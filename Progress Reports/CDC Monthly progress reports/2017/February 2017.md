@@ -10,10 +10,10 @@
 **Week**|**Week Starting**|**PH**|**KG**|**DM**|**BP**|**MD**|**Milestone**|**Notes**
 :-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:
  | | | | | | | | 
-6|06 February 2017|CDC Visit| | | | |Postgres RIF complete| 
+6|06 February 2017|CDC Visit|CDC Visit|CDC Visit|CDC Visit| |Postgres RIF complete| 
 7|13 February 2017|SQL Server data loader script integration|SQL Server data loader script integration|TopoJSON tiles|Documentation, manual|Transferred to COSMOS/SCAMP|tileMaker SQL Server Integration| 
-8|20 February 2017| | |Risk analysis area selection| | | | 
-9|27 February 2017|SQL Server Installer documentation| | |US SEER (Cancer) example data| |Data loader SQL Server install|                                                                                         |                                                                                                |                                                                     |                                                                                           | Postgres Data Loader, Postgres install; tileMaker Postgres intrgration |       |
+8|20 February 2017|SQL Server data loader script integration|SQL Server data loader script integration|Risk analysis area selection| | | | 
+9|27 February 2017|SQL Server Installer documentation|SQL Server data loader script integration|Code refactoring, testin|US SEER (Cancer) example data| |Data loader SQL Server install|                                                                                         |                                                                                                |                                                                     |                                                                                           | Postgres Data Loader, Postgres install; tileMaker Postgres intrgration |       |
 
 ## Planned work for March through May
 
@@ -36,10 +36,10 @@ Expected highlights this month:
 **Week**|**Week Starting**|**PH**|**KG**|**DM**|**BP**|**MD**|**Milestone**|**Notes**
 :-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:
  | | | | | | | | 
-10|06 March 2017|SQL Server data loader script integration| | | | |wpea-traffic/wpea-darwin resdy for install testing| 
-11|13 March 2017|Data loader and tileMaker inegration and tesing|Middleware build|Code refactoring, testing| | | | 
-12|20 March 2017| |Leaves for Cabinet Office|Data loader and middleware handover|Data loader and middleware handover| | | 
-13|27 March 2017|SQL Server study submission (run study)| | | | | | 
+10|06 March 2017|SQL Server data loader script integration|SQL Server data loader script integration|US SEER (Cancer) example data| | |wpea-traffic/wpea-darwin resdy for install testing| 
+11|13 March 2017|Data loader and tileMaker inegration and tesing|Middleware build|Code refactoring, testing|US SEER (Cancer) example data| | | 
+12|20 March 2017|Data loader and tileMaker inegration and tesing|Leaves for Cabinet Office|Data loader and middleware handover|Data loader and middleware handover| | | 
+13|27 March 2017|SQL Server study submission (run study)| |Data loader and middleware handover|Data loader and middleware handover| | | 
 14|03 April 2017| | |SQL Server middleware|SQL Server middleware| |CDC sandbox ready| 
 15|10 April 2017| | | | | |Study submission running on SQL server| 
 16|17 April 2017|Assist with middleware (database fixes); SQL Server full install testing| | | | | | 

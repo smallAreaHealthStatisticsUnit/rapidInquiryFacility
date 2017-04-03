@@ -10,10 +10,10 @@
 **Week**|**Week Starting**|**PH**|**KG**|**DM**|**BP**|**MD**|**Milestone**|**Notes**
 :-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:
  | | | | | | | | 
-10|06 March 2017|SQL Server data loader script integration| | | | |wpea-traffic/wpea-darwin resdy for install testing| 
-11|13 March 2017|Data loader and tileMaker inegration and tesing|Middleware build|Code refactoring, testing| | | | 
-12|20 March 2017| |Leaves for Cabinet Office|Data loader and middleware handover|Data loader and middleware handover| | | 
-13|27 March 2017|SQL Server study submission (run study)| | | | | | 
+10|06 March 2017|SQL Server data loader script integration|SQL Server data loader script integration|US SEER (Cancer) example data| | |wpea-traffic/wpea-darwin resdy for install testing| 
+11|13 March 2017|Data loader and tileMaker inegration and tesing|Middleware build|Code refactoring, testing|US SEER (Cancer) example data| | | 
+12|20 March 2017|Data loader and tileMaker inegration and tesing|Leaves for Cabinet Office|Data loader and middleware handover|Data loader and middleware handover| | | 
+13|27 March 2017|SQL Server study submission (run study)| |Data loader and middleware handover|Data loader and middleware handover| | | 
 
 ## Planned work for April through June
 
@@ -37,28 +37,28 @@ Expected highlights this month:
 **Week**|**Week Starting**|**PH**|**DM**|**BP**|**Milestone**|**Notes**
 :-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:
  | | | | | | 
-14|03 April 2017| |SQL Server middleware|SQL Server middleware|CDC sandbox ready| 
-15|10 April 2017| | | |Study submission running on SQL server| 
-16|17 April 2017|Assist with middleware (database fixes); SQL Server full install testing| | | | 
-17|24 April 2017| | | |SQL Server RIF complete| 
+14|03 April 2017|SQL Server study submission (run study)|SQL Server middleware|SQL Server middleware|CDC sandbox ready| 
+15|10 April 2017|SQL Server study submission (run study)|SQL Server middleware|SQL Server middleware|Study submission running on SQL server| 
+16|17 April 2017|Assist with middleware (database fixes); SQL Server full install testing|SQL Server middleware|SQL Server middleware| | 
+17|24 April 2017|Assist with middleware (database fixes); SQL Server full install testing|SQL Server middleware|SQL Server middleware|SQL Server RIF complete| 
 18|01 May 2017|CDC Install|CDC Install| |CDC Install| 
-19|08 May 2017|Background tile download (csache support)|Risk analysis sstaitical requirements| | | 
-20|15 May 2017| | | | | 
-21|22 May 2017|UK COA 2011 tiles|Risk analysis| | | 
-22|29 May 2017| | | | | 
-23|05 June 2017| | | | | 
-24|12 June 2017|Not yet allocated (fault fixing)| |Risk aanlysis R scripts| | 
-25|19 June 2017| | | | | 
-26|26 June 2017| | | | | 
-27|03 July 2017|Holiday| |SAHSU RIF data statistical testing|SAHSU RIF operational| 
-28|10 July 2017|http://www.geopedia.si/lite.jsp?params=T118\_x408210\_y126301\_s14#T118\_F11063:8283\_x405158\_y123863\_s15\_b4| | | | 
-29|17 July 2017| |Risk analysis integration| | | 
-30|24 July 2017| | | | | 
-31|31 July 2017| | | | | 
+19|08 May 2017|Background tile download (cache support)|Risk analysis statistical requirements|Risk analysis statistical requirements| | 
+20|15 May 2017|Background tile download (cache support)|Risk analysis statistical requirements|Risk analysis statistical requirements| | 
+21|22 May 2017|UK COA 2011 tiles|Risk analysis|Risk analysis statistical requirements| | 
+22|29 May 2017|UK COA 2011 tiles|Risk analysis|Not allocated| | 
+23|05 June 2017|UK COA 2011 tiles|Risk analysis|Not allocated| | 
+24|12 June 2017|Not yet allocated (fault fixing)|Risk analysis R scripts|Risk analysis R scripts| | 
+25|19 June 2017|UK COA 2011 tiles|Risk analysis| | | 
+26|26 June 2017|UK COA 2011 tiles|Risk analysis| | | 
+27|03 July 2017|Holiday|Holiday|SAHSU RIF data statistical testing| | 
+28|10 July 2017|Holiday|Holiday|SAHSU RIF data statistical testing| | 
+29|17 July 2017|Holiday|Risk analysis integration|Risk analysis integration| | 
+30|24 July 2017|Holiday|Risk analysis integration|Risk analysis integration| | 
+31|31 July 2017|Holiday|Risk analysis integration|Risk analysis integration| | 
 32|07 August 2017| | | |Risk analysis| 
 33|14 August 2017|SAHSU RIF install|SAHSU RIF install|SAHSU RIF install| | 
 34|21 August 2017|SAHSU RIF data load| |SAHSU RIF data load| | 
-35|28 August 2017| | | | | 
+35|28 August 2017|SAHSU RIF data load| |SAHSU RIF data load|SAHSU RIF operational| 
 
 ## Data Loader - Kevin
 
