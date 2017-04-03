@@ -82,6 +82,8 @@ Parameters:		study id
 Returns:		area_id, num_adjacencies, adjacency_list as a table. 
 Description: 	Get study area adjacency matrix required by INLA	
 
+Needs to have adjacency_list limited to 8060 characters where converted to use adjacencies_<geography>
+
 Generates and executes SQL>
 
 WITH b AS (
@@ -307,6 +309,8 @@ COMMENT ON FUNCTION rif40_xml_pkg.rif40_GetAdjacencyMatrix(INTEGER) IS 'Function
 Parameters:	study id
 Returns:	area_id, num_adjacencies, adjacency_list as a table. 
 Description: Get study area adjacency matrix required by INLA	
+
+Needs to have adjacency_list limited to 8060 characters where converted to use adjacencies_<geography>
 
 Generates and executes SQL>
 
