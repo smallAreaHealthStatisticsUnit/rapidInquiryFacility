@@ -2,10 +2,8 @@
 
 Principal Work Area: RIF basic estimates and Bayesian smoothing
 
-
-
-#2016
-##June
+# 2016
+## June
 
 RIF basic estimates and Bayesian smoothing
 June 2016 progress report
@@ -15,28 +13,33 @@ June 2016 progress report
 -	Initiated R program from Java, both as JRI call and as R batch command
 
 
-##July
+## July
 - Assisted KG in R integration work
 
-##August
+## August
 - Amended R smoothing program to create database records of the required format
 
-##September
+## September
 - No changes required
-##Octoberparison area is used. Previously several comparison areas were identified based on the first part of the study area ids. Now only one comparison is area is used.
 
-##November
+## October
+
+- Comparison area is used. Previously several comparison areas were identified based on the first part of the study area ids. Now only one comparison is area is used.
+
+## November
 - Enhancement to populate the posterior probability field after performing the smoothing. Writing to the database
 
-##December
-Started work on documentation
-#2017
+## December
 
-##January
+- Started work on documentation
+
+# 2017
+
+## January
 - Minor changes & documentation
 
-##February
+## February
 - Completed first draft of user guide
 
-##March
--Downloaded and prepared SEER data for the data loader.Ran SEER data in data loader.Familiarisation with Data loader java code and minor modifications to code.Familiarisation with Swedish code
+## March
+- Downloaded and prepared SEER data for the data loader.Ran SEER data in data loader.Familiarisation with Data loader java code and minor modifications to code.Familiarisation with Swedish code
