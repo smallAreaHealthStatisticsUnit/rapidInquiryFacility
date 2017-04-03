@@ -2,7 +2,9 @@ package rifServices.dataStorageLayer;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
@@ -17,6 +19,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
+
 
 /**
  * Responsible for managing a pool of connections for each registered user.  Connections will
@@ -132,7 +135,7 @@ public final class SQLConnectionManager
 	private final HashSet<String> registeredUserIDs;
 	private final HashSet<String> userIDsToBlock;
 	
-	
+		
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -150,16 +153,23 @@ public final class SQLConnectionManager
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		readOnlyConnectionsFromUser = new HashMap<String, ConnectionQueue>();
 		writeConnectionsFromUser = new HashMap<String, ConnectionQueue>();
-		
-		
+				
 		userIDsToBlock = new HashSet<String>();
 		registeredUserIDs = new HashSet<String>();
 	
 		suspiciousEventCounterFromUser = new HashMap<String, Integer>();
 		
 		StringBuilder query = new StringBuilder();
-		query.append("SELECT ");
-		query.append("rif40_startup(?) AS rif40_init;");
+		
+		//TODO: (DM) Switch PG or MS. Would be better to use DatabaseType.SQL_SERVER 
+				
+		if (rifServiceStartupOptions.getDatabaseDriverPrefix().equals("jdbc:postgresql")) {	
+			query.append("SELECT ");
+			query.append("rif40_startup(?) AS rif40_init;"); 
+		} else {
+			query.append("EXEC rif40.rif40_startup ?"); 
+		}
+				
 		initialisationQuery = query.toString();
 		
 		databaseURL = generateURLText();
@@ -178,14 +188,28 @@ public final class SQLConnectionManager
 	private String generateURLText() {
 		
 		StringBuilder urlText = new StringBuilder();
-		urlText.append(rifServiceStartupOptions.getDatabaseDriverPrefix());
-		urlText.append(":");
-		urlText.append("//");
-		urlText.append(rifServiceStartupOptions.getHost());
-		urlText.append(":");
-		urlText.append(rifServiceStartupOptions.getPort());
-		urlText.append("/");
-		urlText.append(rifServiceStartupOptions.getDatabaseName());
+			
+		if (rifServiceStartupOptions.getDatabaseDriverPrefix().equals("jdbc:postgresql")) { 
+			urlText.append(rifServiceStartupOptions.getDatabaseDriverPrefix());
+			urlText.append(":");
+			urlText.append("//");
+			urlText.append(rifServiceStartupOptions.getHost());
+			urlText.append(":");
+			urlText.append(rifServiceStartupOptions.getPort());
+			urlText.append("/");
+			urlText.append(rifServiceStartupOptions.getDatabaseName());
+		}
+		else {
+			urlText.append(rifServiceStartupOptions.getDatabaseDriverPrefix());
+			urlText.append(":");
+			urlText.append("//");
+			urlText.append(rifServiceStartupOptions.getHost());
+			urlText.append(":");
+			urlText.append(rifServiceStartupOptions.getPort());
+			urlText.append(";");
+			urlText.append("databaseName=");
+			urlText.append(rifServiceStartupOptions.getDatabaseName());
+		}
 		
 		return urlText.toString();
 	}
@@ -695,16 +719,36 @@ public final class SQLConnectionManager
 					userID,
 					password);
 			*/
-			statement
-				= PGSQLQueryUtility.createPreparedStatement(
-					connection, 
-					initialisationQuery);
-			if (isFirstConnectionForUser) {	
-				//perform checks
-				statement.setBoolean(1, false);
-			}
-			else {
-				statement.setBoolean(1,  true);
+			
+			//Execute RIF start-up function
+			//MSSQL > EXEC rif40.rif40_startup ?
+			//PGSQL > SELECT rif40_startup(?) AS rif40_init;
+			
+			if (rifServiceStartupOptions.getDatabaseDriverPrefix().equals("jdbc:postgresql")) { 	
+				statement
+					= PGSQLQueryUtility.createPreparedStatement(
+						connection, 
+						initialisationQuery); 
+				if (isFirstConnectionForUser) {	
+					//perform checks
+					statement.setBoolean(1, false);
+				}
+				else {
+					statement.setBoolean(1, true);
+				}	
+			} else {
+				statement
+					= MSSQLQueryUtility.createPreparedStatement(
+						connection, 
+						initialisationQuery);	
+				
+				if (isFirstConnectionForUser) {	
+					//perform checks
+					statement.setInt(1, 1);
+				}
+				else {
+					statement.setInt(1, 0);
+				}
 			}
 			
 			statement.execute();
@@ -719,16 +763,16 @@ public final class SQLConnectionManager
 			connection.setAutoCommit(false);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			if (rifServiceStartupOptions.getDatabaseDriverPrefix().equals("jdbc:postgresql")) { 
+				PGSQLQueryUtility.close(statement);
+			} else {
+				MSSQLQueryUtility.close(statement);
+			}
+
 		}
 
 		return connection;
-		
-		
-		
-	
-		
-		
+
 	}
 		
 	// ==========================================

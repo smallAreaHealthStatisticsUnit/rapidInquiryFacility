@@ -113,8 +113,7 @@ public final class MSUserDatabaseConnections {
 		this.userID = userID;
 		
 		StringBuilder query = new StringBuilder();
-		query.append("SELECT ");
-		query.append("rif40_startup() AS rif40_init;");
+		query.append("EXEC rif40.rif40_startup 1"); //TODO: (DM) replaced PG code (Never used??)
 		initialisationQuery = query.toString();
 		
 		readOnlyConnectionsLock = new Object();
