@@ -1175,7 +1175,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			var sqlStmt=new Sql("Load table from CSV file"); // CSV file comes from Tilemaker so is not DB dependent
 			if (dbType == "PostGres") {	
 				sqlStmt.sql="\\copy " + csvFiles[i].tableName + " FROM '" + csvFiles[i].tableName + 
-					".csv' DELIMITER ',' CSV HEADER";
+					".csv' DELIMITER ',' CSV HEADER ENCODING 'UTF-8'";
 			}
 			else if (dbType == "MSSQLServer") {	
 				sqlStmt.sql="BULK INSERT " + csvFiles[i].tableName + "\n" + 
@@ -2229,7 +2229,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				if (dbType == "PostGres") {	
 					sqlStmt.sql="\\copy " + lookupTable + "(" + shapefileTable + ", areaname, gid, geographic_centroid)" +
 						" FROM 'pg_" + lookupTable +
-						".csv' DELIMITER ',' CSV HEADER";
+						".csv' DELIMITER ',' CSV HEADER ENCODING 'UTF-8' ENCODING 'UTF-8'";
 				}
 				else if (dbType == "MSSQLServer") {	
 					sqlStmt.sql="BULK INSERT " + (schema||"") + lookupTable + "\n" + 
@@ -2256,7 +2256,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			if (dbType == "PostGres") {	
 				sqlStmt.sql="\\copy " + "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
 					" FROM 'pg_hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
-					".csv' DELIMITER ',' CSV HEADER";
+					".csv' DELIMITER ',' CSV HEADER ENCODING 'UTF-8'";
 			}
 			else if (dbType == "MSSQLServer") {	
 				sqlStmt.sql="BULK INSERT " + (schema||"") + "hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
@@ -2314,7 +2314,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					"\\copy " + "geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
 					"(geolevel_id, areaid, zoomlevel, wkt)" +
 					" FROM '" + "pg_geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
-					".csv' DELIMITER ',' CSV HEADER", 
+					".csv' DELIMITER ',' CSV HEADER ENCODING 'UTF-8'", 
 					sqlArray, dbType);
 			}
 			else if (dbType == "MSSQLServer") {	// Restrict columns using a view	
@@ -2425,7 +2425,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					sqlStmt.sql="\\copy " + "t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
 						"(geolevel_id,zoomlevel,x,y,tile_id,areaid_count,optimised_topojson)" + 
 						" FROM 'pg_t_tiles_" + xmlConfig.dataLoader.geoLevel[i].geolevelName.toLowerCase() + 
-						".csv' DELIMITER ',' CSV HEADER";				
+						".csv' DELIMITER ',' CSV HEADER ENCODING 'UTF-8'";				
 					sqlStmt.dbType=dbType;
 					sqlArray.push(sqlStmt);	
 				}
