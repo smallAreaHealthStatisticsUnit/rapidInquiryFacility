@@ -36,7 +36,7 @@ Expected highlights this month:
 **Week**|**Week Starting**|**PH**|**KG**|**DM**|**BP**|**MD**|**Milestone**|**Notes**
 :-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:
  | | | | | | | | 
-10|06 March 2017|SQL Server data loader script integration|SQL Server data loader script integration|US SEER (Cancer) example data| | |wpea-traffic/wpea-darwin resdy for install testing| 
+10|06 March 2017|SQL Server data loader script integration|SQL Server data loader script integration|Risk analysis area selection|US SEER (Cancer) example data| |wpea-traffic/wpea-darwin resdy for install testing| 
 11|13 March 2017|Data loader and tileMaker inegration and tesing|Middleware build|Code refactoring, testing|US SEER (Cancer) example data| | | 
 12|20 March 2017|Data loader and tileMaker inegration and tesing|Leaves for Cabinet Office|Data loader and middleware handover|Data loader and middleware handover| | | 
 13|27 March 2017|SQL Server study submission (run study)| |Data loader and middleware handover|Data loader and middleware handover| | | 
