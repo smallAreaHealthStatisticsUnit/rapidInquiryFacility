@@ -1143,15 +1143,12 @@ GO
   listing/comparea/resolution all set to 1 for all geolevels
 * RIF meeting
 
-#### Current TODO list (March 2017): SQL Server Port, documentation
+#### Current TODO list (April 2017): SQL Server Port
 
 * Relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland). Currently 
   edited by hand.
-
-#### Current TODO list (April 2017):
-
 * Process Utah geography
-* SQL Server run study port
+* Complete SQL Server run study port
 * Geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Add checks for studies:
 ```
 	-- SQL statement 75: Remove old geolevels meta data table >>>
