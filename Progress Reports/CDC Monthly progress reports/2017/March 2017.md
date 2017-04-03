@@ -163,7 +163,7 @@ Transfer development to Brandon. Integration testing with Peter.
 ### Geospatial data (Peter)
 
 - Tested Swedish Halland county data; resolved UTM multiple projection issues, investigated UTF-8 issues (UTF-8 chacracters being 
-  corrupted somewhere in the database layer)
+  corrupted somewhere in the database layer, Slättåkra-Kvibille becomes SlÃ¤ttÃ¥kra-Kvibille)
 - Tested USA county data to level 11. Same UTF-8 issues in Puerto Rico; Postgres: OK; SQL Server: requires licensed version (Express
   used in development limited to 10GB) 
 - Data loader integration and testing. 
