@@ -1,34 +1,55 @@
 # CDC RIF 4.0 Progress Report March 2017
 
-## Highlight
+## Highlights
 
 * Data loader integration and testing on Postgres and SQL Server complete. 
 * SQL Server database build and installation instructions complete.
 
 ## March Summary Summary
 
-| Week | Week Starting     | PH                                                            | KG                                                                                                | DM                                                                                             | BP                                                                  | MD                                                                                        | Milestone                                                              | Notes |
-|------|-------------------|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|-------------------------------------------------------------------------------------------|------------------------------------------------------------------------|-------|
-| 10   | 06 March 2017     |                                                               |                                                                                                   |                                                                                                |                                                                     |                                                                                           |                                                                        |       |
-| 11   | 13 March 2017     | SQL Server Installer documentation                            | SQL Server middleware build                                                                       |                                                                                                |                                                                     |                                                                                           |                                                                        |       |
-| 12   | 20 March 2017     | Assist with middleware                                        | Leaves for Cabinet Office                                                                         |                                                                                                |                                                                     |                                                                                           |                                                                        |       |
-| 13   | 27 March 2017     |                                                               | 
+**Week**|**Week Starting**|**PH**|**KG**|**DM**|**BP**|**MD**|**Milestone**|**Notes**
+:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:
+ | | | | | | | | 
+6|06 February 2017|CDC Visit| | | | |Postgres RIF complete| 
+7|13 February 2017|SQL Server data loader script integration|SQL Server data loader script integration|TopoJSON tiles|Documentation, manual|Transferred to COSMOS/SCAMP|tileMaker SQL Server Integration| 
+8|20 February 2017| | |Risk analysis area selection| | | | 
+9|27 February 2017|SQL Server Installer documentation| | |US SEER (Cancer) example data| |Data loader SQL Server install| 
+10|06 March 2017|SQL Server data loader script integration| | | | |wpea-traffic/wpea-darwin resdy for install testing| 
+11|13 March 2017|Data loader and tileMaker inegration and tesing|Middleware build|Code refactoring, testing| | | | 
+12|20 March 2017| |Leaves for Cabinet Office|Data loader and middleware handover|Data loader and middleware handover| | | 
+13|27 March 2017|SQL Server study submission (run study)| | | | | | 
+14|03 April 2017| | |SQL Server middleware|SQL Server middleware| |CDC sandbox ready| 
+15|10 April 2017| | | | | |Study submission running on SQL server| 
+16|17 April 2017|Assist with middleware (database fixes); SQL Server full install testing| | | | | | 
+17|24 April 2017| | | | | |SQL Server RIF complete| 
+18|01 May 2017|CDC Install| |CDC Install| | |CDC Install| 
+19|08 May 2017|Background tile download (csache support)| |Risk analysis sstaitical requirements| | | | 
+20|15 May 2017| | | | | | | 
+21|22 May 2017|UK COA 2011 tiles| |Risk analysis| | | | 
+22|29 May 2017| | | | | | | 
+23|05 June 2017| | | | | | | 
+24|12 June 2017|SAHSU RIF install| |SAHSU RIF install|SAHSU RIF install| | | 
+25|19 June 2017|SAHSU RIF data load| |SAHSU RIF data load| | | | 
+26|26 June 2017| | | | | | | 
 
 ## Planned work for April through June
 
 ### April Plans
 
-Work plan agreed 8/3/2017:
+Work plan for April to be agreed 5/4/2017:
 
-1. Brandon: Documentation with David;
-2. David: Implement one remaining middleware methods (study geography – data from RIF40_STUDIES); code refactor; documentation
-3. Peter: Geospatial integration scripts for SQL server and Postgres; testing. Then SQL Server run study (early February);
+1. Brandon: Documentation with David; test datasets: US SEER cancer data 
+2. David: re-implement one tile get middleware method; code refactor; documentation,
+   risk analysis.
+3. Peter: SQL Server , run study (early March);
 
 Expected highlights this month:
 
-• Implement three remaining middleware methods 
-• Achieve middleware database logon on SQL server using front end
-• Geospatial integration scripts for SQL server
+1. Brandon: Documentation with David; test datasets: US SEER cancer data 
+2. David: re-implement one tile get middleware method; code refactor; documentation,
+   risk analysis.
+3. Peter: SQL Server database build and installation instructions.
+4. Kevin: Data loader complete and integration tested.
 
 | Week | Week Starting     | PH                                                            | KG                                                                                                | DM                                                                                             | BP                                                                  | MD                                                                                        | Milestone                                                              | Notes |
 |------|-------------------|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|-------------------------------------------------------------------------------------------|------------------------------------------------------------------------|-------|                                                                                                  |                                                                                                |                                                                     |                                                                                           |                                                                        |       |
@@ -55,6 +76,8 @@ Transfer development to Brandon. Integration testing with Peter.
 ## Middleware
 
 ### Web services (rifServices) - Kevin/David
+
+* Resolved Maven build issue. Now builds cleanly from github source.
 
 ### Run study batch - Kevin
 

@@ -1,8 +1,9 @@
 # CDC RIF 4.0 Progress Report February 2017
 
-## Highlight
+## Highlights
 
-* Data.loader and tilemaker integration on Postgres, SQL Server: tilemaker only.
+* Data loader script port to SQL Server; full geospatial loader port to SQL Server.
+* Completed first draft of user guide.
 
 ## January Summary
 
@@ -18,24 +19,18 @@
 
 ### March Plans
 
-Work plan agreed 30/2/2017:
+Work plan for March agreed 29/2/2017:
 
-1. Kevin:  Postgres data loader as per document with agreed restrictions; generates scripts for SQL Server. Test integration in 
-   sahusland_empty, then SQL server from february. Assist David as required. Then, from mid february SQL Server middleware 
-   (with Peter/David). SQL Server data loader
-2. Brandon: Documentation with David;
-3. Margaret: Assist Kevin with data loader. No further work on SQL Server port from 6/2/2017 - transferred to COSMOS.
-   * Finish testing as best you can the MS SQL versions of the query formatter classes;  
-   * SQL server porting issues;
-   * Write down full step-by-step for connecting JDBC to an SQL Server db;
-   * Write down any other suggestions you think might be relevant.
-4. David: Implement one remaining middleware methods (study geography – data from RIF40_STUDIES); code refactor; documentation
-5. Peter: Geospatial integration scripts for SQL server and Postgres; testing. Then SQL Server run study (early February);
+1. Brandon: Documentation with David; test datasets: US SEER cancer data 
+2. David: re-implement one tile get middleware method; code refactor; documentation,
+   risk analysis.
+3. Peter: SQL Server run study (early March), geospatial and data loader integration testing;
+4. Kevin Data loader integration testing
 
 Expected highlights this month:
 
 • Implement three remaining middleware methods 
-• Achieve middleware database logon on SQL server using front end
+• Data loader script port to SQL Server
 • Geospatial integration scripts for SQL server
 
 | Week | Week Starting     | PH                                                            | KG                                                                                                | DM                                                                                             | BP                                                                  | MD                                                                                        | Milestone                                                              | Notes |
