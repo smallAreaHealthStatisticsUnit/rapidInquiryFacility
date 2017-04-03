@@ -97,7 +97,7 @@ Expected highlights this month:
   zoomlevel 19 
 * Cache ageing, global auto compaction
 * Fixed private browsing mode issues
-* Support database (i.e. SQL Server not present)
+* Support database (i.e. SQL Server) not being present
 
 #### 30th January to 3rd February 
 

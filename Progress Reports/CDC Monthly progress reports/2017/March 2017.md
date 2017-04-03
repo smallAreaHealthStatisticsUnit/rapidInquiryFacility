@@ -38,6 +38,7 @@ Expected highlights this month:
 | 17   | 24 April 2017     |                                                               |                                                                                                   |                                                                                                |                                                                     |                                                                                           |                                                                        |       |
 | 18   | 01 May 2017       |                                                               |                                                                                                   |                                                                                                |                                                                     |                                                                                           | SQL Server RIF complete                                                |       |
 
+
 ## Data Loader - Kevin
 
 Transfer development to Brandon. Integration testing with Peter.
@@ -49,7 +50,7 @@ Transfer development to Brandon. Integration testing with Peter.
 - Risk analysis methods for selecting areas from shapefiles started
 - Removal of old middleware methods
 - Migrate all CDN libraries to standalone scripts
-- Started study information recall metho
+- Started study information recall method
 
 ## Middleware
 
