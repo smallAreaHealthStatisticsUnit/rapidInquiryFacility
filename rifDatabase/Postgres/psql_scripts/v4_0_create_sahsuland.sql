@@ -460,7 +460,9 @@ $$;
 --
 -- Load new tileMaker SAHSULAND
 --
+\cd ../../GeospatialData/tileMaker/
 \i ../../GeospatialData/tileMaker/rif_pg_SAHSULAND.sql
+\cd ../../Postgres/psql_scripts/
 
 --
 -- Load new dataLoader SAHSULAND

@@ -1175,6 +1175,8 @@ GO
 	  2894 total
 	```
 * rif40_GetAdjacencyMatrix.sql limit line length to 8000 characters; adjacency table create script will raise truncation error if greater
+* Use relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland). No need 
+  to edit path to CSV file by hand.
 
 #### Current TODO list (April 2017): SQL Server Port
 
