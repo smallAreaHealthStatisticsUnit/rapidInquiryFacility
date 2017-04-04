@@ -18,6 +18,6 @@ FETCH NEXT FROM c1 INTO @c1_total;
 IF @c1_total = 0
 	PRINT 'Geography: %1 is not used by any studies';
 ELSE
-	RAISERROR('Geography: %1 is used by: % studies', 16, 1, @c1_total);
+	RAISERROR('Geography: %1 is used by: %%d studies', 16, 1, @c1_total);
 CLOSE c1;
 DEALLOCATE c1
