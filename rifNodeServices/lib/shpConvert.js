@@ -1435,7 +1435,7 @@ This error in actually originating from the error handler function
 		
 		if (shapefileData["prj"]) {
 			shapefileData["mySrs"]=srs.parse(shapefileData["prj"]);
-			if (!shapefileData["mySrs"].srid && shapefileData["mySrs"].is_geographic) { // Add exceptions not spotted by srs.parse
+			if (!shapefileData["mySrs"].srid) { // Add exceptions not spotted by srs.parse
 				var sridList=[];
 				console.error(shapefileData["shapeFileName"] + '; shapefileData["mySrs"].proj4: ' + JSON.stringify(shapefileData["mySrs"], null, 2));
 				for (var epsg in shapefileData["crss"]) { // Search for multiple SRIDs
@@ -1459,6 +1459,9 @@ This error in actually originating from the error handler function
 //				
 				if (shapefileData["mySrs"].name.match(/British_National_Grid/)) {
 					shapefileData["mySrs"].srid="27700";
+				}	
+				else if (shapefileData["mySrs"].name.match(/SWEREF99_TM/)) {
+					shapefileData["mySrs"].srid="3006";
 				}				
 				else if (sridList.length == 1) { // Match (srs.parse() would have found this...)
 					shapefileData["mySrs"].srid=sridList[0];
@@ -1487,9 +1490,9 @@ This error in actually originating from the error handler function
 //
 // Non geographic specials
 //			
-			else if (!shapefileData["mySrs"].is_geographic && shapefileData["mySrs"].name.match(/SWEREF99_TM/)) {
-				shapefileData["mySrs"].srid="3006";
-			}
+//			else if (!shapefileData["mySrs"].is_geographic && shapefileData["mySrs"].name.match(/SWEREF99_TM/)) {
+//				shapefileData["mySrs"].srid="3006";
+//			}
 			
 			else if (!shapefileData["mySrs"].is_geographic) {
 				serverLog.serverError2(__file, __line, "readShapeFile", 
