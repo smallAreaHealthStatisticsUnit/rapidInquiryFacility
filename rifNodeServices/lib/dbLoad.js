@@ -2295,7 +2295,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				if (dbType == "PostGres") {	
 					sqlStmt.sql="\\copy " + lookupTable + "(" + shapefileTable + ", areaname, gid, geographic_centroid)" +
 						" FROM 'pg_" + lookupTable +
-						".csv' DELIMITER ',' CSV HEADER ENCODING 'UTF-8' ENCODING 'UTF-8'";
+						".csv' DELIMITER ',' CSV HEADER ENCODING 'UTF-8'";
 				}
 				else if (dbType == "MSSQLServer") {	
 					sqlStmt.sql="BULK INSERT " + (schema||"") + lookupTable + "\n" + 
