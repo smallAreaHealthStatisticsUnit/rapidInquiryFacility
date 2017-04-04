@@ -1623,7 +1623,8 @@ This error in actually originating from the error handler function
 		}
 		if (response.fields["geographyName"]) { // Add tables
 			dataLoader.hierarchyTable='hierarchy_' +  response.fields["geographyName"];    
-		    dataLoader.geometryTable='geometry_' +  response.fields["geographyName"];        
+		    dataLoader.geometryTable='geometry_' +  response.fields["geographyName"];    
+		    dataLoader.adjacencyTable='adjacency_' +  response.fields["geographyName"];        
 		    dataLoader.tileTable='tiles_' +  response.fields["geographyName"];               
 		}
 		xmlConfig.dataLoader=dataLoader;  // Data loader and RIF40_GEOGRAPHIES setup 
