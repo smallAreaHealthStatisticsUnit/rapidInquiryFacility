@@ -300,7 +300,53 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 		sqlStmt.dbType=dbType;
 		sqlArray.push(sqlStmt);
 	} // End of commitTransaction()		
-			
+
+	/*
+	 * Function: 	createAdjacencyTable(sqlArray, dbType, schema)
+	 * Parameters:	sqlArray, dbType
+	 * Description:	Create hierarchy table: SQL statements
+	 */	 
+	function createAdjacencyTable(sqlArray, dbType, schema) {
+		sqlArray.push(new Sql("Adjacency table"));
+
+		if (schema && dbType == "MSSQLServer") {		
+			var sqlStmt=new Sql("Drop table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+				getSqlFromFile("drop_table.sql", dbType, schema + "adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
+				sqlArray, dbType); 
+		}
+		else {		
+			var sqlStmt=new Sql("Drop table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+				getSqlFromFile("drop_table.sql", dbType, "adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
+				sqlArray, dbType); 
+		}	
+		
+		var sqlStmt=new Sql("Create table adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+			getSqlFromFile("create_adjacency_table.sql", undefined /* Common */, 
+				"adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */,
+				(schema||"")), 
+			sqlArray, dbType); 
+
+		var sqlStmt=new Sql("Comment table: adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase(),
+			getSqlFromFile("comment_table.sql", 
+				dbType, 
+				"adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase(),		/* Table name */
+				"Adjacency lookup table for " + response.fields["geographyDesc"]		/* Comment */), 
+			sqlArray, dbType);	
+		
+		var fieldArray = ['geolevel_id', 'areaid', 'num_adjacencies', 'adjacency_list'];
+		var fieldDescArray = ['ID for ordering (1=lowest resolution). Up to 99 supported.', 'Area Id', 'Number of adjacencies', 'Adjacent area Ids'];
+		for (var l=0; l< fieldArray.length; l++) {		
+			var sqlStmt=new Sql("Comment column: adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "." + fieldArray[l],
+				getSqlFromFile("comment_column.sql", 
+					dbType, 
+					"adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase(),	/* Table name */
+					fieldArray[l]														/* Column name */,
+					fieldDescArray[l]													/* Comment */), 
+				sqlArray, dbType);
+		}
+		
+	} // End of createAdjacencyTable()
+	
 	/*
 	 * Function: 	createHierarchyTable(sqlArray, dbType, schema)
 	 * Parameters:	sqlArray, dbType
@@ -788,6 +834,21 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 		} // End of insertGeolevelsLookupTables()
 
 		/*
+		 * Function: 	insertAdjacencyTable()
+		 * Parameters:	None
+		 * Description:	Insert adjacency table: SQL statements
+		 */	 
+		function insertAdjacencyTable() {				
+			var sqlStmt=new Sql("Insert into adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase(),
+				getSqlFromFile("insert_adjacency.sql", 
+					dbType, 
+					"adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 1: adjacency table; e.g. adjacency_cb_2014_us_500k */,
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* 2: geometry table; e.g. geometry_cb_2014_us_500k */,
+					xmlConfig.dataLoader.maxZoomlevel 								/* 3: Max zoomlevel */), 					
+				sqlArray, dbType);		
+		}
+		
+		/*
 		 * Function: 	insertHierarchyTable()
 		 * Parameters:	None
 		 * Description:	Insert hierarchy table: SQL statements
@@ -1015,7 +1076,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 			var sqlStmt=new Sql("Populate geography meta data table",
 				getSqlFromFile("insert_geography.sql", 
 					undefined /* Common */, 
-					"geography_" + xmlConfig.dataLoader.geographyName.toUpperCase()	/* table; e.g. geography_cb_2014_us_county_500k */,
+					"geography_" + xmlConfig.dataLoader.geographyName.toLowerCase()	/* table; e.g. geography_cb_2014_us_county_500k */,
 					xmlConfig.dataLoader.geographyName.toUpperCase() 				/* Geography; e.g. CB_2014_US_500K */,
 					xmlConfig.dataLoader.geographyDesc 								/* Geography description; e.g. "United states to county level" */,
 					"HIERARCHY_" + xmlConfig.dataLoader.geographyName.toUpperCase()	/* Hierarchy table; e.g. HIERARCHY_CB_2014_US_500K */,
@@ -1029,13 +1090,14 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					postalPopulationTable											/* Postal population table */,
 					postalPointColumn												/* Postal point column */,
 					partition														/* partition (0/1) */,
-					xmlConfig.dataLoader.maxGeojsonDigits							/* Max geojson digits */
+					xmlConfig.dataLoader.maxGeojsonDigits							/* Max geojson digits */,
+					"ADJACENCY_" + xmlConfig.dataLoader.geographyName.toUpperCase()	/* Adjacency table; e.g. ADJACENCY_CB_2014_US_500K */
 					), 
 				sqlArray, dbType);
 			
 			var fieldArray = ['geography', 'description', 'hierarchytable', 'geometrytable', 'tiletable', 
 					'srid', 'defaultcomparea', 'defaultstudyarea', 'minzoomlevel', 'maxzoomlevel',
-					'postal_population_table', 'postal_point_column', 'partition', 'max_geojson_digits'];
+					'postal_population_table', 'postal_point_column', 'partition', 'max_geojson_digits', 'adjacencytable'];
 			var fieldDescArray = ['Geography name', 
 				'Description', 
 				'Hierarchy table', 
@@ -1049,7 +1111,8 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				'Postal_population_table', 
 				'Postal_point_column', 
 				'Partition geometry and tile tables (0/1)', 
-				'Maximum digits in geojson (topojson quantisation)'];
+				'Maximum digits in geojson (topojson quantisation)',
+				'Adjacency table'];
 			for (var l=0; l< fieldArray.length; l++) {		
 				var sqlStmt=new Sql("Comment geography meta data column",
 					getSqlFromFile("comment_column.sql", 
@@ -1879,6 +1942,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 		insertHierarchyTable();
 		createGeometryTable(sqlArray, dbType, undefined /* No schema - use default */);
 		insertGeometryTable();
+		createAdjacencyTable(sqlArray, dbType, undefined /* No schema - use default */);
+		insertAdjacencyTable();
 		
 		var geoLevelsTable="geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase();
 		createTilesTables(sqlArray, dbType, geoLevelsTable, undefined /* No schema - use default */);
@@ -1992,9 +2057,9 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				sqlArray.push(sqlStmt);
 			}
 			
-			var newColumnList=['geometrytable', 'tiletable', 'minzoomlevel', 'maxzoomlevel'];
-			var newColumnDataType=['VARCHAR(30)', 'VARCHAR(30)', 'INTEGER', 'INTEGER'];
-			var newColumnComment=['Geometry table name', 'Tile table name', 'Minimum zoomlevel', 'Maximum zoomlevel'];			
+			var newColumnList=['geometrytable', 'tiletable', 'minzoomlevel', 'maxzoomlevel', 'adjacencytable'];
+			var newColumnDataType=['VARCHAR(30)', 'VARCHAR(30)', 'INTEGER', 'INTEGER', 'VARCHAR(30)'];
+			var newColumnComment=['Geometry table name', 'Tile table name', 'Minimum zoomlevel', 'Maximum zoomlevel', 'Adjacency table'];			
 			new Sql("Remove old geolevels meta data table",
 					"DELETE FROM t_rif40_geolevels WHERE geography = '" + 
 						xmlConfig.dataLoader.geographyName.toUpperCase() + "'", 
@@ -2083,7 +2148,8 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					postalPopulationTable											/* Postal population table */,
 					postalPointColumn												/* Postal point column */,
 					partition														/* partition (0/1) */,
-					xmlConfig.dataLoader.maxGeojsonDigits							/* Max geojson digits */
+					xmlConfig.dataLoader.maxGeojsonDigits							/* Max geojson digits */,
+					"ADJACENCY_" + xmlConfig.dataLoader.geographyName.toUpperCase()	/* Adjacency table; e.g. ADJACENCY_CB_2014_US_500K */
 					), 
 				sqlArray, dbType);	
 				
@@ -2271,6 +2337,33 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			sqlArray.push(sqlStmt);		
 			
 		} // End of loadHierarchyTable()
+
+		/*
+		 * Function: 	loadAdjacencyTable()
+		 * Parameters:	Schema (rif_data.)
+		 * Description:	Load hierarchy table SQL statements
+		 */	
+		var loadAdjacencyTable=function loadAdjacencyTable(schema) {
+			sqlArray.push(new Sql("Load adjacency table"));
+			var sqlStmt=new Sql("Load DB dependent adjacency table from CSV file");
+			if (dbType == "PostGres") {	
+				sqlStmt.sql="\\copy " + "adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
+					" FROM 'pg_adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() + 
+					".csv' DELIMITER ',' CSV HEADER ENCODING 'UTF-8'";
+			}
+			else if (dbType == "MSSQLServer") {	
+				sqlStmt.sql="BULK INSERT " + (schema||"") + "adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() + "\n" + 
+"FROM '$(pwd)/mssql_adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".csv'" + '	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line\n' + 
+"WITH\n" + 
+"(\n" + 
+"	FORMATFILE = '$(pwd)/mssql_adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() + ".fmt',		-- Use a format file\n" +
+"	TABLOCK					-- Table lock\n" + 
+")";
+			}
+			sqlStmt.dbType=dbType;
+			sqlArray.push(sqlStmt);		
+			
+		} // End of loadAdjacencyTable()
 		
 		/*
 		 * Function: 	loadGeometryTable()
@@ -2468,10 +2561,12 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				
 		createGeolevelsLookupTables(sqlArray, dbType, 'rif_data.' /* Schema */);
 		loadGeolevelsLookupTables('rif_data.' /* Schema */);
-		createHierarchyTable(sqlArray, dbType, 'rif_data.' /* Schema */);
+		createHierarchyTable(sqlArray, dbType, 'rif_data.' /* Schema */);	
 		loadHierarchyTable('rif_data.' /* Schema */);
 		createGeometryTable(sqlArray, dbType, 'rif_data.' /* Schema */);
 		loadGeometryTable('rif_data.' /* Schema */);
+		createAdjacencyTable(sqlArray, dbType, 'rif_data.' /* Schema */);		
+		loadAdjacencyTable('rif_data.' /* Schema */);
 		var geoLevelsTable="t_rif40_geolevels";
 		setupGeography('rif_data.' /* Schema */);
 		createTilesTables(sqlArray, dbType, geoLevelsTable, 'rif_data.' /* Schema */);

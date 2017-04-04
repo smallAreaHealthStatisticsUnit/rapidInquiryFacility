@@ -17,18 +17,20 @@
  *      				13: Postal point column (quote enclosed or NULL)
  *						14: Partition (0/1)
  *						15: Max geojson digits
+ *						16: adjacencytable; e.g. ADJACENCY_CB_2014_US_500K
  *
  * Description:			Insert into geography table
  * Note:				%%%% becomes %% after substitution
  */
 INSERT INTO %1 (
-geography, description, hierarchytable, geometrytable, tiletable, srid, defaultcomparea, defaultstudyarea, minzoomlevel, maxzoomlevel,
+geography, description, hierarchytable, geometrytable, tiletable, adjacencytable, srid, defaultcomparea, defaultstudyarea, minzoomlevel, maxzoomlevel,
 		postal_population_table, postal_point_column, partition, max_geojson_digits)
 SELECT '%2' AS geography,
        '%3' AS description,
        '%4' AS hierarchytable,
 	   '%5' AS geometrytable,
 	   '%6' AS tiletable,
+	   '%16' AS adjacencytable,
        %7   AS srid,
        NULL AS defaultcomparea,	/* See: update_geography.sql */
        NULL AS defaultstudyarea,
