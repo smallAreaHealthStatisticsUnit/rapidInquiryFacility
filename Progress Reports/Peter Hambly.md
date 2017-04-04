@@ -1147,18 +1147,42 @@ GO
 
 * Monthly reports
 * Wellcome application
+* Add ajacency table. Some slight differences between PostGIS and SQL Server need to be investigated
+	```
+	C:\Users\Peter\Documents\Work\sahsuland>diff mssql_adjacency_sahsuland.csv pg_adjacency_sahsuland.csv
+	65c65
+	< "3","01.008.002900","6","01.008.006200,01.008.006300,01.008.006800,01.008.006900,01.008.007100,01.008.007500"
+	---
+	> "3","01.008.002900","7","01.008.006200,01.008.006300,01.008.006800,01.008.006900,01.008.007100,01.008.007400,01.008.007500"
+	86c86
+	< "3","01.008.005500","5","01.008.005300,01.008.005400,01.008.005700,01.008.007700,01.008.007800"
+	---
+	> "3","01.008.005500","6","01.008.005300,01.008.005400,01.008.005700,01.008.006000,01.008.007700,01.008.007800"
+	91c91
+	< "3","01.008.006000","11","01.008.003500,01.008.005100,01.008.005200,01.008.005300,01.008.006100,01.008.006700,01.008.006800,01.008
+	.007700,01.008.008200,01.008.008400,01.008.009100"
+	---
+	> "3","01.008.006000","12","01.008.003500,01.008.005100,01.008.005200,01.008.005300,01.008.005500,01.008.006100,01.008.006700,01.008
+	.006800,01.008.007700,01.008.008200,01.008.008400,01.008.009100"
+	105c105
+	< "3","01.008.007400","6","01.008.006700,01.008.006800,01.008.007300,01.008.007500,01.008.007600,01.008.008700"
+	---
+	> "3","01.008.007400","7","01.008.002900,01.008.006700,01.008.006800,01.008.007300,01.008.007500,01.008.007600,01.008.008700"
 
-Planned: 
-
-* Add ajacency table; change rif40_GetAdjacencyMatrix.sql
-* rif40_GetAdjacencyMatrix.sql limit line length to 8060 characters; raise exceptiom if greater
+	C:\Users\Peter\Documents\Work\sahsuland>wc -l mssql_adjacency_sahsuland.csv pg_adjacency_sahsuland.csv
+	  1447 mssql_adjacency_sahsuland.csv
+	  1447 pg_adjacency_sahsuland.csv
+	  2894 total
+	```
+* rif40_GetAdjacencyMatrix.sql limit line length to 8000 characters; adjacency table create script will raise truncation error if greater
 
 #### Current TODO list (April 2017): SQL Server Port
 
+* change rif40_GetAdjacencyMatrix.sql to support adjacency table
 * Relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland). Currently 
   edited by hand.
-* Process Utah geography
 * Complete SQL Server run study port
+* Process Utah geography
 * Postgres and SQL Server install from export scripts
 * Geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Add checks for studies:
 ```
@@ -1175,7 +1199,7 @@ Planned:
 * Assist with middleware (database fixes); SQL Server full install testing
 * Drop script for SQL server to all rif40_sahsuland_dev_install.bat/rif40_sahsuland_install.bat to be re-run without rebuilding the entire database
 
-#### TileViewer TODO (defferred to May?):
+#### TileViewer TODO (deferred to May?):
  
 * Default study/comnparision areas set as LEVEL!/LEVEL2 (i.e. column name, not shapefile name)
 * Area tests (area_check.sql) is failing for Halland - suspect area is too small, could be projection ia wrong 
