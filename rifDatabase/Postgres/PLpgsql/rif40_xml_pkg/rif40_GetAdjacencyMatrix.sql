@@ -82,9 +82,52 @@ Parameters:		study id
 Returns:		area_id, num_adjacencies, adjacency_list as a table. 
 Description: 	Get study area adjacency matrix required by INLA	
 
-Needs to have adjacency_list limited to 8060 characters where converted to use adjacencies_<geography>
+Adjacency_list limited to 8000 characters when using adjacencies_<geography> (adjacency table)
 
 Generates and executes SQL>
+
+WITH b AS ( /- Tilemaker: has adjacency table -/ 
+	SELECT area_id, band_id
+	  FROM rif40_study_areas b1
+	 WHERE b1.study_id = 1
+)
+SELECT area_id, num_adjacencies, adjacency_list
+  FROM adjacency_sahsuland c1, b
+ WHERE c1.geolevel_id   = 2
+   AND c1.areaid        = b.area_id;	
+   
+Tilemaker: with geometry table SQL:
+
+WITH b AS ( /- Tilemaker: has geometry table -/ 
+	SELECT area_id, band_id
+	  FROM rif40_study_areas b1
+	 WHERE b1.study_id = $1
+), c AS (
+	SELECT b.area_id, b.band_id, c1.geom
+	  FROM geometry_sahsuland c1, b
+     WHERE c1.geolevel_id   = $2
+       AND c1.areaid        = b.area_id	  
+	   AND c1.zoomlevel     = 11   /- max zoomlevel: Partition eliminate -/	  
+), d AS (
+	SELECT d1.band_id,
+		   d1.area_id, 
+		   d2.area_id AS adjacent_area_id,
+		   COUNT(d2.area_id) OVER(PARTITION BY d1.area_id ORDER BY d2.area_id) AS num_adjacencies
+	  FROM c d1, c d2
+	 WHERE d1.area_id       != d2.area_id
+	   AND ST_Intersects(d1.geom, d2.geom)
+), e AS (
+	SELECT d.area_id::VARCHAR AS area_id,
+		   COUNT(d.area_id)::INTEGER AS num_adjacencies, 
+		   string_agg(d.adjacent_area_id, ',' ORDER BY d.adjacent_area_id)::VARCHAR AS adjacency_list
+	  FROM d
+	 GROUP BY d.area_id
+)
+SELECT e.*
+  FROM e
+  ORDER BY 1, 2;
+  
+Original pre tilemaker SQL:
 
 WITH b AS (
         SELECT area_id, band_id
@@ -164,6 +207,7 @@ SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(1) LIMIT 10;
 --
 	error_message 	VARCHAR;
 	geometry_table 	VARCHAR;  /* #ASSUME: Pre tilemaker: no geometry table */
+	adjacency_table VARCHAR;  /* #ASSUME: Pre tilemaker: no adjacency table */
 --	
 	v_detail 		VARCHAR:='(Not supported until 9.2; type SQL statement into psql to see remote error)';	
 BEGIN
@@ -202,7 +246,7 @@ BEGIN
 --
 	IF c3_rec.geolevel_name IS NULL THEN
 		PERFORM rif40_log_pkg.rif40_error(-52004, 'rif40_GetAdjacencyMatrix', 'geography: %, <geoevel view> %: not found', 
-			c1_rec.geography::VARCHAR	/* Geography */, 
+			c1_rec.geography::VARCHAR			/* Geography */, 
 			c1_rec.study_geolevel_name::VARCHAR	/* Geolevel view */);
 	END IF;	
 --
@@ -218,36 +262,31 @@ PL/pgSQL function rif40_xml_pkg.rif40_getadjacencymatrix(integer) line 202 at IF
 */
 		WHEN others THEN NULL;
 	END;
---		
-	IF geometry_table IS NULL THEN  /* Pre tilemaker: no geometry table */
-		sql_stmt:='WITH b AS ( /* Pre tilemaker: no geometry table */ '||E'\n'||
+--
+	BEGIN
+		IF c2_rec.adjacencytable IS NOT NULL THEN
+			adjacency_table:=c2_rec.adjacencytable;
+		END IF;
+	EXCEPTION	
+/*
+psql:alter_scripts/v4_0_alter_9.sql:148: ERROR:  record "c1_rec" has no field "adjacencytable"
+CONTEXT:  SQL statement "SELECT c1_rec.adjacencytable IS NULL"
+PL/pgSQL function rif40_xml_pkg.rif40_getadjacencymatrix(integer) line 202 at IF
+*/
+		WHEN others THEN NULL;
+	END;
+--		   
+	IF adjacency_table IS NOT NULL THEN		/* Tilemaker complete */
+		sql_stmt:='WITH b AS ( /* Tilemaker: has adjacency table */ '||E'\n'||
 '	SELECT area_id, band_id'||E'\n'||
 '	  FROM rif40_study_areas b1'||E'\n'||
 '	 WHERE b1.study_id = $1'||E'\n'||
-'), c AS ('||E'\n'||
-'	SELECT b.area_id, b.band_id, c1.optimised_geometry'||E'\n'||
-'	  FROM '||quote_ident('geometry_'||LOWER(c1_rec.geography))||' c1, b'||E'\n'||
-'    WHERE c1.geolevel_name = $2'||E'\n'||
-'      AND c1.area_id       = b.area_id'||E'\n'||	  
-'), d AS ('||E'\n'||
-'	SELECT d1.band_id,'||E'\n'||
-'		   d1.area_id,'||E'\n'|| 
-'		   d2.area_id AS adjacent_area_id,'||E'\n'||
-'		   COUNT(d2.area_id) OVER(PARTITION BY d1.area_id ORDER BY d2.area_id) AS num_adjacencies'||E'\n'||
-'	  FROM c d1, c d2'||E'\n'||
-'	 WHERE d1.area_id       != d2.area_id'||E'\n'||
-'	   AND ST_Intersects(d1.optimised_geometry, d2.optimised_geometry)'||E'\n'||
-'), e AS ('||E'\n'||
-'	SELECT d.area_id::VARCHAR AS area_id,'||E'\n'||
-'		   COUNT(d.area_id)::INTEGER AS num_adjacencies,'||E'\n'|| 
-'		   string_agg(d.adjacent_area_id, '','' ORDER BY d.adjacent_area_id)::VARCHAR AS adjacency_list'||E'\n'||
-'	  FROM d'||E'\n'||
-'	 GROUP BY d.area_id'||E'\n'||
 ')'||E'\n'||
-'SELECT e.*'||E'\n'||
-'  FROM e'||E'\n'||
-'  ORDER BY 1, 2';
-	ELSE
+'SELECT area_id, num_adjacencies, adjacency_list'||E'\n'||
+'  FROM '||quote_ident(LOWER(adjacency_table))||' c1, b'||E'\n'||
+' WHERE c1.geolevel_id   = $2'||E'\n'||
+'   AND c1.areaid        = b.area_id';
+	ELSIF geometry_table IS NOT NULL THEN	/* Tilemaker: pre adjacency table */
 		sql_stmt:='WITH b AS ( /* Tilemaker: has geometry table */ '||E'\n'||
 '	SELECT area_id, band_id'||E'\n'||
 '	  FROM rif40_study_areas b1'||E'\n'||
@@ -276,6 +315,34 @@ PL/pgSQL function rif40_xml_pkg.rif40_getadjacencymatrix(integer) line 202 at IF
 'SELECT e.*'||E'\n'||
 '  FROM e'||E'\n'||
 '  ORDER BY 1, 2';
+	ELSE									  /* Pre tilemaker: no geometry table */
+		sql_stmt:='WITH b AS ( /* Pre tilemaker: no geometry table */ '||E'\n'||
+'	SELECT area_id, band_id'||E'\n'||
+'	  FROM rif40_study_areas b1'||E'\n'||
+'	 WHERE b1.study_id = $1'||E'\n'||
+'), c AS ('||E'\n'||
+'	SELECT b.area_id, b.band_id, c1.optimised_geometry'||E'\n'||
+'	  FROM '||quote_ident('geometry_'||LOWER(c1_rec.geography))||' c1, b'||E'\n'||
+'    WHERE c1.geolevel_name = $2'||E'\n'||
+'      AND c1.area_id       = b.area_id'||E'\n'||	  
+'), d AS ('||E'\n'||
+'	SELECT d1.band_id,'||E'\n'||
+'		   d1.area_id,'||E'\n'|| 
+'		   d2.area_id AS adjacent_area_id,'||E'\n'||
+'		   COUNT(d2.area_id) OVER(PARTITION BY d1.area_id ORDER BY d2.area_id) AS num_adjacencies'||E'\n'||
+'	  FROM c d1, c d2'||E'\n'||
+'	 WHERE d1.area_id       != d2.area_id'||E'\n'||
+'	   AND ST_Intersects(d1.optimised_geometry, d2.optimised_geometry)'||E'\n'||
+'), e AS ('||E'\n'||
+'	SELECT d.area_id::VARCHAR AS area_id,'||E'\n'||
+'		   COUNT(d.area_id)::INTEGER AS num_adjacencies,'||E'\n'|| 
+'		   string_agg(d.adjacent_area_id, '','' ORDER BY d.adjacent_area_id)::VARCHAR AS adjacency_list'||E'\n'||
+'	  FROM d'||E'\n'||
+'	 GROUP BY d.area_id'||E'\n'||
+')'||E'\n'||
+'SELECT e.*'||E'\n'||
+'  FROM e'||E'\n'||
+'  ORDER BY 1, 2';
 	END IF;
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_GetAdjacencyMatrix', '[52005] SQL>'||E'\n'||'%;', sql_stmt::VARCHAR);
@@ -283,7 +350,7 @@ PL/pgSQL function rif40_xml_pkg.rif40_getadjacencymatrix(integer) line 202 at IF
 -- Execute
 --
 	BEGIN
-		IF geometry_table IS NULL THEN /* Pre tilemaker: no geometry table */
+		IF geometry_table IS NULL THEN /* Pre tilemaker: no geometry or adjacency table */
 			RETURN QUERY EXECUTE sql_stmt USING c1_rec.study_id, c1_rec.study_geolevel_name;
 		ELSE
 			RETURN QUERY EXECUTE sql_stmt USING c1_rec.study_id, c3_rec.geolevel_id;
@@ -310,9 +377,52 @@ Parameters:	study id
 Returns:	area_id, num_adjacencies, adjacency_list as a table. 
 Description: Get study area adjacency matrix required by INLA	
 
-Needs to have adjacency_list limited to 8060 characters where converted to use adjacencies_<geography>
+Adjacency_list limited to 8000 characters when using adjacencies_<geography> (adjacency table)
 
 Generates and executes SQL>
+
+WITH b AS ( /* Tilemaker: has adjacency table */ 
+	SELECT area_id, band_id
+	  FROM rif40_study_areas b1
+	 WHERE b1.study_id = 1
+)
+SELECT area_id, num_adjacencies, adjacency_list
+  FROM adjacency_sahsuland c1, b
+ WHERE c1.geolevel_id   = 2
+   AND c1.areaid        = b.area_id;	
+   
+Tilemaker: with geometry table SQL:
+
+WITH b AS ( /* Tilemaker: has geometry table */ 
+	SELECT area_id, band_id
+	  FROM rif40_study_areas b1
+	 WHERE b1.study_id = $1
+), c AS (
+	SELECT b.area_id, b.band_id, c1.geom
+	  FROM geometry_sahsuland c1, b
+     WHERE c1.geolevel_id   = $2
+       AND c1.areaid        = b.area_id	  
+	   AND c1.zoomlevel     = 11   /* max zoomlevel: Partition eliminate */	  
+), d AS (
+	SELECT d1.band_id,
+		   d1.area_id, 
+		   d2.area_id AS adjacent_area_id,
+		   COUNT(d2.area_id) OVER(PARTITION BY d1.area_id ORDER BY d2.area_id) AS num_adjacencies
+	  FROM c d1, c d2
+	 WHERE d1.area_id       != d2.area_id
+	   AND ST_Intersects(d1.geom, d2.geom)
+), e AS (
+	SELECT d.area_id::VARCHAR AS area_id,
+		   COUNT(d.area_id)::INTEGER AS num_adjacencies, 
+		   string_agg(d.adjacent_area_id, '','' ORDER BY d.adjacent_area_id)::VARCHAR AS adjacency_list
+	  FROM d
+	 GROUP BY d.area_id
+)
+SELECT e.*
+  FROM e
+  ORDER BY 1, 2;
+  
+Original pre tilemaker SQL:
 
 WITH b AS (
         SELECT area_id, band_id
