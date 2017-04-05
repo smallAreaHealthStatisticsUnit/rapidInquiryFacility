@@ -251,6 +251,11 @@ BEGIN
 END;
 $$;
 
+--
+-- Test rif40_GetAdjacencyMatrix()
+--
+SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(currval('rif40_study_id_seq'::regclass)::INTEGER) LIMIT 10;
+
 /*
 SELECT * FROM rif40_comparison_areas WHERE study_id = currval('rif40_study_id_seq'::regclass) LIMIT 20;
 SELECT * FROM rif40_study_areas WHERE study_id = currval('rif40_study_id_seq'::regclass) LIMIT 20;
