@@ -222,6 +222,13 @@ COMMIT TRANSACTION;
 GO
 
 --
+-- Test rif40_GetAdjacencyMatrix()
+--
+DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+SELECT TOP 10 * FROM [rif40].[rif40_GetAdjacencyMatrix](@study_id);
+GO
+
+--
 -- Now run it
 --
 BEGIN

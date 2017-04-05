@@ -1,0 +1,87 @@
+-- ************************************************************************
+--
+-- Description:
+--
+-- Rapid Enquiry Facility (RIF) - RIF40 get adjacency matrix
+--
+-- Copyright:
+--
+-- The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+-- that rapidly addresses epidemiological and public health questions using 
+-- routinely collected health and population data and generates standardised 
+-- rates and relative risks for any given health outcome, for specified age 
+-- and year ranges, for any given geographical area.
+--
+-- Copyright 2014 Imperial College London, developed by the Small Area
+-- Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+-- is funded by the Public Health England as part of the MRC-PHE Centre for 
+-- Environment and Health. Funding for this project has also been received 
+-- from the Centers for Disease Control and Prevention.  
+--
+-- This file is part of the Rapid Inquiry Facility (RIF) project.
+-- RIF is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU Lesser General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+--
+-- RIF is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+-- GNU Lesser General Public License for more details.
+--
+-- You should have received a copy of the GNU Lesser General Public License
+-- along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+-- to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+-- Boston, MA 02110-1301 USA
+--
+-- Author:
+--
+-- Peter Hambly, SAHSU
+--
+SELECT *
+             FROM sys.objects
+            WHERE object_id = OBJECT_ID(N'[rif40].[rif40_GetAdjacencyMatrix]');
+GO
+
+IF EXISTS (SELECT *
+             FROM sys.objects
+            WHERE object_id = OBJECT_ID(N'[rif40].[rif40_GetAdjacencyMatrix]')
+              AND type IN ( N'TF' )) /*  SQL table-valued-function */
+	DROP FUNCTION [rif40].[rif40_GetAdjacencyMatrix];
+GO 
+
+CREATE FUNCTION [rif40].[rif40_GetAdjacencyMatrix](@study_id INTEGER)
+RETURNS @rtnTable TABLE 
+(
+--
+--  Columns returned by the function
+--
+	geolevel_id		INTEGER			NOT NULL,
+	areaid			VARCHAR(200)	NOT NULL,
+	num_adjacencies INTEGER			NOT NULL,
+	adjacency_list	VARCHAR(8000)	NOT NULL
+)
+AS
+BEGIN
+	WITH b AS ( /* Tilemaker: has adjacency table */ 
+		SELECT b1.area_id, b3.geolevel_id
+		  FROM [rif40].[rif40_study_areas] b1, [rif40].[rif40_studies] b2, [rif40].[rif40_geolevels] b3
+		 WHERE b1.study_id  = @study_id
+		   AND b1.study_id  = b2.study_id	    
+		   AND b2.geography = b3.geography
+	)
+	INSERT INTO @rtnTable(geolevel_id, areaid, num_adjacencies, adjacency_list)
+	SELECT c1.geolevel_id, c1.areaid, c1.num_adjacencies, c1.adjacency_list
+	  FROM [rif_data].[adjacency_sahsuland] c1, b
+	 WHERE c1.geolevel_id   = b.geolevel_id
+	   AND c1.areaid        = b.area_id;
+--
+	RETURN;
+END;
+GO
+
+GRANT SELECT, REFERENCES ON [rif40].[rif40_GetAdjacencyMatrix] TO rif_user, rif_manager;
+GO
+
+--
+-- Eof

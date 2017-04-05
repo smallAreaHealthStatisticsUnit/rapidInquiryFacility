@@ -42,12 +42,13 @@
 -- This script must be run from the installation directory
 :r ..\sahsuland_dev\rif40\functions\rif40_create_extract.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_compute_results.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_GetAdjacencyMatrix.sql
 
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_run_study]')
                   AND type IN ( N'P' ))
-	DROP PROCEDURE [rif40].[rif40_run_study]
+	DROP PROCEDURE [rif40].[rif40_run_study];
 GO 
 
 CREATE PROCEDURE [rif40].[rif40_run_study](@rval INT OUTPUT, @study_id int, @debug int=0, @recursion_level int=0)
