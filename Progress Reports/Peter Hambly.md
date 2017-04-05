@@ -1177,12 +1177,10 @@ GO
 * rif40_GetAdjacencyMatrix.sql limit line length to 8000 characters; adjacency table create script will raise truncation error if greater
 * Use relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland). No need 
   to edit path to CSV file by hand.
+* Change rif40_GetAdjacencyMatrix.sql to support adjacency table
 
 #### Current TODO list (April 2017): SQL Server Port
 
-* change rif40_GetAdjacencyMatrix.sql to support adjacency table
-* Relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland). Currently 
-  edited by hand.
 * Complete SQL Server run study port
 * Process Utah geography
 * Postgres and SQL Server install from export scripts
@@ -1201,13 +1199,11 @@ GO
 * Assist with middleware (database fixes); SQL Server full install testing
 * Drop script for SQL server to all rif40_sahsuland_dev_install.bat/rif40_sahsuland_install.bat to be re-run without rebuilding the entire database
 
-#### TileViewer TODO (deferred to May?):
+#### TileViewer TODO (deferred to June?):
  
-* Default study/comnparision areas set as LEVEL!/LEVEL2 (i.e. column name, not shapefile name)
 * Area tests (area_check.sql) is failing for Halland - suspect area is too small, could be projection ia wrong 
 * NVarchar support for areaName
 * Get fetch views to handle zoomlevel beyond max zoomlevel (returning the usual NULL geojson)
-* Pre=built ajancency tables: ajacency_<geography>; coluimns: areaid, ajacent_areaid, geolevel
 * Add tileid to tile topoJSON/GeoJSON; include in error messages; add version number 
   (yyyymmddhh24mi) for caching (i.e. there is no need to age them out if auto compaction is running)
 * Fix blank name properties
