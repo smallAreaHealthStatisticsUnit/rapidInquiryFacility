@@ -108,7 +108,7 @@ DECLARE
 	rif40_sm_pkg_functions 		VARCHAR[] := ARRAY['rif40_verify_state_change', 
 						'rif40_run_study', 'rif40_ddl', 'rif40_study_ddl_definer', 
 						'rif40_create_insert_statement', 'rif40_execute_insert_statement', 
-						'rif40_compute_results', 'rif40_startup'];
+						'rif40_compute_results', 'rif40_startup', 'rif40_GetAdjacencyMatrix'];
 --
 	l_function 		VARCHAR;
 	i				INTEGER:=0;

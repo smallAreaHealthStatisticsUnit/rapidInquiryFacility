@@ -2516,7 +2516,21 @@ GRANT SELECT ON rif_data.hierarchy_sahsuland TO rif_user, rif_manager;
  */
 GRANT SELECT ON rif_data.geometry_sahsuland TO rif_user, rif_manager;
 
--- SQL statement 156: Grant table/view t_tiles_sahsuland >>>
+-- SQL statement 156: Grant table/view adjacency_sahsuland >>>
+/*
+ * SQL statement name: 	grant_table.sql
+ * Type:				Common SQL statement
+ * Parameters:
+ *						1: table/view; e.g. tiles_cb_2014_us_county_500k
+ *						2: Privileges; e.g. SELECT
+ *						3: Roles; e.g. rif_user, rif_manager
+ *
+ * Description:			Create tiles view
+ * Note:				%% becomes % after substitution
+ */
+GRANT SELECT ON rif_data.adjacency_sahsuland TO rif_user, rif_manager;
+
+-- SQL statement 157: Grant table/view t_tiles_sahsuland >>>
 /*
  * SQL statement name: 	grant_table.sql
  * Type:				Common SQL statement
@@ -2530,7 +2544,7 @@ GRANT SELECT ON rif_data.geometry_sahsuland TO rif_user, rif_manager;
  */
 GRANT SELECT ON rif_data.t_tiles_sahsuland TO rif_user, rif_manager;
 
--- SQL statement 157: Grant table/view tiles_sahsuland >>>
+-- SQL statement 158: Grant table/view tiles_sahsuland >>>
 /*
  * SQL statement name: 	grant_table.sql
  * Type:				Common SQL statement
@@ -2544,53 +2558,67 @@ GRANT SELECT ON rif_data.t_tiles_sahsuland TO rif_user, rif_manager;
  */
 GRANT SELECT ON rif_data.tiles_sahsuland TO rif_user, rif_manager;
 
--- SQL statement 158: Commit transaction >>>
+-- SQL statement 159: Grant table/view adjacency_sahsuland >>>
+/*
+ * SQL statement name: 	grant_table.sql
+ * Type:				Common SQL statement
+ * Parameters:
+ *						1: table/view; e.g. tiles_cb_2014_us_county_500k
+ *						2: Privileges; e.g. SELECT
+ *						3: Roles; e.g. rif_user, rif_manager
+ *
+ * Description:			Create tiles view
+ * Note:				%% becomes % after substitution
+ */
+GRANT SELECT ON rif_data.adjacency_sahsuland TO rif_user, rif_manager;
+
+-- SQL statement 160: Commit transaction >>>
 END;
 
 --
 -- Analyze tables
 --
 
--- SQL statement 160: Describe table lookup_sahsu_grd_level1 >>>
+-- SQL statement 162: Describe table lookup_sahsu_grd_level1 >>>
 \dS+ rif_data.lookup_sahsu_grd_level1;
 
--- SQL statement 161: Analyze table lookup_sahsu_grd_level1 >>>
+-- SQL statement 163: Analyze table lookup_sahsu_grd_level1 >>>
 VACUUM ANALYZE rif_data.lookup_sahsu_grd_level1;
 
--- SQL statement 162: Describe table lookup_sahsu_grd_level2 >>>
+-- SQL statement 164: Describe table lookup_sahsu_grd_level2 >>>
 \dS+ rif_data.lookup_sahsu_grd_level2;
 
--- SQL statement 163: Analyze table lookup_sahsu_grd_level2 >>>
+-- SQL statement 165: Analyze table lookup_sahsu_grd_level2 >>>
 VACUUM ANALYZE rif_data.lookup_sahsu_grd_level2;
 
--- SQL statement 164: Describe table lookup_sahsu_grd_level3 >>>
+-- SQL statement 166: Describe table lookup_sahsu_grd_level3 >>>
 \dS+ rif_data.lookup_sahsu_grd_level3;
 
--- SQL statement 165: Analyze table lookup_sahsu_grd_level3 >>>
+-- SQL statement 167: Analyze table lookup_sahsu_grd_level3 >>>
 VACUUM ANALYZE rif_data.lookup_sahsu_grd_level3;
 
--- SQL statement 166: Describe table lookup_sahsu_grd_level4 >>>
+-- SQL statement 168: Describe table lookup_sahsu_grd_level4 >>>
 \dS+ rif_data.lookup_sahsu_grd_level4;
 
--- SQL statement 167: Analyze table lookup_sahsu_grd_level4 >>>
+-- SQL statement 169: Analyze table lookup_sahsu_grd_level4 >>>
 VACUUM ANALYZE rif_data.lookup_sahsu_grd_level4;
 
--- SQL statement 168: Describe table hierarchy_sahsuland >>>
+-- SQL statement 170: Describe table hierarchy_sahsuland >>>
 \dS+ rif_data.hierarchy_sahsuland;
 
--- SQL statement 169: Analyze table hierarchy_sahsuland >>>
+-- SQL statement 171: Analyze table hierarchy_sahsuland >>>
 VACUUM ANALYZE rif_data.hierarchy_sahsuland;
 
--- SQL statement 170: Describe table geometry_sahsuland >>>
+-- SQL statement 172: Describe table geometry_sahsuland >>>
 \dS+ rif_data.geometry_sahsuland;
 
--- SQL statement 171: Analyze table geometry_sahsuland >>>
+-- SQL statement 173: Analyze table geometry_sahsuland >>>
 VACUUM ANALYZE rif_data.geometry_sahsuland;
 
--- SQL statement 172: Describe table t_tiles_sahsuland >>>
+-- SQL statement 174: Describe table t_tiles_sahsuland >>>
 \dS+ rif_data.t_tiles_sahsuland;
 
--- SQL statement 173: Analyze table t_tiles_sahsuland >>>
+-- SQL statement 175: Analyze table t_tiles_sahsuland >>>
 VACUUM ANALYZE rif_data.t_tiles_sahsuland;
 
 

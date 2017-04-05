@@ -2002,8 +2002,10 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 			}
 			tableList.push("hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase());
 			tableList.push("geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			tableList.push("adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase());
 			tableList.push("t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase());
 			tableList.push("tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase());
+			tableList.push("adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase());
 						
 			for (var i=0; i<tableList.length; i++) {												
 				var sqlStmt=new Sql("Grant table/view " + tableList[i], 

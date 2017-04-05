@@ -4636,7 +4636,22 @@ GO
 GRANT SELECT ON rif_data.geometry_sahsuland TO rif_user, rif_manager;
 GO
 
--- SQL statement 175: Grant table/view t_tiles_sahsuland >>>
+-- SQL statement 175: Grant table/view adjacency_sahsuland >>>
+/*
+ * SQL statement name: 	grant_table.sql
+ * Type:				Common SQL statement
+ * Parameters:
+ *						1: table/view; e.g. tiles_cb_2014_us_county_500k
+ *						2: Privileges; e.g. SELECT
+ *						3: Roles; e.g. rif_user, rif_manager
+ *
+ * Description:			Create tiles view
+ * Note:				%% becomes % after substitution
+ */
+GRANT SELECT ON rif_data.adjacency_sahsuland TO rif_user, rif_manager;
+GO
+
+-- SQL statement 176: Grant table/view t_tiles_sahsuland >>>
 /*
  * SQL statement name: 	grant_table.sql
  * Type:				Common SQL statement
@@ -4651,7 +4666,7 @@ GO
 GRANT SELECT ON rif_data.t_tiles_sahsuland TO rif_user, rif_manager;
 GO
 
--- SQL statement 176: Grant table/view tiles_sahsuland >>>
+-- SQL statement 177: Grant table/view tiles_sahsuland >>>
 /*
  * SQL statement name: 	grant_table.sql
  * Type:				Common SQL statement
@@ -4666,7 +4681,22 @@ GO
 GRANT SELECT ON rif_data.tiles_sahsuland TO rif_user, rif_manager;
 GO
 
--- SQL statement 177: Commit transaction >>>
+-- SQL statement 178: Grant table/view adjacency_sahsuland >>>
+/*
+ * SQL statement name: 	grant_table.sql
+ * Type:				Common SQL statement
+ * Parameters:
+ *						1: table/view; e.g. tiles_cb_2014_us_county_500k
+ *						2: Privileges; e.g. SELECT
+ *						3: Roles; e.g. rif_user, rif_manager
+ *
+ * Description:			Create tiles view
+ * Note:				%% becomes % after substitution
+ */
+GRANT SELECT ON rif_data.adjacency_sahsuland TO rif_user, rif_manager;
+GO
+
+-- SQL statement 179: Commit transaction >>>
 COMMIT;
 GO
 
@@ -4674,59 +4704,59 @@ GO
 -- Analyze tables
 --
 
--- SQL statement 179: Describe table lookup_sahsu_grd_level1 >>>
+-- SQL statement 181: Describe table lookup_sahsu_grd_level1 >>>
 -- EXEC sp_help rif_data.lookup_sahsu_grd_level1;
 GO
 
--- SQL statement 180: Analyze table lookup_sahsu_grd_level1 >>>
+-- SQL statement 182: Analyze table lookup_sahsu_grd_level1 >>>
 UPDATE STATISTICS rif_data.lookup_sahsu_grd_level1;
 GO
 
--- SQL statement 181: Describe table lookup_sahsu_grd_level2 >>>
+-- SQL statement 183: Describe table lookup_sahsu_grd_level2 >>>
 -- EXEC sp_help rif_data.lookup_sahsu_grd_level2;
 GO
 
--- SQL statement 182: Analyze table lookup_sahsu_grd_level2 >>>
+-- SQL statement 184: Analyze table lookup_sahsu_grd_level2 >>>
 UPDATE STATISTICS rif_data.lookup_sahsu_grd_level2;
 GO
 
--- SQL statement 183: Describe table lookup_sahsu_grd_level3 >>>
+-- SQL statement 185: Describe table lookup_sahsu_grd_level3 >>>
 -- EXEC sp_help rif_data.lookup_sahsu_grd_level3;
 GO
 
--- SQL statement 184: Analyze table lookup_sahsu_grd_level3 >>>
+-- SQL statement 186: Analyze table lookup_sahsu_grd_level3 >>>
 UPDATE STATISTICS rif_data.lookup_sahsu_grd_level3;
 GO
 
--- SQL statement 185: Describe table lookup_sahsu_grd_level4 >>>
+-- SQL statement 187: Describe table lookup_sahsu_grd_level4 >>>
 -- EXEC sp_help rif_data.lookup_sahsu_grd_level4;
 GO
 
--- SQL statement 186: Analyze table lookup_sahsu_grd_level4 >>>
+-- SQL statement 188: Analyze table lookup_sahsu_grd_level4 >>>
 UPDATE STATISTICS rif_data.lookup_sahsu_grd_level4;
 GO
 
--- SQL statement 187: Describe table hierarchy_sahsuland >>>
+-- SQL statement 189: Describe table hierarchy_sahsuland >>>
 -- EXEC sp_help rif_data.hierarchy_sahsuland;
 GO
 
--- SQL statement 188: Analyze table hierarchy_sahsuland >>>
+-- SQL statement 190: Analyze table hierarchy_sahsuland >>>
 UPDATE STATISTICS rif_data.hierarchy_sahsuland;
 GO
 
--- SQL statement 189: Describe table geometry_sahsuland >>>
+-- SQL statement 191: Describe table geometry_sahsuland >>>
 -- EXEC sp_help rif_data.geometry_sahsuland;
 GO
 
--- SQL statement 190: Analyze table geometry_sahsuland >>>
+-- SQL statement 192: Analyze table geometry_sahsuland >>>
 UPDATE STATISTICS rif_data.geometry_sahsuland;
 GO
 
--- SQL statement 191: Describe table t_tiles_sahsuland >>>
+-- SQL statement 193: Describe table t_tiles_sahsuland >>>
 -- EXEC sp_help rif_data.t_tiles_sahsuland;
 GO
 
--- SQL statement 192: Analyze table t_tiles_sahsuland >>>
+-- SQL statement 194: Analyze table t_tiles_sahsuland >>>
 UPDATE STATISTICS rif_data.t_tiles_sahsuland;
 GO
 
