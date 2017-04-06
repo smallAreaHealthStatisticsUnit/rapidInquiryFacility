@@ -41,61 +41,10 @@
 
 IF EXISTS (SELECT *
              FROM sys.objects
-            WHERE object_id = OBJECT_ID(N'[rif40].[sahsuland_GetAdjacencyMatrix]')
-              AND type IN ( N'TF' )) /*  SQL table-valued-function */
-	DROP FUNCTION [rif40].[sahsuland_GetAdjacencyMatrix];
-GO 
-
-IF EXISTS (SELECT *
-             FROM sys.objects
             WHERE object_id = OBJECT_ID(N'[rif40].[rif40_GetAdjacencyMatrix]')
               AND type IN ( N'P' )) /*  SQL table-valued-function */
 	DROP PROCEDURE [rif40].[rif40_GetAdjacencyMatrix];
 GO 
-
-CREATE FUNCTION [rif40].[sahsuland_GetAdjacencyMatrix](@study_id INTEGER)
-RETURNS @rtnTable TABLE 
-(
---
---  Columns returned by the function
---
-	geolevel_id		INTEGER			NOT NULL,
-	areaid			VARCHAR(200)	NOT NULL,
-	num_adjacencies INTEGER			NOT NULL,
-	adjacency_list	VARCHAR(8000)	NOT NULL
-)
-AS
-BEGIN
-	DECLARE c1 CURSOR FOR 
-		SELECT b2.adjacencytable, b2.geography
-		  FROM [rif40].[rif40_studies] b1, [rif40].[rif40_geographies] b2
-		 WHERE b1.study_id  = @study_id	    
-		   AND b2.geography = b1.geography;
-	DECLARE @adjacencytable AS VARCHAR(30);
-	DECLARE @geography AS VARCHAR(30);
-	OPEN c1;
-	FETCH NEXT FROM c1 INTO @adjacencytable, @geography;
-	IF @adjacencytable IS NULL
-		 DECLARE @error INT=CAST('Study geography has no adjacency table' AS INT); /* This is better than nothing! */
-	CLOSE c1;
-	DEALLOCATE c1;		   
---
-	WITH b AS ( /* Tilemaker: has adjacency table */
-		SELECT b1.area_id, b3.geolevel_id
-		  FROM [rif40].[rif40_study_areas] b1, [rif40].[rif40_studies] b2, [rif40].[rif40_geolevels] b3
-		 WHERE b1.study_id  = @study_id
-		   AND b1.study_id  = b2.study_id	    
-		   AND b2.geography = b3.geography
-	)
-	INSERT INTO @rtnTable(geolevel_id, areaid, num_adjacencies, adjacency_list)
-	SELECT c1.geolevel_id, c1.areaid, c1.num_adjacencies, c1.adjacency_list
-	  FROM [rif_data].[adjacency_sahsuland] c1, b
-	 WHERE c1.geolevel_id   = b.geolevel_id
-	   AND c1.areaid        = b.area_id;  
---
-	RETURN;
-END;
-GO
 
 CREATE PROCEDURE [rif40].[rif40_GetAdjacencyMatrix](@study_id INTEGER)
 AS
@@ -133,9 +82,6 @@ BEGIN
 --
 	RETURN;
 END;
-GO
-
-GRANT SELECT, REFERENCES ON [rif40].[sahsuland_GetAdjacencyMatrix] TO rif_user, rif_manager;
 GO
 
 GRANT EXECUTE ON [rif40].[rif40_GetAdjacencyMatrix] TO rif_user, rif_manager;

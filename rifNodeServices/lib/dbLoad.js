@@ -310,12 +310,12 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 		sqlArray.push(new Sql("Adjacency table"));
 
 		if (schema && dbType == "MSSQLServer") {		
-			var sqlStmt=new Sql("Drop table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+			var sqlStmt=new Sql("Drop table adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				getSqlFromFile("drop_table.sql", dbType, schema + "adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
 				sqlArray, dbType); 
 		}
 		else {		
-			var sqlStmt=new Sql("Drop table hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
+			var sqlStmt=new Sql("Drop table adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase(), 
 				getSqlFromFile("drop_table.sql", dbType, "adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* Table name */), 
 				sqlArray, dbType); 
 		}	
@@ -345,6 +345,17 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 				sqlArray, dbType);
 		}
 		
+		if (schema && dbType == "MSSQLServer") {
+			var sqlStmt=new Sql("Drop function " + xmlConfig.dataLoader.geographyName.toLowerCase() + "_GetAdjacencyMatrix()", 
+				getSqlFromFile("drop_GetAdjacencyMatrix.sql", dbType, 
+					xmlConfig.dataLoader.geographyName.toLowerCase() 				/* 1: Geography */), 
+				sqlArray, dbType);	
+			var sqlStmt=new Sql("Create function " + xmlConfig.dataLoader.geographyName.toLowerCase() + "_GetAdjacencyMatrix()", 
+				getSqlFromFile("create_GetAdjacencyMatrix.sql", dbType, 
+					xmlConfig.dataLoader.geographyName.toLowerCase() 				/* 1: Geography */, 
+					"adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* 2: Adjacency Table name */), 
+				sqlArray, dbType);			
+		}
 	} // End of createAdjacencyTable()
 	
 	/*

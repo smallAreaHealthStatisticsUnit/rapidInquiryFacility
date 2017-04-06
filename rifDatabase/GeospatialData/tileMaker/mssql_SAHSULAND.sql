@@ -10200,7 +10200,7 @@ GO
 -- Adjacency table
 --
 
--- SQL statement 352: Drop table hierarchy_sahsuland >>>
+-- SQL statement 352: Drop table adjacency_sahsuland >>>
 IF OBJECT_ID('adjacency_sahsuland', 'U') IS NOT NULL DROP TABLE adjacency_sahsuland;
 GO
 
