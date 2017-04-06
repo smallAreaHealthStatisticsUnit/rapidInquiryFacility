@@ -13,7 +13,7 @@
  * 
  * -- maptable selections all to directives
  * 
- * -- Memory leak. on.destroy map.remove() angularjs-leaflet-memory-issue]
+ * -- Memory leak. on.destroy map.remove() angularjs-leaflet-memory-issue] use version 1.03 not 2.00??
  * 
  * -- clear AOI layer does not always work
  * 

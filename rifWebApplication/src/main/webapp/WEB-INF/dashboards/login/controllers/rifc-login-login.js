@@ -36,26 +36,35 @@
  */
 
 angular.module("RIF")
-        .controller('LoginCtrl', ['$scope', 'user', '$injector',
+        .controller('LoginCtrl', ['$scope', 'user', '$injector', 'DatabaseService',
             'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService',
             'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService',
-            function ($scope, user, $injector,
+            function ($scope, user, $injector, DatabaseService,
                     SubmissionStateService, StudyAreaStateService, CompAreaStateService,
                     ParameterStateService, StatsStateService, ViewerStateService, MappingStateService) {
 
                 $scope.username = "dwmorley";
-                $scope.password = "dwmorley";
-
+                $scope.password = "dwmorley";          
+                $scope.db = "PG";
                 $scope.showSpinner = false;
+                
+                //used in url of webservice calls
+                $scope.dbTypeChanged = function() {
+                    if ($scope.db === "PG") {
+                        DatabaseService.setDatabase("pg");
+                    } else {
+                        DatabaseService.setDatabase("ms");
+                    }              
+                };
 
                 $scope.login = function () {
                     if (!$scope.showSpinner) {
                         $scope.showSpinner = true;
                         //check if already logged on
-                        //user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
+                        user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
                         
                         //In development, this bypasses password)
-                        user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
+                        //user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
                     }
                 };
 
