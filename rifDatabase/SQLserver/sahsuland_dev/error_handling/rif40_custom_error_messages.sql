@@ -467,6 +467,11 @@ EXEC sp_addmessage 55216, 16,
 	N'Function: [rif40].[rif40_run_study], Recursion %i, rif40_run_study study %i had error.';		
 EXEC sp_addmessage 55207, 16,
 	N'Function: [rif40].[rif40_run_study], Expecting to update %i %s(s), updated %i during state transition (%s=>%s) for study %i.';	
+EXEC sp_addmessage 55212, 16,
+	N'Function: [rif40].[rif40_run_study], Study ID %i not found, study in unexpected and unknown state.';	
+EXEC sp_addmessage 55213, 16,
+	N'Function: [rif40].[rif40_run_study], Study %i in unexpected state %s.';	
+
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
 
