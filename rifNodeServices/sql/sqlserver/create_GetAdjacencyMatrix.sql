@@ -41,5 +41,4 @@ BEGIN
 	   AND c1.areaid        = b.area_id;  
 --
 	RETURN;
-END;
-GRANT SELECT, REFERENCES ON [rif40].[%1_GetAdjacencyMatrix] TO rif_user, rif_manager
+END

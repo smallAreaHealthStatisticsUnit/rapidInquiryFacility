@@ -354,7 +354,11 @@ var CreateDbLoadScripts = function CreateDbLoadScripts(response, xmlConfig, req,
 				getSqlFromFile("create_GetAdjacencyMatrix.sql", dbType, 
 					xmlConfig.dataLoader.geographyName.toLowerCase() 				/* 1: Geography */, 
 					"adjacency_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* 2: Adjacency Table name */), 
-				sqlArray, dbType);			
+				sqlArray, dbType);	
+			var sqlStmt=new Sql("Grant function " + xmlConfig.dataLoader.geographyName.toLowerCase() + "_GetAdjacencyMatrix()", 
+				getSqlFromFile("grant_function.sql", dbType, 
+					xmlConfig.dataLoader.geographyName.toLowerCase() + "_GetAdjacencyMatrix" /* 1: Function name */), 
+				sqlArray, dbType);		
 		}
 	} // End of createAdjacencyTable()
 	

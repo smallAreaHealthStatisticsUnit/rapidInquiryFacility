@@ -1178,6 +1178,7 @@ GO
 * Use relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland). No need 
   to edit path to CSV file by hand.
 * Change rif40_GetAdjacencyMatrix.sql to support adjacency table; port to SQL Server.
+* Add <geography>_GetAdjacencyMatrix() function to tilemaker
 
 #### Current TODO list (April 2017): SQL Server Port
 
