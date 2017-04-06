@@ -38,19 +38,22 @@
 --
 -- Peter Hambly, SAHSU
 --
-SELECT *
+
+IF EXISTS (SELECT *
              FROM sys.objects
-            WHERE object_id = OBJECT_ID(N'[rif40].[rif40_GetAdjacencyMatrix]');
-GO
+            WHERE object_id = OBJECT_ID(N'[rif40].[sahsuland_GetAdjacencyMatrix]')
+              AND type IN ( N'TF' )) /*  SQL table-valued-function */
+	DROP FUNCTION [rif40].[sahsuland_GetAdjacencyMatrix];
+GO 
 
 IF EXISTS (SELECT *
              FROM sys.objects
             WHERE object_id = OBJECT_ID(N'[rif40].[rif40_GetAdjacencyMatrix]')
-              AND type IN ( N'TF' )) /*  SQL table-valued-function */
-	DROP FUNCTION [rif40].[rif40_GetAdjacencyMatrix];
+              AND type IN ( N'P' )) /*  SQL table-valued-function */
+	DROP PROCEDURE [rif40].[rif40_GetAdjacencyMatrix];
 GO 
 
-CREATE FUNCTION [rif40].[rif40_GetAdjacencyMatrix](@study_id INTEGER)
+CREATE FUNCTION [rif40].[sahsuland_GetAdjacencyMatrix](@study_id INTEGER)
 RETURNS @rtnTable TABLE 
 (
 --
@@ -63,7 +66,21 @@ RETURNS @rtnTable TABLE
 )
 AS
 BEGIN
-	WITH b AS ( /* Tilemaker: has adjacency table */ 
+	DECLARE c1 CURSOR FOR 
+		SELECT b2.adjacencytable, b2.geography
+		  FROM [rif40].[rif40_studies] b1, [rif40].[rif40_geographies] b2
+		 WHERE b1.study_id  = @study_id	    
+		   AND b2.geography = b1.geography;
+	DECLARE @adjacencytable AS VARCHAR(30);
+	DECLARE @geography AS VARCHAR(30);
+	OPEN c1;
+	FETCH NEXT FROM c1 INTO @adjacencytable, @geography;
+	IF @adjacencytable IS NULL
+		 DECLARE @error INT=CAST('Study geography has no adjacency table' AS INT); /* This is better than nothing! */
+	CLOSE c1;
+	DEALLOCATE c1;		   
+--
+	WITH b AS ( /* Tilemaker: has adjacency table */
 		SELECT b1.area_id, b3.geolevel_id
 		  FROM [rif40].[rif40_study_areas] b1, [rif40].[rif40_studies] b2, [rif40].[rif40_geolevels] b3
 		 WHERE b1.study_id  = @study_id
@@ -74,13 +91,54 @@ BEGIN
 	SELECT c1.geolevel_id, c1.areaid, c1.num_adjacencies, c1.adjacency_list
 	  FROM [rif_data].[adjacency_sahsuland] c1, b
 	 WHERE c1.geolevel_id   = b.geolevel_id
-	   AND c1.areaid        = b.area_id;
+	   AND c1.areaid        = b.area_id;  
 --
 	RETURN;
 END;
 GO
 
-GRANT SELECT, REFERENCES ON [rif40].[rif40_GetAdjacencyMatrix] TO rif_user, rif_manager;
+CREATE PROCEDURE [rif40].[rif40_GetAdjacencyMatrix](@study_id INTEGER)
+AS
+BEGIN
+	DECLARE c1 CURSOR FOR 
+		SELECT b2.adjacencytable, b2.geography
+		  FROM [rif40].[rif40_studies] b1, [rif40].[rif40_geographies] b2
+		 WHERE b1.study_id  = @study_id	    
+		   AND b2.geography = b1.geography;
+	DECLARE @adjacencytable AS VARCHAR(30);
+	DECLARE @geography AS VARCHAR(30);
+	OPEN c1;
+	FETCH NEXT FROM c1 INTO @adjacencytable, @geography;
+	IF @adjacencytable IS NULL
+		 RAISERROR('Study %d geography %s has no adjacency table', 1, 16, @study_id, @geography);
+	CLOSE c1;
+	DEALLOCATE c1;		   
+--
+	DECLARE @crlf AS VARCHAR(2)=CHAR(10)+CHAR(13);
+	DECLARE @sql_stmt AS NVARCHAR(max);
+	SET @sql_stmt='WITH b AS ( /* Tilemaker: has adjacency table */' + @crlf +
+	'	SELECT b1.area_id, b3.geolevel_id' + @crlf +
+	'	  FROM [rif40].[rif40_study_areas] b1, [rif40].[rif40_studies] b2, [rif40].[rif40_geolevels] b3' + @crlf +
+	'	 WHERE b1.study_id  = @nstudy_id' + @crlf +
+	'	   AND b1.study_id  = b2.study_id' + @crlf +	    
+	'	   AND b2.geography = b3.geography' + @crlf +
+	')' + @crlf +
+	'SELECT c1.geolevel_id, c1.areaid, c1.num_adjacencies, c1.adjacency_list' + @crlf +
+	'  FROM [rif_data].[' + @adjacencytable + '] c1, b' + @crlf +
+	' WHERE c1.geolevel_id   = b.geolevel_id' + @crlf +
+	'   AND c1.areaid        = b.area_id';
+	/* INSERT INTO @rtnTable(geolevel_id, areaid, num_adjacencies, adjacency_list) */
+	EXECUTE sp_executesql @sql_stmt, 
+		N'@nstudy_id INTEGER', @study_id;   
+--
+	RETURN;
+END;
+GO
+
+GRANT SELECT, REFERENCES ON [rif40].[sahsuland_GetAdjacencyMatrix] TO rif_user, rif_manager;
+GO
+
+GRANT EXECUTE ON [rif40].[rif40_GetAdjacencyMatrix] TO rif_user, rif_manager;
 GO
 
 --
