@@ -88,9 +88,9 @@ public class AbstractRIFServiceTestCase
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	protected TestRIFStudyServiceBundle rifServiceBundle;
-	protected TestRIFStudySubmissionService rifStudySubmissionService;
-	protected TestRIFStudyRetrievalService rifStudyRetrievalService;
+	protected MSSQLTestRIFStudyServiceBundle rifServiceBundle;
+	protected MSSQLTestRIFStudySubmissionService rifStudySubmissionService;
+	protected MSSQLTestRIFStudyRetrievalService rifStudyRetrievalService;
 
 	
 	/** The test user. */
@@ -213,7 +213,7 @@ public class AbstractRIFServiceTestCase
 
 	public AbstractRIFServiceTestCase() {
 		rifServiceBundle
-			= new TestRIFStudyServiceBundle();
+			= new MSSQLTestRIFStudyServiceBundle();
 
 		FieldValidationUtility fieldValidationUtility 
 			= new FieldValidationUtility();
@@ -476,19 +476,19 @@ public class AbstractRIFServiceTestCase
 	// Section Accessors and Mutators
 	// ==========================================
 	protected void initialiseService() throws RIFServiceException {
-		rifServiceBundle = new TestRIFStudyServiceBundle();
+		rifServiceBundle = new MSSQLTestRIFStudyServiceBundle();
 		
 		startupOptions
 			= RIFServiceStartupOptions.newInstance(false, true);
 		startupOptions.setMaximumMapAreasAllowedForSingleDisplay(200);
 		rifServiceBundle.initialise(startupOptions);
 		rifStudySubmissionService 
-			= (TestRIFStudySubmissionService) rifServiceBundle.getRIFStudySubmissionService();
+			= (MSSQLTestRIFStudySubmissionService) rifServiceBundle.getRIFStudySubmissionService();
 		rifStudyRetrievalService
-			= (TestRIFStudyRetrievalService) rifServiceBundle.getRIFStudyRetrievalService();
+			= (MSSQLTestRIFStudyRetrievalService) rifServiceBundle.getRIFStudyRetrievalService();
 	}
 	
-	protected TestRIFStudyServiceBundle getRIFServiceBundle() {
+	protected MSSQLTestRIFStudyServiceBundle getRIFServiceBundle() {
 		return rifServiceBundle;
 	}
 	

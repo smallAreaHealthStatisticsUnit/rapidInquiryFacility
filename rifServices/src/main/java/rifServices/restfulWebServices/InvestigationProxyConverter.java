@@ -66,7 +66,7 @@ import java.util.ArrayList;
  *
  */
 
-final class InvestigationProxyConverter
+final public class InvestigationProxyConverter
 	extends XmlAdapter<InvestigationProxy, Investigation> {
 
 	// ==========================================

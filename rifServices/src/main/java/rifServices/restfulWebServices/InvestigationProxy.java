@@ -79,7 +79,7 @@ import java.util.ArrayList;
 	"sex",
 	"covariates"
 	})
-final class InvestigationProxy {
+final public class InvestigationProxy {
 
 	// ==========================================
 	// Section Constants

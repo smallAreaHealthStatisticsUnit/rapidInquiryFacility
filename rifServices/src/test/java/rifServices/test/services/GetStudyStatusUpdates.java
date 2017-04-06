@@ -102,8 +102,8 @@ public final class GetStudyStatusUpdates
 		try {
 			User validUser = cloneValidUser();
 
-			TestRIFStudyRetrievalService testService
-				= (TestRIFStudyRetrievalService) rifStudyRetrievalService;
+			MSSQLTestRIFStudyRetrievalService testService
+				= (MSSQLTestRIFStudyRetrievalService) rifStudyRetrievalService;
 			testService.clearStudyStatusUpdates(validUser, "212");
 			
 			testService.updateStudyStatus(validUser, "212", StudyState.STUDY_RESULTS_COMPUTED, "testing111");
@@ -120,8 +120,8 @@ public final class GetStudyStatusUpdates
 		try {
 			User validUser = cloneValidUser();
 
-			TestRIFStudyRetrievalService testService
-				= (TestRIFStudyRetrievalService) rifStudyRetrievalService;
+			MSSQLTestRIFStudyRetrievalService testService
+				= (MSSQLTestRIFStudyRetrievalService) rifStudyRetrievalService;
 			testService.clearStudyStatusUpdates(validUser, "211");
 			testService.clearStudyStatusUpdates(validUser, "212");
 			
@@ -176,8 +176,8 @@ public final class GetStudyStatusUpdates
 		try {
 			User validUser = cloneValidUser();
 
-			TestRIFStudyRetrievalService testService
-				= (TestRIFStudyRetrievalService) rifStudyRetrievalService;
+			MSSQLTestRIFStudyRetrievalService testService
+				= (MSSQLTestRIFStudyRetrievalService) rifStudyRetrievalService;
 
 			RIFResultTable resultTable
 				= testService.getCurrentStatusAllStudies(validUser);

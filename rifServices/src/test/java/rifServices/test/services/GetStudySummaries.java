@@ -107,8 +107,8 @@ public final class GetStudySummaries
 	
 	private void populateDatabaseWithValidStudy() {
 
-		SampleTestObjectGenerator sampleTestObjectGenerator
-			= new SampleTestObjectGenerator();
+		MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+			= new MSSQLSampleTestObjectGenerator();
 		RIFStudySubmission studySubmission
 			= sampleTestObjectGenerator.createSampleRIFJobSubmission();		
 		

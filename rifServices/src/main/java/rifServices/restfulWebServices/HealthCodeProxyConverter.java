@@ -65,7 +65,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  *
  */
 
-final class HealthCodeProxyConverter
+final public class HealthCodeProxyConverter
 	extends XmlAdapter<HealthCodeProxy, HealthCode> {
 	// ==========================================
 	// Section Constants

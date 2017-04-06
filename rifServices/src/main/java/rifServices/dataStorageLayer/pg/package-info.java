@@ -15,7 +15,7 @@
  * <b>production and test service implementations</b>: these are classes which implement the
  * service APIs and are adjusted to meet the needs of test vs production environments.  Test 
  * services will typically need more methods to ensure that the state of the database is reset
- * to a known state.  For example, {@link rifServices.dataStorageLayer.TestRIFStudySubmissionService}
+ * to a known state.  For example, {@link rifServices.dataStorageLayer.MSSQLTestRIFStudySubmissionService}
  * contains a method for clearing a user's studies, which would not be offered in a production
  * environment.  All test services are prefixed with "Test" and all production services are prefixed
  * with "Production".
@@ -26,16 +26,16 @@
  * actually share a lot of common code, but they are offered to potentially different user audiences.
  * </li>
  * <li>
- * <b>service resource classes</b>: in particular, {@link rifServices.dataStorageLayer.RIFServiceResources}
+ * <b>service resource classes</b>: in particular, {@link rifServices.dataStorageLayer.MSSQLRIFServiceResources}
  * help ensure that all the RIF services share the same instances of manager classes which execute
- * queries.  Implementations of {@link rifServices.dataStorageLayer.AbstractStudyServiceBundle} are 
+ * queries.  Implementations of {@link rifServices.dataStorageLayer.MSSQLAbstractStudyServiceBundle} are 
  * used to ensure that these manager classes are instantiated once in a way that will not encourage
  * potential synchronisation problems.
  * </li>
  * <li>
  * <b> manager classes </b>: implementations of RIF service classes delegate the task of executing
  * SQL queries to manager classes, which roughly correspond with key concepts in the business concept
- * layer.  For example, {@link rifServices.dataStorageLayer.SQLInvestigationManager} manages
+ * layer.  For example, {@link rifServices.dataStorageLayer.MSSQLInvestigationManager} manages
  * database operations associated with {@link rifServices.businessConceptLayer.Investigation}.  All
  * manager classes end in <code>*Manager</code> and almost all of them begin with <code>SQL</code>.
  * </li>
@@ -82,10 +82,10 @@
  * <ul>
  * <li>
  * <b>manager classes</b> which have operations that manage operations relating to one or more
- * business concepts.  For example, {@link rifServices.dataStorageLayer.HealthOutcomeManager} contains
+ * business concepts.  For example, {@link rifServices.dataStorageLayer.MSSQLHealthOutcomeManager} contains
  * operations relevant to {@link rifServices.businessConceptLayer.HealthCode}. These classes will contain
  * all the SQL queries in the code base.  Some manager classes manage more than one concept.  For example,
- * {@link rifServices.dataStorageLayer.SQLRIFContextManager} manages operations for 
+ * {@link rifServices.dataStorageLayer.MSSQLRIFContextManager} manages operations for 
  * {@link rifServices.businessConceptLayer.GeoLevelSelect},
  * {@link rifServices.businessConceptLayer.GeoLevelArea},
  * {@link rifServices.businessConceptLayer.GeoLevelView},
@@ -97,7 +97,7 @@
  * of query features
  * </li>
  * <li>
- * <b>connection manager</b>.  {@link rifServices.dataStorageLayer.SQLConnectionManager} is the class which is
+ * <b>connection manager</b>.  {@link rifServices.dataStorageLayer.MSSQLConnectionManager} is the class which is
  * responsible for connection pooling and ensuring that users are registered for a session
  * </li>
  * 
