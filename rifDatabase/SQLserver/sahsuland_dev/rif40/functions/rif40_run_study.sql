@@ -62,8 +62,8 @@ BEGIN
 	
 /*
 Function:	rif40_run_study()
-Parameter:	Study ID, enable debug (INTEGER: default 0), recursion level (internal parameter DO NOT USE)
-Returns:	Success or failure [INTEGER]
+Parameter:	Success or failure [INTEGER], Study ID, enable debug (INTEGER: default 0), recursion level (internal parameter DO NOT USE)
+Returns:	Success or failure [INTEGER], as  first parameter
 			Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)
 			Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost
 Description:	Run study 
@@ -145,7 +145,8 @@ Recurse until complete
 --
 	IF @new_study_state = 'E' BEGIN
 		EXECUTE rif40.rif40_create_extract
-				@rval		/* Result: 0/1 */;
+				@rval		/* Result: 0/1 */,
+				@study_id	/* Study id */;
 		IF @rval = 0 BEGIN
 			PRINT '[55202] WARNING! rif40.rif40_create_extract() FAILED, see previous warnings';
 			RETURN @rval;
@@ -157,7 +158,8 @@ Recurse until complete
 --
 	ELSE IF @new_study_state = 'R' BEGIN
 		EXECUTE rif40.rif40_compute_results
-				@rval		/* Result: 0/1 */;
+				@rval		/* Result: 0/1 */,
+				@study_id	/* Study id */;
 		IF @rval = 0 BEGIN
 			PRINT '[55204] WARNING! rif40.rif40_compute_results() FAILED, see previous warnings';
 			RETURN @rval;

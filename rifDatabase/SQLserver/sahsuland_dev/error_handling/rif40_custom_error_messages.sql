@@ -472,6 +472,18 @@ EXEC sp_addmessage 55212, 16,
 EXEC sp_addmessage 55213, 16,
 	N'Function: [rif40].[rif40_run_study], Study %i in unexpected state %s.';	
 
+EXEC sp_addmessage 55400, 16,
+	N'Function: [rif40].[rif40_create_extract], Study ID %i not found.';		
+EXEC sp_addmessage 55401, 16,
+	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract table: not defined.';
+EXEC sp_addmessage 55403, 16,
+	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract table: %s; in wrong state: %s.';
+EXEC sp_addmessage 55404, 16,
+	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract table: %s; exists in schema: %s.';	
+EXEC sp_addmessage 55405, 16,
+	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract not currently permitted [use RIF IG tool].';	
+EXEC sp_addmessage 55406, 16,
+	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract must be run by study owner %s not %s.';		
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
 
