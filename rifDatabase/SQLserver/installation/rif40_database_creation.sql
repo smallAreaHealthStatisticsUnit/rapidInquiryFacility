@@ -171,6 +171,9 @@ GO
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif_data')
 EXEC('CREATE SCHEMA [rif_data] AUTHORIZATION [rif40]');
 GO
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif_studies')
+EXEC('CREATE SCHEMA [rif_studies] AUTHORIZATION [rif40]');
+GO
 
 --
 -- Default schemas
@@ -225,6 +228,15 @@ GRANT CREATE TABLE TO [rif40];
 GO
 GRANT CREATE VIEW TO [rif40];
 GO
+GRANT CREATE TYPE TO [rif40];
+GO
+
+GRANT ALTER ON SCHEMA :: rif_studies TO [rif40];
+GO
+GRANT ALTER ON SCHEMA :: rif_studies TO [rif_user];
+GO
+GRANT ALTER ON SCHEMA :: rif_studies TO [rif_manager];
+GO
 
 --
 -- Grant roles to users
@@ -273,6 +285,9 @@ EXEC('CREATE SCHEMA [rifmanager] AUTHORIZATION [rifmanager]');
 GO
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif_data')
 EXEC('CREATE SCHEMA [rif_data] AUTHORIZATION [rif40]');
+GO
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif_studies')
+EXEC('CREATE SCHEMA [rif_studies] AUTHORIZATION [rif40]');
 GO
 
 ALTER USER [rif40] WITH DEFAULT_SCHEMA=[rif40];
@@ -331,6 +346,13 @@ GO
 GRANT CREATE TABLE TO [rif40];
 GO
 GRANT CREATE VIEW TO [rif40];
+GO
+
+GRANT ALTER ON SCHEMA :: rif_studies TO [rif40];
+GO
+GRANT ALTER ON SCHEMA :: rif_studies TO [rif_user];
+GO
+GRANT ALTER ON SCHEMA :: rif_studies TO [rif_manager];
 GO
 
 --

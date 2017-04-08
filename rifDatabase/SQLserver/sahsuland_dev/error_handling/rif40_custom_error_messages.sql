@@ -483,7 +483,10 @@ EXEC sp_addmessage 55404, 16,
 EXEC sp_addmessage 55405, 16,
 	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract not currently permitted [use RIF IG tool].';	
 EXEC sp_addmessage 55406, 16,
-	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract must be run by study owner %s not %s.';		
+	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract must be run by study owner %s not %s.';	
+	
+EXEC sp_addmessage 55999, 16,
+	N'Function: [rif40].[rif40_ddl], SQL statement had error: %s%sSQL[%s]> %s;';		
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
 

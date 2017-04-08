@@ -40,6 +40,7 @@
 --
 
 -- This script must be run from the installation directory
+:r ..\sahsuland_dev\rif40\functions\rif40_ddl.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_create_extract.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_compute_results.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_GetAdjacencyMatrix.sql
@@ -146,7 +147,8 @@ Recurse until complete
 	IF @new_study_state = 'E' BEGIN
 		EXECUTE rif40.rif40_create_extract
 				@rval		/* Result: 0/1 */,
-				@study_id	/* Study id */;
+				@study_id	/* Study id */,
+				@debug		/* enable debug: 0/1) */;
 		IF @rval = 0 BEGIN
 			PRINT '[55202] WARNING! rif40.rif40_create_extract() FAILED, see previous warnings';
 			RETURN @rval;

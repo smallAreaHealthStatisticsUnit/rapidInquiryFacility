@@ -38,7 +38,8 @@
 --
 -- Peter Hambly, SAHSU
 --
-
+-- Error codes:  ..\..\error_handling\rif40_custom_error_messages.sql
+--
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_create_extract]')
@@ -46,12 +47,34 @@ IF EXISTS (SELECT *
 	DROP PROCEDURE [rif40].[rif40_create_extract]
 GO 
 
-CREATE PROCEDURE [rif40].[rif40_create_extract](@rval INT OUTPUT, @study_id int)
+/*
+IF EXISTS (SELECT *
+           FROM   sys.objects
+           WHERE  object_id = OBJECT_ID(N'[rif40].[_rif40_create_extract]')
+                  AND type IN ( N'P' ))
+	DROP PROCEDURE [rif40].[_rif40_create_extract]
+GO
+
+CREATE PROCEDURE [rif40].[_rif40_create_extract](@rval INT OUTPUT, @ddl_stmts rif40.Sql_stmt_table READONLY, @debug INTEGER=0)
+WITH EXECUTE AS SELF /- So as to be owned by RIF40 -/
+AS
+BEGIN
+--
+-- Create extract table
+--
+	EXECUTE rif40.rif40_ddl
+			@rval		/- Result: 0/1 -/,
+			@ddl_stmts	/- SQL table -/,
+			@debug		/- enable debug: 0/1) -/;
+END;
+GO
+*/
+CREATE PROCEDURE [rif40].[rif40_create_extract](@rval INT OUTPUT, @study_id INT, @debug INT)
 AS
 BEGIN
 /*
 Function:	rif40_create_extract()
-Parameter:	Success or failure [INTEGER], Study ID
+Parameter:	Success or failure [INTEGER], Study ID, enable debug (INTEGER: default 0)
 Returns:	Success or failure [INTEGER], as  first parameter
 		Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)
 		Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost
@@ -77,7 +100,8 @@ CREATE TABLE <extract_table> (
  	area_id             VARCHAR 	NOT NULL,
 	band_id				INTEGER,
  	sex                 SMALLINT,
- 	age_group           VARCHAR,
+    age_group			SMALLINT,
+    ses					VARCHAR(30),
  	total_pop           DOUBLE PRECISION,
 
 One column per distinct covariate
@@ -105,7 +129,11 @@ Partitioned by RANGE year
 
 Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40) to process
  */
-
+--
+-- Defaults if set to NULL
+--
+	IF @debug IS NULL SET @debug=0;
+	
 	DECLARE c1_creex CURSOR FOR
 		SELECT study_id, study_state, extract_table, extract_permitted, username, description
 		  FROM rif40_studies a
@@ -139,7 +167,7 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 --
 	DECLARE @schema_name 			VARCHAR(30);
 --
-	DECLARE @sql_stmt 	VARCHAR(MAX);
+	DECLARE @sql_stmt 	NVARCHAR(MAX);
 --
 	DECLARE @table_columns TABLE (column_name VARCHAR(30), column_comment VARCHAR(4000));
 	DECLARE @index_columns TABLE (column_name VARCHAR(30));
@@ -172,8 +200,9 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 	DECLARE @c5_rec_column_name			VARCHAR(30);
 	DECLARE @c5_rec_column_comment		VARCHAR(4000);
 --		  
-	DECLARE @ddl_stmts TABLE (sql_stmt VARCHAR(MAX));
+	DECLARE @ddl_stmts 	Sql_stmt_table;
 	DECLARE @t_ddl		INTEGER=0;
+	
 /*	
 	DECLARE @sql_frag 	VARCHAR(MAX);
 --
@@ -274,7 +303,7 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 	FETCH NEXT FROM c2_creex INTO @c2_rec_covariate_name;
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		SET @sql_stmt=@sql_stmt + @tab + LEFT(LOWER(@c2_rec_covariate_name) + REPLICATE(' ',30), 30) + ' VARCHAR,' + @crlf; 
+		SET @sql_stmt=@sql_stmt + @tab + LEFT(LOWER(@c2_rec_covariate_name) + REPLICATE(' ',30), 30) + ' VARCHAR(30),' + @crlf; 
 		INSERT INTO @table_columns(column_name, column_comment) VALUES (@c2_rec_covariate_name, @c2_rec_covariate_name);
 		INSERT INTO @pk_index_columns(column_name) VALUES (@c2_rec_covariate_name);
 --
@@ -304,8 +333,6 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 	CLOSE c3_creex;
 	DEALLOCATE c3_creex;
 	SET @sql_stmt=@sql_stmt + @tab + 'total_pop                      DOUBLE PRECISION)';
-	
-	PRINT 'SQL> ' + @sql_stmt + ';';
 --
 	SET @t_ddl=@t_ddl+1;	
 	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
@@ -337,9 +364,13 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 	DEALLOCATE c5_creex;
 	
 --
--- Create table
+-- Create extract table
 --
-
+	EXECUTE rif40.rif40_ddl
+			@rval		/* Result: 0/1 */,
+			@ddl_stmts	/* SQL table */,
+			@debug		/* enable debug: 0/1) */;
+			
 --
 -- Change ownership to RIF40
 --
