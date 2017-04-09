@@ -233,10 +233,6 @@ GO
 
 GRANT ALTER ON SCHEMA :: rif_studies TO [rif40];
 GO
-GRANT ALTER ON SCHEMA :: rif_studies TO [rif_user];
-GO
-GRANT ALTER ON SCHEMA :: rif_studies TO [rif_manager];
-GO
 
 --
 -- Grant roles to users
@@ -349,10 +345,6 @@ GRANT CREATE VIEW TO [rif40];
 GO
 
 GRANT ALTER ON SCHEMA :: rif_studies TO [rif40];
-GO
-GRANT ALTER ON SCHEMA :: rif_studies TO [rif_user];
-GO
-GRANT ALTER ON SCHEMA :: rif_studies TO [rif_manager];
 GO
 
 --
