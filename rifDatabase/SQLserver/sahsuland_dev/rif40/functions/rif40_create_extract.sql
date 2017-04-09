@@ -47,7 +47,6 @@ IF EXISTS (SELECT *
 	DROP PROCEDURE [rif40].[rif40_create_extract]
 GO 
 
-/*
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[_rif40_create_extract]')
@@ -55,21 +54,8 @@ IF EXISTS (SELECT *
 	DROP PROCEDURE [rif40].[_rif40_create_extract]
 GO
 
-CREATE PROCEDURE [rif40].[_rif40_create_extract](@rval INT OUTPUT, @ddl_stmts rif40.Sql_stmt_table READONLY, @debug INTEGER=0)
-WITH EXECUTE AS SELF /- So as to be owned by RIF40 -/
-AS
-BEGIN
---
--- Create extract table
---
-	EXECUTE rif40.rif40_ddl
-			@rval		/- Result: 0/1 -/,
-			@ddl_stmts	/- SQL table -/,
-			@debug		/- enable debug: 0/1) -/;
-END;
-GO
-*/
 CREATE PROCEDURE [rif40].[rif40_create_extract](@rval INT OUTPUT, @study_id INT, @debug INT)
+WITH EXECUTE AS 'rif40' /* So as to be owned by RIF40 */
 AS
 BEGIN
 /*
@@ -127,7 +113,9 @@ Vacuum analyze
 
 Partitioned by RANGE year
 
-Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40) to process
+Procedure runs as definer (RIF40); but executes SELECTs from RIF views as caller so as to have access.
+rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and then GRANTed to the user.
+
  */
 --
 -- Defaults if set to NULL
@@ -149,7 +137,7 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 		 WHERE @study_id = a.study_id
   		 ORDER BY inv_id;
 	DECLARE c4_creex CURSOR FOR
-		SELECT study_id
+		SELECT grantee_username
 		  FROM rif40_study_shares a
 		 WHERE @study_id = a.study_id;
 --
@@ -163,7 +151,7 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 	DECLARE @c2_rec_covariate_name 		VARCHAR(30);
 	DECLARE @c3_rec_inv_name 			VARCHAR(20);
 	DECLARE @c3_rec_inv_description 	VARCHAR(250);
-	DECLARE @c4_rec_study_id 		INTEGER;
+	DECLARE @c4_rec_grantee_username 	VARCHAR(90);
 --
 	DECLARE @schema_name 			VARCHAR(30);
 --
@@ -217,7 +205,12 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 	DECLARE @tab		VARCHAR(1)=CHAR(9);
 	DECLARE @err_msg 	VARCHAR(MAX);
 	DECLARE @msg	 	VARCHAR(MAX);
-	
+
+--
+-- Use caller execution context to query RIF views
+--
+	EXECUTE AS CALLER /* RIF user */;
+				
 	OPEN c1_creex;
 	FETCH NEXT FROM c1_creex INTO @c1_rec_study_id, @c1_rec_study_state, @c1_rec_extract_table, @c1_rec_extract_permitted, 
 		@c1_rec_username, @c1_rec_description;
@@ -339,12 +332,13 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 --
 -- Comment extract table and columns
 --
-	IF @c1_rec_description IS NOT NULL
-		SET @sql_stmt='COMMENT ON TABLE rif_studies.' + LOWER(@c1_rec_extract_table) + ' IS ''Study ' + 
-			CAST(@study_id AS VARCHAR) + ' extract: ' + @c1_rec_description + '''';
-	ELSE
-		SET @sql_stmt='COMMENT ON TABLE rif_studies.' + LOWER(@c1_rec_extract_table) + ' IS ''Study ' + 
-			CAST(@study_id AS VARCHAR) + ' extract: NO DESCRIPTION''';
+	DECLARE @comment_text NVARCHAR(MAX)='Study ' + 
+			CAST(@study_id AS VARCHAR) + ' extract: ' + COALESCE(@c1_rec_description, 'NO DESCRIPTION');
+	SET @sql_stmt='sp_addextendedproperty' + @crlf +
+'		@name = N''' + @comment_text + ''',' + @crlf +   
+'		@value = N''Area Name field'',' + @crlf + 
+'		@level0type = N''Schema'', @level0name = ''rif_studies'',' + @crlf +  
+'		@level1type = N''Table'', @level1name = ''' + LOWER(@c1_rec_extract_table) + '''';
 	SET @t_ddl=@t_ddl+1;	
 	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
 	
@@ -353,8 +347,12 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
 --		i:=i+1;
-		SET @sql_stmt='COMMENT ON COLUMN rif_studies.' + LOWER(@c1_rec_extract_table) + '.' + LOWER(@c5_rec_column_name) + 
-			' IS ''' + @c5_rec_column_comment + '''';
+		SET @sql_stmt='sp_addextendedproperty' + @crlf +
+'		@name = N''' + @c5_rec_column_comment + ''',' + @crlf +   
+'		@value = N''Area Name field'',' + @crlf + 
+'		@level0type = N''Schema'', @level0name = ''rif_studies'',' + @crlf +  
+'		@level1type = N''Table'', @level1name = ''' + LOWER(@c1_rec_extract_table) + ''',' + @crlf +
+'    	@level2type = N''Column'', @level2name = ''' + LOWER(@c5_rec_column_name) + '''';			
 		SET @t_ddl=@t_ddl+1;	
 		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);	
 --
@@ -362,7 +360,30 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 	END;
 	CLOSE c5_creex;
 	DEALLOCATE c5_creex;
-	
+
+--
+-- Grant to study owner (USER), all GRANTEE_USERNAME in  rif40_study_shares if extract_permitted=1 
+--
+	IF @c1_rec_extract_permitted = 1 BEGIN
+		SET @sql_stmt='GRANT SELECT,INSERT,DELETE ON rif_studies.' + LOWER(@c1_rec_extract_table) + ' TO ' + USER;	
+		SET @t_ddl=@t_ddl+1;	
+		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);	
+		OPEN c4_creex;
+		FETCH NEXT FROM c4_creex INTO @c4_rec_grantee_username;
+		WHILE @@FETCH_STATUS = 0
+		BEGIN
+			SET @sql_stmt='GRANT SELECT,INSERT ON rif_studies.' + LOWER(@c1_rec_extract_table) + 
+				' TO ' + @c4_rec_grantee_username;	
+			SET @t_ddl=@t_ddl+1;	
+			INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);	
+--
+			FETCH NEXT FROM c4_creex INTO @c4_rec_grantee_username;
+		END;
+		CLOSE c4_creex;
+		DEALLOCATE c4_creex;
+	END;
+ 
+	REVERT;	/* Revert to procedure owner context (RIF40) to create tables */
 --
 -- Create extract table
 --
@@ -370,38 +391,12 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 			@rval		/* Result: 0/1 */,
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
-			
---
--- Change ownership to RIF40
---
 
 --
--- Grant to study owner (USER), all GRANTEE_USERNAME in  rif40_study_shares if extract_permitted=1 
+-- Use caller execution context to INSERT extract data
 --
-
-/*
-
-	IF c1_rec.extract_permitted = 1 THEN
-		sql_stmt:='GRANT SELECT,INSERT,TRUNCATE ON rif_studies.'||LOWER(c1_rec.extract_table)||' TO '||USER;
-		t_ddl:=t_ddl+1;	
-		ddl_stmts[t_ddl]:=sql_stmt;
-		FOR c4_rec IN c4_creex(study_id) LOOP
-			sql_stmt:='GRANT SELECT,INSERT ON rif_studies.'||LOWER(c1_rec.extract_table)||' TO '||c4_rec.grantee_username;
-			t_ddl:=t_ddl+1;	
-			ddl_stmts[t_ddl]:=sql_stmt;
-		END LOOP;
-	END IF;
- */
+	EXECUTE AS CALLER /* RIF user */;
  /*
---
--- Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40)
---
-	IF rif40_sm_pkg.rif40_study_ddl_definer(c1_rec.study_id, c1_rec.username, c1a_rec.audsid, ddl_stmts) = FALSE THEN
-		PERFORM rif40_log_pkg.rif40_log ('WARNING', 'rif40_create_extract', 
-			'[55407] RIF40_STUDIES study % extract creation failed, see previous warnings',
-			c1_rec.study_id::VARCHAR	/- Study id -/);
-		RETURN FALSE;
-	END IF;
 --
 -- Call rif40_insert_extract() to populate extract table.
 -- 
@@ -410,7 +405,10 @@ Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40
 			'[55408] RIF40_STUDIES study % populated extract failed, see previous warnings',
 			c1_rec.study_id::VARCHAR	/- Study id -/);
 		RETURN FALSE;
-	END IF;
+	END IF; */
+	
+	REVERT;	/* Revert to procedure owner context (RIF40) to create tables */
+	/*
 --
 -- Reset DDL statement array
 --

@@ -53,8 +53,9 @@ IF EXISTS (SELECT *
 	DROP TYPE [rif40].[Sql_stmt_table];
 GO 
 
-CREATE TYPE [rif40].[Sql_stmt_table] AS TABLE   
-( sql_stmt NVARCHAR(MAX));  
+CREATE TYPE [rif40].[Sql_stmt_table] AS TABLE ( 
+	sql_stmt NVARCHAR(MAX)
+	);  
 GO  
 
 CREATE PROCEDURE [rif40].[rif40_ddl](@rval INT OUTPUT, @sql_stmts rif40.Sql_stmt_table READONLY, @debug INTEGER=0)
@@ -92,7 +93,6 @@ BEGIN
 --	 		[55999] SQL statement had error: %s%sSQL[%s]> %s;	
 			SET @err_msg = formatmessage(55999, error_message(), @crlf, USER, @sql_stmt); 
 			THROW 55999, @err_msg, 1;
---			PRINT 'SQL statement had error: ' + error_message() + @crlf + 'SQL[' + USER + ']> ' + @sql_stmt + ';';
 		END CATCH;
 --
 		FETCH NEXT FROM c1_ddl INTO @sql_stmt;
