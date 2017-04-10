@@ -41,6 +41,7 @@
 
 -- This script must be run from the installation directory
 :r ..\sahsuland_dev\rif40\functions\rif40_ddl.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_insert_extract.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_create_extract.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_compute_results.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_GetAdjacencyMatrix.sql

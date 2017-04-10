@@ -47,13 +47,6 @@ IF EXISTS (SELECT *
 	DROP PROCEDURE [rif40].[rif40_create_extract]
 GO 
 
-IF EXISTS (SELECT *
-           FROM   sys.objects
-           WHERE  object_id = OBJECT_ID(N'[rif40].[_rif40_create_extract]')
-                  AND type IN ( N'P' ))
-	DROP PROCEDURE [rif40].[_rif40_create_extract]
-GO
-
 CREATE PROCEDURE [rif40].[rif40_create_extract](@rval INT OUTPUT, @study_id INT, @debug INT)
 WITH EXECUTE AS 'rif40' /* So as to be owned by RIF40 */
 AS
@@ -396,20 +389,26 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 -- Use caller execution context to INSERT extract data
 --
 	EXECUTE AS CALLER /* RIF user */;
- /*
+ 
 --
 -- Call rif40_insert_extract() to populate extract table.
 -- 
-	EXECUTE rif40_sm_pkg.rif40_insert_extract(@rval, @c1_rec_study_id);
-	SET @msg = 'Study ' + CAST(@study_id AS VARCHAR) + ' OK';
-	IF @rval = 0 
+	EXECUTE rif40.rif40_insert_extract 
+		@rval, 
+		@c1_rec_study_id,
+		@debug;
+	IF @rval = 0 BEGIN
+			PRINT @msg;
+			SET @msg='[55408] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' populated extract failed, see previous warnings'	/* Study id */;
+			RETURN @rval;
+		END; 
+	ELSE BEGIN
+		SET @msg = 'Study ' + CAST(@c1_rec_study_id AS VARCHAR) + ' OK';
 		PRINT @msg;
-		SET @msg='[55408] RIF40_STUDIES study % populated extract failed, see previous warnings',
-			c1_rec.study_id::VARCHAR	/- Study id -/);
-		RETURN FALSE;
-	END IF; */
+	END;
 	
-	REVERT;	/* Revert to procedure owner context (RIF40) to create tables */
+	REVERT;	/* Revert to procedure owner context (RIF40) to create indexes */
 	/*
 --
 -- Reset DDL statement array
