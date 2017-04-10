@@ -425,6 +425,10 @@ final class MSSQLRIFContextManager
 			= new ArrayList<NumeratorDenominatorPair>();;
 	
 		try {
+			//TODO: ERROR HERE BEING THROWN FOR "XXX"
+			//http://localhost:8080/rifServices/studySubmission/ms/getNumerator?userID=rif40&geographyName=SAHSULAND&healthThemeDescription=covering%20various%20types%20of%20cancers
+			
+			
 			//Create SQL query		
 			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);

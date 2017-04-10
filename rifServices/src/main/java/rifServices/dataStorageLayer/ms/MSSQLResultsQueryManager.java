@@ -4,10 +4,10 @@ import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLFunctionCallerQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
@@ -106,7 +106,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 	private MSSQLMapDataManager sqlMapDataManager;
 	private MSSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager;
 	private MSSQLInMemoryTileCache inMemoryTileCache;	
-	private PGSQLFunctionCallerQueryFormatter getTilesQueryFormatter;
+	private MSSQLFunctionCallerQueryFormatter getTilesQueryFormatter;
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -126,7 +126,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 
 		
 		getTilesQueryFormatter
-			= new PGSQLFunctionCallerQueryFormatter();
+			= new MSSQLFunctionCallerQueryFormatter(false);
 		configureQueryFormatterForDB(getTilesQueryFormatter);
 		getTilesQueryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		getTilesQueryFormatter.setFunctionName("rif40_get_geojson_tiles");
@@ -166,8 +166,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		try {
 		
 			//Create query
-			PGSQLFunctionCallerQueryFormatter queryFormatter
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_getgeolevelboundsforarea");
@@ -227,8 +227,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}		
 	}	
 
@@ -251,8 +251,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		try {
 		
 			//Create query
-			PGSQLFunctionCallerQueryFormatter queryFormatter
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_getgeolevelfullextentforstudy");
@@ -299,7 +299,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			
 			String studyName 
 				= getStudyName(
@@ -320,8 +320,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}		
 	}
 	
@@ -340,10 +340,14 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		 */
 		
 		//STEP 1: get the tile table name
-		//SELECT tiletable FROM rif40.rif40_geographies WHERE geography = 'SAHSULAND' 
+		/*
+		SELECT tiletable 
+		FROM [sahsuland_dev].[rif40].[rif40_geographies]
+		WHERE geography = 'SAHSULAND';
+		*/
 							
-		PGSQLSelectQueryFormatter getMapTileTableQueryFormatter
-			= new PGSQLSelectQueryFormatter();		
+		MSSQLSelectQueryFormatter getMapTileTableQueryFormatter
+			= new MSSQLSelectQueryFormatter(false);		
 			
 		getMapTileTableQueryFormatter.setDatabaseSchemaName("rif40");
 		getMapTileTableQueryFormatter.addSelectField("rif40_geographies", "tiletable");
@@ -367,10 +371,10 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			resultSet.next();
 			
 			//This is the tile table name for this geography
-			String myTileTable = resultSet.getString(1);
+			String myTileTable = "rif_data." + resultSet.getString(1);
 					
-			PGSQLSelectQueryFormatter getMapTilesQueryFormatter
-				= new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter getMapTilesQueryFormatter
+				= new MSSQLSelectQueryFormatter(false);
 				
 			//STEP 2: get the tiles	
 			/*
@@ -389,9 +393,9 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 				
 			getMapTilesQueryFormatter.addSelectField(myTileTable,"optimised_topojson");
 			getMapTilesQueryFormatter.addFromTable(myTileTable);
-			getMapTilesQueryFormatter.addFromTable("rif40_geolevels");	
-			getMapTilesQueryFormatter.addWhereJoinCondition(myTileTable, "geolevel_id", "rif40_geolevels", "geolevel_id");
-			getMapTilesQueryFormatter.addWhereParameter("rif40_geolevels", "geolevel_name");
+			getMapTilesQueryFormatter.addFromTable("rif40.rif40_geolevels");	
+			getMapTilesQueryFormatter.addWhereJoinCondition(myTileTable, "geolevel_id", "rif40.rif40_geolevels", "geolevel_id");
+			getMapTilesQueryFormatter.addWhereParameter("rif40.rif40_geolevels", "geolevel_name");
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "zoomlevel");
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "x");
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "y");
@@ -401,7 +405,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			statement2.setInt(2, zoomlevel);
 			statement2.setInt(3, x);
 			statement2.setInt(4, y);
-			
+					
 			resultSet2 = statement2.executeQuery();
 			resultSet2.next();
 			String result = resultSet2.getString(1);
@@ -425,11 +429,11 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 			
-			PGSQLQueryUtility.close(statement2);
-			PGSQLQueryUtility.close(resultSet2);
+			MSSQLQueryUtility.close(statement2);
+			MSSQLQueryUtility.close(resultSet2);
 		}			
 	}
 				
@@ -470,8 +474,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			//if tile with tileIdentifier+zoomFactor has already been used, return that
 			//instead of making another call to the database
 
-			PGSQLFunctionCallerQueryFormatter queryFormatter
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_get_geojson_tiles");
@@ -550,7 +554,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			finally {
 				//Cleanup database resources
 				//SQLQueryUtility.close(statement);
-				PGSQLQueryUtility.close(resultSet);
+				MSSQLQueryUtility.close(resultSet);
 			}		
 		}
 
@@ -595,8 +599,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		//if tile with tileIdentifier+zoomFactor has already been used, return that
 		//instead of making another call to the database
 
-		PGSQLFunctionCallerQueryFormatter queryFormatter
-			= new PGSQLFunctionCallerQueryFormatter();
+		MSSQLFunctionCallerQueryFormatter queryFormatter
+			= new MSSQLFunctionCallerQueryFormatter(false);
 		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_get_geojson_tiles");
@@ -668,7 +672,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		finally {
 			//Cleanup database resources
 			//SQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(resultSet);
 		}		
 	}
 	
@@ -765,8 +769,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		try {
 		
 			//Create query
-			PGSQLSelectQueryFormatter queryFormatter
-				= new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter queryFormatter
+				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addFromTable(calculatedResultTableName);
 			for (String resultTableFieldName : calculatedResultTableFieldNames) {
@@ -800,7 +804,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String studyName 
 				= getStudyName(
 					connection, 
@@ -819,8 +823,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}		
 		
 	}
@@ -846,8 +850,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		try {
 		
 			//Create query
-			PGSQLSelectQueryFormatter queryFormatter
-				= new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter queryFormatter
+				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("map_table");
 			queryFormatter.addFromTable("rif40_studies");
@@ -876,7 +880,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String studyName 
 				= getStudyName(
 					connection, 
@@ -893,8 +897,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}		
 	}
 
@@ -948,8 +952,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			//@TODO: fill in the database function name
 		
 			//Create query		
-			PGSQLFunctionCallerQueryFormatter queryFormatter
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("");
 			queryFormatter.setNumberOfFunctionParameters(2);		
@@ -985,7 +989,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String studyName 
 				= getStudyName(
 					connection, 
@@ -1005,8 +1009,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 
 	}
@@ -1037,8 +1041,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		try {
 			//Create query		
-			PGSQLSelectQueryFormatter queryFormatter 
-				= new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter queryFormatter 
+				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("extract_table");
 			queryFormatter.addSelectField("map_table");
@@ -1095,7 +1099,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -1111,8 +1115,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}				
 	}
 		
@@ -1147,8 +1151,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			ArrayList<GeoLevelAttributeTheme> results
 				= new ArrayList<GeoLevelAttributeTheme>();
 		
-			PGSQLFunctionCallerQueryFormatter queryFormatter
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("");
@@ -1181,7 +1185,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -1196,8 +1200,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}		
 	}
 
@@ -1244,8 +1248,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		try {
 		
 			//Create query		
-			PGSQLFunctionCallerQueryFormatter queryFormatter
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_getallattributesforgeolevelattributetheme");
@@ -1287,7 +1291,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.error.unableToGetAttributesForGeoLevelAttributeTheme",
@@ -1302,8 +1306,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}		
 	}	
 	
@@ -1351,8 +1355,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		try {
 
 			//Create query		
-			PGSQLFunctionCallerQueryFormatter queryFormatter
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("attribute");
 			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
@@ -1392,7 +1396,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.error.unableToGetNumericAttributesForGeoLevelAttributeTheme",
@@ -1407,8 +1411,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}		
 		
 	}
@@ -1510,8 +1514,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		
 			//Create query		
 				
-			PGSQLSelectQueryFormatter queryFormatter
-				= new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter queryFormatter
+				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);		
 			for (String extractTableFieldName : extractTableFieldNames) {
 				queryFormatter.addSelectField(extractTableFieldName);
@@ -1544,7 +1548,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String studyName
 				= getStudyName(
 					connection, 
@@ -1563,8 +1567,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}		
 		
 	}
@@ -1643,8 +1647,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		try {
 
 			//Create query		
-			PGSQLSelectQueryFormatter queryFormatter
-				= new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter queryFormatter
+				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.addSelectField("extract_table");
 			queryFormatter.addFromTable("rif40_studies");
@@ -1699,7 +1703,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -1712,8 +1716,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}
 	}
 	
@@ -1794,8 +1798,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}		
 	}
 		
@@ -1879,7 +1883,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.error.getResultsStratifiedByGenderAndAgeGroup",
@@ -1894,8 +1898,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}		
 		
 		//stub 
@@ -1960,8 +1964,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		RIFResultTable result = new RIFResultTable();
 		try {
 
-			PGSQLFunctionCallerQueryFormatter queryFormatter
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter
+				= new MSSQLFunctionCallerQueryFormatter(false);
 		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("get_pyramid_data");
 		queryFormatter.setNumberOfFunctionParameters(3);
@@ -1995,8 +1999,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 
 		return result;		
@@ -2061,11 +2065,11 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}
 		
 		return result;
@@ -2151,11 +2155,11 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}
 		
 		return results;
@@ -2192,11 +2196,11 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}
 		
 		return results;
@@ -2259,7 +2263,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"");
@@ -2270,8 +2274,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 	}
 	
@@ -2333,7 +2337,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"");
@@ -2344,8 +2348,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 
 	}
@@ -2407,7 +2411,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"");
@@ -2418,8 +2422,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 	}
 	
@@ -2471,8 +2475,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}
 	}
 
@@ -2515,7 +2519,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			//Record original exception, throw sanitised, human-readable version			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -2530,8 +2534,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 		
 		
@@ -2547,8 +2551,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		try {
 		
-			PGSQLSelectQueryFormatter queryFormatter
-				= new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter queryFormatter
+				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("study_name");
 			queryFormatter.addFromTable("rif40_studies");
@@ -2590,7 +2594,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.unableToGetStudyName",
@@ -2602,8 +2606,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 		
 	}
@@ -2621,8 +2625,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		String[][] results = null;
 		try {
 		
-			PGSQLFunctionCallerQueryFormatter queryFormatter 
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter 
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_getgeometrycolumnnames");
@@ -2650,7 +2654,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.error.getGeometryColumnNames",
@@ -2662,8 +2666,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}
 	}
 		
@@ -2687,8 +2691,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		Integer result = null;
 		try {
 
-			PGSQLFunctionCallerQueryFormatter queryFormatter 
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter 
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_createmapareaattributesource");		
@@ -2712,7 +2716,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -2726,8 +2730,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 		
 		return result;
@@ -2742,8 +2746,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		try {
 
-			PGSQLFunctionCallerQueryFormatter queryFormatter 
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter 
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_closegetmapareaattributecursor");		
@@ -2760,7 +2764,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.error.closeMapAreaAttributeSource",
@@ -2772,8 +2776,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 	}
 	
@@ -2787,8 +2791,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		try {
 
-			PGSQLFunctionCallerQueryFormatter queryFormatter 
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter 
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_deletemapareaattributesource");		
@@ -2816,8 +2820,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}
 	}
 	
@@ -2895,8 +2899,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		String studyName = "";
 		try {
-			PGSQLSelectQueryFormatter queryFormatter
-				= new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter queryFormatter
+				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("extract_permitted");
 			queryFormatter.addFromTable("rif40_studies");
@@ -2951,7 +2955,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.error.unableToDetermineExtractPermissionForStudy",
@@ -2964,8 +2968,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}		
 	}
 
@@ -2981,8 +2985,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		try {
 		
-			PGSQLFunctionCallerQueryFormatter queryFormatter 
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter 
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setDatabaseSchemaName("rif40");
 			queryFormatter.setFunctionName("table_field_exists");
@@ -3050,7 +3054,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {			
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.error.unableToCheckTableFieldExists",
@@ -3062,8 +3066,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 		
 		
@@ -3081,8 +3085,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		String studyName = "";
 		try {			
 			//Create query/
-			PGSQLRecordExistsQueryFormatter queryFormatter
-				= new PGSQLRecordExistsQueryFormatter();
+			MSSQLRecordExistsQueryFormatter queryFormatter
+				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			
 			studyName
@@ -3120,7 +3124,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);			
+			MSSQLQueryUtility.rollback(connection);			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.error.unableToCheckResultTableExists",
@@ -3133,8 +3137,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}		
 	}
 	
@@ -3149,8 +3153,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			PGSQLRecordExistsQueryFormatter queryFormatter
-				= new PGSQLRecordExistsQueryFormatter();
+			MSSQLRecordExistsQueryFormatter queryFormatter
+				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);		
 			
 			statement 
@@ -3182,7 +3186,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String studyName
 				= getStudyName(
 					connection, 
@@ -3201,8 +3205,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}		
 	}
 	
@@ -3391,8 +3395,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			PGSQLFunctionCallerQueryFormatter queryFormatter
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("theme");
@@ -3462,8 +3466,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 		
 	}

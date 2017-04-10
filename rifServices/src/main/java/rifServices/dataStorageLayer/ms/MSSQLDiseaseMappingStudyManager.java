@@ -10,9 +10,9 @@ import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 
@@ -133,8 +133,9 @@ final class MSSQLDiseaseMappingStudyManager
 		ArrayList<Project> results = new ArrayList<Project>();
 		try {
 			
-			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
-			configureQueryFormatterForDB(queryFormatter);		
+			MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			configureQueryFormatterForDB(queryFormatter);	
+			queryFormatter.setDatabaseSchemaName("rif40");
 			queryFormatter.addSelectField("project");
 			queryFormatter.addSelectField("description");
 			queryFormatter.addSelectField("date_started");		
@@ -174,7 +175,7 @@ final class MSSQLDiseaseMappingStudyManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"diseaseMappingStudyManager.error.unableToGetProjects",
@@ -194,8 +195,8 @@ final class MSSQLDiseaseMappingStudyManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}
 		
 		return results;
@@ -361,8 +362,8 @@ final class MSSQLDiseaseMappingStudyManager
 		ResultSet resultSet = null;
 		try {
 
-			PGSQLRecordExistsQueryFormatter queryFormatter
-				= new PGSQLRecordExistsQueryFormatter();
+			MSSQLRecordExistsQueryFormatter queryFormatter
+				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setFromTable("rif40_studies");
 			queryFormatter.setLookupKeyFieldName("study_id");
@@ -401,7 +402,7 @@ final class MSSQLDiseaseMappingStudyManager
 		catch(SQLException sqlException) {			
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("diseaseMappingStudy.label");			
 			String errorMessage
@@ -417,8 +418,8 @@ final class MSSQLDiseaseMappingStudyManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 		
 		

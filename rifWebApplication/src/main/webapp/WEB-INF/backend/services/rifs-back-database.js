@@ -40,7 +40,7 @@ angular.module("RIF")
                     var s = "pg"; //"ms"
                     return {
                         getDatabase: function () {
-                            return s;
+                            return s + "/";
                         },
                         setDatabase: function (db) {
                             s = db;

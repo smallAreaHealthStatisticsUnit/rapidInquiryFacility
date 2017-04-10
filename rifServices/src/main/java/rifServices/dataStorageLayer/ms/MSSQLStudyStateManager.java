@@ -7,11 +7,11 @@ import rifServices.businessConceptLayer.StudySummary;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreateTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
 
@@ -128,8 +128,8 @@ final class MSSQLStudyStateManager
 				
 		String statusTableName = deriveStatusTableName(user.getUserID());
 				
-		PGSQLDeleteRowsQueryFormatter queryFormatter
-			= new PGSQLDeleteRowsQueryFormatter();
+		MSSQLDeleteRowsQueryFormatter queryFormatter
+			= new MSSQLDeleteRowsQueryFormatter(false);
 		queryFormatter.setFromTable(statusTableName);
 		queryFormatter.addWhereParameter("study_id");
 		logSQLQuery(
@@ -159,15 +159,12 @@ final class MSSQLStudyStateManager
 			throw rifServiceExeption;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}
 		
 	}
 	
-	
-	
-	
-	
+
 	/**
 	 * Gets the covariates.
 	 *
@@ -265,8 +262,8 @@ final class MSSQLStudyStateManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(dbResultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(dbResultSet);
 		}
 		
 		assert result != null;
@@ -327,7 +324,7 @@ final class MSSQLStudyStateManager
 			throw rifServiceException;
 		}
 		finally {			
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}
 	}
 	
@@ -419,8 +416,8 @@ final class MSSQLStudyStateManager
 			
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
 		}
 		
 		return results;
@@ -454,7 +451,7 @@ final class MSSQLStudyStateManager
 		 * ORDER BY
 		 * 	study_name
 		 */
-		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+		MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.addSelectField("study_id");		
 		queryFormatter.addSelectField("study_name");
@@ -469,6 +466,7 @@ final class MSSQLStudyStateManager
 		try {
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setString(1, user.getUserID());
+				
 			resultSet = statement.executeQuery();
 			while (resultSet.next()) {
 
@@ -502,59 +500,19 @@ final class MSSQLStudyStateManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 		
 		return results;
 	}
 	
+	//THIS IS ACTIVE
 	public RIFResultTable getCurrentStatusAllStudies(
 		final Connection connection, 
 		final User user) 
 		throws RIFServiceException {
-		
-		
-		/*
-		 * Assume that each study state in rif40_studies will have at least one
-		 * comment in the corresponding status table.
-		 *  
-		 * WITH ordered_updates AS
-		 *    (SELECT
-		 *        study_id,
-		 *        row_number() OVER(PARTITION BY creation_date) AS update_number,
-		 *        creation_date
-		 *        message
-		 *     FROM
-		 *        kgarwood.study_status
-		 *     ORDER BY
-		 *        creation_date DESC),
-		 * most_recent_updates AS
-		 *    (SELECT
-		 *        study_id,
-		 *        creation_date,
-		 *        message
-		 *     FROM
-		 *        ordered_updates
-		 *     WHERE
-		 *        update_number = 1)
-		 * SELECT
-		 *    study_id,
-		 *    study_date,
-		 *    study_state,
-		 *    creation_date,
-		 *    message
-		 * FROM
-		 *    rif40.rif40_studies,
-		 *    most_recent_updates
-		 * WHERE
-		 *    rif40.rif40_studies.study_id = kgarwood.study_status.study_id
-		 * ORDER BY
-		 *    study_date DESC,
-		 *    creation_date DESC
-		 * 
-		 */
-		
+
 		RIFResultTable rifResultTable = new RIFResultTable();
 		
 		String[] columnNames = new String[6];
@@ -574,82 +532,60 @@ final class MSSQLStudyStateManager
 		columnDataTypes[5] = RIFResultTable.ColumnDataType.TEXT;		
 
 		rifResultTable.setColumnProperties(columnNames, columnDataTypes);
-		
-		String userID = user.getUserID();
-		String rifStudiesTableName = "rif40.rif40_studies";
-		String statusTableName
-			= deriveStatusTableName(
-				userID);
-		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryLine(0, "WITH ordered_updates AS ");
-		queryFormatter.addQueryLine(1, "(SELECT ");		
-		queryFormatter.addQueryLine(2, "study_id,");
-		queryFormatter.addQueryLine(2, "study_state,");
-		queryFormatter.addQueryLine(2, "creation_date,");
-		queryFormatter.addQueryLine(2, "row_number() OVER(PARTITION BY study_id ORDER BY ith_update DESC) AS update_number,");
-		queryFormatter.addQueryLine(2, "message");
-		queryFormatter.addQueryLine(1, "FROM ");
-		queryFormatter.addQueryLine(2, statusTableName);
-		queryFormatter.addQueryLine(1, "ORDER BY ");
-		queryFormatter.addQueryLine(2, "creation_date DESC),");
-		queryFormatter.addQueryLine(0, "most_recent_updates AS ");
-		queryFormatter.addQueryLine(1, "(SELECT ");
-		queryFormatter.addQueryLine(2, "study_id,");
-		queryFormatter.addQueryLine(2, "study_state,");
-		queryFormatter.addQueryLine(2, "creation_date,");
-		queryFormatter.addQueryLine(2, "message ");
-		queryFormatter.addQueryLine(1, "FROM ");
-		queryFormatter.addQueryLine(2, "ordered_updates ");
-		queryFormatter.addQueryLine(1, "WHERE ");
-		queryFormatter.addQueryLine(2, "update_number = 1) ");
-		queryFormatter.addQueryLine(0, "SELECT ");
-		queryFormatter.addQueryLine(1, "most_recent_updates.study_id,");
-		queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_name,");
-		queryFormatter.addQueryLine(1, rifStudiesTableName + ".description,");
-		queryFormatter.addQueryLine(1, "most_recent_updates.study_state,");
-		queryFormatter.addQueryLine(1, "creation_date,");		
-		queryFormatter.addQueryLine(1, "message");
-		queryFormatter.addQueryLine(0, "FROM ");
-		queryFormatter.addQueryLine(1, rifStudiesTableName + ",");
-		queryFormatter.addQueryLine(1, "most_recent_updates");
-		queryFormatter.addQueryLine(0, "WHERE ");
-		queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_id = most_recent_updates.study_id");
-		queryFormatter.addQueryLine(0, "ORDER BY ");
-		queryFormatter.addQueryLine(1, "most_recent_updates.study_id DESC");
 				
+		MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+		
+		/*
+		 	SELECT 
+		  	study_id,
+		  	study_name,
+		  	description,
+			study_state,
+			summary,
+			study_date
+		  FROM
+		  	[sahsuland_dev].[rif40].[t_rif40_studies]		
+		  WHERE username='rif40'
+		 */
+		
+		queryFormatter.setDatabaseSchemaName("rif40");
+		queryFormatter.addSelectField("study_id");
+		queryFormatter.addSelectField("study_name");
+		queryFormatter.addSelectField("description");
+		queryFormatter.addSelectField("study_state");
+		queryFormatter.addSelectField("summary");
+		queryFormatter.addSelectField("study_date");
+		queryFormatter.addFromTable("t_rif40_studies");
+		queryFormatter.addWhereParameter("username");
+		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
+		
 		try {			
 
-			int expectedNumberOfStatusUpdates
-				= getExpectedNumberOfStatusUpdates(
-					connection,
-					statusTableName,
-					rifStudiesTableName);
-
-			System.out.println("getCurrentStatusAllStudies 2  number of updates==" + expectedNumberOfStatusUpdates+"==");
-
+			connection.setAutoCommit(false);
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setString(1, user.getUserID());
+					
 			logSQLQuery(
-				"getCurrentStatusAllStudies", 
-				queryFormatter, 
-				"userID");
-			
-			statement
-				= createPreparedStatement(
-					connection, 
-					queryFormatter);
+					"getCurrentStatusAllStudies", 
+					queryFormatter, 
+					user.getUserID());
+						
 			resultSet
 				= statement.executeQuery();
-
-			queryFormatter.addQueryLine(1, "most_recent_updates.study_id,");
-			queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_name,");
-			queryFormatter.addQueryLine(1, rifStudiesTableName + ".description,");
-			queryFormatter.addQueryLine(1, "most_recent_updates.study_state,");
-			queryFormatter.addQueryLine(1, "creation_date,");		
-			queryFormatter.addQueryLine(1, "message");			
-			
+						
 			int ithRecord = 0;
+			int expectedNumberOfStatusUpdates = 0;
+			
+			while (resultSet.next() ) {		
+				expectedNumberOfStatusUpdates++;
+			}
+			
+			MSSQLQueryUtility.close(resultSet);	
+			resultSet
+				= statement.executeQuery();
+			
 			String[][] data = new String[expectedNumberOfStatusUpdates][6];
 			while (resultSet.next() ) {		
 				data[ithRecord][0] = resultSet.getString(1); //study ID
@@ -666,13 +602,13 @@ final class MSSQLStudyStateManager
 				ithRecord++;
 			}
 			
-			rifResultTable.setData(data);
+			rifResultTable.setData(data);		
 			
 			return rifResultTable;			
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlStudyStateManager.error.unableToStatusForAllStudies", 
@@ -684,68 +620,10 @@ final class MSSQLStudyStateManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}	
 		
-	}
-	
-	private int getExpectedNumberOfStatusUpdates(
-		final Connection connection,
-		final String statusTableName,
-		final String rifStudiesTableName) 
-		throws SQLException, 
-		RIFServiceException {
-		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryLine(0, "WITH ordered_updates AS ");
-		queryFormatter.addQueryLine(1, "(SELECT ");
-		queryFormatter.addQueryLine(2, "study_id,");
-		queryFormatter.addQueryLine(2, "study_state,");
-		queryFormatter.addQueryLine(2, "creation_date,");
-		queryFormatter.addQueryLine(2, "row_number() OVER(PARTITION BY study_id ORDER BY ith_update DESC) AS update_number,");
-		queryFormatter.addQueryLine(2, "message");
-		queryFormatter.addQueryLine(1, "FROM ");
-		queryFormatter.addQueryLine(2, statusTableName);
-		queryFormatter.addQueryLine(1, "ORDER BY ");
-		queryFormatter.addQueryLine(2, "creation_date DESC),");
-		queryFormatter.addQueryLine(0, "most_recent_updates AS ");
-		queryFormatter.addQueryLine(1, "(SELECT ");
-		queryFormatter.addQueryLine(2, "study_id,");
-		queryFormatter.addQueryLine(2, "study_state,");
-		queryFormatter.addQueryLine(2, "creation_date,");		
-		queryFormatter.addQueryLine(2, "message ");
-		queryFormatter.addQueryLine(1, "FROM ");
-		queryFormatter.addQueryLine(2, "ordered_updates ");
-		queryFormatter.addQueryLine(1, "WHERE ");
-		queryFormatter.addQueryLine(2, "update_number = 1) ");
-		queryFormatter.addQueryLine(0, "SELECT ");
-		queryFormatter.addQueryLine(1, "COUNT(most_recent_updates.study_id) AS number_of_results");
-		queryFormatter.addQueryLine(0, "FROM ");
-		queryFormatter.addQueryLine(1, rifStudiesTableName + ",");
-		queryFormatter.addQueryLine(1, "most_recent_updates");
-		queryFormatter.addQueryLine(0, "WHERE ");
-		queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_id = most_recent_updates.study_id");
-
-		
-		System.out.println(queryFormatter.generateQuery());
-		
-		Integer result = 0;
-		PreparedStatement statement = null;		
-		ResultSet resultSet = null;
-		try {
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
-			resultSet = statement.executeQuery();
-			resultSet.next();
-			result = resultSet.getInt(1);
-			
-			return result;
-		}
-		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);				
-		}
-				
 	}
 	
 	
@@ -763,15 +641,16 @@ final class MSSQLStudyStateManager
 		String statusTableName
 			= deriveStatusTableName(
 				userID);
-		
-		PGSQLCreateTableQueryFormatter queryFormatter
-			= new PGSQLCreateTableQueryFormatter();
-		queryFormatter.setUseIfExists(true);
+	
+		//TODO: (DM) status_table is this used in MSSQL??
+		MSSQLCreateTableQueryFormatter queryFormatter
+			= new MSSQLCreateTableQueryFormatter(false);
+	//	queryFormatter.setUseIfExists(true);
 		queryFormatter.setTableName(statusTableName);
 		queryFormatter.addIntegerFieldDeclaration("study_id", false);
 		queryFormatter.addTextFieldDeclaration("study_state", false);
-		queryFormatter.addTimeStampFieldDeclaration("creation_date", false);
-		queryFormatter.addAutoIncrementFieldDeclaration("ith_update");
+	//	queryFormatter.addTimeStampFieldDeclaration("creation_date", false);
+	//	queryFormatter.addAutoIncrementFieldDeclaration("ith_update");
 		queryFormatter.addTextFieldDeclaration("message", 255, true);
 
 		logSQLQuery(
@@ -798,7 +677,7 @@ final class MSSQLStudyStateManager
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);	
+			MSSQLQueryUtility.close(statement);	
 		}
 		
 	}
@@ -826,8 +705,8 @@ final class MSSQLStudyStateManager
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			PGSQLRecordExistsQueryFormatter queryFormatter
-				= new PGSQLRecordExistsQueryFormatter();
+			MSSQLRecordExistsQueryFormatter queryFormatter
+				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("study_id");
 			queryFormatter.setFromTable("rif40_studies");		
@@ -868,7 +747,7 @@ final class MSSQLStudyStateManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("abstractStudy.label");			
 			String errorMessage
@@ -891,8 +770,8 @@ final class MSSQLStudyStateManager
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}		
 	}
 	
