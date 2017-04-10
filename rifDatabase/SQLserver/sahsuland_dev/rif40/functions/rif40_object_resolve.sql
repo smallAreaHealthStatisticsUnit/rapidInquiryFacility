@@ -17,15 +17,26 @@ IF EXISTS (SELECT *
 GO 
 
 CREATE FUNCTION [rif40].[rif40_object_resolve](@l_table_name VARCHAR(500))
-  RETURNS VARCHAR AS
+RETURNS VARCHAR(30) AS
 BEGIN
 
-	IF (object_id(@l_table_name) IS NOT NULL)
-		RETURN object_schema_name(object_id(@l_table_name));
-	
+	IF (object_id('rif_data.' + LOWER(@l_table_name)) IS NOT NULL)
+		RETURN 'rif_data';
+	ELSE IF (object_id('rif_studies.' + LOWER(@l_table_name)) IS NOT NULL)
+		RETURN 'rif_studies';
+	ELSE IF (object_id('rif40.' + LOWER(@l_table_name)) IS NOT NULL)
+		RETURN 'rif40';
+		
 	RETURN NULL;
 END
 GO
+
+GRANT EXECUTE ON [rif40].[rif40_object_resolve] TO rif_user, rif_manager;
+GO
+
+-- 
+-- Eof
+
 
 --produces error:
 /*

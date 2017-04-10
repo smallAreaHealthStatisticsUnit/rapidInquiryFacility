@@ -8,7 +8,7 @@ GO
 
 
 CREATE FUNCTION [rif40].[rif40_num_denom_validate](@l_geography VARCHAR(max), @l_table_name VARCHAR(max))
-  RETURNS INT AS
+  RETURNS INTEGER AS
 BEGIN
 	DECLARE @l_owner VARCHAR(max);
 /*

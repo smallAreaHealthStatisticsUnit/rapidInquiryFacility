@@ -18,7 +18,7 @@ GO
 
 
 CREATE FUNCTION [rif40].[rif40_auto_indirect_checks](@l_table_name VARCHAR(max))
-	RETURNS varchar AS
+	RETURNS INTEGER AS
 BEGIN
 
 	DECLARE @msg VARCHAR(max), @dmsg VARCHAR(max);

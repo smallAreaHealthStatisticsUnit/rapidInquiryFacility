@@ -10,7 +10,7 @@ IF EXISTS (SELECT *
 GO 
 
 CREATE FUNCTION [rif40].[rif40_is_object_resolvable](@l_table_name VARCHAR(500))
-  RETURNS INT AS
+  RETURNS INTEGER AS
 BEGIN
 	DECLARE @database_name VARCHAR(500) = DB_NAME(); -- current database name
 	DECLARE @schema_name VARCHAR(500) = 'rif_data';
@@ -107,7 +107,8 @@ BEGIN
 		END
 	END
 		
-	IF EXISTS (select * from sys.fn_my_permissions(@l_table_name, N'OBJECT') where  subentity_name = N'' ) -- you have some sort of permissions
+	IF EXISTS (select * from sys.fn_my_permissions(@schema_name + '.' + @l_table_name, N'OBJECT') 
+		WHERE subentity_name = N'' ) -- you have some sort of permissions
 	
 			RETURN 1;
 		ELSE
