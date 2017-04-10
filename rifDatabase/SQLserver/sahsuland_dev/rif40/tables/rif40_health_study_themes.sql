@@ -41,7 +41,8 @@ GO
 
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_health_study_themes] TO [rif_manager]
 GO
-GRANT SELECT, REFERENCES ON [rif40].[rif40_health_study_themes] TO public
+
+GRANT SELECT, REFERENCES ON [rif40].[rif40_health_study_themes] TO [rif_user] WITH GRANT OPTION;
 GO
 
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF health study themes' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_health_study_themes'

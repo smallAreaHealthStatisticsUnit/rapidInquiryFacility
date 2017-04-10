@@ -400,9 +400,11 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 --
 -- Call rif40_insert_extract() to populate extract table.
 -- 
-	IF rif40_sm_pkg.rif40_insert_extract(c1_rec.study_id) = FALSE THEN
-		PERFORM rif40_log_pkg.rif40_log ('WARNING', 'rif40_create_extract', 
-			'[55408] RIF40_STUDIES study % populated extract failed, see previous warnings',
+	EXECUTE rif40_sm_pkg.rif40_insert_extract(@rval, @c1_rec_study_id);
+	SET @msg = 'Study ' + CAST(@study_id AS VARCHAR) + ' OK';
+	IF @rval = 0 
+		PRINT @msg;
+		SET @msg='[55408] RIF40_STUDIES study % populated extract failed, see previous warnings',
 			c1_rec.study_id::VARCHAR	/- Study id -/);
 		RETURN FALSE;
 	END IF; */

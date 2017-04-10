@@ -77,13 +77,7 @@ if %errorlevel% neq 0 (
 ) else (
 	ECHO rif40_database_creation.sql built OK %errorlevel%
 )
-sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=%NEWUSER%
-if %errorlevel% neq 0  (
-	ECHO rif40_test_user.sql exiting with %errorlevel%
-	exit /b 1
-) else (
-	ECHO rif40_test_user.sql built OK %errorlevel%
-)
+
 CALL rif40_sahsuland_dev_install.bat 
 if %errorlevel% neq 0  (
 	ECHO rif40_sahsuland_dev_install.bat exiting with %errorlevel%
@@ -100,6 +94,14 @@ if %errorlevel% neq 0  (
 	exit /b 1
 ) else (
 	ECHO rif40_sahsuland_install.bat built OK %errorlevel%
+)
+
+sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=%NEWUSER%
+if %errorlevel% neq 0  (
+	ECHO rif40_test_user.sql exiting with %errorlevel%
+	exit /b 1
+) else (
+	ECHO rif40_test_user.sql built OK %errorlevel%
 )
 
 sqlcmd -U %NEWUSER% -P %NEWUSER% -b -m-1 -e -i rif40_run_study.sql

@@ -115,18 +115,10 @@ BEGIN
 			
 	RETURN -5;
 END;
-
-
---GRANT EXECUTE ON rif40.rif40_is_object_resolvable(varchar) TO public;
-
-/*
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_is_object_resolvable(character varying) IS 'Function: 	rif40_is_object_resolvable()
-Parameters:	Table/view name
-Returns: 	1 - resolvable and accessible, negative number otherwise
-Description:	Is object resolvable?
-
-Search search path for table/view/foreign table; check resolvable
-
-Will need OracleFDW objects to check remote access';
-*/
 GO
+
+GRANT EXECUTE ON [rif40].[rif40_is_object_resolvable] TO rif_user, rif_manager;
+GO
+
+-- 
+-- Eof

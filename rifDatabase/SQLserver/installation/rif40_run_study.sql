@@ -62,7 +62,8 @@ SELECT * FROM rif40.rif40_projects;
 GO
 SELECT * FROM rif40.rif40_user_projects;
 GO
-
+SELECT * from rif40_num_denom;
+GO
 SELECT * FROM rif40.rif40_tables;
 GO
 

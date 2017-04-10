@@ -85,54 +85,11 @@ GO
 		
 USE [sahsuland];
 
-BEGIN
-	IF EXISTS (SELECT name FROM sys.schemas WHERE name = N'$(NEWUSER)')
-		DROP SCHEMA [$(NEWUSER)];
-	IF EXISTS (SELECT name FROM sys.database_principals WHERE name = N'$(NEWUSER)')
-		DROP USER [$(NEWUSER)];
-
-	CREATE USER [$(NEWUSER)] FOR LOGIN [$(NEWUSER)] WITH DEFAULT_SCHEMA=[dbo];
---
--- 	ALTER SERVER ROLE [rif_manager] ADD MEMBER [Peter]; DOES NOT WORK
---
-	EXEC sp_addrolemember @membername = N'$(NEWUSER)', @rolename = N'rif_user'; 
-	EXEC sp_addrolemember @membername = N'$(NEWUSER)', @rolename = N'rif_manager'; 
-
-	EXEC('CREATE SCHEMA [$(NEWUSER)] AUTHORIZATION [$(NEWUSER)]');
-	ALTER USER [$(NEWUSER)] WITH DEFAULT_SCHEMA=[$(NEWUSER)];
-END;
-GO
-
-SELECT name, type_desc FROM sys.database_principals WHERE name = N'$(NEWUSER)';
-GO
-SELECT * FROM sys.schemas WHERE name = N'$(NEWUSER)';
-GO
+:r user_objects.sql
 	
 USE [sahsuland_dev];
 
-BEGIN
-	IF EXISTS (SELECT name FROM sys.schemas WHERE name = N'$(NEWUSER)')
-		DROP SCHEMA [$(NEWUSER)];
-	IF EXISTS (SELECT name FROM sys.database_principals WHERE name = N'$(NEWUSER)')
-		DROP USER [$(NEWUSER)];
-
-	CREATE USER [$(NEWUSER)] FOR LOGIN [$(NEWUSER)] WITH DEFAULT_SCHEMA=[dbo];
---
--- 	ALTER SERVER ROLE [rif_manager] ADD MEMBER [Peter]; DOES NOT WORK
---
-	EXEC sp_addrolemember @membername = N'$(NEWUSER)', @rolename = N'rif_user'; 
-	EXEC sp_addrolemember @membername = N'$(NEWUSER)', @rolename = N'rif_manager'; 
---
-	EXEC('CREATE SCHEMA [$(NEWUSER)] AUTHORIZATION [$(NEWUSER)]');
-	ALTER USER [$(NEWUSER)] WITH DEFAULT_SCHEMA=[$(NEWUSER)];
-	
-END;
-GO
-
-SELECT name, type_desc FROM sys.database_principals WHERE name = N'$(NEWUSER)';
-GO
-SELECT * FROM sys.schemas WHERE name = N'$(NEWUSER)';
-GO
+:r user_objects.sql
 	
 USE [test];
 
@@ -153,7 +110,6 @@ BEGIN
 --
 	EXEC('CREATE SCHEMA [$(NEWUSER)] AUTHORIZATION [$(NEWUSER)]');
 	ALTER USER [$(NEWUSER)] WITH DEFAULT_SCHEMA=[$(NEWUSER)];
-	
 END;
 GO
 
@@ -162,26 +118,5 @@ GO
 SELECT * FROM sys.schemas WHERE name = N'$(NEWUSER)';
 GO
 
-CREATE TABLE [$(NEWUSER)].study_status
-(
-  study_id integer NOT NULL,
-  study_state VARCHAR(1) NOT NULL,
-  creation_date timestamp NOT NULL,
-  ith_update INTEGER NOT NULL,
-  message VARCHAR(255)
-);
-
---
--- Create a test object - this will not re-run
---
-/*
-EXECUTE AS USER = '$(NEWUSER)';
-IF OBJECT_ID('test_table', 'U') IS NOT NULL DROP TABLE test_table;
-GO
-SELECT db_name() AS db_name INTO [$(NEWUSER)].test_table;
-SELECT SUSER_NAME(), USER_NAME(); 
-GO
- */
- 
 --
 -- Eof
