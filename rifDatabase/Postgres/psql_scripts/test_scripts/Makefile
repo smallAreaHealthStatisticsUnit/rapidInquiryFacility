@@ -96,12 +96,13 @@ ifeq ($(OS),Windows_NT)
 #
 	RUN=powershell -ExecutionPolicy ByPass -file ../run.ps1
 	DELETE=powershell -ExecutionPolicy ByPass -file ../delete.ps1
-	# Assumes tr came with make. Force to lowercase
-	CLEAN_USERNAME=$(shell echo $(USERNAME) | tr ‘[:upper:]’ ‘[:lower:]’)
-	TESTUSER?=$(CLEAN_USERNAME)
-	ifeq ($(TESTUSER),)
-		TESTUSER?=$(USERNAME)
-	endif
+# Assumes tr came with make. Force to lowercase
+#	CLEAN_USERNAME=$(shell echo $(USERNAME) | tr ‘[:upper:]’ ‘[:lower:]’)
+#	TESTUSER?=$(CLEAN_USERNAME)
+#	ifeq ($(TESTUSER),)
+#		TESTUSER?=$(USERNAME)
+#	endif
+	TESTUSER?=$(USERNAME)
 	TOPOJSON="C:\node_modules\.bin\topojson.cmd"
 else
 #

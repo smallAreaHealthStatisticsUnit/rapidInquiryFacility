@@ -192,11 +192,13 @@ else
 	SUDO_CHOWN_TESUSER=chown -R $(TESTUSER) "$@"
 	SUDO_CHOWN_POSTGRES=chown -R postgres "$@"
 	COPY=cp
-	CLEAN_USERNAME=$(shell id -un | tr ‘[:upper:]’ ‘[:lower:]’)
-	TESTUSER?=$(CLEAN_USERNAME)
-	ifeq ($(TESTUSER),)
-		TESTUSER=$(USERNAME)
-	endif
+#   Assumes tr came with make. Force to lowercase
+#	CLEAN_USERNAME=$(shell echo $(USERNAME) | tr ‘[:upper:]’ ‘[:lower:]’)
+#	TESTUSER?=$(CLEAN_USERNAME)
+#	ifeq ($(TESTUSER),)
+#		TESTUSER?=$(USERNAME)
+#	endif
+	TESTUSER?=$(USERNAME)
 	TOPOJSON=topojson
     ifeq ($(UNAME_S),Linux)
 		OS=$(UNAME_S)
