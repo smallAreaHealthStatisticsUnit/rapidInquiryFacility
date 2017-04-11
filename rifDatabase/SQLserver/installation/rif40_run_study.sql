@@ -242,8 +242,15 @@ SELECT TOP 10 SUBSTRING(areaid, 1, 20) AS areaid, num_adjacencies, SUBSTRING(adj
 GO
 
 --
+-- Uncomment to enable execution plans
+--
+--SET SHOWPLAN_TEXT ON
+--GO
+
+--
 -- Now run it
 --
+
 BEGIN
 	DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
 	BEGIN TRANSACTION;

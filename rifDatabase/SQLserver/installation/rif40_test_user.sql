@@ -81,8 +81,14 @@ GO
 -- Allow BULK INSERT
 --
 EXEC sp_addsrvrolemember @loginame = N'$(NEWUSER)', @rolename = N'bulkadmin';
+GO		
+
+--
+-- Allow SHOWPLAN
+--
+GRANT VIEW SERVER STATE TO [$(NEWUSER)];
 GO
-		
+
 USE [sahsuland];
 
 :r user_objects.sql

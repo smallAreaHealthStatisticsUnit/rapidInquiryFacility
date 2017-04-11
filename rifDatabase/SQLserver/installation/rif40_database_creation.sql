@@ -131,6 +131,12 @@ SELECT name FROM sys.server_principals WHERE name LIKE 'rif%';
 GO
 
 --
+-- Allow SHOWPLAN
+--
+GRANT VIEW SERVER STATE TO [rif40];
+GO
+
+--
 -- Create database users, roles and schemas for sahsuland and sahsuland_dev
 --
 USE [sahsuland_dev];
@@ -231,6 +237,12 @@ GO
 GRANT CREATE TYPE TO [rif40];
 GO
 
+--
+-- Allow SHOWPLAN
+--
+GRANT SHOWPLAN TO [rif40];
+GO
+	
 GRANT ALTER ON SCHEMA :: rif_studies TO [rif40];
 GO
 
@@ -343,7 +355,17 @@ GRANT CREATE TABLE TO [rif40];
 GO
 GRANT CREATE VIEW TO [rif40];
 GO
+GRANT CREATE TYPE TO [rif40];
+GO
+--
+-- Allow SHOWPLAN
+--
+GRANT SHOWPLAN TO [rif40];
+GO
 
+--
+-- Grant USAGE on the rif_studies schema to RIF40. This implies control
+--
 GRANT ALTER ON SCHEMA :: rif_studies TO [rif40];
 GO
 
