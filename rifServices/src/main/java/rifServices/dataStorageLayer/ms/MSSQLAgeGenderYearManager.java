@@ -5,6 +5,7 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.AgeGroup;
 import rifServices.businessConceptLayer.AgeBand;
@@ -131,6 +132,7 @@ final class MSSQLAgeGenderYearManager
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public ArrayList<AgeGroup> getAgeGroups(
+		final User user,
 		final Connection connection,
 		final Geography geography,
 		final NumeratorDenominatorPair ndPair,
@@ -139,6 +141,7 @@ final class MSSQLAgeGenderYearManager
 				
 		//Validate parameters
 		validateCommonMethodParameters(
+			user,
 			connection,
 			geography,
 			ndPair);
@@ -156,7 +159,7 @@ final class MSSQLAgeGenderYearManager
 				= new PGSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(getAgeIDQueryFormatter);
 			getAgeIDQueryFormatter.addSelectField("age_group_id");
-			getAgeIDQueryFormatter.addFromTable("rif40_tables");
+			getAgeIDQueryFormatter.addFromTable("rif40.rif40_tables");
 			getAgeIDQueryFormatter.addWhereParameter("table_name");
 			getAgeIDQueryFormatter.addWhereParameter("isnumerator");
 				
@@ -215,7 +218,7 @@ final class MSSQLAgeGenderYearManager
 			getAgesForAgeGroupID.addSelectField("low_age");
 			getAgesForAgeGroupID.addSelectField("high_age");
 			getAgesForAgeGroupID.addSelectField("fieldname");
-			getAgesForAgeGroupID.addFromTable("rif40_age_groups");
+			getAgesForAgeGroupID.addFromTable("rif40.rif40_age_groups");
 			getAgesForAgeGroupID.addWhereParameter("age_group_id");
 		
 			if ((sortingOrder == null) ||
@@ -324,6 +327,7 @@ final class MSSQLAgeGenderYearManager
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public YearRange getYearRange(
+		final User user,
 		final Connection connection,
 		final Geography geography,
 		final NumeratorDenominatorPair ndPair) 
@@ -331,6 +335,7 @@ final class MSSQLAgeGenderYearManager
 		
 		//Validate parameters
 		validateCommonMethodParameters(
+			user,
 			connection,
 			geography,
 			ndPair);
@@ -344,7 +349,7 @@ final class MSSQLAgeGenderYearManager
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("year_start");
 			queryFormatter.addSelectField("year_stop");
-			queryFormatter.addFromTable("rif40_tables");
+			queryFormatter.addFromTable("rif40.rif40_tables");
 			queryFormatter.addWhereParameter("table_name");
 
 			logSQLQuery(
@@ -440,6 +445,7 @@ final class MSSQLAgeGenderYearManager
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	private void validateCommonMethodParameters(
+		final User user,
 		final Connection connection,
 		final Geography geography,
 		final NumeratorDenominatorPair ndPair) 
@@ -457,6 +463,7 @@ final class MSSQLAgeGenderYearManager
 		if (ndPair != null) {
 			ndPair.checkErrors(validationPolicy);
 			sqlRIFContextManager.checkNDPairExists(
+				user,
 				connection, 
 				geography,
 				ndPair);			
@@ -499,6 +506,7 @@ final class MSSQLAgeGenderYearManager
 			//Create query
 			PGSQLSelectQueryFormatter queryFormatter
 				= new PGSQLSelectQueryFormatter();
+			queryFormatter.setDatabaseSchemaName("rif40");
 			queryFormatter.addSelectField("fieldname");
 			queryFormatter.addFromTable("rif40_age_groups");
 			queryFormatter.addFromTable("rif40_tables");

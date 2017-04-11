@@ -298,6 +298,7 @@ final class MSSQLRIFSubmissionManager
 		//perform various checks for non-existent objects
 		//such as geography,  geo level selects, covariates
 		checkNonExistentItems(
+			user,
 			connection, 
 			studySubmission);
 
@@ -503,6 +504,7 @@ final class MSSQLRIFSubmissionManager
 		//perform various checks for non-existent objects
 		//such as geography,  geo level selects, covariates
 		checkNonExistentItems(
+			user, 
 			connection, 
 			studySubmission);
 
@@ -2715,6 +2717,7 @@ final class MSSQLRIFSubmissionManager
 	// ==========================================
 	
 	private void checkNonExistentItems(
+		final User user,
 		final Connection connection,
 		final RIFStudySubmission rifStudySubmission)
 		throws RIFServiceException {
@@ -2728,6 +2731,7 @@ final class MSSQLRIFSubmissionManager
 		DiseaseMappingStudy diseaseMappingStudy
 			= (DiseaseMappingStudy) rifStudySubmission.getStudy();
 		diseaseMappingStudyManager.checkNonExistentItems(
+			user,
 			connection, 
 			diseaseMappingStudy);
 		

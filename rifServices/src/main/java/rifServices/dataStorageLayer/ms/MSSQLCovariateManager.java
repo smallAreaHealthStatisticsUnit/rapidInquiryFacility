@@ -249,7 +249,7 @@ final class MSSQLCovariateManager
 			queryFormatter.addSelectField("min");
 			queryFormatter.addSelectField("max");
 			queryFormatter.addSelectField("type");
-			queryFormatter.addFromTable("rif40_covariates");
+			queryFormatter.addFromTable("rif40.rif40_covariates");
 			queryFormatter.addWhereParameter("geography");
 			queryFormatter.addWhereParameter("geolevel_name");
 			queryFormatter.addOrderByCondition("covariate_name");

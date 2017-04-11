@@ -253,6 +253,7 @@ final class MSSQLDiseaseMappingStudyManager
 	// ==========================================
 	
 	public void checkNonExistentItems(
+		final User user,
 		final Connection connection,
 		final DiseaseMappingStudy diseaseMappingStudy)
 		throws RIFServiceException {
@@ -291,6 +292,7 @@ final class MSSQLDiseaseMappingStudyManager
 			= diseaseMappingStudy.getInvestigations();
 		for (Investigation investigation : investigations) {
 			investigationManager.checkNonExistentItems(
+				user,
 				connection, 
 				geography,
 				geoLevelToMap,

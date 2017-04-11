@@ -5,6 +5,7 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.Investigation;
@@ -159,6 +160,7 @@ final class MSSQLInvestigationManager
 	// ==========================================
 	
 	public void checkNonExistentItems(
+		final User user,
 		final Connection connection, 
 		final Geography geography,
 		final GeoLevelToMap geoLevelToMap,
@@ -189,6 +191,7 @@ final class MSSQLInvestigationManager
 
 		NumeratorDenominatorPair ndPair = investigation.getNdPair();
 		rifContextManager.checkNDPairExists(
+			user,
 			connection, 
 			geography, 
 			ndPair);

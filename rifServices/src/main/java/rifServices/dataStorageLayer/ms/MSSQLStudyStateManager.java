@@ -12,6 +12,7 @@ import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreateTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
 
@@ -507,124 +508,239 @@ final class MSSQLStudyStateManager
 		return results;
 	}
 	
-	//THIS IS ACTIVE
+
 	public RIFResultTable getCurrentStatusAllStudies(
-		final Connection connection, 
-		final User user) 
-		throws RIFServiceException {
-
-		RIFResultTable rifResultTable = new RIFResultTable();
-		
-		String[] columnNames = new String[6];
-		columnNames[0] = "study_id";
-		columnNames[1] = "study_name";		
-		columnNames[2] = "study_description";
-		columnNames[3] = "study_state";
-		columnNames[4] = "date";
-		columnNames[5] = "message";
-		
-		RIFResultTable.ColumnDataType[] columnDataTypes = new RIFResultTable.ColumnDataType[6];
-		columnDataTypes[0] = RIFResultTable.ColumnDataType.TEXT;
-		columnDataTypes[1] = RIFResultTable.ColumnDataType.TEXT;
-		columnDataTypes[2] = RIFResultTable.ColumnDataType.TEXT;
-		columnDataTypes[3] = RIFResultTable.ColumnDataType.TEXT;		
-		columnDataTypes[4] = RIFResultTable.ColumnDataType.TEXT;
-		columnDataTypes[5] = RIFResultTable.ColumnDataType.TEXT;		
-
-		rifResultTable.setColumnProperties(columnNames, columnDataTypes);
+			final Connection connection, 
+			final User user) 
+			throws RIFServiceException {
 				
-		MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
-		
-		/*
-		 	SELECT 
-		  	study_id,
-		  	study_name,
-		  	description,
-			study_state,
-			summary,
-			study_date
+			/*
+  		WITH ordered_updates AS
+		     (SELECT
+		         study_id,
+		         row_number() OVER(PARTITION BY creation_date ORDER BY ith_update ASC) AS update_number,
+		         creation_date,
+		         message
+		      FROM
+		         [sahsuland_dev].[peter].[study_status]
+		     -- ORDER BY
+		        -- creation_date DESC
+				 ),
+		  most_recent_updates AS
+		     (SELECT
+		         study_id,
+		         creation_date,
+		         message
+		      FROM
+		         ordered_updates
+		      WHERE
+		         update_number = 1)
+		  SELECT
+		     a.study_id,
+		     study_date,
+		     study_state,
+		     creation_date,
+		     message
 		  FROM
-		  	[sahsuland_dev].[rif40].[t_rif40_studies]		
-		  WHERE username='rif40'
-		 */
-		
-		queryFormatter.setDatabaseSchemaName("rif40");
-		queryFormatter.addSelectField("study_id");
-		queryFormatter.addSelectField("study_name");
-		queryFormatter.addSelectField("description");
-		queryFormatter.addSelectField("study_state");
-		queryFormatter.addSelectField("summary");
-		queryFormatter.addSelectField("study_date");
-		queryFormatter.addFromTable("t_rif40_studies");
-		queryFormatter.addWhereParameter("username");
-		
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		
-		try {			
+		     [sahsuland_dev].[rif40].[rif40_studies] a,
+		     most_recent_updates b
+		  WHERE
+		     a.study_id = b.study_id
+		  ORDER BY
+		     study_date DESC,
+		     creation_date DESC
+			 */
+			
+			RIFResultTable rifResultTable = new RIFResultTable();
+			
+			String[] columnNames = new String[6];
+			columnNames[0] = "study_id";
+			columnNames[1] = "study_name";		
+			columnNames[2] = "study_description";
+			columnNames[3] = "study_state";
+			columnNames[4] = "date";
+			columnNames[5] = "message";
+			
+			RIFResultTable.ColumnDataType[] columnDataTypes = new RIFResultTable.ColumnDataType[6];
+			columnDataTypes[0] = RIFResultTable.ColumnDataType.TEXT;
+			columnDataTypes[1] = RIFResultTable.ColumnDataType.TEXT;
+			columnDataTypes[2] = RIFResultTable.ColumnDataType.TEXT;
+			columnDataTypes[3] = RIFResultTable.ColumnDataType.TEXT;		
+			columnDataTypes[4] = RIFResultTable.ColumnDataType.TEXT;
+			columnDataTypes[5] = RIFResultTable.ColumnDataType.TEXT;		
 
-			connection.setAutoCommit(false);
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setString(1, user.getUserID());
+			rifResultTable.setColumnProperties(columnNames, columnDataTypes);
+			
+			String userID = user.getUserID();
+			String rifStudiesTableName = "rif40.rif40_studies";
+			String statusTableName
+				= deriveStatusTableName(
+					userID);
+			
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryLine(0, "WITH ordered_updates AS ");
+			queryFormatter.addQueryLine(1, "(SELECT ");		
+			queryFormatter.addQueryLine(2, "study_id,");
+			queryFormatter.addQueryLine(2, "study_state,");
+			queryFormatter.addQueryLine(2, "creation_date,");
+			queryFormatter.addQueryLine(2, "row_number() OVER(PARTITION BY study_id ORDER BY ith_update DESC) AS update_number,");
+			queryFormatter.addQueryLine(2, "message");
+			queryFormatter.addQueryLine(1, "FROM ");
+			queryFormatter.addQueryLine(2, statusTableName);
+			queryFormatter.addQueryLine(2, "),");	
+			queryFormatter.addQueryLine(0, "most_recent_updates AS ");
+			queryFormatter.addQueryLine(1, "(SELECT ");
+			queryFormatter.addQueryLine(2, "study_id,");
+			queryFormatter.addQueryLine(2, "study_state,");
+			queryFormatter.addQueryLine(2, "creation_date,");
+			queryFormatter.addQueryLine(2, "message ");
+			queryFormatter.addQueryLine(1, "FROM ");
+			queryFormatter.addQueryLine(2, "ordered_updates ");
+			queryFormatter.addQueryLine(1, "WHERE ");
+			queryFormatter.addQueryLine(2, "update_number = 1) ");
+			queryFormatter.addQueryLine(0, "SELECT ");
+			queryFormatter.addQueryLine(1, "most_recent_updates.study_id,");
+			queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_name,");
+			queryFormatter.addQueryLine(1, rifStudiesTableName + ".description,");
+			queryFormatter.addQueryLine(1, "most_recent_updates.study_state,");
+			queryFormatter.addQueryLine(1, "creation_date,");		
+			queryFormatter.addQueryLine(1, "message");
+			queryFormatter.addQueryLine(0, "FROM ");
+			queryFormatter.addQueryLine(1, rifStudiesTableName + ",");
+			queryFormatter.addQueryLine(1, "most_recent_updates");
+			queryFormatter.addQueryLine(0, "WHERE ");
+			queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_id = most_recent_updates.study_id");
+			queryFormatter.addQueryLine(0, "ORDER BY ");
+			queryFormatter.addQueryLine(1, "most_recent_updates.study_id DESC");
 					
-			logSQLQuery(
+			PreparedStatement statement = null;
+			ResultSet resultSet = null;
+			try {			
+
+				int expectedNumberOfStatusUpdates
+					= getExpectedNumberOfStatusUpdates(
+						connection,
+						statusTableName,
+						rifStudiesTableName);
+
+				System.out.println("getCurrentStatusAllStudies 2  number of updates==" + expectedNumberOfStatusUpdates+"==");
+
+				logSQLQuery(
 					"getCurrentStatusAllStudies", 
 					queryFormatter, 
-					user.getUserID());
-						
-			resultSet
-				= statement.executeQuery();
-						
-			int ithRecord = 0;
-			int expectedNumberOfStatusUpdates = 0;
-			
-			while (resultSet.next() ) {		
-				expectedNumberOfStatusUpdates++;
-			}
-			
-			MSSQLQueryUtility.close(resultSet);	
-			resultSet
-				= statement.executeQuery();
-			
-			String[][] data = new String[expectedNumberOfStatusUpdates][6];
-			while (resultSet.next() ) {		
-				data[ithRecord][0] = resultSet.getString(1); //study ID
-				data[ithRecord][1] = resultSet.getString(2); //study name
-				data[ithRecord][2] = resultSet.getString(3); //description
-				data[ithRecord][3] = resultSet.getString(4); //study state
+					"userID");
+				
+				statement
+					= createPreparedStatement(
+						connection, 
+						queryFormatter);
+				resultSet
+					= statement.executeQuery();
 
-				java.util.Date time 
-					= new java.util.Date(resultSet.getDate(5).getTime()); 
-				data[ithRecord][4] 
-					= RIFGenericLibraryMessages.getTimePhrase(time);
-			
-				data[ithRecord][5] = resultSet.getString(6); //message
-				ithRecord++;
+				queryFormatter.addQueryLine(1, "most_recent_updates.study_id,");
+				queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_name,");
+				queryFormatter.addQueryLine(1, rifStudiesTableName + ".description,");
+				queryFormatter.addQueryLine(1, "most_recent_updates.study_state,");
+				queryFormatter.addQueryLine(1, "creation_date,");		
+				queryFormatter.addQueryLine(1, "message");			
+				
+				int ithRecord = 0;
+				String[][] data = new String[expectedNumberOfStatusUpdates][6];
+				while (resultSet.next() ) {		
+					data[ithRecord][0] = resultSet.getString(1); //study ID
+					data[ithRecord][1] = resultSet.getString(2); //study name
+					data[ithRecord][2] = resultSet.getString(3); //description
+					data[ithRecord][3] = resultSet.getString(4); //study state
+
+					java.util.Date time 
+						= new java.util.Date(resultSet.getDate(5).getTime()); 
+					data[ithRecord][4] 
+						= RIFGenericLibraryMessages.getTimePhrase(time);
+				
+					data[ithRecord][5] = resultSet.getString(6); //message
+					ithRecord++;
+				}
+				
+				rifResultTable.setData(data);
+				
+				return rifResultTable;			
 			}
+			catch(SQLException sqlException) {
+				logSQLException(sqlException);
+				MSSQLQueryUtility.rollback(connection);
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"sqlStudyStateManager.error.unableToStatusForAllStudies", 
+						user.getUserID());
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.DATABASE_QUERY_FAILED,
+						errorMessage);
+				throw rifServiceException;
+			}
+			finally {
+				MSSQLQueryUtility.close(statement);
+				MSSQLQueryUtility.close(resultSet);			
+			}	
 			
-			rifResultTable.setData(data);		
+		}
+	
+	private int getExpectedNumberOfStatusUpdates(
+			final Connection connection,
+			final String statusTableName,
+			final String rifStudiesTableName) 
+			throws SQLException, 
+			RIFServiceException {
 			
-			return rifResultTable;			
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryLine(0, "WITH ordered_updates AS ");
+			queryFormatter.addQueryLine(1, "(SELECT ");
+			queryFormatter.addQueryLine(2, "study_id,");
+			queryFormatter.addQueryLine(2, "study_state,");
+			queryFormatter.addQueryLine(2, "creation_date,");
+			queryFormatter.addQueryLine(2, "row_number() OVER(PARTITION BY study_id ORDER BY ith_update DESC) AS update_number,");
+			queryFormatter.addQueryLine(2, "message");
+			queryFormatter.addQueryLine(1, "FROM ");
+			queryFormatter.addQueryLine(2, statusTableName);			
+			queryFormatter.addQueryLine(2, "),");
+			queryFormatter.addQueryLine(0, "most_recent_updates AS ");
+			queryFormatter.addQueryLine(1, "(SELECT ");
+			queryFormatter.addQueryLine(2, "study_id,");
+			queryFormatter.addQueryLine(2, "study_state,");
+			queryFormatter.addQueryLine(2, "creation_date,");		
+			queryFormatter.addQueryLine(2, "message ");
+			queryFormatter.addQueryLine(1, "FROM ");
+			queryFormatter.addQueryLine(2, "ordered_updates ");
+			queryFormatter.addQueryLine(1, "WHERE ");
+			queryFormatter.addQueryLine(2, "update_number = 1) ");
+			queryFormatter.addQueryLine(0, "SELECT ");
+			queryFormatter.addQueryLine(1, "COUNT(most_recent_updates.study_id) AS number_of_results");
+			queryFormatter.addQueryLine(0, "FROM ");
+			queryFormatter.addQueryLine(1, rifStudiesTableName + ",");
+			queryFormatter.addQueryLine(1, "most_recent_updates");
+			queryFormatter.addQueryLine(0, "WHERE ");
+			queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_id = most_recent_updates.study_id");
+
+			
+			System.out.println(queryFormatter.generateQuery());
+			
+			Integer result = 0;
+			PreparedStatement statement = null;		
+			ResultSet resultSet = null;
+			try {
+				statement = connection.prepareStatement(queryFormatter.generateQuery());
+				resultSet = statement.executeQuery();
+				resultSet.next();
+				result = resultSet.getInt(1);
+				
+				return result;
+			}
+			finally {
+				MSSQLQueryUtility.close(statement);
+				MSSQLQueryUtility.close(resultSet);				
+			}
+					
 		}
-		catch(SQLException sqlException) {
-			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlStudyStateManager.error.unableToStatusForAllStudies", 
-					user.getUserID());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);			
-		}	
-		
-	}
 	
 	
 	/*

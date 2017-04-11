@@ -880,6 +880,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 				= rifServiceResources.getSqlAgeGenderYearManager();
 			result
 				= sqlAgeGenderYearManager.getYearRange(
+					user,
 					connection, 
 					geography,
 					ndPair);

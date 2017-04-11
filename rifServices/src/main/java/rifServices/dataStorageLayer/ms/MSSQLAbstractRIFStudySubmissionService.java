@@ -416,6 +416,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 				= rifServiceResources.getSqlAgeGenderYearManager();
 			results
 				= sqlAgeGenderYearManager.getAgeGroups(
+					user,
 					connection,
 					geography,
 					ndPair,
@@ -858,7 +859,8 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 				= sqlRIFContextManager.getNumeratorDenominatorPairs(
 					connection, 
 					geography,
-					healthTheme);
+					healthTheme,
+					user);
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -956,6 +958,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 				= rifServiceResources.getSQLRIFContextManager();
 			result
 				= sqlRIFContextManager.getNDPairFromNumeratorTableName(
+					user,
 					connection, 
 					geography,
 					numeratorTableName);
