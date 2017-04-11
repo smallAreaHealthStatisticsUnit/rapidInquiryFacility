@@ -484,6 +484,9 @@ EXEC sp_addmessage 55405, 16,
 	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract not currently permitted [use RIF IG tool].';	
 EXEC sp_addmessage 55406, 16,
 	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract must be run by study owner %s not %s.';	
+
+EXEC sp_addmessage 55800, 16,
+	N'Function: [rif40].[rif40_insert_extract], Study ID %i not found.';	
 	
 EXEC sp_addmessage 55999, 16,
 	N'Function: [rif40].[rif40_ddl], SQL statement had error: %s%sSQL[%s]> %s;';		

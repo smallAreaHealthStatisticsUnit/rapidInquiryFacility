@@ -54,7 +54,8 @@ IF EXISTS (SELECT *
 GO 
 
 CREATE TYPE [rif40].[Sql_stmt_table] AS TABLE ( 
-	sql_stmt NVARCHAR(MAX)
+	sql_stmt 	NVARCHAR(MAX),
+	study_id	INTEGER	DEFAULT NULL
 	);  
 GO  
 
@@ -74,20 +75,30 @@ BEGIN
 	IF @debug IS NULL SET @debug=0;
 	
 	DECLARE c1_ddl CURSOR FOR
-		SELECT sql_stmt
+		SELECT sql_stmt, study_id
 		  FROM @sql_stmts;
 	DECLARE @sql_stmt			NVARCHAR(MAX);
+	DECLARE @study_id			INTEGER;
 --
 	DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
 	DECLARE @err_msg 	VARCHAR(MAX);
 --
 	OPEN c1_ddl;
-	FETCH NEXT FROM c1_ddl INTO @sql_stmt;
+	FETCH NEXT FROM c1_ddl INTO @sql_stmt, @study_id;
 	WHILE @@FETCH_STATUS = 0
 	BEGIN	
 		BEGIN TRY
-			EXECUTE sp_executesql @sql_stmt;
-			PRINT 'SQL[' + USER + '] OK> ' + @sql_stmt + ';';
+			IF @study_id IS NULL BEGIN
+				EXECUTE sp_executesql @sql_stmt;
+				PRINT 'SQL[' + USER + '] OK> ' + @sql_stmt + ';';
+			END;
+			ELSE BEGIN
+				EXECUTE sp_executesql @sql_stmt,  
+					N'@study_id INTEGER',  
+					@study_id;
+				PRINT 'SQL[' + USER + '; study_id: ' + CAST(@study_id AS VARCHAR) + '] OK> ' + 
+					@sql_stmt + ';';
+			END;
 		END TRY
 		BEGIN CATCH		
 --	 		[55999] SQL statement had error: %s%sSQL[%s]> %s;	
@@ -95,7 +106,7 @@ BEGIN
 			THROW 55999, @err_msg, 1;
 		END CATCH;
 --
-		FETCH NEXT FROM c1_ddl INTO @sql_stmt;
+		FETCH NEXT FROM c1_ddl INTO @sql_stmt, @study_id;
 	END;
 	CLOSE c1_ddl;
 	DEALLOCATE c1_ddl;
