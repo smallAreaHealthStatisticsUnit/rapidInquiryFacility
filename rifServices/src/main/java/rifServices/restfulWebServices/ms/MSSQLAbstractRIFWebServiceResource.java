@@ -265,6 +265,36 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			result);		
 	}
 	
+	protected Response getDatabaseType(
+			final HttpServletRequest servletRequest,
+			final String userID) {
+			
+			String result = "";
+			
+			try {
+				//Convert URL parameters to RIF service API parameters
+				User user = createUser(servletRequest, userID);
+								
+				RIFServiceStartupOptions rifServiceStartupOptions
+				= RIFServiceStartupOptions.newInstance(
+					true,
+					false);
+
+				result = serialiseStringResult(rifServiceStartupOptions.getDatabaseDriverPrefix());	
+			}
+			catch(Exception exception) {
+				//Convert exceptions to support JSON
+				result 
+					= serialiseException(
+						servletRequest,
+						exception);			
+			}
+
+			return webServiceResponseGenerator.generateWebServiceResponse(
+				servletRequest,
+				result);		
+	}
+	
 	
 	protected Response getStudySummaries(
 		final HttpServletRequest servletRequest,

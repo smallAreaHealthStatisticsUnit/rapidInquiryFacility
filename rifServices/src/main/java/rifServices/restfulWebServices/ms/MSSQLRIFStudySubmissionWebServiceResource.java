@@ -176,6 +176,19 @@ public class MSSQLRIFStudySubmissionWebServiceResource
 			userID);
 	}
 	
+	//This method does not have a PG version, used before login only
+	@GET
+	@Produces({"application/json"})
+	@Path("/getDatabaseType")
+	public Response getDatabaseType(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID) {
+		
+			return super.getDatabaseType(
+					servletRequest, 
+					userID);	
+	}
+	
 	
 	@GET
 	@Produces({"application/json"})	
