@@ -50,7 +50,7 @@ angular.module("RIF")
                         "rifUser": "rif"
                     }
                 };
-                                         
+
                 //submit a study               
                 self.submitStudy = function (username, jsonObj) {
                     var blob = new Blob([JSON.stringify(jsonObj)], {
@@ -85,6 +85,11 @@ angular.module("RIF")
                     //http://localhost:8080/rifServices/studySubmission/isLoggedIn?userID=kgarwood
                     //[{"result":"true"}]
                     return $http.get(studySubmissionURL + DatabaseService.getDatabase() + 'isLoggedIn?userID=' + username);
+                };
+                self.getDatabaseType = function (username) {
+                    //http://localhost:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter
+                    //jdbc:sqlserver
+                    return $http.get(studySubmissionURL + 'ms/' + 'getDatabaseType?userID=' + username);
                 };
                 //Taxonomy services              
                 self.initialiseService = function () {

@@ -53,10 +53,6 @@ HTML partial for Login menu
                         <span ng-show="!showSpinner">LOG IN</span>                     
                         <md-progress-circular md-mode="indeterminate" md-diameter="20" ng-show="showSpinner"></md-progress-circular>
                     </md-button>
-                    <md-switch id="dbSwitch" ng-model="db" ng-init="db" aria-label="Switch 2" ng-true-value="'PG'" 
-                               ng-false-value="'MS'" class="md-warn" ng-change="dbTypeChanged()">
-                        {{db}}
-                    </md-switch>
                 </div>
             </form>
         </div>

@@ -37,7 +37,7 @@
 angular.module("RIF")
         .factory('DatabaseService',
                 function () {
-                    var s = "pg"; //"ms"
+                    var s = "pg"; //"ms" or "pg"
                     return {
                         getDatabase: function () {
                             return s + "/";

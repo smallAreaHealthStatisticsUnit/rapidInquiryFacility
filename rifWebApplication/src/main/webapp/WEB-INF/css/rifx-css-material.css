@@ -155,10 +155,3 @@ md-switch span {
 md-switch .md-container {
     cursor: pointer;
 }
-
-/* SWITCH FOR DB TYPE ON LOGIN */
-#dbSwitch {
-    display: inline;
-    float: right;
-    padding-right: 25px;
-}
