@@ -375,6 +375,7 @@ The RuntimeException could not be mapped to a response, re-throwing to the HTTP 
 
 # 5. Running the RIF
 
+* Make sure you have restarted tomcat before attempting to run the RIF for the first time
 * In a non networked single machine environment (e.g. a laptop) the RIF is at: http://localhost:8081/RIF4
 * In a networked environment the RIF is at: http://<your domain>/RIF4, e.g. https://aepw-rif27.sm.med.ic.ac.uk/RIF4
 
@@ -390,14 +391,39 @@ The RuntimeException could not be mapped to a response, re-throwing to the HTTP 
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/rif_after_logon.png?raw=true "RIF after logon")
 
-* If you do not see the section on logon troubleshootinbg below
+* If you do not see this then use the section on logon troubleshootinbg below
 
 ## 5.2 Logon troubleshooting
 
-1. Call the web service directly in a brwoser window.
+1. Call the web service directly in a browser window.
 
-http://localhost:8080/rifServices/studySubmission/pg/login?userID=peter&password=XXXXXXXXXXXXXXX
+	http://localhost:8080/rifServices/studySubmission/pg/login?userID=peter&password=XXXXXXXXXXXXXXX
 
-[{"result":"User peter logged in."}]
+	* A sucessful logon returns:
+
+	```
+	[{"result":"User peter logged in."}]
+	```
+
+	* A failed logon returns:
+
+	```
+	[{"errorMessages":["Unable to register \"peter\"."]}]
+	```
+
+	The tomcat logs can be check for the actual error:
+
+	```
+	org.postgresql.util.PSQLException: FATAL: password authentication failed for user "peter"
+			at org.postgresql.core.v3.ConnectionFactoryImpl.doAuthentication(ConnectionFactoryImpl.java:408)
+	```
+
+2. Check the logs for any errors listed in *4.3 Common Setup Errors*
+3. Use the browser developer facilities to trace the middleware web services calls. 
+
+The service address and port used should match what you setup up in *4.2 Setup Network*. If this does not:
+
+* Restart tomcat;
+* Flush your rowser cache (this is especially important for Google Chrome).
 
 Peter Hambly, 12th April 2017
