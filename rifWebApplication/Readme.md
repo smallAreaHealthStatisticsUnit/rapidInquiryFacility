@@ -9,17 +9,16 @@ RIF Web Services
    - [1.3 Apache Tomcat](#13-apache-tomcat)	
    - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
-   - [2.1 Network connection errors](#21-network-connection-errors)	
-- [2. Installing web services in Tomcat](#2-installing-web-services-in-tomcat)
-   - [2.1 Web Services](#21-web-services)
-     - [2.1.1 RIF Services](#211-rif-services)
-     - [2.1.2 Taxonomy Service](#212-taxonomy-services)
-   - [2.2 RIF Web Application](#22-rif-web-application)
-- [3. RIF Setup](#3-rif-setup)
-   - [3.1 Setup Database](#31-setup-database)
-   - [3.2 Setup Network](#32-setup-network)
-     - [3.2.1 TLS](#321-tls)
-   - [3.3 Common Setup Errors](#33-common-setup-errors)
+- [3. Installing web services in Tomcat](#3-installing-web-services-in-tomcat)
+   - [3.1 Web Services](#31-web-services)
+     - [3.1.1 RIF Services](#311-rif-services)
+     - [3.1.2 Taxonomy Service](#312-taxonomy-services)
+   - [3.2 RIF Web Application](#32-rif-web-application)
+- [4. RIF Setup](#4-rif-setup)
+   - [4.1 Setup Database](#41-setup-database)
+   - [4.2 Setup Network](#42-setup-network)
+     - [4.2.1 TLS](#421-tls)
+   - [4.3 Common Setup Errors](#33-common-setup-errors)
    
 # 1. Installation Prerequistes
 
@@ -32,7 +31,7 @@ Download and install Apache Maven: https://maven.apache.org/download.cgi
 Download and install the Java Runtime Environment (JRE): http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html)
 
 Configure Tomcat to use the default Java installed on the machine. This prevents upgrades from breaking *tomcat*!
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/configure_tomcat_app_java_tab.png "Setting Java version autodetect")
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/configure_tomcat_app_java%20_ab.png?raw=true "Setting Java version autodetect")
 
 ## 1.3 Apache Tomcat
 
@@ -47,7 +46,7 @@ Download Apache Tomcat 8.5: Follow the [OWASP guidelines](https://www.owasp.org/
 - Choose an administrator username (NOT admin) and a secure password that complies with your organisations password policy.
 - Complete tomcat installation, but do not start service.
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web 
-  services will not work [The web services crash if it is not set, the will be chnaged to a more obvious error]
+  services will not work [The web services crash if it is not set, the will be changed to a more obvious error]
   
 ## 1.4 R
 
@@ -99,36 +98,33 @@ uiryFacility\rifServices\0.0.1-SNAPSHOT\rifServices-0.0.1-SNAPSHOT.pom
 [INFO] Final Memory: 23M/360M
 [INFO] ------------------------------------------------------------------------
 ```
-*Any message other than **[INFO] BUILD SUCCESS** indicates a build error. Do not install the output war files are report the fault to the 
+*Any message other than **[INFO] BUILD SUCCESS** indicates a build error. Do not install the output war files and report the fault to the 
 development team.
 
-# 2.Installing web services in Tomcat 
+# 3.Installing web services in Tomcat 
 
-## 2.1 Web Services
+## 3.1 Web Services
 
-### 2.1.1 RIF Services
+### 3.1.1 RIF Services
 
 rifServices.war
 From: C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifServices\target
 To: C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps
 
-### 2.1.2 Taxonomy Service
+### 3.1.2 Taxonomy Service
 
-1)
-In local RIF tree, go to
-….rapidInquiryFacility/taxonomyServices/target
+1) Chnage to the taxonomyServices/target directory
+In local RIF tree, go to...rapidInquiryFacility/taxonomyServices/target, e.g. C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\/taxonomyServices/target
 
-2) 
+2) Build using *maven*
 mvn –Dmaven.test.skip=TRUE install
 
-3)
-Copy ‘taxonomyServices.war’ into Tomcat webapps as with rifServices
+3) Copy ‘taxonomyServices.war’ into Tomcat webapps as with rifServices
 
 (The XML file used for this is *ClaML.dtd* which is stored in \rifServices\src\main\resources). A complete ICD10 version is available from SAHSU 
 for Organisation compliant with the WHO licence.
 
-
-## 2.2 RIF Web Application
+## 3.2 RIF Web Application
 
 Create RIF4 in web-apps, cd:
 
@@ -138,21 +134,20 @@ cp all to C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\ROOT\WE
 
 http://localhost:8081/RIF4
 
-# 3 RIF Setup
+# 4 RIF Setup
 
-## 3.1 Setup Database
+## 4.1 Setup Database
 
 rifServices/src/main/resources/RIFServiceStartupProperties.properties
 
-Uncomment the "SSL HTTP/1.1 Connector" entry in $CATALINA_BASE/conf/server.xml and modify as described in the Configuration section in: https://tomcat.apache.org/tomcat-8.5-doc/ssl-howto.html
 
-## 3.2 Setup Network
+## 4.2 Setup Network
 
 C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4\backend\services\rifs-back-requests.js
 
 Port 8080/netstat -ban
 
-### 3.2.1 TLS
+### 4.2.1 TLS
 
 To install and configure SSL/TLS support on Tomcat, you need to follow these simple steps. For more information, read the rest of this HOW-TO.
 
@@ -208,7 +203,9 @@ C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf>dir localhost-rsa.jk
                0 Dir(s)  82,625,716,224 bytes free
 ```
 
-## 3.3 Common Setup Errors
+Uncomment the "SSL HTTP/1.1 Connector" entry in $CATALINA_BASE/conf/server.xml and modify as described in the Configuration section in: https://tomcat.apache.org/tomcat-8.5-doc/ssl-howto.html
+
+## 4.3 Common Setup Errors
 
 ```
 11-Apr-2017 13:47:10.353 INFO [Thread-6] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["http-nio-8081"]
