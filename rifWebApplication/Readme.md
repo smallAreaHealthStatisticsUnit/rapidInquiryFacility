@@ -377,7 +377,7 @@ The RuntimeException could not be mapped to a response, re-throwing to the HTTP 
 
 * Make sure you have restarted tomcat before attempting to run the RIF for the first time
 * In a non networked single machine environment (e.g. a laptop) the RIF is at: http://localhost:8081/RIF4
-* In a networked environment the RIF is at: http://<your domain>/RIF4, e.g. https://aepw-rif27.sm.med.ic.ac.uk/RIF4
+* In a networked environment the RIF is at: ```http://<your domain>/RIF4```, e.g. https://aepw-rif27.sm.med.ic.ac.uk/RIF4
 
 ## 5.1 Logging On
 
@@ -395,26 +395,26 @@ The RuntimeException could not be mapped to a response, re-throwing to the HTTP 
 
 ## 5.2 Logon troubleshooting
 
-1. Call the web service directly in a browser window.
+1. Call the web service directly in a browser window, setting the username and password as appropriate.
 
-	http://localhost:8080/rifServices/studySubmission/pg/login?userID=peter&password=XXXXXXXXXXXXXXX
+	http://localhost:8080/rifServices/studySubmission/pg/login?userID=peterh&password=XXXXXXXXXXXXXXX
 
 	* A sucessful logon returns:
 
 	```
-	[{"result":"User peter logged in."}]
+	[{"result":"User peterh logged in."}]
 	```
 
-	* A failed logon returns:
+	* A failed logon returns (as from above, my password is not *XXXXXXXXXXXXXXX*):
 
 	```
-	[{"errorMessages":["Unable to register \"peter\"."]}]
+	[{"errorMessages":["Unable to register \"peterh\"."]}]
 	```
 
 	The tomcat logs can be check for the actual error:
 
 	```
-	org.postgresql.util.PSQLException: FATAL: password authentication failed for user "peter"
+	org.postgresql.util.PSQLException: FATAL: password authentication failed for user "peterh"
 			at org.postgresql.core.v3.ConnectionFactoryImpl.doAuthentication(ConnectionFactoryImpl.java:408)
 	```
 
