@@ -9,7 +9,7 @@ RIF Web Services
    - [1.3 Apache Tomcat](#13-apache-tomcat)	
      - [1.3.1 Apache Tomcat on a single host](#131-apache-tomcat-on-a-single-host)	
      - [1.3.2 Apache Tomcat for internet use](#132-apache-tomcat-for-internet-use)	
-	 - [1.3.3 Running Tomcat on the command line)[#133-running-tomcat-on-the-command-line)
+	 - [1.3.3 Running Tomcat on the command line](#133-running-tomcat-on-the-command-line)
    - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
 - [3. Installing Web Services in Tomcat](#3-installing-web-services-in-tomcat)
@@ -22,10 +22,11 @@ RIF Web Services
    - [4.2 Setup Network](#42-setup-network)
      - [4.2.1 TLS](#421-tls)
    - [4.3 Common Setup Errors](#43-common-setup-errors)
-   - [4.3.1 Unable to Logon](#431-unable-to-logon)
-   - [4.3.2 TLS Errors](#432-tls-errors)
-   - [4.3.3 Unable to unpack war files](#433-unable-to-unpack-war-files)
-   - [4.3.4 No Taxonomy Services](#434-no-taxonomy-services)
+     - [4.3.1 Unable to Logon](#431-unable-to-logon)
+     - [4.3.2 TLS Errors](#432-tls-errors)
+     - [4.3.3 Unable to unpack war files](#433-unable-to-unpack-war-files)
+     - [4.3.4 No Taxonomy Services](#434-no-taxonomy-services)
+	 - [4.3.5 RIF Services crash on logon](#435-rif-services-crash-on-logon)
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
@@ -69,7 +70,8 @@ Download Apache Tomcat 8.5: Follow the [OWASP guidelines](https://www.owasp.org/
 - Choose an administrator username (NOT admin) and a secure password that complies with your organisations password policy.
 - Complete tomcat installation, but do not start service.
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web 
-  services will not work [The web services will crash on user logon if it is not set, the will be changed to a more obvious error]
+  services will not work [The web services will crash on user logon if it is not set, this will be changed to a more obvious error]; see:
+  4.3.5 RIF Services crash on logon.
 
 ### 1.3.3 Running Tomcat on the command line
 
@@ -80,36 +82,46 @@ daemon in Unix parlance).
 cd to %CATALINA_HOME%\bin; run *tomcat8.exe* e.g.
 ```
 C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin> tomcat8.exe
-11-Apr-2017 14:38:54.070 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version:        Apache Tomcat/8.5.
-13
-11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Mar 27 2017 14:25:
-04 UTC
+11-Apr-2017 14:38:54.070 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version:        Apache Tomcat/8.5.13
+11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Mar 27 2017 14:25:04 UTC
 11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server number:         8.5.13.0
 11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Windows 8.1
 11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.3
 11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
-11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             C:\Program Files\J
-ava\jre1.8.0_121
+11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             C:\Program Files\Java\jre1.8.0_121
 11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           1.8.0_121-b13
 11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Oracle Corporation
 
-11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         C:\Program Files\A
-pache Software Foundation\Tomcat 8.5
-11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         C:\Program Files\A
-pache Software Foundation\Tomcat 8.5
-11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=C:
-\Program Files\Apache Software Foundation\Tomcat 8.5
-11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=C:
-\Program Files\Apache Software Foundation\Tomcat 8.5
-11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=C
-:\Program Files\Apache Software Foundation\Tomcat 8.5\temp
-11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.loggin
-g.manager=org.apache.juli.ClassLoaderLogManager
-11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.loggin
-g.config.file=C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\logging.properties
+11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         C:\Program Files\Apache Software Foundation\Tomcat 8.5
+11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         C:\Program Files\Apache Software Foundation\Tomcat 8.5
+11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=C:\Program Files\Apache Software Foundation\Tomcat 8.5
+11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=C:\Program Files\Apache Software Foundation\Tomcat 8.5
+11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=C:\Program Files\Apache Software Foundation\Tomcat 8.5\temp
+11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\logging.properties
 ...
+12-Apr-2017 14:24:38.326 SEVERE [main] org.apache.catalina.core.StandardServer.await StandardServer.await: create[localhost:8005]:
+ java.net.BindException: Address already in use: JVM_Bind
+        at java.net.DualStackPlainSocketImpl.bind0(Native Method)
+        at java.net.DualStackPlainSocketImpl.socketBind(Unknown Source)
+        at java.net.AbstractPlainSocketImpl.bind(Unknown Source)
+        at java.net.PlainSocketImpl.bind(Unknown Source)
+        at java.net.ServerSocket.bind(Unknown Source)
+        at java.net.ServerSocket.<init>(Unknown Source)
+        at org.apache.catalina.core.StandardServer.await(StandardServer.java:440)
+        at org.apache.catalina.startup.Catalina.await(Catalina.java:743)
+        at org.apache.catalina.startup.Catalina.start(Catalina.java:689)
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+        at java.lang.reflect.Method.invoke(Unknown Source)
+        at org.apache.catalina.startup.Bootstrap.start(Bootstrap.java:355)
+        at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:495)
 ```
-  
+
+* In this case the service is still running, hence the *Address already in use* error;
+* To abort, use control-C or quit the command window.
+
 ## 1.4 R
 
 Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
@@ -347,6 +359,20 @@ See *3.1.2 Taxonomy Service*, and *4.3.3 Unable to unpack war files*
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/taxonomy_sevice_error.png?raw=true "Taxonomy Services error")
   
+### 4.3.5 RIF Services crash on logon  
+
+This is an unhandled exception; caused by CATALINA_HOME not being set in the environment. This will be changed to a more obvious error.
+
+```
+RIFServiceStartupOptions is web deployment
+C A T A L I N A  H O M E==null==
+12-Apr-2017 15:12:33.627 SEVERE [http-nio-8080-exec-1] com.sun.jersey.spi.container.ContainerResponse.mapMappableContainerException
+The RuntimeException could not be mapped to a response, re-throwing to the HTTP container
+ java.lang.NullPointerException
+        at rifServices.system.RIFServiceStartupOptions.getRIFServiceResourcePath(RIFServiceStartupOptions.java:488)
+        at rifServices.dataStorageLayer.pg.PGSQLHealthOutcomeManager.<init>(PGSQLHealthOutcomeManager.java:120)
+```
+
 # 5. Running the RIF
 
 * In a non networked single machine environment (e.g. a laptop) the RIF is at: http://localhost:8081/RIF4
@@ -368,5 +394,10 @@ See *3.1.2 Taxonomy Service*, and *4.3.3 Unable to unpack war files*
 
 ## 5.2 Logon troubleshooting
 
+1. Call the web service directly in a brwoser window.
+
+http://localhost:8080/rifServices/studySubmission/pg/login?userID=peter&password=XXXXXXXXXXXXXXX
+
+[{"result":"User peter logged in."}]
 
 Peter Hambly, 12th April 2017
