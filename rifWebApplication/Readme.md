@@ -9,16 +9,16 @@ RIF Web Services
    - [1.3 Apache Tomcat](#13-apache-tomcat)	
    - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
-- [3. Installing web services in Tomcat](#3-installing-web-services-in-tomcat)
+- [3. Installing Web Services in Tomcat](#3-installing-web-services-in-tomcat)
    - [3.1 Web Services](#31-web-services)
      - [3.1.1 RIF Services](#311-rif-services)
-     - [3.1.2 Taxonomy Service](#312-taxonomy-services)
+     - [3.1.2 Taxonomy Service](#312-taxonomy-service)
    - [3.2 RIF Web Application](#32-rif-web-application)
 - [4. RIF Setup](#4-rif-setup)
    - [4.1 Setup Database](#41-setup-database)
    - [4.2 Setup Network](#42-setup-network)
      - [4.2.1 TLS](#421-tls)
-   - [4.3 Common Setup Errors](#33-common-setup-errors)
+   - [4.3 Common Setup Errors](#43-common-setup-errors)
    
 # 1. Installation Prerequistes
 
@@ -101,7 +101,7 @@ uiryFacility\rifServices\0.0.1-SNAPSHOT\rifServices-0.0.1-SNAPSHOT.pom
 *Any message other than **[INFO] BUILD SUCCESS** indicates a build error. Do not install the output war files and report the fault to the 
 development team.
 
-# 3.Installing web services in Tomcat 
+# 3. Installing Web Services in Tomca
 
 ## 3.1 Web Services
 
@@ -113,7 +113,7 @@ To: C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps
 
 ### 3.1.2 Taxonomy Service
 
-1) Chnage to the taxonomyServices/target directory
+1) Change to the taxonomyServices/target directory
 In local RIF tree, go to...rapidInquiryFacility/taxonomyServices/target, e.g. C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\/taxonomyServices/target
 
 2) Build using *maven*
