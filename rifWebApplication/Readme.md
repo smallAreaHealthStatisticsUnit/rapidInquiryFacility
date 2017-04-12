@@ -113,16 +113,19 @@ To: C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps
 
 ### 3.1.2 Taxonomy Service
 
-1) Change to the taxonomyServices/target directory
-In local RIF tree, go to...rapidInquiryFacility/taxonomyServices/target, e.g. C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\/taxonomyServices/target
-
-2) Build using *maven*
-mvn –Dmaven.test.skip=TRUE install
-
-3) Copy ‘taxonomyServices.war’ into Tomcat webapps as with rifServices
-
-(The XML file used for this is *ClaML.dtd* which is stored in \rifServices\src\main\resources). A complete ICD10 version is available from SAHSU 
+1) Get the Taxonomy Service XML file *ClaML.dtd*. This is stored in is stored in ...rifServices\src\main\resources. A complete ICD10 version is available from SAHSU 
 for Organisation compliant with the WHO licence.
+2) Build the Taxonomy Service using *maven*.
+   Either: 
+   - if you have *make* installed, in the top level github directory type *make taxonomyservice" as per Maven build instructions or
+   - Change to the taxonomyServices directory. In local RIF tree, go to ...rapidInquiryFacility/taxonomyServices, 
+   e.g. C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\taxonomyServices and type:
+
+	```
+	mvn –Dmaven.test.skip=TRUE install
+	```
+
+3) Copy ‘taxonomyServices.war’ into Tomcat webapps as with rifServices. 
 
 ## 3.2 RIF Web Application
 

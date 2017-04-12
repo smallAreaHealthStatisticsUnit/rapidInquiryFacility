@@ -51,7 +51,11 @@ all:
 	$(MAVEN) --version
 	cd rifGenericLibrary; $(MAVEN) -Dmaven.test.skip=true install
 	cd rapidInquiryFacility ; $(MAVEN) -Dmaven.test.skip=true install
-	cd rifServices ; $(MAVEN) -Dmaven.test.skip=true install		
+	cd rifServices ; $(MAVEN) -Dmaven.test.skip=true install
+	cd taxonomyServices ; $(MAVEN) -Dmaven.test.skip=true install
+	
+taxonomyservice:	
+	cd taxonomyServices ; $(MAVEN) -Dmaven.test.skip=true install
 	
 install: clean all
 
@@ -59,6 +63,7 @@ clean:
 	cd rapidInquiryFacility ; $(MAVEN) clean
 	cd rifGenericLibrary; $(MAVEN) clean
 	cd rifServices; $(MAVEN) clean
+	cd taxonomyServices/target; $(MAVEN) clean
 	
 #
 # Eof
