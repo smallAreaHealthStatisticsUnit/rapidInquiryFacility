@@ -101,7 +101,7 @@ uiryFacility\rifServices\0.0.1-SNAPSHOT\rifServices-0.0.1-SNAPSHOT.pom
 *Any message other than **[INFO] BUILD SUCCESS** indicates a build error. Do not install the output war files and report the fault to the 
 development team.
 
-# 3. Installing Web Services in Tomca
+# 3. Installing Web Services in Tomcat
 
 ## 3.1 Web Services
 
