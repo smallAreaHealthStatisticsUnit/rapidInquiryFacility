@@ -72,15 +72,18 @@ Download Apache Tomcat 8.5: Follow the [OWASP guidelines](https://www.owasp.org/
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web 
   services will not work [The web services will crash on user logon if it is not set, this will be changed to a more obvious error]; see:
   4.3.5 RIF Services crash on logon.
+  
+The RIF **must** be secured using TLS to protect the login details and any health data viewed.
 
 ### 1.3.3 Running Tomcat on the command line
 
 Tomcat can be run from the command line. The advantage of this is all the output appears in the same place! To do this the tomcat server must be
-stopped (i.e. in the Windows services panel or via Linux runvel scripts (/etc/init.d/tomcat*). Notrmally tomcat is run as a server (i.e. as a 
+stopped (i.e. in the Windows services panel or via Linux runvel scripts (/etc/init.d/tomcat*). Notmally tomcat is run as a server (i.e. as a 
 daemon in Unix parlance).
 
 cd to %CATALINA_HOME%\bin; run *tomcat8.exe* e.g.
 ```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility> cd %CATALINA_HOME%\bin
 C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin> tomcat8.exe
 11-Apr-2017 14:38:54.070 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version:        Apache Tomcat/8.5.13
 11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Mar 27 2017 14:25:04 UTC
@@ -291,11 +294,11 @@ Running the RIF and logging on is detailed in section 5.
 To install and configure SSL/TLS support on Tomcat, you need to follow these simple steps. For more information, read the rest of this HOW-TO.
 
 Create a keystore file to store the server's private key and self-signed certificate by executing the following command in the $CATALINA_BASE/conf directory:
-Windows:
+Windows. Do **NOT** use a password of *changeit*:
 ```
 cd C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf
 
-"%JAVA_HOME%\bin\keytool" -genkey -alias tomcat -keyalg RSA -keystore "C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks"
+"%JAVA_HOME%\bin\keytool" -genkey -alias tomcat -keyalg RSA -keystore "C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks" -storepass changeit
 
 Unix:
 ```
@@ -307,10 +310,7 @@ On a Unix system the keystore will be put in ~/.keystore and needs to be copied 
 
 Example output:
 ```
-C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf>"%JAVA_HOME%\bin\keytool" -genkey -alias tomcat -keyalg RSA
-:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks"
-Enter keystore password:
-Re-enter new password:
+C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>"%JAVA_HOME%\bin\keytool" -genkey -alias tomcat -keyalg RSA -keystore "C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks" -storepass changeit
 What is your first and last name?
   [Unknown]:  Peter Hambly
 What is the name of your organizational unit?
@@ -328,8 +328,9 @@ Is CN=Peter Hambly, OU=SAHSU, O=Imperial College, L=London, ST=England, C=UK cor
 
 Enter key password for <tomcat>
         (RETURN if same as keystore password):
+
 ```
-Check the keysore is in the corret place:
+Check the keysore is in the correct place:
 ```
 C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf>dir localhost-rsa.jks
  Volume in drive C is OS
@@ -342,12 +343,44 @@ C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf>dir localhost-rsa.jk
                0 Dir(s)  82,625,716,224 bytes free
 ```
 
-Uncomment the "SSL HTTP/1.1 Connector" entry in $CATALINA_BASE/conf/server.xml and modify as described in the Configuration section in: https://tomcat.apache.org/tomcat-8.5-doc/ssl-howto.html
+Uncomment the "SSL HTTP/1.1 Connector" entry in $CATALINA_BASE/conf/server.xml and modify as described in the Configuration section 
+in: https://tomcat.apache.org/tomcat-8.5-doc/ssl-howto.html. Change the port number from 8443 to 8080; remove the original 8080 connector.
+Set the password correctly; as used above. Do **NOT** use a password of *changeit*.
 
+```
+    <Connector port="8080" 
+			   protocol="org.apache.coyote.http11.Http11NioProtocol"
+			   server="Apache"
+               maxThreads="150"
+               scheme="https"
+               keystoreFile="conf/localhost-rsa.jks"
+               keystorePass="changeit"
+               secure="true"
+			   clientAuth="false"
+               sslProtocol="TLSv1.2"
+               sslEnabledProtocols="TLSv1.2"
+               ciphers="TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+                        TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,
+                        TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+                        TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,
+                        TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
+                        TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+                        TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,
+                        TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,
+                        TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
+                        TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+                        TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,
+                        TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA"
+			   SSLEnabled="true">
+    </Connector>	
+```
 
-and specify a password value of "changeit".
+This will generate a self signed certificate; this will cause browsers to complain:
 
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/insecure_connection_warning.png?raw=true "Insecure TLS warning")
 
+To sign the certificates, follow the instructions in: https://tomcat.apache.org/tomcat-8.5-doc/ssl-howto.html#SSL_and_Tomcat
+  
 ## 4.3 Common Setup Errors
 
 ```
@@ -379,7 +412,7 @@ C:\Program Files\Apache Software Foundation\Tomcat 8.5\logs\tomcat8-stderr.2017-
 See *3.1.2 Taxonomy Service*, and *4.3.3 Unable to unpack war files*
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/taxonomy_sevice_error.png?raw=true "Taxonomy Services error")
-  
+
 ### 4.3.5 RIF Services crash on logon  
 
 This is an unhandled exception; caused by CATALINA_HOME not being set in the environment. This will be changed to a more obvious error.
