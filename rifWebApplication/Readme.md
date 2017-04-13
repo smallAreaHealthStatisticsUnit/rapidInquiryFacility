@@ -330,7 +330,7 @@ Enter key password for <tomcat>
         (RETURN if same as keystore password):
 
 ```
-Check the keysore is in the correct place:
+Check the keystore is in the correct place:
 ```
 C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf>dir localhost-rsa.jks
  Volume in drive C is OS
@@ -348,31 +348,31 @@ in: https://tomcat.apache.org/tomcat-8.5-doc/ssl-howto.html. Change the port num
 Set the password correctly; as used above. Do **NOT** use a password of *changeit*.
 
 ```
-    <Connector port="8080" 
-			   protocol="org.apache.coyote.http11.Http11NioProtocol"
-			   server="Apache"
-               maxThreads="150"
-               scheme="https"
-               keystoreFile="conf/localhost-rsa.jks"
-               keystorePass="changeit"
-               secure="true"
-			   clientAuth="false"
-               sslProtocol="TLSv1.2"
-               sslEnabledProtocols="TLSv1.2"
-               ciphers="TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-                        TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,
-                        TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-                        TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,
-                        TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
-                        TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-                        TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,
-                        TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,
-                        TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
-                        TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-                        TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,
-                        TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA"
-			   SSLEnabled="true">
-    </Connector>	
+<Connector port="8080" 
+           protocol="org.apache.coyote.http11.Http11NioProtocol"
+           server="Apache"
+           maxThreads="150"
+           scheme="https"
+           keystoreFile="conf/localhost-rsa.jks"
+           keystorePass="changeit"
+           secure="true"
+           clientAuth="false"
+           sslProtocol="TLSv1.2"
+           sslEnabledProtocols="TLSv1.2"
+           ciphers="TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+           		TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,
+           		TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+           		TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,
+           		TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
+           		TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+           		TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,
+           		TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,
+           		TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
+           		TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+           		TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,
+           		TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA"
+           SSLEnabled="true">
+</Connector>	
 ```
 
 This will generate a self signed certificate; this will cause browsers to complain:
