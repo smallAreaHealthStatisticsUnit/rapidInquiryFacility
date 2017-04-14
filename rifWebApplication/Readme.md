@@ -23,7 +23,7 @@ RIF Web Services
      - [4.1.2 Postgres](#412-postgres)
    - [4.2 Setup Network](#42-setup-network)
      - [4.2.1 TLS](#421-tls)
-   - [4.3 Setup R](#)43-setup-r)
+   - [4.3 Setup R](#43-setup-r)
    - [4.4 Common Setup Errors](#44-common-setup-errors)
      - [4.4.1 Logon RIF Serice Call Incorrect](#441-logon-rif-serice-call-incorrect)
      - [4.4.2 TLS Errors](#442-tls-errors)
@@ -259,7 +259,7 @@ can be remote but users must take care to ensure that it is setup securely. If y
 * Always use TLS.
 * Restrict access using **BOTH* the database software (*hba.conf* in Postgres) and the network infrastruture
 * Keep the database fully patched as per vendor advice.
-* Follow the appropriate OWASP guidelines: 
+* Follow the appropriate guidelines, e.g. OWASP, but be consult SAHSU as some of the changes may break the RIF: 
   - https://www.owasp.org/index.php/OWASP_Backend_Security_Project_PostgreSQL_Hardening
   - https://www.owasp.org/index.php/OWASP_Backend_Security_Project_SQLServer_Hardening
 
