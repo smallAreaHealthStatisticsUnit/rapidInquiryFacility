@@ -19,14 +19,17 @@ RIF Web Services
    - [3.2 RIF Web Application](#32-rif-web-application)
 - [4. RIF Setup](#4-rif-setup)
    - [4.1 Setup Database](#41-setup-database)
+     - [4.1.1 SQL Server](#411-sql-server)
+     - [4.1.2 Postgres](#412-postgres)
    - [4.2 Setup Network](#42-setup-network)
      - [4.2.1 TLS](#421-tls)
-   - [4.3 Common Setup Errors](#43-common-setup-errors)
-     - [4.3.1 Logon RIF Serice Call Incorrect](#431-logon-rif-serice-call-incorrect)
-     - [4.3.2 TLS Errors](#432-tls-errors)
-     - [4.3.3 Unable to unpack war files](#433-unable-to-unpack-war-files)
-     - [4.3.4 No Taxonomy Services](#434-no-taxonomy-services)
-	 - [4.3.5 RIF Services crash on logon](#435-rif-services-crash-on-logon)
+   - [4.3 Setup R](#)43-setup-r)
+   - [4.4 Common Setup Errors](#44-common-setup-errors)
+     - [4.4.1 Logon RIF Serice Call Incorrect](#441-logon-rif-serice-call-incorrect)
+     - [4.4.2 TLS Errors](#442-tls-errors)
+     - [4.4.3 Unable to unpack war files](#443-unable-to-unpack-war-files)
+     - [4.4.4 No Taxonomy Services](#444-no-taxonomy-services)
+	 - [4.4.5 RIF Services crash on logon](#445-rif-services-crash-on-logon)
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
@@ -71,7 +74,7 @@ Download Apache Tomcat 8.5: Follow the [OWASP guidelines](https://www.owasp.org/
 - Complete tomcat installation, but do not start service.
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web 
   services will not work [The web services will crash on user logon if it is not set, this will be changed to a more obvious error]; see:
-  4.3.5 RIF Services crash on logon.
+  4.4.5 RIF Services crash on logon.
   
 The RIF **must** be secured using TLS to protect the login details and any health data viewed.
 
@@ -223,25 +226,68 @@ To: C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps
 	12-Apr-2017 17:45:00.002 INFO [localhost-startStop-2] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\taxonomyServices.war has finished in 3,899 ms
 	```
 
-3) Copy ‘taxonomyServices.war’ into Tomcat webapps as with rifServices. 
+3) Copy ‘taxonomyServices.war’ into the Tomcat webapps folder as with rifServices. 
 
 ## 3.2 RIF Web Application
 
-Create RIF4 in web-apps, cd:
+Create RIF4 in web-apps:
 
-cd C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4
-cd C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifWebApplication\src\main\webapp\WEB-INF
-cp all to C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\ROOT\WEB-INF
+* *cd "C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4"*
+* Create the dreictyory *RIF4*
+* From the drecitory: *"C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifWebApplication\src\main\webapp\WEB-INF"* copy all 
+  files to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\ROOT\WEB-INF*
 
 **BEFORE YOU RUN THE RIF YOU MUST SETUP THE DATABASE AND NETWORKING IN TOMCAT FIRST**
 
-Running the RIF and logging on is detailed in section 5.
+Running the RIF and logging on is detailed in section 5. You must restart Tomcat when you create RIF4 for the first time, it is not automatically spooted 
+unlike the services *.war* files..
 
 # 4 RIF Setup
 
 ## 4.1 Setup Database
 
-rifServices/src/main/resources/RIFServiceStartupProperties.properties
+The Java connector for theRifServices middles is setup in the file *rifServices/src/main/resources/RIFServiceStartupProperties.properties*
+
+* The database name (databaseName) is normally *sahsuland*
+* The database host (database.host) is *localhost* on a standalone machine with no network access or the hostname. This does not notrmally need to be fully qualifed 
+  (i.e. aepw-rif27.sm.med.ic.ac.uk is not required)
+* The SQL Server host will be the same as the SQLCMDSERVER variable.
+
+Do not set up the database not network access or open the firewall ports unless this is required; it is secure on *localhost*! The database 
+can be remote but users must take care to ensure that it is setup securely. If you use a remote database, user are advised the secure the database:
+
+* Always use TLS.
+* Restrict access using **BOTH* the database software (*hba.conf* in Postgres) and the network infrastruture
+* Keep the database fully patched as per vendor advice.
+* Follow the appropriate OWASP guidelines: 
+  - https://www.owasp.org/index.php/OWASP_Backend_Security_Project_PostgreSQL_Hardening
+  - https://www.owasp.org/index.php/OWASP_Backend_Security_Project_SQLServer_Hardening
+
+### 4.1.1 SQL Server
+
+```java
+#SQL SERVER
+database.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver
+database.jdbcDriverPrefix=jdbc:sqlserver
+database.host=AEPW-RIF27\\SQLEXPRESS
+database.port=1433
+database.databaseName=sahsuland
+database.databaseType=sqlServer
+```
+
+### 4.1.2 Postgres
+
+```java
+#POSTGRES
+database.driverClassName=org.postgresql.Driver
+database.jdbcDriverPrefix=jdbc:postgresql
+database.host=aepw-rif27
+database.port=5432
+database.databaseName=sahsuland
+database.databaseType=postgresql
+```
+
+**BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
 
 ## 4.2 Setup Network
 
@@ -389,8 +435,34 @@ This setup will support:
 - IE Mobile 11 and later
 - Java 8 b132
 - Safari 7 and later
+
+## 4.3 Setup R
   
-## 4.3 Common Setup Errors
+1. Create directories for extract (extractDirectory) and policies (extraDirectoryForExtractFiles). The defaults are:
+
+   * Extract: ```extractDirectory=c:\\rifDemo\\scratchSpace```
+   * Policies: ```extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies```
+
+2. Create a system ODBC datasource for the database in use; the default is:
+
+   * ODBC sytsrem data source: ```odbcDataSourceName=PostgreSQL30```
+
+These setting are in the Java connector for theRifServices middles: *rifServices/src/main/resources/RIFServiceStartupProperties.properties*
+
+**BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
+
+```java
+webApplicationDirectory=rifServices
+rScriptDirectory=rScripts
+maximumMapAreasAllowedForSingleDisplay=200
+extractDirectory=c:\\rifDemo\\scratchSpace
+odbcDataSourceName=PostgreSQL30
+extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies
+```
+  
+More to be added.
+
+## 4.4 Common Setup Errors
 
 A errors are to be found in the $CATALINA_BASE/logs directory, e.g.: *C:\Program Files\Apache Software Foundation\Tomcat 8.5\logs\tomcat8-stderr.2017-04-10.log*
 
@@ -398,7 +470,7 @@ A errors are to be found in the $CATALINA_BASE/logs directory, e.g.: *C:\Program
 10-Apr-2017 13:45:12.240 SEVERE [main] org.apache.tomcat.util.net.SSLUtilBase.getStore Failed to load keystore type [JKS] with path [conf/localhost-rsa.jks] due to [C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks (The system cannot find the file specified)]
 ```
 
-### 4.3.1 Logon RIF Serice Call Incorrect
+### 4.4.1 Logon RIF Serice Call Incorrect
 
 Use developer mode in the browser to bring up the console log:
 
@@ -446,26 +518,30 @@ gg/</e@https://localhost:8080/RIF4/libs/standalone/angular.min.js:103:55
 	gg/</e https://localhost:8080/RIF4/libs/standalone/angular.min.js:103:55
 ```
 
-### 4.3.2 TLS Errors
+### 4.4.2 TLS Errors
 
-```
-10-Apr-2017 13:45:12.240 SEVERE [main] org.apache.tomcat.util.net.SSLUtilBase.getStore Failed to load keystore type [JKS] with path [conf/localhost-rsa.jks] due to [C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks (The system cannot find the file specified)]
-```
+TLS errors tend to be:
 
-### 4.3.3 Unable to unpack war files
+* Keyfile in the wrong location:
+	```
+	10-Apr-2017 13:45:12.240 SEVERE [main] org.apache.tomcat.util.net.SSLUtilBase.getStore Failed to load keystore type [JKS] with path [conf/localhost-rsa.jks] due to [C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks (The system cannot find the file specified)]
+	```
+* Invalid keyfile password.
+
+### 4.4.3 Unable to unpack war files
 
 In this case the .war file (e.g. rifServices.war) is not unpacked and the service is not available in tomcat. Find in error in the Tomcat stderr log and send to the development team. 
 This is indicative of a build problem.
 
-* Screenshiots and log will be added when this happends again!*
+* Screenshiots and log will be added when this happens again!*
 
-### 4.3.4 No Taxonomy Services
+### 4.4.4 No Taxonomy Services
 
-See *3.1.2 Taxonomy Service*, and *4.3.3 Unable to unpack war files*
+See *3.1.2 Taxonomy Service*, and *4.4.3 Unable to unpack war files*
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/taxonomy_sevice_error.png?raw=true "Taxonomy Services error")
 
-### 4.3.5 RIF Services crash on logon  
+### 4.4.5 RIF Services crash on logon  
 
 This is an unhandled exception; caused by CATALINA_HOME not being set in the environment. This will be changed to a more obvious error.
 
@@ -524,7 +600,7 @@ The RuntimeException could not be mapped to a response, re-throwing to the HTTP 
 			at org.postgresql.core.v3.ConnectionFactoryImpl.doAuthentication(ConnectionFactoryImpl.java:408)
 	```
 
-2. Check the logs for any errors listed in *4.3 Common Setup Errors*
+2. Check the logs for any errors listed in *4.4 Common Setup Errors*
 3. Use the browser developer facilities to trace the middleware web services calls. 
 
 The service address and port used should match what you setup up in *4.2 Setup Network*. If this does not:
