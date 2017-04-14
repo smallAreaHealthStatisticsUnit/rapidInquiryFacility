@@ -5,7 +5,7 @@ RIF Web Services
 
 - [1. Installation Prerequistes](#1-installation-prerequistes)
    - [1.1 Apache Maven](#11-apache-maven)	
-   - [1.2 Java Runtime Environment](#12-java-runtime-environment)	
+   - [1.2 Java Development Environment](#12-java-development-environment)	
    - [1.3 Apache Tomcat](#13-apache-tomcat)	
      - [1.3.1 Apache Tomcat on a single host](#131-apache-tomcat-on-a-single-host)	
      - [1.3.2 Apache Tomcat for internet use](#132-apache-tomcat-for-internet-use)	
@@ -40,9 +40,15 @@ RIF Web Services
 
 Download and install Apache Maven: https://maven.apache.org/download.cgi
 
-## 1.2 Java Runtime Environment
+## 1.2 Java Runtime Development
 
-Download and install the Java Runtime Environment (JRE): http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html)
+The Java Runtime Environment (JRE) can be used if the war files are pre-supplied and the OWASP requirement to remove the 
+version string from HTTP error messages by repacking  %CATALINA_HOME%/server/lib/catalina.jar with an updated 
+*ServerInfo.properties* file is not required. 
+
+Download and install the Java Development Environment (JDK): http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+
+Make sure all the older versions of Java are removed.
 
 Configure Tomcat to use the default Java installed on the machine. This prevents upgrades from breaking *tomcat*!
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/configure_tomcat_app_java.png?raw=true "Setting Java version autodetect")
@@ -187,9 +193,8 @@ development team.
 
 ### 3.1.1 RIF Services
 
-rifServices.war
-From: C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifServices\target
-To: C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps
+* Copy *rifServices.war* from: *rapidInquiryFacility\rifServices\target*, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifServices\target*
+  to: *%CATALINA_HOME%\webapps*, e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps*
 
 ### 3.1.2 Taxonomy Service
 
@@ -233,21 +238,22 @@ To: C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps
 Create RIF4 in web-apps:
 
 * *cd "C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4"*
-* Create the dreictyory *RIF4*
-* From the drecitory: *"C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifWebApplication\src\main\webapp\WEB-INF"* copy all 
-  files to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\ROOT\WEB-INF*
+* Create the directory *RIF4*
+* Copy all from the drecitory: *"C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifWebApplication\src\main\webapp\WEB-INF"* 
+  to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\ROOT\WEB-INF*
 
 **BEFORE YOU RUN THE RIF YOU MUST SETUP THE DATABASE AND NETWORKING IN TOMCAT FIRST**
 
-Running the RIF and logging on is detailed in section 5. You must restart Tomcat when you create RIF4 for the first time, it is not automatically spooted 
-unlike the services *.war* files..
+Running the RIF and logging on is detailed in section 5. You must restart Tomcat when you create RIF4 for the first time, 
+it is not automatically spotted unlike the services *.war* files..
 
 # 4 RIF Setup
 
 ## 4.1 Setup Database
 
-The Java connector for theRifServices middles is setup in the file *rifServices/src/main/resources/RIFServiceStartupProperties.properties*
+The Java connector for theRifServices middles is setup in the file: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*
 
+* If the folder rifServices does not exist; start tomcat and it will be expanded from the war file.
 * The database name (databaseName) is normally *sahsuland*
 * The database host (database.host) is *localhost* on a standalone machine with no network access or the hostname. This does not notrmally need to be fully qualifed 
   (i.e. aepw-rif27.sm.med.ic.ac.uk is not required)
