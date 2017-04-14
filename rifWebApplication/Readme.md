@@ -22,7 +22,7 @@ RIF Web Services
    - [4.2 Setup Network](#42-setup-network)
      - [4.2.1 TLS](#421-tls)
    - [4.3 Common Setup Errors](#43-common-setup-errors)
-     - [4.3.1 Unable to Logon](#431-unable-to-logon)
+     - [4.3.1 Logon RIF Serice Call Incorrect](#431-logon-rif-serice-call-incorrect)
      - [4.3.2 TLS Errors](#432-tls-errors)
      - [4.3.3 Unable to unpack war files](#433-unable-to-unpack-war-files)
      - [4.3.4 No Taxonomy Services](#434-no-taxonomy-services)
@@ -380,32 +380,84 @@ This will generate a self signed certificate; this will cause browsers to compla
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/insecure_connection_warning.png?raw=true "Insecure TLS warning")
 
 To sign the certificates, follow the instructions in: https://tomcat.apache.org/tomcat-8.5-doc/ssl-howto.html#SSL_and_Tomcat
+
+This setup will support:
+
+- Android 4.4.2 and later
+- Firefox 32 and later
+- IE 11 and later
+- IE Mobile 11 and later
+- Java 8 b132
+- Safari 7 and later
   
 ## 4.3 Common Setup Errors
 
-```
-11-Apr-2017 13:47:10.353 INFO [Thread-6] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["http-nio-8081"]
-11-Apr-2017 13:47:10.405 INFO [Thread-6] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["https-jsse-nio-8443"]
-11-Apr-2017 13:47:10.405 INFO [Thread-6] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["ajp-nio-8009"]
-11-Apr-2017 13:47:10.436 INFO [Thread-6] org.apache.catalina.core.StandardService.stopInternal Stopping service Catalina
-11-Apr-2017 13:47:10.467 INFO [Thread-6] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["http-nio-8081"]
-11-Apr-2017 13:47:10.467 INFO [Thread-6] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["ajp-nio-8009"]
-```
-
-Errors in the $CATALINA_BASE/logs directory
-
-C:\Program Files\Apache Software Foundation\Tomcat 8.5\logs\tomcat8-stderr.2017-04-10.log
+A errors are to be found in the $CATALINA_BASE/logs directory, e.g.: *C:\Program Files\Apache Software Foundation\Tomcat 8.5\logs\tomcat8-stderr.2017-04-10.log*
 
 ```
 10-Apr-2017 13:45:12.240 SEVERE [main] org.apache.tomcat.util.net.SSLUtilBase.getStore Failed to load keystore type [JKS] with path [conf/localhost-rsa.jks] due to [C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks (The system cannot find the file specified)]
-
 ```
 
-### 4.3.1 Unable to Logon
+### 4.3.1 Logon RIF Serice Call Incorrect
+
+Use developer mode in the browser to bring up the console log:
+
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/caching_error.png?raw=true "Logon RIF Serice Call Incorrect")
+
+In this example the RIF web application file RIF4\backend\services\rifs-back-requests.js (e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4\backend\services\rifs-back-requests.js)
+is set to use http://localhost:8080; but the browser, usually Chrome, used https://localhost:8080.
+
+* Should have used: https://localhost:8080/rifServices/studySubmission/pg/login?userID=peter&password=XXXXXXXXXX
+* Used cached version: http://localhost:8080/rifServices/studySubmission/pg/login?userID=peter&password=XXXXXXXXXX
+
+```javascript
+/*
+ * SERVICE for all requests to the middleware
+ */
+angular.module("RIF")
+        .constant('studySubmissionURL', "http://localhost:8080/rifServices/studySubmission/")
+        .constant('studyResultRetrievalURL', "http://localhost:8080/rifServices/studyResultRetrieval/")
+        .constant('taxonomyServicesURL', "http://localhost:8080/taxonomyServices/taxonomyServices/")
+```
+
+This is caused by *rifs-back-requests.js* being changed, Tomcat restarted and Chrome or Firefox caching the rprevious service call. Flush the browser cache.
+
+Firefox console log example:
+
+```
+17:05:09.245 Error: res.data is null
+loggedIn@https://localhost:8080/RIF4/backend/services/rifs-back-interceptor.js:48:69
+e/<@https://localhost:8080/RIF4/libs/standalone/angular.min.js:131:20
+vf/this.$get</m.prototype.$eval@https://localhost:8080/RIF4/libs/standalone/angular.min.js:145:343
+vf/this.$get</m.prototype.$digest@https://localhost:8080/RIF4/libs/standalone/angular.min.js:142:412
+vf/this.$get</m.prototype.$apply@https://localhost:8080/RIF4/libs/standalone/angular.min.js:146:111
+l@https://localhost:8080/RIF4/libs/standalone/angular.min.js:97:320
+J@https://localhost:8080/RIF4/libs/standalone/angular.min.js:102:34
+gg/</e@https://localhost:8080/RIF4/libs/standalone/angular.min.js:103:55
+ 1 angular.min.js:118:8
+	e/< https://localhost:8080/RIF4/libs/standalone/angular.min.js:118:8
+	hf/this.$get</< https://localhost:8080/RIF4/libs/standalone/angular.min.js:90:220
+	e/< https://localhost:8080/RIF4/libs/standalone/angular.min.js:131:103
+	vf/this.$get</m.prototype.$eval https://localhost:8080/RIF4/libs/standalone/angular.min.js:145:343
+	vf/this.$get</m.prototype.$digest https://localhost:8080/RIF4/libs/standalone/angular.min.js:142:412
+	vf/this.$get</m.prototype.$apply https://localhost:8080/RIF4/libs/standalone/angular.min.js:146:111
+	l https://localhost:8080/RIF4/libs/standalone/angular.min.js:97:320
+	J https://localhost:8080/RIF4/libs/standalone/angular.min.js:102:34
+	gg/</e https://localhost:8080/RIF4/libs/standalone/angular.min.js:103:55
+```
 
 ### 4.3.2 TLS Errors
 
+```
+10-Apr-2017 13:45:12.240 SEVERE [main] org.apache.tomcat.util.net.SSLUtilBase.getStore Failed to load keystore type [JKS] with path [conf/localhost-rsa.jks] due to [C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks (The system cannot find the file specified)]
+```
+
 ### 4.3.3 Unable to unpack war files
+
+In this case the .war file (e.g. rifServices.war) is not unpacked and the service is not available in tomcat. Find in error in the Tomcat stderr log and send to the development team. 
+This is indicative of a build problem.
+
+* Screenshiots and log will be added when this happends again!*
 
 ### 4.3.4 No Taxonomy Services
 
@@ -431,7 +483,7 @@ The RuntimeException could not be mapped to a response, re-throwing to the HTTP 
 
 * Make sure you have restarted tomcat before attempting to run the RIF for the first time
 * In a non networked single machine environment (e.g. a laptop) the RIF is at: http://localhost:8081/RIF4
-* In a networked environment the RIF is at: ```http://<your domain>/RIF4```, e.g. https://aepw-rif27.sm.med.ic.ac.uk/RIF4
+* In a networked environment the RIF is at: ```http://<your domain>/RIF4```, e.g. *https://aepw-rif27.sm.med.ic.ac.uk/RIF4*
 
 ## 5.1 Logging On
 
@@ -478,6 +530,6 @@ The RuntimeException could not be mapped to a response, re-throwing to the HTTP 
 The service address and port used should match what you setup up in *4.2 Setup Network*. If this does not:
 
 * Restart tomcat;
-* Flush your rowser cache (this is especially important for Google Chrome).
+* Flush your rowser cache (this is especially important for Google Chrome and Mozilla Firefox).
 
 Peter Hambly, 12th April 2017
