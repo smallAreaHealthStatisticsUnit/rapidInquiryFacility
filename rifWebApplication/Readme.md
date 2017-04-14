@@ -62,7 +62,7 @@ port 8080. You do **NOT** need to follow the OWASP guidelines or to configure TL
 
 The is the normal production use case. It is important that Apache Tomcat is installed securely.
 
-Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.owasp.org/index.php/Securing_tomcat#Sample_Configuration_-_Good_Security for securing tomcat with good security.
+Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.owasp.org/index.php/Securing_tomcat#Sample_Configuration_-_Good_Security) for securing tomcat with good security.
 
 *Do not just install **Tomcat** without reading the instructions first*. In particular on Windows:
 
@@ -257,7 +257,7 @@ Do not set up the database not network access or open the firewall ports unless 
 can be remote but users must take care to ensure that it is setup securely. If you use a remote database, user are advised the secure the database:
 
 * Always use TLS.
-* Restrict access using **BOTH* the database software (*hba.conf* in Postgres) and the network infrastruture
+* Restrict access using **BOTH** the database software (*hba.conf* in Postgres) and the network infrastruture
 * Keep the database fully patched as per vendor advice.
 * Follow the appropriate guidelines, e.g. OWASP, but be consult SAHSU as some of the changes may break the RIF: 
   - [OWASP Postgres guidelines](https://www.owasp.org/index.php/OWASP_Backend_Security_Project_PostgreSQL_Hardening)
