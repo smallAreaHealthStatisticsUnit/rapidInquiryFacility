@@ -55,14 +55,14 @@ Please use tomcat version 8, not 9 as we have not tested 9. The version tested w
 
 ### 1.3.1 Apache Tomcat on a single host
 
-This is suitables for laptops and developers with no access from other machines. Download and install tomcat; make sure your firewall blocks 
-port 8080.
+This is suitable for laptops and developers with no access from other machines. Download and install tomcat; make sure your firewall blocks 
+port 8080. You do **NOT** need to follow the OWASP guidelines or to configure TLS.
 
 ### 1.3.2 Apache Tomcat for internet use
 
 The is the normal production use case. It is important that Apache Tomcat is installed securely.
 
-Download Apache Tomcat 8.5: Follow the [OWASP guidelines](https://www.owasp.org/index.php/Securing_tomcat#Sample_Configuration_-_Good_Security for securing tomcat with good security.
+Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.owasp.org/index.php/Securing_tomcat#Sample_Configuration_-_Good_Security for securing tomcat with good security.
 
 *Do not just install **Tomcat** without reading the instructions first*. In particular on Windows:
 
@@ -260,8 +260,8 @@ can be remote but users must take care to ensure that it is setup securely. If y
 * Restrict access using **BOTH* the database software (*hba.conf* in Postgres) and the network infrastruture
 * Keep the database fully patched as per vendor advice.
 * Follow the appropriate guidelines, e.g. OWASP, but be consult SAHSU as some of the changes may break the RIF: 
-  - https://www.owasp.org/index.php/OWASP_Backend_Security_Project_PostgreSQL_Hardening
-  - https://www.owasp.org/index.php/OWASP_Backend_Security_Project_SQLServer_Hardening
+  - [OWASP Postgres guidelines](https://www.owasp.org/index.php/OWASP_Backend_Security_Project_PostgreSQL_Hardening)
+  - [OWASP SQL Server guidelines](https://www.owasp.org/index.php/OWASP_Backend_Security_Project_SQLServer_Hardening)
 
 ### 4.1.1 SQL Server
 
@@ -336,6 +336,9 @@ Edit these to match:
 Running the RIF and logging on is detailed in section 5.
 
 ### 4.2.1 TLS
+
+TLS or *Transport Layer Security* is required to secure the RIF in a networked environment. It is not required if you are just running locally as 
+a developer or on a laptop.
 
 To install and configure SSL/TLS support on Tomcat, you need to follow these simple steps. For more information, read the rest of this HOW-TO.
 
@@ -447,7 +450,7 @@ This setup will support:
 
    * ODBC sytsrem data source: ```odbcDataSourceName=PostgreSQL30```
 
-These setting are in the Java connector for theRifServices middles: *rifServices/src/main/resources/RIFServiceStartupProperties.properties*
+These setting are in the Java connector for the RifServices middleware: *rifServices/src/main/resources/RIFServiceStartupProperties.properties*
 
 **BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
 
