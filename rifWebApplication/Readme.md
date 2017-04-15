@@ -627,7 +627,7 @@ Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : A network-related or in
 Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
 ```
 
-Examination of ```netstat -ban``` output shows that SQL SErver is running using dynamic ports; 57034 and 55625 in this case and not 
+Examination of ```netstat -ban``` output shows that SQL Server is running using dynamic ports; 57034 and 55625 in this case and not 
 1433 and 1434 as expected (and setup in the firewall). The *sqlcmd* session is using shared memory, so is able to connect as long 
 as you do not use an IP address or fully qualified domain name.
 
