@@ -30,6 +30,7 @@ RIF Web Services
      - [4.4.3 Unable to unpack war files](#443-unable-to-unpack-war-files)
      - [4.4.4 No Taxonomy Services](#444-no-taxonomy-services)
 	 - [4.4.5 RIF Services crash on logon](#445-rif-services-crash-on-logon)
+	 - [4.4.6 SQL Server TCP/IP Connection errors](446-sql-server-tcp-ip-connection-errors)
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
@@ -571,6 +572,82 @@ The RuntimeException could not be mapped to a response, re-throwing to the HTTP 
         at rifServices.system.RIFServiceStartupOptions.getRIFServiceResourcePath(RIFServiceStartupOptions.java:488)
         at rifServices.dataStorageLayer.pg.PGSQLHealthOutcomeManager.<init>(PGSQLHealthOutcomeManager.java:120)
 ```
+
+### 4.4.6 SQL Server TCP/IP Connection errors
+
+This error below is caused by firewall issues:
+
+```
+com.microsoft.sqlserver.jdbc.SQLServerException: The TCP/IP connection to the host localhost, port 1433 has failed. Error: "Connection refused: connect. 
+Verify the connection properties. 
+Make sure that an instance of SQL Server is running on the host and accepting TCP/IP connections at the port. 
+Make sure that TCP connections to the port are not blocked by a firewall.".
+        at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDriverError(SQLServerException.java:206)
+        at com.microsoft.sqlserver.jdbc.SQLServerException.ConvertConnectExceptionToSQLServerException(SQLServerException.java:257)
+        at com.microsoft.sqlserver.jdbc.SocketFinder.findSocket(IOBuffer.java:2385)
+        at com.microsoft.sqlserver.jdbc.TDSChannel.open(IOBuffer.java:567)
+        at com.microsoft.sqlserver.jdbc.SQLServerConnection.connectHelper(SQLServerConnection.java:1955)
+        at com.microsoft.sqlserver.jdbc.SQLServerConnection.login(SQLServerConnection.java:1616)
+        at com.microsoft.sqlserver.jdbc.SQLServerConnection.connectInternal(SQLServerConnection.java:1447)
+        at com.microsoft.sqlserver.jdbc.SQLServerConnection.connect(SQLServerConnection.java:788)
+        at com.microsoft.sqlserver.jdbc.SQLServerDriver.connect(SQLServerDriver.java:1187)
+        at java.sql.DriverManager.getConnection(Unknown Source)
+        at java.sql.DriverManager.getConnection(Unknown Source)
+        at rifServices.dataStorageLayer.ms.MSSQLConnectionManager.createConnection(MSSQLConnectionManager.java:695)
+        at rifServices.dataStorageLayer.ms.MSSQLConnectionManager.login(MSSQLConnectionManager.java:325)
+        at rifServices.dataStorageLayer.ms.MSSQLAbstractStudyServiceBundle.login(MSSQLAbstractStudyServiceBundle.java:192)
+        at rifServices.dataStorageLayer.ms.MSSQLProductionRIFStudyServiceBundle.login(MSSQLProductionRIFStudyServiceBundle.java:63)
+        at rifServices.restfulWebServices.ms.MSSQLAbstractRIFWebServiceResource.login(MSSQLAbstractRIFWebServiceResource.java:172)
+        at rifServices.restfulWebServices.ms.MSSQLRIFStudySubmissionWebServiceResource.login(MSSQLRIFStudySubmissionWebServiceResource.java:136)
+```
+
+It is presumed that you can connect normally using *sqlcmd*:
+
+```
+sqlcmd -U peter -P XXXXXXXXXX -d sahsuland_dev -S localhost\SAHSU
+1> quit
+
+sqlcmd -U peter -P XXXXXXXXXX -d sahsuland_dev -S peter-pc\SAHSU
+1> quit
+```
+
+However, attempting to connect via an IP address or full qualified domain name will fail:
+
+```
+sqlcmd -U peter -P peter -d sahsuland_dev -S 192.168.1.65\SAHSU
+HResult 0xFFFFFFFF, Level 16, State 1
+SQL Server Network Interfaces: Error Locating Server/Instance Specified [xFFFFFFFF].
+Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not
+Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
+
+sqlcmd -U peter -P peter -d sahsuland_dev -S 127.0.0.1\SAHSU
+HResult 0xFFFFFFFF, Level 16, State 1
+SQL Server Network Interfaces: Error Locating Server/Instance Specified [xFFFFFFFF].
+Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not
+Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
+```
+
+Examination of ```netstat -ban``` output shows that SQL SErver is running using dynamic ports; 57034 and 55625 in this case and not 
+1433 and 1434 as expected (and setup in the firewall). The *sqlcmd* session is using shared memory, so is able to connect as long 
+as you do not use an IP address or fully qualified domain name.
+
+```
+  TCP    0.0.0.0:55625          0.0.0.0:0              LISTENING
+ [sqlservr.exe]
+  TCP    0.0.0.0:57034          0.0.0.0:0              LISTENING
+ [sqlservr.exe]
+```
+
+The method for configuring a specific port is detailed in: https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/configure-a-server-to-listen-on-a-specific-tcp-port
+
+* For all entries, clear TCP dynamic ports, set the TCP port to 1433
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sqlserver-change-port.png?raw=true "Configuring a specifc SQL Server port")
+
+* Check you can logon as before using shared memory/named pipes, and then check the port
+	```
+	sqlcmd -U peter -P peter -d sahsuland_dev -S 192.168.1.65\SAHSU,1433
+	1> quit
+	```
 
 # 5. Running the RIF
 
