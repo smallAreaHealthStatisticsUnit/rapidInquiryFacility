@@ -30,7 +30,7 @@ RIF Web Services
      - [4.4.3 Unable to unpack war files](#443-unable-to-unpack-war-files)
      - [4.4.4 No Taxonomy Services](#444-no-taxonomy-services)
 	 - [4.4.5 RIF Services crash on logon](#445-rif-services-crash-on-logon)
-	 - [4.4.6 SQL Server TCP/IP Connection errors](#446-sql-server-tcp-ip-connection-errors)
+	 - [4.4.6 SQL Server TCP/IP Java Connection Errors](#446-sql-server-tcpip-java-connection-errors)
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
@@ -573,7 +573,7 @@ The RuntimeException could not be mapped to a response, re-throwing to the HTTP 
         at rifServices.dataStorageLayer.pg.PGSQLHealthOutcomeManager.<init>(PGSQLHealthOutcomeManager.java:120)
 ```
 
-### 4.4.6 SQL Server TCP/IP Connection errors
+### 4.4.6 SQL Server TCP/IP Java Connection Errors
 
 This error below is caused by firewall issues:
 
