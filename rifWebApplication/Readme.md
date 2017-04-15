@@ -82,7 +82,15 @@ Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.
   services will not work [The web services will crash on user logon if it is not set, this will be changed to a more obvious error]; see:
   4.4.5 RIF Services crash on logon.
   
-The RIF **must** be secured using TLS to protect the login details and any health data viewed.
+When accessed from the internet the RIF **must** be secured using TLS to protect the login details and any health data viewed.
+
+Notes on the OWASP section on removing the version string from HTTP error messages by repacking *%CATALINA_HOME%/server/lib/catalina.jar* with 
+an updated ServerInfo.properties:
+
+* The JAR file is in: *%CATALINA_HOME%/lib/catalina.jar*
+* The intention of this change is to defeat Lamdba probes by malicious pentration testers. This change **may** have the side affect of defeating your own 
+  security assurance software (it appears to defeat Nessus). It may therefore be necessary to not implement this chnage until you have 
+  completed security testing.
 
 ### 1.3.3 Running Tomcat on the command line
 
