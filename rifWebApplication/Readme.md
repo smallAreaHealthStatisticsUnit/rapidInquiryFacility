@@ -614,13 +614,13 @@ sqlcmd -U peter -P XXXXXXXXXX -d sahsuland_dev -S peter-pc\SAHSU
 However, attempting to connect via an IP address or full qualified domain name will fail:
 
 ```
-sqlcmd -U peter -P peter -d sahsuland_dev -S 192.168.1.65\SAHSU
+sqlcmd -U peter -P XXXXXXXXXX -d sahsuland_dev -S 192.168.1.65\SAHSU
 HResult 0xFFFFFFFF, Level 16, State 1
 SQL Server Network Interfaces: Error Locating Server/Instance Specified [xFFFFFFFF].
 Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not
 Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
 
-sqlcmd -U peter -P peter -d sahsuland_dev -S 127.0.0.1\SAHSU
+sqlcmd -U peter -P XXXXXXXXXX -d sahsuland_dev -S 127.0.0.1\SAHSU
 HResult 0xFFFFFFFF, Level 16, State 1
 SQL Server Network Interfaces: Error Locating Server/Instance Specified [xFFFFFFFF].
 Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not
@@ -645,7 +645,7 @@ The method for configuring a specific port is detailed in: https://docs.microsof
 
 * Check you can logon as before using shared memory/named pipes, and then check the port
 	```
-	sqlcmd -U peter -P peter -d sahsuland_dev -S 192.168.1.65\SAHSU,1433
+	sqlcmd -U peter -P XXXXXXXXXX -d sahsuland_dev -S 192.168.1.65\SAHSU,1433
 	1> quit
 	```
 
