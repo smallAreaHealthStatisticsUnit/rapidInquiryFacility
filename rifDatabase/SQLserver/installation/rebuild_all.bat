@@ -43,16 +43,23 @@ REM Usage: rif40_install_tables.bat
 REM
 REM recreate_all_sequences.bat MUST BE RUN FIRST
 REM
-REM MUST BE RUN AS ADMINSTRATOR
-REM
 
 ECHO OFF
+REM
+REM MUST BE RUN AS ADMINSTRATOR/POWERUSER
+REM
 NET SESSION >nul 2>&1
 if %errorlevel% equ 0 (
     ECHO Administrator PRIVILEGES Detected! 
 ) else (
-    ECHO NOT AN ADMIN!
-	exit /b 1
+	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
+	if %errorlevel% neq 0 {
+		ECHO NOT AN ADMIN!
+		exit /b 1
+	}
+	else {
+		ECHO Power user PRIVILEGES Detected! 
+	}
 )
 
 REM
@@ -70,12 +77,15 @@ ECHO #
 ECHO ##########################################################################################
 PAUSE
 
-sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql
+REM
+REM Create development database
+REM
+sqlcmd -E -b -m-1 -e -r1 -i rif40_development_creation.sql
 if %errorlevel% neq 0 (
-	ECHO rif40_database_creation.sql exiting with %errorlevel%
+	ECHO rif40_development_creation.sql exiting with %errorlevel%
 	exit /b 1
 ) else (
-	ECHO rif40_database_creation.sql built OK %errorlevel%
+	ECHO rif40_development_creation.sql built OK %errorlevel%
 )
 
 CALL rif40_sahsuland_dev_install.bat 
@@ -85,6 +95,7 @@ if %errorlevel% neq 0  (
 ) else (
 	ECHO if40_sahsuland_dev_install.bat built OK %errorlevel%
 )
+
 REM
 REM Does not get to here...
 REM
@@ -96,12 +107,15 @@ if %errorlevel% neq 0  (
 	ECHO rif40_sahsuland_install.bat built OK %errorlevel%
 )
 
-sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=%NEWUSER%
+REM
+REM Create development user
+REM
+sqlcmd -E -b -m-1 -e -i rif40_development_user.sql -v newuser=%NEWUSER%
 if %errorlevel% neq 0  (
-	ECHO rif40_test_user.sql exiting with %errorlevel%
+	ECHO rif40_development_user.sql exiting with %errorlevel%
 	exit /b 1
 ) else (
-	ECHO rif40_test_user.sql built OK %errorlevel%
+	ECHO rif40_development_user.sql built OK %errorlevel%
 )
 
 sqlcmd -U %NEWUSER% -P %NEWUSER% -b -m-1 -e -i rif40_run_study.sql

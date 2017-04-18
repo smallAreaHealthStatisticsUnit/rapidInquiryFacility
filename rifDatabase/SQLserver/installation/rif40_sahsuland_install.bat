@@ -42,59 +42,44 @@ REM Usage: rif40_install_tables.bat
 REM
 REM recreate_all_sequences.bat MUST BE RUN FIRST
 REM
+ECHO OFF
+REM
 REM MUST BE RUN AS ADMINSTRATOR/POWERUSER
 REM
-ECHO OFF
-REM NET SESSION >nul 2>&1
-REM if %errorlevel% equ 0 (
-REM    ECHO Administrator PRIVILEGES Detected! 
-REM ) else (
-REM	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
-REM	if %errorlevel% neq 0 {
-REM		ECHO NOT AN ADMIN!
-REM		exit /b 1
-REM	}
-REM	else {
-REM		ECHO Power user PRIVILEGES Detected! 
-REM	}
-REM
-
-sqlcmd -d sahsuland -b -m-1 -e -i rif40_sahsuland_install.sql -v path="%cd%\..\.." -I
-if %errorlevel% neq 0  (
-	ECHO rif40_sahsuland_install.sql exiting with %errorlevel%
-	exit /b 1
+NET SESSION >nul 2>&1
+if %errorlevel% equ 0 (
+    ECHO Administrator PRIVILEGES Detected! 
 ) else (
-	ECHO rif40_sahsuland_install.sql built OK %errorlevel%
+	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
+	if %errorlevel% neq 0 {
+		ECHO NOT AN ADMIN!
+		exit /b 1
+	}
+	else {
+		ECHO Power user PRIVILEGES Detected! 
+	}
 )
 
-REM Does not work in github tree - SQL server needs access permissions!
 REM
-REM BULK INSERT rif_data.lookup_sahsu_grd_level1
-REM FROM 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv'     -- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
-REM WITH
-REM (
-REM        FORMATFILE = 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.fmt',            -- Use a format file
-REM         TABLOCK                                 -- Table lock
-REM );
+REM Create production database
 REM
-REM Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
-REM Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
-REM
-sqlcmd -U rif40 -P rif40 -d sahsuland -b -m-1 -e -r1 -i ..\..\GeospatialData\tileMaker\rif_mssql_SAHSULAND.sql -v pwd="%cd%\..\..\GeospatialData\tileMaker"
-if %errorlevel% neq 0  (
-	ECHO rif_mssql_SAHSULAND.sql exiting with %errorlevel%
+sqlcmd -E -b -m-1 -e -r1 -i rif40_production_creation.sql -v import_dir="%cd%\..\production\"
+if %errorlevel% neq 0 (
+	ECHO rif40_production_creation.sql exiting with %errorlevel%
 	exit /b 1
 ) else (
-	ECHO rif_mssql_SAHSULAND.sql built OK %errorlevel%
+	ECHO rif40_production_creation.sql built OK %errorlevel%
 )
 
-sqlcmd -U rif40 -P rif40 -d sahsuland -b -m-1 -e -r1 -i ..\..\DataLoaderData\SAHSULAND\ms_run_data_loader.sql -v pwd="%cd%\..\..\DataLoaderData\SAHSULAND"
+REM
+REM Create production user
+REM
+sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser=%NEWUSER%
 if %errorlevel% neq 0  (
-	ECHO ms_run_data_loader.sql exiting with %errorlevel%
+	ECHO rif40_production_user.sql exiting with %errorlevel%
 	exit /b 1
 ) else (
-	ECHO ms_run_data_loader.sql built OK %errorlevel%
-	ECHO sahsuland built OK.
+	ECHO rif40_production_user.sql built OK %errorlevel%
 )
 
 REM

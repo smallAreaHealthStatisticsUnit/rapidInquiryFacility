@@ -126,11 +126,11 @@ sahsuland_dev
 ``` 
 # 3. Create Additional Users
 
-Run the optional script *rif40_test_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
+Run the optional script *rif40_development_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
 the -v newuser=<my new user> parameter. Run as Administrator:
 
 ```
-sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=peter
+sqlcmd -E -b -m-1 -e -i rif40_development_user.sql -v newuser=peter
 ```
 
 * User is created with the *rif_user* (can create tables and views) and *rif_manager* roles (can also create procedures and functions), can do `BULK INSERT`;

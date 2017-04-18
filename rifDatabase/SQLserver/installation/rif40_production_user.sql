@@ -2,7 +2,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - Creation of database test user
+-- Rapid Enquiry Facility (RIF) - Creation of production database test user
 --
 -- Copyright:
 --
@@ -42,7 +42,7 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_test_user.sql -v newuser=testuser
+-- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_production_user.sql -v newuser=testuser
 -- Connect flags if required: -E -S<myServerinstanceName>
 --
 -- User is created with rif_user (can create tables and views), rif_manager (can also create procedures and functions), can do BULK INSERT
@@ -88,41 +88,10 @@ GO
 --
 GRANT VIEW SERVER STATE TO [$(NEWUSER)];
 GO
-
+	
 USE [sahsuland];
 
 :r user_objects.sql
-	
-USE [sahsuland_dev];
-
-:r user_objects.sql
-	
-USE [test];
-
-BEGIN
-	IF EXISTS (SELECT name FROM sys.schemas WHERE name = N'$(NEWUSER)')
-		DROP SCHEMA [$(NEWUSER)];
-	IF EXISTS (SELECT name FROM sys.database_principals WHERE name = N'$(NEWUSER)')
-		DROP USER [$(NEWUSER)];
-
-	CREATE USER [$(NEWUSER)] FOR LOGIN [$(NEWUSER)] WITH DEFAULT_SCHEMA=[dbo];
---
--- Object privilege grants
---
-	GRANT CREATE FUNCTION TO [$(NEWUSER)];
-	GRANT CREATE PROCEDURE TO [$(NEWUSER)];
-	GRANT CREATE TABLE TO [$(NEWUSER)];
-	GRANT CREATE VIEW TO [$(NEWUSER)];
---
-	EXEC('CREATE SCHEMA [$(NEWUSER)] AUTHORIZATION [$(NEWUSER)]');
-	ALTER USER [$(NEWUSER)] WITH DEFAULT_SCHEMA=[$(NEWUSER)];
-END;
-GO
-
-SELECT name, type_desc FROM sys.database_principals WHERE name = N'$(NEWUSER)';
-GO
-SELECT * FROM sys.schemas WHERE name = N'$(NEWUSER)';
-GO
 
 --
 -- Eof

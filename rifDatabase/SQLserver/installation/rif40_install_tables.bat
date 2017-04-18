@@ -42,8 +42,25 @@ REM Usage: rif40_install_tables.bat
 REM
 REM recreate_all_sequences.bat MUST BE RUN FIRST
 REM
-REM MUST BE RUN AS ADMINSTRATOR
+
+ECHO OFF
 REM
+REM MUST BE RUN AS ADMINSTRATOR/POWERUSER
+REM
+NET SESSION >nul 2>&1
+if %errorlevel% equ 0 (
+    ECHO Administrator PRIVILEGES Detected! 
+) else (
+	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
+	if %errorlevel% neq 0 {
+		ECHO NOT AN ADMIN!
+		exit /b 1
+	}
+	else {
+		ECHO Power user PRIVILEGES Detected! 
+	}
+)
+
 sqlcmd -d sahsuland_dev -b -m-1 -e -i ..\sahsuland_dev\rif40\tables\recreate_all_tables.sql
 
 REM

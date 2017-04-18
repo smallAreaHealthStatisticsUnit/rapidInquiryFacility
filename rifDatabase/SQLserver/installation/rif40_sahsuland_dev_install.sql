@@ -2,7 +2,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF40 create sahsuland/sahsuland_dev database objects and install data
+-- Rapid Enquiry Facility (RIF) - RIF40 create sahsuland_dev database objects and install data
 --
 -- Copyright:
 --
@@ -74,6 +74,15 @@ rif40_drop_all_data.sql
 ..\sahsuland_dev\rif40\tables\recreate_all_tables.sql
 
  */
+ 
+--
+-- Check database is sahsuland_dev
+--
+DECLARE @database_name 	VARCHAR(30)=DB_NAME();
+IF (@database_name != 'sahsuland_dev')
+	RAISERROR('rif40_roles.sql: Database is NOT sahsuland_dev: %s', 16, 1, @database_name);
+GO
+ 
 :r ..\sahsuland_dev\rif40\sequences\recreate_all_sequences.sql
 :r rif40_drop_all_data.sql
 :r ..\sahsuland_dev\rif40\tables\recreate_all_tables.sql
@@ -85,6 +94,14 @@ rif40_drop_all_data.sql
 :r rif40_import_sahsuland.sql
 
 PRINT 'All done: RIF40 create sahsuland_dev database objects and install data.';
+
+GO
+
+--
+-- Export database to ../production/sahsuland_dev.bak
+-- Grant local users full control to this directory
+--
+BACKUP DATABASE [sahsuland_dev] TO DISK='$(export_dir)sahsuland_dev.bak';
 GO
 
 --
