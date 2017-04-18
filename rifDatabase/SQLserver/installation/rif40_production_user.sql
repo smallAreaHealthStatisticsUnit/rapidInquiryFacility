@@ -42,7 +42,7 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_production_user.sql -v newuser=testuser -v newdb=testdb
+-- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_production_user.sql -v newuser=%NEWUSER% -v newdb=%NEWDB% -v newpw=%NEWPW%
 -- Connect flags if required: -E -S<myServerinstanceName>
 --
 -- User is created with rif_user (can create tables and views), rif_manager (can also create procedures and functions), can do BULK INSERT
@@ -53,7 +53,7 @@
 --
 
 --
--- Expects: $(NEWUSER) and $(NEWDB) to set in sqlcmd
+-- Expects: $(NEWUSER), $(NEWPW) and $(NEWDB) to set in sqlcmd
 --
 USE [master];
 GO
@@ -70,11 +70,8 @@ ELSE
 	RAISERROR('User: %s is not an administrator.', 16, 1, @CurrentUser);
 GO
 
-IF EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'$(NEWUSER)')
-DROP LOGIN [$(NEWUSER)];
-GO
-
-CREATE LOGIN [$(NEWUSER)] WITH PASSWORD='$(NEWUSER)', CHECK_POLICY = OFF;
+IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'$(NEWUSER)')
+CREATE LOGIN [$(NEWUSER)] WITH PASSWORD='$(NEWPW)', CHECK_POLICY = OFF;
 GO
 
 ALTER LOGIN [$(NEWUSER)] WITH DEFAULT_DATABASE = [$(NEWDB)];

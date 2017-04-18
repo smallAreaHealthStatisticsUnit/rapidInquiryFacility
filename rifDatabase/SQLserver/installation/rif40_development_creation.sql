@@ -78,6 +78,12 @@ GO
 CREATE DATABASE test;
 GO
 
+--
+-- Drop RIF40 user
+--
+IF EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'rif40') 
+DROP LOGIN [rif40];
+GO
 
 --
 -- Re-create logins and roles

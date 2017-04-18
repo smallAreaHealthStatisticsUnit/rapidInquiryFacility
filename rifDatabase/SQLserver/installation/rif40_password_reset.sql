@@ -2,7 +2,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - Creation of cluster wide logons and roles
+-- Rapid Enquiry Facility (RIF) - Reset RIF40 password to random characters
 --
 -- Copyright:
 --
@@ -42,29 +42,26 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql 
+-- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_password_reset.sql 
 -- Connect flags if required: -E -S<myServerinstanceName>
 --
 
 --
--- Check database is master
+-- Check database is sahsuland_dev
 --
 DECLARE @database_name 	VARCHAR(30)=DB_NAME();
-IF (@database_name != 'master')
-	RAISERROR('rif40_roles.sql: Database is NOT master: %s', 16, 1, @database_name);
+IF (@database_name != 'sahsuland_dev')
+	RAISERROR('rif40_password_reset.sql: Database is NOT sahsuland_dev: %s', 16, 1, @database_name);
 GO
 
 --
--- Re-create cluster wide logons and roles
---
-
---
 -- RIF40: Schema owner
+-- Reset RIF40 password to random characters
 --
-IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'rif40') BEGIN
+IF EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'rif40') BEGIN
 	DECLARE @sql_stmt NVARCHAR(MAX);
 	DECLARE @stp VARCHAR(60)=CAST(GETDATE() AS VARCHAR);
-	SET @sql_stmt =	'CREATE LOGIN [rif40] WITH PASSWORD=''' + CONVERT(VARCHAR(32), HASHBYTES('MD5', @stp), 2) + /* PW changes every minute */
+	SET @sql_stmt =	'ALTER LOGIN [rif40] WITH PASSWORD=''' + CONVERT(VARCHAR(32), HASHBYTES('MD5', @stp), 2) + /* PW changes every minute */
 		''', CHECK_POLICY = OFF';
 	PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
 	EXECUTE sp_executesql @sql_stmt;	;	-- Change this password if you want to logon!
@@ -72,19 +69,4 @@ END;
 GO
 
 --
--- Allow rif40 BULK INSERT
---
-EXEC sp_addsrvrolemember @loginame = N'rif40', @rolename = N'bulkadmin';
-GO
-
-SELECT name FROM sys.server_principals WHERE name LIKE 'rif%';
-GO
-
---
--- Allow SHOWPLAN
---
-GRANT VIEW SERVER STATE TO [rif40];
-GO
-
---
--- Eof (rif40_roles.sql)
+-- Eof (rif40_password_reset.sql)

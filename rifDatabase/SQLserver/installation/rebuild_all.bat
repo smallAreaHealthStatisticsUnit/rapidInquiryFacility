@@ -44,7 +44,6 @@ REM
 REM recreate_all_sequences.bat MUST BE RUN FIRST
 REM
 
-ECHO OFF
 REM
 REM MUST BE RUN AS ADMINSTRATOR/POWERUSER
 REM
@@ -63,16 +62,28 @@ if %errorlevel% equ 0 (
 )
 
 REM
-REM Change this...
-REM 
-SET NEWUSER="peter"
+REM Clear seetings
+REM
+(SET NEWDB=)
+(SET NEWUSER=)
+(SET NEWPW=)
 
+REM
+REM Get DB settings
+REM
+echo Creating development RIF databases
+SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
+SET NEWDB=sahsuland
+SET /P NEWPW=New user password [default %NEWUSER%]: %=% || SET NEWPW=%NEWUSER%
+SET REBUILD_ALL=Y
+SET SNEWUSER=%NEWUSER%
+SET SNEWPW=%NEWPW%
 ECHO ##########################################################################################
 ECHO #
-ECHO # WARNING! this script will the drop and create the sahsuland and sahusland_dev databases.
+ECHO # WARNING! this script will the drop and create the RIF40 sahsuland and sahusland_dev databases.
 ECHO # Type control-C to abort.
 ECHO #
-ECHO # Test user: %NEWUSER%
+ECHO # Test user: %NEWUSER%; password: %NEWPW%
 ECHO #
 ECHO ##########################################################################################
 PAUSE
@@ -97,7 +108,7 @@ if %errorlevel% neq 0  (
 )
 
 REM
-REM Does not get to here...
+REM Create production database
 REM
 CALL rif40_sahsuland_install.bat 
 if %errorlevel% neq 0  (
@@ -110,7 +121,8 @@ if %errorlevel% neq 0  (
 REM
 REM Create development user
 REM
-sqlcmd -E -b -m-1 -e -i rif40_development_user.sql -v newuser=%NEWUSER%
+ECHO ON
+sqlcmd -E -b -m-1 -e -i rif40_development_user.sql -v newuser="%SNEWUSER%" -v newpw="%SNEWPW%"
 if %errorlevel% neq 0  (
 	ECHO rif40_development_user.sql exiting with %errorlevel%
 	exit /b 1
@@ -118,15 +130,39 @@ if %errorlevel% neq 0  (
 	ECHO rif40_development_user.sql built OK %errorlevel%
 )
 
-sqlcmd -U %NEWUSER% -P %NEWUSER% -b -m-1 -e -i rif40_run_study.sql
+REM
+REM Run a test study
+REM
+sqlcmd -U %SNEWUSER% -P %SNEWPW% -d sahsuland_dev -b -m-1 -e -i rif40_run_study.sql
 if %errorlevel% neq 0  (
 	ECHO Both sahsuland and sahsuland_dev built OK
+	
+REM
+REM Clear seetings
+REM
+	(SET NEWDB=)
+	(SET NEWUSER=)
+	(SET NEWPW=)
+	(SET SNEWUSER=)
+	(SET SNEWPW=)
+	(SET REBUILD_ALL=)
+
 	ECHO rif40_run_study.sql exiting with %errorlevel%
 	exit /b 1
 ) else (
 	ECHO rif40_run_study.sql ran OK %errorlevel%
 	ECHO Both sahsuland and sahsuland_dev built OK
 )
+
+REM
+REM Clear seetings
+REM
+(SET NEWDB=)
+(SET NEWUSER=)
+(SET NEWPW=)
+(SET SNEWUSER=)
+(SET SNEWPW=)
+(SET REBUILD_ALL=)
 
 REM
 REM Eof

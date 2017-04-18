@@ -42,7 +42,7 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql 
+-- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql -v import_dir="%cd%\..\production\" -v newdb="%NEWDB%"
 -- Connect flags if required: -E -S<myServerinstanceName>
 --
 

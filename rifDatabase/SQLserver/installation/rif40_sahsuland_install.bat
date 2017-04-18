@@ -1,3 +1,4 @@
+ECHO OFF
 REM ************************************************************************
 REM
 REM Description:
@@ -42,7 +43,7 @@ REM Usage: rif40_install_tables.bat
 REM
 REM recreate_all_sequences.bat MUST BE RUN FIRST
 REM
-ECHO OFF
+
 REM
 REM MUST BE RUN AS ADMINSTRATOR/POWERUSER
 REM
@@ -61,17 +62,52 @@ if %errorlevel% equ 0 (
 )
 
 REM
-REM Change this...
+REM Get DB settings
 REM 
-SET NEWUSER="peter"
-SET NEWDB=sahsuland
+echo Creating production RIF database
+REM 
+REM REBUILD_ALL is set up rebuild_all.bat - this prevents the questions being asdked twice
+REM
+IF NOT DEFINED REBUILD_ALL (
+	SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
+	SET /P NEWDB=New RIF40 db [default sahsuland]: %=%|| SET NEWDB=sahsuland
+	SET /P NEWPW=New user password [default %NEWUSER%]: %=% || SET NEWPW=%NEWUSER%
+	SET REBUILD_ALL=N
+)
+
+IF NOT DEFINED NEWUSER (
+	SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
+)
+IF NOT DEFINED NEWDB (
+	SET /P NEWDB=New RIF40 db [default sahsuland]: %=%|| SET NEWDB=sahsuland
+)
+IF NOT DEFINED NEWPW (
+	SET /P NEWPW=New user password [default %NEWUSER%]: %=% || SET NEWPW=%NEWUSER%
+	)
+ECHO ##########################################################################################
+ECHO #
+ECHO # WARNING! this script will the drop and create the RIF40 %NEWDB% database.
+ECHO # Type control-C to abort.
+ECHO #
+ECHO # Test user: %NEWUSER%; password: %NEWPW%
+ECHO #
+ECHO ##########################################################################################
+PAUSE
 
 REM
 REM Create production database
 REM
 sqlcmd -E -b -m-1 -e -r1 -i rif40_production_creation.sql -v import_dir="%cd%\..\production\" -v newdb="%NEWDB%"
 if %errorlevel% neq 0 (
-	ECHO rif40_production_creation.sql exiting with %errorlevel%
+	ECHO rif40_production_creation.sql exiting with %errorlevel%	
+	IF NOT DEFINED REBUILD_ALL (
+REM
+REM Clear seetings
+REM
+		(SET NEWDB=)
+		(SET NEWUSER=)
+		(SET NEWPW=)
+	)
 	exit /b 1
 ) else (
 	ECHO rif40_production_creation.sql built OK %errorlevel%
@@ -80,16 +116,27 @@ if %errorlevel% neq 0 (
 REM
 REM Create production user
 REM
-sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser=%NEWUSER% -v newdb="%NEWDB%"
+sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser="%NEWUSER%" -v newdb="%NEWDB%" -v newpw="%NEWPW%"
 if %errorlevel% neq 0  (
 	ECHO rif40_production_user.sql exiting with %errorlevel%
+	IF NOT DEFINED REBUILD_ALL (
+REM
+REM Clear seetings
+REM
+		(SET NEWDB=)
+		(SET NEWUSER=)
+		(SET NEWPW=)
+	)	
 	exit /b 1
 ) else (
-	ECHO rif40_production_user.sql built OK %errorlevel%
-)
-
 REM
-REM %NEWDB% built OK.
+REM Clear seetings
+REM
+	(SET NEWDB=)
+	(SET NEWUSER=)
+	(SET NEWPW=)
+	ECHO rif40_production_user.sql built OK %errorlevel%; created RIF40 production database %NEWDB% with user: %NEWUSER%
+)
 
 REM
 REM Eof

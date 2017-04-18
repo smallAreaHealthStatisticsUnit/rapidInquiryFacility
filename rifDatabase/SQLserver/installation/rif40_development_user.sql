@@ -42,7 +42,7 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_development_user.sql -v newuser=testuser
+-- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_development_user.sql -v newuser=%NEWUSER% -v newpw=%NEWPW%
 -- Connect flags if required: -E -S<myServerinstanceName>
 --
 -- User is created with rif_user (can create tables and views), rif_manager (can also create procedures and functions), can do BULK INSERT
@@ -50,6 +50,10 @@
 -- The test database is for geospatial processing and does not have the rif_user and rif_manager roles, the user can create tables, views,
 -- procedures and function and do BULK INSERTs
 -- Will fail to re-create a user if the user already has objects (tables, views etc)
+--
+
+--
+-- Expects: $(NEWUSER), $(NEWPW) and $(NEWDB) to set in sqlcmd
 --
 
 USE [master];
@@ -71,7 +75,7 @@ IF EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'$(NEWUSER)')
 DROP LOGIN [$(NEWUSER)];
 GO
 
-CREATE LOGIN [$(NEWUSER)] WITH PASSWORD='$(NEWUSER)', CHECK_POLICY = OFF;
+CREATE LOGIN [$(NEWUSER)] WITH PASSWORD='$(NEWPW)', CHECK_POLICY = OFF;
 GO
 
 ALTER LOGIN [$(NEWUSER)] WITH DEFAULT_DATABASE = [sahsuland_dev];
