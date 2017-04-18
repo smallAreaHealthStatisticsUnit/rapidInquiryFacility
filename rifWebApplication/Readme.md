@@ -163,10 +163,10 @@ Otherwise run the following commands by hand:
 mvn --version
 cd rifGenericLibrary
 mvn -Dmaven.test.skip=true install
-cd rapidInquiryFacility
+cd ..\rapidInquiryFacility
 mvn -Dmaven.test.skip=true install
-cd rifServices
-mvn -Dmaven.test.skip=true instal
+cd ..\rifServices
+mvn -Dmaven.test.skip=true install
 ```
 
 Maven produces a lot of output:
