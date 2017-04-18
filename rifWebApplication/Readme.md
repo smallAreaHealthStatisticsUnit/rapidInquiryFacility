@@ -201,7 +201,11 @@ uiryFacility\rifServices\0.0.1-SNAPSHOT\rifServices-0.0.1-SNAPSHOT.pom
 [INFO] ------------------------------------------------------------------------
 ```
 *Any message other than **[INFO] BUILD SUCCESS** indicates a build error. Do not install the output war files and report the fault to the 
-development team.
+development team. 
+
+The order is important; the directories must be built in the order: rifGenericLibrary, rapidInquiryFacility, rifServices. It is always
+assumed you build taxonomyServices later. If you get a build failure try a *mvn clean* in each directory first; then retry with a 
+*mvn  -Dmaven.test.skip=true install*.
 
 # 3. Installing Web Services in Tomcat
 
