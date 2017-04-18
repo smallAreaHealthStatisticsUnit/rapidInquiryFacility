@@ -96,7 +96,7 @@ USE master;
 --
 -- Add custom error messages
 --
-:r ..\sahsuland_dev\error_handling\rif40_custom_error_messages.sql
+:r rif40_custom_error_messages.sql
 
 --
 -- Find the actual database file names for the new $(NEWDB) DB
@@ -140,13 +140,6 @@ SET @sql_stmt =	'RESTORE DATABASE [$(NEWDB)]' + @crlf +
 '        MOVE ''$(NEWDB)_dev_log'' TO ''' + @physical_log_filename + '''';
 PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
 EXECUTE sp_executesql @sql_stmt;
-GO
-
---
--- Export database to ../production/$(NEWDB).bak
--- Grant local users full control to this directory
---
-BACKUP DATABASE [$(NEWDB)] TO DISK='$(import_dir)$(NEWDB).bak';
 GO
 
 --
