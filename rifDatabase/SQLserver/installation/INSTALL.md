@@ -1,5 +1,5 @@
-SQL Server Development Database Installation
-============================================
+SQL Server Production Database Installation
+===========================================
 
 # Contents
 - [1. Install SQL Server 2012 SP2](#1-install-sql-server-2012-sp2)
@@ -10,14 +10,7 @@ SQL Server Development Database Installation
 - [3. Create Additional Users](#3-create-additional-users)
 - [4. Installing the RIF Schema](#4-installing-the-rif-schema)
   - [4.1 BULK INSERT Permission](#41-bulk-insert-permission)
-  - [4.2 Re-running scripts](#42-re-running-scripts)
-    - [4.2.1 Geospatial script: rif40_sahsuland_tiles.bat](#421-geospatial-script-rif40_sahsuland_tilesbat)
-    - [4.2.2 Re-load sahsuland example data](#422-re-load-sahsuland-example-data)
-  - [4.3 SQL Server BULK INSERT Issues](#43-sql-server-bulk-insert-issues)
-    - [4.3.1 Line Termination](#431-line-termination)
-- [5. Script Notes](#5-script-notes)
-  - [5.1 Script and documentation TODO](#51-script-and-documentation-todo)	
-	
+
 # 1. Install SQL Server 2012 SP2
 
 Install SQL Server 2012 SP2  (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
@@ -160,54 +153,6 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_s
  
 # 4. Installing the RIF Schema
 
-Run the following scripts ad Administrator:
-
-* rif40_sahsuland_dev_install.bat (see note 4.1 below before you run this script)
-* rif40_sahsuland_install.bat (see note 4.1 below before you run this script)
-
-An additional script is proved to build exverything and create an example study. This should be edited to set the test user variable, NEWUSER. Note that this user's password will be the 
-username, so change it on a networked system:
-
-* rebuild_all.bat (see note 4.1 below before you run this script)
-  rebuild_all.bat can be abort using *control-C*; no other key will abort the script. You will be asked if you want to abort; 'Y' or 'y' will abort; any other keys will continue
-	```
-	C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>rebuild_all.bat
-
-	C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>ECHO OFF
-	Administrator PRIVILEGES Detected!
-	##########################################################################################
-	#
-	# WARNING! this script will the drop and create the sahsuland and sahusland_dev databases.
-	# Type control-C to abort.
-	#
-	# Test user: "peter"
-	#
-	##########################################################################################
-	Press any key to continue . . .
-	Terminate batch job (Y/N)? y
-    ```
-
-**These scripts do NOT drop existing tables, the database must be rebuilt from scratch**.
-**You _must_ build sahusland_dev before sahusland**; as it loads the error messages.
-
-The indivuidual scripts can be run by batch files for sahsuland_dev only, but they must be run in this order:
-
-* rif40_install_sequences.bat
-* rif40_install_tables.bat
-* rif40_install_log_error_handling.bat
-* rif40_install_functions.bat
-* rif40_install_views.bat
-* rif40_install_table_triggers.bat
-* rif40_install_view_triggers.bat
-* rif40_data_install_tables.bat
-* rif40_sahsuland_tiles.bat (see note 4.1 below)
-* rif40_sahsuland_data.bat (see note 4.1 below)
-
-An additional script in the installation directory can be used to create an example study, for example the *<my new user>* user created by the script *rif40_test_user.sql*:
-```
-sqlcmd -U <my new user> -P <my new user> -d sahsuland_dev -b -m-1 -e -r1 -i rif40_run_study.sql
-```
-
 ## 4.1 BULK INSERT Permission
 
 SQL Server needs access granted to `BULK INSERT` files, they are not copied from the client to the server.
@@ -231,121 +176,3 @@ WITH
 Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
 Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
 ```
-
-## 4.2 Re-running scripts
-
-### 4.2.1 Geospatial script: rif40_sahsuland_tiles.bat
-
-Re-runniong the geospatial script: rif40_sahsuland_tiles.bat will produce the following error:
-
-```
--- SQL statement 75: Remove old geolevels meta data table >>>
-DELETE FROM t_rif40_geolevels WHERE geography = 'SAHSULAND';
-
-Msg 547, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
-The DELETE statement conflicted with the REFERENCE constraint "rif40_covariates_geolevel_fk". The conflict occurred in database "sah
-suland_dev", table "rif40.rif40_covariates".
-Msg 3621, Level 0, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
-The statement has been terminated.
-```
-
-To resolve: delete the coariates. You must re-run rif40_sahsuland_data.bat afterwards.
-
-```
-DELETE FROM rif40.rif40_covariates WHERE geography = 'SAHSULAND';
-```
-### 4.2.2 Re-load sahsuland example data
-
-Re-load sahsuland example data with: rif40_sahsuland_data.bat
-
-## 4.3 SQL Server BULK INSERT Issues
-
-### 4.3.1 Line Termination
-
-```
-BULK INSERT rif_data.pop_sahsuland_pop FROM 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\DataLoaderData\SAHSULAND/pop_sahsuland_pop.csv'
-WITH
-(
-   FORMATFILE = 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\DataLoaderData\SAHSULAND/pop_sahsuland_pop.fmt',
-   TABLOCK,
-   FIRSTROW=2
-);
-
-Msg 245, Level 16, State 1, Server PETER-PC\SAHSU, Line 3
-' to data type int.hen converting the varchar value '0
-```
-
-* This is caused by line termination. SQL Server is expecting a Unix format file (i.e. with "\n" as a line terminator). The file is almost certainly in DOS 
-  format (with \r\n as a line terminator). Convert the file to Unix format using Notetab++, Cygwin/MingW dos2unix or perl:
-```
-perl -i -p -e "s/\r//" <oldfilename >newfilename
-```
-* The Githib repository has been fixed using a .gitattributes file:
-```
-# Declare files that will always have Unix LF line endings on checkout.
-*.csv text eol=lf
-*.fmt text eol=lf
-```
-
-# 5. Script Notes
-
-* All scripts except database creation are now transactional, with a script of the same name usually in the source code directory; 
-  The T-SQL functions sp_addsrvrolemember() and sp_addrolemember() are not tranactional;
-* The function rif40_sequence_current_value() is created earlier by the sequences SQL script and 
-  cannot be recreated once tables have been created;
-* rif40_import_data.bat is now path independent. The SQL script (in this directory) will now delete all 
-  setup data in the database!
-* All the default column constraints have now been named so they can be dropped and recreated. On an earlier 
-  database you will get errors like:
-
-```
-Msg 3729, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 6
-Cannot DROP FUNCTION 'rif40.rif40_sequence_current_value' because it is being referenced by object 'DF__t_rif40_r__inv_i__12A9974E'.
-```
-  Fix by running manually:
-
-  * rif40_drop_all_data.sql
-  * ..\sahsuland_dev\rif40\tables\recreate_all_tables.sql
-
-* The following tables are not present in SQL Server and not needed:
-                                
-	RIF40_DUAL                                           
-	RIF40_ICD10                                          
-	RIF40_ICD9                                           
-	RIF40_POPULATION_EUROPE                              
-	RIF40_POPULATION_US                                 
-	RIF40_POPULATION_WORLD                               
-	RIF40_TEST_HARNESS                                   
-	RIF40_TEST_RUNS                                     
-	T_RIF40_FDW_TABLES
-  
-* To be SQL Server temporary tables (i.e. ##g_rif40_comparison_areas) created by on-logon trigger:
-
-	G_RIF40_COMPARISON_AREAS                            
-	G_RIF40_STUDY_AREAS 
-
-## 5.1 Script and documentation TODO
-	
-Still to do:
-
-* Search path notes
-* On logon trigger - Postgres *rif40_startup()* function
-* Run study procedure *rif40_run_study()*
-* Fix selected columns:
-
-| type    | column_name                                                 | nullable | data_type        | Notes                           |       
-|---------|-------------------------------------------------------------|----------|------------------|---------------------------------| 
-| Extra   | RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISON_POPULATION          | NULL     | numeric          |                                 |   
-| Extra   | RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMN_EXISTS               | NOT NULL | varchar          |                                 |   
-| Extra   | RIF40_PARAMETERS.DESCRIPTION                                | NOT NULL | varchar          |                                 |   
-| Extra   | T_RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISON_POPULATION        | NULL     | numeric          |                                 |  
-| Extra   | T_RIF40_INVESTIGATIONS.ROWID                                | NOT NULL | uniqueidentifier |                                 |                                          
-| Missing | RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS              | NULL     | bool             | Fix Postgres spelling           |                               | 
-| Missing | RIF40_PARAMETERS.PARAM_DESCRIPTION                          | NULL     | VARCHAR2(250)    | Resolve with Postgres           |                               |    
-| Missing | T_RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION       | NULL     | NUMBER(38,6)     | Fix Postgres spelling           |                                          | 
-
-* Fix NULL/NOT NULL issues in postgres_diff_report.txt
-* Check Postgres alter 1-8 for minor changes
-
-Peter Hambly
-2nd March 2017
