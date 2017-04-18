@@ -74,6 +74,10 @@ rif40_drop_all_data.sql
 ..\sahsuland_dev\rif40\tables\recreate_all_tables.sql
 
  */
+
+--
+-- Expects: $(EXPORT_DIR) to set in sqlcmd
+--
  
 --
 -- Check database is sahsuland_dev
@@ -105,4 +109,4 @@ BACKUP DATABASE [sahsuland_dev] TO DISK='$(export_dir)sahsuland_dev.bak';
 GO
 
 --
--- Eof
+-- Eof (rif40_sahsuland_dev_install.sql)

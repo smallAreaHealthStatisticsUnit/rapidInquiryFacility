@@ -48,6 +48,15 @@
 SET QUOTED_IDENTIFIER ON;
 -- SET STATISTICS TIME ON;
 
+
+--
+-- Check database is not sahsuland_dev
+--
+DECLARE @database_name 	VARCHAR(30)=DB_NAME();
+IF (@database_name = 'sahsuland_dev')
+	RAISERROR('recreate_error_handling.sql: Database is sahsuland_dev: %s', 16, 1, @database_name);
+GO
+
 --
 -- Use a single transaction
 --
@@ -67,3 +76,6 @@ GO
 
 COMMIT;
 GO
+
+--
+-- Eof (recreate_error_handling.sql)

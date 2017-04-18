@@ -62,15 +62,18 @@ IF IS_SRVROLEMEMBER('sysadmin') = 1
 ELSE
 	RAISERROR('User: %s is not an administrator.', 16, 1, @CurrentUser);
 GO
+
+--
+-- Expects: $(IMPORT_DIR) and $(NEWDB) to set in sqlcmd
+--
 	
 --
 -- Re-create production databass. This will destroy all existing users and data
 --
-
-IF EXISTS(SELECT * FROM sys.sysdatabases where name='sahsuland')
-	DROP DATABASE sahsuland;
+IF EXISTS(SELECT * FROM sys.sysdatabases where name='$(NEWDB)')
+	DROP DATABASE $(NEWDB);
 GO	
-CREATE DATABASE sahsuland;
+CREATE DATABASE $(NEWDB);
 GO
 
 --
@@ -79,12 +82,11 @@ GO
 :r rif40_roles.sql
 
 --
--- Create database users, roles and schemas for sahsuland
+-- Create database users, roles and schemas for $(NEWDB)
 --
-USE [sahsuland];
+USE [$(NEWDB)];
 
 :r rif40_database_roles.sql
-
 
 -- 
 -- Use master DB
@@ -92,19 +94,24 @@ USE [sahsuland];
 USE master;
 
 --
--- Find the actual database file names for the new sahsuland DB
+-- Add custom error messages
+--
+:r ..\sahsuland_dev\error_handling\rif40_custom_error_messages.sql
+
+--
+-- Find the actual database file names for the new $(NEWDB) DB
 --
 SELECT DB_NAME(mf1.database_id) AS database_name,
 	   mf1.physical_name AS physical_db_filename,
 	   mf2.physical_name AS physical_log_filename 
   FROM sys.master_files mf1, sys.master_files mf2
  WHERE mf1.database_id = mf2.database_id
-   AND mf1.name        = 'sahsuland'
-   AND mf2.name        = 'sahsuland_log';
+   AND mf1.name        = '$(NEWDB)'
+   AND mf2.name        = '$(NEWDB)_log';
 GO
 
 --
--- Import database from ../production/sahsuland_dev.bak
+-- Import database from ../production/$(NEWDB)_dev.bak
 -- Grant local users read access to this directory
 --
 DECLARE c1_db CURSOR FOR
@@ -113,8 +120,8 @@ DECLARE c1_db CURSOR FOR
 	       mf2.physical_name AS physical_log_filename 
 	  FROM sys.master_files mf1, sys.master_files mf2
 	 WHERE mf1.database_id = mf2.database_id
-	   AND mf1.name        = 'sahsuland'
-	   AND mf2.name        = 'sahsuland_log';
+	   AND mf1.name        = '$(NEWDB)'
+	   AND mf2.name        = '$(NEWDB)_log';
 DECLARE @database_name 			VARCHAR(30);
 DECLARE @physical_db_filename 	VARCHAR(MAX);
 DECLARE @physical_log_filename 	VARCHAR(MAX);
@@ -126,21 +133,21 @@ CLOSE c1_db;
 DEALLOCATE c1_db;
 	
 DECLARE @sql_stmt NVARCHAR(MAX);
-SET @sql_stmt =	'RESTORE DATABASE [sahsuland]' + @crlf + 
-'        FROM DISK=''$(import_dir)sahsuland_dev.bak''' + @crlf +
+SET @sql_stmt =	'RESTORE DATABASE [$(NEWDB)]' + @crlf + 
+'        FROM DISK=''$(import_dir)$(NEWDB)_dev.bak''' + @crlf +
 '        WITH REPLACE,' + @crlf +
-'        MOVE ''sahsuland_dev'' TO ''' + @physical_db_filename + ''',' + @crlf +
-'        MOVE ''sahsuland_dev_log'' TO ''' + @physical_log_filename + '''';
+'        MOVE ''$(NEWDB)_dev'' TO ''' + @physical_db_filename + ''',' + @crlf +
+'        MOVE ''$(NEWDB)_dev_log'' TO ''' + @physical_log_filename + '''';
 PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
 EXECUTE sp_executesql @sql_stmt;
 GO
 
 --
--- Export database to ../production/sahsuland.bak
+-- Export database to ../production/$(NEWDB).bak
 -- Grant local users full control to this directory
 --
-BACKUP DATABASE [sahsuland] TO DISK='$(import_dir)sahsuland.bak';
+BACKUP DATABASE [$(NEWDB)] TO DISK='$(import_dir)$(NEWDB).bak';
 GO
 
 --
--- Eof
+-- Eof (rif40_production_creation.sql)

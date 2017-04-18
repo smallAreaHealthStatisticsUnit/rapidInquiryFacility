@@ -42,7 +42,7 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_production_user.sql -v newuser=testuser
+-- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_production_user.sql -v newuser=testuser -v newdb=testdb
 -- Connect flags if required: -E -S<myServerinstanceName>
 --
 -- User is created with rif_user (can create tables and views), rif_manager (can also create procedures and functions), can do BULK INSERT
@@ -52,6 +52,9 @@
 -- Will fail to re-create a user if the user already has objects (tables, views etc)
 --
 
+--
+-- Expects: $(NEWUSER) and $(NEWDB) to set in sqlcmd
+--
 USE [master];
 GO
 
@@ -74,7 +77,7 @@ GO
 CREATE LOGIN [$(NEWUSER)] WITH PASSWORD='$(NEWUSER)', CHECK_POLICY = OFF;
 GO
 
-ALTER LOGIN [$(NEWUSER)] WITH DEFAULT_DATABASE = [sahsuland_dev];
+ALTER LOGIN [$(NEWUSER)] WITH DEFAULT_DATABASE = [$(NEWDB)];
 GO
 
 --
@@ -82,16 +85,10 @@ GO
 --
 EXEC sp_addsrvrolemember @loginame = N'$(NEWUSER)', @rolename = N'bulkadmin';
 GO		
-
---
--- Allow SHOWPLAN
---
-GRANT VIEW SERVER STATE TO [$(NEWUSER)];
-GO
 	
-USE [sahsuland];
+USE [$(NEWDB)];
 
-:r user_objects.sql
+:r rif40_user_objects.sql
 
 --
--- Eof
+-- Eof (rif40_production_user.sql)

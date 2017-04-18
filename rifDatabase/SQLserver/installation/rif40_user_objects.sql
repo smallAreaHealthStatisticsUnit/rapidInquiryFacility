@@ -367,5 +367,5 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description',
 GO
  */
 
---
--- Eof
+-- 
+-- Eof (rif40_user_objects.sql)

@@ -292,4 +292,4 @@ END;
 GO
 
 --
--- Eof
+-- Eof (rif40_run_study.sql)

@@ -98,4 +98,5 @@ BEGIN
 END;
 GO
 
-
+--
+-- Eof (rif40_setup_custom_errors.sql)

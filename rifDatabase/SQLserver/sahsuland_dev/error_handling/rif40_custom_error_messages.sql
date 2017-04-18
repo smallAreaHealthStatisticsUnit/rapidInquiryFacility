@@ -2,10 +2,24 @@
 Custom error messages for functions in rif40.  Mostly used by the trigger functions.
 */
 
-USE master;
-
 --clean up old versions:
-EXEC [sahsuland_dev].[rif40].[rif40_setup_custom_errors];
+DECLARE @error_curs CURSOR, @m_id int;
+SET @error_curs = CURSOR FOR
+	select message_id
+	from sys.messages
+	where message_id >= 50000 and text like '%rif40%'; 
+OPEN @error_curs;
+FETCH @error_curs INTO @m_id;
+		
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	EXEC sp_dropmessage @m_id;
+	FETCH @error_curs INTO @m_id;	
+END;
+CLOSE @error_curs;
+DEALLOCATE @error_curs;
+PRINT 'rif40_custom_error_messages.sql: All RIF-related custom error messages have been removed.';
+GO
 
 --all new error messages.  They must have an id of > 50000 and the text contains 'rif40'
 EXEC sp_addmessage 50020, 16, 
@@ -496,4 +510,4 @@ EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages'
 USE sahsuland_dev;
 
 --
--- Eof
+-- Eof (rif40_custom_error_messages.sql)

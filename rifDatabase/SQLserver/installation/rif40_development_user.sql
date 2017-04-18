@@ -91,7 +91,7 @@ GO
 	
 USE [sahsuland_dev];
 
-:r user_objects.sql
+:r rif40_user_objects.sql
 	
 USE [test];
 
@@ -121,4 +121,4 @@ SELECT * FROM sys.schemas WHERE name = N'$(NEWUSER)';
 GO
 
 --
--- Eof
+-- Eof (rif40_development_user.sql)

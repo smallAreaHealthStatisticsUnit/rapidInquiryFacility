@@ -92,4 +92,4 @@ USE [sahsuland_dev];
 :r rif40_database_roles.sql
 
 --
--- Eof
+-- Eof (rif40_development_creation.sql)

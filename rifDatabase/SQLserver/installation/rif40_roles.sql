@@ -95,4 +95,4 @@ GRANT VIEW SERVER STATE TO [rif40];
 GO
 
 --
--- Eof
+-- Eof (rif40_roles.sql)
