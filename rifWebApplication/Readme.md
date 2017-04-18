@@ -161,9 +161,12 @@ e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*
 Otherwise run the following commands by hand:
 ```
 mvn --version
-cd rifGenericLibrary; mvn -Dmaven.test.skip=true install
-cd rapidInquiryFacility ;mvn -Dmaven.test.skip=true install
-cd rifServices ; mvn -Dmaven.test.skip=true instal
+cd rifGenericLibrary
+mvn -Dmaven.test.skip=true install
+cd rapidInquiryFacility
+mvn -Dmaven.test.skip=true install
+cd rifServices
+mvn -Dmaven.test.skip=true instal
 ```
 
 Maven produces a lot of output:
