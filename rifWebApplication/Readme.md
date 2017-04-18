@@ -34,6 +34,10 @@ RIF Web Services
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
+- [ 6. Patching](#6-patching)
+   - [6.1 RIF Web Application](#61-rif-web-application)
+   - [6.2 RIF Middleware](#62-rif-middleware)
+   - [6.3 Tomcat](#63-tomcat)
    
 # 1. Installation Prerequistes
 
@@ -207,6 +211,8 @@ development team.
 
 ### 3.1.2 Taxonomy Service
 
+If SAHSU has supplied a taxonomyServices.war file skip to step 3.
+
 1) Get the Taxonomy Service XML file *ClaML.dtd*. This is stored in is stored in ...rifServices\src\main\resources. A complete ICD10 version 
    is available from SAHSU for Organisations compliant with the WHO licence.
 2) Build the Taxonomy Service using *maven*.
@@ -246,9 +252,9 @@ development team.
 
 Create RIF4 in web-apps:
 
-* *cd "C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4"*
+* Change directory to *%CATALINA_HOME%\webapps*; e,g, *cd "C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps"*
 * Create the directory *RIF4*
-* Copy all from the drecitory: *"C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifWebApplication\src\main\webapp\WEB-INF"* 
+* Copy all files and directories from the directory: *"C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifWebApplication\src\main\webapp\WEB-INF"* 
   to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\ROOT\WEB-INF*
 
 **BEFORE YOU RUN THE RIF YOU MUST SETUP THE DATABASE AND NETWORKING IN TOMCAT FIRST**
@@ -260,7 +266,7 @@ it is not automatically spotted unlike the services *.war* files..
 
 ## 4.1 Setup Database
 
-The Java connector for theRifServices middles is setup in the file: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*
+The Java connector for theRifServices middleware is setup in the file: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*
 
 * If the folder rifServices does not exist; start tomcat and it will be expanded from the war file.
 * The database name (databaseName) is normally *sahsuland*
@@ -463,9 +469,11 @@ This setup will support:
 
 2. Create a system ODBC datasource for the database in use; the default is:
 
-   * ODBC sytsrem data source: ```odbcDataSourceName=PostgreSQL30```
+   * ODBC sytstem data source: ```odbcDataSourceName=PostgreSQL30```
 
-These setting are in the Java connector for the RifServices middleware: *rifServices/src/main/resources/RIFServiceStartupProperties.properties*
+   For SQL Server use SQL Server Native Client version 11, 2011 version or later; 
+   
+These settings are in the Java connector for the RifServices middleware: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*
 
 **BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
 
@@ -478,7 +486,7 @@ odbcDataSourceName=PostgreSQL30
 extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies
 ```
   
-More to be added.
+**More to be added; especially R packages; debugging.**
 
 ## 4.4 Common Setup Errors
 
@@ -561,7 +569,7 @@ See *3.1.2 Taxonomy Service*, and *4.4.3 Unable to unpack war files*
 
 ### 4.4.5 RIF Services crash on logon  
 
-This is an unhandled exception; caused by CATALINA_HOME not being set in the environment. This will be changed to a more obvious error.
+This is an unhandled exception; caused by CATALINA_HOME not being set in the environment (```C A T A L I N A  H O M E==null==```). This will be changed to a more obvious error.
 
 ```
 RIFServiceStartupOptions is web deployment
@@ -575,7 +583,7 @@ The RuntimeException could not be mapped to a response, re-throwing to the HTTP 
 
 ### 4.4.6 SQL Server TCP/IP Java Connection Errors
 
-This error below is caused by firewall issues:
+This error below is caused by firewall issues, users can connect using SQL Server Management studio and *sqlcmd*:
 
 ```
 com.microsoft.sqlserver.jdbc.SQLServerException: The TCP/IP connection to the host localhost, port 1433 has failed. Error: "Connection refused: connect. 
@@ -700,6 +708,39 @@ The method for configuring a specific port is detailed in: https://docs.microsof
 The service address and port used should match what you setup up in *4.2 Setup Network*. If this does not:
 
 * Restart tomcat;
-* Flush your rowser cache (this is especially important for Google Chrome and Mozilla Firefox).
+* Flush your browser cache (this is especially important for Google Chrome and Mozilla Firefox).
 
+# 6. Patching 
+
+## 6.1 RIF Web Application  
+
+* Save the RIF web application file *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-requests.js* outside of the tomcat tree; 
+* Stop Tomcat;
+* Change directory to *%CATALINA_HOME%\webapps*; rename RIF4 to RIF4.old;
+* Follow the instructions in 
+[section 3.2 for installing the RIF Web Application](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#32-rif-web-application)
+* Restore *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-requests.js*;
+* Start tomcat;
+* When you are satisiffied with the patch remove the RIF4.old directory in *%CATALINA_HOME%\webapps*.
+
+## 6.2 RIF Middleware
+
+* Save the Java connector for the RifServices middleware: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties* 
+outside of the tomcat tree;
+* Stop Tomcat;
+* Change directory to *%CATALINA_HOME%\webapps*; rename the .WAR files to .WAR.OLD; rename the rifServices and taxonomyServices trees to .old;
+* Follow the instructions in 
+[section 3.1 for installing the web services](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#311-rif-services);
+* Start tomcat, check rifServices and taxonomyServices are unpacked and check they are running in the logs;
+* Restore *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*;
+* Restart tomcat;
+* When you are satisiffied with the patch remove the .old files and directories in *%CATALINA_HOME%\webapps*.
+
+## 6.3 Tomcat
+
+To be added. Files to be saved/restored:
+
+* *%CATALINA_HOME%/conf/server.xml*
+* *%CATALINA_HOME%/conf/web.xml*
+ 
 Peter Hambly, 12th April 2017
