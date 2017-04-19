@@ -7,6 +7,7 @@ SQL Server Production Database Installation
    - [2.1 Network connection errors](#21-network-connection-errors)
    - [2.2 Logon errors](#22-logon-errors)
      - [2.2.1 Wrong server authentication mode](#221-wrong-server-authentication-mode)
+   - [2.3 SQL Server Restore](#23-sql-server-restore)
 - [3. Create Additional Users](#3-create-additional-users)
 
 # 1. Install SQL Server 2012 SP2
@@ -147,6 +148,34 @@ rif40
 
 The database specified by *db_name()* will be the one specified by $(NEWDB). Running this script against a pre-existing development user 
 will change the default database from *sahsuland_dev* to *$(NEWDB)*.
+
+## 2.3 SQL Server Restore
+
+SQL Server needs access granted to the drectories used to the `RESTORE` file used to import the database.
+
+SQL Server needs access to the current directory. The simplest
+way is to allow read/executre permission to the local users group (e.g. PH-LAPTOP\Users).
+
+*DO NOT TRY `RESTORE` FROM NETWORK DRIVES or CLOUD DRIVES (e.g. Google Drive).* Use a local directory which SQL Server has
+access to; e.g. somewhere on the C: drive. Note that SQL Server *RESTORE* behaves dirrently if you logon using Windows authentication (where it will use your credentials 
+to access the files) to using a username and password (where it will use the Server's credentials to acces the file).
+
+```
+--
+-- Export database to ../production/sahsuland_dev.bak
+-- Grant local users full control to this directory
+--
+BACKUP DATABASE [sahsuland_dev] TO DISK='C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\
+production\sahsuland_dev.bak';
+
+Msg 3201, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 6
+Cannot open backup device 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\production\sah
+suland_dev.bak'. Operating system error 5(Access is denied.).
+Msg 3013, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 6
+BACKUP DATABASE is terminating abnormally.
+rif40_sahsuland_dev_install.sql exiting with 1
+rif40_sahsuland_dev_install.bat exiting with 1
+```
 
 # 3. Create Additional Users
 
