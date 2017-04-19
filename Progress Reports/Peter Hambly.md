@@ -1185,6 +1185,12 @@ GO
 * SQL server rif40_startup fixed, rif40_num_denom and rif40_num_denom_errors fixed
 * Rebuild wpea-rif1; small TESTUSER fix; tomcat setup requires work
 
+#### 18th to 21st April
+
+* SQL Server install of *sahusland* via a backup and restore
+* Ask for username and password
+* Production installer scripts separate from github tree
+
 #### Current TODO list (April 2017): SQL Server Port
 
 * Complete SQL Server run study port

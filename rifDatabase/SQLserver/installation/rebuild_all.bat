@@ -121,7 +121,6 @@ if %errorlevel% neq 0  (
 REM
 REM Create development user
 REM
-ECHO ON
 sqlcmd -E -b -m-1 -e -i rif40_development_user.sql -v newuser="%SNEWUSER%" -v newpw="%SNEWPW%"
 if %errorlevel% neq 0  (
 	ECHO rif40_development_user.sql exiting with %errorlevel%

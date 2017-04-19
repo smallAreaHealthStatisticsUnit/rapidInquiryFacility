@@ -123,9 +123,9 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_s
 
 ## 3.1 Logon errors
 
-Test for logon errors as using the command: `sqlcmd -U rif40 -P rif40 -d sahsuland_dev`
+Test for logon errors as using the command: `sqlcmd -U peter -P XXXXXXXXXXXXXXXX -d sahsuland_dev`
 
-Test all combinations of *rif40*/*rifuser*/*rifmanager* logon roles and *sahsuland*/*sahsuland_dev* databases.
+Test all combinations of *sahsuland*/*sahsuland_dev*/*test* databases.
 
 ### 3.1.1 Wrong server authentication mode
 
@@ -133,23 +133,23 @@ The server will need to be changed from Windows Authentication mode to SQL Serve
 See: https://msdn.microsoft.com/en-GB/library/ms188670.aspx
 
 ```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U rif40 -P rif40 -d sahsuland_dev
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P XXXXXXXXXXXXXXXX -d sahsuland_dev
 Msg 18456, Level 14, State 1, Server PETER-PC\SQLEXPRESS, Line 1
-Login failed for user 'rif40'.
+Login failed for user 'peter'.
 ```
 
   In the Window "applications" event log:
 ```
-Login failed for user 'rif40'. Reason: An attempt to login using SQL authentication failed. Server is configured for Windows authentication only. [CLIENT: <local machine>]
+Login failed for user 'peter'. Reason: An attempt to login using SQL authentication failed. Server is configured for Windows authentication only. [CLIENT: <local machine>]
 ```
 
   The node also show how to enable the sa (system adminstrator) account. As with all relational database adminstration accounts as strong (12+ chacracter) password is recommended to defeat 
   attacks by dictionary or all possible passwords.
 
-  This is what a successful login looks like: `sqlcmd -U rif40 -P rif40`
+  This is what a successful login looks like: `sqlcmd -U peter -P XXXXXXXXXXXXXXXX`
 
 ```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U rif40 -P rif40
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P XXXXXXXXXXXXXXXX
 1> SELECT db_name();
 2> GO
 
@@ -199,7 +199,8 @@ as Administrator:
 * rif40_development_creation.sql - creates the developement databases *sahsuland_dev* and *test*.
 * rif40_sahsuland_dev_install.bat - to create and export *sahsuland_dev* (see notes 4.1 and 4.3 below before you run this script)
 * rif40_sahsuland_install.bat - to create the *sahsuland* database and restore the *sahsuland_dev* backup into it 
-  (see note 4.3 below before you run this script). This is described in detail in: 
+  (see note 4.3 below before you run this script). This script also causes a pause before rebuilding *sahsuland*.
+  This is described in detail in: 
   https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/production/INSTALL.md
 * rif40_development_user.sql - to create the development user (default database *sahsuland_dev*)
 * rif40_run_study.sql - test the development user by running a study
@@ -349,7 +350,7 @@ Cannot DROP FUNCTION 'rif40.rif40_sequence_current_value' because it is being re
 	RIF40_TEST_RUNS                                     
 	T_RIF40_FDW_TABLES
   
-* To be SQL Server temporary tables (i.e. ##g_rif40_comparison_areas) created by on-logon trigger:
+* To be SQL Server temporary tables (i.e. #g_rif40_comparison_areas) created by the *rif40_run_study* procedure:
 
 	G_RIF40_COMPARISON_AREAS                            
 	G_RIF40_STUDY_AREAS 
