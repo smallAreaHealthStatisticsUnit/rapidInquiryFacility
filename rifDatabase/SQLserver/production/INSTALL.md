@@ -146,7 +146,7 @@ rif40
 ``` 
 
 The database specified by *db_name()* will be the one specified by $(NEWDB). Running this script against a pre-existing development user 
-will chnaged the default database from *sahsuland_dev* to *$(NEWDB)*.
+will change the default database from *sahsuland_dev* to *$(NEWDB)*.
 
 # 3. Create Additional Users
 
