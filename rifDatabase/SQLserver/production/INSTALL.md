@@ -70,6 +70,7 @@ New user password [default kevin]:  garwood
 Press any key to continue . . .
 ```
 
+* Trumpton as in *https://en.wikipedia.org/wiki/Trumpton*!
 * Typing ```<enter>``` produces a lot of output. Successful completion looks like:
 
 ```
