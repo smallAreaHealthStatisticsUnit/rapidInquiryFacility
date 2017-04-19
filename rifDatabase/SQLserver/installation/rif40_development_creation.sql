@@ -86,6 +86,17 @@ DROP LOGIN [rif40];
 GO
 
 --
+-- Drop historic logins for rif roles
+--
+IF EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'rifuser') 
+DROP LOGIN [rifuser];
+GO
+
+IF EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'rifmanager') 
+DROP LOGIN [rifmanager];
+GO
+
+--
 -- Re-create logins and roles
 --
 :r rif40_roles.sql

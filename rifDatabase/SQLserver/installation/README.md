@@ -5,9 +5,9 @@ SQL Server Development Database Installation
 - [1. Install SQL Server 2012 SP2](#1-install-sql-server-2012-sp2)
 - [2. Create Databases and Users](#2-create-databases-and-users)
    - [2.1 Network connection errors](#21-network-connection-errors)
-   - [2.2 Logon errors](#22-logon-errors)
-     - [2.2.1 Wrong server authentication mode](#221-wrong-server-authentication-mode)
 - [3. Create Additional Users](#3-create-additional-users)
+   - [3.1 Logon errors](#31-logon-errors)
+     - [3.1.1 Wrong server authentication mode](#311-wrong-server-authentication-mode)
 - [4. Installing the RIF Schema](#4-installing-the-rif-schema)
   - [4.1 BULK INSERT Permission](#41-bulk-insert-permission)
   - [4.2 Re-running scripts](#42-re-running-scripts)
@@ -42,10 +42,14 @@ Microsoft SQL Server 2012 (SP2-GDR) (KB3194719) - 11.0.5388.0 (X64)
 
 # 2. Create Databases and Users
 
+**This section details the original method the script *rif40_development_creation.sql*, iot is useful to sort out connection problems. 
+The easier way is to skip to section 4, and run  *rebuild_all.bat* which runs all the required scriipts in sequence and prompts for 
+the RIF user and user password.**
+
 Run the following command as Administrator in this directory (...rapidInquiryFacility\rifDatabase\SQLserver\installation):
 
 ```
-sqlcmd -E -b -m-1 -e -i rif40_database_creation.sql
+sqlcmd -E -b -m-1 -e -i rif40_development_creation.sql
 ```
 Note:
 - **_This script will destroy all existing users and data_**;
@@ -55,10 +59,9 @@ Note:
   * The role *rif_user* allows users to create tables and views;
   * The role *rif_manager* allows users to additionally create procedures and functions;
   * The rif40 user can do BULK INSERT;
-  * The default database is *sahsuland_dev*;* The *rif40* users password is `rif40`. Chnage it after install.
+  * The password for the rif40 login is random; this user is purely present to own objects;
+  * The default database is *sahsuland_dev*;
 - The application is installed in the *rif40* schema and data is installed in the *rif_data* schema; both owned by the *rif40* role;
-- Please edit the script to set *rif40*/*rifuser*/*rifmanager* passwords as they are set to their **_usernames_**, especially if 
-  your SQL Server database is networked! 
 - The test database is for building geosptial data. SQL Server express databases are limited to 10G in size; so to maximise the size of data that can be processed
   a separate database is used.
 
@@ -84,15 +87,46 @@ Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
   * Check your firewall permits access to TCP port 1433. **Be careful _not_ to allow Internet access unless you intend it.**
   * The following is more helpful than the official Microsoft manuals: https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/
 
-Now test your can connect to the database.
+# 3. Create Additional Users
 
-## 2.2 Logon errors
+Run the optional script *rif40_development_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
+the -v newuser=<my new user> and -v newpw=<my new password> parameters. Run as Administrator:
+
+```
+sqlcmd -E -b -m-1 -e -i rif40_development_user.sql -v newuser=peter -v newpw=XXXXXXXXXXXXXXXX
+```
+
+* User is created with the *rif_user* (can create tables and views) and *rif_manager* roles (can also create procedures and functions), can do `BULK INSERT`;
+* User can use sahsuland, sahsuland_dev and test databases;
+* The test database is for geospatial processing and does not have the *rif_user* and *rif_manager* roles, the user can create tables, views,
+* procedures and function and do `BULK INSERT`s
+* Will fail to re-create a user if the user already has objects (tables, views etc)
+
+Now test your can connect to the database and check your object creation privileges:
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P peter -d test
+1> SELECT db_name() AS db_name INTO test_table;
+2> SELECT * FROM test_table;
+3> go
+
+(1 rows affected)
+db_name
+--------------------------------------------------------------------------------------------------------------------------------
+test
+
+(1 rows affected)
+1> quit
+
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>
+```
+
+## 3.1 Logon errors
 
 Test for logon errors as using the command: `sqlcmd -U rif40 -P rif40 -d sahsuland_dev`
 
 Test all combinations of *rif40*/*rifuser*/*rifmanager* logon roles and *sahsuland*/*sahsuland_dev* databases.
 
-### 2.2.1 Wrong server authentication mode
+### 3.1.1 Wrong server authentication mode
 
 The server will need to be changed from Windows Authentication mode to SQL Server and Windows Authentication mode. Then restart SQL Server. 
 See: https://msdn.microsoft.com/en-GB/library/ms188670.aspx
@@ -124,39 +158,6 @@ sahsuland_dev
 (1 rows affected)
 1>
 ``` 
-# 3. Create Additional Users
-
-Run the optional script *rif40_development_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
-the -v newuser=<my new user> parameter. Run as Administrator:
-
-```
-sqlcmd -E -b -m-1 -e -i rif40_development_user.sql -v newuser=peter
-```
-
-* User is created with the *rif_user* (can create tables and views) and *rif_manager* roles (can also create procedures and functions), can do `BULK INSERT`;
-* User can use sahsuland, sahsuland_dev and test databases;
-* The test database is for geospatial processing and does not have the *rif_user* and *rif_manager* roles, the user can create tables, views,
-* procedures and function and do `BULK INSERT`s
-* Will fail to re-create a user if the user already has objects (tables, views etc)
-* This user's password will be the username, so change it on a networked system.
-
-Test connection and object privilges:
-```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P peter -d test
-1> SELECT db_name() AS db_name INTO test_table;
-2> SELECT * FROM test_table;
-3> go
-
-(1 rows affected)
-db_name
---------------------------------------------------------------------------------------------------------------------------------
-test
-
-(1 rows affected)
-1> quit
-
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>
-```
  
 # 4. Installing the RIF Schema
 
@@ -169,7 +170,10 @@ An additional script is proved to build exverything and create an example study.
 username, so change it on a networked system:
 
 * rebuild_all.bat (see note 4.1 below before you run this script)
-  rebuild_all.bat can be abort using *control-C*; no other key will abort the script. You will be asked if you want to abort; 'Y' or 'y' will abort; any other keys will continue
+  rebuild_all.bat can be abort using *control-C*; no other key will abort the script. 
+  * This script prompts for the username and password. The default username is *peter*.
+  * This user's password by defaulkt will be the username, so change it on a networked system
+  * You will be asked if you want to abort; 'Y' or 'y' will abort; any other keys will continue
 	```
 	C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>rebuild_all.bat
 
@@ -188,7 +192,7 @@ username, so change it on a networked system:
     ```
 
 **These scripts do NOT drop existing tables, the database must be rebuilt from scratch**.
-**You _must_ build sahusland_dev before sahusland**; as it loads the error messages.
+**You _must_ build sahusland_dev before sahusland**; as *sahsuland_dev* is exported as the basis for *sahsuland*.
 
 The indivuidual scripts can be run by batch files for sahsuland_dev only, but they must be run in this order:
 
