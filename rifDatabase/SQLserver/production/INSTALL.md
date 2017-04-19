@@ -108,7 +108,7 @@ Now test your can connect to the database.
 
 ## 2.2 Logon errors
 
-Test for logon errors as using the command: `sqlcmd -U peter -P XXXXXXXXXXXX -d sahsuland_dev`
+Test for logon errors as using the command: `sqlcmd -U peter -P XXXXXXXXXXXX
 
 ### 2.2.1 Wrong server authentication mode
 
@@ -116,7 +116,7 @@ The server will need to be changed from Windows Authentication mode to SQL Serve
 See: https://msdn.microsoft.com/en-GB/library/ms188670.aspx
 
 ```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P XXXXXXXXXXXX -d sahsuland_dev
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P XXXXXXXXXXXX
 Msg 18456, Level 14, State 1, Server PETER-PC\SQLEXPRESS, Line 1
 Login failed for user 'peter'.
 ```
@@ -142,6 +142,10 @@ sahsuland
 (1 rows affected)
 1>
 ``` 
+
+The database specified by *db_name()* will be the one specified by $(NEWDB). Running this script against a pre-existing development user 
+will chnaged the default database from *sahsuland_dev* to *$(NEWDB)*.
+
 # 3. Create Additional Users
 
 Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
