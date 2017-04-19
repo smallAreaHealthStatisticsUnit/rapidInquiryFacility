@@ -57,11 +57,11 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\produ
 Administrator PRIVILEGES Detected!
 Creating production RIF database
 New user [default peter]:  kevin
-New RIF40 db [default sahsuland]: trumpton
+New RIF40 db [default sahsuland]: rif40
 New user password [default kevin]:  garwood
 ##########################################################################################
 #
-# WARNING! this script will the drop and create the RIF40 trumpton database.
+# WARNING! this script will the drop and create the RIF40 rif40 database.
 # Type control-C to abort.
 #
 # Test user: kevin; password: garwood
@@ -70,7 +70,6 @@ New user password [default kevin]:  garwood
 Press any key to continue . . .
 ```
 
-* Trumpton as in *https://en.wikipedia.org/wiki/Trumpton*!
 * Typing ```<enter>``` produces a lot of output. Successful completion looks like:
 
 ```
@@ -140,7 +139,7 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_s
 2> GO
 
 --------------------------------------------------------------------------------------------------------------------------------
-trumpton
+rif40
 
 (1 rows affected)
 1>
@@ -172,7 +171,7 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_s
 (1 rows affected)
 db_name
 --------------------------------------------------------------------------------------------------------------------------------
-trumpton
+rif40
 
 (1 rows affected)
 1> quit
