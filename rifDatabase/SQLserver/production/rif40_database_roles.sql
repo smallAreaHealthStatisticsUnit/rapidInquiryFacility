@@ -55,33 +55,15 @@ IF (@database_name = 'master')
 GO
 
 --
--- Create database users, roles and schemas for sahsuland
+-- Create database users, roles and schemas for sahsuland/sahsuland_dev
 --
 
-IF EXISTS (SELECT name FROM sys.database_principals WHERE name = N'rif40')
-	DROP USER [rif40];
+IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'rif40')
+	CREATE USER [rif40] FOR LOGIN [rif40] WITH DEFAULT_SCHEMA=[dbo];
 GO
-CREATE USER [rif40] FOR LOGIN [rif40] WITH DEFAULT_SCHEMA=[dbo];
-GO
-IF EXISTS (SELECT name FROM sys.database_principals WHERE name = N'rifuser')
-	DROP USER [rifuser];
-GO
-CREATE USER [rifuser] FOR LOGIN [rifuser] WITH DEFAULT_SCHEMA=[dbo];
-GO
-IF EXISTS (SELECT name FROM sys.database_principals WHERE name = N'rifmanager')
-	DROP USER [rifmanager];
-GO
-CREATE USER [rifmanager] FOR LOGIN [rifmanager] WITH DEFAULT_SCHEMA=[dbo];
-GO
-	
+
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif40')
 EXEC('CREATE SCHEMA [rif40] AUTHORIZATION [rif40]');
-GO
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rifuser')
-EXEC('CREATE SCHEMA [rifuser] AUTHORIZATION [rifuser]');
-GO
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rifmanager')
-EXEC('CREATE SCHEMA [rifmanager] AUTHORIZATION [rifmanager]');
 GO
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif_data')
 EXEC('CREATE SCHEMA [rif_data] AUTHORIZATION [rif40]');
@@ -92,16 +74,8 @@ GO
 
 ALTER USER [rif40] WITH DEFAULT_SCHEMA=[rif40];
 GO
-ALTER USER [rifuser] WITH DEFAULT_SCHEMA=[rifuser];
-GO
-ALTER USER [rifmanager] WITH DEFAULT_SCHEMA=[rifmanager];
-GO
 
 ALTER LOGIN [rif40] WITH DEFAULT_DATABASE = [sahsuland_dev];
-GO
-ALTER LOGIN [rifuser] WITH DEFAULT_DATABASE = [sahsuland_dev];
-GO
-ALTER LOGIN [rifmanager] WITH DEFAULT_DATABASE = [sahsuland_dev];
 GO
 
 --
@@ -159,16 +133,6 @@ GO
 -- Grant USAGE on the rif_studies schema to RIF40. This implies control
 --
 GRANT ALTER ON SCHEMA :: rif_studies TO [rif40];
-GO
-
---
--- Grant roles to users
---
-EXEC sp_addrolemember @membername = N'rifuser', @rolename = N'rif_user'; 
-GO
-EXEC sp_addrolemember @membername = N'rifmanager', @rolename = N'rif_user'; 
-GO
-EXEC sp_addrolemember @membername = N'rifmanager', @rolename = N'rif_manager'; 
 GO
 
 SELECT name, type_desc FROM sys.database_principals WHERE name LIKE '%rif%';

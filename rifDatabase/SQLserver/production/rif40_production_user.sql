@@ -75,13 +75,7 @@ CREATE LOGIN [$(NEWUSER)] WITH PASSWORD='$(NEWPW)', CHECK_POLICY = OFF;
 GO
 
 ALTER LOGIN [$(NEWUSER)] WITH DEFAULT_DATABASE = [$(NEWDB)];
-GO
-
---
--- Allow BULK INSERT
---
-EXEC sp_addsrvrolemember @loginame = N'$(NEWUSER)', @rolename = N'bulkadmin';
-GO		
+GO	
 	
 USE [$(NEWDB)];
 

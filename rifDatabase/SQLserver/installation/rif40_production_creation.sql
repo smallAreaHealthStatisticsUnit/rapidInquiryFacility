@@ -134,7 +134,7 @@ DEALLOCATE c1_db;
 	
 DECLARE @sql_stmt NVARCHAR(MAX);
 SET @sql_stmt =	'RESTORE DATABASE [$(NEWDB)]' + @crlf + 
-'        FROM DISK=''$(import_dir)$(NEWDB)_dev.bak''' + @crlf +
+'        FROM DISK=''$(import_dir)sahsuland_dev.bak''' + @crlf +
 '        WITH REPLACE,' + @crlf +
 '        MOVE ''$(NEWDB)_dev'' TO ''' + @physical_db_filename + ''',' + @crlf +
 '        MOVE ''$(NEWDB)_dev_log'' TO ''' + @physical_log_filename + '''';

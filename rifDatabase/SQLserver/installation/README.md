@@ -97,11 +97,13 @@ the -v newuser=<my new user> and -v newpw=<my new password> parameters. Run as A
 sqlcmd -E -b -m-1 -e -i rif40_development_user.sql -v newuser=peter -v newpw=XXXXXXXXXXXXXXXX
 ```
 
-* User is created with the *rif_user* (can create tables and views) and *rif_manager* roles (can also create procedures and functions), can do `BULK INSERT`;
-* User can use sahsuland, sahsuland_dev and test databases;
-* The test database is for geospatial processing and does not have the *rif_user* and *rif_manager* roles, the user can create tables, views,
-* procedures and function and do `BULK INSERT`s
-* Will fail to re-create a user if the user already has objects (tables, views etc)
+* User is created with the *rif_user* (can create tables and views) and *rif_manager* roles (can also create procedures and functions), 
+  can do `BULK INSERT`;
+* User can use sahsuland_dev and test databases;
+* The test database is for geospatial processing and does not have the *rif_user* and *rif_manager* roles, the user can create tables, 
+  views;
+* procedures and function and do `BULK INSERT`s;
+* Will fail to re-create a user if the user already has objects (tables, views etc);
 
 Now test your can connect to the database and check your object creation privileges:
 ```
@@ -162,7 +164,7 @@ sahsuland_dev
  
 # 4. Installing the RIF Schema
 
-A script is proved to build exverything and create an example study. This should be edited to set the test user variable, NEWUSER. Note that this user's password will be the 
+A script is proved to build everything and create an example study. Note that this user's password will be the 
 username, so change it on a networked system:
 
 * rebuild_all.bat (see note 4.1 below before you run this script)

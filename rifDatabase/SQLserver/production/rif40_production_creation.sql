@@ -42,7 +42,7 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql -v import_dir="%cd%\..\production\" -v newdb="%NEWDB%"
+-- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql -v import_dir="%cd%\" -v newdb="%NEWDB%"
 -- Connect flags if required: -E -S<myServerinstanceName>
 --
 
@@ -111,7 +111,7 @@ SELECT DB_NAME(mf1.database_id) AS database_name,
 GO
 
 --
--- Import database from ../production/$(NEWDB)_dev.bak
+-- Import database from ./sahsuland_dev.bak into $(NEWDB); fixing the log file names so to be as just created for $(NEWDB)
 -- Grant local users read access to this directory
 --
 DECLARE c1_db CURSOR FOR
@@ -134,7 +134,7 @@ DEALLOCATE c1_db;
 	
 DECLARE @sql_stmt NVARCHAR(MAX);
 SET @sql_stmt =	'RESTORE DATABASE [$(NEWDB)]' + @crlf + 
-'        FROM DISK=''$(import_dir)$(NEWDB)_dev.bak''' + @crlf +
+'        FROM DISK=''$(import_dir)sahsuland_dev.bak''' + @crlf +
 '        WITH REPLACE,' + @crlf +
 '        MOVE ''$(NEWDB)_dev'' TO ''' + @physical_db_filename + ''',' + @crlf +
 '        MOVE ''$(NEWDB)_dev_log'' TO ''' + @physical_log_filename + '''';
