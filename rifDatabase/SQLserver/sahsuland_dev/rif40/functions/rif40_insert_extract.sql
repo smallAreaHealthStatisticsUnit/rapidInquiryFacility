@@ -69,10 +69,12 @@ Description:	Insert data into extract table
 	SET @rval=1; 	-- Success
 	
 	DECLARE c1insext2 CURSOR FOR
-		SELECT study_id 
+		SELECT study_id, year_start, year_stop 
 		  FROM rif40_studies a
 		 WHERE a.study_id = @study_id;
 	DECLARE @c1_rec_study_id INTEGER;
+	DECLARE @c1_rec_year_start INTEGER;
+	DECLARE @c1_rec_year_stop INTEGER;
 --
 	DECLARE @sql_stmt		NVARCHAR(MAX);
 	DECLARE @ddl_stmts 	Sql_stmt_table;
@@ -85,8 +87,10 @@ Description:	Insert data into extract table
 	DECLARE @err_msg 	VARCHAR(MAX);
 	DECLARE @msg	 	VARCHAR(MAX);
 --
+	DECLARE @yearno		INTEGER=0;
+--
 	OPEN c1insext2;	
-	FETCH NEXT FROM c1insext2 INTO @c1_rec_study_id;
+	FETCH NEXT FROM c1insext2 INTO @c1_rec_study_id, @c1_rec_year_start, @c1_rec_year_stop;
 	IF @@CURSOR_ROWS = 0 BEGIN
 		CLOSE c1insext2;
 		DEALLOCATE c1insext2;
@@ -126,76 +130,49 @@ Description:	Insert data into extract table
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
 			
-	/*
 --
 -- Study extract insert
 --	
 -- This will eventually support paralleisation. Do year by year for the moment
 --
-	FOR i IN c1_rec.year_start .. c1_rec.year_stop LOOP
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_insert_extract', 
-			'[55801] Study ID % INSERT study year %',
-			study_id::VARCHAR		/- Study ID -/,
-			i::VARCHAR);
+	SET @yearno=@c1_rec_year_start;
+	WHILE @yearno < @c1_rec_year_stop BEGIN
+
+		SET @msg='[55801] Study ID ' + CAST(@c1_rec_study_id AS VARCHAR) + ' INSERT study year ' + CAST(@yearno AS VARCHAR);
+		PRINT @msg;		
 --
--- Do explain plan at the same time
+-- Study extract insert
+-- This will eventually support paralleisation. Do year by year for the moment
 --
-		IF i = c1_rec.year_start THEN
-			sql_stmt:=rif40_sm_pkg.rif40_create_insert_statement(study_id, 'S', i, i);
-			IF rif40_sm_pkg.rif40_execute_insert_statement(study_id, 
-				'EXPLAIN (VERBOSE, FORMAT text)'||E'\n'||sql_stmt, 
-				'Study extract insert '||i::VARCHAR||' (EXPLAIN)'::VARCHAR, i, i) = FALSE THEN 
-				RETURN FALSE;
-			ELSIF rif40_sm_pkg.rif40_execute_insert_statement(study_id, 
-				'EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, /- TIMING, (9.2+) -/ FORMAT text)'||E'\n'||sql_stmt, 
-				'Study extract '||i::VARCHAR||' insert (EXPLAIN ANALYZE)'::VARCHAR, i, i) = FALSE THEN 
-				RETURN FALSE;
-			END IF;
-		ELSIF rif40_sm_pkg.rif40_execute_insert_statement(study_id, sql_stmt, 
-			'Study extract insert '||i::VARCHAR, i, i) = FALSE THEN 
-			RETURN FALSE;
-		END IF;
-	END LOOP;
+		EXECUTE rif40.rif40_create_insert_statement 
+			@rval, 
+			@c1_rec_study_id,
+			'S' /* study or comparison */,
+			@yearno /* Year */,
+			@debug;
+		IF @rval = 0 RETURN @rval;
 
 --
 -- Comparison extract insert
---	
 -- This will eventually support paralleisation. Do year by year for the moment
 --
-	FOR i IN c1_rec.year_start .. c1_rec.year_stop LOOP
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_insert_extract', 
-			'[55802] Study ID % INSERT comparison year %',
-			study_id::VARCHAR		/- Study ID -/,
-			i::VARCHAR);
+		EXECUTE rif40.rif40_create_insert_statement 
+			@rval, 
+			@c1_rec_study_id,
+			'C' /* study or comparison */,
+			@yearno /* Year */,
+			@debug;
+		IF @rval = 0 RETURN @rval;
+
+	   SET @yearno = @yearno + 1;
+	END;
 --
--- Do explain plan at the same time
+	SET @etp=GETDATE();
+	SET @etime=CAST(@etp - @stp AS TIME);
+	SET @msg='[55803] Study ID ' + CAST(@c1_rec_study_id AS VARCHAR) + ' extract table INSERT completed in ' + 
+		CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);		
+	PRINT @msg;		
 --
-		IF i = c1_rec.year_start THEN
-			sql_stmt:=rif40_sm_pkg.rif40_create_insert_statement(study_id, 'C', i, i);
-			IF rif40_sm_pkg.rif40_execute_insert_statement(study_id, 
-				'EXPLAIN (VERBOSE, FORMAT text)'||E'\n'||sql_stmt, 
-				'Comparison extract insert '||i::VARCHAR||' (EXPLAIN)'::VARCHAR, i, i) = FALSE THEN 
-				RETURN FALSE;
-			ELSIF rif40_sm_pkg.rif40_execute_insert_statement(study_id, 
-				'EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, /- TIMING, (9.2+) -/ FORMAT text)'||E'\n'||sql_stmt, 
-				'Comparison extract '||i::VARCHAR||' insert (EXPLAIN ANALYZE)'::VARCHAR, i, i) = FALSE THEN 
-				RETURN FALSE;
-			END IF;
-		ELSIF rif40_sm_pkg.rif40_execute_insert_statement(study_id, sql_stmt, 
-			'Comparison extract insert '||i::VARCHAR, i, i) = FALSE THEN 
-			RETURN FALSE;
-		END IF;
-	END LOOP;
---
-	etp:=clock_timestamp();
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_insert_extract', 
-		'[55803] Study ID % extract table INSERT in %',
-		study_id::VARCHAR		/- Study ID -/,
-		age(etp, stp)::VARCHAR);
---
-	RETURN TRUE;
---
- */
 	RETURN @rval;
 END;
 GO

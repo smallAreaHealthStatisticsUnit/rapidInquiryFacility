@@ -398,9 +398,9 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 		@c1_rec_study_id,
 		@debug;
 	IF @rval = 0 BEGIN
-			PRINT @msg;
 			SET @msg='[55408] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' populated extract failed, see previous warnings'	/* Study id */;
+			PRINT @msg;
 			RETURN @rval;
 		END; 
 	ELSE BEGIN

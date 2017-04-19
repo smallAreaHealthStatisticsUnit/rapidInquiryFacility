@@ -41,6 +41,7 @@
 
 -- This script must be run from the installation directory
 :r ..\sahsuland_dev\rif40\functions\rif40_ddl.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_create_insert_statement.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_insert_extract.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_create_extract.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_compute_results.sql
@@ -203,7 +204,7 @@ Recurse until complete
 		SET @etime=CAST(@etp - @stp AS TIME);
 		SET @msg='[55208] Recurse [' + CAST(@n_recursion_level AS VARCHAR) + '] Completed state transition (' + @study_state + '=>' + @new_study_state + 
 			') for study ' + CAST(@study_id AS VARCHAR) + ' with ' + CAST(@investigation_count AS VARCHAR) + ' investigation(s); time taken ' +
-			CAST(@etime AS VARCHAR);
+			CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);
 		PRINT @msg;
 		END;
 
@@ -262,13 +263,13 @@ Recurse until complete
 		SET @etime=CAST(@etp - @stp AS TIME);
 	IF @recursion_level = 0 BEGIN
 			SET @msg='[55214] Recursion complete, state ' + @study_state + ', rif40_run_study study ' + CAST(@study_id AS VARCHAR) + 
-				' with ' + CAST(@study_id AS VARCHAR) + ' investigation_count(s); time taken ' + CAST(@etime AS VARCHAR);
+				' with ' + CAST(@study_id AS VARCHAR) + ' investigation_count(s); time taken ' + CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);
 			PRINT @msg;
 		END;
 	ELSE BEGIN
 		SET @msg='[55215] Recursion ' + CAST(@n_recursion_level AS VARCHAR) + ', state ' + @study_state + 
 			', rif40_run_study study ' + CAST(@study_id AS VARCHAR) + ' with ' + CAST(@investigation_count AS VARCHAR) + 
-			' investigation(s); time taken ' + CAST(@etime AS VARCHAR);
+			' investigation(s); time taken ' + CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);
 		PRINT @msg;
 	END;
 		
