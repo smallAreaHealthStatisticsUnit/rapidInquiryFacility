@@ -34,14 +34,15 @@ Microsoft SQL Server 2012 (SP2-GDR) (KB3194719) - 11.0.5388.0 (X64)
 # 2. Installing the RIF
 
 A standalone script *rif40_sahsuland_install.bat* is provided to install the RIF. It is designed to run in a single directory, and is in
-*...rapidInquiryFacility\rifDatabase\SQLserver\production*. A backup of the *sahsuland_dev* database is required,. This script runs:
+*...rapidInquiryFacility\rifDatabase\SQLserver\production*. A backup of the *sahsuland_dev* database is required, as created by 
+*rebuild_all.bat* (see: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md) or supplied by SAHSU. This script runs:
 
 * rif40_production_creation.sql - this creates the new database $(NEWDB) (by default *sahsuland*) and then runs:
   * rif40_roles.sql - to re-create cluster logins and roles (i.e. the *rif40* login);
   * rif40_database_roles.sql - creates database users, roles and schemas;
   * rif40_custom_error_messages.sql - add custom error messages to *master* database;
   * Import database from ./sahsuland_dev.bak into $(NEWDB); fixing the log file names so to be as just created for $(NEWDB);
-  * rif40_production_user.sql - creates the production user specified. This is turn runs:
+  * rif40_production_user.sql - creates the production user specified. This in turn runs:
     * rif40_user_objects.sql;
 	
   Notes: 
