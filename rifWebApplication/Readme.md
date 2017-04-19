@@ -464,7 +464,7 @@ This setup will support:
 - Firefox 32 and later
 - IE 11 and later
 - IE Mobile 11 and later
-- Java 8 b132
+- Java 8 b132 (March 10, 2014)
 - Safari 7 and later
 
 ## 4.3 Setup R
