@@ -70,7 +70,7 @@ New user password [default peter]:
 Press any key to continue . . .
 ```
 
-* Typing <enter> produces a lot of output. Successful completion looks like:
+* Typing ```<enter>``` produces a lot of output. Successful completion looks like:
 
 ```
 --
