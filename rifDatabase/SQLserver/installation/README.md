@@ -13,8 +13,9 @@ SQL Server Development Database Installation
   - [4.2 Re-running scripts](#42-re-running-scripts)
     - [4.2.1 Geospatial script: rif40_sahsuland_tiles.bat](#421-geospatial-script-rif40_sahsuland_tilesbat)
     - [4.2.2 Re-load sahsuland example data](#422-re-load-sahsuland-example-data)
-  - [4.3 SQL Server BULK INSERT Issues](#43-sql-server-bulk-insert-issues)
-    - [4.3.1 Line Termination](#431-line-termination)
+  - [4.3 SQL Server Backup and Restore](#43-sql-server-backup-and-restore)
+  - [4.4 SQL Server BULK INSERT Issues](#44-sql-server-bulk-insert-issues)
+    - [4.4.1 Line Termination](#441-line-termination)
 - [5. Script Notes](#5-script-notes)
   - [5.1 Script and documentation TODO](#51-script-and-documentation-todo)	
 	
@@ -42,9 +43,9 @@ Microsoft SQL Server 2012 (SP2-GDR) (KB3194719) - 11.0.5388.0 (X64)
 
 # 2. Create Databases and Users
 
-**This section details the original method the script *rif40_development_creation.sql*, iot is useful to sort out connection problems. 
-The easier way is to skip to section 4, and run  *rebuild_all.bat* which runs all the required scriipts in sequence and prompts for 
-the RIF user and user password.**
+**This section details the original method the script *rif40_development_creation.sql*. This section is useful to sort out connection 
+problems. The easier way to rebuild the RIF is to skip to section 4, and run  *rebuild_all.bat* which runs all the required scriipts 
+in sequence and prompts for the RIF user and user password.**
 
 Run the following command as Administrator in this directory (...rapidInquiryFacility\rifDatabase\SQLserver\installation):
 
@@ -161,30 +162,28 @@ sahsuland_dev
  
 # 4. Installing the RIF Schema
 
-Run the following scripts ad Administrator:
-
-* rif40_sahsuland_dev_install.bat (see note 4.1 below before you run this script)
-* rif40_sahsuland_install.bat (see note 4.1 below before you run this script)
-
-An additional script is proved to build exverything and create an example study. This should be edited to set the test user variable, NEWUSER. Note that this user's password will be the 
+A script is proved to build exverything and create an example study. This should be edited to set the test user variable, NEWUSER. Note that this user's password will be the 
 username, so change it on a networked system:
 
 * rebuild_all.bat (see note 4.1 below before you run this script)
   rebuild_all.bat can be abort using *control-C*; no other key will abort the script. 
   * This script prompts for the username and password. The default username is *peter*.
-  * This user's password by defaulkt will be the username, so change it on a networked system
+  * This user's password by default will be the username, so change it on a networked system!
   * You will be asked if you want to abort; 'Y' or 'y' will abort; any other keys will continue
 	```
 	C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>rebuild_all.bat
 
 	C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>ECHO OFF
 	Administrator PRIVILEGES Detected!
+	Creating development RIF databases
+	New user [default peter]:
+	New user password [default peter]:
 	##########################################################################################
 	#
-	# WARNING! this script will the drop and create the sahsuland and sahusland_dev databases.
+	# WARNING! this script will the drop and create the RIF40 sahsuland and sahusland_dev databases.
 	# Type control-C to abort.
 	#
-	# Test user: "peter"
+	# Test user: peter; password: XXXXXXXXXXXXXXXX
 	#
 	##########################################################################################
 	Press any key to continue . . .
@@ -194,7 +193,18 @@ username, so change it on a networked system:
 **These scripts do NOT drop existing tables, the database must be rebuilt from scratch**.
 **You _must_ build sahusland_dev before sahusland**; as *sahsuland_dev* is exported as the basis for *sahsuland*.
 
-The indivuidual scripts can be run by batch files for sahsuland_dev only, but they must be run in this order:
+The batch tests for Administrator or power user privilege; gets the seettings as detailed above and then runs the following scripts 
+as Administrator:
+
+* rif40_development_creation.sql - creates the developement databases *sahsuland_dev* and *test*.
+* rif40_sahsuland_dev_install.bat - to create and export *sahsuland_dev* (see notes 4.1 and 4.3 below before you run this script)
+* rif40_sahsuland_install.bat - to create the *sahsuland* database and restore the *sahsuland_dev* backup into it 
+  (see note 4.3 below before you run this script). This is described in detail in: 
+  https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/production/INSTALL.md
+* rif40_development_user.sql - to create the development user (default database *sahsuland_dev*)
+* rif40_run_study.sql - test the development user by running a study
+
+The individual scripts can be run by batch files for sahsuland_dev only, but they must be run in this order:
 
 * rif40_install_sequences.bat
 * rif40_install_tables.bat
@@ -214,7 +224,8 @@ sqlcmd -U <my new user> -P <my new user> -d sahsuland_dev -b -m-1 -e -r1 -i rif4
 
 ## 4.1 BULK INSERT Permission
 
-SQL Server needs access granted to `BULK INSERT` files, they are not copied from the client to the server.
+SQL Server needs access permission granted to the directories used to `BULK INSERT` files, the files are not copied from the client to the 
+server as in the *Postgres* *psql* ```\copy` command and the *Oracle* *sqlldr* command.
 
 SQL Server needs access to the relative directories: *..\..\GeospatialData\tileMaker* and *..\..\\DataLoaderData\SAHSULAND*. The simplest
 way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users).
@@ -240,7 +251,7 @@ Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryF
 
 ### 4.2.1 Geospatial script: rif40_sahsuland_tiles.bat
 
-Re-runniong the geospatial script: rif40_sahsuland_tiles.bat will produce the following error:
+Re-running the geospatial script: rif40_sahsuland_tiles.bat will produce the following error:
 
 ```
 -- SQL statement 75: Remove old geolevels meta data table >>>
@@ -262,9 +273,24 @@ DELETE FROM rif40.rif40_covariates WHERE geography = 'SAHSULAND';
 
 Re-load sahsuland example data with: rif40_sahsuland_data.bat
 
-## 4.3 SQL Server BULK INSERT Issues
+## 4.3 SQL Server Backup and Restore
 
-### 4.3.1 Line Termination
+SQL Server needs access granted to the drectories used to `BACKUP` and to `RESTORE` files.
+
+SQL Server needs access to the relative directory: *..\production*. The simplest
+way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users).
+
+*DO NOT TRY TO `BACKUP` or `RESTORE` FROM NETWORK DRIVES or CLOUD DRIVES (e.g. Google Drive).* Use a local directory which SQL Server has
+access to; e.g. somewhere on the C: drive. Note that SQL Server *BACKUP* and *RESTORE* behaves dirrently if you logon using Windows authentication (where it will use your credentials 
+to access the files) to using a username and password (where it will use the Server's credentials to acces the file).
+
+```
+To be added.
+```
+
+## 4.4 SQL Server BULK INSERT Issues
+
+### 4.4.1 Line Termination
 
 ```
 BULK INSERT rif_data.pop_sahsuland_pop FROM 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\DataLoaderData\SAHSULAND/pop_sahsuland_pop.csv'
@@ -332,10 +358,10 @@ Cannot DROP FUNCTION 'rif40.rif40_sequence_current_value' because it is being re
 	
 Still to do:
 
-* Search path notes
-* On logon trigger - Postgres *rif40_startup()* function
+* Search path notes - thjere isn't one!
+* On logon trigger - Postgres *rif40_startup()* function and the *rif40_user_objects.sql* script
 * Run study procedure *rif40_run_study()*
-* Fix selected columns:
+* Fix selected columns (done):
 
 | type    | column_name                                                 | nullable | data_type        | Notes                           |       
 |---------|-------------------------------------------------------------|----------|------------------|---------------------------------| 
