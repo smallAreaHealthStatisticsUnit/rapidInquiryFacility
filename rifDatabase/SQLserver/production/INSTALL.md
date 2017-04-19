@@ -89,7 +89,7 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\produ
 This is when the above command will not run.
 
 ```	
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>sqlcmd -E -b -m-1 -e -r1 -i rif40_production_creation.sql
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>sqlcmd -E -d rif40 -b -m-1 -e -r1 -i rif40_production_creation.sql
 Result 0x2, Level 16, State 1
 Named Pipes Provider: Could not open a connection to SQL Server [2].
 Mirosoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.
@@ -97,7 +97,7 @@ Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
 ```
   * You may need to specify the instance name: e.g. `-S PETER-PC\SAHSU`, e.g.
 	```
-	sqlcmd -E -S PETER-PC\SAHSU -b -m-1 -e -r1 -i rif40_production_creation.sql -v import_dir="%cd%\" -v newdb="%NEWDB%"
+	sqlcmd -E -S PETER-PC\SAHSU -d rif40 -b -m-1 -e -r1 -i rif40_production_creation.sql -v import_dir="%cd%\" -v newdb="%NEWDB%"
 	```  
     If you set this it will ned to be set in the environment as *SQLCMDSERVER*. This is usually caused by 
     multiple installations of SQL server on the machine in the past, i.e. the *DefaultLocalInstance* registry key is wrong.
