@@ -43,7 +43,8 @@ A standalone script *rif40_sahsuland_install.bat* is provided to install the RIF
   * Import database from ./sahsuland_dev.bak into $(NEWDB); fixing the log file names so to be as just created for $(NEWDB);
   * rif40_production_user.sql - creates the production user specified. This is turn runs:
     * rif40_user_objects.sql;
-    Notes: 
+	
+  Notes: 
 	* *this does not grant ```BLUK INSERT```*;
 	* User is a RIF manager.
 

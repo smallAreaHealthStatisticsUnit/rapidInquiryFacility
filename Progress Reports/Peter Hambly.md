@@ -1189,13 +1189,14 @@ GO
 
 * SQL Server install of *sahusland* via a backup and restore
 * Ask for username and password
-* Production installer scripts separate from github tree
+* Production installer scripts separate from github tree; install documented: 
+  https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/production/INSTALL.md
 
 #### Current TODO list (April 2017): SQL Server Port
 
 * Complete SQL Server run study port
 * Process Utah geography
-* Postgres and SQL Server install from export scripts
+* Postgres install from export script
 * Geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Add checks for studies:
 ```
 	-- SQL statement 75: Remove old geolevels meta data table >>>
