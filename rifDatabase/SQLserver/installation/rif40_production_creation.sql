@@ -136,8 +136,8 @@ DECLARE @sql_stmt NVARCHAR(MAX);
 SET @sql_stmt =	'RESTORE DATABASE [$(NEWDB)]' + @crlf + 
 '        FROM DISK=''$(import_dir)sahsuland_dev.bak''' + @crlf +
 '        WITH REPLACE,' + @crlf +
-'        MOVE ''$(NEWDB)_dev'' TO ''' + @physical_db_filename + ''',' + @crlf +
-'        MOVE ''$(NEWDB)_dev_log'' TO ''' + @physical_log_filename + '''';
+'        MOVE ''sahsuland_dev'' TO ''' + @physical_db_filename + ''',' + @crlf +
+'        MOVE ''sahsuland_dev_log'' TO ''' + @physical_log_filename + '''';
 PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
 EXECUTE sp_executesql @sql_stmt;
 GO

@@ -46,7 +46,7 @@ A standalone script *rif40_sahsuland_install.bat* is provided to install the RIF
     * rif40_user_objects.sql;
 	
   Notes: 
-	* *this does not grant ```BLUK INSERT```*;
+	* *Does not grant ```BLUK INSERT```*;
 	* User is a RIF manager.
 
 * Script output. Use control-C to abort the script before database (re-)creation.	
@@ -56,15 +56,15 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\produ
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>ECHO OFF
 Administrator PRIVILEGES Detected!
 Creating production RIF database
-New user [default peter]:
-New RIF40 db [default sahsuland]:
-New user password [default peter]:
+New user [default peter]:  kevin
+New RIF40 db [default sahsuland]: trumpton
+New user password [default kevin]:  garwood
 ##########################################################################################
 #
-# WARNING! this script will the drop and create the RIF40 sahsuland database.
+# WARNING! this script will the drop and create the RIF40 trumpton database.
 # Type control-C to abort.
 #
-# Test user: peter; password: peter
+# Test user: kevin; password: garwood
 #
 ##########################################################################################
 Press any key to continue . . .
@@ -131,15 +131,15 @@ Login failed for user 'peter'. Reason: An attempt to login using SQL authenticat
   The node also show how to enable the sa (system adminstrator) account. As with all relational database adminstration accounts as strong (12+ chacracter) password is recommended to defeat 
   attacks by dictionary or all possible passwords.
 
-  This is what a successful login looks like: `sqlcmd -U peter -P XXXXXXXXXXXX`
+  This is what a successful login looks like: `sqlcmd -U kevin -P XXXXXXXXXXXX`
 
 ```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P XXXXXXXXXXXX
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U kevin -P XXXXXXXXXXXX
 1> SELECT db_name();
 2> GO
 
 --------------------------------------------------------------------------------------------------------------------------------
-sahsuland
+trumpton
 
 (1 rows affected)
 1>
@@ -154,7 +154,7 @@ Run the optional script *rif40_production_user.sql*. This creates a default user
 the -v newuser=<my new user>  and -v newpw=<my new password> parameters. Run as Administrator:
 
 ```
-sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser=peter -v newpw=XXXXXXXXXXXX
+sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser=kevin -v newpw=XXXXXXXXXXXX
 ```
 
 * User is created with the *rif_user* (can create tables and views) and *rif_manager* roles (can also create procedures and functions);
@@ -163,7 +163,7 @@ sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser=peter -v newpw=XXXX
 
 Test connection and object privilges:
 ```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P XXXXXXXXXXXX
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U kevin -P XXXXXXXXXXXX
 1> SELECT db_name() AS db_name INTO test_table;
 2> SELECT * FROM test_table;
 3> go
@@ -171,7 +171,7 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_s
 (1 rows affected)
 db_name
 --------------------------------------------------------------------------------------------------------------------------------
-sahsuland
+trumpton
 
 (1 rows affected)
 1> quit
