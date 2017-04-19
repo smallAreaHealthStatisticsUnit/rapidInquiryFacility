@@ -223,7 +223,8 @@ final public class MSSQLDataSetManager
 			 * #POSSIBLE_PORTING_ISSUE
 			 * Is CURRVAL with the name of a sequence portable to 
 			 * SQL Server?
-			 */				
+			 */			
+			System.out.println(addDataSetQueryFormatter.generateQuery());
 			addDataSetStatement.executeUpdate();
 			getIdentifierQueryFormatter.addQueryPhrase(0, "SELECT IDENT_CURRENT('dbo.data_set_configurations');");
 			getIdentifierStatement

@@ -168,6 +168,9 @@ final public class MSSQLCleanWorkflowManager
 				searchReplaceQuery);
 			searchReplaceStatement
 				= connection.prepareStatement(searchReplaceQuery);
+			
+			System.out.println(searchReplaceQuery);
+
 			searchReplaceStatement.executeUpdate();
 			exportTable(
 				connection, 

@@ -189,10 +189,6 @@ public class MSSQLDataTypeValidationUtility {
 		final String cleanValidationTableName,
 		final DataSetConfiguration dataSetConfiguration) {
 				
-		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
-		queryFormatter.addQueryPhrase(cleanValidationTableName);
-		queryFormatter.addQueryPhrase(" AS ");		
-		queryFormatter.padAndFinishLine();		
 		queryFormatter.addPaddedQueryLine(0, "SELECT");
 		
 		queryFormatter.addQueryLine(1, "data_set_id,");
@@ -213,6 +209,10 @@ public class MSSQLDataTypeValidationUtility {
 				fieldConfigurations.get(i));			
 		}
 		queryFormatter.finishLine();
+		queryFormatter.addQueryPhrase(0, "INTO ");
+		queryFormatter.addQueryPhrase(cleanValidationTableName);
+		queryFormatter.padAndFinishLine();		
+
 		queryFormatter.addPaddedQueryLine(0, "FROM");
 		queryFormatter.addQueryPhrase(1, cleanSearchReplaceTableName);
 	}
@@ -261,7 +261,7 @@ public class MSSQLDataTypeValidationUtility {
 				for (ValidationRule validationRule : validationRules) {
 					queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
 					queryFormatter.addQueryPhrase(cleanFieldName);//xxx
-					queryFormatter.addQueryPhrase(" ~ ");
+					queryFormatter.addQueryPhrase(" LIKE ");
 					queryFormatter.addQueryPhrase("'");
 					queryFormatter.addQueryPhrase(validationRule.getValidValue());
 					queryFormatter.addQueryPhrase("'");

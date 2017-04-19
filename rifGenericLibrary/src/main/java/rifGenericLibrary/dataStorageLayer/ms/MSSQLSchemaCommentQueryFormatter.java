@@ -111,6 +111,8 @@ public final class MSSQLSchemaCommentQueryFormatter
 	@Override
 	public String generateQuery() {
 	
+		resetAccumulatedQueryExpression();
+
 		addQueryLine(0, "EXECUTE sp_addextendedproperty");
 		addQueryLine(1, "@name = 'MS Description',");
 		addQueryPhrase(1, "@value = '");

@@ -25,6 +25,8 @@ import rifGenericLibrary.util.RIFLogger;
 
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
+import com.microsoft.sqlserver.jdbc.SQLServerBulkCopy;
+import com.microsoft.sqlserver.jdbc.SQLServerBulkCSVFileRecord;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -249,9 +251,9 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		queryFormatter.addQueryPhrase(1, "CASE");
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(2, "WHEN ");
-		queryFormatter.addQueryPhrase("firstTableCount.total = secondTableCount.total THEN TRUE");
+		queryFormatter.addQueryPhrase("firstTableCount.total = secondTableCount.total THEN 1");
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryPhrase(2, "ELSE FALSE");
+		queryFormatter.addQueryPhrase(2, "ELSE 0");
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(1, "END AS result");
 		queryFormatter.padAndFinishLine();
@@ -324,10 +326,13 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			queryFormatter.setTableComment(
 				targetTable, 
 				dataSetConfiguration.getDescription());
+			queryFormatter.setDatabaseSchemaName("dbo");
 			statement
 				= createPreparedStatement(
 					connection, 
 					queryFormatter);
+			
+			//System.out.println(queryFormatter.toString());
 			statement.executeUpdate();
 
 			//add data_set_id, row_number
@@ -506,7 +511,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			MSSQLSchemaCommentQueryFormatter queryFormatter
 				= new MSSQLSchemaCommentQueryFormatter(false);
 			//KLG_SCHEMA
-			//queryFormatter.setDatabaseSchemaName("dbo");
+			queryFormatter.setDatabaseSchemaName("dbo");
 			queryFormatter.setTableColumnComment(
 				targetTable, 
 				columnName, 
@@ -617,17 +622,60 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 				tableName);
 						
 		BufferedWriter writer = null;		
+        FileWriter cname = null;
+		ResultSet resultSet = null;
+		PreparedStatement statement = null;
 		try {
-			MSSQLExportTableToCSVQueryFormatter queryFormatter
-				= new MSSQLExportTableToCSVQueryFormatter(false);
-			queryFormatter.setTableToExport(tableName);
-			queryFormatter.setOutputFileName(exportFileName.toString());
 			
-			writer = new BufferedWriter(new FileWriter(exportTableFile));		
+			cname = new FileWriter(exportFileName.toString());
+			MSSQLSelectQueryFormatter selFormatter = new  MSSQLSelectQueryFormatter(false);
+			selFormatter.addSelectField("*");
+			selFormatter.addFromTable(tableName);
+			statement = createPreparedStatement(connection, selFormatter);
+			//statement.setString(1, dataSetConfiguration.getName());
+			//statement.setString(2, dataSetConfiguration.getVersion());
+			resultSet = statement.executeQuery();
 			
-			CopyManager copyManager = new CopyManager((BaseConnection) connection);
-			copyManager.copyOut(queryFormatter.generateQuery(), writer);
-			writer.flush();
+            ResultSetMetaData rsmd = resultSet.getMetaData();
+            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                cname.append(rsmd.getColumnName(i));
+                cname.append(",");
+                cname.flush();
+                
+            }
+            cname.append("\n");
+
+            // WRITE DATA
+            while (resultSet.next()) {
+                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                    if (resultSet.getObject(i) != null) {
+                         cname.append(resultSet.getObject(i).toString());
+                    } else {
+                        cname.append("null");
+                    }
+                    if (i < rsmd.getColumnCount()) {
+                    	cname.append(",");
+                    }
+
+                }
+                //new line entered after each row
+                cname.append("\n");
+
+
+            }
+			
+			
+			//MSSQLExportTableToCSVQueryFormatter queryFormatter
+			//	= new MSSQLExportTableToCSVQueryFormatter(false);
+			//queryFormatter.setTableToExport(tableName);
+			//queryFormatter.setOutputFileName(exportFileName.toString());
+			
+			//writer = new BufferedWriter(new FileWriter(exportTableFile));		
+			
+
+			//CopyManager copyManager = new CopyManager((BaseConnection) connection);
+			//copyManager.copyOut(queryFormatter.generateQuery(), writer);
+			//writer.flush();
 		}
 		catch(Exception exception) {
 			logException(
@@ -644,6 +692,29 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
+			try {
+	           if (cname != null) {
+	                cname.flush();
+	                cname.close();
+	            }
+	            if (resultSet != null) {
+	            	resultSet.close();
+	            }
+			}
+			catch(Exception exception) {
+				logException(
+					logFileWriter,
+					exception);
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage(
+						"abstractDataLoaderStepManager.error.unableToExportTable",
+						tableName);
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+						errorMessage);
+				throw rifServiceException;
+			}	
 			if (writer != null) {
 				try {
 					writer.close();					
@@ -759,9 +830,9 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		PreparedStatement statement = null;
 		try {
-			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");//KLG_SCHEMA
+			queryFormatter.addQueryPhrase(0, "exec sp_rename ");//KLG_SCHEMA
 			queryFormatter.addQueryPhrase(sourceTableName);
-			queryFormatter.addQueryPhrase(" RENAME TO ");
+			queryFormatter.addQueryPhrase(", ");
 			queryFormatter.addQueryPhrase(destinationTableName);
 			statement
 				= createPreparedStatement(connection, queryFormatter);
@@ -801,12 +872,10 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		PreparedStatement statement = null;
 		try {
-			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");//KLG_SCHEMA
-			
+			queryFormatter.addQueryPhrase("SELECT * INTO ");//KLG_SCHEMA
 			queryFormatter.addQueryPhrase(destinationTableName);
-			queryFormatter.addQueryPhrase(" AS ");
+			queryFormatter.addQueryPhrase(" FROM ");
 			queryFormatter.finishLine();
-			queryFormatter.addQueryPhrase("SELECT * FROM ");//KLG_SCHEMA
 			queryFormatter.addQueryPhrase(sourceTableName);
 			
 			statement

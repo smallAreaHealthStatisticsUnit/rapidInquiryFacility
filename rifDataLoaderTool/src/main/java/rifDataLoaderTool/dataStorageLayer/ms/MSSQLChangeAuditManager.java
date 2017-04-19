@@ -199,10 +199,20 @@ final public class MSSQLChangeAuditManager
 
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");//KLG_SCHEMA
+		//queryFormatter.addQueryPhrase(0, "CREATE TABLE ");//KLG_SCHEMA
+		//queryFormatter.addQueryPhrase(auditValidationFailuresTable);
+		//queryFormatter.addQueryPhrase(" AS");		
+		//queryFormatter.padAndFinishLine();
+		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
 		queryFormatter.addQueryPhrase(auditValidationFailuresTable);
-		queryFormatter.addQueryPhrase(" AS");		
+		queryFormatter.addQueryPhrase(" (data_set_id INTEGER NOT NULL, row_number INTEGER NOT NULL, field_name NVARCHAR(30) NOT NULL, invalid_field_value NVARCHAR(30), time_stamp DATETIME NOT NULL) ");
 		queryFormatter.padAndFinishLine();
+		// Now some insert into 
+		queryFormatter.addQueryPhrase(0, "INSERT INTO ");
+		queryFormatter.addQueryPhrase(auditValidationFailuresTable);
+		queryFormatter.addQueryPhrase(" (data_set_id, row_number, field_name, invalid_field_value, time_stamp) ");
+
+		
 		int numberOfFieldsWithValidationChecks = fieldsWithValidationChecks.size();
 		for (int i = 0; i < numberOfFieldsWithValidationChecks; i++) {
 			DataSetFieldConfiguration dataSetFieldConfiguration
@@ -219,6 +229,7 @@ final public class MSSQLChangeAuditManager
 					dataSetFieldConfiguration);
 			queryFormatter.addQueryPhrase(fieldLevelFailureSelectQuery);
 		}
+		System.out.println(queryFormatter.generateQuery());
 
 		logSQLQuery(
 			logFileWriter,
@@ -334,10 +345,23 @@ final public class MSSQLChangeAuditManager
 				return;
 			}
 			else {
-				queryFormatter.addQueryPhrase(0, "CREATE TABLE ");//KLG_SCHEMA
+			
+				//queryFormatter.addQueryPhrase(0, "CREATE TABLE ");//KLG_SCHEMA
+				//queryFormatter.addQueryPhrase(auditTableName);
+				//queryFormatter.addQueryPhrase(" AS");
+				//queryFormatter.padAndFinishLine();
+				// Have to make this change because MS SQL needs different CREATE TABLE syntax which is incompatible with the 
+				// way Kevin designed this class. Hopefully the code below will work and won't break with other audit changes
+				queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
 				queryFormatter.addQueryPhrase(auditTableName);
-				queryFormatter.addQueryPhrase(" AS");
+				queryFormatter.addQueryPhrase(" (data_set_id INTEGER NOT NULL, row_number INTEGER NOT NULL, field_name NVARCHAR(30) NOT NULL, old_value NVARCHAR(30), new_value NVARCHAR(30), time_stamp DATETIME NOT NULL) ");
 				queryFormatter.padAndFinishLine();
+				//queryFormatter.addQueryPhrase(0, "GO ");
+				//queryFormatter.padAndFinishLine();
+				// Now some insert into 
+				queryFormatter.addQueryPhrase(0, "INSERT INTO ");
+				queryFormatter.addQueryPhrase(auditTableName);
+				queryFormatter.addQueryPhrase(" (data_set_id, row_number, field_name, old_value, new_value, time_stamp) ");
 				
 				if ((includeFieldOnlyQuery != null) &&
 					(includeFieldChangeDescriptionsQuery != null)) {
@@ -363,6 +387,7 @@ final public class MSSQLChangeAuditManager
 				logFileWriter,
 				"change_audit_manager audit changes", 
 				queryFormatter);
+			System.out.println(queryFormatter.generateQuery());
 			statement
 				= createPreparedStatement(
 					connection, 
@@ -553,7 +578,7 @@ final public class MSSQLChangeAuditManager
 
 			queryFormatter.addQueryPhrase(singleChangeFieldDescriptionsQuery);
 		}
-		
+		queryFormatter.setEndWithSemiColon(false);
 		return queryFormatter.generateQuery();
 	}
 	

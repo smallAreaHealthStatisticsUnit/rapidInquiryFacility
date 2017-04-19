@@ -89,8 +89,14 @@ public class AbstractMSSQLQueryFormatter
 	public String generateQuery() {
 		StringBuilder result = new StringBuilder();		
 		result.append(getQueryBuilder().toString());
-		result.append(";\n");
 		
+		// I think Kev needed to put a check in here regarding semicolons
+		if (endWithSemiColon()){
+			result.append(";\n");
+		}
+		else {
+			result.append("\n");
+	    }
 		if (useGoCommand) {
 			result.append("GO");
 		}

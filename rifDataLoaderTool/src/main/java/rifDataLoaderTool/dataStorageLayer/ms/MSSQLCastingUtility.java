@@ -216,10 +216,6 @@ public final class MSSQLCastingUtility {
 		final String castingTableName,
 		final DataSetConfiguration dataSetConfiguration) {
 				
-		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");//KLG_SCHEMA
-		queryFormatter.addQueryPhrase(castingTableName);
-		queryFormatter.addQueryPhrase(" AS ");		
-		queryFormatter.padAndFinishLine();		
 		queryFormatter.addPaddedQueryLine(0, "SELECT");
 		
 		queryFormatter.addQueryLine(1, "data_set_id,");
@@ -240,6 +236,9 @@ public final class MSSQLCastingUtility {
 				fieldConfigurations.get(i));			
 		}
 		queryFormatter.finishLine();
+		queryFormatter.addQueryPhrase(0, "INTO ");//KLG_SCHEMA
+		queryFormatter.addQueryPhrase(castingTableName);
+		queryFormatter.padAndFinishLine();		
 		queryFormatter.addPaddedQueryLine(0, "FROM");
 		queryFormatter.addQueryPhrase(1, "");//KLG_SCHEMA
 		queryFormatter.addQueryPhrase(cleanValidationTableName);

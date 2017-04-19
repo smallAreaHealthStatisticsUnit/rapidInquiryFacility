@@ -144,14 +144,10 @@ final public class MSSQLConvertWorkflowManager
 			
 			//Create the first part of the query used to create a converted table
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");//KLG_SCHEMA
-			queryFormatter.addQueryPhrase(convertedTableName);
-			queryFormatter.addQueryPhrase(" AS");
+			queryFormatter.addQueryPhrase(0, "SELECT");
 			queryFormatter.padAndFinishLine();
-			queryFormatter.addQueryPhrase(1, "SELECT");
-			queryFormatter.padAndFinishLine();
-			queryFormatter.addQueryLine(2, "data_set_id,");
-			queryFormatter.addQueryPhrase(2, "row_number");
+			queryFormatter.addQueryLine(1, "data_set_id,");
+			queryFormatter.addQueryPhrase(1, "row_number");
 
 			processFieldsWithoutConversions(
 				queryFormatter,
@@ -168,9 +164,11 @@ final public class MSSQLConvertWorkflowManager
 				dataSetConfiguration);		
 
 			queryFormatter.padAndFinishLine();
-			queryFormatter.addQueryPhrase(0, "FROM");
+			queryFormatter.addQueryPhrase(3, "INTO ");//KLG_SCHEMA
+			queryFormatter.addQueryPhrase(convertedTableName);
 			queryFormatter.padAndFinishLine();
-			queryFormatter.addQueryPhrase(1, "");//KLG_SCHEMA
+
+			queryFormatter.addQueryPhrase(0, "FROM ");
 			queryFormatter.addQueryPhrase(cleanedTableName);
 			logSQLQuery(
 				logFileWriter,
@@ -303,7 +301,7 @@ final public class MSSQLConvertWorkflowManager
 				 * SQL Server and PostgreSQL
 				 */				
 				ConversionFunction ageSexConversionFunction
-					= rifConversionFunctionFactory.getRIFConvertFunction("convert_age_sex");
+					= rifConversionFunctionFactory.getRIFConvertFunction("[dbo].[convert_age_sex]");
 				ageSexConversionFunction.addActualParameter(ageFieldConfiguration);
 				ageSexConversionFunction.addActualParameter(sexFieldConfiguration);
 				

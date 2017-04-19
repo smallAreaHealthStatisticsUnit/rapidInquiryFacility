@@ -257,17 +257,40 @@ final class MSSQLExtractWorkflowManager
 		
 		try {
 			
+			PreparedStatement bulkInsert = null;
+			
+			SQLGeneralQueryFormatter queryFormatter
+				= new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryPhrase(0, "BULK INSERT ");
+			queryFormatter.addQueryPhrase(destinationTableName);
+			queryFormatter.addQueryPhrase(" FROM '");
+			queryFormatter.addQueryPhrase(csvFilePath);
+			queryFormatter.addQueryPhrase("' WITH ( FIRSTROW = 2, FIELDTERMINATOR = ',', ROWTERMINATOR = '\\n', TABLOCK)");
+			// by specifying FIRSTROW = 2 we skip the header row
+		
+			System.out.println(queryFormatter.generateQuery());
+			
+			bulkInsert = createPreparedStatement(
+				connection, 
+				queryFormatter);
+			bulkInsert.executeUpdate();
 			/*
 			 * #POSSIBLE_PORTING_ISSUE
 			 * It is likely that SQL Server will have at least a slightly
 			 * different syntax for importing CSV files than PostgreSQL.
 			 */				
 			//COPY t FROM STDIN
+			
+			/*
 			SQLGeneralQueryFormatter queryFormatter
 				= new SQLGeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "COPY ");
 			queryFormatter.addQueryPhrase(destinationTableName);
 			queryFormatter.addQueryPhrase(" FROM STDIN WITH DELIMITER ',' CSV HEADER");
+			
+			System.out.println(queryFormatter.generateQuery());
+			System.out.println(csvFilePath);
+			
 			
 			CopyManager copyManager 
 				= new CopyManager((BaseConnection) connection);
@@ -278,6 +301,7 @@ final class MSSQLExtractWorkflowManager
 			copyManager.copyIn(
 				queryFormatter.generateQuery(), 
 				fileReader);
+				*/
 		}
 		catch(Exception exception) {
 			exception.printStackTrace(System.out);
@@ -299,10 +323,10 @@ final class MSSQLExtractWorkflowManager
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");//KLG_SCHEMA
 			queryFormatter.addQueryPhrase(targetExtractTable);
-			queryFormatter.addQueryPhrase(" ADD COLUMN data_set_id INTEGER DEFAULT ");
+			queryFormatter.addQueryPhrase(" ADD data_set_id INTEGER DEFAULT ");
 			queryFormatter.addQueryPhrase(String.valueOf(dataSetIdentifier));
-			queryFormatter.addQueryPhrase(";");
-			
+			queryFormatter.addQueryPhrase(" NOT NULL");
+			System.out.println(queryFormatter.generateQuery());
 			statement
 				= createPreparedStatement(
 					connection, 
@@ -347,13 +371,14 @@ final class MSSQLExtractWorkflowManager
 			
 			/*
 			 * #POSSIBLE_PORTING_ISSUE
-			 * Do PostgreSQL and SQL Server provide support for BIGSERIAL?
+			 * Do PostgreSQL and SQL Server provide support for BIGSERIAL? - int IDENTITY?
 			 */				
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");//KLG_SCHEMA
 			queryFormatter.addQueryPhrase(targetExtractTable);
-			queryFormatter.addQueryPhrase(" ADD COLUMN row_number BIGSERIAL");
-		
+			queryFormatter.addQueryPhrase(" ADD row_number int IDENTITY(1,1) NOT NULL");
+			System.out.println(queryFormatter.generateQuery());
+	
 			statement 
 				= createPreparedStatement(connection, queryFormatter);
 			statement.executeUpdate();

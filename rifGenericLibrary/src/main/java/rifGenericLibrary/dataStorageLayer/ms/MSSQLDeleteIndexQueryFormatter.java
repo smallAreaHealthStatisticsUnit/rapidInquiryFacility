@@ -113,14 +113,18 @@ public final class MSSQLDeleteIndexQueryFormatter
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
 		
-		//check if index exists first?
-		
-		addQueryPhrase(0, "DROP INDEX ");
-		padAndFinishLine();
-		addQueryPhrase(1, "ind_");
-		addQueryPhrase(getSchemaTableName(indexTable));
-		addQueryPhrase("_");
+		//check if index exists first
+		addQueryPhrase(0, "IF EXISTS(SELECT * from sys.indexes where name = '");
 		addQueryPhrase(indexTableField);
+		addQueryPhrase("' AND object_id = OBJECT_ID('");
+		addQueryPhrase(getSchemaTableName(indexTable));
+		addQueryPhrase("'))");
+		padAndFinishLine();
+		addQueryPhrase(0, "DROP INDEX ");
+		addQueryPhrase(indexTableField);
+		addQueryPhrase(" ON ");
+		addQueryPhrase(getSchemaTableName(indexTable));
+
 
 		return super.generateQuery();		
 	}

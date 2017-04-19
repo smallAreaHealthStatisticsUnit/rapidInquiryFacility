@@ -101,6 +101,28 @@ public class ConversionFunctionFactory {
 		factory.registerConvertFunction(
 			ageSexConversionFunction.getFunctionName(), 
 			ageSexConversionFunction);
+		/*
+		 * Function: age_sex_group_converter (MS SQL version)
+		 * Inputs:
+		 * (1) "age": AgeRIFDataType
+		 * (2) "sex": SexRIFDataType
+		 * 
+		 * Returns:
+		 * age_sex_group : IntegerRIFDataType
+		 */
+		final ConversionFunction ageSexConversionFunctionMS
+			= ConversionFunction.newInstance();
+		ageSexConversionFunctionMS.setSupportsOneToOneConversion(false);
+		ageSexConversionFunctionMS.setSchemaName(null);
+		ageSexConversionFunctionMS.setFunctionName("[dbo].[convert_age_sex]");
+		ageSexConversionFunctionMS.defineFormalParameter(
+			"age", RIFDataTypeFactory.createAgeRIFDataType());
+		ageSexConversionFunctionMS.defineFormalParameter(
+			"sex", RIFDataTypeFactory.RIF_SEX_DATA_TYPE);
+		ageSexConversionFunctionMS.setConvertFieldName("age_sex_group");
+		factory.registerConvertFunction(
+				ageSexConversionFunctionMS.getFunctionName(), 
+				ageSexConversionFunctionMS);
 		
 		/*
 		 * Function: format_date

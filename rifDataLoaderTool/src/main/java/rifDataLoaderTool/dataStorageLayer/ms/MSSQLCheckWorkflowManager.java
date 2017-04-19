@@ -205,10 +205,7 @@ final public class MSSQLCheckWorkflowManager
 			 */	
 			SQLGeneralQueryFormatter queryFormatter 
 				= new SQLGeneralQueryFormatter();
-			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
-			queryFormatter.addQueryPhrase(checkTableName);
-			queryFormatter.padAndFinishLine();
-			queryFormatter.addPaddedQueryLine(0, "AS");
+
 			queryFormatter.addPaddedQueryLine(0, "WITH duplicate_rows AS");
 			queryFormatter.addPaddedQueryLine(1, "(SELECT");
 			queryFormatter.addQueryLine(2, "data_set_id,");
@@ -274,6 +271,11 @@ final public class MSSQLCheckWorkflowManager
 				1, 
 				queryFormatter);
 			queryFormatter.padAndFinishLine();
+			
+			queryFormatter.addQueryPhrase(0, "INTO ");
+			queryFormatter.addQueryPhrase(checkTableName);
+			queryFormatter.padAndFinishLine();
+			
 			queryFormatter.addPaddedQueryLine(0, "FROM");
 			queryFormatter.addQueryPhrase(1, "duplicate_rows");
 			
@@ -458,10 +460,6 @@ final public class MSSQLCheckWorkflowManager
 		
 		
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
-			queryFormatter.addQueryPhrase(emptyFieldsDataQualityTableName);
-			queryFormatter.addQueryPhrase(" AS ");
-			queryFormatter.finishLine();
 		
 			queryFormatter.addPaddedQueryLine(0, "WITH");
 			queryFormatter.addQueryPhrase(1, "identifiers AS");
@@ -552,9 +550,9 @@ final public class MSSQLCheckWorkflowManager
 					queryFormatter.addQueryPhrase(convertFieldName);
 					queryFormatter.addQueryPhrase("_total,");
 					queryFormatter.finishLine();				
-					queryFormatter.addQueryPhrase(2, "(tmp_");
+					queryFormatter.addQueryPhrase(2, "(CAST(tmp_");
 					queryFormatter.addQueryPhrase(convertFieldName);
-					queryFormatter.addQueryPhrase("_empty.total_empty_rows::double precision / summary.total_rows :: double precision) ");
+					queryFormatter.addQueryPhrase("_empty.total_empty_rows AS numeric) / CAST(summary.total_rows AS numeric)) ");
 					queryFormatter.addQueryPhrase("* 100 AS ");
 					queryFormatter.addQueryPhrase(convertFieldName);
 					queryFormatter.addQueryPhrase("_percent");			
@@ -571,8 +569,8 @@ final public class MSSQLCheckWorkflowManager
 				queryFormatter.addQueryPhrase(2, "tmp_age_sex_group_empty.total_empty_rows AS ");
 				queryFormatter.addQueryPhrase("age_sex_group_total,");
 				queryFormatter.finishLine();				
-				queryFormatter.addQueryPhrase(2, "(tmp_age_sex_group_empty.total_empty_rows::double precision ");
-				queryFormatter.addQueryPhrase("/ summary.total_rows :: double precision) ");
+				queryFormatter.addQueryPhrase(2, "(CAST(tmp_age_sex_group_empty.total_empty_rows AS numeric) ");
+				queryFormatter.addQueryPhrase("/ CAST(summary.total_rows AS numeric)) ");
 				queryFormatter.addQueryPhrase("* 100 AS ");
 				queryFormatter.addQueryPhrase("age_sex_group_total_percent");
 			}
@@ -583,6 +581,11 @@ final public class MSSQLCheckWorkflowManager
 			queryFormatter.addQueryPhrase(2, "summary.total_rows AS total_rows");
 			queryFormatter.finishLine();
 
+			queryFormatter.addQueryPhrase(0, "INTO ");
+			queryFormatter.addQueryPhrase(emptyFieldsDataQualityTableName);
+			queryFormatter.finishLine();
+
+			
 			queryFormatter.addPaddedQueryLine(1, "FROM");
 			queryFormatter.addQueryLine(2, "identifiers,");
 			queryFormatter.addQueryPhrase(2, "summary");
@@ -754,10 +757,6 @@ final public class MSSQLCheckWorkflowManager
 		
 		
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
-			queryFormatter.addQueryPhrase(emptyPerYearFieldsDataQualityTableName);
-			queryFormatter.addQueryPhrase(" AS ");
-			queryFormatter.finishLine();
 		
 			queryFormatter.addPaddedQueryLine(0, "WITH");
 			queryFormatter.addQueryPhrase(1, "identifiers AS");
@@ -864,9 +863,9 @@ final public class MSSQLCheckWorkflowManager
 					queryFormatter.addQueryPhrase("_total,");
 					queryFormatter.finishLine();
 				
-					queryFormatter.addQueryPhrase(2, "(COALESCE(tmp_");
+					queryFormatter.addQueryPhrase(2, "(CAST(COALESCE(tmp_");
 					queryFormatter.addQueryPhrase(convertFieldName);
-					queryFormatter.addQueryPhrase("_empty_yr.total_empty_rows, 0)::double precision / summary.total_rows::double precision) ");
+					queryFormatter.addQueryPhrase("_empty_yr.total_empty_rows, 0) AS numeric) / CAST(summary.total_rows AS numeric)) ");
 					queryFormatter.addQueryPhrase("* 100 AS ");
 					queryFormatter.addQueryPhrase(convertFieldName);
 					queryFormatter.addQueryPhrase("_percent");
@@ -884,8 +883,8 @@ final public class MSSQLCheckWorkflowManager
 				queryFormatter.addQueryPhrase("total_empty_rows, 0) AS ");
 				queryFormatter.addQueryPhrase("age_sex_group_total,");
 				queryFormatter.finishLine();			
-				queryFormatter.addQueryPhrase(2, "(COALESCE(tmp_age_sex_group_empty_yr.");
-				queryFormatter.addQueryPhrase("total_empty_rows, 0)::double precision / summary.total_rows::double precision) ");
+				queryFormatter.addQueryPhrase(2, "(CAST(COALESCE(tmp_age_sex_group_empty_yr.");
+				queryFormatter.addQueryPhrase("total_empty_rows, 0) AS numeric) / CAST(summary.total_rows AS numeric)) ");
 				queryFormatter.addQueryPhrase("* 100 AS ");
 				queryFormatter.addQueryPhrase("age_sex_group_percent");
 			}
@@ -895,6 +894,10 @@ final public class MSSQLCheckWorkflowManager
 			
 			queryFormatter.addQueryPhrase(2, "COALESCE(summary.total_rows, 0) AS total_rows");
 			queryFormatter.padAndFinishLine();
+			
+			queryFormatter.addQueryPhrase(0, "INTO ");
+			queryFormatter.addQueryPhrase(emptyPerYearFieldsDataQualityTableName);
+			queryFormatter.finishLine();
 			
 			queryFormatter.addPaddedQueryLine(1, "FROM");
 			queryFormatter.addQueryLine(2, "identifiers,");
@@ -936,7 +939,17 @@ final public class MSSQLCheckWorkflowManager
 			queryFormatter.finishLine();
 			queryFormatter.addPaddedQueryLine(1, "ORDER BY");
 			queryFormatter.addPaddedQueryLine(2, "summary.year");
-		
+
+			// need to set the fields that will be the PK to not nullable
+			queryFormatter.finishLine();
+			queryFormatter.addPaddedQueryLine(0, "ALTER TABLE ");
+			queryFormatter.addQueryPhrase(emptyPerYearFieldsDataQualityTableName);
+			queryFormatter.addQueryPhrase(" ALTER COLUMN data_set_id int NOT NULL");
+			queryFormatter.finishLine();
+			queryFormatter.addPaddedQueryLine(0, "ALTER TABLE ");
+			queryFormatter.addQueryPhrase(emptyPerYearFieldsDataQualityTableName);
+			queryFormatter.addQueryPhrase(" ALTER COLUMN year int NOT NULL");
+			
 			logSQLQuery(
 				logFileWriter,
 				"createEmptyFieldCheckDataQualityTable", 

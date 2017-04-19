@@ -100,6 +100,7 @@ public class MSSQLDataTypeSearchReplaceUtility {
 		 * #POSSIBLE_PORTING_ISSUE
 		 * Do PostgreSQL and SQL Server support regular expressions
 		 * in an identical way?
+		 * BP says: YES ! use LIKE instead of ~
 		 */	
 		
 		/*
@@ -193,10 +194,10 @@ public class MSSQLDataTypeSearchReplaceUtility {
 		final DataSetConfiguration dataSetConfiguration,
 		final boolean includeIgnoredFields) {
 				
-		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
-		queryFormatter.addQueryPhrase(cleanSearchReplaceTableName);
-		queryFormatter.addQueryPhrase(" AS ");
-		queryFormatter.padAndFinishLine();		
+		//queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
+		//queryFormatter.addQueryPhrase(cleanSearchReplaceTableName);
+		//queryFormatter.addQueryPhrase(" AS ");
+		//queryFormatter.padAndFinishLine();		
 		queryFormatter.addPaddedQueryLine(0, "SELECT");
 		
 		queryFormatter.addQueryLine(1, "data_set_id,");
@@ -225,6 +226,9 @@ public class MSSQLDataTypeSearchReplaceUtility {
 				queryFormatter,
 				fieldConfigurations.get(i));			
 		}
+		queryFormatter.finishLine();
+		queryFormatter.addQueryPhrase(0, "INTO ");
+		queryFormatter.addQueryPhrase(cleanSearchReplaceTableName);
 		queryFormatter.finishLine();
 		queryFormatter.addPaddedQueryLine(0, "FROM");
 		queryFormatter.addQueryPhrase(1, loadTableName);
@@ -286,7 +290,7 @@ public class MSSQLDataTypeSearchReplaceUtility {
 			for (CleaningRule cleaningRule : cleaningRules) {
 				queryFormatter.addQueryPhrase(baseIndentationLevel + 1, "WHEN ");
 				queryFormatter.addQueryPhrase(loadFieldName);
-				queryFormatter.addQueryPhrase(" ~ ");
+				queryFormatter.addQueryPhrase(" LIKE ");
 				queryFormatter.addQueryPhrase("'");
 				queryFormatter.addQueryPhrase(cleaningRule.getSearchValue());
 				queryFormatter.addQueryPhrase("'");
