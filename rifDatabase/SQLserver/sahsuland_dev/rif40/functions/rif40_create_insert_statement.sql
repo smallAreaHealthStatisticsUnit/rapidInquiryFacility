@@ -66,38 +66,33 @@ Description:	Create AND EXECUTE INSERT SQL statement
 	
 	SET @rval=1; 	-- Success
 	
-/*
-	c1insext CURSOR(l_study_id INTEGER) FOR
-		SELECT * 
+	DECLARE c1insext CURSOR FOR
+		SELECT study_id, extract_table
 		  FROM rif40_studies a
-		 WHERE a.study_id = l_study_id;
-	c2insext CURSOR(l_table VARCHAR) FOR
-		SELECT *
-		  FROM information_schema.columns a
-		 WHERE a.table_schema = 'rif_studies'
-		   AND a.table_name   = l_table
-		 ORDER BY a.ordinal_position;
-	c3insext CURSOR(l_study_id INTEGER) FOR
+		 WHERE a.study_id = @study_id;
+	DECLARE @c1_rec_study_id 		INTEGER;
+	DECLARE @c1_rec_extract_table 	VARCHAR(30);
+	DECLARE c3insext CURSOR FOR
 		SELECT COUNT(DISTINCT(numer_tab)) AS distinct_numerators
 		  FROM rif40_investigations a
-		 WHERE a.study_id = l_study_id;
-	c4insext CURSOR(l_study_id INTEGER) FOR
+		 WHERE a.study_id = @study_id;
+	DECLARE @c3_rec_distinct_numerators 		INTEGER;
+	DECLARE c4insext CURSOR FOR
 		WITH b AS (
 			SELECT DISTINCT(a.numer_tab) AS numer_tab
 			  FROM rif40_investigations a
-		 	 WHERE a.study_id   = l_study_id
+		 	 WHERE a.study_id   = @study_id
 		)
 		SELECT b.numer_tab,
- 		       t.description, t.total_field, t.year_start, t.year_stop, 
-   		       t.sex_field_name, t.age_group_field_name, t.age_sex_group_field_name, t.age_group_id
+ 		       t.description, t.age_sex_group_field_name /*, t.total_field, t.year_start, t.year_stop, 
+   		       t.sex_field_name, t.age_group_field_name, t.age_group_id */
 		  FROM b, rif40_tables t 
 		 WHERE t.table_name = b.numer_tab;
-	c5insext CURSOR(l_study_id INTEGER, l_numer_tab VARCHAR) FOR
-		SELECT *
-		  FROM rif40_investigations a
-		 WHERE a.study_id  = l_study_id
-		   AND a.numer_tab = l_numer_tab
- 		 ORDER BY inv_id;
+	DECLARE @c4_rec_numer_tab 					VARCHAR(30);
+	DECLARE @c4_rec_description 				VARCHAR(2000);
+	DECLARE @c4_rec_age_sex_group_field_name 	VARCHAR(30);
+		
+		 /*
 	c6insext CURSOR(l_study_id INTEGER, l_inv_id INTEGER) FOR
 		SELECT *
 		  FROM rif40_inv_conditions a
@@ -110,7 +105,8 @@ Description:	Create AND EXECUTE INSERT SQL statement
 				LEFT OUTER JOIN rif40_geolevels b ON (a.study_geolevel_name = b.geolevel_name)
 		 WHERE a.study_id = l_study_id
  		 ORDER BY a.covariate_name;
-	c8insext CURSOR(l_study_id INTEGER) FOR
+*/
+	DECLARE c8insext CURSOR FOR
 		SELECT b.denom_tab,
  		       t.description, t.total_field, t.year_start, t.year_stop,
    		       t.sex_field_name, t.age_group_field_name, t.age_sex_group_field_name, t.age_group_id, 
@@ -118,137 +114,215 @@ Description:	Create AND EXECUTE INSERT SQL statement
 		  FROM rif40_studies b, rif40_tables t, rif40_age_groups a
 		 WHERE t.table_name   = b.denom_tab
 		   AND t.age_group_id = a.age_group_id
-		   AND b.study_id     = l_study_id
+		   AND b.study_id     = @study_id
 		 GROUP BY b.denom_tab,
  		       t.description, t.total_field, t.year_start, t.year_stop,
    		       t.sex_field_name, t.age_group_field_name, t.age_sex_group_field_name, t.age_group_id;
-	c1_rec RECORD;
-	c2_rec RECORD;
-	c3_rec RECORD;
-	c4_rec RECORD;
-	c5_rec RECORD;
+	DECLARE @c8_rec_denom_tab					VARCHAR(30);
+	DECLARE @c8_rec_description					VARCHAR(2000);
+	DECLARE @c8_rec_total_field					INTEGER;
+	DECLARE @c8_rec_year_start					INTEGER;
+	DECLARE @c8_rec_year_stop					INTEGER;
+	DECLARE @c8_rec_sex_field_name				VARCHAR(30);
+	DECLARE @c8_rec_age_group_field_name		VARCHAR(30);
+	DECLARE @c8_rec_age_sex_group_field_name	VARCHAR(30);
+	DECLARE @c8_rec_age_group_id				INTEGER;		
+	DECLARE @c8_rec_min_age_group				INTEGER;		
+	DECLARE @c8_rec_max_age_group				INTEGER;		   
+	
+	/*
 	c6_rec RECORD;
 	c7_rec RECORD;
-	c8_rec RECORD;
 --
 	covariate_table_name	VARCHAR;
-	sql_stmt	VARCHAR;
-	i		INTEGER:=0;
-	j		INTEGER:=0;
 	k		INTEGER:=0;
-	inv_array	VARCHAR[];
-	inv_join_array	VARCHAR[];
+-- */
+
+	DECLARE @inv_array 		TABLE (inv VARCHAR(MAX));
+	DECLARE @inv_join_array TABLE (outer_join VARCHAR(MAX));
+	DECLARE @i			INTEGER=0;
+	DECLARE @j			INTEGER=0;
 --
-	areas_table	VARCHAR:='g_rif40_study_areas';
-BEGIN
+	DECLARE @sql_stmt		NVARCHAR(MAX);
+	DECLARE @ddl_stmts 	Sql_stmt_table;
+	DECLARE @t_ddl		INTEGER=0;
+--
+	DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
+	DECLARE @tab		VARCHAR(1)=CHAR(9);
+	DECLARE @err_msg 	VARCHAR(MAX);
+	DECLARE @msg	 	VARCHAR(MAX);
+	
+	DECLARE @areas_table	VARCHAR(30)='g_rif40_study_areas';
 --
 -- Use different areas_table for comparison (it has no band_id)
 --	
-	IF study_or_comparison = 'C' THEN
-		areas_table:='g_rif40_comparison_areas';
-	END IF;
-	OPEN c1insext(study_id);
-	FETCH c1insext INTO c1_rec;
-	IF NOT FOUND THEN
+	IF @study_or_comparison = 'C' SET @areas_table='g_rif40_comparison_areas';
+--
+	OPEN c1insext;	
+	FETCH NEXT FROM c1insext INTO @c1_rec_study_id, @c1_rec_extract_table;
+	IF @@CURSOR_ROWS = 0 BEGIN
 		CLOSE c1insext;
-		PERFORM rif40_log_pkg.rif40_error(-56000, 'rif40_create_insert_statement', 
-			'Study ID % not found',
-			study_id::VARCHAR		/- Study ID -/);
-	END IF;
+		DEALLOCATE c1insext;
+		SET @err_msg = formatmessage(56000, @study_id); -- Study ID %i not found
+		THROW 56000, @err_msg, 1;
+	END;
 	CLOSE c1insext;
+	DEALLOCATE c1insext;
+
 --
 -- Create INSERT statement
 -- 
-	sql_stmt:='INSERT INTO '||LOWER(c1_rec.extract_table)||' ('||E'\n';
+	SET @sql_stmt='INSERT INTO ' + LOWER(@c1_rec_extract_table) + ' (' + @crlf;	
+
 --
 -- Add columns
 -- 
-	FOR c2_rec IN c2insext(LOWER(c1_rec.extract_table)) LOOP
-		i:=i+1;
-		IF i = 1 THEN
-			sql_stmt:=sql_stmt||E'\t'||c2_rec.column_name;
-		ELSE
-			sql_stmt:=sql_stmt||','||c2_rec.column_name;
-		END IF;
-	END LOOP;
-	IF i = 0 THEN
-		PERFORM rif40_log_pkg.rif40_error(-56001, 'rif40_create_insert_statement', 
-			'Study ID % no columns found for extract table: %',
-			study_id::VARCHAR		/- Study ID -/,		
-			c1_rec.extract_table::VARCHAR 	/- Extract table -/);
-	END IF;
+	DECLARE c2insext CURSOR FOR
+		SELECT column_name
+		  FROM information_schema.columns a
+		 WHERE a.table_schema = 'rif_studies'
+		   AND a.table_name   = LOWER(@c1_rec_extract_table)
+		 ORDER BY a.ordinal_position;			    
+	DECLARE @c2_rec_column_name 	VARCHAR(30);
+	SET @i=0;
+	OPEN c2insext;
+	FETCH NEXT FROM c2insext INTO @c2_rec_column_name;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @i=@i+1;
+		IF @i = 1 SET @sql_stmt=@sql_stmt + @tab + @c2_rec_column_name
+		ELSE SET @sql_stmt=@sql_stmt + ',' + @c2_rec_column_name;
+--
+		FETCH NEXT FROM c2insext INTO @c2_rec_column_name;
+	END;
+	CLOSE c2insext;
+	DEALLOCATE c2insext;
+--
+	IF @i = 0 BEGIN
+		SET @err_msg = formatmessage(56001, @study_id, @c1_rec_extract_table); -- Study ID %i no columns found for extract table: %s
+		THROW 56001, @err_msg, 1;
+	END;
+
 --
 -- Get number of distinct numerators
 --
-	OPEN c3insext(study_id);
-	FETCH c3insext INTO c3_rec;
-	IF NOT FOUND THEN
+	OPEN c3insext;
+	FETCH NEXT FROM c3insext INTO @c3_rec_distinct_numerators;
+	IF @@CURSOR_ROWS = 0 BEGIN
 		CLOSE c3insext;
-		PERFORM rif40_log_pkg.rif40_error(-56002, 'rif40_create_insert_statement', 
-			'Study ID % not found',
-			study_id::VARCHAR		/- Study ID -/);
-	END IF;
+		DEALLOCATE c3insext;
+		SET @err_msg = formatmessage(56000, @study_id); -- Study ID %i not found
+		THROW 56000, @err_msg, 1;
+	END;
 	CLOSE c3insext;
-	sql_stmt:=sql_stmt||') /- '||c3_rec.distinct_numerators::VARCHAR||' numerator(s) -/'||E'\n';
+	DEALLOCATE c3insext;
+	SET @sql_stmt=@sql_stmt + ') /* '+ CAST(@c3_rec_distinct_numerators AS VARCHAR) + ' numerator(s) */' + @crlf;
+	
 --
 -- Get denominator setup
 --
-	OPEN c8insext(study_id);
-	FETCH c8insext INTO c8_rec;
-	IF NOT FOUND THEN
+	OPEN c8insext;
+	FETCH NEXT FROM c8insext INTO @c8_rec_denom_tab, @c8_rec_description, @c8_rec_total_field, @c8_rec_year_start, @c8_rec_year_stop,
+   		       @c8_rec_sex_field_name, @c8_rec_age_group_field_name, @c8_rec_age_sex_group_field_name, @c8_rec_age_group_id,
+			   @c8_rec_min_age_group, @c8_rec_max_age_group;
+	IF @@CURSOR_ROWS = 0 BEGIN
 		CLOSE c8insext;
-		PERFORM rif40_log_pkg.rif40_error(-56003, 'rif40_create_insert_statement', 
-			'Study ID % not found',
-			study_id::VARCHAR		/- Study ID -/);
-	END IF;
+		DEALLOCATE c8insext;
+		SET @err_msg = formatmessage(56000, @study_id); -- Study ID %i not found
+		THROW 56000, @err_msg, 1;
+	END;
 	CLOSE c8insext;
---
+	DEALLOCATE c8insext;
+
 --
 -- Loop through distinct numerators
 --
-	i:=0;
+	SET @i=0;
+	OPEN c4insext;
+	FETCH NEXT FROM c4insext INTO @c4_rec_numer_tab, @c4_rec_description, @c4_rec_age_sex_group_field_name;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @i=@i+1;
+		
+--
+-- Open WITH clause (common table expression)
+-- 
+		IF @i = 1 SET @sql_stmt=@sql_stmt + 'WITH n' + CAST(@i AS VARCHAR) + ' AS (' + @tab + 
+			'/* ' + @c4_rec_numer_tab + ' - ' + @c4_rec_description + ' */' + @crlf
+		ELSE SET @sql_stmt=@sql_stmt + ', n' + CAST(@i AS VARCHAR) + ' AS (' + @tab + 
+			'/* ' + @c4_rec_numer_tab + ' - ' + @c4_rec_description + ' */' + @crlf;
+			
+--
+-- Numerator JOINS
+--
+		INSERT INTO @inv_join_array(outer_join) VALUES (@tab + 'LEFT OUTER JOIN n' + CAST(@i AS VARCHAR) + ' ON ( ' + @crlf +
+			@tab + '/* ' + @c4_rec_numer_tab + ' - ' + @c4_rec_description + ' */' + @crlf +
+			@tab + @tab + '    d.area_id'+ @tab + @tab + ' = n' + CAST(@i AS VARCHAR) + '.area_id' + @crlf +
+			@tab + @tab + 'AND d.year' + @tab + @tab + ' = n' + CAST(@i AS VARCHAR) + '.year' + @crlf +
+--
+-- [Add conversion support for differing age/sex/group names; convert to AGE_SEX_GROUP]
+--
+			@tab + @tab + 'AND d.' + LOWER(@c8_rec_age_sex_group_field_name) + @tab + ' = n' + CAST(@i AS VARCHAR) + '.n_age_sex_group)');
+				/* List of numerator joins (for use in FROM clause) */;
+
+		SET @sql_stmt=@sql_stmt + @tab + 'SELECT s.area_id' + @tab + @tab + '/* Study or comparision resolution */,' + @crlf +
+			@tab + '       c.year,' + @crlf;
+--
+-- [Add support for differing age/sex/group names; convert to AGE_SEX_GROUP]
+--
+		SET @sql_stmt=@sql_stmt + @tab + '       c.' + LOWER(@c4_rec_age_sex_group_field_name) + ' AS n_age_sex_group,' + @crlf;				
+
+--
+-- Individual investigations [add age group/sex/year filters]
+-- 
+		DECLARE c5insext CURSOR FOR
+			SELECT inv_id, inv_name
+			  FROM rif40_investigations a
+			 WHERE a.study_id  = @study_id
+			   AND a.numer_tab = @c4_rec_numer_tab
+			 ORDER BY inv_id;
+		DECLARE @c5_rec_inv_id		INTEGER;
+		DECLARE @c5_rec_inv_name	VARCHAR(20);
+	
+		OPEN c5insext;
+		FETCH NEXT FROM c5insext INTO @c5_rec_inv_id, @c5_rec_inv_name;
+		WHILE @@FETCH_STATUS = 0
+		BEGIN	
+			SET @j=@j+1;
+			INSERT INTO @inv_array(inv) VALUES('       COALESCE(' + 
+				'n' + CAST(@i AS VARCHAR) + '.inv_' + CAST(@c5_rec_inv_id AS VARCHAR) + '_' + LOWER(@c5_rec_inv_name) +
+				', 0) AS inv_' + CAST(@c5_rec_inv_id AS VARCHAR) + '_' + LOWER(@c5_rec_inv_name)); 
+				/* List of investigations (for use in final SELECT) */
+			IF @j > 1 SET @sql_stmt=@sql_stmt + ',' + @crlf;
+			SET @sql_stmt=@sql_stmt + @tab + '       SUM(CASE ' + @tab + @tab + '/* Numerators - can overlap */' + @crlf +
+				@tab + @tab + @tab + 'WHEN ((' + @tab + @tab + '/* Investigation ' + CAST(@j AS VARCHAR) + ' ICD filters */' + @crlf;
+--
+			FETCH NEXT FROM c5insext INTO @c5_rec_inv_id, @c5_rec_inv_name;
+		END;
+		CLOSE c5insext;
+		DEALLOCATE c5insext;			
+--
+		FETCH NEXT FROM c4insext INTO @c4_rec_numer_tab, @c4_rec_description, @c4_rec_age_sex_group_field_name;
+	END;
+	CLOSE c4insext;
+	DEALLOCATE c4insext;
+	
+	PRINT @sql_stmt;	
+/*
 	FOR c4_rec IN c4insext(study_id) LOOP
 		i:=i+1;
 --
 -- Open WITH clause (common table expression)
 -- 
-		IF i = 1 THEN
-			sql_stmt:=sql_stmt||'WITH n'||i::VARCHAR||' AS ('||E'\t'||'/- '||c4_rec.numer_tab||' - '||c4_rec.description||' -/'||E'\n';
-		ELSE
-			sql_stmt:=sql_stmt||', n'||i::VARCHAR||' AS ('||E'\t'||'/- '||c4_rec.numer_tab||' - '||c4_rec.description||' -/'||E'\n';
-		END IF;
+		
 --
 -- Numerator JOINS
 --
-		inv_join_array[i]:=E'\t'||'LEFT OUTER JOIN n'||i::VARCHAR||' ON ( '||
-			E'\t'||'/- '||c4_rec.numer_tab||' - '||c4_rec.description||' -/'||E'\n'||
-			E'\t'||E'\t'||'    d.area_id'||E'\t'||E'\t'||' = n'||i::VARCHAR||'.area_id'||E'\n'||
-			E'\t'||E'\t'||'AND d.year'||E'\t'||E'\t'||' = n'||i::VARCHAR||'.year'||E'\n'||
---
--- [Add conversion support for differing age/sex/group names; convert to AGE_SEX_GROUP]
---
-			E'\t'||E'\t'||'AND d.'||LOWER(c8_rec.age_sex_group_field_name)||E'\t'||' = n'||i::VARCHAR||'.n_age_sex_group)';
-				/- List of numerator joins (for use in FROM clause) -/
-		sql_stmt:=sql_stmt||E'\t'||'SELECT s.area_id'||E'\t'||E'\t'||'/- Study or comparision resolution -/,'||E'\n';
-		sql_stmt:=sql_stmt||E'\t'||'       c.year,'||E'\n';
---
--- [Add support for differing age/sex/group names; convert to AGE_SEX_GROUP]
---
-		sql_stmt:=sql_stmt||E'\t'||'       c.'||LOWER(c4_rec.age_sex_group_field_name)||' AS n_age_sex_group,'||E'\n';
+
 --
 -- Individual investigations [add age group/sex/year filters]
 -- 
-		FOR c5_rec IN c5insext(study_id, c4_rec.numer_tab) LOOP
-			j:=j+1;
-			inv_array[j]:='       COALESCE('||
-				'n'||i::VARCHAR||'.inv_'||c5_rec.inv_id::VARCHAR||'_'||LOWER(c5_rec.inv_name)||
-				', 0) AS inv_'||c5_rec.inv_id::VARCHAR||'_'||LOWER(c5_rec.inv_name); 
-				/- List of investigations (for use in final SELECT) -/
-			IF j > 1 THEN
-				sql_stmt:=sql_stmt||','||E'\n';
-			END IF;
-			sql_stmt:=sql_stmt||E'\t'||'       SUM(CASE '||E'\t'||E'\t'||'/- Numerators - can overlap -/'||E'\n';
-			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'WHEN (('||E'\t'||'/- Investigation '||j::VARCHAR||' ICD filters -/'||E'\n';
+
 --
 -- Add conditions
 --
