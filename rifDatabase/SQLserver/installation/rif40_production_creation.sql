@@ -131,7 +131,25 @@ OPEN c1_db;
 FETCH NEXT FROM c1_db INTO @database_name, @physical_db_filename, @physical_log_filename;
 CLOSE c1_db;
 DEALLOCATE c1_db;
-	
+
+/*
+
+NOTE: NOT RESTORING rif_data, rif_studies
+
+SQL[dbo]> RESTORE DATABASE [sahsuland]
+        FROM DISK='C:\Users\bparkes\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\production\sahsuland
+_dev.bak'
+        WITH REPLACE,
+        MOVE 'sahsuland_dev' TO 'C:\Program Files\Microsoft SQL Server\MSSQL11.SQLEXPRESS\MSSQL\DATA\sahsuland.mdf',
+        MOVE 'sahsuland_dev_log' TO 'C:\Program Files\Microsoft SQL Server\MSSQL11.SQLEXPRESS\MSSQL\DATA\sahsuland_log.ldf';
+Msg 4035, Level 0, State 1, Server WPEA-RIF1\SQLEXPRESS, Line 1
+Processed 488 pages for database 'sahsuland', file 'sahsuland_dev' on file 1.
+Msg 4035, Level 0, State 1, Server WPEA-RIF1\SQLEXPRESS, Line 1
+Processed 4 pages for database 'sahsuland', file 'sahsuland_dev_log' on file 1.
+Msg 3014, Level 0, State 1, Server WPEA-RIF1\SQLEXPRESS, Line 1
+RESTORE DATABASE successfully processed 492 pages in 0.029 seconds (132.408 MB/sec).
+
+ */	
 DECLARE @sql_stmt NVARCHAR(MAX);
 SET @sql_stmt =	'RESTORE DATABASE [$(NEWDB)]' + @crlf + 
 '        FROM DISK=''$(import_dir)sahsuland_dev.bak''' + @crlf +
@@ -140,6 +158,12 @@ SET @sql_stmt =	'RESTORE DATABASE [$(NEWDB)]' + @crlf +
 '        MOVE ''sahsuland_dev_log'' TO ''' + @physical_log_filename + '''';
 PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
 EXECUTE sp_executesql @sql_stmt;
+GO
+
+--
+-- Wait for 10secs
+--
+WAITFOR DELAY '00:00:10';
 GO
 
 --
