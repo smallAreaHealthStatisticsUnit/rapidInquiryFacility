@@ -1191,7 +1191,87 @@ GO
 * Ask for username and password
 * Production installer scripts separate from github tree; install documented: 
   https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/production/INSTALL.md
+* Install on wpea-rif1 issues:
+  * Logged on as a power user; run shell as adminstrator - shell is still in the user's name so SQL SErver sqlcmd -E logs on as 
+    quest. Will add note.
+  * Java is broken on server. Fully d-install, rebott; remove all Java file from C:\Program Files\Java and re-install afresh.
+    Run servce.bat remove then install in %CATALINA_HOME%/bin directory to re-initialise tomcat.
+  * Firewall issues - advice use of localhost or 127.0.0.1 to avoid routing via ethernet
+  * Unsigned TLS being blocked by the Imperial Network/browsers
+    ```
+	13:26:08.957 wpea-rif1.sm.med.ic.ac.uk:8080 uses an invalid security certificate.
 
+	The certificate is not trusted because it is self-signed.
+	The certificate is not valid for the name wpea-rif1.sm.med.ic.ac.uk.
+
+	Error code: <a id="errorCode" title="SEC_ERROR_UNKNOWN_ISSUER">SEC_ERROR_UNKNOWN_ISSUER</a>
+	 1 (unknown)
+    ```	
+  * ```The port number 1433/sahsuland_dev is not valid```. SQL Server set to use port 1433; issue is with configuration, will
+    test further at home.
+  ```
+	  C A T A L I N A  H O M E==C:\Program Files\Apache Software Foundation\Tomcat 8.5==
+	HealthOutcomeManager init targetPathValue==C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\
+	\classes==
+	com.microsoft.sqlserver.jdbc.SQLServerException: The port number 1433/sahsuland_dev is not valid.
+			at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDriverError(SQLServerException.java:206)
+			at com.microsoft.sqlserver.jdbc.SQLServerConnection.connectInternal(SQLServerConnection.java:1305)
+			at com.microsoft.sqlserver.jdbc.SQLServerConnection.connect(SQLServerConnection.java:788)
+			at com.microsoft.sqlserver.jdbc.SQLServerDriver.connect(SQLServerDriver.java:1187)
+			at java.sql.DriverManager.getConnection(DriverManager.java:664)
+			at java.sql.DriverManager.getConnection(DriverManager.java:208)
+			at rifServices.dataStorageLayer.pg.PGSQLConnectionManager.createConnection(PGSQLConnectionManager.java:697)
+			at rifServices.dataStorageLayer.pg.PGSQLConnectionManager.login(PGSQLConnectionManager.java:327)
+			at rifServices.dataStorageLayer.pg.PGSQLAbstractStudyServiceBundle.login(PGSQLAbstractStudyServiceBundle.java:192)
+			at rifServices.dataStorageLayer.pg.PGSQLProductionRIFStudyServiceBundle.login(PGSQLProductionRIFStudyServiceBundle.java:63)
+			at rifServices.restfulWebServices.pg.PGSQLAbstractRIFWebServiceResource.login(PGSQLAbstractRIFWebServiceResource.java:171)
+			at rifServices.restfulWebServices.pg.PGSQLRIFStudySubmissionWebServiceResource.login(PGSQLRIFStudySubmissionWebServiceResour
+	ce.java:136)
+			at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+			at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+			at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+			at java.lang.reflect.Method.invoke(Method.java:498)
+			at com.sun.jersey.spi.container.JavaMethodInvokerFactory$1.invoke(JavaMethodInvokerFactory.java:60)
+			at com.sun.jersey.server.impl.model.method.dispatch.AbstractResourceMethodDispatchProvider$ResponseOutInvoker._dispatch(Abst
+	ractResourceMethodDispatchProvider.java:205)
+			at com.sun.jersey.server.impl.model.method.dispatch.ResourceJavaMethodDispatcher.dispatch(ResourceJavaMethodDispatcher.java:
+	75)
+			at com.sun.jersey.server.impl.uri.rules.HttpMethodRule.accept(HttpMethodRule.java:302)
+			at com.sun.jersey.server.impl.uri.rules.RightHandPathRule.accept(RightHandPathRule.java:147)
+			at com.sun.jersey.server.impl.uri.rules.ResourceClassRule.accept(ResourceClassRule.java:108)
+			at com.sun.jersey.server.impl.uri.rules.RightHandPathRule.accept(RightHandPathRule.java:147)
+			at com.sun.jersey.server.impl.uri.rules.RootResourceClassesRule.accept(RootResourceClassesRule.java:84)
+			at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1542)
+			at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1473)
+			at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1419)
+			at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1409)
+			at com.sun.jersey.spi.container.servlet.WebComponent.service(WebComponent.java:409)
+			at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:558)
+			at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:733)
+			at javax.servlet.http.HttpServlet.service(HttpServlet.java:742)
+			at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:231)
+			at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)
+			at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:52)
+			at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)
+			at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)
+			at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:198)
+			at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:96)
+			at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:478)
+			at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:140)
+			at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:80)
+			at org.apache.catalina.valves.AbstractAccessLogValve.invoke(AbstractAccessLogValve.java:624)
+			at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:87)
+			at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:342)
+			at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:799)
+			at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:66)
+			at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:861)
+			at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1455)
+			at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49)
+			at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+			at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+			at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
+			at java.lang.Thread.run(Thread.java:748)
+	```
 #### Current TODO list (April 2017): SQL Server Port
 
 * Complete SQL Server run study port
