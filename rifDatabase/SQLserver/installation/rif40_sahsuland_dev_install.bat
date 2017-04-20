@@ -61,7 +61,10 @@ if %errorlevel% equ 0 (
 	}
 )
 
-sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_sahsuland_dev_install.sql -v export_dir="%cd%\..\production\" -v path="%cd%\..\.." -I
+REM
+REM Build sahsuland_dev
+REM
+sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_sahsuland_dev_install.sql -v path="%cd%\..\.." -I
 if %errorlevel% neq 0  (
 	ECHO rif40_sahsuland_dev_install.sql exiting with %errorlevel%
 	exit /b 1
@@ -123,6 +126,17 @@ if %errorlevel% neq 0  (
 	exit /b 1
 ) else (
 	ECHO rif40_password_reset.sql built OK %errorlevel%
+)
+
+REM
+REM Export sahusland_dev
+REM
+sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_export_sahsuland_dev.sql -v export_dir="%cd%\..\production\" -I
+if %errorlevel% neq 0  (
+	ECHO rif40_export_sahsuland_dev.sql exiting with %errorlevel%
+	exit /b 1
+) else (
+	ECHO rif40_export_sahsuland_dev.sql built OK %errorlevel%
 )
 
 REM
