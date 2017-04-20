@@ -116,7 +116,7 @@ public class ConversionFunctionFactory {
 		ageSexConversionFunctionMS.setSchemaName(null);
 		ageSexConversionFunctionMS.setFunctionName("[dbo].[convert_age_sex]");
 		ageSexConversionFunctionMS.defineFormalParameter(
-			"age", RIFDataTypeFactory.createAgeRIFDataType());
+			"age", RIFDataTypeFactory.createAgeRIFDataTypeMS());
 		ageSexConversionFunctionMS.defineFormalParameter(
 			"sex", RIFDataTypeFactory.RIF_SEX_DATA_TYPE);
 		ageSexConversionFunctionMS.setConvertFieldName("age_sex_group");
