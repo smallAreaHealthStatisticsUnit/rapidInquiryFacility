@@ -1288,7 +1288,13 @@ GO
 * Process Utah geography
 * Postgres install from export script
 * Disable guest logins on SQL Server
-* Add localhost notes to tomcat install doc; add network setup to SQL Server install notes; add notes on XXX
+* Add localhost notes to tomcat install doc; add network setup to SQL Server install notes; 
+  add notes on cross site scripting errors (caused by URL/webservices name mismatch); firefox example:
+  ```
+  GET XHR https://peter-pc:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter [HTTP/1.1 200  25ms]
+  09:09:31.552 Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://peter-pc:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter. (Reason: CORS header 'Access-Control-Allow-Origin' missing). 1 (unknown)
+  ```
+  
 * Discuss changing passwords
 * Geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Add checks for studies:
 ```
