@@ -81,7 +81,7 @@ BEGIN
 	DECLARE @study_id			INTEGER;
 --
 	DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
-	DECLARE @err_msg 	VARCHAR(MAX);
+	DECLARE @err_msg 	NVARCHAR(2048);
 --
 	OPEN c1_ddl;
 	FETCH NEXT FROM c1_ddl INTO @sql_stmt, @study_id;
@@ -102,7 +102,11 @@ BEGIN
 		END TRY
 		BEGIN CATCH		
 --	 		[55999] SQL statement had error: %s%sSQL[%s]> %s;	
-			SET @err_msg = formatmessage(55999, error_message(), @crlf, USER, @sql_stmt); 
+			IF LEN(@sql_stmt) > 1900 BEGIN	
+				SET @err_msg = formatmessage(55999, error_message(), @crlf, USER, '[SQL statement too long for error; see SQL above]');
+				PRINT '[55999] SQL> ' + @sql_stmt;
+			END;
+			ELSE SET @err_msg = formatmessage(55999, error_message(), @crlf, USER, @sql_stmt); 
 			THROW 55999, @err_msg, 1;
 		END CATCH;
 --

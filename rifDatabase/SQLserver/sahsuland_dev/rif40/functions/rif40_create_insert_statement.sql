@@ -138,6 +138,15 @@ Description:	Create AND EXECUTE INSERT SQL statement
 
 	DECLARE @inv_array 		TABLE (inv VARCHAR(MAX));
 	DECLARE @inv_join_array TABLE (outer_join VARCHAR(MAX));
+	DECLARE c9_inv_array CURSOR FOR
+		SELECT inv
+		  FROM @inv_array;
+	DECLARE @c9_rec_inv			VARCHAR(MAX);
+	DECLARE c10_inv_join_array CURSOR FOR
+		SELECT outer_join
+		  FROM @inv_join_array;
+	DECLARE @c10_rec_outer_join		VARCHAR(MAX);
+--	
 	DECLARE @i			INTEGER=0;
 	DECLARE @j			INTEGER=0;
 	DECLARE @k			INTEGER=0;
@@ -169,54 +178,10 @@ Description:	Create AND EXECUTE INSERT SQL statement
 	CLOSE c1insext;
 	DEALLOCATE c1insext;
 
+	SET @sql_stmt='';
 --
--- Create INSERT statement
--- 
-	SET @sql_stmt='INSERT INTO ' + LOWER(@c1_rec_extract_table) + ' (' + @crlf;	
-
+-- Start with CTE (WITH)
 --
--- Add columns
--- 
-	DECLARE c2insext CURSOR FOR
-		SELECT column_name
-		  FROM information_schema.columns a
-		 WHERE a.table_schema = 'rif_studies'
-		   AND a.table_name   = LOWER(@c1_rec_extract_table)
-		 ORDER BY a.ordinal_position;			    
-	DECLARE @c2_rec_column_name 	VARCHAR(30);
-	SET @i=0;
-	OPEN c2insext;
-	FETCH NEXT FROM c2insext INTO @c2_rec_column_name;
-	WHILE @@FETCH_STATUS = 0
-	BEGIN
-		SET @i=@i+1;
-		IF @i = 1 SET @sql_stmt=@sql_stmt + @tab + @c2_rec_column_name
-		ELSE SET @sql_stmt=@sql_stmt + ',' + @c2_rec_column_name;
---
-		FETCH NEXT FROM c2insext INTO @c2_rec_column_name;
-	END;
-	CLOSE c2insext;
-	DEALLOCATE c2insext;
---
-	IF @i = 0 BEGIN
-		SET @err_msg = formatmessage(56001, @study_id, @c1_rec_extract_table); -- Study ID %i no columns found for extract table: %s
-		THROW 56001, @err_msg, 1;
-	END;
-
---
--- Get number of distinct numerators
---
-	OPEN c3insext;
-	FETCH NEXT FROM c3insext INTO @c3_rec_distinct_numerators;
-	IF @@CURSOR_ROWS = 0 BEGIN
-		CLOSE c3insext;
-		DEALLOCATE c3insext;
-		SET @err_msg = formatmessage(56000, @study_id); -- Study ID %i not found
-		THROW 56000, @err_msg, 1;
-	END;
-	CLOSE c3insext;
-	DEALLOCATE c3insext;
-	SET @sql_stmt=@sql_stmt + ') /* '+ CAST(@c3_rec_distinct_numerators AS VARCHAR) + ' numerator(s) */' + @crlf;
 	
 --
 -- Get denominator setup
@@ -532,57 +497,130 @@ Description:	Create AND EXECUTE INSERT SQL statement
 
 	SET @sql_stmt=@sql_stmt + ', c.' + LOWER(@c7_rec_covariate_name); /* Multiple covariate support will be needed here */
 	SET @sql_stmt=@sql_stmt + @crlf + ') /* End of denominator */' + @crlf;
-	
-	PRINT @sql_stmt;	
-/*
+
+		
+--	
+-- Add INSERT
+--
+	SET @sql_stmt=@sql_stmt + 'INSERT INTO rif_studies.' + LOWER(@c1_rec_extract_table) + ' (' + @crlf;	
 
 --
--- Main SQL statement
+-- Add INSERT columns
+-- 
+	DECLARE c2insext CURSOR FOR
+		SELECT column_name
+		  FROM information_schema.columns a
+		 WHERE a.table_schema = 'rif_studies'
+		   AND a.table_name   = LOWER(@c1_rec_extract_table)
+		 ORDER BY a.ordinal_position;			    
+	DECLARE @c2_rec_column_name 	VARCHAR(30);
+	SET @i=0;
+	OPEN c2insext;
+	FETCH NEXT FROM c2insext INTO @c2_rec_column_name;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @i=@i+1;
+		IF @i = 1 SET @sql_stmt=@sql_stmt + @tab + @c2_rec_column_name
+		ELSE SET @sql_stmt=@sql_stmt + ',' + @c2_rec_column_name;
 --
-	sql_stmt:=sql_stmt||'SELECT d.year,'||E'\n';
-	sql_stmt:=sql_stmt||'       '''||study_or_comparison||''' AS study_or_comparison,'||E'\n';
-	sql_stmt:=sql_stmt||'       $1 AS study_id,'||E'\n';
-	sql_stmt:=sql_stmt||'       d.area_id,'||E'\n';
-	sql_stmt:=sql_stmt||'       d.band_id,'||E'\n';
+		FETCH NEXT FROM c2insext INTO @c2_rec_column_name;
+	END;
+	CLOSE c2insext;
+	DEALLOCATE c2insext;
+--
+	IF @i = 0 BEGIN
+		SET @err_msg = formatmessage(56001, @study_id, @c1_rec_extract_table); -- Study ID %i no columns found for extract table: %s
+		THROW 56001, @err_msg, 1;
+	END;
+
+--
+-- Get number of distinct numerators
+--
+	OPEN c3insext;
+	FETCH NEXT FROM c3insext INTO @c3_rec_distinct_numerators;
+	IF @@CURSOR_ROWS = 0 BEGIN
+		CLOSE c3insext;
+		DEALLOCATE c3insext;
+		SET @err_msg = formatmessage(56000, @study_id); -- Study ID %i not found
+		THROW 56000, @err_msg, 1;
+	END;
+	CLOSE c3insext;
+	DEALLOCATE c3insext;
+	SET @sql_stmt=@sql_stmt + ') /* '+ CAST(@c3_rec_distinct_numerators AS VARCHAR) + ' numerator(s) */' + @crlf;
+	
+--
+-- SELECT statement
+--
+	SET @sql_stmt=@sql_stmt + 'SELECT d.year,' + @crlf +
+		'       ''' + @study_or_comparison + ''' AS study_or_comparison,' + @crlf +
+		'       $1 AS study_id,' + @crlf +
+		'       d.area_id,' + @crlf +
+		'       d.band_id,' + @crlf;
 --
 -- [Add support for differing age/sex/group names]
 --
-	sql_stmt:=sql_stmt||'       TRUNC(d.'||LOWER(c8_rec.age_sex_group_field_name)||'/100) AS sex,'||E'\n';
-	sql_stmt:=sql_stmt||'       MOD(d.'||LOWER(c8_rec.age_sex_group_field_name)||', 100) AS age_group,'||E'\n';
+	SET @sql_stmt=@sql_stmt + '       TRUNC(d.' + LOWER(@c8_rec_age_sex_group_field_name) + '/100) AS sex,' + @crlf +
+		'       MOD(d.' + LOWER(@c8_rec_age_sex_group_field_name) + ', 100) AS age_group,' + @crlf;
+
 --
--- Add covariate names (Assumes 1 covariate table)
+-- Add covariate names (Assumes 1 covariate table.1 covariate)
 --
-	k:=0;
-	FOR c7_rec IN c7insext(study_id) LOOP
-		k:=k+1;
 --		IF study_or_comparison = 'C' THEN
 --			sql_stmt:=sql_stmt||'       NULL::INTEGER AS '||LOWER(c7_rec.covariate_name)||','||E'\n';
 --		ELSE
-			sql_stmt:=sql_stmt||'       d.'||LOWER(c7_rec.covariate_name)||','||E'\n';
+	SET @sql_stmt=@sql_stmt + '       d.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
+					/* Multiple covariate support will be needed here */
 --		END IF;
-	END LOOP;
+
+
 --
 -- Add investigations 
 --
-	sql_stmt:=sql_stmt||array_to_string(inv_array, ','||E'\n')||', '||E'\n';
+	OPEN c9_inv_array;
+	FETCH NEXT FROM c9_inv_array INTO @c9_rec_inv;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @sql_stmt=@sql_stmt + @c9_rec_inv + @crlf;
+--
+		FETCH NEXT FROM c9_inv_array INTO @c9_rec_inv;
+	END;
+	CLOSE c9_inv_array;
+	DEALLOCATE c9_inv_array;
+
 --
 -- Add denominator
 --
-	sql_stmt:=sql_stmt||'       d.total_pop'||E'\n';
+	SET @sql_stmt=@sql_stmt + '       d.total_pop' + @crlf;
+
 --
 -- FROM clause
 --
-	sql_stmt:=sql_stmt||'  FROM d'||E'\t'||E'\t'||E'\t'||'/- Denominator - '||c8_rec.description||' -/'||E'\n';
-	sql_stmt:=sql_stmt||array_to_string(inv_join_array, E'\n')||E'\n';
+	SET @sql_stmt=@sql_stmt + '  FROM d' + @tab + @tab + @tab + '/* Denominator - ' + @c8_rec_description + ' */' + @crlf;
+	OPEN c10_inv_join_array;
+	FETCH NEXT FROM c10_inv_join_array INTO @c10_rec_outer_join;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @sql_stmt=@sql_stmt + @c10_rec_outer_join + @crlf;
+--
+		FETCH NEXT FROM c10_inv_join_array INTO @c10_rec_outer_join;
+	END;
+	CLOSE c10_inv_join_array;
+	DEALLOCATE c10_inv_join_array;
 
 --
 -- ORDER BY clause
 --
-	sql_stmt:=sql_stmt||' ORDER BY 1, 2, 3, 4, 5, 6, 7';
+	SET @sql_stmt=@sql_stmt + ' ORDER BY 1, 2, 3, 4, 5, 6, 7';
+	SET @t_ddl=@t_ddl+1;		
+	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+
 --
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_create_insert_statement', 
-		'[56005] SQL> %;', sql_stmt::VARCHAR);
- */
+-- Populate extract table
+--
+	EXECUTE rif40.rif40_ddl
+			@rval		/* Result: 0/1 */,
+			@ddl_stmts	/* SQL table */,
+			@debug		/* enable debug: 0/1) */;	
 --
 	RETURN @rval;
 END;
