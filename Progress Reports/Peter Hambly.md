@@ -1192,12 +1192,12 @@ GO
 * Production installer scripts separate from github tree; install documented: 
   https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/production/INSTALL.md
 * Install on wpea-rif1 issues:
-  * Logged on as a power user; run shell as adminstrator - shell is still in the user's name so SQL SErver sqlcmd -E logs on as 
-    quest. Will add note.
-  * Java is broken on server. Fully d-install, rebott; remove all Java file from C:\Program Files\Java and re-install afresh.
+  * Logged on as a power user; run shell as adminstrator - shell is still in the user's name so SQL Server sqlcmd -E logs on as 
+    guest. Added section to isntallation instructions.
+  * Java is broken on server. Fully de-install, reboot; remove all Java file from C:\Program Files\Java and re-install afresh.
     Run servce.bat remove then install in %CATALINA_HOME%/bin directory to re-initialise tomcat.
-  * Firewall issues - advice use of localhost or 127.0.0.1 to avoid routing via ethernet
-  * Unsigned TLS being blocked by the Imperial Network/browsers
+  * Firewall issues - advice to use of localhost or 127.0.0.1 to avoid routing via ethernet for SQL Server and Postgres
+  * Unsigned TLS being blocked by the Imperial Network IE11; other browsers work after the warnings have been accepted
     ```
 	13:26:08.957 wpea-rif1.sm.med.ic.ac.uk:8080 uses an invalid security certificate.
 
@@ -1208,7 +1208,7 @@ GO
 	 1 (unknown)
     ```	
   * ```The port number 1433/sahsuland_dev is not valid```. SQL Server set to use port 1433; issue is with configuration, will
-    test further at home.
+    test further at home then document.
   ```
 	  C A T A L I N A  H O M E==C:\Program Files\Apache Software Foundation\Tomcat 8.5==
 	HealthOutcomeManager init targetPathValue==C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\
@@ -1272,11 +1272,23 @@ GO
 			at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
 			at java.lang.Thread.run(Thread.java:748)
 	```
+	Home PC runs with: 
+	```
+	#SQL SERVER
+	database.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver
+	database.jdbcDriverPrefix=jdbc:sqlserver
+	database.host=localhost\\SAHSU
+	database.port=1433
+	database.databaseName=sahsuland_dev
+	database.databaseType=sqlServer	
+	```
 #### Current TODO list (April 2017): SQL Server Port
 
 * Complete SQL Server run study port
 * Process Utah geography
 * Postgres install from export script
+* Disable guest logins on SQL Server
+* Discuss chnaging passwords
 * Geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Add checks for studies:
 ```
 	-- SQL statement 75: Remove old geolevels meta data table >>>

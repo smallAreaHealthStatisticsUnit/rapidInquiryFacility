@@ -8,6 +8,7 @@ SQL Server Production Database Installation
    - [2.2 Logon errors](#22-logon-errors)
      - [2.2.1 Wrong server authentication mode](#221-wrong-server-authentication-mode)
    - [2.3 SQL Server Restore](#23-sql-server-restore)
+   - [2.4 Power User Issues](#24-power-user-issues)
 - [3. Create Additional Users](#3-create-additional-users)
 
 # 1. Install SQL Server 2012 SP2
@@ -177,6 +178,40 @@ rif40_sahsuland_dev_install.sql exiting with 1
 rif40_sahsuland_dev_install.bat exiting with 1
 ```
 
+## 2.4 Power User Issues
+
+This is caused by *rif40_sahsuland_install.bat* failing complaining the user is not an Administrator when run as a power user.
+
+```
+sqlcmd -E
+1> SELECT useR_name();
+2> GO
+
+--------------------------------------------------------------------------------------------------------------------------------
+guest
+
+(1 rows affected)
+1> quit
+``` 
+
+The solution to this is to:
+
+* logon as *sa* using the password for the *sa* provided during the install;
+* Create a Windows authenticated user login as the domain user name (e.g. *IC\pch*);
+* Grant full database adminstration privileges (all of them!) to this user
+* Check the user logon is now an Adminstrator (i.e. is dbo):
+	```
+	sqlcmd -E
+	1> SELECT useR_name();
+	2> GO
+
+	--------------------------------------------------------------------------------------------------------------------------------
+	dbo
+
+	(1 rows affected)
+	1> quit
+	``` 
+	
 # 3. Create Additional Users
 
 Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 

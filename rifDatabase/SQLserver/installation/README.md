@@ -5,6 +5,7 @@ SQL Server Development Database Installation
 - [1. Install SQL Server 2012 SP2](#1-install-sql-server-2012-sp2)
 - [2. Create Databases and Users](#2-create-databases-and-users)
    - [2.1 Network connection errors](#21-network-connection-errors)
+   - [2.2 Power User Issues](#22-power-user-issues)
 - [3. Create Additional Users](#3-create-additional-users)
    - [3.1 Logon errors](#31-logon-errors)
      - [3.1.1 Wrong server authentication mode](#311-wrong-server-authentication-mode)
@@ -88,6 +89,40 @@ Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
   * Check your firewall permits access to TCP port 1433. **Be careful _not_ to allow Internet access unless you intend it.**
   * The following is more helpful than the official Microsoft manuals: https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/
 
+## 2.2 Power User Issues
+
+This is caused by *rebuild_all.bat* failing complaining the user is not an Administrator when run as a power user.
+
+```
+sqlcmd -E
+1> SELECT useR_name();
+2> GO
+
+--------------------------------------------------------------------------------------------------------------------------------
+guest
+
+(1 rows affected)
+1> quit
+``` 
+
+The solution to this is to:
+
+* logon as *sa* using the password for the *sa* provided during the install;
+* Create a Windows authenticated user login as the domain user name (e.g. *IC\pch*);
+* Grant full database adminstration privileges (all of them!) to this user
+* Check the user logon is now an Adminstrator (i.e. is dbo):
+	```
+	sqlcmd -E
+	1> SELECT useR_name();
+	2> GO
+
+	--------------------------------------------------------------------------------------------------------------------------------
+	dbo
+
+	(1 rows affected)
+	1> quit
+	``` 
+	
 # 3. Create Additional Users
 
 Run the optional script *rif40_development_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
