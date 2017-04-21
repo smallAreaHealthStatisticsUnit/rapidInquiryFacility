@@ -77,8 +77,10 @@ Description:	Insert data into extract table
 	DECLARE @c1_rec_year_stop INTEGER;
 --
 	DECLARE @sql_stmt		NVARCHAR(MAX);
-	DECLARE @ddl_stmts 	Sql_stmt_table;
-	DECLARE @t_ddl		INTEGER=0;
+	DECLARE @ddl_stmts 		Sql_stmt_table;
+	DECLARE @t_ddl			INTEGER=0;
+	DECLARE @dml_stmts 		Sql_stmt_table;
+	DECLARE @t_dml			INTEGER=0;
 --
 	DECLARE @etime DATETIME, @stp DATETIME=GETDATE(), @etp DATETIME;
 --
@@ -129,41 +131,63 @@ Description:	Insert data into extract table
 			@rval		/* Result: 0/1 */,
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
-			
+	SET @sql_stmt=NULL;	
 --
 -- Study extract insert
 --	
 -- This will eventually support paralleisation. Do year by year for the moment
 --
+
+--
+-- Study extract insert
+-- This will eventually support paralleisation. Do year by year for the moment
+--	
+	EXECUTE @rval=rif40.rif40_create_insert_statement 
+		@sql_stmt 					/* DML statement created (OUT) */, 
+		@c1_rec_study_id			/* Study ID */,
+		'S' 						/* study or comparison */,
+		@c1_rec_year_start			/* Year start */,
+		@c1_rec_year_stop			/* Year stop */,
+		@debug						/* Debug */;
+	IF @rval = 0 RETURN @rval;
+	
+	SET @msg='[56005] (' + CAST(LEN(COALESCE(@sql_stmt, '')) AS VARCHAR) + ' chars) SQL> ' + COALESCE(@sql_stmt, '') + ';';
+	PRINT @msg;
+	
+	INSERT INTO @dml_stmts(sql_stmt, study_id) VALUES (@sql_stmt, @study_id);
+	SET @t_dml=@t_dml+1;	
+--
+-- Comparison extract insert
+-- This will eventually support paralleisation. Do year by year for the moment
+--	
+	EXECUTE @rval=rif40.rif40_create_insert_statement 
+		@sql_stmt 					/* DML statement created (OUT) */, 
+		@c1_rec_study_id			/* Study ID */,
+		'C' 						/* study or comparison */,
+		@c1_rec_year_start			/* Year start */,
+		@c1_rec_year_stop			/* Year stop */,
+		@debug						/* Debug */;
+	IF @rval = 0 RETURN @rval;
+	INSERT INTO @dml_stmts(sql_stmt, study_id) VALUES (@sql_stmt, @study_id);
+	SET @t_dml=@t_dml+1;	
+		
 	SET @yearno=@c1_rec_year_start;
 	WHILE @yearno < @c1_rec_year_stop BEGIN
 
 		SET @msg='[55801] Study ID ' + CAST(@c1_rec_study_id AS VARCHAR) + ' INSERT study year ' + CAST(@yearno AS VARCHAR);
 		PRINT @msg;		
+		
 --
--- Study extract insert
--- This will eventually support paralleisation. Do year by year for the moment
+-- Do insert
 --
-		EXECUTE rif40.rif40_create_insert_statement 
-			@rval, 
-			@c1_rec_study_id,
-			'S' /* study or comparison */,
-			@yearno /* Year */,
-			@debug  /* Year start, year stop not used */;
-		IF @rval = 0 RETURN @rval;
-
---
--- Comparison extract insert
--- This will eventually support paralleisation. Do year by year for the moment
---
-		EXECUTE rif40.rif40_create_insert_statement 
-			@rval, 
-			@c1_rec_study_id,
-			'C' /* study or comparison */,
-			@yearno /* Year */,
-			@debug;
-		IF @rval = 0 RETURN @rval;
-
+		EXECUTE rif40.rif40_execute_insert_statement
+			@rval		/* Result: 0/1 */,
+			@dml_stmts	/* DML insert statements */,
+			@study_id	/* Study ID */, 
+			@yearno		/* Year to be extracted [start] */,
+			@yearno		/* Year to be extracted [stop] */,
+			@debug		/* enable debug: 0/1) */;
+			
 	   SET @yearno = @yearno + 1;
 	END;
 --

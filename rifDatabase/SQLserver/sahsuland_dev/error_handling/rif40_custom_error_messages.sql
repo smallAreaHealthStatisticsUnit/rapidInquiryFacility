@@ -510,6 +510,16 @@ EXEC sp_addmessage 56006, 16,
 EXEC sp_addmessage 56007, 16,
 	N'Function: [rif40].[rif40_create_insert_statement], Study ID %i multiple covariate tables: %s, %s.';	
 	
+	
+EXEC sp_addmessage 56600, 16,
+	N'Function: [rif40].[rif40_execute_insert_statement], Study ID is NULL.';	
+EXEC sp_addmessage 56601, 16,
+	N'Function: [rif40].[rif40_execute_insert_statement], Year start is NULL for study ID: %i.';
+EXEC sp_addmessage 56602, 16,
+	N'Function: [rif40].[rif40_execute_insert_statement], Year stop is NULL for study ID: %i.';
+EXEC sp_addmessage 56699, 16,
+	N'Function: [rif40].[rif40_execute_insert_statement],  SQL statement had error: %s%sSQL[%s]> %s;';
+	
 EXEC sp_addmessage 55800, 16,
 	N'Function: [rif40].[rif40_insert_extract], Study ID %i not found.';	
 	

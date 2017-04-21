@@ -41,6 +41,7 @@
 
 -- This script must be run from the installation directory
 :r ..\sahsuland_dev\rif40\functions\rif40_ddl.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_execute_insert_statement.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_create_insert_statement.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_insert_extract.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_create_extract.sql

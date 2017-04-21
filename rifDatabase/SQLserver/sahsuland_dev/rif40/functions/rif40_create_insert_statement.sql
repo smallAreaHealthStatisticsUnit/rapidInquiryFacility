@@ -3,7 +3,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF40 run study - create and execute insert statement
+-- Rapid Enquiry Facility (RIF) - RIF40 run study - create insert statement
 --
 -- Copyright:
 --
@@ -40,7 +40,7 @@
 -- Peter Hambly, SAHSU
 --
 -- Error codes:  ..\..\error_handling\rif40_custom_error_messages.sql
---
+-- 
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_create_insert_statement]')
@@ -48,15 +48,20 @@ IF EXISTS (SELECT *
 	DROP PROCEDURE [rif40].[rif40_create_insert_statement]
 GO 
 
-CREATE PROCEDURE [rif40].[rif40_create_insert_statement](@rval INT OUTPUT, @study_id INT, 
-	@study_or_comparison VARCHAR(1), @yearno INT, @debug INT=0, @year_start INTEGER=NULL, @year_stop INTEGER=NULL)
+CREATE PROCEDURE [rif40].[rif40_create_insert_statement](
+	@sql_stmt 				VARCHAR(40) OUTPUT, 
+	@study_id 				INTEGER, 
+	@study_or_comparison 	VARCHAR(1), 
+	@year_start 			INTEGER=NULL, 
+	@year_stop 				INTEGER=NULL, 
+	@debug 					INTEGER=0)
 AS
 BEGIN
 /*
 Function:	rif40_create_insert_statement()
-Parameter:	Success or failure [INTEGER], Study ID, study or comparison (S/C), year_start, year_stop
-Returns:	Success or failure [INTEGER], as  first parameter
-Description:	Create AND EXECUTE INSERT SQL statement
+Parameter:	DML statement created (OUT), Study ID, study or comparison (S/C), year_start, year_stop, debug
+Returns:	Success or failure [INTEGER]
+Description:	Create INSERT SQL statement
  */
 
 --
@@ -64,7 +69,9 @@ Description:	Create AND EXECUTE INSERT SQL statement
 --
 	IF @debug IS NULL SET @debug=0;
 	
-	SET @rval=1; 	-- Success
+	DECLARE @rval 	INTEGER=1; 	-- Success
+	SET @sql_stmt='SELECT USER';
+	RETURN @rval;
 	
 	DECLARE c1insext CURSOR FOR
 		SELECT study_id, extract_table, comparison_geolevel_name, study_geolevel_name, min_age_group, max_age_group, denom_tab
@@ -150,10 +157,6 @@ Description:	Create AND EXECUTE INSERT SQL statement
 	DECLARE @i			INTEGER=0;
 	DECLARE @j			INTEGER=0;
 	DECLARE @k			INTEGER=0;
---
-	DECLARE @sql_stmt		NVARCHAR(MAX);
-	DECLARE @ddl_stmts 	Sql_stmt_table;
-	DECLARE @t_ddl		INTEGER=0;
 --
 	DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
 	DECLARE @tab		VARCHAR(1)=CHAR(9);
@@ -303,9 +306,9 @@ Description:	Create AND EXECUTE INSERT SQL statement
 -- Processing years filter [commented out in Postgres]
 --
 /*			IF year_start = year_stop THEN
-				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND (c.year = $2'||E'\t'||'-* Denominator (INSERT) year filter *-'||E'\n';
+				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND (c.year = @yearstart'||E'\t'||'-* Denominator (INSERT) year filter *-'||E'\n';
 			ELSE
-				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND (c.year BETWEEN $2 AND $3'||E'\t'||'-* Denominator (INSERT) year filter *-'||E'\n';
+				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND (c.year BETWEEN @yearstart AND @yearstop'||E'\t'||'-* Denominator (INSERT) year filter *-'||E'\n';
 			END IF; */		
 
 --
@@ -373,14 +376,14 @@ Description:	Create AND EXECUTE INSERT SQL statement
 		ELSE SET @sql_stmt=@sql_stmt + @tab + '   AND (c.' + LOWER(@c8_rec_age_sex_group_field_name) + ' % 100) BETWEEN ' +
 				CAST(@c1_rec_min_age_group AS VARCHAR) + ' AND ' + CAST(@c1_rec_max_age_group AS VARCHAR) +
 				' /* All valid age groups for denominator I */' + @crlf;
-		SET @sql_stmt=@sql_stmt + @tab + '   AND s.study_id = $1' + @tab + @tab + '/* Current study ID */' + @crlf;
+		SET @sql_stmt=@sql_stmt + @tab + '   AND s.study_id = @studyid' + @tab + @tab + '/* Current study ID */' + @crlf;
 
 --
 -- Processing years filter
 --
-		IF @year_start = @year_stop SET @sql_stmt=@sql_stmt + @tab + '   AND c.year = $2' + @tab + @tab + 
+		IF @year_start = @year_stop SET @sql_stmt=@sql_stmt + @tab + '   AND c.year = @yearstart' + @tab + @tab + 
 			'/* Denominator (INSERT) year filter */' + @crlf
-		ELSE SET @sql_stmt=@sql_stmt + @tab + '   AND c.year BETWEEN $2 AND $3' + @tab + 
+		ELSE SET @sql_stmt=@sql_stmt + @tab + '   AND c.year BETWEEN @yearstart AND @yearstop' + @tab + 
 			'/* Denominator (INSERT) year filter */' + @crlf;
 
 --
@@ -412,11 +415,11 @@ Description:	Create AND EXECUTE INSERT SQL statement
           FROM g_rif40_comparison_areas s, sahsuland_pop d1     /- Study or comparison area to be extracted -/
   	      LEFT OUTER JOIN sahsuland_covariates_level4 c ON (        /- Covariates -/
      	               d1.level2 = c.level2				/- Join at study geolevel -/
-     	           AND c.year    = $2)
-         WHERE d1.year    = $2          /- Denominator (INSERT) year filter -/
+     	           AND c.year    = @yearstart)
+         WHERE d1.year    = @yearstart          /- Denominator (INSERT) year filter -/
            AND s.area_id  = d1.level2   /- Comparison geolevel join -/
            AND s.area_id  IS NOT NULL   /- Exclude NULL geolevel -/
-           AND s.study_id = $1          /- Current study ID -/
+           AND s.study_id = @studyid   /- Current study ID -/
                /- No age group filter required for denominator -/
          GROUP BY d1.year, s.area_id, d1.age_sex_group, c.ses
 )
@@ -464,15 +467,15 @@ Description:	Create AND EXECUTE INSERT SQL statement
 		LOWER(@covariate_table_name) + ' c ON (' + @tab + '/* Covariates */' + @crlf +
 		@tab + @tab + @tab + '    d1.' + LOWER(@c1_rec_study_geolevel_name) +
 		' = c.' + LOWER(@c1_rec_study_geolevel_name) + @tab + @tab + '/* Join at study geolevel */' + @crlf +
-		@tab + @tab + @tab + 'AND c.year = $2)' + @crlf;
-	SET @sql_stmt=@sql_stmt + @tab + ' WHERE d1.year = $2' + @tab + @tab +  '/* Denominator (INSERT) year filter */' + @crlf;
+		@tab + @tab + @tab + 'AND c.year = @yearstart)' + @crlf;
+	SET @sql_stmt=@sql_stmt + @tab + ' WHERE d1.year = @yearstart' + @tab + @tab +  '/* Denominator (INSERT) year filter */' + @crlf;
 	
 	IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + 
 		'   AND s.area_id  = d1.'+ LOWER(@c1_rec_comparison_geolevel_name) + @tab + '/* Comparison geolevel join */' + @crlf
 	ELSE SET @sql_stmt=@sql_stmt + @tab + 
 		'   AND s.area_id  = d1.' + LOWER(@c1_rec_study_geolevel_name) + @tab + '/* Study geolevel join */' + @crlf;
 	SET @sql_stmt=@sql_stmt + @tab + '   AND s.area_id  IS NOT NULL' + @tab + '/* Exclude NULL geolevel */' + @crlf +
-		@tab + '   AND s.study_id = $1' + @tab + @tab + '/* Current study ID */' + @crlf;
+		@tab + '   AND s.study_id = @studyid' + @tab + @tab + '/* Current study ID */' + @crlf;
 
 --
 -- [Add correct age_sex_group limits]
@@ -553,7 +556,7 @@ Description:	Create AND EXECUTE INSERT SQL statement
 --
 	SET @sql_stmt=@sql_stmt + 'SELECT d.year,' + @crlf +
 		'       ''' + @study_or_comparison + ''' AS study_or_comparison,' + @crlf +
-		'       $1 AS study_id,' + @crlf +
+		'       @studyid AS study_id,' + @crlf +
 		'       d.area_id,' + @crlf +
 		'       d.band_id,' + @crlf;
 --
@@ -611,16 +614,9 @@ Description:	Create AND EXECUTE INSERT SQL statement
 -- ORDER BY clause
 --
 	SET @sql_stmt=@sql_stmt + ' ORDER BY 1, 2, 3, 4, 5, 6, 7';
-	SET @t_ddl=@t_ddl+1;		
-	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
-
 --
--- Populate extract table
---
-	EXECUTE rif40.rif40_ddl
-			@rval		/* Result: 0/1 */,
-			@ddl_stmts	/* SQL table */,
-			@debug		/* enable debug: 0/1) */;	
+	SET @msg='[56005] (' + CAST(LEN(@sql_stmt) AS VARCHAR) + ' chars) SQL> ' + @sql_stmt + ';';
+	PRINT @msg;
 --
 	RETURN @rval;
 END;

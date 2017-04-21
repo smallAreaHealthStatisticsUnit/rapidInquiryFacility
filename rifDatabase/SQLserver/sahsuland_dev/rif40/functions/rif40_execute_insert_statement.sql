@@ -1,8 +1,9 @@
+
 -- ************************************************************************
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF40 ddl
+-- Rapid Enquiry Facility (RIF) - RIF40 run study - execute insert statement
 --
 -- Copyright:
 --
@@ -38,71 +39,66 @@
 --
 -- Peter Hambly, SAHSU
 --
-
--- This script must be run from the installation directory
-
-IF EXISTS (SELECT *
-           FROM   sys.objects
-           WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_ddl]')
-                  AND type IN ( N'P' ))
-	DROP PROCEDURE [rif40].[rif40_ddl];
-GO 
-
+-- Error codes:  ..\..\error_handling\rif40_custom_error_messages.sql
+-- 
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_execute_insert_statement]')
                   AND type IN ( N'P' ))
 	DROP PROCEDURE [rif40].[rif40_execute_insert_statement]
 GO 
-		   
-IF EXISTS (SELECT *
-           FROM   sys.table_types WHERE name = 'Sql_stmt_table')
-	DROP TYPE [rif40].[Sql_stmt_table];
-GO 
 
-CREATE TYPE [rif40].[Sql_stmt_table] AS TABLE ( 
-	sql_stmt 	NVARCHAR(MAX),
-	study_id	INTEGER	DEFAULT NULL
-	);  
-GO  
-
-CREATE PROCEDURE [rif40].[rif40_ddl](@rval INT OUTPUT, @sql_stmts rif40.Sql_stmt_table READONLY, @debug INTEGER=0)
+CREATE PROCEDURE [rif40].[rif40_execute_insert_statement](@rval INT OUTPUT, @dml_stmts Sql_stmt_table READONLY, 
+	@study_id INT, @year_start INTEGER=NULL, @year_stop INTEGER=NULL, @debug INT=0)
 AS
 BEGIN
 /*
- Function:		rif40_ddl()
- Parameter:		Success or failure [INTEGER], SQL statements table(sql_stmt VARCHAR(MAX)), debug flag (0/1) [Default: 0]
- Returns:		Success or failure [INTEGER], as  first parameter
- Description:	Run DDL.
+Function:	rif40_execute_insert_statement()
+Parameter:	Success or failure [INTEGER], DML insert, study ID, start year, stop year, debug
+Returns:	Success or failure [INTEGER], as  first parameter
+Description:	Execute INSERT SQL statement
  */
- 
+
 --
 -- Defaults if set to NULL
 --
 	IF @debug IS NULL SET @debug=0;
 	
-	DECLARE c1_ddl CURSOR FOR
+	SET @rval=1; 	-- Success
+
+	DECLARE c1_dml CURSOR FOR
 		SELECT sql_stmt, study_id
-		  FROM @sql_stmts;
+		  FROM @dml_stmts;
 	DECLARE @sql_stmt			NVARCHAR(MAX);
-	DECLARE @study_id			INTEGER;
 --
 	DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
 	DECLARE @err_msg 	NVARCHAR(2048);
 --
-	OPEN c1_ddl;
-	FETCH NEXT FROM c1_ddl INTO @sql_stmt, @study_id;
+	OPEN c1_dml;
+	FETCH NEXT FROM c1_dml INTO @sql_stmt, @study_id;
 	WHILE @@FETCH_STATUS = 0
 	BEGIN	
 		BEGIN TRY
 			IF @study_id IS NULL BEGIN
-				EXECUTE sp_executesql @sql_stmt;
-				PRINT 'SQL[' + USER + '] OK> ' + @sql_stmt + ';';
+				SET @err_msg = formatmessage(56600); 
+				THROW 56600, @err_msg, 1;
+			END;
+			IF @year_start IS NULL BEGIN
+				SET @err_msg = formatmessage(56601,@study_id); 
+				THROW 56601, @err_msg, 1;
+			END;
+			IF @year_stop IS NULL BEGIN
+				SET @err_msg = formatmessage(56602, @study_id); 
+				THROW 56602, @err_msg, 2;
 			END;
 			ELSE BEGIN
 				EXECUTE sp_executesql @sql_stmt,  
-					N'@study_id INTEGER',  
-					@study_id;
+					N'@studyid 		INTEGER', 
+					@study_id,
+					N'@yearstart 	INTEGER',
+					@year_start,
+					N'@yearstop 	INTEGER',
+					@year_stop;
 				PRINT 'SQL[' + USER + '; study_id: ' + CAST(@study_id AS VARCHAR) + '] OK> ' + 
 					@sql_stmt + ';';
 			END;
@@ -110,20 +106,21 @@ BEGIN
 		BEGIN CATCH		
 --	 		[55999] SQL statement had error: %s%sSQL[%s]> %s;	
 			IF LEN(@sql_stmt) > 1900 BEGIN	
-				SET @err_msg = formatmessage(55999, error_message(), @crlf, USER, '[SQL statement too long for error; see SQL above]');
-				PRINT '[55999] SQL> ' + @sql_stmt;
+				SET @err_msg = formatmessage(56699, error_message(), @crlf, USER, '[SQL statement too long for error; see SQL above]');
+				PRINT '[56699] SQL> ' + @sql_stmt;
 			END;
-			ELSE SET @err_msg = formatmessage(55999, error_message(), @crlf, USER, @sql_stmt); 
-			THROW 55999, @err_msg, 1;
+			ELSE SET @err_msg = formatmessage(56699, error_message(), @crlf, USER, @sql_stmt); 
+			THROW 56699, @err_msg, 1;
 		END CATCH;
 --
-		FETCH NEXT FROM c1_ddl INTO @sql_stmt, @study_id;
+		FETCH NEXT FROM c1_dml INTO @sql_stmt, @study_id;
 	END;
-	CLOSE c1_ddl;
-	DEALLOCATE c1_ddl;
+	CLOSE c1_dml;
+	DEALLOCATE c1_dml;
 	
+	RETURN @rval;
 END;
 GO
 
 --
--- Eof
+-- Eof	
