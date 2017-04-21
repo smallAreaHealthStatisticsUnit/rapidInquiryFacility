@@ -1288,7 +1288,7 @@ GO
 * Process Utah geography
 * Postgres install from export script
 * Disable guest logins on SQL Server
-* Add localhost notes to tomcat install doc; add network setup to SQL Server install notes
+* Add localhost notes to tomcat install doc; add network setup to SQL Server install notes; add notes on XXX
 * Discuss changing passwords
 * Geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Add checks for studies:
 ```
