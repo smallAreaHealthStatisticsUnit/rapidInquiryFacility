@@ -1288,7 +1288,8 @@ GO
 * Process Utah geography
 * Postgres install from export script
 * Disable guest logins on SQL Server
-* Discuss chnaging passwords
+* Add localhost notes to tomcat install doc; add network setup to SQL Server install notes
+* Discuss changing passwords
 * Geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Add checks for studies:
 ```
 	-- SQL statement 75: Remove old geolevels meta data table >>>

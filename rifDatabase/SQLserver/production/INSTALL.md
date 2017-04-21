@@ -184,7 +184,7 @@ This is caused by *rif40_sahsuland_install.bat* failing complaining the user is 
 
 ```
 sqlcmd -E
-1> SELECT useR_name();
+1> SELECT user_name();
 2> GO
 
 --------------------------------------------------------------------------------------------------------------------------------
@@ -198,11 +198,11 @@ The solution to this is to:
 
 * logon as *sa* using the password for the *sa* provided during the install;
 * Create a Windows authenticated user login as the domain user name (e.g. *IC\pch*);
-* Grant full database adminstration privileges (all of them!) to this user
+* Grant full database adminstration privileges (all of them!) to this user;
 * Check the user logon is now an Adminstrator (i.e. is dbo):
 	```
 	sqlcmd -E
-	1> SELECT useR_name();
+	1> SELECT user_name();
 	2> GO
 
 	--------------------------------------------------------------------------------------------------------------------------------
@@ -211,6 +211,7 @@ The solution to this is to:
 	(1 rows affected)
 	1> quit
 	``` 
+* Re-run *rif40_sahsuland_install.bat*
 	
 # 3. Create Additional Users
 
