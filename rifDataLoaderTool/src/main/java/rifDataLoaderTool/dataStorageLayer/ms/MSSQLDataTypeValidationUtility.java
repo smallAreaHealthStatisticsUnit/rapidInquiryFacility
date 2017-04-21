@@ -300,6 +300,9 @@ public class MSSQLDataTypeValidationUtility {
 			 * 
 			 * is_valid_uk_postal_code(postal_code)
 			 * 
+			 * for MS SQL eg:
+			 * [dbo].[is_valid_uk_postal_code](postal_code)
+			 * 
 			 */
 			queryFormatter.addQueryPhrase(baseIndentationLevel, "CASE");
 			queryFormatter.padAndFinishLine();
@@ -309,8 +312,10 @@ public class MSSQLDataTypeValidationUtility {
 			String validationFunctionName
 				= rifDataType.getValidationFunctionName();
 			String parameterValuesPhrase
-				= rifDataType.getValidationFunctionParameterValues();	
+				= rifDataType.getValidationFunctionParameterValues();
+			queryFormatter.addQueryPhrase("[dbo].[");
 			queryFormatter.addQueryPhrase(validationFunctionName);
+			queryFormatter.addQueryPhrase("]");
 			queryFormatter.addQueryPhrase("(");
 			queryFormatter.addQueryPhrase(cleanFieldName);
 			

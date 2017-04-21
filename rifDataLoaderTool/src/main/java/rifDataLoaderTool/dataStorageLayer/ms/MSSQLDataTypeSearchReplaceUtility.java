@@ -314,12 +314,23 @@ public class MSSQLDataTypeSearchReplaceUtility {
 			 * 
 			 * clean_icd(icd_1) AS icd_1
 			 * 
+			 * For MS SQL functions, need to be in this format
+			 * 
+			 * [dbo].[clean_icd](icd_1) as icd_1
+			 * 
 			 */
 			String cleaningFunctionName
 				= rifDataType.getCleaningFunctionName();
+			//queryFormatter.addQueryPhrase(
+			//	baseIndentationLevel, 
+			//	cleaningFunctionName);
+			//MS SQL additional formatting
 			queryFormatter.addQueryPhrase(
 				baseIndentationLevel, 
-				cleaningFunctionName);
+				"[dbo].[");
+			queryFormatter.addQueryPhrase(cleaningFunctionName);
+			queryFormatter.addQueryPhrase("]");
+						
 			queryFormatter.addQueryPhrase("(");
 			queryFormatter.addQueryPhrase(loadFieldName);
 			queryFormatter.addQueryPhrase(") AS ");

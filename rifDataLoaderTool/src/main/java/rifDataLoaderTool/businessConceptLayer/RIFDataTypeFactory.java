@@ -233,6 +233,49 @@ public class RIFDataTypeFactory {
 		return ageRIFDataType;
 	}
 	
+	public static RIFDataType createAgeRIFDataTypeMS() {
+		//MS specific version of the function, make sure this is called correctly for MS data access
+		String identifier = "rif_age";
+		String name
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.age.label");
+		String description
+			= RIFDataLoaderToolMessages.getMessage("rifDataType.age.description");
+		RIFDataType ageRIFDataType
+			= RIFDataType.newInstance(
+				identifier, 
+				name, 
+				description,
+				true);		
+		
+		/*
+		String regularExpression
+			= "^[0-9]{1,2}$|1[0-1][0-9]$";	
+		String validationRuleName1
+			= RIFDataLoaderToolMessages.getMessage(
+				"rifDataType.age.vaidationRule1.name");
+		String validationRuleDescription1
+			= RIFDataLoaderToolMessages.getMessage(
+				"rifDataType.age.vaidationRule1.description");
+	
+		ValidationRule validationRule 
+			= ValidationRule.newInstance(
+				validationRuleName1, 
+				validationRuleDescription1, 
+				regularExpression, 
+				true);
+	
+		ageRIFDataType.setFieldValidationPolicy(RIFFieldActionPolicy.USE_RULES);
+		ageRIFDataType.addValidationRule(validationRule);
+		*/
+		
+		ageRIFDataType.setFieldValidationPolicy(FieldActionPolicy.USE_FUNCTION);
+		ageRIFDataType.setValidationFunctionName("is_valid_age");
+
+		ageRIFDataType.setFieldCleaningPolicy(FieldActionPolicy.USE_FUNCTION);
+		ageRIFDataType.setCleaningFunctionName("clean_age");
+		
+		return ageRIFDataType;
+	}
 	private static RIFDataType createDoubleRIFDataType() {
 		String name
 			= RIFDataLoaderToolMessages.getMessage("rifDataType.double.label");
@@ -310,7 +353,11 @@ public class RIFDataTypeFactory {
 				"rifDataType.year.vaidationRule1.description");
 		validationRule.setDescription(validationRuleDescription1);
 		
-		validationRule.setValidValue("^(19|20)\\d{2}$");
+		// MS SQL specific code - need different regular expression code for MS SQL
+		//validationRule.setValidValue("^(19|20)\\d{2}$"); //postgres
+		//validationRule.setValidValue("[12][09][0-9][0-9]"); // SQL compatible - doesn't have full regexp capabilities
+		// Hopefully the rule below works for both MS and PG, not tested on PG fully...
+		validationRule.setValidValue("[1|2][9|0][0|1|2|3|4|5|6|7|8|9][0|1|2|3|4|5|6|7|8|9]");
 		yearRIFDataType.setFieldValidationPolicy(FieldActionPolicy.USE_RULES);
 		yearRIFDataType.setFieldCleaningPolicy(FieldActionPolicy.DO_NOTHING);		
 		yearRIFDataType.addValidationRule(validationRule);
