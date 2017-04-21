@@ -1,6 +1,7 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
 import rifDataLoaderTool.dataStorageLayer.pg.ProductionPGDataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.ms.ProductionMSDataLoaderService;
 import rifDataLoaderTool.system.DataLoaderToolSession;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.businessConceptLayer.*;
@@ -79,8 +80,10 @@ public class RIFDataLoaderToolApplication
 		try {
 			DataLoaderToolSession session 
 				= new DataLoaderToolSession();
-			ProductionPGDataLoaderService dataLoaderService
-				= new ProductionPGDataLoaderService();
+			//ProductionPGDataLoaderService dataLoaderService
+			//	= new ProductionPGDataLoaderService();
+			ProductionMSDataLoaderService dataLoaderService
+				= new ProductionMSDataLoaderService();
 			session.setDataLoaderService(dataLoaderService);
 			session.initialiseService();
 		
@@ -406,6 +409,15 @@ public class RIFDataLoaderToolApplication
 				session.getDataLoaderToolConfiguration(),
 				workflow);
 			
+		
+				String workflowCompletedMessage
+				= RIFDataLoaderToolMessages.getMessage(
+					"rifDataLoaderToolApplication.info.workflowFinishedRunning");
+
+				JOptionPane.showMessageDialog(
+				frame, 
+				workflowCompletedMessage);		
+
 			
 			
 		}
