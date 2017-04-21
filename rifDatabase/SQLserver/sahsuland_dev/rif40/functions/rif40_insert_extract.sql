@@ -149,7 +149,7 @@ Description:	Insert data into extract table
 			@c1_rec_study_id,
 			'S' /* study or comparison */,
 			@yearno /* Year */,
-			@debug;
+			@debug  /* Year start, year stop not used */;
 		IF @rval = 0 RETURN @rval;
 
 --

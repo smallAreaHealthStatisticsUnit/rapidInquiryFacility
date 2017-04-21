@@ -503,6 +503,8 @@ EXEC sp_addmessage 56000, 16,
 	N'Function: [rif40].[rif40_create_insert_statement], Study ID %i not found.';	
 EXEC sp_addmessage 56001, 16,
 	N'Function: [rif40].[rif40_create_insert_statement], Study ID %i no columns found for extract table: %s.';	
+EXEC sp_addmessage 56004, 16,
+	N'Function: [rif40].[rif40_create_insert_statement], Study ID %i no investigations created: distinct numerator: %s.';	
 	
 EXEC sp_addmessage 55800, 16,
 	N'Function: [rif40].[rif40_insert_extract], Study ID %i not found.';	
