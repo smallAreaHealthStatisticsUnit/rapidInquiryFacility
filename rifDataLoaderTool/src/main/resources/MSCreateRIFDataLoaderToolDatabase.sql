@@ -6,7 +6,7 @@
 -- Create system tables needed by the Data Loader Tool
 -- =====================================================================
 
-DROP TABLE IF EXISTS data_set_configurations;
+IF OBJECT_ID('data_set_configurations', 'U') IS NOT NULL DROP TABLE data_set_configurations;
 CREATE TABLE data_set_configurations (
 	id INT IDENTITY(1,1),
 	core_data_set_name VARCHAR(50) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE data_set_configurations (
 	current_workflow_state VARCHAR(20) NOT NULL DEFAULT 'start');
 GO
 	
-DROP TABLE IF EXISTS rif_change_log;
+IF OBJECT_ID('rif_change_log', 'U') IS NOT NULL DROP TABLE rif_change_log;
 CREATE TABLE rif_change_log (
 	data_set_id INT NOT NULL,
 	row_number INT NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE rif_change_log (
 	time_stamp DATE NOT NULL DEFAULT GETDATE());
 GO
 
-DROP TABLE IF EXISTS rif_failed_val_log;
+IF OBJECT_ID('rif_failed_val_log', 'U') IS NOT NULL DROP TABLE rif_failed_val_log;
 CREATE TABLE rif_failed_val_log (
 	data_set_id INT NOT NULL,
 	row_number INT NOT NULL,
@@ -38,7 +38,7 @@ GO
 -- Default Data Cleaning Functions
 -- =====================================================================
 
-DROP FUNCTION IF EXISTS dbo.clean_date
+IF OBJECT_ID('dbo.clean_date', 'FN') IS NOT NULL DROP FUNCTION dbo.clean_date
 GO
 CREATE FUNCTION dbo.clean_date(
 	@date_value VARCHAR(30),
@@ -46,16 +46,19 @@ CREATE FUNCTION dbo.clean_date(
 RETURNS VARCHAR(30) 
 AS 
 BEGIN
-	DECLARE 
-		@result AS VARCHAR(30);
-	SELECT @result = @date_value;
-	RETURN @result;
+       -- This function probably won't do what KGARWOOD intended.
+       -- BUT is seems to do as much as the postgres version which seems to be a stub
+   DECLARE @result varchar(30)
+   DECLARE @tempDate as datetime
+   SET @tempDate  = CAST(@date_value AS datetime)
+   SET @result = CONVERT(nvarchar(30), @tempDate, CAST(@date_format AS int)) 
+   RETURN @result;
 END
 GO
 
 --SELECT date_matches_format('05/20/1995', 'MM/DD/YYYY');
 
-DROP FUNCTION IF EXISTS dbo.clean_year
+IF OBJECT_ID('dbo.clean_year', 'FN') IS NOT NULL DROP FUNCTION dbo.clean_year
 GO
 CREATE FUNCTION dbo.clean_year(
 	@year_value VARCHAR(30))
@@ -63,18 +66,24 @@ RETURNS VARCHAR(30)
 AS 
 BEGIN
 
-	DECLARE 
-		@result AS VARCHAR(30);
+       DECLARE @tmpDateStr as VARCHAR(30)
+       DECLARE @tmpDate as date
+       DECLARE @retStr as VARCHAR(30)
 
-   	SET @result = @year_value;
+       SET @tmpDateStr = @year_value + '.01.01'
+       IF (len(@year_value) = 2) 
+              SET @tmpDate = CONVERT(date, @tmpDateStr, 2)
+       ELSE
+              SET @tmpDate = CONVERT(date, @tmpDateStr, 102)
 
-    RETURN @result;
+       SET @retStr = CAST(YEAR(@tmpDate) AS VARCHAR(30))
+       RETURN @retStr
 END
 GO
 
 --SELECT date_matches_format('05/20/1995', 'MM/DD/YYYY');
 
-DROP FUNCTION IF EXISTS dbo.clean_age;
+IF OBJECT_ID('dbo.clean_age', 'FN') IS NOT NULL DROP FUNCTION dbo.clean_age;
 GO
 CREATE FUNCTION dbo.clean_age(
 	@original_age VARCHAR(30))
@@ -90,7 +99,7 @@ BEGIN
 END
 GO
 
-DROP FUNCTION IF EXISTS dbo.clean_icd_code
+IF OBJECT_ID('dbo.clean_icd_code', 'FN') IS NOT NULL DROP FUNCTION dbo.clean_icd_code
 GO
 CREATE FUNCTION dbo.clean_icd_code(
 	@original_icd_code VARCHAR(30))
@@ -105,7 +114,7 @@ BEGIN
 END
 GO
 
-DROP FUNCTION IF EXISTS dbo.uk_postal_code
+IF OBJECT_ID('dbo.clean_uk_postal_code', 'FN') IS NOT NULL DROP FUNCTION dbo.clean_uk_postal_code
 GO
 CREATE FUNCTION dbo.clean_uk_postal_code(
 	@original_uk_postal_code VARCHAR(30))
@@ -120,7 +129,7 @@ BEGIN
 END
 GO
 
-DROP FUNCTION IF EXISTS dbo.clean_icd
+IF OBJECT_ID('dbo.clean_icd', 'FN') IS NOT NULL DROP FUNCTION dbo.clean_icd
 GO
 CREATE FUNCTION dbo.clean_icd(
 	@original_icd_code VARCHAR(30))
@@ -139,8 +148,8 @@ GO
 -- Default Validating Functions
 -- =====================================================================
 
-GO
-DROP FUNCTION IF EXISTS dbo.date_matches_format
+
+IF OBJECT_ID('dbo.date_matches_format', 'FN') IS NOT NULL DROP FUNCTION dbo.date_matches_format
 GO
 CREATE FUNCTION dbo.date_matches_format(
 	@date_value VARCHAR(30),
@@ -148,10 +157,26 @@ CREATE FUNCTION dbo.date_matches_format(
 	RETURNS INT AS 
 
 BEGIN
-	DECLARE 
-		@result INT;
+       --Date formats are defined as integers in SQL SERVER, so assume an integer is passed in
 
-	RETURN 1;
+       --this function should really use TRY can CATCH which isn't so easy in functions
+       --It will break if an invalid date fromat is given
+       DECLARE @DateFormatInt AS INT
+       DECLARE @res AS INT
+
+       SET @DateFormatInt = CAST(@date_format as int)
+
+       IF (@date_value = NULL OR @date_format = NULL)
+              RETURN 0
+   
+              SET  @res = 
+              CASE
+                     WHEN CONVERT(VARCHAR, CONVERT(date, @date_value, @DateFormatInt), @DateFormatInt) = @date_value THEN
+                     1
+                     ELSE
+                     0
+              END
+       RETURN @res
 
 END
 GO
@@ -167,38 +192,38 @@ GO
  *    false if the text value is not a number
  */
  
-GO
-DROP FUNCTION IF EXISTS dbo.is_numeric
+IF OBJECT_ID('dbo.is_numeric', 'FN') IS NOT NULL DROP FUNCTION dbo.is_numeric
 GO
 CREATE FUNCTION dbo.is_numeric(
 	@original_value VARCHAR(30))
 RETURNS INT 
 AS 
 BEGIN
-	DECLARE 
-		@result INT;
-
-	IF @original_value IS NULL
-		RETURN 0;
-
-	RETURN 1;
+	return ISNUMERIC(@original_value)
 END
 GO
 
-DROP FUNCTION IF EXISTS dbo.is_valid_age
+IF OBJECT_ID('dbo.is_valid_age', 'FN') IS NOT NULL DROP FUNCTION dbo.is_valid_age
 GO
 CREATE FUNCTION dbo.is_valid_age(
 	@candidate_age VARCHAR(30))
 	RETURNS INT AS 
 
 BEGIN
-
-	RETURN 1;
+       -- Declare the return variable here
+       DECLARE @age_value integer;
+       SET @age_value = @candidate_age;
+       IF (@age_value < 0) OR (@age_value > 120) 
+              RETURN 0;
+       ELSE
+              RETURN 1;
+              
+RETURN 1;
 	
 END
 GO
 
-DROP FUNCTION IF EXISTS dbo.is_valid_uk_postal_code
+IF OBJECT_ID('dbo.is_valid_uk_postal_code', 'FN') IS NOT NULL DROP FUNCTION dbo.is_valid_uk_postal_code
 GO
 CREATE FUNCTION dbo.is_valid_uk_postal_code(
 	@candidate_postal_code VARCHAR(30))
@@ -211,33 +236,33 @@ BEGIN
 END
 GO
 
-DROP FUNCTION IF EXISTS dbo.is_valid_double
+IF OBJECT_ID('dbo.is_valid_double', 'FN') IS NOT NULL DROP FUNCTION dbo.is_valid_double
 GO
 CREATE FUNCTION dbo.is_valid_double(
 	@candidate_double VARCHAR(20))
 	RETURNS INT AS 
 
 BEGIN
-	DECLARE 
-		@double_value AS DOUBLE PRECISION;
-
-	SELECT @double_value = cast(@candidate_double as double precision);
-		
-	RETURN 1;
+	   return ISNUMERIC(@candidate_double)
 
 END
 GO
 
 
-DROP FUNCTION IF EXISTS dbo.is_valid_integer
+IF OBJECT_ID('dbo.is_valid_integer', 'FN') IS NOT NULL DROP FUNCTION dbo.is_valid_integer
 GO
 CREATE FUNCTION dbo.is_valid_integer(
 	@candidate_integer VARCHAR(20))
 	RETURNS INT AS 
 
 BEGIN
-		
-	RETURN 1;
+       IF (@candidate_integer LIKE '%[^0-9]%')  
+              RETURN 0;
+       ELSE
+              RETURN 1;
+
+              
+RETURN 1;
 
 END
 GO
@@ -254,7 +279,7 @@ GO
 --that should appear in the demo.
 
 GO
-DROP FUNCTION IF EXISTS dbo.convert_age_sex;
+IF OBJECT_ID('dbo.convert_age_sex', 'FN') IS NOT NULL DROP FUNCTION dbo.convert_age_sex;
 GO
 CREATE FUNCTION dbo.convert_age_sex(
 	@age INT,
@@ -262,80 +287,80 @@ CREATE FUNCTION dbo.convert_age_sex(
 	RETURNS INT AS 
 
 BEGIN
-	DECLARE 
-		@age_sex_code INT;
-
-	IF @age IS NULL OR @sex IS NULL
-	   RETURN -1;
-	
-	SET @age_sex_code = (@sex * 100) + @age;
-	RETURN @age_sex_code;
+       IF (@age IS NULL OR @sex IS NULL) BEGIN
+          RETURN -1;
+       END
+       
+       IF (@age >= 0 AND @age <= 4) BEGIN
+              IF (@sex = 1) 
+                     RETURN(100 + @age);
+              ELSE IF (@sex = 2)
+                           RETURN(200 + @age);
+              ELSE
+                     RETURN(300 + @age);
+              
+       END 
+       
+       IF (@age >= 5 AND @age <= 84) BEGIN
+              IF (@sex = 1)
+                     RETURN(100+ (@age/5) + 4);
+              ELSE IF (@sex = 2)
+                     RETURN(200+ (@age/5) + 4);
+              ELSE
+                     RETURN(300+ (@age/5) + 4);
+              
+       END
+       
+       IF (@age >= 85 AND @age <=150) BEGIN
+              IF (@sex = 1)
+                     RETURN 121;
+              ELSE IF (@sex = 2) 
+                     RETURN 221;
+              ELSE
+                     RETURN 321;
+       END
+       
+       RETURN 99;
 END
 GO
 
 
-GO
-DROP FUNCTION IF EXISTS dbo.map_age_to_rif_age_group;
+IF OBJECT_ID('dbo.map_age_to_rif_age_group', 'FN') IS NOT NULL DROP FUNCTION dbo.map_age_to_rif_age_group;
 GO
 CREATE FUNCTION dbo.map_age_to_rif_age_group(
 	@original_age VARCHAR(30))
 RETURNS VARCHAR(30) 
 AS 
 BEGIN
-	DECLARE 
-		@age INT,
-		@result VARCHAR(30);
+       DECLARE @age INT;
+       DECLARE @result INT;
 
-	SET @age = CAST(@original_age AS INT);
+       SET @age = CAST(@original_age AS int)
 
-	IF @age=0
-		SET @result = '0';
-	ELSE IF @age=1
-		SET @result = '1';
-	ELSE IF @age=2
-		SET @result = '2';
-	ELSE IF @age=3
-		SET @result = '3';
-	ELSE IF @age=4
-		SET @result = '4';
-	ELSE IF @age BETWEEN 5 AND 9
-		SET @result = '5';
-	ELSE IF @age BETWEEN 10 AND 14
-		SET @result = '6';
-	ELSE IF @age BETWEEN 15 AND 19 
-		SET @result = '7';
-	ELSE IF @age BETWEEN 20 AND 24 
-		SET @result = '8';
-	ELSE IF @age BETWEEN 25 AND 29
-		SET @result = '9';
-	ELSE IF @age BETWEEN 30 AND 34
-		SET @result = '10';
-	ELSE IF @age BETWEEN 35 AND 39
-		SET @result = '11';
-	ELSE IF @age BETWEEN 40 AND 44
-		SET @result = '12';		
-	ELSE IF @age BETWEEN 45 AND 49
-		SET @result = '13';
-	ELSE IF @age BETWEEN 50 AND 54
-		SET @result = '14';
-	ELSE IF @age BETWEEN 55 AND 59
-		SET @result = '15';
-	ELSE IF @age BETWEEN 60 AND 64
-		SET @result = '16';
-	ELSE IF @age BETWEEN 65 AND 69
-		SET @result = '17';
-	ELSE IF @age BETWEEN 70 AND 74 
-		SET @result = '18';
-	ELSE IF @age BETWEEN 75 AND 79
-		SET @result = '19';
-	ELSE IF @age BETWEEN 80 AND 84
-		SET @result = '20';
-	ELSE IF @age >= 85
-		SET @result = '21';
-	ELSE
-		SET @result = NULL;
-		
-	RETURN @result;
+       IF (@age = 0) SET @result = '0';
+       IF (@age = 1) SET @result = '1'
+       IF (@age = 2) SET @result = '2'
+       IF (@age = 3) SET @result = '3'
+       IF (@age = 4) SET @result = '4'
+       IF (@age >=5 and @age <= 9) SET @result = '5'
+       IF (@age >=10 and @age <= 14) SET @result = '6'
+       IF (@age >=15 and @age <= 19) SET @result = '7'
+       IF (@age >=20 and @age <= 24) SET @result = '8'
+       IF (@age >=25 and @age <= 29) SET @result = '9'
+       IF (@age >=30 and @age <= 34) SET @result = '10'
+       IF (@age >=35 and @age <= 39) SET @result = '11'
+       IF (@age >=40 and @age <= 44) SET @result = '12'
+       IF (@age >=45 and @age <= 49) SET @result = '13'
+       IF (@age >=50 and @age <= 54) SET @result = '14'
+       IF (@age >=55 and @age <= 59) SET @result = '15'
+       IF (@age >=60 and @age <= 64) SET @result = '16'
+       IF (@age >=65 and @age <= 69) SET @result = '17'
+       IF (@age >=70 and @age <= 74) SET @result = '18'
+       IF (@age >=75 and @age <= 79) SET @result = '19'
+       IF (@age >=80 and @age <= 84) SET @result = '20'
+       IF (@age >=85) SET @result = '21'
+
+       RETURN @result
 END
 GO
 
