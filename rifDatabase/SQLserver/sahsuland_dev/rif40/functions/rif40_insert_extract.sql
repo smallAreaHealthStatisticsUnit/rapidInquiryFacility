@@ -104,7 +104,7 @@ Description:	Insert data into extract table
 -- Study area insert
 --
 	SET @sql_stmt='SELECT study_id, area_id, band_id' + @crlf +
-		'  INTO #g_rif40_study_areas' + @crlf + 
+		'  INTO ##g_rif40_study_areas' + @crlf + 
 		'  FROM rif40.rif40_study_areas' + @crlf +
 		' WHERE study_id = @study_id /* Current study ID */' + @crlf +
 		' ORDER BY study_id, area_id, band_id';
@@ -115,7 +115,7 @@ Description:	Insert data into extract table
 -- Comparison area insert
 --
 	SET @sql_stmt='SELECT study_id, area_id' + @crlf +
-		'  INTO #g_rif40_comparison_areas' + @crlf + 
+		'  INTO ##g_rif40_comparison_areas' + @crlf + 
 		'  FROM rif40.rif40_comparison_areas' + @crlf +
 		' WHERE study_id = @study_id /* Current study ID */' + @crlf +
 		' ORDER BY study_id, area_id';

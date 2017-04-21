@@ -3,7 +3,7 @@
 --
 -- Description:
 --
--- Rapid Enquiry Facility (RIF) - RIF40 run study - create insert statement
+-- Rapid Enquiry Facility (RIF) - RIF40 run study - create and execute insert statement
 --
 -- Copyright:
 --
@@ -160,11 +160,11 @@ Description:	Create AND EXECUTE INSERT SQL statement
 	DECLARE @err_msg 	VARCHAR(MAX);
 	DECLARE @msg	 	VARCHAR(MAX);
 	
-	DECLARE @areas_table	VARCHAR(30)='#g_rif40_study_areas';
+	DECLARE @areas_table	VARCHAR(30)='##g_rif40_study_areas';
 --
 -- Use different areas_table for comparison (it has no band_id)
 --	
-	IF @study_or_comparison = 'C' SET @areas_table='#g_rif40_comparison_areas';
+	IF @study_or_comparison = 'C' SET @areas_table='##g_rif40_comparison_areas';
 --
 	OPEN c1insext;	
 	FETCH NEXT FROM c1insext INTO @c1_rec_study_id, @c1_rec_extract_table, 
@@ -215,14 +215,14 @@ Description:	Create AND EXECUTE INSERT SQL statement
 -- 
 		IF @i = 1 SET @sql_stmt=@sql_stmt + 'WITH n' + CAST(@i AS VARCHAR) + ' AS (' + @tab + 
 			'/* ' + @c4_rec_numer_tab + ' - ' + @c4_rec_description + ' */' + @crlf
-		ELSE SET @sql_stmt=@sql_stmt + ', n' + CAST(@i AS VARCHAR) + ' AS (' + @tab + 
+		ELSE SET @sql_stmt=@sql_stmt + @tab + 'n' + CAST(@i AS VARCHAR) + ' AS (' + @tab + 
 			'/* ' + @c4_rec_numer_tab + ' - ' + @c4_rec_description + ' */' + @crlf;
 			
 --
 -- Numerator JOINS
 --
 		INSERT INTO @inv_join_array(outer_join) VALUES (@tab + 'LEFT OUTER JOIN n' + CAST(@i AS VARCHAR) + ' ON ( ' + @crlf +
-			@tab + '/* ' + @c4_rec_numer_tab + ' - ' + @c4_rec_description + ' */' + @crlf +
+			@tab + '/* rif_data.' + LOWER(@c4_rec_numer_tab) + ' - ' + @c4_rec_description + ' */' + @crlf +
 			@tab + @tab + '    d.area_id'+ @tab + @tab + ' = n' + CAST(@i AS VARCHAR) + '.area_id' + @crlf +
 			@tab + @tab + 'AND d.year' + @tab + @tab + ' = n' + CAST(@i AS VARCHAR) + '.year' + @crlf +
 --
@@ -321,13 +321,13 @@ Description:	Create AND EXECUTE INSERT SQL statement
 			IF @c5_rec_genders = 3 SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
 				'        /* No genders filter required for investigation  ' + CAST(@j AS VARCHAR) + ' */' + @crlf
 			ELSE SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + 
-				'   AND  TRUNC(c.' + LOWER(@c4_rec_age_sex_group_field_name) + '/100) = ' + CAST(@c5_rec_genders AS VARCHAR) + @crlf;
+				'   AND  FLOOR(c.' + LOWER(@c4_rec_age_sex_group_field_name) + '/100) = ' + CAST(@c5_rec_genders AS VARCHAR) + @crlf;
 		
 			IF @c8_rec_min_age_group = @c5_rec_min_age_group AND @c8_rec_max_age_group = @c5_rec_max_age_group SET @sql_stmt=@sql_stmt +
 				@tab + @tab + @tab + @tab + 
 				'        /* No age group filter required for investigation ' + CAST(@j AS VARCHAR) + ' */)' + @crlf
 			ELSE SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
-				'   AND  MOD(c.' + LOWER(@c4_rec_age_sex_group_field_name) + ', 100) BETWEEN ' + 
+				'   AND (c.' + LOWER(@c4_rec_age_sex_group_field_name) + ' % 100) BETWEEN ' + 
 				CAST(@c5_rec_min_age_group AS VARCHAR) + ' AND ' + CAST(@c5_rec_max_age_group AS VARCHAR) +
 				' /* Investigation ' + CAST(@j AS VARCHAR) + ' year, age group filter */)' + @crlf;
 --
@@ -359,7 +359,7 @@ Description:	Create AND EXECUTE INSERT SQL statement
 --
 -- From clause
 --
-		SET @sql_stmt=@sql_stmt + @tab + '  FROM ' + LOWER(@c4_rec_numer_tab) + ' c, ' + @tab +'/* ' + @c4_rec_description + ' */' + @crlf +
+		SET @sql_stmt=@sql_stmt + @tab + '  FROM rif_data.' + LOWER(@c4_rec_numer_tab) + ' c, ' + @tab +'/* ' + @c4_rec_description + ' */' + @crlf +
 			@tab + '       ' + @areas_table + ' s ' + @tab + '/* Study or comparision area to be extracted */' + @crlf;
 		IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + 
 			' WHERE c.' + LOWER(@c1_rec_comparison_geolevel_name) + ' = s.area_id ' + @tab + '/* Comparison selection */' + @crlf
@@ -370,7 +370,7 @@ Description:	Create AND EXECUTE INSERT SQL statement
 --
 		IF @c8_rec_min_age_group = @c1_rec_min_age_group AND @c8_rec_max_age_group = @c1_rec_max_age_group SET @sql_stmt=@sql_stmt + 
 			@tab + '       /* No age group filter required for denominator */' + @crlf
-		ELSE SET @sql_stmt=@sql_stmt + @tab + '   AND MOD(c.' + LOWER(@c8_rec_age_sex_group_field_name) + ', 100) BETWEEN ' +
+		ELSE SET @sql_stmt=@sql_stmt + @tab + '   AND (c.' + LOWER(@c8_rec_age_sex_group_field_name) + ' % 100) BETWEEN ' +
 				CAST(@c1_rec_min_age_group AS VARCHAR) + ' AND ' + CAST(@c1_rec_max_age_group AS VARCHAR) +
 				' /* All valid age groups for denominator I */' + @crlf;
 		SET @sql_stmt=@sql_stmt + @tab + '   AND s.study_id = $1' + @tab + @tab + '/* Current study ID */' + @crlf;
@@ -392,7 +392,7 @@ Description:	Create AND EXECUTE INSERT SQL statement
 --
 -- Close WITH clause (common table expression)
 -- 
-		SET @sql_stmt=@sql_stmt + @tab + ') /* ' + @c4_rec_numer_tab + ' - ' + @c4_rec_description + ' */' + @crlf;
+		SET @sql_stmt=@sql_stmt + @tab + ') /* ' + @c4_rec_numer_tab + ' - ' + @c4_rec_description + ' */,' + @crlf;
 		
 --
 		FETCH NEXT FROM c4insext INTO @c4_rec_numer_tab, @c4_rec_description, @c4_rec_age_sex_group_field_name, 
@@ -421,7 +421,7 @@ Description:	Create AND EXECUTE INSERT SQL statement
          GROUP BY d1.year, s.area_id, d1.age_sex_group, c.ses
 )
  */
-	SET @sql_stmt=@sql_stmt + ', d AS (' + @crlf;
+	SET @sql_stmt=@sql_stmt + @tab + 'd AS (' + @crlf;
 	IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + 'SELECT d1.year, s.area_id, CAST(NULL AS INTEGER) AS band_id, d1.'+
 			LOWER(@c8_rec_age_sex_group_field_name) + ',' + @crlf
 	ELSE SET @sql_stmt=@sql_stmt + @tab + 'SELECT d1.year, s.area_id, s.band_id, d1.' +
@@ -447,7 +447,7 @@ Description:	Create AND EXECUTE INSERT SQL statement
 			THROW 56007, @err_msg, 1;	
 		END;
 		SET @k=@k+1;
-		SET @sql_stmt=@sql_stmt + @tab + '       c.' + LOWER(@c7_rec_covariate_name) + @crlf;
+		SET @sql_stmt=@sql_stmt + @tab + '       c.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
 --
 		FETCH NEXT FROM c7insext INTO @c7_rec_covariate_name, @c7_rec_covariate_table_name;
 	END; /* Loop k: c7insext */
@@ -455,12 +455,12 @@ Description:	Create AND EXECUTE INSERT SQL statement
 	DEALLOCATE c7insext;
 
 	SET @sql_stmt=@sql_stmt + @tab + '       SUM(COALESCE(d1.'+ coalesce(LOWER(@c8_rec_total_field), 'total') + 
-		', 0)) AS total_pop' + @crlf + @tab + '  FROM ' + @areas_table + ' s, ' +
+		', 0)) AS total_pop' + @crlf + @tab + '  FROM ' + @areas_table + ' s, rif_data.' +
 		LOWER(@c1_rec_denom_tab) + ' d1 ' + @tab + '/* Study or comparison area to be extracted */' + @crlf;
 --
 -- This is joining at the study geolevel. For comparison areas this needs to be aggregated to the comparison area
 --			
-	IF @covariate_table_name IS NOT NULL SET @sql_stmt=@sql_stmt + @tab + @tab + 'LEFT OUTER JOIN ' +
+	IF @covariate_table_name IS NOT NULL SET @sql_stmt=@sql_stmt + @tab + @tab + 'LEFT OUTER JOIN rif_data.' +
 		LOWER(@covariate_table_name) + ' c ON (' + @tab + '/* Covariates */' + @crlf +
 		@tab + @tab + @tab + '    d1.' + LOWER(@c1_rec_study_geolevel_name) +
 		' = c.' + LOWER(@c1_rec_study_geolevel_name) + @tab + @tab + '/* Join at study geolevel */' + @crlf +
@@ -480,7 +480,7 @@ Description:	Create AND EXECUTE INSERT SQL statement
 	IF @c8_rec_min_age_group = @c1_rec_min_age_group AND @c8_rec_max_age_group = @c1_rec_max_age_group SET @sql_stmt=@sql_stmt + @tab + 
 		'       /* No age group filter required for denominator */' + @crlf
 	ELSE SET @sql_stmt=@sql_stmt + @tab + 
-		'   AND MOD(d1.' + LOWER(@c8_rec_age_sex_group_field_name) + ', 100) BETWEEN ' + 
+		'   AND (d1.' + LOWER(@c8_rec_age_sex_group_field_name) + ' % 100) BETWEEN ' + 
 			CAST(@c1_rec_min_age_group AS VARCHAR) + ' AND ' + CAST(@c1_rec_max_age_group AS VARCHAR) +
 			' /* All valid age groups for denominator II */' + @crlf;
 --
@@ -502,7 +502,7 @@ Description:	Create AND EXECUTE INSERT SQL statement
 --	
 -- Add INSERT
 --
-	SET @sql_stmt=@sql_stmt + 'INSERT INTO rif_studies.' + LOWER(@c1_rec_extract_table) + ' (' + @crlf;	
+	SET @sql_stmt=@sql_stmt + 'INSERT INTO rif_studies.' + LOWER(@c1_rec_extract_table) + ' /* (' + @crlf;	
 
 --
 -- Add INSERT columns
@@ -546,7 +546,7 @@ Description:	Create AND EXECUTE INSERT SQL statement
 	END;
 	CLOSE c3insext;
 	DEALLOCATE c3insext;
-	SET @sql_stmt=@sql_stmt + ') /* '+ CAST(@c3_rec_distinct_numerators AS VARCHAR) + ' numerator(s) */' + @crlf;
+	SET @sql_stmt=@sql_stmt + ') -* '+ CAST(@c3_rec_distinct_numerators AS VARCHAR) + ' numerator(s) */' + @crlf;
 	
 --
 -- SELECT statement
@@ -559,8 +559,8 @@ Description:	Create AND EXECUTE INSERT SQL statement
 --
 -- [Add support for differing age/sex/group names]
 --
-	SET @sql_stmt=@sql_stmt + '       TRUNC(d.' + LOWER(@c8_rec_age_sex_group_field_name) + '/100) AS sex,' + @crlf +
-		'       MOD(d.' + LOWER(@c8_rec_age_sex_group_field_name) + ', 100) AS age_group,' + @crlf;
+	SET @sql_stmt=@sql_stmt + '       FLOOR(d.' + LOWER(@c8_rec_age_sex_group_field_name) + '/100) AS sex,' + @crlf +
+		'       (d.' + LOWER(@c8_rec_age_sex_group_field_name) + ' % 100) AS age_group,' + @crlf;
 
 --
 -- Add covariate names (Assumes 1 covariate table.1 covariate)
@@ -580,7 +580,7 @@ Description:	Create AND EXECUTE INSERT SQL statement
 	FETCH NEXT FROM c9_inv_array INTO @c9_rec_inv;
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		SET @sql_stmt=@sql_stmt + @c9_rec_inv + @crlf;
+		SET @sql_stmt=@sql_stmt + @c9_rec_inv + ',' + @crlf;
 --
 		FETCH NEXT FROM c9_inv_array INTO @c9_rec_inv;
 	END;
