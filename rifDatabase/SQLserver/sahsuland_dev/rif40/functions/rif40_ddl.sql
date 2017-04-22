@@ -47,13 +47,6 @@ IF EXISTS (SELECT *
                   AND type IN ( N'P' ))
 	DROP PROCEDURE [rif40].[rif40_ddl];
 GO 
-
-IF EXISTS (SELECT *
-           FROM   sys.objects
-           WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_execute_insert_statement]')
-                  AND type IN ( N'P' ))
-	DROP PROCEDURE [rif40].[rif40_execute_insert_statement]
-GO 
 		   
 IF EXISTS (SELECT *
            FROM   sys.table_types WHERE name = 'Sql_stmt_table')

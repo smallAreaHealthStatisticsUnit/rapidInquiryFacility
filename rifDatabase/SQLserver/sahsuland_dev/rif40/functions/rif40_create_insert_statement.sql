@@ -504,7 +504,7 @@ Description:	Create INSERT SQL statement
 --	
 -- Add INSERT
 --
-	SET @sql_stmt=@sql_stmt + 'INSERT INTO rif_studies.' + LOWER(@c1_rec_extract_table) + ' /* (' + @crlf;	
+	SET @sql_stmt=@sql_stmt + 'INSERT INTO rif_studies.' + LOWER(@c1_rec_extract_table) + ' (' + @crlf;	
 
 --
 -- Add INSERT columns
@@ -548,7 +548,7 @@ Description:	Create INSERT SQL statement
 	END;
 	CLOSE c3insext;
 	DEALLOCATE c3insext;
-	SET @sql_stmt=@sql_stmt + ') -* '+ CAST(@c3_rec_distinct_numerators AS VARCHAR) + ' numerator(s) */' + @crlf;
+	SET @sql_stmt=@sql_stmt + ') /* '+ CAST(@c3_rec_distinct_numerators AS VARCHAR) + ' numerator(s) */' + @crlf;
 	
 --
 -- SELECT statement

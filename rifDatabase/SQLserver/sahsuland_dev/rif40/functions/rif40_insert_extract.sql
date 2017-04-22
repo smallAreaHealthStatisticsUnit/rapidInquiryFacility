@@ -126,7 +126,8 @@ Description:	Insert data into extract table
 --
 -- Create table for insert DML
 --
-	SET @sql_stmt='CREATE TABLE ##g_insert_dml(study_id INTEGER, name VARCHAR(20), sql_stmt NVARCHAR(MAX))';
+	SET @sql_stmt='IF OBJECT_ID(''tempdb..##g_insert_dml'') IS NULL' + @crlf + 
+		'CREATE TABLE ##g_insert_dml(study_id INTEGER, name VARCHAR(20), sql_stmt NVARCHAR(MAX))';
 	SET @t_ddl=@t_ddl+1;	
 	INSERT INTO @ddl_stmts(sql_stmt, study_id) VALUES (@sql_stmt, @study_id);
 	
