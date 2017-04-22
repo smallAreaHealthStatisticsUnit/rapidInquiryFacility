@@ -148,8 +148,7 @@ Recurse until complete
 -- Create extract, call: rif40.rif40_create_extract()
 --
 	IF @new_study_state = 'E' BEGIN
-		EXECUTE rif40.rif40_create_extract
-				@rval		/* Result: 0/1 */,
+		EXECUTE @rval=rif40.rif40_create_extract
 				@study_id	/* Study id */,
 				@debug		/* enable debug: 0/1) */;
 		IF @rval = 0 BEGIN

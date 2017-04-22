@@ -47,14 +47,14 @@ IF EXISTS (SELECT *
 	DROP PROCEDURE [rif40].[rif40_create_extract]
 GO 
 
-CREATE PROCEDURE [rif40].[rif40_create_extract](@rval INT OUTPUT, @study_id INT, @debug INT)
+CREATE PROCEDURE [rif40].[rif40_create_extract](@study_id INT, @debug INT)
 WITH EXECUTE AS 'rif40' /* So as to be owned by RIF40 */
 AS
 BEGIN
 /*
 Function:	rif40_create_extract()
-Parameter:	Success or failure [INTEGER], Study ID, enable debug (INTEGER: default 0)
-Returns:	Success or failure [INTEGER], as  first parameter
+Parameter:	Study ID, enable debug (INTEGER: default 0)
+Returns:	Success or failure [INTEGER]
 		Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)
 		Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost
 Description:	Create extract table. Calls rif40_insert_extract() to populate extract table.
@@ -114,6 +114,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 -- Defaults if set to NULL
 --
 	IF @debug IS NULL SET @debug=0;
+	DECLARE @rval INTEGER=1;  -- Success
 	
 	DECLARE c1_creex CURSOR FOR
 		SELECT study_id, study_state, extract_table, extract_permitted, username, description, partition_parallelisation, study_type
@@ -491,27 +492,14 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	SET @t_ddl=@t_ddl+1;	
 	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);	
 
-	/*
 --
 -- Vacuum analyze - raises 25001 "VACUUM cannot run inside a transaction block"
 --
 -- DEFER TO LATER
 --
-	sql_stmt:='ANALYZE rif_studies.'||LOWER(c1_rec.extract_table);
-	t_ddl:=t_ddl+1;	
-	ddl_stmts[t_ddl]:=sql_stmt;
---
--- Call rif40_sm_pkg.rif40_study_ddl_definer (i.e. runs as rif40_sm_pkg owner rif40)
---
-	IF rif40_sm_pkg.rif40_study_ddl_definer(c1_rec.study_id, c1_rec.username, c1a_rec.audsid, ddl_stmts) = FALSE THEN
-		PERFORM rif40_log_pkg.rif40_log ('WARNING', 'rif40_create_extract', 
-			'[55409] RIF40_STUDIES study % extract index/analyze failed, see previous warnings',
-			c1_rec.study_id::VARCHAR);
-		RETURN FALSE;
-	END IF;
---
-	RETURN TRUE;
- */	
+	SET @sql_stmt='UPDATE STATISTICS rif_studies.' + LOWER(@c1_rec_extract_table) + ' WITH SAMPLE 10 PERCENT';
+	SET @t_ddl=@t_ddl+1;	
+	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);	
  
 --
 -- Index extract table
@@ -524,7 +512,12 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 				' populated extract failed, see previous warnings'	/* Study id */;
 			PRINT @msg;
 		END; 
-		
+	ELSE BEGIN
+			SET @msg='[55411] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' populated extract OK'	/* Study id */;
+			PRINT @msg;
+		END; 
+	
 	RETURN @rval;
 END;
 GO

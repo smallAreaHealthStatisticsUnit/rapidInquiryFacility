@@ -105,10 +105,18 @@ BEGIN
 		BEGIN CATCH		
 --	 		[55999] SQL statement had error: %s%sSQL[%s]> %s;	
 			IF LEN(@sql_stmt) > 1900 BEGIN	
-				SET @err_msg = formatmessage(55999, error_message(), @crlf, USER, '[SQL statement too long for error; see SQL above]');
+				SET @err_msg = formatmessage(55999, COALESCE(error_message(), 'No error!'), @crlf, USER, '[SQL statement too long for error; see SQL above]');
 				PRINT '[55999] SQL> ' + @sql_stmt;
+			END
+			ELSE SET @err_msg = formatmessage(55999, COALESCE(error_message(), 'No error!'), @crlf, USER, @sql_stmt); 
+			
+			IF @err_msg IS NULL BEGIN
+				SET @err_msg = '[55998] [formatmessage issue] SQL statement had error: ' + 
+					COALESCE(error_message(), 'No error!') +  @crlf + 'SQL[' + USER + ']';
 			END;
-			ELSE SET @err_msg = formatmessage(55999, error_message(), @crlf, USER, @sql_stmt); 
+
+			PRINT @err_msg;
+				
 			THROW 55999, @err_msg, 1;
 		END CATCH;
 --
