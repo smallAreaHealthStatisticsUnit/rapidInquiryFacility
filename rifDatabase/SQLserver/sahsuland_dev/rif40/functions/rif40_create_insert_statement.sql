@@ -49,7 +49,6 @@ IF EXISTS (SELECT *
 GO 
 
 CREATE PROCEDURE [rif40].[rif40_create_insert_statement](
-	@sql_stmt 				VARCHAR(40) OUTPUT, 
 	@study_id 				INTEGER, 
 	@study_or_comparison 	VARCHAR(1), 
 	@year_start 			INTEGER=NULL, 
@@ -59,7 +58,7 @@ AS
 BEGIN
 /*
 Function:	rif40_create_insert_statement()
-Parameter:	DML statement created (OUT), Study ID, study or comparison (S/C), year_start, year_stop, debug
+Parameter:	Study ID, study or comparison (S/C), year_start, year_stop, debug
 Returns:	Success or failure [INTEGER]
 Description:	Create INSERT SQL statement
  */
@@ -70,8 +69,6 @@ Description:	Create INSERT SQL statement
 	IF @debug IS NULL SET @debug=0;
 	
 	DECLARE @rval 	INTEGER=1; 	-- Success
-	SET @sql_stmt='SELECT USER';
-	RETURN @rval;
 	
 	DECLARE c1insext CURSOR FOR
 		SELECT study_id, extract_table, comparison_geolevel_name, study_geolevel_name, min_age_group, max_age_group, denom_tab
@@ -154,6 +151,8 @@ Description:	Create INSERT SQL statement
 		  FROM @inv_join_array;
 	DECLARE @c10_rec_outer_join		VARCHAR(MAX);
 --	
+	DECLARE @sql_stmt	NVARCHAR(MAX);
+--
 	DECLARE @i			INTEGER=0;
 	DECLARE @j			INTEGER=0;
 	DECLARE @k			INTEGER=0;
@@ -615,7 +614,9 @@ Description:	Create INSERT SQL statement
 --
 	SET @sql_stmt=@sql_stmt + ' ORDER BY 1, 2, 3, 4, 5, 6, 7';
 --
-	SET @msg='[56005] (' + CAST(LEN(@sql_stmt) AS VARCHAR) + ' chars) SQL> ' + @sql_stmt + ';';
+	INSERT INTO ##g_insert_dml(sql_stmt, name, study_id) VALUES (@sql_stmt, @study_or_comparison + ': 1', @study_id);
+--
+	SET @msg='[56005] Create INSERT statement (' + CAST(LEN(@sql_stmt) AS VARCHAR) + ' chars)' + @crlf + 'SQL> ' + @sql_stmt + ';';
 	PRINT @msg;
 --
 	RETURN @rval;

@@ -48,13 +48,13 @@ IF EXISTS (SELECT *
 	DROP PROCEDURE [rif40].[rif40_execute_insert_statement]
 GO 
 
-CREATE PROCEDURE [rif40].[rif40_execute_insert_statement](@rval INT OUTPUT, @dml_stmts Sql_stmt_table READONLY, 
+CREATE PROCEDURE [rif40].[rif40_execute_insert_statement](@rval INT OUTPUT,
 	@study_id INT, @year_start INTEGER=NULL, @year_stop INTEGER=NULL, @debug INT=0)
 AS
 BEGIN
 /*
 Function:	rif40_execute_insert_statement()
-Parameter:	Success or failure [INTEGER], DML insert, study ID, start year, stop year, debug
+Parameter:	Success or failure [INTEGER], study ID, start year, stop year, debug
 Returns:	Success or failure [INTEGER], as  first parameter
 Description:	Execute INSERT SQL statement
  */
@@ -67,15 +67,18 @@ Description:	Execute INSERT SQL statement
 	SET @rval=1; 	-- Success
 
 	DECLARE c1_dml CURSOR FOR
-		SELECT sql_stmt, study_id
-		  FROM @dml_stmts;
-	DECLARE @sql_stmt			NVARCHAR(MAX);
+		SELECT sql_stmt, name
+		  FROM ##g_insert_dml
+		 WHERE study_id = @study_id
+	DECLARE @sql_stmt	NVARCHAR(MAX);
+	DECLARE @name		VARCHAR(20);
+	DECLARE @rowcount	INTEGER;
 --
 	DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
 	DECLARE @err_msg 	NVARCHAR(2048);
 --
 	OPEN c1_dml;
-	FETCH NEXT FROM c1_dml INTO @sql_stmt, @study_id;
+	FETCH NEXT FROM c1_dml INTO @sql_stmt, @name;
 	WHILE @@FETCH_STATUS = 0
 	BEGIN	
 		BEGIN TRY
@@ -91,17 +94,18 @@ Description:	Execute INSERT SQL statement
 				SET @err_msg = formatmessage(56602, @study_id); 
 				THROW 56602, @err_msg, 2;
 			END;
-			ELSE BEGIN
-				EXECUTE sp_executesql @sql_stmt,  
-					N'@studyid 		INTEGER', 
-					@study_id,
-					N'@yearstart 	INTEGER',
-					@year_start,
-					N'@yearstop 	INTEGER',
-					@year_stop;
-				PRINT 'SQL[' + USER + '; study_id: ' + CAST(@study_id AS VARCHAR) + '] OK> ' + 
-					@sql_stmt + ';';
-			END;
+			
+			EXECUTE sp_executesql @sql_stmt,  
+				N'@studyid INTEGER, @yearstart INTEGER, @yearstop INTEGER',
+				@studyid=@study_id,
+				@yearstart=@year_start,
+				@yearstop=@year_stop;
+			SET @rowcount=@@ROWCOUNT;
+			PRINT 'SQL[' + USER + '] study_id: ' + CAST(@study_id AS VARCHAR) + 
+				'; start: ' + CAST(@year_start AS VARCHAR) +
+				'; stop: ' + CAST(@year_stop AS VARCHAR) +
+				' OK: ' + @name +
+				'; rows: ' + CAST(@rowcount AS VARCHAR);
 		END TRY
 		BEGIN CATCH		
 --	 		[55999] SQL statement had error: %s%sSQL[%s]> %s;	
@@ -113,7 +117,7 @@ Description:	Execute INSERT SQL statement
 			THROW 56699, @err_msg, 1;
 		END CATCH;
 --
-		FETCH NEXT FROM c1_dml INTO @sql_stmt, @study_id;
+		FETCH NEXT FROM c1_dml INTO @sql_stmt, @name;
 	END;
 	CLOSE c1_dml;
 	DEALLOCATE c1_dml;
