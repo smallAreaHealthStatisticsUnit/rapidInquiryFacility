@@ -59,13 +59,13 @@ CREATE TYPE [rif40].[Sql_stmt_table] AS TABLE (
 	);  
 GO  
 
-CREATE PROCEDURE [rif40].[rif40_ddl](@rval INT OUTPUT, @sql_stmts rif40.Sql_stmt_table READONLY, @debug INTEGER=0)
+CREATE PROCEDURE [rif40].[rif40_ddl](@sql_stmts rif40.Sql_stmt_table READONLY, @debug INTEGER=0)
 AS
 BEGIN
 /*
  Function:		rif40_ddl()
- Parameter:		Success or failure [INTEGER], SQL statements table(sql_stmt VARCHAR(MAX)), debug flag (0/1) [Default: 0]
- Returns:		Success or failure [INTEGER], as  first parameter
+ Parameter:		SQL statements table(sql_stmt VARCHAR(MAX)), debug flag (0/1) [Default: 0]
+ Returns:		Success or failure [INTEGER]
  Description:	Run DDL.
  */
  
@@ -73,6 +73,8 @@ BEGIN
 -- Defaults if set to NULL
 --
 	IF @debug IS NULL SET @debug=0;
+
+	DECLARE @rval	INTEGER=1; 	-- Success
 	
 	DECLARE c1_ddl CURSOR FOR
 		SELECT sql_stmt, study_id
@@ -115,6 +117,7 @@ BEGIN
 	CLOSE c1_ddl;
 	DEALLOCATE c1_ddl;
 	
+	RETURN @rval;
 END;
 GO
 

@@ -116,7 +116,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	IF @debug IS NULL SET @debug=0;
 	
 	DECLARE c1_creex CURSOR FOR
-		SELECT study_id, study_state, extract_table, extract_permitted, username, description
+		SELECT study_id, study_state, extract_table, extract_permitted, username, description, partition_parallelisation, study_type
 		  FROM rif40_studies a
 		 WHERE @study_id = a.study_id;
 	DECLARE c2_creex CURSOR FOR
@@ -140,6 +140,8 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	DECLARE @c1_rec_extract_permitted	INTEGER;
 	DECLARE @c1_rec_username			VARCHAR(90);
 	DECLARE @c1_rec_description 		VARCHAR(250);
+	DECLARE @c1_rec_partition_parallelisation	INTEGER;
+	DECLARE @c1_rec_study_type			INTEGER;
 --
 	DECLARE @c2_rec_covariate_name 		VARCHAR(30);
 	DECLARE @c3_rec_inv_name 			VARCHAR(20);
@@ -180,12 +182,22 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 		  FROM @table_columns;
 	DECLARE @c5_rec_column_name			VARCHAR(30);
 	DECLARE @c5_rec_column_comment		VARCHAR(4000);
+--
+	DECLARE c6_creex CURSOR FOR
+		SELECT column_name
+		  FROM @index_columns;
+	DECLARE @c6_rec_column_name			VARCHAR(30);	
+	--
+	DECLARE c7_creex CURSOR FOR
+		SELECT column_name
+		  FROM @pk_index_columns;
+	DECLARE @c7_rec_column_name			VARCHAR(30);
 --		  
 	DECLARE @ddl_stmts 	Sql_stmt_table;
 	DECLARE @t_ddl		INTEGER=0;
-	
+--
+	DECLARE @sql_frag 	VARCHAR(MAX);	
 /*	
-	DECLARE @sql_frag 	VARCHAR(MAX);
 --
 	index_column	VARCHAR;
 	table_column	VARCHAR;
@@ -206,7 +218,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 				
 	OPEN c1_creex;
 	FETCH NEXT FROM c1_creex INTO @c1_rec_study_id, @c1_rec_study_state, @c1_rec_extract_table, @c1_rec_extract_permitted, 
-		@c1_rec_username, @c1_rec_description;
+		@c1_rec_username, @c1_rec_description, @c1_rec_partition_parallelisation, @c1_rec_study_type;
 	IF @@CURSOR_ROWS = 0 BEGIN
 		CLOSE c1_creex;
 		DEALLOCATE c1_creex;
@@ -262,24 +274,34 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 -- The basis for this is the performance tests created from the new EHA extract for Lea in September 2012
 -- The table has the following standard columns
 --
---CREATE TABLE <extract_table> (
--- 	year                    SMALLINT 	NOT NULL,
+-- CREATE TABLE rif_studies.<extract_table> (
+-- 	year                SMALLINT 	NOT NULL,
 --	study_or_comparison	VARCHAR(1) 	NOT NULL,
---	study_id		INTEGER 	NOT NULL,
--- 	area_id                 VARCHAR 	NOT NULL,
---	band_id			INTEGER,
--- 	sex                     SMALLINT,
--- 	age_group               VARCHAR,
--- 	total_pop               DOUBLE PRECISION,
+--	study_id			INTEGER 	NOT NULL,
+-- 	area_id             VARCHAR 	NOT NULL,
+--	band_id				INTEGER 	NOT NULL, /* Risk analysis only */
+-- 	sex                 SMALLINT,
+-- 	age_group           VARCHAR,
+-- 	total_pop           DOUBLE PRECISION,
+--  <covariate_name>	VARCHAR(30) NOT NULL	DEFAULT 'No data'
+--
+-- PK disease mapping: year,study_or_comparison,study_id,area_id,sex,age_group,ses
+-- PK risk analysis: year,study_or_comparison,study_id,area_id,sex,age_group,ses
 --
 	SET @sql_stmt='CREATE TABLE rif_studies.' + LOWER(@c1_rec_extract_table) + ' (' + @crlf +
-		 	@tab + 'year                           SMALLINT    NOT NULL,' + @crlf +
-			@tab + 'study_or_comparison            VARCHAR(1)  NOT NULL,' + @crlf +
-			@tab + 'study_id                       INTEGER     NOT NULL,' + @crlf +
- 			@tab + 'area_id                        VARCHAR(30) NOT NULL,' + @crlf +
-			@tab + 'band_id                        INTEGER,' + @crlf +
- 			@tab + 'sex                            SMALLINT,' + @crlf +
- 			@tab + 'age_group                      SMALLINT,' + @crlf;
+		 	@tab + 'year                           SMALLINT    	NOT NULL,' + @crlf +
+			@tab + 'study_or_comparison            VARCHAR(1)  	NOT NULL,' + @crlf +
+			@tab + 'study_id                       INTEGER     	NOT NULL,' + @crlf +
+ 			@tab + 'area_id                        VARCHAR(30) 	NOT NULL,' + @crlf;
+			
+	IF @c1_rec_study_type != '1' SET @sql_stmt=@sql_stmt + @tab + 
+		'band_id                        INTEGER 		NOT NULL,' + @crlf /* Risk analysis only */
+	ELSE SET @sql_stmt=@sql_stmt + @tab + 
+		'band_id                        INTEGER 		NULL,' + @crlf;
+	
+ 	SET @sql_stmt=@sql_stmt + 
+			@tab + 'sex                            SMALLINT 	NOT NULL,' + @crlf +
+ 			@tab + 'age_group                      SMALLINT 	NOT NULL,' + @crlf;
 --
 -- One column per distinct covariate
 --
@@ -289,7 +311,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	FETCH NEXT FROM c2_creex INTO @c2_rec_covariate_name;
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		SET @sql_stmt=@sql_stmt + @tab + LEFT(LOWER(@c2_rec_covariate_name) + REPLICATE(' ',30), 30) + ' VARCHAR(30),' + @crlf; 
+		SET @sql_stmt=@sql_stmt + @tab + LEFT(LOWER(@c2_rec_covariate_name) + REPLICATE(' ',30), 30) + ' VARCHAR(30)	 NOT NULL DEFAULT ''No data'',' + @crlf; 
 		INSERT INTO @table_columns(column_name, column_comment) VALUES (@c2_rec_covariate_name, @c2_rec_covariate_name);
 		INSERT INTO @pk_index_columns(column_name) VALUES (@c2_rec_covariate_name);
 --
@@ -380,11 +402,16 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 --
 -- Create extract table
 --
-	EXECUTE rif40.rif40_ddl
-			@rval		/* Result: 0/1 */,
+	EXECUTE @rval=rif40.rif40_ddl
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
-
+	IF @rval = 0 BEGIN
+			SET @msg='[55408] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' populated extract failed, see previous warnings'	/* Study id */;
+			PRINT @msg;
+			RETURN @rval;
+		END; 
+		
 --
 -- Use caller execution context to INSERT extract data
 --
@@ -398,7 +425,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 		@c1_rec_study_id,
 		@debug;
 	IF @rval = 0 BEGIN
-			SET @msg='[55408] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+			SET @msg='[55409] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' populated extract failed, see previous warnings'	/* Study id */;
 			PRINT @msg;
 			RETURN @rval;
@@ -409,47 +436,62 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	END;
 	
 	REVERT;	/* Revert to procedure owner context (RIF40) to create indexes */
-	/*
+	
 --
 -- Reset DDL statement array
 --
-	ddl_stmts:=NULL;
-	t_ddl:=0;
+	DELETE FROM @ddl_stmts;
+	SET @t_ddl=0;
 --
 -- Index: year, study_or_comparison if no partitioning
 --	  area_id, band_id, sex, age_group
 --
--- NEEDS TO BE MOVED TO AFTER INSERT, ADD PK
+-- NEEDED TO BE MOVED TO AFTER INSERT, ADD PK
 --
-	IF c1_rec.partition_parallelisation = 0 THEN
-		index_columns:=array_cat(index_columns, ARRAY['year', 'study_or_comparison']::VARCHAR[]);
-	END IF;
-	FOREACH index_column IN ARRAY index_columns LOOP
-		sql_stmt:='CREATE INDEX '||LOWER(c1_rec.extract_table)||'_'||index_column||
-			' ON rif_studies.'||LOWER(c1_rec.extract_table)||'('||index_column||')';
-		t_ddl:=t_ddl+1;	
-		ddl_stmts[t_ddl]:=sql_stmt;
-	END LOOP;
+	IF @c1_rec_partition_parallelisation = 0 BEGIN
+		INSERT INTO @index_columns(column_name) VALUES ('year');
+		INSERT INTO @index_columns(column_name) VALUES ('study_or_comparison');
+	END;
+	
+	OPEN c6_creex;
+	FETCH NEXT FROM c6_creex INTO @c6_rec_column_name;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @sql_stmt='CREATE INDEX ' + LOWER(@c1_rec_extract_table) + '_' + @c6_rec_column_name +
+			' ON rif_studies.' + LOWER(@c1_rec_extract_table) + '(' + @c6_rec_column_name + ')';	
+		SET @t_ddl=@t_ddl+1;	
+		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);	
+--
+		FETCH NEXT FROM c6_creex INTO @c6_rec_column_name;
+	END;
+	CLOSE c6_creex;
+	DEALLOCATE c6_creex;
 
 --
 -- Primary key index on: year, study_or_comparison, study_id, area_id, band_id, sex, age_group,
 -- ses column(s)
 --	
-	sql_frag:=NULL;
-	FOREACH index_column IN ARRAY pk_index_columns LOOP
-		IF sql_frag IS NULL THEN
-			sql_frag:=LOWER(index_column);
-		ELSE
-			sql_frag:=sql_frag||','||LOWER(index_column);
-		END IF;
-	END LOOP;
-	IF c1_rec.study_type != '1' THEN /- study type: 1 - disease mapping -/
-		sql_frag:=sql_frag||',band_id'; /- Risk analysis only -/
-	END IF;
-	sql_stmt:='ALTER TABLE rif_studies.'||LOWER(c1_rec.extract_table)||
-		' ADD CONSTRAINT '||LOWER(c1_rec.extract_table)||'_pk PRIMARY KEY ('||sql_frag||')';
-	t_ddl:=t_ddl+1;	
-	ddl_stmts[t_ddl]:=sql_stmt;
+	SET @sql_frag=NULL;	
+	OPEN c7_creex;
+	FETCH NEXT FROM c7_creex INTO @c7_rec_column_name;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		IF @sql_frag IS NULL SET @sql_frag=LOWER(@c7_rec_column_name)
+		ELSE SET @sql_frag=@sql_frag + ',' + LOWER(@c7_rec_column_name);
+--
+		FETCH NEXT FROM c7_creex INTO @c7_rec_column_name;
+	END;
+	CLOSE c7_creex;
+	DEALLOCATE c7_creex;
+
+	IF @c1_rec_study_type != '1' SET @sql_frag=@sql_frag + ',band_id'; /* Risk analysis only */
+	SET @sql_stmt='ALTER TABLE rif_studies.' + LOWER(@c1_rec_extract_table) + 
+		' ADD CONSTRAINT ' + LOWER(@c1_rec_extract_table) + '_pk PRIMARY KEY (' + @sql_frag + ')';
+		
+	SET @t_ddl=@t_ddl+1;	
+	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);	
+
+	/*
 --
 -- Vacuum analyze - raises 25001 "VACUUM cannot run inside a transaction block"
 --
@@ -470,7 +512,19 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 --
 	RETURN TRUE;
  */	
-	SET @rval=1; 	-- Success
+ 
+--
+-- Index extract table
+--
+	EXECUTE @rval=rif40.rif40_ddl
+			@ddl_stmts	/* SQL table */,
+			@debug		/* enable debug: 0/1) */;
+	IF @rval = 0 BEGIN
+			SET @msg='[55410] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' populated extract failed, see previous warnings'	/* Study id */;
+			PRINT @msg;
+		END; 
+		
 	RETURN @rval;
 END;
 GO

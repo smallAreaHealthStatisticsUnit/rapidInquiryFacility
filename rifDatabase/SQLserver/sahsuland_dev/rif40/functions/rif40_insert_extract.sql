@@ -134,8 +134,7 @@ Description:	Insert data into extract table
 --
 -- Do insert
 --
-	EXECUTE rif40.rif40_ddl
-			@rval		/* Result: 0/1 */,
+	EXECUTE @rval=rif40.rif40_ddl
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
 	SET @sql_stmt=NULL;	
