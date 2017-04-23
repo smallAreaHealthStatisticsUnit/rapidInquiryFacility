@@ -40,7 +40,7 @@
 --
 -- MS SQL Server specific parameters
 --
--- Usage: sqlcmd -d <sahsuland/sahsuland_dev< -b -m-1 -e -i rif40_sahsuland_dev_install.sql -v path="%cd%\..\.." -I
+-- Usage: sqlcmd -d <sahsuland/sahsuland_dev> -b -m-1 -e -i rif40_export_sahsuland_dev.sql -v export_dir="%cd%\..\production\"
 --
 -- MUST BE RUN AS ADMINSTRATOR SO CAN CREATE OBJECTS OR RUN AS RIF40 (with -U rif40)
 --
@@ -48,13 +48,26 @@
 --
 -- Expects: $(EXPORT_DIR) to set in sqlcmd
 --
+SELECT DB_NAME(mf1.database_id) AS database_name,
+	   mf1.physical_name AS physical_db_filename
+  FROM sys.master_files mf1
+ WHERE DB_NAME(mf1.database_id) = 'sahsuland_dev';
+GO
 
 --
 -- Export database to ../production/sahsuland_dev.bak
 -- Grant local users full control to this directory
 --
-BACKUP DATABASE [sahsuland_dev] TO DISK='$(export_dir)sahsuland_dev.bak';
+BACKUP DATABASE [sahsuland_dev] TO DISK='$(export_dir)sahsuland_dev.bak' 
+  WITH COPY_ONLY, INIT;
 GO
-
+/*
+Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 6
+Processed 42040 pages for database 'sahsuland_dev', file 'sahsuland_dev' on file 54.
+Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 6
+Processed 2 pages for database 'sahsuland_dev', file 'sahsuland_dev_log' on file 54.
+Msg 3014, Level 0, State 1, Server PETER-PC\SAHSU, Line 6
+BACKUP DATABASE successfully processed 42042 pages in 3.940 seconds (83.363 MB/sec).
+ */
 --
 -- Eof (rif40_export_sahsuland_dev.sql)

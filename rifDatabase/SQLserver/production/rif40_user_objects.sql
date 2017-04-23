@@ -46,12 +46,10 @@ BEGIN
 END;
 	
 BEGIN
-	IF EXISTS (SELECT name FROM sys.schemas WHERE name = N'$(NEWUSER)')
-		DROP SCHEMA [$(NEWUSER)];
-	IF EXISTS (SELECT name FROM sys.database_principals WHERE name = N'$(NEWUSER)')
-		DROP USER [$(NEWUSER)];
-
-	CREATE USER [$(NEWUSER)] FOR LOGIN [$(NEWUSER)] WITH DEFAULT_SCHEMA=[dbo];
+	IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'$(NEWUSER)')
+	CREATE USER [$(NEWUSER)] FOR LOGIN [$(NEWUSER)] WITH DEFAULT_SCHEMA=[dbo]
+	ELSE ALTER USER [$(NEWUSER)] WITH LOGIN=[$(NEWUSER)];
+	
 --
 -- Object privilege grants
 --
@@ -64,7 +62,8 @@ BEGIN
 --
 	GRANT SHOWPLAN TO [$(NEWUSER)];
 --
-	EXEC('CREATE SCHEMA [$(NEWUSER)] AUTHORIZATION [$(NEWUSER)]');
+	IF NOT EXISTS (SELECT name FROM sys.schemas WHERE name = N'$(NEWUSER)')
+		EXEC('CREATE SCHEMA [$(NEWUSER)] AUTHORIZATION [$(NEWUSER)]');
 	ALTER USER [$(NEWUSER)] WITH DEFAULT_SCHEMA=[$(NEWUSER)];
 	ALTER ROLE rif_user ADD MEMBER [$(NEWUSER)];
 	ALTER ROLE rif_manager ADD MEMBER [$(NEWUSER)];	
@@ -76,13 +75,17 @@ GO
 SELECT * FROM sys.schemas WHERE name = N'$(NEWUSER)';
 GO
 
-CREATE TABLE [$(NEWUSER)].study_status (
-	  study_id 		INTEGER NOT NULL,
-	  study_state 	VARCHAR(1) NOT NULL,
-	  creation_date TIMESTAMP NOT NULL,
-	  ith_update 	INTEGER NOT NULL,
-	  message 		VARCHAR(255)
-);
+IF NOT EXISTS (SELECT *
+           FROM   sys.objects
+           WHERE  object_id = OBJECT_ID(N'[$(NEWUSER)].[study_status]')
+                  AND type IN ( N'U' ))
+	CREATE TABLE [$(NEWUSER)].[study_status] (
+		  study_id 		INTEGER NOT NULL,
+		  study_state 	VARCHAR(1) NOT NULL,
+		  creation_date TIMESTAMP NOT NULL,
+		  ith_update 	INTEGER NOT NULL,
+		  message 		VARCHAR(255)
+	);
 GO 
 
 --

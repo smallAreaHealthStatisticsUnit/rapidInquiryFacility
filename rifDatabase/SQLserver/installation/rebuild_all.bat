@@ -78,6 +78,7 @@ SET /P NEWPW=New user password [default %NEWUSER%]: %=% || SET NEWPW=%NEWUSER%
 SET REBUILD_ALL=Y
 SET SNEWUSER=%NEWUSER%
 SET SNEWPW=%NEWPW%
+SET SNEWDB=%NEWDB%
 ECHO ##########################################################################################
 ECHO #
 ECHO # WARNING! this script will the drop and create the RIF40 sahsuland and sahusland_dev databases.
@@ -130,11 +131,22 @@ if %errorlevel% neq 0  (
 )
 
 REM
+REM Create production user
+REM
+sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser="%SNEWUSER%" -v newdb="%SNEWDB%" -v newpw="%SNEWPW%"
+if %errorlevel% neq 0  (
+	ECHO rif40_production_user.sql exiting with %errorlevel%
+	exit /b 1
+) else (
+	ECHO rif40_production_user.sql built OK %errorlevel%
+)
+	
+REM
 REM Run a test study
 REM
-sqlcmd -U %SNEWUSER% -P %SNEWPW% -d sahsuland_dev -b -m-1 -e -i rif40_run_study.sql
+sqlcmd -U %SNEWUSER% -P %SNEWPW% -d %SNEWDB% -b -m-1 -e -i rif40_run_study.sql
 if %errorlevel% neq 0  (
-	ECHO Both sahsuland and sahsuland_dev built OK
+	ECHO Both %SNEWDB% and sahsuland_dev built OK
 	
 REM
 REM Clear seetings
@@ -144,13 +156,14 @@ REM
 	(SET NEWPW=)
 	(SET SNEWUSER=)
 	(SET SNEWPW=)
+	(SET SNEWDB=)
 	(SET REBUILD_ALL=)
 
 	ECHO rif40_run_study.sql exiting with %errorlevel%
 	exit /b 1
 ) else (
 	ECHO rif40_run_study.sql ran OK %errorlevel%
-	ECHO Both sahsuland and sahsuland_dev built OK
+	ECHO Both %SNEWDB% and sahsuland_dev built OK
 )
 
 REM

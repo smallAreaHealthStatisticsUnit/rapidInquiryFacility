@@ -77,23 +77,6 @@ CREATE DATABASE $(NEWDB);
 GO
 
 --
--- Re-create logins and roles
---
-:r rif40_roles.sql
-
---
--- Create database users, roles and schemas for $(NEWDB)
---
-USE [$(NEWDB)];
-
-:r rif40_database_roles.sql
-
--- 
--- Use master DB
---
-USE master;
-
---
 -- Add custom error messages
 --
 :r rif40_custom_error_messages.sql
@@ -111,7 +94,7 @@ SELECT DB_NAME(mf1.database_id) AS database_name,
 GO
 
 --
--- Import database from ./sahsuland_dev.bak into $(NEWDB); fixing the log file names so to be as just created for $(NEWDB)
+-- Import database from $(NEWDB)_dev.bak
 -- Grant local users read access to this directory
 --
 DECLARE c1_db CURSOR FOR
@@ -131,7 +114,31 @@ OPEN c1_db;
 FETCH NEXT FROM c1_db INTO @database_name, @physical_db_filename, @physical_log_filename;
 CLOSE c1_db;
 DEALLOCATE c1_db;
-	
+
+/*
+
+OK:
+
+SQL[dbo]> RESTORE DATABASE [sahsuland]
+        FROM DISK='C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\production\sahsuland_dev.bak'
+        WITH REPLACE,
+        MOVE 'sahsuland_dev' TO 'F:\SqlServer\sahsuland.mdf',
+        MOVE 'sahsuland_dev_log' TO 'F:\SqlServer\sahsuland_log.ldf';
+Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+Processed 45648 pages for database 'sahsuland', file 'sahsuland_dev' on file 1.
+Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+Processed 14 pages for database 'sahsuland', file 'sahsuland_dev_log' on file 1.
+Msg 3014, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+RESTORE DATABASE successfully processed 45662 pages in 5.130 seconds (69.538 MB/sec).
+SQL[dbo]> ALTER DATABASE [sahsuland] MODIFY FILE ( NAME = sahsuland_dev, NEWNAME = sahsuland);
+Msg 5021, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+The file name 'sahsuland' has been set.
+SQL[dbo]> ALTER DATABASE [sahsuland] MODIFY FILE ( NAME = sahsuland_dev_log, NEWNAME = sahsuland_log);
+Msg 5021, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+The file name 'sahsuland_log' has been set.
+
+ */	
+
 DECLARE @sql_stmt NVARCHAR(MAX);
 SET @sql_stmt =	'RESTORE DATABASE [$(NEWDB)]' + @crlf + 
 '        FROM DISK=''$(import_dir)sahsuland_dev.bak''' + @crlf +
@@ -140,7 +147,43 @@ SET @sql_stmt =	'RESTORE DATABASE [$(NEWDB)]' + @crlf +
 '        MOVE ''sahsuland_dev_log'' TO ''' + @physical_log_filename + '''';
 PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
 EXECUTE sp_executesql @sql_stmt;
+SET @sql_stmt='ALTER DATABASE [$(NEWDB)] MODIFY FILE ( NAME = sahsuland_dev, NEWNAME = $(NEWDB))';
+PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
+EXECUTE sp_executesql @sql_stmt;
+SET @sql_stmt='ALTER DATABASE [$(NEWDB)] MODIFY FILE ( NAME = sahsuland_dev_log, NEWNAME = $(NEWDB)_log)';
+PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
+EXECUTE sp_executesql @sql_stmt;
 GO
+
+--
+-- Export database to $(NEWDB).bak
+-- Grant local users full control to this directory
+--
+BACKUP DATABASE [$(NEWDB)] TO DISK='$(import_dir)$(NEWDB).bak';
+GO
+
+--
+-- Wait for 10secs
+--
+WAITFOR DELAY '00:00:10';
+GO
+
+-- 
+-- Use master DB
+--
+USE master;
+
+--
+-- Re-create logins and roles
+--
+:r rif40_roles.sql
+
+--
+-- Create database users, roles and schemas for $(NEWDB)
+--
+USE [$(NEWDB)];
+
+:r rif40_database_roles.sql
 
 --
 -- Eof (rif40_production_creation.sql)
