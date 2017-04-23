@@ -161,9 +161,9 @@ Recurse until complete
 -- Compute results, call: rif40.rif40_compute_results()
 --
 	ELSE IF @new_study_state = 'R' BEGIN
-		EXECUTE rif40.rif40_compute_results
-				@rval		/* Result: 0/1 */,
-				@study_id	/* Study id */;
+		EXECUTE @rval=rif40.rif40_compute_results
+				@study_id	/* Study id */,
+				@debug		/* enable debug: 0/1) */;
 		IF @rval = 0 BEGIN
 			PRINT '[55204] WARNING! rif40.rif40_compute_results() FAILED, see previous warnings';
 			RETURN @rval;

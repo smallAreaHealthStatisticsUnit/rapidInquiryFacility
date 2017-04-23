@@ -495,8 +495,6 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 --
 -- Vacuum analyze - raises 25001 "VACUUM cannot run inside a transaction block"
 --
--- DEFER TO LATER
---
 	SET @sql_stmt='UPDATE STATISTICS rif_studies.' + LOWER(@c1_rec_extract_table) + ' WITH SAMPLE 10 PERCENT';
 	SET @t_ddl=@t_ddl+1;	
 	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);	
