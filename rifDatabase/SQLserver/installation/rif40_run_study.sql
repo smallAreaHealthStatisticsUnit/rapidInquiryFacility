@@ -62,7 +62,8 @@ SELECT * FROM rif40.rif40_projects;
 GO
 SELECT * FROM rif40.rif40_user_projects;
 GO
-
+SELECT * from rif40_num_denom;
+GO
 SELECT * FROM rif40.rif40_tables;
 GO
 
@@ -222,8 +223,34 @@ COMMIT TRANSACTION;
 GO
 
 --
+-- Test rif40_GetAdjacencyMatrix()
+--
+DECLARE @study_id INTEGER=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq')/* Get current sequence */;
+SELECT TOP 10 SUBSTRING(areaid, 1, 20) AS areaid, num_adjacencies, SUBSTRING(adjacency_list, 1, 90) AS adjacency_list_truncated
+  FROM [rif40].[sahsuland_GetAdjacencyMatrix](@study_id);
+GO
+
+DECLARE @study_id INTEGER=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq')/* Get current sequence */;
+DECLARE @t TABLE(
+	geolevel_id		INTEGER,
+	areaid			VARCHAR(200),
+	num_adjacencies INTEGER,
+	adjacency_list	VARCHAR(8000))
+INSERT @t EXECUTE [rif40].[rif40_GetAdjacencyMatrix] @study_id;
+SELECT TOP 10 SUBSTRING(areaid, 1, 20) AS areaid, num_adjacencies, SUBSTRING(adjacency_list, 1, 90) AS adjacency_list_truncated
+  FROM @t;
+GO
+
+--
+-- Uncomment to enable execution plans
+--
+--SET SHOWPLAN_TEXT ON
+--GO
+
+--
 -- Now run it
 --
+
 BEGIN
 	DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
 	BEGIN TRANSACTION;
@@ -265,4 +292,4 @@ END;
 GO
 
 --
--- Eof
+-- Eof (rif40_run_study.sql)

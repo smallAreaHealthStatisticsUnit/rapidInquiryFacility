@@ -103,11 +103,11 @@ public final class TestStudyDataExtraction
 			User validUser = cloneValidUser();
 			String validStudyID = "75";
 			
-			TestRIFStudyServiceBundle testRIFStudyServiceBundle
+			MSSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
 				= getRIFServiceBundle();
 			
-			TestRIFStudySubmissionService testSubmissionService
-				= (TestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
+			MSSQLTestRIFStudySubmissionService testSubmissionService
+				= (MSSQLTestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
 		
 			testSubmissionService.createStudyExtract(
 				validUser, 
@@ -125,11 +125,11 @@ public final class TestStudyDataExtraction
 			User validUser = cloneValidUser();
 			String validStudyID = "31";
 			
-			TestRIFStudyServiceBundle testRIFStudyServiceBundle
+			MSSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
 				= getRIFServiceBundle();
 			
-			TestRIFStudySubmissionService testSubmissionService
-				= (TestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
+			MSSQLTestRIFStudySubmissionService testSubmissionService
+				= (MSSQLTestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
 			testSubmissionService.runStudy(validUser, validStudyID);			
 			
 		}
@@ -144,11 +144,11 @@ public final class TestStudyDataExtraction
 			User validUser = cloneValidUser();
 			String validStudyID = "19";
 			
-			TestRIFStudyServiceBundle testRIFStudyServiceBundle
+			MSSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
 				= getRIFServiceBundle();
 			
-			TestRIFStudySubmissionService testSubmissionService
-				= (TestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
+			MSSQLTestRIFStudySubmissionService testSubmissionService
+				= (MSSQLTestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
 			testSubmissionService.clearRIFJobSubmissionsForUser(validUser);		
 			
 		}
@@ -163,11 +163,11 @@ public final class TestStudyDataExtraction
 			User validUser = cloneValidUser();
 			String validStudyID = "18";
 			
-			TestRIFStudyServiceBundle testRIFStudyServiceBundle
+			MSSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
 				= getRIFServiceBundle();
 			
-			TestRIFStudySubmissionService testSubmissionService
-				= (TestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
+			MSSQLTestRIFStudySubmissionService testSubmissionService
+				= (MSSQLTestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
 			testSubmissionService.deleteStudy(validUser, validStudyID);
 			
 		}

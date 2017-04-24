@@ -2,10 +2,24 @@
 Custom error messages for functions in rif40.  Mostly used by the trigger functions.
 */
 
-USE master;
-
 --clean up old versions:
-EXEC [sahsuland_dev].[rif40].[rif40_setup_custom_errors];
+DECLARE @error_curs CURSOR, @m_id int;
+SET @error_curs = CURSOR FOR
+	select message_id
+	from sys.messages
+	where message_id >= 50000 and text like '%rif40%'; 
+OPEN @error_curs;
+FETCH @error_curs INTO @m_id;
+		
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	EXEC sp_dropmessage @m_id;
+	FETCH @error_curs INTO @m_id;	
+END;
+CLOSE @error_curs;
+DEALLOCATE @error_curs;
+PRINT 'rif40_custom_error_messages.sql: All RIF-related custom error messages have been removed.';
+GO
 
 --all new error messages.  They must have an id of > 50000 and the text contains 'rif40'
 EXEC sp_addmessage 50020, 16, 
@@ -467,10 +481,54 @@ EXEC sp_addmessage 55216, 16,
 	N'Function: [rif40].[rif40_run_study], Recursion %i, rif40_run_study study %i had error.';		
 EXEC sp_addmessage 55207, 16,
 	N'Function: [rif40].[rif40_run_study], Expecting to update %i %s(s), updated %i during state transition (%s=>%s) for study %i.';	
+EXEC sp_addmessage 55212, 16,
+	N'Function: [rif40].[rif40_run_study], Study ID %i not found, study in unexpected and unknown state.';	
+EXEC sp_addmessage 55213, 16,
+	N'Function: [rif40].[rif40_run_study], Study %i in unexpected state %s.';	
+
+EXEC sp_addmessage 55400, 16,
+	N'Function: [rif40].[rif40_create_extract], Study ID %i not found.';		
+EXEC sp_addmessage 55401, 16,
+	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract table: not defined.';
+EXEC sp_addmessage 55403, 16,
+	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract table: %s; in wrong state: %s.';
+EXEC sp_addmessage 55404, 16,
+	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract table: %s; exists in schema: %s.';	
+EXEC sp_addmessage 55405, 16,
+	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract not currently permitted [use RIF IG tool].';	
+EXEC sp_addmessage 55406, 16,
+	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract must be run by study owner %s not %s.';	
+
+EXEC sp_addmessage 56000, 16,
+	N'Function: [rif40].[rif40_create_insert_statement], Study ID %i not found.';	
+EXEC sp_addmessage 56001, 16,
+	N'Function: [rif40].[rif40_create_insert_statement], Study ID %i no columns found for extract table: %s.';	
+EXEC sp_addmessage 56004, 16,
+	N'Function: [rif40].[rif40_create_insert_statement], Study ID %i no investigations created: distinct numerator: %s.';	
+EXEC sp_addmessage 56006, 16,
+	N'Function: [rif40].[rif40_create_insert_statement], Study ID %i NULL covariate table.';	
+EXEC sp_addmessage 56007, 16,
+	N'Function: [rif40].[rif40_create_insert_statement], Study ID %i multiple covariate tables: %s, %s.';	
+	
+	
+EXEC sp_addmessage 56600, 16,
+	N'Function: [rif40].[rif40_execute_insert_statement], Study ID is NULL.';	
+EXEC sp_addmessage 56601, 16,
+	N'Function: [rif40].[rif40_execute_insert_statement], Year start is NULL for study ID: %i.';
+EXEC sp_addmessage 56602, 16,
+	N'Function: [rif40].[rif40_execute_insert_statement], Year stop is NULL for study ID: %i.';
+EXEC sp_addmessage 56699, 16,
+	N'Function: [rif40].[rif40_execute_insert_statement],  SQL statement had error: %s%sSQL[%s]> %s;';
+	
+EXEC sp_addmessage 55800, 16,
+	N'Function: [rif40].[rif40_insert_extract], Study ID %i not found.';	
+	
+EXEC sp_addmessage 55999, 16,
+	N'Function: [rif40].[rif40_ddl], SQL statement had error: %s%sSQL[%s]> %s;';		
 	
 EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
 
 USE sahsuland_dev;
 
 --
--- Eof
+-- Eof (rif40_custom_error_messages.sql)

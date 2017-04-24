@@ -76,7 +76,7 @@ import javax.xml.bind.annotation.*;
 	"isTopLevelTerm",
 	"numberOfSubTerms"
 	})
-final class CalculationMethodProxy {
+final public class CalculationMethodProxy {
 
 	// ==========================================
 	// Section Constants

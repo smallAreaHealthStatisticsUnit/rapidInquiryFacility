@@ -159,7 +159,7 @@ GO
 --permissions
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_tables] TO [rif_manager]
 GO
-GRANT SELECT, REFERENCES ON [rif40].[rif40_tables] TO public
+GRANT SELECT, REFERENCES ON [rif40].[rif40_tables] TO [rif_user] WITH GRANT OPTION;
 GO
 
 --comments

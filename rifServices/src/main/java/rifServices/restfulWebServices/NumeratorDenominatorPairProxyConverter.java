@@ -65,7 +65,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  *
  */
 
-final class NumeratorDenominatorPairProxyConverter
+final public class NumeratorDenominatorPairProxyConverter
 	extends XmlAdapter<NumeratorDenominatorPairProxy, 
 	NumeratorDenominatorPair> {
 

@@ -136,9 +136,6 @@ md-select-label img {
 
 /* SWITCH FOR STUDY TYPE*/
 
-
-
-
 md-switch.md-checked .md-bar {
     background-color: #337ab7 !important;
 }

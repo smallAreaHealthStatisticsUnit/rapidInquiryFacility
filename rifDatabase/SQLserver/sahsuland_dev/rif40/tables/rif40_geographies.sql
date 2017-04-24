@@ -94,7 +94,7 @@ GO
 
 GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[rif40_geographies] TO [rif_manager]
 GO
-GRANT SELECT, REFERENCES ON [rif40].[rif40_geographies] TO [public]
+GRANT SELECT, REFERENCES ON [rif40].[rif40_geographies] TO [rif_user] WITH GRANT OPTION;
 GO
 
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Pre-defined hierarchial geographies. Usually based on Census geography. Beware of the foreign key from RIF40_GEOGRAPHIES.DEFAULTCOMPAREA to RIF40_GEOLEVELS. When inserting a new geography do NOT set DEFAULTCOMPAREA, update it after adding geolevels to T_RIF40_GEOLEVELS' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N'rif40_geographies'

@@ -8,7 +8,7 @@ GO
 
 
 CREATE FUNCTION [rif40].[rif40_num_denom_validate](@l_geography VARCHAR(max), @l_table_name VARCHAR(max))
-  RETURNS INT AS
+  RETURNS INTEGER AS
 BEGIN
 	DECLARE @l_owner VARCHAR(max);
 /*
@@ -58,11 +58,8 @@ Description:	Validate numerator or denominator geolevels
 END
 GO
 
---GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_num_denom_validate(character varying, character varying) TO public;
+GRANT EXECUTE ON [rif40].[rif40_num_denom_validate] TO rif_user, rif_manager;
+GO
 
-/*
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_num_denom_validate(character varying, character varying) IS 'Function: 	rif40_num_denom_validate()
-Parameters: 	geography, table/view/foreign table name
-Returns: 	1 - table/view/foreign table has all geolevels present in geography, 0 - table/view/foreign table has some/all geolevels missing in geography
-Description:	Validate numerator or denominator geolevels';
-*/
+-- 
+-- Eof

@@ -60,6 +60,14 @@ ELSE
 GO
 
 --
+-- Check database is sahsuland_dev
+--
+DECLARE @database_name 	VARCHAR(30)=DB_NAME();
+IF (@database_name != 'sahsuland_dev')
+	RAISERROR('recreate_error_handling.sql: Database is not sahsuland_dev: %s', 16, 1, @database_name);
+GO
+
+--
 -- Use a single transaction
 --
 BEGIN TRANSACTION;
@@ -72,9 +80,15 @@ GO
 -- sahsuland_dev only
 --
 :r ..\sahsuland_dev\error_handling\rif40_setup_custom_errors.sql
+
+USE master;
 :r ..\sahsuland_dev\error_handling\rif40_custom_error_messages.sql
+USE sahsuland_dev;
 
 GO
 
 COMMIT;
 GO
+
+--
+-- Eof (recreate_error_handling_sahsuland_dev.sql)

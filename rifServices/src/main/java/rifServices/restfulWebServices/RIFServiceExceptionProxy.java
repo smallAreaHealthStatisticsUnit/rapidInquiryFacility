@@ -66,7 +66,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name="exception")
 @XmlAccessorType(XmlAccessType.FIELD)
-final class RIFServiceExceptionProxy {
+final public class RIFServiceExceptionProxy {
 
 	// ==========================================
 	// Section Constants

@@ -43,47 +43,63 @@ REM Usage: rif40_install_tables.bat
 REM
 REM recreate_all_sequences.bat MUST BE RUN FIRST
 REM
-REM MUST BE RUN AS ADMINSTRATOR
-REM
 
-ECHO OFF
+REM
+REM MUST BE RUN AS ADMINSTRATOR/POWERUSER
+REM
 NET SESSION >nul 2>&1
 if %errorlevel% equ 0 (
     ECHO Administrator PRIVILEGES Detected! 
 ) else (
-    ECHO NOT AN ADMIN!
-	exit /b 1
+	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
+	if %errorlevel% neq 0 {
+		ECHO NOT AN ADMIN!
+		exit /b 1
+	}
+	else {
+		ECHO Power user PRIVILEGES Detected! 
+	}
 )
 
 REM
-REM Change this...
-REM 
-SET NEWUSER="peter"
+REM Clear seetings
+REM
+(SET NEWDB=)
+(SET NEWUSER=)
+(SET NEWPW=)
 
+REM
+REM Get DB settings
+REM
+echo Creating development RIF databases
+SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
+SET NEWDB=sahsuland
+SET /P NEWPW=New user password [default %NEWUSER%]: %=% || SET NEWPW=%NEWUSER%
+SET REBUILD_ALL=Y
+SET SNEWUSER=%NEWUSER%
+SET SNEWPW=%NEWPW%
+SET SNEWDB=%NEWDB%
 ECHO ##########################################################################################
 ECHO #
-ECHO # WARNING! this script will the drop and create the sahsuland and sahusland_dev databases.
+ECHO # WARNING! this script will the drop and create the RIF40 sahsuland and sahusland_dev databases.
 ECHO # Type control-C to abort.
 ECHO #
-ECHO # Test user: %NEWUSER%
+ECHO # Test user: %NEWUSER%; password: %NEWPW%
 ECHO #
 ECHO ##########################################################################################
 PAUSE
 
-sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql
+REM
+REM Create development database
+REM
+sqlcmd -E -b -m-1 -e -r1 -i rif40_development_creation.sql
 if %errorlevel% neq 0 (
-	ECHO rif40_database_creation.sql exiting with %errorlevel%
+	ECHO rif40_development_creation.sql exiting with %errorlevel%
 	exit /b 1
 ) else (
-	ECHO rif40_database_creation.sql built OK %errorlevel%
+	ECHO rif40_development_creation.sql built OK %errorlevel%
 )
-sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=%NEWUSER%
-if %errorlevel% neq 0  (
-	ECHO rif40_test_user.sql exiting with %errorlevel%
-	exit /b 1
-) else (
-	ECHO rif40_test_user.sql built OK %errorlevel%
-)
+
 CALL rif40_sahsuland_dev_install.bat 
 if %errorlevel% neq 0  (
 	ECHO rif40_sahsuland_dev_install.bat exiting with %errorlevel%
@@ -91,8 +107,9 @@ if %errorlevel% neq 0  (
 ) else (
 	ECHO if40_sahsuland_dev_install.bat built OK %errorlevel%
 )
+
 REM
-REM Does not get to here...
+REM Create production database
 REM
 CALL rif40_sahsuland_install.bat 
 if %errorlevel% neq 0  (
@@ -102,15 +119,62 @@ if %errorlevel% neq 0  (
 	ECHO rif40_sahsuland_install.bat built OK %errorlevel%
 )
 
-sqlcmd -U %NEWUSER% -P %NEWUSER% -b -m-1 -e -i rif40_run_study.sql
+REM
+REM Create development user
+REM
+sqlcmd -E -b -m-1 -e -i rif40_development_user.sql -v newuser="%SNEWUSER%" -v newpw="%SNEWPW%"
 if %errorlevel% neq 0  (
-	ECHO Both sahsuland and sahsuland_dev built OK
+	ECHO rif40_development_user.sql exiting with %errorlevel%
+	exit /b 1
+) else (
+	ECHO rif40_development_user.sql built OK %errorlevel%
+)
+
+REM
+REM Create production user
+REM
+sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser="%SNEWUSER%" -v newdb="%SNEWDB%" -v newpw="%SNEWPW%"
+if %errorlevel% neq 0  (
+	ECHO rif40_production_user.sql exiting with %errorlevel%
+	exit /b 1
+) else (
+	ECHO rif40_production_user.sql built OK %errorlevel%
+)
+	
+REM
+REM Run a test study
+REM
+sqlcmd -U %SNEWUSER% -P %SNEWPW% -d %SNEWDB% -b -m-1 -e -i rif40_run_study.sql
+if %errorlevel% neq 0  (
+	ECHO Both %SNEWDB% and sahsuland_dev built OK
+	
+REM
+REM Clear seetings
+REM
+	(SET NEWDB=)
+	(SET NEWUSER=)
+	(SET NEWPW=)
+	(SET SNEWUSER=)
+	(SET SNEWPW=)
+	(SET SNEWDB=)
+	(SET REBUILD_ALL=)
+
 	ECHO rif40_run_study.sql exiting with %errorlevel%
 	exit /b 1
 ) else (
 	ECHO rif40_run_study.sql ran OK %errorlevel%
-	ECHO Both sahsuland and sahsuland_dev built OK
+	ECHO Both %SNEWDB% and sahsuland_dev built OK
 )
+
+REM
+REM Clear seetings
+REM
+(SET NEWDB=)
+(SET NEWUSER=)
+(SET NEWPW=)
+(SET SNEWUSER=)
+(SET SNEWPW=)
+(SET REBUILD_ALL=)
 
 REM
 REM Eof

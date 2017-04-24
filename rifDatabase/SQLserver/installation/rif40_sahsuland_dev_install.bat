@@ -42,29 +42,45 @@ REM Usage: rif40_install_tables.bat
 REM
 REM recreate_all_sequences.bat MUST BE RUN FIRST
 REM
+
+ECHO OFF
+REM
 REM MUST BE RUN AS ADMINSTRATOR/POWERUSER
 REM
-ECHO OFF
-REM NET SESSION >nul 2>&1
-REM if %errorlevel% equ 0 (
-REM    ECHO Administrator PRIVILEGES Detected! 
-REM ) else (
-REM	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
-REM	if %errorlevel% neq 0 {
-REM		ECHO NOT AN ADMIN!
-REM		exit /b 1
-REM	}
-REM	else {
-REM		ECHO Power user PRIVILEGES Detected! 
-REM	}
-REM
+NET SESSION >nul 2>&1
+if %errorlevel% equ 0 (
+    ECHO Administrator PRIVILEGES Detected! 
+) else (
+	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
+	if %errorlevel% neq 0 {
+		ECHO NOT AN ADMIN!
+		exit /b 1
+	}
+	else {
+		ECHO Power user PRIVILEGES Detected! 
+	}
+)
 
+REM
+REM Build sahsuland_dev
+REM
 sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_sahsuland_dev_install.sql -v path="%cd%\..\.." -I
 if %errorlevel% neq 0  (
 	ECHO rif40_sahsuland_dev_install.sql exiting with %errorlevel%
 	exit /b 1
 ) else (
 	ECHO rif40_sahsuland_dev_install.sql built OK %errorlevel%
+)
+
+REM
+REM Reset rif40 password to rif40
+REM 
+sqlcmd -d sahsuland_dev -b -m-1 -e -Q "ALTER LOGIN [rif40] WITH PASSWORD = 'rif40'"
+if %errorlevel% neq 0  (
+	ECHO Unable to reset rif40 password; exiting with %errorlevel%
+	exit /b 1
+) else (
+	ECHO rif40 password reset OK %errorlevel%
 )
 
 REM Does not work in github tree - SQL server needs access permissions!
@@ -80,9 +96,12 @@ REM
 REM Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
 REM Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
 REM
+REM CREATE LOGIN [rif40] WITH PASSWORD='rif40', CHECK_POLICY = OFF;
+
 sqlcmd -U rif40 -P rif40 -d sahsuland_dev -b -m-1 -e -r1 -i ..\..\GeospatialData\tileMaker\rif_mssql_SAHSULAND.sql -v pwd="%cd%\..\..\GeospatialData\tileMaker"
 if %errorlevel% neq 0  (
 	ECHO rif_mssql_SAHSULAND.sql exiting with %errorlevel%
+	sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_password_reset.sql
 	exit /b 1
 ) else (
 	ECHO rif_mssql_SAHSULAND.sql built OK %errorlevel%
@@ -91,10 +110,33 @@ if %errorlevel% neq 0  (
 sqlcmd -U rif40 -P rif40 -d sahsuland_dev -b -m-1 -e -r1 -i ..\..\DataLoaderData\SAHSULAND\ms_run_data_loader.sql -v pwd="%cd%\..\..\DataLoaderData\SAHSULAND"
 if %errorlevel% neq 0  (
 	ECHO ms_run_data_loader.sql exiting with %errorlevel%
+	sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_password_reset.sql
 	exit /b 1
 ) else (
 	ECHO ms_run_data_loader.sql built OK %errorlevel%
 	ECHO sahsuland_dev built OK.
+)
+
+REM
+REM Reset RIF40 password to random characters
+REM
+sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_password_reset.sql
+if %errorlevel% neq 0  (
+	ECHO rif40_password_reset.sql exiting with %errorlevel%
+	exit /b 1
+) else (
+	ECHO rif40_password_reset.sql built OK %errorlevel%
+)
+
+REM
+REM Export sahusland_dev
+REM
+sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_export_sahsuland_dev.sql -v export_dir="%cd%\..\production\" -I
+if %errorlevel% neq 0  (
+	ECHO rif40_export_sahsuland_dev.sql exiting with %errorlevel%
+	exit /b 1
+) else (
+	ECHO rif40_export_sahsuland_dev.sql built OK %errorlevel%
 )
 
 REM

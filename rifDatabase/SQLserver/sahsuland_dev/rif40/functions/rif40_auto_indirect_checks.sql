@@ -18,7 +18,7 @@ GO
 
 
 CREATE FUNCTION [rif40].[rif40_auto_indirect_checks](@l_table_name VARCHAR(max))
-	RETURNS varchar AS
+	RETURNS INTEGER AS
 BEGIN
 
 	DECLARE @msg VARCHAR(max), @dmsg VARCHAR(max);
@@ -130,13 +130,8 @@ BEGIN
 END;
 GO
 
-/*
-GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_auto_indirect_checks(character varying) TO public;
-GRANT EXECUTE ON FUNCTION rif40_sql_pkg.rif40_auto_indirect_checks(character varying) TO rif40;
-COMMENT ON FUNCTION rif40_sql_pkg.rif40_auto_indirect_checks(character varying) IS 'Function: 	rif40_auto_indirect_checks()
-Parameters:	table name
-Returns: 	NULL if not found or not an indirect denominator, geography and counts
-Description:	Automatic (Able to be used in automatic RIF40_NUM_DENOM (0/1, default 0). 
-		A user specific T_RIF40_NUM_DENOM is supplied for other combinations. 
-		Cannot be applied to direct standardisation denominator) is restricted to 1 denominator per geography.';
-*/
+GRANT EXECUTE ON [rif40].[rif40_auto_indirect_checks] TO rif_user, rif_manager;
+GO
+
+-- 
+-- Eof

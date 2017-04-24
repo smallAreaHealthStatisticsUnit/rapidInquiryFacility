@@ -73,7 +73,7 @@ import javax.xml.bind.annotation.XmlType;
 	"yMin",
 	"xMax",
 	"yMax"})
-final class BoundaryRectangleProxy {
+final public class BoundaryRectangleProxy {
 
 	// ==========================================
 	// Section Constants

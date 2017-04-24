@@ -40,14 +40,19 @@
 --
 
 -- This script must be run from the installation directory
+:r ..\sahsuland_dev\rif40\functions\rif40_ddl.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_execute_insert_statement.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_create_insert_statement.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_insert_extract.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_create_extract.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_compute_results.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_GetAdjacencyMatrix.sql
 
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_run_study]')
                   AND type IN ( N'P' ))
-	DROP PROCEDURE [rif40].[rif40_run_study]
+	DROP PROCEDURE [rif40].[rif40_run_study];
 GO 
 
 CREATE PROCEDURE [rif40].[rif40_run_study](@rval INT OUTPUT, @study_id int, @debug int=0, @recursion_level int=0)
@@ -61,8 +66,8 @@ BEGIN
 	
 /*
 Function:	rif40_run_study()
-Parameter:	Study ID, enable debug (INTEGER: default 0), recursion level (internal parameter DO NOT USE)
-Returns:	Success or failure [INTEGER]
+Parameter:	Success or failure [INTEGER], Study ID, enable debug (INTEGER: default 0), recursion level (internal parameter DO NOT USE)
+Returns:	Success or failure [INTEGER], as  first parameter
 			Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)
 			Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost
 Description:	Run study 
@@ -89,6 +94,7 @@ Recurse until complete
 --
 	DECLARE @etime DATETIME, @stp DATETIME=GETDATE(), @etp DATETIME;
 --
+	DECLARE @crlf AS VARCHAR(2)=CHAR(10)+CHAR(13);
 	DECLARE @err_msg VARCHAR(MAX);
 	DECLARE @msg VARCHAR(MAX);
 --
@@ -142,8 +148,9 @@ Recurse until complete
 -- Create extract, call: rif40.rif40_create_extract()
 --
 	IF @new_study_state = 'E' BEGIN
-		EXECUTE rif40.rif40_create_extract
-				@rval		/* Result: 0/1 */;
+		EXECUTE @rval=rif40.rif40_create_extract
+				@study_id	/* Study id */,
+				@debug		/* enable debug: 0/1) */;
 		IF @rval = 0 BEGIN
 			PRINT '[55202] WARNING! rif40.rif40_create_extract() FAILED, see previous warnings';
 			RETURN @rval;
@@ -154,8 +161,9 @@ Recurse until complete
 -- Compute results, call: rif40.rif40_compute_results()
 --
 	ELSE IF @new_study_state = 'R' BEGIN
-		EXECUTE rif40.rif40_compute_results
-				@rval		/* Result: 0/1 */;
+		EXECUTE @rval=rif40.rif40_compute_results
+				@study_id	/* Study id */,
+				@debug		/* enable debug: 0/1) */;
 		IF @rval = 0 BEGIN
 			PRINT '[55204] WARNING! rif40.rif40_compute_results() FAILED, see previous warnings';
 			RETURN @rval;
@@ -196,76 +204,74 @@ Recurse until complete
 		SET @etime=CAST(@etp - @stp AS TIME);
 		SET @msg='[55208] Recurse [' + CAST(@n_recursion_level AS VARCHAR) + '] Completed state transition (' + @study_state + '=>' + @new_study_state + 
 			') for study ' + CAST(@study_id AS VARCHAR) + ' with ' + CAST(@investigation_count AS VARCHAR) + ' investigation(s); time taken ' +
-			CAST(@etime AS VARCHAR);
+			CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);
 		PRINT @msg;
 		END;
- /*
+
 --
 -- Recurse until complete
 --
-	IF new_study_state != c1_rec.study_state AND new_study_state IN ('V', 'E') THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_run_study',
-			'[55209] Recurse [%] rif40_run_study using new state % for study %',
-			n_recursion_level::VARCHAR,
-			new_study_state::VARCHAR,
-			c1_rec.study_id::VARCHAR);
-		IF rif40_sm_pkg.rif40_run_study(c1_rec.study_id, debug, n_recursion_level) = FALSE THEN /- Halt on failure -/
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_run_study',
-				'[55210] Recurse [%] rif40_run_study to new state % for study % failed, see previous warnings',
-				n_recursion_level::VARCHAR,
-				new_study_state::VARCHAR,
-				c1_rec.study_id::VARCHAR);
-			RETURN FALSE;
-		END IF;
-	ELSIF new_study_state != c1_rec.study_state AND new_study_state = 'R' THEN
-		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study', E'\n'||
-'************************************************************************'||E'\n'||
-'*                                                                      *'||E'\n'||
-'* [55211] Completed study %                         *'||E'\n'||
-'*                                                                      *'||E'\n'||
-'************************************************************************',
-			RPAD(c1_rec.study_id::VARCHAR, 20)::VARCHAR);
-	ELSE
-		OPEN c1_runst(study_id);
-		FETCH c1_runst INTO c1_rec;
-		IF NOT FOUND THEN
+	IF @new_study_state != @study_state AND @new_study_state IN ('V', 'E') BEGIN
+			SET @msg='[55209] Recurse [' + CAST(@n_recursion_level AS VARCHAR) + '] rif40_run_study using new state ' + 
+				@new_study_state + ' for study ' + CAST(@study_id AS VARCHAR);
+			PRINT @msg;
+			EXECUTE rif40.rif40_run_study
+				@rval				/* Result: 0/1 */, 
+				@study_id 			/* Study_id */, 
+				@debug 				/* Debug: 0/1 */, 
+				@n_recursion_level 	/* Recursion level: Use default */;
+			IF @rval = 0 BEGIN 		/* Halt on failure */
+				SET @msg='WARNING [55210] Recurse [' + CAST(@n_recursion_level AS VARCHAR) + '] rif40_run_study to new state ' + 
+				@new_study_state + ' for study ' + CAST(@study_id AS VARCHAR) + ' failed, see previous warnings';
+				PRINT @msg;
+				RETURN @rval;
+			END;
+		END;
+	ELSE IF @new_study_state != @study_state AND @new_study_state = 'R' BEGIN
+			SET @msg=@crlf + 
+'************************************************************************' + @crlf +
+'*                                                                      *' + @crlf +
+'* [55211] Completed study ' + RIGHT(REPLICATE('0',20)+(CAST(@study_id AS VARCHAR)), 20) + 
+	'                         *' + @crlf +
+'*                                                                      *' + @crlf +
+'************************************************************************';
+			PRINT @msg;
+		END;
+	ELSE BEGIN
+		OPEN c1_runst; 
+		FETCH NEXT FROM c1_runst INTO @study_state, @investigation_count;
+		IF @@CURSOR_ROWS = 0 BEGIN
 			CLOSE c1_runst;
-			PERFORM rif40_log_pkg.rif40_error(-55212, 'rif40_run_study', 
-				'Study ID % not found, study in unexpected and unknown state',
-				study_id::VARCHAR);
-		END IF;
-		PERFORM rif40_log_pkg.rif40_error(-55213, 'rif40_run_study', 
-			'Study % in unexpected state %',
-			c1_rec.study_id::VARCHAR,
-			c1_rec.study_state::VARCHAR);
-	END IF;
+			DEALLOCATE c1_runst;			
+--
+-- Error: [55212] Study ID %i not found, study in unexpected and unknown state	
+--		
+			SET @err_msg = formatmessage(55212, @study_id);
+			THROW 55212, @err_msg, 1;			
+		END;
+--
+-- Error: [55213] Study %i in unexpected state %s
+--
+		SET @err_msg = formatmessage(55213, @study_id, @study_state);
+		THROW 55213, @err_msg, 1;
+	END;
+
 --
 -- All recursion unwound
 --
-	etp:=clock_timestamp();
-	IF recursion_level = 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_run_study',
-			'[55214] Recursion complete, state %, rif40_run_study study % with % investigation(s); time taken %',
-			c1_rec.study_state::VARCHAR,
-			c1_rec.study_id::VARCHAR,
-			investigation_count::VARCHAR,
-			age(etp, stp)::VARCHAR);
-	ELSE
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_run_study',
-			'[55215] Recursion %, state %, rif40_run_study study % with % investigation(s); time taken %',
-			recursion_level::VARCHAR,
-			c1_rec.study_state::VARCHAR,
-			c1_rec.study_id::VARCHAR,
-			investigation_count::VARCHAR,
-			age(etp, stp)::VARCHAR);
-	END IF;
- */
-
---	
--- Error: Recursion %i, rif40_run_study study %i had error.
---
---	SET @@err_msg = formatmessage(55216, @recursion_level, @study_id);
---	THROW 55216, @err_msg, 1;
+		SET @etp=GETDATE();
+		SET @etime=CAST(@etp - @stp AS TIME);
+	IF @recursion_level = 0 BEGIN
+			SET @msg='[55214] Recursion complete, state ' + @study_state + ', rif40_run_study study ' + CAST(@study_id AS VARCHAR) + 
+				' with ' + CAST(@study_id AS VARCHAR) + ' investigation_count(s); time taken ' + CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);
+			PRINT @msg;
+		END;
+	ELSE BEGIN
+		SET @msg='[55215] Recursion ' + CAST(@n_recursion_level AS VARCHAR) + ', state ' + @study_state + 
+			', rif40_run_study study ' + CAST(@study_id AS VARCHAR) + ' with ' + CAST(@investigation_count AS VARCHAR) + 
+			' investigation(s); time taken ' + CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);
+		PRINT @msg;
+	END;
 		
 	RETURN @rval;
 END;

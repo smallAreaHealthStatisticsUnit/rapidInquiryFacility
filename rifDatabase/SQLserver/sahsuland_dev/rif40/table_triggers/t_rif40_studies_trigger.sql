@@ -700,9 +700,9 @@ DEALLOCATE studies_name_cursor ;
 
 DECLARE @extract_table_access_prob VARCHAR(MAX) = 
 (
-	select study_id, extract_table, study_state
+	select study_id, extract_table, study_state, OBJECT_ID('rif_studies.' + LOWER(extract_table)) AS extract_table_object_id
 	from inserted
-	where OBJECT_ID(extract_table) IS NULL 
+	where OBJECT_ID('rif_studies.' + LOWER(extract_table)) IS NULL 
 	and study_state  NOT IN ('C', 'V', 'U')
 	FOR XML PATH('')
 );
@@ -720,10 +720,10 @@ END CATCH;
 
 DECLARE @map_table_access_prob VARCHAR(MAX) = 
 (
-	select study_id, map_table, study_state
+	select study_id, map_table, study_state, OBJECT_ID('rif_studies.' + LOWER(map_table)) AS map_table_object_id
 	from inserted
-	where OBJECT_ID(map_table) IS NULL 
-	and study_state  NOT IN ('C', 'V', 'U')
+	where OBJECT_ID('rif_studies.' + LOWER(map_table)) IS NULL 
+	and study_state  NOT IN ('C', 'V', 'U', 'E')
 	FOR XML PATH('')
 );
 IF @map_table_access_prob IS NOT NULL

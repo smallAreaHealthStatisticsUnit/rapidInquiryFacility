@@ -97,8 +97,8 @@ public final class TestCalculationMethod
 	 * Instantiates a new test calculation method.
 	 */
 	public TestCalculationMethod() {
-		SampleTestObjectGenerator generator
-			= new SampleTestObjectGenerator();
+		MSSQLSampleTestObjectGenerator generator
+			= new MSSQLSampleTestObjectGenerator();
 		masterCalculationMethod 
 			= generator.createSampleBYMMethod();
 	}

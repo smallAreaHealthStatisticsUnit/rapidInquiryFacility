@@ -183,7 +183,5 @@ EXEC sp_addmessage 50098, 16,
    N'Table_name: [rif40].[T_RIF40_INV_COVARIATES], Study geolevel name not found in rif40_geolevels:(%s)';
 GO
 
-USE sahsuland_dev;
-
 --
--- Eof
+-- Eof (Custom_errors.sql)

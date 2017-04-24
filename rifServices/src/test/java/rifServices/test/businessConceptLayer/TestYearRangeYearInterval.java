@@ -94,7 +94,7 @@ public final class TestYearRangeYearInterval
 	// ==========================================
 	/** The service. */
 	
-	private TestRIFStudyServiceBundle rifStudyServiceBundle;
+	private MSSQLTestRIFStudyServiceBundle rifStudyServiceBundle;
 	private RIFStudySubmissionAPI service;
 
 	
@@ -190,7 +190,7 @@ public final class TestYearRangeYearInterval
 
 		try {
 			rifStudyServiceBundle
-				= new TestRIFStudyServiceBundle();
+				= new MSSQLTestRIFStudyServiceBundle();
 			RIFServiceStartupOptions startupOptions
 				= RIFServiceStartupOptions.newInstance(false, true);
 			rifStudyServiceBundle.initialise(startupOptions);

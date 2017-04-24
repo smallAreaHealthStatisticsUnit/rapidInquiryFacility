@@ -135,8 +135,8 @@ public final class SubmitStudy
 			
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission studySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			validOutputFile
@@ -166,8 +166,8 @@ public final class SubmitStudy
 			User emptyUser = cloneEmptyUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission studySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			validOutputFile
@@ -197,8 +197,8 @@ public final class SubmitStudy
 		try {
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission validStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			validOutputFile
@@ -232,8 +232,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -277,8 +277,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			emptyStudySubmission.setProject(cloneEmptyProject());
@@ -314,8 +314,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy
@@ -351,8 +351,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			validOutputFile
 				= sampleTestObjectGenerator.generateSampleOutputFile();
 			rifStudySubmissionService.submitStudy(
@@ -379,8 +379,8 @@ public final class SubmitStudy
 
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission validStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			rifStudySubmissionService.submitStudy(
@@ -408,8 +408,8 @@ public final class SubmitStudy
 
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy
@@ -445,8 +445,8 @@ public final class SubmitStudy
 			
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission validStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			validOutputFile
@@ -479,8 +479,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -520,8 +520,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -564,8 +564,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -607,8 +607,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -652,8 +652,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission nonExistentStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -697,8 +697,8 @@ public final class SubmitStudy
 			
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission validStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			validOutputFile
@@ -733,8 +733,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			maliciousStudySubmission.setProject(cloneMaliciousProject());
@@ -770,8 +770,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy 
@@ -811,8 +811,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy 
@@ -852,8 +852,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy 
@@ -895,8 +895,8 @@ public final class SubmitStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			SampleTestObjectGenerator sampleTestObjectGenerator
-				= new SampleTestObjectGenerator();
+			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
+				= new MSSQLSampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			

@@ -21,9 +21,13 @@ IF EXISTS (SELECT *
   DROP PROCEDURE [rif40].[rif40_startup]
 GO 
 
-CREATE PROCEDURE [rif40].[rif40_startup](@l_skip_checks int)
+CREATE PROCEDURE [rif40].[rif40_startup](@l_skip_checks int=0)
  AS
 BEGIN
+--
+-- Defaults if set to NULL
+--
+	IF @l_skip_checks IS NULL SET @l_skip_checks=0;
 	IF @l_skip_checks = 1
 	BEGIN
 		RETURN;
@@ -61,3 +65,7 @@ BEGIN
 		
 END
 GO
+
+GRANT EXECUTE ON [rif40].[rif40_startup] TO rif_user, rif_manager;
+GO
+

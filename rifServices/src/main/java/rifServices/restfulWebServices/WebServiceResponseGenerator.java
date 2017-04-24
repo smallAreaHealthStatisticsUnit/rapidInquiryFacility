@@ -189,7 +189,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
  *
  */
 
-final class WebServiceResponseGenerator {
+final public class WebServiceResponseGenerator {
 
 	// ==========================================
 	// Section Constants

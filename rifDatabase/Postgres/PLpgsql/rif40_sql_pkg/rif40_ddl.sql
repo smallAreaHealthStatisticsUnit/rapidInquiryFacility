@@ -177,6 +177,7 @@ EXCEPTION
 	WHEN SQLSTATE '02000' /* No data found */ THEN
 		RAISE;
 	WHEN others THEN
+-- 		[55999] SQL statement had error: %s%sSQL[%s]> %s;
 		PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl', 'SQL in error (%)> %;', 
 			SQLSTATE::VARCHAR /* SQL error state */,
 			sql_stmt::VARCHAR /* SQL statement */); 

@@ -86,7 +86,7 @@ public final class TestDiseaseMappingStudy
 	// Section Properties
 	// ==========================================
 	/** The master disease mapping study. */
-	private SampleTestObjectGenerator generator;
+	private MSSQLSampleTestObjectGenerator generator;
 	private DiseaseMappingStudy masterDiseaseMappingStudy;
 
 	private AdjustableCovariate masterNearDistCovariate;
@@ -102,7 +102,7 @@ public final class TestDiseaseMappingStudy
 	 */
 	public TestDiseaseMappingStudy() {
 		generator
-			= new SampleTestObjectGenerator();
+			= new MSSQLSampleTestObjectGenerator();
 		masterDiseaseMappingStudy 
 			= generator.createSampleDiseaseMappingStudy();
 
@@ -360,8 +360,8 @@ public final class TestDiseaseMappingStudy
 	 * A disease mapping study is invalid if it has an invalid investigation
 	 */	
 	public void rejectInvalidInvestigation_ERROR() {
-		SampleTestObjectGenerator generator 
-			= new SampleTestObjectGenerator();
+		MSSQLSampleTestObjectGenerator generator 
+			= new MSSQLSampleTestObjectGenerator();
 		Investigation invalidInvestigation
 			= generator.createSampleInvestigation("This is an invalid investigation");
 		HealthCode invalidHealthCode 
@@ -392,8 +392,8 @@ public final class TestDiseaseMappingStudy
 			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 		diseaseMappingStudy.clearInvestigations();
 		
-		SampleTestObjectGenerator generator 
-			= new SampleTestObjectGenerator();
+		MSSQLSampleTestObjectGenerator generator 
+			= new MSSQLSampleTestObjectGenerator();
 		Investigation investigation1
 			= generator.createSampleInvestigation("Investigation 1");
 		NumeratorDenominatorPair ndPair1

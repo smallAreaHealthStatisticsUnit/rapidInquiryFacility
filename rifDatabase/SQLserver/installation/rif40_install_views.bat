@@ -40,8 +40,25 @@ REM Margaret Douglass, Peter Hambly, SAHSU
 REM
 REM Usage: recreate_all_views.bat
 REM
-REM MUST BE RUN AS ADMINSTRATOR
+
+ECHO OFF
 REM
+REM MUST BE RUN AS ADMINSTRATOR/POWERUSER
+REM
+NET SESSION >nul 2>&1
+if %errorlevel% equ 0 (
+    ECHO Administrator PRIVILEGES Detected! 
+) else (
+	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
+	if %errorlevel% neq 0 {
+		ECHO NOT AN ADMIN!
+		exit /b 1
+	}
+	else {
+		ECHO Power user PRIVILEGES Detected! 
+	}
+)
+
 sqlcmd -d sahsuland_dev -b -m-1 -e -i ..\sahsuland_dev\rif40\views\recreate_all_views.sql
 
 REM

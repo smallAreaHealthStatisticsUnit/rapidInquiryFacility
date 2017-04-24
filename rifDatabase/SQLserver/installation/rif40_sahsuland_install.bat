@@ -1,3 +1,4 @@
+ECHO OFF
 REM ************************************************************************
 REM
 REM Description:
@@ -42,63 +43,100 @@ REM Usage: rif40_install_tables.bat
 REM
 REM recreate_all_sequences.bat MUST BE RUN FIRST
 REM
+
+REM
 REM MUST BE RUN AS ADMINSTRATOR/POWERUSER
 REM
-ECHO OFF
-REM NET SESSION >nul 2>&1
-REM if %errorlevel% equ 0 (
-REM    ECHO Administrator PRIVILEGES Detected! 
-REM ) else (
-REM	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
-REM	if %errorlevel% neq 0 {
-REM		ECHO NOT AN ADMIN!
-REM		exit /b 1
-REM	}
-REM	else {
-REM		ECHO Power user PRIVILEGES Detected! 
-REM	}
-REM
-
-sqlcmd -d sahsuland -b -m-1 -e -i rif40_sahsuland_install.sql -v path="%cd%\..\.." -I
-if %errorlevel% neq 0  (
-	ECHO rif40_sahsuland_install.sql exiting with %errorlevel%
-	exit /b 1
+NET SESSION >nul 2>&1
+if %errorlevel% equ 0 (
+    ECHO Administrator PRIVILEGES Detected! 
 ) else (
-	ECHO rif40_sahsuland_install.sql built OK %errorlevel%
-)
-
-REM Does not work in github tree - SQL server needs access permissions!
-REM
-REM BULK INSERT rif_data.lookup_sahsu_grd_level1
-REM FROM 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv'     -- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
-REM WITH
-REM (
-REM        FORMATFILE = 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.fmt',            -- Use a format file
-REM         TABLOCK                                 -- Table lock
-REM );
-REM
-REM Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 7
-REM Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\GeospatialData\tileMaker/mssql_lookup_sahsu_grd_level1.csv" could not be opened. Operating system error code 5(Access is denied.).
-REM
-sqlcmd -U rif40 -P rif40 -d sahsuland -b -m-1 -e -r1 -i ..\..\GeospatialData\tileMaker\rif_mssql_SAHSULAND.sql -v pwd="%cd%\..\..\GeospatialData\tileMaker"
-if %errorlevel% neq 0  (
-	ECHO rif_mssql_SAHSULAND.sql exiting with %errorlevel%
-	exit /b 1
-) else (
-	ECHO rif_mssql_SAHSULAND.sql built OK %errorlevel%
-)
-
-sqlcmd -U rif40 -P rif40 -d sahsuland -b -m-1 -e -r1 -i ..\..\DataLoaderData\SAHSULAND\ms_run_data_loader.sql -v pwd="%cd%\..\..\DataLoaderData\SAHSULAND"
-if %errorlevel% neq 0  (
-	ECHO ms_run_data_loader.sql exiting with %errorlevel%
-	exit /b 1
-) else (
-	ECHO ms_run_data_loader.sql built OK %errorlevel%
-	ECHO sahsuland built OK.
+	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
+	if %errorlevel% neq 0 {
+		ECHO NOT AN ADMIN!
+		exit /b 1
+	}
+	else {
+		ECHO Power user PRIVILEGES Detected! 
+	}
 )
 
 REM
-REM sahsuland built OK.
+REM Get DB settings
+REM 
+echo Creating production RIF database
+REM 
+REM REBUILD_ALL is set up rebuild_all.bat - this prevents the questions being asdked twice
+REM
+IF NOT DEFINED REBUILD_ALL (
+	SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
+	SET /P NEWDB=New RIF40 db [default sahsuland]: %=%|| SET NEWDB=sahsuland
+	SET /P NEWPW=New user password [default %NEWUSER%]: %=% || SET NEWPW=%NEWUSER%
+	SET REBUILD_ALL=N
+)
+
+IF NOT DEFINED NEWUSER (
+	SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
+)
+IF NOT DEFINED NEWDB (
+	SET /P NEWDB=New RIF40 db [default sahsuland]: %=%|| SET NEWDB=sahsuland
+)
+IF NOT DEFINED NEWPW (
+	SET /P NEWPW=New user password [default %NEWUSER%]: %=% || SET NEWPW=%NEWUSER%
+	)
+ECHO ##########################################################################################
+ECHO #
+ECHO # WARNING! this script will the drop and create the RIF40 %NEWDB% database.
+ECHO # Type control-C to abort.
+ECHO #
+ECHO # Test user: %NEWUSER%; password: %NEWPW%
+ECHO #
+ECHO ##########################################################################################
+PAUSE
+
+REM
+REM Create production database
+REM
+sqlcmd -E -b -m-1 -e -r1 -i rif40_production_creation.sql -v import_dir="%cd%\..\production\" -v newdb="%NEWDB%"
+if %errorlevel% neq 0 (
+	ECHO rif40_production_creation.sql exiting with %errorlevel%	
+	IF NOT DEFINED REBUILD_ALL (
+REM
+REM Clear seetings
+REM
+		(SET NEWDB=)
+		(SET NEWUSER=)
+		(SET NEWPW=)
+	)
+	exit /b 1
+) else (
+	ECHO rif40_production_creation.sql built OK %errorlevel%
+)
+
+REM
+REM Create production user
+REM
+sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser="%NEWUSER%" -v newdb="%NEWDB%" -v newpw="%NEWPW%"
+if %errorlevel% neq 0  (
+	ECHO rif40_production_user.sql exiting with %errorlevel%
+	IF NOT DEFINED REBUILD_ALL (
+REM
+REM Clear seetings
+REM
+		(SET NEWDB=)
+		(SET NEWUSER=)
+		(SET NEWPW=)
+	)	
+	exit /b 1
+) else (
+REM
+REM Clear seetings
+REM
+	(SET NEWDB=)
+	(SET NEWUSER=)
+	(SET NEWPW=)
+	ECHO rif40_production_user.sql built OK %errorlevel%; created RIF40 production database %NEWDB% with user: %NEWUSER%
+)
 
 REM
 REM Eof

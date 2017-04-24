@@ -255,7 +255,12 @@ DECLARE
 BEGIN	
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_ddl_check_f', '[70300]: Checking for extra table/views');
 	FOR c6_rec IN c6(schema_owner) LOOP
-		IF USER NOT IN ('rif40', 'rifupg34') AND c6_rec.table_or_view IN ( /* Ordinary users - ignore  */
+		IF c6_rec.table_or_view IN ( /* Ordinary users - ignore  */
+			'study_status') THEN
+			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_ddl_check_f', '[70302]: Extra other user table/view: %.% [IGNORED]', 
+				USER::VARCHAR,
+				c6_rec.table_or_view::VARCHAR);
+		ELSIF USER NOT IN ('rif40', 'rifupg34') AND c6_rec.table_or_view IN ( /* Ordinary users - ignore  */
 			'fdw_all_tab_columns', 'fdw_all_tables') THEN
 			NULL;
 		ELSIF USER IN ('rif40', 'rifupg34') THEN

@@ -78,6 +78,10 @@
 \set ON_ERROR_STOP ON
 \timing
 
+--
+-- Make the same as the CSV files
+--
+SET client_encoding='UTF-8';
 -- SQL statement 0: Start transaction >>>
 BEGIN TRANSACTION;
 
@@ -354,7 +358,7 @@ COMMENT /*
 	ON COLUMN sahsu_grd_level1.area IS 'Area';
 
 -- SQL statement 19: Load table from CSV file >>>
-\copy sahsu_grd_level1 FROM 'sahsu_grd_level1.csv' DELIMITER ',' CSV HEADER;
+\copy sahsu_grd_level1 FROM 'sahsu_grd_level1.csv' DELIMITER ',' CSV HEADER ENCODING 'UTF-8';
 
 -- SQL statement 20: Row check: 1 >>>
 DO LANGUAGE plpgsql $$
@@ -698,88 +702,36 @@ UPDATE sahsu_grd_level1
 -- Test Turf and DB areas agree to within 1%
 --
 
--- SQL statement 39: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
-DO LANGUAGE plpgsql $$
-DECLARE 
-/*
- * SQL statement name: 	area_check.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: geometry column; e.g. geom_11
- *						2: table name; e.g. cb_2014_us_county_500k
- *
- * Description:			Check Turf araa (area_km2) compared to SQL Server calculated area (area_km2_calc)
- *						Allow for 1% error
- *						Ignore small areas <= 10 km2
- * Note:				%% becomes % after substitution
- */
-	c1 CURSOR FOR
-		WITH a AS (
-			SELECT areaname,
-				   area_km2 AS area_km2,
-				   ST_Area(geography(geom_11))/(1000*1000) AS area_km2_calc
-			  FROM sahsu_grd_level1
-		), b AS (
-		SELECT SUBSTRING(a.areaname, 1, 30) AS areaname,
-			   a.area_km2,
-			   a.area_km2_calc,
-			   CASE WHEN a.area_km2 > 0 THEN 100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2)
-					WHEN a.area_km2 = a.area_km2_calc THEN 0
-					ELSE NULL
-			   END AS pct_km2_diff 
-		  FROM a
-		)
-		SELECT b.areaname, b.area_km2, b.area_km2_calc, b.pct_km2_diff
-		  FROM b
-		 WHERE b.pct_km2_diff > 1 /* Allow for 1% error */
-		   AND b.area_km2_calc > 10 /* Ignore small areas <= 10 km2 */;
-
-	c1_rec RECORD;
-	total INTEGER:=0;
-BEGIN
-	FOR c1_rec IN c1 LOOP
-		total:=total+1;
-		RAISE INFO 'Area: %, area km2: %:, calc: %, diff %',
-			c1_rec.areaname, c1_rec.area_km2, c1_rec.area_km2_calc, c1_rec.pct_km2_diff;
-	END LOOP;
-	IF total = 0 THEN
-		RAISE INFO 'Table: sahsu_grd_level1 no invalid areas check OK';
-	ELSE
-		RAISE EXCEPTION 'Table: sahsu_grd_level1 no invalid areas check FAILED: % invalid', total;
-	END IF;
-END;
-$$;
-
 --
 -- Create spatial indexes
 --
 
--- SQL statement 41: Index geometry column for zoomlevel: 6 >>>
+-- SQL statement 40: Index geometry column for zoomlevel: 6 >>>
 CREATE INDEX sahsu_grd_level1_geom_6_gix ON sahsu_grd_level1 USING GIST (geom_6);
 
--- SQL statement 42: Index geometry column for zoomlevel: 7 >>>
+-- SQL statement 41: Index geometry column for zoomlevel: 7 >>>
 CREATE INDEX sahsu_grd_level1_geom_7_gix ON sahsu_grd_level1 USING GIST (geom_7);
 
--- SQL statement 43: Index geometry column for zoomlevel: 8 >>>
+-- SQL statement 42: Index geometry column for zoomlevel: 8 >>>
 CREATE INDEX sahsu_grd_level1_geom_8_gix ON sahsu_grd_level1 USING GIST (geom_8);
 
--- SQL statement 44: Index geometry column for zoomlevel: 9 >>>
+-- SQL statement 43: Index geometry column for zoomlevel: 9 >>>
 CREATE INDEX sahsu_grd_level1_geom_9_gix ON sahsu_grd_level1 USING GIST (geom_9);
 
--- SQL statement 45: Index geometry column for zoomlevel: 10 >>>
+-- SQL statement 44: Index geometry column for zoomlevel: 10 >>>
 CREATE INDEX sahsu_grd_level1_geom_10_gix ON sahsu_grd_level1 USING GIST (geom_10);
 
--- SQL statement 46: Index geometry column for zoomlevel: 11 >>>
+-- SQL statement 45: Index geometry column for zoomlevel: 11 >>>
 CREATE INDEX sahsu_grd_level1_geom_11_gix ON sahsu_grd_level1 USING GIST (geom_11);
 
--- SQL statement 47: Index geometry column for original SRID geometry >>>
+-- SQL statement 46: Index geometry column for original SRID geometry >>>
 CREATE INDEX sahsu_grd_level1_geom_orig_gix ON sahsu_grd_level1 USING GIST (geom_orig);
 
 --
 -- Reports
 --
 
--- SQL statement 49: Areas and centroids report >>>
+-- SQL statement 48: Areas and centroids report >>>
 /*
  * SQL statement name: 	area_centroid_report.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -812,10 +764,10 @@ SELECT a.areaname,
  ORDER BY 1
  LIMIT 100;
 
--- SQL statement 50: Drop table sahsu_grd_level2 >>>
+-- SQL statement 49: Drop table sahsu_grd_level2 >>>
 DROP TABLE IF EXISTS sahsu_grd_level2;
 
--- SQL statement 51: Create tablesahsu_grd_level2 >>>
+-- SQL statement 50: Create tablesahsu_grd_level2 >>>
 CREATE TABLE sahsu_grd_level2 (
 	level2                         	text /* Level 2 */,
 	area                           	text /* Area */,
@@ -833,7 +785,7 @@ CREATE TABLE sahsu_grd_level2 (
 	wkt_7                          	text /* Wellknown text for zoomlevel 7 */,
 	wkt_6                          	text /* Wellknown text for zoomlevel 6 */);
 
--- SQL statement 52: Comment geospatial data table >>>
+-- SQL statement 51: Comment geospatial data table >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -847,7 +799,7 @@ COMMENT /*
  */
 	ON TABLE sahsu_grd_level2 IS 'Level 2';
 
--- SQL statement 53: Comment geospatial data column >>>
+-- SQL statement 52: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -862,7 +814,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.gid IS 'Unique geographic index';
 
--- SQL statement 54: Comment geospatial data column >>>
+-- SQL statement 53: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -877,7 +829,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.areaid IS 'Area ID (LEVEL2): Level 2';
 
--- SQL statement 55: Comment geospatial data column >>>
+-- SQL statement 54: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -892,7 +844,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.areaname IS 'Area name (NAME): Level 2 name';
 
--- SQL statement 56: Comment geospatial data column >>>
+-- SQL statement 55: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -907,7 +859,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.area_km2 IS 'Area in square km';
 
--- SQL statement 57: Comment geospatial data column >>>
+-- SQL statement 56: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -922,7 +874,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.geographic_centroid_wkt IS 'Wellknown text for geographic centroid';
 
--- SQL statement 58: Comment geospatial data column >>>
+-- SQL statement 57: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -937,7 +889,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.wkt_6 IS 'Wellknown text for zoomlevel 6';
 
--- SQL statement 59: Comment geospatial data column >>>
+-- SQL statement 58: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -952,7 +904,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.wkt_7 IS 'Wellknown text for zoomlevel 7';
 
--- SQL statement 60: Comment geospatial data column >>>
+-- SQL statement 59: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -967,7 +919,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.wkt_8 IS 'Wellknown text for zoomlevel 8';
 
--- SQL statement 61: Comment geospatial data column >>>
+-- SQL statement 60: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -982,7 +934,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.wkt_9 IS 'Wellknown text for zoomlevel 9';
 
--- SQL statement 62: Comment geospatial data column >>>
+-- SQL statement 61: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -997,7 +949,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.wkt_10 IS 'Wellknown text for zoomlevel 10';
 
--- SQL statement 63: Comment geospatial data column >>>
+-- SQL statement 62: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1012,7 +964,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.wkt_11 IS 'Wellknown text for zoomlevel 11';
 
--- SQL statement 64: Comment geospatial data column >>>
+-- SQL statement 63: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1027,7 +979,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.level2 IS 'Level 2';
 
--- SQL statement 65: Comment geospatial data column >>>
+-- SQL statement 64: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1042,7 +994,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.area IS 'Area';
 
--- SQL statement 66: Comment geospatial data column >>>
+-- SQL statement 65: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1057,7 +1009,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.level1 IS 'Level 1';
 
--- SQL statement 67: Comment geospatial data column >>>
+-- SQL statement 66: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1072,10 +1024,10 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level2.name IS 'Level 2 name';
 
--- SQL statement 68: Load table from CSV file >>>
-\copy sahsu_grd_level2 FROM 'sahsu_grd_level2.csv' DELIMITER ',' CSV HEADER;
+-- SQL statement 67: Load table from CSV file >>>
+\copy sahsu_grd_level2 FROM 'sahsu_grd_level2.csv' DELIMITER ',' CSV HEADER ENCODING 'UTF-8';
 
--- SQL statement 69: Row check: 17 >>>
+-- SQL statement 68: Row check: 17 >>>
 DO LANGUAGE plpgsql $$
 DECLARE
 /*
@@ -1105,10 +1057,10 @@ BEGIN
 END;
 $$;
 
--- SQL statement 70: Add primary key sahsu_grd_level2 >>>
+-- SQL statement 69: Add primary key sahsu_grd_level2 >>>
 ALTER TABLE sahsu_grd_level2 ADD PRIMARY KEY (gid);
 
--- SQL statement 71: Add unique key sahsu_grd_level2 >>>
+-- SQL statement 70: Add unique key sahsu_grd_level2 >>>
 /*
  * SQL statement name: 	add_unique_key.sql
  * Type:				Common SQL statement
@@ -1126,7 +1078,7 @@ ALTER TABLE sahsu_grd_level2 ADD CONSTRAINT sahsu_grd_level2_uk UNIQUE(areaid);
 -- Add geometric  data
 --
 
--- SQL statement 73: Add geometry column: geographic centroid >>>
+-- SQL statement 72: Add geometry column: geographic centroid >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1143,7 +1095,7 @@ SELECT AddGeometryColumn('sahsu_grd_level2','geographic_centroid', 4326, 'POINT'
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 74: Add geometry column for original SRID geometry >>>
+-- SQL statement 73: Add geometry column for original SRID geometry >>>
 /*
  * SQL statement name: 	add_geometry_column2.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1161,7 +1113,7 @@ SELECT AddGeometryColumn('sahsu_grd_level2','geom_orig', 27700, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 75: Add geometry column for zoomlevel: 6 >>>
+-- SQL statement 74: Add geometry column for zoomlevel: 6 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1178,7 +1130,7 @@ SELECT AddGeometryColumn('sahsu_grd_level2','geom_6', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 76: Add geometry column for zoomlevel: 7 >>>
+-- SQL statement 75: Add geometry column for zoomlevel: 7 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1195,7 +1147,7 @@ SELECT AddGeometryColumn('sahsu_grd_level2','geom_7', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 77: Add geometry column for zoomlevel: 8 >>>
+-- SQL statement 76: Add geometry column for zoomlevel: 8 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1212,7 +1164,7 @@ SELECT AddGeometryColumn('sahsu_grd_level2','geom_8', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 78: Add geometry column for zoomlevel: 9 >>>
+-- SQL statement 77: Add geometry column for zoomlevel: 9 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1229,7 +1181,7 @@ SELECT AddGeometryColumn('sahsu_grd_level2','geom_9', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 79: Add geometry column for zoomlevel: 10 >>>
+-- SQL statement 78: Add geometry column for zoomlevel: 10 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1246,7 +1198,7 @@ SELECT AddGeometryColumn('sahsu_grd_level2','geom_10', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 80: Add geometry column for zoomlevel: 11 >>>
+-- SQL statement 79: Add geometry column for zoomlevel: 11 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1263,7 +1215,7 @@ SELECT AddGeometryColumn('sahsu_grd_level2','geom_11', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 81: Update geographic centroid, geometry columns, handle polygons and mutlipolygons, convert highest zoomlevel to original SRID >>>
+-- SQL statement 80: Update geographic centroid, geometry columns, handle polygons and mutlipolygons, convert highest zoomlevel to original SRID >>>
 UPDATE sahsu_grd_level2
    SET geographic_centroid = ST_GeomFromText(geographic_centroid_wkt, 4326),
        geom_6 = 
@@ -1302,7 +1254,7 @@ UPDATE sahsu_grd_level2
        			ELSE 			ST_Multi(ST_GeomFromText(wkt_11, 4326))
        		END, 27700);
 
--- SQL statement 82: Make geometry columns valid >>>
+-- SQL statement 81: Make geometry columns valid >>>
 UPDATE sahsu_grd_level2
    SET
        geom_6 = CASE ST_IsValid(geom_6)
@@ -1338,7 +1290,7 @@ UPDATE sahsu_grd_level2
 -- Test geometry and make valid if required
 --
 
--- SQL statement 84: Check validity of geometry columns >>>
+-- SQL statement 83: Check validity of geometry columns >>>
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR
@@ -1403,7 +1355,7 @@ $$;
 -- Make all polygons right handed
 --
 
--- SQL statement 86: Make all polygons right handed for original geometry >>>
+-- SQL statement 85: Make all polygons right handed for original geometry >>>
 UPDATE sahsu_grd_level2
    SET       geom_6 = ST_ForceRHR(geom_6),
        geom_7 = ST_ForceRHR(geom_7),
@@ -1417,88 +1369,36 @@ UPDATE sahsu_grd_level2
 -- Test Turf and DB areas agree to within 1%
 --
 
--- SQL statement 88: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
-DO LANGUAGE plpgsql $$
-DECLARE 
-/*
- * SQL statement name: 	area_check.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: geometry column; e.g. geom_11
- *						2: table name; e.g. cb_2014_us_county_500k
- *
- * Description:			Check Turf araa (area_km2) compared to SQL Server calculated area (area_km2_calc)
- *						Allow for 1% error
- *						Ignore small areas <= 10 km2
- * Note:				%% becomes % after substitution
- */
-	c1 CURSOR FOR
-		WITH a AS (
-			SELECT areaname,
-				   area_km2 AS area_km2,
-				   ST_Area(geography(geom_11))/(1000*1000) AS area_km2_calc
-			  FROM sahsu_grd_level2
-		), b AS (
-		SELECT SUBSTRING(a.areaname, 1, 30) AS areaname,
-			   a.area_km2,
-			   a.area_km2_calc,
-			   CASE WHEN a.area_km2 > 0 THEN 100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2)
-					WHEN a.area_km2 = a.area_km2_calc THEN 0
-					ELSE NULL
-			   END AS pct_km2_diff 
-		  FROM a
-		)
-		SELECT b.areaname, b.area_km2, b.area_km2_calc, b.pct_km2_diff
-		  FROM b
-		 WHERE b.pct_km2_diff > 1 /* Allow for 1% error */
-		   AND b.area_km2_calc > 10 /* Ignore small areas <= 10 km2 */;
-
-	c1_rec RECORD;
-	total INTEGER:=0;
-BEGIN
-	FOR c1_rec IN c1 LOOP
-		total:=total+1;
-		RAISE INFO 'Area: %, area km2: %:, calc: %, diff %',
-			c1_rec.areaname, c1_rec.area_km2, c1_rec.area_km2_calc, c1_rec.pct_km2_diff;
-	END LOOP;
-	IF total = 0 THEN
-		RAISE INFO 'Table: sahsu_grd_level2 no invalid areas check OK';
-	ELSE
-		RAISE EXCEPTION 'Table: sahsu_grd_level2 no invalid areas check FAILED: % invalid', total;
-	END IF;
-END;
-$$;
-
 --
 -- Create spatial indexes
 --
 
--- SQL statement 90: Index geometry column for zoomlevel: 6 >>>
+-- SQL statement 88: Index geometry column for zoomlevel: 6 >>>
 CREATE INDEX sahsu_grd_level2_geom_6_gix ON sahsu_grd_level2 USING GIST (geom_6);
 
--- SQL statement 91: Index geometry column for zoomlevel: 7 >>>
+-- SQL statement 89: Index geometry column for zoomlevel: 7 >>>
 CREATE INDEX sahsu_grd_level2_geom_7_gix ON sahsu_grd_level2 USING GIST (geom_7);
 
--- SQL statement 92: Index geometry column for zoomlevel: 8 >>>
+-- SQL statement 90: Index geometry column for zoomlevel: 8 >>>
 CREATE INDEX sahsu_grd_level2_geom_8_gix ON sahsu_grd_level2 USING GIST (geom_8);
 
--- SQL statement 93: Index geometry column for zoomlevel: 9 >>>
+-- SQL statement 91: Index geometry column for zoomlevel: 9 >>>
 CREATE INDEX sahsu_grd_level2_geom_9_gix ON sahsu_grd_level2 USING GIST (geom_9);
 
--- SQL statement 94: Index geometry column for zoomlevel: 10 >>>
+-- SQL statement 92: Index geometry column for zoomlevel: 10 >>>
 CREATE INDEX sahsu_grd_level2_geom_10_gix ON sahsu_grd_level2 USING GIST (geom_10);
 
--- SQL statement 95: Index geometry column for zoomlevel: 11 >>>
+-- SQL statement 93: Index geometry column for zoomlevel: 11 >>>
 CREATE INDEX sahsu_grd_level2_geom_11_gix ON sahsu_grd_level2 USING GIST (geom_11);
 
--- SQL statement 96: Index geometry column for original SRID geometry >>>
+-- SQL statement 94: Index geometry column for original SRID geometry >>>
 CREATE INDEX sahsu_grd_level2_geom_orig_gix ON sahsu_grd_level2 USING GIST (geom_orig);
 
 --
 -- Reports
 --
 
--- SQL statement 98: Areas and centroids report >>>
+-- SQL statement 96: Areas and centroids report >>>
 /*
  * SQL statement name: 	area_centroid_report.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1531,10 +1431,10 @@ SELECT a.areaname,
  ORDER BY 1
  LIMIT 100;
 
--- SQL statement 99: Drop table sahsu_grd_level3 >>>
+-- SQL statement 97: Drop table sahsu_grd_level3 >>>
 DROP TABLE IF EXISTS sahsu_grd_level3;
 
--- SQL statement 100: Create tablesahsu_grd_level3 >>>
+-- SQL statement 98: Create tablesahsu_grd_level3 >>>
 CREATE TABLE sahsu_grd_level3 (
 	level2                         	text /* Level 2 */,
 	level1                         	text /* Level 1 */,
@@ -1551,7 +1451,7 @@ CREATE TABLE sahsu_grd_level3 (
 	wkt_7                          	text /* Wellknown text for zoomlevel 7 */,
 	wkt_6                          	text /* Wellknown text for zoomlevel 6 */);
 
--- SQL statement 101: Comment geospatial data table >>>
+-- SQL statement 99: Comment geospatial data table >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1565,7 +1465,7 @@ COMMENT /*
  */
 	ON TABLE sahsu_grd_level3 IS 'Level 3';
 
--- SQL statement 102: Comment geospatial data column >>>
+-- SQL statement 100: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1580,7 +1480,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.gid IS 'Unique geographic index';
 
--- SQL statement 103: Comment geospatial data column >>>
+-- SQL statement 101: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1595,7 +1495,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.areaid IS 'Area ID (LEVEL3): Level 3';
 
--- SQL statement 104: Comment geospatial data column >>>
+-- SQL statement 102: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1610,7 +1510,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.areaname IS 'Area name (LEVEL3): Level 3 name';
 
--- SQL statement 105: Comment geospatial data column >>>
+-- SQL statement 103: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1625,7 +1525,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.area_km2 IS 'Area in square km';
 
--- SQL statement 106: Comment geospatial data column >>>
+-- SQL statement 104: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1640,7 +1540,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.geographic_centroid_wkt IS 'Wellknown text for geographic centroid';
 
--- SQL statement 107: Comment geospatial data column >>>
+-- SQL statement 105: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1655,7 +1555,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.wkt_6 IS 'Wellknown text for zoomlevel 6';
 
--- SQL statement 108: Comment geospatial data column >>>
+-- SQL statement 106: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1670,7 +1570,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.wkt_7 IS 'Wellknown text for zoomlevel 7';
 
--- SQL statement 109: Comment geospatial data column >>>
+-- SQL statement 107: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1685,7 +1585,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.wkt_8 IS 'Wellknown text for zoomlevel 8';
 
--- SQL statement 110: Comment geospatial data column >>>
+-- SQL statement 108: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1700,7 +1600,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.wkt_9 IS 'Wellknown text for zoomlevel 9';
 
--- SQL statement 111: Comment geospatial data column >>>
+-- SQL statement 109: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1715,7 +1615,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.wkt_10 IS 'Wellknown text for zoomlevel 10';
 
--- SQL statement 112: Comment geospatial data column >>>
+-- SQL statement 110: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1730,7 +1630,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.wkt_11 IS 'Wellknown text for zoomlevel 11';
 
--- SQL statement 113: Comment geospatial data column >>>
+-- SQL statement 111: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1745,7 +1645,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.level2 IS 'Level 2';
 
--- SQL statement 114: Comment geospatial data column >>>
+-- SQL statement 112: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1760,7 +1660,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.level1 IS 'Level 1';
 
--- SQL statement 115: Comment geospatial data column >>>
+-- SQL statement 113: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1775,10 +1675,10 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level3.level3 IS 'Level 3';
 
--- SQL statement 116: Load table from CSV file >>>
-\copy sahsu_grd_level3 FROM 'sahsu_grd_level3.csv' DELIMITER ',' CSV HEADER;
+-- SQL statement 114: Load table from CSV file >>>
+\copy sahsu_grd_level3 FROM 'sahsu_grd_level3.csv' DELIMITER ',' CSV HEADER ENCODING 'UTF-8';
 
--- SQL statement 117: Row check: 200 >>>
+-- SQL statement 115: Row check: 200 >>>
 DO LANGUAGE plpgsql $$
 DECLARE
 /*
@@ -1808,10 +1708,10 @@ BEGIN
 END;
 $$;
 
--- SQL statement 118: Add primary key sahsu_grd_level3 >>>
+-- SQL statement 116: Add primary key sahsu_grd_level3 >>>
 ALTER TABLE sahsu_grd_level3 ADD PRIMARY KEY (gid);
 
--- SQL statement 119: Add unique key sahsu_grd_level3 >>>
+-- SQL statement 117: Add unique key sahsu_grd_level3 >>>
 /*
  * SQL statement name: 	add_unique_key.sql
  * Type:				Common SQL statement
@@ -1829,7 +1729,7 @@ ALTER TABLE sahsu_grd_level3 ADD CONSTRAINT sahsu_grd_level3_uk UNIQUE(areaid);
 -- Add geometric  data
 --
 
--- SQL statement 121: Add geometry column: geographic centroid >>>
+-- SQL statement 119: Add geometry column: geographic centroid >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1846,7 +1746,7 @@ SELECT AddGeometryColumn('sahsu_grd_level3','geographic_centroid', 4326, 'POINT'
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 122: Add geometry column for original SRID geometry >>>
+-- SQL statement 120: Add geometry column for original SRID geometry >>>
 /*
  * SQL statement name: 	add_geometry_column2.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1864,7 +1764,7 @@ SELECT AddGeometryColumn('sahsu_grd_level3','geom_orig', 27700, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 123: Add geometry column for zoomlevel: 6 >>>
+-- SQL statement 121: Add geometry column for zoomlevel: 6 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1881,7 +1781,7 @@ SELECT AddGeometryColumn('sahsu_grd_level3','geom_6', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 124: Add geometry column for zoomlevel: 7 >>>
+-- SQL statement 122: Add geometry column for zoomlevel: 7 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1898,7 +1798,7 @@ SELECT AddGeometryColumn('sahsu_grd_level3','geom_7', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 125: Add geometry column for zoomlevel: 8 >>>
+-- SQL statement 123: Add geometry column for zoomlevel: 8 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1915,7 +1815,7 @@ SELECT AddGeometryColumn('sahsu_grd_level3','geom_8', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 126: Add geometry column for zoomlevel: 9 >>>
+-- SQL statement 124: Add geometry column for zoomlevel: 9 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1932,7 +1832,7 @@ SELECT AddGeometryColumn('sahsu_grd_level3','geom_9', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 127: Add geometry column for zoomlevel: 10 >>>
+-- SQL statement 125: Add geometry column for zoomlevel: 10 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1949,7 +1849,7 @@ SELECT AddGeometryColumn('sahsu_grd_level3','geom_10', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 128: Add geometry column for zoomlevel: 11 >>>
+-- SQL statement 126: Add geometry column for zoomlevel: 11 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -1966,7 +1866,7 @@ SELECT AddGeometryColumn('sahsu_grd_level3','geom_11', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 129: Update geographic centroid, geometry columns, handle polygons and mutlipolygons, convert highest zoomlevel to original SRID >>>
+-- SQL statement 127: Update geographic centroid, geometry columns, handle polygons and mutlipolygons, convert highest zoomlevel to original SRID >>>
 UPDATE sahsu_grd_level3
    SET geographic_centroid = ST_GeomFromText(geographic_centroid_wkt, 4326),
        geom_6 = 
@@ -2005,7 +1905,7 @@ UPDATE sahsu_grd_level3
        			ELSE 			ST_Multi(ST_GeomFromText(wkt_11, 4326))
        		END, 27700);
 
--- SQL statement 130: Make geometry columns valid >>>
+-- SQL statement 128: Make geometry columns valid >>>
 UPDATE sahsu_grd_level3
    SET
        geom_6 = CASE ST_IsValid(geom_6)
@@ -2041,7 +1941,7 @@ UPDATE sahsu_grd_level3
 -- Test geometry and make valid if required
 --
 
--- SQL statement 132: Check validity of geometry columns >>>
+-- SQL statement 130: Check validity of geometry columns >>>
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR
@@ -2106,7 +2006,7 @@ $$;
 -- Make all polygons right handed
 --
 
--- SQL statement 134: Make all polygons right handed for original geometry >>>
+-- SQL statement 132: Make all polygons right handed for original geometry >>>
 UPDATE sahsu_grd_level3
    SET       geom_6 = ST_ForceRHR(geom_6),
        geom_7 = ST_ForceRHR(geom_7),
@@ -2120,88 +2020,36 @@ UPDATE sahsu_grd_level3
 -- Test Turf and DB areas agree to within 1%
 --
 
--- SQL statement 136: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
-DO LANGUAGE plpgsql $$
-DECLARE 
-/*
- * SQL statement name: 	area_check.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: geometry column; e.g. geom_11
- *						2: table name; e.g. cb_2014_us_county_500k
- *
- * Description:			Check Turf araa (area_km2) compared to SQL Server calculated area (area_km2_calc)
- *						Allow for 1% error
- *						Ignore small areas <= 10 km2
- * Note:				%% becomes % after substitution
- */
-	c1 CURSOR FOR
-		WITH a AS (
-			SELECT areaname,
-				   area_km2 AS area_km2,
-				   ST_Area(geography(geom_11))/(1000*1000) AS area_km2_calc
-			  FROM sahsu_grd_level3
-		), b AS (
-		SELECT SUBSTRING(a.areaname, 1, 30) AS areaname,
-			   a.area_km2,
-			   a.area_km2_calc,
-			   CASE WHEN a.area_km2 > 0 THEN 100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2)
-					WHEN a.area_km2 = a.area_km2_calc THEN 0
-					ELSE NULL
-			   END AS pct_km2_diff 
-		  FROM a
-		)
-		SELECT b.areaname, b.area_km2, b.area_km2_calc, b.pct_km2_diff
-		  FROM b
-		 WHERE b.pct_km2_diff > 1 /* Allow for 1% error */
-		   AND b.area_km2_calc > 10 /* Ignore small areas <= 10 km2 */;
-
-	c1_rec RECORD;
-	total INTEGER:=0;
-BEGIN
-	FOR c1_rec IN c1 LOOP
-		total:=total+1;
-		RAISE INFO 'Area: %, area km2: %:, calc: %, diff %',
-			c1_rec.areaname, c1_rec.area_km2, c1_rec.area_km2_calc, c1_rec.pct_km2_diff;
-	END LOOP;
-	IF total = 0 THEN
-		RAISE INFO 'Table: sahsu_grd_level3 no invalid areas check OK';
-	ELSE
-		RAISE EXCEPTION 'Table: sahsu_grd_level3 no invalid areas check FAILED: % invalid', total;
-	END IF;
-END;
-$$;
-
 --
 -- Create spatial indexes
 --
 
--- SQL statement 138: Index geometry column for zoomlevel: 6 >>>
+-- SQL statement 135: Index geometry column for zoomlevel: 6 >>>
 CREATE INDEX sahsu_grd_level3_geom_6_gix ON sahsu_grd_level3 USING GIST (geom_6);
 
--- SQL statement 139: Index geometry column for zoomlevel: 7 >>>
+-- SQL statement 136: Index geometry column for zoomlevel: 7 >>>
 CREATE INDEX sahsu_grd_level3_geom_7_gix ON sahsu_grd_level3 USING GIST (geom_7);
 
--- SQL statement 140: Index geometry column for zoomlevel: 8 >>>
+-- SQL statement 137: Index geometry column for zoomlevel: 8 >>>
 CREATE INDEX sahsu_grd_level3_geom_8_gix ON sahsu_grd_level3 USING GIST (geom_8);
 
--- SQL statement 141: Index geometry column for zoomlevel: 9 >>>
+-- SQL statement 138: Index geometry column for zoomlevel: 9 >>>
 CREATE INDEX sahsu_grd_level3_geom_9_gix ON sahsu_grd_level3 USING GIST (geom_9);
 
--- SQL statement 142: Index geometry column for zoomlevel: 10 >>>
+-- SQL statement 139: Index geometry column for zoomlevel: 10 >>>
 CREATE INDEX sahsu_grd_level3_geom_10_gix ON sahsu_grd_level3 USING GIST (geom_10);
 
--- SQL statement 143: Index geometry column for zoomlevel: 11 >>>
+-- SQL statement 140: Index geometry column for zoomlevel: 11 >>>
 CREATE INDEX sahsu_grd_level3_geom_11_gix ON sahsu_grd_level3 USING GIST (geom_11);
 
--- SQL statement 144: Index geometry column for original SRID geometry >>>
+-- SQL statement 141: Index geometry column for original SRID geometry >>>
 CREATE INDEX sahsu_grd_level3_geom_orig_gix ON sahsu_grd_level3 USING GIST (geom_orig);
 
 --
 -- Reports
 --
 
--- SQL statement 146: Areas and centroids report >>>
+-- SQL statement 143: Areas and centroids report >>>
 /*
  * SQL statement name: 	area_centroid_report.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2234,10 +2082,10 @@ SELECT a.areaname,
  ORDER BY 1
  LIMIT 100;
 
--- SQL statement 147: Drop table sahsu_grd_level4 >>>
+-- SQL statement 144: Drop table sahsu_grd_level4 >>>
 DROP TABLE IF EXISTS sahsu_grd_level4;
 
--- SQL statement 148: Create tablesahsu_grd_level4 >>>
+-- SQL statement 145: Create tablesahsu_grd_level4 >>>
 CREATE TABLE sahsu_grd_level4 (
 	perimeter                      	text /* Perimeter */,
 	level4                         	text /* Level 4 */,
@@ -2256,7 +2104,7 @@ CREATE TABLE sahsu_grd_level4 (
 	wkt_7                          	text /* Wellknown text for zoomlevel 7 */,
 	wkt_6                          	text /* Wellknown text for zoomlevel 6 */);
 
--- SQL statement 149: Comment geospatial data table >>>
+-- SQL statement 146: Comment geospatial data table >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2270,7 +2118,7 @@ COMMENT /*
  */
 	ON TABLE sahsu_grd_level4 IS 'Level 4';
 
--- SQL statement 150: Comment geospatial data column >>>
+-- SQL statement 147: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2285,7 +2133,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.gid IS 'Unique geographic index';
 
--- SQL statement 151: Comment geospatial data column >>>
+-- SQL statement 148: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2300,7 +2148,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.areaid IS 'Area ID (LEVEL4): Level 4';
 
--- SQL statement 152: Comment geospatial data column >>>
+-- SQL statement 149: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2315,7 +2163,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.areaname IS 'Area name (LEVEL4): Level 4 name';
 
--- SQL statement 153: Comment geospatial data column >>>
+-- SQL statement 150: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2330,7 +2178,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.area_km2 IS 'Area in square km';
 
--- SQL statement 154: Comment geospatial data column >>>
+-- SQL statement 151: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2345,7 +2193,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.geographic_centroid_wkt IS 'Wellknown text for geographic centroid';
 
--- SQL statement 155: Comment geospatial data column >>>
+-- SQL statement 152: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2360,7 +2208,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.wkt_6 IS 'Wellknown text for zoomlevel 6';
 
--- SQL statement 156: Comment geospatial data column >>>
+-- SQL statement 153: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2375,7 +2223,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.wkt_7 IS 'Wellknown text for zoomlevel 7';
 
--- SQL statement 157: Comment geospatial data column >>>
+-- SQL statement 154: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2390,7 +2238,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.wkt_8 IS 'Wellknown text for zoomlevel 8';
 
--- SQL statement 158: Comment geospatial data column >>>
+-- SQL statement 155: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2405,7 +2253,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.wkt_9 IS 'Wellknown text for zoomlevel 9';
 
--- SQL statement 159: Comment geospatial data column >>>
+-- SQL statement 156: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2420,7 +2268,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.wkt_10 IS 'Wellknown text for zoomlevel 10';
 
--- SQL statement 160: Comment geospatial data column >>>
+-- SQL statement 157: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2435,7 +2283,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.wkt_11 IS 'Wellknown text for zoomlevel 11';
 
--- SQL statement 161: Comment geospatial data column >>>
+-- SQL statement 158: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2450,7 +2298,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.perimeter IS 'Perimeter';
 
--- SQL statement 162: Comment geospatial data column >>>
+-- SQL statement 159: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2465,7 +2313,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.level4 IS 'Level 4';
 
--- SQL statement 163: Comment geospatial data column >>>
+-- SQL statement 160: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2480,7 +2328,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.level2 IS 'Level 2';
 
--- SQL statement 164: Comment geospatial data column >>>
+-- SQL statement 161: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2495,7 +2343,7 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.level1 IS 'Level 1';
 
--- SQL statement 165: Comment geospatial data column >>>
+-- SQL statement 162: Comment geospatial data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2510,10 +2358,10 @@ COMMENT /*
  */
 	ON COLUMN sahsu_grd_level4.level3 IS 'Level 3';
 
--- SQL statement 166: Load table from CSV file >>>
-\copy sahsu_grd_level4 FROM 'sahsu_grd_level4.csv' DELIMITER ',' CSV HEADER;
+-- SQL statement 163: Load table from CSV file >>>
+\copy sahsu_grd_level4 FROM 'sahsu_grd_level4.csv' DELIMITER ',' CSV HEADER ENCODING 'UTF-8';
 
--- SQL statement 167: Row check: 1230 >>>
+-- SQL statement 164: Row check: 1230 >>>
 DO LANGUAGE plpgsql $$
 DECLARE
 /*
@@ -2543,10 +2391,10 @@ BEGIN
 END;
 $$;
 
--- SQL statement 168: Add primary key sahsu_grd_level4 >>>
+-- SQL statement 165: Add primary key sahsu_grd_level4 >>>
 ALTER TABLE sahsu_grd_level4 ADD PRIMARY KEY (gid);
 
--- SQL statement 169: Add unique key sahsu_grd_level4 >>>
+-- SQL statement 166: Add unique key sahsu_grd_level4 >>>
 /*
  * SQL statement name: 	add_unique_key.sql
  * Type:				Common SQL statement
@@ -2564,7 +2412,7 @@ ALTER TABLE sahsu_grd_level4 ADD CONSTRAINT sahsu_grd_level4_uk UNIQUE(areaid);
 -- Add geometric  data
 --
 
--- SQL statement 171: Add geometry column: geographic centroid >>>
+-- SQL statement 168: Add geometry column: geographic centroid >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2581,7 +2429,7 @@ SELECT AddGeometryColumn('sahsu_grd_level4','geographic_centroid', 4326, 'POINT'
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 172: Add geometry column for original SRID geometry >>>
+-- SQL statement 169: Add geometry column for original SRID geometry >>>
 /*
  * SQL statement name: 	add_geometry_column2.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2599,7 +2447,7 @@ SELECT AddGeometryColumn('sahsu_grd_level4','geom_orig', 27700, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 173: Add geometry column for zoomlevel: 6 >>>
+-- SQL statement 170: Add geometry column for zoomlevel: 6 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2616,7 +2464,7 @@ SELECT AddGeometryColumn('sahsu_grd_level4','geom_6', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 174: Add geometry column for zoomlevel: 7 >>>
+-- SQL statement 171: Add geometry column for zoomlevel: 7 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2633,7 +2481,7 @@ SELECT AddGeometryColumn('sahsu_grd_level4','geom_7', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 175: Add geometry column for zoomlevel: 8 >>>
+-- SQL statement 172: Add geometry column for zoomlevel: 8 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2650,7 +2498,7 @@ SELECT AddGeometryColumn('sahsu_grd_level4','geom_8', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 176: Add geometry column for zoomlevel: 9 >>>
+-- SQL statement 173: Add geometry column for zoomlevel: 9 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2667,7 +2515,7 @@ SELECT AddGeometryColumn('sahsu_grd_level4','geom_9', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 177: Add geometry column for zoomlevel: 10 >>>
+-- SQL statement 174: Add geometry column for zoomlevel: 10 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2684,7 +2532,7 @@ SELECT AddGeometryColumn('sahsu_grd_level4','geom_10', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 178: Add geometry column for zoomlevel: 11 >>>
+-- SQL statement 175: Add geometry column for zoomlevel: 11 >>>
 /*
  * SQL statement name: 	add_geometry_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2701,7 +2549,7 @@ SELECT AddGeometryColumn('sahsu_grd_level4','geom_11', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 179: Update geographic centroid, geometry columns, handle polygons and mutlipolygons, convert highest zoomlevel to original SRID >>>
+-- SQL statement 176: Update geographic centroid, geometry columns, handle polygons and mutlipolygons, convert highest zoomlevel to original SRID >>>
 UPDATE sahsu_grd_level4
    SET geographic_centroid = ST_GeomFromText(geographic_centroid_wkt, 4326),
        geom_6 = 
@@ -2740,7 +2588,7 @@ UPDATE sahsu_grd_level4
        			ELSE 			ST_Multi(ST_GeomFromText(wkt_11, 4326))
        		END, 27700);
 
--- SQL statement 180: Make geometry columns valid >>>
+-- SQL statement 177: Make geometry columns valid >>>
 UPDATE sahsu_grd_level4
    SET
        geom_6 = CASE ST_IsValid(geom_6)
@@ -2776,7 +2624,7 @@ UPDATE sahsu_grd_level4
 -- Test geometry and make valid if required
 --
 
--- SQL statement 182: Check validity of geometry columns >>>
+-- SQL statement 179: Check validity of geometry columns >>>
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR
@@ -2841,7 +2689,7 @@ $$;
 -- Make all polygons right handed
 --
 
--- SQL statement 184: Make all polygons right handed for original geometry >>>
+-- SQL statement 181: Make all polygons right handed for original geometry >>>
 UPDATE sahsu_grd_level4
    SET       geom_6 = ST_ForceRHR(geom_6),
        geom_7 = ST_ForceRHR(geom_7),
@@ -2855,88 +2703,36 @@ UPDATE sahsu_grd_level4
 -- Test Turf and DB areas agree to within 1%
 --
 
--- SQL statement 186: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
-DO LANGUAGE plpgsql $$
-DECLARE 
-/*
- * SQL statement name: 	area_check.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: geometry column; e.g. geom_11
- *						2: table name; e.g. cb_2014_us_county_500k
- *
- * Description:			Check Turf araa (area_km2) compared to SQL Server calculated area (area_km2_calc)
- *						Allow for 1% error
- *						Ignore small areas <= 10 km2
- * Note:				%% becomes % after substitution
- */
-	c1 CURSOR FOR
-		WITH a AS (
-			SELECT areaname,
-				   area_km2 AS area_km2,
-				   ST_Area(geography(geom_11))/(1000*1000) AS area_km2_calc
-			  FROM sahsu_grd_level4
-		), b AS (
-		SELECT SUBSTRING(a.areaname, 1, 30) AS areaname,
-			   a.area_km2,
-			   a.area_km2_calc,
-			   CASE WHEN a.area_km2 > 0 THEN 100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2)
-					WHEN a.area_km2 = a.area_km2_calc THEN 0
-					ELSE NULL
-			   END AS pct_km2_diff 
-		  FROM a
-		)
-		SELECT b.areaname, b.area_km2, b.area_km2_calc, b.pct_km2_diff
-		  FROM b
-		 WHERE b.pct_km2_diff > 1 /* Allow for 1% error */
-		   AND b.area_km2_calc > 10 /* Ignore small areas <= 10 km2 */;
-
-	c1_rec RECORD;
-	total INTEGER:=0;
-BEGIN
-	FOR c1_rec IN c1 LOOP
-		total:=total+1;
-		RAISE INFO 'Area: %, area km2: %:, calc: %, diff %',
-			c1_rec.areaname, c1_rec.area_km2, c1_rec.area_km2_calc, c1_rec.pct_km2_diff;
-	END LOOP;
-	IF total = 0 THEN
-		RAISE INFO 'Table: sahsu_grd_level4 no invalid areas check OK';
-	ELSE
-		RAISE EXCEPTION 'Table: sahsu_grd_level4 no invalid areas check FAILED: % invalid', total;
-	END IF;
-END;
-$$;
-
 --
 -- Create spatial indexes
 --
 
--- SQL statement 188: Index geometry column for zoomlevel: 6 >>>
+-- SQL statement 184: Index geometry column for zoomlevel: 6 >>>
 CREATE INDEX sahsu_grd_level4_geom_6_gix ON sahsu_grd_level4 USING GIST (geom_6);
 
--- SQL statement 189: Index geometry column for zoomlevel: 7 >>>
+-- SQL statement 185: Index geometry column for zoomlevel: 7 >>>
 CREATE INDEX sahsu_grd_level4_geom_7_gix ON sahsu_grd_level4 USING GIST (geom_7);
 
--- SQL statement 190: Index geometry column for zoomlevel: 8 >>>
+-- SQL statement 186: Index geometry column for zoomlevel: 8 >>>
 CREATE INDEX sahsu_grd_level4_geom_8_gix ON sahsu_grd_level4 USING GIST (geom_8);
 
--- SQL statement 191: Index geometry column for zoomlevel: 9 >>>
+-- SQL statement 187: Index geometry column for zoomlevel: 9 >>>
 CREATE INDEX sahsu_grd_level4_geom_9_gix ON sahsu_grd_level4 USING GIST (geom_9);
 
--- SQL statement 192: Index geometry column for zoomlevel: 10 >>>
+-- SQL statement 188: Index geometry column for zoomlevel: 10 >>>
 CREATE INDEX sahsu_grd_level4_geom_10_gix ON sahsu_grd_level4 USING GIST (geom_10);
 
--- SQL statement 193: Index geometry column for zoomlevel: 11 >>>
+-- SQL statement 189: Index geometry column for zoomlevel: 11 >>>
 CREATE INDEX sahsu_grd_level4_geom_11_gix ON sahsu_grd_level4 USING GIST (geom_11);
 
--- SQL statement 194: Index geometry column for original SRID geometry >>>
+-- SQL statement 190: Index geometry column for original SRID geometry >>>
 CREATE INDEX sahsu_grd_level4_geom_orig_gix ON sahsu_grd_level4 USING GIST (geom_orig);
 
 --
 -- Reports
 --
 
--- SQL statement 196: Areas and centroids report >>>
+-- SQL statement 192: Areas and centroids report >>>
 /*
  * SQL statement name: 	area_centroid_report.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -2977,16 +2773,16 @@ SELECT a.areaname,
 -- Drop dependent objects: tiles view and generate_series() [MS SQL Server only]
 --
 
--- SQL statement 199: Drop dependent object - view tiles_sahsuland >>>
+-- SQL statement 195: Drop dependent object - view tiles_sahsuland >>>
 DROP VIEW IF EXISTS tiles_sahsuland;
 
--- SQL statement 200: Drop dependent object - FK table geolevels_sahsuland >>>
+-- SQL statement 196: Drop dependent object - FK table geolevels_sahsuland >>>
 DROP TABLE IF EXISTS geolevels_sahsuland;
 
--- SQL statement 201: Drop table geography_sahsuland >>>
+-- SQL statement 197: Drop table geography_sahsuland >>>
 DROP TABLE IF EXISTS geography_sahsuland;
 
--- SQL statement 202: Create geography meta data table >>>
+-- SQL statement 198: Create geography meta data table >>>
 /*
  * SQL statement name: 	create_geography_table.sql
  * Type:				Common SQL statement
@@ -3001,6 +2797,7 @@ DROP TABLE IF EXISTS geography_sahsuland;
  *		  description character varying(250) NOT NULL, -- Description
  *		  hierarchytable character varying(30) NOT NULL, -- Hierarchy table
  *		  tiletable character varying(30) NOT NULL, -- Tile table
+ *		  adjacencytable character varying(30) NOT NULL, -- Adjacency table
  *		  geometrytable character varying(30) NOT NULL, -- Geometry table
  *		  srid integer DEFAULT 0, -- Postgres projection SRID
  *		  defaultcomparea character varying(30), -- Default comparison area
@@ -3022,6 +2819,7 @@ CREATE TABLE geography_sahsuland (
        hierarchytable          VARCHAR(30)  NOT NULL,
        geometrytable           VARCHAR(30)  NOT NULL,
        tiletable               VARCHAR(30)  NOT NULL,			/* New for DB */
+	   adjacencytable 		   VARCHAR(30) NOT NULL,			/* New for DB */
        srid                    INTEGER      NOT NULL DEFAULT 0,
        defaultcomparea         VARCHAR(30)  NULL,
        defaultstudyarea        VARCHAR(30)  NULL,
@@ -3037,7 +2835,7 @@ CREATE TABLE geography_sahsuland (
 			postal_population_table IS NOT NULL AND postal_point_column IS NOT NULL OR postal_population_table IS NULL AND postal_point_column IS NULL)
 	);
 
--- SQL statement 203: Comment geography meta data table >>>
+-- SQL statement 199: Comment geography meta data table >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3051,7 +2849,7 @@ COMMENT /*
  */
 	ON TABLE geography_sahsuland IS 'Hierarchial geographies. Usually based on Census geography';
 
--- SQL statement 204: Populate geography meta data table >>>
+-- SQL statement 200: Populate geography meta data table >>>
 /*
  * SQL statement name: 	insert_geography.sql
  * Type:				Common SQL statement
@@ -3071,21 +2869,23 @@ COMMENT /*
  *      				13: Postal point column (quote enclosed or NULL)
  *						14: Partition (0/1)
  *						15: Max geojson digits
+ *						16: adjacencytable; e.g. ADJACENCY_CB_2014_US_500K
  *
  * Description:			Insert into geography table
  * Note:				%% becomes % after substitution
  */
-INSERT INTO geography_SAHSULAND (
-geography, description, hierarchytable, geometrytable, tiletable, srid, defaultcomparea, defaultstudyarea, minzoomlevel, maxzoomlevel,
+INSERT INTO geography_sahsuland (
+geography, description, hierarchytable, geometrytable, tiletable, adjacencytable, srid, defaultcomparea, defaultstudyarea, minzoomlevel, maxzoomlevel,
 		postal_population_table, postal_point_column, partition, max_geojson_digits)
 SELECT 'SAHSULAND' AS geography,
        'SAHSU Example geography' AS description,
        'HIERARCHY_SAHSULAND' AS hierarchytable,
 	   'GEOMETRY_SAHSULAND' AS geometrytable,
 	   'TILES_SAHSULAND' AS tiletable,
+	   'ADJACENCY_SAHSULAND' AS adjacencytable,
        27700   AS srid,
-       'LEVEL1' AS defaultcomparea,
-       'LEVEL3' AS defaultstudyarea,
+       NULL AS defaultcomparea,	/* See: update_geography.sql */
+       NULL AS defaultstudyarea,
 	   6  AS minzoomlevel,
 	   11  AS maxzoomlevel,
 	   NULL  AS postal_population_table,
@@ -3093,7 +2893,7 @@ SELECT 'SAHSULAND' AS geography,
        1  AS partition, 
        6  AS max_geojson_digits;
 
--- SQL statement 205: Comment geography meta data column >>>
+-- SQL statement 201: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3108,7 +2908,7 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.geography IS 'Geography name';
 
--- SQL statement 206: Comment geography meta data column >>>
+-- SQL statement 202: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3123,7 +2923,7 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.description IS 'Description';
 
--- SQL statement 207: Comment geography meta data column >>>
+-- SQL statement 203: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3138,7 +2938,7 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.hierarchytable IS 'Hierarchy table';
 
--- SQL statement 208: Comment geography meta data column >>>
+-- SQL statement 204: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3153,7 +2953,7 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.geometrytable IS 'Geometry table';
 
--- SQL statement 209: Comment geography meta data column >>>
+-- SQL statement 205: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3168,7 +2968,7 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.tiletable IS 'Tile table';
 
--- SQL statement 210: Comment geography meta data column >>>
+-- SQL statement 206: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3183,7 +2983,7 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.srid IS 'Projection SRID';
 
--- SQL statement 211: Comment geography meta data column >>>
+-- SQL statement 207: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3198,7 +2998,7 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.defaultcomparea IS 'Default comparison area: lowest resolution geolevel';
 
--- SQL statement 212: Comment geography meta data column >>>
+-- SQL statement 208: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3213,7 +3013,7 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.defaultstudyarea IS 'Default study area: highest resolution geolevel';
 
--- SQL statement 213: Comment geography meta data column >>>
+-- SQL statement 209: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3228,7 +3028,7 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.minzoomlevel IS 'Min zoomlevel';
 
--- SQL statement 214: Comment geography meta data column >>>
+-- SQL statement 210: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3243,7 +3043,7 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.maxzoomlevel IS 'Max zoomlevel';
 
--- SQL statement 215: Comment geography meta data column >>>
+-- SQL statement 211: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3258,7 +3058,7 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.postal_population_table IS 'Postal_population_table';
 
--- SQL statement 216: Comment geography meta data column >>>
+-- SQL statement 212: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3273,7 +3073,7 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.postal_point_column IS 'Postal_point_column';
 
--- SQL statement 217: Comment geography meta data column >>>
+-- SQL statement 213: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3288,7 +3088,7 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.partition IS 'Partition geometry and tile tables (0/1)';
 
--- SQL statement 218: Comment geography meta data column >>>
+-- SQL statement 214: Comment geography meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3303,11 +3103,26 @@ COMMENT /*
  */
 	ON COLUMN geography_sahsuland.max_geojson_digits IS 'Maximum digits in geojson (topojson quantisation)';
 
+-- SQL statement 215: Comment geography meta data column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN geography_sahsuland.adjacencytable IS 'Adjacency table';
+
 --
 -- Geolevels meta data
 --
 
--- SQL statement 220: Create geolevels meta data table >>>
+-- SQL statement 217: Create geolevels meta data table >>>
 /*
  * SQL statement name: 	create_geolevels_table.sql
  * Type:				Common SQL statement
@@ -3376,7 +3191,7 @@ CREATE TABLE geolevels_sahsuland (
 	   CONSTRAINT geolevels_sahsuland_restricted_ck CHECK (restricted IN (0, 1))
 );
 
--- SQL statement 221: Comment geolevels meta data table >>>
+-- SQL statement 218: Comment geolevels meta data table >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3390,7 +3205,7 @@ COMMENT /*
  */
 	ON TABLE geolevels_sahsuland IS 'Geolevels: hierarchy of level within a geography';
 
--- SQL statement 222: Comment geolevels meta data column >>>
+-- SQL statement 219: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3405,7 +3220,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.geography IS 'Geography (e.g EW2001)';
 
--- SQL statement 223: Comment geolevels meta data column >>>
+-- SQL statement 220: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3420,7 +3235,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.geolevel_name IS 'Name of geolevel. This will be a column name in the numerator/denominator tables';
 
--- SQL statement 224: Comment geolevels meta data column >>>
+-- SQL statement 221: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3435,7 +3250,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
 
--- SQL statement 225: Comment geolevels meta data column >>>
+-- SQL statement 222: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3450,7 +3265,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.description IS 'Description';
 
--- SQL statement 226: Comment geolevels meta data column >>>
+-- SQL statement 223: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3465,7 +3280,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.lookup_table IS 'Lookup table name. This is used to translate codes to the common names, e.g a LADUA of 00BK is "Westminster"';
 
--- SQL statement 227: Comment geolevels meta data column >>>
+-- SQL statement 224: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3480,7 +3295,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.lookup_desc_column IS 'Lookup table description column name.';
 
--- SQL statement 228: Comment geolevels meta data column >>>
+-- SQL statement 225: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3495,7 +3310,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.shapefile IS 'Location of the GIS shape file. NULL if PostGress/PostGIS used. Can also use SHAPEFILE_GEOMETRY instead';
 
--- SQL statement 229: Comment geolevels meta data column >>>
+-- SQL statement 226: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3510,7 +3325,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.shapefile_table IS 'Table containing GIS shape file data.';
 
--- SQL statement 230: Comment geolevels meta data column >>>
+-- SQL statement 227: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3525,7 +3340,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.shapefile_area_id_column IS 'Column containing the AREA_IDs in SHAPEFILE_TABLE';
 
--- SQL statement 231: Comment geolevels meta data column >>>
+-- SQL statement 228: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3540,7 +3355,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.shapefile_desc_column IS 'Column containing the AREA_ID descriptions in SHAPEFILE_TABLE';
 
--- SQL statement 232: Comment geolevels meta data column >>>
+-- SQL statement 229: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3555,7 +3370,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.resolution IS 'Can use a map for selection at this resolution (0/1)';
 
--- SQL statement 233: Comment geolevels meta data column >>>
+-- SQL statement 230: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3570,7 +3385,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.comparea IS 'Able to be used as a comparison area (0/1)';
 
--- SQL statement 234: Comment geolevels meta data column >>>
+-- SQL statement 231: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3585,7 +3400,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.listing IS 'Able to be used in a disease map listing (0/1)';
 
--- SQL statement 235: Comment geolevels meta data column >>>
+-- SQL statement 232: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3600,7 +3415,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.areaid_count IS 'Total number of area IDs within the geolevel';
 
--- SQL statement 236: Comment geolevels meta data column >>>
+-- SQL statement 233: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3615,7 +3430,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.centroids_table IS 'Centroids table';
 
--- SQL statement 237: Comment geolevels meta data column >>>
+-- SQL statement 234: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3630,7 +3445,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.centroids_area_id_column IS 'Centroids area id column';
 
--- SQL statement 238: Comment geolevels meta data column >>>
+-- SQL statement 235: Comment geolevels meta data column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3645,7 +3460,7 @@ COMMENT /*
  */
 	ON COLUMN geolevels_sahsuland.covariate_table IS 'Covariate table';
 
--- SQL statement 239: Insert geolevels meta data for: sahsu_grd_level1 >>>
+-- SQL statement 236: Insert geolevels meta data for: sahsu_grd_level1 >>>
 /*
  * SQL statement name: 	insert_geolevel.sql
  * Type:				Common SQL statement
@@ -3685,10 +3500,10 @@ SELECT 'SAHSULAND' AS geography,
        'LEVEL1' AS shapefile_desc_column,
        1 AS resolution,
        1 AS comparea,
-       0 AS listing,
+       1 AS listing,
 	   NULL AS covariate_table;
 
--- SQL statement 240: Insert geolevels meta data for: sahsu_grd_level2 >>>
+-- SQL statement 237: Insert geolevels meta data for: sahsu_grd_level2 >>>
 /*
  * SQL statement name: 	insert_geolevel.sql
  * Type:				Common SQL statement
@@ -3731,7 +3546,7 @@ SELECT 'SAHSULAND' AS geography,
        1 AS listing,
 	   'COV_SAHSU_GRD_LEVEL2' AS covariate_table;
 
--- SQL statement 241: Insert geolevels meta data for: sahsu_grd_level3 >>>
+-- SQL statement 238: Insert geolevels meta data for: sahsu_grd_level3 >>>
 /*
  * SQL statement name: 	insert_geolevel.sql
  * Type:				Common SQL statement
@@ -3770,11 +3585,11 @@ SELECT 'SAHSULAND' AS geography,
        'LEVEL3' AS shapefile_area_id_column,
        'LEVEL3' AS shapefile_desc_column,
        1 AS resolution,
-       0 AS comparea,
+       1 AS comparea,
        1 AS listing,
 	   'COV_SAHSU_GRD_LEVEL3' AS covariate_table;
 
--- SQL statement 242: Insert geolevels meta data for: sahsu_grd_level4 >>>
+-- SQL statement 239: Insert geolevels meta data for: sahsu_grd_level4 >>>
 /*
  * SQL statement name: 	insert_geolevel.sql
  * Type:				Common SQL statement
@@ -3821,10 +3636,10 @@ SELECT 'SAHSULAND' AS geography,
 -- Create Geolevels lookup tables
 --
 
--- SQL statement 244: Drop table lookup_sahsu_grd_level1 >>>
+-- SQL statement 241: Drop table lookup_sahsu_grd_level1 >>>
 DROP TABLE IF EXISTS lookup_sahsu_grd_level1;
 
--- SQL statement 245: Create table lookup_sahsu_grd_level1 >>>
+-- SQL statement 242: Create table lookup_sahsu_grd_level1 >>>
 /*
  * SQL statement name: 	create_lookup_table.sql
  * Type:				Postgres/PostGIS psql
@@ -3844,7 +3659,7 @@ CREATE TABLE lookup_sahsu_grd_level1 (
 	PRIMARY KEY (sahsu_grd_level1)
 );
 
--- SQL statement 246: Comment table lookup_sahsu_grd_level1 >>>
+-- SQL statement 243: Comment table lookup_sahsu_grd_level1 >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3858,7 +3673,7 @@ COMMENT /*
  */
 	ON TABLE lookup_sahsu_grd_level1 IS 'Lookup table for Level 1 (top level)';
 
--- SQL statement 247: Comment lookup_sahsu_grd_level1 columns >>>
+-- SQL statement 244: Comment lookup_sahsu_grd_level1 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3873,7 +3688,7 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level1.sahsu_grd_level1 IS 'Area ID field';
 
--- SQL statement 248: Comment lookup_sahsu_grd_level1 columns >>>
+-- SQL statement 245: Comment lookup_sahsu_grd_level1 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3888,7 +3703,7 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level1.gid IS 'GID field';
 
--- SQL statement 249: Comment lookup_sahsu_grd_level1 columns >>>
+-- SQL statement 246: Comment lookup_sahsu_grd_level1 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3903,7 +3718,7 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level1.areaname IS 'Area Name field';
 
--- SQL statement 250: Comment lookup_sahsu_grd_level1 columns >>>
+-- SQL statement 247: Comment lookup_sahsu_grd_level1 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3918,10 +3733,10 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level1.geographic_centroid IS 'Geographic centroid';
 
--- SQL statement 251: Drop table lookup_sahsu_grd_level2 >>>
+-- SQL statement 248: Drop table lookup_sahsu_grd_level2 >>>
 DROP TABLE IF EXISTS lookup_sahsu_grd_level2;
 
--- SQL statement 252: Create table lookup_sahsu_grd_level2 >>>
+-- SQL statement 249: Create table lookup_sahsu_grd_level2 >>>
 /*
  * SQL statement name: 	create_lookup_table.sql
  * Type:				Postgres/PostGIS psql
@@ -3941,7 +3756,7 @@ CREATE TABLE lookup_sahsu_grd_level2 (
 	PRIMARY KEY (sahsu_grd_level2)
 );
 
--- SQL statement 253: Comment table lookup_sahsu_grd_level2 >>>
+-- SQL statement 250: Comment table lookup_sahsu_grd_level2 >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3955,7 +3770,7 @@ COMMENT /*
  */
 	ON TABLE lookup_sahsu_grd_level2 IS 'Lookup table for Level 2';
 
--- SQL statement 254: Comment lookup_sahsu_grd_level2 columns >>>
+-- SQL statement 251: Comment lookup_sahsu_grd_level2 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3970,7 +3785,7 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level2.sahsu_grd_level2 IS 'Area ID field';
 
--- SQL statement 255: Comment lookup_sahsu_grd_level2 columns >>>
+-- SQL statement 252: Comment lookup_sahsu_grd_level2 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -3985,7 +3800,7 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level2.gid IS 'GID field';
 
--- SQL statement 256: Comment lookup_sahsu_grd_level2 columns >>>
+-- SQL statement 253: Comment lookup_sahsu_grd_level2 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4000,7 +3815,7 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level2.areaname IS 'Area Name field';
 
--- SQL statement 257: Comment lookup_sahsu_grd_level2 columns >>>
+-- SQL statement 254: Comment lookup_sahsu_grd_level2 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4015,10 +3830,10 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level2.geographic_centroid IS 'Geographic centroid';
 
--- SQL statement 258: Drop table lookup_sahsu_grd_level3 >>>
+-- SQL statement 255: Drop table lookup_sahsu_grd_level3 >>>
 DROP TABLE IF EXISTS lookup_sahsu_grd_level3;
 
--- SQL statement 259: Create table lookup_sahsu_grd_level3 >>>
+-- SQL statement 256: Create table lookup_sahsu_grd_level3 >>>
 /*
  * SQL statement name: 	create_lookup_table.sql
  * Type:				Postgres/PostGIS psql
@@ -4038,7 +3853,7 @@ CREATE TABLE lookup_sahsu_grd_level3 (
 	PRIMARY KEY (sahsu_grd_level3)
 );
 
--- SQL statement 260: Comment table lookup_sahsu_grd_level3 >>>
+-- SQL statement 257: Comment table lookup_sahsu_grd_level3 >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4052,7 +3867,7 @@ COMMENT /*
  */
 	ON TABLE lookup_sahsu_grd_level3 IS 'Lookup table for Level 3';
 
--- SQL statement 261: Comment lookup_sahsu_grd_level3 columns >>>
+-- SQL statement 258: Comment lookup_sahsu_grd_level3 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4067,7 +3882,7 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level3.sahsu_grd_level3 IS 'Area ID field';
 
--- SQL statement 262: Comment lookup_sahsu_grd_level3 columns >>>
+-- SQL statement 259: Comment lookup_sahsu_grd_level3 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4082,7 +3897,7 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level3.gid IS 'GID field';
 
--- SQL statement 263: Comment lookup_sahsu_grd_level3 columns >>>
+-- SQL statement 260: Comment lookup_sahsu_grd_level3 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4097,7 +3912,7 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level3.areaname IS 'Area Name field';
 
--- SQL statement 264: Comment lookup_sahsu_grd_level3 columns >>>
+-- SQL statement 261: Comment lookup_sahsu_grd_level3 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4112,10 +3927,10 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level3.geographic_centroid IS 'Geographic centroid';
 
--- SQL statement 265: Drop table lookup_sahsu_grd_level4 >>>
+-- SQL statement 262: Drop table lookup_sahsu_grd_level4 >>>
 DROP TABLE IF EXISTS lookup_sahsu_grd_level4;
 
--- SQL statement 266: Create table lookup_sahsu_grd_level4 >>>
+-- SQL statement 263: Create table lookup_sahsu_grd_level4 >>>
 /*
  * SQL statement name: 	create_lookup_table.sql
  * Type:				Postgres/PostGIS psql
@@ -4135,7 +3950,7 @@ CREATE TABLE lookup_sahsu_grd_level4 (
 	PRIMARY KEY (sahsu_grd_level4)
 );
 
--- SQL statement 267: Comment table lookup_sahsu_grd_level4 >>>
+-- SQL statement 264: Comment table lookup_sahsu_grd_level4 >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4149,7 +3964,7 @@ COMMENT /*
  */
 	ON TABLE lookup_sahsu_grd_level4 IS 'Lookup table for Level 4';
 
--- SQL statement 268: Comment lookup_sahsu_grd_level4 columns >>>
+-- SQL statement 265: Comment lookup_sahsu_grd_level4 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4164,7 +3979,7 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level4.sahsu_grd_level4 IS 'Area ID field';
 
--- SQL statement 269: Comment lookup_sahsu_grd_level4 columns >>>
+-- SQL statement 266: Comment lookup_sahsu_grd_level4 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4179,7 +3994,7 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level4.gid IS 'GID field';
 
--- SQL statement 270: Comment lookup_sahsu_grd_level4 columns >>>
+-- SQL statement 267: Comment lookup_sahsu_grd_level4 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4194,7 +4009,7 @@ COMMENT /*
  */
 	ON COLUMN lookup_sahsu_grd_level4.areaname IS 'Area Name field';
 
--- SQL statement 271: Comment lookup_sahsu_grd_level4 columns >>>
+-- SQL statement 268: Comment lookup_sahsu_grd_level4 columns >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4213,7 +4028,7 @@ COMMENT /*
 -- Insert Geolevels lookup tables
 --
 
--- SQL statement 273: Insert table lookup_sahsu_grd_level1 >>>
+-- SQL statement 270: Insert table lookup_sahsu_grd_level1 >>>
 /*
  * SQL statement name: 	insert_lookup_table.sql
  * Type:				Postgres/PostGIS psql
@@ -4230,7 +4045,7 @@ SELECT areaid, areaname, ROW_NUMBER() OVER(ORDER BY areaid) AS gid, ST_AsGeoJSON
   FROM sahsu_grd_level1
  ORDER BY 1;
 
--- SQL statement 274: Insert table lookup_sahsu_grd_level2 >>>
+-- SQL statement 271: Insert table lookup_sahsu_grd_level2 >>>
 /*
  * SQL statement name: 	insert_lookup_table.sql
  * Type:				Postgres/PostGIS psql
@@ -4247,7 +4062,7 @@ SELECT areaid, areaname, ROW_NUMBER() OVER(ORDER BY areaid) AS gid, ST_AsGeoJSON
   FROM sahsu_grd_level2
  ORDER BY 1;
 
--- SQL statement 275: Insert table lookup_sahsu_grd_level3 >>>
+-- SQL statement 272: Insert table lookup_sahsu_grd_level3 >>>
 /*
  * SQL statement name: 	insert_lookup_table.sql
  * Type:				Postgres/PostGIS psql
@@ -4264,7 +4079,7 @@ SELECT areaid, areaname, ROW_NUMBER() OVER(ORDER BY areaid) AS gid, ST_AsGeoJSON
   FROM sahsu_grd_level3
  ORDER BY 1;
 
--- SQL statement 276: Insert table lookup_sahsu_grd_level4 >>>
+-- SQL statement 273: Insert table lookup_sahsu_grd_level4 >>>
 /*
  * SQL statement name: 	insert_lookup_table.sql
  * Type:				Postgres/PostGIS psql
@@ -4285,26 +4100,26 @@ SELECT areaid, areaname, ROW_NUMBER() OVER(ORDER BY areaid) AS gid, ST_AsGeoJSON
 -- Hierarchy table
 --
 
--- SQL statement 278: Drop table hierarchy_sahsuland >>>
+-- SQL statement 275: Drop table hierarchy_sahsuland >>>
 DROP TABLE IF EXISTS hierarchy_sahsuland;
 
--- SQL statement 279: Create table hierarchy_sahsuland >>>
+-- SQL statement 276: Create table hierarchy_sahsuland >>>
 CREATE TABLE hierarchy_sahsuland (
 	sahsu_grd_level1	VARCHAR(100)  NOT NULL,
 	sahsu_grd_level2	VARCHAR(100)  NOT NULL,
 	sahsu_grd_level3	VARCHAR(100)  NOT NULL,
 	sahsu_grd_level4	VARCHAR(100)  NOT NULL);
 
--- SQL statement 280: Add primary key hierarchy_sahsuland >>>
+-- SQL statement 277: Add primary key hierarchy_sahsuland >>>
 ALTER TABLE hierarchy_sahsuland ADD PRIMARY KEY (sahsu_grd_level4);
 
--- SQL statement 281: Add index key hierarchy_sahsuland_sahsu_grd_level2 >>>
+-- SQL statement 278: Add index key hierarchy_sahsuland_sahsu_grd_level2 >>>
 CREATE INDEX hierarchy_sahsuland_sahsu_grd_level2 ON hierarchy_sahsuland (sahsu_grd_level2);
 
--- SQL statement 282: Add index key hierarchy_sahsuland_sahsu_grd_level3 >>>
+-- SQL statement 279: Add index key hierarchy_sahsuland_sahsu_grd_level3 >>>
 CREATE INDEX hierarchy_sahsuland_sahsu_grd_level3 ON hierarchy_sahsuland (sahsu_grd_level3);
 
--- SQL statement 283: Comment table: hierarchy_sahsuland >>>
+-- SQL statement 280: Comment table: hierarchy_sahsuland >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4318,7 +4133,7 @@ COMMENT /*
  */
 	ON TABLE hierarchy_sahsuland IS 'Hierarchy lookup table for SAHSU Example geography';
 
--- SQL statement 284: Comment column: hierarchy_sahsuland.sahsu_grd_level1 >>>
+-- SQL statement 281: Comment column: hierarchy_sahsuland.sahsu_grd_level1 >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4333,7 +4148,7 @@ COMMENT /*
  */
 	ON COLUMN hierarchy_sahsuland.sahsu_grd_level1 IS 'Hierarchy lookup for Level 1 (top level)';
 
--- SQL statement 285: Comment column: hierarchy_sahsuland.sahsu_grd_level2 >>>
+-- SQL statement 282: Comment column: hierarchy_sahsuland.sahsu_grd_level2 >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4348,7 +4163,7 @@ COMMENT /*
  */
 	ON COLUMN hierarchy_sahsuland.sahsu_grd_level2 IS 'Hierarchy lookup for Level 2';
 
--- SQL statement 286: Comment column: hierarchy_sahsuland.sahsu_grd_level3 >>>
+-- SQL statement 283: Comment column: hierarchy_sahsuland.sahsu_grd_level3 >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4363,7 +4178,7 @@ COMMENT /*
  */
 	ON COLUMN hierarchy_sahsuland.sahsu_grd_level3 IS 'Hierarchy lookup for Level 3';
 
--- SQL statement 287: Comment column: hierarchy_sahsuland.sahsu_grd_level4 >>>
+-- SQL statement 284: Comment column: hierarchy_sahsuland.sahsu_grd_level4 >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4378,7 +4193,7 @@ COMMENT /*
  */
 	ON COLUMN hierarchy_sahsuland.sahsu_grd_level4 IS 'Hierarchy lookup for Level 4';
 
--- SQL statement 288: Create function check_hierarchy_sahsuland >>>
+-- SQL statement 285: Create function check_hierarchy_sahsuland >>>
 CREATE OR REPLACE FUNCTION check_hierarchy_sahsuland(l_geography VARCHAR, l_hierarchytable VARCHAR, l_type VARCHAR)
 RETURNS integer 
 SECURITY INVOKER
@@ -4550,7 +4365,7 @@ END;
 $body$
 LANGUAGE PLPGSQL;
 
--- SQL statement 289: Comment function check_hierarchy_sahsuland >>>
+-- SQL statement 286: Comment function check_hierarchy_sahsuland >>>
 COMMENT /*
  * SQL statement name: 	check_hierarchy_function_comment.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4609,7 +4424,7 @@ SELECT ARRAY[a2.cb_2014_us_state_500k_total, a3.cb_2014_us_county_500k_total] AS
 FROM a2, a3;
 ';
 
--- SQL statement 290: Insert into hierarchy_sahsuland >>>
+-- SQL statement 287: Insert into hierarchy_sahsuland >>>
 DO LANGUAGE plpgsql $$
 DECLARE
 /*
@@ -4880,7 +4695,7 @@ SELECT level1, level2, level3, level4,
 END;
 $$;
 
--- SQL statement 291: Check intersctions  for geograpy: sahsuland >>>
+-- SQL statement 288: Check intersctions  for geograpy: sahsuland >>>
 DO LANGUAGE plpgsql $$
 DECLARE
 /*
@@ -4937,10 +4752,10 @@ $$;
 -- Create geometry table
 --
 
--- SQL statement 293: Drop geometry table geometry_sahsuland >>>
+-- SQL statement 290: Drop geometry table geometry_sahsuland >>>
 DROP TABLE IF EXISTS geometry_sahsuland CASCADE;
 
--- SQL statement 294: Create geometry table geometry_sahsuland >>>
+-- SQL statement 291: Create geometry table geometry_sahsuland >>>
 /*
  * SQL statement name: 	create_geometry_table.sql
  * Type:				Common SQL statement
@@ -4956,7 +4771,7 @@ CREATE TABLE geometry_sahsuland (
 	areaid			VARCHAR(200)	NOT NULL,
 	zoomlevel		INTEGER			NOT NULL);
 
--- SQL statement 295: Add geom geometry column >>>
+-- SQL statement 292: Add geom geometry column >>>
 /*
  * SQL statement name: 	add_geometry_column2.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4974,7 +4789,7 @@ SELECT AddGeometryColumn('geometry_sahsuland','geom', 4326, 'MULTIPOLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 296: Comment geometry table >>>
+-- SQL statement 293: Comment geometry table >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -4988,7 +4803,7 @@ COMMENT /*
  */
 	ON TABLE geometry_sahsuland IS 'All geolevels geometry combined into a single table for a single geography';
 
--- SQL statement 297: Comment geometry table column >>>
+-- SQL statement 294: Comment geometry table column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -5003,7 +4818,7 @@ COMMENT /*
  */
 	ON COLUMN geometry_sahsuland.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
 
--- SQL statement 298: Comment geometry table column >>>
+-- SQL statement 295: Comment geometry table column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -5018,7 +4833,7 @@ COMMENT /*
  */
 	ON COLUMN geometry_sahsuland.zoomlevel IS 'Zoom level: 0 to maxoomlevel (11). Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11';
 
--- SQL statement 299: Comment geometry table column >>>
+-- SQL statement 296: Comment geometry table column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -5033,7 +4848,7 @@ COMMENT /*
  */
 	ON COLUMN geometry_sahsuland.areaid IS 'Area ID.';
 
--- SQL statement 300: Comment geometry table column >>>
+-- SQL statement 297: Comment geometry table column >>>
 COMMENT /*
  * SQL statement name: 	comment_column.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -5048,7 +4863,7 @@ COMMENT /*
  */
 	ON COLUMN geometry_sahsuland.geom IS 'Geometry data in SRID 4326 (WGS84).';
 
--- SQL statement 301: Create partitioned tables and insert function for geometry table; comment partitioned tables and columns >>>
+-- SQL statement 298: Create partitioned tables and insert function for geometry table; comment partitioned tables and columns >>>
 DO LANGUAGE plpgsql $$
 DECLARE
 /*
@@ -5120,7 +4935,7 @@ BEGIN
 END;
 $$;
 
--- SQL statement 302: Partition geometry table: insert trigger >>>
+-- SQL statement 299: Partition geometry table: insert trigger >>>
 /*
  * SQL statement name: 	partition_trigger.sql
  * Type:				Postgres/PostGIS psql
@@ -5134,7 +4949,7 @@ $$;
     BEFORE INSERT ON geometry_sahsuland
     FOR EACH ROW EXECUTE PROCEDURE geometry_sahsuland_insert_trigger();
 
--- SQL statement 303: Comment partition geometry table: insert trigger >>>
+-- SQL statement 300: Comment partition geometry table: insert trigger >>>
 /*
  * SQL statement name: 	comment_partition_trigger.sql
  * Type:				Postgres/PostGIS psql
@@ -5150,12 +4965,39 @@ $$;
 -- Insert geometry table
 --
 
--- SQL statement 305: Insert into geometry table >>>
+-- SQL statement 302: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 1 geolevel_id,
        areaid,
         6 AS zoomlevel,
        geom_6 AS geom
+  FROM sahsu_grd_level1
+ORDER BY 1, 3, 2;
+
+-- SQL statement 303: Insert into geometry table >>>
+INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
+SELECT 1 geolevel_id,
+       areaid,
+        7 AS zoomlevel,
+       geom_7 AS geom
+  FROM sahsu_grd_level1
+ORDER BY 1, 3, 2;
+
+-- SQL statement 304: Insert into geometry table >>>
+INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
+SELECT 1 geolevel_id,
+       areaid,
+        8 AS zoomlevel,
+       geom_8 AS geom
+  FROM sahsu_grd_level1
+ORDER BY 1, 3, 2;
+
+-- SQL statement 305: Insert into geometry table >>>
+INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
+SELECT 1 geolevel_id,
+       areaid,
+        9 AS zoomlevel,
+       geom_9 AS geom
   FROM sahsu_grd_level1
 ORDER BY 1, 3, 2;
 
@@ -5163,8 +5005,8 @@ ORDER BY 1, 3, 2;
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 1 geolevel_id,
        areaid,
-        7 AS zoomlevel,
-       geom_7 AS geom
+        10 AS zoomlevel,
+       geom_10 AS geom
   FROM sahsu_grd_level1
 ORDER BY 1, 3, 2;
 
@@ -5172,44 +5014,44 @@ ORDER BY 1, 3, 2;
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 1 geolevel_id,
        areaid,
-        8 AS zoomlevel,
-       geom_8 AS geom
+        11 AS zoomlevel,
+       geom_11 AS geom
   FROM sahsu_grd_level1
 ORDER BY 1, 3, 2;
 
 -- SQL statement 308: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
-SELECT 1 geolevel_id,
+SELECT 2 geolevel_id,
        areaid,
-        9 AS zoomlevel,
-       geom_9 AS geom
-  FROM sahsu_grd_level1
+        6 AS zoomlevel,
+       geom_6 AS geom
+  FROM sahsu_grd_level2
 ORDER BY 1, 3, 2;
 
 -- SQL statement 309: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
-SELECT 1 geolevel_id,
+SELECT 2 geolevel_id,
        areaid,
-        10 AS zoomlevel,
-       geom_10 AS geom
-  FROM sahsu_grd_level1
+        7 AS zoomlevel,
+       geom_7 AS geom
+  FROM sahsu_grd_level2
 ORDER BY 1, 3, 2;
 
 -- SQL statement 310: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
-SELECT 1 geolevel_id,
+SELECT 2 geolevel_id,
        areaid,
-        11 AS zoomlevel,
-       geom_11 AS geom
-  FROM sahsu_grd_level1
+        8 AS zoomlevel,
+       geom_8 AS geom
+  FROM sahsu_grd_level2
 ORDER BY 1, 3, 2;
 
 -- SQL statement 311: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 2 geolevel_id,
        areaid,
-        6 AS zoomlevel,
-       geom_6 AS geom
+        9 AS zoomlevel,
+       geom_9 AS geom
   FROM sahsu_grd_level2
 ORDER BY 1, 3, 2;
 
@@ -5217,8 +5059,8 @@ ORDER BY 1, 3, 2;
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 2 geolevel_id,
        areaid,
-        7 AS zoomlevel,
-       geom_7 AS geom
+        10 AS zoomlevel,
+       geom_10 AS geom
   FROM sahsu_grd_level2
 ORDER BY 1, 3, 2;
 
@@ -5226,44 +5068,44 @@ ORDER BY 1, 3, 2;
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 2 geolevel_id,
        areaid,
-        8 AS zoomlevel,
-       geom_8 AS geom
+        11 AS zoomlevel,
+       geom_11 AS geom
   FROM sahsu_grd_level2
 ORDER BY 1, 3, 2;
 
 -- SQL statement 314: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
-SELECT 2 geolevel_id,
+SELECT 3 geolevel_id,
        areaid,
-        9 AS zoomlevel,
-       geom_9 AS geom
-  FROM sahsu_grd_level2
+        6 AS zoomlevel,
+       geom_6 AS geom
+  FROM sahsu_grd_level3
 ORDER BY 1, 3, 2;
 
 -- SQL statement 315: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
-SELECT 2 geolevel_id,
+SELECT 3 geolevel_id,
        areaid,
-        10 AS zoomlevel,
-       geom_10 AS geom
-  FROM sahsu_grd_level2
+        7 AS zoomlevel,
+       geom_7 AS geom
+  FROM sahsu_grd_level3
 ORDER BY 1, 3, 2;
 
 -- SQL statement 316: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
-SELECT 2 geolevel_id,
+SELECT 3 geolevel_id,
        areaid,
-        11 AS zoomlevel,
-       geom_11 AS geom
-  FROM sahsu_grd_level2
+        8 AS zoomlevel,
+       geom_8 AS geom
+  FROM sahsu_grd_level3
 ORDER BY 1, 3, 2;
 
 -- SQL statement 317: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 3 geolevel_id,
        areaid,
-        6 AS zoomlevel,
-       geom_6 AS geom
+        9 AS zoomlevel,
+       geom_9 AS geom
   FROM sahsu_grd_level3
 ORDER BY 1, 3, 2;
 
@@ -5271,39 +5113,12 @@ ORDER BY 1, 3, 2;
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 3 geolevel_id,
        areaid,
-        7 AS zoomlevel,
-       geom_7 AS geom
-  FROM sahsu_grd_level3
-ORDER BY 1, 3, 2;
-
--- SQL statement 319: Insert into geometry table >>>
-INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
-SELECT 3 geolevel_id,
-       areaid,
-        8 AS zoomlevel,
-       geom_8 AS geom
-  FROM sahsu_grd_level3
-ORDER BY 1, 3, 2;
-
--- SQL statement 320: Insert into geometry table >>>
-INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
-SELECT 3 geolevel_id,
-       areaid,
-        9 AS zoomlevel,
-       geom_9 AS geom
-  FROM sahsu_grd_level3
-ORDER BY 1, 3, 2;
-
--- SQL statement 321: Insert into geometry table >>>
-INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
-SELECT 3 geolevel_id,
-       areaid,
         10 AS zoomlevel,
        geom_10 AS geom
   FROM sahsu_grd_level3
 ORDER BY 1, 3, 2;
 
--- SQL statement 322: Insert into geometry table >>>
+-- SQL statement 319: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 3 geolevel_id,
        areaid,
@@ -5312,7 +5127,7 @@ SELECT 3 geolevel_id,
   FROM sahsu_grd_level3
 ORDER BY 1, 3, 2;
 
--- SQL statement 323: Insert into geometry table >>>
+-- SQL statement 320: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 4 geolevel_id,
        areaid,
@@ -5321,7 +5136,7 @@ SELECT 4 geolevel_id,
   FROM sahsu_grd_level4
 ORDER BY 1, 3, 2;
 
--- SQL statement 324: Insert into geometry table >>>
+-- SQL statement 321: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 4 geolevel_id,
        areaid,
@@ -5330,7 +5145,7 @@ SELECT 4 geolevel_id,
   FROM sahsu_grd_level4
 ORDER BY 1, 3, 2;
 
--- SQL statement 325: Insert into geometry table >>>
+-- SQL statement 322: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 4 geolevel_id,
        areaid,
@@ -5339,7 +5154,7 @@ SELECT 4 geolevel_id,
   FROM sahsu_grd_level4
 ORDER BY 1, 3, 2;
 
--- SQL statement 326: Insert into geometry table >>>
+-- SQL statement 323: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 4 geolevel_id,
        areaid,
@@ -5348,7 +5163,7 @@ SELECT 4 geolevel_id,
   FROM sahsu_grd_level4
 ORDER BY 1, 3, 2;
 
--- SQL statement 327: Insert into geometry table >>>
+-- SQL statement 324: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 4 geolevel_id,
        areaid,
@@ -5357,7 +5172,7 @@ SELECT 4 geolevel_id,
   FROM sahsu_grd_level4
 ORDER BY 1, 3, 2;
 
--- SQL statement 328: Insert into geometry table >>>
+-- SQL statement 325: Insert into geometry table >>>
 INSERT INTO geometry_sahsuland(geolevel_id, areaid, zoomlevel, geom)
 SELECT 4 geolevel_id,
        areaid,
@@ -5366,7 +5181,7 @@ SELECT 4 geolevel_id,
   FROM sahsu_grd_level4
 ORDER BY 1, 3, 2;
 
--- SQL statement 329: Add primary key, index and cluster (convert to index organized table) >>>
+-- SQL statement 326: Add primary key, index and cluster (convert to index organized table) >>>
 DO LANGUAGE plpgsql $$
 DECLARE
 /*
@@ -5411,7 +5226,7 @@ BEGIN
 END;
 $$;
 
--- SQL statement 330: Update areaid_count column in geolevels table using geometry table >>>
+-- SQL statement 327: Update areaid_count column in geolevels table using geometry table >>>
 /*
  * SQL statement name: 	geolevels_areaid_update.sql
  * Type:				Postgres SQL statement
@@ -5429,10 +5244,140 @@ UPDATE geolevels_sahsuland a
 			 WHERE a.geolevel_id = b.geolevel_id);
 
 --
+-- Adjacency table
+--
+
+-- SQL statement 329: Drop table hierarchy_sahsuland >>>
+DROP TABLE IF EXISTS adjacency_sahsuland;
+
+-- SQL statement 330: Create table adjacency_sahsuland >>>
+/*
+ * SQL statement name: 	create_adjacency_table.sql
+ * Type:				Common SQL statement
+ * Parameters:
+ *						1: adjacency table; e.g. adjacency_cb_2014_us_500k
+ *						2: schema; e.g.rif_data. or ""
+ *
+ * Description:			Create adjacency table
+ * Note:				% becomes % after substitution
+ */
+CREATE TABLE adjacency_sahsuland (
+	geolevel_id		INTEGER			NOT NULL,
+	areaid			VARCHAR(200)	NOT NULL,
+	num_adjacencies INTEGER			NOT NULL,
+	adjacency_list	VARCHAR(8000)	NOT NULL,
+	CONSTRAINT adjacency_sahsuland_pk PRIMARY KEY (geolevel_id, areaid)
+);
+
+-- SQL statement 331: Comment table: adjacency_sahsuland >>>
+COMMENT /*
+ * SQL statement name: 	comment_table.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. cb_2014_us_county_500k
+ *						2: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON TABLE adjacency_sahsuland IS 'Adjacency lookup table for SAHSU Example geography';
+
+-- SQL statement 332: Comment column: adjacency_sahsuland.geolevel_id >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN adjacency_sahsuland.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
+
+-- SQL statement 333: Comment column: adjacency_sahsuland.areaid >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN adjacency_sahsuland.areaid IS 'Area Id';
+
+-- SQL statement 334: Comment column: adjacency_sahsuland.num_adjacencies >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN adjacency_sahsuland.num_adjacencies IS 'Number of adjacencies';
+
+-- SQL statement 335: Comment column: adjacency_sahsuland.adjacency_list >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN adjacency_sahsuland.adjacency_list IS 'Adjacent area Ids';
+
+-- SQL statement 336: Insert into adjacency_sahsuland >>>
+/*
+ * SQL statement name: 	insert_adjacency.sql
+ * Type:				Postgres/PostGIS SQL
+ * Parameters:
+ *						1: adjacency table; e.g. adjacency_cb_2014_us_500k
+ *						2: geometry table; e.g. geometry_cb_2014_us_500k
+ *						3: Max zoomlevel
+ *
+ * Description:			Create insert statement into adjacency table
+ * Note:				%% becomes % after substitution
+ */
+INSERT INTO adjacency_sahsuland(geolevel_id, areaid, num_adjacencies, adjacency_list)
+WITH a AS (
+	SELECT a.geolevel_id, a.areaid, b.areaid AS adjacent_areaid
+	  FROM geometry_sahsuland a, geometry_sahsuland b
+	 WHERE a.zoomlevel   = 11
+	   AND b.zoomlevel   = 11
+	   AND a.geolevel_id = b.geolevel_id
+	   AND a.areaid      != b.areaid
+	   AND a.geom        && b.geom 			/* Bounding box intersect first for efficiency */
+	   AND ST_Intersects(a.geom, b.geom)
+)
+SELECT geolevel_id, areaid,
+	   COUNT(adjacent_areaid) AS num_adjacencies, 
+	   STRING_AGG(adjacent_areaid, ',' ORDER BY adjacent_areaid)::VARCHAR AS adjacency_list
+  FROM a
+ GROUP BY geolevel_id, areaid
+ ORDER BY 1, 2;
+
+--
 -- Create tiles functions
 --
 
--- SQL statement 332: Create function: longitude2tile.sql >>>
+-- SQL statement 338: Create function: longitude2tile.sql >>>
 /*
  * SQL statement name: 	longitude2tile.sql
  * Type:				Postgres/PostGIS PL/pgsql function
@@ -5471,7 +5416,7 @@ y = [1 - (y / p)] / 2
 * Calculate the number of tiles across the map, n, using 2**zoom
 * Multiply x and y by n. Round results down to give tilex and tiley.';
 
--- SQL statement 333: Create function: latitude2tile.sql >>>
+-- SQL statement 339: Create function: latitude2tile.sql >>>
 /*
  * SQL statement name: 	latitude2tile.sql
  * Type:				Postgres/PostGIS PL/pgsql function
@@ -5510,7 +5455,7 @@ y = [1 - (y / p)] / 2
 * Calculate the number of tiles across the map, n, using 2**zoom
 * Multiply x and y by n. Round results down to give tilex and tiley.';
 
--- SQL statement 334: Create function: tile2longitude.sql >>>
+-- SQL statement 340: Create function: tile2longitude.sql >>>
 /*
  * SQL statement name: 	tile2longitude.sql
  * Type:				Postgres/PostGIS PL/pgsql function
@@ -5533,7 +5478,7 @@ Parameters:	 OSM Tile x, zoom level
 Returns:	 Longitude
 Description: Convert OSM tile x to longitude (WGS84 - 4326)';
 
--- SQL statement 335: Create function: tile2latitude.sql >>>
+-- SQL statement 341: Create function: tile2latitude.sql >>>
 /*
  * SQL statement name: 	tileMaker_tile2latitude.sql
  * Type:				Postgres/PostGIS PL/pgsql function
@@ -5564,7 +5509,7 @@ Parameters:	 OSM Tile y, zoom level
 Returns:	 Latitude
 Description: Convert OSM tile y to latitude (WGS84 - 4326)';
 
--- SQL statement 336: Tile check >>>
+-- SQL statement 342: Tile check >>>
 /*
  * SQL statement name: 	tile_check.sql
  * Type:				Postgres/PostGIS PL/pgsql function
@@ -5634,10 +5579,10 @@ SELECT * FROM d;
 -- Create tiles tables
 --
 
--- SQL statement 338: Drop table t_tiles_sahsuland >>>
+-- SQL statement 344: Drop table t_tiles_sahsuland >>>
 DROP TABLE IF EXISTS t_tiles_sahsuland;
 
--- SQL statement 339: Create tiles table >>>
+-- SQL statement 345: Create tiles table >>>
 /*
  * SQL statement name: 	create_tiles_table.sql
  * Type:				Common SQL statement
@@ -5659,7 +5604,7 @@ CREATE TABLE t_tiles_sahsuland (
 	areaid_count		INTEGER			NOT NULL,
 	PRIMARY KEY (tile_id));
 
--- SQL statement 340: Comment tiles table >>>
+-- SQL statement 346: Comment tiles table >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -5672,96 +5617,6 @@ COMMENT /*
  * Note:				%% becomes % after substitution
  */
 	ON TABLE t_tiles_sahsuland IS 'Maptiles for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11';
-
--- SQL statement 341: Comment tiles table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN t_tiles_sahsuland.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
-
--- SQL statement 342: Comment tiles table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN t_tiles_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11';
-
--- SQL statement 343: Comment tiles table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN t_tiles_sahsuland.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
-
--- SQL statement 344: Comment tiles table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN t_tiles_sahsuland.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
-
--- SQL statement 345: Comment tiles table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN t_tiles_sahsuland.optimised_topojson IS 'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.';
-
--- SQL statement 346: Comment tiles table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN t_tiles_sahsuland.tile_id IS 'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>';
 
 -- SQL statement 347: Comment tiles table column >>>
 COMMENT /*
@@ -5776,21 +5631,111 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
+	ON COLUMN t_tiles_sahsuland.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
+
+-- SQL statement 348: Comment tiles table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN t_tiles_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11';
+
+-- SQL statement 349: Comment tiles table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN t_tiles_sahsuland.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
+
+-- SQL statement 350: Comment tiles table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN t_tiles_sahsuland.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
+
+-- SQL statement 351: Comment tiles table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN t_tiles_sahsuland.optimised_topojson IS 'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.';
+
+-- SQL statement 352: Comment tiles table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN t_tiles_sahsuland.tile_id IS 'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>';
+
+-- SQL statement 353: Comment tiles table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
 	ON COLUMN t_tiles_sahsuland.areaid_count IS 'Total number of areaIDs (geoJSON features)';
 
--- SQL statement 348: Add tiles index: t_tiles_sahsuland_x_tile >>>
+-- SQL statement 354: Add tiles index: t_tiles_sahsuland_x_tile >>>
 CREATE INDEX t_tiles_sahsuland_x_tile ON t_tiles_sahsuland (geolevel_id, zoomlevel, x);
 
--- SQL statement 349: Add tiles index: t_tiles_sahsuland_y_tile >>>
+-- SQL statement 355: Add tiles index: t_tiles_sahsuland_y_tile >>>
 CREATE INDEX t_tiles_sahsuland_y_tile ON t_tiles_sahsuland (geolevel_id, zoomlevel, x);
 
--- SQL statement 350: Add tiles index: t_tiles_sahsuland_xy_tile >>>
+-- SQL statement 356: Add tiles index: t_tiles_sahsuland_xy_tile >>>
 CREATE INDEX t_tiles_sahsuland_xy_tile ON t_tiles_sahsuland (geolevel_id, zoomlevel, x, y);
 
--- SQL statement 351: Add tiles index: t_tiles_sahsuland_areaid_count >>>
+-- SQL statement 357: Add tiles index: t_tiles_sahsuland_areaid_count >>>
 CREATE INDEX t_tiles_sahsuland_areaid_count ON t_tiles_sahsuland (areaid_count);
 
--- SQL statement 352: Create tiles view >>>
+-- SQL statement 358: Create tiles view >>>
 /*
  * SQL statement name: 	create_tiles_view.sql
  * Type:				Postgres/PostGIS SQL statement
@@ -5881,7 +5826,7 @@ SELECT z.geography,
 				h2.y           = 0 AND 
 				h2.geolevel_id = 1);
 
--- SQL statement 353: Comment tiles view >>>
+-- SQL statement 359: Comment tiles view >>>
 COMMENT /*
  * SQL statement name: 	comment_view.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -5894,96 +5839,6 @@ COMMENT /*
  * Note:				%% becomes % after substitution
  */
 	ON VIEW tiles_sahsuland IS 'Maptiles view for geography; empty tiles are added to complete zoomlevels for zoomlevels 0 to 11. This view is efficent!';
-
--- SQL statement 354: Comment tiles view column >>>
-COMMENT /*
- * SQL statement name: 	comment_view_column.sql
- * Type:				Postgres/PostGIS psql
- * Parameters:
- *						1: view; e.g. tiles_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tiles_sahsuland.geography IS 'Geography';
-
--- SQL statement 355: Comment tiles view column >>>
-COMMENT /*
- * SQL statement name: 	comment_view_column.sql
- * Type:				Postgres/PostGIS psql
- * Parameters:
- *						1: view; e.g. tiles_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tiles_sahsuland.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
-
--- SQL statement 356: Comment tiles view column >>>
-COMMENT /*
- * SQL statement name: 	comment_view_column.sql
- * Type:				Postgres/PostGIS psql
- * Parameters:
- *						1: view; e.g. tiles_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tiles_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11';
-
--- SQL statement 357: Comment tiles view column >>>
-COMMENT /*
- * SQL statement name: 	comment_view_column.sql
- * Type:				Postgres/PostGIS psql
- * Parameters:
- *						1: view; e.g. tiles_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tiles_sahsuland.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
-
--- SQL statement 358: Comment tiles view column >>>
-COMMENT /*
- * SQL statement name: 	comment_view_column.sql
- * Type:				Postgres/PostGIS psql
- * Parameters:
- *						1: view; e.g. tiles_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tiles_sahsuland.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
-
--- SQL statement 359: Comment tiles view column >>>
-COMMENT /*
- * SQL statement name: 	comment_view_column.sql
- * Type:				Postgres/PostGIS psql
- * Parameters:
- *						1: view; e.g. tiles_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tiles_sahsuland.optimised_topojson IS 'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.';
 
 -- SQL statement 360: Comment tiles view column >>>
 COMMENT /*
@@ -5998,7 +5853,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tiles_sahsuland.tile_id IS 'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>';
+	ON COLUMN tiles_sahsuland.geography IS 'Geography';
 
 -- SQL statement 361: Comment tiles view column >>>
 COMMENT /*
@@ -6013,9 +5868,99 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tiles_sahsuland.geolevel_name IS 'Name of geolevel. This will be a column name in the numerator/denominator tables';
+	ON COLUMN tiles_sahsuland.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
 
 -- SQL statement 362: Comment tiles view column >>>
+COMMENT /*
+ * SQL statement name: 	comment_view_column.sql
+ * Type:				Postgres/PostGIS psql
+ * Parameters:
+ *						1: view; e.g. tiles_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tiles_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11';
+
+-- SQL statement 363: Comment tiles view column >>>
+COMMENT /*
+ * SQL statement name: 	comment_view_column.sql
+ * Type:				Postgres/PostGIS psql
+ * Parameters:
+ *						1: view; e.g. tiles_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tiles_sahsuland.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
+
+-- SQL statement 364: Comment tiles view column >>>
+COMMENT /*
+ * SQL statement name: 	comment_view_column.sql
+ * Type:				Postgres/PostGIS psql
+ * Parameters:
+ *						1: view; e.g. tiles_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tiles_sahsuland.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
+
+-- SQL statement 365: Comment tiles view column >>>
+COMMENT /*
+ * SQL statement name: 	comment_view_column.sql
+ * Type:				Postgres/PostGIS psql
+ * Parameters:
+ *						1: view; e.g. tiles_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tiles_sahsuland.optimised_topojson IS 'Tile multipolygon in TopoJSON format, optimised for zoomlevel N. The SRID is always 4326.';
+
+-- SQL statement 366: Comment tiles view column >>>
+COMMENT /*
+ * SQL statement name: 	comment_view_column.sql
+ * Type:				Postgres/PostGIS psql
+ * Parameters:
+ *						1: view; e.g. tiles_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tiles_sahsuland.tile_id IS 'Tile ID in the format <geolevel number>_<geolevel name>_<zoomlevel>_<X tile number>_<Y tile number>';
+
+-- SQL statement 367: Comment tiles view column >>>
+COMMENT /*
+ * SQL statement name: 	comment_view_column.sql
+ * Type:				Postgres/PostGIS psql
+ * Parameters:
+ *						1: view; e.g. tiles_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tiles_sahsuland.geolevel_name IS 'Name of geolevel. This will be a column name in the numerator/denominator tables';
+
+-- SQL statement 368: Comment tiles view column >>>
 COMMENT /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Postgres/PostGIS psql
@@ -6034,10 +5979,10 @@ COMMENT /*
 -- Create tile limits table
 --
 
--- SQL statement 364: Drop table tile_limits_sahsuland >>>
+-- SQL statement 370: Drop table tile_limits_sahsuland >>>
 DROP TABLE IF EXISTS tile_limits_sahsuland;
 
--- SQL statement 365: Create table tile_limits_sahsuland >>>
+-- SQL statement 371: Create table tile_limits_sahsuland >>>
 /*
  * SQL statement name: 	create_tile_limits_table.sql
  * Type:				Postgres/PostGIS psql
@@ -6086,7 +6031,7 @@ SELECT d.*,
        ST_MakeEnvelope(d.x_min, d.y_min, d.x_max, d.y_max, 4326) AS bbox
   FROM d;
 
--- SQL statement 366: Comment tile limits table >>>
+-- SQL statement 372: Comment tile limits table >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -6099,96 +6044,6 @@ COMMENT /*
  * Note:				%% becomes % after substitution
  */
 	ON TABLE tile_limits_sahsuland IS 'Tile limits';
-
--- SQL statement 367: Comment tile limits table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_limits_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at max zooomlevel (11)';
-
--- SQL statement 368: Comment tile limits table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_limits_sahsuland.x_min IS 'Min X (longitude)';
-
--- SQL statement 369: Comment tile limits table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_limits_sahsuland.x_max IS 'Max X (longitude)';
-
--- SQL statement 370: Comment tile limits table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_limits_sahsuland.y_min IS 'Min Y (latitude)';
-
--- SQL statement 371: Comment tile limits table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_limits_sahsuland.y_max IS 'Max Y (latitude)';
-
--- SQL statement 372: Comment tile limits table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_limits_sahsuland.y_mintile IS 'Min Y tile number (latitude)';
 
 -- SQL statement 373: Comment tile limits table column >>>
 COMMENT /*
@@ -6203,7 +6058,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_limits_sahsuland.y_maxtile IS 'Max Y tile number (latitude)';
+	ON COLUMN tile_limits_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at max zooomlevel (11)';
 
 -- SQL statement 374: Comment tile limits table column >>>
 COMMENT /*
@@ -6218,7 +6073,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_limits_sahsuland.x_mintile IS 'Min X tile number (longitude)';
+	ON COLUMN tile_limits_sahsuland.x_min IS 'Min X (longitude)';
 
 -- SQL statement 375: Comment tile limits table column >>>
 COMMENT /*
@@ -6233,7 +6088,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_limits_sahsuland.x_maxtile IS 'Max X tile number (longitude)';
+	ON COLUMN tile_limits_sahsuland.x_max IS 'Max X (longitude)';
 
 -- SQL statement 376: Comment tile limits table column >>>
 COMMENT /*
@@ -6248,21 +6103,111 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
+	ON COLUMN tile_limits_sahsuland.y_min IS 'Min Y (latitude)';
+
+-- SQL statement 377: Comment tile limits table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_limits_sahsuland.y_max IS 'Max Y (latitude)';
+
+-- SQL statement 378: Comment tile limits table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_limits_sahsuland.y_mintile IS 'Min Y tile number (latitude)';
+
+-- SQL statement 379: Comment tile limits table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_limits_sahsuland.y_maxtile IS 'Max Y tile number (latitude)';
+
+-- SQL statement 380: Comment tile limits table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_limits_sahsuland.x_mintile IS 'Min X tile number (longitude)';
+
+-- SQL statement 381: Comment tile limits table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_limits_sahsuland.x_maxtile IS 'Max X tile number (longitude)';
+
+-- SQL statement 382: Comment tile limits table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
 	ON COLUMN tile_limits_sahsuland.bbox IS 'Bounding box polygon for geolevel_id 1 area';
 
--- SQL statement 377: Add primary key >>>
+-- SQL statement 383: Add primary key >>>
 ALTER TABLE tile_limits_sahsuland ADD PRIMARY KEY (zoomlevel);
 
--- SQL statement 378: Analyze table >>>
+-- SQL statement 384: Analyze table >>>
 ANALYZE tile_limits_sahsuland;
 
--- SQL statement 379: Analyze table >>>
+-- SQL statement 385: Analyze table >>>
 SELECT zoomlevel, x_min, x_max, y_min, y_max, y_mintile, y_maxtile, x_mintile, x_maxtile FROM tile_limits_sahsuland;
 
--- SQL statement 380: Drop table tile_intersects_sahsuland >>>
+-- SQL statement 386: Drop table tile_intersects_sahsuland >>>
 DROP TABLE IF EXISTS tile_intersects_sahsuland CASCADE;
 
--- SQL statement 381: Create tile intersects table >>>
+-- SQL statement 387: Create tile intersects table >>>
 /*
  * SQL statement name: 	create_tile_intersects_table.sql
  * Type:				Common SQL statement
@@ -6284,7 +6229,7 @@ CREATE TABLE tile_intersects_sahsuland (
 	within					BOOLEAN				NOT NULL
 );
 
--- SQL statement 382: Add geometry column: bbox >>>
+-- SQL statement 388: Add geometry column: bbox >>>
 /*
  * SQL statement name: 	add_geometry_column2.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -6302,7 +6247,7 @@ SELECT AddGeometryColumn('tile_intersects_sahsuland','bbox', 4326, 'POLYGON',
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 383: Add geometry column: geom >>>
+-- SQL statement 389: Add geometry column: geom >>>
 /*
  * SQL statement name: 	add_geometry_column2.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -6320,7 +6265,7 @@ SELECT AddGeometryColumn('tile_intersects_sahsuland','geom', 4326, 'MULTIPOLYGON
 			2 		/* Dimension */, 
 			false 	/* use typmod geometry column instead of constraint-based */);
 
--- SQL statement 384: Comment tile intersects table >>>
+-- SQL statement 390: Comment tile intersects table >>>
 COMMENT /*
  * SQL statement name: 	comment_table.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -6333,96 +6278,6 @@ COMMENT /*
  * Note:				%% becomes % after substitution
  */
 	ON TABLE tile_intersects_sahsuland IS 'Tile area id intersects';
-
--- SQL statement 385: Comment tile intersects table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_intersects_sahsuland.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
-
--- SQL statement 386: Comment tile intersects table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_intersects_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11';
-
--- SQL statement 387: Comment tile intersects table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_intersects_sahsuland.areaid IS 'Area ID';
-
--- SQL statement 388: Comment tile intersects table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_intersects_sahsuland.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
-
--- SQL statement 389: Comment tile intersects table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_intersects_sahsuland.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
-
--- SQL statement 390: Comment tile intersects table column >>>
-COMMENT /*
- * SQL statement name: 	comment_column.sql
- * Type:				Postgres/PostGIS PL/pgsql anonymous block
- * Parameters:
- *						1: table; e.g. geolevels_cb_2014_us_county_500k
- *						2: column; e.g. geolevel_name
- *						3: comment. Usual rules for comment text in SQK - single 
- *									quotes (') need to be double ('')
- *
- * Description:			Comment table
- * Note:				%% becomes % after substitution
- */
-	ON COLUMN tile_intersects_sahsuland.optimised_geojson IS 'Tile areaid intersect multipolygon in GeoJSON format, optimised for zoomlevel N.';
 
 -- SQL statement 391: Comment tile intersects table column >>>
 COMMENT /*
@@ -6437,7 +6292,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_intersects_sahsuland.within IS 'Defined as: ST_Within(bbox, geom). Used to exclude any tile bounding completely within the area.';
+	ON COLUMN tile_intersects_sahsuland.geolevel_id IS 'ID for ordering (1=lowest resolution). Up to 99 supported.';
 
 -- SQL statement 392: Comment tile intersects table column >>>
 COMMENT /*
@@ -6452,7 +6307,7 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
-	ON COLUMN tile_intersects_sahsuland.bbox IS 'Bounding box of tile as a polygon.';
+	ON COLUMN tile_intersects_sahsuland.zoomlevel IS 'Zoom level: 0 to 11. Number of tiles is 2**<zoom level> * 2**<zoom level>; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11';
 
 -- SQL statement 393: Comment tile intersects table column >>>
 COMMENT /*
@@ -6467,9 +6322,99 @@ COMMENT /*
  * Description:			Comment table
  * Note:				%% becomes % after substitution
  */
+	ON COLUMN tile_intersects_sahsuland.areaid IS 'Area ID';
+
+-- SQL statement 394: Comment tile intersects table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_intersects_sahsuland.x IS 'X tile number. From 0 to (2**<zoomlevel>)-1';
+
+-- SQL statement 395: Comment tile intersects table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_intersects_sahsuland.y IS 'Y tile number. From 0 to (2**<zoomlevel>)-1';
+
+-- SQL statement 396: Comment tile intersects table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_intersects_sahsuland.optimised_geojson IS 'Tile areaid intersect multipolygon in GeoJSON format, optimised for zoomlevel N.';
+
+-- SQL statement 397: Comment tile intersects table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_intersects_sahsuland.within IS 'Defined as: ST_Within(bbox, geom). Used to exclude any tile bounding completely within the area.';
+
+-- SQL statement 398: Comment tile intersects table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
+	ON COLUMN tile_intersects_sahsuland.bbox IS 'Bounding box of tile as a polygon.';
+
+-- SQL statement 399: Comment tile intersects table column >>>
+COMMENT /*
+ * SQL statement name: 	comment_column.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: table; e.g. geolevels_cb_2014_us_county_500k
+ *						2: column; e.g. geolevel_name
+ *						3: comment. Usual rules for comment text in SQK - single 
+ *									quotes (') need to be double ('')
+ *
+ * Description:			Comment table
+ * Note:				%% becomes % after substitution
+ */
 	ON COLUMN tile_intersects_sahsuland.geom IS 'Geometry of area.';
 
--- SQL statement 394: Create partitioned tables and insert function for tile intersects table; comment partitioned tables and columns >>>
+-- SQL statement 400: Create partitioned tables and insert function for tile intersects table; comment partitioned tables and columns >>>
 DO LANGUAGE plpgsql $$
 DECLARE
 /*
@@ -6587,7 +6532,7 @@ BEGIN
 END;
 $$ ;
 
--- SQL statement 395: Partition tile intersects table: insert trigger >>>
+-- SQL statement 401: Partition tile intersects table: insert trigger >>>
 /*
  * SQL statement name: 	partition_trigger.sql
  * Type:				Postgres/PostGIS psql
@@ -6601,7 +6546,7 @@ $$ ;
     BEFORE INSERT ON tile_intersects_sahsuland
     FOR EACH ROW EXECUTE PROCEDURE tile_intersects_sahsuland_insert_trigger();
 
--- SQL statement 396: Comment partition tile intersects table: insert trigger >>>
+-- SQL statement 402: Comment partition tile intersects table: insert trigger >>>
 /*
  * SQL statement name: 	comment_partition_trigger.sql
  * Type:				Postgres/PostGIS psql
@@ -6613,7 +6558,7 @@ $$ ;
  */
  COMMENT ON TRIGGER insert_tile_intersects_sahsuland_trigger ON tile_intersects_sahsuland IS 'Partitioned tables insert trigger';
 
--- SQL statement 397: INSERT into tile intersects table >>>
+-- SQL statement 403: INSERT into tile intersects table >>>
 /*
  * SQL statement name: 	tile_intersects_insert.sql
  * Type:				Postgres/PostGIS SQL
@@ -6678,13 +6623,13 @@ SELECT c.geolevel_id,
   FROM c
  ORDER BY c.geolevel_id, c.zoomlevel, c.x, c.y;
 
--- SQL statement 398: Add primary key >>>
+-- SQL statement 404: Add primary key >>>
 ALTER TABLE tile_intersects_sahsuland ADD PRIMARY KEY (geolevel_id, zoomlevel, areaid, x, y);
 
--- SQL statement 399: Analyze table >>>
+-- SQL statement 405: Analyze table >>>
 ANALYZE tile_intersects_sahsuland;
 
--- SQL statement 400: SELECT from tile intersects table >>>
+-- SQL statement 406: SELECT from tile intersects table >>>
 /*
  * SQL statement name: 	tile_intersects_select.sql
  * Type:				Postgres/PostGIS SQL
@@ -6711,7 +6656,7 @@ SELECT geolevel_id,
   FROM tile_intersects_sahsuland
  WHERE zoomlevel = 0 AND geolevel_id = 1;
 
--- SQL statement 401: Create tile intersects table INSERT function >>>
+-- SQL statement 407: Create tile intersects table INSERT function >>>
 CREATE OR REPLACE FUNCTION tileMaker_intersector_sahsuland(
 	l_geolevel_id INTEGER, 
 	l_zoomlevel INTEGER, 
@@ -6831,7 +6776,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
--- SQL statement 402: Create second tile intersects table INSERT function (simplification errors) >>>
+-- SQL statement 408: Create second tile intersects table INSERT function (simplification errors) >>>
 CREATE OR REPLACE FUNCTION tileMaker_intersector2_sahsuland(
 	l_geolevel_id INTEGER, 
 	l_zoomlevel INTEGER, 
@@ -6979,7 +6924,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
--- SQL statement 403: Create tiles table INSERT function (tile aggregator) >>>
+-- SQL statement 409: Create tiles table INSERT function (tile aggregator) >>>
 CREATE OR REPLACE FUNCTION tileMaker_aggregator_sahsuland(
 	l_geolevel_id INTEGER, 
 	l_zoomlevel INTEGER,  
@@ -7068,7 +7013,7 @@ END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
 
--- SQL statement 404: Create tiles table INSERT function (tile aggregator) >>>
+-- SQL statement 410: Create tiles table INSERT function (tile aggregator) >>>
 /*
  * SQL statement name: 	tileMaker_main_function.sql
  * Type:				Postgres/PostGIS PL/pgsql anonymous block
@@ -7196,7 +7141,7 @@ BEGIN
 END;
 $$;
 
--- SQL statement 405: Tile intersects table % savings >>>
+-- SQL statement 411: Tile intersects table % savings >>>
 /*
  * SQL statement name: 	tile_intersects_select2.sql
  * Type:				Postgres/PostGIS SQL
@@ -7242,102 +7187,382 @@ SELECT geolevel_id, zoomlevel,
  GROUP BY geolevel_id, zoomlevel
  ORDER BY 1, 2;
 
--- SQL statement 406: Commit transaction >>>
+-- SQL statement 412: Commit transaction >>>
 END;
 
 --
 -- Analyze tables
 --
 
--- SQL statement 408: Describe table sahsu_grd_level1 >>>
+-- SQL statement 414: Describe table sahsu_grd_level1 >>>
 \dS+ sahsu_grd_level1;
 
--- SQL statement 409: Analyze table sahsu_grd_level1 >>>
+-- SQL statement 415: Analyze table sahsu_grd_level1 >>>
 VACUUM ANALYZE sahsu_grd_level1;
 
--- SQL statement 410: Describe table lookup_sahsu_grd_level1 >>>
+-- SQL statement 416: Describe table lookup_sahsu_grd_level1 >>>
 \dS+ lookup_sahsu_grd_level1;
 
--- SQL statement 411: Analyze table lookup_sahsu_grd_level1 >>>
+-- SQL statement 417: Analyze table lookup_sahsu_grd_level1 >>>
 VACUUM ANALYZE lookup_sahsu_grd_level1;
 
--- SQL statement 412: Describe table sahsu_grd_level2 >>>
+-- SQL statement 418: Describe table sahsu_grd_level2 >>>
 \dS+ sahsu_grd_level2;
 
--- SQL statement 413: Analyze table sahsu_grd_level2 >>>
+-- SQL statement 419: Analyze table sahsu_grd_level2 >>>
 VACUUM ANALYZE sahsu_grd_level2;
 
--- SQL statement 414: Describe table lookup_sahsu_grd_level2 >>>
+-- SQL statement 420: Describe table lookup_sahsu_grd_level2 >>>
 \dS+ lookup_sahsu_grd_level2;
 
--- SQL statement 415: Analyze table lookup_sahsu_grd_level2 >>>
+-- SQL statement 421: Analyze table lookup_sahsu_grd_level2 >>>
 VACUUM ANALYZE lookup_sahsu_grd_level2;
 
--- SQL statement 416: Describe table sahsu_grd_level3 >>>
+-- SQL statement 422: Describe table sahsu_grd_level3 >>>
 \dS+ sahsu_grd_level3;
 
--- SQL statement 417: Analyze table sahsu_grd_level3 >>>
+-- SQL statement 423: Analyze table sahsu_grd_level3 >>>
 VACUUM ANALYZE sahsu_grd_level3;
 
--- SQL statement 418: Describe table lookup_sahsu_grd_level3 >>>
+-- SQL statement 424: Describe table lookup_sahsu_grd_level3 >>>
 \dS+ lookup_sahsu_grd_level3;
 
--- SQL statement 419: Analyze table lookup_sahsu_grd_level3 >>>
+-- SQL statement 425: Analyze table lookup_sahsu_grd_level3 >>>
 VACUUM ANALYZE lookup_sahsu_grd_level3;
 
--- SQL statement 420: Describe table sahsu_grd_level4 >>>
+-- SQL statement 426: Describe table sahsu_grd_level4 >>>
 \dS+ sahsu_grd_level4;
 
--- SQL statement 421: Analyze table sahsu_grd_level4 >>>
+-- SQL statement 427: Analyze table sahsu_grd_level4 >>>
 VACUUM ANALYZE sahsu_grd_level4;
 
--- SQL statement 422: Describe table lookup_sahsu_grd_level4 >>>
+-- SQL statement 428: Describe table lookup_sahsu_grd_level4 >>>
 \dS+ lookup_sahsu_grd_level4;
 
--- SQL statement 423: Analyze table lookup_sahsu_grd_level4 >>>
+-- SQL statement 429: Analyze table lookup_sahsu_grd_level4 >>>
 VACUUM ANALYZE lookup_sahsu_grd_level4;
 
--- SQL statement 424: Describe table geolevels_sahsuland >>>
+-- SQL statement 430: Describe table geolevels_sahsuland >>>
 \dS+ geolevels_sahsuland;
 
--- SQL statement 425: Analyze table geolevels_sahsuland >>>
+-- SQL statement 431: Analyze table geolevels_sahsuland >>>
 VACUUM ANALYZE geolevels_sahsuland;
 
--- SQL statement 426: Describe table geography_sahsuland >>>
+-- SQL statement 432: Describe table geography_sahsuland >>>
 \dS+ geography_sahsuland;
 
--- SQL statement 427: Analyze table geography_sahsuland >>>
+-- SQL statement 433: Analyze table geography_sahsuland >>>
 VACUUM ANALYZE geography_sahsuland;
 
--- SQL statement 428: Describe table hierarchy_sahsuland >>>
+-- SQL statement 434: Describe table hierarchy_sahsuland >>>
 \dS+ hierarchy_sahsuland;
 
--- SQL statement 429: Analyze table hierarchy_sahsuland >>>
+-- SQL statement 435: Analyze table hierarchy_sahsuland >>>
 VACUUM ANALYZE hierarchy_sahsuland;
 
--- SQL statement 430: Describe table geometry_sahsuland >>>
+-- SQL statement 436: Describe table geometry_sahsuland >>>
 \dS+ geometry_sahsuland;
 
--- SQL statement 431: Analyze table geometry_sahsuland >>>
+-- SQL statement 437: Analyze table geometry_sahsuland >>>
 VACUUM ANALYZE geometry_sahsuland;
 
--- SQL statement 432: Describe table tile_intersects_sahsuland >>>
+-- SQL statement 438: Describe table tile_intersects_sahsuland >>>
 \dS+ tile_intersects_sahsuland;
 
--- SQL statement 433: Analyze table tile_intersects_sahsuland >>>
+-- SQL statement 439: Analyze table tile_intersects_sahsuland >>>
 VACUUM ANALYZE tile_intersects_sahsuland;
 
--- SQL statement 434: Describe table tile_limits_sahsuland >>>
+-- SQL statement 440: Describe table tile_limits_sahsuland >>>
 \dS+ tile_limits_sahsuland;
 
--- SQL statement 435: Analyze table tile_limits_sahsuland >>>
+-- SQL statement 441: Analyze table tile_limits_sahsuland >>>
 VACUUM ANALYZE tile_limits_sahsuland;
 
--- SQL statement 436: Describe table t_tiles_sahsuland >>>
+-- SQL statement 442: Describe table t_tiles_sahsuland >>>
 \dS+ t_tiles_sahsuland;
 
--- SQL statement 437: Analyze table t_tiles_sahsuland >>>
+-- SQL statement 443: Analyze table t_tiles_sahsuland >>>
 VACUUM ANALYZE t_tiles_sahsuland;
+
+--
+-- Check areas
+--
+
+-- SQL statement 445: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
+DO LANGUAGE plpgsql $$
+DECLARE 
+/*
+ * SQL statement name: 	area_check.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: geometry column; e.g. geom_11
+ *						2: table name; e.g. cb_2014_us_county_500k
+ *
+ * Description:			Check Turf araa (area_km2) compared to SQL Server calculated area (area_km2_calc)
+ *						Allow for 1% error
+ *						Ignore small areas <= 10 km2
+ * Note:				%% becomes % after substitution
+ */
+	c1 CURSOR FOR
+		WITH a AS (
+			SELECT areaname,
+				   area_km2 AS area_km2,
+				   ST_Area(geography(geom_11))/(1000*1000) AS area_km2_calc
+			  FROM sahsu_grd_level1
+		), b AS (
+		SELECT a.areaname,
+			   a.area_km2,
+			   a.area_km2_calc,
+			   CASE WHEN a.area_km2 > 0 THEN 100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2)
+					WHEN a.area_km2 = a.area_km2_calc THEN 0
+					ELSE NULL
+			   END AS pct_km2_diff 
+		  FROM a
+		), c AS (
+			SELECT COUNT(areaname) AS total_areas
+			  FROM a
+		), d AS (
+			SELECT b.areaname, b.area_km2, b.area_km2_calc, b.pct_km2_diff
+			  FROM b, c
+			 WHERE b.pct_km2_diff > 1 /* Allow for 1% error */
+			   AND b.area_km2_calc > 10 /* Ignore small areas <= 10 km2 */
+		), e AS (
+			SELECT COUNT(areaname) AS total_areas_in_error
+			  FROM d
+		)
+		SELECT d.*, c.total_areas, e.total_areas_in_error, 
+		       ROUND((100*e.total_areas_in_error::NUMERIC/c.total_areas::NUMERIC), 2) AS pct_in_error
+		  FROM d, c, e;
+
+	c1_rec RECORD;
+	total INTEGER:=0;
+	pct_in_error NUMERIC:=0;
+BEGIN
+	FOR c1_rec IN c1 LOOP
+		IF total = 0 THEN
+			RAISE WARNING '% areas in error of %, % pct', c1_rec.total_areas_in_error, c1_rec.total_areas, c1_rec.pct_in_error;
+			pct_in_error:=c1_rec.pct_in_error;
+		END IF;
+		total:=total+1;
+		RAISE WARNING 'Area: %, area km2: %:, calc: %, diff %',
+			c1_rec.areaname, c1_rec.area_km2, c1_rec.area_km2_calc, c1_rec.pct_km2_diff;
+	END LOOP;
+	IF total = 0 THEN
+		RAISE INFO 'Table: sahsu_grd_level1 no invalid areas check OK';
+	ELSIF pct_in_error < 10 THEN
+		RAISE WARNING 'Table: sahsu_grd_level1 no invalid areas check WARNING: % invalid (<10 pct)', pct_in_error;
+	ELSE
+		RAISE EXCEPTION 'Table: sahsu_grd_level1 no invalid areas check FAILED: % invalid', total;
+	END IF;
+END;
+$$;
+
+-- SQL statement 446: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
+DO LANGUAGE plpgsql $$
+DECLARE 
+/*
+ * SQL statement name: 	area_check.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: geometry column; e.g. geom_11
+ *						2: table name; e.g. cb_2014_us_county_500k
+ *
+ * Description:			Check Turf araa (area_km2) compared to SQL Server calculated area (area_km2_calc)
+ *						Allow for 1% error
+ *						Ignore small areas <= 10 km2
+ * Note:				%% becomes % after substitution
+ */
+	c1 CURSOR FOR
+		WITH a AS (
+			SELECT areaname,
+				   area_km2 AS area_km2,
+				   ST_Area(geography(geom_11))/(1000*1000) AS area_km2_calc
+			  FROM sahsu_grd_level2
+		), b AS (
+		SELECT a.areaname,
+			   a.area_km2,
+			   a.area_km2_calc,
+			   CASE WHEN a.area_km2 > 0 THEN 100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2)
+					WHEN a.area_km2 = a.area_km2_calc THEN 0
+					ELSE NULL
+			   END AS pct_km2_diff 
+		  FROM a
+		), c AS (
+			SELECT COUNT(areaname) AS total_areas
+			  FROM a
+		), d AS (
+			SELECT b.areaname, b.area_km2, b.area_km2_calc, b.pct_km2_diff
+			  FROM b, c
+			 WHERE b.pct_km2_diff > 1 /* Allow for 1% error */
+			   AND b.area_km2_calc > 10 /* Ignore small areas <= 10 km2 */
+		), e AS (
+			SELECT COUNT(areaname) AS total_areas_in_error
+			  FROM d
+		)
+		SELECT d.*, c.total_areas, e.total_areas_in_error, 
+		       ROUND((100*e.total_areas_in_error::NUMERIC/c.total_areas::NUMERIC), 2) AS pct_in_error
+		  FROM d, c, e;
+
+	c1_rec RECORD;
+	total INTEGER:=0;
+	pct_in_error NUMERIC:=0;
+BEGIN
+	FOR c1_rec IN c1 LOOP
+		IF total = 0 THEN
+			RAISE WARNING '% areas in error of %, % pct', c1_rec.total_areas_in_error, c1_rec.total_areas, c1_rec.pct_in_error;
+			pct_in_error:=c1_rec.pct_in_error;
+		END IF;
+		total:=total+1;
+		RAISE WARNING 'Area: %, area km2: %:, calc: %, diff %',
+			c1_rec.areaname, c1_rec.area_km2, c1_rec.area_km2_calc, c1_rec.pct_km2_diff;
+	END LOOP;
+	IF total = 0 THEN
+		RAISE INFO 'Table: sahsu_grd_level2 no invalid areas check OK';
+	ELSIF pct_in_error < 10 THEN
+		RAISE WARNING 'Table: sahsu_grd_level2 no invalid areas check WARNING: % invalid (<10 pct)', pct_in_error;
+	ELSE
+		RAISE EXCEPTION 'Table: sahsu_grd_level2 no invalid areas check FAILED: % invalid', total;
+	END IF;
+END;
+$$;
+
+-- SQL statement 447: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
+DO LANGUAGE plpgsql $$
+DECLARE 
+/*
+ * SQL statement name: 	area_check.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: geometry column; e.g. geom_11
+ *						2: table name; e.g. cb_2014_us_county_500k
+ *
+ * Description:			Check Turf araa (area_km2) compared to SQL Server calculated area (area_km2_calc)
+ *						Allow for 1% error
+ *						Ignore small areas <= 10 km2
+ * Note:				%% becomes % after substitution
+ */
+	c1 CURSOR FOR
+		WITH a AS (
+			SELECT areaname,
+				   area_km2 AS area_km2,
+				   ST_Area(geography(geom_11))/(1000*1000) AS area_km2_calc
+			  FROM sahsu_grd_level3
+		), b AS (
+		SELECT a.areaname,
+			   a.area_km2,
+			   a.area_km2_calc,
+			   CASE WHEN a.area_km2 > 0 THEN 100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2)
+					WHEN a.area_km2 = a.area_km2_calc THEN 0
+					ELSE NULL
+			   END AS pct_km2_diff 
+		  FROM a
+		), c AS (
+			SELECT COUNT(areaname) AS total_areas
+			  FROM a
+		), d AS (
+			SELECT b.areaname, b.area_km2, b.area_km2_calc, b.pct_km2_diff
+			  FROM b, c
+			 WHERE b.pct_km2_diff > 1 /* Allow for 1% error */
+			   AND b.area_km2_calc > 10 /* Ignore small areas <= 10 km2 */
+		), e AS (
+			SELECT COUNT(areaname) AS total_areas_in_error
+			  FROM d
+		)
+		SELECT d.*, c.total_areas, e.total_areas_in_error, 
+		       ROUND((100*e.total_areas_in_error::NUMERIC/c.total_areas::NUMERIC), 2) AS pct_in_error
+		  FROM d, c, e;
+
+	c1_rec RECORD;
+	total INTEGER:=0;
+	pct_in_error NUMERIC:=0;
+BEGIN
+	FOR c1_rec IN c1 LOOP
+		IF total = 0 THEN
+			RAISE WARNING '% areas in error of %, % pct', c1_rec.total_areas_in_error, c1_rec.total_areas, c1_rec.pct_in_error;
+			pct_in_error:=c1_rec.pct_in_error;
+		END IF;
+		total:=total+1;
+		RAISE WARNING 'Area: %, area km2: %:, calc: %, diff %',
+			c1_rec.areaname, c1_rec.area_km2, c1_rec.area_km2_calc, c1_rec.pct_km2_diff;
+	END LOOP;
+	IF total = 0 THEN
+		RAISE INFO 'Table: sahsu_grd_level3 no invalid areas check OK';
+	ELSIF pct_in_error < 10 THEN
+		RAISE WARNING 'Table: sahsu_grd_level3 no invalid areas check WARNING: % invalid (<10 pct)', pct_in_error;
+	ELSE
+		RAISE EXCEPTION 'Table: sahsu_grd_level3 no invalid areas check FAILED: % invalid', total;
+	END IF;
+END;
+$$;
+
+-- SQL statement 448: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
+DO LANGUAGE plpgsql $$
+DECLARE 
+/*
+ * SQL statement name: 	area_check.sql
+ * Type:				Postgres/PostGIS PL/pgsql anonymous block
+ * Parameters:
+ *						1: geometry column; e.g. geom_11
+ *						2: table name; e.g. cb_2014_us_county_500k
+ *
+ * Description:			Check Turf araa (area_km2) compared to SQL Server calculated area (area_km2_calc)
+ *						Allow for 1% error
+ *						Ignore small areas <= 10 km2
+ * Note:				%% becomes % after substitution
+ */
+	c1 CURSOR FOR
+		WITH a AS (
+			SELECT areaname,
+				   area_km2 AS area_km2,
+				   ST_Area(geography(geom_11))/(1000*1000) AS area_km2_calc
+			  FROM sahsu_grd_level4
+		), b AS (
+		SELECT a.areaname,
+			   a.area_km2,
+			   a.area_km2_calc,
+			   CASE WHEN a.area_km2 > 0 THEN 100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2)
+					WHEN a.area_km2 = a.area_km2_calc THEN 0
+					ELSE NULL
+			   END AS pct_km2_diff 
+		  FROM a
+		), c AS (
+			SELECT COUNT(areaname) AS total_areas
+			  FROM a
+		), d AS (
+			SELECT b.areaname, b.area_km2, b.area_km2_calc, b.pct_km2_diff
+			  FROM b, c
+			 WHERE b.pct_km2_diff > 1 /* Allow for 1% error */
+			   AND b.area_km2_calc > 10 /* Ignore small areas <= 10 km2 */
+		), e AS (
+			SELECT COUNT(areaname) AS total_areas_in_error
+			  FROM d
+		)
+		SELECT d.*, c.total_areas, e.total_areas_in_error, 
+		       ROUND((100*e.total_areas_in_error::NUMERIC/c.total_areas::NUMERIC), 2) AS pct_in_error
+		  FROM d, c, e;
+
+	c1_rec RECORD;
+	total INTEGER:=0;
+	pct_in_error NUMERIC:=0;
+BEGIN
+	FOR c1_rec IN c1 LOOP
+		IF total = 0 THEN
+			RAISE WARNING '% areas in error of %, % pct', c1_rec.total_areas_in_error, c1_rec.total_areas, c1_rec.pct_in_error;
+			pct_in_error:=c1_rec.pct_in_error;
+		END IF;
+		total:=total+1;
+		RAISE WARNING 'Area: %, area km2: %:, calc: %, diff %',
+			c1_rec.areaname, c1_rec.area_km2, c1_rec.area_km2_calc, c1_rec.pct_km2_diff;
+	END LOOP;
+	IF total = 0 THEN
+		RAISE INFO 'Table: sahsu_grd_level4 no invalid areas check OK';
+	ELSIF pct_in_error < 10 THEN
+		RAISE WARNING 'Table: sahsu_grd_level4 no invalid areas check WARNING: % invalid (<10 pct)', pct_in_error;
+	ELSE
+		RAISE EXCEPTION 'Table: sahsu_grd_level4 no invalid areas check FAILED: % invalid', total;
+	END IF;
+END;
+$$;
 
 
 --

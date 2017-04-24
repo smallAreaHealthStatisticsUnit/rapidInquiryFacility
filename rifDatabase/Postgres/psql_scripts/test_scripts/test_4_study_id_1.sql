@@ -108,7 +108,7 @@ DECLARE
 	rif40_sm_pkg_functions 		VARCHAR[] := ARRAY['rif40_verify_state_change', 
 						'rif40_run_study', 'rif40_ddl', 'rif40_study_ddl_definer', 
 						'rif40_create_insert_statement', 'rif40_execute_insert_statement', 
-						'rif40_compute_results', 'rif40_startup'];
+						'rif40_compute_results', 'rif40_startup', 'rif40_GetAdjacencyMatrix'];
 --
 	l_function 		VARCHAR;
 	i				INTEGER:=0;
@@ -250,6 +250,11 @@ BEGIN
 	END IF;
 END;
 $$;
+
+--
+-- Test rif40_GetAdjacencyMatrix()
+--
+SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(currval('rif40_study_id_seq'::regclass)::INTEGER) LIMIT 10;
 
 /*
 SELECT * FROM rif40_comparison_areas WHERE study_id = currval('rif40_study_id_seq'::regclass) LIMIT 20;

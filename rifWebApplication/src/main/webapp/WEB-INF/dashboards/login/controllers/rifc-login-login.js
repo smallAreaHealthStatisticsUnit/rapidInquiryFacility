@@ -36,26 +36,42 @@
  */
 
 angular.module("RIF")
-        .controller('LoginCtrl', ['$scope', 'user', '$injector',
+        .controller('LoginCtrl', ['$scope', 'user', '$injector', 'DatabaseService',
             'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService',
             'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService',
-            function ($scope, user, $injector,
+            function ($scope, user, $injector, DatabaseService,
                     SubmissionStateService, StudyAreaStateService, CompAreaStateService,
                     ParameterStateService, StatsStateService, ViewerStateService, MappingStateService) {
 
-                $scope.username = "dwmorley";
-                $scope.password = "dwmorley";
+                //$scope.username = "dwmorley";
+                //$scope.password = "dwmorley";
+                //$scope.db = "PG";
+                
+                $scope.username = "peter";
+                $scope.password = "peter";
+                $scope.db = "MS";
 
                 $scope.showSpinner = false;
 
                 $scope.login = function () {
                     if (!$scope.showSpinner) {
                         $scope.showSpinner = true;
-                        //check if already logged on
-                        user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
-                      //  
-                        //In development, this bypasses password)
-                       // user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
+
+                        //which database is being used PG or MS?
+                        user.getDatabaseType($scope.username).then(function (res) {   
+                            if (res.data[0].result === "jdbc:sqlserver") {
+                                DatabaseService.setDatabase("ms");
+                            } else if (res.data[0].result === "jdbc:postgresql") {
+                                DatabaseService.setDatabase("pg");
+                            } else {
+                                $scope.showError('Could not determine if database is PGSQL or MSSQL');
+                            }
+        
+                            //check if already logged on
+                            user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
+                            //In development, this bypasses password)
+                            //user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
+                        }, handleServerError);                  
                     }
                 };
 
@@ -104,5 +120,6 @@ angular.module("RIF")
                 }
                 function handleServerError(res) {
                     $scope.showSpinner = false;
+                    $scope.showError('Could not log in');
                 }
             }]);

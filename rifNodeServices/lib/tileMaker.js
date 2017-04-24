@@ -2063,36 +2063,133 @@ REFERENCE (from shapefile) {
 
 	/*
 	 * Function: 	getDataLoaderParameter()
-	 * Parameters:	Data loader object (dataLoader in XML), parameter name 
+	 * Parameters:	Data loader object (dataLoader in XML), parameter name, default Parameter
 	 * Returns:		Value
 	 * Description:	Get data loader parameter. Cope with single arrays instead of object itemdsds
 	 */		
-	function getDataLoaderParameter(dataLoader, parameter) {
-		if (dataLoader[parameter] == undefined) {
-			dbErrorHandler(new Error("Unable to find dataLoder parameter: " + parameter + "; dataLoder object: " + JSON.stringify(dataLoader, null, 2)), 
-				undefined /* SQL */);
-		}
-		var value=dataLoader[parameter];
+	function getDataLoaderParameter(dataLoader, parameter, defaultParameter) {
 
+		var value=dataLoader[parameter];
+		if (value == undefined) {
+			if (defaultParameter) {
+				value=defaultParameter;
+				if (typeof value == "object") {
+					winston.log("verbose", "Parameter: " + parameter + '="' + JSON.stringify(dataLoader, value, 2) + '" [DEFAULT]');
+				}
+				else {
+					winston.log("verbose", "Parameter: " + parameter + '="' + value + '" [DEFAULT]');
+				}
+			}
+			else {
+				dbErrorHandler(new Error("Unable to get dataLoder parameter: " + parameter + "; dataLoder object: " + JSON.stringify(dataLoader, null, 2)), 
+					undefined /* SQL */);
+			}
+		}
 		if (typeof value == "object") {
 			winston.log("verbose", "Parameter: " + parameter + '="' + JSON.stringify(dataLoader, value, 2) + '"');
 		}
 		else {
 			winston.log("verbose", "Parameter: " + parameter + '="' + value + '"');
 		}
-		if (value == undefined) {
-			dbErrorHandler(new Error("Unable to get dataLoder parameter: " + parameter + "; dataLoder object: " + JSON.stringify(dataLoader, null, 2)), 
-				undefined /* SQL */);
-		}
+		
 		return value;
 	} // End of getDataLoaderParameter()
-		
+	
 	/*
-	 * Function: 	lookupProcessing()
-	 * Parameters:	lookup processing callback: geometryProcessing(),
+	 * Function: 	adjacencyProcessing()
+	 * Parameters:	adjacency processing callback: geometryProcessing(),
 	 *				Geography table object (dataLoader in XML), XML file directory (original location of XML file)
 	 * Returns:		Nothing
 	 * Description:	Dump lookup tsbles to CSV, call lookup processing callback: geometryProcessing()
+	 */	 
+	 function adjacencyProcessing(adjacencyProcessingCallback, dataLoader, xmlFileDir) {
+		var geographyName=getDataLoaderParameter(dataLoader, "geographyName");
+		var geoLevel=getDataLoaderParameter(dataLoader, "geoLevel");
+		var geographyTableDescription=getDataLoaderParameter(dataLoader, "geographyDesc");
+		
+		var adjacencyTable=getDataLoaderParameter(dataLoader, "adjacencyTable", "adjacency_" + geographyName);
+		adjacencyTable=adjacencyTable.toString().toLowerCase();
+		var csvFileName;
+		
+		var request;
+		var sql="SELECT geolevel_id, areaid, num_adjacencies, adjacency_list\n" +
+				"  FROM " + adjacencyTable + " ORDER BY geolevel_id, areaid";
+		if (dbType == "PostGres") {
+			csvFileName=xmlFileDir + "/data/pg_" + adjacencyTable + ".csv";
+			request=client;
+		}		
+		else if (dbType == "MSSQLServer") {	
+			csvFileName=xmlFileDir + "/data/mssql_" + adjacencyTable + ".csv";
+			request=new dbSql.Request();
+		}					
+
+		try { // Create CSV file for adjacency table
+			var adjacencyCsvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
+			winston.log("info", "Creating adjacency CSV file: " + csvFileName + 
+				" for " + geographyName + ": " + geographyTableDescription);	
+			adjacencyCsvStream.on('finish', function csvStreamClose() {
+				winston.log("verbose", "adjacency csvStreamClose(): " + csvFileName);
+			});		
+			adjacencyCsvStream.on('error', function csvStreamError(e) {
+				winston.log("error", "Exception in adjacency CSV write to file: " + csvFileName, e.message);										
+			});
+		}
+		catch (e) {
+			dbErrorHandler(e, sql);
+		}
+
+		var query=request.query(sql, function(err, recordSet) {
+	
+			if (err) {		
+				dbErrorHandler(err, sql);
+			}
+			else {	
+//				winston.log("verbose", "SQL> " + sql);
+				var record;
+				if (dbType == "PostGres") {
+					record=recordSet.rows;
+				}
+				else if (dbType == "MSSQLServer") {	
+					record=recordSet;
+				}			
+				var rowsAffected=record.length;
+				if (rowsAffected == undefined || rowsAffected == 0) {
+					dbErrorHandler(new Error("No rows returned in adjacency SELECT"), sql);
+				}
+				var buf=Object.keys(record[0]).join(',').toUpperCase(); // Header
+				buf+="\r\n";
+				for (var i=0; i<record.length; i++) {
+					var keys=Object.keys(record[i]);
+					var values=[];
+					for (var j=0; j<keys.length; j++) {
+						var str=record[i][keys[j]].toString();
+						str=str.split('"' /* search: " */).join('""' /* replacement: "" */);	// CSV escape data 	
+						values.push(str);
+					}
+					
+					buf+='"' + values.join('","') + '"\r\n'; // Quote enclose data
+				}
+				adjacencyCsvStream.write(buf, function adjacencyProcessingWrite(err) {
+					if (err) {
+						adjacencyProcessingCallback(err);
+					}
+					else {
+						adjacencyCsvStream.end();
+						dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", adjacencyTable, record, adjacencyProcessingCallback);	
+					}
+					
+				});
+			}
+		});	
+		
+	 } // End of adjacencyProcessing()
+	 
+	/*
+	 * Function: 	lookupProcessing()
+	 * Parameters:	lookup processing callback: adjacencyProcessing(),
+	 *				Geography table object (dataLoader in XML), XML file directory (original location of XML file)
+	 * Returns:		Nothing
+	 * Description:	Dump lookup tsbles to CSV, call lookup processing callback: adjacencyProcessing()
 	 */	
 	 
 	 function lookupProcessing(lookupProcessingCallback, dataLoader, xmlFileDir) {
@@ -2755,8 +2852,19 @@ sql+="	  FROM t_tiles_" + geographyTable.toLowerCase() + "\n" +
 							dbErrorHandler(err);
 						}
 						else {
-							geometryProcessing(tileProcessing, tileMakerConfig.xmlConfig.dataLoader[0], 
-								xmlFileDir, tileIntersectsProcessingGeolevelLoop);
+							var adjacencyProcessingCallback=function adjacencyProcessingCallback(err) {
+								if (err) {
+									dbErrorHandler(err);
+								}
+								else {
+									geometryProcessing(tileProcessing, tileMakerConfig.xmlConfig.dataLoader[0], 
+										xmlFileDir, tileIntersectsProcessingGeolevelLoop);
+								}
+								
+							};
+							
+							adjacencyProcessing(adjacencyProcessingCallback, tileMakerConfig.xmlConfig.dataLoader[0], 
+								xmlFileDir);
 						}
 					}	
 

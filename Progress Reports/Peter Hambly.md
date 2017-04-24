@@ -1143,14 +1143,166 @@ GO
   listing/comparea/resolution all set to 1 for all geolevels
 * RIF meeting
 
-#### Current TODO list (March 2017): SQL Server Port, documentation
+#### 3rd to 7th April
 
-* Relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland). Currently 
-  edited by hand.
-* SQL Server run study port
+* Monthly reports
+* Wellcome application
+* Add ajacency table. Some slight differences between PostGIS and SQL Server need to be investigated
+	```
+	C:\Users\Peter\Documents\Work\sahsuland>diff mssql_adjacency_sahsuland.csv pg_adjacency_sahsuland.csv
+	65c65
+	< "3","01.008.002900","6","01.008.006200,01.008.006300,01.008.006800,01.008.006900,01.008.007100,01.008.007500"
+	---
+	> "3","01.008.002900","7","01.008.006200,01.008.006300,01.008.006800,01.008.006900,01.008.007100,01.008.007400,01.008.007500"
+	86c86
+	< "3","01.008.005500","5","01.008.005300,01.008.005400,01.008.005700,01.008.007700,01.008.007800"
+	---
+	> "3","01.008.005500","6","01.008.005300,01.008.005400,01.008.005700,01.008.006000,01.008.007700,01.008.007800"
+	91c91
+	< "3","01.008.006000","11","01.008.003500,01.008.005100,01.008.005200,01.008.005300,01.008.006100,01.008.006700,01.008.006800,01.008
+	.007700,01.008.008200,01.008.008400,01.008.009100"
+	---
+	> "3","01.008.006000","12","01.008.003500,01.008.005100,01.008.005200,01.008.005300,01.008.005500,01.008.006100,01.008.006700,01.008
+	.006800,01.008.007700,01.008.008200,01.008.008400,01.008.009100"
+	105c105
+	< "3","01.008.007400","6","01.008.006700,01.008.006800,01.008.007300,01.008.007500,01.008.007600,01.008.008700"
+	---
+	> "3","01.008.007400","7","01.008.002900,01.008.006700,01.008.006800,01.008.007300,01.008.007500,01.008.007600,01.008.008700"
 
-#### Current TODO list (April 2017):
+	C:\Users\Peter\Documents\Work\sahsuland>wc -l mssql_adjacency_sahsuland.csv pg_adjacency_sahsuland.csv
+	  1447 mssql_adjacency_sahsuland.csv
+	  1447 pg_adjacency_sahsuland.csv
+	  2894 total
+	```
+* rif40_GetAdjacencyMatrix.sql limit line length to 8000 characters; adjacency table create script will raise truncation error if greater
+* Use relative install path in tilemaker install script generator (i.e. ../../GeospatialData/tileMaker/ for sahsuland). No need 
+  to edit path to CSV file by hand.
+* Change rif40_GetAdjacencyMatrix.sql to support adjacency table; port to SQL Server.
+* Add <geography>_GetAdjacencyMatrix() function to tilemaker
 
+#### 10th to 14th April
+
+* SQL server rif40_startup fixed, rif40_num_denom and rif40_num_denom_errors fixed
+* Rebuild wpea-rif1; small TESTUSER fix; tomcat setup requires work
+
+#### 18th to 21st April
+
+* SQL Server install of *sahusland* via a backup and restore
+* Ask for username and password
+* Production installer scripts separate from github tree; install documented: 
+  https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/production/INSTALL.md
+* Install on wpea-rif1 issues:
+  * Logged on as a power user; run shell as adminstrator - shell is still in the user's name so SQL Server sqlcmd -E logs on as 
+    guest. Added section to isntallation instructions.
+  * Java is broken on server. Fully de-install, reboot; remove all Java file from C:\Program Files\Java and re-install afresh.
+    Run servce.bat remove then install in %CATALINA_HOME%/bin directory to re-initialise tomcat.
+  * Firewall issues - advice to use of localhost or 127.0.0.1 to avoid routing via ethernet for SQL Server and Postgres
+  * Unsigned TLS being blocked by the Imperial Network IE11; other browsers work after the warnings have been accepted
+    ```
+	13:26:08.957 wpea-rif1.sm.med.ic.ac.uk:8080 uses an invalid security certificate.
+
+	The certificate is not trusted because it is self-signed.
+	The certificate is not valid for the name wpea-rif1.sm.med.ic.ac.uk.
+
+	Error code: <a id="errorCode" title="SEC_ERROR_UNKNOWN_ISSUER">SEC_ERROR_UNKNOWN_ISSUER</a>
+	 1 (unknown)
+    ```	
+  * ```The port number 1433/sahsuland_dev is not valid```. SQL Server set to use port 1433; issue is with configuration, will
+    test further at home then document.
+  ```
+	  C A T A L I N A  H O M E==C:\Program Files\Apache Software Foundation\Tomcat 8.5==
+	HealthOutcomeManager init targetPathValue==C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\
+	\classes==
+	com.microsoft.sqlserver.jdbc.SQLServerException: The port number 1433/sahsuland_dev is not valid.
+			at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDriverError(SQLServerException.java:206)
+			at com.microsoft.sqlserver.jdbc.SQLServerConnection.connectInternal(SQLServerConnection.java:1305)
+			at com.microsoft.sqlserver.jdbc.SQLServerConnection.connect(SQLServerConnection.java:788)
+			at com.microsoft.sqlserver.jdbc.SQLServerDriver.connect(SQLServerDriver.java:1187)
+			at java.sql.DriverManager.getConnection(DriverManager.java:664)
+			at java.sql.DriverManager.getConnection(DriverManager.java:208)
+			at rifServices.dataStorageLayer.pg.PGSQLConnectionManager.createConnection(PGSQLConnectionManager.java:697)
+			at rifServices.dataStorageLayer.pg.PGSQLConnectionManager.login(PGSQLConnectionManager.java:327)
+			at rifServices.dataStorageLayer.pg.PGSQLAbstractStudyServiceBundle.login(PGSQLAbstractStudyServiceBundle.java:192)
+			at rifServices.dataStorageLayer.pg.PGSQLProductionRIFStudyServiceBundle.login(PGSQLProductionRIFStudyServiceBundle.java:63)
+			at rifServices.restfulWebServices.pg.PGSQLAbstractRIFWebServiceResource.login(PGSQLAbstractRIFWebServiceResource.java:171)
+			at rifServices.restfulWebServices.pg.PGSQLRIFStudySubmissionWebServiceResource.login(PGSQLRIFStudySubmissionWebServiceResour
+	ce.java:136)
+			at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+			at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+			at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+			at java.lang.reflect.Method.invoke(Method.java:498)
+			at com.sun.jersey.spi.container.JavaMethodInvokerFactory$1.invoke(JavaMethodInvokerFactory.java:60)
+			at com.sun.jersey.server.impl.model.method.dispatch.AbstractResourceMethodDispatchProvider$ResponseOutInvoker._dispatch(Abst
+	ractResourceMethodDispatchProvider.java:205)
+			at com.sun.jersey.server.impl.model.method.dispatch.ResourceJavaMethodDispatcher.dispatch(ResourceJavaMethodDispatcher.java:
+	75)
+			at com.sun.jersey.server.impl.uri.rules.HttpMethodRule.accept(HttpMethodRule.java:302)
+			at com.sun.jersey.server.impl.uri.rules.RightHandPathRule.accept(RightHandPathRule.java:147)
+			at com.sun.jersey.server.impl.uri.rules.ResourceClassRule.accept(ResourceClassRule.java:108)
+			at com.sun.jersey.server.impl.uri.rules.RightHandPathRule.accept(RightHandPathRule.java:147)
+			at com.sun.jersey.server.impl.uri.rules.RootResourceClassesRule.accept(RootResourceClassesRule.java:84)
+			at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1542)
+			at com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1473)
+			at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1419)
+			at com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1409)
+			at com.sun.jersey.spi.container.servlet.WebComponent.service(WebComponent.java:409)
+			at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:558)
+			at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:733)
+			at javax.servlet.http.HttpServlet.service(HttpServlet.java:742)
+			at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:231)
+			at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)
+			at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:52)
+			at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)
+			at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)
+			at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:198)
+			at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:96)
+			at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:478)
+			at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:140)
+			at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:80)
+			at org.apache.catalina.valves.AbstractAccessLogValve.invoke(AbstractAccessLogValve.java:624)
+			at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:87)
+			at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:342)
+			at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:799)
+			at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:66)
+			at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:861)
+			at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1455)
+			at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:49)
+			at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+			at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+			at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
+			at java.lang.Thread.run(Thread.java:748)
+	```
+	Home PC runs with: 
+	```
+	#SQL SERVER
+	database.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver
+	database.jdbcDriverPrefix=jdbc:sqlserver
+	database.host=localhost\\SAHSU
+	database.port=1433
+	database.databaseName=sahsuland_dev
+	database.databaseType=sqlServer	
+	```
+* Run study extract complete, map table to do
+
+#### 29th to 28th April	
+
+* Fixed production restore - complete
+	
+#### Current TODO list (April 2017): SQL Server Port
+
+* Complete SQL Server run study port
+* Process Utah geography
+* Postgres install from export script
+* Add checks to username, database name in scripts for lowercase DB name
+* Disable guest logins on SQL Server
+* Add localhost notes to tomcat install doc; add network setup to SQL Server install notes; 
+  add notes on cross site scripting errors (caused by URL/webservices name mismatch); firefox example:
+  ```
+  GET XHR https://peter-pc:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter [HTTP/1.1 200  25ms]
+  09:09:31.552 Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://peter-pc:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter. (Reason: CORS header 'Access-Control-Allow-Origin' missing). 1 (unknown)
+  ```
+  
+* Discuss changing passwords
 * Geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Add checks for studies:
 ```
 	-- SQL statement 75: Remove old geolevels meta data table >>>
@@ -1166,13 +1318,11 @@ GO
 * Assist with middleware (database fixes); SQL Server full install testing
 * Drop script for SQL server to all rif40_sahsuland_dev_install.bat/rif40_sahsuland_install.bat to be re-run without rebuilding the entire database
 
-#### TileViewer TODO (defferred to May?):
+#### TileViewer TODO (deferred to June?):
  
-* Default study/comnparision areas set as LEVEL!/LEVEL2 (i.e. column name, not shapefile name)
 * Area tests (area_check.sql) is failing for Halland - suspect area is too small, could be projection ia wrong 
 * NVarchar support for areaName
 * Get fetch views to handle zoomlevel beyond max zoomlevel (returning the usual NULL geojson)
-* Pre=built ajancency tables: ajacency_<geography>; coluimns: areaid, ajacent_areaid, geolevel
 * Add tileid to tile topoJSON/GeoJSON; include in error messages; add version number 
   (yyyymmddhh24mi) for caching (i.e. there is no need to age them out if auto compaction is running)
 * Fix blank name properties

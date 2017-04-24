@@ -395,7 +395,7 @@ angular.module("RIF")
                                     leafletData.getMap(mapID).then(function (map) {
                                         var topojsonURL = user.getTileMakerTiles(user.currentUser, $scope.tileInfo[mapID].geography, $scope.tileInfo[mapID].level);
                                         $scope.$parent.geoJSON[mapID] = new L.topoJsonGridLayer(topojsonURL, {
-                                            attribution: 'Tiles &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
+                                            attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
                                             layers: {
                                                 default: {
                                                     mapID: mapID,

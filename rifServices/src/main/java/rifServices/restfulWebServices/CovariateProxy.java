@@ -70,7 +70,7 @@ import javax.xml.bind.annotation.*;
 	"minimumValue",
 	"maximumValue"
 	})
-final class CovariateProxy {
+final public class CovariateProxy {
 
 	// ==========================================
 	// Section Constants

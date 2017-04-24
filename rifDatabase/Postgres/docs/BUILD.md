@@ -204,8 +204,7 @@ For make to work it needs to be able to logon as following users:
 * postgres     - The database administrator. You will have set this password when you or the installer created 
                  the Postgres cluster.
 * rif40        - The schema owner. You choose this password (see ENCRYPTED_RIF40_PASSWORD below)
-* &lt;user login&gt; - Your user login. This must be in lowercase and without spaces. The build scripts will 
-                 convert a mixed case username to lowercase if the Linux program tr is on the path. 
+* &lt;user login&gt; - Your user login. This must be in lowercase and without spaces. The username (TESTUSER) may be set in Makefile.local
 * notarifuser  - A security test user
 
 The password for all users must be set in your local .pgpass/pgpass.conf files (see Postgres documentation for its location on various OS). 

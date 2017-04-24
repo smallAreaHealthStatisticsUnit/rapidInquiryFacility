@@ -12,6 +12,7 @@
  *		  description character varying(250) NOT NULL, -- Description
  *		  hierarchytable character varying(30) NOT NULL, -- Hierarchy table
  *		  tiletable character varying(30) NOT NULL, -- Tile table
+ *		  adjacencytable character varying(30) NOT NULL, -- Adjacency table
  *		  geometrytable character varying(30) NOT NULL, -- Geometry table
  *		  srid integer DEFAULT 0, -- Postgres projection SRID
  *		  defaultcomparea character varying(30), -- Default comparison area
@@ -33,6 +34,7 @@ CREATE TABLE %1 (
        hierarchytable          VARCHAR(30)  NOT NULL,
        geometrytable           VARCHAR(30)  NOT NULL,
        tiletable               VARCHAR(30)  NOT NULL,			/* New for DB */
+	   adjacencytable 		   VARCHAR(30) NOT NULL,			/* New for DB */
        srid                    INTEGER      NOT NULL DEFAULT 0,
        defaultcomparea         VARCHAR(30)  NULL,
        defaultstudyarea        VARCHAR(30)  NULL,

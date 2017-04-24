@@ -1,20 +1,22 @@
-SQL Server Database Installation
-================================
+SQL Server Development Database Installation
+============================================
 
 # Contents
 - [1. Install SQL Server 2012 SP2](#1-install-sql-server-2012-sp2)
 - [2. Create Databases and Users](#2-create-databases-and-users)
    - [2.1 Network connection errors](#21-network-connection-errors)
-   - [2.2 Logon errors](#22-logon-errors)
-     - [2.2.1 Wrong server authentication mode](#221-wrong-server-authentication-mode)
+   - [2.2 Power User Issues](#22-power-user-issues)
 - [3. Create Additional Users](#3-create-additional-users)
+   - [3.1 Logon errors](#31-logon-errors)
+     - [3.1.1 Wrong server authentication mode](#311-wrong-server-authentication-mode)
 - [4. Installing the RIF Schema](#4-installing-the-rif-schema)
   - [4.1 BULK INSERT Permission](#41-bulk-insert-permission)
   - [4.2 Re-running scripts](#42-re-running-scripts)
     - [4.2.1 Geospatial script: rif40_sahsuland_tiles.bat](#421-geospatial-script-rif40_sahsuland_tilesbat)
     - [4.2.2 Re-load sahsuland example data](#422-re-load-sahsuland-example-data)
-  - [4.3 SQL Server BULK INSERT Issues](#43-sql-server-bulk-insert-issues)
-    - [4.3.1 Line Termination](#431-line-termination)
+  - [4.3 SQL Server Backup and Restore](#43-sql-server-backup-and-restore)
+  - [4.4 SQL Server BULK INSERT Issues](#44-sql-server-bulk-insert-issues)
+    - [4.4.1 Line Termination](#441-line-termination)
 - [5. Script Notes](#5-script-notes)
   - [5.1 Script and documentation TODO](#51-script-and-documentation-todo)	
 	
@@ -42,10 +44,14 @@ Microsoft SQL Server 2012 (SP2-GDR) (KB3194719) - 11.0.5388.0 (X64)
 
 # 2. Create Databases and Users
 
+**This section details the original method the script *rif40_development_creation.sql*. This section is useful to sort out connection 
+problems. The easier way to rebuild the RIF is to skip to section 4, and run  *rebuild_all.bat* which runs all the required scriipts 
+in sequence and prompts for the RIF user and user password.**
+
 Run the following command as Administrator in this directory (...rapidInquiryFacility\rifDatabase\SQLserver\installation):
 
 ```
-sqlcmd -E -b -m-1 -e -i rif40_database_creation.sql
+sqlcmd -E -b -m-1 -e -i rif40_development_creation.sql
 ```
 Note:
 - **_This script will destroy all existing users and data_**;
@@ -55,10 +61,9 @@ Note:
   * The role *rif_user* allows users to create tables and views;
   * The role *rif_manager* allows users to additionally create procedures and functions;
   * The rif40 user can do BULK INSERT;
-  * The default database is *sahsuland_dev*;* The *rif40* users password is `rif40`. Chnage it after install.
+  * The password for the rif40 login is random; this user is purely present to own objects;
+  * The default database is *sahsuland_dev*;
 - The application is installed in the *rif40* schema and data is installed in the *rif_data* schema; both owned by the *rif40* role;
-- Please edit the script to set *rif40*/*rifuser*/*rifmanager* passwords as they are set to their **_usernames_**, especially if 
-  your SQL Server database is networked! 
 - The test database is for building geosptial data. SQL Server express databases are limited to 10G in size; so to maximise the size of data that can be processed
   a separate database is used.
 
@@ -84,63 +89,59 @@ Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
   * Check your firewall permits access to TCP port 1433. **Be careful _not_ to allow Internet access unless you intend it.**
   * The following is more helpful than the official Microsoft manuals: https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/
 
-Now test your can connect to the database.
+## 2.2 Power User Issues
 
-## 2.2 Logon errors
-
-Test for logon errors as using the command: `sqlcmd -U rif40 -P rif40 -d sahsuland_dev`
-
-Test all combinations of *rif40*/*rifuser*/*rifmanager* logon roles and *sahsuland*/*sahsuland_dev* databases.
-
-### 2.2.1 Wrong server authentication mode
-
-The server will need to be changed from Windows Authentication mode to SQL Server and Windows Authentication mode. Then restart SQL Server. 
-See: https://msdn.microsoft.com/en-GB/library/ms188670.aspx
+This is caused by *rebuild_all.bat* failing complaining the user is not an Administrator when run as a power user.
 
 ```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U rif40 -P rif40 -d sahsuland_dev
-Msg 18456, Level 14, State 1, Server PETER-PC\SQLEXPRESS, Line 1
-Login failed for user 'rif40'.
-```
-
-  In the Window "applications" event log:
-```
-Login failed for user 'rif40'. Reason: An attempt to login using SQL authentication failed. Server is configured for Windows authentication only. [CLIENT: <local machine>]
-```
-
-  The node also show how to enable the sa (system adminstrator) account. As with all relational database adminstration accounts as strong (12+ chacracter) password is recommended to defeat 
-  attacks by dictionary or all possible passwords.
-
-  This is what a successful login looks like: `sqlcmd -U rif40 -P rif40`
-
-```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U rif40 -P rif40
-1> SELECT db_name();
+sqlcmd -E
+1> SELECT user_name();
 2> GO
 
 --------------------------------------------------------------------------------------------------------------------------------
-sahsuland_dev
+guest
 
 (1 rows affected)
-1>
+1> quit
 ``` 
+
+The solution to this is to:
+
+* logon as *sa* using the password for the *sa* provided during the install;
+* Create a Windows authenticated user login as the domain user name (e.g. *IC\pch*);
+* Grant full database adminstration privileges (all of them!) to this user;
+* Check the user logon is now an Adminstrator (i.e. is dbo):
+	```
+	sqlcmd -E
+	1> SELECT user_name();
+	2> GO
+
+	--------------------------------------------------------------------------------------------------------------------------------
+	dbo
+
+	(1 rows affected)
+	1> quit
+	``` 
+* Re-run *rebuild_all.bat*
+	
 # 3. Create Additional Users
 
-Run the optional script *rif40_test_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
-the -v newuser=<my new user> parameter. Run as Administrator:
+Run the optional script *rif40_development_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
+the -v newuser=<my new user> and -v newpw=<my new password> parameters. Run as Administrator:
 
 ```
-sqlcmd -E -b -m-1 -e -i rif40_test_user.sql -v newuser=peter
+sqlcmd -E -b -m-1 -e -i rif40_development_user.sql -v newuser=peter -v newpw=XXXXXXXXXXXXXXXX
 ```
 
-* User is created with the *rif_user* (can create tables and views) and *rif_manager* roles (can also create procedures and functions), can do `BULK INSERT`;
-* User can use sahsuland, sahsuland_dev and test databases;
-* The test database is for geospatial processing and does not have the *rif_user* and *rif_manager* roles, the user can create tables, views,
-* procedures and function and do `BULK INSERT`s
-* Will fail to re-create a user if the user already has objects (tables, views etc)
-* This user's password will be the username, so change it on a networked system.
+* User is created with the *rif_user* (can create tables and views) and *rif_manager* roles (can also create procedures and functions), 
+  can do `BULK INSERT`;
+* User can use sahsuland_dev and test databases;
+* The test database is for geospatial processing and does not have the *rif_user* and *rif_manager* roles, the user can create tables, 
+  views;
+* procedures and function and do `BULK INSERT`s;
+* Will fail to re-create a user if the user already has objects (tables, views etc);
 
-Test connection and object privilges:
+Now test your can connect to the database and check your object creation privileges:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P peter -d test
 1> SELECT db_name() AS db_name INTO test_table;
@@ -157,30 +158,70 @@ test
 
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>
 ```
+
+## 3.1 Logon errors
+
+Test for logon errors as using the command: `sqlcmd -U peter -P XXXXXXXXXXXXXXXX -d sahsuland_dev`
+
+Test all combinations of *sahsuland*/*sahsuland_dev*/*test* databases.
+
+### 3.1.1 Wrong server authentication mode
+
+The server will need to be changed from Windows Authentication mode to SQL Server and Windows Authentication mode. Then restart SQL Server. 
+See: https://msdn.microsoft.com/en-GB/library/ms188670.aspx
+
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P XXXXXXXXXXXXXXXX -d sahsuland_dev
+Msg 18456, Level 14, State 1, Server PETER-PC\SQLEXPRESS, Line 1
+Login failed for user 'peter'.
+```
+
+  In the Window "applications" event log:
+```
+Login failed for user 'peter'. Reason: An attempt to login using SQL authentication failed. Server is configured for Windows authentication only. [CLIENT: <local machine>]
+```
+
+  The node also show how to enable the sa (system adminstrator) account. As with all relational database adminstration accounts as strong (12+ chacracter) password is recommended to defeat 
+  attacks by dictionary or all possible passwords.
+
+  This is what a successful login looks like: `sqlcmd -U peter -P XXXXXXXXXXXXXXXX`
+
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U peter -P XXXXXXXXXXXXXXXX
+1> SELECT db_name();
+2> GO
+
+--------------------------------------------------------------------------------------------------------------------------------
+sahsuland_dev
+
+(1 rows affected)
+1>
+``` 
  
 # 4. Installing the RIF Schema
 
-Run the following scripts ad Administrator:
-
-* rif40_sahsuland_dev_install.bat (see note 4.1 below before you run this script)
-* rif40_sahsuland_install.bat (see note 4.1 below before you run this script)
-
-An additional script is proved to build exverything and create an example study. This should be edited to set the test user variable, NEWUSER. Note that this user's password will be the 
+A script is proved to build everything and create an example study. Note that this user's password will be the 
 username, so change it on a networked system:
 
 * rebuild_all.bat (see note 4.1 below before you run this script)
-  rebuild_all.bat can be abort using *control-C*; no other key will abort the script. You will be asked if you want to abort; 'Y' or 'y' will abort; any other keys will continue
+  rebuild_all.bat can be abort using *control-C*; no other key will abort the script. 
+  * This script prompts for the username and password. The default username is *peter*.
+  * This user's password by default will be the username, so change it on a networked system!
+  * You will be asked if you want to abort; 'Y' or 'y' will abort; any other keys will continue
 	```
 	C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>rebuild_all.bat
 
 	C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>ECHO OFF
 	Administrator PRIVILEGES Detected!
+	Creating development RIF databases
+	New user [default peter]:
+	New user password [default peter]:
 	##########################################################################################
 	#
-	# WARNING! this script will the drop and create the sahsuland and sahusland_dev databases.
+	# WARNING! this script will the drop and create the RIF40 sahsuland and sahusland_dev databases.
 	# Type control-C to abort.
 	#
-	# Test user: "peter"
+	# Test user: peter; password: XXXXXXXXXXXXXXXX
 	#
 	##########################################################################################
 	Press any key to continue . . .
@@ -188,9 +229,21 @@ username, so change it on a networked system:
     ```
 
 **These scripts do NOT drop existing tables, the database must be rebuilt from scratch**.
-**You _must_ build sahusland_dev before sahusland**; as it loads the error messages.
+**You _must_ build sahusland_dev before sahusland**; as *sahsuland_dev* is exported as the basis for *sahsuland*.
 
-The indivuidual scripts can be run by batch files for sahsuland_dev only, but they must be run in this order:
+The batch tests for Administrator or power user privilege; gets the seettings as detailed above and then runs the following scripts 
+as Administrator:
+
+* rif40_development_creation.sql - creates the developement databases *sahsuland_dev* and *test*.
+* rif40_sahsuland_dev_install.bat - to create and export *sahsuland_dev* (see notes 4.1 and 4.3 below before you run this script)
+* rif40_sahsuland_install.bat - to create the *sahsuland* database and restore the *sahsuland_dev* backup into it 
+  (see note 4.3 below before you run this script). This script also causes a pause before rebuilding *sahsuland*.
+  This is described in detail in: 
+  https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/production/INSTALL.md
+* rif40_development_user.sql - to create the development user (default database *sahsuland_dev*)
+* rif40_run_study.sql - test the development user by running a study
+
+The individual scripts can be run by batch files for sahsuland_dev only, but they must be run in this order:
 
 * rif40_install_sequences.bat
 * rif40_install_tables.bat
@@ -210,7 +263,8 @@ sqlcmd -U <my new user> -P <my new user> -d sahsuland_dev -b -m-1 -e -r1 -i rif4
 
 ## 4.1 BULK INSERT Permission
 
-SQL Server needs access granted to `BULK INSERT` files, they are not coipied from the client to the server.
+SQL Server needs access permission granted to the directories used to `BULK INSERT` files, the files are not copied from the client to the 
+server as in the *Postgres* *psql* ```\copy` command and the *Oracle* *sqlldr* command.
 
 SQL Server needs access to the relative directories: *..\..\GeospatialData\tileMaker* and *..\..\\DataLoaderData\SAHSULAND*. The simplest
 way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users).
@@ -236,7 +290,7 @@ Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryF
 
 ### 4.2.1 Geospatial script: rif40_sahsuland_tiles.bat
 
-Re-runniong the geospatial script: rif40_sahsuland_tiles.bat will produce the following error:
+Re-running the geospatial script: rif40_sahsuland_tiles.bat will produce the following error:
 
 ```
 -- SQL statement 75: Remove old geolevels meta data table >>>
@@ -258,9 +312,37 @@ DELETE FROM rif40.rif40_covariates WHERE geography = 'SAHSULAND';
 
 Re-load sahsuland example data with: rif40_sahsuland_data.bat
 
-## 4.3 SQL Server BULK INSERT Issues
+## 4.3 SQL Server Backup and Restore
 
-### 4.3.1 Line Termination
+SQL Server needs access granted to the drectories used to `BACKUP` and to `RESTORE` files.
+
+SQL Server needs access to the relative directory: *..\production*. The simplest
+way is to allow full control to the local users group (e.g. PH-LAPTOP\Users).
+
+*DO NOT TRY TO `BACKUP` or `RESTORE` FROM NETWORK DRIVES or CLOUD DRIVES (e.g. Google Drive).* Use a local directory which SQL Server has
+access to; e.g. somewhere on the C: drive. Note that SQL Server *BACKUP* and *RESTORE* behaves dirrently if you logon using Windows authentication (where it will use your credentials 
+to access the files) to using a username and password (where it will use the Server's credentials to acces the file).
+
+```
+--
+-- Export database to ../production/sahsuland_dev.bak
+-- Grant local users full control to this directory
+--
+BACKUP DATABASE [sahsuland_dev] TO DISK='C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\
+production\sahsuland_dev.bak';
+
+Msg 3201, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 6
+Cannot open backup device 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\production\sah
+suland_dev.bak'. Operating system error 5(Access is denied.).
+Msg 3013, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 6
+BACKUP DATABASE is terminating abnormally.
+rif40_sahsuland_dev_install.sql exiting with 1
+rif40_sahsuland_dev_install.bat exiting with 1
+```
+
+## 4.4 SQL Server BULK INSERT Issues
+
+### 4.4.1 Line Termination
 
 ```
 BULK INSERT rif_data.pop_sahsuland_pop FROM 'C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\..\DataLoaderData\SAHSULAND/pop_sahsuland_pop.csv'
@@ -319,7 +401,7 @@ Cannot DROP FUNCTION 'rif40.rif40_sequence_current_value' because it is being re
 	RIF40_TEST_RUNS                                     
 	T_RIF40_FDW_TABLES
   
-* To be SQL Server temporary tables (i.e. ##g_rif40_comparison_areas) created by on-logon trigger:
+* To be SQL Server temporary tables (i.e. #g_rif40_comparison_areas) created by the *rif40_run_study* procedure:
 
 	G_RIF40_COMPARISON_AREAS                            
 	G_RIF40_STUDY_AREAS 
@@ -328,10 +410,10 @@ Cannot DROP FUNCTION 'rif40.rif40_sequence_current_value' because it is being re
 	
 Still to do:
 
-* Search path notes
-* On logon trigger - Postgres *rif40_startup()* function
+* Search path notes - thjere isn't one!
+* On logon trigger - Postgres *rif40_startup()* function and the *rif40_user_objects.sql* script
 * Run study procedure *rif40_run_study()*
-* Fix selected columns:
+* Fix selected columns (done):
 
 | type    | column_name                                                 | nullable | data_type        | Notes                           |       
 |---------|-------------------------------------------------------------|----------|------------------|---------------------------------| 

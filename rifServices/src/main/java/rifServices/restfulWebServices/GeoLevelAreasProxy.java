@@ -144,7 +144,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name="geoLevelAreas")
 @XmlAccessorType(XmlAccessType.FIELD)
-final class GeoLevelAreasProxy {
+final public class GeoLevelAreasProxy {
 
 	// ==========================================
 	// Section Constants
