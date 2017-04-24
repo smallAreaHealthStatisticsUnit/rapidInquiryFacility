@@ -37,7 +37,18 @@ Microsoft SQL Server 2012 (SP2-GDR) (KB3194719) - 11.0.5388.0 (X64)
 
 A standalone script *rif40_sahsuland_install.bat* is provided to install the RIF. It is designed to run in a single directory, and is in
 *...rapidInquiryFacility\rifDatabase\SQLserver\production*. A backup of the *sahsuland_dev* database is required, as created by 
-*rebuild_all.bat* (see: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md) or supplied by SAHSU. This script runs:
+*rebuild_all.bat* (see: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md) or supplied by SAHSU. 
+
+You will need to enter:
+
+* Database name
+* User name
+* User password
+
+The database name and user name should only contain lowercase letters, underscore (\_) and numbers and must start with a letter.
+The default password is the same as the username; chnage it on a production system conntected to the internet!
+
+This script runs:
 
 * rif40_production_creation.sql - this creates the new database $(NEWDB) (by default *sahsuland*) and then runs:
   * rif40_roles.sql - to re-create cluster logins and roles (i.e. the *rif40* login);
@@ -60,13 +71,13 @@ Administrator PRIVILEGES Detected!
 Creating production RIF database
 New user [default peter]:  kevin
 New RIF40 db [default sahsuland]: rif40
-New user password [default kevin]:  garwood
+New user password [default kevin]:  garwood1901
 ##########################################################################################
 #
 # WARNING! this script will the drop and create the RIF40 rif40 database.
 # Type control-C to abort.
 #
-# Test user: kevin; password: garwood
+# Test user: kevin; password: garwood1901
 #
 ##########################################################################################
 Press any key to continue . . .
