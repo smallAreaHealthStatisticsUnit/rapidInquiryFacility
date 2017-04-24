@@ -1282,11 +1282,18 @@ GO
 	database.databaseName=sahsuland_dev
 	database.databaseType=sqlServer	
 	```
+* Run study extract complete, map table to do
+
+#### 29th to 28th April	
+
+* Fixed production restore - complete
+	
 #### Current TODO list (April 2017): SQL Server Port
 
 * Complete SQL Server run study port
 * Process Utah geography
 * Postgres install from export script
+* Add checks to username, database name in scripts for lowercase DB name
 * Disable guest logins on SQL Server
 * Add localhost notes to tomcat install doc; add network setup to SQL Server install notes; 
   add notes on cross site scripting errors (caused by URL/webservices name mismatch); firefox example:
