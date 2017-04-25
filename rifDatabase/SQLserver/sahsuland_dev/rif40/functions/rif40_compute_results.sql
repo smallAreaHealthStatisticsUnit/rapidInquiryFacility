@@ -488,6 +488,15 @@ This may be added to extract creation later.
 	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
 	SET @msg='55612: SQL> ' + @sql_stmt + ';';
 	PRINT @msg;	
+
+--
+-- Make gid_rowindex bigger
+--
+	SET @sql_stmt='ALTER TABLE rif_studies.' + LOWER(@c1_rec_map_table) + 
+		' ALTER COLUMN gid_rowindex VARCHAR(70)';
+	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+	SET @msg='55613: SQL> ' + @sql_stmt + ';';
+	PRINT @msg;
 	
 --
 -- Execute DDL code as rif40
@@ -496,13 +505,13 @@ This may be added to extract creation later.
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
 	IF @rval = 0 BEGIN
-			SET @msg='55613: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+			SET @msg='55614: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' map primary key creation failed, see previous warnings'	/* Study id */;
 			PRINT @msg;
 			RETURN @rval;
 		END; 
 	ELSE BEGIN
-			SET @msg='55614: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+			SET @msg='55615: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' map primary key creation OK'	/* Study id */;
 			PRINT @msg;
 		END; 
@@ -526,7 +535,7 @@ This may be added to extract creation later.
 			'            WHERE rif_studies.' + LOWER(@c1_rec_map_table) + '.study_id = b.study_id' + @crlf +
 			'              AND rif_studies.' + LOWER(@c1_rec_map_table) + '.band_id  = b.band_id)';
 		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
-		SET @msg='55613: SQL> ' + @sql_stmt + ';';	
+		SET @msg='55616: SQL> ' + @sql_stmt + ';';	
 		PRINT @msg;
 		
 --
@@ -534,24 +543,23 @@ This may be added to extract creation later.
 --
 		SET @sql_stmt='UPDATE rif_studies.' + LOWER(@c1_rec_map_table) + @crlf +
 			'   SET gid = ('+ @crlf +
-			'           SELECT d.gid'+ @crlf +
+			'           SELECT d.gid' + @crlf +
 			'             FROM rif_data.lookup_' + LOWER(@c1_rec_study_geolevel_name) + ' d' + @crlf +
 			'            WHERE rif_studies.' + LOWER(@c1_rec_map_table) + '.area_id       = d.' + LOWER(@c1_rec_study_geolevel_name) + ')';
 		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
-		SET @msg='55614: SQL> ' + @sql_stmt + ';';	
+		SET @msg='55617: SQL> ' + @sql_stmt + ';';	
 		PRINT @msg;	
 
 --
 -- Merge gid with gid_rowindex
 --		
-/* Error message: Function: [rif40].[rif40_ddl], SQL statement had error: String or binary data would be truncated.
+-- Error message: Function: [rif40].[rif40_ddl], SQL statement had error: String or binary data would be truncated.
 		SET @sql_stmt='UPDATE rif_studies.' + LOWER(@c1_rec_map_table) + @crlf +
 			'   SET gid_rowindex = gid + ''_'' + gid_rowindex' + @crlf +
 			' WHERE gid IS NOT NULL';
 		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
-		SET @msg='55615: SQL> ' + @sql_stmt + ';';	
+		SET @msg='55618: SQL> ' + @sql_stmt + ';';	
 		PRINT @msg;	
-		*/
 		
 --
 -- Execute as USER
@@ -560,13 +568,13 @@ This may be added to extract creation later.
 				@ddl_stmts	/* SQL table */,
 				@debug		/* enable debug: 0/1) */;
 		IF @rval = 0 BEGIN
-				SET @msg='55616: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				SET @msg='55619: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 					' GID update failed, see previous warnings'	/* Study id */;
 				PRINT @msg;
 				RETURN @rval;
 			END; 
 		ELSE BEGIN
-				SET @msg='55617: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				SET @msg='55620: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 					' GID update OK'	/* Study id */;
 				PRINT @msg;
 			END; 
@@ -578,16 +586,12 @@ This may be added to extract creation later.
 --
 -- Add gid_rowindex unique key for disease maps
 --
-/*
-		sql_stmt:='CREATE UNIQUE INDEX '||quote_ident(LOWER(c1_rec.map_table)||'_uk')||
-			' ON rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||'(gid_rowindex)';
-		ddl_stmts[t_ddl]:=sql_stmt;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55618] SQL> %;',
-			sql_stmt::VARCHAR);
-		t_ddl:=t_ddl+1;	
- */		
-	END;
+		SET @sql_stmt='CREATE UNIQUE INDEX ' + LOWER(@c1_rec_map_table) + '_uk' +
+			' ON rif_studies.' + LOWER(@c1_rec_map_table) + '(gid_rowindex)';
+		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+		SET @msg='55621: SQL> ' + @sql_stmt + ';';	
+		PRINT @msg;		
+	END; /* Disease mapping */ 
 
 	REVERT;	/* Revert to procedure owner context (RIF40) to add indexes */	
 	
@@ -597,7 +601,7 @@ This may be added to extract creation later.
 	SET @sql_stmt='UPDATE STATISTICS rif_studies.' + LOWER(@c1_rec_map_table) + 
 		' WITH SAMPLE 10 PERCENT';
 	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
-	SET @msg='55619: SQL> ' + @sql_stmt + ';';	
+	SET @msg='55622: SQL> ' + @sql_stmt + ';';	
 	PRINT @msg;	
 	
 --
@@ -607,13 +611,13 @@ This may be added to extract creation later.
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
 	IF @rval = 0 BEGIN
-			SET @msg='55620: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+			SET @msg='55623: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' Statistics update failed, see previous warnings'	/* Study id */;
 			PRINT @msg;
 			RETURN @rval;
 		END; 
 	ELSE BEGIN
-			SET @msg='55621: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+			SET @msg='55624: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' Statistics update OK'	/* Study id */;
 			PRINT @msg;
 		END; 
@@ -621,7 +625,7 @@ This may be added to extract creation later.
 --
 	SET @etp=GETDATE();
 	SET @etime=CAST(@etp - @stp AS TIME);
-	SET @msg='55622: Study ID ' + CAST(@c1_rec_study_id AS VARCHAR) +
+	SET @msg='55625: Study ID ' + CAST(@c1_rec_study_id AS VARCHAR) +
 		' map table ' + @c1_rec_map_table + ' created; time taken ' + 
 		CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);
 	PRINT @msg;
