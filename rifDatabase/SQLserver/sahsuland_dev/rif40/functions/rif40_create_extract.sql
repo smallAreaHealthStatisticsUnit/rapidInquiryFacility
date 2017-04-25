@@ -345,8 +345,8 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	DECLARE @comment_text NVARCHAR(MAX)='Study ' + 
 			CAST(@study_id AS VARCHAR) + ' extract: ' + COALESCE(@c1_rec_description, 'NO DESCRIPTION');
 	SET @sql_stmt='sp_addextendedproperty' + @crlf +
-'		@name = N''' + @comment_text + ''',' + @crlf +   
-'		@value = N''Area Name field'',' + @crlf + 
+'		@name = N''MS_Description'',' + @crlf +
+'		@value = N''' + @comment_text + ''',' + @crlf +   
 '		@level0type = N''Schema'', @level0name = ''rif_studies'',' + @crlf +  
 '		@level1type = N''Table'', @level1name = ''' + LOWER(@c1_rec_extract_table) + '''';
 	SET @t_ddl=@t_ddl+1;	
@@ -357,8 +357,8 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
 		SET @sql_stmt='sp_addextendedproperty' + @crlf +
-'		@name = N''' + @c5_rec_column_comment + ''',' + @crlf +   
-'		@value = N''Area Name field'',' + @crlf + 
+'		@name = N''MS_Description'',' + @crlf +
+'		@value = N''' + @c5_rec_column_comment + ''',' + @crlf + 
 '		@level0type = N''Schema'', @level0name = ''rif_studies'',' + @crlf +  
 '		@level1type = N''Table'', @level1name = ''' + LOWER(@c1_rec_extract_table) + ''',' + @crlf +
 '    	@level2type = N''Column'', @level2name = ''' + LOWER(@c5_rec_column_name) + '''';			
