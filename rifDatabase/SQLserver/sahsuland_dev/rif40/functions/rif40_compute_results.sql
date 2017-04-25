@@ -48,10 +48,7 @@ GO
 CREATE PROCEDURE [rif40].[rif40_compute_results](@study_id INT, @debug INT)
 WITH EXECUTE AS 'rif40' /* So as to be owned by RIF40 */
 AS
-BEGIN
-	PRINT 'In: rif40.rif40_compute_results()';
-
-	DECLARE @rval INTEGER=0; 	-- Success		
+BEGIN	
 /*
 Function:	rif40_compute_results()
 Parameter:	Study ID
@@ -85,25 +82,26 @@ Map table for disease maps supports area_id, gid and gid_rowindex for faster mid
 This may be added to extract creation later.
 
  */
- 
- /*
-	c1comp CURSOR(l_study_id INTEGER) FOR
-		SELECT * 
-		  FROM rif40_studies a
-		 WHERE a.study_id = l_study_id;
-	c1acomp CURSOR(l_study_id INTEGER) FOR
-		SELECT * 
-		  FROM rif40_studies a
-		 WHERE a.study_id = l_study_id;
-	c2comp CURSOR(l_study_id INTEGER) FOR
-		SELECT * 
-		  FROM rif40_investigations a
-		 WHERE a.study_id = l_study_id
+
+--
+-- Defaults if set to NULL
+--
+	DECLARE @rval INTEGER=0; 	-- Success	
+	
+	DECLARE c1comp CURSOR FOR
+		SELECT study_id, extract_table 
+		  FROM rif40.rif40_studies a
+		 WHERE a.study_id = @study_id;
+	DECLARE c2comp CURSOR FOR
+		SELECT inv_id, inv_name, numer_tab, inv_description
+		  FROM rif40.rif40_investigations a
+		 WHERE a.study_id = @study_id
 		 ORDER BY inv_id;
-	c3comp CURSOR(l_study_id INTEGER) FOR
-		SELECT *
-		  FROM rif40_study_shares a
-		 WHERE l_study_id = a.study_id;
+	DECLARE c3comp CURSOR FOR
+		SELECT study_id
+		  FROM rif40.rif40_study_shares a
+		 WHERE a.study_id = @study_id;
+		 /*
 	c4comp CURSOR FOR
 		SELECT col_description(a.oid, c.ordinal_position) AS description, c.column_name
 		  FROM information_schema.columns c, pg_class a
@@ -128,81 +126,164 @@ This may be added to extract creation later.
 --		 		 
 	c5comp REFCURSOR;
 --
-	c1_rec RECORD;
-	c1a_rec RECORD;
-	c2_rec RECORD;
 	c3_rec RECORD;
 	c4_rec RECORD;
 	c5_rec RECORD;
 --	c6_rec RECORD;
---
-	sql_stmt	VARCHAR;
-	ddl_stmts	VARCHAR[];
-	i		INTEGER:=0;
-	t_ddl		INTEGER:=1;
-	inv_array	INTEGER[];
-	inv		INTEGER;
+
 BEGIN
-	OPEN c1comp(study_id);
-	FETCH c1comp INTO c1_rec;
-	OPEN c1acomp(study_id);
-	FETCH c1acomp INTO c1a_rec;
-	IF NOT FOUND THEN
+*/
+
+--
+	DECLARE @c1_rec_study_id 		INTEGER;
+	DECLARE @c1_rec_extract_table	VARCHAR(30);
+--	
+	DECLARE @c2_rec_inv_id 			INTEGER;
+	DECLARE @c2_rec_inv_name		VARCHAR(20);
+	DECLARE @c2_rec_numer_tab 		VARCHAR(30);
+	DECLARE @c2_rec_inv_description VARCHAR(250);
+--
+	DECLARE @inv_array TABLE (inv_id INTEGER);
+	DECLARE c6comp CURSOR FOR 
+		SELECT inv_id
+		  FROM @inv_array;
+	DECLARE @c6_rec_inv_id 			INTEGER;		  
+--
+	DECLARE @i			INTEGER=0;
+--
+	DECLARE @sql_stmt 	NVARCHAR(MAX);
+--		  
+	DECLARE @dml_stmts 	Sql_stmt_table;
+	DECLARE @t_dml		INTEGER=0;
+--		  
+	DECLARE @ddl_stmts 	Sql_stmt_table;
+	DECLARE @t_ddl		INTEGER=0;
+--
+	DECLARE @etime DATETIME, @stp DATETIME=GETDATE(), @etp DATETIME;
+--
+	DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
+	DECLARE @tab		VARCHAR(1)=CHAR(9);
+	DECLARE @err_msg 	VARCHAR(MAX);
+	DECLARE @msg	 	VARCHAR(MAX);	
+
+--
+-- Use caller execution context to query RIF views
+--
+	EXECUTE AS CALLER /* RIF user */;
+--
+	OPEN c1comp;
+	FETCH NEXT FROM c1comp INTO @c1_rec_study_id, @c1_rec_extract_table;
+	IF @@CURSOR_ROWS = 0 BEGIN
 		CLOSE c1comp;
-		CLOSE c1acomp;
-		PERFORM rif40_log_pkg.rif40_error(-55600, 'rif40_compute_results', 
-			'Study ID % not found',
-			study_id::VARCHAR		/- Study ID -/);
-	END IF;
+		DEALLOCATE c1comp;
+		SET @err_msg = formatmessage(55600, @study_id); -- Study ID %i not found
+		THROW 55600, @err_msg, 1;
+	END;
 	CLOSE c1comp;
-	CLOSE c1acomp;
+	DEALLOCATE c1comp;
+	
 --
 -- Calculate observed
 --
 -- [No genders support]
 --
-	sql_stmt:='INSERT INTO rif40_results (study_id, inv_id, band_id, genders, direct_standardisation, adjusted, observed)'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'WITH a AS ('||E'\n';
+	SET @sql_stmt='INSERT INTO rif40.rif40_results (study_id, inv_id, band_id, genders, direct_standardisation, adjusted, observed)' + @crlf +
+		'WITH a AS (' + @crlf +
+		@tab + 'SELECT study_id, band_id, sex,';				/* Alredy banded */
 --
-	sql_stmt:=sql_stmt||E'\t'||'SELECT study_id, band_id, sex,';				/- Alredy banded -/
-	FOR c2_rec IN c2comp(study_id) LOOP
-		i:=i+1;
-		inv_array[i]:=c2_rec.inv_id;
-		IF i = 1 THEN
-		       	sql_stmt:=sql_stmt||E'\n'||E'\t'||'       SUM(COALESCE('||c2_rec.inv_name||', 0)) AS inv_'||i::VARCHAR||'_observed'||
-				E'\t'||'/- '||c2_rec.inv_id||' -  '||c2_rec.numer_tab||' - '||c2_rec.inv_description||' -/';
-		ELSE
-		       	sql_stmt:=sql_stmt||','||E'\n'||E'\t'||'       SUM(COALESCE('||c2_rec.inv_name||', 0)) AS inv_'||i::VARCHAR||'_observed'||
-				E'\t'||'/- '||c2_rec.inv_id||' -  '||c2_rec.numer_tab||' - '||c2_rec.inv_description||' -/';
-		END IF;
-	END LOOP;
-	sql_stmt:=sql_stmt||E'\t'||'	  FROM '||quote_ident(LOWER(c1_rec.extract_table))||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'	 WHERE study_or_comparison = ''S'''||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'	 GROUP BY study_id, band_id, sex'||E'\n';
-	sql_stmt:=sql_stmt||')'||E'\n';
-	FOREACH inv IN ARRAY inv_array LOOP
-		IF i > 1 THEN
-			sql_stmt:=sql_stmt||'UNION'||E'\n';
-		END IF;
-		sql_stmt:=sql_stmt||'SELECT study_id, '||inv::VARCHAR||' AS inv_id, band_id,'||
-		' 1 AS genders, 0 /- Indirect -/ AS direct_standardisation, 0 /- Unadjusted -/ AS adjusted, inv_'||
-			i::VARCHAR||'_observed AS observed'||E'\n';
-		sql_stmt:=sql_stmt||'  FROM a'||E'\n';
-		sql_stmt:=sql_stmt||' WHERE sex = 1'||E'\n';
-		sql_stmt:=sql_stmt||'UNION'||E'\n';
-		sql_stmt:=sql_stmt||'SELECT study_id, '||inv::VARCHAR||' AS inv_id, band_id,'||
-		' 2 AS genders, 0 /- Indirect -/ AS direct_standardisation, 0 /- Unadjusted -/ AS adjusted, inv_'||
-			i::VARCHAR||'_observed AS observed'||E'\n';
-		sql_stmt:=sql_stmt||'  FROM a'||E'\n';
-		sql_stmt:=sql_stmt||' WHERE sex = 2'||E'\n';
-		sql_stmt:=sql_stmt||'UNION'||E'\n';
-		sql_stmt:=sql_stmt||'SELECT study_id, '||inv::VARCHAR||' AS inv_id, band_id,'||
-		' 3 /- both -/ AS genders, 0 /- Indirect -/ AS direct_standardisation, 0 /- Unadjusted -/ AS adjusted, SUM(COALESCE(inv_'||
-			i::VARCHAR||'_observed, 0)) AS observed'||E'\n';
-		sql_stmt:=sql_stmt||'  FROM a'||E'\n';
-		sql_stmt:=sql_stmt||' GROUP BY study_id, band_id'||E'\n';
-	END LOOP;
-	sql_stmt:=sql_stmt||' ORDER BY 1, 2, 3, 4, 5, 6';
+	OPEN c2comp;
+	FETCH NEXT FROM c2comp INTO @c2_rec_inv_id, @c2_rec_inv_name, @c2_rec_numer_tab, 
+		@c2_rec_inv_description;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @i=@i+1;		
+		INSERT INTO @inv_array(inv_id) VALUES (@c2_rec_inv_id);
+--
+		IF @i = 1 SET @sql_stmt=@sql_stmt + @crlf + @tab + 
+			'       SUM(COALESCE(' + LOWER(@c2_rec_inv_name) + ', 0)) AS inv_' + CAST(@i AS VARCHAR) + 
+			'_observed' + @tab + '/* ' + CAST (@c2_rec_inv_id AS VARCHAR) + ' -  ' + @c2_rec_numer_tab + ' - ' + 
+			@c2_rec_inv_description + ' */'
+		ELSE SET @sql_stmt=@sql_stmt + ',' + @crlf + @tab + 
+			'       SUM(COALESCE(' + LOWER(@c2_rec_inv_name) + ', 0)) AS inv_' + CAST(@i AS VARCHAR) + 
+			'_observed' + @tab + '/* ' + CAST(@c2_rec_inv_id AS VARCHAR) + ' -  ' + @c2_rec_numer_tab + ' - ' + 
+			@c2_rec_inv_description + ' */'
+--
+		FETCH NEXT FROM c2comp INTO @c2_rec_inv_id, @c2_rec_inv_name, @c2_rec_numer_tab, 
+			@c2_rec_inv_description;
+	END;
+	CLOSE c2comp;
+	DEALLOCATE c2comp;	
+	SET @sql_stmt=@sql_stmt + @crlf + '	  FROM ' + LOWER(@c1_rec_extract_table) + @crlf + 
+		'	 WHERE study_or_comparison = ''S''' + @crlf +
+		'	 GROUP BY study_id, band_id, sex' + @crlf +
+		')' + @crlf;
+
+--
+	SET @i=0;
+	OPEN c6comp;
+	FETCH NEXT FROM c6comp INTO @c6_rec_inv_id;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @i=@i+1;
+		IF @i > 1 SET @sql_stmt=@sql_stmt + 'UNION' + @crlf;
+		SET @sql_stmt=@sql_stmt +
+			'SELECT study_id, ' + CAST (@c6_rec_inv_id AS VARCHAR) + ' AS inv_id, band_id,' +
+				' 1 AS genders,' + @crlf + 
+			'       0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */ AS adjusted,' +
+				' inv_' +
+				 CAST(@i AS VARCHAR) + '_observed AS observed' + @crlf +
+			'  FROM a' + @crlf +
+			' WHERE sex = 1' + @crlf +
+			'UNION' + @crlf +
+			'SELECT study_id, ' + CAST (@c6_rec_inv_id AS VARCHAR) + ' AS inv_id, band_id,' +
+				' 2 AS genders,' + @crlf + 
+			'       0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */ AS adjusted,' +
+				' inv_' +
+				 CAST(@i AS VARCHAR) + '_observed AS observed' + @crlf +
+			'  FROM a' + @crlf +
+			' WHERE sex = 2' + @crlf +
+			'UNION' + @crlf +
+			'SELECT study_id, ' + CAST (@c6_rec_inv_id AS VARCHAR) + ' AS inv_id, band_id,' +
+				' 3 /* both */ AS genders,' + @crlf + 
+			'       0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */'+
+				' AS adjusted, SUM(COALESCE(inv_' +
+				 CAST(@i AS VARCHAR) + '_observed, 0)) AS observed' + @crlf +
+			'  FROM a' + @crlf +
+			' GROUP BY study_id, band_id' + @crlf;		
+--
+		FETCH NEXT FROM c6comp INTO @c6_rec_inv_id;
+	END;
+	CLOSE c6comp;
+	DEALLOCATE c6comp;
+
+	SET @sql_stmt=@sql_stmt + ' ORDER BY 1, 2, 3, 4, 5, 6';
+	
+	PRINT @sql_stmt;
+	SET @t_dml=@t_dml+1;	
+	INSERT INTO @dml_stmts(sql_stmt) VALUES (@sql_stmt);	
+ 
+--
+-- Populate rif40_results from extract table
+--
+	EXECUTE @rval=rif40.rif40_ddl
+			@ddl_stmts	/* SQL table */,
+			@debug		/* enable debug: 0/1) */;
+	IF @rval = 0 BEGIN
+			SET @msg='[55410] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' rif40_results from extract table failed, see previous warnings'	/* Study id */;
+			PRINT @msg;
+			RETURN @rval;
+		END; 
+	ELSE BEGIN
+			SET @msg='[55411] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' rif40_results from extract table OK'	/* Study id */;
+			PRINT @msg;
+		END; 
+
+	REVERT;	/* Revert to procedure owner context (RIF40) to create tables */
+	
+/*
+
 --
 	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
 		'55601] SQL> %;',

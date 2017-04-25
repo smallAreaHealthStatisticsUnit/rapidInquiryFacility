@@ -198,12 +198,6 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	DECLARE @t_ddl		INTEGER=0;
 --
 	DECLARE @sql_frag 	VARCHAR(MAX);	
-/*	
---
-	index_column	VARCHAR;
-	table_column	VARCHAR;
-	i		INTEGER:=0;
- */
 --
 	DECLARE @etime DATETIME, @stp DATETIME=GETDATE(), @etp DATETIME;
 --
@@ -362,7 +356,6 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	FETCH NEXT FROM c5_creex INTO @c5_rec_column_name, @c5_rec_column_comment;
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
---		i:=i+1;
 		SET @sql_stmt='sp_addextendedproperty' + @crlf +
 '		@name = N''' + @c5_rec_column_comment + ''',' + @crlf +   
 '		@value = N''Area Name field'',' + @crlf + 
@@ -432,7 +425,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 			RETURN @rval;
 		END; 
 	ELSE BEGIN
-		SET @msg = 'Study ' + CAST(@c1_rec_study_id AS VARCHAR) + ' OK';
+		SET @msg = 'Study ' + CAST(@c1_rec_study_id AS VARCHAR) + ' extraxct OK';
 		PRINT @msg;
 	END;
 	

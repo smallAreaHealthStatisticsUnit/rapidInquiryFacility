@@ -499,6 +499,9 @@ EXEC sp_addmessage 55405, 16,
 EXEC sp_addmessage 55406, 16,
 	N'Function: [rif40].[rif40_create_extract], RIF40_STUDIES study %i extract must be run by study owner %s not %s.';	
 
+EXEC sp_addmessage 55600, 16,
+	N'Function: [rif40].[rif40_compute_results], Study ID %i not found.';
+	
 EXEC sp_addmessage 56000, 16,
 	N'Function: [rif40].[rif40_create_insert_statement], Study ID %i not found.';	
 EXEC sp_addmessage 56001, 16,
