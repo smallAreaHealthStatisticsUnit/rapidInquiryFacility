@@ -55,3 +55,7 @@ rifDatabase/SQLserver/production/sahsuland.bak
 rifDatabase/SQLserver/production/sahsuland_dev.bak
 rifDatabase/SQLserver/production/trumpton.bak
 rifDatabase/SQLserver/production/sahsuland.zip
+dumpdata/dumpdata.jar
+dumpdata/rif40_studies.csv
+dumpdata/rif40_db/rif40_db.jar
+dumpdata/postgresql-9.2-1002.jdbc4.jar
