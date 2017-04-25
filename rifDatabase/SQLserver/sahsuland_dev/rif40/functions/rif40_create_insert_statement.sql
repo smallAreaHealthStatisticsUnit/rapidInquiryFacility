@@ -616,7 +616,7 @@ Description:	Create INSERT SQL statement
 --
 	INSERT INTO ##g_insert_dml(sql_stmt, name, study_id) VALUES (@sql_stmt, @study_or_comparison + ': 1', @study_id);
 --
-	SET @msg='[56005] Create INSERT statement (' + CAST(LEN(@sql_stmt) AS VARCHAR) + ' chars)' + @crlf + 'SQL> ' + @sql_stmt + ';';
+	SET @msg='56005: Create INSERT statement (' + CAST(LEN(@sql_stmt) AS VARCHAR) + ' chars)' + @crlf + 'SQL> ' + @sql_stmt + ';';
 	PRINT @msg;
 --
 	RETURN @rval;

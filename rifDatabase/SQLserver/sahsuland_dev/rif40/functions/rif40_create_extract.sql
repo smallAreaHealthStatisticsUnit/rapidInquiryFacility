@@ -231,7 +231,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	
 	SET @schema_name=rif40.rif40_object_resolve(@c1_rec_extract_table);
 	IF @schema_name IS NULL AND @c1_rec_study_state = 'V' 
-		PRINT '[55402] RIF40_STUDIES study ' + CAST(@study_id AS VARCHAR) + ' extract table: ' + 
+		PRINT '55402: RIF40_STUDIES study ' + CAST(@study_id AS VARCHAR) + ' extract table: ' + 
 			@c1_rec_extract_table + ' defined, awaiting creation';
 			
 	ELSE IF @c1_rec_study_state != 'V' BEGIN
@@ -400,7 +400,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
 	IF @rval = 0 BEGIN
-			SET @msg='[55408] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+			SET @msg='55408: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' populated extract failed, see previous warnings'	/* Study id */;
 			PRINT @msg;
 			RETURN @rval;
@@ -419,13 +419,13 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 		@c1_rec_study_id,
 		@debug;
 	IF @rval = 0 BEGIN
-			SET @msg='[55409] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+			SET @msg='55409: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' populated extract failed, see previous warnings'	/* Study id */;
 			PRINT @msg;
 			RETURN @rval;
 		END; 
 	ELSE BEGIN
-		SET @msg = 'Study ' + CAST(@c1_rec_study_id AS VARCHAR) + ' extraxct OK';
+		SET @msg = 'Study ' + CAST(@c1_rec_study_id AS VARCHAR) + ' extract OK';
 		PRINT @msg;
 	END;
 	
@@ -499,12 +499,12 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
 	IF @rval = 0 BEGIN
-			SET @msg='[55410] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+			SET @msg='55410: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' populated extract failed, see previous warnings'	/* Study id */;
 			PRINT @msg;
 		END; 
 	ELSE BEGIN
-			SET @msg='[55411] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+			SET @msg='55411: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' populated extract OK'	/* Study id */;
 			PRINT @msg;
 		END; 

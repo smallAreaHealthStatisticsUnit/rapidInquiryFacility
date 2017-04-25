@@ -255,10 +255,9 @@ BEGIN
 	END;
 	CLOSE c6comp;
 	DEALLOCATE c6comp;
-
+--
 	SET @sql_stmt=@sql_stmt + ' ORDER BY 1, 2, 3, 4, 5, 6';
-	
-	PRINT @sql_stmt;
+--	
 	SET @t_dml=@t_dml+1;	
 	INSERT INTO @dml_stmts(sql_stmt) VALUES (@sql_stmt);	
  
@@ -269,14 +268,15 @@ BEGIN
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
 	IF @rval = 0 BEGIN
-			SET @msg='[55410] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
-				' rif40_results from extract table failed, see previous warnings'	/* Study id */;
+			SET @msg='55410: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' populate rif40_results from extract table failed, see previous warnings'	/* Study id */;
 			PRINT @msg;
 			RETURN @rval;
 		END; 
 	ELSE BEGIN
-			SET @msg='[55411] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
-				' rif40_results from extract table OK'	/* Study id */;
+			SET @msg='55411: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' populate rif40_results from extract table OK'	/* Study id */ +
+				@crlf + 'SQL>' + @sql_stmt;
 			PRINT @msg;
 		END; 
 
@@ -284,13 +284,6 @@ BEGIN
 	
 /*
 
---
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-		'55601] SQL> %;',
-		sql_stmt::VARCHAR);
-	IF rif40_sm_pkg.rif40_execute_insert_statement(study_id, sql_stmt, 'rif40_results observed INSERT'::VARCHAR) = FALSE THEN 
-		RETURN FALSE;
-	END IF;
 --	
 -- Check if t_rif40_sahsu_geometry.gid_rowindex column exists (does not pre alter 2) 
 --	
