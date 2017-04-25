@@ -55,7 +55,7 @@ IF EXISTS (SELECT *
 	DROP PROCEDURE [rif40].[rif40_run_study];
 GO 
 
-CREATE PROCEDURE [rif40].[rif40_run_study](@rval INT OUTPUT, @study_id int, @debug int=0, @recursion_level int=0)
+CREATE PROCEDURE [rif40].[rif40_run_study](@study_id int, @debug int=0, @recursion_level int=0)
 AS
 BEGIN
 --
@@ -66,7 +66,7 @@ BEGIN
 	
 /*
 Function:	rif40_run_study()
-Parameter:	Success or failure [INTEGER], Study ID, enable debug (INTEGER: default 0), recursion level (internal parameter DO NOT USE)
+Parameter:	Study ID, enable debug (INTEGER: default 0), recursion level (internal parameter DO NOT USE)
 Returns:	Success or failure [INTEGER], as  first parameter
 			Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)
 			Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost
@@ -90,7 +90,7 @@ Do update. This forces verification
 (i.e. change in study_State on rif40_studies calls rif40_sm_pkg.rif40_verify_state_change)
 Recurse until complete
  */
-	SET @rval=0 /* Failure */;
+	DECLARE @rval	INTEGER=0 /* Failure */;
 --
 	DECLARE @etime DATETIME, @stp DATETIME=GETDATE(), @etp DATETIME;
 --
@@ -215,8 +215,7 @@ Recurse until complete
 			SET @msg='55209: Recurse (' + CAST(@n_recursion_level AS VARCHAR) + ') rif40_run_study using new state ' + 
 				@new_study_state + ' for study ' + CAST(@study_id AS VARCHAR);
 			PRINT @msg;
-			EXECUTE rif40.rif40_run_study
-				@rval				/* Result: 0/1 */, 
+			EXECUTE @rval=rif40.rif40_run_study
 				@study_id 			/* Study_id */, 
 				@debug 				/* Debug: 0/1 */, 
 				@n_recursion_level 	/* Recursion level: Use default */;
@@ -236,6 +235,7 @@ Recurse until complete
 '*                                                                      *' + @crlf +
 '************************************************************************';
 			PRINT @msg;
+			SET @rval=1;
 		END;
 	ELSE BEGIN
 		OPEN c1_runst; 

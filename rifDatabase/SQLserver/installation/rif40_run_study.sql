@@ -258,8 +258,7 @@ BEGIN
 	DECLARE @msg VARCHAR(MAX);
 --
 	BEGIN TRY
-		 EXECUTE rif40.rif40_run_study
-				@rval		/* Result: 0/1 */, 
+		 EXECUTE @rval=rif40.rif40_run_study
 				@study_id 	/* Study_id */, 
 				1 			/* Debug: 0/1 */, 
 				default 	/* Recursion level: Use default */;
