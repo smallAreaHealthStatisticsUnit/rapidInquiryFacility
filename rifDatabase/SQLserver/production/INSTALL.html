@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SQL Server Install</title>
+</head>
+<body>
+<h1 id="sql-server-production-database-installation">SQL Server Production Database Installation</h1>
+<h1 id="contents">Contents</h1>
+<ul>
+<li><a href="#1-install-sql-server-2012-sp2">1. Install SQL Server 2012 SP2</a></li>
+<li><a href="#2-installing-the-rif">2. Installing the RIF</a><ul>
+<li><a href="#21-network-connection-errors">2.1 Network connection errors</a></li>
+<li><a href="#22-logon-errors">2.2 Logon errors</a><ul>
+<li><a href="#221-wrong-server-authentication-mode">2.2.1 Wrong server authentication mode</a></li>
+</ul>
+</li>
+<li><a href="#23-sql-server-restore">2.3 SQL Server Restore</a></li>
+<li><a href="#24-power-user-issues">2.4 Power User Issues</a></li>
+</ul>
+</li>
+<li><a href="#3-create-additional-users">3. Create Additional Users</a></li>
+</ul>
+<h1 id="1-install-sql-server-2012-sp2">1. Install SQL Server 2012 SP2</h1>
+<p>Install SQL Server 2012 SP2  (Express for a test system/full version for production): <a href="https://www.microsoft.com/en-gb/download/details.aspx?id=43351#">https://www.microsoft.com/en-gb/download/details.aspx?id=43351#</a> </p>
+<p><strong>DO NOT INSTALL SQL Server 2008 or before</strong></p>
+<p>Check the version of your database:</p>
+<pre><code><div class="highlight"><pre><span class="nx">sqlcmd</span> <span class="o">-</span><span class="nx">E</span>
+<span class="mi">1</span><span class="o">&gt;</span> <span class="nx">SELECT</span> <span class="err">@@</span><span class="nx">version</span> <span class="nx">AS</span> <span class="nx">version</span><span class="p">,</span> <span class="nx">compatibility_level</span> <span class="nx">FROM</span> <span class="nx">sys</span><span class="p">.</span><span class="nx">databases</span> <span class="nx">Where</span> <span class="nx">DB_NAME</span><span class="p">()</span> <span class="o">=</span> <span class="nx">name</span> <span class="p">;</span>
+<span class="mi">2</span><span class="o">&gt;</span> <span class="nx">go</span>
+<span class="nx">version</span>                                                                                               <span class="nx">compatibility_level</span>
+<span class="o">-----------------------------------------------------------------------------------------------------</span> <span class="o">-------------------</span>
+<span class="nx">Microsoft</span> <span class="nx">SQL</span> <span class="nx">Server</span> <span class="mi">2012</span> <span class="p">(</span><span class="nx">SP2</span><span class="o">-</span><span class="nx">GDR</span><span class="p">)</span> <span class="p">(</span><span class="nx">KB3194719</span><span class="p">)</span> <span class="o">-</span> <span class="mf">11.0</span><span class="p">.</span><span class="mf">5388.0</span> <span class="p">(</span><span class="nx">X64</span><span class="p">)</span>
+        <span class="nx">Sep</span> <span class="mi">23</span> <span class="mi">2016</span> <span class="mi">16</span><span class="o">:</span><span class="mi">56</span><span class="o">:</span><span class="mi">29</span>
+        <span class="nx">Copyright</span> <span class="p">(</span><span class="nx">c</span><span class="p">)</span> <span class="nx">Microsoft</span> <span class="nx">Corporation</span>
+        <span class="nx">Express</span> <span class="nx">Edition</span> <span class="p">(</span><span class="mi">64</span><span class="o">-</span><span class="nx">bit</span><span class="p">)</span> <span class="nx">on</span> <span class="nx">Windows</span> <span class="nx">NT</span> <span class="mf">6.1</span> <span class="o">&lt;</span><span class="nx">X64</span><span class="o">&gt;</span> <span class="p">(</span><span class="nx">Build</span> <span class="mi">7601</span><span class="o">:</span> <span class="nx">Service</span> <span class="nx">Pack</span> <span class="mi">1</span><span class="p">)</span>                 <span class="mi">110</span>
+</pre></div>
+
+</code></pre><ul>
+<li>The compatibility level should be <em>110</em> and the version <em>Microsoft SQL Server 2012 (SP2...</em>. If it is not then you have more<br>than one SQL Server database on your machine, see setting <em>SQLCMDSERVER</em> in the next section.</li>
+<li>If you install SQL Server 2014+; make sure SQL Server Management Studio has been installed; <a href="https://www.hanselman.com/blog/DownloadSQLServerExpress.aspx">see this blog for further instructions</a></li>
+</ul>
+<h1 id="2-installing-the-rif">2. Installing the RIF</h1>
+<p>A standalone script <em>rif40_sahsuland_install.bat</em> is provided to install the RIF. It is designed to run in a single directory, and is in<br><em>...rapidInquiryFacility\rifDatabase\SQLserver\production</em>. A backup of the <em>sahsuland_dev</em> database is required, as created by<br><em>rebuild_all.bat</em> (see: <a href="https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md">https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md</a>) or supplied by SAHSU. </p>
+<p>Either:</p>
+<ol>
+<li>Create <em>...rapidInquiryFacility\rifDatabase\SQLserver\production\sahsuland_dev.bak</em> using rebuild_all.bat</li>
+</ol>
+<p>or:</p>
+<ol>
+<li>Use a pre-built database dump provided by SAHSU. If you use the prebuilt version check that the<br>dump <em>sahsuland_dev.bak</em> is unZipped.</li>
+</ol>
+<p>You will need to enter:</p>
+<ul>
+<li>Database name</li>
+<li>User name</li>
+<li>User password</li>
+</ul>
+<p>The database name and user name should only contain lowercase letters, underscore (_) and numbers and must start with a letter.<br>The default password is the same as the username; chnage it on a production system conntected to the internet!</p>
+<p>This script runs:</p>
+<ul>
+<li><p>rif40_production_creation.sql - this creates the new database $(NEWDB) (by default <em>sahsuland</em>) and then runs:</p>
+<ul>
+<li>rif40_roles.sql - to re-create cluster logins and roles (i.e. the <em>rif40</em> login);</li>
+<li>rif40_database_roles.sql - creates database users, roles and schemas;</li>
+<li>rif40_custom_error_messages.sql - add custom error messages to <em>master</em> database;</li>
+<li>Import database from ./sahsuland_dev.bak into $(NEWDB); fixing the log file names so to be as just created for $(NEWDB);</li>
+<li>rif40_production_user.sql - creates the production user specified. This in turn runs:<ul>
+<li>rif40_user_objects.sql;</li>
+</ul>
+</li>
+</ul>
+<p>Notes: </p>
+<ul>
+<li><em>Does not grant <code>BLUK INSERT</code></em>;</li>
+<li>User is a RIF manager.</li>
+</ul>
+</li>
+<li><p>Script output. Use control-C to abort the script before database (re-)creation.<br>```<br>C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production&gt;rif40_sahsuland_install.bat</p>
+</li>
+</ul>
+<p>C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production&gt;ECHO OFF<br>Administrator PRIVILEGES Detected!<br>Creating production RIF database<br>New user [default peter]:  kevin<br>New RIF40 db [default sahsuland]: rif40<br>New user password [default kevin]:  garwood1901</p>
+<p>##########################################################################################<br>#</p>
+<h1 id="warning-this-script-will-the-drop-and-create-the-rif40-rif40-database-">WARNING! this script will the drop and create the RIF40 rif40 database.</h1>
+<h1 id="type-control-c-to-abort-">Type control-C to abort.</h1>
+<p>#</p>
+<h1 id="test-user-kevin-password-garwood1901">Test user: kevin; password: garwood1901</h1>
+<p>#</p>
+<p>##########################################################################################<br>Press any key to continue . . .</p>
+<pre><code><div class="highlight"><pre><span class="o">*</span> <span class="nx">Typing</span> <span class="err">```</span><span class="o">&lt;</span><span class="nx">enter</span><span class="o">&gt;</span><span class="err">```</span> <span class="nx">produces</span> <span class="nx">a</span> <span class="nx">lot</span> <span class="nx">of</span> <span class="nx">output</span><span class="p">.</span> <span class="nx">Successful</span> <span class="nx">completion</span> <span class="nx">looks</span> <span class="nx">like</span><span class="o">:</span>
+</pre></div>
+
+</code></pre><p>--<br>-- Eof (rif40_user_objects.sql)</p>
+<p>--<br>-- Eof (rif40_production_user.sql)</p>
+<p>rif40_production_user.sql built OK 0; created RIF40 production database sahsuland with user: peter</p>
+<p>C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production&gt;</p>
+<pre><code><div class="highlight"><pre><span class="err">##</span> <span class="mf">2.1</span> <span class="nx">Network</span> <span class="nx">connection</span> <span class="nx">errors</span>
+
+<span class="nx">This</span> <span class="nx">is</span> <span class="nx">when</span> <span class="nx">the</span> <span class="nx">above</span> <span class="nx">command</span> <span class="nx">will</span> <span class="nx">not</span> <span class="nx">run</span><span class="p">.</span>
+</pre></div>
+
+</code></pre><p>C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation&gt;sqlcmd -E -d rif40 -b -m-1 -e -r1 -i rif40_production_creation.sql<br>Result 0x2, Level 16, State 1<br>Named Pipes Provider: Could not open a connection to SQL Server [2].<br>Mirosoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.<br>Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.</p>
+<pre><code><div class="highlight"><pre>  <span class="o">*</span> <span class="nx">You</span> <span class="nx">may</span> <span class="nx">need</span> <span class="nx">to</span> <span class="nx">specify</span> <span class="nx">the</span> <span class="nx">instance</span> <span class="nx">name</span><span class="o">:</span> <span class="nx">e</span><span class="p">.</span><span class="nx">g</span><span class="p">.</span> <span class="err">`</span><span class="o">-</span><span class="nx">S</span> <span class="nx">PETER</span><span class="o">-</span><span class="nx">PC</span><span class="err">\</span><span class="nx">SAHSU</span><span class="err">`</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">g</span><span class="p">.</span>
+</pre></div>
+
+</code></pre><pre><code><div class="highlight"><pre><span class="nx">sqlcmd</span> <span class="o">-</span><span class="nx">E</span> <span class="o">-</span><span class="nx">S</span> <span class="nx">PETER</span><span class="o">-</span><span class="nx">PC</span><span class="err">\</span><span class="nx">SAHSU</span> <span class="o">-</span><span class="nx">d</span> <span class="nx">rif40</span> <span class="o">-</span><span class="nx">b</span> <span class="o">-</span><span class="nx">m</span><span class="o">-</span><span class="mi">1</span> <span class="o">-</span><span class="nx">e</span> <span class="o">-</span><span class="nx">r1</span> <span class="o">-</span><span class="nx">i</span> <span class="nx">rif40_production_creation</span><span class="p">.</span><span class="nx">sql</span> <span class="o">-</span><span class="nx">v</span> <span class="nx">import_dir</span><span class="o">=</span><span class="s2">&quot;%cd%\&quot; -v newdb=&quot;</span><span class="o">%</span><span class="nx">NEWDB</span><span class="o">%</span><span class="err">&quot;</span>
+<span class="err">```</span>  
+<span class="nx">If</span> <span class="nx">you</span> <span class="nx">set</span> <span class="k">this</span> <span class="nx">it</span> <span class="nx">will</span> <span class="nx">ned</span> <span class="nx">to</span> <span class="nx">be</span> <span class="nx">set</span> <span class="k">in</span> <span class="nx">the</span> <span class="nx">environment</span> <span class="nx">as</span> <span class="o">*</span><span class="nx">SQLCMDSERVER</span><span class="o">*</span><span class="p">.</span> <span class="nx">This</span> <span class="nx">is</span> <span class="nx">usually</span> <span class="nx">caused</span> <span class="nx">by</span> 
+<span class="nx">multiple</span> <span class="nx">installations</span> <span class="nx">of</span> <span class="nx">SQL</span> <span class="nx">server</span> <span class="nx">on</span> <span class="nx">the</span> <span class="nx">machine</span> <span class="k">in</span> <span class="nx">the</span> <span class="nx">past</span><span class="p">,</span> <span class="nx">i</span><span class="p">.</span><span class="nx">e</span><span class="p">.</span> <span class="nx">the</span> <span class="o">*</span><span class="nx">DefaultLocalInstance</span><span class="o">*</span> <span class="nx">registry</span> <span class="nx">key</span> <span class="nx">is</span> <span class="nx">wrong</span><span class="p">.</span>
+</pre></div>
+
+</code></pre><ul>
+<li>Check if remote access is enabled (it should be) using SQL Server Management Studio as adminstrator: <a href="https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx">https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx</a></li>
+<li>Check TCP access is enabled using SQL Server Configuration Manager as adminstrator: <a href="https://msdn.microsoft.com/en-us/library/ms189083.aspx">https://msdn.microsoft.com/en-us/library/ms189083.aspx</a></li>
+<li>Check your firewall permits access to TCP port 1433. <strong>Be careful <em>not</em> to allow Internet access unless you intend it.</strong></li>
+<li>The following is more helpful than the official Microsoft manuals: <a href="https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/">https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/</a></li>
+</ul>
+<p>Now test your can connect to the database.</p>
+<h2 id="2-2-logon-errors">2.2 Logon errors</h2>
+<p>Test for logon errors as using the command: `sqlcmd -U peter -P XXXXXXXXXXXX</p>
+<h3 id="2-2-1-wrong-server-authentication-mode">2.2.1 Wrong server authentication mode</h3>
+<p>The server will need to be changed from Windows Authentication mode to SQL Server and Windows Authentication mode. Then restart SQL Server.<br>See: <a href="https://msdn.microsoft.com/en-GB/library/ms188670.aspx">https://msdn.microsoft.com/en-GB/library/ms188670.aspx</a></p>
+<pre><code><div class="highlight"><pre><span class="nx">C</span><span class="o">:</span><span class="err">\</span><span class="nx">Users</span><span class="err">\</span><span class="nx">Peter</span><span class="err">\</span><span class="nx">Documents</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">rapidInquiryFacility</span><span class="err">\</span><span class="nx">rifDatabase</span><span class="err">\</span><span class="nx">Postgres</span><span class="err">\</span><span class="nx">psql_scripts</span><span class="o">&gt;</span><span class="nx">sqlcmd</span> <span class="o">-</span><span class="nx">U</span> <span class="nx">peter</span> <span class="o">-</span><span class="nx">P</span> <span class="nx">XXXXXXXXXXXX</span>
+<span class="nx">Msg</span> <span class="mi">18456</span><span class="p">,</span> <span class="nx">Level</span> <span class="mi">14</span><span class="p">,</span> <span class="nx">State</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">Server</span> <span class="nx">PETER</span><span class="o">-</span><span class="nx">PC</span><span class="err">\</span><span class="nx">SQLEXPRESS</span><span class="p">,</span> <span class="nx">Line</span> <span class="mi">1</span>
+<span class="nx">Login</span> <span class="nx">failed</span> <span class="k">for</span> <span class="nx">user</span> <span class="s1">&#39;peter&#39;</span><span class="p">.</span>
+</pre></div>
+
+</code></pre><p>  In the Window &quot;applications&quot; event log:</p>
+<pre><code><div class="highlight"><pre><span class="nx">Login</span> <span class="nx">failed</span> <span class="k">for</span> <span class="nx">user</span> <span class="s1">&#39;peter&#39;</span><span class="p">.</span> <span class="nx">Reason</span><span class="o">:</span> <span class="nx">An</span> <span class="nx">attempt</span> <span class="nx">to</span> <span class="nx">login</span> <span class="nx">using</span> <span class="nx">SQL</span> <span class="nx">authentication</span> <span class="nx">failed</span><span class="p">.</span> <span class="nx">Server</span> <span class="nx">is</span> <span class="nx">configured</span> <span class="k">for</span> <span class="nx">Windows</span> <span class="nx">authentication</span> <span class="nx">only</span><span class="p">.</span> <span class="p">[</span><span class="nx">CLIENT</span><span class="o">:</span> <span class="o">&lt;</span><span class="nx">local</span> <span class="nx">machine</span><span class="o">&gt;</span><span class="p">]</span>
+</pre></div>
+
+</code></pre><p>  The node also show how to enable the sa (system adminstrator) account. As with all relational database adminstration accounts as strong (12+ chacracter) password is recommended to defeat<br>  attacks by dictionary or all possible passwords.</p>
+<p>  This is what a successful login looks like: <code>sqlcmd -U kevin -P XXXXXXXXXXXX</code></p>
+<pre><code><div class="highlight"><pre><span class="nx">C</span><span class="o">:</span><span class="err">\</span><span class="nx">Users</span><span class="err">\</span><span class="nx">Peter</span><span class="err">\</span><span class="nx">Documents</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">rapidInquiryFacility</span><span class="err">\</span><span class="nx">rifDatabase</span><span class="err">\</span><span class="nx">Postgres</span><span class="err">\</span><span class="nx">psql_scripts</span><span class="o">&gt;</span><span class="nx">sqlcmd</span> <span class="o">-</span><span class="nx">U</span> <span class="nx">kevin</span> <span class="o">-</span><span class="nx">P</span> <span class="nx">XXXXXXXXXXXX</span>
+<span class="mi">1</span><span class="o">&gt;</span> <span class="nx">SELECT</span> <span class="nx">db_name</span><span class="p">();</span>
+<span class="mi">2</span><span class="o">&gt;</span> <span class="nx">GO</span>
+
+<span class="o">--------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="nx">rif40</span>
+
+<span class="p">(</span><span class="mi">1</span> <span class="nx">rows</span> <span class="nx">affected</span><span class="p">)</span>
+<span class="mi">1</span><span class="o">&gt;</span>
+</pre></div>
+
+</code></pre><p>The database specified by <em>db_name()</em> will be the one specified by $(NEWDB). Running this script against a pre-existing development user<br>will change the default database from <em>sahsuland_dev</em> to <em>$(NEWDB)</em>.</p>
+<h2 id="2-3-sql-server-restore">2.3 SQL Server Restore</h2>
+<p>SQL Server needs access granted to the drectories used to the <code>RESTORE</code> file used to import the database.</p>
+<p>SQL Server needs access to the current directory. The simplest<br>way is to allow read/executre permission to the local users group (e.g. PH-LAPTOP\Users).</p>
+<p><em>DO NOT TRY <code>RESTORE</code> FROM NETWORK DRIVES or CLOUD DRIVES (e.g. Google Drive).</em> Use a local directory which SQL Server has<br>access to; e.g. somewhere on the C: drive. Note that SQL Server <em>RESTORE</em> behaves dirrently if you logon using Windows authentication (where it will use your credentials<br>to access the files) to using a username and password (where it will use the Server&#39;s credentials to acces the file).</p>
+<pre><code><div class="highlight"><pre><span class="o">--</span>
+<span class="o">--</span> <span class="nx">Export</span> <span class="nx">database</span> <span class="nx">to</span> <span class="p">..</span><span class="o">/</span><span class="nx">production</span><span class="o">/</span><span class="nx">sahsuland_dev</span><span class="p">.</span><span class="nx">bak</span>
+<span class="o">--</span> <span class="nx">Grant</span> <span class="nx">local</span> <span class="nx">users</span> <span class="nx">full</span> <span class="nx">control</span> <span class="nx">to</span> <span class="k">this</span> <span class="nx">directory</span>
+<span class="o">--</span>
+<span class="nx">BACKUP</span> <span class="nx">DATABASE</span> <span class="p">[</span><span class="nx">sahsuland_dev</span><span class="p">]</span> <span class="nx">TO</span> <span class="nx">DISK</span><span class="o">=</span><span class="s1">&#39;C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\</span>
+<span class="s1">production\sahsuland_dev.bak&#39;</span><span class="p">;</span>
+
+<span class="nx">Msg</span> <span class="mi">3201</span><span class="p">,</span> <span class="nx">Level</span> <span class="mi">16</span><span class="p">,</span> <span class="nx">State</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">Server</span> <span class="nx">PH</span><span class="o">-</span><span class="nx">LAPTOP</span><span class="err">\</span><span class="nx">SQLEXPRESS</span><span class="p">,</span> <span class="nx">Line</span> <span class="mi">6</span>
+<span class="nx">Cannot</span> <span class="nx">open</span> <span class="nx">backup</span> <span class="nx">device</span> <span class="s1">&#39;C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\production\sah</span>
+<span class="s1">suland_dev.bak&#39;</span><span class="p">.</span> <span class="nx">Operating</span> <span class="nx">system</span> <span class="nx">error</span> <span class="mi">5</span><span class="p">(</span><span class="nx">Access</span> <span class="nx">is</span> <span class="nx">denied</span><span class="p">.).</span>
+<span class="nx">Msg</span> <span class="mi">3013</span><span class="p">,</span> <span class="nx">Level</span> <span class="mi">16</span><span class="p">,</span> <span class="nx">State</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">Server</span> <span class="nx">PH</span><span class="o">-</span><span class="nx">LAPTOP</span><span class="err">\</span><span class="nx">SQLEXPRESS</span><span class="p">,</span> <span class="nx">Line</span> <span class="mi">6</span>
+<span class="nx">BACKUP</span> <span class="nx">DATABASE</span> <span class="nx">is</span> <span class="nx">terminating</span> <span class="nx">abnormally</span><span class="p">.</span>
+<span class="nx">rif40_sahsuland_dev_install</span><span class="p">.</span><span class="nx">sql</span> <span class="nx">exiting</span> <span class="kd">with</span> <span class="mi">1</span>
+<span class="nx">rif40_sahsuland_dev_install</span><span class="p">.</span><span class="nx">bat</span> <span class="nx">exiting</span> <span class="kd">with</span> <span class="mi">1</span>
+</pre></div>
+
+</code></pre><h2 id="2-4-power-user-issues">2.4 Power User Issues</h2>
+<p>This is caused by <em>rif40_sahsuland_install.bat</em> failing complaining the user is not an Administrator when run as a power user.</p>
+<pre><code><div class="highlight"><pre><span class="nx">sqlcmd</span> <span class="o">-</span><span class="nx">E</span>
+<span class="mi">1</span><span class="o">&gt;</span> <span class="nx">SELECT</span> <span class="nx">user_name</span><span class="p">();</span>
+<span class="mi">2</span><span class="o">&gt;</span> <span class="nx">GO</span>
+
+<span class="o">--------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="nx">guest</span>
+
+<span class="p">(</span><span class="mi">1</span> <span class="nx">rows</span> <span class="nx">affected</span><span class="p">)</span>
+<span class="mi">1</span><span class="o">&gt;</span> <span class="nx">quit</span>
+</pre></div>
+
+</code></pre><p>The solution to this is to:</p>
+<ul>
+<li>logon as <em>sa</em> using the password for the <em>sa</em> provided during the install;</li>
+<li>Create a Windows authenticated user login as the domain user name (e.g. <em>IC\pch</em>);</li>
+<li>Grant full database adminstration privileges (all of them!) to this user;</li>
+<li><p>Check the user logon is now an Adminstrator (i.e. is dbo):</p>
+<pre><code><div class="highlight"><pre>  <span class="nx">sqlcmd</span> <span class="o">-</span><span class="nx">E</span>
+  <span class="mi">1</span><span class="o">&gt;</span> <span class="nx">SELECT</span> <span class="nx">user_name</span><span class="p">();</span>
+  <span class="mi">2</span><span class="o">&gt;</span> <span class="nx">GO</span>
+
+  <span class="o">--------------------------------------------------------------------------------------------------------------------------------</span>
+  <span class="nx">dbo</span>
+
+  <span class="p">(</span><span class="mi">1</span> <span class="nx">rows</span> <span class="nx">affected</span><span class="p">)</span>
+  <span class="mi">1</span><span class="o">&gt;</span> <span class="nx">quit</span>
+</pre></div>
+
+</code></pre></li>
+<li>Re-run <em>rif40_sahsuland_install.bat</em></li>
+</ul>
+<h1 id="3-create-additional-users">3. Create Additional Users</h1>
+<p>Run the optional script <em>rif40_production_user.sql</em>. This creates a default user <em>%newuser%</em> from the command environment. This is set from the command line using<br>the -v newuser=&lt;my new user&gt;  and -v newpw=&lt;my new password&gt; parameters. Run as Administrator:</p>
+<pre><code><div class="highlight"><pre><span class="nx">sqlcmd</span> <span class="o">-</span><span class="nx">E</span> <span class="o">-</span><span class="nx">b</span> <span class="o">-</span><span class="nx">m</span><span class="o">-</span><span class="mi">1</span> <span class="o">-</span><span class="nx">e</span> <span class="o">-</span><span class="nx">i</span> <span class="nx">rif40_production_user</span><span class="p">.</span><span class="nx">sql</span> <span class="o">-</span><span class="nx">v</span> <span class="nx">newuser</span><span class="o">=</span><span class="nx">kevin</span> <span class="o">-</span><span class="nx">v</span> <span class="nx">newpw</span><span class="o">=</span><span class="nx">XXXXXXXXXXXX</span>
+</pre></div>
+
+</code></pre><ul>
+<li>User is created with the <em>rif_user</em> (can create tables and views) and <em>rif_manager</em> roles (can also create procedures and functions);</li>
+<li>User can use the sahsuland database;</li>
+<li>Will fail to re-create a user if the user already has objects (tables, views etc);</li>
+</ul>
+<p>Test connection and object privilges:</p>
+<pre><code><div class="highlight"><pre><span class="nx">C</span><span class="o">:</span><span class="err">\</span><span class="nx">Users</span><span class="err">\</span><span class="nx">Peter</span><span class="err">\</span><span class="nx">Documents</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">rapidInquiryFacility</span><span class="err">\</span><span class="nx">rifDatabase</span><span class="err">\</span><span class="nx">Postgres</span><span class="err">\</span><span class="nx">psql_scripts</span><span class="o">&gt;</span><span class="nx">sqlcmd</span> <span class="o">-</span><span class="nx">U</span> <span class="nx">kevin</span> <span class="o">-</span><span class="nx">P</span> <span class="nx">XXXXXXXXXXXX</span>
+<span class="mi">1</span><span class="o">&gt;</span> <span class="nx">SELECT</span> <span class="nx">db_name</span><span class="p">()</span> <span class="nx">AS</span> <span class="nx">db_name</span> <span class="nx">INTO</span> <span class="nx">test_table</span><span class="p">;</span>
+<span class="mi">2</span><span class="o">&gt;</span> <span class="nx">SELECT</span> <span class="o">*</span> <span class="nx">FROM</span> <span class="nx">test_table</span><span class="p">;</span>
+<span class="mi">3</span><span class="o">&gt;</span> <span class="nx">go</span>
+
+<span class="p">(</span><span class="mi">1</span> <span class="nx">rows</span> <span class="nx">affected</span><span class="p">)</span>
+<span class="nx">db_name</span>
+<span class="o">--------------------------------------------------------------------------------------------------------------------------------</span>
+<span class="nx">rif40</span>
+
+<span class="p">(</span><span class="mi">1</span> <span class="nx">rows</span> <span class="nx">affected</span><span class="p">)</span>
+<span class="mi">1</span><span class="o">&gt;</span> <span class="nx">quit</span>
+
+<span class="nx">C</span><span class="o">:</span><span class="err">\</span><span class="nx">Users</span><span class="err">\</span><span class="nx">Peter</span><span class="err">\</span><span class="nx">Documents</span><span class="err">\</span><span class="nx">GitHub</span><span class="err">\</span><span class="nx">rapidInquiryFacility</span><span class="err">\</span><span class="nx">rifDatabase</span><span class="err">\</span><span class="nx">Postgres</span><span class="err">\</span><span class="nx">psql_scripts</span><span class="o">&gt;</span>
+</pre></div>
+
+</code></pre></body>
+</html>
