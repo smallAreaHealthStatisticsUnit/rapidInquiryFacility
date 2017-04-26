@@ -10,10 +10,10 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -170,7 +170,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
@@ -220,8 +220,8 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 		
 	}
@@ -240,8 +240,8 @@ final class MSSQLCreateStudySubmissionStep
 		try {
 			
 			//add information about who can share the study
-			PGSQLInsertQueryFormatter studyQueryFormatter
-				= new PGSQLInsertQueryFormatter();
+			MSSQLInsertQueryFormatter studyQueryFormatter
+				= new MSSQLInsertQueryFormatter(false);
 			studyQueryFormatter.setIntoTable("rif40_studies");
 			studyQueryFormatter.addInsertField("geography");
 			studyQueryFormatter.addInsertField("project");
@@ -361,8 +361,8 @@ final class MSSQLCreateStudySubmissionStep
 			addStudyStatement.executeUpdate();			
 			
 			//add information about who can share the study
-			PGSQLInsertQueryFormatter studyShareQueryFormatter
-				= new PGSQLInsertQueryFormatter();
+			MSSQLInsertQueryFormatter studyShareQueryFormatter
+				= new MSSQLInsertQueryFormatter(false);
 			studyShareQueryFormatter.setIntoTable("rif40_study_shares");
 			studyShareQueryFormatter.addInsertField("grantee_username");
 
@@ -375,8 +375,8 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources	
-			PGSQLQueryUtility.close(studyShareStatement);
-			PGSQLQueryUtility.close(addStudyStatement);
+			MSSQLQueryUtility.close(studyShareStatement);
+			MSSQLQueryUtility.close(addStudyStatement);
 		}
 	}
 	
@@ -399,8 +399,8 @@ final class MSSQLCreateStudySubmissionStep
 				return;
 			}
 
-			PGSQLInsertQueryFormatter queryFormatter
-				= new PGSQLInsertQueryFormatter();
+			MSSQLInsertQueryFormatter queryFormatter
+				= new MSSQLInsertQueryFormatter(false);
 			queryFormatter.setIntoTable("rif40_investigations");		
 			queryFormatter.addInsertField("inv_name");
 			queryFormatter.addInsertField("inv_description");
@@ -517,7 +517,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}
 
 	}
@@ -532,7 +532,7 @@ final class MSSQLCreateStudySubmissionStep
 		throws SQLException,
 		RIFServiceException {
 		
-		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+		MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 
 		queryFormatter.addSelectField("\"offset\"");
 		queryFormatter.addFromTable("rif40_age_groups");
@@ -574,7 +574,7 @@ final class MSSQLCreateStudySubmissionStep
 			return resultSet.getInt(1);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}
 	}
 		
@@ -598,8 +598,8 @@ final class MSSQLCreateStudySubmissionStep
 					geography,
 					diseaseMappingStudyArea);
 			
-			PGSQLInsertQueryFormatter queryFormatter
-				= new PGSQLInsertQueryFormatter();
+			MSSQLInsertQueryFormatter queryFormatter
+				= new MSSQLInsertQueryFormatter(false);
 			queryFormatter.setIntoTable("rif40_study_areas");
 			queryFormatter.addInsertField("area_id");
 			queryFormatter.addInsertField("band_id");
@@ -644,7 +644,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}	
 	}
 	
@@ -656,8 +656,8 @@ final class MSSQLCreateStudySubmissionStep
 	
 		PreparedStatement statement = null;
 		try {
-			PGSQLInsertQueryFormatter queryFormatter
-				= new PGSQLInsertQueryFormatter();
+			MSSQLInsertQueryFormatter queryFormatter
+				= new MSSQLInsertQueryFormatter(false);
 			queryFormatter.setIntoTable("rif40_comparison_areas");
 			queryFormatter.addInsertField("area_id");
 			
@@ -693,7 +693,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -709,8 +709,8 @@ final class MSSQLCreateStudySubmissionStep
 		PreparedStatement addCovariateStatement = null;
 		try {
 		
-			PGSQLSelectQueryFormatter getMinMaxCovariateValuesQueryFormatter
-				= new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter getMinMaxCovariateValuesQueryFormatter
+				= new MSSQLSelectQueryFormatter(false);
 			getMinMaxCovariateValuesQueryFormatter.addSelectField("min");
 			getMinMaxCovariateValuesQueryFormatter.addSelectField("max");
 			getMinMaxCovariateValuesQueryFormatter.addFromTable("rif40_covariates");
@@ -718,8 +718,8 @@ final class MSSQLCreateStudySubmissionStep
 			getMinMaxCovariateValuesQueryFormatter.addWhereParameter("geolevel_name");
 			getMinMaxCovariateValuesQueryFormatter.addWhereParameter("covariate_name");
 			
-			PGSQLInsertQueryFormatter addCovariateQueryFormatter
-				= new PGSQLInsertQueryFormatter();
+			MSSQLInsertQueryFormatter addCovariateQueryFormatter
+				= new MSSQLInsertQueryFormatter(false);
 			addCovariateQueryFormatter.setIntoTable("rif40_inv_covariates");
 			addCovariateQueryFormatter.addInsertField("geography");
 			addCovariateQueryFormatter.addInsertField("covariate_name");
@@ -799,7 +799,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(addCovariateStatement);
+			MSSQLQueryUtility.close(addCovariateStatement);
 		}
 	}
 		
@@ -815,8 +815,8 @@ final class MSSQLCreateStudySubmissionStep
 		PreparedStatement addHealthCodeStatement = null;
 		try {
 						
-			PGSQLSelectQueryFormatter getOutcomeGroupNameQueryFormatter
-				= new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter getOutcomeGroupNameQueryFormatter
+				= new MSSQLSelectQueryFormatter(false);
 			getOutcomeGroupNameQueryFormatter.addSelectField("outcome_group_name");
 			getOutcomeGroupNameQueryFormatter.addSelectField("field_name");			
 			getOutcomeGroupNameQueryFormatter.addFromTable("rif40_numerator_outcome_columns");
@@ -855,8 +855,8 @@ final class MSSQLCreateStudySubmissionStep
 			//KLG: TODO: try adding one health code maximum
 			if (totalHealthCodes > 0) {
 
-				PGSQLInsertQueryFormatter addHealthOutcomeQueryFormatter
-					= new PGSQLInsertQueryFormatter();
+				MSSQLInsertQueryFormatter addHealthOutcomeQueryFormatter
+					= new MSSQLInsertQueryFormatter(false);
 				addHealthOutcomeQueryFormatter.setIntoTable("rif40_inv_conditions");
 				addHealthOutcomeQueryFormatter.addInsertField("min_condition");
 				addHealthOutcomeQueryFormatter.addInsertField("outcome_group_name");				
@@ -893,8 +893,8 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources	
-			PGSQLQueryUtility.close(getOutcomeGroupNameStatement);
-			PGSQLQueryUtility.close(addHealthCodeStatement);
+			MSSQLQueryUtility.close(getOutcomeGroupNameStatement);
+			MSSQLQueryUtility.close(addHealthCodeStatement);
 		}		
 	}
 
@@ -944,13 +944,13 @@ final class MSSQLCreateStudySubmissionStep
 		ResultSet checkProjectExistsResultSet = null;
 		try {
 			//Create SQL query
-			PGSQLRecordExistsQueryFormatter queryFormatter
-				= new PGSQLRecordExistsQueryFormatter();
+			MSSQLRecordExistsQueryFormatter queryFormatter
+				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("project");
-			queryFormatter.setFromTable("rif40_projects");
-
-			logSQLQuery(
+			queryFormatter.setFromTable("rif40.rif40_projects");
+						
+		    logSQLQuery(
 					"checkProjectExists", 
 					queryFormatter,
 					project.getName());			
@@ -991,7 +991,7 @@ final class MSSQLCreateStudySubmissionStep
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("project.label");			
 			String errorMessage
@@ -1014,8 +1014,8 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(checkProjectExistsStatement);
-			PGSQLQueryUtility.close(checkProjectExistsResultSet);			
+			MSSQLQueryUtility.close(checkProjectExistsStatement);
+			MSSQLQueryUtility.close(checkProjectExistsResultSet);			
 		}		
 	}
 	
