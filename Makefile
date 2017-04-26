@@ -45,17 +45,42 @@
 # Peter Hambly, SAHSU
 #
 
-MAVEN=mvn
+OS?=Unknown
+ifeq ($(OS),Windows_NT)
+	MAVEN=mvn
+	7ZIP="C:\Program Files\7-Zip\7z.exe"
+	COPY=cp
+	DELETE=rm -f
+else
+#
+# Linux macos support []
+#
+	MAVEN=mvn
+	7ZIP="C:\Program Files\7-Zip\7z.exe"
+	COPY=cp
+	DELETE=rm -f
+$(error 7ZIP unsupported: $(7ZIP))
+endif
 
-all:
+all: rifservice RIF4 taxonomyservice
+
+rifservice: rifServices.war
+rifServices.war:
 	$(MAVEN) --version
 	cd rifGenericLibrary; $(MAVEN) -Dmaven.test.skip=true install
 	cd rapidInquiryFacility ; $(MAVEN) -Dmaven.test.skip=true install
 	cd rifServices ; $(MAVEN) -Dmaven.test.skip=true install
-	cd taxonomyServices ; $(MAVEN) -Dmaven.test.skip=true install
+	$(COPY) rifServices/target/rifServices.war .
 	
-taxonomyservice:	
+RIF4: RIF4.7z
+RIF4.7z:
+	cd rifWebApplication/src/main/webapp/WEB-INF; $(7ZIP) a ../../../../../RIF4.7z *
+	$(7ZIP) l RIF4.7z
+	
+taxonomyservice: taxonomyServices.war
+taxonomyServices.war:	
 	cd taxonomyServices ; $(MAVEN) -Dmaven.test.skip=true install
+	$(COPY) taxonomyServices/target/taxonomyServices.war .
 	
 install: clean all
 
@@ -63,7 +88,7 @@ clean:
 	cd rapidInquiryFacility ; $(MAVEN) clean
 	cd rifGenericLibrary; $(MAVEN) clean
 	cd rifServices; $(MAVEN) clean
-	cd taxonomyServices/target; $(MAVEN) clean
-	
+	cd taxonomyServices; $(MAVEN) clean
+	$(DELETE) taxonomyServices.war rifServices.war RIF4.7z
 #
 # Eof

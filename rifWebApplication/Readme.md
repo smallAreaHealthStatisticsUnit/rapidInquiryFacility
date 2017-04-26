@@ -158,6 +158,22 @@ Download and install Apache Maven: https://maven.apache.org/download.cgi
 If you have installed make (i.e. you are building the Postgrs port from Scratch), run make from the root of the github repository,
 e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*
 
+The following make targets are provided:
+
+* *clean*: remove targets, clean maven build areas
+* *all*: build targets
+* *install*: clean then all
+* *rifservice*: build rifServices.war target
+* *taxonomyService*: build taxonomyServices.war target
+* *RIF4*: build RIF4.7z target
+
+To run a make target type *make <target>;e.g. *make install*.
+
+The following files are then built and copied into the rapidInquiryFacility directory: 
+taxonomyServices.war rifServices.war RIF4.7z
+
+**Make currently only works on Windows and requires the Mingw development kit and 7zip to be installed.**
+
 Otherwise run the following commands by hand:
 ```
 mvn --version
@@ -253,7 +269,7 @@ If SAHSU has supplied a taxonomyServices.war file skip to step 3.
 	12-Apr-2017 17:45:00.002 INFO [localhost-startStop-2] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\taxonomyServices.war has finished in 3,899 ms
 	```
 
-3) Copy ‘taxonomyServices.war’ into the Tomcat webapps folder as with rifServices. 
+3) Copy ‘taxonomyServices.war’ from the *target* directory into the Tomcat webapps folder as with rifServices. 
 
 ## 3.2 RIF Web Application
 
@@ -262,8 +278,48 @@ Create RIF4 in web-apps:
 * Change directory to *%CATALINA_HOME%\webapps*; e,g, *cd "C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps"*
 * Create the directory *RIF4*
 * Copy all files and directories from the directory: *"C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifWebApplication\src\main\webapp\WEB-INF"* 
-  to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\ROOT\WEB-INF*
+  to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4*
 
+If you are supplied with the *7zip* archive, RIF4.7z needs to be copied to: 
+*%CATALINA_HOME%\webapps\RIF4* and unpacked using: ```"C:\Program Files\7-Zip\7z.exe" x RIF4.7z```
+
+```
+C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4>"C:\Program Files\7-Zip\7z.exe" x RIF4.7z
+
+7-Zip [64] 16.04 : Copyright (c) 1999-2016 Igor Pavlov : 2016-10-04
+
+Scanning the drive for archives:
+1 file, 2242469 bytes (2190 KiB)
+
+Extracting archive: RIF4.7z
+--
+Path = RIF4.7z
+Type = 7z
+Physical Size = 2242469
+Headers Size = 3912
+Method = LZMA2:6m
+Solid = +
+Blocks = 1
+
+
+Would you like to replace the existing file:
+  Path:     .\backend\services\rifs-back-database.js
+  Size:     2160 bytes (3 KiB)
+  Modified: 2017-04-10 11:03:15
+with the file from archive:
+  Path:     backend\services\rifs-back-database.js
+  Size:     2168 bytes (3 KiB)
+  Modified: 2017-04-12 09:24:31
+? (Y)es / (N)o / (A)lways / (S)kip all / A(u)to rename all / (Q)uit? A
+
+Everything is Ok
+
+Folders: 35
+Files: 199
+Size:       4920556
+Compressed: 2242469
+```
+  
 **BEFORE YOU RUN THE RIF YOU MUST SETUP THE DATABASE AND NETWORKING IN TOMCAT FIRST**
 
 Running the RIF and logging on is detailed in section 5. You must restart Tomcat when you create RIF4 for the first time, 
