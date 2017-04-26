@@ -156,14 +156,6 @@ EXECUTE sp_executesql @sql_stmt;
 GO
 
 --
--- Export database to ../production/$(NEWDB).bak
--- Grant local users full control to this directory
---
-BACKUP DATABASE [$(NEWDB)] TO DISK='$(import_dir)$(NEWDB).bak'; 
-  WITH COPY_ONLY, INIT;
-GO
-
---
 -- Wait for 10secs
 --
 WAITFOR DELAY '00:00:10';
