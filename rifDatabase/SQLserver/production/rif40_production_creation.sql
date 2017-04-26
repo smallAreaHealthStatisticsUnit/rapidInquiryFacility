@@ -66,7 +66,49 @@ GO
 --
 -- Expects: $(IMPORT_DIR) and $(NEWDB) to set in sqlcmd
 --
-	
+
+--
+-- Test $(NEWDB)
+--
+DECLARE @newdb VARCHAR(MAX)='$(NEWDB)';
+DECLARE @invalid_chars INTEGER;
+DECLARE @first_char VARCHAR(1);
+SET @invalid_chars=PATINDEX('%[^0-9a-z_]%', @newdb);
+SET @first_char=SUBSTRING(@newdb, 1, 1);
+IF @invalid_chars IS NULL
+	RAISERROR('New database name is null', 16, 1, @newdb);
+ELSE IF @invalid_chars > 0
+	RAISERROR('New database name: %s contains invalid character(s) starting at position: %i.', 16, 1, 
+		@newdb, @invalid_chars);
+ELSE IF (LEN(@newdb) > 30) 
+	RAISERROR('New database name: %s is too long (30 characters max).', 16, 1, @newdb);
+ELSE IF ISNUMERIC(@first_char) = 1
+	RAISERROR('First character in database name: %s is numeric: %s.', 16, 1, @newdb, @first_char);
+ELSE 
+	PRINT 'New database name: ' + @newdb + ' OK';
+GO
+
+--
+-- Test $(NEWUSER)
+--	
+DECLARE @newuser VARCHAR(MAX)='$(NEWUSER)';
+DECLARE @invalid_chars INTEGER;
+DECLARE @first_char VARCHAR(1);
+SET @invalid_chars=PATINDEX('%[^0-9a-z_]%', @newuser);
+SET @first_char=SUBSTRING(@newuser, 1, 1);
+IF @invalid_chars IS NULL
+	RAISERROR('New username is null', 16, 1, @newuser);
+ELSE IF @invalid_chars > 0
+	RAISERROR('New username: %s contains invalid character(s) starting at position: %i.', 16, 1, 
+		@newuser, @invalid_chars);
+ELSE IF (LEN(@newuser) > 30) 
+	RAISERROR('New username: %s is too long (30 characters max).', 16, 1, @newuser);
+ELSE IF ISNUMERIC(@first_char) = 1
+	RAISERROR('First character in username: %s is numeric: %s.', 16, 1, @newuser, @first_char);
+ELSE 
+	PRINT 'New username: ' + @newuser + ' OK';	
+GO
+
 --
 -- Re-create production databass. This will destroy all existing users and data
 --

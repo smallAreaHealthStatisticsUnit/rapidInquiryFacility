@@ -92,7 +92,7 @@ PAUSE
 REM
 REM Create development database
 REM
-sqlcmd -E -b -m-1 -e -r1 -i rif40_development_creation.sql
+sqlcmd -E -b -m-1 -e -r1 -i rif40_development_creation.sql -v newuser="%NEWUSER%"
 if %errorlevel% neq 0 (
 	ECHO rif40_development_creation.sql exiting with %errorlevel%
 	exit /b 1
