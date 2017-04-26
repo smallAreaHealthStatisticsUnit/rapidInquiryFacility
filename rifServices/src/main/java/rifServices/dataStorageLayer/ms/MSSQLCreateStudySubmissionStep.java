@@ -199,9 +199,8 @@ final class MSSQLCreateStudySubmissionStep
 		try {
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 			queryFormatter.addQueryLine(0, "SELECT");
-			queryFormatter.addQueryLine(1, "currval('rif40_study_id_seq'::regclass);");
-
-
+			queryFormatter.addQueryLine(1, "rif40.rif40_sequence_current_value('rif40_study_id_seq')");
+			
 			logSQLQuery(
 				"getCurrentStudyID", 
 				queryFormatter);
@@ -242,7 +241,7 @@ final class MSSQLCreateStudySubmissionStep
 			//add information about who can share the study
 			MSSQLInsertQueryFormatter studyQueryFormatter
 				= new MSSQLInsertQueryFormatter(false);
-			studyQueryFormatter.setIntoTable("rif40_studies");
+			studyQueryFormatter.setIntoTable("rif40.rif40_studies");
 			studyQueryFormatter.addInsertField("geography");
 			studyQueryFormatter.addInsertField("project");
 			studyQueryFormatter.addInsertField("study_name");
@@ -363,7 +362,7 @@ final class MSSQLCreateStudySubmissionStep
 			//add information about who can share the study
 			MSSQLInsertQueryFormatter studyShareQueryFormatter
 				= new MSSQLInsertQueryFormatter(false);
-			studyShareQueryFormatter.setIntoTable("rif40_study_shares");
+			studyShareQueryFormatter.setIntoTable("rif40.rif40_study_shares");
 			studyShareQueryFormatter.addInsertField("grantee_username");
 
 			studyShareStatement 
@@ -401,7 +400,7 @@ final class MSSQLCreateStudySubmissionStep
 
 			MSSQLInsertQueryFormatter queryFormatter
 				= new MSSQLInsertQueryFormatter(false);
-			queryFormatter.setIntoTable("rif40_investigations");		
+			queryFormatter.setIntoTable("rif40.rif40_investigations");		
 			queryFormatter.addInsertField("inv_name");
 			queryFormatter.addInsertField("inv_description");
 			queryFormatter.addInsertField("genders");
@@ -534,6 +533,7 @@ final class MSSQLCreateStudySubmissionStep
 		
 		MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 
+		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.addSelectField("\"offset\"");
 		queryFormatter.addFromTable("rif40_age_groups");
 		queryFormatter.addFromTable("rif40_tables");
@@ -600,7 +600,7 @@ final class MSSQLCreateStudySubmissionStep
 			
 			MSSQLInsertQueryFormatter queryFormatter
 				= new MSSQLInsertQueryFormatter(false);
-			queryFormatter.setIntoTable("rif40_study_areas");
+			queryFormatter.setIntoTable("rif40.rif40_study_areas");
 			queryFormatter.addInsertField("area_id");
 			queryFormatter.addInsertField("band_id");
 		
@@ -658,7 +658,7 @@ final class MSSQLCreateStudySubmissionStep
 		try {
 			MSSQLInsertQueryFormatter queryFormatter
 				= new MSSQLInsertQueryFormatter(false);
-			queryFormatter.setIntoTable("rif40_comparison_areas");
+			queryFormatter.setIntoTable("rif40.rif40_comparison_areas");
 			queryFormatter.addInsertField("area_id");
 			
 			
@@ -713,14 +713,14 @@ final class MSSQLCreateStudySubmissionStep
 				= new MSSQLSelectQueryFormatter(false);
 			getMinMaxCovariateValuesQueryFormatter.addSelectField("min");
 			getMinMaxCovariateValuesQueryFormatter.addSelectField("max");
-			getMinMaxCovariateValuesQueryFormatter.addFromTable("rif40_covariates");
+			getMinMaxCovariateValuesQueryFormatter.addFromTable("rif40.rif40_covariates");
 			getMinMaxCovariateValuesQueryFormatter.addWhereParameter("geography");
 			getMinMaxCovariateValuesQueryFormatter.addWhereParameter("geolevel_name");
 			getMinMaxCovariateValuesQueryFormatter.addWhereParameter("covariate_name");
 			
 			MSSQLInsertQueryFormatter addCovariateQueryFormatter
 				= new MSSQLInsertQueryFormatter(false);
-			addCovariateQueryFormatter.setIntoTable("rif40_inv_covariates");
+			addCovariateQueryFormatter.setIntoTable("rif40.rif40_inv_covariates");
 			addCovariateQueryFormatter.addInsertField("geography");
 			addCovariateQueryFormatter.addInsertField("covariate_name");
 			addCovariateQueryFormatter.addInsertField("study_geolevel_name");
@@ -819,7 +819,7 @@ final class MSSQLCreateStudySubmissionStep
 				= new MSSQLSelectQueryFormatter(false);
 			getOutcomeGroupNameQueryFormatter.addSelectField("outcome_group_name");
 			getOutcomeGroupNameQueryFormatter.addSelectField("field_name");			
-			getOutcomeGroupNameQueryFormatter.addFromTable("rif40_numerator_outcome_columns");
+			getOutcomeGroupNameQueryFormatter.addFromTable("rif40.rif40_numerator_outcome_columns");
 			getOutcomeGroupNameQueryFormatter.addWhereParameter("geography");
 			getOutcomeGroupNameQueryFormatter.addWhereParameter("table_name");
 
@@ -857,7 +857,7 @@ final class MSSQLCreateStudySubmissionStep
 
 				MSSQLInsertQueryFormatter addHealthOutcomeQueryFormatter
 					= new MSSQLInsertQueryFormatter(false);
-				addHealthOutcomeQueryFormatter.setIntoTable("rif40_inv_conditions");
+				addHealthOutcomeQueryFormatter.setIntoTable("rif40.rif40_inv_conditions");
 				addHealthOutcomeQueryFormatter.addInsertField("min_condition");
 				addHealthOutcomeQueryFormatter.addInsertField("outcome_group_name");				
 				addHealthOutcomeQueryFormatter.addInsertField("numer_tab");				
