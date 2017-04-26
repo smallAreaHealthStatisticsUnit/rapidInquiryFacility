@@ -74,7 +74,8 @@ rifServices.war:
 	
 RIF4: RIF4.7z
 RIF4.7z:
-	cd rifWebApplication/src/main/webapp/WEB-INF; $(7ZIP) a ../../../../../RIF4.7z *
+#	cd rifWebApplication/src/main/webapp/WEB-INF; ls -alR
+	cd rifWebApplication/src/main/webapp/WEB-INF; $(7ZIP) a -r ../../../../../RIF4.7z *
 	$(7ZIP) l RIF4.7z
 	
 taxonomyservice: taxonomyServices.war

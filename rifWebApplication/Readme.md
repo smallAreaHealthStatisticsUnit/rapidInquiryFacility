@@ -153,8 +153,6 @@ Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
 
 # 2. Building Web Services using Maven
 
-Download and install Apache Maven: https://maven.apache.org/download.cgi
-
 If you have installed make (i.e. you are building the Postgrs port from Scratch), run make from the root of the github repository,
 e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*
 
@@ -280,7 +278,7 @@ Create RIF4 in web-apps:
 * Copy all files and directories from the directory: *"C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifWebApplication\src\main\webapp\WEB-INF"* 
   to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4*
 
-If you are supplied with the *7zip* archive, RIF4.7z needs to be copied to: 
+[DO NOT USE - BROKEN] If you are supplied with the *7zip* archive, RIF4.7z needs to be copied to: 
 *%CATALINA_HOME%\webapps\RIF4* and unpacked using: ```"C:\Program Files\7-Zip\7z.exe" x RIF4.7z```
 
 ```
