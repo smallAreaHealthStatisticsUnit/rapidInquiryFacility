@@ -159,7 +159,8 @@ GO
 -- Export database to ../production/$(NEWDB).bak
 -- Grant local users full control to this directory
 --
-BACKUP DATABASE [$(NEWDB)] TO DISK='$(import_dir)$(NEWDB).bak';
+BACKUP DATABASE [$(NEWDB)] TO DISK='$(import_dir)$(NEWDB).bak'; 
+  WITH COPY_ONLY, INIT;
 GO
 
 --

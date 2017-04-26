@@ -39,6 +39,15 @@ A standalone script *rif40_sahsuland_install.bat* is provided to install the RIF
 *...rapidInquiryFacility\rifDatabase\SQLserver\production*. A backup of the *sahsuland_dev* database is required, as created by 
 *rebuild_all.bat* (see: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md) or supplied by SAHSU. 
 
+Either:
+
+1. Create *...rapidInquiryFacility\rifDatabase\SQLserver\production\sahsuland_dev.bak* using rebuild_all.bat
+
+or:
+
+2. Use a pre-built database dump provided by SAHSU. If you use the prebuilt version check that the
+   dump *sahsuland_dev.bak* is unZipped.
+   
 You will need to enter:
 
 * Database name

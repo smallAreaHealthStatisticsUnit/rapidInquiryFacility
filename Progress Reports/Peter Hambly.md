@@ -1287,10 +1287,11 @@ GO
 #### 29th to 28th April	
 
 * Fixed production restore - complete
+* Complete SQL Server run study port
+* SQL Server full install testing
 	
 #### Current TODO list (April 2017): SQL Server Port
 
-* Complete SQL Server run study port
 * Process Utah geography
 * Postgres install from export script
 * Add checks to username, database name in scripts for lowercase DB name
@@ -1315,7 +1316,7 @@ GO
 	The statement has been terminated.
 ```
 * Test database and user account creation with db_create target. Need to keep postgres admin logged on
-* Assist with middleware (database fixes); SQL Server full install testing
+* Assist with middleware (database fixes)
 * Drop script for SQL server to all rif40_sahsuland_dev_install.bat/rif40_sahsuland_install.bat to be re-run without rebuilding the entire database
 
 #### TileViewer TODO (deferred to June?):

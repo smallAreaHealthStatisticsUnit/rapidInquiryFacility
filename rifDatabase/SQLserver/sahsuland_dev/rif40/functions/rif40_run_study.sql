@@ -230,7 +230,7 @@ Recurse until complete
 			SET @msg=@crlf + 
 '************************************************************************' + @crlf +
 '*                                                                      *' + @crlf +
-'* 55211: Completed study ' + RIGHT(REPLICATE('0',20)+(CAST(@study_id AS VARCHAR)), 20) + 
+'* 55211: Completed study ' + RIGHT(REPLICATE(' ',20)+(CAST(@study_id AS VARCHAR)), 20) + 
 	'                          *' + @crlf +
 '*                                                                      *' + @crlf +
 '************************************************************************';
