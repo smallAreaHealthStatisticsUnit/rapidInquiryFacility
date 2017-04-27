@@ -110,7 +110,7 @@ final class MSSQLCreateStudySubmissionStep
 		super(rifDatabaseProperties);	
 		this.diseaseMappingStudyManager = diseaseMappingStudyManager;
 		this.mapDataManager = mapDataManager;
-		setEnableLogging(false);
+		setEnableLogging(true);
 	}
 
 	// ==========================================
@@ -875,7 +875,7 @@ final class MSSQLCreateStudySubmissionStep
 						ndPair.getNumeratorTableName(),
 						fieldName,
 						String.valueOf(i));
-					
+									
 					addHealthCodeStatement
 						= createPreparedStatement(
 							connection,
@@ -885,8 +885,12 @@ final class MSSQLCreateStudySubmissionStep
 					addHealthCodeStatement.setString(3, ndPair.getNumeratorTableName());
 					addHealthCodeStatement.setString(4, fieldName);
 					addHealthCodeStatement.setInt(5, i);
+					
+					System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXX");
+					System.out.println(addHealthOutcomeQueryFormatter.generateQuery());
+					System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXX");
 
-					addHealthCodeStatement.executeUpdate();
+					addHealthCodeStatement.executeUpdate(); //TODO: ############################### ERROR HERE
 
 				}
 			}
