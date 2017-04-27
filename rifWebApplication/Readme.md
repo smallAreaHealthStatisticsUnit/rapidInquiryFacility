@@ -153,8 +153,12 @@ Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
 
 # 2. Building Web Services using Maven
 
-If you have installed make (i.e. you are building the Postgrs port from Scratch), run make from the root of the github repository,
-e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*
+## 2.1 Building Using Make
+
+If you have installed make (i.e. you are building the Postgrs port from Scratch), run make from the 
+root of the github repository, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*
+
+This method requires 7zip to be installed in *C:\Program Files\7-Zip\7z.exe*
 
 The following make targets are provided:
 
@@ -168,11 +172,87 @@ The following make targets are provided:
 To run a make target type *make <target>;e.g. *make install*.
 
 The following files are then built and copied into the rapidInquiryFacility directory: 
-taxonomyServices.war rifServices.war RIF4.7z
+*taxonomyServices.war*, *rifServices.war*, *RIF4.7z*
 
 **Make currently only works on Windows and requires the Mingw development kit and 7zip to be installed.**
 
-Otherwise run the following commands by hand:
+## 2.2 Building Using a Windows Batch File
+
+This method requires 7zip to be installed in *C:\Program Files\7-Zip\7z.exe*
+
+Run *java_build.bat* from the root of the github repository, 
+e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*. The files *taxonomyServices.war*, 
+*rifServices.war*, *RIF4.7z* are the end product.
+
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility>java_build.bat
+
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility>ECHO OFF
+
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility>SET PWD=C:\Users\Peter\Documents\GitHub\rapidInquiryFacility
+
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility>call mvn --version
+Apache Maven 3.3.9 (bb52d8502b132ec0a5a3f4c09453c07478323dc5; 2015-11-10T16:41:47+00:00)
+Maven home: C:\Program Files\Apache Software Foundation\apache-maven-3.3.9\bin\..
+Java version: 1.8.0_111, vendor: Oracle Corporation
+Java home: C:\Program Files\Java\jdk1.8.0_111\jre
+Default locale: en_GB, platform encoding: Cp1252
+OS name: "windows 8.1", version: "6.3", arch: "amd64", family: "dos"
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] Building rifGenericLibrary 0.0.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO]
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ rifGenericLibrary ---
+[INFO] Deleting C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifGenericLibrary\target
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 0.564 s
+[INFO] Finished at: 2017-04-27T09:34:05+01:00
+[INFO] Final Memory: 7M/245M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING]
+[WARNING] Some problems were encountered while building the effective model for rapidInquiryFacility:taxonomyServices:war:0.0.1-SNAP
+SHOT
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: rapidInquiryFacility:rifGenericLibrary:jar
+-> duplicate declaration of version 0.0.1-SNAPSHOT @ line 133, column 16
+[WARNING]
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING]
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING]
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO]
+[INFO] General RIF Tool Suite Settings
+[INFO] rifGenericLibrary
+[INFO] RIF Middleware
+[INFO] taxonomyServices
+[INFO] rifDataLoaderTool
+[INFO] RIF IT Governance Tool
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] Building General RIF Tool Suite Settings 0.0.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+...
+2017-02-01 13:19:42 ....A         4524               utils\services\rifs-util-JSON.js
+2017-03-20 08:11:00 ....A        20129               utils\services\rifs-util-leafletdraw.js
+2017-02-01 13:19:42 ....A         2685               utils\services\rifs-util-mapping.js
+2017-02-01 13:19:42 ....A         2329               utils\services\rifs-util-uigrid.js
+------------------- ----- ------------ ------------  ------------------------
+2017-04-12 09:24:32            4920556      2238557  199 files, 35 folders
+
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility>
+```
+
+## 2.3 Building By Hand
+
+Otherwise run the following commands by hand from the 
+root of the github repository, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*:
+
 ```
 mvn --version
 cd rifGenericLibrary
@@ -220,6 +300,8 @@ development team.
 The order is important; the directories must be built in the order: rifGenericLibrary, rapidInquiryFacility, rifServices. It is always
 assumed you build taxonomyServices later. If you get a build failure try a *mvn clean* in each directory first; then retry with a 
 *mvn  -Dmaven.test.skip=true install*.
+
+This method  does not build the *taxonomyServices* or the web application 7zip file.
 
 # 3. Installing Web Services in Tomcat
 

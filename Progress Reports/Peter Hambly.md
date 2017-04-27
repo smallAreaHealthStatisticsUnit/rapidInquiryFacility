@@ -1289,12 +1289,15 @@ GO
 * Fixed production restore - complete
 * Complete SQL Server run study port
 * SQL Server full install testing
+* Add checks to username, database name in scripts for lowercase DB name
+* Tested installer on empty SQL Server DB
+* Middleware testing
+* Added middleware *java_build.bat* script
 	
 #### Current TODO list (April 2017): SQL Server Port
 
 * Process Utah geography
 * Postgres install from export script
-* Add checks to username, database name in scripts for lowercase DB name
 * Disable guest logins on SQL Server
 * Add localhost notes to tomcat install doc; add network setup to SQL Server install notes; 
   add notes on cross site scripting errors (caused by URL/webservices name mismatch); firefox example:
