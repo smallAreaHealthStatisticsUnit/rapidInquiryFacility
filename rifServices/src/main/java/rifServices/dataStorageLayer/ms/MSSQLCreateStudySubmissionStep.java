@@ -853,51 +853,42 @@ final class MSSQLCreateStudySubmissionStep
 			int totalHealthCodes = healthCodes.size();
 			
 			//KLG: TODO: try adding one health code maximum
+			//TODO: (DM) if multiple conditions supplied in currentHealthCode.getCode() 
 			if (totalHealthCodes > 0) {
 
 				MSSQLInsertQueryFormatter addHealthOutcomeQueryFormatter
 					= new MSSQLInsertQueryFormatter(false);
-				/*
-				addHealthOutcomeQueryFormatter.setIntoTable("rif40.rif40_inv_conditions");
-				addHealthOutcomeQueryFormatter.addInsertField("min_condition");
-				addHealthOutcomeQueryFormatter.addInsertField("outcome_group_name");				
-				addHealthOutcomeQueryFormatter.addInsertField("numer_tab");				
-				addHealthOutcomeQueryFormatter.addInsertField("field_name");				
-				addHealthOutcomeQueryFormatter.addInsertField("line_number");				
-				 */
 				
 				addHealthOutcomeQueryFormatter.setIntoTable("rif40.rif40_inv_conditions");
 				addHealthOutcomeQueryFormatter.addInsertField("outcome_group_name");
 				addHealthOutcomeQueryFormatter.addInsertField("min_condition");				
 				addHealthOutcomeQueryFormatter.addInsertField("max_condition");				
 				addHealthOutcomeQueryFormatter.addInsertField("predefined_group_name");				
-				addHealthOutcomeQueryFormatter.addInsertField("line_number");		
-											
+				addHealthOutcomeQueryFormatter.addInsertField("line_number");				
+												
 				for (int i = 1; i <= totalHealthCodes; i++) {
 					HealthCode currentHealthCode = healthCodes.get(i - 1);
 										
 					logSQLQuery(
 						"add_inv_condition", 
 						addHealthOutcomeQueryFormatter, 
-						
-						currentHealthCode.getCode(),
 						outcomeGroupName,
-						ndPair.getNumeratorTableName(),
-						fieldName,
+						currentHealthCode.getCode(),
+						null, //max_condition not supported yet
+						null, //predefined_group_name not supported yet
 						String.valueOf(i));
 									
 					addHealthCodeStatement
 						= createPreparedStatement(
 							connection,
 							addHealthOutcomeQueryFormatter);
-					addHealthCodeStatement.setString(1, currentHealthCode.getCode());
-					addHealthCodeStatement.setString(2, outcomeGroupName);
-					addHealthCodeStatement.setString(3, ndPair.getNumeratorTableName());
-					addHealthCodeStatement.setString(4, fieldName);
+					addHealthCodeStatement.setString(1, outcomeGroupName);
+					addHealthCodeStatement.setString(2, currentHealthCode.getCode());
+					addHealthCodeStatement.setString(3, null);
+					addHealthCodeStatement.setString(4, null);
 					addHealthCodeStatement.setInt(5, i);
 
-					addHealthCodeStatement.executeUpdate(); //TODO: ############################### ERROR HERE on term groups?
-
+					addHealthCodeStatement.executeUpdate(); 
 				}
 			}
 		}
