@@ -505,9 +505,8 @@ EXEC sp_addmessage 55800, 16,
 EXEC sp_addmessage 55999, 16,
 	N'Function: [rif40].[rif40_ddl], SQL statement had error: %s%sSQL[%s]> %s;';		
 	
-EXEC [sahsuland_dev].[rif40].[rif40_log] 'DEBUG1', 'rif40_custom_error_messages', 'Rif40 Custom error messages added to database';
-
-USE sahsuland_dev;
+USE sahsuland;
+GO
 
 --
 -- Eof (rif40_custom_error_messages.sql)

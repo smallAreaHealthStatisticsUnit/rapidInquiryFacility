@@ -132,9 +132,9 @@ REM
 REM
 REM Run a test study
 REM
-	sqlcmd -U %SNEWUSER% -P %SNEWPW% -d %SNEWDB% -b -m-1 -e -i rif40_run_study.sql
+	sqlcmd -U %NEWUSER% -P %NEWPW% -d %NEWDB% -b -m-1 -e -i rif40_run_study.sql
 	if %errorlevel% neq 0  (
-		ECHO Both %SNEWDB% and sahsuland_dev built OK
+		ECHO Both %NEWDB% and sahsuland_dev built OK; test study failed
 	)	
 REM
 REM Clear seetings

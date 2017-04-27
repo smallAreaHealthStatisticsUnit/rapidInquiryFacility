@@ -123,6 +123,8 @@ GO
 --
 :r rif40_custom_error_messages.sql
 
+USE master;
+
 --
 -- Find the actual database file names for the new $(NEWDB) DB
 --
@@ -195,13 +197,6 @@ EXECUTE sp_executesql @sql_stmt;
 SET @sql_stmt='ALTER DATABASE [$(NEWDB)] MODIFY FILE ( NAME = sahsuland_dev_log, NEWNAME = $(NEWDB)_log)';
 PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
 EXECUTE sp_executesql @sql_stmt;
-GO
-
---
--- Export database to $(NEWDB).bak
--- Grant local users full control to this directory
---
-BACKUP DATABASE [$(NEWDB)] TO DISK='$(import_dir)$(NEWDB).bak';
 GO
 
 --
