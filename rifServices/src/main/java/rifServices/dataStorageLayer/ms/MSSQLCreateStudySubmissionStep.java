@@ -868,7 +868,11 @@ final class MSSQLCreateStudySubmissionStep
 												
 				for (int i = 1; i <= totalHealthCodes; i++) {
 					HealthCode currentHealthCode = healthCodes.get(i - 1);
-										
+					
+					System.out.println("XXXXXXXXXX currentHealthCode XXXXXXXXXXXXXXXXXXXXXX");
+					System.out.println(currentHealthCode);
+					System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+					
 					logSQLQuery(
 						"add_inv_condition", 
 						addHealthOutcomeQueryFormatter, 
