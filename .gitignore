@@ -62,3 +62,4 @@ dumpdata/postgresql-9.2-1002.jdbc4.jar
 rifDatabase/SQLserver/production/sahsuland_dev.zip
 RIF4.7z
 *.war
+rifServices/src/main/resources/icdClaML2016ens.xml
