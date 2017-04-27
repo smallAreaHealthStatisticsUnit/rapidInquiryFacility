@@ -363,8 +363,9 @@ Create RIF4 in web-apps:
 * Copy all files and directories from the directory: *"C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifWebApplication\src\main\webapp\WEB-INF"* 
   to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4*
 
-[DO NOT USE - BROKEN] If you are supplied with the *7zip* archive, RIF4.7z needs to be copied to: 
-*%CATALINA_HOME%\webapps\RIF4* and unpacked using: ```"C:\Program Files\7-Zip\7z.exe" x RIF4.7z```
+If you are supplied with the *7zip* archive, RIF4.7z needs to be copied to: 
+*%CATALINA_HOME%\webapps\RIF4* and unpacked using the file manager *7zip*. Do not use the command line 
+(```"C:\Program Files\7-Zip\7z.exe" x RIF4.7z```) it does not work!
 
 ```
 C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4>"C:\Program Files\7-Zip\7z.exe" x RIF4.7z
