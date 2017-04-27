@@ -300,7 +300,6 @@ final class MSSQLStudyStateManager
 		PreparedStatement statement = null;
 		try {
 			System.out.println("SQLStudyStateManager updateStudyStatus 1");
-			createStatusTable(connection, user);
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(studyID));
 			statement.setString(2, studyState.getCode());
@@ -758,7 +757,6 @@ final class MSSQLStudyStateManager
 			= deriveStatusTableName(
 				userID);
 	
-		//TODO: (DM) status_table is this used in MSSQL??
 		MSSQLCreateTableQueryFormatter queryFormatter
 			= new MSSQLCreateTableQueryFormatter(false);
 	//	queryFormatter.setUseIfExists(true);

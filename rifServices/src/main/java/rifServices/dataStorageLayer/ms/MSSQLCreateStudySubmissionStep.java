@@ -885,12 +885,8 @@ final class MSSQLCreateStudySubmissionStep
 					addHealthCodeStatement.setString(3, ndPair.getNumeratorTableName());
 					addHealthCodeStatement.setString(4, fieldName);
 					addHealthCodeStatement.setInt(5, i);
-					
-					System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXX");
-					System.out.println(addHealthOutcomeQueryFormatter.generateQuery());
-					System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXX");
 
-					addHealthCodeStatement.executeUpdate(); //TODO: ############################### ERROR HERE
+					addHealthCodeStatement.executeUpdate(); //TODO: ############################### ERROR HERE on term groups?
 
 				}
 			}
