@@ -354,6 +354,12 @@ If SAHSU has supplied a taxonomyServices.war file skip to step 3.
 
 3) Copy ‘taxonomyServices.war’ from the *target* directory into the Tomcat webapps folder as with rifServices. 
 
+4) For a full ICD10 listing add the following SAHSU supplied files to: 
+%CATALINE_HOME%\webapps\taxonomyServices\WEB-INF\classes and restart tomcat
+
+* icdClaML2016ens.xml
+* TaxonomyServicesConfiguration.xml
+
 ## 3.2 RIF Web Application
 
 Create RIF4 in web-apps:

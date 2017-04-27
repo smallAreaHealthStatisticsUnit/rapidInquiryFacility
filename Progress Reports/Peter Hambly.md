@@ -1293,6 +1293,8 @@ GO
 * Tested installer on empty SQL Server DB
 * Middleware testing
 * Added middleware *java_build.bat* script
+* Full ICD10 listing setup
+* Web apps 7zip bundle
 	
 #### Current TODO list (April 2017): SQL Server Port
 
