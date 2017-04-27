@@ -2,9 +2,9 @@ package rifServices.dataStorageLayer.ms;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLFunctionCallerQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
@@ -304,7 +304,7 @@ final class MSSQLMapDataManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetAreaCount",
@@ -324,8 +324,8 @@ final class MSSQLMapDataManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}
 		
 		MapAreaSummaryData result = MapAreaSummaryData.newInstance();
@@ -417,7 +417,7 @@ final class MSSQLMapDataManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetMapAreasForBoundaryRectangle",
@@ -439,8 +439,8 @@ final class MSSQLMapDataManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}
 		
 		return results.toString();		
@@ -598,8 +598,8 @@ final class MSSQLMapDataManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 	
 		return allRelevantMapAreas;
@@ -613,9 +613,9 @@ final class MSSQLMapDataManager
 				
 		String result = "";
 				
-		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+		MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 		queryFormatter.addSelectField("hierarchytable");
-		queryFormatter.addFromTable("rif40_geographies");
+		queryFormatter.addFromTable("rif40.rif40_geographies");
 		queryFormatter.addWhereParameter("geography");
 		
 		logSQLQuery(
@@ -637,8 +637,8 @@ final class MSSQLMapDataManager
 			result = resultSet.getString(1);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 		
 		return result;
@@ -788,7 +788,7 @@ final class MSSQLMapDataManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetMapAreas",
@@ -808,8 +808,8 @@ final class MSSQLMapDataManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}
 		
 		return results;		
@@ -1031,7 +1031,7 @@ final class MSSQLMapDataManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetMapAreas",
@@ -1051,8 +1051,8 @@ final class MSSQLMapDataManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}
 		
 		return results;		
@@ -1080,11 +1080,11 @@ final class MSSQLMapDataManager
 		String result = null;
 		try {
 		
-			PGSQLSelectQueryFormatter queryFormatter 
-				= new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter queryFormatter 
+				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("lookup_table");
-			queryFormatter.addFromTable("rif40_geolevels");
+			queryFormatter.addFromTable("rif40.rif40_geolevels");
 			queryFormatter.addWhereParameter("geography");
 			queryFormatter.addWhereParameter("geolevel_name");
 		
@@ -1114,8 +1114,8 @@ final class MSSQLMapDataManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);		
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);		
 		}
 		
 		return result;
@@ -1140,11 +1140,11 @@ final class MSSQLMapDataManager
 		String result = null;
 		try {
 					
-			PGSQLSelectQueryFormatter queryFormatter 
-				= new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter queryFormatter 
+				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("hierarchytable");
-			queryFormatter.addFromTable("rif40_geographies");
+			queryFormatter.addFromTable("rif40.rif40_geographies");
 			queryFormatter.addWhereParameter("geography");
 
 			logSQLQuery(
@@ -1169,8 +1169,8 @@ final class MSSQLMapDataManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);		
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);		
 		}
 			
 		return result;
@@ -1314,8 +1314,8 @@ final class MSSQLMapDataManager
 		ResultSet resultSet = null;
 		String result = "";
 		try {		
-			PGSQLFunctionCallerQueryFormatter queryFormatter
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_get_geojson_as_js");
@@ -1350,7 +1350,7 @@ final class MSSQLMapDataManager
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			MSSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlMapDataManager.error.unableToGetGeometry",
@@ -1365,8 +1365,8 @@ final class MSSQLMapDataManager
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);			
 		}
 		
 		return result;
@@ -1494,11 +1494,11 @@ final class MSSQLMapDataManager
 		throws SQLException,
 		RIFServiceException {
 
-		PGSQLSelectQueryFormatter queryFormatter
-			= new PGSQLSelectQueryFormatter();
+		MSSQLSelectQueryFormatter queryFormatter
+			= new MSSQLSelectQueryFormatter(false);
 		configureQueryFormatterForDB(queryFormatter);
 		queryFormatter.addSelectField("hierarchytable");
-		queryFormatter.addFromTable("rif40_geographies");
+		queryFormatter.addFromTable("rif40.rif40_geographies");
 		queryFormatter.addWhereParameter("geography");
 
 		logSQLQuery(
@@ -1522,8 +1522,8 @@ final class MSSQLMapDataManager
 			return resultSet.getString(1);			
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}		
 	}
 
@@ -1551,8 +1551,8 @@ final class MSSQLMapDataManager
 		try {
 
 			//Create query
-			PGSQLFunctionCallerQueryFormatter queryFormatter
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter queryFormatter
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 			queryFormatter.setFunctionName("rif40_getgeolevelfullextent");
@@ -1608,8 +1608,8 @@ final class MSSQLMapDataManager
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}		
 	}
 
@@ -1645,7 +1645,7 @@ final class MSSQLMapDataManager
 			findLowestResolutionQueryFormatter.addQueryLine(1, "geolevel_name,");
 			findLowestResolutionQueryFormatter.addQueryLine(1, "LOWER(lookup_table) AS lookup_table");
 			findLowestResolutionQueryFormatter.addQueryLine(0, "FROM");
-			findLowestResolutionQueryFormatter.addQueryLine(1, "rif40_geolevels");
+			findLowestResolutionQueryFormatter.addQueryLine(1, "rif40.rif40_geolevels");
 			findLowestResolutionQueryFormatter.addQueryLine(0, "WHERE");
 			
 			findLowestResolutionQueryFormatter.addQueryLine(1, "geography=? AND ");
@@ -1672,7 +1672,7 @@ final class MSSQLMapDataManager
 			
 			
 			//Obtain the map area id
-			PGSQLSelectQueryFormatter getMapAreaIDQueryFormatter = new PGSQLSelectQueryFormatter();
+			MSSQLSelectQueryFormatter getMapAreaIDQueryFormatter = new MSSQLSelectQueryFormatter(false);
 			getMapAreaIDQueryFormatter.addSelectField(geoLevelName);
 			getMapAreaIDQueryFormatter.addFromTable(lookupTable);
 
@@ -1693,8 +1693,8 @@ final class MSSQLMapDataManager
 			
 			
 			//now call the getGeoLevelBoundsForArea function 
-			PGSQLFunctionCallerQueryFormatter getBoundsForGeographyQueryFormatter
-				= new PGSQLFunctionCallerQueryFormatter();
+			MSSQLFunctionCallerQueryFormatter getBoundsForGeographyQueryFormatter
+				= new MSSQLFunctionCallerQueryFormatter(false);
 			getBoundsForGeographyQueryFormatter.addSelectField("y_max");
 			getBoundsForGeographyQueryFormatter.addSelectField("x_max");
 			getBoundsForGeographyQueryFormatter.addSelectField("y_min");
@@ -1754,14 +1754,14 @@ final class MSSQLMapDataManager
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(findLowestResolutionStatement);						
-			PGSQLQueryUtility.close(findLowestResolutionResultSet);
+			MSSQLQueryUtility.close(findLowestResolutionStatement);						
+			MSSQLQueryUtility.close(findLowestResolutionResultSet);
 			
-			PGSQLQueryUtility.close(getMapAreaIDStatement);
-			PGSQLQueryUtility.close(getMapAreaIDResultSet);
+			MSSQLQueryUtility.close(getMapAreaIDStatement);
+			MSSQLQueryUtility.close(getMapAreaIDResultSet);
 			
-			PGSQLQueryUtility.close(getBoundsForGeographyStatement);
-			PGSQLQueryUtility.close(getBoundsForGeographyResultSet);
+			MSSQLQueryUtility.close(getBoundsForGeographyStatement);
+			MSSQLQueryUtility.close(getBoundsForGeographyResultSet);
 			
 		}		
 	}
