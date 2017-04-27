@@ -295,7 +295,11 @@ final class MSSQLStudyStateManager
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "INSERT INTO " + statusTableName);
 		queryFormatter.addQueryLine(1, " (study_id, study_state, creation_date, message) ");
-		queryFormatter.addQueryLine(1, "VALUES (?, ?, NOW(), ?)");						
+		queryFormatter.addQueryLine(1, "VALUES (?, ?, GETDATE(), ?)");	//TODO: (DM) #################### next error here ######	
+		
+		System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+		System.out.println(queryFormatter.generateQuery());
+		System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 		
 		PreparedStatement statement = null;
 		try {

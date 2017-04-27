@@ -857,19 +857,29 @@ final class MSSQLCreateStudySubmissionStep
 
 				MSSQLInsertQueryFormatter addHealthOutcomeQueryFormatter
 					= new MSSQLInsertQueryFormatter(false);
+				/*
 				addHealthOutcomeQueryFormatter.setIntoTable("rif40.rif40_inv_conditions");
 				addHealthOutcomeQueryFormatter.addInsertField("min_condition");
 				addHealthOutcomeQueryFormatter.addInsertField("outcome_group_name");				
 				addHealthOutcomeQueryFormatter.addInsertField("numer_tab");				
 				addHealthOutcomeQueryFormatter.addInsertField("field_name");				
 				addHealthOutcomeQueryFormatter.addInsertField("line_number");				
-
+				 */
+				
+				addHealthOutcomeQueryFormatter.setIntoTable("rif40.rif40_inv_conditions");
+				addHealthOutcomeQueryFormatter.addInsertField("outcome_group_name");
+				addHealthOutcomeQueryFormatter.addInsertField("min_condition");				
+				addHealthOutcomeQueryFormatter.addInsertField("max_condition");				
+				addHealthOutcomeQueryFormatter.addInsertField("predefined_group_name");				
+				addHealthOutcomeQueryFormatter.addInsertField("line_number");		
+											
 				for (int i = 1; i <= totalHealthCodes; i++) {
 					HealthCode currentHealthCode = healthCodes.get(i - 1);
 										
 					logSQLQuery(
 						"add_inv_condition", 
 						addHealthOutcomeQueryFormatter, 
+						
 						currentHealthCode.getCode(),
 						outcomeGroupName,
 						ndPair.getNumeratorTableName(),
