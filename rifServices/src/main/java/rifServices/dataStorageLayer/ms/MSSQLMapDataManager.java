@@ -514,10 +514,10 @@ final class MSSQLMapDataManager
 			queryFormatter.addQueryPhrase(".");			
 			queryFormatter.addQueryPhrase(geoLevelToMap.getName());			
 			queryFormatter.padAndFinishLine();			
-			queryFormatter.addQueryLine(0, "FROM rif_data.");
-			queryFormatter.addQueryPhrase(1, mapAreaResolutionMappingTableName);
-			queryFormatter.addQueryPhrase(", rif_data.");
-			queryFormatter.addQueryPhrase(geoLevelToMapTableName);
+			queryFormatter.addQueryLine(0, "FROM ");
+			queryFormatter.addQueryPhrase(1, "rif_data." + mapAreaResolutionMappingTableName);
+			queryFormatter.addQueryPhrase(",");
+			queryFormatter.addQueryPhrase("rif_data." + geoLevelToMapTableName);
 			queryFormatter.padAndFinishLine();			
 			queryFormatter.addQueryLine(0, "WHERE");
 			
