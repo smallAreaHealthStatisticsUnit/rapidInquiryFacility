@@ -296,8 +296,8 @@ final class PGSQLStudyStateManager
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "INSERT INTO " + statusTableName);
-		queryFormatter.addQueryLine(1, " (study_id, study_state, creation_date, message) ");
-		queryFormatter.addQueryLine(1, "VALUES (?, ?, NOW(), ?)");						
+		queryFormatter.addQueryLine(1, " (study_id, study_state, creation_date, ith_update, message) ");
+		queryFormatter.addQueryLine(1, "VALUES (?, ?, NOW(), 0, ?)");						
 		
 		PreparedStatement statement = null;
 		try {
