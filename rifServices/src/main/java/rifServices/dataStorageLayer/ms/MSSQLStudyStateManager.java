@@ -304,6 +304,13 @@ final class MSSQLStudyStateManager
 			statement.setInt(1, Integer.valueOf(studyID));
 			statement.setString(2, studyState.getCode());
 			statement.setString(3, statusMessage);
+			
+			//TODO: (DM) THIS IS THE CURRENT ERROR
+			System.out.println("XXXXXXXXXXXXXXXXXX updateStudyStatus XXXXXXXXXXXXXXXXXXXXXXX");
+			System.out.println(queryFormatter.generateQuery());
+			System.out.println(statement.toString());
+			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+			
 			statement.executeUpdate();
 			connection.commit();
 			System.out.println("SQLStudyStateManager updateStudyStatus 2");

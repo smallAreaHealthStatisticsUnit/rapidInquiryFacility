@@ -199,7 +199,7 @@ final class MSSQLCreateStudySubmissionStep
 		try {
 			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 			queryFormatter.addQueryLine(0, "SELECT");
-			queryFormatter.addQueryLine(1, "rif40.rif40_sequence_current_value('rif40_study_id_seq')");
+			queryFormatter.addQueryLine(1, "rif40.rif40_sequence_current_value('rif40.rif40_study_id_seq')");
 			
 			logSQLQuery(
 				"getCurrentStudyID", 
