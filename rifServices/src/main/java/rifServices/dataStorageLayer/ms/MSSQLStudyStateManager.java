@@ -294,8 +294,8 @@ final class MSSQLStudyStateManager
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "INSERT INTO " + statusTableName);
-		queryFormatter.addQueryLine(1, " (study_id, study_state, creation_date, ith_update, message) ");
-		queryFormatter.addQueryLine(1, "VALUES (?, ?, current_timestamp, 0, ?)");
+		queryFormatter.addQueryLine(1, " (study_id, study_state, ith_update, message) ");
+		queryFormatter.addQueryLine(1, "VALUES (?, ?, 0, ?)");
 				
 		PreparedStatement statement = null;
 		try {
