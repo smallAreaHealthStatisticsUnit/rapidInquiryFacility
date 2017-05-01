@@ -3,7 +3,7 @@ REM ************************************************************************
 REM
 REM Description:
 REM
-REM Rapid Enquiry Facility (RIF) - RIF40 create production database from backup
+REM Rapid Enquiry Facility (RIF) - RIF40 create production SQL Server database from backup
 REM								   One directory (production) version
 REM
 REM Copyright:
@@ -65,7 +65,7 @@ if %errorlevel% equ 0 (
 REM
 REM Get DB settings
 REM 
-echo Creating production RIF database
+echo Creating production RIF SQL Server database
 REM 
 REM REBUILD_ALL is set up rebuild_all.bat - this prevents the questions being asdked twice
 REM
@@ -87,7 +87,7 @@ IF NOT DEFINED NEWPW (
 	)
 ECHO ##########################################################################################
 ECHO #
-ECHO # WARNING! this script will the drop and create the RIF40 %NEWDB% database.
+ECHO # WARNING! this script will the drop and create the RIF40 %NEWDB% SQL Server database.
 ECHO # Type control-C to abort.
 ECHO #
 ECHO # Test user: %NEWUSER%; password: %NEWPW%
