@@ -266,7 +266,7 @@ BEGIN
 END;
 $$;
 
-\echo "Create users and roles"
+\echo Create users and roles
 --
 -- Create users and roles
 --
@@ -590,6 +590,7 @@ $$;
 --
 END;
 
+\set ECHO none
 --
 \echo *****************************************************************************************************
 \echo * Try to connect as test user. This will fail if pgpass is not setup correctly
@@ -597,7 +598,6 @@ END;
 \echo * Format is: hostname:port:database:username:password
 \echo *****************************************************************************************************
 --
-\set ECHO all
 \c postgres :testuser :pghost
 \echo "Try to connect as rif40. This will fail if if the password file is not setup correctly"
 \c postgres rif40 :pghost
@@ -607,7 +607,6 @@ END;
 -- Re-connect as postgres
 \c postgres postgres :pghost
 
-\set ECHO none
 \echo ************************************************************************************
 \echo *                                                                                  
 \echo * WARNING !!!                                                                      
@@ -747,11 +746,15 @@ SELECT sql_stmt FROM recreate_sahsu_dev_tmp
 --
 -- Extract SQL to run
 --
+\copy (SELECT sql_stmt FROM recreate_sahsu_dev_tmp ORDER BY ord) TO recreate_sahsu_dev_tmp.sql WITH (FORMAT text)
+
 DROP VIEW IF EXISTS recreate_sahsu_dev_tmp;
 
 --
 -- Execute
 --
+\set ECHO all
+\set ON_ERROR_STOP on
 \i recreate_sahsu_dev_tmp.sql
 
 \c :newdb postgres :pghost 
@@ -763,7 +766,7 @@ BEGIN;
 --
 -- Check user is postgres on :newdb
 --
-\set ECHO OFF
+\set ECHO none
 SET rif40.testuser TO :ntestuser;
 SET rif40.newdb TO :newdb;
 

@@ -65,3 +65,4 @@ RIF4.7z
 rifServices/src/main/resources/icdClaML2016ens.xml
 rifDatabase/Postgres/production/sahsuland_dev.dump
 db_create.rpt
+rifDatabase/Postgres/production/recreate_sahsu_dev_tmp.sql
