@@ -27,6 +27,7 @@ RIF Web Services
    - [4.2 Setup Network](#42-setup-network)
      - [4.2.1 TLS](#421-tls)
    - [4.3 Setup R](#43-setup-r)
+     - [4.3.1 R Debugging](#431-r-debugging)
    - [4.4 Common Setup Errors](#44-common-setup-errors)
      - [4.4.1 Logon RIF Serice Call Incorrect](#441-logon-rif-serice-call-incorrect)
      - [4.4.2 TLS Errors](#442-tls-errors)
@@ -627,6 +628,7 @@ This setup will support:
    * ODBC sytstem data source: ```odbcDataSourceName=PostgreSQL30```
 
    For SQL Server use SQL Server Native Client version 11, 2011 version or later; 
+   For Postgres use the latest driver from https://www.postgresql.org/ftp/odbc/versions/msi/
    
 These settings are in the Java connector for the RifServices middleware: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*
 
@@ -646,13 +648,14 @@ extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies
 
 ```R
 # CHECK & AUTO INSTALL MISSING PACKAGES
-packages <- c("plyr", "abind", "maptools", "spdep", "RODBC")
+packages <- c("plyr", "abind", "maptools", "spdep", "RODBC", "MatrixModels")
 if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
   install.packages(setdiff(packages, rownames(installed.packages())))  
 }
 if (!require(INLA)) {
 	install.packages("INLA", repos="https://www.math.ntnu.no/inla/R/stable")
 }
+
 ``` 
 
 * R will ask for the nearest CRAN (R code archive); select one geographically near you (e.g. same country).
@@ -752,6 +755,161 @@ downloaded 88.7 MB
 
 The downloaded binary packages are in
         C:\Users\admin\AppData\Local\Temp\RtmpSkeuRW\downloaded_packages
+```
+
+4. Add R_HOME to the enviuroment
+
+### 4.3.1 R Debugging
+
+Typical errors:
+
+* *R_HOME* not setup: ```command==null\bin\x64\RScript```
+* No scratchSpace directory: *c:\rifDemo\scratchSpace\* ```(The system cannot find the path specified)```
+
+Tomcat logs:
+
+1. Errors shown above:
+```
+Investigation name==My_New_Investigation  ID==5==
+command==null\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"\\webapps\\rifServices\\WEB-INF\\classe
+s\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432  --db_name=sahsuland  --db_driver_class_
+name=org.postgresql.Driver  --study_id=5  --investigation_name=MY_NEW_INVESTIGATION  --covariate_name=NONE  --investigation_id=5  --
+r_model=bym_r_procedure  --odbc_data_source=PostgreSQL30  --user_id=peter  --password=peter==
+java.io.FileNotFoundException: c:\rifDemo\scratchSpace\kevTest22_01-May-2017.bat (The system cannot find the path specified)
+        at java.io.FileOutputStream.open0(Native Method)
+        at java.io.FileOutputStream.open(FileOutputStream.java:270)
+        at java.io.FileOutputStream.<init>(FileOutputStream.java:213)
+        at java.io.FileOutputStream.<init>(FileOutputStream.java:162)
+        at rifServices.dataStorageLayer.pg.PGSQLAbstractRService.createBatchFile(PGSQLAbstractRService.java:274)
+        at rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep.performStep(PGSQLSmoothResultsSubmissionStep.java:186)
+        at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.smoothResults(PGSQLRunStudyThread.java:278)
+        at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.run(PGSQLRunStudyThread.java:194)
+        at java.lang.Thread.run(Thread.java:745)
+        at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.submitStudy(PGSQLAbstractRIFStudySubmissionService
+.java:1878)
+        at rifServices.restfulWebServices.pg.PGSQLAbstractRIFWebServiceResource.submitStudy(PGSQLAbstractRIFWebServiceResource.java:
+```
+
+If you get no results in the data viewer; re-run the batch file command manually:
+
+```bat
+C:\Windows\system32>cd C:\rifDemo\scratchSpace
+
+C:\rifDemo\scratchSpace>kevTest22_01-May-2017.bat
+C:\rifDemo\scratchSpace>C:\"Program Files"\R\R-3.4.0\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"
+\\webapps\\rifServices\\WEB-INF\\classes\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432
+--db_name=sahsuland  --db_driver_class_name=org.postgresql.Driver  --study_id=7  --investigation_name=MY_NEW_INVESTIGATION  --covari
+ate_name=NONE  --investigation_id=7  --r_model=bym_r_procedure  --odbc_data_source=PostgreSQL35W  --user_id=peter  --password=peter
+
+Loading required package: sp
+Loading required package: methods
+Loading required package: Matrix
+This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
+See www.r-inla.org/contact-us for how to get help.
+Checking rgeos availability: FALSE
+        Note: when rgeos is not available, polygon geometry     computations in maptools depend on gpclib,
+        which has a restricted licence. It is disabled by default;
+        to enable gpclib, type gpclibPermit()
+[1] "Arguments were supplied"
+[1] "Parsing parameters"
+                   name                 value
+1      db_driver_prefix       jdbc:postgresql
+2               db_host             localhost
+3               db_port                  5432
+4               db_name             sahsuland
+5  db_driver_class_name org.postgresql.Driver
+6              study_id                     7
+7    investigation_name  MY_NEW_INVESTIGATION
+8        covariate_name                  NONE
+9      investigation_id                     7
+10              r_model       bym_r_procedure
+11     odbc_data_source         PostgreSQL35W
+12              user_id                 peter
+13             password                 peter
+[1] "Study ID: 7"
+[1] "Performing basic stats and smoothing"
+[1] "============EXTRACT TABLE NAME ===================="
+[1] "rif_studies.s7_extract"
+[1] "============EXTRACT TABLE NAME ===================="
+[1] "rif_studies.s7_extract numberOfRows=433312=="
+[1] "rif40_GetAdjacencyMatrix numberOfRows=1229=="
+[1] "Bayes smoothing with BYM model type no adjustment"
+Error in if (scale.model) { : argument is of length zero
+Calls: performSmoothingActivity ... inla.interpret.formula -> eval -> eval -> <Anonymous>
+Execution halted
+Warning message:
+closing unused RODBC handle 1
+```
+
+2. Tomcat sucessful run:
+```
+==========================================================
+
+SQLStudyStateManager updateStudyStatus 2
+run generate results AFTER state==Study extracted==
+run smooth results BEFORE state==Study extracted==
+SQLSmoothedResultsSubmissionStep getInvestigationID studyID==7==investigation_name==My_New_Investigation==inv_description====
+=======getInvestigationID========1===
+StudyID==7==
+Inv_name==MY_NEW_INVESTIGATION==
+SELECT
+   inv_id
+FROM
+   rif40.rif40_investigations
+WHERE
+   study_id=? AND
+   inv_name=?;
+
+
+;
+
+
+=======getInvestigationID========2===
+About to call next
+called next
+Investigation name==My_New_Investigation  ID==7==
+command==C:\"Program Files"\R\R-3.4.0\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"\\webapps\\rifS
+ervices\\WEB-INF\\classes\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432  --db_name=sahsu
+land  --db_driver_class_name=org.postgresql.Driver  --study_id=7  --investigation_name=MY_NEW_INVESTIGATION  --covariate_name=NONE
+--investigation_id=7  --r_model=bym_r_procedure  --odbc_data_source=PostgreSQL35W  --user_id=peter  --password=peter==
+Writing batch file==C:\"Program Files"\R\R-3.4.0\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"\\we
+bapps\\rifServices\\WEB-INF\\classes\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432  --db
+_name=sahsuland  --db_driver_class_name=org.postgresql.Driver  --study_id=7  --investigation_name=MY_NEW_INVESTIGATION  --covariate_
+name=NONE  --investigation_id=7  --r_model=bym_r_procedure  --odbc_data_source=PostgreSQL35W  --user_id=peter  --password=peter
+Exit value==1==
+SQLStudyStateManager updateStudyStatus 1
+AbstractSQLManager logSQLQuery 1rifServices.dataStorageLayer.pg.PGSQLStudyStateManager==
+==========================================================
+QUERY NAME:createStatusTable
+PARAMETERS:
+        1:"user"
+
+SQL QUERY TEXT
+CREATE TABLE IF NOT EXISTS peter.study_status (
+   study_id INTEGER NOT NULL,
+   study_state VARCHAR NOT NULL,
+   creation_date TIMESTAMP NOT NULL,
+   ith_update SERIAL NOT NULL,
+   message VARCHAR(255));
+
+
+==========================================================
+
+SQLStudyStateManager updateStudyStatus 2
+run smooth results AFTER state==Study results computed==
+Finished!!
+isClientBrowserIE==true==
+```
+
+3. STUDY_STATUS local user table:
+```
+sahsuland=> SELECT * FROM study_status WHERE study_id = 7 ORDER BY ith_update;
+ study_id | study_state |       creation_date        | ith_update |                                       message
+----------+-------------+----------------------------+------------+-------------------------------------------------------------------------------------
+        7 | C           | 2017-05-01 16:01:01.121765 |          0 | The study has been created but it has not been verified.
+        7 | E           | 2017-05-01 16:03:48.402219 |          1 | Study extracted imported or created but neither results nor maps have been created.
+        7 | R           | 2017-05-01 16:04:06.503855 |          2 | The study results have been computed and they are now ready to be used.
+(3 rows)
 ```
 
 **More to be added; especially R debugging.**

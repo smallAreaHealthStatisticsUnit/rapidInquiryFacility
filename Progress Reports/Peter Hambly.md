@@ -1296,10 +1296,35 @@ GO
 * Full ICD10 listing setup
 * Web apps 7zip bundle
 	
-#### Current TODO list (April 2017): SQL Server Port
+#### 1st to 5th May 
 
-* Process Utah geography
 * Postgres install from export script
+* Test can run a study on Postgres
+* Study processed by not available to front end:
+```
+sahsuland=> select * from study_status;
+ study_id | study_state |       creation_date        | ith_update |                                       message
+
+----------+-------------+----------------------------+------------+-----------------------------------------------------------------
+--------------------
+        4 | C           | 2017-05-01 14:41:10.344285 |          0 | The study has been created but it has not been verified.
+        4 | E           | 2017-05-01 14:44:32.595896 |          0 | Study extracted imported or created but neither results nor maps
+ have been created.
+        4 | R           | 2017-05-01 14:44:32.83881  |          0 | The study results have been computed and they are now ready to b
+e used.
+(3 rows)
+```
+
+Fixed by:
+```
+UPDATE study_status SET ith_update = 2 WHERE study_state = 'R';
+UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
+```
+
+#### Current TODO list (May 2017): SQL Server Port
+
+* Harden SQL SErver port against SQL Injection getting past middleware into meta data
+* Process Utah geography
 * Disable guest logins on SQL Server
 * Add localhost notes to tomcat install doc; add network setup to SQL Server install notes; 
   add notes on cross site scripting errors (caused by URL/webservices name mismatch); firefox example:
