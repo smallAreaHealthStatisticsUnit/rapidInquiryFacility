@@ -44,21 +44,6 @@ REM Usage: rif40_database_install.bat
 REM
 
 REM
-REM NET SESSION >nul 2>&1
-REM if %errorlevel% equ 0 (
-REM    ECHO Administrator PRIVILEGES Detected! 
-REM ) else (
-REM 	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
-REM 	if %errorlevel% neq 0 {
-REM 		ECHO NOT AN ADMIN!
-REM 		exit /b 1
-REM 	}
-REM 	else {
-REM 		ECHO Power user PRIVILEGES Detected! 
-REM 	}
-REM )
-
-REM
 REM Get DB settings
 REM 
 echo Creating production RIF Postgres database
@@ -71,6 +56,9 @@ IF NOT DEFINED NEWDB (
 	SET /P NEWDB=New RIF40 db [default sahsuland]: %=%	|| SET NEWDB=sahsuland
 )
 
+REM
+REM Get passwords from C:\Users\%USERNAME%\AppData\Roaming\postgresql\pgpass.conf if it exists
+REM
 SET PGPASSFILE=C:\Users\%USERNAME%\AppData\Roaming\postgresql\pgpass.conf
 IF EXIST %PGPASSFILE% (
 	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:postgres:" %PGPASSFILE%') DO (
@@ -84,6 +72,9 @@ IF EXIST %PGPASSFILE% (
 	)
 )
 
+REM
+REM Otherwise ask the user
+REM
 IF NOT DEFINED PGPASSWORD (
 	SET /P PGPASSWORD=Postgres password [default postgres]: %=%	|| SET PGPASSWORD=postgres
 )
@@ -139,6 +130,17 @@ if %errorlevel% neq 0 (
 	exit /b 1
 ) else (
 	ECHO db_create.sql built %NEWDB% OK
+	
+REM
+REM This needs to be tested on a clean install
+REM
+	IF NOT EXIST %PGPASSFILE% IF EXIST pgpass.conf (
+		ECHO Copying generated pgpass.conf to %PGPASSFILE%
+		COPY pgpass.conf %PGPASSFILE%
+		if %errorlevel% neq 0 (
+			ECHO Unable to copy pgpass.conf to %PGPASSFILE%
+		)
+	)
 	CALL powershell -ExecutionPolicy ByPass -file run.ps1 pg_restore.rpt "%CD%" ^
 		pg_restore -d %NEWDB% -U postgres sahsuland_dev.dump
 	if %errorlevel% neq 0 (
@@ -161,8 +163,17 @@ REM
 )
 
 REM
-REM Run a test study
+REM Install psqlrc if an administrator
 REM
+NET SESSION >nul 2>&1
+if %errorlevel% equ 0 (
+    ECHO Administrator PRIVILEGES Detected! 
+) else (
+ 	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
+ 	if %errorlevel% eq 0 {
+ 		ECHO Power user PRIVILEGES Detected! 
+ 	}
+)
 
 REM
 REM Eof
