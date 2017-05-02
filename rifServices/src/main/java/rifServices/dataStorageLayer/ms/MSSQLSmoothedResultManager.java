@@ -313,7 +313,7 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 	}
 	
 	
-	//TODO:(DM) new geography method
+	// new geography method
 	public String[] getGeographyAndLevelForStudy(
 		final Connection connection,
 		final String studyID) 

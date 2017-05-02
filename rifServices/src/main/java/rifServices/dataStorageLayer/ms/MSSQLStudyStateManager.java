@@ -271,6 +271,23 @@ final class MSSQLStudyStateManager
 		return result;
 	}
 	
+	private int getIthUpdate(
+			final String studyState) {
+		
+		if (studyState.equals("C")) {
+			return 0;
+		}
+		else if (studyState.equals("E")) {
+			return 1;
+		}
+		else if (studyState.equals("R")) {
+			return 2;
+		} 
+		else {
+			return 0;
+		}
+	}
+	
 
 	public void updateStudyStatus(
 		final Connection connection, 
@@ -283,27 +300,32 @@ final class MSSQLStudyStateManager
 		if (studyState == StudyState.STUDY_NOT_CREATED) {
 			return;
 		}
-		
-		
-		
+				
 		/*
 		 * We're just adding another entry to the status table. So an update
 		 * is really adding a new row
 		 */
 		String statusTableName = deriveStatusTableName(user.getUserID());
 		
+		//TODO: (DM) DUBUGGING HERE 
+		System.out.println("XXXX STUDY STATE XXXXXXXXXXXXXXXXXXXX");
+		System.out.println(studyState.getCode());
+		System.out.println(getIthUpdate(studyState.getCode()));
+		System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "INSERT INTO " + statusTableName);
 		queryFormatter.addQueryLine(1, " (study_id, study_state, ith_update, message) ");
-		queryFormatter.addQueryLine(1, "VALUES (?, ?, 0, ?)");
-				
+		queryFormatter.addQueryLine(1, "VALUES (?, ?, ?, ?)");
+						
 		PreparedStatement statement = null;
 		try {
 			System.out.println("SQLStudyStateManager updateStudyStatus 1");
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(studyID));
 			statement.setString(2, studyState.getCode());
-			statement.setString(3, statusMessage);		
+			statement.setInt(3, getIthUpdate(studyState.getCode()));
+			statement.setString(4, statusMessage);		
 			statement.executeUpdate();
 			connection.commit();
 			System.out.println("SQLStudyStateManager updateStudyStatus 2");
