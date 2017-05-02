@@ -100,3 +100,11 @@ Principal Work Area: JavaScript User interface development
 - Migrate all CDN libraries to standalone scripts
 - Started study information recall method
 
+## April
+
+- Working full time on middle ware in April
+- Changes to rifServices architecture to handle 2 DB types
+- MS SQL server porting for study submission complete
+- Started working on MS SQL server port for data viewer / disease mapping
+
+
