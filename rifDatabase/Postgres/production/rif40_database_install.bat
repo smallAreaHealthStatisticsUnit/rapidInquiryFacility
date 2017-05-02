@@ -1,4 +1,4 @@
-ECHO OFF
+@ECHO OFF
 REM ************************************************************************
 REM
 REM Description:
@@ -47,7 +47,37 @@ REM
 REM Get DB settings
 REM 
 echo Creating production RIF Postgres database
+for /f "delims=" %%a in ('pg_config --sysconfdir') do @set PG_SYSCONFDIR=%%a
+echo PG_SYSCONFDIR=%PG_SYSCONFDIR%
+
 REM
+REM Install psqlrc if an administrator
+REM
+NET SESSION >nul 2>&1
+if %errorlevel% equ 0 (
+    ECHO Administrator PRIVILEGES Detected! 
+	
+	IF NOT EXIST %PG_SYSCONFDIR%\psqlrc IF EXIST psqlrc (
+		ECHO Copy psqlrc to %PG_SYSCONFDIR%
+		COPY psqlrc %PG_SYSCONFDIR%\psqlrc
+		if %errorlevel% neq 0 (
+			ECHO Unable to copy psqlrc to %PG_SYSCONFDIR%
+		)		
+	)
+) else (
+ 	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt 2>&1 > nul
+ 	if %errorlevel% equ 0 (
+ 		ECHO Power user PRIVILEGES Detected! 
+			
+		IF NOT EXIST %PG_SYSCONFDIR%\psqlrc IF EXIST psqlrc (
+			ECHO Copy psqlrc to %PG_SYSCONFDIR%
+			COPY psqlrc %PG_SYSCONFDIR%\psqlrc
+			if %errorlevel% neq 0 (
+				ECHO Unable to copy psqlrc to %PG_SYSCONFDIR%
+			)		
+		)
+ 	)
+)
 
 IF NOT DEFINED NEWUSER (
 	SET /P NEWUSER=New user [default peter]: %=%	|| SET NEWUSER=peter
@@ -100,10 +130,7 @@ PAUSE
 REM
 REM Todo:
 REM
-REM 1. psqlrc
-REM powershell -ExecutionPolicy ByPass -file copy.ps1  ../etc/psqlrc c:/PROGRA~1/POSTGR~1/9.5/etc
-REM 2. Generate encrypted passwords
-REM 3. Generate and test .pgpass
+REM 1. Check database and usernames
 REM
 
 REM
@@ -160,19 +187,6 @@ REM
 		(SET PGPASSWORD=)
 		(SET RIF40PW=)
 	)
-)
-
-REM
-REM Install psqlrc if an administrator
-REM
-NET SESSION >nul 2>&1
-if %errorlevel% equ 0 (
-    ECHO Administrator PRIVILEGES Detected! 
-) else (
- 	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
- 	if %errorlevel% eq 0 {
- 		ECHO Power user PRIVILEGES Detected! 
- 	}
 )
 
 REM
