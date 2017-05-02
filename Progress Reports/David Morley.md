@@ -107,4 +107,9 @@ Principal Work Area: JavaScript User interface development
 - MS SQL server porting for study submission complete
 - Started working on MS SQL server port for data viewer / disease mapping
 
+## (May)
+
+- Moved rifServices test cases to either sql server of pgres versions
+- sql server porting for run Study (mostly problems with error checking routines)
+
 
