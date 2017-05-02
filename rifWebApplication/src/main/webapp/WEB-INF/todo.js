@@ -22,7 +22,6 @@
  * -- ask peter about adding users, need to add user.study_status table to a new user (currently done manually)
  * -- cannot make changes to standalone until I get the new database from Peter
  * 
- * --todo: show error if LOGIN fails
  * 
  * 
  * 

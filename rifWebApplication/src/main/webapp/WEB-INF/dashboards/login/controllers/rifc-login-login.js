@@ -45,11 +45,9 @@ angular.module("RIF")
 
                 //$scope.username = "dwmorley";
                 //$scope.password = "dwmorley";
-                //$scope.db = "PG";
                 
                 $scope.username = "peter";
                 $scope.password = "peter";
-                $scope.db = "MS";
 
                 $scope.showSpinner = false;
 
@@ -120,6 +118,6 @@ angular.module("RIF")
                 }
                 function handleServerError(res) {
                     $scope.showSpinner = false;
-                    $scope.showError('Could not log in');
+                    $scope.showError('Could not establish a connection to Tomcat (is it running?)');
                 }
             }]);

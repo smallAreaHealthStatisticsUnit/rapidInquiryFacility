@@ -35,10 +35,6 @@
  * SERVICE for all requests to the middleware
  */
 angular.module("RIF")
-        .constant('studySubmissionURL', "http://localhost:8080/rifServices/studySubmission/")
-        .constant('studyResultRetrievalURL', "http://localhost:8080/rifServices/studyResultRetrieval/")
-        .constant('taxonomyServicesURL', "http://localhost:8080/taxonomyServices/taxonomyServices/")
-
         .service('user', ['$http', 'studySubmissionURL', 'studyResultRetrievalURL', 'taxonomyServicesURL', 'DatabaseService',
             function ($http, studySubmissionURL, studyResultRetrievalURL, taxonomyServicesURL, DatabaseService) {
                 var self = this;
