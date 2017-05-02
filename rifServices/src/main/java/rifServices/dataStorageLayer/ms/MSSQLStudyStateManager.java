@@ -288,7 +288,6 @@ final class MSSQLStudyStateManager
 		}
 	}
 	
-
 	public void updateStudyStatus(
 		final Connection connection, 
 		final User user,
