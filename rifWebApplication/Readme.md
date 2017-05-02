@@ -488,17 +488,18 @@ C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>netstat -ba
  [Tomcat8.exe]
 ```
 
-The RIF web application file RIF4\backend\services\rifs-back-requests.js (e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4\backend\services\rifs-back-requests.js)
+The RIF web application file RIF4\backend\services\rifs-back-urls.js (e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4\backend\services\rifs-back-urls.js)
 define the URLs for the services.
 
 ```javascript
 /*
- * SERVICE for all requests to the middleware
+ * SERVICE for URL middleware calls. Localhost can be edited here
  */
+
 angular.module("RIF")
         .constant('studySubmissionURL', "http://localhost:8080/rifServices/studySubmission/")
         .constant('studyResultRetrievalURL', "http://localhost:8080/rifServices/studyResultRetrieval/")
-        .constant('taxonomyServicesURL', "http://localhost:8080/taxonomyServices/taxonomyServices/")
+        .constant('taxonomyServicesURL', "http://localhost:8080/taxonomyServices/taxonomyServices/");
 ```
 
 Edit these to match:
@@ -928,7 +929,7 @@ Use developer mode in the browser to bring up the console log:
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/caching_error.png?raw=true "Logon RIF Serice Call Incorrect")
 
-In this example the RIF web application file RIF4\backend\services\rifs-back-requests.js (e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4\backend\services\rifs-back-requests.js)
+In this example the RIF web application file RIF4\backend\services\rifs-back-urls.js (e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4\backend\services\rifs-back-urls.js)
 is set to use http://localhost:8080; but the browser, usually Chrome, used https://localhost:8080.
 
 * Should have used: https://localhost:8080/rifServices/studySubmission/pg/login?userID=peter&password=XXXXXXXXXX
@@ -936,7 +937,7 @@ is set to use http://localhost:8080; but the browser, usually Chrome, used https
 
 ```javascript
 /*
- * SERVICE for all requests to the middleware
+ * SERVICE for URL middleware calls. Localhost can be edited here
  */
 angular.module("RIF")
         .constant('studySubmissionURL', "http://localhost:8080/rifServices/studySubmission/")
@@ -944,7 +945,7 @@ angular.module("RIF")
         .constant('taxonomyServicesURL', "http://localhost:8080/taxonomyServices/taxonomyServices/")
 ```
 
-This is caused by *rifs-back-requests.js* being changed, Tomcat restarted and Chrome or Firefox caching the rprevious service call. Flush the browser cache.
+This is caused by *rifs-back-urls.js* being changed, Tomcat restarted and Chrome or Firefox caching the rprevious service call. Flush the browser cache.
 
 Firefox console log example:
 
@@ -1140,12 +1141,12 @@ The service address and port used should match what you setup up in *4.2 Setup N
 
 ## 6.1 RIF Web Application  
 
-* Save the RIF web application file *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-requests.js* outside of the tomcat tree; 
+* Save the RIF web application file *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-urls.js* outside of the tomcat tree; 
 * Stop Tomcat;
 * Change directory to *%CATALINA_HOME%\webapps*; rename RIF4 to RIF4.old;
 * Follow the instructions in 
 [section 3.2 for installing the RIF Web Application](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#32-rif-web-application)
-* Restore *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-requests.js*;
+* Restore *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-urls.js*;
 * Start tomcat;
 * When you are satisiffied with the patch remove the RIF4.old directory in *%CATALINA_HOME%\webapps*.
 
