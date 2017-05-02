@@ -53,9 +53,14 @@
 \set ECHO none
 \set ON_ERROR_STOP on
 --
--- This script is tightly coupled to the Makefile and requires the following variables to run:
+-- This script is tightly coupled to rif40_database_install.bat and requires the following variables to run:
 --
-
+--	-v testuser=%NEWUSER% -v newdb=%NEWDB% -v newpw=%NEWPW% 
+--	-v postgres_password=%PGPASSWORD% ^
+--	-v rif40_password=%RIF40PW% 
+--	-v tablespace_dir= 
+--	-v pghost=localhost 
+	
 --
 -- Start transaction 1: extensions and user accounts, roles
 --
@@ -109,10 +114,10 @@ $$;
 --
 -- Encrypted postgres and rif40 user passwords
 --
-\set npassword '''XXXX':encrypted_postgres_password''''
-SET rif40.encrypted_postgres_password TO :npassword;
-\set npassword '''XXXX':encrypted_rif40_password''''
-SET rif40.encrypted_rif40_password TO :npassword;
+\set npassword '''XXXX':postgres_password''''
+SET rif40.postgres_password TO :npassword;
+\set npassword '''XXXX':rif40_password''''
+SET rif40.rif40_password TO :npassword;
 
 --
 -- Check user is postgres on postgres, check password
@@ -121,11 +126,16 @@ DO LANGUAGE plpgsql $$
 DECLARE	
 	c1up CURSOR(l_param VARCHAR) FOR 
 		SELECT CURRENT_SETTING(l_param) AS password;
-	c2up CURSOR(l_user VARCHAR) FOR 
-		SELECT usename, passwd FROM pg_shadow WHERE usename = l_user;
+	c2up CURSOR(l_user VARCHAR, l_pass VARCHAR) FOR 
+		SELECT rolname AS usename, rolpassword, l_pass AS password,
+		       'md5'||md5(l_pass||l_user) AS encrypted_passwd
+		  FROM pg_authid  
+		 WHERE rolname = l_user;
 --
 	c1_rec RECORD;
 	c2_rec RECORD;
+--
+	sql_stmt VARCHAR;
 BEGIN
 	IF user = 'postgres' AND current_database() = 'postgres' THEN
 		RAISE INFO 'db_create.sql() User check: %', user;	
@@ -134,51 +144,64 @@ BEGIN
 			user, current_database();	
 	END IF;
 --
--- Check encrypted_rif40_password pareameter
+-- Check rif40_password pareameter
 --
-	OPEN c1up('rif40.encrypted_rif40_password');
+	OPEN c1up('rif40.rif40_password');
 	FETCH c1up INTO c1_rec;
 	CLOSE c1up;	
 	IF UPPER(c1_rec.password) = 'XXXX' THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: No -v encrypted_rif40_password=<encrypted_rif40_password password> parameter';	
+		RAISE EXCEPTION 'db_create.sql() C209xx: No -v rif40_password=<rif40_password password> parameter';	
 	ELSE
-		OPEN c2up('rif40');
+		OPEN c2up('rif40', SUBSTR(CURRENT_SETTING('rif40.rif40_password'), 5));
 		FETCH c2up INTO c2_rec;
 		CLOSE c2up;
-		IF c2_rec.passwd IS NULL THEN
-			RAISE INFO 'db_create.sql() rif40 needs to be created encrypted password will be ="%"', SUBSTR(c1_rec.password, 5);		
-		ELSIF c2_rec.passwd = SUBSTR(c1_rec.password, 5) THEN
-			RAISE INFO 'db_create.sql() rif40 encrypted password="%"', SUBSTR(c1_rec.password, 5);
+--		
+		RAISE INFO 'db_create.sql() rif40 password="%"', c2_rec.password;
+		IF c2_rec.rolpassword IS NULL THEN
+			RAISE INFO 'db_create.sql() rif40 needs to be created encrypted password will be ="%"', c2_rec.encrypted_passwd;		
+		ELSIF c2_rec.rolpassword = c2_rec.encrypted_passwd THEN
+			RAISE INFO 'db_create.sql() rif40 encrypted password="%"', c2_rec.encrypted_passwd;
+			sql_stmt:='SET rif40.encrypted_rif40_password TO '''|| c2_rec.encrypted_passwd||'''';
+-- 
+			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+			EXECUTE sql_stmt;
+			sql_stmt:='SET rif40.rif40_password TO '''|| c2_rec.password||'''';
+-- 
+			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+			EXECUTE sql_stmt;
 		ELSE
-			RAISE EXCEPTION 'db_create.sql() rif40 encrypted password set in makefile="%" differs from database: "%', 
-				SUBSTR(c1_rec.password, 5), c2_rec.passwd;	
+			RAISE EXCEPTION 'db_create.sql() rif40 password set in rif40_database_install.bat="%" differs from database: "%"', 
+				c2_rec.encrypted_passwd, c2_rec.rolpassword;	
 		END IF;
 	END IF;	
 --
--- Check encrypted_postgres_password pareameter
+-- Check postgres_password pareameter
 --
-	OPEN c1up('rif40.encrypted_postgres_password');
+	OPEN c1up('rif40.postgres_password');
 	FETCH c1up INTO c1_rec;
 	CLOSE c1up;	
 	IF UPPER(c1_rec.password) = 'XXXX' THEN
-		RAISE EXCEPTION 'db_create.sql() C209xx: No -v encrypted_postgres_password=<encrypted_postgres_password password> parameter';	
+		RAISE EXCEPTION 'db_create.sql() C209xx: No -v postgres_password=<postgres_password password> parameter';	
 	ELSE
-		OPEN c2up('postgres');
+		OPEN c2up('postgres', SUBSTR(CURRENT_SETTING('rif40.postgres_password'), 5));
 		FETCH c2up INTO c2_rec;
 		CLOSE c2up;
-		IF c2_rec.passwd = SUBSTR(c1_rec.password, 5) THEN
-			RAISE INFO 'db_create.sql() postgres encrypted password="%"', SUBSTR(c1_rec.password, 5);
+--		
+		RAISE INFO 'db_create.sql() postgres password="%"', c2_rec.password;
+		IF c2_rec.rolpassword = c2_rec.encrypted_passwd THEN
+			RAISE INFO 'db_create.sql() postgres encrypted password="%"', c2_rec.encrypted_passwd;
+			sql_stmt:='SET rif40.encrypted_postgres_password TO '''|| c2_rec.encrypted_passwd||'''';
+-- 
+			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+			EXECUTE sql_stmt;
 		ELSE
-			RAISE EXCEPTION 'db_create.sql() postgres encrypted password set in makefile="%" differs from database: "%', 
-				SUBSTR(c1_rec.password, 5), c2_rec.passwd;	
+			RAISE EXCEPTION 'db_create.sql() postgres password set in rif40_database_install.bat="%" differs from database: "%"', 
+				c2_rec.encrypted_passwd, c2_rec.rolpassword;	
 		END IF;
 	END IF;		
 --	
 END;
 $$;
-
-SET rif40.encrypted_postgres_password TO :encrypted_postgres_password;
-SET rif40.encrypted_rif40_password TO :encrypted_rif40_password;
 
 --
 -- Check DB version
@@ -275,14 +298,14 @@ DECLARE
 	c1 CURSOR(l_name VARCHAR) FOR
 		SELECT * FROM pg_user WHERE usename = l_name;
 	c2 CURSOR FOR 
-		SELECT CURRENT_SETTING('rif40.encrypted_postgres_password') AS encrypted_postgres_password,
-		       CURRENT_SETTING('rif40.encrypted_rif40_password') AS encrypted_rif40_password;
+		SELECT CURRENT_SETTING('rif40.encrypted_postgres_password') AS postgres_password,
+		       CURRENT_SETTING('rif40.encrypted_rif40_password') AS rif40_password;
 	c3 CURSOR(l_name VARCHAR) FOR
 		SELECT * FROM pg_roles WHERE rolname = l_name;
 	c4 CURSOR(l_name VARCHAR) FOR
 		SELECT rolpassword FROM pg_authid WHERE rolname = l_name;
-	c5 CURSOR(l_user VARCHAR) FOR
-		SELECT 'md5'||md5(l_user||l_user) AS new_passwd, passwd FROM pg_shadow
+	c5 CURSOR(l_user VARCHAR, l_pass VARCHAR) FOR
+		SELECT 'md5'||md5(l_pass||l_user) AS new_passwd, passwd FROM pg_shadow
 		 WHERE usename = l_user;
 	c11 CURSOR(l_name VARCHAR) FOR 
 		SELECT *
@@ -309,12 +332,12 @@ BEGIN
 	CLOSE c4;
 	IF c4_rec.rolpassword IS NULL THEN
 		RAISE EXCEPTION 'db_create.sql() postgres user has no password';
-	ELSIF c4_rec.rolpassword = c2_rec.encrypted_postgres_password THEN
+	ELSIF c4_rec.rolpassword = c2_rec.postgres_password THEN
 		RAISE NOTICE 'db_create.sql() postgres user password is unchanged';
 	ELSE
-		RAISE EXCEPTION 'db_create.sql() postgres user password would change; set encrypted_postgres_password correctly';
+		RAISE EXCEPTION 'db_create.sql() postgres user password would change; set postgres_password correctly';
 --		RAISE NOTICE 'db_create.sql() changing postgres user password';
---		sql_stmt:='ALTER USER postgres ENCRYPTED PASSWORD  '''||c2_rec.encrypted_postgres_password||'''';
+--		sql_stmt:='ALTER USER postgres ENCRYPTED PASSWORD  '''||c2_rec.postgres_password||'''';
 --		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 -- Now fixed
 --		EXECUTE sql_stmt;
@@ -392,7 +415,11 @@ BEGIN
 			OPEN c4(x);
 			FETCH c4 INTO c4_rec;
 			CLOSE c4;
-			OPEN c5(x);
+			IF x = 'rif40' THEN
+				OPEN c5(x, SUBSTR(CURRENT_SETTING('rif40.rif40_password'), 5));
+			ELSE
+				OPEN c5(x, x);
+			END IF;
 			FETCH c5 INTO c5_rec;
 			CLOSE c5;			
 			IF c4_rec.rolpassword IS NULL THEN
@@ -400,7 +427,7 @@ BEGIN
 			ELSIF c1_rec.usename = 'rif40' THEN
 				RAISE INFO 'db_create.sql() RIF schema user % exists; changing password to encrypted', c1_rec.usename::VARCHAR;
 				sql_stmt:='ALTER USER '||c1_rec.usename||' ENCRYPTED PASSWORD  '''||
-					c2_rec.encrypted_rif40_password||'''';
+					c2_rec.rif40_password||'''';
 				RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 -- Now fixed
 				EXECUTE sql_stmt;
@@ -426,7 +453,7 @@ BEGIN
 		ELSIF x = 'rif40' THEN
 	    	sql_stmt:='CREATE ROLE '||x||
 				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASSWORD '''||
-				c2_rec.encrypted_rif40_password||'''';
+				c2_rec.rif40_password||'''';
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 			EXECUTE sql_stmt;
 --
@@ -435,7 +462,7 @@ BEGIN
 		ELSIF x = 'notarifuser' THEN
 	    	sql_stmt:='CREATE ROLE '||x||
 				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||
-				x||'''';
+				md5(CURRENT_TIMESTAMP::Text)||'''';
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 			EXECUTE sql_stmt;
 --
@@ -444,7 +471,7 @@ BEGIN
 		ELSIF x IN ('gis', 'pop') THEN
 	    	sql_stmt:='CREATE ROLE '||x||
 				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||
-				x||'''';
+				md5(CURRENT_TIMESTAMP::Text)||'''';
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 			EXECUTE sql_stmt;
 --
@@ -453,7 +480,7 @@ BEGIN
 		ELSIF x IN ('test_rif_no_suppression', 'test_rif_user', 'test_rif_manager', 'test_rif_student') THEN
 	    	sql_stmt:='CREATE ROLE '||x||
 				' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||
-				x||'''';
+				md5(CURRENT_TIMESTAMP::Text)||'''';
 			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 			EXECUTE sql_stmt;
 			sql_stmt:='GRANT '||right(x, -5)||' TO '||x;
@@ -482,6 +509,7 @@ SET rif40.testuser TO :testuser;
 \set nnewpw '''XXXX':newpw''''
 SET rif40.nnewpw TO :nnewpw;
 SET rif40.newpw TO :newpw;
+
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR 
@@ -590,21 +618,42 @@ $$;
 --
 END;
 
+SET rif40.postgres_password TO :postgres_password;
+CREATE OR REPLACE VIEW pgpass_tmp
+AS
+SELECT 'localhost:5432:*:'||rolname||':'||
+			CASE WHEN rolname = 'rif40' 							THEN CURRENT_SETTING('rif40.rif40_password')
+			     WHEN rolname = 'postgres'							THEN CURRENT_SETTING('rif40.postgres_password')
+			     WHEN rolname = CURRENT_SETTING('rif40.testuser') 	THEN CURRENT_SETTING('rif40.newpw')
+			END AS pgpassline
+  FROM pg_authid
+ WHERE rolname IN ('rif40', 'postgres')
+     OR rolname = CURRENT_SETTING('rif40.testuser');
+
 \set ECHO none
 --
-\echo *****************************************************************************************************
-\echo * Try to connect as test user. This will fail if pgpass is not setup correctly
-\echo '* Stored password file is in ~/.pgpass on Linux/Macos or: %APPDATA%/postgresql/pgpass.conf on Windows'
-\echo * Format is: hostname:port:database:username:password
-\echo *****************************************************************************************************
+\pset tuples_only on
 --
-\c postgres :testuser :pghost
-\echo "Try to connect as rif40. This will fail if if the password file is not setup correctly"
-\c postgres rif40 :pghost
-\echo "Try to connect as notarifuser. This will fail if if the password file is not setup correctly"
-\c postgres notarifuser :pghost
-\echo "Try to re-connect as postgres. This will fail if if the password file is not setup correctly"
--- Re-connect as postgres
+\echo '*****************************************************************************************************'
+\echo '* Try to connect as test user. This will fail if pgpass is not setup correctly'
+\echo '* Stored password file is in ~/.pgpass on Linux/Macos or: %APPDATA%/postgresql/pgpass.conf on Windows'
+\echo '* Format is: hostname:port:database:username:password'
+\echo '* An example is supplied in pgpass.conf in the current directory'
+\echo '*****************************************************************************************************'
+
+SELECT * FROM pgpass_tmp;
+\pset tuples_only off
+\copy (SELECT pgpassline FROM pgpass_tmp) TO pgpass.conf WITH (FORMAT text)	 
+DROP VIEW IF EXISTS pgpass_tmp;
+
+--
+\c postgresql://:testuser::newpw@:pghost/postgres
+\echo Connection as :testuser to postgres OK!
+SELECT 'Connected to: '||current_database()||' AS '||USER AS connected;
+\echo Try to connect as rif40. This will fail if if the password file is not setup correctly
+\c postgresql://rif40::rif40_password@:pghost/postgres
+\echo Connection as rif40 to postgres OK!
+SELECT 'Connected to: '||current_database()||' AS '||USER AS connected;
 \c postgres postgres :pghost
 
 \echo ************************************************************************************
@@ -679,7 +728,7 @@ SELECT param,
        CURRENT_SETTING(a.param) AS value
 	     FROM a;
 \set tablespace_dir TO rif40.tablespace_dir;
-
+ 
 --
 -- Conditionally create a script to recreate :newdb
 -- Database creation is not transactional!
@@ -830,12 +879,20 @@ ALTER USER rif40 SET search_path
 SET search_path 
 	TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
 	
---
--- End transaction 4: sahsuland_dev build
---
-
-END;
 SHOW search_path;
+
+--
+\echo *****************************************************************************************************
+\echo * Try to connect as test user and rif40
+\echo *****************************************************************************************************
+--
+\c postgresql://:testuser::newpw@:pghost/:newdb
+\echo Connection as :testuser to :newdb OK!
+SELECT 'Connected to: '||current_database()||' AS '||USER AS connected;
+\echo Try to connect as rif40. This will fail if if the password file is not setup correctly
+\c postgresql://rif40::rif40_password@:pghost/:newdb
+\echo Connection as rif40 to :newdb OK!
+SELECT 'Connected to: '||current_database()||' AS '||USER AS connected;
 
 /*
 DO LANGUAGE plpgsql $$

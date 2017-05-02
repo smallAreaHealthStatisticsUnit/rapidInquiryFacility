@@ -40,13 +40,9 @@ REM Author:
 REM
 REM Margaret Douglass, Peter Hambly, SAHSU
 REM
-REM Usage: rif40_install_tables.bat
-REM
-REM recreate_all_sequences.bat MUST BE RUN FIRST
+REM Usage: rif40_database_install.bat
 REM
 
-REM
-REM MUST BE RUN AS USER WHO CAN LOGON AS POSTGRES
 REM
 REM NET SESSION >nul 2>&1
 REM if %errorlevel% equ 0 (
@@ -69,20 +65,43 @@ echo Creating production RIF Postgres database
 REM
 
 IF NOT DEFINED NEWUSER (
-	SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
+	SET /P NEWUSER=New user [default peter]: %=%	|| SET NEWUSER=peter
 )
 IF NOT DEFINED NEWDB (
-	SET /P NEWDB=New RIF40 db [default sahsuland]: %=%|| SET NEWDB=sahsuland
+	SET /P NEWDB=New RIF40 db [default sahsuland]: %=%	|| SET NEWDB=sahsuland
+)
+
+SET PGPASSFILE=C:\Users\%USERNAME%\AppData\Roaming\postgresql\pgpass.conf
+IF EXIST %PGPASSFILE% (
+	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:postgres:" %PGPASSFILE%') DO (
+	  SET PGPASSWORD=%%F
+	)
+	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:rif40:" %PGPASSFILE%') DO (
+	  SET RIF40PW=%%F
+	)
+	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:%NEWUSER%:" %PGPASSFILE%') DO (
+	  SET NEWPW=%%F
+	)
+)
+
+IF NOT DEFINED PGPASSWORD (
+	SET /P PGPASSWORD=Postgres password [default postgres]: %=%	|| SET PGPASSWORD=postgres
+)
+IF NOT DEFINED RIF40PW (
+	SET /P RIF40PW=Schema [rif40] password [default rif40]: %=%	|| SET RIF40PW=rif40
 )
 IF NOT DEFINED NEWPW (
-	SET /P NEWPW=New user password [default %NEWUSER%]: %=% || SET NEWPW=%NEWUSER%
-	)
+	SET /P NEWPW=New user password [default %NEWUSER%]: %=%	|| SET NEWPW=%NEWUSER%
+)
+
 ECHO ##########################################################################################
 ECHO #
 ECHO # WARNING! this script will the drop and create the RIF40 %NEWDB% Postgres database.
 ECHO # Type control-C to abort.
 ECHO #
 ECHO # Test user: %NEWUSER%; password: %NEWPW%
+ECHO # Postgres password:       %PGPASSWORD%
+ECHO # Schema (rif40) password: %RIF40PW%
 ECHO #
 ECHO ##########################################################################################
 PAUSE
@@ -106,14 +125,17 @@ CALL powershell -ExecutionPolicy ByPass -file run.ps1 db_create.rpt "%CD%" ^
 	-v verbosity=terse ^
 	-v debug_level=1 ^
 	-v echo=all ^
-	-v encrypted_postgres_password=md51b0219e12aaf22cdaf7567e586887db4 ^
-	-v encrypted_rif40_password=md5971757ca86c61e2d8f618fe7ab7a32a1 ^
+	-v postgres_password=%PGPASSWORD% ^
+	-v rif40_password=%RIF40PW% ^
 	-v tablespace_dir= ^
 	-v pghost=localhost ^
 	-v os=Windows_NT ^
 	-f db_create.sql
 if %errorlevel% neq 0 (
-	ECHO db_create.sql exiting with error code: %errorlevel%	
+	ECHO db_create.sql exiting with error code: %errorlevel%
+	(SET NEWPW=)
+	(SET PGPASSWORD=)
+	(SET RIF40PW=)	
 	exit /b 1
 ) else (
 	ECHO db_create.sql built %NEWDB% OK
@@ -121,6 +143,9 @@ if %errorlevel% neq 0 (
 		pg_restore -d %NEWDB% -U postgres sahsuland_dev.dump
 	if %errorlevel% neq 0 (
 		ECHO pg_restore exiting with error code: %errorlevel%	
+		(SET NEWPW=)
+		(SET PGPASSWORD=)
+		(SET RIF40PW=)
 		exit /b 1
 	) else (		
 		ECHO pg_restore restored %NEWDB% OK
@@ -130,6 +155,8 @@ REM
 		(SET NEWDB=)
 		(SET NEWUSER=)
 		(SET NEWPW=)
+		(SET PGPASSWORD=)
+		(SET RIF40PW=)
 	)
 )
 

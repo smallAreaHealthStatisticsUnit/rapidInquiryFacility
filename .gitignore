@@ -65,4 +65,11 @@ RIF4.7z
 rifServices/src/main/resources/icdClaML2016ens.xml
 rifDatabase/Postgres/production/sahsuland_dev.dump
 db_create.rpt
+pg_restore.rpt
 rifDatabase/Postgres/production/recreate_sahsu_dev_tmp.sql
+rifDatabase/Postgres/production/db_create.rpt.err
+rifDatabase/Postgres/production/pg_restore.rpt.err
+rifDatabase/Postgres/production/db_create.rpt
+rifDatabase/Postgres/production/pg_restore.rpt
+rifDatabase/Postgres/production/recreate_sahsu_dev_tmp.sql
+rifDatabase/Postgres/production/pgpass.conf

@@ -76,10 +76,10 @@ Set-Location $curdir
 # Clean up log files
 #
 If (Test-Path $log".err"){
-	Remove-Item $log".err" -verbose
+	Remove-Item $log".err"
 }
 If (Test-Path $log){
-	Remove-Item $log -verbose
+	Remove-Item $log
 }
 
 Try {
