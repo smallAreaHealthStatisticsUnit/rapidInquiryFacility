@@ -82,7 +82,7 @@ IF NOT EXISTS (SELECT *
 	CREATE TABLE [$(NEWUSER)].[study_status] (
 		  study_id 		INTEGER NOT NULL,
 		  study_state 	VARCHAR(1) NOT NULL,
-		  creation_date TIMESTAMP NOT NULL,
+		  creation_date DATETIME NOT NULL DEFAULT getdate(),
 		  ith_update 	INTEGER NOT NULL,
 		  message 		VARCHAR(255)
 	);
