@@ -128,15 +128,8 @@ ECHO ###########################################################################
 PAUSE
 
 REM
-REM Todo:
-REM
-REM 1. Check database and usernames
-REM
-
-REM
 REM Create production database
 REM
-REM sqlcmd -E -b -m-1 -e -r1 -i rif40_production_creation.sql -v import_dir="%cd%\" -v newdb="%NEWDB%" -v newuser="%NEWUSER%"
 CALL powershell -ExecutionPolicy ByPass -file run.ps1 db_create.rpt "%CD%" ^
 	psql -U postgres -d postgres -h localhost -w -e -P pager=off ^
 	-v testuser=%NEWUSER% -v newdb=%NEWDB% -v newpw=%NEWPW% ^

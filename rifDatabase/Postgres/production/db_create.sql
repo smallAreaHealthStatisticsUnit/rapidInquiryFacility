@@ -87,7 +87,19 @@ SET rif40.newdb TO :newdb;
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR 
-		SELECT CURRENT_SETTING('rif40.nnewdb') AS nnewdb, CURRENT_SETTING('rif40.newdb') AS newdb;
+		SELECT CURRENT_SETTING('rif40.nnewdb') AS nnewdb, 
+		       CURRENT_SETTING('rif40.newdb') AS newdb,
+			   REGEXP_REPLACE(CURRENT_SETTING('rif40.newdb'), 
+					'[[:lower:]]{1,}[[:lower:]{0,}[:digit:]{0,}_{0,}]{0,}', '', 'g') AS invalid_characters,
+		       CASE
+					WHEN LENGTH(REGEXP_REPLACE(CURRENT_SETTING('rif40.newdb'), 
+						'[[:lower:]]{1,}[[:lower:]{0,}[:digit:]{0,}_{0,}]{0,}', '', 'g')) > 0 THEN TRUE
+					ELSE FALSE 
+			   END::BOOLEAN AS is_invalid,
+		       CASE
+					WHEN LENGTH(CURRENT_SETTING('rif40.newdb')) > 30 THEN TRUE
+					ELSE FALSE 
+			   END::BOOLEAN AS length_invalid;
 	c1_rec RECORD;
 	c2_rec RECORD;
 --
@@ -102,8 +114,15 @@ BEGIN
 --
 	IF c1_rec.nnewdb IN ('XXXX', 'XXXX:nnewdb') THEN
 		RAISE EXCEPTION 'db_create.sql() C209xx: No -v newdb=<new database> parameter';	
+	ELSIF c1_rec.is_invalid THEN
+		RAISE EXCEPTION 'db_create.sql() new database name="%" contains invalid characters: "%"',
+			c1_rec.newdb, 
+			c1_rec.invalid_characters;
+	ELSIF c1_rec.length_invalid THEN
+		RAISE EXCEPTION 'db_create.sql() new database name="%" is too long (30 characters max)', 
+			c1_rec.newdb;
 	ELSE
-		RAISE INFO 'db_create.sql() test new database parameter="%"', c1_rec.newdb;
+		RAISE INFO 'db_create.sql() test new database name="%" is OK', c1_rec.newdb;
 	END IF;
 	
 END;
@@ -505,16 +524,28 @@ $$;
 -- 
 \set ntestuser '''XXXX':testuser''''
 SET rif40.ntestuser TO :ntestuser;
-SET rif40.testuser TO :testuser;
+\set quotedtestuser '\"':testuser'\"'
+SET rif40.testuser TO :quotedtestuser;
 \set nnewpw '''XXXX':newpw''''
 SET rif40.nnewpw TO :nnewpw;
 SET rif40.newpw TO :newpw;
 
 DO LANGUAGE plpgsql $$
 DECLARE
-	c1 CURSOR FOR 
+	c1 CURSOR(l_name VARCHAR) FOR 
 		SELECT CURRENT_SETTING('rif40.ntestuser') AS ntestuser, 
-		       CURRENT_SETTING('rif40.testuser') AS testuser;
+		       l_name AS testuser,
+			   REGEXP_REPLACE(l_name, 
+					'[[:lower:]]{1,}[[:lower:]{0,}[:digit:]{0,}_{0,}]{0,}', '', 'g') AS invalid_characters,
+		       CASE
+					WHEN LENGTH(REGEXP_REPLACE(l_name, 
+						'[[:lower:]]{1,}[[:lower:]{0,}[:digit:]{0,}_{0,}]{0,}', '', 'g')) > 0 THEN TRUE
+					ELSE FALSE 
+			   END::BOOLEAN AS is_invalid,
+		       CASE
+					WHEN LENGTH(l_name) > 30 THEN TRUE
+					ELSE FALSE 
+			   END::BOOLEAN AS length_invalid;
 	c2 CURSOR(l_usename VARCHAR) FOR 
 		SELECT * FROM pg_user WHERE usename = l_usename;
 	c3 CURSOR FOR 
@@ -534,7 +565,7 @@ DECLARE
 	u_name	VARCHAR;
 	u_pass	VARCHAR;
 BEGIN
-	OPEN c1;
+	OPEN c1(CURRENT_SETTING('rif40.testuser'));
 	FETCH c1 INTO c1_rec;
 	CLOSE c1;
 --
@@ -542,8 +573,16 @@ BEGIN
 --
 	IF c1_rec.ntestuser IN ('XXXX', 'XXXX:testuser') THEN
 		RAISE EXCEPTION 'db_create.sql() C209xx: No -v testuser=<test user account> parameter';	
+	ELSIF c1_rec.is_invalid THEN
+		RAISE EXCEPTION 'db_create.sql() test user account name="%" contains invalid characters: "%"',
+			c1_rec.testuser, 
+			c1_rec.invalid_characters;
+	ELSIF c1_rec.length_invalid THEN
+		RAISE EXCEPTION 'db_create.sql() test user account name="%" is too long (30 characters max)', 
+			c1_rec.testuser;		
 	ELSE
-		RAISE INFO 'db_create.sql() test user account parameter="%"', c1_rec.testuser;
+		RAISE INFO 'db_create.sql() test user account parameter="%/%" OK', 
+			c1_rec.testuser, CURRENT_SETTING('rif40.testuser');
 	END IF;	
 	OPEN c3;
 	FETCH c3 INTO c3_rec;
@@ -555,12 +594,10 @@ BEGIN
 	END IF;	
 	
 --
--- Check is lower, valid DB name
+-- Check is valid DB name
 --
-
---
-	u_name:=LOWER(CURRENT_SETTING('rif40.testuser'));
-	u_pass:=LOWER(CURRENT_SETTING('rif40.newpw'));
+	u_name:=CURRENT_SETTING('rif40.testuser');
+	u_pass:=CURRENT_SETTING('rif40.newpw');
 --
 -- Test account exists
 --
@@ -569,8 +606,9 @@ BEGIN
 	CLOSE c2;
 	IF c2_rec.usename IS NULL THEN
 		RAISE NOTICE 'db_create.sql() C209xx: User account does not exist: %; creating', u_name;	
-		sql_stmt:='CREATE ROLE '||LOWER(SUBSTR(c1_rec.testuser, 5))||
-			' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||rif40.newpw||'''';
+		sql_stmt:='CREATE ROLE '||u_name||
+			' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||
+				CURRENT_SETTING('rif40.newpw')||'''';
 		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 		EXECUTE sql_stmt;
 	ELSE
@@ -579,13 +617,15 @@ BEGIN
 		FETCH c4 INTO c4_rec;
 		CLOSE c4;
 		IF c4_rec.rolpassword IS NULL THEN
-			RAISE EXCEPTION 'db_create.sql() C209xx: User account: % has a NULL password', c2_rec.usename;	
+			RAISE EXCEPTION 'db_create.sql() C209xx: User account: % has a NULL password', 
+				c2_rec.usename;	
 		ELSIF c4_rec.rolpassword != c4_rec.password IS NULL THEN
 			RAISE INFO 'rolpassword: "%"', c4_rec.rolpassword;
 			RAISE INFO 'password:    "%"', c4_rec.password;
 			RAISE EXCEPTION 'db_create.sql() C209xx: User account: % password (%) would change; set password correctly', c2_rec.usename, u_pass;		
 		ELSE
-			RAISE NOTICE 'db_create.sql() C209xx: User account: % password is unchanged', c2_rec.usename;
+			RAISE NOTICE 'db_create.sql() C209xx: User account: % password is unchanged', 
+				c2_rec.usename;
 		END IF;
 --
 		IF pg_has_role(c2_rec.usename, 'rif_user', 'MEMBER') THEN
@@ -824,7 +864,7 @@ DECLARE
 	sql_stmt VARCHAR;
 	u_name	VARCHAR;
 BEGIN
-	u_name:=LOWER(SUBSTR(CURRENT_SETTING('rif40.testuser'), 5));
+	u_name:=SUBSTR(CURRENT_SETTING('rif40.testuser'), 5);
 	IF user = 'postgres' AND current_database() = CURRENT_SETTING('rif40.newdb') THEN
 		RAISE INFO 'db_create.sql() User check: %', user;	
 	ELSE

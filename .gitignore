@@ -73,3 +73,4 @@ rifDatabase/Postgres/production/db_create.rpt
 rifDatabase/Postgres/production/pg_restore.rpt
 rifDatabase/Postgres/production/recreate_sahsu_dev_tmp.sql
 rifDatabase/Postgres/production/pgpass.conf
+rifDatabase/Postgres/production/recreate_sahsu_dev_tmp.sql
