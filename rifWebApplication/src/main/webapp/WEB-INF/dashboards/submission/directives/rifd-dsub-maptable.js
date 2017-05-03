@@ -254,13 +254,19 @@ angular.module("RIF")
                                 });
                                 map.addLayer($scope.geoJSON);
 
+                                //Get max bounds
+                                user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
+                                    var lowestLevel = res.data[0].names[0];
+                                    user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
+                                        maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
+                                        if ($scope.input.center.lng === 0) {
+                                            map.fitBounds(maxbounds);
+                                        }
+                                    });
+                                });
+
                                 //Get overall layer properties
                                 user.getTileMakerTilesAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
-                                    //get maxbounds
-                                    maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
-                                    if ($scope.input.center.lng === 0) {
-                                        map.fitBounds(maxbounds);
-                                    }
                                     //populate the table
                                     for (var i = 0; i < res.data.objects.collection.geometries.length; i++) {
                                         var thisPoly = res.data.objects.collection.geometries[i];

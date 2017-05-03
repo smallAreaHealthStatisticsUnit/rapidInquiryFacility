@@ -464,13 +464,16 @@ angular.module("RIF")
 
                                         //do not get maxbounds for diseasemap2
                                         if (mapID !== "diseasemap2") {
-                                            user.getTileMakerTilesAttributes(user.currentUser, $scope.tileInfo[mapID].geography, $scope.tileInfo[mapID].level).then(function (res) {
-                                                $scope.maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
-                                                if ($scope.myService.getState().center[mapID].lng === 0) {
-                                                    leafletData.getMap(mapID).then(function (map) {
-                                                        map.fitBounds($scope.maxbounds);
-                                                    });
-                                                }
+                                            user.getGeoLevelSelectValues(user.currentUser, $scope.tileInfo[mapID].geography).then(function (res) {
+                                                var lowestLevel = res.data[0].names[0];
+                                                user.getTileMakerTilesAttributes(user.currentUser, $scope.tileInfo[mapID].geography, lowestLevel).then(function (res) {
+                                                    $scope.maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
+                                                    if ($scope.myService.getState().center[mapID].lng === 0) {
+                                                        leafletData.getMap(mapID).then(function (map) {
+                                                            map.fitBounds($scope.maxbounds);
+                                                        });
+                                                    }
+                                                });
                                             });
                                         }
                                     }).then(function () {

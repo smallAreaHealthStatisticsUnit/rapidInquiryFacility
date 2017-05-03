@@ -37,6 +37,7 @@
 angular.module("RIF")
         .service('user', ['$http', 'studySubmissionURL', 'studyResultRetrievalURL', 'taxonomyServicesURL', 'DatabaseService',
             function ($http, studySubmissionURL, studyResultRetrievalURL, taxonomyServicesURL, DatabaseService) {
+                
                 var self = this;
                 self.currentUser = "";
 
