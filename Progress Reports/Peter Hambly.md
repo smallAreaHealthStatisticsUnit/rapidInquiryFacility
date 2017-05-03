@@ -1320,9 +1320,13 @@ Fixed by:
 UPDATE study_status SET ith_update = 2 WHERE study_state = 'R';
 UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
 ```
+* Missing level 4 geography tiles caused by areaid_count=0 in geolevels_sahsuland (SQL statement 327: Update areaid_count 
+  column in geolevels table using geometry table); removed areaid_count tests from tiles_sahsuland view
+  temporarily. Temporary fix applied
 
 #### Current TODO list (May 2017): SQL Server Port
 
+* Fix missing level 4 geography tiles bug (areaid_count=0 in geolevels table)
 * Harden SQL SErver port against SQL Injection getting past middleware into meta data
 * Process Utah geography
 * Disable guest logins on SQL Server
