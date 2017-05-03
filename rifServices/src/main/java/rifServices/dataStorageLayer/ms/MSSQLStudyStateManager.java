@@ -305,13 +305,7 @@ final class MSSQLStudyStateManager
 		 * is really adding a new row
 		 */
 		String statusTableName = deriveStatusTableName(user.getUserID());
-		
-		//TODO: (DM) DUBUGGING HERE 
-		System.out.println("XXXX STUDY STATE XXXXXXXXXXXXXXXXXXXX");
-		System.out.println(studyState.getCode());
-		System.out.println(getIthUpdate(studyState.getCode()));
-		System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-		
+				
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "INSERT INTO " + statusTableName);
 		queryFormatter.addQueryLine(1, " (study_id, study_state, ith_update, message) ");
