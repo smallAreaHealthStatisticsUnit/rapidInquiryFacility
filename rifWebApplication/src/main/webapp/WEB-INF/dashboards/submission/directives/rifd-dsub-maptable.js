@@ -198,7 +198,10 @@ angular.module("RIF")
                                             renderer: L.canvas(),
                                             style: style,
                                             onEachFeature: function (feature, layer) {
-                                                //get as centroid marker layer
+                                                
+                                                //TODO: get these centroids from rif_data.look_up_tables lookup_$scope.input.selectAt
+                                                
+                                                //get as centroid marker layer. 
                                                 var p = layer.getBounds().getCenter();
                                                 latlngList.push([L.latLng([p.lat, p.lng]), feature.properties.name, feature.properties.area_id]);
                                                 var circle = new L.CircleMarker([p.lat, p.lng], {

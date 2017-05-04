@@ -96,6 +96,11 @@ angular.module("RIF")
                     $scope.showError("Could not submit study. Please complete - " + errMsg);
                     return;
                 }
+                if (SubmissionStateService.getState().studyName === "") {
+                    $scope.showError("Please enter a study name (MY RIF STUDY is a just a placeholder)");
+                    return;
+                }
+                
                 //TODO: error if year params not set (if loaded from file)
 
                 //If tests passed, then submitStudy

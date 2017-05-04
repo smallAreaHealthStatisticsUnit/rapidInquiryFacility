@@ -5,7 +5,7 @@
 /*
  * -- A method to return details of a 
  * submitted job from the DB
- * This Mithed below does not really work, so need to write new method
+ * This Method below does not really work, so need to write new method
  * http://localhost:8080/rifServices/studySubmission/getStudySubmission?userID=kgarwood&studyID=280
  * -- NOWHERE IN DB DOES IT STORE THE CALCULATION METHOD!!
  * 

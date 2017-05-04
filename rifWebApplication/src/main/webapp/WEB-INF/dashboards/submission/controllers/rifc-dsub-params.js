@@ -446,9 +446,14 @@ angular.module("RIF")
                     });
                     modalInstance.result.then(function () {
                         //Change tree icon colour
-                        if ($scope.thisICDselection.length !== 0 & $scope.title !== "" &
-                                $scope.startYear !== "" & $scope.endYear !== "" & $scope.yearInterval !== "" &
-                                $scope.upperAge !== "" & $scope.lowerAge !== "") {
+                        if ($scope.thisICDselection.length !== 0 & 
+                                ParameterStateService.getState().title !== "" &
+                                ParameterStateService.getState().start !== "" & 
+                                ParameterStateService.getState().end !== "" & 
+                                ParameterStateService.getState().interval !== "" &
+                                ParameterStateService.getState().upperAge !== "" & 
+                                ParameterStateService.getState().lowerAge !== "") 
+                        {   
                             SubmissionStateService.getState().investigationTree = true;
                             $scope.tree = true;
                         } else {
