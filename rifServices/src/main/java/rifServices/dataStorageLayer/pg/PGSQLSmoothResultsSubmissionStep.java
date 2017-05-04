@@ -188,6 +188,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 			
 			Process process = Runtime.getRuntime().exec(batchFile.getAbsolutePath());
 			
+			int exitValue = process.waitFor(); 
 			//batchFile.delete();			
 			System.out.println("Exit value=="+exitValue+"==");
 			
