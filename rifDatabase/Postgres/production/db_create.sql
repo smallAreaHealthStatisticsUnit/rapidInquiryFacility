@@ -619,7 +619,7 @@ BEGIN
 		IF c4_rec.rolpassword IS NULL THEN
 			RAISE EXCEPTION 'db_create.sql() C209xx: User account: % has a NULL password', 
 				c2_rec.usename;	
-		ELSIF c4_rec.rolpassword != c4_rec.password IS NULL THEN
+		ELSIF c4_rec.rolpassword != c4_rec.password THEN
 			RAISE INFO 'rolpassword: "%"', c4_rec.rolpassword;
 			RAISE INFO 'password:    "%"', c4_rec.password;
 			RAISE EXCEPTION 'db_create.sql() C209xx: User account: % password (%) would change; set password correctly', c2_rec.usename, u_pass;		

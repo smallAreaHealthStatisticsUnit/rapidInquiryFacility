@@ -631,6 +631,8 @@ This setup will support:
    For SQL Server use SQL Server Native Client version 11, 2011 version or later; 
    For Postgres use the latest driver from https://www.postgresql.org/ftp/odbc/versions/msi/
    
+   For Postgres, select the datasourcde tab and set *Max Varchar* and *Max Long Varchar* to 8190.
+   
 These settings are in the Java connector for the RifServices middleware: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*
 
 **BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
@@ -1087,7 +1089,7 @@ The method for configuring a specific port is detailed in: https://docs.microsof
 # 5. Running the RIF
 
 * Make sure you have restarted tomcat before attempting to run the RIF for the first time
-* In a non networked single machine environment (e.g. a laptop) the RIF is at: http://localhost:8081/RIF4
+* In a non networked single machine environment (e.g. a laptop) the RIF is at: http://localhost:8080/RIF4
 * In a networked environment the RIF is at: ```http://<your domain>/RIF4```, e.g. *https://aepw-rif27.sm.med.ic.ac.uk/RIF4*
 
 ## 5.1 Logging On
