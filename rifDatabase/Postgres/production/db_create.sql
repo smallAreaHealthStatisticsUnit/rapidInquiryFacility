@@ -153,6 +153,9 @@ DECLARE
 --
 	c1_rec RECORD;
 	c2_rec RECORD;
+	encrypted_passwd	VARCHAR;
+	password	VARCHAR;
+	
 --
 	sql_stmt VARCHAR;
 BEGIN
@@ -177,21 +180,24 @@ BEGIN
 --		
 		RAISE INFO 'db_create.sql() rif40 password="%"', c2_rec.password;
 		IF c2_rec.rolpassword IS NULL THEN
-			RAISE INFO 'db_create.sql() rif40 needs to be created encrypted password will be ="%"', c2_rec.encrypted_passwd;		
+			RAISE INFO 'db_create.sql() rif40 needs to be created encrypted password will be ="%"', c2_rec.encrypted_passwd;	
 		ELSIF c2_rec.rolpassword = c2_rec.encrypted_passwd THEN
 			RAISE INFO 'db_create.sql() rif40 encrypted password="%"', c2_rec.encrypted_passwd;
-			sql_stmt:='SET rif40.encrypted_rif40_password TO '''|| c2_rec.encrypted_passwd||'''';
--- 
-			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-			EXECUTE sql_stmt;
-			sql_stmt:='SET rif40.rif40_password TO '''|| c2_rec.password||'''';
--- 
-			RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
-			EXECUTE sql_stmt;
 		ELSE
 			RAISE EXCEPTION 'db_create.sql() rif40 password set in rif40_database_install.bat="%" differs from database: "%"', 
 				c2_rec.encrypted_passwd, c2_rec.rolpassword;	
 		END IF;
+		password:=COALESCE(c2_rec.password, SUBSTR(CURRENT_SETTING('rif40.rif40_password'), 5));
+		encrypted_passwd:=COALESCE(c2_rec.encrypted_passwd, 'md5'||md5(password||'rif40'));
+		sql_stmt:='SET rif40.encrypted_rif40_password TO '''|| encrypted_passwd||'''';
+-- 
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+		sql_stmt:='SET rif40.rif40_password TO '''|| password||'''';
+-- 
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+			
 	END IF;	
 --
 -- Check postgres_password pareameter

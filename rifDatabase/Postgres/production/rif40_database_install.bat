@@ -89,7 +89,7 @@ IF NOT DEFINED NEWDB (
 REM
 REM Get passwords from C:\Users\%USERNAME%\AppData\Roaming\postgresql\pgpass.conf if it exists
 REM
-SET PGPASSFILE=C:\Users\%USERNAME%\AppData\Roaming\postgresql\pgpass.conf
+SET PGPASSFILE="C:\Users\%USERNAME%\AppData\Roaming\postgresql\pgpass.conf"
 IF EXIST %PGPASSFILE% (
 	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:postgres:" %PGPASSFILE%') DO (
 	  SET PGPASSWORD=%%F
