@@ -272,8 +272,6 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			String result = "";
 			
 			try {
-				//Convert URL parameters to RIF service API parameters
-				User user = createUser(servletRequest, userID);
 								
 				RIFServiceStartupOptions rifServiceStartupOptions
 				= RIFServiceStartupOptions.newInstance(
