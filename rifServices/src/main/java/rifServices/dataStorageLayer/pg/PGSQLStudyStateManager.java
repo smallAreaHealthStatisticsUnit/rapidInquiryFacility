@@ -642,13 +642,15 @@ final class PGSQLStudyStateManager
 					connection,
 					statusTableName,
 					rifStudiesTableName);
-
+			
+			//Disabled to keep tomcat window clear (called every 4 seconds by front-end)
+			/*
 			System.out.println("getCurrentStatusAllStudies 2  number of updates==" + expectedNumberOfStatusUpdates+"==");
 
 			logSQLQuery(
 				"getCurrentStatusAllStudies", 
 				queryFormatter, 
-				"userID");
+				"userID");*/
 			
 			statement
 				= createPreparedStatement(
@@ -743,7 +745,7 @@ final class PGSQLStudyStateManager
 		queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_id = most_recent_updates.study_id");
 
 		
-		System.out.println(queryFormatter.generateQuery());
+		//System.out.println(queryFormatter.generateQuery());
 		
 		Integer result = 0;
 		PreparedStatement statement = null;		

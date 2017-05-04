@@ -637,12 +637,15 @@ final class MSSQLStudyStateManager
 						statusTableName,
 						rifStudiesTableName);
 
+				//Disabled to keep tomcat window clear (called every 4 seconds by front-end)
+				/*
 				System.out.println("getCurrentStatusAllStudies 2  number of updates==" + expectedNumberOfStatusUpdates+"==");
 
 				logSQLQuery(
 					"getCurrentStatusAllStudies", 
 					queryFormatter, 
 					"userID");
+				*/
 				
 				statement
 					= createPreparedStatement(
@@ -734,9 +737,8 @@ final class MSSQLStudyStateManager
 			queryFormatter.addQueryLine(1, "most_recent_updates");
 			queryFormatter.addQueryLine(0, "WHERE ");
 			queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_id = most_recent_updates.study_id");
-
 			
-			System.out.println(queryFormatter.generateQuery());
+			//System.out.println(queryFormatter.generateQuery());
 			
 			Integer result = 0;
 			PreparedStatement statement = null;		
