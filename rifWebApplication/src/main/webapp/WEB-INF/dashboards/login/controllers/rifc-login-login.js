@@ -43,11 +43,14 @@ angular.module("RIF")
                     SubmissionStateService, StudyAreaStateService, CompAreaStateService,
                     ParameterStateService, StatsStateService, ViewerStateService, MappingStateService) {
 
-                $scope.username = "dwmorley";
-                $scope.password = "dwmorley";
+              //  $scope.username = "dwmorley";
+              //  $scope.password = "dwmorley";
                 
              //   $scope.username = "peter";
              //   $scope.password = "peter";
+             
+                $scope.username = "";
+                $scope.password = "";
 
                 $scope.showSpinner = false;
 
