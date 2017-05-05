@@ -200,15 +200,13 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		final String studyID) 
 		throws RIFServiceException {
 		
-		String mapTableName
-			= deriveMapTableName(studyID);
-		
 		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
-		queryFormatter.setUseDistinct(true);
-		queryFormatter.addSelectField("genders");
-		queryFormatter.addFromTable(mapTableName);
-				
 		
+		queryFormatter.setDatabaseSchemaName("rif40");
+		queryFormatter.addSelectField("genders");
+		queryFormatter.addFromTable("rif40_investigations");
+		queryFormatter.addWhereParameter("study_id");
+			
 		System.out.println("=======");
 		System.out.println(queryFormatter.generateQuery());
 		System.out.println("=======");
@@ -217,13 +215,22 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		ArrayList<Sex> results = new ArrayList<Sex>();
 		try {
-			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+			
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setInt(1, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
-			while (resultSet.next()) {
-				int sexID = resultSet.getInt(1);
-				Sex currentSex = Sex.getSexFromCode(sexID);
-				results.add(currentSex);
+			resultSet.next();	
+			
+			int sexID = resultSet.getInt(1);				
+
+			if (sexID == 3) {
+				//BOTH
+				results.add(Sex.getSexFromCode(1));
+				results.add(Sex.getSexFromCode(2));
+				results.add(Sex.getSexFromCode(3));
+			} else {
+				//M or F
+				results.add(Sex.getSexFromCode(sexID));
 			}
 		}
 		catch(SQLException sqlException) {
