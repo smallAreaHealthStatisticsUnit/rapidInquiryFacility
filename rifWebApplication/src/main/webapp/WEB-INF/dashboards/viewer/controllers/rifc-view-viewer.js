@@ -184,7 +184,7 @@ angular.module("RIF")
                 //population pyramaid year selection
                 $scope.yearsPop = [];
                 $scope.fillPyramidData = function () {
-                    user.getYearsForStudy(user.currentUser, 1, "viewermap").then(function (res) {
+                    user.getYearsForStudy(user.currentUser, $scope.studyID["viewermap"].study_id, "viewermap").then(function (res) {
                         if (!angular.isUndefined(res.data['years{'])) { //Note erroneous trailing '{' in middle ware method
                             $scope.yearsPop.length = 0;
                             for (var i = 0; i < res.data['years{'].length; i++) {

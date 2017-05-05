@@ -192,7 +192,7 @@ angular.module("RIF")
                 self.getYearsForStudy = function (username, studyID, leaflet) {
                     config.leaflet = leaflet;
                     //http://localhost:8080/rifServices/studyResultRetrieval/getYearsForStudy?userID=kgarwood&study_id=1
-                    //{"years{":["1989","1990","1991","1992","1993","1994","1995","1996"]}
+                    //[["1993","1996"]]
                     return $http.get(studyResultRetrievalURL + DatabaseService.getDatabase() + 'getYearsForStudy?userID=' + username + '&study_id=' + studyID, config);
                 };
                 self.getSexesForStudy = function (username, studyID, leaflet) {
