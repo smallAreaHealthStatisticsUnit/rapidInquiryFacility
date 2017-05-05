@@ -988,7 +988,7 @@ TLS errors tend to be:
 In this case the .war file (e.g. rifServices.war) is not unpacked and the service is not available in tomcat. Find in error in the Tomcat stderr log and send to the development team. 
 This is indicative of a build problem.
 
-* Screenshiots and log will be added when this happens again!*
+* Screenshots and log will be added when this happens again!*
 
 ### 4.4.4 No Taxonomy Services
 
