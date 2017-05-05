@@ -88,7 +88,7 @@ Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.
 - Choose an administrator username (NOT admin) and a secure password that complies with your organisations password policy.
 - Complete tomcat installation, but do not start service.
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web 
-  services will not work [The web services will crash on user logon if it is not set, this will be changed to a more obvious error]; see:
+  services will not work [The web services will crash on user logon if it is not set]; see:
   4.4.5 RIF Services crash on logon.
   
 When accessed from the internet the RIF **must** be secured using TLS to protect the login details and any health data viewed.
