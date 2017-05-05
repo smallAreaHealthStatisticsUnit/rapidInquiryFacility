@@ -143,12 +143,7 @@ public class MSDenominatorScriptGenerator
 			yearFieldConfiguration.getCleanFieldName().toUpperCase(), 
 			false);
 		
-		//This is a field that will not appear in the input files but is derived
-		//by the data loader tool.
-		createTableQueryFormatter.addIntegerFieldDeclaration(
-			"AGE_SEX_GROUP", 
-			false);
-
+	
 		//Do we assume these field names will be in increasing order of 
 		//geographical resolution?
 		
@@ -159,6 +154,11 @@ public class MSDenominatorScriptGenerator
 		
 		createTableQueryFormatter.addIntegerFieldDeclaration(
 			totalFieldConfiguration.getConvertFieldName().toUpperCase(), 
+			false);
+		//This is a field that will not appear in the input files but is derived
+		//by the data loader tool.
+		createTableQueryFormatter.addIntegerFieldDeclaration(
+			"AGE_SEX_GROUP", 
 			false);
 
 		denominatorEntry.append(createTableQueryFormatter.generateQuery());
@@ -250,14 +250,6 @@ public class MSDenominatorScriptGenerator
 				yearFieldConfiguration.getConvertFieldName(), 
 				yearFieldConfiguration.getDescription()));	
 		
-		//age sex group field
-		String ageSexGroupComment
-			= RIFDataLoaderToolMessages.getMessage("defaultSchemaComments.ageSexGroup");
-		denominatorEntry.append(
-				createTableFieldCommentQuery(
-					publishedCovariateTableName, 
-					"AGE_SEX_GROUP", 
-					ageSexGroupComment));		
 		
 		ArrayList<DataSetFieldConfiguration> resolutionFields
 			= DataSetConfigurationUtility.getAllGeographicalResolutionFields(denominator);
@@ -276,7 +268,15 @@ public class MSDenominatorScriptGenerator
 				publishedCovariateTableName, 
 				totalField.getConvertFieldName(), 
 				totalField.getDescription()));
-	}
+		//age sex group field
+		String ageSexGroupComment
+			= RIFDataLoaderToolMessages.getMessage("defaultSchemaComments.ageSexGroup");
+		denominatorEntry.append(
+				createTableFieldCommentQuery(
+					publishedCovariateTableName, 
+					"AGE_SEX_GROUP", 
+					ageSexGroupComment));		
+}
 	
 	private void createIndices(
 		final StringBuilder denominatorEntry, 

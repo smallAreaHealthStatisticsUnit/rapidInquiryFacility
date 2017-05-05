@@ -222,7 +222,7 @@ public class MSBulkInsertQueryFormatter extends
 		index = 0;
 		
 		writeColumnSourceEntry(writer, ++index, "year");			
-		writeColumnSourceEntry(writer, ++index, "age_sex_group");
+		//writeColumnSourceEntry(writer, ++index, "age_sex_group");
 
 		for (DataSetFieldConfiguration geographicalResolutionField : geographicalResolutionFields) {
 			String fieldName
@@ -230,6 +230,7 @@ public class MSBulkInsertQueryFormatter extends
 			writeColumnSourceEntry(writer, ++index, fieldName); //geographical resolution field				
 		}
 		writeColumnSourceEntry(writer, ++index, "total");
+		writeColumnSourceEntry(writer, ++index, "age_sex_group");
 		
 		writer.write("</ROW>");
 		writer.newLine();			
@@ -266,7 +267,6 @@ public class MSBulkInsertQueryFormatter extends
 		index = 0;
 		
 		writeColumnSourceEntry(writer, ++index, "year");			
-		writeColumnSourceEntry(writer, ++index, "age_sex_group");
 
 		for (DataSetFieldConfiguration geographicalResolutionField : geographicalResolutionFields) {
 			String fieldName
@@ -275,6 +275,7 @@ public class MSBulkInsertQueryFormatter extends
 		}
 		writeColumnSourceEntry(writer, ++index, "icd");
 		writeColumnSourceEntry(writer, ++index, "total");
+		writeColumnSourceEntry(writer, ++index, "age_sex_group");
 		
 		writer.write("</ROW>");
 		writer.newLine();			

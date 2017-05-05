@@ -143,7 +143,6 @@ public class PGNumeratorScriptGenerator
 		createTableQueryFormatter.setDatabaseSchemaName("rif_data");
 		createTableQueryFormatter.setTableName(publishedDenominatorTableName);
 		createTableQueryFormatter.addIntegerFieldDeclaration("year", false);
-		createTableQueryFormatter.addIntegerFieldDeclaration("age_sex_group", false);
 
 		//Do we assume these field names will be in increasing order of 
 		//geographical resolution?
@@ -157,6 +156,7 @@ public class PGNumeratorScriptGenerator
 		}
 		createTableQueryFormatter.addTextFieldDeclaration("icd", false);
 		createTableQueryFormatter.addIntegerFieldDeclaration("total", false);
+		createTableQueryFormatter.addIntegerFieldDeclaration("age_sex_group", false);
 
 		numeratorEntry.append(createTableQueryFormatter.generateQuery());
 		numeratorEntry.append("\n");
@@ -164,12 +164,12 @@ public class PGNumeratorScriptGenerator
 		//How do we handle extra fields?
 		ArrayList<String> fieldNames = new ArrayList<String>();
 		fieldNames.add("year");
-		fieldNames.add("age_sex_group");
 		for (String levelCodeName : levelCodeNames) {
 			fieldNames.add(levelCodeName);
 		}
 		fieldNames.add("icd");
 		fieldNames.add("total");
+		fieldNames.add("age_sex_group");
 			
 		String filePath
 			= super.getPublishedFilePath(numerator) + ".csv";

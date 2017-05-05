@@ -638,25 +638,36 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			
             ResultSetMetaData rsmd = resultSet.getMetaData();
             for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                cname.append(rsmd.getColumnName(i));
-                cname.append(",");
-                cname.flush();
-                
+            	// Not interested in the data_set_id, row_number or keep_record fields
+            	String colName = rsmd.getColumnName(i);
+            	if (colName.equals("data_set_id") == false && colName.equals("row_number") == false && colName.equals("keep_record") == false)
+            	{
+	                cname.append(rsmd.getColumnName(i));
+	                if (i < rsmd.getColumnCount()) {
+	                	cname.append(",");
+	                }
+	               cname.flush();
+            	}
             }
             cname.append("\n");
 
             // WRITE DATA
             while (resultSet.next()) {
                 for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                    if (resultSet.getObject(i) != null) {
-                         cname.append(resultSet.getObject(i).toString());
-                    } else {
-                        cname.append("null");
-                    }
-                    if (i < rsmd.getColumnCount()) {
-                    	cname.append(",");
-                    }
-
+                	
+                	// Not interested in the data_set_id, row_number or keep_record fields
+                	String colName = rsmd.getColumnName(i);
+                	if (colName.equals("data_set_id") == false && colName.equals("row_number") == false && colName.equals("keep_record") == false)
+                	{
+	                    if (resultSet.getObject(i) != null) {
+	                         cname.append(resultSet.getObject(i).toString());
+	                    } else {
+	                        cname.append("null");
+	                    }
+	                    if (i < rsmd.getColumnCount()) {
+	                    	cname.append(",");
+	                    }
+                	}
                 }
                 //new line entered after each row
                 cname.append("\n");

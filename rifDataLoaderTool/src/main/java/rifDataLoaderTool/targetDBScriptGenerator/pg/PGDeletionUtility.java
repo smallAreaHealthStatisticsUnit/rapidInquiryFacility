@@ -129,13 +129,13 @@ public class PGDeletionUtility {
 		}
 
 		//Attempt to delete health themes
-		ArrayList<HealthTheme> healthThemes
-			= dataLoaderToolConfiguration.getHealthThemes();
-		for (HealthTheme healthTheme : healthThemes) {
-			deleteHealthTheme(
-				deletionScriptText, 
-				healthTheme);
-		}
+		//ArrayList<HealthTheme> healthThemes
+		//	= dataLoaderToolConfiguration.getHealthThemes();
+		//for (HealthTheme healthTheme : healthThemes) {
+		//	deleteHealthTheme(
+		//		deletionScriptText, 
+		//		healthTheme);
+		//}
 		
 		return deletionScriptText.toString();
 	}

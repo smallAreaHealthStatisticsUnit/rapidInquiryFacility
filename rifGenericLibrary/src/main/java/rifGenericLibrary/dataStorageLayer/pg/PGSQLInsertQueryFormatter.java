@@ -188,10 +188,11 @@ public final class PGSQLInsertQueryFormatter
 
 		addQueryPhrase(")");
 		padAndFinishLine();
-		addQueryPhrase(0, "VALUES (");
+		
+		addQueryPhrase(0, "SELECT ");
 		for (int i = 0; i < numberOfInsertFields; i++) {
 			if (i != 0) {
-				addQueryPhrase(",");
+				addQueryPhrase(", ");
 			}
 			
 			if (literalValues[i] == null) {
@@ -207,11 +208,21 @@ public final class PGSQLInsertQueryFormatter
 					addQueryPhrase(literalValues[i]);
 				}
 			}
+			addQueryPhrase(" AS ");
+			addQueryPhrase(insertFields.get(i).trim());			
 		}
-
+		finishLine();
+		addQueryPhrase(0, "FROM ");
+		addQueryPhrase(getSchemaTableName(intoTable));
+		finishLine();
+		addQueryPhrase("WHERE ");
+		addQueryPhrase(insertFields.get(0).trim());
+		addQueryPhrase(" NOT IN (SELECT ");
+		addQueryPhrase(insertFields.get(0).trim());
+		addQueryPhrase(" FROM ");
+		addQueryPhrase(getSchemaTableName(intoTable));
 		addQueryPhrase(")");
-		//finishLine();
-		
+	
 		return super.generateQuery();		
 	}
 	

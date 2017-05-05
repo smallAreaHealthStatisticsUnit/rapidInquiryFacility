@@ -147,7 +147,7 @@ public class MSNumeratorScriptGenerator
 		createTableQueryFormatter.setDatabaseSchemaName("rif_data");
 		createTableQueryFormatter.setTableName(publishedNumeratorTableName);
 		createTableQueryFormatter.addIntegerFieldDeclaration("year", false);
-		createTableQueryFormatter.addIntegerFieldDeclaration("age_sex_group", false);
+		//createTableQueryFormatter.addIntegerFieldDeclaration("age_sex_group", false);
 
 		//Do we assume these field names will be in increasing order of 
 		//geographical resolution?
@@ -161,20 +161,22 @@ public class MSNumeratorScriptGenerator
 		}
 		createTableQueryFormatter.addTextFieldDeclaration("icd", 20, false);
 		createTableQueryFormatter.addIntegerFieldDeclaration("total", false);
-
+		createTableQueryFormatter.addIntegerFieldDeclaration("age_sex_group", false);
+		
 		numeratorEntry.append(createTableQueryFormatter.generateQuery());
 		numeratorEntry.append("\n");
 		
 		//How do we handle extra fields?
 		ArrayList<String> fieldNames = new ArrayList<String>();
 		fieldNames.add("year");
-		fieldNames.add("age_sex_group");
+		//fieldNames.add("age_sex_group");
 		for (String levelCodeName : levelCodeNames) {
 			fieldNames.add(levelCodeName);
 		}
 		fieldNames.add("icd");
 		fieldNames.add("total");
-		
+		fieldNames.add("age_sex_group");
+
 		String bulkInsertStatement
 			= createBulkCopyStatement("rif_data", numerator);
 

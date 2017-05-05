@@ -171,6 +171,14 @@ public final class MSSQLInsertQueryFormatter
 		final String... literalValues) {
 		
 		resetAccumulatedQueryExpression();
+		addQueryPhrase(0, "IF NOT EXISTS(SELECT * FROM ");
+		addQueryPhrase(getSchemaTableName(intoTable));
+		addQueryPhrase(" WHERE ");
+		addQueryPhrase(insertFields.get(0).trim());
+		addQueryPhrase(" = '");
+		addQueryPhrase(literalValues[0]);
+		addQueryPhrase("')");
+		finishLine();
 		addQueryPhrase(0, "INSERT INTO ");
 		addQueryPhrase(getSchemaTableName(intoTable));
 		addQueryPhrase("(");

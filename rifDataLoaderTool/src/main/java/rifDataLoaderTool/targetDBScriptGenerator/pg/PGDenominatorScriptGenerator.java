@@ -140,12 +140,6 @@ public class PGDenominatorScriptGenerator
 			yearFieldConfiguration.getCleanFieldName().toUpperCase(), 
 			false);
 		
-		//This is a field that will not appear in the input files but is derived
-		//by the data loader tool.
-		createTableQueryFormatter.addIntegerFieldDeclaration(
-			"AGE_SEX_GROUP", 
-			false);
-
 		//Do we assume these field names will be in increasing order of 
 		//geographical resolution?
 		
@@ -157,6 +151,12 @@ public class PGDenominatorScriptGenerator
 		createTableQueryFormatter.addIntegerFieldDeclaration(
 			totalFieldConfiguration.getConvertFieldName().toUpperCase(), 
 			false);
+		
+		//This is a field that will not appear in the input files but is derived
+		//by the data loader tool.
+		createTableQueryFormatter.addIntegerFieldDeclaration(
+			"AGE_SEX_GROUP", 
+			false);
 
 		denominatorEntry.append(createTableQueryFormatter.generateQuery());
 		denominatorEntry.append("\n\n");
@@ -164,12 +164,12 @@ public class PGDenominatorScriptGenerator
 		//How do we handle extra fields?
 		ArrayList<String> fieldNames = new ArrayList<String>();
 		fieldNames.add("YEAR");
-		fieldNames.add("AGE_SEX_GROUP");
 		for (DataSetFieldConfiguration resolutionField : resolutionFields) {
 			String fieldName = resolutionField.getConvertFieldName().toUpperCase();
 			fieldNames.add(fieldName);
 		}		
 		fieldNames.add("TOTAL");
+		fieldNames.add("AGE_SEX_GROUP");
 			
 		String filePath
 			= super.getPublishedFilePath(denominator) + ".csv";		
