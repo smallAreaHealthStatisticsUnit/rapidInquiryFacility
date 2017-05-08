@@ -14,13 +14,13 @@
  * -- maptable selections all to directives
  * 
  * -- Memory leak. on.destroy map.remove() angularjs-leaflet-memory-issue] use version 1.03 not 2.00??
+ * -- Try Leaflet without directive
  * 
  * -- clear AOI layer does not always work
  * 
  * -- How to submit bands ?
  * 
- * 
- * 
+ * -- change file save filename in firefox
  * 
  * 
  */

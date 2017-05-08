@@ -65,6 +65,8 @@ angular.module("RIF")
                     });
                 };
 
+                //Note in the example URLs below either pg/ or ms/ needs to be added before the first paramter
+
                 //login
                 self.login = function (username, password) {
                     //http://localhost:8080/rifServices/studySubmission/login?userID=kgarwood&password=xyz
@@ -192,7 +194,7 @@ angular.module("RIF")
                 self.getYearsForStudy = function (username, studyID, leaflet) {
                     config.leaflet = leaflet;
                     //http://localhost:8080/rifServices/studyResultRetrieval/getYearsForStudy?userID=kgarwood&study_id=1
-                    //[["1993","1996"]]
+                    //{"years{":["1989","1990","1991","1992","1993","1994","1995","1996"]}
                     return $http.get(studyResultRetrievalURL + DatabaseService.getDatabase() + 'getYearsForStudy?userID=' + username + '&study_id=' + studyID, config);
                 };
                 self.getSexesForStudy = function (username, studyID, leaflet) {
