@@ -88,7 +88,7 @@ Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.
 - Choose an administrator username (NOT admin) and a secure password that complies with your organisations password policy.
 - Complete tomcat installation, but do not start service.
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web 
-  services will not work [The web services will crash on user logon if it is not set, this will be changed to a more obvious error]; see:
+  services will not work [The web services will crash on user logon if it is not set]; see:
   4.4.5 RIF Services crash on logon.
   
 When accessed from the internet the RIF **must** be secured using TLS to protect the login details and any health data viewed.
@@ -504,7 +504,7 @@ angular.module("RIF")
 
 Edit these to match:
 
-* The port number in use; e.g. 8081 as in the above example or 8443 if you are in a production environment with TLS enabled;
+* The port number in use; e.g. 8080 as in the above example or 8443 if you are in a production environment with TLS enabled;
 * The server for the remote service, e.g. *https://aepw-rif27.sm.med.ic.ac.uk*
 
 **BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
@@ -760,7 +760,7 @@ The downloaded binary packages are in
         C:\Users\admin\AppData\Local\Temp\RtmpSkeuRW\downloaded_packages
 ```
 
-4. Add R_HOME to the enviuroment
+4. Add R_HOME to the environment
 
 ### 4.3.1 R Debugging
 
@@ -777,7 +777,7 @@ Investigation name==My_New_Investigation  ID==5==
 command==null\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"\\webapps\\rifServices\\WEB-INF\\classe
 s\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432  --db_name=sahsuland  --db_driver_class_
 name=org.postgresql.Driver  --study_id=5  --investigation_name=MY_NEW_INVESTIGATION  --covariate_name=NONE  --investigation_id=5  --
-r_model=bym_r_procedure  --odbc_data_source=PostgreSQL30  --user_id=peter  --password=peter==
+r_model=bym_r_procedure  --odbc_data_source=PostgreSQL30  --user_id=peter  --password=xxxxxx==
 java.io.FileNotFoundException: c:\rifDemo\scratchSpace\kevTest22_01-May-2017.bat (The system cannot find the path specified)
         at java.io.FileOutputStream.open0(Native Method)
         at java.io.FileOutputStream.open(FileOutputStream.java:270)
@@ -802,7 +802,7 @@ C:\rifDemo\scratchSpace>kevTest22_01-May-2017.bat
 C:\rifDemo\scratchSpace>C:\"Program Files"\R\R-3.4.0\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"
 \\webapps\\rifServices\\WEB-INF\\classes\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432
 --db_name=sahsuland  --db_driver_class_name=org.postgresql.Driver  --study_id=7  --investigation_name=MY_NEW_INVESTIGATION  --covari
-ate_name=NONE  --investigation_id=7  --r_model=bym_r_procedure  --odbc_data_source=PostgreSQL35W  --user_id=peter  --password=peter
+ate_name=NONE  --investigation_id=7  --r_model=bym_r_procedure  --odbc_data_source=PostgreSQL35W  --user_id=peter  --password=xxxxxx
 
 Loading required package: sp
 Loading required package: methods
@@ -878,7 +878,7 @@ land  --db_driver_class_name=org.postgresql.Driver  --study_id=7  --investigatio
 Writing batch file==C:\"Program Files"\R\R-3.4.0\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"\\we
 bapps\\rifServices\\WEB-INF\\classes\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432  --db
 _name=sahsuland  --db_driver_class_name=org.postgresql.Driver  --study_id=7  --investigation_name=MY_NEW_INVESTIGATION  --covariate_
-name=NONE  --investigation_id=7  --r_model=bym_r_procedure  --odbc_data_source=PostgreSQL35W  --user_id=peter  --password=peter
+name=NONE  --investigation_id=7  --r_model=bym_r_procedure  --odbc_data_source=PostgreSQL35W  --user_id=peter  --password=xxxxx
 Exit value==1==
 SQLStudyStateManager updateStudyStatus 1
 AbstractSQLManager logSQLQuery 1rifServices.dataStorageLayer.pg.PGSQLStudyStateManager==
@@ -988,7 +988,7 @@ TLS errors tend to be:
 In this case the .war file (e.g. rifServices.war) is not unpacked and the service is not available in tomcat. Find in error in the Tomcat stderr log and send to the development team. 
 This is indicative of a build problem.
 
-* Screenshiots and log will be added when this happens again!*
+* Screenshots and log will be added when this happens again!*
 
 ### 4.4.4 No Taxonomy Services
 
