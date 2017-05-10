@@ -76,3 +76,4 @@ rifDatabase/Postgres/production/pgpass.conf
 rifDatabase/Postgres/production/recreate_sahsu_dev_tmp.sql
 rifWebApplication/src/main/webapp/WEB-INF/libs/standalone/images/Thumbs.db
 rifWebApplication/src/main/webapp/WEB-INF/libs/standalone/images/Thumbs.db
+rifDataLoaderTool-jar-with-dependencies.jar
