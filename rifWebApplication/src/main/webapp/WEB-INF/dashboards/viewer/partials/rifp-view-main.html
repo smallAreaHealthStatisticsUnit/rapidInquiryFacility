@@ -99,8 +99,9 @@ Viewer
                             <input type="range" ng-model ="transparency['viewermap']" min="0" max="1" step="0.01" value ="0.7" change-opacity mapid="viewermap"/>
                         </li>
                     </ul> 
-                </div>    
-                <leaflet id="viewermap" tiles="thisLayer[viewermap]" width="100%" height="calc(100% - 40px)" lf-center="center"></leaflet>  
+                </div>  
+                <!-- Leaflet -->
+                <div id="viewermap"></div>
             </div>
             <div ui-layout-container class="js-back">
                 <div ng-controller="MultiSelectCtrl">

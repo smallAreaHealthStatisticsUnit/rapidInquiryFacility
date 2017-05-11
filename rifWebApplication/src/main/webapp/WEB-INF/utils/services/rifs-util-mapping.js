@@ -37,7 +37,7 @@
 
 angular.module("RIF")
         .factory('MappingService',
-                function (ChoroService) {
+                function () {
                     //Convert sex description to code
                     function sexCode(s) {
                         return ["Males", "Females", "Both"].indexOf(s) + 1;

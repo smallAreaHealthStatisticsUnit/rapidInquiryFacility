@@ -54,7 +54,7 @@ HTML partial disease mapping
             <div class="mappingPageLabel">LEFT DISPLAY</div>
             <div>
                 <div>Study:</div>
-                <select ng-change='child.updateSex("diseasemap1")' id='studySelect' ng-model='studyID["diseasemap1"]' ng-options='(s.study_id +   ": " +   s.name) for s in child.studyIDs'> 
+                <select ng-change='child.updateSex("diseasemap1")' id='studySelect' ng-model='studyID["diseasemap1"]' ng-options='(s.study_id +     ": " +     s.name) for s in child.studyIDs'> 
                 </select>             
             </div>
             <div>
@@ -70,7 +70,7 @@ HTML partial disease mapping
             <div class="mappingPageLabel">RIGHT DISPLAY</div>
             <div>
                 <div>Study:</div>
-                <select ng-change='child.updateSex("diseasemap2")' id='studySelect' ng-model='studyID["diseasemap2"]' ng-options='(s.study_id +   ": " +   s.name) for s in child.studyIDs'> 
+                <select ng-change='child.updateSex("diseasemap2")' id='studySelect' ng-model='studyID["diseasemap2"]' ng-options='(s.study_id +     ": " +     s.name) for s in child.studyIDs'> 
                 </select>             
             </div>
             <div>
@@ -114,8 +114,8 @@ HTML partial disease mapping
                             </div>
                         </li>
                     </ul>                 
-                </div>                     
-                <leaflet id="diseasemap1" tiles="thisLayer[diseasemap1]" width="100%" height="calc(100% - 40px)" lf-center="center1"></leaflet>  
+                </div> 
+                <div id="diseasemap1"></div>
             </div>
             <div ui-layout-container class="rr-back" id="rr1" max-size="100%">            
                 <!--d3 RR chart1 and table data -->
@@ -141,7 +141,7 @@ HTML partial disease mapping
                         </li>
                     </ul>                 
                 </div>
-                <leaflet id="diseasemap2" tiles="thisLayer[diseasemap2]" width="100%" height="calc(100% - 40px)" lf-center="center2"></leaflet>  
+                <div id="diseasemap2"></div>
             </div>
             <div ui-layout-container class="rr-back" id="rr2" max-size="100%">            
                 <!--d3 RR chart2 and table data -->

@@ -37,49 +37,49 @@
 
 /* global L, d3, key, topojson */
 angular.module("RIF")
-        .directive('submissionMapTable', ['leafletData', 'ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService',
+        .directive('submissionMapTable', ['ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService',
             'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService',
-            function (leafletData, ModalAreaService, LeafletDrawService, $uibModal, JSONService,
+            function (ModalAreaService, LeafletDrawService, $uibModal, JSONService,
                     GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
                     link: function ($scope) {
 
-                        $scope.$on("$destroy", function () {
-                            //Trying to stop memory leak
-                            leafletData.unresolveMap("area");
-                            leafletData.getMap("area").then(function (map) {
-                                map.remove();
-                            });
-                        });
+                        var areaMap = L.map('area').setView([51.505, -0.09], 13);
+                        $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
 
                         //Reference the child scope
                         $scope.child = {};
                         var alertScope = $scope.$parent.$$childHead.$parent.$parent.$$childHead;
-                        //Called on DOM render completion to ensure basemap is rendered
+
+                        ///Called on DOM render completion to ensure basemap is rendered
                         $timeout(function () {
+                            //add baselayer
                             $scope.renderMap("area");
-                            leafletData.getMap("area").then(function (map) {
-                                //Store the current zoom and view on map changes
-                                map.on('zoomend', function (e) {
-                                    $scope.input.center.zoom = map.getZoom();
-                                });
-                                map.on('moveend', function (e) {
-                                    $scope.input.center.lng = map.getCenter().lng;
-                                    $scope.input.center.lat = map.getCenter().lat;
-                                });
-                                map.addControl(new L.Control.Fullscreen());
-                                //Set initial map extents
-                                $scope.center = $scope.input.center;
-                                //scalebar
-                                L.control.scale({position: 'topleft', imperial: false}).addTo(map);
-                                //Attributions to open in new window
-                                map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
-                                map.doubleClickZoom.disable();
-                                map.band = Math.max.apply(null, $scope.possibleBands);
+
+                            //Store the current zoom and view on map changes
+                            areaMap.on('zoomend', function (e) {
+                                $scope.input.center.zoom = areaMap.getZoom();
                             });
+                            areaMap.on('moveend', function (e) {
+                                $scope.input.center.lng = areaMap.getCenter().lng;
+                                $scope.input.center.lat = areaMap.getCenter().lat;
+                            });
+                            //scalebar and fullscreen
+                            L.control.scale({position: 'topleft', imperial: false}).addTo(areaMap);
+                            areaMap.addControl(new L.Control.Fullscreen());
+
+                            //Set initial map extents
+                            $scope.center = $scope.input.center;
+                            areaMap.setView([$scope.center.lat, $scope.center.lng], $scope.center.zoom);
+
+                            //Attributions to open in new window
+                            areaMap.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
+                            areaMap.doubleClickZoom.disable();
+                            areaMap.band = Math.max.apply(null, $scope.possibleBands);
                         });
+
                         /*
                          * LOCAL VARIABLES
                          */
@@ -115,12 +115,10 @@ angular.module("RIF")
                         };
                         //remove AOI layer
                         $scope.clearAOI = function () {
-                            leafletData.getMap("area").then(function (map) {
-                                if (map.hasLayer($scope.shpfile)) {
-                                    map.removeLayer($scope.shpfile);
-                                    $scope.shpfile = new L.layerGroup();
-                                }
-                            });
+                            if (areaMap.hasLayer($scope.shpfile)) {
+                                areaMap.removeLayer($scope.shpfile);
+                                $scope.shpfile = new L.layerGroup();
+                            }
                         };
                         //Select all in map and table
                         $scope.selectAll = function () {
@@ -144,19 +142,15 @@ angular.module("RIF")
                         };
                         //Zoom to layer
                         $scope.zoomToExtent = function () {
-                            leafletData.getMap("area").then(function (map) {
-                                map.fitBounds(maxbounds);
-                            });
+                            areaMap.fitBounds(maxbounds);
                         };
                         //Show-hide centroids
                         $scope.showCentroids = function () {
-                            leafletData.getMap("area").then(function (map) {
-                                if (map.hasLayer(centroidMarkers)) {
-                                    map.removeLayer(centroidMarkers);
-                                } else {
-                                    map.addLayer(centroidMarkers);
-                                }
-                            });
+                            if (areaMap.hasLayer(centroidMarkers)) {
+                                areaMap.removeLayer(centroidMarkers);
+                            } else {
+                                areaMap.addLayer(centroidMarkers);
+                            }
                         };
 
                         /*
@@ -168,15 +162,11 @@ angular.module("RIF")
                             //offer the correct number of bands
                             if ($scope.input.type === "Risk Analysis") {
                                 $scope.possibleBands = [1, 2, 3, 4, 5, 6];
-                                leafletData.getMap("area").then(function (map) {
-                                    map.band = 6;
-                                });
+                                areaMap.band = 6;
                             } else {
                                 $scope.possibleBands = [1];
                                 $scope.currentBand = 1;
-                                leafletData.getMap("area").then(function (map) {
-                                    map.band = 1;
-                                });
+                                areaMap.band = 1;
                             }
                         };
 
@@ -184,110 +174,112 @@ angular.module("RIF")
                          * RENDER THE MAP AND THE TABLE
                          */
                         getMyMap = function () {
-                            leafletData.getMap("area").then(function (map) {
-                                if (map.hasLayer($scope.geoJSON)) {
-                                    map.removeLayer($scope.geoJSON);
+
+                            if (areaMap.hasLayer($scope.geoJSON)) {
+                                areaMap.removeLayer($scope.geoJSON);
+                            }
+
+                            var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt);
+                            latlngList = [];
+                            centroidMarkers = new L.layerGroup();
+
+                            $scope.geoJSON = new L.topoJsonGridLayer(topojsonURL, {
+                                attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
+                                layers: {
+                                    default: {
+                                        renderer: L.canvas(),
+                                        style: style,
+                                        onEachFeature: function (feature, layer) {
+
+                                            //TODO: get these centroids from rif_data.look_up_tables lookup_$scope.input.selectAt
+
+                                            //get as centroid marker layer. 
+                                            var p = layer.getBounds().getCenter();
+                                            latlngList.push([L.latLng([p.lat, p.lng]), feature.properties.name, feature.properties.area_id]);
+                                            var circle = new L.CircleMarker([p.lat, p.lng], {
+                                                radius: 2,
+                                                fillColor: "red",
+                                                color: "#000",
+                                                weight: 1,
+                                                opacity: 1,
+                                                fillOpacity: 0.8
+                                            });
+                                            centroidMarkers.addLayer(circle);
+
+                                            layer.on('mouseover', function (e) {
+                                                //if drawing then return
+                                                if ($scope.input.bDrawing) {
+                                                    return;
+                                                }
+                                                this.setStyle({
+                                                    color: 'gray',
+                                                    weight: 1.5,
+                                                    fillOpacity: function () {
+                                                        //set tranparency from slider
+                                                        return($scope.transparency - 0.3 > 0 ? $scope.transparency - 0.3 : 0.1);
+                                                    }()
+                                                });
+                                                $scope.thisPolygon = feature.properties.name;
+                                            });
+                                            layer.on('mouseout', function (e) {
+                                                $scope.geoJSON._geojsons.default.resetStyle(e.target);
+                                                $scope.thisPolygon = "";
+                                            });
+                                            layer.on('click', function (e) {
+                                                //if drawing then return
+                                                if ($scope.input.bDrawing) {
+                                                    return;
+                                                }
+                                                var thisPoly = e.target.feature.properties.area_id;
+                                                var bFound = false;
+                                                for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+                                                    if ($scope.selectedPolygon[i].id === thisPoly) {
+                                                        bFound = true;
+                                                        $scope.selectedPolygon.splice(i, 1);
+                                                        break;
+                                                    }
+                                                }
+                                                if (!bFound) {
+                                                    $scope.selectedPolygon.push({id: feature.properties.area_id, gid: feature.properties.gid, label: feature.properties.name, band: $scope.currentBand});
+                                                }
+                                                $scope.$digest();
+                                            });
+                                        }
+                                    }
                                 }
-                                latlngList = [];
-                                centroidMarkers = new L.layerGroup();
-                                var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt);
-                                $scope.geoJSON = new L.topoJsonGridLayer(topojsonURL, {
-                                    attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
-                                    layers: {
-                                        default: {
-                                            renderer: L.canvas(),
-                                            style: style,
-                                            onEachFeature: function (feature, layer) {
-                                                
-                                                //TODO: get these centroids from rif_data.look_up_tables lookup_$scope.input.selectAt
-                                                
-                                                //get as centroid marker layer. 
-                                                var p = layer.getBounds().getCenter();
-                                                latlngList.push([L.latLng([p.lat, p.lng]), feature.properties.name, feature.properties.area_id]);
-                                                var circle = new L.CircleMarker([p.lat, p.lng], {
-                                                    radius: 2,
-                                                    fillColor: "red",
-                                                    color: "#000",
-                                                    weight: 1,
-                                                    opacity: 1,
-                                                    fillOpacity: 0.8
-                                                });
-                                                centroidMarkers.addLayer(circle);
+                            });
+                            areaMap.addLayer($scope.geoJSON);
 
-                                                layer.on('mouseover', function (e) {
-                                                    //if drawing then return
-                                                    if ($scope.input.bDrawing) {
-                                                        return;
-                                                    }
-                                                    this.setStyle({
-                                                        color: 'gray',
-                                                        weight: 1.5,
-                                                        fillOpacity: function () {
-                                                            //set tranparency from slider
-                                                            return($scope.transparency - 0.3 > 0 ? $scope.transparency - 0.3 : 0.1);
-                                                        }()
-                                                    });
-                                                    $scope.thisPolygon = feature.properties.name;
-                                                });
-                                                layer.on('mouseout', function (e) {
-                                                    $scope.geoJSON._geojsons.default.resetStyle(e.target);
-                                                    $scope.thisPolygon = "";
-                                                });
-                                                layer.on('click', function (e) {
-                                                    //if drawing then return
-                                                    if ($scope.input.bDrawing) {
-                                                        return;
-                                                    }
-                                                    var thisPoly = e.target.feature.properties.area_id;
-                                                    var bFound = false;
-                                                    for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-                                                        if ($scope.selectedPolygon[i].id === thisPoly) {
-                                                            bFound = true;
-                                                            $scope.selectedPolygon.splice(i, 1);
-                                                            break;
-                                                        }
-                                                    }
-                                                    if (!bFound) {
-                                                        $scope.selectedPolygon.push({id: feature.properties.area_id, gid: feature.properties.gid, label: feature.properties.name, band: $scope.currentBand});
-                                                    }
-                                                });
-                                            }
-                                        }
+                            //Get max bounds
+                            user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
+                                var lowestLevel = res.data[0].names[0];
+                                user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
+                                    maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
+                                    if ($scope.input.center.lng === 0) {
+                                        areaMap.fitBounds(maxbounds);
                                     }
                                 });
-                                map.addLayer($scope.geoJSON);
+                            });
 
-                                //Get max bounds
-                                user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
-                                    var lowestLevel = res.data[0].names[0];
-                                    user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
-                                        maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
-                                        if ($scope.input.center.lng === 0) {
-                                            map.fitBounds(maxbounds);
-                                        }
-                                    });
-                                });
-
-                                //Get overall layer properties
-                                user.getTileMakerTilesAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
-                                    //populate the table
-                                    for (var i = 0; i < res.data.objects.collection.geometries.length; i++) {
-                                        var thisPoly = res.data.objects.collection.geometries[i];
-                                        var bFound = false;
-                                        for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-                                            if ($scope.selectedPolygon[j].id === thisPoly.properties.area_id) {
-                                                res.data.objects.collection.geometries[i].properties.band = $scope.selectedPolygon[j].band;
-                                                bFound = true;
-                                                break;
-                                            }
-                                        }
-                                        if (!bFound) {
-                                            res.data.objects.collection.geometries[i].properties.band = 0;
+                            //Get overall layer properties
+                            user.getTileMakerTilesAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
+                                //populate the table
+                                for (var i = 0; i < res.data.objects.collection.geometries.length; i++) {
+                                    var thisPoly = res.data.objects.collection.geometries[i];
+                                    var bFound = false;
+                                    for (var j = 0; j < $scope.selectedPolygon.length; j++) {
+                                        if ($scope.selectedPolygon[j].id === thisPoly.properties.area_id) {
+                                            res.data.objects.collection.geometries[i].properties.band = $scope.selectedPolygon[j].band;
+                                            bFound = true;
+                                            break;
                                         }
                                     }
-                                    $scope.gridOptions.data = ModalAreaService.fillTable(res.data);
-                                    $scope.totalPolygonCount = res.data.objects.collection.geometries.length;
-                                });
+                                    if (!bFound) {
+                                        res.data.objects.collection.geometries[i].properties.band = 0;
+                                    }
+                                }
+                                $scope.gridOptions.data = ModalAreaService.fillTable(res.data);
+                                $scope.totalPolygonCount = res.data.objects.collection.geometries.length;
                             });
                         };
 
@@ -299,16 +291,12 @@ angular.module("RIF")
                         user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(handleGeoLevelSelect, handleGeographyError);
 
                         $scope.geoLevelChange = function () {
-
                             //Clear the map
                             $scope.selectedPolygon.length = 0;
                             $scope.clearAOI();
-
-                            leafletData.getMap("area").then(function (map) {
-                                if (map.hasLayer(centroidMarkers)) {
-                                    map.removeLayer(centroidMarkers);
-                                }
-                            });
+                            if (areaMap.hasLayer(centroidMarkers)) {
+                                areaMap.removeLayer(centroidMarkers);
+                            }
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                         };
 
@@ -367,21 +355,20 @@ angular.module("RIF")
                         $scope.gridOptions.onRegisterApi = function (gridApi) {
                             $scope.gridApi = gridApi;
                         };
+
                         //Set the user defined basemap
-                        $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
                         $scope.renderMap = function (mapID) {
-                            leafletData.getMap(mapID).then(function (map) {
-                                map.removeLayer($scope.thisLayer);
-                                if (!LeafletBaseMapService.getNoBaseMap("area")) {
-                                    $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
-                                    map.addLayer($scope.thisLayer);
-                                }
-                                //hack to refresh map
-                                setTimeout(function () {
-                                    map.invalidateSize();
-                                }, 50);
-                            });
+                            areaMap.removeLayer($scope.thisLayer);
+                            if (!LeafletBaseMapService.getNoBaseMap("area")) {
+                                $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
+                                $scope.thisLayer.addTo(areaMap);
+                            }
+                            //hack to refresh map
+                            setTimeout(function () {
+                                areaMap.invalidateSize();
+                            }, 50);
                         };
+
                         function renderFeature(feature) {
                             for (var i = 0; i < $scope.selectedPolygon.length; i++) {
                                 if ($scope.selectedPolygon[i].id === feature) {
@@ -429,12 +416,14 @@ angular.module("RIF")
                             }
                             //Update the area counter
                             $scope.selectedPolygonCount = newNames.length;
+
                             if (!$scope.geoJSON) {
                                 return;
                             } else {
-                                //Update map selection                              
+                                //Update map selection    
                                 $scope.geoJSON._geojsons.default.eachLayer(handleLayer);
                             }
+
                         });
                         //*********************************************************************************************************************
                         //SELECTION METHODS
@@ -447,44 +436,44 @@ angular.module("RIF")
                         LeafletDrawService.getCircleCapability();
                         LeafletDrawService.getPolygonCapability();
                         //Add Leaflet.Draw toolbar
-                        leafletData.getMap("area").then(function (map) {
-                            L.drawLocal.draw.toolbar.buttons.circle = "Select by concentric bands";
-                            L.drawLocal.draw.toolbar.buttons.polygon = "Select by freehand polygons";
-                            drawnItems = new L.FeatureGroup();
-                            map.addLayer(drawnItems);
-                            var drawControl = new L.Control.Draw({
-                                draw: {
-                                    polygon: {
-                                        shapeOptions: {
-                                            color: '#0099cc',
-                                            weight: 4,
-                                            opacity: 1,
-                                            fillOpacity: 0.2
-                                        }
-                                    },
-                                    marker: false,
-                                    polyline: false,
-                                    rectangle: false
+
+                        L.drawLocal.draw.toolbar.buttons.circle = "Select by concentric bands";
+                        L.drawLocal.draw.toolbar.buttons.polygon = "Select by freehand polygons";
+                        drawnItems = new L.FeatureGroup();
+                        areaMap.addLayer(drawnItems);
+                        var drawControl = new L.Control.Draw({
+                            draw: {
+                                polygon: {
+                                    shapeOptions: {
+                                        color: '#0099cc',
+                                        weight: 4,
+                                        opacity: 1,
+                                        fillOpacity: 0.2
+                                    }
                                 },
-                                edit: {
-                                    remove: false,
-                                    edit: false,
-                                    featureGroup: drawnItems
-                                }
-                            });
-                            map.addControl(drawControl);
-                            new L.Control.GeoSearch({
-                                provider: new L.GeoSearch.Provider.OpenStreetMap()
-                            }).addTo(map);
-                            //add the circle to the map
-                            map.on('draw:created', function (e) {
-                                drawnItems.addLayer(e.layer);
-                            });
-                            //override other map mouse events
-                            map.on('draw:drawstart', function (e) {
-                                $scope.input.bDrawing = true;
-                            });
+                                marker: false,
+                                polyline: false,
+                                rectangle: false
+                            },
+                            edit: {
+                                remove: false,
+                                edit: false,
+                                featureGroup: drawnItems
+                            }
                         });
+                        areaMap.addControl(drawControl);
+                        new L.Control.GeoSearch({
+                            provider: new L.GeoSearch.Provider.OpenStreetMap()
+                        }).addTo(areaMap);
+                        //add the circle to the map
+                        areaMap.on('draw:created', function (e) {
+                            drawnItems.addLayer(e.layer);
+                        });
+                        //override other map mouse events
+                        areaMap.on('draw:drawstart', function (e) {
+                            $scope.input.bDrawing = true;
+                        });
+
                         //selection event fired from service
                         $scope.$on('makeDrawSelection', function (event, data) {
                             $scope.makeDrawSelection(data);
@@ -517,6 +506,7 @@ angular.module("RIF")
                                     }
                                 }
                             });
+                            $scope.$digest();
                             if (!shape.circle && !shape.shapefile) {
                                 removeMapDrawItems();
                                 //auto increase band dropdown
@@ -531,9 +521,7 @@ angular.module("RIF")
                         });
                         function removeMapDrawItems() {
                             drawnItems.clearLayers();
-                            leafletData.getMap("area").then(function (map) {
-                                map.addLayer(drawnItems);
-                            });
+                            areaMap.addLayer(drawnItems);
                             $scope.input.bDrawing = false; //re-enable layer events
                         }
 

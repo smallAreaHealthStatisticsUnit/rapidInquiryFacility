@@ -35,7 +35,6 @@ angular.module("RIF",
         [
             "ui.router",
             "ui.bootstrap",
-            "ui-leaflet",
             "ui.grid",
             "ui.grid.selection",
             "ui.grid.resizeColumns",

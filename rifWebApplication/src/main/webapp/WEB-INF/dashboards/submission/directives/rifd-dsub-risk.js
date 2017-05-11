@@ -48,8 +48,8 @@ angular.module("RIF")
                 $uibModalInstance.close();
             };
         })
-        .directive('riskAnalysis', ['$rootScope', 'leafletData', '$uibModal', '$q',
-            function ($rootScope, leafletData, $uibModal, $q) {
+        .directive('riskAnalysis', ['$rootScope', '$uibModal', '$q',
+            function ($rootScope,$uibModal, $q) {
                 return {
                     restrict: 'A',
                     link: function (scope, element, attr) {
