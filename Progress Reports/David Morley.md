@@ -112,5 +112,6 @@ Principal Work Area: JavaScript User interface development
 - Moved rifServices test cases to either sql server of pgres versions
 - sql server porting for run Study (mostly problems with error checking routines)
 - Fixed viewer sex and year for study drop-down middleware methods
+- Removed dependency on ui-leaflet directive
 
 
