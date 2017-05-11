@@ -11,13 +11,6 @@
  * 
  * -- Get centroids from the database in study area
  * 
- * -- Memory leak. on.destroy map.remove() angularjs-leaflet-memory-issue] use version 1.03 not 2.00??
- * -- Try Leaflet without directive
- * 
- * -- Make sure old geojson removed before plotting a new layer (remove ALL LAYERS)
- * 
- * -- clear AOI layer does not always work
- * 
  * -- How to submit bands ?
  * 
  * -- change file save filename in firefox

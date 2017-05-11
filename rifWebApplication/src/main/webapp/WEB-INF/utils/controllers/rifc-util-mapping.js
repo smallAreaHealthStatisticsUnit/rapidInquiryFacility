@@ -37,9 +37,9 @@
 
 /* global L */
 angular.module("RIF")
-        .controller('leafletLayersCtrl', ['$scope', 'user', 'LeafletBaseMapService', 'ChoroService', '$timeout',
+        .controller('leafletLayersCtrl', ['$scope', 'user', 'LeafletBaseMapService', 'ChoroService',
             'MappingStateService', 'ViewerStateService', 'MappingService',
-            function ($scope, user, LeafletBaseMapService, ChoroService, $timeout,
+            function ($scope, user, LeafletBaseMapService, ChoroService,
                     MappingStateService, ViewerStateService, MappingService) {
 
                 //Reference the parent scope
@@ -123,12 +123,12 @@ angular.module("RIF")
                     "diseasemap2": [],
                     "viewermap": []
                 };
-                $scope.studyIDs = [];
                 $scope.sexes = {
                     "diseasemap1": [],
                     "diseasemap2": [],
                     "viewermap": []
                 };
+                $scope.studyIDs = [];
 
                 /*
                  * Tidy up on error
@@ -444,23 +444,12 @@ angular.module("RIF")
                                         $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
                                     });
 
-                                    /*
-                                     * if ($scope.myService.getState().center[mapID].lat === 0) {
-                                     $scope.map[mapID].fitBounds($scope.maxbounds);
-                                     } else {
-                                     var centre = $scope.myService.getState().center[mapID];
-                                     $scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
-                                     }
-                                     */
-
-                                    //do not get maxbounds for diseasemap2
-
                                     user.getGeoLevelSelectValues(user.currentUser, $scope.tileInfo[mapID].geography).then(function (res) {
                                         var lowestLevel = res.data[0].names[0];
                                         user.getTileMakerTilesAttributes(user.currentUser, $scope.tileInfo[mapID].geography, lowestLevel).then(function (res) {
                                             $scope.maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
-
                                             if (mapID !== "diseasemap2") {
+                                                //do not get maxbounds for diseasemap2
                                                 if ($scope.myService.getState().center[mapID].lat === 0) {
                                                     $scope.map[mapID].fitBounds($scope.maxbounds);
                                                 } else {
@@ -472,20 +461,7 @@ angular.module("RIF")
                                                 $scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
                                             }
                                         });
-
-
                                     });
-
-
-
-
-
-                                    /*else {
-                                     if (!$scope.$parent.bLockCenters) {
-                                     var centre = $scope.myService.getState().center[mapID];
-                                     $scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
-                                     }
-                                     }*/
                                     if (mapID !== "viewermap") {
                                         $scope.mapLocking();
                                     }
