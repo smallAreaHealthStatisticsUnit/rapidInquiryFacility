@@ -459,13 +459,19 @@ function addSelector(selectorId, selectorChangeCallback, newHTML, defaultValue) 
  * Description:	Set object height
  */
 function setHeight(id, lheight) {
-	document.getElementById(id).setAttribute("style","display:block;cursor:pointer;cursor:hand;");
-	document.getElementById(id).setAttribute("draggable", "true");
-	document.getElementById(id).style.display = "block"	;
-	document.getElementById(id).style.cursor = "hand";			
-	document.getElementById(id).style.height=lheight + "px";						
-	
-	consoleLog(id + " h x w: " + document.getElementById(id).offsetHeight + "x" + document.getElementById(id).offsetWidth);	
+	if (document.getElementById(id)) {
+		document.getElementById(id).setAttribute("style","display:block;cursor:pointer;cursor:hand;");
+		document.getElementById(id).setAttribute("draggable", "true");
+		document.getElementById(id).style.display = "block"	;
+		document.getElementById(id).style.cursor = "hand";			
+		document.getElementById(id).style.height=lheight + "px";						
+		
+		consoleLog("setHeight(" + id + "," + lheight + ") h x w: " + 
+			document.getElementById(id).offsetHeight + "x" + document.getElementById(id).offsetWidth);	
+	}
+	else {
+		consoleError("setHeight() " + id + " not found");
+	}
 } // End of setHeight()
 		
 /*

@@ -82,8 +82,8 @@ function Basemap(basemapOptions, mapArrays) {
 				if (this.tileLayerType == "tileLayer" && this.tileLayerOptions) {
 					this.tileLayer=L.tileLayer(this.tileLayerURL, this.tileLayerOptions);
 					if (this.tileLayer) {
-						consoleLog("Basemap() constructor: created tileLayerType: " + 
-							this.tileLayerType + " for: " + this.name);
+//						consoleLog("Basemap() constructor: created tileLayerType: " + 
+//							this.tileLayerType + " for: " + this.name);
 					}
 					else {
 						consoleError("Basemap() constructor: no tileLayer object can be created, tileLayerType: " + 

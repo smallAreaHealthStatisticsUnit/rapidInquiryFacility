@@ -347,22 +347,55 @@ function setupTileViewer() {
 	var mapcontainerHeight=y-selectDivHeight-20; 
 	var dialogFormHieght=y-selectDivHeight-50; 
 	var dialogFormWidth=x-250; 
-	if (dialogFormWidth < 200) {
-		dialogFormWidth=200;
-	}
+//	if (dialogFormWidth < 200) {
+//		dialogFormWidth=200;
+//	}
 	var selectButtonWidthStr=$("#select-button").css("width");
 	var selectButtonWidth = parseInt(selectButtonWidthStr.substring(0, selectButtonWidthStr.length - 2));
 	var dbSelectorHeight=dialogFormHieght-320;
-	if (dbSelectorHeight < 200) {
-		dbSelectorHeight=200;
-	}
+	var dbSelectorWidth=x-50;
+//	if (dbSelectorHeight < 200) {
+//		dbSelectorHeight=200;
+//	}
 	var labelClassWidth=dialogFormWidth-90;
 	var selectClassWidth=dialogFormWidth-260;
-	if (selectClassWidth < 300) {
-		selectClassWidth=200;
-		labelClassWidth=300;
-	}	
-	consoleLog("Window Width: " + x + " px\n" +
+//	if (selectClassWidth < 300) {
+//		selectClassWidth=200;
+//		labelClassWidth=300;
+//	}	
+
+/*
+
+OK: 
+
++0.2: Window Width: 1408 px
+Window Height: 648 px
+selectDiv Height: 40 px
+mapcontainer Height: 588 px
+dialogFormHieght Height: 558 px
+dialogFormHieght Width: 1158 px
+selectButton Width: 271 px
+labelClass Width: 1068 px
+selectClass Width: 898 px
+dbSelector Height: 238 px
+
+Not OK: 
+
++160.7: Window Width: 1002 px
+Window Height: 562 px
+selectDiv Height: 40 px
+mapcontainer Height: 502 px
+dialogFormHieght Height: 472 px
+dialogFormHieght Width: 752 px
+selectButton Width: 419 px
+labelClass Width: 662 px
+selectClass Width: 492 px
+dbSelector Height: 152 px  tile-common.js:185:4
+
+ui-selectmenu-text 896.533×38.7
+
+ */
+	consoleLog("setupTileViewer(): Window Width: " + x + " px\n" +
 		"Window Height: " + y + " px\n" +
 		"selectDiv Height: " + selectDivHeight + " px\n" +
 		"mapcontainer Height: " + mapcontainerHeight + " px\n" +
@@ -371,7 +404,8 @@ function setupTileViewer() {
 		"selectButton Width: " + selectButtonWidth + " px\n" +
 		"labelClass Width: " + labelClassWidth + " px\n" +
 		"selectClass Width: " + selectClassWidth + " px\n" +
-		"dbSelector Height: " + dbSelectorHeight + " px");
+		"dbSelector Height: " + dbSelectorHeight + " px\n" +
+		"dbSelector Width: " + dbSelectorWidth + " px");
 	
 	if (map == undefined) { // Only set the height if leaflet is not initialised or you will make a mess of the screen
 		setHeight("mapcontainer", mapcontainerHeight);
@@ -382,9 +416,7 @@ function setupTileViewer() {
 //		setHeight("map", mapcontainerHeight-3);		
 //		map.invalidateSize();​
 	}
-	setHeight("topbar", selectDivHeight);
-
-	setHeight("dbSelector", dbSelectorHeight);			
+	setHeight("topbar", selectDivHeight);		
 
 	$( "#dialog-form" ).dialog( "option", "height", dialogFormHieght );	
 	$( "#dialog-form" ).dialog( "option", "width", dialogFormWidth );
@@ -401,7 +433,41 @@ function setupTileViewer() {
 	}
 	var selectClass=document.getElementsByClassName("inputClass");
 	for (var i=0;i<selectClass.length; i++) {
-		selectClass[i].style.width=selectClassWidth + "px";
+		selectClass[i].style.width=selectClassWidth + "px"; 
 	}	
+
+	document.getElementById("dbSelector").style.height=dbSelectorHeight + "px";
+	document.getElementById("dbSelector").style.width=dbSelectorWidth + "px";	
 	
+	// Auto resize .labelClass class
+	var numResizable=0;
+	$('.labelClass').each(function(i, obj) {
+		numResizable++;
+
+		var startWidth=$(obj).width();
+		var parentWidth=$(obj).parent().width();
+		var startFontSize=$(obj).css('font-size');
+		if ($(obj).parent().attr("id")) {			
+			if (parentWidth > 0) {
+				while ($(obj).width() > parentWidth) {
+					var newFontSize=(parseInt($(obj).css('font-size')) - 1);
+					$(obj).css('font-size', newFontSize + "px");
+				}			
+			}
+			if (startWidth == $(obj).width() && 
+				startFontSize == $(obj).css('font-size')) {
+				consoleLog("Auto resize [" + (i+1) + "] " + $(obj).attr("id") + ": width/font size " + 
+				startWidth + "px/" + startFontSize + " is unchanged; parent (" + 
+					$(obj).parent().attr("id") + ") width: " + parentWidth + "px");
+			}
+			else {
+				consoleLog("Auto resize [" + (i+1) + "] " + $(obj).attr("id") + ": width/font size " + 
+				startWidth + "px/" + startFontSize + " to " + 
+				$(obj).width() + "px/" + $(obj).css('font-size') + "; parent (" + 
+					$(obj).parent().attr("id") + ") width: " + parentWidth + "px");
+			}
+		}
+	});
+	consoleLog("Total auto resize: " + numResizable);
+
 } // End of setupTileViewer()
