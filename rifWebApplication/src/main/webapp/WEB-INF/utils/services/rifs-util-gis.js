@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -40,18 +40,43 @@ angular.module("RIF")
         .factory('GISService',
                 function () {
                     function isPointInPolygon(point, poly) {
-                        http://stackoverflow.com/questions/31790344/determine-if-a-point-reside-inside-a-leaflet-polygon
-                        var polyPoints = poly.data.getLatLngs();
+                        //http://stackoverflow.com/questions/31790344/determine-if-a-point-reside-inside-a-leaflet-polygon
+
+                        //the hull
+                        var polyPoints;
+                        var xi;
+                        var xj;
+                        var yi;
+                        var yj;
+                        if (poly.freehand) {
+                            polyPoints = poly.data.getLatLngs();
+                        } else {
+                            polyPoints = poly.data.getLatLngs()[0];
+                        }
+
+                        //the centroid
                         var x = point.lat;
                         var y = point.lng;
+
+                        //the test
                         var inside = false;
                         for (var i = 0, j = polyPoints.length - 1; i < polyPoints.length; j = i++) {
-                            var xi = polyPoints[i].lat, yi = polyPoints[i].lng;
-                            var xj = polyPoints[j].lat, yj = polyPoints[j].lng;
-                            var intersect = ((yi > y) !== (yj > y))
-                                    && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-                            if (intersect)
+                            if (poly.freehand) {
+                                xi = polyPoints[i].lat;
+                                yi = polyPoints[i].lng;
+                                xj = polyPoints[j].lat;
+                                yj = polyPoints[j].lng;
+                            } else {
+                                //Shp Library inverts lat, lngs for some reason (Bug?) - switch 
+                                xi = polyPoints[i].lng;
+                                yi = polyPoints[i].lat;
+                                xj = polyPoints[j].lng;
+                                yj = polyPoints[j].lat;
+                            }
+                            var intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                            if (intersect) {
                                 inside = !inside;
+                            }
                         }
                         return inside;
                     }

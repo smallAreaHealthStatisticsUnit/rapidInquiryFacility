@@ -15,5 +15,8 @@
  * 
  * -- change file save filename in firefox
  * 
- * 
+ * -- zoom to current selection button in maptable
+ * -- attr drop-down in shp file select to remove hartyping
+ * -- export map is not working
+ * -- modal close on band order error
  */

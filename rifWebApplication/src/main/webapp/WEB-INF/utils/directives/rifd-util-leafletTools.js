@@ -177,52 +177,65 @@ angular.module("RIF")
                     restrict: 'A',
                     link: function (scope, element, attr) {
                         element.on('click', function (event) {
-                            var hostMap = document.getElementById(attr.mapid);
+
+                            //TODO: change to wait cursor on click
+                            //TODO: on error, currently silent
+
+                            //get the map object
+                            var x = attr.mapid.split('.');
+                            var thisMap = scope[x[0]];
+                            if (x.length !== 1) {
+                                thisMap = scope[x[0]][x[1]];
+                            }
+
+                            //get the map elements
+                            var hostMap = document.getElementById(x[x.length - 1]);
                             var thisLegend = hostMap.getElementsByClassName("info legend leaflet-control")[0]; //the legend
                             var thisScale = hostMap.getElementsByClassName("leaflet-control-scale leaflet-control")[0]; //the scale bar
+
+                            //render
                             html2canvas(thisLegend, {
                                 onrendered: function (legend) {
-                                    var thisScaleCanvas;
+                                    var scaleCanvas;
                                     html2canvas(thisScale, {
                                         onrendered: function (canvas1) {
-                                            thisScaleCanvas = canvas1;
-                                            if (!angular.isUndefined(scope.child.renderMap)) {
-                                                scope.child.renderMap(attr.mapid);
-                                            } else {
-                                                scope.renderMap(attr.mapid);
-                                            }
-                                            //the map                                          
-                                            leafletImage(scope.child.map[attr.mapid], function (err, canvas) {
-                                                //4 canvas elements here canvas=leaflet map, legend=legend, scale=scalebar                          
-                                                //and a new blank canvas
-                                                var can4 = document.createElement('canvas');
-                                                can4.width = canvas.width;
-                                                can4.height = canvas.height;
-                                                var ctx4 = can4.getContext('2d');
-                                                ctx4.drawImage(canvas, 0, 0);
+                                            scaleCanvas = canvas1;
+                                            leafletImage(thisMap, function (err, canvas) {
 
+                                                //padding between elements
                                                 var pad = 10;
+
+                                                //blank canvas
+                                                var blank = document.createElement('canvas');
+                                                blank.width = canvas.width;
+                                                blank.height = canvas.height;
+
+                                                //draw the map tiles
+                                                var blankctx = blank.getContext('2d');
+                                                blankctx.drawImage(canvas, 0, 0);
+
                                                 //overlay the legend
                                                 if (!angular.isUndefined(legend)) {
                                                     if (legend.width < canvas.width / 2) {
-                                                        ctx4.drawImage(legend, canvas.width - legend.width - pad, pad);
+                                                        blankctx.drawImage(legend, canvas.width - legend.width - pad, pad);
                                                     }
                                                 }
                                                 //overlay the scale bar
-                                                if (!angular.isUndefined(thisScaleCanvas)) {
-                                                    if (thisScaleCanvas.width < canvas.width / 2) {
-                                                        ctx4.drawImage(thisScaleCanvas, pad, pad);
+                                                if (!angular.isUndefined(scaleCanvas)) {
+                                                    if (scaleCanvas.width < canvas.width / 2) {
+                                                        blankctx.drawImage(scaleCanvas, pad, pad);
                                                     }
                                                 }
+
                                                 //Download with Filesaver.js
-                                                can4.toBlob(function (blob) {
-                                                    saveAs(blob, attr.mapid + ".png");
+                                                blank.toBlob(function (blob) {
+                                                    saveAs(blob, "map.png");
                                                 });
                                             });
                                         }
                                     });
                                 }
-                            });
+                            });                            
                         });
                     }
                 };

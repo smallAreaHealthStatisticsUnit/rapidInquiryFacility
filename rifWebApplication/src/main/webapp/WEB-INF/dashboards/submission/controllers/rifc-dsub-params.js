@@ -263,7 +263,11 @@ angular.module("RIF")
                                 $scope.sexes.push(res.data[0].names[i]);
                             }
                             if ($scope.sex === "") {
-                                $scope.sex = res.data[0].names[0];
+                                if (res.data[0].names.indexOf("Both") !== -1) {
+                                    $scope.sex = "Both";
+                                } else {
+                                    $scope.sex = res.data[0].names[0];
+                                }                               
                             }
                         }
                     }

@@ -46,7 +46,7 @@ angular.module("RIF")
                     restrict: 'AE',
                     link: function ($scope) {
 
-                        var areaMap = L.map('area').setView([51.505, -0.09], 13);
+                        $scope.areaMap = L.map('areamap').setView([51.505, -0.09], 13);
                         $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
 
                         //Reference the child scope
@@ -59,25 +59,25 @@ angular.module("RIF")
                             $scope.renderMap("area");
 
                             //Store the current zoom and view on map changes
-                            areaMap.on('zoomend', function (e) {
-                                $scope.input.center.zoom = areaMap.getZoom();
+                            $scope.areaMap.on('zoomend', function (e) {
+                                $scope.input.center.zoom = $scope.areaMap.getZoom();
                             });
-                            areaMap.on('moveend', function (e) {
-                                $scope.input.center.lng = areaMap.getCenter().lng;
-                                $scope.input.center.lat = areaMap.getCenter().lat;
+                            $scope.areaMap.on('moveend', function (e) {
+                                $scope.input.center.lng = $scope.areaMap.getCenter().lng;
+                                $scope.input.center.lat = $scope.areaMap.getCenter().lat;
                             });
                             //scalebar and fullscreen
-                            L.control.scale({position: 'topleft', imperial: false}).addTo(areaMap);
-                            areaMap.addControl(new L.Control.Fullscreen());
+                            L.control.scale({position: 'topleft', imperial: false}).addTo($scope.areaMap);
+                            $scope.areaMap.addControl(new L.Control.Fullscreen());
 
                             //Set initial map extents
                             $scope.center = $scope.input.center;
-                            areaMap.setView([$scope.center.lat, $scope.center.lng], $scope.center.zoom);
+                            $scope.areaMap.setView([$scope.center.lat, $scope.center.lng], $scope.center.zoom);
 
                             //Attributions to open in new window
-                            areaMap.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
-                            areaMap.doubleClickZoom.disable();
-                            areaMap.band = Math.max.apply(null, $scope.possibleBands);
+                            $scope.areaMap.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
+                            $scope.areaMap.doubleClickZoom.disable();
+                            $scope.areaMap.band = Math.max.apply(null, $scope.possibleBands);
                         });
 
                         /*
@@ -115,8 +115,8 @@ angular.module("RIF")
                         };
                         //remove AOI layer
                         $scope.clearAOI = function () {
-                            if (areaMap.hasLayer($scope.shpfile)) {
-                                areaMap.removeLayer($scope.shpfile);
+                            if ($scope.areaMap.hasLayer($scope.shpfile)) {
+                                $scope.areaMap.removeLayer($scope.shpfile);
                                 $scope.shpfile = new L.layerGroup();
                             }
                         };
@@ -142,14 +142,30 @@ angular.module("RIF")
                         };
                         //Zoom to layer
                         $scope.zoomToExtent = function () {
-                            areaMap.fitBounds(maxbounds);
+                            $scope.areaMap.fitBounds(maxbounds);
+                        };
+                        //Zoom to selection
+                        $scope.zoomToSelection = function () {
+                            var studyBounds = new L.LatLngBounds();
+                            if (angular.isDefined($scope.geoJSON)) {
+                                $scope.geoJSON._geojsons.default.eachLayer(function (layer) {
+                                    for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+                                        if ($scope.selectedPolygon[i].id === layer.feature.properties.area_id) {
+                                            studyBounds.extend(layer.getBounds());
+                                        }
+                                    }
+                                });
+                                if (studyBounds.isValid()) {
+                                    $scope.areaMap.fitBounds(studyBounds);
+                                }
+                            }
                         };
                         //Show-hide centroids
                         $scope.showCentroids = function () {
-                            if (areaMap.hasLayer(centroidMarkers)) {
-                                areaMap.removeLayer(centroidMarkers);
+                            if ($scope.areaMap.hasLayer(centroidMarkers)) {
+                                $scope.areaMap.removeLayer(centroidMarkers);
                             } else {
-                                areaMap.addLayer(centroidMarkers);
+                                $scope.areaMap.addLayer(centroidMarkers);
                             }
                         };
 
@@ -162,11 +178,11 @@ angular.module("RIF")
                             //offer the correct number of bands
                             if ($scope.input.type === "Risk Analysis") {
                                 $scope.possibleBands = [1, 2, 3, 4, 5, 6];
-                                areaMap.band = 6;
+                                $scope.areaMap.band = 6;
                             } else {
                                 $scope.possibleBands = [1];
                                 $scope.currentBand = 1;
-                                areaMap.band = 1;
+                                $scope.areaMap.band = 1;
                             }
                         };
 
@@ -175,8 +191,8 @@ angular.module("RIF")
                          */
                         getMyMap = function () {
 
-                            if (areaMap.hasLayer($scope.geoJSON)) {
-                                areaMap.removeLayer($scope.geoJSON);
+                            if ($scope.areaMap.hasLayer($scope.geoJSON)) {
+                                $scope.areaMap.removeLayer($scope.geoJSON);
                             }
 
                             var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt);
@@ -220,10 +236,12 @@ angular.module("RIF")
                                                     }()
                                                 });
                                                 $scope.thisPolygon = feature.properties.name;
+                                                $scope.$digest();
                                             });
                                             layer.on('mouseout', function (e) {
                                                 $scope.geoJSON._geojsons.default.resetStyle(e.target);
                                                 $scope.thisPolygon = "";
+                                                $scope.$digest();
                                             });
                                             layer.on('click', function (e) {
                                                 //if drawing then return
@@ -248,7 +266,7 @@ angular.module("RIF")
                                     }
                                 }
                             });
-                            areaMap.addLayer($scope.geoJSON);
+                            $scope.areaMap.addLayer($scope.geoJSON);
 
                             //Get max bounds
                             user.getGeoLevelSelectValues(user.currentUser, thisGeography).then(function (res) {
@@ -256,7 +274,7 @@ angular.module("RIF")
                                 user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
                                     maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
                                     if ($scope.input.center.lng === 0) {
-                                        areaMap.fitBounds(maxbounds);
+                                        $scope.areaMap.fitBounds(maxbounds);
                                     }
                                 });
                             });
@@ -294,8 +312,8 @@ angular.module("RIF")
                             //Clear the map
                             $scope.selectedPolygon.length = 0;
                             $scope.clearAOI();
-                            if (areaMap.hasLayer(centroidMarkers)) {
-                                areaMap.removeLayer(centroidMarkers);
+                            if ($scope.areaMap.hasLayer(centroidMarkers)) {
+                                $scope.areaMap.removeLayer(centroidMarkers);
                             }
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                         };
@@ -358,14 +376,14 @@ angular.module("RIF")
 
                         //Set the user defined basemap
                         $scope.renderMap = function (mapID) {
-                            areaMap.removeLayer($scope.thisLayer);
+                            $scope.areaMap.removeLayer($scope.thisLayer);
                             if (!LeafletBaseMapService.getNoBaseMap("area")) {
                                 $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
-                                $scope.thisLayer.addTo(areaMap);
+                                $scope.thisLayer.addTo($scope.areaMap);
                             }
                             //hack to refresh map
                             setTimeout(function () {
-                                areaMap.invalidateSize();
+                                $scope.areaMap.invalidateSize();
                             }, 50);
                         };
 
@@ -440,7 +458,7 @@ angular.module("RIF")
                         L.drawLocal.draw.toolbar.buttons.circle = "Select by concentric bands";
                         L.drawLocal.draw.toolbar.buttons.polygon = "Select by freehand polygons";
                         drawnItems = new L.FeatureGroup();
-                        areaMap.addLayer(drawnItems);
+                        $scope.areaMap.addLayer(drawnItems);
                         var drawControl = new L.Control.Draw({
                             draw: {
                                 polygon: {
@@ -461,16 +479,16 @@ angular.module("RIF")
                                 featureGroup: drawnItems
                             }
                         });
-                        areaMap.addControl(drawControl);
+                        $scope.areaMap.addControl(drawControl);
                         new L.Control.GeoSearch({
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
-                        }).addTo(areaMap);
+                        }).addTo($scope.areaMap);
                         //add the circle to the map
-                        areaMap.on('draw:created', function (e) {
+                        $scope.areaMap.on('draw:created', function (e) {
                             drawnItems.addLayer(e.layer);
                         });
                         //override other map mouse events
-                        areaMap.on('draw:drawstart', function (e) {
+                        $scope.areaMap.on('draw:drawstart', function (e) {
                             $scope.input.bDrawing = true;
                         });
 
@@ -506,7 +524,9 @@ angular.module("RIF")
                                     }
                                 }
                             });
-                            $scope.$digest();
+
+                            $scope.$applyAsync();
+
                             if (!shape.circle && !shape.shapefile) {
                                 removeMapDrawItems();
                                 //auto increase band dropdown
@@ -521,7 +541,7 @@ angular.module("RIF")
                         });
                         function removeMapDrawItems() {
                             drawnItems.clearLayers();
-                            areaMap.addLayer(drawnItems);
+                            $scope.areaMap.addLayer(drawnItems);
                             $scope.input.bDrawing = false; //re-enable layer events
                         }
 
