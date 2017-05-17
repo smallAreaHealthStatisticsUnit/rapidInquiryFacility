@@ -1324,10 +1324,19 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
   column in geolevels table using geometry table); removed areaid_count tests from tiles_sahsuland view
   temporarily. Temporary fix applied
 
+#### 8th to 12th May 
+
+* CDC visit in Atlanta: CDC meetings at Roybal, EPHT conference including RIF demo
+
+#### 15th to 19th May 
+
+* Fix tile viewer screen sizing
+* Send out Atlanta comments
+
 #### Current TODO list (May 2017): SQL Server Port
 
 * Fix missing level 4 geography tiles bug (areaid_count=0 in geolevels table)
-* Harden SQL SErver port against SQL Injection getting past middleware into meta data
+* Harden SQL Server port against SQL Injection getting past middleware into meta data
 * Process Utah geography
 * Disable guest logins on SQL Server
 * Add localhost notes to tomcat install doc; add network setup to SQL Server install notes; 
