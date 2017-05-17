@@ -46,7 +46,8 @@
 
 var geolevelsHtml=[];
 var geographiesJson=[];
-var methodFields;	
+var methodFields;
+var bodyFontSize;	
 
 /*
  * Function: 	databaseSelectChange()
@@ -360,7 +361,7 @@ function setupTileViewer(allSelectFields) {
 //		dbSelectorHeight=200;
 //	}
 	var labelClassWidth=dialogFormWidth-90;
-	var selectClassWidth=dialogFormWidth-260;
+	var selectClassWidth=dialogFormWidth-180;
 //	if (selectClassWidth < 300) {
 //		dbSelectorWidth=225;
 //		selectClassWidth=200;
@@ -411,13 +412,17 @@ function setupTileViewer(allSelectFields) {
 	
 	var fontSizeStr=$( "#tileviewerbody" ).css('font-size');
 	var fontSize=parseInt(fontSizeStr.substring(0, fontSizeStr.length - 2));
+	if (bodyFontSize == undefined) {
+		bodyFontSize=fontSize;
+	}
 	if (dbSelectorWidth < 600) {
 		fontSize-=2;
 		$( "#tileviewerbody" ).css('font-size', fontSize + "px");
 		consoleLog("New body font size(" + fontSize+ "): " + $( "#tileviewerbody" ).css('font-size'));
 	} 
 	else {
-		consoleLog("Body font size: " + $( "#tileviewerbody" ).css('font-size'));
+		$( "#tileviewerbody" ).css('font-size', bodyFontSize + "px");
+		consoleLog("Reset body font size: " + $( "#tileviewerbody" ).css('font-size'));
 	}
 	
 //	autoResizeLabels();

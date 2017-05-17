@@ -9,6 +9,11 @@ body {
     width: 480px; 
 	float: right; 
 }
+.selectorText {
+	padding-top: 10px !important;
+	vertical-align: middle !important;
+	display: inline;
+}
 .labelClass {
 	float: left; 
     width: 480px;
