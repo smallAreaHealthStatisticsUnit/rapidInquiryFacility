@@ -6,9 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractCovariate;
@@ -26,6 +27,8 @@ import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.StudyResultRetrievalContext;
 import rifServices.businessConceptLayer.YearRange;
 import rifServices.businessConceptLayer.StudySummary;
+import rifServices.dataStorageLayer.ms.MSSQLConnectionManager;
+import rifServices.dataStorageLayer.ms.MSSQLResultsQueryManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
@@ -1400,8 +1403,8 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		final String studyID)
 		throws RIFServiceException {
 					
-		PGSQLSelectQueryFormatter queryFormatter
-			= new PGSQLSelectQueryFormatter();
+		MSSQLSelectQueryFormatter queryFormatter
+			= new MSSQLSelectQueryFormatter(false);
 		queryFormatter.addSelectField("study_name");
 		queryFormatter.addFromTable("rif40_studies");
 		queryFormatter.addWhereParameter("study_id");
@@ -1410,7 +1413,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= PGSQLQueryUtility.createPreparedStatement(
+				= MSSQLQueryUtility.createPreparedStatement(
 					connection, 
 					queryFormatter);
 			statement.setInt(
@@ -1445,11 +1448,98 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			MSSQLQueryUtility.close(statement);
+			MSSQLQueryUtility.close(resultSet);
 		}
 			
 	}
+	
+	public RIFResultTable getTileMakerCentroids(
+			final User _user,
+			final Geography _geography,
+			final GeoLevelSelect _geoLevelSelect)
+			throws RIFServiceException {
+			
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			MSSQLConnectionManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user) == true) {
+				return null;
+			}
+			Geography geography
+				= Geography.createCopy(_geography);
+			GeoLevelSelect geoLevelSelect 
+				= GeoLevelSelect.createCopy(_geoLevelSelect);
+			
+			RIFResultTable result = new RIFResultTable();
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getTileMakerCentroids",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"getTileMakerCentroids",
+					"geography",
+					geography);	
+				fieldValidationUtility.checkNullMethodParameter(
+					"getTileMakerCentroids",
+					"getLevelSelect",
+					geoLevelSelect);	
+				
+				//Check for security violations
+				validateUser(user);
+				geography.checkSecurityViolations();
+				geoLevelSelect.checkSecurityViolations();	
+				
+				//System.out.println(geography.getDisplayName());
+									
+				//Audit attempt to do operation
+				RIFLogger rifLogger = RIFLogger.getLogger();				
+				String auditTrailMessage
+					= RIFServiceMessages.getMessage("logging.getTileMakerCentroids",
+						user.getUserID(),
+						user.getIPAddress(),
+						geography.getDisplayName(),
+						geoLevelSelect.getDisplayName());
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+				
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+				
+				//Delegate operation to a specialised manager class
+				MSSQLResultsQueryManager sqlResultsQueryManager
+					= rifServiceResources.getSqlResultsQueryManager();
+				result
+					= sqlResultsQueryManager.getTileMakerCentroids(
+						connection,
+						user,
+						geography,
+						geoLevelSelect);
+			} 
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getTileMakerTiles",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+
+			return result;	
+		}
 	
 	public String getTileMakerTiles(
 		final User _user,

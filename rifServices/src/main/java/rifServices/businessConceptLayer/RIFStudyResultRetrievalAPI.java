@@ -106,7 +106,19 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 		final MapArea mapArea)
 		throws RIFServiceException;
 
-
+	/**
+	 * gets the centroids for all polygons 
+	 * @param user
+	 * @param geography
+	 * @param geoLevelSelect
+	 * @return
+	 * @throws RIFServiceException
+	 */
+	public RIFResultTable getTileMakerCentroids(
+			final User user,
+			final Geography geography,
+			final GeoLevelSelect geoLevelSelect)
+			throws RIFServiceException;
 
 	/*
 	 * Returns JSON stream for a given tile identifier

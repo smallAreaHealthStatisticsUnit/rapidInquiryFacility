@@ -325,6 +325,98 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager {
 		}		
 	}
 	
+	public RIFResultTable getTileMakerCentroids(
+			final Connection connection,
+			final User user,
+			final Geography geography,
+			final GeoLevelSelect geoLevelSelect)
+			throws RIFServiceException {
+								
+			PGSQLSelectQueryFormatter getMapTileTableQueryFormatter
+				= new PGSQLSelectQueryFormatter();		
+				
+			getMapTileTableQueryFormatter.setDatabaseSchemaName("rif_data");
+			getMapTileTableQueryFormatter.addSelectField(geoLevelSelect.getName());
+			getMapTileTableQueryFormatter.addSelectField("areaname");
+			getMapTileTableQueryFormatter.addSelectField("geographic_centroid");		
+			getMapTileTableQueryFormatter.addFromTable("lookup_" + geoLevelSelect.getName());
+					
+			PreparedStatement resultCounterStatement = null;
+			PreparedStatement statement = null;
+			ResultSet resultCounterSet = null;
+			ResultSet resultSet = null;
+					
+			try {
+				//Count the number of results first
+				resultCounterStatement = connection.prepareStatement(getMapTileTableQueryFormatter.generateQuery());
+				resultCounterSet = resultCounterStatement.executeQuery();
+				
+				int totalNumberRowsInResults = 0;
+				while (resultCounterSet.next()) {			
+					totalNumberRowsInResults++;
+				}
+
+				//get the results
+				statement = connection.prepareStatement(getMapTileTableQueryFormatter.generateQuery());	
+				
+				RIFResultTable results = new RIFResultTable();	
+				
+				String[] columnNames = new String[4];
+				columnNames[0] = "id";
+				columnNames[1] = "name";
+				columnNames[2] = "x";
+				columnNames[3] = "y";
+				
+				RIFResultTable.ColumnDataType[] columnDataTypes = new RIFResultTable.ColumnDataType[4];
+				columnDataTypes[0] = RIFResultTable.ColumnDataType.TEXT;
+				columnDataTypes[1] = RIFResultTable.ColumnDataType.TEXT;
+				columnDataTypes[2] = RIFResultTable.ColumnDataType.TEXT;
+				columnDataTypes[3] = RIFResultTable.ColumnDataType.TEXT;
+				
+				String[][] data = new String[totalNumberRowsInResults][4];
+				int ithRow = 0;
+												
+				resultSet = statement.executeQuery();
+				while (resultSet.next()) {					
+					data[ithRow][0] = resultSet.getString(1);
+					data[ithRow][1] = resultSet.getString(2);									
+					String coords = resultSet.getString(3).split(":")[2];	
+					String x = coords.split(",")[0];
+					String y = coords.split(",")[1];
+					x = x.replaceAll("[^0-9?!\\.-]","");
+					y = y.replaceAll("[^0-9?!\\.-]","");		
+					data[ithRow][2] = x;
+					data[ithRow][3] = y;
+					ithRow++;
+				}	
+				
+				results.setColumnProperties(columnNames, columnDataTypes);
+				results.setData(data);	
+				connection.commit();	
+									
+				return results;
+			}
+			catch(SQLException sqlException) {
+				//Record original exception, throw sanitised, human-readable version			
+				logSQLException(sqlException);
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"sqlResultsQueryManager.unableToGetCentroids",
+						geoLevelSelect.getDisplayName(),
+						geography.getDisplayName());
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.DATABASE_QUERY_FAILED,
+						errorMessage);
+				throw rifServiceException;
+			}
+			finally {
+				//Cleanup database resources
+				PGSQLQueryUtility.close(statement);
+				PGSQLQueryUtility.close(resultSet);
+			}			
+		}
+	
 	public String getTileMakerTiles(
 		final Connection connection,
 		final User user,
@@ -2325,7 +2417,7 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager {
 				ithRow = ithRow + 1;
 			}
 			results.setData(resultsBlockData);
-			
+		
 			connection.commit();			
 			return results;
 			

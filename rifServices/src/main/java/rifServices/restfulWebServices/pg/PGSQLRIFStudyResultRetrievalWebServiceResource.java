@@ -800,6 +800,22 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 				x, 
 				y);	
 	}
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getTileMakerCentroids")
+	public Response getTileMakerCentroids(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("geographyName") String geographyName, //SAHSU
+		@QueryParam("geoLevelSelectName") String geoLevelSelectName ) { //LEVEL2
+				
+		return super.getTileMakerCentroids(
+				servletRequest, 
+				userID, 
+				geographyName, 
+				geoLevelSelectName);	
+	}
 		
 	@GET
 	@Produces({"application/json"})	

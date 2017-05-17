@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
@@ -1449,6 +1450,92 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		}
 			
 	}
+	
+	public RIFResultTable getTileMakerCentroids(
+			final User _user,
+			final Geography _geography,
+			final GeoLevelSelect _geoLevelSelect)
+			throws RIFServiceException {
+			
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			PGSQLConnectionManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user) == true) {
+				return null;
+			}
+			Geography geography
+				= Geography.createCopy(_geography);
+			GeoLevelSelect geoLevelSelect 
+				= GeoLevelSelect.createCopy(_geoLevelSelect);
+			
+			RIFResultTable result = new RIFResultTable();
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getTileMakerCentroids",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"getTileMakerCentroids",
+					"geography",
+					geography);	
+				fieldValidationUtility.checkNullMethodParameter(
+					"getTileMakerCentroids",
+					"getLevelSelect",
+					geoLevelSelect);	
+				
+				//Check for security violations
+				validateUser(user);
+				geography.checkSecurityViolations();
+				geoLevelSelect.checkSecurityViolations();	
+								
+				//Audit attempt to do operation
+				RIFLogger rifLogger = RIFLogger.getLogger();				
+				String auditTrailMessage
+					= RIFServiceMessages.getMessage("logging.getTileMakerCentroids",
+						user.getUserID(),
+						user.getIPAddress(),
+						geography.getDisplayName(),
+						geoLevelSelect.getDisplayName());
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+				
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+				
+				//Delegate operation to a specialised manager class
+				PGSQLResultsQueryManager sqlResultsQueryManager
+					= rifServiceResources.getSqlResultsQueryManager();
+				result
+					= sqlResultsQueryManager.getTileMakerCentroids(
+						connection,
+						user,
+						geography,
+						geoLevelSelect);
+			} 
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getTileMakerTiles",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+
+			return result;	
+		}
+	
 	
 	public String getTileMakerTiles(
 		final User _user,
