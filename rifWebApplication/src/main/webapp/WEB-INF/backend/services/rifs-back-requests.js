@@ -37,7 +37,7 @@
 angular.module("RIF")
         .service('user', ['$http', 'studySubmissionURL', 'studyResultRetrievalURL', 'taxonomyServicesURL', 'DatabaseService',
             function ($http, studySubmissionURL, studyResultRetrievalURL, taxonomyServicesURL, DatabaseService) {
-                
+
                 var self = this;
                 self.currentUser = "";
 
@@ -219,6 +219,11 @@ angular.module("RIF")
                 self.getTileMakerTilesAttributes = function (username, geography, geoLevel) {
                     return $http.get(studyResultRetrievalURL + DatabaseService.getDatabase() + 'getTileMakerTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
                             '&zoomlevel=1&x=0&y=0', config);
+                };
+                //get all the centroids for the current geolevel
+                self.getTileMakerCentroids = function (username, geography, geoLevel) {
+                    //http://localhost:8080/rifServices/studyResultRetrieval/pg/getTileMakerCentroids?userID=dwmorley&geographyName=SAHSULAND&geoLevelSelectName=SAHSU_GRD_LEVEL4
+                    return $http.get(studyResultRetrievalURL + DatabaseService.getDatabase() + 'getTileMakerCentroids?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel);
                 };
                 //get details of a completed study
                 //TODO: this method does not give complete information

@@ -93,8 +93,8 @@ angular.module("RIF")
                             //remove any existing AOI layer
                             poly = null;
                             buffers = null;
-                            if (scope.areaMap.hasLayer(scope.shpfile)) {
-                                scope.areaMap.removeLayer(scope.shpfile);
+                            if (scope.areamap.hasLayer(scope.shpfile)) {
+                                scope.areamap.removeLayer(scope.shpfile);
                                 scope.shpfile = new L.layerGroup();
                             }
                         });
@@ -112,7 +112,7 @@ angular.module("RIF")
                             try {
                                 if (file.name.slice(-3) !== 'zip') {
                                     //not a zip file
-                                    alertScope.showError("All parts of the Shapefile expected in one zipped file");
+                                    alertScope.showError("All parts of the shapefile expected in one zipped file");
                                     return;
                                 } else {
 
@@ -155,19 +155,20 @@ angular.module("RIF")
                                                 }
                                             },
                                             onEachFeature: function (feature, layer) {
+                                                //add markers with pop-ups
                                                 if (feature.geometry.type === "Point") {
-                                                    layer.setIcon(factory);
-                                                    //TODO: add some type of pop-up
-                                                    
-                                                    //##########################################################
-
-
+                                                    layer.setIcon(factory);                                                 
+                                                    var popupContent = "";
+                                                    for (var property in feature.properties) {
+                                                        popupContent = popupContent + property.toUpperCase() + 
+                                                                ":\t" + feature.properties[property] + "</br>";   
+                                                    }
+                                                    layer.bindPopup(popupContent);
                                                 }
                                             }
                                         });
                                         deferred.resolve(poly);
                                     };
-
                                     reader.readAsArrayBuffer(file);
                                     return deferred.promise;
                                 }
@@ -326,7 +327,7 @@ angular.module("RIF")
                             //add AOI layer to map on modal close                            
                             try {
                                 scope.shpfile.addLayer(poly);
-                                scope.shpfile.addTo(scope.areaMap);
+                                scope.shpfile.addTo(scope.areamap);
                             } catch (err) {
                                 alertScope.showError("Could not open Shapefile, no valid features");
                                 return false;
