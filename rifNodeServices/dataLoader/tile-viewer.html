@@ -92,12 +92,6 @@ $(document).ready(function documentReady() {
         event.preventDefault();
         selectFunc();
     });
-	
-	
-//	var name = $("#databaseSelect"),
-//       geographySelect = $("#geographySelect"),
-//        geolevelSelect = $("#geolevelSelect"),
-//        allSettingsFields = $([]).add(name).add(geographySelect).add(geolevelSelect);
 		
 	var settings = $("#settings-tabs").dialog({
         autoOpen: false,
@@ -132,7 +126,7 @@ $(document).ready(function documentReady() {
 //        settingsFunc();
     });
 	
-	setupTileViewer();
+	setupTileViewer(undefined);
 	
 	addSelector("#databaseSelect", databaseSelectChange, $( "#databaseSelect" ).html(), 
 		undefined /* Use checked */);
@@ -200,7 +194,7 @@ $(document).ready(function documentReady() {
 		consoleLog("windowResize(): resize; body; h x w: " + document.getElementById('tileviewerbody').offsetHeight +
 			"x" + document.getElementById('tileviewerbody').offsetWidth);
 	
-		setupTileViewer();
+		setupTileViewer(allSelectFields);
 	});
 
 });

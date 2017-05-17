@@ -453,9 +453,26 @@ function addSelector(selectorId, selectorChangeCallback, newHTML, defaultValue) 
 } // End of addSelector()
 
 /*
+ * Function: 	setWidth()
+ * Parameters: 	HTML element, height
+ * Returns: 	nothing
+ * Description:	Set object width
+ */
+function setWidth(elem, width){
+	if (elem.style) {
+		elem.style.width=width + "px";
+//		consoleLog("setWidth(" + elem.id + "," + width + ") h x w: " + 
+//			elem.offsetHeight + "x" + elem.offsetWidth);	
+	}
+	else {
+		consoleError("setWidth() " + (elem.id||JSON.stringify(elem)) + " not found");
+	}
+}
+
+/*
  * Function: 	setHeight()
  * Parameters: 	id, height
- * Returns: 	map
+ * Returns: 	nothing
  * Description:	Set object height
  */
 function setHeight(id, lheight) {
@@ -466,8 +483,8 @@ function setHeight(id, lheight) {
 		document.getElementById(id).style.cursor = "hand";			
 		document.getElementById(id).style.height=lheight + "px";						
 		
-		consoleLog("setHeight(" + id + "," + lheight + ") h x w: " + 
-			document.getElementById(id).offsetHeight + "x" + document.getElementById(id).offsetWidth);	
+//		consoleLog("setHeight(" + id + "," + lheight + ") h x w: " + 
+//			document.getElementById(id).offsetHeight + "x" + document.getElementById(id).offsetWidth);	
 	}
 	else {
 		consoleError("setHeight() " + id + " not found");

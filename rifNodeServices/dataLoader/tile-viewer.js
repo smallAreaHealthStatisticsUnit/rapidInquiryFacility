@@ -329,11 +329,11 @@ function cacheEmpty(settings) {
 	
 /*
  * Function: 	setupTileViewer()
- * Parameters: 	None
+ * Parameters: 	Select fields array
  * Returns: 	Nothing
- * Description:	Seup tile viewer screen size
+ * Description:	Setup tile viewer screen size
  */		
-function setupTileViewer() {
+function setupTileViewer(allSelectFields) {
 	var w = window,
 		d = document,
 		e = d.documentElement,
@@ -341,9 +341,11 @@ function setupTileViewer() {
 		x = w.innerWidth || e.clientWidth || g.clientWidth,
 		y = w.innerHeight|| e.clientHeight|| g.clientHeight;
 	
-	var selectDiv = document.getElementById("selectDiv");
+	var selectDiv = document.getElementById("selectDiv"); // Change database, geography and geolevel
 	var selectDivHeightStr = window.getComputedStyle(selectDiv, null).getPropertyValue("height");
 	var selectDivHeight = parseInt(selectDivHeightStr.substring(0, selectDivHeightStr.length - 2));
+	var selectDivWidthStr = window.getComputedStyle(selectDiv, null).getPropertyValue("width");
+	var selectDivWidth = parseInt(selectDivWidthStr.substring(0, selectDivWidthStr.length - 2));
 	var mapcontainerHeight=y-selectDivHeight-20; 
 	var dialogFormHieght=y-selectDivHeight-50; 
 	var dialogFormWidth=x-250; 
@@ -353,59 +355,27 @@ function setupTileViewer() {
 	var selectButtonWidthStr=$("#select-button").css("width");
 	var selectButtonWidth = parseInt(selectButtonWidthStr.substring(0, selectButtonWidthStr.length - 2));
 	var dbSelectorHeight=dialogFormHieght-320;
-	var dbSelectorWidth=x-50;
+	var dbSelectorWidth=x-325;
 //	if (dbSelectorHeight < 200) {
 //		dbSelectorHeight=200;
 //	}
 	var labelClassWidth=dialogFormWidth-90;
 	var selectClassWidth=dialogFormWidth-260;
 //	if (selectClassWidth < 300) {
+//		dbSelectorWidth=225;
 //		selectClassWidth=200;
 //		labelClassWidth=300;
 //	}	
 
-/*
-
-OK: 
-
-+0.2: Window Width: 1408 px
-Window Height: 648 px
-selectDiv Height: 40 px
-mapcontainer Height: 588 px
-dialogFormHieght Height: 558 px
-dialogFormHieght Width: 1158 px
-selectButton Width: 271 px
-labelClass Width: 1068 px
-selectClass Width: 898 px
-dbSelector Height: 238 px
-
-Not OK: 
-
-+160.7: Window Width: 1002 px
-Window Height: 562 px
-selectDiv Height: 40 px
-mapcontainer Height: 502 px
-dialogFormHieght Height: 472 px
-dialogFormHieght Width: 752 px
-selectButton Width: 419 px
-labelClass Width: 662 px
-selectClass Width: 492 px
-dbSelector Height: 152 px  tile-common.js:185:4
-
-ui-selectmenu-text 896.533×38.7
-
- */
-	consoleLog("setupTileViewer(): Window Width: " + x + " px\n" +
-		"Window Height: " + y + " px\n" +
-		"selectDiv Height: " + selectDivHeight + " px\n" +
-		"mapcontainer Height: " + mapcontainerHeight + " px\n" +
-		"dialogFormHieght Height: " + dialogFormHieght + " px\n" +
-		"dialogFormHieght Width: " + dialogFormWidth + " px\n" +
+	consoleLog("setupTileViewer(): " +
+		"Window height: " + y + " px, width: " + x + " px\n" +
+		"selectDiv height: " + selectDivHeight + " px, width: " + selectDivWidth + " px\n" +
+		"mapcontainer height: " + mapcontainerHeight + " px\n" +
+		"dialogForm height: " + dialogFormHieght + " px, width: " + dialogFormWidth + " px\n" +
 		"selectButton Width: " + selectButtonWidth + " px\n" +
 		"labelClass Width: " + labelClassWidth + " px\n" +
 		"selectClass Width: " + selectClassWidth + " px\n" +
-		"dbSelector Height: " + dbSelectorHeight + " px\n" +
-		"dbSelector Width: " + dbSelectorWidth + " px");
+		"dbSelector Height: " + dbSelectorHeight + " px, width: " + dbSelectorWidth + " px");
 	
 	if (map == undefined) { // Only set the height if leaflet is not initialised or you will make a mess of the screen
 		setHeight("mapcontainer", mapcontainerHeight);
@@ -425,22 +395,56 @@ ui-selectmenu-text 896.533×38.7
 	
 	var labelClass=document.getElementsByClassName("labelClass");
 	for (var i=0;i<labelClass.length; i++) {
-		labelClass[i].style.width=labelClassWidth + "px";
+		setWidth(labelClass[i], labelClassWidth);
 	}
 	var selectClass=document.getElementsByClassName("selectClass");
 	for (var i=0;i<selectClass.length; i++) {
-		selectClass[i].style.width=selectClassWidth + "px";
+		setWidth(selectClass[i], selectClassWidth);
 	}
 	var selectClass=document.getElementsByClassName("inputClass");
 	for (var i=0;i<selectClass.length; i++) {
-		selectClass[i].style.width=selectClassWidth + "px"; 
+		setWidth(selectClass[i], selectClassWidth);
 	}	
 
 	document.getElementById("dbSelector").style.height=dbSelectorHeight + "px";
-	document.getElementById("dbSelector").style.width=dbSelectorWidth + "px";	
+	setWidth(document.getElementById("dbSelector"), dbSelectorWidth);	
 	
-	// Auto resize .labelClass class
+	var fontSizeStr=$( "#tileviewerbody" ).css('font-size');
+	var fontSize=parseInt(fontSizeStr.substring(0, fontSizeStr.length - 2));
+	if (dbSelectorWidth < 600) {
+		fontSize-=2;
+		$( "#tileviewerbody" ).css('font-size', fontSize + "px");
+		consoleLog("New body font size(" + fontSize+ "): " + $( "#tileviewerbody" ).css('font-size'));
+	} 
+	else {
+		consoleLog("Body font size: " + $( "#tileviewerbody" ).css('font-size'));
+	}
+	
+//	autoResizeLabels();
+	
+	if (allSelectFields) { // Defined if select fields are initialised
+	// Refresh select fields
+		for (var i=0; i<allSelectFields.length; i++) {
+			
+//			consoleLog("Select field: " + allSelectFields[i].id + " options: " +
+//				JSON.stringify($( allSelectFields[i] ).button( "option" ), null, 2));
+			$( allSelectFields[i] ).button( "refresh" );
+			$( allSelectFields[i] ).selectmenu( "refresh" );
+		};
+	}
+		
+} // End of setupTileViewer()
+
+/*
+ * Function: 	setupTileViewer()
+ * Parameters: 	None
+ * Returns: 	Nothing
+ * Description:	Change label font size to fit labels (no longer used)
+ */	
+function autoResizeLabels() {
+		// Auto resize .labelClass class
 	var numResizable=0;
+	var j=0;
 	$('.labelClass').each(function(i, obj) {
 		numResizable++;
 
@@ -448,26 +452,29 @@ ui-selectmenu-text 896.533×38.7
 		var parentWidth=$(obj).parent().width();
 		var startFontSize=$(obj).css('font-size');
 		if ($(obj).parent().attr("id")) {			
-			if (parentWidth > 0) {
-				while ($(obj).width() > parentWidth) {
+			if (startWidth && startFontSize && parentWidth && parentWidth > 0) {
+				j++;
+				var k=0;
+				while ($(obj).width() > parentWidth && k<20 /* Recursion preventor */) {
+					k++;
 					var newFontSize=(parseInt($(obj).css('font-size')) - 1);
 					$(obj).css('font-size', newFontSize + "px");
 				}			
 			}
 			if (startWidth == $(obj).width() && 
 				startFontSize == $(obj).css('font-size')) {
-				consoleLog("Auto resize [" + (i+1) + "] " + $(obj).attr("id") + ": width/font size " + 
+				consoleLog("Auto resize [" + j + "] " + $(obj).attr("id") + ": width/font size " + 
 				startWidth + "px/" + startFontSize + " is unchanged; parent (" + 
-					$(obj).parent().attr("id") + ") width: " + parentWidth + "px");
+					$(obj).parent().attr("id") + ") width: " + parentWidth + "/" + $(obj).width() + "px");
 			}
 			else {
-				consoleLog("Auto resize [" + (i+1) + "] " + $(obj).attr("id") + ": width/font size " + 
+				consoleLog("Auto resize [" + j + "] " + $(obj).attr("id") + ": width/font size " + 
 				startWidth + "px/" + startFontSize + " to " + 
 				$(obj).width() + "px/" + $(obj).css('font-size') + "; parent (" + 
-					$(obj).parent().attr("id") + ") width: " + parentWidth + "px");
+					$(obj).parent().attr("id") + ") width: " + parentWidth + "/" + $(obj).width() + "px");
 			}
 		}
 	});
-	consoleLog("Total auto resize: " + numResizable);
-
-} // End of setupTileViewer()
+	consoleLog("Total auto resize: " + j + "/" + numResizable);
+	
+}
