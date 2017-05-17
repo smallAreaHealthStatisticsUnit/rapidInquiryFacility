@@ -113,6 +113,7 @@ Principal Work Area: JavaScript User interface development
 - sql server porting for run Study (mostly problems with error checking routines)
 - Fixed viewer sex and year for study drop-down middleware methods
 - Removed dependency on ui-leaflet directive
+- Fixed memory leak in map containers
 - Middleware method to get polygon centroids from database (defaults to leaflet getCenter() on error)
 
 
