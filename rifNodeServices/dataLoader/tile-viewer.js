@@ -361,7 +361,8 @@ function setupTileViewer(allSelectFields) {
 //		dbSelectorHeight=200;
 //	}
 	var labelClassWidth=dialogFormWidth-90;
-	var selectClassWidth=dialogFormWidth-180;
+	var selectClassWidth=dialogFormWidth-180;	// DB selector size
+	var selectClassWidth2=dialogFormWidth-250;	// Settings text box size
 //	if (selectClassWidth < 300) {
 //		dbSelectorWidth=225;
 //		selectClassWidth=200;
@@ -398,24 +399,24 @@ function setupTileViewer(allSelectFields) {
 	for (var i=0;i<labelClass.length; i++) {
 		setWidth(labelClass[i], labelClassWidth);
 	}
-	var selectClass=document.getElementsByClassName("selectClass");
+	var selectClass=document.getElementsByClassName("selectClass"); // DB selector size
 	for (var i=0;i<selectClass.length; i++) {
 		setWidth(selectClass[i], selectClassWidth);
 	}
-	var selectClass=document.getElementsByClassName("inputClass");
+	var selectClass=document.getElementsByClassName("inputClass"); // Settings text box size
 	for (var i=0;i<selectClass.length; i++) {
-		setWidth(selectClass[i], selectClassWidth);
+		setWidth(selectClass[i], selectClassWidth2);
 	}	
 
 	document.getElementById("dbSelector").style.height=dbSelectorHeight + "px";
 	setWidth(document.getElementById("dbSelector"), dbSelectorWidth);	
 	
 	var fontSizeStr=$( "#tileviewerbody" ).css('font-size');
-	var fontSize=parseInt(fontSizeStr.substring(0, fontSizeStr.length - 2));
+	var fontSize=parseInt(fontSizeStr.substring(0, fontSizeStr.length - 2)); // 13px
 	if (bodyFontSize == undefined) {
 		bodyFontSize=fontSize;
 	}
-	if (dbSelectorWidth < 600) {
+	if (dbSelectorWidth < 600) {	// Reduce font size on smaller screens
 		fontSize-=2;
 		$( "#tileviewerbody" ).css('font-size', fontSize + "px");
 		consoleLog("New body font size(" + fontSize+ "): " + $( "#tileviewerbody" ).css('font-size'));

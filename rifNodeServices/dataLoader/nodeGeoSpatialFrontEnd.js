@@ -689,6 +689,23 @@ scopeChecker = function scopeChecker(array, optionalArray) {
 		throw new Error(msg);
 	}	
 } // End of scopeChecker()
+
+/*
+ * Function: 	setWidth()
+ * Parameters: 	HTML element, height
+ * Returns: 	nothing
+ * Description:	Set object width
+ */
+function setWidth(elem, width){
+	if (elem.style) {
+		elem.style.width=width + "px";
+//		consoleLog("setWidth(" + elem.id + "," + width + ") h x w: " + 
+//			elem.offsetHeight + "x" + elem.offsetWidth);	
+	}
+	else {
+		consoleError("setWidth() " + (elem.id||JSON.stringify(elem)) + " not found");
+	}
+}
 	
 /*
  * Function: 	setupMap()
