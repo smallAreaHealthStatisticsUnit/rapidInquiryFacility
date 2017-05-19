@@ -63,6 +63,10 @@ IF NOT DEFINED NEWDB (
 IF NOT DEFINED NEWPW (
 	SET /P NEWPW=New user password [default %NEWUSER%]: %=% || SET NEWPW=%NEWUSER%
 )
+
+REM
+REM Check R and Tomcat setup correctly
+REM 
 IF NOT DEFINED R_HOME (
 	ECHO Please set R_HOME in the environment
 	exit /b 1
@@ -71,7 +75,12 @@ IF NOT DEFINED CATALINA_HOME (
 	ECHO Please set CATALINA_HOME in the environment
 	exit /b 1
 )
-SET DEFAULT_DB_DRIVER='--db_driver_prefix=jdbc:sqlserver --db_driver_class_name=com.microsoft.sqlserver.jdbc.SQLServerDriver'
+
+IF DEFINED DB_DRIVER SET DB_DRIVER=
+IF DEFINED DEFAULT_DB_DRIVER SET DEFAULT_DB_DRIVER=
+IF DEFINED ODBC_DATA_SOURCE SET ODBC_DATA_SOURCE=
+
+SET DEFAULT_DB_DRIVER=--db_driver_prefix^=jdbc:sqlserver --db_driver_class_name^=com.microsoft.sqlserver.jdbc.SQLServerDriver
 IF NOT DEFINED DB_DRIVER (
 	SET /P DB_DRIVER=Java database driver [default "%DEFAULT_DB_DRIVER%"]: %=% || SET DB_DRIVER=%DEFAULT_DB_DRIVER%
 )
@@ -85,6 +94,7 @@ IF EXIST inv_id.txt DEL /F inv_id.txt
 
 IF DEFINED STUDY_ID SET STUDY_ID=
 IF DEFINED INV_ID SET INV_ID=
+
 REM
 REM Get next study_id and inv_id from database
 REM
@@ -154,6 +164,9 @@ REM
 (SET NEWPW=)
 (SET STUDY_ID=)
 (SET INV_ID=)
+(SET DB_DRIVER=)
+(SET DEFAULT_DB_DRIVER=)
+(SET ODBC_DATA_SOURCE=)
 
 REM
 REM Eof
