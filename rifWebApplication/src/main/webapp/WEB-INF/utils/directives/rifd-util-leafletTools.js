@@ -45,9 +45,9 @@ angular.module("RIF")
                 restrict: 'A',
                 link: function (scope, element, attr) {
                     scope.$watch(attr['ngModel'], function (v) {
-                        if (!angular.isUndefined(scope.$parent.geoJSON[attr.mapid])) {
-                            scope.$parent.geoJSON[attr.mapid]._geojsons.default.eachLayer(scope.child.handleLayer);
-                            scope.myService.getState().transparency = v;
+                        scope.myService.getState().transparency[attr.mapid] = v;
+                        if (angular.isDefined(scope.geoJSON[attr.mapid]._geojsons)) {
+                            scope.geoJSON[attr.mapid]._geojsons.default.eachLayer(scope.child.handleLayer);
                         }
                     });
                 }
@@ -56,21 +56,19 @@ angular.module("RIF")
         /*
          * Zooming
          */
-        .directive('zoomExtent', ['leafletData', function (leafletData) {
+        .directive('zoomExtent', [function () {
                 return {
                     restrict: 'A',
                     link: function (scope, element, attr) {
                         element.on('click', function (event) {
                             if (angular.isDefined(scope.child.maxbounds)) {
-                                leafletData.getMap(attr.mapid).then(function (map) {
-                                    map.fitBounds(scope.child.maxbounds);
-                                });
+                                scope.child.map[attr.mapid].fitBounds(scope.child.maxbounds);
                             }
                         });
                     }
                 };
             }])
-        .directive('zoomStudy', ['leafletData', function (leafletData) {
+        .directive('zoomStudy', [function () {
                 return {
                     restrict: 'A',
                     link: function (scope, element, attr) {
@@ -85,17 +83,15 @@ angular.module("RIF")
                                         }
                                     }
                                 });
-                                leafletData.getMap(attr.mapid).then(function (map) {
-                                    if (studyBounds.isValid()) {
-                                        map.fitBounds(studyBounds);
-                                    }
-                                });
+                                if (studyBounds.isValid()) {
+                                    scope.child.map[attr.mapid].fitBounds(studyBounds);
+                                }
                             }
                         });
                     }
                 };
             }])
-        .directive('zoomSelectionSingle', ['leafletData', function (leafletData) {
+        .directive('zoomSelectionSingle', [function () {
                 return {
                     restrict: 'A',
                     link: function (scope, element, attr) {
@@ -109,16 +105,14 @@ angular.module("RIF")
                                     }
                                 });
                                 if (selbounds !== null) {
-                                    leafletData.getMap(attr.mapid).then(function (map) {
-                                        map.fitBounds(selbounds);
-                                    });
+                                    scope.child.map[attr.mapid].fitBounds(selbounds);
                                 }
                             }
                         });
                     }
                 };
             }])
-        .directive('zoomSelectionMultiple', ['leafletData', function (leafletData) {
+        .directive('zoomSelectionMultiple', [function () {
                 return {
                     restrict: 'A',
                     link: function (scope, element, attr) {
@@ -136,11 +130,9 @@ angular.module("RIF")
                                         }
                                     }
                                 });
-                                leafletData.getMap(attr.mapid).then(function (map) {
-                                    if (studyBounds.isValid()) {
-                                        map.fitBounds(studyBounds);
-                                    }
-                                });
+                                if (studyBounds.isValid()) {
+                                    scope.child.map[attr.mapid].fitBounds(studyBounds);
+                                }
                             }
                         });
                     }
@@ -177,7 +169,7 @@ angular.module("RIF")
                     }
                 };
             }])
-        .directive('leafletToPng', ['leafletData', function (leafletData) {
+        .directive('leafletToPng', [function () {
                 //When defining new L.TopoJSON
                 //Need to set renderer: L.canvas(),
                 //Not: L.svg()
@@ -185,55 +177,65 @@ angular.module("RIF")
                     restrict: 'A',
                     link: function (scope, element, attr) {
                         element.on('click', function (event) {
-                            var hostMap = document.getElementById(attr.mapid);
+
+                            //TODO: change to wait cursor on click
+                            //TODO: on error, currently silent
+
+                            //get the map object
+                            var x = attr.mapid.split('.');
+                            var thisMap = scope[x[0]];
+                            if (x.length !== 1) {
+                                thisMap = scope[x[0]][x[1]];
+                            }
+
+                            //get the map elements
+                            var hostMap = document.getElementById(x[x.length - 1]);
                             var thisLegend = hostMap.getElementsByClassName("info legend leaflet-control")[0]; //the legend
                             var thisScale = hostMap.getElementsByClassName("leaflet-control-scale leaflet-control")[0]; //the scale bar
+
+                            //render
                             html2canvas(thisLegend, {
                                 onrendered: function (legend) {
-                                    var thisScaleCanvas;
+                                    var scaleCanvas;
                                     html2canvas(thisScale, {
                                         onrendered: function (canvas1) {
-                                            thisScaleCanvas = canvas1;
-                                            if (!angular.isUndefined(scope.child.renderMap)) {
-                                                scope.child.renderMap(attr.mapid);
-                                            } else {
-                                                scope.renderMap(attr.mapid);
-                                            }
-                                            //the map
-                                            leafletData.getMap(attr.mapid).then(function (map) {
-                                                leafletImage(map, function (err, canvas) {
-                                                    //4 canvas elements here canvas=leaflet map, legend=legend, scale=scalebar                          
-                                                    //and a new blank canvas
-                                                    var can4 = document.createElement('canvas');
-                                                    can4.width = canvas.width;
-                                                    can4.height = canvas.height;
-                                                    var ctx4 = can4.getContext('2d');
-                                                    ctx4.drawImage(canvas, 0, 0);
+                                            scaleCanvas = canvas1;
+                                            leafletImage(thisMap, function (err, canvas) {
 
-                                                    var pad = 10;
-                                                    //overlay the legend
-                                                    if (!angular.isUndefined(legend)) {
-                                                        if (legend.width < canvas.width / 2) {
-                                                            ctx4.drawImage(legend, canvas.width - legend.width - pad, pad);
-                                                        }
-                                                    }
-                                                    //overlay the scale bar
-                                                    if (!angular.isUndefined(thisScaleCanvas)) {
-                                                        if (thisScaleCanvas.width < canvas.width / 2) {
-                                                            ctx4.drawImage(thisScaleCanvas, pad, pad);
-                                                        }
-                                                    }
+                                                //padding between elements
+                                                var pad = 10;
 
-                                                    //Download with Filesaver.js
-                                                    can4.toBlob(function (blob) {
-                                                        saveAs(blob, attr.mapid + ".png");
-                                                    });
+                                                //blank canvas
+                                                var blank = document.createElement('canvas');
+                                                blank.width = canvas.width;
+                                                blank.height = canvas.height;
+
+                                                //draw the map tiles
+                                                var blankctx = blank.getContext('2d');
+                                                blankctx.drawImage(canvas, 0, 0);
+
+                                                //overlay the legend
+                                                if (!angular.isUndefined(legend)) {
+                                                    if (legend.width < canvas.width / 2) {
+                                                        blankctx.drawImage(legend, canvas.width - legend.width - pad, pad);
+                                                    }
+                                                }
+                                                //overlay the scale bar
+                                                if (!angular.isUndefined(scaleCanvas)) {
+                                                    if (scaleCanvas.width < canvas.width / 2) {
+                                                        blankctx.drawImage(scaleCanvas, pad, pad);
+                                                    }
+                                                }
+
+                                                //Download with Filesaver.js
+                                                blank.toBlob(function (blob) {
+                                                    saveAs(blob, "map.png");
                                                 });
                                             });
                                         }
                                     });
                                 }
-                            });
+                            });                            
                         });
                     }
                 };

@@ -12,6 +12,9 @@ RIF Web Services
 	 - [1.3.3 Running Tomcat on the command line](#133-running-tomcat-on-the-command-line)
    - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
+   - [2.1 Building Using Make](#21-building-using-make)	
+   - [2.2 Building Using a Windows Batch File](#22-building-using-a-windows-batch-file)	
+   - [2.3 Building By Hand](#23-building-by-hand)	
 - [3. Installing Web Services in Tomcat](#3-installing-web-services-in-tomcat)
    - [3.1 Web Services](#31-web-services)
      - [3.1.1 RIF Services](#311-rif-services)
@@ -24,6 +27,7 @@ RIF Web Services
    - [4.2 Setup Network](#42-setup-network)
      - [4.2.1 TLS](#421-tls)
    - [4.3 Setup R](#43-setup-r)
+     - [4.3.1 R Debugging](#431-r-debugging)
    - [4.4 Common Setup Errors](#44-common-setup-errors)
      - [4.4.1 Logon RIF Serice Call Incorrect](#441-logon-rif-serice-call-incorrect)
      - [4.4.2 TLS Errors](#442-tls-errors)
@@ -84,7 +88,7 @@ Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.
 - Choose an administrator username (NOT admin) and a secure password that complies with your organisations password policy.
 - Complete tomcat installation, but do not start service.
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web 
-  services will not work [The web services will crash on user logon if it is not set, this will be changed to a more obvious error]; see:
+  services will not work [The web services will crash on user logon if it is not set]; see:
   4.4.5 RIF Services crash on logon.
   
 When accessed from the internet the RIF **must** be secured using TLS to protect the login details and any health data viewed.
@@ -153,12 +157,106 @@ Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
 
 # 2. Building Web Services using Maven
 
-Download and install Apache Maven: https://maven.apache.org/download.cgi
+## 2.1 Building Using Make
 
-If you have installed make (i.e. you are building the Postgrs port from Scratch), run make from the root of the github repository,
-e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*
+If you have installed make (i.e. you are building the Postgrs port from Scratch), run make from the 
+root of the github repository, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*
 
-Otherwise run the following commands by hand:
+This method requires 7zip to be installed in *C:\Program Files\7-Zip\7z.exe*
+
+The following make targets are provided:
+
+* *clean*: remove targets, clean maven build areas
+* *all*: build targets
+* *install*: clean then all
+* *rifservice*: build rifServices.war target
+* *taxonomyService*: build taxonomyServices.war target
+* *RIF4*: build RIF4.7z target
+
+To run a make target type *make <target>;e.g. *make install*.
+
+The following files are then built and copied into the rapidInquiryFacility directory: 
+*taxonomyServices.war*, *rifServices.war*, *RIF4.7z*
+
+**Make currently only works on Windows and requires the Mingw development kit and 7zip to be installed.**
+
+## 2.2 Building Using a Windows Batch File
+
+This method requires 7zip to be installed in *C:\Program Files\7-Zip\7z.exe*
+
+Run *java_build.bat* from the root of the github repository, 
+e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*. The files *taxonomyServices.war*, 
+*rifServices.war*, *RIF4.7z* are the end product.
+
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility>java_build.bat
+
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility>ECHO OFF
+
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility>SET PWD=C:\Users\Peter\Documents\GitHub\rapidInquiryFacility
+
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility>call mvn --version
+Apache Maven 3.3.9 (bb52d8502b132ec0a5a3f4c09453c07478323dc5; 2015-11-10T16:41:47+00:00)
+Maven home: C:\Program Files\Apache Software Foundation\apache-maven-3.3.9\bin\..
+Java version: 1.8.0_111, vendor: Oracle Corporation
+Java home: C:\Program Files\Java\jdk1.8.0_111\jre
+Default locale: en_GB, platform encoding: Cp1252
+OS name: "windows 8.1", version: "6.3", arch: "amd64", family: "dos"
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] Building rifGenericLibrary 0.0.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO]
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ rifGenericLibrary ---
+[INFO] Deleting C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifGenericLibrary\target
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 0.564 s
+[INFO] Finished at: 2017-04-27T09:34:05+01:00
+[INFO] Final Memory: 7M/245M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING]
+[WARNING] Some problems were encountered while building the effective model for rapidInquiryFacility:taxonomyServices:war:0.0.1-SNAP
+SHOT
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: rapidInquiryFacility:rifGenericLibrary:jar
+-> duplicate declaration of version 0.0.1-SNAPSHOT @ line 133, column 16
+[WARNING]
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING]
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING]
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO]
+[INFO] General RIF Tool Suite Settings
+[INFO] rifGenericLibrary
+[INFO] RIF Middleware
+[INFO] taxonomyServices
+[INFO] rifDataLoaderTool
+[INFO] RIF IT Governance Tool
+[INFO]
+[INFO] ------------------------------------------------------------------------
+[INFO] Building General RIF Tool Suite Settings 0.0.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+...
+2017-02-01 13:19:42 ....A         4524               utils\services\rifs-util-JSON.js
+2017-03-20 08:11:00 ....A        20129               utils\services\rifs-util-leafletdraw.js
+2017-02-01 13:19:42 ....A         2685               utils\services\rifs-util-mapping.js
+2017-02-01 13:19:42 ....A         2329               utils\services\rifs-util-uigrid.js
+------------------- ----- ------------ ------------  ------------------------
+2017-04-12 09:24:32            4920556      2238557  199 files, 35 folders
+
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility>
+```
+
+## 2.3 Building By Hand
+
+Otherwise run the following commands by hand from the 
+root of the github repository, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*:
+
 ```
 mvn --version
 cd rifGenericLibrary
@@ -207,6 +305,8 @@ The order is important; the directories must be built in the order: rifGenericLi
 assumed you build taxonomyServices later. If you get a build failure try a *mvn clean* in each directory first; then retry with a 
 *mvn  -Dmaven.test.skip=true install*.
 
+This method  does not build the *taxonomyServices* or the web application 7zip file.
+
 # 3. Installing Web Services in Tomcat
 
 ## 3.1 Web Services
@@ -253,7 +353,13 @@ If SAHSU has supplied a taxonomyServices.war file skip to step 3.
 	12-Apr-2017 17:45:00.002 INFO [localhost-startStop-2] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\taxonomyServices.war has finished in 3,899 ms
 	```
 
-3) Copy ‘taxonomyServices.war’ into the Tomcat webapps folder as with rifServices. 
+3) Copy ‘taxonomyServices.war’ from the *target* directory into the Tomcat webapps folder as with rifServices. 
+
+4) For a full ICD10 listing add the following SAHSU supplied files to: 
+%CATALINE_HOME%\webapps\taxonomyServices\WEB-INF\classes and restart tomcat
+
+* icdClaML2016ens.xml
+* TaxonomyServicesConfiguration.xml
 
 ## 3.2 RIF Web Application
 
@@ -262,8 +368,49 @@ Create RIF4 in web-apps:
 * Change directory to *%CATALINA_HOME%\webapps*; e,g, *cd "C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps"*
 * Create the directory *RIF4*
 * Copy all files and directories from the directory: *"C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifWebApplication\src\main\webapp\WEB-INF"* 
-  to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\ROOT\WEB-INF*
+  to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4*
 
+If you are supplied with the *7zip* archive, RIF4.7z needs to be copied to: 
+*%CATALINA_HOME%\webapps\RIF4* and unpacked using the file manager *7zip*. Do not use the command line 
+(```"C:\Program Files\7-Zip\7z.exe" x RIF4.7z```) it does not work!
+
+```
+C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4>"C:\Program Files\7-Zip\7z.exe" x RIF4.7z
+
+7-Zip [64] 16.04 : Copyright (c) 1999-2016 Igor Pavlov : 2016-10-04
+
+Scanning the drive for archives:
+1 file, 2242469 bytes (2190 KiB)
+
+Extracting archive: RIF4.7z
+--
+Path = RIF4.7z
+Type = 7z
+Physical Size = 2242469
+Headers Size = 3912
+Method = LZMA2:6m
+Solid = +
+Blocks = 1
+
+
+Would you like to replace the existing file:
+  Path:     .\backend\services\rifs-back-database.js
+  Size:     2160 bytes (3 KiB)
+  Modified: 2017-04-10 11:03:15
+with the file from archive:
+  Path:     backend\services\rifs-back-database.js
+  Size:     2168 bytes (3 KiB)
+  Modified: 2017-04-12 09:24:31
+? (Y)es / (N)o / (A)lways / (S)kip all / A(u)to rename all / (Q)uit? A
+
+Everything is Ok
+
+Folders: 35
+Files: 199
+Size:       4920556
+Compressed: 2242469
+```
+  
 **BEFORE YOU RUN THE RIF YOU MUST SETUP THE DATABASE AND NETWORKING IN TOMCAT FIRST**
 
 Running the RIF and logging on is detailed in section 5. You must restart Tomcat when you create RIF4 for the first time, 
@@ -297,7 +444,7 @@ can be remote but users must take care to ensure that it is setup securely. If y
 #SQL SERVER
 database.driverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver
 database.jdbcDriverPrefix=jdbc:sqlserver
-database.host=AEPW-RIF27\\SQLEXPRESS
+database.host=localhost\\SQLEXPRESS
 database.port=1433
 database.databaseName=sahsuland
 database.databaseType=sqlServer
@@ -341,22 +488,23 @@ C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>netstat -ba
  [Tomcat8.exe]
 ```
 
-The RIF web application file RIF4\backend\services\rifs-back-requests.js (e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4\backend\services\rifs-back-requests.js)
+The RIF web application file RIF4\backend\services\rifs-back-urls.js (e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4\backend\services\rifs-back-urls.js)
 define the URLs for the services.
 
 ```javascript
 /*
- * SERVICE for all requests to the middleware
+ * SERVICE for URL middleware calls. Localhost can be edited here
  */
+
 angular.module("RIF")
         .constant('studySubmissionURL', "http://localhost:8080/rifServices/studySubmission/")
         .constant('studyResultRetrievalURL', "http://localhost:8080/rifServices/studyResultRetrieval/")
-        .constant('taxonomyServicesURL', "http://localhost:8080/taxonomyServices/taxonomyServices/")
+        .constant('taxonomyServicesURL', "http://localhost:8080/taxonomyServices/taxonomyServices/");
 ```
 
 Edit these to match:
 
-* The port number in use; e.g. 8081 as in the above example or 8443 if you are in a production environment with TLS enabled;
+* The port number in use; e.g. 8080 as in the above example or 8443 if you are in a production environment with TLS enabled;
 * The server for the remote service, e.g. *https://aepw-rif27.sm.med.ic.ac.uk*
 
 **BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
@@ -474,11 +622,16 @@ This setup will support:
    * Extract: ```extractDirectory=c:\\rifDemo\\scratchSpace```
    * Policies: ```extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies```
 
-2. Create a system ODBC datasource for the database in use; the default is:
+   Grant read, write and execute access to these directories for Tomcat and SQL Server
+   
+2. Create and test a system ODBC datasource for the database in use; the default is:
 
    * ODBC sytstem data source: ```odbcDataSourceName=PostgreSQL30```
 
    For SQL Server use SQL Server Native Client version 11, 2011 version or later; 
+   For Postgres use the latest driver from https://www.postgresql.org/ftp/odbc/versions/msi/
+   
+   For Postgres, select the datasourcde tab and set *Max Varchar* and *Max Long Varchar* to 8190.
    
 These settings are in the Java connector for the RifServices middleware: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*
 
@@ -490,10 +643,279 @@ rScriptDirectory=rScripts
 maximumMapAreasAllowedForSingleDisplay=200
 extractDirectory=c:\\rifDemo\\scratchSpace
 odbcDataSourceName=PostgreSQL30
+#odbcDataSourceName=SQLServer11
 extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies
 ```
-  
-**More to be added; especially R packages; debugging.**
+
+3. Start *R* as Administrator and run the following script:
+
+```R
+# CHECK & AUTO INSTALL MISSING PACKAGES
+packages <- c("plyr", "abind", "maptools", "spdep", "RODBC", "MatrixModels")
+if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
+  install.packages(setdiff(packages, rownames(installed.packages())))  
+}
+if (!require(INLA)) {
+	install.packages("INLA", repos="https://www.math.ntnu.no/inla/R/stable")
+}
+
+``` 
+
+* R will ask for the nearest CRAN (R code archive); select one geographically near you (e.g. same country).
+* R output:
+
+```
+--- Please select a CRAN mirror for use in this session ---
+also installing the dependencies 'gtools', 'gdata', 'Rcpp', 'sp', 'LearnBayes', 'deldir', 'coda', 'gmodels', 'expm'
+
+
+  There are binary versions available but the source versions are later:
+       binary source needs_compilation
+deldir 0.1-12 0.1-14              TRUE
+spdep  0.6-12 0.6-13              TRUE
+
+Do you want to install from sources the packages which need compilation?
+y/n: if (!require(INLA)) {
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/gtools_3.5.0.zip'
+Content type 'application/zip' length 144014 bytes (140 KB)
+downloaded 140 KB
+
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/gdata_2.17.0.zip'
+Content type 'application/zip' length 1178306 bytes (1.1 MB)
+downloaded 1.1 MB
+
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/Rcpp_0.12.10.zip'
+Content type 'application/zip' length 3261850 bytes (3.1 MB)
+downloaded 3.1 MB
+
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/sp_1.2-4.zip'
+Content type 'application/zip' length 1528674 bytes (1.5 MB)
+downloaded 1.5 MB
+
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/LearnBayes_2.15.zip'
+Content type 'application/zip' length 1129565 bytes (1.1 MB)
+downloaded 1.1 MB
+
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/deldir_0.1-12.zip'
+Content type 'application/zip' length 171603 bytes (167 KB)
+downloaded 167 KB
+
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/coda_0.19-1.zip'
+Content type 'application/zip' length 201300 bytes (196 KB)
+downloaded 196 KB
+
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/gmodels_2.16.2.zip'
+Content type 'application/zip' length 73931 bytes (72 KB)
+downloaded 72 KB
+
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/expm_0.999-2.zip'
+Content type 'application/zip' length 194188 bytes (189 KB)
+downloaded 189 KB
+
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/plyr_1.8.4.zip'
+Content type 'application/zip' length 1121290 bytes (1.1 MB)
+downloaded 1.1 MB
+
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/abind_1.4-5.zip'
+Content type 'application/zip' length 40002 bytes (39 KB)
+downloaded 39 KB
+
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/maptools_0.9-2.zip'
+Content type 'application/zip' length 1818632 bytes (1.7 MB)
+downloaded 1.7 MB
+
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/spdep_0.6-12.zip'
+Content type 'application/zip' length 3819364 bytes (3.6 MB)
+downloaded 3.6 MB
+
+trying URL 'https://cran.ma.imperial.ac.uk/bin/windows/contrib/3.2/RODBC_1.3-15.zip'
+Content type 'application/zip' length 829585 bytes (810 KB)
+downloaded 810 KB
+
+package 'gtools' successfully unpacked and MD5 sums checked
+package 'gdata' successfully unpacked and MD5 sums checked
+package 'Rcpp' successfully unpacked and MD5 sums checked
+package 'sp' successfully unpacked and MD5 sums checked
+package 'LearnBayes' successfully unpacked and MD5 sums checked
+package 'deldir' successfully unpacked and MD5 sums checked
+package 'coda' successfully unpacked and MD5 sums checked
+package 'gmodels' successfully unpacked and MD5 sums checked
+package 'expm' successfully unpacked and MD5 sums checked
+package 'plyr' successfully unpacked and MD5 sums checked
+package 'abind' successfully unpacked and MD5 sums checked
+package 'maptools' successfully unpacked and MD5 sums checked
+package 'spdep' successfully unpacked and MD5 sums checked
+package 'RODBC' successfully unpacked and MD5 sums checked
+
+The downloaded binary packages are in
+        C:\Users\admin\AppData\Local\Temp\RtmpSkeuRW\downloaded_packages
+> install.packages("INLA", repos="https://www.math.ntnu.no/inla/R/stable")
+Warning: dependency 'MatrixModels' is not available
+trying URL 'https://www.math.ntnu.no/inla/R/stable/bin/windows/contrib/3.2/INLA_0.0-1485844051.zip'
+Content type 'application/zip' length 93004915 bytes (88.7 MB)
+downloaded 88.7 MB
+
+
+The downloaded binary packages are in
+        C:\Users\admin\AppData\Local\Temp\RtmpSkeuRW\downloaded_packages
+```
+
+4. Add R_HOME to the environment
+
+### 4.3.1 R Debugging
+
+Typical errors:
+
+* *R_HOME* not setup: ```command==null\bin\x64\RScript```
+* No scratchSpace directory: *c:\rifDemo\scratchSpace\* ```(The system cannot find the path specified)```
+
+Tomcat logs:
+
+1. Errors shown above:
+```
+Investigation name==My_New_Investigation  ID==5==
+command==null\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"\\webapps\\rifServices\\WEB-INF\\classe
+s\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432  --db_name=sahsuland  --db_driver_class_
+name=org.postgresql.Driver  --study_id=5  --investigation_name=MY_NEW_INVESTIGATION  --covariate_name=NONE  --investigation_id=5  --
+r_model=bym_r_procedure  --odbc_data_source=PostgreSQL30  --user_id=peter  --password=xxxxxx==
+java.io.FileNotFoundException: c:\rifDemo\scratchSpace\kevTest22_01-May-2017.bat (The system cannot find the path specified)
+        at java.io.FileOutputStream.open0(Native Method)
+        at java.io.FileOutputStream.open(FileOutputStream.java:270)
+        at java.io.FileOutputStream.<init>(FileOutputStream.java:213)
+        at java.io.FileOutputStream.<init>(FileOutputStream.java:162)
+        at rifServices.dataStorageLayer.pg.PGSQLAbstractRService.createBatchFile(PGSQLAbstractRService.java:274)
+        at rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep.performStep(PGSQLSmoothResultsSubmissionStep.java:186)
+        at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.smoothResults(PGSQLRunStudyThread.java:278)
+        at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.run(PGSQLRunStudyThread.java:194)
+        at java.lang.Thread.run(Thread.java:745)
+        at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.submitStudy(PGSQLAbstractRIFStudySubmissionService
+.java:1878)
+        at rifServices.restfulWebServices.pg.PGSQLAbstractRIFWebServiceResource.submitStudy(PGSQLAbstractRIFWebServiceResource.java:
+```
+
+If you get no results in the data viewer; re-run the batch file command manually:
+
+```bat
+C:\Windows\system32>cd C:\rifDemo\scratchSpace
+
+C:\rifDemo\scratchSpace>kevTest22_01-May-2017.bat
+C:\rifDemo\scratchSpace>C:\"Program Files"\R\R-3.4.0\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"
+\\webapps\\rifServices\\WEB-INF\\classes\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432
+--db_name=sahsuland  --db_driver_class_name=org.postgresql.Driver  --study_id=7  --investigation_name=MY_NEW_INVESTIGATION  --covari
+ate_name=NONE  --investigation_id=7  --r_model=bym_r_procedure  --odbc_data_source=PostgreSQL35W  --user_id=peter  --password=xxxxxx
+
+Loading required package: sp
+Loading required package: methods
+Loading required package: Matrix
+This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
+See www.r-inla.org/contact-us for how to get help.
+Checking rgeos availability: FALSE
+        Note: when rgeos is not available, polygon geometry     computations in maptools depend on gpclib,
+        which has a restricted licence. It is disabled by default;
+        to enable gpclib, type gpclibPermit()
+[1] "Arguments were supplied"
+[1] "Parsing parameters"
+                   name                 value
+1      db_driver_prefix       jdbc:postgresql
+2               db_host             localhost
+3               db_port                  5432
+4               db_name             sahsuland
+5  db_driver_class_name org.postgresql.Driver
+6              study_id                     7
+7    investigation_name  MY_NEW_INVESTIGATION
+8        covariate_name                  NONE
+9      investigation_id                     7
+10              r_model       bym_r_procedure
+11     odbc_data_source         PostgreSQL35W
+12              user_id                 peter
+13             password                 peter
+[1] "Study ID: 7"
+[1] "Performing basic stats and smoothing"
+[1] "============EXTRACT TABLE NAME ===================="
+[1] "rif_studies.s7_extract"
+[1] "============EXTRACT TABLE NAME ===================="
+[1] "rif_studies.s7_extract numberOfRows=433312=="
+[1] "rif40_GetAdjacencyMatrix numberOfRows=1229=="
+[1] "Bayes smoothing with BYM model type no adjustment"
+Error in if (scale.model) { : argument is of length zero
+Calls: performSmoothingActivity ... inla.interpret.formula -> eval -> eval -> <Anonymous>
+Execution halted
+Warning message:
+closing unused RODBC handle 1
+```
+
+2. Tomcat sucessful run:
+```
+==========================================================
+
+SQLStudyStateManager updateStudyStatus 2
+run generate results AFTER state==Study extracted==
+run smooth results BEFORE state==Study extracted==
+SQLSmoothedResultsSubmissionStep getInvestigationID studyID==7==investigation_name==My_New_Investigation==inv_description====
+=======getInvestigationID========1===
+StudyID==7==
+Inv_name==MY_NEW_INVESTIGATION==
+SELECT
+   inv_id
+FROM
+   rif40.rif40_investigations
+WHERE
+   study_id=? AND
+   inv_name=?;
+
+
+;
+
+
+=======getInvestigationID========2===
+About to call next
+called next
+Investigation name==My_New_Investigation  ID==7==
+command==C:\"Program Files"\R\R-3.4.0\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"\\webapps\\rifS
+ervices\\WEB-INF\\classes\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432  --db_name=sahsu
+land  --db_driver_class_name=org.postgresql.Driver  --study_id=7  --investigation_name=MY_NEW_INVESTIGATION  --covariate_name=NONE
+--investigation_id=7  --r_model=bym_r_procedure  --odbc_data_source=PostgreSQL35W  --user_id=peter  --password=peter==
+Writing batch file==C:\"Program Files"\R\R-3.4.0\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"\\we
+bapps\\rifServices\\WEB-INF\\classes\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432  --db
+_name=sahsuland  --db_driver_class_name=org.postgresql.Driver  --study_id=7  --investigation_name=MY_NEW_INVESTIGATION  --covariate_
+name=NONE  --investigation_id=7  --r_model=bym_r_procedure  --odbc_data_source=PostgreSQL35W  --user_id=peter  --password=xxxxx
+Exit value==1==
+SQLStudyStateManager updateStudyStatus 1
+AbstractSQLManager logSQLQuery 1rifServices.dataStorageLayer.pg.PGSQLStudyStateManager==
+==========================================================
+QUERY NAME:createStatusTable
+PARAMETERS:
+        1:"user"
+
+SQL QUERY TEXT
+CREATE TABLE IF NOT EXISTS peter.study_status (
+   study_id INTEGER NOT NULL,
+   study_state VARCHAR NOT NULL,
+   creation_date TIMESTAMP NOT NULL,
+   ith_update SERIAL NOT NULL,
+   message VARCHAR(255));
+
+
+==========================================================
+
+SQLStudyStateManager updateStudyStatus 2
+run smooth results AFTER state==Study results computed==
+Finished!!
+isClientBrowserIE==true==
+```
+
+3. STUDY_STATUS local user table:
+```
+sahsuland=> SELECT * FROM study_status WHERE study_id = 7 ORDER BY ith_update;
+ study_id | study_state |       creation_date        | ith_update |                                       message
+----------+-------------+----------------------------+------------+-------------------------------------------------------------------------------------
+        7 | C           | 2017-05-01 16:01:01.121765 |          0 | The study has been created but it has not been verified.
+        7 | E           | 2017-05-01 16:03:48.402219 |          1 | Study extracted imported or created but neither results nor maps have been created.
+        7 | R           | 2017-05-01 16:04:06.503855 |          2 | The study results have been computed and they are now ready to be used.
+(3 rows)
+```
+
+**More to be added; especially R debugging.**
 
 ## 4.4 Common Setup Errors
 
@@ -509,7 +931,7 @@ Use developer mode in the browser to bring up the console log:
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/caching_error.png?raw=true "Logon RIF Serice Call Incorrect")
 
-In this example the RIF web application file RIF4\backend\services\rifs-back-requests.js (e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4\backend\services\rifs-back-requests.js)
+In this example the RIF web application file RIF4\backend\services\rifs-back-urls.js (e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4\backend\services\rifs-back-urls.js)
 is set to use http://localhost:8080; but the browser, usually Chrome, used https://localhost:8080.
 
 * Should have used: https://localhost:8080/rifServices/studySubmission/pg/login?userID=peter&password=XXXXXXXXXX
@@ -517,7 +939,7 @@ is set to use http://localhost:8080; but the browser, usually Chrome, used https
 
 ```javascript
 /*
- * SERVICE for all requests to the middleware
+ * SERVICE for URL middleware calls. Localhost can be edited here
  */
 angular.module("RIF")
         .constant('studySubmissionURL', "http://localhost:8080/rifServices/studySubmission/")
@@ -525,7 +947,7 @@ angular.module("RIF")
         .constant('taxonomyServicesURL', "http://localhost:8080/taxonomyServices/taxonomyServices/")
 ```
 
-This is caused by *rifs-back-requests.js* being changed, Tomcat restarted and Chrome or Firefox caching the rprevious service call. Flush the browser cache.
+This is caused by *rifs-back-urls.js* being changed, Tomcat restarted and Chrome or Firefox caching the rprevious service call. Flush the browser cache.
 
 Firefox console log example:
 
@@ -566,7 +988,7 @@ TLS errors tend to be:
 In this case the .war file (e.g. rifServices.war) is not unpacked and the service is not available in tomcat. Find in error in the Tomcat stderr log and send to the development team. 
 This is indicative of a build problem.
 
-* Screenshiots and log will be added when this happens again!*
+* Screenshots and log will be added when this happens again!*
 
 ### 4.4.4 No Taxonomy Services
 
@@ -667,7 +1089,7 @@ The method for configuring a specific port is detailed in: https://docs.microsof
 # 5. Running the RIF
 
 * Make sure you have restarted tomcat before attempting to run the RIF for the first time
-* In a non networked single machine environment (e.g. a laptop) the RIF is at: http://localhost:8081/RIF4
+* In a non networked single machine environment (e.g. a laptop) the RIF is at: http://localhost:8080/RIF4
 * In a networked environment the RIF is at: ```http://<your domain>/RIF4```, e.g. *https://aepw-rif27.sm.med.ic.ac.uk/RIF4*
 
 ## 5.1 Logging On
@@ -721,12 +1143,12 @@ The service address and port used should match what you setup up in *4.2 Setup N
 
 ## 6.1 RIF Web Application  
 
-* Save the RIF web application file *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-requests.js* outside of the tomcat tree; 
+* Save the RIF web application file *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-urls.js* outside of the tomcat tree; 
 * Stop Tomcat;
 * Change directory to *%CATALINA_HOME%\webapps*; rename RIF4 to RIF4.old;
 * Follow the instructions in 
 [section 3.2 for installing the RIF Web Application](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#32-rif-web-application)
-* Restore *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-requests.js*;
+* Restore *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-urls.js*;
 * Start tomcat;
 * When you are satisiffied with the patch remove the RIF4.old directory in *%CATALINA_HOME%\webapps*.
 

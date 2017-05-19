@@ -345,9 +345,9 @@ sahsuland.dump: ../install/sahsuland.dump
 ../install/sahsuland.sql: 
 #- sahsuland_dev_dump: Dump sahsuland_dev database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
 #-                     Used to create sahsuland
-sahsuland_dev_dump: ../install/sahsuland_dev.dump 
-../install/sahsuland_dev.dump:
-	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland_dev > ../install/sahsuland_dev.dump	
+sahsuland_dev_dump: ../production/sahsuland_dev.dump 
+../production/sahsuland_dev.dump:
+	pg_dump -U postgres -w -F custom -Z 9 -T '*x_uk*' -T '*.x_ew01*' -v sahsuland_dev > ../production/sahsuland_dev.dump	
 #
 ../install/sahsuland.dump:
 	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../install/sahsuland.dump		
@@ -381,7 +381,7 @@ verbose_test:
 clean:
 	$(MAKE) -C alter_scripts clean
 	$(MAKE) -C test_scripts clean
-	$(DELETE) db_setup.rpt db_create.rpt recreate_sahsuland_empty_db.rpt recreate_sahsuland_empty_db.rpt v4_0_create_sahsuland.rpt v4_0_create_sahsuland_empty.rpt v4_0_vacuum_analyse.rpt ../install/sahsuland_dev.dump ../install/sahsuland.dump ../install/sahsuland.sql
+	$(DELETE) db_setup.rpt db_create.rpt recreate_sahsuland_empty_db.rpt recreate_sahsuland_empty_db.rpt v4_0_create_sahsuland.rpt v4_0_create_sahsuland_empty.rpt v4_0_vacuum_analyse.rpt ../production/sahsuland_dev.dump ../install/sahsuland.dump ../install/sahsuland.sql
 #- devclean: Remove logs so alter scripts in development can be r-run 
 #-           Not normally needed as they abort.
 devclean:
@@ -409,21 +409,21 @@ endif
 	$(MAKE) sahsuland_dev PGDATABASE=sahsuland_dev
 	$(MAKE) sahsuland_dev_dump PGDATABASE=sahsuland_dev
 ifeq ($(PG_VERSION),PostgreSQL 9.4.1)
-	-$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+	-$(RUN) pg_restore.rpt ../production pg_restore -d sahsuland -U postgres -v ../production/sahsuland_dev.dump
 else
 ifeq ($(PG_VERSION),PostgreSQL 9.4.2)
-	-$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+	-$(RUN) pg_restore.rpt ../production pg_restore -d sahsuland -U postgres -v ../production/sahsuland_dev.dump
 else
 ifeq ($(PG_VERSION),PostgreSQL 9.4.3)
-	-$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+	-$(RUN) pg_restore.rpt ../production pg_restore -d sahsuland -U postgres -v ../production/sahsuland_dev.dump
 else
 ifeq ($(PG_VERSION),PostgreSQL 9.4.4)
-	-$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+	-$(RUN) pg_restore.rpt ../production pg_restore -d sahsuland -U postgres -v ../production/sahsuland_dev.dump
 else
 ifeq ($(PG_VERSION),PostgreSQL 9.4.5)
-	-$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+	-$(RUN) pg_restore.rpt ../production pg_restore -d sahsuland -U postgres -v ../production/sahsuland_dev.dump
 else
-	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland_dev.dump
+	$(RUN) pg_restore.rpt ../production pg_restore -d sahsuland -U postgres -v ../production/sahsuland_dev.dump
 endif
 endif
 endif

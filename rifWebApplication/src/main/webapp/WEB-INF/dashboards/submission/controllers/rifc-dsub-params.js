@@ -263,7 +263,11 @@ angular.module("RIF")
                                 $scope.sexes.push(res.data[0].names[i]);
                             }
                             if ($scope.sex === "") {
-                                $scope.sex = res.data[0].names[0];
+                                if (res.data[0].names.indexOf("Both") !== -1) {
+                                    $scope.sex = "Both";
+                                } else {
+                                    $scope.sex = res.data[0].names[0];
+                                }                               
                             }
                         }
                     }
@@ -446,9 +450,14 @@ angular.module("RIF")
                     });
                     modalInstance.result.then(function () {
                         //Change tree icon colour
-                        if ($scope.thisICDselection.length !== 0 & $scope.title !== "" &
-                                $scope.startYear !== "" & $scope.endYear !== "" & $scope.yearInterval !== "" &
-                                $scope.upperAge !== "" & $scope.lowerAge !== "") {
+                        if ($scope.thisICDselection.length !== 0 & 
+                                ParameterStateService.getState().title !== "" &
+                                ParameterStateService.getState().start !== "" & 
+                                ParameterStateService.getState().end !== "" & 
+                                ParameterStateService.getState().interval !== "" &
+                                ParameterStateService.getState().upperAge !== "" & 
+                                ParameterStateService.getState().lowerAge !== "") 
+                        {   
                             SubmissionStateService.getState().investigationTree = true;
                             $scope.tree = true;
                         } else {

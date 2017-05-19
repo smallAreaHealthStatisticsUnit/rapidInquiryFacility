@@ -43,13 +43,14 @@ angular.module("RIF")
                     SubmissionStateService, StudyAreaStateService, CompAreaStateService,
                     ParameterStateService, StatsStateService, ViewerStateService, MappingStateService) {
 
-                //$scope.username = "dwmorley";
-                //$scope.password = "dwmorley";
-                //$scope.db = "PG";
+             //   $scope.username = "";
+             //   $scope.password = "";
                 
-                $scope.username = "peter";
-                $scope.password = "peter";
-                $scope.db = "MS";
+                $scope.username = "dwmorley";
+                $scope.password = "dwmorley";
+                
+             //   $scope.username = "peter";
+             //   $scope.password = "peter";
 
                 $scope.showSpinner = false;
 
@@ -70,7 +71,7 @@ angular.module("RIF")
                             //check if already logged on
                             user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
                             //In development, this bypasses password)
-                            //user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
+                         //   user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
                         }, handleServerError);                  
                     }
                 };
@@ -120,6 +121,6 @@ angular.module("RIF")
                 }
                 function handleServerError(res) {
                     $scope.showSpinner = false;
-                    $scope.showError('Could not log in');
+                    $scope.showError('Could not establish a connection to Tomcat (is it running?)');
                 }
             }]);

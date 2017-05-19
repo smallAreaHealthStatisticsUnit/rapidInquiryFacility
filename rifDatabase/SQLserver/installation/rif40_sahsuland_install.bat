@@ -97,7 +97,7 @@ PAUSE
 REM
 REM Create production database
 REM
-sqlcmd -E -b -m-1 -e -r1 -i rif40_production_creation.sql -v import_dir="%cd%\..\production\" -v newdb="%NEWDB%"
+sqlcmd -E -b -m-1 -e -r1 -i rif40_production_creation.sql -v import_dir="%cd%\..\production\" -v newdb="%NEWDB%" -v newuser="%NEWUSER%"
 if %errorlevel% neq 0 (
 	ECHO rif40_production_creation.sql exiting with %errorlevel%	
 	IF NOT DEFINED REBUILD_ALL (
@@ -129,6 +129,13 @@ REM
 	)	
 	exit /b 1
 ) else (
+REM
+REM Run a test study
+REM
+	sqlcmd -U %NEWUSER% -P %NEWPW% -d %NEWDB% -b -m-1 -e -i rif40_run_study.sql
+	if %errorlevel% neq 0  (
+		ECHO Both %NEWDB% and sahsuland_dev built OK; test study failed
+	)	
 REM
 REM Clear seetings
 REM

@@ -100,3 +100,20 @@ Principal Work Area: JavaScript User interface development
 - Migrate all CDN libraries to standalone scripts
 - Started study information recall method
 
+## April
+
+- Working full time on middle ware in April
+- Changes to rifServices architecture to handle 2 DB types
+- MS SQL server porting for study submission complete
+- Started working on MS SQL server port for data viewer / disease mapping
+
+## (May)
+
+- Moved rifServices test cases to either sql server of pgres versions
+- sql server porting for run Study (mostly problems with error checking routines)
+- Fixed viewer sex and year for study drop-down middleware methods
+- Removed dependency on ui-leaflet directive
+- Fixed memory leak in map containers
+- Middleware method to get polygon centroids from database (defaults to leaflet getCenter() on error)
+
+

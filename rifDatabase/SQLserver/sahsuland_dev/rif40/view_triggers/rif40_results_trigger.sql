@@ -41,9 +41,9 @@ BEGIN
 	(
 		select username, study_id, inv_id, band_id, genders, direct_standardisation, adjusted
 		from inserted
-		where (username != SUSER_SNAME() and username is not null)
-		OR ([rif40].[rif40_has_role](username,'rif_user') = 0
-		AND [rif40].[rif40_has_role](username,'rif_manager') = 0)
+		where (username != USER and username is not null)
+		OR ([rif40].[rif40_has_role](USER,'rif_user') = 0
+		AND [rif40].[rif40_has_role](USER,'rif_manager') = 0)
 		FOR XML PATH('')
 	);
 	IF @insert_invalid_user IS NOT NULL

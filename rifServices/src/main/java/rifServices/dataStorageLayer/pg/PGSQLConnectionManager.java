@@ -159,9 +159,7 @@ public final class PGSQLConnectionManager
 		suspiciousEventCounterFromUser = new HashMap<String, Integer>();
 		
 		StringBuilder query = new StringBuilder();
-		
-		//TODO: (DM) Switch PG or MS. Would be better to use DatabaseType.SQL_SERVER 
-				
+						
 		query.append("SELECT ");
 		query.append("rif40_startup(?) AS rif40_init;"); 
 				

@@ -37,34 +37,14 @@
 
 /* global L */
 angular.module("RIF")
-        .controller('leafletLayersCtrl', ['$scope', 'user', 'LeafletBaseMapService', 'leafletData', 'ChoroService',
+        .controller('leafletLayersCtrl', ['$scope', 'user', 'LeafletBaseMapService', 'ChoroService',
             'MappingStateService', 'ViewerStateService', 'MappingService',
-            function ($scope, user, LeafletBaseMapService, leafletData, ChoroService,
+            function ($scope, user, LeafletBaseMapService, ChoroService,
                     MappingStateService, ViewerStateService, MappingService) {
 
                 //Reference the parent scope
                 var parentScope = $scope.$parent;
                 parentScope.child = $scope;
-
-                //HACK: trying to fix memory leak
-                //TODO: is similar needed in view and dmap controllers?
-                $scope.$on("$destroy", function () {
-                    if (parentScope.myMaps[0] === "viewermap") {
-                        leafletData.unresolveMap("viewermap");
-                        leafletData.getMap("viewermap").then(function (map) {
-                            map.remove();
-                        });
-                    } else {
-                        leafletData.unresolveMap("diseasemap1");
-                        leafletData.unresolveMap("diseasemap2");
-                        leafletData.getMap("diseasemap1").then(function (map) {
-                            map.remove();
-                        });
-                        leafletData.getMap("diseasemap2").then(function (map) {
-                            map.remove();
-                        });
-                    }
-                });
 
                 //Reference the state service
                 $scope.myService = MappingStateService;
@@ -78,18 +58,24 @@ angular.module("RIF")
                 });
                 $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
                     $scope.getD3FramesOnResize(beforeContainer, afterContainer);
+                    for (var i in parentScope.myMaps) {
+                        $scope.map[parentScope.myMaps[i]].invalidateSize();
+                    }
                 });
 
-                //Rescale leaflet container       
-                $scope.rescaleLeafletContainer = function () {
-                    for (var i in parentScope.myMaps) {
-                        leafletData.getMap(parentScope.myMaps[i]).then(function (map) {
-                            setTimeout(function () {
-                                map.invalidateSize();
-                            }, 50);
-                        });
-                    }
-                };
+                //Leaflet maps
+                $scope.map = ({
+                    'diseasemap1': {},
+                    'diseasemap2': {},
+                    'viewermap': {}
+                });
+
+                //Polygons
+                $scope.geoJSON = ({
+                    'diseasemap1': {},
+                    'diseasemap2': {},
+                    'viewermap': {}
+                });
 
                 //Legends and Infoboxes
                 $scope.legend = {
@@ -137,12 +123,12 @@ angular.module("RIF")
                     "diseasemap2": [],
                     "viewermap": []
                 };
-                $scope.studyIDs = [];
                 $scope.sexes = {
                     "diseasemap1": [],
                     "diseasemap2": [],
                     "viewermap": []
                 };
+                $scope.studyIDs = [];
 
                 /*
                  * Tidy up on error
@@ -166,14 +152,12 @@ angular.module("RIF")
                         $scope.rrChartData[mapID].length = 0;
                     }
 
-                    leafletData.getMap(mapID).then(function (map) {
-                        if (map.hasLayer($scope.geoJSON[mapID])) {
-                            map.removeLayer($scope.geoJSON[mapID]);
-                            if ($scope.legend[mapID]._map) {
-                                map.removeControl($scope.legend[mapID]);
-                            }
+                    if ($scope.map[mapID].hasLayer($scope.geoJSON[mapID])) {
+                        $scope.map[mapID].removeLayer($scope.geoJSON[mapID]);
+                        if ($scope.legend[mapID]._map) {
+                            $scope.map[mapID].removeControl($scope.legend[mapID]);
                         }
-                    });
+                    }
                 }
 
                 /*.
@@ -276,15 +260,12 @@ angular.module("RIF")
                  */
                 //change the basemaps 
                 $scope.renderMap = function (mapID) {
-                    leafletData.getMap(mapID).then(function (map) {
-                        //remove baselayer
-                        map.removeLayer($scope.thisLayer[mapID]);
-                        //add new baselayer if requested
-                        if (!LeafletBaseMapService.getNoBaseMap(mapID)) {
-                            $scope.thisLayer[mapID] = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse(mapID));
-                            map.addLayer($scope.thisLayer[mapID]);
-                        }
-                    });
+                    $scope.map[mapID].removeLayer($scope.thisLayer[mapID]);
+                    //add new baselayer if requested
+                    if (!LeafletBaseMapService.getNoBaseMap(mapID)) {
+                        $scope.thisLayer[mapID] = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse(mapID));
+                        $scope.thisLayer[mapID].addTo($scope.map[mapID]);
+                    }
                 };
 
                 //Draw the map
@@ -296,26 +277,26 @@ angular.module("RIF")
                     //not a choropleth, but single colour
                     if (thisMap[mapID].range.length === 1) {
                         $scope.attr[mapID] = "";
-                        leafletData.getMap(mapID).then(function (map) {
-                            //remove existing legend
-                            if ($scope.legend[mapID]._map) {
-                                map.removeControl($scope.legend[mapID]);
-                            }
-                        });
-                        $scope.$parent.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+                        //remove existing legend
+                        if ($scope.legend[mapID]._map) {
+                            $scope.map[mapID].removeControl($scope.legend[mapID]);
+                        }
+                        if (angular.isDefined($scope.geoJSON[mapID]._geojsons.default)) {
+                            $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+                        }
                         return;
                     }
 
                     //remove old legend and add new
                     $scope.legend[mapID].onAdd = ChoroService.getMakeLegend(thisMap[mapID], $scope.attr[mapID]);
-                    leafletData.getMap(mapID).then(function (map) {
-                        if ($scope.legend[mapID]._map) { //This may break in future leaflet versions
-                            map.removeControl($scope.legend[mapID]);
-                        }
-                        $scope.legend[mapID].addTo(map);
-                    });
+                    if ($scope.legend[mapID]._map) { //This may break in future leaflet versions
+                        $scope.map[mapID].removeControl($scope.legend[mapID]);
+                    }
+                    $scope.legend[mapID].addTo($scope.map[mapID]);
                     //force a redraw
-                    $scope.$parent.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+                    if (angular.isDefined($scope.geoJSON[mapID]._geojsons.default)) {
+                        $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+                    }
                     //GET D3
                     $scope.getD3chart(mapID, $scope.attr[mapID]);
                 };
@@ -339,6 +320,8 @@ angular.module("RIF")
                         }
                         var polyStyle = ChoroService.getRenderFeatureMapping(thisMap["viewermap"].scale, thisAttr, selected);
                         layer.setStyle({
+                            weight: 1,
+                            color: "gray",
                             fillColor: polyStyle,
                             fillOpacity: $scope.child.transparency[mapID]
                         });
@@ -378,11 +361,10 @@ angular.module("RIF")
                         }
 
                         //Remove any existing geography
-                        leafletData.getMap(mapID).then(function (map) {
-                            if (map.hasLayer($scope.geoJSON[mapID])) {
-                                map.removeLayer($scope.geoJSON[mapID]);
-                            }
-                        });
+                        if ($scope.map[mapID].hasLayer($scope.geoJSON[mapID])) {
+                            $scope.map[mapID].removeLayer($scope.geoJSON[mapID]);
+                        }
+
                         //save study, sex selection
                         $scope.myService.getState().sex[mapID] = $scope.sex[mapID];
                         $scope.myService.getState().study[mapID] = $scope.$parent.studyID[mapID];
@@ -392,95 +374,127 @@ angular.module("RIF")
                                     $scope.tileInfo[mapID].geography = res.data[0][0]; //e.g. SAHSU
                                     $scope.tileInfo[mapID].level = res.data[0][1]; //e.g. LEVEL3
 
-                                    leafletData.getMap(mapID).then(function (map) {
-                                        var topojsonURL = user.getTileMakerTiles(user.currentUser, $scope.tileInfo[mapID].geography, $scope.tileInfo[mapID].level);
-                                        $scope.$parent.geoJSON[mapID] = new L.topoJsonGridLayer(topojsonURL, {
-                                            attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
-                                            layers: {
-                                                default: {
-                                                    mapID: mapID,
-                                                    renderer: L.canvas(),
-                                                    style: function (feature) {
-                                                        return({
-                                                            weight: 1,
-                                                            opacity: 1,
-                                                            color: "gray",
-                                                            fillColor: "transparent"
+                                    var topojsonURL = user.getTileMakerTiles(user.currentUser, $scope.tileInfo[mapID].geography, $scope.tileInfo[mapID].level);
+                                    $scope.geoJSON[mapID] = new L.topoJsonGridLayer(topojsonURL, {
+                                        attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
+                                        layers: {
+                                            default: {
+                                                mapID: mapID,
+                                                renderer: L.canvas(),
+                                                style: function (feature) {
+                                                    return({
+                                                        weight: 1,
+                                                        opacity: 1,
+                                                        color: "gray",
+                                                        fillColor: "transparent"
+                                                    });
+                                                },
+                                                onEachFeature: function (feature, layer) {
+                                                    layer.on('mouseover', function (e) {
+                                                        this.setStyle({
+                                                            color: 'gray',
+                                                            weight: 1.5,
+                                                            fillOpacity: function () {
+                                                                return($scope.child.transparency[mapID] - 0.3 > 0 ? $scope.child.transparency[mapID] - 0.3 : 0.1);
+                                                            }()
                                                         });
-                                                    },
-                                                    onEachFeature: function (feature, layer) {
-                                                        layer.on('mouseover', function (e) {
-                                                            this.setStyle({
-                                                                color: 'gray',
-                                                                weight: 1.5,
-                                                                fillOpacity: function () {
-                                                                    return($scope.child.transparency[mapID] - 0.3 > 0 ? $scope.child.transparency[mapID] - 0.3 : 0.1);
-                                                                }()
-                                                            });
-                                                            infoBox[mapID].update(layer.feature.properties.area_id);
-                                                        });
-                                                        layer.on('mouseout', function (e) {
-                                                            $scope.$parent.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
-                                                            infoBox[mapID].update(false);
-                                                        });
-                                                        layer.on('click', function (e) {
-                                                            if (mapID === "viewermap") {
-                                                                //Multiple selections
-                                                                var thisPoly = e.target.feature.properties.area_id;
-                                                                var bFound = false;
-                                                                for (var i = 0; i < $scope.thisPoly.length; i++) {
-                                                                    if ($scope.thisPoly[i] === thisPoly) {
-                                                                        bFound = true;
-                                                                        $scope.thisPoly.splice(i, 1);
-                                                                        break;
-                                                                    }
-                                                                }
-                                                                if (!bFound) {
-                                                                    $scope.thisPoly.push(thisPoly);
-                                                                }
-                                                            } else {
-                                                                //Single selections
-                                                                $scope.thisPoly[mapID] = e.target.feature.properties.area_id;
-                                                                $scope.myService.getState().area_id[mapID] = e.target.feature.properties.area_id;
-                                                                $scope.infoBox2[mapID].update($scope.thisPoly[mapID]);
-                                                                $scope.updateMapSelection($scope.thisPoly[mapID], mapID);
-                                                                if ($scope.bLockSelect) {
-                                                                    var otherMap = MappingService.getOtherMap(mapID);
-                                                                    $scope.thisPoly[otherMap] = e.target.feature.properties.area_id;
-                                                                    $scope.myService.getState().area_id[otherMap] = e.target.feature.properties.area_id;
-                                                                    $scope.updateMapSelection(otherMap, e.target.feature.properties.area_id);
+                                                        infoBox[mapID].update(layer.feature.properties.area_id);
+                                                    });
+                                                    layer.on('mouseout', function (e) {
+                                                        $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+                                                        infoBox[mapID].update(false);
+                                                    });
+                                                    layer.on('click', function (e) {
+                                                        if (mapID === "viewermap") {
+                                                            //Multiple selections
+                                                            var thisPoly = e.target.feature.properties.area_id;
+                                                            var bFound = false;
+                                                            for (var i = 0; i < $scope.thisPoly.length; i++) {
+                                                                if ($scope.thisPoly[i] === thisPoly) {
+                                                                    bFound = true;
+                                                                    $scope.thisPoly.splice(i, 1);
+                                                                    break;
                                                                 }
                                                             }
-                                                        });
-                                                    }
-                                                }
-                                            }
-                                        });
-                                        $scope.$parent.geoJSON[mapID].on('load', function (e) {
-                                            //force re-render of new tiles
-                                            $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
-                                        });
-                                        $scope.$parent.geoJSON[mapID].addTo(map);
-
-                                        //do not get maxbounds for diseasemap2
-                                        if (mapID !== "diseasemap2") {
-                                            user.getTileMakerTilesAttributes(user.currentUser, $scope.tileInfo[mapID].geography, $scope.tileInfo[mapID].level).then(function (res) {
-                                                $scope.maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
-                                                if ($scope.myService.getState().center[mapID].lng === 0) {
-                                                    leafletData.getMap(mapID).then(function (map) {
-                                                        map.fitBounds($scope.maxbounds);
+                                                            if (!bFound) {
+                                                                $scope.thisPoly.push(thisPoly);
+                                                            }
+                                                        } else {
+                                                            //Single selections
+                                                            $scope.thisPoly[mapID] = e.target.feature.properties.area_id;
+                                                            $scope.myService.getState().area_id[mapID] = e.target.feature.properties.area_id;
+                                                            $scope.infoBox2[mapID].update($scope.thisPoly[mapID]);
+                                                            $scope.$parent.updateMapSelection($scope.thisPoly[mapID], mapID);
+                                                            if ($scope.bLockSelect) {
+                                                                var otherMap = MappingService.getOtherMap(mapID);
+                                                                $scope.thisPoly[otherMap] = e.target.feature.properties.area_id;
+                                                                $scope.myService.getState().area_id[otherMap] = e.target.feature.properties.area_id;
+                                                                $scope.$parent.updateMapSelection(e.target.feature.properties.area_id, otherMap);
+                                                            }
+                                                        }
+                                                        $scope.$parent.$digest();
                                                     });
                                                 }
-                                            });
+                                            }
                                         }
-                                    }).then(function () {
-                                        getAttributeTable(mapID);
-                                    }).then(function () {
-                                        $scope.renderMap(mapID);
                                     });
+
+                                    //force re-render of new tiles
+                                    $scope.geoJSON[mapID].on('load', function (e) {
+                                        $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+                                    });
+
+                                    user.getGeoLevelSelectValues(user.currentUser, $scope.tileInfo[mapID].geography).then(function (res) {
+                                        var lowestLevel = res.data[0].names[0];
+                                        user.getTileMakerTilesAttributes(user.currentUser, $scope.tileInfo[mapID].geography, lowestLevel).then(function (res) {
+                                            $scope.maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
+                                            if (mapID !== "diseasemap2") {
+                                                //do not get maxbounds for diseasemap2
+                                                if ($scope.myService.getState().center[mapID].lat === 0) {
+                                                    $scope.map[mapID].fitBounds($scope.maxbounds);
+                                                } else {
+                                                    var centre = $scope.myService.getState().center[mapID];
+                                                    $scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
+                                                }
+                                            } else {
+                                                var centre = $scope.myService.getState().center[mapID];
+                                                $scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
+                                            }
+                                        });
+                                    });
+                                    if (mapID !== "viewermap") {
+                                        $scope.mapLocking();
+                                    }
                                 }
-                        );
+                        ).then(function () {
+                            $scope.map[mapID].addLayer($scope.geoJSON[mapID]);
+                        }).then(function () {
+                            getAttributeTable(mapID);
+
+                            //pan events                            
+                            $scope.map[mapID].on('zoomend', function (e) {
+                                $scope.myService.getState().center[mapID].zoom = $scope.map[mapID].getZoom();
+                            });
+                            $scope.map[mapID].on('moveend', function (e) {
+                                $scope.myService.getState().center[mapID].lng = $scope.map[mapID].getCenter().lng;
+                                $scope.myService.getState().center[mapID].lat = $scope.map[mapID].getCenter().lat;
+                            });
+
+                        }).then(function () {
+                            $scope.refresh(mapID);
+                        });
                     }
+
+                    //Sync or unsync map extents
+                    $scope.mapLocking = function () {
+                        if ($scope.$parent.bLockCenters) {
+                            $scope.map["diseasemap1"].sync($scope.map["diseasemap2"]);
+                            $scope.map["diseasemap2"].sync($scope.map["diseasemap1"]);
+                        } else {
+                            $scope.map["diseasemap1"].unsync($scope.map["diseasemap2"]);
+                            $scope.map["diseasemap2"].unsync($scope.map["diseasemap1"]);
+                        }
+                    };
 
                     function getAttributeTable(mapID) {
                         user.getSmoothedResults(user.currentUser, $scope.studyID[mapID].study_id, MappingService.getSexCode($scope.sex[mapID]))
@@ -522,7 +536,7 @@ angular.module("RIF")
                                         $scope.getD3chart("viewermap", $scope.attr["viewermap"]);
                                         $scope.updateTable();
                                     }
-                                    $scope.refresh(mapID);
+                                    //  $scope.refresh(mapID);
                                 }, function (e) {
                                     console.log("Something went wrong when getting the attribute data");
                                     clearTheMapOnError(mapID);
@@ -604,21 +618,15 @@ angular.module("RIF")
                     }
                     for (var i = 0; i < parentScope.myMaps.length; i++) {
                         if (parentScope.myMaps.indexOf("diseasemap1") !== -1) {
-                            leafletData.getMap("diseasemap1").then(function (map) {
-                                infoBox["diseasemap1"].addTo(map);
-                                $scope.infoBox2["diseasemap1"].addTo(map);
-                            });
+                            infoBox["diseasemap1"].addTo($scope.map["diseasemap1"]);
+                            $scope.infoBox2["diseasemap1"].addTo($scope.map["diseasemap1"]);
                         }
                         if (parentScope.myMaps.indexOf("diseasemap2") !== -1) {
-                            leafletData.getMap("diseasemap2").then(function (map) {
-                                infoBox["diseasemap2"].addTo(map);
-                                $scope.infoBox2["diseasemap2"].addTo(map);
-                            });
+                            infoBox["diseasemap2"].addTo($scope.map["diseasemap2"]);
+                            $scope.infoBox2["diseasemap2"].addTo($scope.map["diseasemap2"]);
                         }
                         if (parentScope.myMaps.indexOf("viewermap") !== -1) {
-                            leafletData.getMap("viewermap").then(function (map) {
-                                infoBox["viewermap"].addTo(map);
-                            });
+                            infoBox["viewermap"].addTo($scope.map["viewermap"]);
                         }
                     }
                 };

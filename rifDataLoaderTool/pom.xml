@@ -12,11 +12,12 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <!-- use the latest snapshot -->
-    <geotools.version>15-SNAPSHOT</geotools.version>
+    <geotools.version>17-SNAPSHOT</geotools.version>
   </properties>
 
   <dependencies>
 
+  <!-- It would be really nice to remove gt-shapefile and gt-swing -->
    <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-shapefile</artifactId>

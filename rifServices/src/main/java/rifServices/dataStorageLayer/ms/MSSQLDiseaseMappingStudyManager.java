@@ -367,7 +367,7 @@ final class MSSQLDiseaseMappingStudyManager
 			MSSQLRecordExistsQueryFormatter queryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
-			queryFormatter.setFromTable("rif40_studies");
+			queryFormatter.setFromTable("rif40.rif40_studies");
 			queryFormatter.setLookupKeyFieldName("study_id");
 
 			logSQLQuery(

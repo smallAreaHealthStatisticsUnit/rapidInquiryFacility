@@ -271,7 +271,23 @@ final class MSSQLStudyStateManager
 		return result;
 	}
 	
-
+	private int getIthUpdate(
+			final String studyState) {
+		
+		if (studyState.equals("C")) {
+			return 0;
+		}
+		else if (studyState.equals("E")) {
+			return 1;
+		}
+		else if (studyState.equals("R")) {
+			return 2;
+		} 
+		else {
+			return 0;
+		}
+	}
+	
 	public void updateStudyStatus(
 		final Connection connection, 
 		final User user,
@@ -283,28 +299,26 @@ final class MSSQLStudyStateManager
 		if (studyState == StudyState.STUDY_NOT_CREATED) {
 			return;
 		}
-		
-		
-		
+				
 		/*
 		 * We're just adding another entry to the status table. So an update
 		 * is really adding a new row
 		 */
 		String statusTableName = deriveStatusTableName(user.getUserID());
-		
+				
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "INSERT INTO " + statusTableName);
-		queryFormatter.addQueryLine(1, " (study_id, study_state, creation_date, message) ");
-		queryFormatter.addQueryLine(1, "VALUES (?, ?, NOW(), ?)");						
-		
+		queryFormatter.addQueryLine(1, " (study_id, study_state, ith_update, message) ");
+		queryFormatter.addQueryLine(1, "VALUES (?, ?, ?, ?)");
+						
 		PreparedStatement statement = null;
 		try {
 			System.out.println("SQLStudyStateManager updateStudyStatus 1");
-			createStatusTable(connection, user);
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(studyID));
 			statement.setString(2, studyState.getCode());
-			statement.setString(3, statusMessage);
+			statement.setInt(3, getIthUpdate(studyState.getCode()));
+			statement.setString(4, statusMessage);		
 			statement.executeUpdate();
 			connection.commit();
 			System.out.println("SQLStudyStateManager updateStudyStatus 2");
@@ -623,12 +637,15 @@ final class MSSQLStudyStateManager
 						statusTableName,
 						rifStudiesTableName);
 
+				//Disabled to keep tomcat window clear (called every 4 seconds by front-end)
+				/*
 				System.out.println("getCurrentStatusAllStudies 2  number of updates==" + expectedNumberOfStatusUpdates+"==");
 
 				logSQLQuery(
 					"getCurrentStatusAllStudies", 
 					queryFormatter, 
 					"userID");
+				*/
 				
 				statement
 					= createPreparedStatement(
@@ -720,9 +737,8 @@ final class MSSQLStudyStateManager
 			queryFormatter.addQueryLine(1, "most_recent_updates");
 			queryFormatter.addQueryLine(0, "WHERE ");
 			queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_id = most_recent_updates.study_id");
-
 			
-			System.out.println(queryFormatter.generateQuery());
+			//System.out.println(queryFormatter.generateQuery());
 			
 			Integer result = 0;
 			PreparedStatement statement = null;		
@@ -758,7 +774,6 @@ final class MSSQLStudyStateManager
 			= deriveStatusTableName(
 				userID);
 	
-		//TODO: (DM) status_table is this used in MSSQL??
 		MSSQLCreateTableQueryFormatter queryFormatter
 			= new MSSQLCreateTableQueryFormatter(false);
 	//	queryFormatter.setUseIfExists(true);

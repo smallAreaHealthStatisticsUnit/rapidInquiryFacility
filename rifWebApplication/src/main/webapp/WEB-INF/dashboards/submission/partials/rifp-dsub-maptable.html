@@ -72,10 +72,11 @@ Used by rifd-dsub-maptable.js
                 <li><a id="clearSelection" title="Clear selection" ng-click="clear()"></a></li>
                 <li><a id="clearByBand" title="Clear band" ng-click="clearBand()"></a></li>
                 <li><a id="zoomExtent" title="Zoom to extent" ng-click="zoomToExtent()"></a></li>
+                <li><a id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelection()"></a></li> 
                 <li><a id="showCentroids" title="Show/hide centroids" ng-click="showCentroids()"></a></li>               
-                <li><a id="addAOI" title="Select by shapefile" risk-analysis="area"></a></li>      <!-- "addAOI()"  -->
+                <li><a id="addAOI" title="Select by shapefile" risk-analysis></a></li>   
                 <li><a id="removeAOI" title="Clear shapefile" ng-click="clearAOI()"></a></li>    
-                <li><a id="exportMap" title="Quick export map" leaflet-to-png mapid="area"></a></li>
+                <li><a id="exportMap" title="Quick export map" leaflet-to-png mapid="areamap"></a></li>
                 <li>
                     <input type="range" ng-model="transparency" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity()"/>
                 </li>
@@ -89,8 +90,9 @@ Used by rifd-dsub-maptable.js
                 </li>
 
             </ul>                 
-        </div>    
-        <leaflet id= "area" width="100%" height="100%" tiles="tiles" lf-center="input.center"></leaflet>    
+        </div>  
+        <!-- Leaflet map -->
+        <div id="areamap"></div>
     </div>  
 
     <div id='mapSelectionCounter' class='mapCounter'>

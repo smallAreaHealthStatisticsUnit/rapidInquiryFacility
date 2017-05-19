@@ -55,7 +55,7 @@ IF EXISTS (SELECT *
 	DROP PROCEDURE [rif40].[rif40_run_study];
 GO 
 
-CREATE PROCEDURE [rif40].[rif40_run_study](@rval INT OUTPUT, @study_id int, @debug int=0, @recursion_level int=0)
+CREATE PROCEDURE [rif40].[rif40_run_study](@study_id int, @debug int=0, @recursion_level int=0)
 AS
 BEGIN
 --
@@ -66,7 +66,7 @@ BEGIN
 	
 /*
 Function:	rif40_run_study()
-Parameter:	Success or failure [INTEGER], Study ID, enable debug (INTEGER: default 0), recursion level (internal parameter DO NOT USE)
+Parameter:	Study ID, enable debug (INTEGER: default 0), recursion level (internal parameter DO NOT USE)
 Returns:	Success or failure [INTEGER], as  first parameter
 			Note this is to allow SQL executed by study extraction/results created to be logged (Postgres does not allow autonomous transactions)
 			Verification and error checking raises EXCEPTIONS in the usual way; and will cause the SQL log to be lost
@@ -90,7 +90,7 @@ Do update. This forces verification
 (i.e. change in study_State on rif40_studies calls rif40_sm_pkg.rif40_verify_state_change)
 Recurse until complete
  */
-	SET @rval=0 /* Failure */;
+	DECLARE @rval	INTEGER=0 /* Failure */;
 --
 	DECLARE @etime DATETIME, @stp DATETIME=GETDATE(), @etp DATETIME;
 --
@@ -152,10 +152,10 @@ Recurse until complete
 				@study_id	/* Study id */,
 				@debug		/* enable debug: 0/1) */;
 		IF @rval = 0 BEGIN
-			PRINT '[55202] WARNING! rif40.rif40_create_extract() FAILED, see previous warnings';
+			PRINT '55202: WARNING! rif40.rif40_create_extract() FAILED, see previous warnings';
 			RETURN @rval;
 			END;
-		ELSE PRINT '[55203] rif40.rif40_create_extract() OK';
+		ELSE PRINT '55203: rif40.rif40_create_extract() OK';
 		END;
 --
 -- Compute results, call: rif40.rif40_compute_results()
@@ -165,17 +165,17 @@ Recurse until complete
 				@study_id	/* Study id */,
 				@debug		/* enable debug: 0/1) */;
 		IF @rval = 0 BEGIN
-			PRINT '[55204] WARNING! rif40.rif40_compute_results() FAILED, see previous warnings';
+			PRINT '55204: WARNING! rif40.rif40_compute_results() FAILED, see previous warnings';
 			RETURN @rval;
 			END;
-		ELSE PRINT '[55205] rif40.rif40_compute_results() OK';
+		ELSE PRINT '55205: rif40.rif40_compute_results() OK';
 		END;
 
 --
 -- Do update. This forces verification
 -- (i.e. change in study_state on rif40_studies calls rif40.rif40_verify_state_change)
 --
-	SET @msg='[55206] Start state transition (' + @study_state + '=>' + @new_study_state + ') for study ' + CAST(@study_id AS VARCHAR);
+	SET @msg='55206: Start state transition (' + @study_state + '=>' + @new_study_state + ') for study ' + CAST(@study_id AS VARCHAR);
 	PRINT @msg;
 	UPDATE rif40.rif40_investigations SET investigation_state = @new_study_state WHERE study_id = @study_id AND investigation_state = @study_state;
 	SET @actual_investigation_count = @@ROWCOUNT;
@@ -202,7 +202,7 @@ Recurse until complete
 	ELSE BEGIN
 		SET @etp=GETDATE();
 		SET @etime=CAST(@etp - @stp AS TIME);
-		SET @msg='[55208] Recurse [' + CAST(@n_recursion_level AS VARCHAR) + '] Completed state transition (' + @study_state + '=>' + @new_study_state + 
+		SET @msg='55208: Recurse (' + CAST(@n_recursion_level AS VARCHAR) + ') Completed state transition (' + @study_state + '=>' + @new_study_state + 
 			') for study ' + CAST(@study_id AS VARCHAR) + ' with ' + CAST(@investigation_count AS VARCHAR) + ' investigation(s); time taken ' +
 			CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);
 		PRINT @msg;
@@ -212,16 +212,15 @@ Recurse until complete
 -- Recurse until complete
 --
 	IF @new_study_state != @study_state AND @new_study_state IN ('V', 'E') BEGIN
-			SET @msg='[55209] Recurse [' + CAST(@n_recursion_level AS VARCHAR) + '] rif40_run_study using new state ' + 
+			SET @msg='55209: Recurse (' + CAST(@n_recursion_level AS VARCHAR) + ') rif40_run_study using new state ' + 
 				@new_study_state + ' for study ' + CAST(@study_id AS VARCHAR);
 			PRINT @msg;
-			EXECUTE rif40.rif40_run_study
-				@rval				/* Result: 0/1 */, 
+			EXECUTE @rval=rif40.rif40_run_study
 				@study_id 			/* Study_id */, 
 				@debug 				/* Debug: 0/1 */, 
 				@n_recursion_level 	/* Recursion level: Use default */;
 			IF @rval = 0 BEGIN 		/* Halt on failure */
-				SET @msg='WARNING [55210] Recurse [' + CAST(@n_recursion_level AS VARCHAR) + '] rif40_run_study to new state ' + 
+				SET @msg='WARNING 55210: Recurse (' + CAST(@n_recursion_level AS VARCHAR) + ') rif40_run_study to new state ' + 
 				@new_study_state + ' for study ' + CAST(@study_id AS VARCHAR) + ' failed, see previous warnings';
 				PRINT @msg;
 				RETURN @rval;
@@ -231,11 +230,12 @@ Recurse until complete
 			SET @msg=@crlf + 
 '************************************************************************' + @crlf +
 '*                                                                      *' + @crlf +
-'* [55211] Completed study ' + RIGHT(REPLICATE('0',20)+(CAST(@study_id AS VARCHAR)), 20) + 
-	'                         *' + @crlf +
+'* 55211: Completed study ' + RIGHT(REPLICATE(' ',20)+(CAST(@study_id AS VARCHAR)), 20) + 
+	'                          *' + @crlf +
 '*                                                                      *' + @crlf +
 '************************************************************************';
 			PRINT @msg;
+			SET @rval=1;
 		END;
 	ELSE BEGIN
 		OPEN c1_runst; 
@@ -262,12 +262,12 @@ Recurse until complete
 		SET @etp=GETDATE();
 		SET @etime=CAST(@etp - @stp AS TIME);
 	IF @recursion_level = 0 BEGIN
-			SET @msg='[55214] Recursion complete, state ' + @study_state + ', rif40_run_study study ' + CAST(@study_id AS VARCHAR) + 
+			SET @msg='55214: Recursion complete, state ' + @study_state + ', rif40_run_study study ' + CAST(@study_id AS VARCHAR) + 
 				' with ' + CAST(@study_id AS VARCHAR) + ' investigation_count(s); time taken ' + CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);
 			PRINT @msg;
 		END;
 	ELSE BEGIN
-		SET @msg='[55215] Recursion ' + CAST(@n_recursion_level AS VARCHAR) + ', state ' + @study_state + 
+		SET @msg='55215: Recursion ' + CAST(@n_recursion_level AS VARCHAR) + ', state ' + @study_state + 
 			', rif40_run_study study ' + CAST(@study_id AS VARCHAR) + ' with ' + CAST(@investigation_count AS VARCHAR) + 
 			' investigation(s); time taken ' + CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);
 		PRINT @msg;

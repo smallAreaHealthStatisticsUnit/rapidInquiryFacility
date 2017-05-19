@@ -647,20 +647,20 @@ geoDataLoader.xml parameter: geographyDesc="Description of: cb_2014_us_nation_5m
 					key + '_desc" name="' + key + '_desc" type="text" value="' + fileList[key].description + '"  required/>' +
 				'  </label>\n' + '<br>\n' +
 				'  <label id="' + key + '_areaID_Tooltip" title="Please choose an area ID. This is the unique administrative code for area on the map" ' +
-					'class="my-accordion-fields2" for="' + 
+					'class="my-accordion-fields-areaID" for="' + 
 					key + '_areaID">Area ID: \n' +
-				'    <select required class="my-accordion-fields2" id="' + key + '_areaID" name="' + key + 
+				'    <select required class="my-accordion-areaID2" id="' + key + '_areaID" name="' + key + 
 					'_areaID" form="shpConvert">\n' +
 				fieldSelect1 +
 				'    </select>\n' + 
 				'  </label>\n' +							
-				'  <label class="my-accordion-fields2" for="' + key + '_areaID_desc" title="Please enter a description of the choosen area ID">Label:\n' +  
-				'    <input class="my-accordion-fields2" id="' + 
+				'  <label class="my-accordion-desc" for="' + key + '_areaID_desc" title="Please enter a description of the choosen area ID">Label:\n' +  
+				'    <input class="my-accordion-desc2" id="' + 
 					key + '_areaID_desc" name="' + key + '_areaID_desc" type="text" required/>\n' +	
 				'  </label>\n' +							
 				'  <label id="' + key + '_areaName_Tooltip" title="Please choose an area name. This is the administrative name corresponding to the area ID" ' +
-					'class="my-accordion-fields2" for="' + key + '_areaName">Area Name: \n' +
-				'    <select required class="my-accordion-fields2" id="' + key + '_areaName" name="' + key + 
+					'class="my-accordion-name" for="' + key + '_areaName">Area Name: \n' +
+				'    <select required class="my-accordion-name2" id="' + key + '_areaName" name="' + key + 
 					'_areaName" form="shpConvert">\n' +
 				fieldSelect2 +
 				'    </select>\n' + 
@@ -742,82 +742,7 @@ geoDataLoader.xml parameter: cb_2014_us_nation_5m_areaName_desc="Nation name  no
 			throw new Error("Invalid HTML; newDiv >>>\n" + newDiv + "\n<<<");
 		}					
 
-		var isOpera = (window.navigator.userAgent.indexOf("OPR") > -1);
-		var width="800px";	// Shape file description text entry box
-		if (!!window.chrome && !isOpera) { // Chrome
-			width="850px"; 	// Chrome is out by about -50px
-		}
-		var width2="170px";	// Area ID, area name buttons
-		var width3="170px";	// Area ID, area name description text entry boxes
-//		console.log("accordion width: " + document.getElementById('accordion').offsetWidth);
-		if (document.getElementById('accordion').offsetWidth > 1500) {
-			if (!!window.chrome && !isOpera) { // Chrome
-				width="1308px";
-				width2="220px";
-				width3="370px";
-			}
-			else {
-				width="1308px";
-				width2="220px";
-				width3="370px";
-			}
-		}		
-	
-		for (var key in fileList) { // Style shapefile descriptions
-			var id = key + "_desc";
-			var item = document.getElementById(id);
-			if (item) {
-				item.style.width = width;
-				item.style.textAlign = "left";
-			}
-			else {
-				throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
-			}
-		}
-		
-		var  styleArr = ["areaID", "areaName"]; // Add change function to select menus
-		for (var key in fileList) {
-			for (var j=0; j< styleArr.length; j++) {
-				var id=key + "_" + styleArr[j];
-				var item = document.getElementById(id);
-				
-				if (item) { // Style areaID, areaName
-					item.style.width = width2;
-					item.style.textAlign = "left";
-				}
-				else {
-					throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
-				}
-				
-				$( "#" + id ).on( "selectmenuchange", function(event, ui) { // Add change function to aync _desc field
-					updateAreaIdNameDesc(event.target.id, event.target.parentNode.parentNode.id, this.value);
-				});
-				
-				var myId = document.getElementById(id);
-				if (myId && geoDataLoaderParameters[id]) {	
-					consoleLog("updateAreaIdNameDesc() not needed, id: " + myId.id +" set to: " + geoDataLoaderParameters[id + "_desc"]);
-				}
-				else if (myId) {
-					updateAreaIdNameDesc(myId.id, myId.parentNode.parentNode.id, $( "#" + id ).val()); // Set defaults
-				}
-			}
-
-		}
-		
-		var  styleArr = ["areaID_desc", "areaName_desc"]; // Style areaID, areaName descriptions
-		for (var key in fileList) {
-			for (var j=0; j< styleArr.length; j++) {
-				var id=key + "_" + styleArr[j];		
-				var item = document.getElementById(id);
-				if (item) {
-					item.style.width = width3;
-					item.style.textAlign = "left";
-				}
-				else {
-					throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
-				}
-			}		
-		} // End of for loop
+		styleShapeFile();
 		
 		$("#accordion").accordion({ // Create accordion from HTML
 //			active: false,
@@ -851,6 +776,109 @@ geoDataLoader.xml parameter: cb_2014_us_nation_5m_areaName_desc="Nation name  no
 	} // End of if JQuery-UI version
 }	
 
+/*
+ * Function: 	styleShapeFile()
+ * Parameters: 	None 
+ * Returns: 	Nothing
+ * Description:	Resize shapefile accordions
+ */
+function styleShapeFile() {
+
+	var isOpera = (window.navigator.userAgent.indexOf("OPR") > -1);
+	var width="800px";	// Shape file description text entry box
+	if (!!window.chrome && !isOpera) { // Chrome
+		width="850px"; 	// Chrome is out by about -50px
+	}
+	var width2="170px";	// Area ID, area name buttons
+	var width3="170px";	// Area ID, area name description text entry boxes
+//		console.log("accordion width: " + document.getElementById('accordion').offsetWidth);
+	if (document.getElementById('accordion').offsetWidth > 1500) {
+		if (!!window.chrome && !isOpera) { // Chrome
+			width="1308px";
+			width2="220px";
+			width3="370px";
+		}
+		else {
+			width="1308px";
+			width2="220px";
+			width3="370px";
+		}
+	}		
+	else if (document.getElementById('accordion').offsetWidth < 900) {
+		width=document.getElementById('accordion').offsetWidth-175;
+		if (!!window.chrome && !isOpera) { // Chrome
+			width+=50;
+		}
+		var remain=width;
+		width+="px";
+		width2=(remain/4)-30; // Area ID, area name buttons
+		width3=(remain/4)-15; // Area ID, area name description text entry boxes
+		width2+="px";
+		width3+="px";
+		consoleLog("styleShapeFile() offsetWidth: " + document.getElementById('accordion').offsetWidth +
+			", remain: " + remain +
+			", width: " + width +
+			", width2: " + width2 +
+			", width3: " + width3);
+	}
+		
+	for (var key in fileList) { // Style shapefile descriptions
+		var id = key + "_desc";
+		var item = document.getElementById(id);
+		if (item) {
+			item.style.width = width;
+			item.style.textAlign = "left";
+		}
+		else {
+			throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
+		}
+	}
+	
+	var  styleArr = ["areaID", "areaName"]; // Add change function to select menus
+	for (var key in fileList) {
+		for (var j=0; j< styleArr.length; j++) {
+			var id=key + "_" + styleArr[j];
+			var item = document.getElementById(id);
+			
+			if (item) { // Style areaID, areaName
+				item.style.width = width2;
+				item.style.textAlign = "left";
+			}
+			else {
+				throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
+			}
+			
+			$( "#" + id ).on( "selectmenuchange", function(event, ui) { // Add change function to aync _desc field
+				updateAreaIdNameDesc(event.target.id, event.target.parentNode.parentNode.id, this.value);
+			});
+			
+			var myId = document.getElementById(id);
+			if (myId && geoDataLoaderParameters[id]) {	
+				consoleLog("updateAreaIdNameDesc() not needed, id: " + myId.id +" set to: " + geoDataLoaderParameters[id + "_desc"]);
+			}
+			else if (myId) {
+				updateAreaIdNameDesc(myId.id, myId.parentNode.parentNode.id, $( "#" + id ).val()); // Set defaults
+			}
+		}
+
+	}
+	
+	var  styleArr = ["areaID_desc", "areaName_desc"]; // Style areaID, areaName descriptions
+	for (var key in fileList) {
+		for (var j=0; j< styleArr.length; j++) {
+			var id=key + "_" + styleArr[j];		
+			var item = document.getElementById(id);
+			if (item) {
+				item.style.width = width3;
+				item.style.textAlign = "left";
+			}
+			else {
+				throw new Error("Cannot find id: " + id + "; unable to style; newDiv >>>\n" + newDiv + "\n<<<");
+			}
+		}		
+	} // End of for loop
+} // End of styleShapeFile()
+	
 /*
  * Function: 	updateAreaIdNameDesc()
  * Parameters: 	Calling id, parent div id (file key), value

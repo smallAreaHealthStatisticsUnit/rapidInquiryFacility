@@ -35,10 +35,19 @@ Microsoft SQL Server 2012 (SP2-GDR) (KB3194719) - 11.0.5388.0 (X64)
 
 # 2. Installing the RIF
 
-A standalone script *rif40_sahsuland_install.bat* is provided to install the RIF. It is designed to run in a single directory, and is in
+A standalone script *rif40_database_install.bat* is provided to install the RIF. It is designed to run in a single directory, and is in
 *...rapidInquiryFacility\rifDatabase\SQLserver\production*. A backup of the *sahsuland_dev* database is required, as created by 
 *rebuild_all.bat* (see: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md) or supplied by SAHSU. 
 
+Either:
+
+1. Create *...rapidInquiryFacility\rifDatabase\SQLserver\production\sahsuland_dev.bak* using rebuild_all.bat
+
+or:
+
+2. Use a pre-built database dump provided by SAHSU. If you use the prebuilt version check that the
+   dump *sahsuland_dev.bak* is unZipped.
+   
 You will need to enter:
 
 * Database name
@@ -64,7 +73,7 @@ This script runs:
 
 * Script output. Use control-C to abort the script before database (re-)creation.	
 ```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>rif40_sahsuland_install.bat
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>rif40_database_install.bat
 
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>ECHO OFF
 Administrator PRIVILEGES Detected!
@@ -191,7 +200,7 @@ rif40_sahsuland_dev_install.bat exiting with 1
 
 ## 2.4 Power User Issues
 
-This is caused by *rif40_sahsuland_install.bat* failing complaining the user is not an Administrator when run as a power user.
+This is caused by *rif40_database_install.bat* failing complaining the user is not an Administrator when run as a power user.
 
 ```
 sqlcmd -E
@@ -222,7 +231,7 @@ The solution to this is to:
 	(1 rows affected)
 	1> quit
 	``` 
-* Re-run *rif40_sahsuland_install.bat*
+* Re-run *rif40_database_install.bat*
 	
 # 3. Create Additional Users
 

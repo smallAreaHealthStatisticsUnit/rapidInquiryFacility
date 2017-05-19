@@ -128,6 +128,7 @@ angular.module("RIF")
                                         $rootScope.$broadcast('makeDrawSelection', {
                                             data: this._shape,
                                             circle: true,
+                                            freehand: false,
                                             band: thisBand
                                         });
                                     }
@@ -152,6 +153,7 @@ angular.module("RIF")
                                         $rootScope.$broadcast('makeDrawSelection', {
                                             data: this._shape,
                                             circle: true,
+                                            freehand: false,
                                             band: thisBand
                                         });
                                     }
@@ -175,6 +177,7 @@ angular.module("RIF")
                                     $rootScope.$broadcast('makeDrawSelection', {
                                         data: this._shape,
                                         circle: true,
+                                        freehand: false,
                                         band: thisBand
                                     });
                                     //increase band number
@@ -356,6 +359,7 @@ angular.module("RIF")
                                         $rootScope.$broadcast('makeDrawSelection', {
                                             data: this._poly,
                                             circle: false,
+                                            freehand: true,
                                             band: -1
                                         });
                                     }

@@ -2251,13 +2251,11 @@ SELECT z.geography,
           WHERE ex.zoomlevel = ey.zoomlevel
 		) z 
 		 LEFT JOIN t_tiles_sahsuland h1 ON ( /* Multiple area ids in the geolevel */
-				z.areaid_count > 1 AND
 				z.zoomlevel    = h1.zoomlevel AND 
 				z.x            = h1.x AND 
 				z.y            = h1.y AND 
 				z.geolevel_id  = h1.geolevel_id)
 		 LEFT JOIN t_tiles_sahsuland h2 ON ( /* Single area ids in the geolevel */
-				z.areaid_count = 1 AND
 				h2.zoomlevel   = 0 AND 
 				h2.x           = 0 AND 
 				h2.y           = 0 AND 

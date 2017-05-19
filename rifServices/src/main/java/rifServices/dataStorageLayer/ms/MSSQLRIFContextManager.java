@@ -1094,7 +1094,7 @@ final class MSSQLRIFContextManager
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(geoLevelToMapQueryFormatter);
 			geoLevelToMapQueryFormatter.addSelectField("geolevel_name");
-			geoLevelToMapQueryFormatter.addFromTable("rif40_geolevels");
+			geoLevelToMapQueryFormatter.addFromTable("rif40.rif40_geolevels");
 			geoLevelToMapQueryFormatter.addWhereParameter("geography");
 			geoLevelToMapQueryFormatter.addWhereParameterWithOperator("geolevel_id",">");
 			geoLevelToMapQueryFormatter.addOrderByCondition("geolevel_name");
@@ -1589,7 +1589,7 @@ final class MSSQLRIFContextManager
 			MSSQLRecordExistsQueryFormatter geoLevelMapExistsQueryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(geoLevelMapExistsQueryFormatter);		
-			geoLevelMapExistsQueryFormatter.setFromTable("rif40_geolevels");
+			geoLevelMapExistsQueryFormatter.setFromTable("rif40.rif40_geolevels");
 			geoLevelMapExistsQueryFormatter.addWhereParameter("geography");
 			geoLevelMapExistsQueryFormatter.addWhereParameterWithOperator("geolevel_id",">=");
 			geoLevelMapExistsQueryFormatter.addWhereParameter("geolevel_name");

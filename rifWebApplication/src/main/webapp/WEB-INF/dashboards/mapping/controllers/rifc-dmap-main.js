@@ -38,10 +38,8 @@
 /* global L, key, topojson, d3 */
 
 angular.module("RIF")
-        .controller('MappingCtrl', ['$scope', 'leafletData', '$timeout', 'MappingStateService',
-            'ChoroService', 'MappingService',
-            function ($scope, leafletData, $timeout, MappingStateService,
-                    ChoroService, MappingService) {
+        .controller('MappingCtrl', ['$scope', '$timeout', 'MappingStateService', 'ChoroService', 'MappingService',
+            function ($scope, $timeout, MappingStateService, ChoroService, MappingService) {
 
                 //Reference the child scope
                 $scope.child = {};
@@ -49,77 +47,44 @@ angular.module("RIF")
                 //A flag to keep renderers if changing tabs
                 $scope.$on("$destroy", function () {
                     MappingStateService.getState().initial = true;
-
-                    //try and resolve memory leak
-                    leafletData.unresolveMap("diseasemap1");
-                    leafletData.unresolveMap("diseasemap2");
-                    leafletData.getMap("diseasemap1").then(function (map) {
-                        map.remove();
-                    });
-                    leafletData.getMap("diseasemap2").then(function (map) {
-                        map.remove();
-                    });
+                    $scope.child.map['diseasemap1'].remove();
+                    $scope.child.map['diseasemap2'].remove();
                 });
 
                 //Set initial map panels and events
                 $timeout(function () {
-                    leafletData.getMap("diseasemap1").then(function (map) {
-                        map.on('zoomend', function (e) {
-                            MappingStateService.getState().center["diseasemap1"].zoom = map.getZoom();
-                        });
-                        map.on('moveend', function (e) {
-                            MappingStateService.getState().center["diseasemap1"].lng = map.getCenter().lng;
-                            MappingStateService.getState().center["diseasemap1"].lat = map.getCenter().lat;
-                        });
+                    //make maps
+                    for (var i in $scope.child.myMaps) {                     
+                        //initialise map
+                        var container = angular.copy($scope.child.myMaps[i]);
+                        $scope.child.map[container] = L.map(container).setView([0, 0], 1);
+                        
+                        //search box
                         new L.Control.GeoSearch({
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
-                        }).addTo(map);
-                        //full screen control
-                        map.addControl(new L.Control.Fullscreen());
-                        map.on('fullscreenchange', function () {
-                            $scope.child.rescaleLeafletContainer();
-                        });
-                        //scalebar
-                        L.control.scale({position: 'topleft', imperial: false}).addTo(map);
-                        //Attributions to open in new window
-                        map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
-                        map.doubleClickZoom.disable();
-                        map.keyboard.disable();
-                    });
-                    leafletData.getMap("diseasemap2").then(function (map) {
-                        map.on('zoomend', function (e) {
-                            MappingStateService.getState().center["diseasemap2"].zoom = map.getZoom();
-                        });
-                        map.on('moveend', function (e) {
-                            MappingStateService.getState().center["diseasemap2"].lng = map.getCenter().lng;
-                            MappingStateService.getState().center["diseasemap2"].lat = map.getCenter().lat;
-                        });
-                        new L.Control.GeoSearch({
-                            provider: new L.GeoSearch.Provider.OpenStreetMap()
-                        }).addTo(map);
-                        //full screen control
-                        map.addControl(new L.Control.Fullscreen());
-                        map.on('fullscreenchange', function () {
-                            $scope.child.rescaleLeafletContainer();
-                        });
-                        //scalebar
-                        L.control.scale({position: 'topleft', imperial: false}).addTo(map);
-                        //Attributions to open in new window
-                        map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
-                        map.doubleClickZoom.disable();
-                        map.keyboard.disable();
-                    });
-                    //Set initial map extents
-                    if ($scope.bLockCenters) {
-                        $scope.center1 = MappingStateService.getState().center["diseasemap1"];
-                        $scope.center2 = $scope.center1;
-                    } else {
-                        $scope.center1 = MappingStateService.getState().center["diseasemap1"];
-                        $scope.center2 = MappingStateService.getState().center["diseasemap2"];
-                    }
+                        }).addTo($scope.child.map[container]);
 
+                        //full screen control             
+                        $scope.child.map[container].addControl(new L.Control.Fullscreen());
+                        $scope.child.map[container].on('fullscreenchange', function () {
+                            setTimeout(function () {
+                                $scope.child.map[container].invalidateSize();
+                            }, 50);
+                        });
+
+                        //scalebar
+                        L.control.scale({position: 'topleft', imperial: false}).addTo($scope.child.map[container]);
+
+                        //Attributions to open in new window
+                        $scope.child.map[container].attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
+                        $scope.child.map[container].doubleClickZoom.disable();
+                        $scope.child.map[container].keyboard.disable();
+                    }
+                    
                     //Fill study drop-downs
                     $scope.child.getStudies();
+                    $scope.child.renderMap("diseasemap1");
+                    $scope.child.renderMap("diseasemap2");
                 });
 
                 //ui-container sizes
@@ -152,7 +117,6 @@ angular.module("RIF")
                         MappingStateService.getState().hSplit2 = (beforeContainer.size / beforeContainer.maxSize) * 100;
                         $scope.currentHeight2 = d3.select("#rr2").node().getBoundingClientRect().height;
                     }
-                    $scope.child.rescaleLeafletContainer();
                 };
 
                 /*
@@ -160,16 +124,12 @@ angular.module("RIF")
                  */
                 $scope.myMaps = ["diseasemap1", "diseasemap2"];
 
-                //define non-null centres for leaflet directive
-                $scope.center1 = {};
-                $scope.center2 = {};
                 //transparency as set by slider
                 $scope.transparency = {
                     "diseasemap1": MappingStateService.getState().transparency["diseasemap1"],
                     "diseasemap2": MappingStateService.getState().transparency["diseasemap2"]
                 };
-                //target for geoJSON
-                $scope.geoJSON = {};
+
                 //selected polygons
                 $scope.thisPoly = {
                     'diseasemap1': MappingStateService.getState().area_id["diseasemap1"],
@@ -312,12 +272,11 @@ angular.module("RIF")
                     if ($scope.bLockCenters) {
                         $scope.bLockCenters = false;
                         MappingStateService.getState().extentLock = false;
-                        $scope.center2 = angular.copy($scope.center1);
                     } else {
                         $scope.bLockCenters = true;
                         MappingStateService.getState().extentLock = true;
-                        $scope.center2 = $scope.center1;
                     }
+                    $scope.child.mapLocking();
                 };
 
                 //sync map selections
@@ -384,13 +343,13 @@ angular.module("RIF")
                     //update map
                     if (map) {
                         $scope.thisPoly[mapID] = gid;
-                        $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.child.handleLayer);
+                        $scope.child.geoJSON[mapID]._geojsons.default.eachLayer($scope.child.handleLayer); //TODO: scope error here
                         $scope.child.infoBox2[mapID].update($scope.thisPoly[mapID]);
                         if ($scope.bLockSelect) {
                             var otherMap = MappingService.getOtherMap(mapID);
                             $scope.thisPoly[otherMap] = gid;
-                            if (!angular.isUndefined($scope.geoJSON[otherMap])) {
-                                $scope.geoJSON[otherMap]._geojsons.default.eachLayer($scope.child.handleLayer);
+                            if (!angular.isUndefined($scope.child.geoJSON[otherMap])) {
+                                $scope.child.geoJSON[otherMap]._geojsons.default.eachLayer($scope.child.handleLayer);
                             }
                         }
                     }

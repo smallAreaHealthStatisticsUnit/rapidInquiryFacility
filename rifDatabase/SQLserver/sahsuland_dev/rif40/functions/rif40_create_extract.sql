@@ -198,12 +198,6 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	DECLARE @t_ddl		INTEGER=0;
 --
 	DECLARE @sql_frag 	VARCHAR(MAX);	
-/*	
---
-	index_column	VARCHAR;
-	table_column	VARCHAR;
-	i		INTEGER:=0;
- */
 --
 	DECLARE @etime DATETIME, @stp DATETIME=GETDATE(), @etp DATETIME;
 --
@@ -237,7 +231,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	
 	SET @schema_name=rif40.rif40_object_resolve(@c1_rec_extract_table);
 	IF @schema_name IS NULL AND @c1_rec_study_state = 'V' 
-		PRINT '[55402] RIF40_STUDIES study ' + CAST(@study_id AS VARCHAR) + ' extract table: ' + 
+		PRINT '55402: RIF40_STUDIES study ' + CAST(@study_id AS VARCHAR) + ' extract table: ' + 
 			@c1_rec_extract_table + ' defined, awaiting creation';
 			
 	ELSE IF @c1_rec_study_state != 'V' BEGIN
@@ -351,8 +345,8 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	DECLARE @comment_text NVARCHAR(MAX)='Study ' + 
 			CAST(@study_id AS VARCHAR) + ' extract: ' + COALESCE(@c1_rec_description, 'NO DESCRIPTION');
 	SET @sql_stmt='sp_addextendedproperty' + @crlf +
-'		@name = N''' + @comment_text + ''',' + @crlf +   
-'		@value = N''Area Name field'',' + @crlf + 
+'		@name = N''MS_Description'',' + @crlf +
+'		@value = N''' + @comment_text + ''',' + @crlf +   
 '		@level0type = N''Schema'', @level0name = ''rif_studies'',' + @crlf +  
 '		@level1type = N''Table'', @level1name = ''' + LOWER(@c1_rec_extract_table) + '''';
 	SET @t_ddl=@t_ddl+1;	
@@ -362,10 +356,9 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	FETCH NEXT FROM c5_creex INTO @c5_rec_column_name, @c5_rec_column_comment;
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
---		i:=i+1;
 		SET @sql_stmt='sp_addextendedproperty' + @crlf +
-'		@name = N''' + @c5_rec_column_comment + ''',' + @crlf +   
-'		@value = N''Area Name field'',' + @crlf + 
+'		@name = N''MS_Description'',' + @crlf +
+'		@value = N''' + @c5_rec_column_comment + ''',' + @crlf + 
 '		@level0type = N''Schema'', @level0name = ''rif_studies'',' + @crlf +  
 '		@level1type = N''Table'', @level1name = ''' + LOWER(@c1_rec_extract_table) + ''',' + @crlf +
 '    	@level2type = N''Column'', @level2name = ''' + LOWER(@c5_rec_column_name) + '''';			
@@ -407,7 +400,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
 	IF @rval = 0 BEGIN
-			SET @msg='[55408] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+			SET @msg='55408: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' populated extract failed, see previous warnings'	/* Study id */;
 			PRINT @msg;
 			RETURN @rval;
@@ -426,13 +419,13 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 		@c1_rec_study_id,
 		@debug;
 	IF @rval = 0 BEGIN
-			SET @msg='[55409] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+			SET @msg='55409: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' populated extract failed, see previous warnings'	/* Study id */;
 			PRINT @msg;
 			RETURN @rval;
 		END; 
 	ELSE BEGIN
-		SET @msg = 'Study ' + CAST(@c1_rec_study_id AS VARCHAR) + ' OK';
+		SET @msg = 'Study ' + CAST(@c1_rec_study_id AS VARCHAR) + ' extract OK';
 		PRINT @msg;
 	END;
 	
@@ -495,7 +488,8 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 --
 -- Vacuum analyze - raises 25001 "VACUUM cannot run inside a transaction block"
 --
-	SET @sql_stmt='UPDATE STATISTICS rif_studies.' + LOWER(@c1_rec_extract_table) + ' WITH SAMPLE 10 PERCENT';
+	SET @sql_stmt='UPDATE STATISTICS rif_studies.' + LOWER(@c1_rec_extract_table) + 
+		' WITH SAMPLE 10 PERCENT';
 	SET @t_ddl=@t_ddl+1;	
 	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);	
  
@@ -506,12 +500,12 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
 	IF @rval = 0 BEGIN
-			SET @msg='[55410] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+			SET @msg='55410: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' populated extract failed, see previous warnings'	/* Study id */;
 			PRINT @msg;
 		END; 
 	ELSE BEGIN
-			SET @msg='[55411] RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+			SET @msg='55411: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
 				' populated extract OK'	/* Study id */;
 			PRINT @msg;
 		END; 

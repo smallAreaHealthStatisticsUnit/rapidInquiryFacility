@@ -187,8 +187,8 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 					rifStartupOptions.getExtractDirectory(), "kevTest22");
 			
 			Process process = Runtime.getRuntime().exec(batchFile.getAbsolutePath());
-
-			int exitValue = process.waitFor();
+			
+			int exitValue = process.waitFor(); 
 			//batchFile.delete();			
 			System.out.println("Exit value=="+exitValue+"==");
 			

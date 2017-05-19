@@ -59,7 +59,8 @@ GO
 --
 
 IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'rif40')
-	CREATE USER [rif40] FOR LOGIN [rif40] WITH DEFAULT_SCHEMA=[dbo];
+	CREATE USER [rif40] FOR LOGIN [rif40] WITH DEFAULT_SCHEMA=[dbo]
+	ELSE ALTER USER [rif40] WITH LOGIN=[rif40];
 GO
 
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif40')
@@ -75,7 +76,7 @@ GO
 ALTER USER [rif40] WITH DEFAULT_SCHEMA=[rif40];
 GO
 
-ALTER LOGIN [rif40] WITH DEFAULT_DATABASE = [sahsuland_dev];
+ALTER LOGIN [rif40] WITH DEFAULT_DATABASE = [$(NEWDB)];
 GO
 
 --

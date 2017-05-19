@@ -37,10 +37,8 @@
 
 /* global L, key, topojson, d3 */
 angular.module("RIF")
-        .controller('ViewerCtrl', ['$scope', 'user', 'leafletData', '$timeout',
-            'ViewerStateService', 'ChoroService',
-            function ($scope, user, leafletData, $timeout,
-                    ViewerStateService, ChoroService) {
+        .controller('ViewerCtrl', ['$scope', 'user', '$timeout', 'ViewerStateService', 'ChoroService',
+            function ($scope, user, $timeout, ViewerStateService, ChoroService) {
 
                 //Reference the child scope
                 $scope.child = {};
@@ -48,43 +46,37 @@ angular.module("RIF")
                 $scope.$on("$destroy", function () {
                     //A flag to keep renderers if changing tabs
                     ViewerStateService.getState().initial = true;
-
-                    //Trying to stop memory leak
-                    leafletData.unresolveMap("viewermap");
-                    leafletData.getMap("viewermap").then(function (map) {
-                        map.remove();
-                    });
+                    $scope.child.map['viewermap'].remove();
                 });
 
-                //Set initial map panels and events
                 $timeout(function () {
-                    leafletData.getMap("viewermap").then(function (map) {
-                        map.on('zoomend', function (e) {
-                            ViewerStateService.getState().center["viewermap"].zoom = map.getZoom();
-                        });
-                        map.on('moveend', function (e) {
-                            ViewerStateService.getState().center["viewermap"].lng = map.getCenter().lng;
-                            ViewerStateService.getState().center["viewermap"].lat = map.getCenter().lat;
-                        });
-                        new L.Control.GeoSearch({
-                            provider: new L.GeoSearch.Provider.OpenStreetMap()
-                        }).addTo(map);
-                        //full screen control
-                        map.addControl(new L.Control.Fullscreen());
-                        map.on('fullscreenchange', function () {
-                            $scope.child.rescaleLeafletContainer();
-                        });
-                        //scalebar
-                        L.control.scale({position: 'topleft', imperial: false}).addTo(map);
-                        //Attributions to open in new window
-                        map.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
-                        map.doubleClickZoom.disable();
+                    //make map
+                    var view = $scope.child.myService.getState().center['viewermap'];
+                    $scope.child.map['viewermap'] = L.map('viewermap').setView([0, 0], 1);
+
+                    //search box
+                    new L.Control.GeoSearch({
+                        provider: new L.GeoSearch.Provider.OpenStreetMap()
+                    }).addTo($scope.child.map['viewermap']);
+
+                    //full screen control             
+                    $scope.child.map['viewermap'].addControl(new L.Control.Fullscreen());
+                    $scope.child.map['viewermap'].on('fullscreenchange', function () {
+                        setTimeout(function () {
+                            $scope.child.map['viewermap'].invalidateSize();
+                        }, 50);
                     });
-                    //Set initial map extents
-                    $scope.center = ViewerStateService.getState().center['viewermap'];
+
+                    //scalebar
+                    L.control.scale({position: 'topleft', imperial: false}).addTo($scope.child.map['viewermap']);
+                    //Attributions to open in new window
+                    $scope.child.map['viewermap'].attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
+                    $scope.child.map['viewermap'].doubleClickZoom.disable();
+                    $scope.child.map['viewermap'].keyboard.disable();
 
                     //Fill study drop-downs
                     $scope.child.getStudies();
+                    $scope.child.renderMap("viewermap");
                 });
 
                 //ui-container sizes
@@ -118,7 +110,6 @@ angular.module("RIF")
                     if (beforeContainer.id === "hSplit2") {
                         ViewerStateService.getState().hSplit2 = (beforeContainer.size / beforeContainer.maxSize) * 100;
                     }
-                    $scope.child.rescaleLeafletContainer();
                 };
 
                 /*
@@ -126,14 +117,10 @@ angular.module("RIF")
                  */
                 $scope.myMaps = ["viewermap"];
 
-                //define non-null centre for leaflet directive
-                $scope.center = {};
                 //transparency as set by slider
                 $scope.transparency = {
                     "viewermap": ViewerStateService.getState().transparency["viewermap"]
                 };
-                //target for getTiles topoJSON
-                $scope.geoJSON = {};
 
                 //selected polygons
                 $scope.thisPoly = ViewerStateService.getState().selected["viewermap"];
@@ -184,7 +171,7 @@ angular.module("RIF")
                 //population pyramaid year selection
                 $scope.yearsPop = [];
                 $scope.fillPyramidData = function () {
-                    user.getYearsForStudy(user.currentUser, 1, "viewermap").then(function (res) {
+                    user.getYearsForStudy(user.currentUser, $scope.studyID["viewermap"].study_id, "viewermap").then(function (res) {
                         if (!angular.isUndefined(res.data['years{'])) { //Note erroneous trailing '{' in middle ware method
                             $scope.yearsPop.length = 0;
                             for (var i = 0; i < res.data['years{'].length; i++) {
@@ -264,6 +251,6 @@ angular.module("RIF")
                     $scope.updateTable();
                     ViewerStateService.getState().selected["viewermap"] = newNames;
                     //Update map selection
-                    $scope.geoJSON["viewermap"]._geojsons.default.eachLayer($scope.child.handleLayer);
+                    $scope.child.geoJSON["viewermap"]._geojsons.default.eachLayer($scope.child.handleLayer);
                 });
             }]);

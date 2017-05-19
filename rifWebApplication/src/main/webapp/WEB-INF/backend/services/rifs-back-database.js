@@ -32,7 +32,7 @@
  */
 
 /* 
- * SERVICE to store database type in use (set on login screen)
+ * SERVICE to store database type in use
  */
 angular.module("RIF")
         .factory('DatabaseService',

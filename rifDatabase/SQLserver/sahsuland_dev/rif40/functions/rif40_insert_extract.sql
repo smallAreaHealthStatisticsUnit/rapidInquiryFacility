@@ -171,7 +171,7 @@ Description:	Insert data into extract table
 	SET @yearno=@c1_rec_year_start;
 	WHILE @yearno < @c1_rec_year_stop BEGIN
 
-		SET @msg='[55801] Study ID ' + CAST(@c1_rec_study_id AS VARCHAR) + ' INSERT study year ' + CAST(@yearno AS VARCHAR);
+		SET @msg='55801: Study ID ' + CAST(@c1_rec_study_id AS VARCHAR) + ' INSERT study year ' + CAST(@yearno AS VARCHAR);
 		PRINT @msg;		
 		
 --
@@ -189,7 +189,7 @@ Description:	Insert data into extract table
 --
 	SET @etp=GETDATE();
 	SET @etime=CAST(@etp - @stp AS TIME);
-	SET @msg='[55803] Study ID ' + CAST(@c1_rec_study_id AS VARCHAR) + ' extract table INSERT completed in ' + 
+	SET @msg='55803: Study ID ' + CAST(@c1_rec_study_id AS VARCHAR) + ' extract table INSERT completed in ' + 
 		CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);		
 	PRINT @msg;		
 --

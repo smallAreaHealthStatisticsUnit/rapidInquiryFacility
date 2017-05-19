@@ -46,7 +46,7 @@ HTML partial for Login menu
             <form>
                 <div class="txt-fld">
                     <input ng-model="username" type="text" placeholder="User name" id="username"  class='dropdownInput username'/>
-                    <input ng-model="password" type="password" placeholder="Password" id="password"  class='dropdownInput password' />
+                    <input ng-model="password" type="password" autocomplete="off" placeholder="Password" id="password"  class='dropdownInput password' />
                 </div>
                 <div class="save-fld-settings">
                     <md-button class="md-raised circular-progress-button md-warn" ng-click="login()" keep-width>

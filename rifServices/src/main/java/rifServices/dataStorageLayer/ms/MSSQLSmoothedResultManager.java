@@ -196,55 +196,62 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 	// ==========================================
 	
 	public ArrayList<Sex> getSexes(
-		final Connection connection,
-		final String studyID) 
-		throws RIFServiceException {
-		
-		String mapTableName
-			= deriveMapTableName(studyID);
-		
-		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
-		queryFormatter.setUseDistinct(true);
-		queryFormatter.addSelectField("genders");
-		queryFormatter.addFromTable(mapTableName);
+			final Connection connection,
+			final String studyID) 
+			throws RIFServiceException {
+			
+			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+			
+			queryFormatter.setDatabaseSchemaName("rif40");
+			queryFormatter.addSelectField("genders");
+			queryFormatter.addFromTable("rif40_investigations");
+			queryFormatter.addWhereParameter("study_id");
 				
-		
-		System.out.println("=======");
-		System.out.println(queryFormatter.generateQuery());
-		System.out.println("=======");
-		
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		ArrayList<Sex> results = new ArrayList<Sex>();
-		try {
-			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
-			resultSet = statement.executeQuery();
-			while (resultSet.next()) {
-				int sexID = resultSet.getInt(1);
-				Sex currentSex = Sex.getSexFromCode(sexID);
-				results.add(currentSex);
+			System.out.println("=======");
+			System.out.println(queryFormatter.generateQuery());
+			System.out.println("=======");
+			
+			PreparedStatement statement = null;
+			ResultSet resultSet = null;
+			ArrayList<Sex> results = new ArrayList<Sex>();
+			try {
+				
+				statement = connection.prepareStatement(queryFormatter.generateQuery());
+				statement.setInt(1, Integer.valueOf(studyID));
+				resultSet = statement.executeQuery();
+				resultSet.next();	
+				
+				int sexID = resultSet.getInt(1);				
+
+				if (sexID == 3) {
+					//BOTH
+					results.add(Sex.getSexFromCode(1));
+					results.add(Sex.getSexFromCode(2));
+					results.add(Sex.getSexFromCode(3));
+				} else {
+					//M or F
+					results.add(Sex.getSexFromCode(sexID));
+				}
 			}
+			catch(SQLException sqlException) {
+				logSQLException(sqlException);
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"smoothedResultsManager.error.unableToGetSexesForStudy",
+						studyID);
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.DATABASE_QUERY_FAILED, 
+						errorMessage);
+				throw rifServiceException;
+			}
+			finally {
+				PGSQLQueryUtility.close(statement);
+				PGSQLQueryUtility.close(resultSet);
+			}		
+			
+			return results;
 		}
-		catch(SQLException sqlException) {
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"smoothedResultsManager.error.unableToGetSexesForStudy",
-					studyID);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
-		}		
-		
-		return results;
-	}
 		
 	public ArrayList<Integer> getYears(
 		final Connection connection,
@@ -313,7 +320,7 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 	}
 	
 	
-	//TODO:(DM) new geography method
+	// new geography method
 	public String[] getGeographyAndLevelForStudy(
 		final Connection connection,
 		final String studyID) 

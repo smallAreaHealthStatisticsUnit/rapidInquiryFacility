@@ -273,6 +273,22 @@ final class PGSQLStudyStateManager
 		return result;
 	}
 	
+	private int getIthUpdate(
+			final String studyState) {
+		
+		if (studyState.equals("C")) {
+			return 0;
+		}
+		else if (studyState.equals("E")) {
+			return 1;
+		}
+		else if (studyState.equals("R")) {
+			return 2;
+		} 
+		else {
+			return 0;
+		}
+	}	
 
 	public void updateStudyStatus(
 		final Connection connection, 
@@ -285,9 +301,7 @@ final class PGSQLStudyStateManager
 		if (studyState == StudyState.STUDY_NOT_CREATED) {
 			return;
 		}
-		
-		
-		
+				
 		/*
 		 * We're just adding another entry to the status table. So an update
 		 * is really adding a new row
@@ -296,8 +310,8 @@ final class PGSQLStudyStateManager
 		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "INSERT INTO " + statusTableName);
-		queryFormatter.addQueryLine(1, " (study_id, study_state, creation_date, message) ");
-		queryFormatter.addQueryLine(1, "VALUES (?, ?, NOW(), ?)");						
+		queryFormatter.addQueryLine(1, " (study_id, study_state, creation_date, ith_update, message) ");
+		queryFormatter.addQueryLine(1, "VALUES (?, ?, NOW(), ?, ?)");						
 		
 		PreparedStatement statement = null;
 		try {
@@ -306,7 +320,8 @@ final class PGSQLStudyStateManager
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(studyID));
 			statement.setString(2, studyState.getCode());
-			statement.setString(3, statusMessage);
+			statement.setInt(3, getIthUpdate(studyState.getCode()));
+			statement.setString(4, statusMessage);
 			statement.executeUpdate();
 			connection.commit();
 			System.out.println("SQLStudyStateManager updateStudyStatus 2");
@@ -627,13 +642,15 @@ final class PGSQLStudyStateManager
 					connection,
 					statusTableName,
 					rifStudiesTableName);
-
+			
+			//Disabled to keep tomcat window clear (called every 4 seconds by front-end)
+			/*
 			System.out.println("getCurrentStatusAllStudies 2  number of updates==" + expectedNumberOfStatusUpdates+"==");
 
 			logSQLQuery(
 				"getCurrentStatusAllStudies", 
 				queryFormatter, 
-				"userID");
+				"userID");*/
 			
 			statement
 				= createPreparedStatement(
@@ -728,7 +745,7 @@ final class PGSQLStudyStateManager
 		queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_id = most_recent_updates.study_id");
 
 		
-		System.out.println(queryFormatter.generateQuery());
+		//System.out.println(queryFormatter.generateQuery());
 		
 		Integer result = 0;
 		PreparedStatement statement = null;		

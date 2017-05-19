@@ -53,12 +53,6 @@ angular.module("RIF")
 
                 //Open the modal
                 $scope.open = function (id) {
-
-                    //if there are no studies, do not show
-                    if (angular.isUndefined($scope.studyID[id])) {
-                        return;
-                    }
-
                     $scope.id = id; //<leaflet id = "id">
                     var modalInstance = $uibModal.open({
                         animation: true,

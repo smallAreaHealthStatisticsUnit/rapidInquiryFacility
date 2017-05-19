@@ -48,10 +48,7 @@ GO
 CREATE PROCEDURE [rif40].[rif40_compute_results](@study_id INT, @debug INT)
 WITH EXECUTE AS 'rif40' /* So as to be owned by RIF40 */
 AS
-BEGIN
-	PRINT 'In: rif40.rif40_compute_results()';
-
-	DECLARE @rval INTEGER=0; 	-- Success		
+BEGIN	
 /*
 Function:	rif40_compute_results()
 Parameter:	Study ID
@@ -85,389 +82,554 @@ Map table for disease maps supports area_id, gid and gid_rowindex for faster mid
 This may be added to extract creation later.
 
  */
- 
- /*
-	c1comp CURSOR(l_study_id INTEGER) FOR
-		SELECT * 
-		  FROM rif40_studies a
-		 WHERE a.study_id = l_study_id;
-	c1acomp CURSOR(l_study_id INTEGER) FOR
-		SELECT * 
-		  FROM rif40_studies a
-		 WHERE a.study_id = l_study_id;
-	c2comp CURSOR(l_study_id INTEGER) FOR
-		SELECT * 
-		  FROM rif40_investigations a
-		 WHERE a.study_id = l_study_id
+
+--
+-- Defaults if set to NULL
+--
+	DECLARE @rval INTEGER=0; 	-- Success	
+	
+	DECLARE c1comp CURSOR FOR
+		SELECT study_id, extract_table, geography, study_type, map_table, extract_permitted,
+			   description, study_geolevel_name
+		  FROM rif40.rif40_studies a
+		 WHERE a.study_id = @study_id;
+	DECLARE c2comp CURSOR FOR
+		SELECT inv_id, inv_name, numer_tab, inv_description
+		  FROM rif40.rif40_investigations a
+		 WHERE a.study_id = @study_id
 		 ORDER BY inv_id;
-	c3comp CURSOR(l_study_id INTEGER) FOR
-		SELECT *
-		  FROM rif40_study_shares a
-		 WHERE l_study_id = a.study_id;
-	c4comp CURSOR FOR
-		SELECT col_description(a.oid, c.ordinal_position) AS description, c.column_name
-		  FROM information_schema.columns c, pg_class a
-			LEFT OUTER JOIN pg_namespace n ON (n.oid = a.relnamespace)			
-		 WHERE a.relowner IN (SELECT oid FROM pg_roles WHERE rolname = 'rif40')
-		   AND a.relname = 't_rif40_results'
-		   AND a.relname = c.table_name
-		   AND  c.column_name != 'hash_partition_number' /- Exclude inherited columns -/
-		 ORDER BY 1;
---	c6comp CURSOR(l_geography INTEGER) FOR
---		SELECT *
---		  FROM rif40_geographies a
---		 WHERE l_geography = a.geography;
+	DECLARE c3comp CURSOR FOR
+		SELECT grantee_username
+		  FROM rif40.rif40_study_shares a
+		 WHERE a.study_id = @study_id;
+	DECLARE c4comp CURSOR FOR
+		SELECT a.column_name, CAST (b.value AS VARCHAR) AS column_comment
+		  FROM information_schema.columns a, 
+			   fn_listextendedproperty('MS_Description', 
+					'schema', 'rif40', 'table', 't_rif40_results', 'column', default) b
+		 WHERE a.table_name  = 't_rif40_results'
+		   AND a.column_name COLLATE SQL_Latin1_General_CP1_CI_AS = 
+					b.objname COLLATE SQL_Latin1_General_CP1_CI_AS
+		   AND b.objtype     = 'COLUMN';
+
 --
--- Inherited columns failure:
+	DECLARE @c1_rec_study_id 		INTEGER;
+	DECLARE @c1_rec_extract_table	VARCHAR(30);
+	DECLARE @c1_rec_geography		VARCHAR(30);
+	DECLARE @c1_rec_study_type		VARCHAR(1);
+	DECLARE @c1_rec_map_table		VARCHAR(30);
+	DECLARE @c1_rec_extract_permitted INTEGER;
+	DECLARE @c1_rec_description	 	VARCHAR(250);
+	DECLARE @c1_rec_study_geolevel_name	VARCHAR(30);
+--	
+	DECLARE @c2_rec_inv_id 			INTEGER;
+	DECLARE @c2_rec_inv_name		VARCHAR(20);
+	DECLARE @c2_rec_numer_tab 		VARCHAR(30);
+	DECLARE @c2_rec_inv_description VARCHAR(250);
 --
--- [11:27:30 AM 635] notice: rif40_ddl(): SQL in error (42703)> COMMENT ON COLUMN rif_studies.s11_map.hash_partition_number IS 'Hash partition number (for partition elimination)';
--- [11:27:30 AM 646] notice: rif40_study_ddl_definer(): [56408] Study 11: statement 51 error: 42703 "column "hash_partition_number" of relation "rif_studies.s11_map" does not exist" raised by
--- SQL> COMMENT ON COLUMN rif_studies.s11_map.hash_partition_number IS 'Hash partition number (for partition elimination)';
---  after: 00:00:03.877
--- [11:27:30 AM 658] notice: rif40_study_ddl_definer(): [56409] Study 11: error prevents further processing
---		 		 
-	c5comp REFCURSOR;
+	DECLARE @c3_rec_grantee_username VARCHAR(30);
+	
+	DECLARE @c4_rec_column_name 	VARCHAR(30);
+	DECLARE @c4_rec_column_comment 	VARCHAR(MAX);
 --
-	c1_rec RECORD;
-	c1a_rec RECORD;
-	c2_rec RECORD;
-	c3_rec RECORD;
-	c4_rec RECORD;
-	c5_rec RECORD;
---	c6_rec RECORD;
+	DECLARE @inv_array TABLE (inv_id INTEGER);
+	DECLARE c6comp CURSOR FOR 
+		SELECT inv_id
+		  FROM @inv_array;
+	DECLARE @c6_rec_inv_id 			INTEGER;		  
 --
-	sql_stmt	VARCHAR;
-	ddl_stmts	VARCHAR[];
-	i		INTEGER:=0;
-	t_ddl		INTEGER:=1;
-	inv_array	INTEGER[];
-	inv		INTEGER;
-BEGIN
-	OPEN c1comp(study_id);
-	FETCH c1comp INTO c1_rec;
-	OPEN c1acomp(study_id);
-	FETCH c1acomp INTO c1a_rec;
-	IF NOT FOUND THEN
+	DECLARE @i			INTEGER=0;
+--
+	DECLARE @sql_stmt 	NVARCHAR(MAX);
+--		  
+	DECLARE @dml_stmts 	Sql_stmt_table;
+	DECLARE @t_dml		INTEGER=0;
+--		  
+	DECLARE @ddl_stmts 	Sql_stmt_table;
+	DECLARE @t_ddl		INTEGER=0;
+--
+	DECLARE @etime DATETIME, @stp DATETIME=GETDATE(), @etp DATETIME;
+--
+	DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
+	DECLARE @tab		VARCHAR(1)=CHAR(9);
+	DECLARE @err_msg 	VARCHAR(MAX);
+	DECLARE @msg	 	VARCHAR(MAX);	
+
+--
+-- Use caller execution context to query RIF views
+--
+	EXECUTE AS CALLER /* RIF user */;
+--
+	OPEN c1comp;
+	FETCH NEXT FROM c1comp INTO @c1_rec_study_id, @c1_rec_extract_table, @c1_rec_geography,
+		@c1_rec_study_type, @c1_rec_map_table, @c1_rec_extract_permitted, @c1_rec_description,
+		@c1_rec_study_geolevel_name;
+	IF @@CURSOR_ROWS = 0 BEGIN
 		CLOSE c1comp;
-		CLOSE c1acomp;
-		PERFORM rif40_log_pkg.rif40_error(-55600, 'rif40_compute_results', 
-			'Study ID % not found',
-			study_id::VARCHAR		/- Study ID -/);
-	END IF;
+		DEALLOCATE c1comp;
+		SET @err_msg = formatmessage(55600, @study_id); -- Study ID %i not found
+		THROW 55600, @err_msg, 1;
+	END;
 	CLOSE c1comp;
-	CLOSE c1acomp;
+	DEALLOCATE c1comp;
+	
 --
 -- Calculate observed
 --
 -- [No genders support]
 --
-	sql_stmt:='INSERT INTO rif40_results (study_id, inv_id, band_id, genders, direct_standardisation, adjusted, observed)'||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'WITH a AS ('||E'\n';
+	SET @sql_stmt='WITH a AS (' + @crlf +
+		@tab + 'SELECT study_id, band_id, sex,';				/* Already banded */
 --
-	sql_stmt:=sql_stmt||E'\t'||'SELECT study_id, band_id, sex,';				/- Alredy banded -/
-	FOR c2_rec IN c2comp(study_id) LOOP
-		i:=i+1;
-		inv_array[i]:=c2_rec.inv_id;
-		IF i = 1 THEN
-		       	sql_stmt:=sql_stmt||E'\n'||E'\t'||'       SUM(COALESCE('||c2_rec.inv_name||', 0)) AS inv_'||i::VARCHAR||'_observed'||
-				E'\t'||'/- '||c2_rec.inv_id||' -  '||c2_rec.numer_tab||' - '||c2_rec.inv_description||' -/';
-		ELSE
-		       	sql_stmt:=sql_stmt||','||E'\n'||E'\t'||'       SUM(COALESCE('||c2_rec.inv_name||', 0)) AS inv_'||i::VARCHAR||'_observed'||
-				E'\t'||'/- '||c2_rec.inv_id||' -  '||c2_rec.numer_tab||' - '||c2_rec.inv_description||' -/';
-		END IF;
-	END LOOP;
-	sql_stmt:=sql_stmt||E'\t'||'	  FROM '||quote_ident(LOWER(c1_rec.extract_table))||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'	 WHERE study_or_comparison = ''S'''||E'\n';
-	sql_stmt:=sql_stmt||E'\t'||'	 GROUP BY study_id, band_id, sex'||E'\n';
-	sql_stmt:=sql_stmt||')'||E'\n';
-	FOREACH inv IN ARRAY inv_array LOOP
-		IF i > 1 THEN
-			sql_stmt:=sql_stmt||'UNION'||E'\n';
-		END IF;
-		sql_stmt:=sql_stmt||'SELECT study_id, '||inv::VARCHAR||' AS inv_id, band_id,'||
-		' 1 AS genders, 0 /- Indirect -/ AS direct_standardisation, 0 /- Unadjusted -/ AS adjusted, inv_'||
-			i::VARCHAR||'_observed AS observed'||E'\n';
-		sql_stmt:=sql_stmt||'  FROM a'||E'\n';
-		sql_stmt:=sql_stmt||' WHERE sex = 1'||E'\n';
-		sql_stmt:=sql_stmt||'UNION'||E'\n';
-		sql_stmt:=sql_stmt||'SELECT study_id, '||inv::VARCHAR||' AS inv_id, band_id,'||
-		' 2 AS genders, 0 /- Indirect -/ AS direct_standardisation, 0 /- Unadjusted -/ AS adjusted, inv_'||
-			i::VARCHAR||'_observed AS observed'||E'\n';
-		sql_stmt:=sql_stmt||'  FROM a'||E'\n';
-		sql_stmt:=sql_stmt||' WHERE sex = 2'||E'\n';
-		sql_stmt:=sql_stmt||'UNION'||E'\n';
-		sql_stmt:=sql_stmt||'SELECT study_id, '||inv::VARCHAR||' AS inv_id, band_id,'||
-		' 3 /- both -/ AS genders, 0 /- Indirect -/ AS direct_standardisation, 0 /- Unadjusted -/ AS adjusted, SUM(COALESCE(inv_'||
-			i::VARCHAR||'_observed, 0)) AS observed'||E'\n';
-		sql_stmt:=sql_stmt||'  FROM a'||E'\n';
-		sql_stmt:=sql_stmt||' GROUP BY study_id, band_id'||E'\n';
-	END LOOP;
-	sql_stmt:=sql_stmt||' ORDER BY 1, 2, 3, 4, 5, 6';
+	OPEN c2comp;
+	FETCH NEXT FROM c2comp INTO @c2_rec_inv_id, @c2_rec_inv_name, @c2_rec_numer_tab, 
+		@c2_rec_inv_description;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @i=@i+1;		
+		INSERT INTO @inv_array(inv_id) VALUES (@c2_rec_inv_id);
 --
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-		'55601] SQL> %;',
-		sql_stmt::VARCHAR);
-	IF rif40_sm_pkg.rif40_execute_insert_statement(study_id, sql_stmt, 'rif40_results observed INSERT'::VARCHAR) = FALSE THEN 
-		RETURN FALSE;
-	END IF;
+		IF @i = 1 SET @sql_stmt=@sql_stmt + @crlf + @tab + 
+			'       SUM(COALESCE(' + LOWER(@c2_rec_inv_name) + ', 0)) AS inv_' + CAST(@i AS VARCHAR) + 
+			'_observed' + @tab + '/* ' + CAST (@c2_rec_inv_id AS VARCHAR) + ' -  ' + @c2_rec_numer_tab + ' - ' + 
+			@c2_rec_inv_description + ' */'
+		ELSE SET @sql_stmt=@sql_stmt + ',' + @crlf + @tab + 
+			'       SUM(COALESCE(' + LOWER(@c2_rec_inv_name) + ', 0)) AS inv_' + CAST(@i AS VARCHAR) + 
+			'_observed' + @tab + '/* ' + CAST(@c2_rec_inv_id AS VARCHAR) + ' -  ' + @c2_rec_numer_tab + ' - ' + 
+			@c2_rec_inv_description + ' */'
+--
+		FETCH NEXT FROM c2comp INTO @c2_rec_inv_id, @c2_rec_inv_name, @c2_rec_numer_tab, 
+			@c2_rec_inv_description;
+	END;
+	CLOSE c2comp;
+	DEALLOCATE c2comp;	
+	SET @sql_stmt=@sql_stmt + @crlf + '	  FROM rif_studies.' + LOWER(@c1_rec_extract_table) + @crlf + 
+		'	 WHERE study_or_comparison = ''S''' + @crlf +
+		'	 GROUP BY study_id, band_id, sex' + @crlf +
+		')' + @crlf;
+
+--
+	SET @sql_stmt=@sql_stmt +
+		'INSERT INTO rif40.rif40_results' + @crlf + @tab +
+		'(study_id, inv_id, band_id, genders, direct_standardisation, adjusted, observed)' + 
+		@crlf;
+
+	SET @i=0;
+	OPEN c6comp;
+	FETCH NEXT FROM c6comp INTO @c6_rec_inv_id;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @i=@i+1; /* XXXX Reset i in PG */
+		IF @i > 1 SET @sql_stmt=@sql_stmt + 'UNION' + @crlf;
+		SET @sql_stmt=@sql_stmt +
+			'SELECT study_id, ' + CAST (@c6_rec_inv_id AS VARCHAR) + ' AS inv_id, band_id,' +
+				' 1 AS genders,' + @crlf + 
+			'       0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */ AS adjusted,' +
+				' inv_' +
+				 CAST(@i AS VARCHAR) + '_observed AS observed' + @crlf +
+			'  FROM a' + @crlf +
+			' WHERE sex = 1' + @crlf +
+			'UNION' + @crlf +
+			'SELECT study_id, ' + CAST (@c6_rec_inv_id AS VARCHAR) + ' AS inv_id, band_id,' +
+				' 2 AS genders,' + @crlf + 
+			'       0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */ AS adjusted,' +
+				' inv_' +
+				 CAST(@i AS VARCHAR) + '_observed AS observed' + @crlf +
+			'  FROM a' + @crlf +
+			' WHERE sex = 2' + @crlf +
+			'UNION' + @crlf +
+			'SELECT study_id, ' + CAST (@c6_rec_inv_id AS VARCHAR) + ' AS inv_id, band_id,' +
+				' 3 /* both */ AS genders,' + @crlf + 
+			'       0 /* Indirect */ AS direct_standardisation, 0 /* Unadjusted */'+
+				' AS adjusted, SUM(COALESCE(inv_' +
+				 CAST(@i AS VARCHAR) + '_observed, 0)) AS observed' + @crlf +
+			'  FROM a' + @crlf +
+			' GROUP BY study_id, band_id' + @crlf;		
+--
+		FETCH NEXT FROM c6comp INTO @c6_rec_inv_id;
+	END;
+	CLOSE c6comp;
+	DEALLOCATE c6comp;
+--
+	SET @sql_stmt=@sql_stmt + ' ORDER BY 1, 2, 3, 4, 5, 6';
 --	
--- Check if t_rif40_sahsu_geometry.gid_rowindex column exists (does not pre alter 2) 
---	
-	OPEN c5comp FOR EXECUTE 
-		'SELECT column_name'||E'\n'||
-		'  FROM information_schema.columns'||E'\n'||
-		' WHERE table_name   = '''||quote_ident('t_rif40_'||LOWER(c1_rec.geography)||'_geometry')||''''||E'\n'||
-		'   AND column_name  = ''gid_rowindex'''||E'\n'||
-		'   AND table_schema = ''rif40''';
-	FETCH c5comp INTO c5_rec;
-	CLOSE c5comp;
+	SET @t_dml=@t_dml+1;	
+	INSERT INTO @dml_stmts(sql_stmt) VALUES (@sql_stmt);	
+ 
+--
+-- Populate rif40_results from extract table
+--
+	EXECUTE @rval=rif40.rif40_ddl
+			@dml_stmts	/* SQL table */,
+			@debug		/* enable debug: 0/1) */;
+	IF @rval = 0 BEGIN
+			SET @msg='55601: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' populate rif40_results from extract table failed, see previous warnings'	/* Study id */;
+			PRINT @msg;
+			RETURN @rval;
+		END; 
+	ELSE BEGIN
+			SET @msg='55602: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' populate rif40_results from extract table OK'	/* Study id */ +
+				@crlf + 'SQL>' + @sql_stmt;
+			PRINT @msg;
+		END; 
+		
 --
 -- Create map table [DOES NOT CREATE ANY ROWS]
 --
 -- [CONTAINS NO GEOMETRY]
 --
-	IF c1_rec.study_type = 1 /- Disease mapping -/ THEN
+	IF @c1_rec_study_type = 1 /* Disease mapping */ SET @sql_stmt='SELECT TOP 1 ' +
 --
 -- GID_ROWINDEX support in maps (extracts subject to performance tests)
 --
-		ddl_stmts[t_ddl]:='CREATE TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
-			'AS'||E'\n'||
-			'SELECT ''X''::Text AS gid, LPAD(ROW_NUMBER() OVER('||E'\n'||
-			'       		ORDER BY a.study_id, a.band_id, a.inv_id, a.genders, a.adjusted, a.direct_standardisation)::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
-			'               a.band_id::Text AS area_id,'||E'\n'||
-			'       a.*'||E'\n'||
-			'  FROM rif40_results a'||E'\n'||
-			' WHERE a.study_id      = '||study_id::VARCHAR||' /- Current study ID -/'||E'\n'||
-			' LIMIT 1'::VARCHAR; 
-	ELSE
-		ddl_stmts[t_ddl]:='CREATE TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
-			'AS'||E'\n'||
-			'SELECT a.*'||E'\n'||
-			'  FROM rif40_results a'||E'\n'||
-			' WHERE a.study_id = '||study_id::VARCHAR||' /- Current study ID -/ LIMIT 1'::VARCHAR; 
-	END IF;
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-		'[55602] SQL> %;',
-		ddl_stmts[t_ddl]::VARCHAR);
+-- LPAD(YourFieldValue, 10, '0') becomes
+-- RIGHT(REPLICATE('0', 10) + YourFieldValue,10)
+--
+			'REPLICATE(''X'', 60) AS gid,' + @crlf +
+			'       RIGHT(REPLICATE(''0'', 10) + CAST(ROW_NUMBER() OVER(' + @crlf +
+			'              ORDER BY a.study_id, a.band_id, a.inv_id, a.genders, a.adjusted, a.direct_standardisation' + @crlf +
+			'              ) AS VARCHAR), 10) AS gid_rowindex,'+ @crlf +
+			'       REPLICATE(''X'', 60) AS area_id,' + @crlf +
+			'       a.*' + @crlf +
+			'  INTO rif_studies.' + LOWER(@c1_rec_map_table) + @crlf +
+			'  FROM rif40.rif40_results a' + @crlf +
+			' WHERE a.study_id      = ' + CAST(@study_id AS VARCHAR) + ' /* Current study ID */';
+	ELSE SET @sql_stmt=@sql_stmt + 'SELECT TOP 1 a.*' + @crlf + 
+			'  INTO rif_studies.' + LOWER(@c1_rec_map_table) + @crlf +
+			'  FROM rif40.rif40_results a' + @crlf + 
+			' WHERE a.study_id      = ' + CAST(@study_id AS VARCHAR) + ' /* Current study ID */';
+
+--	
+	SET @t_ddl=@t_ddl+1;	
+	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+	SET @msg='55602: SQL> ' + @sql_stmt + ';';
+	PRINT @msg;
+	
 --
 -- Truncate it anyway to make sure
 --
-	t_ddl:=t_ddl+1;	
-	ddl_stmts[t_ddl]:='TRUNCATE TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table));
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-		'[55603] SQL> %;',
-		ddl_stmts[t_ddl]::VARCHAR);
+	SET @sql_stmt='TRUNCATE TABLE [rif_studies].[' + LOWER(@c1_rec_map_table) + ']';
+	SET @t_ddl=@t_ddl+1;	
+	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+	SET @msg='55603: SQL> ' + @sql_stmt + ';';
+	PRINT @msg;
+	
 --
 -- Grant to study owner and all grantees in rif40_study_shares if extract_permitted=1 
 --
-	IF c1_rec.extract_permitted = 1 THEN
-		sql_stmt:='GRANT SELECT,INSERT,UPDATE,TRUNCATE ON rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' TO '||USER;
-		t_ddl:=t_ddl+1;	
-		ddl_stmts[t_ddl]:=sql_stmt;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55604] SQL> %;',
-			ddl_stmts[t_ddl]::VARCHAR);
-		FOR c3_rec IN c3comp(study_id) LOOP
-			sql_stmt:='GRANT SELECT,INSERT,UPDATE ON rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' TO '||c3_rec.grantee_username;
-			t_ddl:=t_ddl+1;	
-			ddl_stmts[t_ddl]:=sql_stmt;
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-				'[55605] SQL> %;',
-				ddl_stmts[t_ddl]::VARCHAR);
-		END LOOP;
-	END IF;
+	IF @c1_rec_extract_permitted = 1 BEGIN
+		SET @sql_stmt='GRANT SELECT,INSERT,UPDATE ON [rif_studies].[' + 
+			LOWER(@c1_rec_map_table) + '] TO ' + USER;
+		SET @t_ddl=@t_ddl+1;	
+		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+		SET @msg='55604: SQL> ' + @sql_stmt + ';';
+		PRINT @msg;
+
+		OPEN c3comp;
+		FETCH NEXT FROM c3comp INTO @c3_rec_grantee_username;
+		WHILE @@FETCH_STATUS = 0
+		BEGIN
+			SET @sql_stmt='GRANT SELECT,INSERT,UPDATE ON [rif_studies].[' + 
+				LOWER(@c1_rec_map_table) + '] TO ' + @c3_rec_grantee_username;
+			SET @t_ddl=@t_ddl+1;	
+			INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+			SET @msg='55605: SQL> ' + @sql_stmt + ';';
+			PRINT @msg;		
+--
+			FETCH NEXT FROM c3comp INTO @c3_rec_grantee_username;
+		END;
+		CLOSE c3comp;
+		DEALLOCATE c3comp;	
+	END;
+	
 --
 -- Comment
 --
-	sql_stmt:='COMMENT ON TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' IS ''Study :'||study_id::VARCHAR||' map table''';
-	t_ddl:=t_ddl+1;	
-	ddl_stmts[t_ddl]:=sql_stmt;
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-		'[55606] SQL> %;',
-		ddl_stmts[t_ddl]::VARCHAR);
-	FOR c4_rec IN c4comp LOOP
-		sql_stmt:='COMMENT ON COLUMN rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||'.'||c4_rec.column_name||
-			' IS '''||c4_rec.description||'''';
-		t_ddl:=t_ddl+1;	
-		ddl_stmts[t_ddl]:=sql_stmt;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55607] SQL> %;',
-			ddl_stmts[t_ddl]::VARCHAR);
-	END LOOP;
-	IF c1_rec.study_type = 1 /- Disease mapping -/ THEN
+	DECLARE @comment_text NVARCHAR(MAX)='Study ' + 
+			CAST(@study_id AS VARCHAR) + ' map: ' + COALESCE(@c1_rec_description, 'NO DESCRIPTION');
+	SET @sql_stmt='sp_addextendedproperty' + @crlf +
+		'		@name = N''MS_Description'',' + @crlf + 
+		'		@value = N''' + @comment_text + ''',' + @crlf +  
+		'		@level0type = N''Schema'', @level0name = ''rif_studies'',' + @crlf +  
+		'		@level1type = N''Table'', @level1name = ''' + LOWER(@c1_rec_map_table) + '''';
+	SET @t_ddl=@t_ddl+1;	
+	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+	SET @msg='55606: SQL> ' + @sql_stmt + ';';
+	PRINT @msg;
+	
+	OPEN c4comp;
+	FETCH NEXT FROM c4comp INTO @c4_rec_column_name, @c4_rec_column_comment;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SET @sql_stmt='sp_addextendedproperty' + @crlf +
+			'		@name = N''MS_Description'',' + @crlf + 
+			'		@value = N''' + @c4_rec_column_comment + ''',' + @crlf +  
+			'		@level0type = N''Schema'', @level0name = ''rif_studies'',' + @crlf +  
+			'		@level1type = N''Table'', @level1name = ''' + LOWER(@c1_rec_map_table) + ''',' + @crlf +
+			'		@level2type = N''Column'', @level2name = ''' + LOWER(@c4_rec_column_name) + '''';
+		SET @t_ddl=@t_ddl+1;	
+		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+		SET @msg='55607: SQL> ' + @sql_stmt + ';';
+		PRINT @msg;	
+--
+		FETCH NEXT FROM c4comp INTO @c4_rec_column_name, @c4_rec_column_comment;
+	END;
+	CLOSE c4comp;
+	DEALLOCATE c4comp;	
+		
 --
 -- GID, GID_ROWINDEX support in maps (extracts subject to performance tests)
 -- AREA_ID in disease mapping
 --
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55608] SQL> %;',
-			ddl_stmts[t_ddl]::VARCHAR);
---
-		sql_stmt:='COMMENT ON COLUMN rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||'.gid_rowindex'||
-			' IS ''GID rowindex record locator unique key''';
-		t_ddl:=t_ddl+1;	
-		ddl_stmts[t_ddl]:=sql_stmt;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55607] SQL> %;',
-			ddl_stmts[t_ddl]::VARCHAR);
---
-		sql_stmt:='COMMENT ON COLUMN rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||'.gid'||
-			' IS ''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)''';
-		t_ddl:=t_ddl+1;	
-		ddl_stmts[t_ddl]:=sql_stmt;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55607] SQL> %;',
-			ddl_stmts[t_ddl]::VARCHAR);
-	END IF;
+	IF @c1_rec_study_type = 1 /* Disease mapping */ BEGIN
+		SET @sql_stmt='sp_addextendedproperty' + @crlf +
+			'		@name = N''MS_Description'',' + @crlf + 
+			'		@value = N''GID rowindex record locator unique key'',' + @crlf +  
+			'		@level0type = N''Schema'', @level0name = ''rif_studies'',' + @crlf +  
+			'		@level1type = N''Table'', @level1name = ''' + LOWER(@c1_rec_map_table) + ''',' + @crlf +
+			'		@level2type = N''Column'', @level2name = ''gid_rowindex''';
+		SET @t_ddl=@t_ddl+1;	
+		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+		SET @msg='55608: SQL> ' + @sql_stmt + ';';
+		PRINT @msg;	
+		
+		SET @sql_stmt='sp_addextendedproperty' + @crlf +
+			'		@name = N''MS_Description'',' + @crlf + 
+			'		@value = N''Geographic ID (artificial primary key originally created by shp2pgsql, equals RIF40_GEOLEVELS.GEOLEVEL_ID after ST_Union() conversion to single multipolygon per AREA_ID)'',' + @crlf +  
+			'		@level0type = N''Schema'', @level0name = ''rif_studies'',' + @crlf +  
+			'		@level1type = N''Table'', @level1name = ''' + LOWER(@c1_rec_map_table) + ''',' + @crlf +
+			'		@level2type = N''Column'', @level2name = ''gid''';
+		SET @t_ddl=@t_ddl+1;	
+		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+		SET @msg='55609: SQL> ' + @sql_stmt + ';';
+		PRINT @msg;	
+	END;
+
+	REVERT;	/* Revert to procedure owner context (RIF40) to create map table */
+
+	EXECUTE @rval=rif40.rif40_ddl
+			@ddl_stmts	/* SQL table */,
+			@debug		/* enable debug: 0/1) */;
+	IF @rval = 0 BEGIN
+			SET @msg='55610: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' map table creation failed, see previous warnings'	/* Study id */;
+			PRINT @msg;
+			RETURN @rval;
+		END; 
+	ELSE BEGIN
+			SET @msg='55611: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' map table creation OK'	/* Study id */;
+			PRINT @msg;
+		END; 
 
 --
--- Execute DDL code as rif40
+-- Use caller execution context to query RIF views
 --
-	IF rif40_sm_pkg.rif40_study_ddl_definer(c1_rec.study_id, c1_rec.username, c1a_rec.audsid, ddl_stmts) = FALSE THEN
-		RETURN FALSE;
-	END IF;
+	EXECUTE AS CALLER /* RIF user */;
+	
 --
 -- Now do real insert as user
 --
-	IF c1_rec.study_type = 1 /- Disease mapping -/ THEN
+	IF @c1_rec_study_type = 1 /* Disease mapping */ SET @sql_stmt='INSERT INTO rif_studies.' + 
+		LOWER(@c1_rec_map_table) + @crlf +
 --
 -- GID, GID_ROWINDEX support in maps (extracts subject to performance tests)
 -- AREA_ID in disease mapping
 --
-		sql_stmt:='INSERT INTO rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
-			'SELECT ''X''::Text AS gid, LPAD(ROW_NUMBER() OVER('||E'\n'||
-			'       		ORDER BY a.study_id, a.band_id, a.inv_id, a.genders, a.adjusted, a.direct_standardisation)::Text, 10, ''0''::Text) AS gid_rowindex,'||E'\n'||
-			'               a.band_id::Text AS area_id,'||E'\n'||
-			'       a.*'||E'\n'||
-			'  FROM rif40_results a'||E'\n'||
-			' WHERE a.study_id      = '||study_id::VARCHAR||' /- Current study ID -/'||E'\n'||
-			' ORDER BY 2			/- GID_ROWINDEX -/'::VARCHAR; 
-	ELSE
-		sql_stmt:='INSERT INTO rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||E'\n'||
-			'SELECT a.*'||E'\n'||
-			' FROM rif40_results a'||E'\n'||
-			' WHERE a.study_id = '||study_id::VARCHAR||' /- Current study ID -/'||E'\n'||
-			' ORDER BY 1, 2, 3, 4, 5, 6'::VARCHAR; 
-	END IF;
-	IF rif40_sm_pkg.rif40_execute_insert_statement(study_id, sql_stmt, 'Map table observed INSERT'::VARCHAR) = FALSE THEN 
-		RETURN FALSE;
-	END IF;
+			'SELECT ''X'' AS gid,' + @crlf +
+			'       RIGHT(REPLICATE(''0'', 10) + CAST(ROW_NUMBER() OVER(' + @crlf +
+			'              ORDER BY a.study_id, a.band_id, a.inv_id, a.genders, a.adjusted, a.direct_standardisation' + @crlf +
+			'              ) AS VARCHAR), 10) AS gid_rowindex,'+ @crlf +
+			'       ''X'' AS area_id,' + @crlf +
+			'       a.*' + @crlf +
+			'  FROM rif40.rif40_results a' + @crlf +
+			' WHERE a.study_id      = ' + CAST(@study_id AS VARCHAR) + 
+				' /* Current study ID */' + @crlf +	
+			' ORDER BY 2			/* GID_ROWINDEX */';
+	ELSE SET @sql_stmt='INSERT INTO rif_studies.' + 
+		LOWER(@c1_rec_map_table) + @crlf +
+			'SELECT a.*' + @crlf + 
+			'  FROM rif40.rif40_results a' + @crlf + 
+			' WHERE a.study_id      = ' + CAST(@study_id AS VARCHAR) + 
+				' /* Current study ID */' + @crlf +	
+			' ORDER BY 1, 2, 3, 4, 5, 6'; 	
+	PRINT @sql_stmt;
+	
+	DECLARE @rowcount	INTEGER;
+	BEGIN TRY	
+		EXECUTE sp_executesql @sql_stmt;
+		SET @rowcount=@@ROWCOUNT;
+		PRINT 'SQL[' + USER + '] study_id: ' + CAST(@study_id AS VARCHAR) + 
+			' map table insert OK; rows: ' + CAST(@rowcount AS VARCHAR);
+	END TRY
+	BEGIN CATCH		
+--	 		[55699] SQL statement had error: %s%sSQL[%s]> %s;	
+		IF LEN(@sql_stmt) > 1900 BEGIN	
+			SET @err_msg = formatmessage(55699, error_message(), @crlf, USER, '[SQL statement too long for error; see SQL above]');
+			PRINT '[55699] SQL> ' + @sql_stmt;
+		END;
+		ELSE SET @err_msg = formatmessage(55699, error_message(), @crlf, USER, @sql_stmt); 
+		THROW 55699, @err_msg, 1;
+	END CATCH;	
 
-	ddl_stmts:=NULL;
-	t_ddl:=1;
+	DELETE FROM @ddl_stmts;
+	SET @t_ddl=1;
+	
+	REVERT;	/* Revert to procedure owner context (RIF40) to add primary key */
+
 --
 -- Add primary key
 --
-	sql_stmt:='ALTER TABLE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' ADD CONSTRAINT '||quote_ident(LOWER(c1_rec.map_table)||'_pk')||
+	SET @sql_stmt='ALTER TABLE rif_studies.' + LOWER(@c1_rec_map_table) + 
+		' ADD CONSTRAINT ' + LOWER(@c1_rec_map_table) + '_pk' +
 		' PRIMARY KEY (study_id, band_id, inv_id, genders, adjusted, direct_standardisation)';
-	ddl_stmts[t_ddl]:=sql_stmt;
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-		'[55611] SQL> %;',
-		sql_stmt::VARCHAR);
-	t_ddl:=t_ddl+1;		
+	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+	SET @msg='55612: SQL> ' + @sql_stmt + ';';
+	PRINT @msg;	
+
+--
+-- Make gid_rowindex bigger
+--
+	SET @sql_stmt='ALTER TABLE rif_studies.' + LOWER(@c1_rec_map_table) + 
+		' ALTER COLUMN gid_rowindex VARCHAR(70)';
+	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+	SET @msg='55613: SQL> ' + @sql_stmt + ';';
+	PRINT @msg;
 	
 --
 -- Execute DDL code as rif40
 --
-	IF rif40_sm_pkg.rif40_study_ddl_definer(c1_rec.study_id, c1_rec.username, c1a_rec.audsid, ddl_stmts) = FALSE THEN
-		RETURN FALSE;
-	END IF;
+	EXECUTE @rval=rif40.rif40_ddl
+			@ddl_stmts	/* SQL table */,
+			@debug		/* enable debug: 0/1) */;
+	IF @rval = 0 BEGIN
+			SET @msg='55614: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' map primary key creation failed, see previous warnings'	/* Study id */;
+			PRINT @msg;
+			RETURN @rval;
+		END; 
+	ELSE BEGIN
+			SET @msg='55615: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' map primary key creation OK'	/* Study id */;
+			PRINT @msg;
+		END; 
+
+--
+-- Use caller execution context to query RIF views
+--
+	EXECUTE AS CALLER /* RIF user */;
 	
+	DELETE FROM @ddl_stmts;
+	SET @t_ddl=1;	
 --
 -- Update area_id, gid
 --
-	IF c1_rec.study_type = 1 /- Disease mapping -/ THEN
-
-		ddl_stmts:=NULL;
-		t_ddl:=1;	
+	IF @c1_rec_study_type = 1 /* Disease mapping */ BEGIN	
 		
-		sql_stmt:='UPDATE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' a'||E'\n'||
-			'   SET area_id = ('||E'\n'||
-			'			SELECT b.area_id'||E'\n'||
-			'			  FROM rif40_study_areas b'||E'\n'||
-			'			 WHERE a.study_id = b.study_id'||E'\n'||
-			'			   AND a.band_id  = b.band_id)';
-		ddl_stmts[t_ddl]:=sql_stmt;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55612] SQL> %;',
-			sql_stmt::VARCHAR);
-		t_ddl:=t_ddl+1;		
+		SET @sql_stmt='UPDATE rif_studies.' + LOWER(@c1_rec_map_table) + @crlf +
+			'   SET area_id = (' + @crlf +
+			'           SELECT b.area_id' + @crlf +
+			'             FROM rif40.rif40_study_areas b' + @crlf +
+			'            WHERE rif_studies.' + LOWER(@c1_rec_map_table) + '.study_id = b.study_id' + @crlf +
+			'              AND rif_studies.' + LOWER(@c1_rec_map_table) + '.band_id  = b.band_id)';
+		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+		SET @msg='55616: SQL> ' + @sql_stmt + ';';	
+		PRINT @msg;
+		
 --
 -- Get geographies settings
 --
---		OPEN c6comp(c1_rec.geography);
---		FETCH c6comp INTO c6_rec;
---		CLOSE c6comp;
---
-		sql_stmt:='UPDATE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' a'||E'\n'||
-			'   SET gid = ('||E'\n'||
-			'			SELECT d.gid'||E'\n'||
-			'			  FROM '||quote_ident('lookup_'||LOWER(c1_rec.study_geolevel_name))||' d'||E'\n'||
-			'			 WHERE a.area_id       = d.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||')';
-		ddl_stmts[t_ddl]:=sql_stmt;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55613] SQL> %;',
-			sql_stmt::VARCHAR);
-		t_ddl:=t_ddl+1;			
+		SET @sql_stmt='UPDATE rif_studies.' + LOWER(@c1_rec_map_table) + @crlf +
+			'   SET gid = ('+ @crlf +
+			'           SELECT d.gid' + @crlf +
+			'             FROM rif_data.lookup_' + LOWER(@c1_rec_study_geolevel_name) + ' d' + @crlf +
+			'            WHERE rif_studies.' + LOWER(@c1_rec_map_table) + '.area_id       = d.' + LOWER(@c1_rec_study_geolevel_name) + ')';
+		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+		SET @msg='55617: SQL> ' + @sql_stmt + ';';	
+		PRINT @msg;	
 
 --
 -- Merge gid with gid_rowindex
 --		
-		sql_stmt:='UPDATE rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||' a'||E'\n'||
-			'   SET gid_rowindex = a.gid||''_''||a.gid_rowindex'||E'\n'||
-			' WHERE a.gid IS NOT NULL';
-		ddl_stmts[t_ddl]:=sql_stmt;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55614] SQL> %;',
-			sql_stmt::VARCHAR);
-		t_ddl:=t_ddl+1;	
+-- Error message: Function: [rif40].[rif40_ddl], SQL statement had error: String or binary data would be truncated.
+		SET @sql_stmt='UPDATE rif_studies.' + LOWER(@c1_rec_map_table) + @crlf +
+			'   SET gid_rowindex = gid + ''_'' + gid_rowindex' + @crlf +
+			' WHERE gid IS NOT NULL';
+		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+		SET @msg='55618: SQL> ' + @sql_stmt + ';';	
+		PRINT @msg;	
 		
-		PERFORM rif40_sql_pkg.rif40_ddl(ddl_stmts); -- Needs to run in user execution context
-	END IF;
+--
+-- Execute as USER
+--
+		EXECUTE @rval=rif40.rif40_ddl
+				@ddl_stmts	/* SQL table */,
+				@debug		/* enable debug: 0/1) */;
+		IF @rval = 0 BEGIN
+				SET @msg='55619: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+					' GID update failed, see previous warnings'	/* Study id */;
+				PRINT @msg;
+				RETURN @rval;
+			END; 
+		ELSE BEGIN
+				SET @msg='55620: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+					' GID update OK'	/* Study id */;
+				PRINT @msg;
+			END; 
+	
+	
+		DELETE FROM @ddl_stmts;
+		SET @t_ddl=1;
 
-	ddl_stmts:=NULL;
-	t_ddl:=1;	
---
--- Index, analyze
---
-	IF c1_rec.study_type = 1 /- Disease mapping -/ AND c5_rec.column_name /- gid_rowindex post alter 2 -/ IS NOT NULL THEN
 --
 -- Add gid_rowindex unique key for disease maps
 --
-		sql_stmt:='CREATE UNIQUE INDEX '||quote_ident(LOWER(c1_rec.map_table)||'_uk')||
-			' ON rif_studies.'||quote_ident(LOWER(c1_rec.map_table))||'(gid_rowindex)';
-		ddl_stmts[t_ddl]:=sql_stmt;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-			'[55615] SQL> %;',
-			sql_stmt::VARCHAR);
-		t_ddl:=t_ddl+1;	
-	END IF;
-	sql_stmt:='ANALYZE rif_studies.'||quote_ident(LOWER(c1_rec.map_table));
-	ddl_stmts[t_ddl]:=sql_stmt;
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_compute_results', 	
-		'[55616] SQL> %;',
-		sql_stmt::VARCHAR);
+		SET @sql_stmt='CREATE UNIQUE INDEX ' + LOWER(@c1_rec_map_table) + '_uk' +
+			' ON rif_studies.' + LOWER(@c1_rec_map_table) + '(gid_rowindex)';
+		INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+		SET @msg='55621: SQL> ' + @sql_stmt + ';';	
+		PRINT @msg;		
+	END; /* Disease mapping */ 
+
+	REVERT;	/* Revert to procedure owner context (RIF40) to add indexes */	
+	
+--
+-- Analyze
+--
+	SET @sql_stmt='UPDATE STATISTICS rif_studies.' + LOWER(@c1_rec_map_table) + 
+		' WITH SAMPLE 10 PERCENT';
+	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);
+	SET @msg='55622: SQL> ' + @sql_stmt + ';';	
+	PRINT @msg;	
+	
 --
 -- Execute DDL code as rif40
 --
-	IF rif40_sm_pkg.rif40_study_ddl_definer(c1_rec.study_id, c1_rec.username, c1a_rec.audsid, ddl_stmts) = FALSE THEN
-		RETURN FALSE;
-	END IF;
+	EXECUTE @rval=rif40.rif40_ddl
+			@ddl_stmts	/* SQL table */,
+			@debug		/* enable debug: 0/1) */;
+	IF @rval = 0 BEGIN
+			SET @msg='55623: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' Statistics update failed, see previous warnings'	/* Study id */;
+			PRINT @msg;
+			RETURN @rval;
+		END; 
+	ELSE BEGIN
+			SET @msg='55624: RIF40_STUDIES study ' + CAST(@c1_rec_study_id AS VARCHAR) +
+				' Statistics update OK'	/* Study id */;
+			PRINT @msg;
+		END; 
 
 --
-	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_compute_results', 
-		'[55617] Study ID % map table % created',
-		study_id::VARCHAR,
-		c1_rec.map_table::VARCHAR);
+	SET @etp=GETDATE();
+	SET @etime=CAST(@etp - @stp AS TIME);
+	SET @msg='55625: Study ID ' + CAST(@c1_rec_study_id AS VARCHAR) +
+		' map table ' + @c1_rec_map_table + ' created; time taken ' + 
+		CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);
+	PRINT @msg;
 --
--- Next expected...
---
-	PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_compute_results', 
-		'[55618] Study ID % rif40_compute_results() not fully implemented',
-		study_id::VARCHAR);
-	RETURN TRUE;
---
- */
 	RETURN @rval;
 END;
 GO

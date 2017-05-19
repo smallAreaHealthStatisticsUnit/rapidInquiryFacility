@@ -17,13 +17,13 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 
 
+
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-
 import rifServices.restfulWebServices.*;
 import rifServices.dataStorageLayer.ms.MSSQLProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.ms.MSSQLSampleTestObjectGenerator;
-
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.RIFServiceError;
@@ -272,8 +272,6 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			String result = "";
 			
 			try {
-				//Convert URL parameters to RIF service API parameters
-				User user = createUser(servletRequest, userID);
 								
 				RIFServiceStartupOptions rifServiceStartupOptions
 				= RIFServiceStartupOptions.newInstance(
@@ -856,6 +854,47 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			servletRequest,
 			result);		
 	}
+	
+	protected Response getTileMakerCentroids(
+			final HttpServletRequest servletRequest,	
+			final String userID,
+			final String geographyName,
+			final String geoLevelSelectName) {
+			
+			String result = "";
+			
+			try {
+				//Convert URL parameters to RIF service API parameters			
+				User user = createUser(servletRequest, userID);
+				Geography geography = Geography.newInstance(geographyName, "");
+				GeoLevelSelect geoLevelSelect = GeoLevelSelect.newInstance(geoLevelSelectName);
+							
+				//Call service API
+				RIFStudyResultRetrievalAPI studyResultRetrievalService
+					= getRIFStudyResultRetrievalService();
+				
+				RIFResultTable resultTable
+					= studyResultRetrievalService.getTileMakerCentroids(
+						user, 
+						geography, 
+						geoLevelSelect);	
+				
+				RIFResultTableJSONGenerator rifResultTableJSONGenerator
+					= new RIFResultTableJSONGenerator();
+				result = rifResultTableJSONGenerator.writeResultTable(resultTable);
+			}
+			catch(Exception exception) {
+				result 
+					= serialiseException(
+						servletRequest,
+						exception);			
+			}
+			
+
+			return webServiceResponseGenerator.generateWebServiceResponse(
+					servletRequest,
+					result);	
+		}
 	
 	protected Response getTileMakerTiles(
 		final HttpServletRequest servletRequest,	

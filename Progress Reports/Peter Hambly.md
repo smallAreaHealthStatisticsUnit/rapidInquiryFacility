@@ -1287,13 +1287,57 @@ GO
 #### 29th to 28th April	
 
 * Fixed production restore - complete
-	
-#### Current TODO list (April 2017): SQL Server Port
-
 * Complete SQL Server run study port
-* Process Utah geography
-* Postgres install from export script
+* SQL Server full install testing
 * Add checks to username, database name in scripts for lowercase DB name
+* Tested installer on empty SQL Server DB
+* Middleware testing
+* Added middleware *java_build.bat* script
+* Full ICD10 listing setup
+* Web apps 7zip bundle
+	
+#### 1st to 5th May 
+
+* Postgres install from export script
+* Test can run a study on Postgres
+* Study processed by not available to front end:
+```
+sahsuland=> select * from study_status;
+ study_id | study_state |       creation_date        | ith_update |                                       message
+
+----------+-------------+----------------------------+------------+-----------------------------------------------------------------
+--------------------
+        4 | C           | 2017-05-01 14:41:10.344285 |          0 | The study has been created but it has not been verified.
+        4 | E           | 2017-05-01 14:44:32.595896 |          0 | Study extracted imported or created but neither results nor maps
+ have been created.
+        4 | R           | 2017-05-01 14:44:32.83881  |          0 | The study results have been computed and they are now ready to b
+e used.
+(3 rows)
+```
+
+Fixed by:
+```
+UPDATE study_status SET ith_update = 2 WHERE study_state = 'R';
+UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
+```
+* Missing level 4 geography tiles caused by areaid_count=0 in geolevels_sahsuland (SQL statement 327: Update areaid_count 
+  column in geolevels table using geometry table); removed areaid_count tests from tiles_sahsuland view
+  temporarily. Temporary fix applied
+
+#### 8th to 12th May 
+
+* CDC visit in Atlanta: CDC meetings at Roybal, EPHT conference including RIF demo
+
+#### 15th to 19th May 
+
+* Fix tile viewer screen sizing
+* Send out Atlanta comments
+
+#### Current TODO list (May 2017): SQL Server Port
+
+* Fix missing level 4 geography tiles bug (areaid_count=0 in geolevels table)
+* Harden SQL Server port against SQL Injection getting past middleware into meta data
+* Process Utah geography
 * Disable guest logins on SQL Server
 * Add localhost notes to tomcat install doc; add network setup to SQL Server install notes; 
   add notes on cross site scripting errors (caused by URL/webservices name mismatch); firefox example:
@@ -1315,7 +1359,7 @@ GO
 	The statement has been terminated.
 ```
 * Test database and user account creation with db_create target. Need to keep postgres admin logged on
-* Assist with middleware (database fixes); SQL Server full install testing
+* Assist with middleware (database fixes)
 * Drop script for SQL server to all rif40_sahsuland_dev_install.bat/rif40_sahsuland_install.bat to be re-run without rebuilding the entire database
 
 #### TileViewer TODO (deferred to June?):

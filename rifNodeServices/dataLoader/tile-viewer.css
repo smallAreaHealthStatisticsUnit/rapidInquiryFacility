@@ -1,5 +1,5 @@
 body {
-	font-size: smalller;
+	font-size: smaller;
 }
 .selectClass {
     width: 190px; 
@@ -8,6 +8,11 @@ body {
 .inputClass {
     width: 480px; 
 	float: right; 
+}
+.selectorText {
+	padding-top: 10px !important;
+	vertical-align: middle !important;
+	display: inline;
 }
 .labelClass {
 	float: left; 
