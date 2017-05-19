@@ -46,12 +46,6 @@ REM
 REM 
 REM REBUILD_ALL is set up rebuild_all.bat - this prevents the questions being asked twice
 REM
-
-IF EXIST study_id.txt DEL /F study_id.txt
-IF EXIST inv_id.txt DEL /F inv_id.txt
-	
-IF DEFINED STUDY_ID SET STUDY_ID=
-IF DEFINED INV_ID SET INV_ID=
 	
 IF NOT DEFINED REBUILD_ALL (
 	SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
@@ -84,52 +78,66 @@ IF NOT DEFINED DB_DRIVER (
 IF NOT DEFINED ODBC_DATA_SOURCE (
 	SET /P ODBC_DATA_SOURCE=New user password [default SQLServer11]: %=% || SET ODBC_DATA_SOURCE=SQLServer11
 )
+
+
+IF EXIST study_id.txt DEL /F study_id.txt
+IF EXIST inv_id.txt DEL /F inv_id.txt
+
+IF DEFINED STUDY_ID SET STUDY_ID=
+IF DEFINED INV_ID SET INV_ID=
+REM
+REM Get next study_id and inv_id from database
+REM
+SQLCMD  -U %NEWUSER% -P %NEWPW% -d %NEWDB% -W -Q "SET NOCOUNT ON; SELECT RTRIM(CAST([rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq') + 1 AS VARCHAR))" -h -1 > study_id.txt
+if %errorlevel% neq 0  (
+	ECHO rif40_run_study procedure OK; unable to get study_id from database
+)
+SQLCMD  -U %NEWUSER% -P %NEWPW% -d %NEWDB% -W -Q "SET NOCOUNT ON; SELECT RTRIM(CAST([rif40].[rif40_sequence_current_value] ('rif40.rif40_inv_id_seq') + 1 AS VARCHAR))" -h -1 > inv_id.txt
+if %errorlevel% neq 0  (
+	ECHO rif40_run_study procedure OK; unable to get inv_id from database
+)
+REM
+
+IF EXIST study_id.txt (
+REM	type study_id.txt
+	SET /p STUDY_ID= < study_id.txt
+) else (
+	ECHO Test study failed: no study_id.txt
+	exit /b 1
+)
+IF EXIST inv_id.txt (
+REM	type inv_id.txt
+	SET /p INV_ID= < inv_id.txt
+) else (
+	ECHO Test study failed: no inv_id.txt
+	exit /b 1
+)
+REM ECHO STUDY_ID=%STUDY_ID%
+REM ECHO INV_ID=%INV_ID%
+REM (SET STUDY_ID=)
+REM (SET INV_ID=)
+REM exit /b 1
 	
 REM
 REM Run a test study
 REM
+ECHO Run study: %STUDY_ID%; investigation: %INV_ID%	
 sqlcmd -U %NEWUSER% -P %NEWPW% -d %NEWDB% -b -m-1 -e -i rif40_run_study.sql
 if %errorlevel% neq 0  (
 	ECHO Test study failed: rif40_run_study procedure had error
 	exit /b 1
 ) else (
-REM
-REM Get study_id and inv_id from database
-REM
-	SQLCMD  -U %NEWUSER% -P %NEWPW% -d %NEWDB% -W -Q "SET NOCOUNT ON; SELECT RTRIM(CAST([rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq') AS VARCHAR))" -h -1 > study_id.txt
-	if %errorlevel% neq 0  (
-		ECHO rif40_run_study procedure OK; unable to get study_id from database
-	)
-	SQLCMD  -U %NEWUSER% -P %NEWPW% -d %NEWDB% -W -Q "SET NOCOUNT ON; SELECT RTRIM(CAST([rif40].[rif40_sequence_current_value] ('rif40.rif40_inv_id_seq') AS VARCHAR))" -h -1 > inv_id.txt
-	if %errorlevel% neq 0  (
-		ECHO rif40_run_study procedure OK; unable to get inv_id from database
-	)
-	ECHO ON
-REM
-	SETLOCAL EnableDelayedExpansion
-	IF EXIST study_id.txt (
-		type study_id.txt
-		SET /p STUDY_ID= < study_id.txt
-	) else (
-		ECHO Test study failed: no study_id.txt
-		exit /b 1
-	)
-	IF EXIST inv_id.txt (
-		type inv_id.txt
-		SET /p INV_ID= < inv_id.txt
-	) else (
-		ECHO Test study failed: no inv_id.txt
-		exit /b 1
-	)
-	ENDLOCAL
-	ECHO rif40_run_study procedure OK for study: %STUDY_ID%; investigation: %INV_ID%
-	@ECHO ON
-	CALL "%R_HOME%\bin\x64\RScript" "%CATALINA_HOME%\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth.R" ^
+	ECHO rif40_run_study procedure OK for study: %STUDY_ID%; investigation: %INV_ID%; R command ^>^>^>
+	ECHO "%R_HOME%\bin\x64\RScript" "%CATALINA_HOME%\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth.R" ^^
+	ECHO %DB_DRIVER% ^^
+	ECHO --db_host=localhost --db_port=5432 --db_name=%NEWDB% ^^
+	ECHO --study_id=%STUDY_ID% --investigation_name=T_INV_1 --covariate_name=SES --investigation_id=%INV_ID% --r_model=het_r_procedure ^^
+	ECHO --odbc_data_source=%ODBC_DATA_SOURCE% --user_id=%NEWUSER% --password=XXXXXXXXXXXXXXXXXXXXXX
+	"%R_HOME%\bin\x64\RScript" "%CATALINA_HOME%\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth.R" ^
 		%DB_DRIVER% ^
 		--db_host=localhost --db_port=5432 --db_name=%NEWDB% ^
 		--study_id=%STUDY_ID% --investigation_name=T_INV_1 --covariate_name=SES --investigation_id=%INV_ID% --r_model=het_r_procedure ^
 		--odbc_data_source=%ODBC_DATA_SOURCE% --user_id=%NEWUSER% --password=%NEWPW%
-	@ECHO OFF
 	if %errorlevel% neq 0  (
 		ECHO Test study failed: Adj_Cov_Smooth.R procedure had error for study: %STUDY_ID%; investigation: %INV_ID%
 		exit /b 1
