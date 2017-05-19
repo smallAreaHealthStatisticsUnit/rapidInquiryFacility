@@ -1,4 +1,4 @@
-ECHO OFF
+@ECHO OFF
 REM ************************************************************************
 REM
 REM Description:
@@ -40,33 +40,19 @@ REM Author:
 REM
 REM Margaret Douglass, Peter Hambly, SAHSU
 REM
-REM Usage: rif40_database_install.bat
+REM Usage: rif40_run_study.bat
 REM
 
-REM
-REM MUST BE RUN AS ADMINSTRATOR/POWERUSER
-REM
-NET SESSION >nul 2>&1
-if %errorlevel% equ 0 (
-    ECHO Administrator PRIVILEGES Detected! 
-) else (
-	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt
-	if %errorlevel% neq 0 {
-		ECHO NOT AN ADMIN!
-		exit /b 1
-	}
-	else {
-		ECHO Power user PRIVILEGES Detected! 
-	}
-)
-
-REM
-REM Get DB settings
-REM 
-echo Creating production RIF SQL Server database
 REM 
 REM REBUILD_ALL is set up rebuild_all.bat - this prevents the questions being asked twice
 REM
+
+IF EXIST study_id.txt DEL /F study_id.txt
+IF EXIST inv_id.txt DEL /F inv_id.txt
+	
+IF DEFINED STUDY_ID SET STUDY_ID=
+IF DEFINED INV_ID SET INV_ID=
+	
 IF NOT DEFINED REBUILD_ALL (
 	SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
 	SET /P NEWDB=New RIF40 db [default sahsuland]: %=%|| SET NEWDB=sahsuland
@@ -82,67 +68,84 @@ IF NOT DEFINED NEWDB (
 )
 IF NOT DEFINED NEWPW (
 	SET /P NEWPW=New user password [default %NEWUSER%]: %=% || SET NEWPW=%NEWUSER%
-	)
-ECHO ##########################################################################################
-ECHO #
-ECHO # WARNING! this script will the drop and create the RIF40 %NEWDB% SQL Server database.
-ECHO # Type control-C to abort.
-ECHO #
-ECHO # Test user: %NEWUSER%; password: %NEWPW%
-ECHO #
-ECHO ##########################################################################################
-PAUSE
-
-REM
-REM Create production database
-REM
-sqlcmd -E -b -m-1 -e -r1 -i rif40_production_creation.sql -v import_dir="%cd%\" -v newdb="%NEWDB%" -v newuser="%NEWUSER%"
-if %errorlevel% neq 0 (
-	ECHO rif40_production_creation.sql exiting with %errorlevel%	
-	IF NOT DEFINED REBUILD_ALL (
-REM
-REM Clear seetings
-REM
-		(SET NEWDB=)
-		(SET NEWUSER=)
-		(SET NEWPW=)
-	)
-	exit /b 1
-) else (
-	ECHO rif40_production_creation.sql built OK %errorlevel%
 )
-
-REM
-REM Create production user
-REM
-sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser="%NEWUSER%" -v newdb="%NEWDB%" -v newpw="%NEWPW%"
-if %errorlevel% neq 0  (
-	ECHO rif40_production_user.sql exiting with %errorlevel%
-	IF NOT DEFINED REBUILD_ALL (
-REM
-REM Clear seetings
-REM
-		(SET NEWDB=)
-		(SET NEWUSER=)
-		(SET NEWPW=)
-	)	
+IF NOT DEFINED R_HOME (
+	ECHO Please set R_HOME in the environment
 	exit /b 1
-) else (
+)
+IF NOT DEFINED CATALINA_HOME (
+	ECHO Please set CATALINA_HOME in the environment
+	exit /b 1
+)
+SET DEFAULT_DB_DRIVER='--db_driver_prefix=jdbc:sqlserver --db_driver_class_name=com.microsoft.sqlserver.jdbc.SQLServerDriver'
+IF NOT DEFINED DB_DRIVER (
+	SET /P DB_DRIVER=Java database driver [default "%DEFAULT_DB_DRIVER%"]: %=% || SET DB_DRIVER=%DEFAULT_DB_DRIVER%
+)
+IF NOT DEFINED ODBC_DATA_SOURCE (
+	SET /P ODBC_DATA_SOURCE=New user password [default SQLServer11]: %=% || SET ODBC_DATA_SOURCE=SQLServer11
+)
+	
 REM
 REM Run a test study
 REM
-	sqlcmd -U %NEWUSER% -P %NEWPW% -d %NEWDB% -b -m-1 -e -i rif40_run_study.sql
+sqlcmd -U %NEWUSER% -P %NEWPW% -d %NEWDB% -b -m-1 -e -i rif40_run_study.sql
+if %errorlevel% neq 0  (
+	ECHO Test study failed: rif40_run_study procedure had error
+	exit /b 1
+) else (
+REM
+REM Get study_id and inv_id from database
+REM
+	SQLCMD  -U %NEWUSER% -P %NEWPW% -d %NEWDB% -W -Q "SET NOCOUNT ON; SELECT RTRIM(CAST([rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq') AS VARCHAR))" -h -1 > study_id.txt
 	if %errorlevel% neq 0  (
-		ECHO Both %NEWDB% and sahsuland_dev built OK; test study failed
-	)	
+		ECHO rif40_run_study procedure OK; unable to get study_id from database
+	)
+	SQLCMD  -U %NEWUSER% -P %NEWPW% -d %NEWDB% -W -Q "SET NOCOUNT ON; SELECT RTRIM(CAST([rif40].[rif40_sequence_current_value] ('rif40.rif40_inv_id_seq') AS VARCHAR))" -h -1 > inv_id.txt
+	if %errorlevel% neq 0  (
+		ECHO rif40_run_study procedure OK; unable to get inv_id from database
+	)
+	ECHO ON
+REM
+	SETLOCAL EnableDelayedExpansion
+	IF EXIST study_id.txt (
+		type study_id.txt
+		SET /p STUDY_ID= < study_id.txt
+	) else (
+		ECHO Test study failed: no study_id.txt
+		exit /b 1
+	)
+	IF EXIST inv_id.txt (
+		type inv_id.txt
+		SET /p INV_ID= < inv_id.txt
+	) else (
+		ECHO Test study failed: no inv_id.txt
+		exit /b 1
+	)
+	ENDLOCAL
+	ECHO rif40_run_study procedure OK for study: %STUDY_ID%; investigation: %INV_ID%
+	@ECHO ON
+	CALL "%R_HOME%\bin\x64\RScript" "%CATALINA_HOME%\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth.R" ^
+		%DB_DRIVER% ^
+		--db_host=localhost --db_port=5432 --db_name=%NEWDB% ^
+		--study_id=%STUDY_ID% --investigation_name=T_INV_1 --covariate_name=SES --investigation_id=%INV_ID% --r_model=het_r_procedure ^
+		--odbc_data_source=%ODBC_DATA_SOURCE% --user_id=%NEWUSER% --password=%NEWPW%
+	@ECHO OFF
+	if %errorlevel% neq 0  (
+		ECHO Test study failed: Adj_Cov_Smooth.R procedure had error for study: %STUDY_ID%; investigation: %INV_ID%
+		exit /b 1
+	) else (
+		ECHO Adj_Cov_Smooth.R procedure OK for study: %STUDY_ID%; investigation: %INV_ID%
+	)
+)
+
 REM
 REM Clear seetings
 REM
-	(SET NEWDB=)
-	(SET NEWUSER=)
-	(SET NEWPW=)
-	ECHO rif40_production_user.sql built OK %errorlevel%; created RIF40 production database %NEWDB% with user: %NEWUSER%
-)
+(SET NEWDB=)
+(SET NEWUSER=)
+(SET NEWPW=)
+(SET STUDY_ID=)
+(SET INV_ID=)
 
 REM
 REM Eof

@@ -77,3 +77,5 @@ rifDatabase/Postgres/production/recreate_sahsu_dev_tmp.sql
 rifWebApplication/src/main/webapp/WEB-INF/libs/standalone/images/Thumbs.db
 rifWebApplication/src/main/webapp/WEB-INF/libs/standalone/images/Thumbs.db
 rifDataLoaderTool-jar-with-dependencies.jar
+rifDatabase/SQLserver/production/study_id.txt
+rifDatabase/SQLserver/production/inv_id.txt

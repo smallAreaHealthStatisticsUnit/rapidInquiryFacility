@@ -258,10 +258,14 @@ BEGIN
 	DECLARE @msg VARCHAR(MAX);
 --
 	BEGIN TRY
+		INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'C', 0, 
+			'Study has been created but it has not been verified.');	
 		 EXECUTE @rval=rif40.rif40_run_study
 				@study_id 	/* Study_id */, 
 				1 			/* Debug: 0/1 */, 
-				default 	/* Recursion level: Use default */;
+				default 	/* Recursion level: Use default */;	
+		INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'E', 1, 
+			'Study extracted imported or created but neither results nor maps have been created.');				
 --
 	END TRY
 	BEGIN CATCH 
@@ -276,6 +280,9 @@ BEGIN
 		PRINT @msg; 
 		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';
 	END CATCH;
+	INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'R', 2, 
+		'Study results have been computed and they are now ready to be used.');
+	SELECT * FROM study_status WHERE study_id = @study_id;
 --	
 -- Always commit, even though this may fail because trigger failure have caused a rollback:
 -- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.
