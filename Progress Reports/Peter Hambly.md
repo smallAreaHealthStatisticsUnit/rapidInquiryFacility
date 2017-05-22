@@ -1332,6 +1332,11 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
 
 * Fix tile viewer screen sizing
 * Send out Atlanta comments
+* R test script, study_status integration
+
+#### 22nd to 26th May
+
+* RIF meeting
 
 #### Current TODO list (May 2017): SQL Server Port
 
