@@ -67,6 +67,8 @@ password <- ""
 dbName <- "rif_studies"
 dbHost <- ""
 dbPort <- ""
+db_driver_prefix <- ""
+db_driver_class_name <- ""
 dbConnectionString <- ""
 odbcDataSource <- "networkRif"
 numberOfInvestigations <- ""
@@ -119,7 +121,7 @@ processCommandLineArguments <- function() {
   if (numCommandLineArgs==0) {
     print("No arguments supplied")
   }else{
-    print("Arguments were supplied")
+    print(paste0(numCommandLineArgs, " arguments were supplied"))
     for (i in 1:numCommandLineArgs) {
       ##Filter command arguments that fit the form
       ##--X=Y
@@ -144,7 +146,11 @@ processCommandLineArguments <- function() {
       } else if (grepl('db_host', parametersDataFrame[i, 1]) == TRUE){
         dbHost <<- parametersDataFrame[i, 2]
       } else if (grepl('db_port', parametersDataFrame[i, 1]) == TRUE){
-        dbPort <<- parametersDataFrame[i, 2]	
+        dbPort <<- parametersDataFrame[i, 2]
+      } else if (grepl('db_driver_prefix', parametersDataFrame[i, 1]) == TRUE){
+        db_driver_prefix <<- parametersDataFrame[i, 2]
+      } else if (grepl('db_driver_class_name', parametersDataFrame[i, 1]) == TRUE){
+        db_driver_class_name <<- parametersDataFrame[i, 2]	
       } else if (grepl('study_id', parametersDataFrame[i, 1]) == TRUE){
         studyID <<- parametersDataFrame[i, 2]
       } else if (grepl('num_investigations', parametersDataFrame[i, 1]) == TRUE){
@@ -216,6 +222,32 @@ establishTableNames <-function(vstudyID) {
   mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")
 }
 
+##====================================================================
+##FUNCTION:    doSQLQuery()
+##PARAMETER:   SQL 
+##RETURNS:     Data frame
+##DESCRIPTION: Run SQL query. On error/warning/NULL data; print SQL, error and exit
+##====================================================================
+doSQLQuery <- function(sql) {
+	sqlData <- tryCatch(sqlQuery(connDB, sql, FALSE),
+		warning=function(w) {
+			print(paste("UNABLE TO QUERY! SQL> ", sql, "; warning: ", w))
+			odbcClose(connDB)
+			quit("no", 1, FALSE)
+		},
+		error=function(e) {
+			print(paste("ERROR IN QUERY! SQL> ", sql, "; error: ", odbcGetErrMsg(connDB)))
+			odbcClose(connDB)
+			quit("no", 1, FALSE)
+		})
+	if (is.null(nrow(sqlData))) {
+			print(paste("ERROR IN QUERY! (null data returned); SQL> ", sql, "; error: ", odbcGetErrMsg(connDB)))
+			odbcClose(connDB)
+			quit("no", 1, FALSE)
+	} 
+
+	return(sqlData)	  
+}
 
 ##====================================================================
 ##FUNCTION: createSmoothedExtractResults
@@ -233,12 +265,27 @@ performSmoothingActivity <- function() {
   print(extractTableName)
   print("============EXTRACT TABLE NAME ====================")
   #extract the relevant Study data
-  data=sqlFetch(connDB, extractTableName)
+
+  data=tryCatch(sqlFetch(connDB, extractTableName),
+	warning=function(w) {
+		print(paste("UNABLE TO FETCH! ", w))
+		odbcClose(connDB)
+		quit("no", 1, FALSE)
+	},
+	error=function(e) {
+		print(paste("ERROR FETCHING! ", geterrmessage()))
+		odbcClose(connDB)
+		quit("no", 1, FALSE)
+	})	
   # Get the adjacency matrix from the db
   #data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
   
   numberOfRows <- nrow(data)	
-  
+  if (is.null(nrow(data))) {
+		print(paste("ERROR IN FETCH! (null data returned): ", extractTableName, ", error: ", odbcGetErrMsg(connDB)))
+		odbcClose(connDB)
+		quit("no", 1, FALSE)
+  }	  
   print(paste0(extractTableName," numberOfRows=",numberOfRows, "=="))
   
   if (investigationName != "inv_1"){
@@ -262,8 +309,22 @@ performSmoothingActivity <- function() {
   # TODO: ensure it's ok hardcode rif40_xml_pkg here rather than pass it in as a parameter
   # This SQL statement will possibly have to be changed to work with SQL
   
-  sqlQuery(connDB, paste("SELECT rif40_sql_pkg.rif40_startup()"))
-  AdjRowset<-sqlQuery(connDB, paste("SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(", studyID, ")"))
+  if (db_driver_prefix == "jdbc:postgresql") {
+		sql <- "SELECT rif40_sql_pkg.rif40_startup()"
+		doSQLQuery(sql)
+  }
+  
+  
+  if (db_driver_prefix == "jdbc:postgresql") {
+		sql <- paste("SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(", studyID, ")")
+  }
+  else {
+		print(paste("Unsupported port: ", db_driver_prefix))
+		odbcClose(connDB)
+		quit("no", 1, FALSE)
+  }
+#		sql <- paste("SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(", studyID, ")")
+  AdjRowset=doSQLQuery(sql)
   numberOfRows <- nrow(AdjRowset)	
   
   print(paste0("rif40_GetAdjacencyMatrix numberOfRows=",numberOfRows, "=="))
@@ -1102,9 +1163,19 @@ updateMapTableFromSmoothedResultsTable <- function() {
 
 processCommandLineArguments()
 establishTableNames(studyID)
-#connDB <- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password))
-connDB = odbcConnect(odbcDataSource)
-
+print(paste0("Connect to database: ", odbcDataSource))
+tryCatch(connDB <- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password)),
+#tryCatch(connDB <- odbcConnect(odbcDataSource),
+	warning=function(w) {
+		print(paste("UNABLE TO CONNECT! ", w))
+		quit("no", 1, FALSE)
+	},
+	error=function(e) {
+		print(paste("ERROR CONNECTING! ", geterrmessage()))
+		quit("no", 1, FALSE)
+	})
+odbcGetInfo(connDB)	
+		
 #odbcSetAutoCommit(connDB, autoCommit=FALSE)
 print("Performing basic stats and smoothing")
 result <- performSmoothingActivity()
@@ -1115,6 +1186,6 @@ updateMapTableFromSmoothedResultsTable()
 print("Dropping temporary table")
 sqlDrop(connDB, temporarySmoothedResultsTableName)
 print("Closing database connection")
-#print(paste0("RESULT==", result, "=="))
+print(paste0("RESULT==", result, "=="))
 odbcClose(connDB)
-#quit(status=result)
+quit("no", result, FALSE)

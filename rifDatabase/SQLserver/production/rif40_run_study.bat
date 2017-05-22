@@ -143,17 +143,11 @@ if %errorlevel% neq 0  (
 	ECHO --db_host=localhost --db_port=5432 --db_name=%NEWDB% ^^
 	ECHO --study_id=%STUDY_ID% --investigation_name=T_INV_1 --covariate_name=SES --investigation_id=%INV_ID% --r_model=het_r_procedure ^^
 	ECHO --odbc_data_source=%ODBC_DATA_SOURCE% --user_id=%NEWUSER% --password=XXXXXXXXXXXXXXXXXXXXXX
-	"%R_HOME%\bin\x64\RScript" "%CATALINA_HOME%\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth.R" ^
+	call RScript.bat "%R_HOME%\bin\x64\RScript" "%CATALINA_HOME%\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth.R" ^
 		%DB_DRIVER% ^
 		--db_host=localhost --db_port=5432 --db_name=%NEWDB% ^
 		--study_id=%STUDY_ID% --investigation_name=T_INV_1 --covariate_name=SES --investigation_id=%INV_ID% --r_model=het_r_procedure ^
 		--odbc_data_source=%ODBC_DATA_SOURCE% --user_id=%NEWUSER% --password=%NEWPW%
-	if %errorlevel% neq 0  (
-		ECHO Test study failed: Adj_Cov_Smooth.R procedure had error for study: %STUDY_ID%; investigation: %INV_ID%
-		exit /b 1
-	) else (
-		ECHO Adj_Cov_Smooth.R procedure OK for study: %STUDY_ID%; investigation: %INV_ID%
-	)
 )
 
 REM
