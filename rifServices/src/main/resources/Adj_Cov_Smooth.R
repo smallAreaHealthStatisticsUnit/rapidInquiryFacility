@@ -148,7 +148,7 @@ processCommandLineArguments <- function() {
         userID <<- parametersDataFrame[i, 2]
       } else if (grepl('password', parametersDataFrame[i, 1]) == TRUE){
         password <<- parametersDataFrame[i, 2]
-#		parametersDataFrame[i, 2] <- "XXXXXXXXXXXXXXXXXXXXXX"
+		parametersDataFrame[i, 2] <- NA
       } else if (grepl('db_name', parametersDataFrame[i, 1]) == TRUE){
         dbName <<- parametersDataFrame[i, 2]
       } else if (grepl('db_host', parametersDataFrame[i, 1]) == TRUE){
@@ -351,10 +351,11 @@ WHERE b1.study_id  = ", studyID ,"
   AND b1.study_id  = b2.study_id   
   AND b2.geography = b3.geography
 )
-SELECT c1.geolevel_id, c1.areaid, c1.num_adjacencies, c1.adjacency_list
+SELECT c1.areaid AS area_id, c1.num_adjacencies, c1.adjacency_list
   FROM [rif_data].[", adjacencyTable, "] c1, b
  WHERE c1.geolevel_id   = b.geolevel_id
-   AND c1.areaid        = b.area_id", sep = "")
+   AND c1.areaid        = b.area_id
+ ORDER BY 1", sep = "")
 		AdjRowset=doSQLQuery(sql)
 		numberOfRows <- nrow(AdjRowset)	   
   }  
@@ -379,7 +380,7 @@ SELECT c1.geolevel_id, c1.areaid, c1.num_adjacencies, c1.adjacency_list
 # 01.002.000300.5                    3 01.002.000300.3,01.002.000300.4,01.002.000400.3
 # 01.002.000400.1                    6 01.002.000400.2,01.002.000400.5,01.002.000400.7,01.002.001700.1,01.002.001700.2,01.002.001
 #  
-   print(head(AdjRowset, n=10))
+#   print(head(AdjRowset, n=10))
   
   #Part II: Perform smoothing operation
   #====================================	
