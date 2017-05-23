@@ -227,7 +227,14 @@ establishTableNames <-function(vstudyID) {
   print(paste("Study ID:", vstudyID))
   extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
   #temporarySmoothedResultsTableName <<-paste("rif_studies.tmp_s", vstudyID, "_map", sep="")
-  temporarySmoothedResultsTableName <<-paste(userID,".tmp_s", vstudyID, "_map", sep="")
+#
+# Would need to implement sqlSave() as the exists checks fail
+#  if (db_driver_prefix == "jdbc:sqlserver") {
+#	temporarySmoothedResultsTableName <<-paste(userID, ".#tmp_s", vstudyID, "_map", sep="")
+#  }
+#  else {
+	temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")	
+#  }
   mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")
 }
 
@@ -1144,9 +1151,9 @@ convertToDBFormat=function(dataIn){
 
 
 saveDataFrameToDatabaseTable <- function(data) {
-  print(paste0("Creating ",temporarySmoothedResultsTableName))
+  print(paste0("Creating temporary table: ", temporarySmoothedResultsTableName))
   
-  sqlSave(connDB, data, tablename=temporarySmoothedResultsTableName)
+  sqlSave(connDB, data, tablename=temporarySmoothedResultsTableName, verbose=FALSE)
   #sqlSave(connDB, data, tablename = "kgarwood.rifSmoothTest")
   #Add indices to the new table so that its join with s[study_id]_map will be more 
   #efficient
@@ -1246,11 +1253,11 @@ odbcGetInfo(connDB)
 #odbcSetAutoCommit(connDB, autoCommit=FALSE)
 print("Performing basic stats and smoothing")
 result <- performSmoothingActivity()
-print("Creating temporary table")
+
 saveDataFrameToDatabaseTable(result)
-print("Updating map table")
+
 updateMapTableFromSmoothedResultsTable()
-print("Dropping temporary table")
+print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
 sqlDrop(connDB, temporarySmoothedResultsTableName)
 print("Closing database connection")
 #DONT DO THIS - YOU WILL GET A LOT OF OUTPUT!

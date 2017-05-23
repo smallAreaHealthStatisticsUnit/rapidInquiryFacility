@@ -1337,6 +1337,12 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
 #### 22nd to 26th May
 
 * RIF meeting
+* rif40_GetAdjacencyMatrix port for R
+* R script now works on Postgres.
+* rif40_run_study.bat provided for Postgres aswell
+
+test # in the password later; it should be permitted
+Middleware: We are in the process of removing all password strings from logs; I will add this to the list
 
 #### Current TODO list (May 2017): SQL Server Port
 
@@ -1367,7 +1373,7 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
 * Assist with middleware (database fixes)
 * Drop script for SQL server to all rif40_sahsuland_dev_install.bat/rif40_sahsuland_install.bat to be re-run without rebuilding the entire database
 
-#### TileViewer TODO (deferred to June?):
+#### TileViewer TODO (deferred to August?):
  
 * Area tests (area_check.sql) is failing for Halland - suspect area is too small, could be projection ia wrong 
 * NVarchar support for areaName
