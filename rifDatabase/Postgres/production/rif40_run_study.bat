@@ -3,7 +3,7 @@ REM ************************************************************************
 REM
 REM Description:
 REM
-REM Rapid Enquiry Facility (RIF) - SQL Server database - create test study
+REM Rapid Enquiry Facility (RIF) - Postgres database - create test study
 REM
 REM Copyright:
 REM
@@ -45,13 +45,6 @@ REM
 REM 
 REM REBUILD_ALL is set up rebuild_all.bat - this prevents the questions being asked twice
 REM
-	
-IF NOT DEFINED REBUILD_ALL (
-	SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
-	SET /P NEWDB=New RIF40 db [default sahsuland]: %=%|| SET NEWDB=sahsuland
-	SET /P NEWPW=New user password [default %NEWUSER%]: %=% || SET NEWPW=%NEWUSER%
-	SET REBUILD_ALL=N
-)
 
 IF NOT DEFINED NEWUSER (
 	SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
@@ -79,12 +72,12 @@ IF DEFINED DB_DRIVER SET DB_DRIVER=
 IF DEFINED DEFAULT_DB_DRIVER SET DEFAULT_DB_DRIVER=
 IF DEFINED ODBC_DATA_SOURCE SET ODBC_DATA_SOURCE=
 
-SET DEFAULT_DB_DRIVER=--db_driver_prefix^=jdbc:sqlserver --db_driver_class_name^=com.microsoft.sqlserver.jdbc.SQLServerDriver
+SET DEFAULT_DB_DRIVER=--db_driver_prefix^=jdbc:postgresql --db_driver_class_name^=org.postgresql.Driver
 IF NOT DEFINED DB_DRIVER (
 	SET /P DB_DRIVER=Java database driver [default "%DEFAULT_DB_DRIVER%"]: %=% || SET DB_DRIVER=%DEFAULT_DB_DRIVER%
 )
 IF NOT DEFINED ODBC_DATA_SOURCE (
-	SET /P ODBC_DATA_SOURCE=ODBC Data Source [default SQLServer11]: %=% || SET ODBC_DATA_SOURCE=SQLServer11
+	SET /P ODBC_DATA_SOURCE=ODBC Data Source [default PostgreSQL35W]: %=% || SET ODBC_DATA_SOURCE=PostgreSQL35W
 )
 
 
@@ -97,11 +90,11 @@ IF DEFINED INV_ID SET INV_ID=
 REM
 REM Get next study_id and inv_id from database
 REM
-SQLCMD  -U %NEWUSER% -P %NEWPW% -d %NEWDB% -W -Q "SET NOCOUNT ON; SELECT RTRIM(CAST([rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq') + 1 AS VARCHAR))" -h -1 > study_id.txt
+psql -U %NEWUSER% -d %NEWDB% -A -b -t -c "SELECT LTRIM(RTRIM((MAX(study_id)+1)::Text)) AS study_id FROM rif40_studies;" > study_id.txt
 if %errorlevel% neq 0  (
 	ECHO rif40_run_study procedure OK; unable to get study_id from database
 )
-SQLCMD  -U %NEWUSER% -P %NEWPW% -d %NEWDB% -W -Q "SET NOCOUNT ON; SELECT RTRIM(CAST([rif40].[rif40_sequence_current_value] ('rif40.rif40_inv_id_seq') + 1 AS VARCHAR))" -h -1 > inv_id.txt
+psql -U %NEWUSER% -d %NEWDB% -A -b -t -c "SELECT LTRIM(RTRIM((MAX(inv_id)+1)::Text)) AS inv_id FROM rif40_investigations;" > inv_id.txt
 if %errorlevel% neq 0  (
 	ECHO rif40_run_study procedure OK; unable to get inv_id from database
 )
@@ -109,14 +102,14 @@ REM
 
 IF EXIST study_id.txt (
 REM	type study_id.txt
-	SET /p STUDY_ID= < study_id.txt
+	SET /p STUDY_ID=< study_id.txt
 ) else (
 	ECHO Test study failed: no study_id.txt
 	exit /b 1
 )
 IF EXIST inv_id.txt (
 REM	type inv_id.txt
-	SET /p INV_ID= < inv_id.txt
+	SET /p INV_ID=< inv_id.txt
 ) else (
 	ECHO Test study failed: no inv_id.txt
 	exit /b 1
@@ -131,7 +124,7 @@ REM
 REM Run a test study
 REM
 ECHO Run study: %STUDY_ID%; investigation: %INV_ID%	
-sqlcmd -U %NEWUSER% -P %NEWPW% -d %NEWDB% -b -m-1 -e -i rif40_run_study.sql
+psql -U %NEWUSER% -d %NEWDB% -w -e -f rif40_run_study.sql
 if %errorlevel% neq 0  (
 	ECHO Test study failed: rif40_run_study procedure had error
 	exit /b 1
