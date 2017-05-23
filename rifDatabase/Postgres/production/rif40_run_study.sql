@@ -57,28 +57,6 @@
 BEGIN;
 DO LANGUAGE plpgsql $$
 DECLARE
-	c1sm CURSOR FOR /* Get list of study_id tables with trigger functions */
-		WITH a AS (
-			SELECT DISTINCT table_name
-			  FROM information_schema.columns
-			 WHERE column_name = 'study_id'
-			   AND table_name NOT LIKE 'g_rif40%'
-			   AND table_name IN (
-				SELECT table_name
-				  FROM information_schema.tables
-			 	 WHERE table_schema = 'rif40'
-				   AND table_type = 'BASE TABLE')
-		)
-		SELECT TRANSLATE(SUBSTR(action_statement, STRPOS(action_statement, '.')+1), '()', '') AS function,
-		       a.table_name, action_timing, COUNT(trigger_name) AS t
-		  FROM a 
-			LEFT OUTER JOIN information_schema.triggers b ON (
-		  		trigger_schema = 'rif40'
-		  	    AND action_timing IN ('BEFORE', 'AFTER') 
-			    AND event_object_table = a.table_name)
-		 GROUP BY TRANSLATE(SUBSTR(action_statement, STRPOS(action_statement, '.')+1), '()', ''),
-		       a.table_name, action_timing
-		 ORDER BY 1 DESC, 3;
 	c2sm CURSOR FOR 
 		SELECT array_agg(sahsu_grd_level3) AS level3_array FROM lookup_sahsu_grd_level3;
 	c3sm CURSOR FOR /* Old studies to delete - not study 1 */
@@ -89,7 +67,6 @@ DECLARE
 		   AND study_id > 1;
 		   
 --
-	c1sm_rec RECORD;
 	c2sm_rec RECORD;
 	c3sm_rec RECORD;
 --
@@ -99,46 +76,16 @@ DECLARE
 	investigation_desc_array	VARCHAR[]:=array['Lung cancer'];
 	covariate_array				VARCHAR[]:=array['SES'];	
 --
-	rif40_sm_pkg_functions 		VARCHAR[] := ARRAY['rif40_verify_state_change', 
-						'rif40_run_study', 'rif40_ddl', 'rif40_study_ddl_definer', 
-						'rif40_create_insert_statement', 'rif40_execute_insert_statement', 
-						'rif40_compute_results', 'rif40_startup', 'rif40_GetAdjacencyMatrix'];
---
 	l_function 		VARCHAR;
 	i				INTEGER:=0;
 --
 	sql_stmt		VARCHAR[];
-	debug_level		INTEGER=0;
 	study_ran_ok	BOOLEAN;
 BEGIN
 --
 -- Turn on some debug (all BEFORE/AFTER trigger functions for tables containing the study_id column) 
 --
     PERFORM rif40_log_pkg.rif40_log_setup();
-	IF debug_level IS NULL THEN
-		debug_level:=0;
-	ELSIF debug_level > 4 THEN
-		RAISE EXCEPTION 'test_4_study_id_1.sql: T4--03: Invslid debug level [0-4]: %', debug_level;
-	ELSIF debug_level BETWEEN 1 AND 4 THEN
-        PERFORM rif40_log_pkg.rif40_send_debug_to_info(TRUE);
-
-		FOR c1sm_rec IN c1sm LOOP
-			IF c1sm_rec.function IS NOT NULL THEN
-				RAISE INFO 'test_4_study_id_1.sql: T4--04: Enable debug for % trigger function: % on table: %',
-					c1sm_rec.action_timing, c1sm_rec.function, c1sm_rec.table_name;
-					PERFORM rif40_log_pkg.rif40_add_to_debug(c1sm_rec.function||':DEBUG'||debug_level::Text);
-			ELSE
-				RAISE WARNING 'test_4_study_id_1.sql: T4--05: No trigger function found for table: %', c1sm_rec.table_name;
-			END IF;
-		END LOOP;
---
--- Enabled debug on select rif40_sm_pkg functions
---
-		FOREACH l_function IN ARRAY rif40_sm_pkg_functions LOOP
-			RAISE INFO 'test_4_study_id_1.sql: T4--06: Enable debug for function: %', l_function;
-			PERFORM rif40_log_pkg.rif40_add_to_debug(l_function||':DEBUG'||debug_level::Text);
-		END LOOP;
-	END IF;
 	
 --
 -- Call init function is case called from main build scripts

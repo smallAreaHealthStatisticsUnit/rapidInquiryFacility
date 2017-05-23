@@ -143,11 +143,12 @@ processCommandLineArguments <- function() {
     
     print("Parsing parameters")
     for (i in 1:nrow(parametersDataFrame)) {
-      #print(parametersDataFrame[i,1])
+		
       if (grepl('user_id', parametersDataFrame[i, 1]) == TRUE) {
         userID <<- parametersDataFrame[i, 2]
       } else if (grepl('password', parametersDataFrame[i, 1]) == TRUE){
         password <<- parametersDataFrame[i, 2]
+#		parametersDataFrame[i, 2] <- "XXXXXXXXXXXXXXXXXXXXXX"
       } else if (grepl('db_name', parametersDataFrame[i, 1]) == TRUE){
         dbName <<- parametersDataFrame[i, 2]
       } else if (grepl('db_host', parametersDataFrame[i, 1]) == TRUE){
@@ -188,6 +189,7 @@ processCommandLineArguments <- function() {
 		}
       }
     }
+	
     return(parametersDataFrame)
   }
 }
@@ -796,9 +798,12 @@ SELECT c1.geolevel_id, c1.areaid, c1.num_adjacencies, c1.adjacency_list
         rowNums<-c(rowNums,i)
         colNums<-c(colNums,i)
       } 
-      if (length(wr) > 1) {} #throw an exception because there are duplicate areas_ids in the ajd
-		stop("duplicate areas_ids in the adjacency list")
-      if (length(wr) == 1){
+      else if (length(wr) > 1) {
+	  #throw an exception because there are duplicate areas_ids in the adjacency list
+		stop(paste("duplicate areas_ids: ", wr , " in the adjacency list"))
+#		print(paste("duplicate areas_ids: ", wr , " in the adjacency list"))
+	  } 
+      else if (length(wr) == 1){
         rowNums<-c(rowNums,i)
         colNums<-c(colNums,i)
         # go through the neighbours of this row and AdjRows and find the index in data
@@ -1239,7 +1244,7 @@ odbcGetInfo(connDB)
 		
 #odbcSetAutoCommit(connDB, autoCommit=FALSE)
 print("Performing basic stats and smoothing")
-performSmoothingActivity()
+result <- performSmoothingActivity()
 print("Creating temporary table")
 saveDataFrameToDatabaseTable(result)
 print("Updating map table")
@@ -1247,6 +1252,7 @@ updateMapTableFromSmoothedResultsTable()
 print("Dropping temporary table")
 sqlDrop(connDB, temporarySmoothedResultsTableName)
 print("Closing database connection")
-print(paste0("RESULT==", result, "=="))
+#DONT DO THIS - YOU WILL GET A LOT OF OUTPUT!
+#print(paste0("RESULT==", result, "=="))
 odbcClose(connDB)
-quit("no", result, FALSE)
+quit("no", 0, FALSE)
