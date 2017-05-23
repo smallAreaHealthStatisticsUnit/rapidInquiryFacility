@@ -56,6 +56,13 @@ library(spdep)
 #library(Matrix)
 library(RODBC) #will need db libraries as well if we decide to use db specific packages e.g. RSQLServer and RPostgreSQL
 rm(list=ls()) 
+
+#
+# Enable traceback for uncaught errors
+#
+connDB <- ""
+options(error=function() { traceback(2); if (!is.null(connDB)) odbcClose(connDB); quit("no", 1, FALSE)})
+
 ##====================================================================
 # SCRIPT VARIABLES
 ##====================================================================
@@ -304,30 +311,73 @@ performSmoothingActivity <- function() {
       data$inv_1 = data[,invcol]
     }
   }
-  #originalExtractTable$area_id <- as.character(originalExtractTable$area_id)
-  #AdjRowset<-sqlQuery(connDB, paste("SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(1) LIMIT 10"))
-  # TODO: ensure it's ok hardcode rif40_xml_pkg here rather than pass it in as a parameter
-  # This SQL statement will possibly have to be changed to work with SQL
-  
+ 
+#
+# Run rif40_startup() procedure on Postgres
+#
   if (db_driver_prefix == "jdbc:postgresql") {
 		sql <- "SELECT rif40_sql_pkg.rif40_startup()"
 		doSQLQuery(sql)
   }
   
-  
+#
+# Get Adjacency matrix
+#  
   if (db_driver_prefix == "jdbc:postgresql") {
 		sql <- paste("SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(", studyID, ")")
+		AdjRowset=doSQLQuery(sql)
+		numberOfRows <- nrow(AdjRowset)	
   }
+  else if (db_driver_prefix == "jdbc:sqlserver") {
+		sql <- paste("SELECT b2.adjacencytable
+		  FROM [rif40].[rif40_studies] b1, [rif40].[rif40_geographies] b2
+		 WHERE b1.study_id  = ", studyID ,"   
+		   AND b2.geography = b1.geography");
+		adjacencyTableRes=doSQLQuery(sql)
+		numberOfRows <- nrow(adjacencyTableRes)
+		if (numberOfRows != 1) {
+			print(paste("Expected 1 row; got: " + numberOfRows + "; SQL> ", sql))
+			odbcClose(connDB)
+			quit("no", 1, FALSE)
+		}	
+		adjacencyTable <- tolower(adjacencyTableRes$adjacencytable[1])	
+		print(adjacencyTable);
+		sql <- paste("WITH b AS ( /* Tilemaker: has adjacency table */
+SELECT b1.area_id, b3.geolevel_id
+  FROM [rif40].[rif40_study_areas] b1, [rif40].[rif40_studies] b2, [rif40].[rif40_geolevels] b3
+WHERE b1.study_id  = ", studyID ,"
+  AND b1.study_id  = b2.study_id   
+  AND b2.geography = b3.geography
+)
+SELECT c1.geolevel_id, c1.areaid, c1.num_adjacencies, c1.adjacency_list
+  FROM [rif_data].[", adjacencyTable, "] c1, b
+ WHERE c1.geolevel_id   = b.geolevel_id
+   AND c1.areaid        = b.area_id", sep = "")
+		AdjRowset=doSQLQuery(sql)
+		numberOfRows <- nrow(AdjRowset)	   
+  }  
   else {
 		print(paste("Unsupported port: ", db_driver_prefix))
 		odbcClose(connDB)
 		quit("no", 1, FALSE)
   }
-#		sql <- paste("SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(", studyID, ")")
-  AdjRowset=doSQLQuery(sql)
-  numberOfRows <- nrow(AdjRowset)	
   
   print(paste0("rif40_GetAdjacencyMatrix numberOfRows=",numberOfRows, "=="))
+#
+# areaid               num_adjacencies adjacency_list_truncated
+# -------------------- --------------- ------------------------------------------------------------------------------------------
+# 01.001.000100.1                   18 01.001.000100.2,01.001.000200.1,01.002.000500.1,01.002.000500.4,01.002.000500.7,01.002.000
+# 01.001.000100.2                    2 01.001.000100.1,01.001.000200.1
+# 01.001.000200.1                    4 01.001.000100.1,01.001.000100.2,01.001.000300.1,01.005.002400.1
+# 01.001.000300.1                    1 01.001.000200.1
+# 01.002.000300.1                    3 01.002.000300.2,01.002.000300.3,01.002.000300.4
+# 01.002.000300.2                    4 01.002.000300.1,01.002.000300.4,01.002.000500.3,01.002.000600.2
+# 01.002.000300.3                    3 01.002.000300.1,01.002.000300.4,01.002.000300.5
+# 01.002.000300.4                    6 01.002.000300.1,01.002.000300.2,01.002.000300.3,01.002.000300.5,01.002.000400.3,01.002.000
+# 01.002.000300.5                    3 01.002.000300.3,01.002.000300.4,01.002.000400.3
+# 01.002.000400.1                    6 01.002.000400.2,01.002.000400.5,01.002.000400.7,01.002.001700.1,01.002.001700.2,01.002.001
+#  
+   print(head(AdjRowset, n=10))
   
   #Part II: Perform smoothing operation
   #====================================	
@@ -746,7 +796,8 @@ performSmoothingActivity <- function() {
         rowNums<-c(rowNums,i)
         colNums<-c(colNums,i)
       } 
-      if (length(wr) > 1) {} #throw and exception because there are duplicate areas_ids in the ajd
+      if (length(wr) > 1) {} #throw an exception because there are duplicate areas_ids in the ajd
+		stop("duplicate areas_ids in the adjacency list")
       if (length(wr) == 1){
         rowNums<-c(rowNums,i)
         colNums<-c(colNums,i)
@@ -754,9 +805,19 @@ performSmoothingActivity <- function() {
         neighbours = strsplit(AdjRowset$adjacency_list[wr], split=",")
         for (j in 1:length(neighbours[[1]])){
           whichIndex = data$area_order[which(data$area_id == neighbours[[1]][j])]
-          if (length(whichIndex) == 0) {} # through an exception because neighbour file contains unknown neighbours
-          rowNums<-c(rowNums,i)
-          colNums<-c(colNums,whichIndex[1])
+		  
+#          if (length(whichIndex) == 0) {} # through an exception because neighbour file contains unknown neighbours
+#          rowNums<-c(rowNums,i)
+#          colNums<-c(colNums,whichIndex[1])
+
+          if (length(whichIndex) == 0) {
+            print(paste0("Area: ", AdjRowset$area_id[i], " Invalid adjacent Area: "  ,neighbours[[1]][j]))
+            # Print a message, but ignore the nieghbours which shouldn't be in the list
+          }
+          else {
+            rowNums<-c(rowNums,i)
+            colNums<-c(colNums,whichIndex[1])
+          }
         }
       }
     }
@@ -1178,7 +1239,7 @@ odbcGetInfo(connDB)
 		
 #odbcSetAutoCommit(connDB, autoCommit=FALSE)
 print("Performing basic stats and smoothing")
-result <- performSmoothingActivity()
+performSmoothingActivity()
 print("Creating temporary table")
 saveDataFrameToDatabaseTable(result)
 print("Updating map table")
