@@ -83,14 +83,14 @@ angular.module("RIF")
                     'diseasemap2': L.control({position: 'topright'}),
                     'viewermap': L.control({position: 'topright'})
                 };
-                var infoBox = {
+                $scope.infoBox = {
                     'diseasemap1': L.control({position: 'bottomright'}),
                     'diseasemap2': L.control({position: 'bottomright'}),
                     'viewermap': L.control({position: 'bottomright'})
                 };
                 $scope.infoBox2 = {
-                    'diseasemap1': L.control({position: 'bottomleft'}),
-                    'diseasemap2': L.control({position: 'bottomleft'}),
+                    'diseasemap1': L.control({position: 'bottomright'}),
+                    'diseasemap2': L.control({position: 'bottomright'}),
                     'viewermap': null
                 };
 
@@ -398,11 +398,11 @@ angular.module("RIF")
                                                                 return($scope.child.transparency[mapID] - 0.3 > 0 ? $scope.child.transparency[mapID] - 0.3 : 0.1);
                                                             }()
                                                         });
-                                                        infoBox[mapID].update(layer.feature.properties.area_id);
+                                                        $scope.infoBox[mapID].update(layer.feature.properties.area_id);
                                                     });
                                                     layer.on('mouseout', function (e) {
                                                         $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
-                                                        infoBox[mapID].update(false);
+                                                        $scope.infoBox[mapID].update(false);
                                                     });
                                                     layer.on('click', function (e) {
                                                         if (mapID === "viewermap") {
@@ -562,7 +562,7 @@ angular.module("RIF")
                                         function () {
                                             var feature = ChoroService.getMaps(m).feature;
                                             var tmp;
-                                            var inner = '<h4>ID: ' + poly + '</h4>';
+                                            var inner = '<h5>ID: ' + poly + '</h5>';
                                             if ($scope.attr[m] !== "") {
                                                 for (var i = 0; i < $scope.tableData[m].length; i++) {
                                                     if ($scope.tableData[m][i].area_id === poly) {
@@ -571,7 +571,7 @@ angular.module("RIF")
                                                     }
                                                 }
                                                 if (feature !== "" && !isNaN(Number(tmp))) {
-                                                    inner = '<h4>ID: ' + poly + '</br>' + feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h4>';
+                                                    inner = '<h5>ID: ' + poly + '</br>' + feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h5>';
                                                 }
                                             }
                                             return inner;
@@ -595,10 +595,10 @@ angular.module("RIF")
                                 }
                                 if (results !== null) {
                                     this._div.innerHTML =
-                                            '<h4>ID: ' + poly + '</br>' +
+                                            '<h5>ID: ' + poly + '</br>' +
                                             'Population: ' + results.population + '</br>' +
                                             'Observed: ' + results.observed + '</br>' +
-                                            'Expected: ' + Number(results.expected).toFixed(2) + '</br>' + '</h4>';
+                                            'Expected: ' + Number(results.expected).toFixed(2) + '</br>' + '</h5>';
                                 } else {
                                     this._div.innerHTML = "";
                                 }
@@ -609,8 +609,8 @@ angular.module("RIF")
                     //Add the controls
                     for (var i = 0; i < parentScope.myMaps.length; i++) {
                         var m = parentScope.myMaps[i];
-                        infoBox[m].onAdd = closureAddControl(m);
-                        infoBox[m].update = closureInfoBoxUpdate(m);
+                        $scope.infoBox[m].onAdd = closureAddControl(m);
+                        $scope.infoBox[m].update = closureInfoBoxUpdate(m);
                         if (m !== "viewermap") {
                             $scope.infoBox2[m].onAdd = closureAddControl(m);
                             $scope.infoBox2[m].update = closureInfoBox2Update(m);
@@ -618,15 +618,15 @@ angular.module("RIF")
                     }
                     for (var i = 0; i < parentScope.myMaps.length; i++) {
                         if (parentScope.myMaps.indexOf("diseasemap1") !== -1) {
-                            infoBox["diseasemap1"].addTo($scope.map["diseasemap1"]);
                             $scope.infoBox2["diseasemap1"].addTo($scope.map["diseasemap1"]);
+                            $scope.infoBox["diseasemap1"].addTo($scope.map["diseasemap1"]);
                         }
                         if (parentScope.myMaps.indexOf("diseasemap2") !== -1) {
-                            infoBox["diseasemap2"].addTo($scope.map["diseasemap2"]);
                             $scope.infoBox2["diseasemap2"].addTo($scope.map["diseasemap2"]);
+                            $scope.infoBox["diseasemap2"].addTo($scope.map["diseasemap2"]);
                         }
                         if (parentScope.myMaps.indexOf("viewermap") !== -1) {
-                            infoBox["viewermap"].addTo($scope.map["viewermap"]);
+                            $scope.infoBox["viewermap"].addTo($scope.map["viewermap"]);
                         }
                     }
                 };

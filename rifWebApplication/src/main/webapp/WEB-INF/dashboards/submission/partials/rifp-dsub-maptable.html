@@ -42,10 +42,10 @@ Used by rifd-dsub-maptable.js
 
 <div class='modalAreaSelectionMenu'>
     <div id = "maptableLeft">
-        <button class="mapListButton" ng-click="openFromList()">Upload from List</button>
+        <button class="mapListButton" ng-click="openFromList()">Upload from List</button>  
     </div>
-    <div ng-show="input.showSwitch" id="maptableRight">
-        <md-switch id="studySwitch" ng-model="input.type" ng-init="input.type" aria-label="Switch 2" ng-true-value="'Disease Mapping'" 
+    <div id = "maptableLeft2">
+        <md-switch ng-show="input.showSwitch" id="studySwitch" ng-model="input.type" ng-init="input.type" aria-label="Switch 2" ng-true-value="'Disease Mapping'" 
                    ng-false-value="'Risk Analysis'" class="md-warn" ng-change="studyTypeChanged()">
             {{input.type}}
         </md-switch>
@@ -65,32 +65,6 @@ Used by rifd-dsub-maptable.js
         <div ng-if="!refresh" class="grid" ng-mouseleave="mouseleave($event)" ui-grid="gridOptions" ui-grid-selection ui-grid-resize-columns></div>
     </div>
     <div id='areaSelectionMap'>
-        <div class="submenuMapping" >
-            <ul class="mapBoxOpts">
-                <li><a ng-controller="BaseMapModalCtrl" ng-click="open('area')" id="baseMapBtn" title="Base map"></a></li>
-                <li><a id="selectAll" title="Select all" ng-click="selectAll()"></a></li>
-                <li><a id="clearSelection" title="Clear selection" ng-click="clear()"></a></li>
-                <li><a id="clearByBand" title="Clear band" ng-click="clearBand()"></a></li>
-                <li><a id="zoomExtent" title="Zoom to extent" ng-click="zoomToExtent()"></a></li>
-                <li><a id="zoomSelection" title="Zoom to selected" ng-click="zoomToSelection()"></a></li> 
-                <li><a id="showCentroids" title="Show/hide centroids" ng-click="showCentroids()"></a></li>               
-                <li><a id="addAOI" title="Select by shapefile" risk-analysis></a></li>   
-                <li><a id="removeAOI" title="Clear shapefile" ng-click="clearAOI()"></a></li>    
-                <li><a id="exportMap" title="Quick export map" leaflet-to-png mapid="areamap"></a></li>
-                <li>
-                    <input type="range" ng-model="transparency" min="0" max="1" step="0.01" value ="0.7" ng-change="changeOpacity()"/>
-                </li>
-                <li>
-                    <label>Band number</label>
-                </li>
-                <li>
-                    <select id="selectbands" class="dropdownBand" ng-options="n for n in possibleBands" 
-                            ng-model="currentBand" ng-init="currentBand">
-                    </select>   
-                </li>
-
-            </ul>                 
-        </div>  
         <!-- Leaflet map -->
         <div id="areamap"></div>
     </div>  

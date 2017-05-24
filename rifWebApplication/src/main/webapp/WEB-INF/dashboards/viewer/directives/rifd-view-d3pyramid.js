@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -86,7 +86,7 @@ angular.module("RIF")
                             return(d.males + d.females);
                         });
 
-                        xScale.domain([0, maximumPopulation + 10]);
+                        xScale.domain([0, maximumPopulation]);
                         if (angular.isArray(scope.data)) {
                             yScale.domain(scope.data.map(function (d) {
                                 return d.population_label;
@@ -150,20 +150,35 @@ angular.module("RIF")
 
                         var xAxis = d3.axisBottom()
                                 .scale(xScale)
+                                .ticks(5)
                                 .tickFormat(function (d) {
                                     return myFormatter(+d);
                                 });
 
+                        function customXAxis(g) {
+                            g.call(xAxis);
+                            g.selectAll(".tick text").style("font-size", function (d) {
+                                return Math.min((chartWidth / 20), 10);
+                            });
+                        }
+
                         mainImageArea.append("g")
                                 .attr("transform", "translate(0," + chartHeight + ")")
-                                .call(xAxis);
+                                .call(customXAxis);
 
                         // Add the Y Axis
                         var yAxis = d3.axisLeft()
                                 .scale(yScale);
 
+                        function customYAxis(g) {
+                            g.call(yAxis);
+                            g.selectAll(".tick text").style("font-size", function (d) {
+                                return Math.min((chartHeight / 25), 10);
+                            });
+                        }
+
                         mainImageArea.append("g")
-                                .call(yAxis);
+                                .call(customYAxis);
 
                         // Add drop lines
                         mainImageArea.selectAll("g.xTickMarkProjectionLines")
@@ -186,27 +201,41 @@ angular.module("RIF")
 
                         //Add legend and axis labels
                         mainImageArea.append("rect")
-                                .attr("width", 20)
-                                .attr("height", 20)
+                                .attr("width", yScale.bandwidth())
+                                .attr("height", yScale.bandwidth())
                                 .style("fill", "#c97f82")
-                                .attr("transform", "translate(0,-30)");
+                                .attr("transform", "translate(0, " + (-yScale.bandwidth() - 10) + ")");
                         mainImageArea.append("text")
-                                .attr("transform", "translate(30,-15)")
+                                .style("font-size", function (d) {
+                                    return Math.min((chartWidth / 15), 10, (chartHeight / 15));
+                                })
+                                .attr("transform", "translate(" + (yScale.bandwidth() + 2) + "," + ((-yScale.bandwidth() / 2) - 10) + ")")
+                                .style("text-anchor", "start")
                                 .text("Male");
                         mainImageArea.append("rect")
-                                .attr("width", 20)
-                                .attr("height", 20)
+                                .attr("width", yScale.bandwidth())
+                                .attr("height", yScale.bandwidth())
                                 .style("fill", "#7f82c9")
-                                .attr("transform", "translate(80,-30)");
+                                .attr("transform", "translate(80, " + (-yScale.bandwidth() - 10) + ")");
                         mainImageArea.append("text")
-                                .attr("transform", "translate(110,-15)")
+                                .style("font-size", function (d) {
+                                    return Math.min((chartWidth / 15), 10, (chartHeight / 15));
+                                })
+                                .attr("transform", "translate(" + (yScale.bandwidth() + 82) + "," + ((-yScale.bandwidth() / 2) - 10) + ")")
+                                .style("text-anchor", "start")
                                 .text("Female");
                         mainImageArea.append("text")
+                                .style("font-size", function (d) {
+                                    return Math.min((chartWidth / 15), 15);
+                                })
                                 .attr("transform", "translate(" + chartWidth / 2 + "," + (chartHeight + 35) + ")")
                                 .style("text-anchor", "middle")
                                 .text("TOTAL POPULATION");
                         mainImageArea.append("text")
-                                .style("text-anchor", "middle")
+                                .style("font-size", function (d) {
+                                    return Math.min((chartHeight / 15), 15);
+                                })
+                                .attr("text-anchor", "middle")
                                 .attr("transform", "rotate(-90)")
                                 .attr("y", 15 - margins.top)
                                 .attr("x", 0 - (chartHeight / 2))

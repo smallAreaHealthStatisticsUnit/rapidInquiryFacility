@@ -37,9 +37,9 @@
 
 /* global L, d3, key, topojson */
 angular.module("RIF")
-        .directive('submissionMapTable', ['ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService',
+        .directive('submissionMapTable', ['ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService', 'mapTools',
             'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService',
-            function (ModalAreaService, LeafletDrawService, $uibModal, JSONService,
+            function (ModalAreaService, LeafletDrawService, $uibModal, JSONService, mapTools,
                     GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
@@ -47,7 +47,7 @@ angular.module("RIF")
                     link: function ($scope) {
 
                         $scope.areamap = L.map('areamap').setView([51.505, -0.09], 13);
-                        $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
+                        $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("areamap"));
 
                         //Reference the child scope
                         $scope.child = {};
@@ -56,7 +56,7 @@ angular.module("RIF")
                         ///Called on DOM render completion to ensure basemap is rendered
                         $timeout(function () {
                             //add baselayer
-                            $scope.renderMap("area");
+                            $scope.renderMap("areamap");
 
                             //Store the current zoom and view on map changes
                             $scope.areamap.on('zoomend', function (e) {
@@ -66,9 +66,36 @@ angular.module("RIF")
                                 $scope.input.center.lng = $scope.areamap.getCenter().lng;
                                 $scope.input.center.lat = $scope.areamap.getCenter().lat;
                             });
+
+                            //slider
+                            var slider = L.control.slider(function (v) {
+                                $scope.changeOpacity(v);
+                            }, {
+                                id: slider,
+                                position: 'topleft',
+                                orientation: 'horizontal',
+                                min: 0,
+                                max: 1,
+                                step: 0.01,
+                                value: $scope.transparency,
+                                title: 'Transparency',
+                                logo: '',
+                                syncSlider: true
+                            }).addTo($scope.areamap);
+
+                            //Custom toolbar
+                            var tools = mapTools.getSelectionTools($scope);
+                            for (var i = 0; i < tools.length; i++) {
+                                new tools[i]().addTo($scope.areamap);
+                            }
+
                             //scalebar and fullscreen
-                            L.control.scale({position: 'topleft', imperial: false}).addTo($scope.areamap);
+                            L.control.scale({position: 'bottomleft', imperial: false}).addTo($scope.areamap);
                             $scope.areamap.addControl(new L.Control.Fullscreen());
+
+                            //drop down for bands
+                            var dropDown = mapTools.getBandDropDown($scope);
+                            new dropDown().addTo($scope.areamap);
 
                             //Set initial map extents
                             $scope.center = $scope.input.center;
@@ -127,9 +154,13 @@ angular.module("RIF")
                                 $scope.selectedPolygon.push({id: $scope.gridOptions.data[i].area_id, gid: $scope.gridOptions.data[i].area_id, label: $scope.gridOptions.data[i].label, band: $scope.currentBand});
                             }
                         };
-                        $scope.changeOpacity = function () {
+                        $scope.changeOpacity = function (v) {
+                            $scope.transparency = v;
                             $scope.input.transparency = $scope.transparency;
-                            $scope.geoJSON._geojsons.default.eachLayer(handleLayer);
+                            if ($scope.geoJSON) {
+                                $scope.geoJSON._geojsons.default.eachLayer(handleLayer);
+                            }
+
                         };
                         //Reset only the selected band back to 0
                         $scope.clearBand = function () {
@@ -397,8 +428,8 @@ angular.module("RIF")
                         //Set the user defined basemap
                         $scope.renderMap = function (mapID) {
                             $scope.areamap.removeLayer($scope.thisLayer);
-                            if (!LeafletBaseMapService.getNoBaseMap("area")) {
-                                $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("area"));
+                            if (!LeafletBaseMapService.getNoBaseMap("areamap")) {
+                                $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("areamap"));
                                 $scope.thisLayer.addTo($scope.areamap);
                             }
                             //hack to refresh map

@@ -53,16 +53,29 @@ angular.module("RIF")
 
                 //Open the modal
                 $scope.open = function (id) {
-                    $scope.id = id; //<leaflet id = "id">
+                    var myScope = $scope.$parent.child;
+                    //do not allow modal to open if map in full screen
+                    if (id === "areamap") {
+                        myScope = $scope.$parent;
+                        if (myScope[id].isFullscreen()) {
+                            return;
+                        }
+                    } else {
+                        if (myScope.map[id].isFullscreen()) {
+                            return;
+                        }
+                    }
+                    myScope.id = id;
+
                     var modalInstance = $uibModal.open({
                         animation: true,
                         templateUrl: 'utils/partials/rifp-util-basemap.html',
                         controller: 'BaseMapModalInstanceCtrl',
                         windowClass: 'osm-Modal',
-                        scope: $scope
+                        scope: myScope
                     });
                     modalInstance.result.then(function () {
-                        $scope.renderMap($scope.id);
+                        myScope.renderMap(myScope.id);
                     });
                 };
             }])

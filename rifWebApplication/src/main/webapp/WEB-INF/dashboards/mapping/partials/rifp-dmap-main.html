@@ -37,15 +37,11 @@
 HTML partial disease mapping
 -->
 
-<div id="navigation">
-    <div class='logOutUsername' ng-controller="TabCtrl"> 
-        <span class="userName"> {{username}} </span><span id="logOut" ng-click="logout()" > log out </span>
-    </div>
-    <div class='nav'>
-        <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping </a>
-        <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer </a>
-        <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Study Submission</a>
-    </div>
+<div class="topnav" id="myTopnav" ng-controller="TabCtrl">
+    <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Study Submission</a>
+    <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer</a>
+    <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping</a>
+    <a style="font-size:15px;" class="icon" ng-click="hamburger()">&#9776;</a>
 </div>
 
 <div id="buttons">
@@ -54,7 +50,7 @@ HTML partial disease mapping
             <div class="mappingPageLabel">LEFT DISPLAY</div>
             <div>
                 <div>Study:</div>
-                <select ng-change='child.updateSex("diseasemap1")' id='studySelect' ng-model='studyID["diseasemap1"]' ng-options='(s.study_id +     ": " +     s.name) for s in child.studyIDs'> 
+                <select ng-change='child.updateSex("diseasemap1")' id='studySelect' ng-model='studyID["diseasemap1"]' ng-options='(s.study_id +        ": " +        s.name) for s in child.studyIDs'> 
                 </select>             
             </div>
             <div>
@@ -66,11 +62,14 @@ HTML partial disease mapping
         </div>
     </div>
     <div id='right'>
+        <div class='logOutUsername' ng-controller="TabCtrl"> 
+            <span class="userName"> {{username}} </span><span id="logOut" ng-click="logout()" > log out </span>
+        </div>
         <div class='geoDropsMapping'>
             <div class="mappingPageLabel">RIGHT DISPLAY</div>
             <div>
                 <div>Study:</div>
-                <select ng-change='child.updateSex("diseasemap2")' id='studySelect' ng-model='studyID["diseasemap2"]' ng-options='(s.study_id +     ": " +     s.name) for s in child.studyIDs'> 
+                <select ng-change='child.updateSex("diseasemap2")' id='studySelect' ng-model='studyID["diseasemap2"]' ng-options='(s.study_id +        ": " +        s.name) for s in child.studyIDs'> 
                 </select>             
             </div>
             <div>
@@ -87,38 +86,11 @@ HTML partial disease mapping
     <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 
         <div ui-layout="{flow : 'row'}">
             <div ui-layout-container class="leaflet-box" id="hSplit1" max-size="100%" size="{{hSplit1}}%">
-                <div class="submenuMapping" >
-                    <ul class="mapBoxOpts">
-                        <li><a ng-controller="ChoroplethModalCtrl" ng-click="open('diseasemap1')" id="choroplethBtn" title="Choropleth map"></a></li>
-                        <li><a ng-controller="BaseMapModalCtrl" ng-click="open('diseasemap1')" id="baseMapBtn" title="Base map"></a></li>
-                        <li><a id="clearSelection" title="Clear selection" clear-array-selection mapid="diseasemap1"></a></li>
-                        <li><a id="zoomExtent" title="Zoom to full extent" zoom-extent mapid="diseasemap1"></a></li>
-                        <li><a id="zoomStudy" title="Zoom to study extent" zoom-study mapid="diseasemap1"></a></li>
-                        <li><a id="zoomSelection" title="Zoom to selected" zoom-selection-single mapid="diseasemap1"></a></li>
-                        <li><a id="exportMap" title="Quick export map" leaflet-to-png mapid="map.diseasemap1"></a></li>
-                        <li><a id="exportD3" title="Quick export chart" saved3-chart mapid="diseasemap1"></a></li>
-                        <li>
-                            <input type="range" ng-model ="transparency['diseasemap1']" min="0" max="1" step="0.01" value ="0.7" change-opacity mapid="diseasemap1"/>
-                        </li>  
-                        <li><a id="copySymbology" title="Copy symbology" ng-click="copySymbology()"></a></li>                                                 
-                        <li>
-                            <div ng-switch on=bLockCenters>
-                                <a ng-click="lockExtent()" title="Unlock map extents" id='lockExtentTrue' ng-switch-when="true"></a>
-                                <a ng-click="lockExtent()" title="Lock map extents" id='lockExtentFalse' ng-switch-when="false"></a>
-                            </div>
-                        </li>
-                        <li>
-                            <div ng-switch on=bLockSelect>
-                                <a ng-click="lockSelect()" title="Unlock selection" id='lockSelectTrue' ng-switch-when="true"></a>
-                                <a ng-click="lockSelect()" title="Lock selection" id='lockSelectFalse' ng-switch-when="false"></a>
-                            </div>
-                        </li>
-                    </ul>                 
-                </div> 
                 <div id="diseasemap1"></div>
             </div>
             <div ui-layout-container class="rr-back" id="rr1" max-size="100%">            
                 <!--d3 RR chart1 and table data -->
+                <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="diseasemap1"></button>
                 <rr-zoom id="rrMap1" chart-data="rrChartData['diseasemap1']" options="optionsRR['diseasemap1']" width="currentWidth1" height="currentHeight1"></rr-zoom>           
             </div>
         </div>
@@ -126,25 +98,11 @@ HTML partial disease mapping
     <div ui-layout-container ui-layout-loaded> 
         <div ui-layout="{flow : 'row'}">
             <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="{{hSplit2}}%">            
-                <div class="submenuMapping" >
-                    <ul class="mapBoxOpts">
-                        <li><a ng-controller="ChoroplethModalCtrl" ng-click="open('diseasemap2')" id="choroplethBtn" title="Choropleth map"></a></li>
-                        <li><a ng-controller="BaseMapModalCtrl" ng-click="open('diseasemap2')"  id="baseMapBtn" title="Base map"></a></li>	
-                        <li><a id="clearSelection" title="Clear selection" clear-array-selection mapid="diseasemap2"></a></li>                       
-                        <li><a id="zoomExtent" title="Zoom to full extent" zoom-extent mapid="diseasemap2"></a></li>
-                        <li><a id="zoomStudy" title="Zoom to study extent" zoom-study mapid="diseasemap2"></a></li>
-                        <li><a id="zoomSelection" title="Zoom to selected" zoom-selection-single mapid="diseasemap2"></a></li> 
-                        <li><a id="exportMap" title="Quick export map" leaflet-to-png mapid="map.diseasemap2"></a></li>
-                        <li><a id="exportD3" title="Quick export chart" saved3-chart mapid="diseasemap2"></a></li>
-                        <li>
-                            <input type="range" ng-model ="transparency['diseasemap2']" min="0" max="1" step="0.01" value ="0.7" change-opacity mapid="diseasemap2"/>
-                        </li>
-                    </ul>                 
-                </div>
                 <div id="diseasemap2"></div>
             </div>
             <div ui-layout-container class="rr-back" id="rr2" max-size="100%">            
                 <!--d3 RR chart2 and table data -->
+                <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="diseasemap2"></button>
                 <rr-zoom id="rrMap2" chart-data="rrChartData['diseasemap2']" options="optionsRR['diseasemap2']" width="currentWidth2" height="currentHeight2"></rr-zoom>    
             </div>
         </div>

@@ -38,8 +38,8 @@
 /* global L, key, topojson, d3 */
 
 angular.module("RIF")
-        .controller('MappingCtrl', ['$scope', '$timeout', 'MappingStateService', 'ChoroService', 'MappingService',
-            function ($scope, $timeout, MappingStateService, ChoroService, MappingService) {
+        .controller('MappingCtrl', ['$scope', '$timeout', 'MappingStateService', 'ChoroService', 'MappingService', 'mapTools',
+            function ($scope, $timeout, MappingStateService, ChoroService, MappingService, mapTools) {
 
                 //Reference the child scope
                 $scope.child = {};
@@ -51,14 +51,25 @@ angular.module("RIF")
                     $scope.child.map['diseasemap2'].remove();
                 });
 
+                //Transparency change function
+                function closureAddSliderControl(m) {
+                    return function (v) {
+                        MappingStateService.getState().transparency[m] = v;
+                        $scope.transparency[m] = v;
+                        if (angular.isDefined($scope.child.geoJSON[m]._geojsons)) {
+                            $scope.child.geoJSON[m]._geojsons.default.eachLayer($scope.child.handleLayer);
+                        }
+                    };
+                }
+
                 //Set initial map panels and events
                 $timeout(function () {
                     //make maps
-                    for (var i in $scope.child.myMaps) {                     
+                    for (var i in $scope.child.myMaps) {
                         //initialise map
                         var container = angular.copy($scope.child.myMaps[i]);
                         $scope.child.map[container] = L.map(container).setView([0, 0], 1);
-                        
+
                         //search box
                         new L.Control.GeoSearch({
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
@@ -72,15 +83,43 @@ angular.module("RIF")
                             }, 50);
                         });
 
+                        //slider
+                        var slider = L.control.slider(closureAddSliderControl(container), {
+                            id: slider,
+                            position: 'topleft',
+                            orientation: 'horizontal',
+                            min: 0,
+                            max: 1,
+                            step: 0.01,
+                            value: MappingStateService.getState().transparency[container],
+                            title: 'Transparency',
+                            logo: '',
+                            syncSlider: true
+
+                        }).addTo($scope.child.map[container]);
+
+                        //left map only tools
+                        if (container === "diseasemap1") {
+                            var tools = mapTools.getExtraTools($scope.child);
+                            for (var i = 0; i < tools.length; i++) {
+                                new tools[i]().addTo($scope.child.map[container]);
+                            }
+                        }
+                        //Custom Toolbar
+                        var tools = mapTools.getBasicTools($scope.child, container);
+                        for (var i = 0; i < tools.length; i++) {
+                            new tools[i]().addTo($scope.child.map[container]);
+                        }
+
                         //scalebar
-                        L.control.scale({position: 'topleft', imperial: false}).addTo($scope.child.map[container]);
+                        L.control.scale({position: 'bottomleft', imperial: false}).addTo($scope.child.map[container]);
 
                         //Attributions to open in new window
                         $scope.child.map[container].attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                         $scope.child.map[container].doubleClickZoom.disable();
                         $scope.child.map[container].keyboard.disable();
                     }
-                    
+
                     //Fill study drop-downs
                     $scope.child.getStudies();
                     $scope.child.renderMap("diseasemap1");

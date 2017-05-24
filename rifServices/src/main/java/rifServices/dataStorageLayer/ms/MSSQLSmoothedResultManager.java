@@ -500,7 +500,7 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 			}
 			queryFormatter.finishLine();		
 			queryFormatter.addQueryLine(0, "FROM");
-			queryFormatter.addQueryPhrase(1, mapTableName + " as a");
+			queryFormatter.addQueryPhrase(1, mapTableName + " as " + mapTableNameAlias);
 			queryFormatter.addQueryPhrase(",");
 			queryFormatter.finishLine();		
 			queryFormatter.addQueryLine(1, "population_per_area");

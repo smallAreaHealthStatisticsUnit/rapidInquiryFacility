@@ -210,20 +210,6 @@ svg.areaCharts g.context rect.background{
 }
 
 /*POP PYRAMID*/
-.femaleBarLabel {
-    font: 14px sans-serif;
-    font-weight : bold;
-    fill : "green";	
-    text-anchor : "middle";		
-}
-
-.maleBarLabel {
-    font: 14px sans-serif;
-    font-weight : bold;
-    fill : "black";	
-    text-anchor : "middle";		
-}
-
 .maleBar {
     height : 70;
     fill : #c97f82;
@@ -291,4 +277,43 @@ pyramid {
 .prob3 {
     fill: #fc8d59;
     opacity: 0.2;
+}
+
+.d3SaveButton {
+    padding: 6px 12px;
+    margin-bottom: 0;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    border-color: #ccc;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-color: #ccc;
+    background: white url("../images/glyphicon/glyphicons-444-floppy-disk.png") no-repeat;
+    background-size: 70% 70%;
+    background-position: 50% 50%;
+    margin: 5px;
+    position: absolute;
+    z-index: 10;
+    opacity: 0.3;
+}
+
+.d3SaveButton:hover {
+    background-color: #f4f4f4;
+    opacity: 0.8;
+}
+
+.d3SaveButton:focus {
+    outline: none;
 }

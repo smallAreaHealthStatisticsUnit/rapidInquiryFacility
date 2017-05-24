@@ -46,11 +46,7 @@
     background: rgba(255,255,255,1);
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
     border-radius: 5px;
-}
-.info h4 {
-    color: #065581;
-    font-weight: bold;
-    font-size: 16px;
+    float: right !important;
 }
 .legend {
     line-height: 25px;
@@ -77,14 +73,158 @@
 }
 #viewermap {
     width: 100%;
-    height: calc(100% - 40px);
+    height: 100%;
 }
 #diseasemap1 {
     width: 100%;
-    height: calc(100% - 40px);
+    height: 100%;
 }
 #diseasemap2 {
     width: 100%;
-    height: calc(100% - 40px);
+    height: 100%;
 }
 
+/*
+* LEAFLET UI
+*/
+
+.leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar {
+    border: none;
+}
+
+.leaflet-control-slider {
+    box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.4);
+}
+
+.leaflet-control-container .btn:hover {
+    background-color: #f4f4f4;
+    opacity: 0.8;
+}
+
+.btn-choropleth, .btn-choropleth:active {
+    background: white url("../images/glyphicon/glyphicons-373-spray.png") no-repeat;
+    margin-right: 30px;
+}
+.btn-basemap, .btn-basemap:active{
+    background: white url("../images/glyphicon/glyphicons-320-sort.png") no-repeat;
+}
+.btn-clear, .btn-clear:active {
+    background: white url("../images/glyphicon/glyphicons-551-erase.png") no-repeat;
+}
+.btn-zoomExtent, .btn-zoomExtent:active {
+    background: white url("../images/glyphicon/glyphicons-371-globe-af.png") no-repeat;
+}
+.btn-zoomStudy, .btn-zoomStudy:active {
+    background: white url("../images/glyphicon/glyphicons-488-fit-image-to-frame.png") no-repeat;
+}
+.btn-zoomSelected, .btn-zoomSelected:active {
+    background: white url("../images/glyphicon/glyphicons-487-fit-frame-to-image.png") no-repeat;
+}
+.btn-exportChart, .btn-exportChart:active {
+    background: white url("../images/glyphicon/glyphicons-42-charts.png") no-repeat;
+}
+.btn-exportMap, .btn-exportMap:active {
+    background: white url("../images/glyphicon/glyphicons-503-map.png") no-repeat;
+}
+.btn-switchSymbology, .btn-switchSymbology:active {
+    background: white url("../images/glyphicon/glyphicons-230-retweet-2.png") no-repeat;
+}
+.btn-selectAll, .btn-selectAll:active {
+    background: white url("../images/glyphicon/glyphicons-433-plus.png") no-repeat;
+}
+.btn-centroids, .btn-centroids:active {
+    background: white url("../images/glyphicon/glyphicons-267-flag.png") no-repeat;
+}
+.btn-addAOI, .btn-addAOI:active {
+    background: white url("../images/glyphicon/glyphicons-97-vector-path-polygon.png") no-repeat;
+}
+.btn-removeAOI, .btn-removeAOI:active {
+    background: white url("../images/glyphicon/glyphicons-17-bin.png") no-repeat;
+    margin-left: 0px !important;
+}
+
+.leaflet-control #lockExtentTrue, #lockExtentFalse, #lockSelectTrue, #lockSelectFalse  {
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-color: #ccc;
+    background-color: white; 
+    float:right;
+}
+
+.leaflet-control #lockExtentTrue { 
+    background: lightgreen url("../images/glyphicon/glyphicons-204-lock.png") no-repeat;
+    background-size: 70% 70%;
+    background-position: 50% 50%;
+}
+.leaflet-control #lockExtentFalse {
+    background: white url("../images/glyphicon/glyphicons-204-lock.png") no-repeat;
+    background-size: 70% 70%;
+    background-position: 50% 50%;
+}
+
+.leaflet-control #lockSelectTrue { 
+    background: lightgreen url("../images/glyphicon/glyphicons-596-paired.png") no-repeat;
+    background-size: 70% 70%;
+    background-position: 50% 50%;
+}
+.leaflet-control #lockSelectFalse {
+    background: white url("../images/glyphicon/glyphicons-596-paired.png") no-repeat;
+    background-size: 70% 70%;
+    background-position: 50% 50%;
+}
+
+.leaflet-control-container .btn {
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-color: #ccc;
+    background-color: #fff;
+    background-size: 70% 70%;
+    background-position: 50% 50%;
+}
+
+.leaflet-bottom.leaflet-left .leaflet-control {
+    float: none;
+    display:inline;
+    position: relative;
+}
+.leaflet-bottom .btn:nth-child(n+3) {
+    margin-left: 0px;
+}
+
+.leaflet-bottom #lockExtentTrue, #lockExtentFalse{
+    position: relative;
+}
+
+.leaflet-control-scale-line {
+    margin: 10px;
+}
+
+#bandHolder {
+    width: 150px;
+    height: 40px;
+    background-color: white;
+    border-radius: 4px;
+}
+
+#bandHolder label {
+    margin-left: 10px;
+}

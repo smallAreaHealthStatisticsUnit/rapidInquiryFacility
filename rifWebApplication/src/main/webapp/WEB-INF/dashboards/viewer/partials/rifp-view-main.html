@@ -37,15 +37,14 @@
 HTML partial for ui-router
 Viewer
 -->
-<div id="navigation">
-    <div class='logOutUsername' ng-controller="TabCtrl"> 
-        <span class="userName"> {{username}} </span><span id="logOut" ng-click="logout()" > log out </span>
-    </div>
-    <div class='nav'>
-        <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping </a>
-        <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer </a>
-        <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Study Submission</a>
-    </div>
+<div class="topnav" id="myTopnav" ng-controller="TabCtrl">
+    <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Study Submission</a>
+    <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer</a>
+    <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping</a>
+    <a style="font-size:15px;" class="icon" ng-click="hamburger()">&#9776;</a>
+</div>
+<div class='logOutUsername' ng-controller="TabCtrl" > 
+    <span class="userName"> {{username}} </span><span id="logOut" ng-click="logout()" > log out </span>
 </div>
 
 <div id="buttons">
@@ -53,7 +52,7 @@ Viewer
         <div class="mappingPageLabel">VIEW RESULTS</div>
         <div >
             <div>Study:</div>
-            <select ng-change='child.updateSex("viewermap")'id='studySelect' ng-model='studyID["viewermap"]' ng-options='(s.study_id +       ": " +       s.name) for s in child.studyIDs'></select>
+            <select ng-change='child.updateSex("viewermap")'id='studySelect' ng-model='studyID["viewermap"]' ng-options='(s.study_id +            ": " +            s.name) for s in child.studyIDs'></select>
         </div>
         <div>
             <div>Sex:</div>
@@ -66,9 +65,11 @@ Viewer
     <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 
         <div ui-layout="{flow : 'row'}">
             <div ui-layout-container id="hSplit1" max-size="100%" class="js-back" size="{{hSplit1}}%">
+                <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="distHisto"></button>
                 <dist-histo chart-data="histoData['viewermap']" name="distHistoName" width="distHistoCurrentWidth" height="distHistoCurrentHeight"></dist-histo>
             </div>
             <div ui-layout-container id="hSplit2" max-size="100%" class="js-back">
+                <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="poppyramid"></button>
                 <pyramid chart-data="populationData['viewermap']" width="pyramidCurrentWidth" height="pyramidCurrentHeight"></pyramid> 
                 <select id="yearPyramidSelect" ng-model="yearPop" ng-options="s for s in yearsPop" ng-change="updatePyramidForYear()"></select>
             </div>
@@ -77,30 +78,6 @@ Viewer
     <div ui-layout-container ui-layout-loaded> 
         <div ui-layout="{flow : 'row'}">
             <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="{{hSplit2}}%">            
-                <div class="submenuMapping" >
-                    <div class="btn-group" title="Quick export chart" uib-dropdown is-open="isopen">
-                        <button id="single-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
-                            <span class="caret"></span>
-                        </button>
-                        <div class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                            <li role="menuitem"><a saved3-chart mapid="distHisto">Histogram</a></li>
-                            <li role="menuitem"><a saved3-chart mapid="poppyramid">Pyramid</a></li>
-                        </div>
-                    </div>
-                    <ul class="mapBoxOpts">
-                        <li><a ng-controller="ChoroplethModalCtrl" ng-click="open('viewermap')" id="choroplethBtn" title="Choropleth map"></a></li>
-                        <li><a ng-controller="BaseMapModalCtrl" ng-click="open('viewermap')" id="baseMapBtn" title="Base map"></a></li>	
-                        <li><a id="clearSelection" title="Clear selection" clear-array-selection mapid="viewermap"></a></li>
-                        <li><a id="zoomExtent" title="Zoom to full extent" zoom-extent mapid="viewermap"></a></li>
-                        <li><a id="zoomStudy" title="Zoom to study extent" zoom-study mapid="viewermap"></a></li>
-                        <li><a id="zoomSelection" title="Zoom to selected" zoom-selection-multiple mapid="viewermap"></a></li> 
-                        <li><a id="exportMap" title="Quick export map" leaflet-to-png mapid="map.viewermap"></a></li>
-                        <li>
-                            <input type="range" ng-model ="transparency['viewermap']" min="0" max="1" step="0.01" value ="0.7" change-opacity mapid="viewermap"/>
-                        </li>
-                    </ul> 
-                </div>  
-                <!-- Leaflet -->
                 <div id="viewermap"></div>
             </div>
             <div ui-layout-container class="js-back">

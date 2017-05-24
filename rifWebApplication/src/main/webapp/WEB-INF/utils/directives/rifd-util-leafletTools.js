@@ -39,6 +39,7 @@
 angular.module("RIF")
         /*
          * Change Opacity
+         * TODO: not used with new slider
          */
         .directive('changeOpacity', function () {
             return {
@@ -164,6 +165,7 @@ angular.module("RIF")
                                         scope.updateMapSelection(null, toClear[i]);
                                     }
                                 }
+                                scope.$parent.$digest();
                             }
                         });
                     }

@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -123,21 +123,47 @@ angular.module("RIF")
                                         return height - y(d.length);
                                     });
 
-                            svg.append("g")
-                                    .attr("class", "axis axis--x")
-                                    .attr("transform", "translate(0," + height + ")")
-                                    .call(d3.axisBottom(x));
+                            //y axis
+                            var yAxis = d3.axisLeft()
+                                    .scale(y);
+
+                            function customYAxis(g) {
+                                g.call(yAxis);
+                                g.selectAll(".tick text").style("font-size", function (d) {
+                                    return Math.min((height / 20), 15);
+                                });
+                            }
 
                             svg.append("g")
-                                    .attr("class", "axis axis--y")
-                                    .call(d3.axisLeft(y));
+                                    .call(customYAxis);
+
+                            //x axis
+                            var xAxis = d3.axisBottom()
+                                    .scale(x);
+
+                            function customXAxis(g) {
+                                g.call(xAxis);
+                                g.attr("transform", "translate(0," + height + ")")
+                                g.selectAll(".tick text").style("font-size", function (d) {
+                                    return Math.min((width / 20), 10);
+                                });
+                            }
+
+                            svg.append("g")
+                                    .call(customXAxis);
 
                             svg.append("text")
+                                    .style("font-size", function (d) {
+                                        return Math.min((width / 15), 15);
+                                    })
                                     .attr("transform", "translate(" + width / 2 + "," + (height + 35) + ")")
                                     .style("text-anchor", "middle")
                                     .attr("class", "xlabel")
                                     .text(scope.name);
                             svg.append("text")
+                                    .style("font-size", function (d) {
+                                        return Math.min((height / 15), 15);
+                                    })
                                     .style("text-anchor", "middle")
                                     .attr("transform", "rotate(-90)")
                                     .attr("y", 15 - margin.top)

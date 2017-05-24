@@ -37,8 +37,8 @@
 
 /* global L, key, topojson, d3 */
 angular.module("RIF")
-        .controller('ViewerCtrl', ['$scope', 'user', '$timeout', 'ViewerStateService', 'ChoroService',
-            function ($scope, user, $timeout, ViewerStateService, ChoroService) {
+        .controller('ViewerCtrl', ['$scope', 'user', '$timeout', 'ViewerStateService', 'ChoroService', 'mapTools', '$compile',
+            function ($scope, user, $timeout, ViewerStateService, ChoroService, mapTools, $compile) {
 
                 //Reference the child scope
                 $scope.child = {};
@@ -67,8 +67,36 @@ angular.module("RIF")
                         }, 50);
                     });
 
+                    //slider
+                    var slider = L.control.slider(function (v) {
+                        ViewerStateService.getState().transparency['viewermap'] = v;
+                        $scope.transparency['viewermap'] = v;
+                        if (angular.isDefined($scope.child.geoJSON['viewermap']._geojsons)) {
+                            $scope.child.geoJSON['viewermap']._geojsons.default.eachLayer($scope.child.handleLayer);
+                        }
+                    }, {
+                        id: slider,
+                        position: 'topleft',
+                        orientation: 'horizontal',
+                        min: 0,
+                        max: 1,
+                        step: 0.01,
+                        value: ViewerStateService.getState().transparency['viewermap'],
+                        title: 'Transparency',
+                        logo: '',
+                        syncSlider: true
+
+                    }).addTo($scope.child.map['viewermap']);
+
+                    //Custom Toolbar
+                    var tools = mapTools.getBasicTools($scope.child, "viewermap");
+                    for (var i = 0; i < tools.length; i++) {
+                        new tools[i]().addTo($scope.child.map['viewermap']);
+                    }
+
                     //scalebar
-                    L.control.scale({position: 'topleft', imperial: false}).addTo($scope.child.map['viewermap']);
+                    L.control.scale({position: 'bottomleft', imperial: false}).addTo($scope.child.map['viewermap']);
+
                     //Attributions to open in new window
                     $scope.child.map['viewermap'].attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                     $scope.child.map['viewermap'].doubleClickZoom.disable();

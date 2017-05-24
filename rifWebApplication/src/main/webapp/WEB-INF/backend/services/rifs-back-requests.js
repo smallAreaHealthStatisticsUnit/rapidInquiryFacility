@@ -225,6 +225,7 @@ angular.module("RIF")
                     //http://localhost:8080/rifServices/studyResultRetrieval/pg/getTileMakerCentroids?userID=dwmorley&geographyName=SAHSULAND&geoLevelSelectName=SAHSU_GRD_LEVEL4
                     return $http.get(studyResultRetrievalURL + DatabaseService.getDatabase() + 'getTileMakerCentroids?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel);
                 };
+                
                 //get details of a completed study
                 //TODO: this method does not give complete information
                 self.getStudySubmission = function (username, studyID) {

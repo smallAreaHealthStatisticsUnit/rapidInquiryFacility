@@ -67,6 +67,15 @@ angular.module("RIF")
                     }
                 }, ms);
 
+                $scope.hamburger = function () {
+                    var x = document.getElementById("myTopnav");
+                    if (x.className === "topnav") {
+                        x.className += " responsive";
+                    } else {
+                        x.className = "topnav";
+                    }
+                };
+
                 $scope.$on('$destroy', function () {
                     if (!angular.isUndefined(stop)) {
                         $interval.cancel(stop);

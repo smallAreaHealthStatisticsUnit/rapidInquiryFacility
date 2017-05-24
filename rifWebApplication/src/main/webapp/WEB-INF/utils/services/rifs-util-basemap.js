@@ -47,14 +47,14 @@ angular.module("RIF")
 
                     //for disease mapping
                     var baseMapInUse = {
-                        area: defaultBaseMap,
+                        areamap: defaultBaseMap,
                         viewermap: defaultBaseMap,
                         diseasemap1: defaultBaseMap,
                         diseasemap2: defaultBaseMap
                     };
                     //from checkbox, disable basemap
                     var noBaseMap = {
-                        area: false,
+                        areamap: false,
                         viewermap: false,
                         diseasemap1: false,
                         diseasemap2: false
