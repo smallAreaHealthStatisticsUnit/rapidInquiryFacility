@@ -374,263 +374,263 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 	}
 	
 	public RIFResultTable getSmoothedResultsForAttributes(
-		final Connection connection,
-		final ArrayList<String> smoothedAttributesToInclude,
-		final String studyID,
-		final Sex sex) 
-		throws RIFServiceException {
-		
-
-		String extractTableName = deriveExtractTableName(studyID);
-		String mapTableName	= deriveMapTableName(studyID);
-		
-		/*
-		 * Create the statement to obtain the total number of rows we should 
-		 * expect to get back when we fetch the entire table.  using a 
-		 * SELECT
-		 *    COUNT(study_id)
-		 * FROM
-		 *    rif_studies.s[study_id]_map
-		 *
-		 * This is being used as an alternative to finding out the number of rows by using
-		 * 
-		 * resultSet.last()
-		 * resultSet.getRow()
-		 * 
-		 * resultSet.beforeFirst()
-		 * while (resultSet.next()) {
-		 *    ... do stuff ...
-		 * }
-		 */
-				
-		SQLGeneralQueryFormatter countTableRowsQueryFormatter = new SQLGeneralQueryFormatter();
-		//otherwise, if it's both, don't filter by any sex value
-		countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
-		countTableRowsQueryFormatter.addQueryLine(1, "COUNT(DISTINCT area_id) AS total");
-		countTableRowsQueryFormatter.addQueryLine(0, "FROM");
-		countTableRowsQueryFormatter.addQueryLine(1, mapTableName);
-		countTableRowsQueryFormatter.padAndFinishLine();
-		
-		/*
-		 * Create the SQL query to return all of the fields of interest
-		 */
-		
-		//Aggregate population totals for each area based on sex.  If sex is 'BOTH', aggregate male and female 
-		//totals together.  
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryLine(0, "WITH population_per_area AS ");
-		queryFormatter.addQueryLine(1, "(SELECT");
-		queryFormatter.addQueryLine(2, "area_id,");
-		queryFormatter.addQueryLine(2, "SUM(total_pop) AS population");
-		queryFormatter.addQueryLine(1, "FROM");		
-		queryFormatter.addQueryLine(2, extractTableName);
-		if (sex == Sex.MALES) {
-			queryFormatter.addQueryLine(2, "WHERE sex = 1 ");			
-		}
-		else if (sex == Sex.FEMALES) {
-			queryFormatter.addQueryLine(2, "WHERE sex = 2 ");			
-		}		
-		//otherwise, if it's both, don't filter by any sex value
-		queryFormatter.addQueryLine(1, "GROUP BY");
-		queryFormatter.addQueryLine(2, "area_id)");
-		
-		//now generate the main SELECT statement
-		queryFormatter.addQueryLine(0, "SELECT");
-
-		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			"population_per_area",
-			"area_id",
-			false);		
-				
-		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			mapTableName,
-			"band_id",
-			true);
-
-		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			mapTableName,
-			"genders",
-			true);
-		
-		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			mapTableName,
-			"observed",
-			true);
-				
-		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			mapTableName,
-			"expected",
-			true);
-
-		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			"population_per_area",
-			"population",
-			true);
-		
-		
-		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			mapTableName,
-			"adjusted",
-			true);
-		
-		
-		for (int i = 0; i < smoothedAttributesToInclude.size(); i++) {
-
-				addSelectSmoothedFieldEntry(
-					queryFormatter,
-					1,
-					mapTableName,
-					smoothedAttributesToInclude.get(i),
-					true);						
-		}
-		queryFormatter.finishLine();		
-		queryFormatter.addQueryLine(0, "FROM");
-		queryFormatter.addQueryPhrase(1, mapTableName);
-		queryFormatter.addQueryPhrase(",");
-		queryFormatter.finishLine();		
-		queryFormatter.addQueryLine(1, "population_per_area");
-		queryFormatter.addQueryLine(0, "WHERE");
-		queryFormatter.addQueryPhrase(1, mapTableName);
-		queryFormatter.addQueryPhrase(".area_id = population_per_area.area_id AND ");
-		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryPhrase(1, mapTableName);
-		queryFormatter.addQueryPhrase(".genders=?");
-		queryFormatter.padAndFinishLine();
-		
-		//add in join condition related to genders
-		
-		logSQLQuery(
-			"getNumberOfResultsForMapDataSet", 
-			countTableRowsQueryFormatter, 
-			studyID);
-		logSQLQuery(
-			"retrieveResultsForMapDataSet", 
-			queryFormatter, 
-			studyID);
-		
-		PreparedStatement countTableRowsStatement = null;
-		PreparedStatement retrieveDataStatement = null;
-		ResultSet totalRowCountResultSet = null;
-		ResultSet smoothedResultSet = null;
-		int numberOfRows = 0;
-		try {
-			countTableRowsStatement
-				= connection.prepareStatement(countTableRowsQueryFormatter.generateQuery());						
-			totalRowCountResultSet
-				= countTableRowsStatement.executeQuery();
-			totalRowCountResultSet.next();
-			numberOfRows = totalRowCountResultSet.getInt(1);
+			final Connection connection,
+			final ArrayList<String> smoothedAttributesToInclude,
+			final String studyID,
+			final Sex sex) 
+			throws RIFServiceException {
 			
-			retrieveDataStatement
-				= connection.prepareStatement(queryFormatter.generateQuery());	
 
-			if (sex == Sex.MALES) {
-				retrieveDataStatement.setInt(1, 1);				
-			}
-			else if (sex == Sex.FEMALES) {
-				retrieveDataStatement.setInt(1, 2);				
-			}
-			else {
-				retrieveDataStatement.setInt(1, 3);				
-			}
-						
-			smoothedResultSet = retrieveDataStatement.executeQuery();
-
+			String extractTableName = deriveExtractTableName(studyID);
+			String mapTableName	= deriveMapTableName(studyID);
 			
 			/*
-			 * Format should look like:
-			 * area_id,
-			 * band_id,
-			 * genders,
-			 * observed,
-			 * expected,
-			 * population
-			 * adjusted,
+			 * Create the statement to obtain the total number of rows we should 
+			 * expect to get back when we fetch the entire table.  using a 
+			 * SELECT
+			 *    COUNT(study_id)
+			 * FROM
+			 *    rif_studies.s[study_id]_map
+			 *
+			 * This is being used as an alternative to finding out the number of rows by using
 			 * 
-			 * + n
+			 * resultSet.last()
+			 * resultSet.getRow()
+			 * 
+			 * resultSet.beforeFirst()
+			 * while (resultSet.next()) {
+			 *    ... do stuff ...
+			 * }
+			 */
+					
+			SQLGeneralQueryFormatter countTableRowsQueryFormatter = new SQLGeneralQueryFormatter();
+			//otherwise, if it's both, don't filter by any sex value
+			countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
+			countTableRowsQueryFormatter.addQueryLine(1, "COUNT(DISTINCT area_id) AS total");
+			countTableRowsQueryFormatter.addQueryLine(0, "FROM");
+			countTableRowsQueryFormatter.addQueryLine(1, mapTableName);
+			countTableRowsQueryFormatter.padAndFinishLine();
+			
+			/*
+			 * Create the SQL query to return all of the fields of interest
 			 */
 			
-			int numberOfColumns = smoothedAttributesToInclude.size();
-			String[][] data = new String[numberOfRows][7 + numberOfColumns];
-						
-			//Build up results table
-			int currentRow = 0;	
-			while(smoothedResultSet.next()) {
-				//grab data that will be used to set values in columns which will definitely appear in the extract
-				data[currentRow][0] = smoothedResultSet.getString("area_id");
-				data[currentRow][1] = smoothedResultSet.getString("band_id");
-				data[currentRow][2] = smoothedResultSet.getString("genders");
-				data[currentRow][3] = smoothedResultSet.getString("observed");
-				data[currentRow][4] = smoothedResultSet.getString("expected");
-				data[currentRow][5] = smoothedResultSet.getString("population");
-				data[currentRow][6] = smoothedResultSet.getString("adjusted");
+			//Aggregate population totals for each area based on sex.  If sex is 'BOTH', aggregate male and female 
+			//totals together.  
+			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			queryFormatter.addQueryLine(0, "WITH population_per_area AS ");
+			queryFormatter.addQueryLine(1, "(SELECT");
+			queryFormatter.addQueryLine(2, "area_id,");
+			queryFormatter.addQueryLine(2, "SUM(total_pop) AS population");
+			queryFormatter.addQueryLine(1, "FROM");		
+			queryFormatter.addQueryLine(2, extractTableName);
+			if (sex == Sex.MALES) {
+				queryFormatter.addQueryLine(2, "WHERE sex = 1 ");			
+			}
+			else if (sex == Sex.FEMALES) {
+				queryFormatter.addQueryLine(2, "WHERE sex = 2 ");			
+			}		
+			//otherwise, if it's both, don't filter by any sex value
+			queryFormatter.addQueryLine(1, "GROUP BY");
+			queryFormatter.addQueryLine(2, "area_id)");
+			
+			//now generate the main SELECT statement
+			String mapTableNameAlias = "a";
+			queryFormatter.addQueryLine(0, "SELECT");
 
-				//Add in the optional fields that end users will have selected in the front end UI
-				int currentColumn = 7;
-				for (String smoothedAttributeToInclude : smoothedAttributesToInclude) {
-					data[currentRow][currentColumn] 
-						= smoothedResultSet.getString(smoothedAttributeToInclude);
-					currentColumn++;
+			addSelectSmoothedFieldEntry(
+				queryFormatter,
+				1,
+				"population_per_area",
+				"area_id",
+				false);		
+					
+			addSelectSmoothedFieldEntry(
+				queryFormatter,
+				1,
+				mapTableNameAlias,
+				"band_id",
+				true);
+
+			addSelectSmoothedFieldEntry(
+				queryFormatter,
+				1,
+				mapTableNameAlias,
+				"genders",
+				true);
+			
+			addSelectSmoothedFieldEntry(
+				queryFormatter,
+				1,
+				mapTableNameAlias,
+				"observed",
+				true);
+					
+			addSelectSmoothedFieldEntry(
+				queryFormatter,
+				1,
+				mapTableNameAlias,
+				"expected",
+				true);
+
+			addSelectSmoothedFieldEntry(
+				queryFormatter,
+				1,
+				"population_per_area",
+				"population",
+				true);
+			
+			
+			addSelectSmoothedFieldEntry(
+				queryFormatter,
+				1,
+				mapTableNameAlias,
+				"adjusted",
+				true);
+			
+			
+			for (int i = 0; i < smoothedAttributesToInclude.size(); i++) {
+
+					addSelectSmoothedFieldEntry(
+						queryFormatter,
+						1,
+						mapTableNameAlias,
+						smoothedAttributesToInclude.get(i),
+						true);						
+			}
+			queryFormatter.finishLine();		
+			queryFormatter.addQueryLine(0, "FROM");
+			queryFormatter.addQueryPhrase(1, mapTableName + " as a");
+			queryFormatter.addQueryPhrase(",");
+			queryFormatter.finishLine();		
+			queryFormatter.addQueryLine(1, "population_per_area");
+			queryFormatter.addQueryLine(0, "WHERE");
+			queryFormatter.addQueryPhrase(1, mapTableNameAlias);
+			queryFormatter.addQueryPhrase(".area_id = population_per_area.area_id AND ");
+			queryFormatter.padAndFinishLine();
+			queryFormatter.addQueryPhrase(1, mapTableNameAlias);
+			queryFormatter.addQueryPhrase(".genders=?");
+			queryFormatter.padAndFinishLine();
+			
+			//add in join condition related to genders
+			logSQLQuery(
+				"getNumberOfResultsForMapDataSet", 
+				countTableRowsQueryFormatter, 
+				studyID);
+			logSQLQuery(
+				"retrieveResultsForMapDataSet", 
+				queryFormatter, 
+				studyID);
+			
+			PreparedStatement countTableRowsStatement = null;
+			PreparedStatement retrieveDataStatement = null;
+			ResultSet totalRowCountResultSet = null;
+			ResultSet smoothedResultSet = null;
+			int numberOfRows = 0;
+			try {
+				countTableRowsStatement
+					= connection.prepareStatement(countTableRowsQueryFormatter.generateQuery());						
+				totalRowCountResultSet
+					= countTableRowsStatement.executeQuery();
+				totalRowCountResultSet.next();
+				numberOfRows = totalRowCountResultSet.getInt(1);
+				
+				retrieveDataStatement
+					= connection.prepareStatement(queryFormatter.generateQuery());	
+
+				if (sex == Sex.MALES) {
+					retrieveDataStatement.setInt(1, 1);				
+				}
+				else if (sex == Sex.FEMALES) {
+					retrieveDataStatement.setInt(1, 2);				
+				}
+				else {
+					retrieveDataStatement.setInt(1, 3);				
+				}
+							
+				smoothedResultSet = retrieveDataStatement.executeQuery();
+
+				
+				/*
+				 * Format should look like:
+				 * area_id,
+				 * band_id,
+				 * genders,
+				 * observed,
+				 * expected,
+				 * population
+				 * adjusted,
+				 * 
+				 * + n
+				 */
+				
+				int numberOfColumns = smoothedAttributesToInclude.size();
+				String[][] data = new String[numberOfRows][7 + numberOfColumns];
+							
+				//Build up results table
+				int currentRow = 0;	
+				while(smoothedResultSet.next()) {
+					//grab data that will be used to set values in columns which will definitely appear in the extract
+					data[currentRow][0] = smoothedResultSet.getString("area_id");
+					data[currentRow][1] = smoothedResultSet.getString("band_id");
+					data[currentRow][2] = smoothedResultSet.getString("genders");
+					data[currentRow][3] = smoothedResultSet.getString("observed");
+					data[currentRow][4] = smoothedResultSet.getString("expected");
+					data[currentRow][5] = smoothedResultSet.getString("population");
+					data[currentRow][6] = smoothedResultSet.getString("adjusted");
+
+					//Add in the optional fields that end users will have selected in the front end UI
+					int currentColumn = 7;
+					for (String smoothedAttributeToInclude : smoothedAttributesToInclude) {
+						data[currentRow][currentColumn] 
+							= smoothedResultSet.getString(smoothedAttributeToInclude);
+						currentColumn++;
+					}
+					
+					currentRow++;		
+				}
+
+				//Stuff everything the client will have to know about the results and send it back
+				RIFResultTable rifResultTable = new RIFResultTable();
+				int numberOfSmoothedAttributesToInclude = smoothedAttributesToInclude.size();
+				String[] columnNames = new String[7 + numberOfSmoothedAttributesToInclude];
+				columnNames[0] = "area_id";
+				columnNames[1] = "band_id";
+				columnNames[2] = "genders";
+				columnNames[3] = "observed";
+				columnNames[4] = "expected";
+				columnNames[5] = "population";
+				columnNames[6] = "adjusted";
+				for (int i = 0; i < numberOfSmoothedAttributesToInclude; i++) {
+					columnNames[7 + i] = smoothedAttributesToInclude.get(i);
 				}
 				
-				currentRow++;		
+				String[] columnNameDescriptions = getColumnNameDescriptions(columnNames);
+				
+				RIFResultTable.ColumnDataType[] columnDataTypes = deriveColumnDataTypes(columnNames);
+				rifResultTable.setColumnProperties(columnNames, columnNameDescriptions, columnDataTypes);
+				rifResultTable.setData(data);
+				return rifResultTable;
+				
 			}
-
-			//Stuff everything the client will have to know about the results and send it back
-			RIFResultTable rifResultTable = new RIFResultTable();
-			int numberOfSmoothedAttributesToInclude = smoothedAttributesToInclude.size();
-			String[] columnNames = new String[7 + numberOfSmoothedAttributesToInclude];
-			columnNames[0] = "area_id";
-			columnNames[1] = "band_id";
-			columnNames[2] = "genders";
-			columnNames[3] = "observed";
-			columnNames[4] = "expected";
-			columnNames[5] = "population";
-			columnNames[6] = "adjusted";
-			for (int i = 0; i < numberOfSmoothedAttributesToInclude; i++) {
-				columnNames[7 + i] = smoothedAttributesToInclude.get(i);
+			catch(SQLException sqlException) {
+				sqlException.printStackTrace(System.out);
+				String errorMessage
+					= RIFServiceMessages.getMessage(
+						"smoothedResultsManager.error.unableToGetSmoothedResults", 
+						studyID);
+				RIFServiceException rifServiceException
+					= new RIFServiceException(RIFServiceError.DATABASE_QUERY_FAILED, errorMessage);
+				throw rifServiceException;			
 			}
-			
-			String[] columnNameDescriptions = getColumnNameDescriptions(columnNames);
-			
-			RIFResultTable.ColumnDataType[] columnDataTypes = deriveColumnDataTypes(columnNames);
-			rifResultTable.setColumnProperties(columnNames, columnNameDescriptions, columnDataTypes);
-			rifResultTable.setData(data);
-			return rifResultTable;
-			
+			finally {
+				PGSQLQueryUtility.close(totalRowCountResultSet);
+				PGSQLQueryUtility.close(smoothedResultSet);
+				PGSQLQueryUtility.close(countTableRowsStatement);
+				PGSQLQueryUtility.close(retrieveDataStatement);
+			}
+				
 		}
-		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"smoothedResultsManager.error.unableToGetSmoothedResults", 
-					studyID);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(RIFServiceError.DATABASE_QUERY_FAILED, errorMessage);
-			throw rifServiceException;			
-		}
-		finally {
-			PGSQLQueryUtility.close(totalRowCountResultSet);
-			PGSQLQueryUtility.close(smoothedResultSet);
-			PGSQLQueryUtility.close(countTableRowsStatement);
-			PGSQLQueryUtility.close(retrieveDataStatement);
-		}
-			
-	}
 
 	private void addSelectSmoothedFieldEntry(
 		final SQLGeneralQueryFormatter queryFormatter,

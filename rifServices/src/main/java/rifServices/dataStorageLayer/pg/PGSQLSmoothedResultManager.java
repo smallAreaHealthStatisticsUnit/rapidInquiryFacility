@@ -435,6 +435,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		queryFormatter.addQueryLine(2, "area_id)");
 		
 		//now generate the main SELECT statement
+		String mapTableNameAlias = "a";
 		queryFormatter.addQueryLine(0, "SELECT");
 
 		addSelectSmoothedFieldEntry(
@@ -447,28 +448,28 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		addSelectSmoothedFieldEntry(
 			queryFormatter,
 			1,
-			mapTableName,
+			mapTableNameAlias,
 			"band_id",
 			true);
 
 		addSelectSmoothedFieldEntry(
 			queryFormatter,
 			1,
-			mapTableName,
+			mapTableNameAlias,
 			"genders",
 			true);
 		
 		addSelectSmoothedFieldEntry(
 			queryFormatter,
 			1,
-			mapTableName,
+			mapTableNameAlias,
 			"observed",
 			true);
 				
 		addSelectSmoothedFieldEntry(
 			queryFormatter,
 			1,
-			mapTableName,
+			mapTableNameAlias,
 			"expected",
 			true);
 
@@ -483,7 +484,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		addSelectSmoothedFieldEntry(
 			queryFormatter,
 			1,
-			mapTableName,
+			mapTableNameAlias,
 			"adjusted",
 			true);
 		
@@ -493,26 +494,25 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 				addSelectSmoothedFieldEntry(
 					queryFormatter,
 					1,
-					mapTableName,
+					mapTableNameAlias,
 					smoothedAttributesToInclude.get(i),
 					true);						
 		}
 		queryFormatter.finishLine();		
 		queryFormatter.addQueryLine(0, "FROM");
-		queryFormatter.addQueryPhrase(1, mapTableName);
+		queryFormatter.addQueryPhrase(1, mapTableName + " as a");
 		queryFormatter.addQueryPhrase(",");
 		queryFormatter.finishLine();		
 		queryFormatter.addQueryLine(1, "population_per_area");
 		queryFormatter.addQueryLine(0, "WHERE");
-		queryFormatter.addQueryPhrase(1, mapTableName);
+		queryFormatter.addQueryPhrase(1, mapTableNameAlias);
 		queryFormatter.addQueryPhrase(".area_id = population_per_area.area_id AND ");
 		queryFormatter.padAndFinishLine();
-		queryFormatter.addQueryPhrase(1, mapTableName);
+		queryFormatter.addQueryPhrase(1, mapTableNameAlias);
 		queryFormatter.addQueryPhrase(".genders=?");
 		queryFormatter.padAndFinishLine();
 		
 		//add in join condition related to genders
-		
 		logSQLQuery(
 			"getNumberOfResultsForMapDataSet", 
 			countTableRowsQueryFormatter, 
