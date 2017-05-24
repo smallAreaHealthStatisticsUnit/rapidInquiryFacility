@@ -668,7 +668,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			sqlRoundingFragment.append(tableName);
 			sqlRoundingFragment.append(".");			
 			sqlRoundingFragment.append(columnName);
-			sqlRoundingFragment.append("::numeric, 3) AS ");
+			sqlRoundingFragment.append(", 3) AS ");
 			sqlRoundingFragment.append(columnName);
 				
 			queryFormatter.addQueryPhrase(indentationLevel, sqlRoundingFragment.toString());
