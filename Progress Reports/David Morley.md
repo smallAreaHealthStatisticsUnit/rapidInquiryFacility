@@ -107,7 +107,7 @@ Principal Work Area: JavaScript User interface development
 - MS SQL server porting for study submission complete
 - Started working on MS SQL server port for data viewer / disease mapping
 
-## (May)
+## May
 
 - Moved rifServices test cases to either sql server of pgres versions
 - sql server porting for run Study (mostly problems with error checking routines)
@@ -115,5 +115,10 @@ Principal Work Area: JavaScript User interface development
 - Removed dependency on ui-leaflet directive
 - Fixed memory leak in map containers
 - Middleware method to get polygon centroids from database (defaults to leaflet getCenter() on error)
+- New toolbars for map consistent with standard leaflet tools
+- Correct resizing issues in KG's D3 code
+- Main navbar is now responsive to page resize
+
+## (June)
 
 
