@@ -1193,40 +1193,88 @@ generateTableIndexSQLQuery <- function(tableName, columnName) {
 ##corresponding fields that exist in the temporary table.
 ##================================================================================
 updateMapTableFromSmoothedResultsTable <- function() {
-  
-  updateMapTableSQLQuery <- paste0(
-    "UPDATE ", mapTableName, " a ",
-    "SET ",
-    "genders=b.genders,",
-    "direct_standardisation=b.direct_standardisation,",
-    "adjusted=b.adjusted,",
-    "observed=b.observed,",
-    "expected=b.expected,",
-    "lower95=b.lower95,",
-    "upper95=b.upper95,",
-    "relative_risk=b.relative_risk,",
-    "smoothed_relative_risk=b.smoothed_relative_risk,",
-    "posterior_probability=b.posterior_probability,",
-    "posterior_probability_upper95=b.posterior_probability_upper95,",
-    "posterior_probability_lower95=b.posterior_probability_lower95,",
-    "residual_relative_risk=b.residual_relative_risk,",
-    "residual_rr_lower95=b.residual_rr_lower95,",
-    "residual_rr_upper95=b.residual_rr_upper95,",
-    "smoothed_smr=b.smoothed_smr,",
-    "smoothed_smr_lower95=b.smoothed_smr_lower95,",					
-    "smoothed_smr_upper95=b.smoothed_smr_upper95 ",
-    "FROM ",
-    temporarySmoothedResultsTableName,
-    " b ",
-    "WHERE ",
-    "a.study_id=b.study_id AND ",
-    "a.band_id=b.band_id AND ",
-    "a.inv_id=b.inv_id AND ",
-    "a.genders=b.genders AND ",
-    "a.area_id=b.area_id");
-  
-  sqlQuery(connDB, updateMapTableSQLQuery)				
-  #print(updateMapTableSQLQuery)
+ 
+  if (db_driver_prefix == "jdbc:postgresql") {	
+	  updateMapTableSQLQuery <- paste0(
+		"UPDATE ", mapTableName, " a ",
+		"SET ",
+		"genders=b.genders,",
+		"direct_standardisation=b.direct_standardisation,",
+		"adjusted=b.adjusted,",
+		"observed=b.observed,",
+		"expected=b.expected,",
+		"lower95=b.lower95,",
+		"upper95=b.upper95,",
+		"relative_risk=b.relative_risk,",
+		"smoothed_relative_risk=b.smoothed_relative_risk,",
+		"posterior_probability=b.posterior_probability,",
+		"posterior_probability_upper95=b.posterior_probability_upper95,",
+		"posterior_probability_lower95=b.posterior_probability_lower95,",
+		"residual_relative_risk=b.residual_relative_risk,",
+		"residual_rr_lower95=b.residual_rr_lower95,",
+		"residual_rr_upper95=b.residual_rr_upper95,",
+		"smoothed_smr=b.smoothed_smr,",
+		"smoothed_smr_lower95=b.smoothed_smr_lower95,",					
+		"smoothed_smr_upper95=b.smoothed_smr_upper95 ",
+		"FROM ",
+		temporarySmoothedResultsTableName,
+		" b ",
+		"WHERE ",
+		"a.study_id=b.study_id AND ",
+		"a.band_id=b.band_id AND ",
+		"a.inv_id=b.inv_id AND ",
+		"a.genders=b.genders AND ",
+		"a.area_id=b.area_id");
+  }
+  else if (db_driver_prefix == "jdbc:sqlserver") { 
+	  updateMapTableSQLQuery <- paste0(
+		"UPDATE a ",
+		"SET ",
+		"genders=b.genders,",
+		"direct_standardisation=b.direct_standardisation,",
+		"adjusted=b.adjusted,",
+		"observed=b.observed,",
+		"expected=b.expected,",
+		"lower95=b.lower95,",
+		"upper95=b.upper95,",
+		"relative_risk=b.relative_risk,",
+		"smoothed_relative_risk=b.smoothed_relative_risk,",
+		"posterior_probability=b.posterior_probability,",
+		"posterior_probability_upper95=b.posterior_probability_upper95,",
+		"posterior_probability_lower95=b.posterior_probability_lower95,",
+		"residual_relative_risk=b.residual_relative_risk,",
+		"residual_rr_lower95=b.residual_rr_lower95,",
+		"residual_rr_upper95=b.residual_rr_upper95,",
+		"smoothed_smr=b.smoothed_smr,",
+		"smoothed_smr_lower95=b.smoothed_smr_lower95,",					
+		"smoothed_smr_upper95=b.smoothed_smr_upper95 ",
+		"FROM ", mapTableName, " AS a INNER JOIN ",
+		temporarySmoothedResultsTableName, " AS b ",
+		"ON (",
+		"a.study_id=b.study_id AND ",
+		"a.band_id=b.band_id AND ",
+		"a.inv_id=b.inv_id AND ",
+		"a.genders=b.genders AND ",
+		"a.area_id=b.area_id)");
+  }
+  	
+  res <- tryCatch(odbcQuery(connDB, updateMapTableSQLQuery, FALSE),
+		warning=function(w) {
+			print(paste("UNABLE TO QUERY! SQL> ", updateMapTableSQLQuery, "; warning: ", w))
+			odbcClose(connDB)
+			quit("no", 1, FALSE)
+		},
+		error=function(e) {
+			print(paste("ERROR IN QUERY! SQL> ", updateMapTableSQLQuery, "; error: ", odbcGetErrMsg(connDB)))
+			odbcClose(connDB)
+			quit("no", 1, FALSE)
+		}) 
+	if (res != 1) {
+		print(paste("ERROR IN QUERY! SQL> ", updateMapTableSQLQuery, "; error: ", odbcGetErrMsg(connDB)))
+			odbcClose(connDB)
+			quit("no", 1, FALSE)
+	}	
+#  print(updateMapTableSQLQuery)
   print(paste0("Updated map table: ", mapTableName))
 }
 
@@ -1258,7 +1306,7 @@ saveDataFrameToDatabaseTable(result)
 
 updateMapTableFromSmoothedResultsTable()
 print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
-sqlDrop(connDB, temporarySmoothedResultsTableName)
+#sqlDrop(connDB, temporarySmoothedResultsTableName)
 print("Closing database connection")
 #DONT DO THIS - YOU WILL GET A LOT OF OUTPUT!
 #print(paste0("RESULT==", result, "=="))

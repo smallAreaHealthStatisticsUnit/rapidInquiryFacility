@@ -1343,6 +1343,7 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
 
 test # in the password later; it should be permitted
 Middleware: We are in the process of removing all password strings from logs; I will add this to the list
+rif40_startup for SQL Server
 
 #### Current TODO list (May 2017): SQL Server Port
 
