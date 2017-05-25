@@ -174,8 +174,8 @@ final class MSSQLGenerateResultsSubmissionStep
 					runStudyQueryFormatter);
 			
 			runStudyResultSet
-			= runStudyStatement.executeQuery();
-				runStudyResultSet.next();
+				= runStudyStatement.executeQuery();
+					runStudyResultSet.next();
 				
 				result = String.valueOf(runStudyResultSet.getBoolean(1));	
 				

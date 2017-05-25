@@ -38,13 +38,13 @@ HTML partial for ui-router
 Disease submission main 'trees' menu
 -->
 <div class="topnav" id="myTopnav" ng-controller="TabCtrl">
+    <div class='logOutUsername' ng-controller="TabCtrl" > 
+        <span class="userName"> {{username}} </span><span id="logOut" ng-click="logout()" > log out </span>
+    </div>
     <a ui-sref="state1" ng-class="{active: $state.includes('state1')}">Study Submission</a>
     <a ui-sref="state2" ng-class="{active: $state.includes('state2')}">Data Viewer</a>
     <a ui-sref="state3" ng-class="{active: $state.includes('state3')}">Disease Mapping</a>
     <a style="font-size:15px;" class="icon" ng-click="hamburger()">&#9776;</a>
-</div>
-<div class='logOutUsername' ng-controller="TabCtrl" > 
-    <span class="userName"> {{username}} </span><span id="logOut" ng-click="logout()" > log out </span>
 </div>
 
 <!-- 5 Submission drop downs-->
