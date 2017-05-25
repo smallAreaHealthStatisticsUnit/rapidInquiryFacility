@@ -1410,6 +1410,11 @@ input[type=number]+ label  {
 
 #logOut {
     color: #848484;
+    background-color: #66c9f9;
+    padding: 3px;
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 0px 5px 5px 0px;
+    border-radius: 0px 5px 5px 0px; 
 }
 #logOut:hover {
     color: #FF7D40;
@@ -1418,6 +1423,11 @@ input[type=number]+ label  {
 .userName {
     color: #106993;
     font-weight: bold;
+    background-color: #66c9f9;
+    padding: 3px;
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 5px 0px 0px 5px;
+    border-radius: 5px 0px 0px 5px; 
 }
 
 .logOutUsername {
