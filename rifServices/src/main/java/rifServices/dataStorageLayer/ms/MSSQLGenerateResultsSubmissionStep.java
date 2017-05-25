@@ -123,7 +123,80 @@ final class MSSQLGenerateResultsSubmissionStep
 		ResultSet computeResultSet = null;
 		
 		try {
+			PGSQLFunctionCallerQueryFormatter runStudyQueryFormatter = new PGSQLFunctionCallerQueryFormatter();		
 			
+			runStudyQueryFormatter.addQueryLine(1, "BEGIN");
+			runStudyQueryFormatter.addQueryLine(2, "DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');");
+			runStudyQueryFormatter.addQueryLine(2, "BEGIN TRANSACTION;");
+			runStudyQueryFormatter.addQueryLine(2, "DECLARE @rval INT;");
+			runStudyQueryFormatter.addQueryLine(2, "DECLARE @msg VARCHAR(MAX);");
+			runStudyQueryFormatter.addUnderline();
+			runStudyQueryFormatter.addQueryLine(2, "BEGIN TRY");
+			runStudyQueryFormatter.addQueryLine(3, "EXECUTE @rval=rif40.rif40_run_study");
+			runStudyQueryFormatter.addQueryLine(3, "@study_id /* Study_id */, ");
+			runStudyQueryFormatter.addQueryLine(3, "1                /* Debug: 0/1 */, ");
+			runStudyQueryFormatter.addQueryLine(3, "default    /* Recursion level: Use default */;");
+			runStudyQueryFormatter.addUnderline();
+			runStudyQueryFormatter.addQueryLine(2, "END TRY");
+			runStudyQueryFormatter.addQueryLine(2, "BEGIN CATCH");
+			runStudyQueryFormatter.addQueryLine(3, "SET @rval=0;");
+			runStudyQueryFormatter.addQueryLine(3, "SET @msg='Caught error in rif40.rif40_run_study(' + CAST(@study_id AS VARCHAR) + ')' + CHAR(10) + ");
+			runStudyQueryFormatter.addQueryLine(3, "'Error number: ' + NULLIF(CAST(ERROR_NUMBER() AS VARCHAR), 'N/A') + CHAR(10) + ");
+			runStudyQueryFormatter.addQueryLine(3, "'Error severity: ' + NULLIF(CAST(ERROR_SEVERITY() AS VARCHAR), 'N/A') + CHAR(10) + ");
+			runStudyQueryFormatter.addQueryLine(3, "'Error state: ' + NULLIF(CAST(ERROR_STATE() AS VARCHAR), 'N/A') + CHAR(10) + ");
+			runStudyQueryFormatter.addQueryLine(3, "'Procedure with error: ' + NULLIF(ERROR_PROCEDURE() + CHAR(10), 'N/A') + ");
+			runStudyQueryFormatter.addQueryLine(3, "'Procedure line: ' + NULLIF(CAST(ERROR_LINE() AS VARCHAR), 'N/A') + CHAR(10) + ");
+			runStudyQueryFormatter.addQueryLine(3, "'Error message: ' + NULLIF(ERROR_MESSAGE(), 'N/A') + CHAR(10);");
+			runStudyQueryFormatter.addQueryLine(3, "PRINT @msg;");
+			runStudyQueryFormatter.addQueryLine(3, "EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';");
+			runStudyQueryFormatter.addQueryLine(2, "END CATCH;");
+			runStudyQueryFormatter.addUnderline();
+			runStudyQueryFormatter.addCommentLine("Always commit, even though this may fail because trigger failure have caused a rollback:");
+			runStudyQueryFormatter.addCommentLine("The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.");
+			runStudyQueryFormatter.addUnderline();
+			runStudyQueryFormatter.addQueryLine(2, "COMMIT TRANSACTION;");
+			runStudyQueryFormatter.addUnderline();
+			runStudyQueryFormatter.addQueryLine(2, "SET @msg = 'Study ' + CAST(@study_id AS VARCHAR) + ' OK';");
+			runStudyQueryFormatter.addQueryLine(2, "IF @rval = 1");
+			runStudyQueryFormatter.addQueryLine(3, "PRINT @msg;");
+			runStudyQueryFormatter.addQueryLine(2, "ELSE");
+			runStudyQueryFormatter.addQueryLine(3, "RAISERROR('Study %i FAILED (see previous errors)', 16, 1, @study_id);");
+			runStudyQueryFormatter.addQueryLine(1, "END;");
+			
+			logSQLQuery(
+					"runStudy", 
+					runStudyQueryFormatter,
+					studyID);
+			
+			runStudyStatement
+				= createPreparedStatement(
+					connection,
+					runStudyQueryFormatter);
+			
+			runStudyResultSet
+			= runStudyStatement.executeQuery();
+				runStudyResultSet.next();
+				
+				result = String.valueOf(runStudyResultSet.getBoolean(1));	
+				
+				SQLWarning warning = runStudyStatement.getWarnings();
+				while (warning != null) {
+					
+			     //   System.out.println("Message:" + warning.getMessage());
+			     //   System.out.println("SQLState:" + warning.getSQLState());
+			     //   System.out.print("Vendor error code: ");
+			     //   System.out.println(warning.getErrorCode());
+			     //   System.out.println("==");
+			       
+			        warning = warning.getNextWarning();
+		
+				}
+				
+				connection.commit();
+				return result;
+				
+			
+		/*	TODO: (DM) delete when above is working
 			PGSQLFunctionCallerQueryFormatter runStudyQueryFormatter = new PGSQLFunctionCallerQueryFormatter();
 			runStudyQueryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
 			runStudyQueryFormatter.setFunctionName("rif40_run_study");
@@ -148,20 +221,20 @@ final class MSSQLGenerateResultsSubmissionStep
 			
 			SQLWarning warning = runStudyStatement.getWarnings();
 			while (warning != null) {
-				/*
-		        System.out.println("Message:" + warning.getMessage());
-		        System.out.println("SQLState:" + warning.getSQLState());
-		        System.out.print("Vendor error code: ");
-		        System.out.println(warning.getErrorCode());
-		        System.out.println("==");
-		        */
+				
+		     //   System.out.println("Message:" + warning.getMessage());
+		     //   System.out.println("SQLState:" + warning.getSQLState());
+		     //   System.out.print("Vendor error code: ");
+		     //   System.out.println(warning.getErrorCode());
+		     //   System.out.println("==");
+		       
 		        warning = warning.getNextWarning();
 
 			}
 			
 			connection.commit();
 			
-			return result;
+			return result;*/
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
