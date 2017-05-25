@@ -36,7 +36,6 @@
  */
 
 /* global L */
-
 angular.module("RIF")
         //Open a shapefile for risk analysis
         .controller('ModalAOIShapefileInstanceCtrl', function ($scope, $uibModalInstance) {
@@ -60,15 +59,12 @@ angular.module("RIF")
                         var poly; //polygon shapefile
                         var buffers; //concentric buffers around points
                         var bandColours = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33'];
-
                         var factory = L.icon({
                             iconUrl: 'images/factory.png',
                             iconAnchor: [16, 16]
                         });
-
                         //user input boxes
                         scope.bandAttr = [];
-
                         element.on('click', function (event) {
                             scope.modalHeader = "Select with a shapefile";
                             scope.accept = ".zip";
@@ -81,7 +77,6 @@ angular.module("RIF")
                                 scope: scope,
                                 keyboard: false
                             });
-
                             //ng-show which options to display
                             scope.selectionMethod = 1;
                             scope.bProgress = false;
@@ -89,7 +84,6 @@ angular.module("RIF")
                             scope.isPoint = false;
                             scope.isTable = false;
                             scope.bandAttr.length = 0;
-
                             //remove any existing AOI layer
                             poly = null;
                             buffers = null;
@@ -98,7 +92,6 @@ angular.module("RIF")
                                 scope.shpfile = new L.layerGroup();
                             }
                         });
-
                         scope.radioChange = function (selectionMethod) {
                             scope.selectionMethod = selectionMethod;
                             if (selectionMethod === 3) {
@@ -107,7 +100,6 @@ angular.module("RIF")
                                 scope.isTable = false;
                             }
                         };
-
                         function readShpFile(file) {
                             try {
                                 if (file.name.slice(-3) !== 'zip') {
@@ -127,8 +119,8 @@ angular.module("RIF")
                                     var deferred = $q.defer();
                                     //http://jsfiddle.net/ashalota/ov0p4ajh/10/
                                     //http://leaflet.calvinmetcalf.com/#3/31.88/10.63
-                                    reader.onload = function () {                                     
-                                        var bAttr = false;   
+                                    reader.onload = function () {
+                                        var bAttr = false;
                                         scope.attrs = [];
                                         poly = new L.Shapefile(this.result, {
                                             style: function (feature) {
@@ -139,8 +131,8 @@ angular.module("RIF")
                                                 } else if (feature.geometry.type === "Polygon") {
                                                     if (!bAttr) {
                                                         for (var property in feature.properties) {
-                                                             scope.attrs.push(property);
-                                                        }                                                   
+                                                            scope.attrs.push(property);
+                                                        }
                                                         bAttr = true;
                                                         scope.attr = scope.attrs[scope.attrs.length - 1];
                                                     }
@@ -157,11 +149,11 @@ angular.module("RIF")
                                             onEachFeature: function (feature, layer) {
                                                 //add markers with pop-ups
                                                 if (feature.geometry.type === "Point") {
-                                                    layer.setIcon(factory);                                                 
+                                                    layer.setIcon(factory);
                                                     var popupContent = "";
                                                     for (var property in feature.properties) {
-                                                        popupContent = popupContent + property.toUpperCase() + 
-                                                                ":\t" + feature.properties[property] + "</br>";   
+                                                        popupContent = popupContent + property.toUpperCase() +
+                                                                ":\t" + feature.properties[property] + "</br>";
                                                     }
                                                     layer.bindPopup(popupContent);
                                                 }
@@ -185,7 +177,6 @@ angular.module("RIF")
                                 return;
                             }
                             var file = files[0];
-
                             //clear existing layers
                             if (scope.shpfile.hasLayer(buffers)) {
                                 scope.shpfile.removeLayer(buffers);
@@ -195,7 +186,6 @@ angular.module("RIF")
                             }
                             poly = null;
                             buffers = null;
-
                             //async for progress bar
                             readShpFile(file).then(function () {
                                 //switch off progress bar
@@ -205,24 +195,46 @@ angular.module("RIF")
                                 }
                             });
                         };
-
                         scope.displayShapeFile = function () {
                             //exit if there is no shapefile
                             if (!scope.isPolygon && !scope.isPoint) {
                                 return false;
                             }
-                            
+
                             //check user input on bands
                             if (scope.selectionMethod === 3 || scope.isPoint) {
-                                //check radii
+                                //trim any trailing zeros
+                                //check numeric
+                                var bZero = [];
                                 for (var i = 0; i < scope.bandAttr.length; i++) {
                                     var thisBreak = Number(scope.bandAttr[i]);
                                     if (!isNaN(thisBreak)) {
-                                        scope.bandAttr[i] = thisBreak;
+                                        if (thisBreak !== 0) {
+                                            bZero.push(1);
+                                        } else {
+                                            bZero.push(0);
+                                        }
                                     } else {
                                         alertScope.showError("Non-numeric band value entered");
                                         return false; //and only display the points
                                     }
+                                }
+                                var total = 0;
+                                for (var i in bZero) {
+                                    total += bZero[i];
+                                }
+                                if (total !== scope.bandAttr.length) {
+                                    var tmp = angular.copy(scope.bandAttr);
+                                    //there are zero values, are they at the end?
+                                    for (var i = scope.bandAttr.length - 1; i >= 0; i--) {
+                                        if (scope.bandAttr[i] === '') {
+                                            tmp.pop();
+                                        }
+                                        else {
+                                            break;
+                                        }
+                                    }
+                                    scope.bandAttr = angular.copy(tmp);
                                 }
                                 if (scope.isPoint) {
                                     //check ascending and sequential for radii
@@ -285,7 +297,7 @@ angular.module("RIF")
                                         //check these are valid exposure values
                                         if (!angular.isNumber(poly._layers[i].feature.properties[scope.attr])) {
                                             //number not recognised 
-                                            alertScope.showError("Non-numeric value in file: " + poly._layers[i].feature.properties[scope.attr]); 
+                                            alertScope.showError("Non-numeric value in file: " + poly._layers[i].feature.properties[scope.attr]);
                                             return false;
                                         }
                                     }
@@ -299,13 +311,12 @@ angular.module("RIF")
                                     shape.circle = false;
                                     shape.freehand = false;
                                     shape.shapefile = true;
-
                                     if (scope.selectionMethod === 1) {
                                         shape.band = -1;
                                     } else if (scope.selectionMethod === 2) {
                                         shape.band = poly._layers[i].feature.properties.band;
                                     } else if (scope.selectionMethod === 3) {
-                                        var attr = poly._layers[i].feature.properties[scope.attr]; 
+                                        var attr = poly._layers[i].feature.properties[scope.attr];
                                         shape.band = -1;
                                         for (var k = 0; k < scope.bandAttr.length; k++) {
                                             if (k === 0) {

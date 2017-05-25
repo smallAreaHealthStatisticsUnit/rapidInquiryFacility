@@ -1376,7 +1376,6 @@ input[type=number]+ label  {
     cursor: pointer;
 }
 
-
 .topnav {
     overflow: hidden;
     background-color: #1caff6;
@@ -1389,17 +1388,12 @@ input[type=number]+ label  {
 
 .topnav a {
     float: left;
-    display: block;
     color: #f2f2f2;
     text-align: center;
     padding: 14px 16px;
     text-decoration: none;
     font-size: 17px;
-}
-
-.topnav a:hover {
-    background-color: #d1effd;
-    color: #1caff6;
+    margin-top: 5px;
 }
 
 .topnav .icon {
@@ -1407,7 +1401,11 @@ input[type=number]+ label  {
 }
 
 .topnav .active {
-    background-color: #168cc4;
+    background-color: #fff;
+    color: #848484;
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 5px 5px 0px 0px;
+    border-radius: 5px 5px 0px 0px; 
 }
 
 #logOut {
@@ -1432,7 +1430,6 @@ input[type=number]+ label  {
 @media screen and (max-width: 700px) {
     .topnav a:not(:first-child) {display: none;}
     .topnav a.icon {
-        background-color: #106993;
         float: right;
         display: block;
     }
@@ -1451,9 +1448,4 @@ input[type=number]+ label  {
         display: block;
         text-align: left;
     }
-
 }
-
-
-
-

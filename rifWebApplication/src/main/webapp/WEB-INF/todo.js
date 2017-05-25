@@ -17,11 +17,7 @@
  * 
  * -- configure database from login dialog
  * 
- * -- filter null | 0 for band radii
- * 
  * -- eachlayer not always firing on map load
- * 
- * -- nav bar responsive
  * 
  * -- export geojson as text
  * 

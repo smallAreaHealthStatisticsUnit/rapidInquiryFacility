@@ -46,7 +46,7 @@ angular.module("RIF")
                 $scope.username = "";
                 $scope.password = "";
                 
-            //    $scope.username = "dwmorley";
+              //  $scope.username = "dwmorley";
             //    $scope.password = "dwmorley";
                 
              //   $scope.username = "peter";

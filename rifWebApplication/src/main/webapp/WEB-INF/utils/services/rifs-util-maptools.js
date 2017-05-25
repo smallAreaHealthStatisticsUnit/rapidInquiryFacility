@@ -56,7 +56,7 @@ angular.module("RIF")
                         '<button type="button" class="btn btn-zoomExtent" title="Zoom to full extent" zoom-extent mapid=\'XMAPX\'></button>',
                         '<button type="button" class="btn btn-zoomStudy" title="Zoom to study extent" zoom-study mapid=\'XMAPX\'></button>',
                         '<button type="button" class="btn btn-zoomSelected" title="Zoom to selection" zoom-selection-single mapid=\'XMAPX\'></button>',
-                        '<button type="button" class="btn btn-exportMap" title="Quick export map" leaflet-to-png mapid=\'map.XMAPX\'></button>' //mapid="map.viewermap"
+                        '<button type="button" class="btn btn-exportMap" title="Quick export map" leaflet-to-png mapid=\'map.XMAPX\'></button>'
                     ];
 
                     var extraMapTools = [
@@ -67,7 +67,8 @@ angular.module("RIF")
                                 '<a ng-click="lockSelect()" title="Lock selection" id="lockSelectFalse" ng-switch-when="false"></a></div>'
                     ];
 
-                    var bandMapDropDown = '<div id="bandHolder"> <label for="selectbands">Band</label>' +
+                    var bandMapDropDown =
+                            '<div id="bandHolder"> <label for="selectbands">Band</label>' +
                             '<select id="selectbands" class="dropdownBand" ng-options="n for n in possibleBands" ng-model="currentBand" ng-init="currentBand"></select>' +
                             '</div>';
 

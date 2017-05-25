@@ -221,11 +221,10 @@ angular.module("RIF")
                                     $scope.sexes[res.config.leaflet].push(res.data[0].names[i]);
                                 }
                             }
-                            //if no preselection, then set dropdown to last one in list (=both)        
-                            if ($scope.sex[res.config.leaflet] === null) {
+                            //if no or invalid preselection, then set dropdown to last one in list     
+                            if ($scope.sexes[res.config.leaflet].indexOf($scope.sex[res.config.leaflet]) === -1 | $scope.sex[res.config.leaflet] === null) {
                                 $scope.sex[res.config.leaflet] = $scope.sexes[res.config.leaflet][$scope.sexes[res.config.leaflet].length - 1];
                             }
-
                             //dashboard specific
                             if (mapID === "viewermap") {
                                 //update pyramid if in viewer

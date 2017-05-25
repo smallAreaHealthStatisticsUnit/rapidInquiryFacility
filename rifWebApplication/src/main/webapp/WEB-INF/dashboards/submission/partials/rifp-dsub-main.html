@@ -54,7 +54,9 @@ Disease submission main 'trees' menu
             <div  class='styleUnderline'>
                 <input type="text" ng-model="studyName" placeholder = "my rif study" id='studyName' class='dropdownSelectSingle' ng-pattern-restrict="^[A-Za-z0-9_ ]*$" ng-change="studyNameChanged()">
                 <div id='studyAvailables' class='availables' > </div>
-                <div class="dropDownLabel">Study Name</div>
+                <div class="dropDownLabel">Study Name
+                    <md-tooltip md-direction="right" md-delay="1000">{{studyName}}</md-tooltip>
+                </div>
             </div>
         </div>  
         <div>
@@ -62,7 +64,9 @@ Disease submission main 'trees' menu
                 <select type="text" ng-model="healthTheme" id='healthTheme' class='dropdownSelect' ng-options="s.name for s in healthThemes" ng-change="healthThemeChange()">
                 </select>
                 <div id='healthThemeAvailables' class='availables'></div>
-                <div class="dropDownLabel">Health Theme</div>
+                <div class="dropDownLabel">Health Theme
+                    <md-tooltip md-direction="right" md-delay="1000">{{healthTheme.name}}</md-tooltip>
+                </div>
             </div>
         </div>
         <div>
@@ -70,7 +74,9 @@ Disease submission main 'trees' menu
                 <select type="text" ng-model="geography" id='geography' class='dropdownSelect' ng-options="s for s in geographies" ng-change="geographyChange()">
                 </select>
                 <div id='geographiesAvailables' class='availables'></div>
-                <div class="dropDownLabel">Geography</div>
+                <div class="dropDownLabel">Geography
+                    <md-tooltip md-direction="right" md-delay="1000">{{geography}}</md-tooltip>
+                </div>
             </div>
         </div>
         <div>
@@ -78,14 +84,18 @@ Disease submission main 'trees' menu
                 <select type="text" ng-model="numerator" id='numerator' class='dropdownSelect' ng-options="s.numeratorTableName for s in fractions" ng-change="numeratorChange()">
                 </select>
                 <div id='numeratorAvailables' class='availables' ></div>
-                <div class="dropDownLabel">Numerator</div>
+                <div class="dropDownLabel">Numerator
+                    <md-tooltip md-direction="right" md-delay="1000">{{numerator.numeratorTableName}}</md-tooltip>
+                </div>
             </div>
         </div>
         <div>
             <div  class='styleUnderline dropdowns availablesWrapper'>
                 <input type="text" ng-model="denominator" id='denominator' class='dropdownSelectSingle' readonly>
                 <div id='denominatorAvailables' class='availables' > </div>
-                <div class="dropDownLabel">Denominator</div>
+                <div class="dropDownLabel">Denominator
+                    <md-tooltip md-direction="right" md-delay="1000">{{denominator}}</md-tooltip>
+                </div>
             </div>
         </div>
     </div>
