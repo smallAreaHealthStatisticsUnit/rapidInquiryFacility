@@ -664,13 +664,14 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		if (doublePrecisionColumns.contains(columnName)) {
 			
 			StringBuilder sqlRoundingFragment = new StringBuilder();
+						
 			sqlRoundingFragment.append("ROUND(");
 			sqlRoundingFragment.append(tableName);
 			sqlRoundingFragment.append(".");			
 			sqlRoundingFragment.append(columnName);
-			sqlRoundingFragment.append(", 3) AS ");
+			sqlRoundingFragment.append("::numeric, 3) AS ");
 			sqlRoundingFragment.append(columnName);
-				
+
 			queryFormatter.addQueryPhrase(indentationLevel, sqlRoundingFragment.toString());
 		}
 		else {
