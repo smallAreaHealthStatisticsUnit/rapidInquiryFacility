@@ -156,53 +156,6 @@ public abstract class MSSQLAbstractSQLManager {
 
 	}
 	
-	protected void enableDatabaseDebugMessages(
-		final Connection connection) 
-		throws RIFServiceException {
-			
-		PGSQLFunctionCallerQueryFormatter setupDatabaseLogQueryFormatter 
-			= new PGSQLFunctionCallerQueryFormatter();
-		setupDatabaseLogQueryFormatter.setDatabaseSchemaName("rif40_log_pkg");
-		setupDatabaseLogQueryFormatter.setFunctionName("rif40_log_setup");
-		setupDatabaseLogQueryFormatter.setNumberOfFunctionParameters(0);		
-		PreparedStatement setupLogStatement = null;
-		
-		PGSQLFunctionCallerQueryFormatter sendDebugToInfoQueryFormatter 
-			= new PGSQLFunctionCallerQueryFormatter();
-		sendDebugToInfoQueryFormatter.setDatabaseSchemaName("rif40_log_pkg");
-		sendDebugToInfoQueryFormatter.setFunctionName("rif40_send_debug_to_info");
-		sendDebugToInfoQueryFormatter.setNumberOfFunctionParameters(1);		
-		
-		
-		PreparedStatement sendDebugToInfoStatement = null;
-		try {
-			setupLogStatement 
-				= createPreparedStatement(
-					connection, 
-					setupDatabaseLogQueryFormatter);
-			setupLogStatement.executeQuery();
-			
-			sendDebugToInfoStatement 
-				= createPreparedStatement(
-					connection, 
-					sendDebugToInfoQueryFormatter);
-			sendDebugToInfoStatement.setBoolean(1, true);
-			sendDebugToInfoStatement.executeQuery();						
-		}
-		catch(SQLException sqlException) {
-			String errorMessage
-				= RIFServiceMessages.getMessage("abstractSQLManager.error.unableToEnableDatabaseDebugging");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_TO_MAINTAIN_DEBUG, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			PGSQLQueryUtility.close(setupLogStatement);
-			PGSQLQueryUtility.close(sendDebugToInfoStatement);	
-		}		
-	}
 	
 	/**
 	 * Use appropriate field name case.

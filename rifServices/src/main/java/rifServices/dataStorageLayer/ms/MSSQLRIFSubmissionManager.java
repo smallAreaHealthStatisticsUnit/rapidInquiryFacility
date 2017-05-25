@@ -1133,9 +1133,7 @@ final class MSSQLRIFSubmissionManager
 		ResultSet computeResultSet = null;
 		
 		try {
-			
-			enableDatabaseDebugMessages(connection);		
-			
+					
 			PGSQLFunctionCallerQueryFormatter runStudyQueryFormatter = new PGSQLFunctionCallerQueryFormatter();
 			runStudyQueryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
 			runStudyQueryFormatter.setFunctionName("rif40_run_study");
