@@ -43,6 +43,9 @@
 -- MS SQL Server specific parameters
 --
 -- Usage: sqlcmd -E -b -m-1 -e -r1 -i rif40_production_user.sql -v newuser=%NEWUSER% -v newdb=%NEWDB% -v newpw=%NEWPW%
+-- 
+-- e.g: sqlcmd -E -b -m-1 -e -r1 -i rif40_production_user.sql -v newuser=Pch -v newdb=sahsuland -v newpw=Pch
+--
 -- Connect flags if required: -E -S<myServerinstanceName>
 --
 -- User is created with rif_user (can create tables and views), rif_manager (can also create procedures and functions), can do BULK INSERT
@@ -76,7 +79,7 @@ GO
 DECLARE @newdb VARCHAR(MAX)='$(NEWDB)';
 DECLARE @invalid_chars INTEGER;
 DECLARE @first_char VARCHAR(1);
-SET @invalid_chars=PATINDEX('%[^0-9a-z_]%', @newdb);
+SET @invalid_chars=PATINDEX('%[^0-9a-zA-Z_]%', @newdb);
 SET @first_char=SUBSTRING(@newdb, 1, 1);
 IF @invalid_chars IS NULL
 	RAISERROR('New database name is null', 16, 1, @newdb);
