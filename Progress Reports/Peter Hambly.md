@@ -1340,13 +1340,13 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
 * rif40_GetAdjacencyMatrix port for R
 * R script now works on Postgres.
 * rif40_run_study.bat provided for Postgres aswell
+* Data needs to be checked in both ports; port ports give different answers
+* SQL Server middleware tests and fault diagnosis
+* Uppercase logons test; middleware testing
 
-test # in the password later; it should be permitted
-Middleware: We are in the process of removing all password strings from logs; I will add this to the list
-rif40_startup for SQL Server
-Fixing uppercase logons will be added to the fault list (it appears to be a small fault in the rif40_projects view)
+#### 29th May to 2nd June
 
-#### Current TODO list (May 2017): SQL Server Port
+#### Current TODO list (June 2017): SQL Server Port
 
 * Fix missing level 4 geography tiles bug (areaid_count=0 in geolevels table)
 * Harden SQL Server port against SQL Injection getting past middleware into meta data
@@ -1375,7 +1375,7 @@ Fixing uppercase logons will be added to the fault list (it appears to be a smal
 * Assist with middleware (database fixes)
 * Drop script for SQL server to all rif40_sahsuland_dev_install.bat/rif40_sahsuland_install.bat to be re-run without rebuilding the entire database
 
-#### TileViewer TODO (deferred to August?):
+#### TileViewer TODO (deferred to August):
  
 * Area tests (area_check.sql) is failing for Halland - suspect area is too small, could be projection ia wrong 
 * NVarchar support for areaName
