@@ -173,28 +173,35 @@ final class MSSQLGenerateResultsSubmissionStep
 					connection,
 					runStudyQueryFormatter);
 			
+			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+			System.out.print(runStudyQueryFormatter.generateQuery());
+			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+			
+			
+			
 			runStudyResultSet
 				= runStudyStatement.executeQuery();
-					runStudyResultSet.next();
-				
-				result = String.valueOf(runStudyResultSet.getBoolean(1));	
-				
-				SQLWarning warning = runStudyStatement.getWarnings();
-				while (warning != null) {
 					
-			     //   System.out.println("Message:" + warning.getMessage());
-			     //   System.out.println("SQLState:" + warning.getSQLState());
-			     //   System.out.print("Vendor error code: ");
-			     //   System.out.println(warning.getErrorCode());
-			     //   System.out.println("==");
-			       
-			        warning = warning.getNextWarning();
-		
-				}
+			runStudyResultSet.next();
 				
-				connection.commit();
-				return result;
+			result = String.valueOf(runStudyResultSet.getBoolean(1));	
+			
+			SQLWarning warning = runStudyStatement.getWarnings();
+			while (warning != null) {
 				
+		     //   System.out.println("Message:" + warning.getMessage());
+		     //   System.out.println("SQLState:" + warning.getSQLState());
+		     //   System.out.print("Vendor error code: ");
+		     //   System.out.println(warning.getErrorCode());
+		     //   System.out.println("==");
+		       
+		        warning = warning.getNextWarning();
+	
+			}
+			
+			connection.commit();
+			return result;
+			
 			
 		/*	TODO: (DM) delete when above is working
 			PGSQLFunctionCallerQueryFormatter runStudyQueryFormatter = new PGSQLFunctionCallerQueryFormatter();
