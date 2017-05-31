@@ -105,6 +105,10 @@ angular.module("RIF")
                     //Fill study drop-downs
                     $scope.child.getStudies();
                     $scope.child.renderMap("viewermap");
+
+                    setTimeout(function () {
+                        $scope.child.map['viewermap'].invalidateSize();
+                    }, 50);
                 });
 
                 //ui-container sizes

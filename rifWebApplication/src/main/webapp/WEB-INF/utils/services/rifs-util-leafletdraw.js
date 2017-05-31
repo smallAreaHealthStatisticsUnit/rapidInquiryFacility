@@ -110,6 +110,7 @@ angular.module("RIF")
                                 };
                             },
                             _onMouseDown: function (e) {
+
                                 //add circles 
                                 this._isDrawing = true;
                                 //fire new circle at same centre
@@ -117,7 +118,6 @@ angular.module("RIF")
                                     this._startLatLng = e.latlng;
                                     this._isConcentricing = true;
                                 }
-
                                 //Draw a single circle only (disease mapping comparison area)
                                 if (this._map.band === 1) {
                                     this._map.addLayer(this._shape);

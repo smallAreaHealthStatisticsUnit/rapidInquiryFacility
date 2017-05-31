@@ -66,11 +66,7 @@ angular.module("RIF")
                         windowClass: 'mapping-Modal',
                         scope: $scope.$parent.child
                     });
-                    modalInstance.opened.then(function () {
-                        if ($scope.$$prevSibling.$$childTail) {
-                            $scope.$$prevSibling.$$childTail.renderSwatch(true, true);
-                        }
-                    });
+                    
                     modalInstance.result.then(function (modal) {
                         ChoroService.getMaps(map).brewerName = modal.currOption.name;
                         ChoroService.getMaps(map).invert = modal.checkboxInvert;
@@ -161,6 +157,9 @@ angular.module("RIF")
                     }
                 }
             };
+            
+            //ensure modal fields are filled
+            $scope.renderSwatch(true, true);
 
             $scope.close = function () {
                 //reset to what was there on modal open  

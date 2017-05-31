@@ -118,6 +118,10 @@ angular.module("RIF")
                         $scope.child.map[container].attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
                         $scope.child.map[container].doubleClickZoom.disable();
                         $scope.child.map[container].keyboard.disable();
+
+                        setTimeout(function () {
+                            $scope.child.map[container].invalidateSize();
+                        }, 50);
                     }
 
                     //Fill study drop-downs

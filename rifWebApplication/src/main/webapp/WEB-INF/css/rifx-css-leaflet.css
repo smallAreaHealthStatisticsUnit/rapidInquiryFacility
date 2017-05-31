@@ -49,12 +49,16 @@
     float: right !important;
 }
 .legend {
-    line-height: 25px;
+    line-height: 15px;
     color: #555;
+}
+.legend h4 {
+    color: #000;
+    font-weight: bold;
 }
 .legend i {
     width: 10px;
-    height: 25px;
+    height: 15px;
     float: left;
     margin-right: 8px;
     opacity: 0.7;
@@ -62,6 +66,7 @@
 }
 .legend span {
     padding-left: 15px;
+    font-size: 12px;
 }
 
 /*
@@ -229,4 +234,9 @@
 
 #bandHolder label {
     margin-left: 10px;
+}
+
+.xxkx {
+    background-color: transparent;
+    width: 100px;
 }

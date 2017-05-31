@@ -322,7 +322,7 @@ angular.module("RIF")
                                     MappingStateService.getState().selected[panel] = scope.data[i];
                                     break;
                                 }
-                            }
+                            }                            
                             $rootScope.$broadcast('syncMapping2Events', {selected: selected, mapID: panel, map: data.map});
                         }
 

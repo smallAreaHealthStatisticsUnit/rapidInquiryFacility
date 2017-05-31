@@ -275,7 +275,6 @@ angular.module("RIF")
 
                     //not a choropleth, but single colour
                     if (thisMap[mapID].range.length === 1) {
-                        $scope.attr[mapID] = "";
                         //remove existing legend
                         if ($scope.legend[mapID]._map) {
                             $scope.map[mapID].removeControl($scope.legend[mapID]);
@@ -296,8 +295,6 @@ angular.module("RIF")
                     if (angular.isDefined($scope.geoJSON[mapID]._geojsons.default)) {
                         $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
                     }
-                    //GET D3
-                    $scope.getD3chart(mapID, $scope.attr[mapID]);
                 };
 
                 //apply relevent renderer to layer
@@ -532,10 +529,12 @@ angular.module("RIF")
                                         ChoroService.getMaps("viewermap").features = attrs;
                                         $scope.viewerTableOptions.columnDefs = colDef;
                                         $scope.viewerTableOptions.data = $scope.tableData.viewermap;
-                                        $scope.getD3chart("viewermap", $scope.attr["viewermap"]);
                                         $scope.updateTable();
                                     }
-                                    //  $scope.refresh(mapID);
+                                    
+                                    //draw D3 plots
+                                    $scope.getD3chart(mapID, $scope.attr[mapID]);
+
                                 }, function (e) {
                                     console.log("Something went wrong when getting the attribute data");
                                     clearTheMapOnError(mapID);

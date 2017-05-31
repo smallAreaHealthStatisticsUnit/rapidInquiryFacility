@@ -64,6 +64,9 @@ angular.module("RIF")
                     'diseasemap2': new symbology()
                 };
                 
+                //default for 2nd disease map is probability
+                maps['diseasemap2'].feature = "posterior_probability";
+                
                 //used in viewer map
                 function renderFeatureMapping(scale, value, selected) {
                     //returns fill colour

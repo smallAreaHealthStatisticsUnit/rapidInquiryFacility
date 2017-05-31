@@ -8,8 +8,10 @@
 
 * Middleware, Data loader [Kevin Garwood](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/KevinGarwoodProgressReport.md)
 * Middleware [Nan Lin](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Nan%20Lin.md)
+* Data loader [Brandon Parkes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Brandon%20Parkes.md) from March 2017
+* Middleware [David Morley](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/David%20Morley.md) from March 2017
 
-# Databases, backends and integration
+## Databases, backends and integration
 
 * Postgres, Node, build and integration [Peter Hambly](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Peter%20Hambly.md)
 * Microsoft SQL server [Margaret Douglass](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Margaret%20Douglass.md)
