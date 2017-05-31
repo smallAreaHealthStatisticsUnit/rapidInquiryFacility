@@ -678,11 +678,6 @@ public final class MSSQLConnectionManager
 			databaseProperties.setProperty("user", userID);
 			databaseProperties.setProperty("password", password);
 			
-			//TODO: (DM) to remove - debug for password valid
-			System.out.println("XXXXXXXXX The password string being sent by the connectionManager is: ");
-			System.out.println(password);
-			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-			
 			boolean isSSLSupported
 				= rifServiceStartupOptions.getRIFDatabaseProperties().isSSLSupported();
 			if (isSSLSupported) {
