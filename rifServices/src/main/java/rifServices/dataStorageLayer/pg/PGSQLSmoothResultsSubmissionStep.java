@@ -186,6 +186,8 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 				= createBatchFile(
 					rifStartupOptions.getExtractDirectory(), "kevTest22");
 			
+			
+			//TODO: (DM) Batch file is run here - should be replaced by a call to R encapsulated within Java
 			Process process = Runtime.getRuntime().exec(batchFile.getAbsolutePath());
 			
 			int exitValue = process.waitFor(); 
