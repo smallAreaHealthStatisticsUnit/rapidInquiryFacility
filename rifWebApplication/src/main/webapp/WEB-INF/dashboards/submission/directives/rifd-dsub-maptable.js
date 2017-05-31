@@ -46,7 +46,7 @@ angular.module("RIF")
                     restrict: 'AE',
                     link: function ($scope) {
 
-                        $scope.areamap = L.map('areamap').setView([51.505, -0.09], 13);
+                        $scope.areamap = L.map('areamap').setView([0, 0], 1);
                         $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("areamap"));
 
                         //Reference the child scope

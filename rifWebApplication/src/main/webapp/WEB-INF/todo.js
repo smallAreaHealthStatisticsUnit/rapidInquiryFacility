@@ -17,7 +17,7 @@
  * 
  * -- configure database from login dialog
  * 
- * -- eachlayer not always firing on map load
+ * -- D3 rrZoom does not reload on tab change
  * 
  * -- export geojson as text
  * 
