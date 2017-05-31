@@ -27,9 +27,12 @@ CREATE VIEW [rif40].[rif40_num_denom] AS
                     n_1.automatic,
                     t.description AS theme_description
                    FROM [rif40].[rif40_geographies] g,
-                    [rif40].[rif40_tables] n_1,
-                    [rif40].[rif40_health_study_themes] t
-                  WHERE n_1.isnumerator = 1 AND n_1.automatic = 1 AND [rif40].[rif40_is_object_resolvable](n_1.table_name) = 1 AND n_1.theme = t.theme) n1
+                        [rif40].[rif40_tables] n_1,
+                        [rif40].[rif40_health_study_themes] t
+                  WHERE n_1.isnumerator = 1 
+				    AND n_1.automatic   = 1 
+					AND [rif40].[rif40_is_object_resolvable](n_1.table_name) = 1 
+					AND n_1.theme       = t.theme) n1
           WHERE [rif40].[rif40_num_denom_validate](n1.geography, n1.numerator_table) = 1
         ), d AS (
          SELECT d1.geography,
@@ -39,9 +42,12 @@ CREATE VIEW [rif40].[rif40_num_denom] AS
                     d_1.table_name AS denominator_table,
                     d_1.description AS denominator_description
                    FROM [rif40].[rif40_geographies] g,
-                    [rif40].[rif40_tables] d_1
-                  WHERE d_1.isindirectdenominator = 1 AND d_1.automatic = 1 AND [rif40].[rif40_is_object_resolvable](d_1.table_name) = 1) d1
-          WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1 AND [rif40].[rif40_auto_indirect_checks](d1.denominator_table) IS NULL
+                        [rif40].[rif40_tables] d_1
+                  WHERE d_1.isindirectdenominator = 1 
+				    AND d_1.automatic             = 1 
+					AND [rif40].[rif40_is_object_resolvable](d_1.table_name) = 1) d1
+          WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1 
+		    AND [rif40].[rif40_auto_indirect_checks](d1.denominator_table) IS NULL
         )
  SELECT n.geography,
     n.numerator_table,

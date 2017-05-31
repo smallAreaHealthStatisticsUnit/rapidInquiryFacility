@@ -60,6 +60,7 @@ GO
 :r ..\sahsuland_dev\rif40\functions\rif40_has_role.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_is_object_resolvable.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_num_denom_validate.sql
+:r ..\sahsuland_dev\rif40\functions\rif40_num_denom_validate2.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_object_resolve.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_db_name_check.sql
 :r ..\sahsuland_dev\rif40\functions\rif40_startup.sql

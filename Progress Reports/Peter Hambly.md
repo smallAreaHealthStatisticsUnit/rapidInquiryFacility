@@ -1346,6 +1346,9 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
 
 #### 29th May to 2nd June
 
+* Automatic denominators: USA data not appearing (rif40_num_denom issue). USA data using wrong column 
+  names - should use geolevel_name. Added to help trace [rif40].[rif40_num_denom_validate2](); 
+  
 #### Current TODO list (June 2017): SQL Server Port
 
 * Fix missing level 4 geography tiles bug (areaid_count=0 in geolevels table)
