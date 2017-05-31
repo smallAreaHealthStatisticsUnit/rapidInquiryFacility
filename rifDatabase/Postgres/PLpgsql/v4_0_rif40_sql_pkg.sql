@@ -964,34 +964,31 @@ Description:	Validate numerator or denominator geolevels
  */
 DECLARE
 	c1ndv CURSOR(l_geography VARCHAR, l_owner VARCHAR, l_table VARCHAR) FOR
-		WITH all_tab_columns AS (
-			SELECT UPPER(a.tablename) AS tablename, UPPER(b.attname) AS columnname, UPPER(schemaname) AS schemaname	/* Tables */
+/*		WITH all_tab_columns AS (
+			SELECT UPPER(a.tablename) AS tablename, 
+			       UPPER(b.attname) AS columnname, 
+				   UPPER(schemaname) AS schemaname	/- Tables -/
 			  FROM pg_tables a, pg_attribute b, pg_class c
 			 WHERE c.oid        = b.attrelid
 			   AND c.relname    = a.tablename
-			   AND c.relkind    = 'r' /* Relational table */
-			   AND c.relpersistence IN ('p', 'u') /* Persistence: permanent/unlogged */ 
+			   AND c.relkind    = 'r' 				/- Relational table -/
+			   AND c.relpersistence IN ('p', 'u') 	/- Persistence: permanent/unlogged -/ 
 			 UNION
-			SELECT UPPER(a.viewname) AS tablename, UPPER(b.attname) AS columnname, UPPER(schemaname) AS schemaname	/* Views */
+			SELECT UPPER(a.viewname) AS tablename, 
+			       UPPER(b.attname) AS columnname, 
+				   UPPER(schemaname) AS schemaname	/- Views -/
 			  FROM pg_views a, pg_attribute b, pg_class c
 			 WHERE c.oid        = b.attrelid
 			   AND c.relname    = a.viewname
-			   AND c.relkind    = 'v' /* View */
-			 UNION
-			SELECT UPPER(a.relname) AS tablename, UPPER(d.attname) AS columnname, UPPER(n.nspname) AS schemaname				/* User FDW foreign tables */
-			  FROM pg_foreign_table b, pg_roles r, pg_attribute d, pg_class a
-				LEFT OUTER JOIN pg_namespace n ON (n.oid = a.relnamespace)			
-			 WHERE b.ftrelid  = a.oid
-			   AND a.relowner = (SELECT oid FROM pg_roles WHERE rolname = USER)
-			   AND a.relowner = r.oid
-			   AND n.nspname  = USER
-			   AND a.oid      = d.attrelid
-		)
+			   AND c.relkind    = 'v' 				/- View -/
+		) */
 		SELECT COUNT(l.geolevel_name) total_geolevels,
-    		       COUNT(c.columnname) total_columns 
+    		   COUNT(c.column_name) total_columns 
 		  FROM t_rif40_geolevels l
-			LEFT OUTER JOIN all_tab_columns c ON (c.schemaname = l_owner AND 
-				c.tablename = l_table   AND c.columnname = l.geolevel_name)
+			LEFT OUTER JOIN information_schema.columns c ON (
+				c.table_schema = LOWER(l_owner)			AND 
+				c.table_name   = LOWER(l_table)			AND 
+				c.column_name  = LOWER(l.geolevel_name))
 		 WHERE geography  = l_geography
    		   AND resolution = 1;
 	c1_rec RECORD;
@@ -1003,8 +1000,12 @@ BEGIN
 -- Must be rif40 or have rif_user or rif_manager role
 --
 	IF NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_num_denom_validate', 'User % must be rif40 or have rif_user or rif_manager role', 
-			USER::VARCHAR);
+		IF CURRENT_DATABASE() = 'sahsuland_dev' THEN
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_num_denom_validate', 'User % must be rif40 or have rif_user or rif_manager role', 
+				USER::VARCHAR);
+		ELSE		
+			RETURN 0;
+		END IF;
 	END IF;
 --
 -- If inputs are NULL return 0
@@ -1023,8 +1024,11 @@ BEGIN
 		OPEN c1ndv(l_geography, l_owner, l_table_name);
 		FETCH c1ndv INTO c1_rec;
 		CLOSE c1ndv;
-		PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_num_denom_validate', '[%,%.%] total_geolevels (in geography): %; total_columns (in table/view/foreign table; matching geolevels columns): %', 
-			l_geography::VARCHAR, l_owner::VARCHAR, l_table_name::VARCHAR, c1_rec.total_geolevels::VARCHAR, c1_rec.total_columns::VARCHAR);
+		
+		IF CURRENT_DATABASE() = 'sahsuland_dev' THEN
+			PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_num_denom_validate', '[%,%.%] total_geolevels (in geography): %; total_columns (in table/view/foreign table; matching geolevels columns): %', 
+				l_geography::VARCHAR, l_owner::VARCHAR, l_table_name::VARCHAR, c1_rec.total_geolevels::VARCHAR, c1_rec.total_columns::VARCHAR);
+		END IF;
 		IF c1_rec.total_geolevels = c1_rec.total_columns THEN 
 			RETURN 1;		/* Validated */
 		END IF;
@@ -1092,8 +1096,12 @@ BEGIN
 -- Must be rif40 or have rif_user or rif_manager role
 --
 	IF NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_is_object_resolvable', 'User % must be rif40 or have rif_user or rif_manager role', 
-			USER::VARCHAR);
+		IF CURRENT_DATABASE() = 'sahsuland_dev' THEN
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_is_object_resolvable', 'User % must be rif40 or have rif_user or rif_manager role', 
+				USER::VARCHAR);
+		ELSE 
+			RETURN 0;
+		END IF;
 	END IF;
 --
 -- If inputs are NULL return 0
@@ -1109,16 +1117,20 @@ BEGIN
 		IF c2_rec.tablename IS NOT NULL AND has_schema_privilege(USER, c1_rec.schemaname, 'USAGE') AND 
 		   has_table_privilege(USER, c1_rec.schemaname||'.'||c2_rec.tablename, 'SELECT') /* or view or foreign table */ THEN
 			CLOSE c2;
-			RETURN 1;
-		ELSIF c2_rec.tablename IS NULL THEN
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_is_object_resolvable', 'No table/view/foreign table: %.%', 
-				c1_rec.schemaname::VARCHAR, LOWER(l_table_name)::VARCHAR);
-		ELSIF c2_rec.tablename IS NOT NULL AND NOT has_schema_privilege(USER, c1_rec.schemaname, 'USAGE') THEN
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_is_object_resolvable', 'No access to schema % for table/view/foreign table: %.%', 
-				c1_rec.schemaname::VARCHAR, c1_rec.schemaname::VARCHAR, LOWER(l_table_name)::VARCHAR);
-		ELSE
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_is_object_resolvable', 'No access to: %.%', 
-				c1_rec.schemaname::VARCHAR, LOWER(l_table_name)::VARCHAR);
+			RETURN 1; /* Resolvable */
+		ELSE /* Nor resolvable */
+			IF CURRENT_DATABASE() = 'sahsuland_dev' THEN
+				IF c2_rec.tablename IS NULL THEN
+					PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_is_object_resolvable', 'No table/view/foreign table: %.%', 
+						c1_rec.schemaname::VARCHAR, LOWER(l_table_name)::VARCHAR);
+				ELSIF c2_rec.tablename IS NOT NULL AND NOT has_schema_privilege(USER, c1_rec.schemaname, 'USAGE') THEN
+					PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_is_object_resolvable', 'No access to schema % for table/view/foreign table: %.%', 
+						c1_rec.schemaname::VARCHAR, c1_rec.schemaname::VARCHAR, LOWER(l_table_name)::VARCHAR);
+				ELSE
+					PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_is_object_resolvable', 'No access to: %.%', 
+						c1_rec.schemaname::VARCHAR, LOWER(l_table_name)::VARCHAR);
+				END IF;
+			END IF;
 		END IF;
 		CLOSE c2;
 	END LOOP;
@@ -1186,8 +1198,12 @@ BEGIN
 -- Must be rif40 or have rif_user or rif_manager role
 --
 	IF NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_object_resolve', 'User % must be rif40 or have rif_user or rif_manager role', 
-			USER::VARCHAR);
+		IF CURRENT_DATABASE() = 'sahsuland_dev' THEN
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_object_resolve', 'User % must be rif40 or have rif_user or rif_manager role', 
+				USER::VARCHAR);
+		ELSE 
+			RETURN 0;
+		END IF;	
 	END IF;
 --
 -- If inputs are NULL return 0
@@ -1202,16 +1218,20 @@ BEGIN
 --
 		IF c2_rec.tablename IS NOT NULL AND has_schema_privilege(USER, c1_rec.schemaname, 'USAGE') /* or view or foreign table */ THEN
 			CLOSE c2or;
-			RETURN c1_rec.schemaname;
-		ELSIF c2_rec.tablename IS NULL THEN
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_object_resolve', 'No table/view/foreign table: %.%', 
-				c1_rec.schemaname::VARCHAR, LOWER(l_table_name)::VARCHAR);
-		ELSIF c2_rec.tablename IS NOT NULL AND NOT has_schema_privilege(USER, c1_rec.schemaname, 'USAGE') THEN
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_object_resolve', 'No access to schema % for table/view/foreign table: %.%', 
-				c1_rec.schemaname::VARCHAR, c1_rec.schemaname::VARCHAR, LOWER(l_table_name)::VARCHAR);
-		ELSE
-			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_object_resolve', 'No access to: %.%', 
-				c1_rec.schemaname::VARCHAR, LOWER(l_table_name)::VARCHAR);
+			RETURN c1_rec.schemaname; /* Resolvable */
+		ELSE /* Nor resolvable */
+			IF CURRENT_DATABASE() = 'sahsuland_dev' THEN
+				IF c2_rec.tablename IS NULL THEN
+					PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_object_resolve', 'No table/view/foreign table: %.%', 
+						c1_rec.schemaname::VARCHAR, LOWER(l_table_name)::VARCHAR);
+				ELSIF c2_rec.tablename IS NOT NULL AND NOT has_schema_privilege(USER, c1_rec.schemaname, 'USAGE') THEN
+					PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_object_resolve', 'No access to schema % for table/view/foreign table: %.%', 
+						c1_rec.schemaname::VARCHAR, c1_rec.schemaname::VARCHAR, LOWER(l_table_name)::VARCHAR);
+				ELSE
+					PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_object_resolve', 'No access to: %.%', 
+						c1_rec.schemaname::VARCHAR, LOWER(l_table_name)::VARCHAR);
+				END IF;
+			END IF;
 		END IF;
 		CLOSE c2or;
 	END LOOP;
@@ -1286,8 +1306,12 @@ BEGIN
 -- Must be rif40 or have rif_user or rif_manager role
 --
 	IF NOT rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
-		PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_auto_indirect_checks', 'User % must be rif40 or have rif_user or rif_manager role', 
-			USER::VARCHAR);
+		IF CURRENT_DATABASE() = 'sahsuland_dev' THEN
+			PERFORM rif40_log_pkg.rif40_error(-20999, 'rif40_auto_indirect_checks', 'User % must be rif40 or have rif_user or rif_manager role', 
+				USER::VARCHAR);
+		ELSE 
+			RETURN 0;
+		END IF;		
 	END IF;
 --
 -- If inputs are NULL return NULL 
@@ -1301,17 +1325,21 @@ BEGIN
 	OPEN c1autoin(l_table_name);
 	FETCH c1autoin INTO c1_rec;
 	CLOSE c1autoin;
-	IF c1_rec.automatic = 0 OR c1_rec.isindirectdenominator != 1 OR c1_rec.isnumerator = 1 THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_auto_indirect_checks', 'table: % is not an automatic indirect denominator', 
-			l_table_name::VARCHAR);
+	IF c1_rec.automatic = 0 OR c1_rec.isindirectdenominator != 1 OR c1_rec.isnumerator = 1 THEN	
+		IF CURRENT_DATABASE() = 'sahsuland_dev' THEN
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_auto_indirect_checks', 'table: % is not an automatic indirect denominator', 
+				l_table_name::VARCHAR);
+		END IF;
 		RETURN NULL;
 	END IF;
 --
 -- Check object is resolvable
 --
 	IF rif40_sql_pkg.rif40_is_object_resolvable(l_table_name) = 0 THEN
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_auto_indirect_checks', 'table: % not resolvable', 
-			l_table_name::VARCHAR);
+		IF CURRENT_DATABASE() = 'sahsuland_dev' THEN
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_auto_indirect_checks', 'table: % not resolvable', 
+				l_table_name::VARCHAR);
+		END IF;
 		RETURN NULL;
 	END IF;
 --
@@ -1334,12 +1362,16 @@ BEGIN
 						dmsg:=dmsg||', '||c3_rec.table_name;
 					END IF;
 				END LOOP;
-				dmsg:=dmsg||')';
-				PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_auto_indirect_checks', 'table[%]: %, geography: %; total_denominators = %; %', 
-					j::VARCHAR, l_table_name::VARCHAR, c2_rec.geography::VARCHAR, c2_rec.total_denominators::VARCHAR, dmsg::VARCHAR);
-			ELSE
-				PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_auto_indirect_checks', 'table[%]: %, geography: %; total_denominators = 0', 
-					j::VARCHAR, l_table_name::VARCHAR, c2_rec.geography::VARCHAR);
+				dmsg:=dmsg||')';		
+				IF CURRENT_DATABASE() = 'sahsuland_dev' THEN
+					PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_auto_indirect_checks', 'table[%]: %, geography: %; total_denominators = %; %', 
+						j::VARCHAR, l_table_name::VARCHAR, c2_rec.geography::VARCHAR, c2_rec.total_denominators::VARCHAR, dmsg::VARCHAR);
+				END IF;	
+			ELSE		
+				IF CURRENT_DATABASE() = 'sahsuland_dev' THEN
+					PERFORM rif40_log_pkg.rif40_log('DEBUG2', 'rif40_auto_indirect_checks', 'table[%]: %, geography: %; total_denominators = 0', 
+						j::VARCHAR, l_table_name::VARCHAR, c2_rec.geography::VARCHAR);
+				END IF;	
 			END IF;	
 		END LOOP;
 	END IF;	
