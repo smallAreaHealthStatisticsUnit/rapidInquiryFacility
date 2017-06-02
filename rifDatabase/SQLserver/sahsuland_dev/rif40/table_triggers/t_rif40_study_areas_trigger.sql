@@ -101,7 +101,9 @@ BEGIN
 		END CATCH;	
 	END;
 	
-	DECLARE @current_study_id int = [rif40].[rif40_sequence_current_value]( 'study_id');
+	DECLARE @current_study_id int = [rif40].[rif40_sequence_current_value]( 'rif40.rif40_study_id_seq' );
+
+    DECLARE @log_msg12 VARCHAR(MAX) = 'Validated study ID: '+CAST(@current_study_id AS VARCHAR);
 	
 	DECLARE @study_area_not_found VARCHAR(MAX) = 
 	(
@@ -114,6 +116,7 @@ BEGIN
 			WHERE a.geography = b.geography)
 		FOR XML PATH('')
 	);
+	
 	IF @study_area_not_found IS NOT NULL
 	BEGIN TRY
 		rollback;
@@ -130,14 +133,21 @@ BEGIN
 --
 	DECLARE @study_geolevel_name VARCHAR(MAX), @study_hierarchytable VARCHAR(MAX)
 	SELECT @study_geolevel_name=a.study_geolevel_name, @study_hierarchytable = b.hierarchytable
-	FROM t_rif40_studies a, rif40_geographies b
-	WHERE a.geography = b.geography
-	AND a.study_id  = @current_study_id;
+	  FROM t_rif40_studies a, rif40_geographies b
+	 WHERE a.geography = b.geography
+	   AND a.study_id  = @current_study_id;
 
 	DECLARE @area_id_query NVARCHAR(MAX);
-	SET @area_id_query = 'SELECT @totalOUT=count(*) from (SELECT area_id FROM t_rif40_study_areas a WHERE study_id = '+CAST(@current_study_id AS VARCHAR)+' AND NOT EXISTS (
-	SELECT 1
-	FROM '+@study_hierarchytable+' b WHERE b.'+@study_geolevel_name+'=a.area_id))';
+	SET @area_id_query = 'SELECT @totalOUT=COUNT(*) FROM (
+		SELECT area_id
+ 		  FROM rif40.t_rif40_study_areas a
+		 WHERE study_id = '+CAST(@current_study_id AS VARCHAR)+'
+		   AND NOT EXISTS (
+				SELECT 1
+				  FROM rif_data.'+LOWER(@study_hierarchytable)+' b
+				 WHERE b.'+LOWER(@study_geolevel_name)+'=a.area_id)
+		) AS a';
+		
 	DECLARE  @ParmDefinition nvarchar(500) = N'@totalOUT int OUTPUT', @total int;
 	EXEC sp_executesql @area_id_query, @ParmDefinition, @totalOUT=@total OUTPUT;
 	
@@ -148,10 +158,11 @@ BEGIN
 		THROW 51091, @err_msg5, 1;
 	END TRY
 	BEGIN CATCH
-		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_study_areas]';
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_study_areas1]';
 		THROW 51091, @err_msg5, 1;
 	END CATCH;
-	
+
+    EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_study_areas]', @log_msg12;		
 END;	
 
 END;
