@@ -45,6 +45,7 @@ on [rif40].[t_rif40_studies]
 AFTER insert , update , delete
 as
 BEGIN 
+  
 --------------------------------------
 --to  Determine the type of transaction 
 ---------------------------------------
@@ -62,7 +63,22 @@ Declare  @XTYPE varchar(5);
 		ELSE 
 			SET @XTYPE = 'I'
 	END;
+	
+--
+-- Save sequence in current valid sequences object for later use by
+-- CURRVAL function: [rif40].[rif40_sequence_current_value]()
+--
 
+DECLARE @log_msg0 VARCHAR(MAX) = '@XTYPE='+COALESCE(@XTYPE, 'NULL')+
+	'; OBJECT_ID tempdb..##t_rif40_studies_seq='+
+	COALESCE(CAST(OBJECT_ID('tempdb..##t_rif40_studies_seq') AS VARCHAR), 'NULL');
+EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_studies]', @log_msg0;
+
+IF @XTYPE = 'I' AND OBJECT_ID('tempdb..##t_rif40_studies_seq') IS NOT NULL 
+	INSERT INTO ##t_rif40_studies_seq(study_id)
+	SELECT study_id
+	  FROM INSERTED;
+  
 DECLARE @has_studies_check VARCHAR(MAX) = 
 (
 	SELECT count(study_id) as total

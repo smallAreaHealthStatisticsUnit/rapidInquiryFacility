@@ -75,6 +75,9 @@ GO
 SELECT * FROM sys.schemas WHERE name = N'$(NEWUSER)';
 GO
 
+--
+-- To be replaced by rif40.rif40_study_status table/view pair
+--
 IF NOT EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[$(NEWUSER)].[study_status]')
@@ -87,6 +90,25 @@ IF NOT EXISTS (SELECT *
 		  message 		VARCHAR(255)
 	);
 GO 
+
+--
+-- Save sequence in current valid sequences object for later use by
+-- CURRVAL function: [rif40].[rif40_sequence_current_value]()
+--
+IF (OBJECT_ID('tempdb..##t_rif40_studies_seq') IS NOT NULL)
+	DROP TABLE ##t_rif40_studies_seq;
+GO
+CREATE TABLE ##t_rif40_studies_seq (
+	study_id INTEGER NOT NULL
+);
+GO
+IF (OBJECT_ID('tempdb..##t_rif40_investigations_seq') IS NOT NULL)
+	DROP TABLE ##t_rif40_investigations_seq;
+GO
+CREATE TABLE ##t_rif40_investigations_seq (
+	inv_id INTEGER NOT NULL
+);
+GO
 
 --
 -- Create a test object - this will not re-run

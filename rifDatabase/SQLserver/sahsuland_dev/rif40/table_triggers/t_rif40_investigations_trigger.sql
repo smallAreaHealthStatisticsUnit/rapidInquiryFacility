@@ -25,22 +25,35 @@ for insert , update , delete
 as
 BEGIN 
 
-Declare  @xtype varchar(5)
- 	IF EXISTS (SELECT * FROM DELETED)
-		SET @XTYPE = 'D';
+Declare  @XTYPE varchar(5)
+	IF EXISTS (SELECT * FROM DELETED)
+	BEGIN
+		SET @XTYPE = 'D'
+	END;
 	
 	IF EXISTS (SELECT * FROM INSERTED)
-		BEGIN
-			IF (@XTYPE = 'D')
-			BEGIN
-				SET @XTYPE = 'U';
-			END
-		END
-	ELSE
-		BEGIN
-			SET @XTYPE = 'I';
-		END;
+	BEGIN
+		IF (@XTYPE = 'D')
+			SET @XTYPE = 'U'
+		ELSE 
+			SET @XTYPE = 'I'
+	END;
 
+--
+-- Save sequence in current valid sequences object for later use by
+-- CURRVAL function: [rif40].[rif40_sequence_current_value]()
+--
+DECLARE @log_msg1 VARCHAR(MAX) = '@XTYPE='+COALESCE(@XTYPE, 'NULL')+
+	'; OBJECT_ID tempdb..##t_rif40_investigations_seq='+
+	COALESCE(CAST(OBJECT_ID('tempdb..##t_rif40_investigations_seq') AS VARCHAR), 'NULL');
+EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_investigations]', @log_msg1;
+	
+IF @XTYPE = 'I' AND OBJECT_ID('tempdb..##t_rif40_investigations_seq') IS NOT NULL BEGIN
+	INSERT INTO ##t_rif40_investigations_seq(inv_id)
+	SELECT inv_id
+	  FROM INSERTED;
+END;
+  
 DECLARE @has_studies_check VARCHAR(MAX) = 
 (
 	SELECT count(study_id) as total
@@ -519,3 +532,6 @@ END CATCH;
 END;
 END; 
 GO
+
+--
+-- Eof

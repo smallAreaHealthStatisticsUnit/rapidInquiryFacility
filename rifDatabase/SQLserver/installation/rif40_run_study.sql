@@ -70,6 +70,25 @@ GO
 SELECT TOP 5 * FROM rif_data.pop_sahsuland_pop;
 GO
 
+--
+-- Save sequence in current valid sequences object for later use by
+-- CURRVAL function: [rif40].[rif40_sequence_current_value]()
+--
+IF (OBJECT_ID('tempdb..##t_rif40_studies_seq') IS NOT NULL)
+	DROP TABLE ##t_rif40_studies_seq;
+GO
+CREATE TABLE ##t_rif40_studies_seq (
+	study_id INTEGER NOT NULL
+);
+GO
+IF (OBJECT_ID('tempdb..##t_rif40_investigations_seq') IS NOT NULL)
+	DROP TABLE ##t_rif40_investigations_seq;
+GO
+CREATE TABLE ##t_rif40_investigations_seq (
+	inv_id INTEGER NOT NULL
+);
+GO
+
 INSERT /* 1 */ INTO rif40.rif40_studies (
  		geography, project, study_name, study_type,
  		comparison_geolevel_name, study_geolevel_name, denom_tab,
@@ -200,6 +219,16 @@ SELECT * /* 3 */ FROM rif40.rif40_inv_conditions WHERE study_id = [rif40].[rif40
 GO
 DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
 DECLARE @inv_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_inv_id_seq');
+--
+-- Test sequence numbers
+--
+DECLARE @study_id2 INTEGER = (SELECT study_id AS t_rif40_studies_seq FROM ##t_rif40_studies_seq);
+DECLARE @inv_id2 INTEGER = (SELECT inv_id AS t_rif40_investigations_seq FROM ##t_rif40_investigations_seq);
+IF (@study_id = @study_id2) PRINT 'Study ID OK'
+ELSE RAISERROR('Study ID mismatch %i !=%i', 16, 1, @study_id, @study_id2);
+IF (@inv_id = @inv_id2) PRINT 'Study ID OK'
+ELSE RAISERROR('Study ID mismatch %i !=%i', 16, 1, @inv_id, @inv_id2);
+
 DECLARE @rif40_investigations VARCHAR(MAX) = (
 		SELECT * /* 2 */
 		  FROM rif40.rif40_investigations WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq')
@@ -283,6 +312,9 @@ BEGIN
 	INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'R', 2, 
 		'Study results have been computed and they are now ready to be used.');
 	SELECT * FROM study_status WHERE study_id = @study_id;
+	SELECT study_id AS t_rif40_studies_seq FROM ##t_rif40_studies_seq;
+	SELECT inv_id AS t_rif40_investigations_seq FROM ##t_rif40_investigations_seq;
+	
 --	
 -- Always commit, even though this may fail because trigger failure have caused a rollback:
 -- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.
