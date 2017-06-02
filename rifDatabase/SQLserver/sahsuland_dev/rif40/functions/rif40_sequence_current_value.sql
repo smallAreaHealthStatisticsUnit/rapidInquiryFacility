@@ -211,8 +211,8 @@ BEGIN
 			ELSE RETURN CAST('rif40_sequence_current_value error: Logically impossible' AS INT);
 				/* Logically impossible */
 		END
---	ELSE
---		RETURN CAST('rif40_sequence_current_value error: Invalid sequence name: ' + @l_sequence_name AS INT); 
+	ELSE
+		RETURN CAST('rif40_sequence_current_value error: Invalid sequence name: ' + @l_sequence_name AS INT); 
 --		/* Cause deliberate error: cannot RAISE errors in SQL functions */	
 		
 	RETURN -1;

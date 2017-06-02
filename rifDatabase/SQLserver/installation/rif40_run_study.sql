@@ -254,6 +254,7 @@ GO
 --
 -- Test rif40_GetAdjacencyMatrix()
 --
+-- @study_id needs to be restored via a variable to be safe
 DECLARE @study_id INTEGER=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq')/* Get current sequence */;
 SELECT TOP 10 SUBSTRING(areaid, 1, 20) AS areaid, num_adjacencies, SUBSTRING(adjacency_list, 1, 90) AS adjacency_list_truncated
   FROM [rif40].[sahsuland_GetAdjacencyMatrix](@study_id);
@@ -281,6 +282,7 @@ GO
 --
 
 BEGIN
+-- @study_id needs to be restored via a variable to be safe
 	DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
 	BEGIN TRANSACTION;
 	DECLARE @rval INT;
