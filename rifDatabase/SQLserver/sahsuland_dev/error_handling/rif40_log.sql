@@ -23,6 +23,6 @@ CREATE PROCEDURE [rif40].[rif40_log]
 AS
 BEGIN
 	IF @debug_level <> 'ERROR'
-		print 'LOG '+@debug_level+' '+@function_name+': '+@msg;
+		print 'LOG '+@debug_level+' '+@function_name+': '+COALESCE(@msg, 'NULL Message');
 END
 GO

@@ -62,7 +62,7 @@ AS
  BEGIN
  
  	IF @Error_Message IS NOT NULL 
-		exec [rif40].[rif40_log] 'ERROR',null,@Error_Message;
+		exec [rif40].[rif40_log] 'ERROR','ErrorLog_proc',@Error_Message;
 	
      BEGIN TRY
      
