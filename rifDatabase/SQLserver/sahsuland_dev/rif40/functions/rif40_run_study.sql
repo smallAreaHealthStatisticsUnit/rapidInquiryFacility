@@ -55,7 +55,14 @@ IF EXISTS (SELECT *
 	DROP PROCEDURE [rif40].[rif40_run_study];
 GO 
 
-CREATE PROCEDURE [rif40].[rif40_run_study](@study_id int, @debug int=0, @recursion_level int=0)
+IF EXISTS (SELECT *
+           FROM   sys.objects
+           WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_run_study2]')
+                  AND type IN ( N'P' ))
+	DROP PROCEDURE [rif40].[rif40_run_study2];
+GO 
+
+CREATE PROCEDURE [rif40].[rif40_run_study2](@study_id int, @debug int=0, @recursion_level int=0)
 AS
 BEGIN
 --
@@ -215,7 +222,7 @@ Recurse until complete
 			SET @msg='55209: Recurse (' + CAST(@n_recursion_level AS VARCHAR) + ') rif40_run_study using new state ' + 
 				@new_study_state + ' for study ' + CAST(@study_id AS VARCHAR);
 			PRINT @msg;
-			EXECUTE @rval=rif40.rif40_run_study
+			EXECUTE @rval=rif40.rif40_run_study2
 				@study_id 			/* Study_id */, 
 				@debug 				/* Debug: 0/1 */, 
 				@n_recursion_level 	/* Recursion level: Use default */;
@@ -272,7 +279,50 @@ Recurse until complete
 			' investigation(s); time taken ' + CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);
 		PRINT @msg;
 	END;
-		
+--		
+	RETURN @rval;
+END;
+GO
+
+CREATE PROCEDURE [rif40].[rif40_run_study](@study_id int, @debug int=0)
+AS
+BEGIN 
+	IF @study_id IS NULL SET @study_id=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
+    BEGIN TRANSACTION;
+    DECLARE @rval INT;
+    DECLARE @msg VARCHAR(MAX);
+-- ============================================================
+    BEGIN TRY
+         EXECUTE @rval=rif40.rif40_run_study2
+         @study_id  /* Study_id */,
+         @debug     /* Debug: 0/1 */,
+         default    /* Recursion level: Use default */;
+-- ============================================================
+    END TRY
+    BEGIN CATCH
+         SET @rval=0;
+         SET @msg='Caught error in rif40.rif40_run_study2(' + CAST(@study_id AS VARCHAR) + ')' + CHAR(10) +
+         'Error number: ' + NULLIF(CAST(ERROR_NUMBER() AS VARCHAR), 'N/A') + CHAR(10) +
+         'Error severity: ' + NULLIF(CAST(ERROR_SEVERITY() AS VARCHAR), 'N/A') + CHAR(10) +
+         'Error state: ' + NULLIF(CAST(ERROR_STATE() AS VARCHAR), 'N/A') + CHAR(10) +
+         'Procedure with error: ' + NULLIF(ERROR_PROCEDURE() + CHAR(10), 'N/A') +
+         'Procedure line: ' + NULLIF(CAST(ERROR_LINE() AS VARCHAR), 'N/A') + CHAR(10) +
+         'Error message: ' + NULLIF(ERROR_MESSAGE(), 'N/A') + CHAR(10);
+         PRINT @msg;
+         EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';
+    END CATCH;
+-- ============================================================
+-- Always commit, even though this may fail because trigger failure have caused a rollback:
+-- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.
+-- ============================================================
+  COMMIT TRANSACTION;
+-- ============================================================
+    SET @msg = 'Study ' + CAST(@study_id AS VARCHAR) + ' OK';
+    IF @rval = 1
+         PRINT @msg;
+    ELSE
+         RAISERROR('Study %i FAILED (see previous errors)', 16, 1, @study_id);
+--		
 	RETURN @rval;
 END;
 GO

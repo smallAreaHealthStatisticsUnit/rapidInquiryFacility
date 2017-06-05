@@ -1351,6 +1351,11 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
 * Speed of automatic denominators on Postgres is slow; fine on SQL Server. Speeded up roughly three times by supressing
   log messages to sahsuland_dev only in the validator functions 
   e.g. rif40_sql_pkg.rif40_num_denom_validate();
+* Improvements to rif40_sequence_current_value transactional robustness
+
+#### 5th to 9th June
+
+*
   
 #### Current TODO list (June 2017): SQL Server Port
 

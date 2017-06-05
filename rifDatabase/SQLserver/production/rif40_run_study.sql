@@ -296,8 +296,7 @@ BEGIN
 			'Study has been created but it has not been verified.');	
 		 EXECUTE @rval=rif40.rif40_run_study
 				@study_id 	/* Study_id */, 
-				1 			/* Debug: 0/1 */, 
-				default 	/* Recursion level: Use default */;	
+				1 			/* Debug: 0/1 */;	
 		INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'E', 1, 
 			'Study extracted imported or created but neither results nor maps have been created.');				
 --
