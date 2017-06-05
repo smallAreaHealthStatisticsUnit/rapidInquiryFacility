@@ -183,14 +183,14 @@ BEGIN
 			SELECT @table_val = MAX(study_id)
 			  FROM rif40_studies
 			 WHERE username = CURRENT_USER;
-			RETURN @table_val;
+--			RETURN @table_val;
 		END
 	ELSE IF @l_sequence_name = 'rif40.rif40_inv_id_seq' 
 		BEGIN
 			SELECT @table_val = MAX(inv_id)
 			  FROM rif40_investigations
 			 WHERE username = CURRENT_USER;
-			RETURN @table_val;
+--			RETURN @table_val;
 		END;
 	
 	IF EXISTS (SELECT * FROM sys.objects 
