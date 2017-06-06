@@ -1355,7 +1355,7 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
 
 #### 5th to 9th June
 
-*
+* rif40 run study procedural stub for SQL Server
   
 #### Current TODO list (June 2017): SQL Server Port
 
