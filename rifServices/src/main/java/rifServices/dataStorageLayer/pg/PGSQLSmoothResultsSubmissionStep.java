@@ -180,21 +180,14 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 
 			validateCommandLineExpressionComponents();
 
-			//TODO: batch file code to remove starts here
-			//System.out.println("command=="+generateCommandLineExpression() + "==");
-			//ProcessBuilder processBuilder = new ProcessBuilder(commandLineComponents);
-
-			//File batchFile 
-			//= createBatchFile(
-			//		rifStartupOptions.getExtractDirectory(), "kevTest22");
-
 
 			//########################
 			//TODO: from MSSQL as well
 
-			boolean test = true;
+			boolean test = false; //true JRI false BATCH
+			int exitValue = 0;
+			
 			if (test) {
-				int exitValue = 0;
 
 				Rengine rengine = null;
 
@@ -211,7 +204,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 					Rengine.DEBUG = 10;
 					System.out.println("Rengine Started");
 					
-					//Start R operations 
+					//Start R operations
 
 					//Check library path
 					rengine.eval("rm(list=ls())"); //just in case!
@@ -255,14 +248,22 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 					System.out.println("Rengine Stopped");
 				}
 
-				//########################
-
-				//TODO: (DM) BATCH FILE to delete 
-				//Process process = Runtime.getRuntime().exec(batchFile.getAbsolutePath());
-				//int exitValue = process.waitFor(); 
-				//batchFile.delete();	
 
 				System.out.println("Exit value=="+ exitValue +"==");
+			}
+			else {
+				//TODO: (DM) BATCH FILE to delete 
+				//System.out.println("command=="+generateCommandLineExpression() + "==");
+				//ProcessBuilder processBuilder = new ProcessBuilder(commandLineComponents);
+
+				File batchFile 
+				= createBatchFile(
+						rifStartupOptions.getExtractDirectory(), "kevTest22");
+				
+				Process process = Runtime.getRuntime().exec(batchFile.getAbsolutePath());
+				exitValue = process.waitFor(); 
+				//batchFile.delete();	
+				
 			}
 		}
 		catch(Exception ioException) {
