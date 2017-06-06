@@ -321,9 +321,11 @@ BEGIN
 	SELECT study_id AS t_rif40_studies_seq FROM ##t_rif40_studies_seq;
 	SELECT inv_id AS t_rif40_investigations_seq FROM ##t_rif40_investigations_seq;
 --
-	SET @rval=COALESCE(@rval, @rval2);
+	SET @rval=COALESCE(@rval2, @rval);
 	SET @rval=COALESCE(@rval, -1);
 	SET @msg = 'Study test run ' + CAST(@study_id AS VARCHAR) + ' OK';
+	
+	COMMIT TRANSACTION;	
 	IF @rval = 1
 		PRINT @msg;
 	ELSE 

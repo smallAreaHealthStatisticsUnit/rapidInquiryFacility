@@ -149,17 +149,16 @@ final class MSSQLGenerateResultsSubmissionStep
 			
 			boolean res = runStudyStatement.execute();
 			int rval=-1;
-			if (res) { 
+			if (res) { // OK we has a resultSet
 				runStudyResultSet=runStudyStatement.getResultSet();
 				rval = runStudyResultSet.getInt(3);
 				runStudyResultSet.next(); // No rows returned
 			} // Need to handle no resultSet to retrieve rval
+			else {
+				rval = runStudyStatement.getInt(3);	
+			}
 		
 			result = String.valueOf(rval);	
-						
-			System.out.println("XXXXXXXXXX RESULT XXXXXXXXXXXXXXXXXXXXXX");
-			System.out.println(result);
-			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 						
 			SQLWarning warning = runStudyStatement.getWarnings();
 			while (warning != null) {	
@@ -175,8 +174,16 @@ final class MSSQLGenerateResultsSubmissionStep
 				}
 		        warning = warning.getNextWarning();
 			}	
+						
+			if (rval == 1) {
+				System.out.println("XXXXXXXXXX Study " + studyID + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
+			}
+			else {
+				System.out.println("XXXXXXXXXX Study " + studyID + " failed with code: " + result + 
+					" XXXXXXXXXXXXXXXXXXXXXX");
+			}
 			
-			connection.commit();
+			connection.commit(); 
 			return result;
 			
 			
