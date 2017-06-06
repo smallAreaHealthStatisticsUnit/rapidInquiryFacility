@@ -2,7 +2,6 @@ package rifServices.dataStorageLayer.pg;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
@@ -11,7 +10,6 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -19,11 +17,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
-
-import org.rosuda.JRI.*;
-
-import java.util.logging.Logger;
-
 
 
 /**
@@ -380,120 +373,8 @@ extends PGSQLAbstractSQLManager {
 
 	}
 
-
-	/*
-	 * Logging R console output in Tomcat
-	 * TODO: put it somewhere (AbstractRService)
-	 */
-	private static Logger log = Logger.getLogger("Runner");
-	static class LoggingConsole implements RMainLoopCallbacks {
-		private Logger log;
-
-		LoggingConsole(Logger log) {
-			this.log = log;
-		}
-
-		public void rWriteConsole(Rengine re, String text, int oType) {
-			log.info(String.format("rWriteConsole: %s", text));
-		}
-
-		public void rBusy(Rengine re, int which) {
-			log.info(String.format("rBusy: %s", which));
-		}
-
-		public void rShowMessage(Rengine re, String message) {
-			log.info(String.format("rShowMessage: %s",  message));
-		}
-
-		public String rReadConsole(Rengine re, String prompt, int addToHistory) {
-			return null;
-		}
-
-		public String rChooseFile(Rengine re, int newFile) {
-			return null;
-		}
-
-		public void rFlushConsole(Rengine re) {
-		}
-
-		public void rLoadHistory(Rengine re, String filename) {
-		}
-
-		public void rSaveHistory(Rengine re, String filename) {
-		}
-	}
-
-
 	public boolean isLoggedIn(
 			final String userID) {
-
-		//##############################################
-		//TODO: (DM) This is a bookmark for JRI test
-		//http://localhost:8080/rifServices/studySubmission/pg/login?userID=dwmorley&password=dwmorley
-		//TODO: ODBC to JDBC
-
-
-		boolean test = false;
-		if (test) {
-
-			Rengine rengine = null;
-
-			//	try {	
-			rengine = Rengine.getMainEngine();
-			if(rengine == null) {
-				rengine = new Rengine(new String[] {"--vanilla"}, false, new LoggingConsole(log)); //null | new LoggingConsole(log)
-			}
-
-			if (!rengine.waitForR()) {
-				System.out.println("Cannot load the R engine");
-			}
-			System.out.println("Rengine Started");
-
-			Rengine.DEBUG = 0;
-
-			//Check library path
-			rengine.eval("rm(list=ls())"); //just in case!
-			rengine.eval("print(.libPaths())");
-
-
-			//user & connection variables
-			//...
-			//...
-			rengine.assign("userID", "dwmorley");
-			rengine.assign("password", "dwmorley");
-			rengine.assign("dbName", "sahsuland_dev");
-			rengine.assign("dbHost", "localhost");
-			rengine.assign("dbPort", "5432");
-			rengine.assign("db_driver_prefix", "jdbc:postgresql");
-			rengine.assign("db_driver_class_name", "org.postgresql.Driver");
-			rengine.assign("studyID", "32");
-			rengine.assign("investigationName", "MY_NEW_INVESTIGATION");
-			rengine.assign("investigationId", "27");
-			rengine.assign("odbcDataSource", "PostgreSQL30");
-			rengine.assign("model", "HET");
-			rengine.assign("names.adj.1", "NONE");			
-			rengine.assign("adj.1", "FALSE"); 
-			
-			//Smoothing script path	
-			StringBuilder rifScriptPath = new StringBuilder();	
-			rifScriptPath.append(rifServiceStartupOptions.getRIFServiceResourcePath());
-			rifScriptPath.append(File.separator);
-			rifScriptPath.append(File.separator);
-			rifScriptPath.append("Adj_Cov_Smooth_JRI.R");
-			System.out.println("rScriptPath=="+ rifScriptPath +"==");
-
-			rengine.eval("source(\"" + rifScriptPath + "\")");
-
-
-
-			
-			
-			rengine.end();
-			System.out.println("Rengine Stopped");
-		}
-
-
-		//##############################################	
 
 		if (registeredUserIDs.contains(userID)) {
 			return true;

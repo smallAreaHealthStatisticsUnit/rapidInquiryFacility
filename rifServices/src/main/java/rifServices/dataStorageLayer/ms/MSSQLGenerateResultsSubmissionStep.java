@@ -140,7 +140,7 @@ final class MSSQLGenerateResultsSubmissionStep
 			
 			runStudyStatement.setInt(1, Integer.valueOf(studyID));
 			runStudyStatement.setInt(2, 1);
-			
+						
 			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 			System.out.print(generalQueryFormatter.generateQuery());
 			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
@@ -151,12 +151,10 @@ final class MSSQLGenerateResultsSubmissionStep
 			
 			result = String.valueOf(runStudyResultSet.getInt(1));	
 						
-			System.out.println("XXXXXXXXXX RESULT XXXXXXXXXXXXXXXXXXXXXX");
+			System.out.println("XXXXXXXXXX RESULT XXXXXXXXXXXXXX");
 			System.out.println(result);
 			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-			
-
-			
+					
 			SQLWarning warning = runStudyStatement.getWarnings();
 			while (warning != null) {			
 		        System.out.println("Message:" + warning.getMessage());

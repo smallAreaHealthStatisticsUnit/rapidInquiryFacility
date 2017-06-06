@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.io.*;
 import java.util.Date;
+import java.util.logging.Logger;
+
+import org.rosuda.JRI.RMainLoopCallbacks;
+import org.rosuda.JRI.Rengine;
 
 
 /**
@@ -220,7 +224,7 @@ public abstract class PGSQLAbstractRService {
 		this.operatingSystemType = operatingSystemType;
 	}
 	
-	//TODO: (DM) generate param string array
+	//Generate param string array
 	protected String[] generateParameterArray() {
 	
 		String[] parametersArray = new String[13];
@@ -233,7 +237,7 @@ public abstract class PGSQLAbstractRService {
 		parametersArray[11] = userID;
 		parametersArray[12] = password;
 
-		//same order of args as in the batch file
+		//same order of args as in the old batch file
 		/*
 		0		"jdbc:postgresql", //db_driver_prefix
 		1		"localhost", //dbHost
@@ -289,6 +293,7 @@ public abstract class PGSQLAbstractRService {
 		return expression.toString();
 	}
 
+	//TODO: (DM) delete all batch file
 	protected File createBatchFile(
 		final String directoryName,
 		final String baseFileName) 
@@ -354,6 +359,46 @@ public abstract class PGSQLAbstractRService {
 		throws RIFServiceException {
 
 		validateParametersToVerify();
+	}
+	
+	/*
+	 * Logging R console output in Tomcat
+	 */
+	static class LoggingConsole implements RMainLoopCallbacks {
+		private Logger log;
+
+		LoggingConsole(Logger log) {
+			this.log = log;
+		}
+
+		public void rWriteConsole(Rengine re, String text, int oType) {
+			log.info(String.format("rWriteConsole: %s", text));
+		}
+
+		public void rBusy(Rengine re, int which) {
+			log.info(String.format("rBusy: %s", which));
+		}
+
+		public void rShowMessage(Rengine re, String message) {
+			log.info(String.format("rShowMessage: %s",  message));
+		}
+
+		public String rReadConsole(Rengine re, String prompt, int addToHistory) {
+			return null;
+		}
+
+		public String rChooseFile(Rengine re, int newFile) {
+			return null;
+		}
+
+		public void rFlushConsole(Rengine re) {
+		}
+
+		public void rLoadHistory(Rengine re, String filename) {
+		}
+
+		public void rSaveHistory(Rengine re, String filename) {
+		}
 	}
 	
 	

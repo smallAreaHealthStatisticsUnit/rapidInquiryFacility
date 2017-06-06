@@ -131,47 +131,8 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 
 	}
 
-	/*
-	 * Logging R console output in Tomcat
-	 * TODO: put it somewhere (AbstractRService)
-	 */
+	//Logging for JRI	
 	private static Logger log = Logger.getLogger("Runner");
-	static class LoggingConsole implements RMainLoopCallbacks {
-		private Logger log;
-
-		LoggingConsole(Logger log) {
-			this.log = log;
-		}
-
-		public void rWriteConsole(Rengine re, String text, int oType) {
-			log.info(String.format("rWriteConsole: %s", text));
-		}
-
-		public void rBusy(Rengine re, int which) {
-			log.info(String.format("rBusy: %s", which));
-		}
-
-		public void rShowMessage(Rengine re, String message) {
-			log.info(String.format("rShowMessage: %s",  message));
-		}
-
-		public String rReadConsole(Rengine re, String prompt, int addToHistory) {
-			return null;
-		}
-
-		public String rChooseFile(Rengine re, int newFile) {
-			return null;
-		}
-
-		public void rFlushConsole(Rengine re) {
-		}
-
-		public void rLoadHistory(Rengine re, String filename) {
-		}
-
-		public void rSaveHistory(Rengine re, String filename) {
-		}
-	}
 
 	public void performStep(
 			final Connection connection,
@@ -220,95 +181,89 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 			validateCommandLineExpressionComponents();
 
 			//TODO: batch file code to remove starts here
-
-			System.out.println("command=="+generateCommandLineExpression() + "==");
+			//System.out.println("command=="+generateCommandLineExpression() + "==");
 			//ProcessBuilder processBuilder = new ProcessBuilder(commandLineComponents);
 
-			File batchFile 
-			= createBatchFile(
-					rifStartupOptions.getExtractDirectory(), "kevTest22");
-
+			//File batchFile 
+			//= createBatchFile(
+			//		rifStartupOptions.getExtractDirectory(), "kevTest22");
 
 
 			//########################
-			//TODO: (DM) Batch file is run here - should be replaced by a call to R encapsulated within Java
-			//TODO: return exitvalue from batch file function
+			//TODO: from MSSQL as well
 
-			boolean test = false;
+			boolean test = true;
 			if (test) {
+				int exitValue = 0;
 
 				Rengine rengine = null;
 
-				//		try {	
-				//Create an R engine with JRI
-				rengine = Rengine.getMainEngine();
-				if(rengine == null) {
-					rengine = new Rengine(new String[] {"--vanilla"}, false, new LoggingConsole(log)); //null | new LoggingConsole(log)
+				try {	
+					//Create an R engine with JRI
+					rengine = Rengine.getMainEngine();
+					if(rengine == null) {
+						rengine = new Rengine(new String[] {"--vanilla"}, false, new LoggingConsole(log)); 
+					}
+
+					if (!rengine.waitForR()) {
+						System.out.println("Cannot load the R engine");
+					}
+					Rengine.DEBUG = 10;
+					System.out.println("Rengine Started");
+					
+					//Start R operations 
+
+					//Check library path
+					rengine.eval("rm(list=ls())"); //just in case!
+					rengine.eval("print(.libPaths())");
+
+					//set connection details and parameters
+					String[] parameters = generateParameterArray();
+					rengine.assign("userID", parameters[12]);
+					rengine.assign("password", parameters[11]);
+					rengine.assign("dbName", parameters[3]);
+					rengine.assign("dbHost", parameters[1]);
+					rengine.assign("dbPort", parameters[2]);
+					rengine.assign("db_driver_prefix", parameters[0]);
+					rengine.assign("db_driver_class_name", parameters[4]);
+					rengine.assign("studyID", parameters[5]);
+					rengine.assign("investigationName", parameters[6]);
+					rengine.assign("investigationId", parameters[8]);
+					rengine.assign("odbcDataSource", parameters[10]);
+					rengine.assign("model", getRRoutineModelCode(parameters[9]));
+					rengine.assign("names.adj.1", parameters[7]);			
+					rengine.assign("adj.1", getRAdjust(parameters[7]));
+
+					//RUN "Adj_Cov_Smooth_JRI.R"
+					StringBuilder rifScriptPath = new StringBuilder();	
+					rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
+					rifScriptPath.append(File.separator);
+					rifScriptPath.append(File.separator);
+					rifScriptPath.append("Adj_Cov_Smooth_JRI.R");
+					System.out.println("rScriptPath=="+rifScriptPath+"==");
+					rengine.eval("source(\"" + rifScriptPath + "\")");
+
+					//RUN the actual smoothing
+					REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
+					exitValue  = exitValueFromR.asInt();
 				}
-
-				if (!rengine.waitForR()) {
-					System.out.println("Cannot load the R engine");
+				catch(Exception error) {
+					System.out.println("JRI R ERROR");
+					exitValue = 1;
+				} finally {
+					rengine.end();
+					System.out.println("Rengine Stopped");
 				}
-				Rengine.DEBUG = 10;
-				System.out.println("Rengine Started");
-
-				//
-				//Start R operations 
-				//
-
-				//set connection details and parameters
-				String[] parameters = generateParameterArray();
-
-				for (int i = 0; i < 13;  i++) {
-					System.out.println(parameters[i]);
-				}
-
-				rengine.assign("userID", parameters[12]);
-				rengine.assign("password", parameters[11]);
-				rengine.assign("dbName", parameters[3]);
-				rengine.assign("dbHost", parameters[1]);
-				rengine.assign("dbPort", parameters[2]);
-				rengine.assign("db_driver_prefix", parameters[0]);
-				rengine.assign("db_driver_class_name", parameters[4]);
-				rengine.assign("studyID", parameters[5]);
-				rengine.assign("investigationName", parameters[6]);
-				rengine.assign("investigationId", parameters[8]);
-				rengine.assign("odbcDataSource", parameters[10]);
-				rengine.assign("model", getRRoutineModelCode(parameters[9]));
-				rengine.assign("names.adj.1", parameters[7]);			
-				rengine.assign("adj.1", "FALSE"); //TODO: hard-typed
-
-
-				//RUN "Adj_Cov_Smooth_JRI.R"
-				StringBuilder rifScriptPath = new StringBuilder();	
-				rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
-				rifScriptPath.append(File.separator);
-				rifScriptPath.append(File.separator);
-				rifScriptPath.append("Adj_Cov_Smooth_JRI.R");
-				System.out.println("rScriptPath=="+rifScriptPath+"==");
-				rengine.eval("source(\"" + rifScriptPath + "\")");
-
-
-				//		}
-				//		catch(Exception error) {
-				//			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-				//			System.out.println("R JAVA ERROR (TEST CODE ONLY)");
-				//			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-				//		} finally {
-				rengine.end();
-				//			System.out.println("Rengine Stopped");
-				//		}
 
 				//########################
+
+				//TODO: (DM) BATCH FILE to delete 
+				//Process process = Runtime.getRuntime().exec(batchFile.getAbsolutePath());
+				//int exitValue = process.waitFor(); 
+				//batchFile.delete();	
+
+				System.out.println("Exit value=="+ exitValue +"==");
 			}
-
-
-			Process process = Runtime.getRuntime().exec(batchFile.getAbsolutePath());
-
-			int exitValue = process.waitFor(); 
-			//batchFile.delete();			
-			System.out.println("Exit value=="+exitValue+"==");
-
 		}
 		catch(Exception ioException) {
 			ioException.printStackTrace(System.out);
@@ -320,11 +275,11 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 
 	private String getRRoutineModelCode(String proc) {
 		String model = "NONE";
-		if (proc == "het_r_procedure") {
+		if (proc.equals("het_r_procedure")) {
 			model = "HET";
-		} else if (proc == "car_r_procedure") {
+		} else if (proc.equals("car_r_procedure")) {
 			model = "CAR";
-		} else if (proc == "bym_r_procedure") {
+		} else if (proc.equals("bym_r_procedure")) {
 			model = "BYM";
 		}
 		return model;
@@ -332,13 +287,12 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 
 	private String getRAdjust(String covar) {
 		String name = covar.toUpperCase();
-		if (name != "NONE") {
+		if (!name.equals("NONE")) {
 			return "TRUE";
 		} else {
 			return "FALSE";
 		}	
 	}
-
 
 	/*
 	 * @TODO: KLG - Currently the study submission data model allows for it to have a study with multiple investigations,
@@ -370,7 +324,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 		return investigationName.trim().toUpperCase().replaceAll(" ", "_");		
 	}
 
-
+	//TODO: (DM) delete all batch file
 	private String createRCommandLineInvocation(
 			final String commandLineExecutable,
 			final ArrayList<Parameter> parameters) {
@@ -524,6 +478,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 	 * @param operatingSystemType
 	 * @throws RIFServiceException
 	 */
+	//TODO: (DM) delete all batch file
 	private void checkInputOutputFileProperties(
 			final String commandLineExecutable,
 			final ArrayList<Parameter> parameters, 
@@ -579,6 +534,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 	 * 
 	 * @param parameter
 	 */
+	//TODO: (DM) delete all batch file
 	private void checkDatabaseConnectionString(
 			final ArrayList<Parameter> parameters) 
 					throws RIFServiceException {
