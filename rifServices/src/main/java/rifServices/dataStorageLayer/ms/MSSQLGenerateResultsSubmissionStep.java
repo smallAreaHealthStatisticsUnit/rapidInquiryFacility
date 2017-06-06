@@ -2,6 +2,7 @@ package rifServices.dataStorageLayer.ms;
 
 import rifServices.system.*;
 import rifGenericLibrary.dataStorageLayer.*;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
@@ -123,45 +124,10 @@ final class MSSQLGenerateResultsSubmissionStep
 		
 		try {
 			SQLGeneralQueryFormatter generalQueryFormatter = new SQLGeneralQueryFormatter();		
-			
-			generalQueryFormatter.addQueryLine(1, "BEGIN");
-			generalQueryFormatter.addQueryLine(2, "DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');");
-			generalQueryFormatter.addQueryLine(2, "BEGIN TRANSACTION;");
-			generalQueryFormatter.addQueryLine(2, "DECLARE @rval INT;");
-			generalQueryFormatter.addQueryLine(2, "DECLARE @msg VARCHAR(MAX);");
-			generalQueryFormatter.addUnderline();
-			generalQueryFormatter.addQueryLine(2, "BEGIN TRY");
-			generalQueryFormatter.addQueryLine(3, "EXECUTE @rval=rif40.rif40_run_study");
-			generalQueryFormatter.addQueryLine(3, "@study_id /* Study_id */, ");
-			generalQueryFormatter.addQueryLine(3, "1                /* Debug: 0/1 */, ");
-			generalQueryFormatter.addQueryLine(3, "default    /* Recursion level: Use default */;");
-			generalQueryFormatter.addUnderline();
-			generalQueryFormatter.addQueryLine(2, "END TRY");
-			generalQueryFormatter.addQueryLine(2, "BEGIN CATCH");
-			generalQueryFormatter.addQueryLine(3, "SET @rval=0;");
-			generalQueryFormatter.addQueryLine(3, "SET @msg='Caught error in rif40.rif40_run_study(' + CAST(@study_id AS VARCHAR) + ')' + CHAR(10) + ");
-			generalQueryFormatter.addQueryLine(3, "'Error number: ' + NULLIF(CAST(ERROR_NUMBER() AS VARCHAR), 'N/A') + CHAR(10) + ");
-			generalQueryFormatter.addQueryLine(3, "'Error severity: ' + NULLIF(CAST(ERROR_SEVERITY() AS VARCHAR), 'N/A') + CHAR(10) + ");
-			generalQueryFormatter.addQueryLine(3, "'Error state: ' + NULLIF(CAST(ERROR_STATE() AS VARCHAR), 'N/A') + CHAR(10) + ");
-			generalQueryFormatter.addQueryLine(3, "'Procedure with error: ' + NULLIF(ERROR_PROCEDURE() + CHAR(10), 'N/A') + ");
-			generalQueryFormatter.addQueryLine(3, "'Procedure line: ' + NULLIF(CAST(ERROR_LINE() AS VARCHAR), 'N/A') + CHAR(10) + ");
-			generalQueryFormatter.addQueryLine(3, "'Error message: ' + NULLIF(ERROR_MESSAGE(), 'N/A') + CHAR(10);");
-			generalQueryFormatter.addQueryLine(3, "PRINT @msg;");
-			generalQueryFormatter.addQueryLine(3, "EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';");
-			generalQueryFormatter.addQueryLine(2, "END CATCH;");
-			generalQueryFormatter.addUnderline();
-			generalQueryFormatter.addCommentLine("Always commit, even though this may fail because trigger failure have caused a rollback:");
-			generalQueryFormatter.addCommentLine("The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.");
-			generalQueryFormatter.addUnderline();
-			generalQueryFormatter.addQueryLine(2, "COMMIT TRANSACTION;");
-			generalQueryFormatter.addUnderline();
-			generalQueryFormatter.addQueryLine(2, "SET @msg = 'Study ' + CAST(@study_id AS VARCHAR) + ' OK';");
-			generalQueryFormatter.addQueryLine(2, "IF @rval = 1");
-			generalQueryFormatter.addQueryLine(3, "PRINT @msg;");
-			generalQueryFormatter.addQueryLine(2, "ELSE");
-			generalQueryFormatter.addQueryLine(3, "RAISERROR('Study %i FAILED (see previous errors)', 16, 1, @study_id);");
-			generalQueryFormatter.addQueryLine(1, "END;");
-			
+			//EXECUTE @rval=rif40.rif40_run_study <study id> <debug: 0/1>
+			String stmt = String.format("EXECUTE rif40.rif40_run_study %s 1", studyID);
+			generalQueryFormatter.addQueryLine(1, stmt);
+
 			logSQLQuery(
 					"runStudy", 
 					generalQueryFormatter,
@@ -176,26 +142,20 @@ final class MSSQLGenerateResultsSubmissionStep
 			System.out.print(generalQueryFormatter.generateQuery());
 			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 			
-			
-			
 			runStudyResultSet
 				= runStudyStatement.executeQuery();
-					
 			runStudyResultSet.next();
-				
+			
 			result = String.valueOf(runStudyResultSet.getBoolean(1));	
 			
 			SQLWarning warning = runStudyStatement.getWarnings();
-			while (warning != null) {
-				
-		     //   System.out.println("Message:" + warning.getMessage());
-		     //   System.out.println("SQLState:" + warning.getSQLState());
-		     //   System.out.print("Vendor error code: ");
-		     //   System.out.println(warning.getErrorCode());
-		     //   System.out.println("==");
-		       
+			while (warning != null) {			
+		        System.out.println("Message:" + warning.getMessage());
+		        System.out.println("SQLState:" + warning.getSQLState());
+		        System.out.print("Vendor error code: ");
+		        System.out.println(warning.getErrorCode());
+		        System.out.println("==");	       
 		        warning = warning.getNextWarning();
-	
 			}
 			
 			connection.commit();
