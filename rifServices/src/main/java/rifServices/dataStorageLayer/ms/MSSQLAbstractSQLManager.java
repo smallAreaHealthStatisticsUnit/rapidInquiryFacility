@@ -3,8 +3,10 @@ package rifServices.dataStorageLayer.ms;
 
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+// Mainly use Postgres
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility; // Only used for createPreparedCall
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
@@ -156,6 +158,16 @@ public abstract class MSSQLAbstractSQLManager {
 
 	}
 	
+	protected CallableStatement createPreparedCall( // Use MSSQLQueryUtility
+		final Connection connection,
+		final String query) 
+		throws SQLException {
+				
+		return MSSQLQueryUtility.createPreparedCall(
+			connection,
+			query);
+
+	}
 	
 	/**
 	 * Use appropriate field name case.

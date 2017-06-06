@@ -137,7 +137,7 @@ final class MSSQLGenerateResultsSubmissionStep
 				= createPreparedCall(
 					connection,
 					stmt); /* This shoud be generalQueryFormatter but more work needs to be done
-							  on Kev's layers to support CallableStatement */
+							  on Kev's layers to support CallableStatement; only String is supported */
 			
 			runStudyStatement.setInt(1, Integer.valueOf(studyID));
 			runStudyStatement.setInt(2, 1);		
@@ -147,26 +147,32 @@ final class MSSQLGenerateResultsSubmissionStep
 			System.out.print(generalQueryFormatter.generateQuery());
 			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 			
-			runStudyResultSet
-				= runStudyStatement.executeQuery();
-			int rval = runStudyResultSet.getInt(3);
-			runStudyResultSet.next();
-			
+			boolean res = runStudyStatement.execute();
+			int rval=-1;
+			if (res) { 
+				runStudyResultSet=runStudyStatement.getResultSet();
+				rval = runStudyResultSet.getInt(3);
+				runStudyResultSet.next(); // No rows returned
+			}
+		
 			result = String.valueOf(rval);	
 						
 			System.out.println("XXXXXXXXXX RESULT XXXXXXXXXXXXXXXXXXXXXX");
 			System.out.println(result);
 			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-			
-
-			
+						
 			SQLWarning warning = runStudyStatement.getWarnings();
-			while (warning != null) {			
-		        System.out.println("Message:" + warning.getMessage());
-		        System.out.println("SQLState:" + warning.getSQLState());
-		        System.out.print("Vendor error code: ");
-		        System.out.println(warning.getErrorCode());
-		        System.out.println("==");	       
+			while (warning != null) {	
+				if (warning.getErrorCode() == 0) {
+					System.out.println(warning.getMessage());	       
+				}
+				else {
+					System.out.println("Message:" + warning.getMessage());
+					System.out.println("SQLState:" + warning.getSQLState());
+					System.out.print("Vendor error code: ");
+					System.out.println(warning.getErrorCode());
+					System.out.println("==");	       
+				}
 		        warning = warning.getNextWarning();
 			}
 			
