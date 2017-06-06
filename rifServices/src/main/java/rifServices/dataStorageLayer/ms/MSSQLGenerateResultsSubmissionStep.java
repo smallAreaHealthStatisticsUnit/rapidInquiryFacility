@@ -125,7 +125,7 @@ final class MSSQLGenerateResultsSubmissionStep
 		try {
 			SQLGeneralQueryFormatter generalQueryFormatter = new SQLGeneralQueryFormatter();		
 			//EXECUTE @rval=rif40.rif40_run_study <study id> <debug: 0/1>
-			String stmt = "EXECUTE rif40.rif40_run_study ? ?";
+			String stmt = "EXECUTE rif40.rif40_run_study ?, ?";
 			generalQueryFormatter.addQueryLine(1, stmt);
 
 			logSQLQuery(

@@ -1220,7 +1220,8 @@ print("Closing database connection")
 #DONT DO THIS - YOU WILL GET A LOT OF OUTPUT!
 #print(paste0("RESULT==", result, "=="))
 odbcClose(connDB)
-quit("no", 0, FALSE)
+
+#quit("no", 0, FALSE)
 
 
 
