@@ -8,6 +8,7 @@ import rifGenericLibrary.system.RIFGenericLibraryMessages;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.SQLException;
@@ -273,6 +274,21 @@ public final class MSSQLQueryUtility {
 	
 	}
 
+	/*
+	 * PH: Add prepareCall; only for the basic string query formatter. For use with 
+	 * SQL Server procedures e.g. rif40_run_study()
+	 */
+	public static CallableStatement createPreparedCall(
+		final Connection connection,
+		final String query) 
+		throws SQLException {
+		
+		//holdability set at connection level, not statement level
+		CallableStatement call = connection.prepareCall(query);			
+		
+		return call;
+	
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

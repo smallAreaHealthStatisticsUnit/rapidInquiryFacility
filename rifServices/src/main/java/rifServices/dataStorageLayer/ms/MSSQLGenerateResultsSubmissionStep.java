@@ -117,15 +117,15 @@ final class MSSQLGenerateResultsSubmissionStep
 		throws RIFServiceException {
 				
 		String result = null;
-		PreparedStatement runStudyStatement = null;
+		CallableStatement runStudyStatement = null;
 		PreparedStatement computeResultsStatement = null;
 		ResultSet runStudyResultSet = null;
 		ResultSet computeResultSet = null;
 		
 		try {
 			SQLGeneralQueryFormatter generalQueryFormatter = new SQLGeneralQueryFormatter();		
-			//EXECUTE @rval=rif40.rif40_run_study <study id> <debug: 0/1>
-			String stmt = "EXECUTE rif40.rif40_run_study ?, ?";
+			//EXECUTE @rval=rif40.rif40_run_study <study id> <debug: 0/1> <rval>
+			String stmt = "{call rif40.rif40_run_study(?, ?, ?)}";
 			generalQueryFormatter.addQueryLine(1, stmt);
 
 			logSQLQuery(
@@ -134,12 +134,14 @@ final class MSSQLGenerateResultsSubmissionStep
 					studyID);
 			
 			runStudyStatement
-				= createPreparedStatement(
+				= createPreparedCall(
 					connection,
-					generalQueryFormatter);
+					stmt); /* This shoud be generalQueryFormatter but more work needs to be done
+							  on Kev's layers to support CallableStatement */
 			
 			runStudyStatement.setInt(1, Integer.valueOf(studyID));
-			runStudyStatement.setInt(2, 1);
+			runStudyStatement.setInt(2, 1);		
+			runStudyStatement.registerOutParameter(3, java.sql.Types.INTEGER);
 			
 			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 			System.out.print(generalQueryFormatter.generateQuery());
@@ -147,9 +149,10 @@ final class MSSQLGenerateResultsSubmissionStep
 			
 			runStudyResultSet
 				= runStudyStatement.executeQuery();
+			int rval = runStudyResultSet.getInt(3);
 			runStudyResultSet.next();
 			
-			result = String.valueOf(runStudyResultSet.getInt(1));	
+			result = String.valueOf(rval);	
 						
 			System.out.println("XXXXXXXXXX RESULT XXXXXXXXXXXXXXXXXXXXXX");
 			System.out.println(result);

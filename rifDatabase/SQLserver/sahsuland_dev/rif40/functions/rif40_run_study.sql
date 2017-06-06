@@ -284,19 +284,21 @@ Recurse until complete
 END;
 GO
 
-CREATE PROCEDURE [rif40].[rif40_run_study](@study_id int, @debug int=0)
+CREATE PROCEDURE [rif40].[rif40_run_study](@study_id INTEGER, @debug INTEGER=0, @rval INTEGER OUTPUT)
 AS
 BEGIN 
+	SET NOCOUNT ON;
+--
 	IF @study_id IS NULL SET @study_id=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
     BEGIN TRANSACTION;
-    DECLARE @rval INT;
+    DECLARE @rval2 INT=-2;
     DECLARE @msg VARCHAR(MAX);
 -- ============================================================
     BEGIN TRY
-         EXECUTE @rval=rif40.rif40_run_study2
-         @study_id  /* Study_id */,
-         @debug     /* Debug: 0/1 */,
-         default    /* Recursion level: Use default */;
+         EXECUTE @rval2=rif40.rif40_run_study2
+			 @study_id  /* Study_id */,
+			 @debug     /* Debug: 0/1 */,
+			 default    /* Recursion level: Use default */;
 -- ============================================================
     END TRY
     BEGIN CATCH
@@ -312,18 +314,29 @@ BEGIN
          EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';
     END CATCH;
 -- ============================================================
+    SET @msg = 'Study extract ran ' + CAST(@study_id AS VARCHAR) + ' OK';
+    IF @rval2 = 1 BEGIN
+		SET @rval=1;
+        PRINT @msg;
+-- ============================================================
 -- Always commit, even though this may fail because trigger failure have caused a rollback:
 -- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.
 -- ============================================================
-  COMMIT TRANSACTION;
+		COMMIT TRANSACTION;		
+		RETURN 1;
+		END
+    ELSE BEGIN
+		SET @rval=0;	
+		SET @rval2=COALESCE(@rval2, -1);
 -- ============================================================
-    SET @msg = 'Study ' + CAST(@study_id AS VARCHAR) + ' OK';
-    IF @rval = 1
-         PRINT @msg;
-    ELSE
-         RAISERROR('Study %i FAILED (see previous errors)', 16, 1, @study_id);
---		
-	RETURN @rval;
+-- Always commit, even though this may fail because trigger failure have caused a rollback:
+-- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.
+-- ============================================================
+		COMMIT TRANSACTION;	
+        RAISERROR('Study extract run %i FAILED; rval2=%i (see previous errors)', 16, 1, @study_id, @rval2);
+	END;
+--
+	RETURN -9;
 END;
 GO
 
