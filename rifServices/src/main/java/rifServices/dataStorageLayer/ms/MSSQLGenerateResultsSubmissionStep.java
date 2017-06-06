@@ -125,7 +125,7 @@ final class MSSQLGenerateResultsSubmissionStep
 		try {
 			SQLGeneralQueryFormatter generalQueryFormatter = new SQLGeneralQueryFormatter();		
 			//EXECUTE @rval=rif40.rif40_run_study <study id> <debug: 0/1>
-			String stmt = String.format("EXECUTE rif40.rif40_run_study %s 1", studyID);
+			String stmt = "EXECUTE rif40.rif40_run_study ? ?";
 			generalQueryFormatter.addQueryLine(1, stmt);
 
 			logSQLQuery(
@@ -138,6 +138,9 @@ final class MSSQLGenerateResultsSubmissionStep
 					connection,
 					generalQueryFormatter);
 			
+			runStudyStatement.setInt(1, Integer.valueOf(studyID));
+			runStudyStatement.setInt(2, 1);
+			
 			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 			System.out.print(generalQueryFormatter.generateQuery());
 			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
@@ -146,7 +149,13 @@ final class MSSQLGenerateResultsSubmissionStep
 				= runStudyStatement.executeQuery();
 			runStudyResultSet.next();
 			
-			result = String.valueOf(runStudyResultSet.getBoolean(1));	
+			result = String.valueOf(runStudyResultSet.getInt(1));	
+						
+			System.out.println("XXXXXXXXXX RESULT XXXXXXXXXXXXXXXXXXXXXX");
+			System.out.println(result);
+			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+			
+
 			
 			SQLWarning warning = runStudyStatement.getWarnings();
 			while (warning != null) {			

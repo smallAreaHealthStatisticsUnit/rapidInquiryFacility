@@ -2,7 +2,6 @@ package rifServices.dataStorageLayer.pg;
 
 
 import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.pg.PGSQLConnectionManager.LoggingConsole;
 import rifServices.system.RIFServiceStartupOptions;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;

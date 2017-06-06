@@ -431,8 +431,7 @@ extends PGSQLAbstractSQLManager {
 		//TODO: (DM) This is a bookmark for JRI test
 		//http://localhost:8080/rifServices/studySubmission/pg/login?userID=dwmorley&password=dwmorley
 		//TODO: ODBC to JDBC
-		
-		
+
 
 		boolean test = false;
 		if (test) {
