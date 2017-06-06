@@ -55,16 +55,13 @@ library(maptools)
 library(spdep)
 library(RODBC)
 
-#
-# Enable traceback for uncaught errors
-#
-connDB <- ""
-options(error=function() { traceback(2); if (!is.null(connDB)) odbcClose(connDB); quit("no", 1, FALSE)})
-
 
 ##====================================================================
 # SCRIPT VARIABLES
 ##====================================================================
+
+connDB <- ""
+exitValue <- 0 #0 success, 1 failure
 
 #Adjust for other covariate(s) or not
 #Reformat Java type > R
@@ -81,7 +78,6 @@ if (names.adj.1 == "NONE") {
 } else {
   names.adj<-c(names.adj.1)
 }
-
 
 ##====================================================================
 ##FUNCTION: createDatabaseConnectionString
@@ -128,12 +124,12 @@ establishTableNames <-function(vstudyID) {
   temporarySmoothedResultsTableName <<-paste("rif_studies.tmp_s", vstudyID, "_map", sep="")
   
     #Would need to implement sqlSave() as the exists checks fail
-    #if (db_driver_prefix == "jdbc:sqlserver") {
-  	#   temporarySmoothedResultsTableName <<-paste(userID, ".#tmp_s", vstudyID, "_map", sep="")
-    #}
-    #else {
-    #  temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")	
-    #}
+    if (db_driver_prefix == "jdbc:sqlserver") {
+  	   temporarySmoothedResultsTableName <<-paste(userID, ".#tmp_s", vstudyID, "_map", sep="")
+    }
+    else {
+      temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")	
+    }
 }
 
 ##====================================================================
@@ -147,17 +143,17 @@ doSQLQuery <- function(sql) {
                       warning=function(w) {
                         print(paste("UNABLE TO QUERY! SQL> ", sql, "; warning: ", w))
                         odbcClose(connDB)
-                        quit("no", 1, FALSE)
+                        exitValue <<- 1
                       },
                       error=function(e) {
                         print(paste("ERROR IN QUERY! SQL> ", sql, "; error: ", odbcGetErrMsg(connDB)))
                         odbcClose(connDB)
-                        quit("no", 1, FALSE)
+                        exitValue <<- 1
                       })
   if (is.null(nrow(sqlData))) {
     print(paste("ERROR IN QUERY! (null data returned); SQL> ", sql, "; error: ", odbcGetErrMsg(connDB)))
     odbcClose(connDB)
-    quit("no", 1, FALSE)
+    exitValue <<- 1
   } 
   
   return(sqlData)	  
@@ -185,12 +181,12 @@ performSmoothingActivity <- function() {
                 warning=function(w) {
                   print(paste("UNABLE TO FETCH! ", w))
                   odbcClose(connDB)
-                  quit("no", 1, FALSE)
+                  exitValue <<- 1
                 },
                 error=function(e) {
                   print(paste("ERROR FETCHING! ", geterrmessage()))
                   odbcClose(connDB)
-                  quit("no", 1, FALSE)
+                  exitValue <<- 1
                 })	
   # Get the adjacency matrix from the db
   #data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
@@ -199,7 +195,7 @@ performSmoothingActivity <- function() {
   if (is.null(nrow(data))) {
     print(paste("ERROR IN FETCH! (null data returned): ", extractTableName, ", error: ", odbcGetErrMsg(connDB)))
     odbcClose(connDB)
-    quit("no", 1, FALSE)
+    exitValue <<- 1
   }	  
   print(paste0(extractTableName," numberOfRows=",numberOfRows, "=="))
   
@@ -246,7 +242,7 @@ performSmoothingActivity <- function() {
     if (numberOfRows != 1) {
       print(paste("Expected 1 row; got: " + numberOfRows + "; SQL> ", sql))
       odbcClose(connDB)
-      quit("no", 1, FALSE)
+      exitValue <<- 1
     }	
     adjacencyTable <- tolower(adjacencyTableRes$adjacencytable[1])	
     print(adjacencyTable);
@@ -268,7 +264,7 @@ performSmoothingActivity <- function() {
   else {
     print(paste("Unsupported port: ", db_driver_prefix))
     odbcClose(connDB)
-    quit("no", 1, FALSE)
+    exitValue <<- 1
   }
   
   print(paste0("rif40_GetAdjacencyMatrix numberOfRows=",numberOfRows, "=="))
@@ -890,7 +886,9 @@ performSmoothingActivity <- function() {
       
     }
   }  #end if model == BYM or HET or CAR
-  else {       print("No Bayesian smoothing performed") }
+  else {       
+    print("No Bayesian smoothing performed") 
+    }
   
   # call the function to convert data to the format the db is expecting
   originalExtractTable = convertToDBFormat(data)
@@ -1162,17 +1160,17 @@ updateMapTableFromSmoothedResultsTable <- function() {
                   warning=function(w) {
                     print(paste("UNABLE TO QUERY! SQL> ", updateMapTableSQLQuery, "; warning: ", w))
                     odbcClose(connDB)
-                    quit("no", 1, FALSE)
+                    exitValue <<- 1
                   },
                   error=function(e) {
                     print(paste("ERROR IN QUERY! SQL> ", updateMapTableSQLQuery, "; error: ", odbcGetErrMsg(connDB)))
                     odbcClose(connDB)
-                    quit("no", 1, FALSE)
+                    exitValue <<- 1
                   }) 
   if (res != 1) {
     print(paste("ERROR IN QUERY! SQL> ", updateMapTableSQLQuery, "; error: ", odbcGetErrMsg(connDB)))
     odbcClose(connDB)
-    quit("no", 1, FALSE)
+    exitValue <<- 1
   }	
   #  print(updateMapTableSQLQuery)
   print(paste0("Updated map table: ", mapTableName))
@@ -1185,43 +1183,54 @@ updateMapTableFromSmoothedResultsTable <- function() {
 
 
 
+##================================================================================
+##FUNCTION: runRSmoothingFunctions
+##DESCRIPTION
+##Run the functions defined this script as source
+##Called direectly from JRI in the middleware
+##Returns (exitvalue) 1 on success, 0 on failure 
+##================================================================================
+runRSmoothingFunctions <- function() {
+  establishTableNames(studyID)
+  print(paste0("Connect to database: ", odbcDataSource))
+  
+  tryCatch(connDB <<- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password)),
+           #tryCatch(connDB <- odbcConnect(odbcDataSource),
+           warning=function(w) {
+             print(paste("UNABLE TO CONNECT! ", w))
+             exitValue <<- 1
+           },
+           error=function(e) {
+             print(paste("ERROR CONNECTING! ", geterrmessage()))
+             exitValue <<- 1
+           })
+  print(odbcGetInfo(connDB))
+  
+  #odbcSetAutoCommit(connDB, autoCommit=FALSE)
+  print("Performing basic stats and smoothing")
+  result <- performSmoothingActivity()
+  
+  saveDataFrameToDatabaseTable(result)
+  
+  updateMapTableFromSmoothedResultsTable()
+  print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
+  #sqlDrop(connDB, temporarySmoothedResultsTableName)
+  print("Closing database connection")
+  #DONT DO THIS - YOU WILL GET A LOT OF OUTPUT!
+  #print(paste0("RESULT==", result, "=="))
+  odbcClose(connDB)
+  
+  return(exitValue)
+}
 
 
 
-###############################################################
-# OUTSIDE OF SOURCE
 
 
-establishTableNames(studyID)
-print(paste0("Connect to database: ", odbcDataSource))
-tryCatch(connDB <- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password)),
-         #tryCatch(connDB <- odbcConnect(odbcDataSource),
-         warning=function(w) {
-           print(paste("UNABLE TO CONNECT! ", w))
-           quit("no", 1, FALSE)
-         },
-         error=function(e) {
-           print(paste("ERROR CONNECTING! ", geterrmessage()))
-           quit("no", 1, FALSE)
-         })
-print(odbcGetInfo(connDB))
-
-#odbcSetAutoCommit(connDB, autoCommit=FALSE)
-print("Performing basic stats and smoothing")
-result <- performSmoothingActivity()
 
 
-saveDataFrameToDatabaseTable(result)
 
-updateMapTableFromSmoothedResultsTable()
-print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
-#sqlDrop(connDB, temporarySmoothedResultsTableName)
-print("Closing database connection")
-#DONT DO THIS - YOU WILL GET A LOT OF OUTPUT!
-#print(paste0("RESULT==", result, "=="))
-odbcClose(connDB)
 
-#quit("no", 0, FALSE)
 
 
 

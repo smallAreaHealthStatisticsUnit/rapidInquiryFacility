@@ -17,8 +17,6 @@
  * 
  * -- configure database from login dialog
  * 
- * -- D3 rrZoom does not reload on tab change
- * 
  * -- export geojson as text
  * 
  */

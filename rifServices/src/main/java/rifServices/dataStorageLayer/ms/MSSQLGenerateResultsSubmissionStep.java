@@ -176,6 +176,7 @@ final class MSSQLGenerateResultsSubmissionStep
 		        warning = warning.getNextWarning();
 			}
 			
+			
 			connection.commit();
 			return result;
 			

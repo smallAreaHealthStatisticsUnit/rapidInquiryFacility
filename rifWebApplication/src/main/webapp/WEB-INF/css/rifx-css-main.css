@@ -1408,35 +1408,28 @@ input[type=number]+ label  {
     border-radius: 5px 5px 0px 0px; 
 }
 
-#logOut {
-    color: #848484;
-    background-color: #66c9f9;
-    padding: 3px;
-    -moz-border-radius: 0px;
-    -webkit-border-radius: 0px 5px 5px 0px;
-    border-radius: 0px 5px 5px 0px; 
-}
-#logOut:hover {
-    color: #FF7D40;
-    cursor: pointer;
-}
-.userName {
-    color: #106993;
-    font-weight: bold;
-    background-color: #66c9f9;
-    padding: 3px;
-    -moz-border-radius: 0px;
-    -webkit-border-radius: 5px 0px 0px 5px;
-    border-radius: 5px 0px 0px 5px; 
-}
-
 .logOutUsername {
     float: left;
-    margin-left: 5px;
-    margin-top: 5px;
-    text-transform: uppercase;
     position: relative;
     width: 200px;
+}
+
+.logoutToolTip {
+    text-transform: uppercase;
+    font-size: 10px;  
+}
+
+#user {
+    margin-left: 15px;
+    margin-top: 16px;
+    height: 24px;
+    width: 18px;
+    background: transparent url("../images/glyphicon/glyphicons-592-person-running.png") no-repeat;
+    opacity: 0.4;
+}
+#user:hover {
+    opacity: 0.8;
+    cursor: pointer;
 }
 
 @media screen and (max-width: 800px) {
