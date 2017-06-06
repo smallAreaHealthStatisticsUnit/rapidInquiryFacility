@@ -153,7 +153,7 @@ final class MSSQLGenerateResultsSubmissionStep
 				runStudyResultSet=runStudyStatement.getResultSet();
 				rval = runStudyResultSet.getInt(3);
 				runStudyResultSet.next(); // No rows returned
-			}
+			} // Need to handle no resultSet to retrieve rval
 		
 			result = String.valueOf(rval);	
 						
@@ -174,8 +174,7 @@ final class MSSQLGenerateResultsSubmissionStep
 					System.out.println("==");	       
 				}
 		        warning = warning.getNextWarning();
-			}
-			
+			}	
 			
 			connection.commit();
 			return result;
