@@ -285,15 +285,17 @@ BEGIN
 -- @study_id needs to be restored via a variable to be safe
 	DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
 	BEGIN TRANSACTION;
-	DECLARE @rval INT;
+	DECLARE @rval INT=-5;
+	DECLARE @rval2 INT=-6;
 	DECLARE @msg VARCHAR(MAX);
 --
 	BEGIN TRY
 		INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'C', 0, 
 			'Study has been created but it has not been verified.');	
-		 EXECUTE @rval=rif40.rif40_run_study
+		 EXECUTE @rval2=rif40.rif40_run_study
 				@study_id 	/* Study_id */, 
-				1 			/* Debug: 0/1 */;	
+				1 			/* Debug: 0/1 */,
+				@rval		/* Result */;	
 		INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'E', 1, 
 			'Study extracted imported or created but neither results nor maps have been created.');				
 --
@@ -315,18 +317,15 @@ BEGIN
 	SELECT * FROM study_status WHERE study_id = @study_id;
 	SELECT study_id AS t_rif40_studies_seq FROM ##t_rif40_studies_seq;
 	SELECT inv_id AS t_rif40_investigations_seq FROM ##t_rif40_investigations_seq;
-	
---	
--- Always commit, even though this may fail because trigger failure have caused a rollback:
--- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.
 --
-	COMMIT TRANSACTION;
---
-	SET @msg = 'Study ' + CAST(@study_id AS VARCHAR) + ' OK';
-	IF @rval = 1 
-		PRINT @msg;
+	SET @rval=COALESCE(@rval, @rval2);
+	SET @rval=COALESCE(@rval, -1);
+	SET @msg = 'Study test run ' + CAST(@study_id AS VARCHAR) + ' OK';
+	IF @rval = 1
+		PRINT @msg;	
 	ELSE 
-		RAISERROR('Study %i FAILED (see previous errors)', 16, 1, @study_id);
+		COMMIT TRANSACTION;	
+
 END;
 GO
 
