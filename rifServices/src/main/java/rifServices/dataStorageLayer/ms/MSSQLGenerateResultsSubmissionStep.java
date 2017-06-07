@@ -101,7 +101,26 @@ final class MSSQLGenerateResultsSubmissionStep
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-		
+
+	/*
+	 * Print warning messages
+	 */
+	private static void printWarnings(SQLWarning warning) {
+		while (warning != null) {	
+			if (warning.getErrorCode() == 0) {
+				System.out.println(warning.getMessage());	       
+			}
+			else {
+				System.out.println("Message:" + warning.getMessage());
+				System.out.println("SQLState:" + warning.getSQLState());
+				System.out.print("Vendor error code: ");
+				System.out.println(warning.getErrorCode());
+				System.out.println("==");	       
+			}
+			warning = warning.getNextWarning();
+		}
+	}
+	
 	/**
 	 * submit rif study submission.
 	 *
@@ -121,6 +140,8 @@ final class MSSQLGenerateResultsSubmissionStep
 		PreparedStatement computeResultsStatement = null;
 		ResultSet runStudyResultSet = null;
 		ResultSet computeResultSet = null;
+		boolean res;
+		int rval;
 		
 		try {
 			SQLGeneralQueryFormatter generalQueryFormatter = new SQLGeneralQueryFormatter();		
@@ -147,8 +168,8 @@ final class MSSQLGenerateResultsSubmissionStep
 			System.out.print(generalQueryFormatter.generateQuery());
 			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 			
-			boolean res = runStudyStatement.execute();
-			int rval=-1;
+			res = runStudyStatement.execute();
+			rval=-1;
 			if (res) { // OK we has a resultSet
 				runStudyResultSet=runStudyStatement.getResultSet();
 				rval = runStudyResultSet.getInt(3);
@@ -158,22 +179,7 @@ final class MSSQLGenerateResultsSubmissionStep
 				rval = runStudyStatement.getInt(3);	
 			}
 		
-			result = String.valueOf(rval);	
-						
-			SQLWarning warning = runStudyStatement.getWarnings();
-			while (warning != null) {	
-				if (warning.getErrorCode() == 0) {
-					System.out.println(warning.getMessage());	       
-				}
-				else {
-					System.out.println("Message:" + warning.getMessage());
-					System.out.println("SQLState:" + warning.getSQLState());
-					System.out.print("Vendor error code: ");
-					System.out.println(warning.getErrorCode());
-					System.out.println("==");	       
-				}
-		        warning = warning.getNextWarning();
-			}	
+			result = String.valueOf(rval);		
 						
 			if (rval == 1) {
 				System.out.println("XXXXXXXXXX Study " + studyID + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
@@ -185,50 +191,10 @@ final class MSSQLGenerateResultsSubmissionStep
 			
 			connection.commit(); 
 			return result;
-			
-			
-		/*	TODO: (DM) delete when above is working
-			PGSQLFunctionCallerQueryFormatter runStudyQueryFormatter = new PGSQLFunctionCallerQueryFormatter();
-			runStudyQueryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
-			runStudyQueryFormatter.setFunctionName("rif40_run_study");
-			runStudyQueryFormatter.setNumberOfFunctionParameters(2);
-
-			logSQLQuery(
-				"runStudy", 
-				runStudyQueryFormatter,
-				studyID);
-			
-			runStudyStatement
-				= createPreparedStatement(
-					connection,
-					runStudyQueryFormatter);
-			runStudyStatement.setInt(1, Integer.valueOf(studyID));
-			runStudyStatement.setBoolean(2, true);
-			runStudyResultSet
-				= runStudyStatement.executeQuery();
-			runStudyResultSet.next();
-			
-			result = String.valueOf(runStudyResultSet.getBoolean(1));	
-			
-			SQLWarning warning = runStudyStatement.getWarnings();
-			while (warning != null) {
-				
-		     //   System.out.println("Message:" + warning.getMessage());
-		     //   System.out.println("SQLState:" + warning.getSQLState());
-		     //   System.out.print("Vendor error code: ");
-		     //   System.out.println(warning.getErrorCode());
-		     //   System.out.println("==");
-		       
-		        warning = warning.getNextWarning();
-
-			}
-			
-			connection.commit();
-			
-			return result;*/
 		}
 		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
+			//Record original exception, throw sanitised, human-readable version, print warning dialogs
+
 			logSQLException(sqlException);
 			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
@@ -249,6 +215,11 @@ final class MSSQLGenerateResultsSubmissionStep
 			throw rifServiceException;
 		}
 		finally {
+			try {
+				printWarnings(runStudyStatement.getWarnings()); // Print output from T-SQL
+			}			
+			catch(SQLException sqlException) { // Do nothing - they are warnings!
+			}
 			//Cleanup database resources			
 			PGSQLQueryUtility.close(runStudyStatement);
 			PGSQLQueryUtility.close(runStudyResultSet);

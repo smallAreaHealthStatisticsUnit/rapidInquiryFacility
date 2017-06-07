@@ -101,7 +101,26 @@ final class PGSQLGenerateResultsSubmissionStep
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-		
+
+	/*
+	 * Print warning messages
+	 */
+	private static void printWarnings(SQLWarning warning) {
+		while (warning != null) {	
+			if (warning.getErrorCode() == 0) {
+				System.out.println(warning.getMessage());	       
+			}
+			else {
+				System.out.println("Message:" + warning.getMessage());
+				System.out.println("SQLState:" + warning.getSQLState());
+				System.out.print("Vendor error code: ");
+				System.out.println(warning.getErrorCode());
+				System.out.println("==");	       
+			}
+			warning = warning.getNextWarning();
+		}
+	}
+	
 	/**
 	 * submit rif study submission.
 	 *
@@ -147,18 +166,12 @@ final class PGSQLGenerateResultsSubmissionStep
 			runStudyResultSet.next();
 			
 			result = String.valueOf(runStudyResultSet.getBoolean(1));	
-			
-			SQLWarning warning = runStudyStatement.getWarnings();
-			while (warning != null) {
-				/*
-		        System.out.println("Message:" + warning.getMessage());
-		        System.out.println("SQLState:" + warning.getSQLState());
-		        System.out.print("Vendor error code: ");
-		        System.out.println(warning.getErrorCode());
-		        System.out.println("==");
-		        */
-		        warning = warning.getNextWarning();
-
+			if (runStudyResultSet.getBoolean(1)) {
+				System.out.println("XXXXXXXXXX Study " + studyID + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
+			}
+			else {
+				System.out.println("XXXXXXXXXX Study " + studyID + " failed with code: " + result + 
+					" XXXXXXXXXXXXXXXXXXXXXX");
 			}
 			
 			connection.commit();
@@ -187,6 +200,11 @@ final class PGSQLGenerateResultsSubmissionStep
 			throw rifServiceException;
 		}
 		finally {
+			try {
+				printWarnings(runStudyStatement.getWarnings()); // Print output from T-SQL
+			}			
+			catch(SQLException sqlException) { // Do nothing - they are warnings!
+			}
 			//Cleanup database resources			
 			PGSQLQueryUtility.close(runStudyStatement);
 			PGSQLQueryUtility.close(runStudyResultSet);
