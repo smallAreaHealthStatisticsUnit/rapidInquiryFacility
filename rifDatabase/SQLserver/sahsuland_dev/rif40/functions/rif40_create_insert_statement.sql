@@ -614,11 +614,21 @@ Description:	Create INSERT SQL statement
 --
 	SET @sql_stmt=@sql_stmt + ' ORDER BY 1, 2, 3, 4, 5, 6, 7';
 --
-	INSERT INTO ##g_insert_dml(sql_stmt, name, study_id) VALUES (@sql_stmt, @study_or_comparison + ': 1', @study_id);
+	IF @sql_stmt IS NOT NULL BEGIN
+		INSERT INTO ##g_insert_dml(sql_stmt, name, study_id) VALUES (@sql_stmt, @study_or_comparison + ': 1', @study_id);
 --
-	SET @msg='56005: Create INSERT statement (' + CAST(LEN(@sql_stmt) AS VARCHAR) + ' chars)' + @crlf + 'SQL> ';
-	PRINT @msg; -- Split into 2 so missing output is obvious; splitting SQL statement on CRLFs
-	
+		SET @msg='56005: Create INSERT statement (' + COALESCE(CAST(LEN(@sql_stmt) AS VARCHAR), 'no') + 
+		' chars)' + @crlf + 'SQL> ';
+		PRINT @msg; -- Split into 2 so missing output is obvious; splitting SQL statement on CRLFs
+		PRINT @sql_stmt;
+		END;
+	ELSE
+		BEGIN
+			SET @err_msg = formatmessage(56008, @study_id); 
+				-- Study ID %i no SQL generated for INSERT into extract table.
+			THROW 56008, @err_msg, 1;		
+	END;
+	/* EXPERIMENTAL CODE TO SPLIT SQL INTO LINES WITH SEPARATE PRINT FOR TOMCAT 
 	DECLARE @psql_stmt varchar(4000) = REPLACE(@sql_stmt, @crlf, '|');
 	DECLARE @sql_frag varchar(4000) = null
 	WHILE LEN(@psql_stmt) > 0
@@ -640,7 +650,7 @@ Description:	Create INSERT SQL statement
 			SET @psql_stmt = NULL
 			PRINT @sql_frag
 		END
-	END;
+	END; */
 --
 	RETURN @rval;
 END;

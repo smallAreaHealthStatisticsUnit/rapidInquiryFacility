@@ -521,6 +521,8 @@ EXEC sp_addmessage 56006, 16,
 	N'Function: [rif40].[rif40_create_insert_statement], Study ID %i NULL covariate table.';	
 EXEC sp_addmessage 56007, 16,
 	N'Function: [rif40].[rif40_create_insert_statement], Study ID %i multiple covariate tables: %s, %s.';	
+EXEC sp_addmessage 56008, 16,
+	N'Function: [rif40].[rif40_create_insert_statement], Study ID %i no SQL generated for INSERT into extract table.';	
 	
 	
 EXEC sp_addmessage 56600, 16,
