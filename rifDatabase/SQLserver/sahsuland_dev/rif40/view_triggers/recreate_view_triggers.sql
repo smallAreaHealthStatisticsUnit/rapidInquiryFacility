@@ -68,6 +68,7 @@ GO
 :r ..\sahsuland_dev\rif40\view_triggers\rif40_study_sql_trigger.sql
 :r ..\sahsuland_dev\rif40\view_triggers\rif40_study_sql_log_trigger.sql
 :r ..\sahsuland_dev\rif40\view_triggers\rif40_user_projects_trigger.sql
+:r ..\sahsuland_dev\rif40\view_triggers\rif40_study_status_trigger.sql
 GO
 
 COMMIT;

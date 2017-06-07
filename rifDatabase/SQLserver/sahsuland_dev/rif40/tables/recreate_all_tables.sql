@@ -93,6 +93,7 @@ GO
 :r ..\sahsuland_dev\rif40\tables\rif40_columns.sql
 :r ..\sahsuland_dev\rif40\tables\rif40_triggers.sql
 :r ..\sahsuland_dev\rif40\tables\t_rif40_study_areas.sql
+:r ..\sahsuland_dev\rif40\tables\t_rif40_study_status.sql
 GO
 
 COMMIT;

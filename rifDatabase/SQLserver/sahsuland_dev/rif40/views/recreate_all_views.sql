@@ -74,6 +74,7 @@ GO
 :r ..\sahsuland_dev\rif40\views\rif40_numerator_outcome_columns.sql
 :r ..\sahsuland_dev\rif40\views\rif40_num_denom_errors.sql
 :r ..\sahsuland_dev\rif40\views\rif40_study_areas.sql
+:r ..\sahsuland_dev\rif40\views\rif40_study_status.sql
 
 GO
 
