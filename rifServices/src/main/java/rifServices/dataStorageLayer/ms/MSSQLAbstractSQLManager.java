@@ -4,14 +4,11 @@ package rifServices.dataStorageLayer.ms;
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 // Mainly use Postgres
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility; // Only used for createPreparedCall
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 
 import java.sql.*;
 

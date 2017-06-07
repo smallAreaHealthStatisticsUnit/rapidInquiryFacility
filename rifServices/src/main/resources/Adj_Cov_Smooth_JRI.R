@@ -123,13 +123,14 @@ establishTableNames <-function(vstudyID) {
   #its fields and fields that appear in the map table skeleton.  
   temporarySmoothedResultsTableName <<-paste("rif_studies.tmp_s", vstudyID, "_map", sep="")
   
-    #Would need to implement sqlSave() as the exists checks fail
-    if (db_driver_prefix == "jdbc:sqlserver") {
-  	   temporarySmoothedResultsTableName <<-paste(userID, ".#tmp_s", vstudyID, "_map", sep="")
-    }
-    else {
-      temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")	
-    }
+  
+  #Would need to implement sqlSave() as the exists checks fail
+  if (db_driver_prefix == "jdbc:sqlserver") {
+	   temporarySmoothedResultsTableName <<-paste(userID, ".#tmp_s", vstudyID, "_map", sep="")
+  }
+  else {
+    temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")	
+  }
 }
 
 ##====================================================================
@@ -142,17 +143,14 @@ doSQLQuery <- function(sql) {
   sqlData <- tryCatch(sqlQuery(connDB, sql, FALSE),
                       warning=function(w) {
                         print(paste("UNABLE TO QUERY! SQL> ", sql, "; warning: ", w))
-                        odbcClose(connDB)
                         exitValue <<- 1
                       },
                       error=function(e) {
                         print(paste("ERROR IN QUERY! SQL> ", sql, "; error: ", odbcGetErrMsg(connDB)))
-                        odbcClose(connDB)
                         exitValue <<- 1
                       })
   if (is.null(nrow(sqlData))) {
     print(paste("ERROR IN QUERY! (null data returned); SQL> ", sql, "; error: ", odbcGetErrMsg(connDB)))
-    odbcClose(connDB)
     exitValue <<- 1
   } 
   
@@ -180,12 +178,10 @@ performSmoothingActivity <- function() {
   data=tryCatch(sqlFetch(connDB, extractTableName),
                 warning=function(w) {
                   print(paste("UNABLE TO FETCH! ", w))
-                  odbcClose(connDB)
                   exitValue <<- 1
                 },
                 error=function(e) {
                   print(paste("ERROR FETCHING! ", geterrmessage()))
-                  odbcClose(connDB)
                   exitValue <<- 1
                 })	
   # Get the adjacency matrix from the db
@@ -194,7 +190,6 @@ performSmoothingActivity <- function() {
   numberOfRows <- nrow(data)	
   if (is.null(nrow(data))) {
     print(paste("ERROR IN FETCH! (null data returned): ", extractTableName, ", error: ", odbcGetErrMsg(connDB)))
-    odbcClose(connDB)
     exitValue <<- 1
   }	  
   print(paste0(extractTableName," numberOfRows=",numberOfRows, "=="))
@@ -241,7 +236,6 @@ performSmoothingActivity <- function() {
     numberOfRows <- nrow(adjacencyTableRes)
     if (numberOfRows != 1) {
       print(paste("Expected 1 row; got: " + numberOfRows + "; SQL> ", sql))
-      odbcClose(connDB)
       exitValue <<- 1
     }	
     adjacencyTable <- tolower(adjacencyTableRes$adjacencytable[1])	
@@ -263,7 +257,6 @@ performSmoothingActivity <- function() {
   }  
   else {
     print(paste("Unsupported port: ", db_driver_prefix))
-    odbcClose(connDB)
     exitValue <<- 1
   }
   
@@ -1158,17 +1151,14 @@ updateMapTableFromSmoothedResultsTable <- function() {
   res <- tryCatch(odbcQuery(connDB, updateMapTableSQLQuery, FALSE),
                   warning=function(w) {
                     print(paste("UNABLE TO QUERY! SQL> ", updateMapTableSQLQuery, "; warning: ", w))
-                    odbcClose(connDB)
                     exitValue <<- 1
                   },
                   error=function(e) {
                     print(paste("ERROR IN QUERY! SQL> ", updateMapTableSQLQuery, "; error: ", odbcGetErrMsg(connDB)))
-                    odbcClose(connDB)
                     exitValue <<- 1
                   }) 
   if (res != 1) {
     print(paste("ERROR IN QUERY! SQL> ", updateMapTableSQLQuery, "; error: ", odbcGetErrMsg(connDB)))
-    odbcClose(connDB)
     exitValue <<- 1
   }	
   #  print(updateMapTableSQLQuery)
@@ -1209,15 +1199,18 @@ runRSmoothingFunctions <- function() {
   print("Performing basic stats and smoothing")
   result <- performSmoothingActivity()
   
-  saveDataFrameToDatabaseTable(result)
-  
-  updateMapTableFromSmoothedResultsTable()
+  if (exitValue == 0) {
+    saveDataFrameToDatabaseTable(result)
+    updateMapTableFromSmoothedResultsTable()
+  }
+
   print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
-  #sqlDrop(connDB, temporarySmoothedResultsTableName)
+  sqlDrop(connDB, temporarySmoothedResultsTableName)
+  
   print("Closing database connection")
   #DONT DO THIS - YOU WILL GET A LOT OF OUTPUT!
   #print(paste0("RESULT==", result, "=="))
-  odbcClose(connDB)
   
+  odbcClose(connDB)
   return(exitValue)
 }
