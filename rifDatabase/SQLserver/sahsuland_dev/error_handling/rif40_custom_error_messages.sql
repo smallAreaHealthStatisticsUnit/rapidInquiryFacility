@@ -473,6 +473,13 @@ EXEC sp_addmessage 51150, 16,
 EXEC sp_addmessage 51151, 16,
 	N'Function: [rif40].[rif40_addorupdate_comment], Missing object or schema name and cannot create comment: %s';	
 
+EXEC sp_addmessage 51164, 16, 
+	N'View name: [rif40].[rif40_study_status], Cannot INSERT: User must have rif_user or rif_manager role, NEW.username must be USER or NULL: %s';
+EXEC sp_addmessage 51165, 16, 
+	N'View name: [rif40].[rif40_study_status], Cannot UPDATE: User is not the owner of the record: %s';
+EXEC sp_addmessage 51166, 16, 
+	N'View name: [rif40].[rif40_study_status], Cannot DELETE: User is not the owner of the record: %s';	
+
 EXEC sp_addmessage 55200, 16,
 	N'Function: [rif40].[rif40_run_study], Study ID %i not found.';	
 EXEC sp_addmessage 55201, 16,
@@ -522,15 +529,25 @@ EXEC sp_addmessage 56601, 16,
 	N'Function: [rif40].[rif40_execute_insert_statement], Year start is NULL for study ID: %i.';
 EXEC sp_addmessage 56602, 16,
 	N'Function: [rif40].[rif40_execute_insert_statement], Year stop is NULL for study ID: %i.';
+--EXEC sp_addmessage 56603, 16,
+--	N'Function: [rif40].[rif40_execute_insert_statement], SQL statement is NULL for study ID: %i.';
 EXEC sp_addmessage 56699, 16,
 	N'Function: [rif40].[rif40_execute_insert_statement],  SQL statement had error: %s%sSQL[%s]> %s;';
 	
 EXEC sp_addmessage 55800, 16,
-	N'Function: [rif40].[rif40_insert_extract], Study ID %i not found.';	
+	N'Function: [rif40].[rif40_insert_extract], Study ID %i not found.';
+EXEC sp_addmessage 55801, 16,
+	N'Function: [rif40].[rif40_insert_extract], Study ID %i no rows INSERTED into ##g_rif40_study_areas temporary table.';
+EXEC sp_addmessage 55802, 16,
+	N'Function: [rif40].[rif40_insert_extract], Study ID %i no rows INSERTED into ##g_rif40_comparison_areas temporary table.';
+EXEC sp_addmessage 55803, 16,
+	N'Function: [rif40].[rif40_insert_extract], Study ID %i no rows INSERTED into extract table.';
+
+	
 EXEC sp_addmessage 55810, 16,
 	N'Function: [rif40].[rif40_compute_results], Study ID %i no rows INSERTED into map table.';
 EXEC sp_addmessage 55820, 16,
-	N'Function: [rif40].[rif40_execute_insert_statement], Study ID %i no rows INSERTED into exttract table.';
+	N'Function: [rif40].[rif40_execute_insert_statement], Study ID %i no rows INSERTED into extract table.';
 	
 EXEC sp_addmessage 55999, 16,
 	N'Function: [rif40].[rif40_ddl], SQL statement had error: %s%sSQL[%s]> %s;';		

@@ -69,12 +69,13 @@ Description:	Insert data into extract table
 	SET @rval=1; 	-- Success
 	
 	DECLARE c1insext2 CURSOR FOR
-		SELECT study_id, year_start, year_stop 
+		SELECT study_id, year_start, year_stop, extract_table 
 		  FROM rif40_studies a
 		 WHERE a.study_id = @study_id;
 	DECLARE @c1_rec_study_id INTEGER;
 	DECLARE @c1_rec_year_start INTEGER;
 	DECLARE @c1_rec_year_stop INTEGER;
+	DECLARE @c1_rec_extract_table		VARCHAR(30);
 --
 	DECLARE @sql_stmt		NVARCHAR(MAX);
 	DECLARE @ddl_stmts 		Sql_stmt_table;
@@ -91,7 +92,7 @@ Description:	Insert data into extract table
 	DECLARE @yearno		INTEGER=0;
 --
 	OPEN c1insext2;	
-	FETCH NEXT FROM c1insext2 INTO @c1_rec_study_id, @c1_rec_year_start, @c1_rec_year_stop;
+	FETCH NEXT FROM c1insext2 INTO @c1_rec_study_id, @c1_rec_year_start, @c1_rec_year_stop, @c1_rec_extract_table;
 	IF @@CURSOR_ROWS = 0 BEGIN
 		CLOSE c1insext2;
 		DEALLOCATE c1insext2;
@@ -138,6 +139,30 @@ Description:	Insert data into extract table
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
 	SET @sql_stmt=NULL;	
+	
+--
+-- For for rows in ##g_rif40_comparison_areas, ##g_rif40_study_areas
+--
+	DECLARE @g_rif40_study_areas_check INTEGER = (SELECT COUNT(study_id) FROM ##g_rif40_study_areas);
+	IF @g_rif40_study_areas_check > 0 
+			PRINT 'SQL[' + USER + '] study_id: ' + CAST(@study_id AS VARCHAR) + 
+				' ##g_rif40_study_areas insert OK; rows: ' + CAST(@g_rif40_study_areas_check AS VARCHAR)
+	ELSE BEGIN	
+		SET @err_msg = formatmessage(55801, @study_id); 
+			-- Study ID %i no rows INSERTED into ##g_rif40_study_areas temporary table.
+		THROW 55801, @err_msg, 1;
+	END;
+	
+	DECLARE @g_rif40_comparison_areas_check INTEGER = (SELECT COUNT(study_id) FROM ##g_rif40_study_areas);
+	IF @g_rif40_comparison_areas_check > 0 
+			PRINT 'SQL[' + USER + '] study_id: ' + CAST(@study_id AS VARCHAR) + 
+				' ##g_rif40_comparison_areas insert OK; rows: ' + CAST(@g_rif40_comparison_areas_check AS VARCHAR)
+	ELSE BEGIN	
+		SET @err_msg = formatmessage(55802, @study_id); 
+			-- Study ID %i no rows INSERTED into ##g_rif40_comparison_areas temporary table.
+		THROW 55802, @err_msg, 1;
+	END;	
+	
 --
 -- Study extract insert
 --	
@@ -187,11 +212,23 @@ Description:	Insert data into extract table
 	   SET @yearno = @yearno + 1;
 	END;
 --
+	SET @sql_stmt='SELECT @totalOUT=COUNT(*) FROM rif_studies.' + LOWER(@c1_rec_extract_table); 
+	DECLARE @ParmDefinition nvarchar(500) = N'@totalOUT int OUTPUT', @total int=0;
+	EXEC sp_executesql @sql_stmt, @ParmDefinition, @totalOUT=@total OUTPUT;	
+--	
 	SET @etp=GETDATE();
 	SET @etime=CAST(@etp - @stp AS TIME);
-	SET @msg='55803: Study ID ' + CAST(@c1_rec_study_id AS VARCHAR) + ' extract table INSERT completed in ' + 
-		CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR);		
-	PRINT @msg;		
+	IF @total > 0 BEGIN
+		SET @msg='55803: Study ID ' + CAST(@c1_rec_study_id AS VARCHAR) + ' extract table INSERT completed in ' + 
+			CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR) + 
+			'; rows: ' + CAST(@total AS VARCHAR);		
+		PRINT @msg;	
+		END
+	ELSE BEGIN
+		SET @err_msg = formatmessage(55803, @study_id); 
+			-- Study ID %i no rows INSERTED into extract table.
+		THROW 55803, @err_msg, 1;	
+	END;
 --
 	RETURN @rval;
 END;
