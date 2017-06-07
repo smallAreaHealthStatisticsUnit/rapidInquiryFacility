@@ -180,10 +180,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 
 			validateCommandLineExpressionComponents();
 
-
 			//########################
-			//TODO: from MSSQL as well
-
 			boolean test = false; //true JRI false BATCH
 			int exitValue = 0;
 			
@@ -247,13 +244,10 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 					rengine.end();
 					System.out.println("Rengine Stopped");
 				}
-
-
-				System.out.println("Exit value=="+ exitValue +"==");
 			}
 			else {
 				//TODO: (DM) BATCH FILE to delete 
-				//System.out.println("command=="+generateCommandLineExpression() + "==");
+				System.out.println("command=="+generateCommandLineExpression() + "==");
 				//ProcessBuilder processBuilder = new ProcessBuilder(commandLineComponents);
 
 				File batchFile 
@@ -265,6 +259,9 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 				//batchFile.delete();	
 				
 			}
+			
+			System.out.println("Exit value=="+ exitValue +"==");
+			
 		}
 		catch(Exception ioException) {
 			ioException.printStackTrace(System.out);

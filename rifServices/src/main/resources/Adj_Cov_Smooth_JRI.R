@@ -882,9 +882,8 @@ performSmoothingActivity <- function() {
       a<- 0
       prob.csi<- lapply(csi, function(x) {1 - inla.pmarginal(a, x)})
       data$POSTERIOR_PROBABILITY[whichrows]=unlist(prob.csi)
-      print("Posterior probability calculated")
-      
     }
+    print("Posterior probability calculated")
   }  #end if model == BYM or HET or CAR
   else {       
     print("No Bayesian smoothing performed") 
@@ -1222,24 +1221,3 @@ runRSmoothingFunctions <- function() {
   
   return(exitValue)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

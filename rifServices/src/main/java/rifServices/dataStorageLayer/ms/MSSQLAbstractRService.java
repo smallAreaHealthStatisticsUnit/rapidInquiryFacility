@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.io.*;
 import java.util.Date;
+import java.util.logging.Logger;
+
+import org.rosuda.JRI.RMainLoopCallbacks;
+import org.rosuda.JRI.Rengine;
 
 
 /**
@@ -220,6 +224,38 @@ public abstract class MSSQLAbstractRService {
 		this.operatingSystemType = operatingSystemType;
 	}
 	
+	//Generate param string array
+		protected String[] generateParameterArray() {
+		
+			String[] parametersArray = new String[13];
+			int i = 0;
+			for (Parameter parameter : parameters) {
+				parametersArray[i] = parameter.getValue();
+				i++;
+			}	
+			parametersArray[10] = odbcDataSourceName;
+			parametersArray[11] = userID;
+			parametersArray[12] = password;
+
+			//same order of args as in the old batch file
+			/*
+			0		"jdbc:postgresql", //db_driver_prefix
+			1		"localhost", //dbHost
+			2		"5432", //dbPort
+			3		"sahsuland_dev", //dbName
+			4		"db_driver_class_name", //org.postgresql.Driver
+			5		"14", //studyID
+			6		"MY_NEW_INVESTIGATION", //investigationName
+			7		"NONE", //covariate_name 
+			8		"9", //investigationId
+			9		"het_r_procedure", //r_model
+			10		"odbcDataSource", //PostgreSQL30
+			11		"dwmorley", //userID
+			12		"*******" //password
+			 */
+			return parametersArray;
+		}
+	
 	protected String generateCommandLineExpression() {
 
 		commandLineComponents.clear();
@@ -321,6 +357,46 @@ public abstract class MSSQLAbstractRService {
 		throws RIFServiceException {
 
 		validateParametersToVerify();
+	}
+	
+	/*
+	 * Logging R console output in Tomcat
+	 */
+	static class LoggingConsole implements RMainLoopCallbacks {
+		private Logger log;
+
+		LoggingConsole(Logger log) {
+			this.log = log;
+		}
+
+		public void rWriteConsole(Rengine re, String text, int oType) {
+			log.info(String.format("rWriteConsole: %s", text));
+		}
+
+		public void rBusy(Rengine re, int which) {
+			log.info(String.format("rBusy: %s", which));
+		}
+
+		public void rShowMessage(Rengine re, String message) {
+			log.info(String.format("rShowMessage: %s",  message));
+		}
+
+		public String rReadConsole(Rengine re, String prompt, int addToHistory) {
+			return null;
+		}
+
+		public String rChooseFile(Rengine re, int newFile) {
+			return null;
+		}
+
+		public void rFlushConsole(Rengine re) {
+		}
+
+		public void rLoadHistory(Rengine re, String filename) {
+		}
+
+		public void rSaveHistory(Rengine re, String filename) {
+		}
 	}
 	
 	
