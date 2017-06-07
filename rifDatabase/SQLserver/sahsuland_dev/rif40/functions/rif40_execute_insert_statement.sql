@@ -73,6 +73,7 @@ Description:	Execute INSERT SQL statement
 	DECLARE @sql_stmt	NVARCHAR(MAX);
 	DECLARE @name		VARCHAR(20);
 	DECLARE @rowcount	INTEGER;
+	DECLARE @total_rows INTEGER = 0;
 --
 	DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
 	DECLARE @err_msg 	NVARCHAR(2048);
@@ -106,6 +107,7 @@ Description:	Execute INSERT SQL statement
 				'; stop: ' + CAST(@year_stop AS VARCHAR) +
 				' OK: ' + @name +
 				'; rows: ' + CAST(@rowcount AS VARCHAR);
+			SET @total_rows=@total_rows+@rowcount;
 		END TRY
 		BEGIN CATCH		
 --	 		[55999] SQL statement had error: %s%sSQL[%s]> %s;	
@@ -121,6 +123,15 @@ Description:	Execute INSERT SQL statement
 	END;
 	CLOSE c1_dml;
 	DEALLOCATE c1_dml;
+	
+	IF @total_rows > 0 
+			PRINT 'SQL[' + USER + '] study_id: ' + CAST(@study_id AS VARCHAR) + 
+				' extract table insert OK; rows: ' + CAST(@rowcount AS VARCHAR)
+	ELSE BEGIN	
+		SET @err_msg = formatmessage(55820, @study_id); 
+			-- Study ID %i no rows INSERTED into extract table.
+		THROW 55820, @err_msg, 1;
+	END;
 	
 	RETURN @rval;
 END;

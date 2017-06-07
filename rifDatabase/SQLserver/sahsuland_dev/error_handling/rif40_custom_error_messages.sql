@@ -527,6 +527,10 @@ EXEC sp_addmessage 56699, 16,
 	
 EXEC sp_addmessage 55800, 16,
 	N'Function: [rif40].[rif40_insert_extract], Study ID %i not found.';	
+EXEC sp_addmessage 55810, 16,
+	N'Function: [rif40].[rif40_compute_results], Study ID %i no rows INSERTED into map table.';
+EXEC sp_addmessage 55820, 16,
+	N'Function: [rif40].[rif40_execute_insert_statement], Study ID %i no rows INSERTED into exttract table.';
 	
 EXEC sp_addmessage 55999, 16,
 	N'Function: [rif40].[rif40_ddl], SQL statement had error: %s%sSQL[%s]> %s;';		

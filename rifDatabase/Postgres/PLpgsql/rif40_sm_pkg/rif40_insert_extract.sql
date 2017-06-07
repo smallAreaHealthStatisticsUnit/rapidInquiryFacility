@@ -86,8 +86,10 @@ Description:	Insert data into extract table
 	c1insext2 CURSOR(l_study_id INTEGER) FOR
 		SELECT * 
 		  FROM rif40_studies a
-		 WHERE a.study_id = l_study_id;
+		 WHERE a.study_id = l_study_id;	 	 
+	c2insext2 REFCURSOR;
 	c1_rec RECORD;
+	c2_rec RECORD;
 --
 	sql_stmt		VARCHAR;
 --
@@ -183,12 +185,25 @@ BEGIN
 			RETURN FALSE;
 		END IF;
 	END LOOP;
+	
+	sql_stmt:='SELECT COUNT(year) AS total FROM rif_studies.'||quote_ident(LOWER(c1_rec.extract_table));
+	OPEN c2insext2 FOR EXECUTE sql_stmt;
+	FETCH c2insext2 INTO c2_rec;
+	CLOSE c2insext2;
 --
 	etp:=clock_timestamp();
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_insert_extract', 
-		'[55803] Study ID % extract table INSERT in %',
-		study_id::VARCHAR		/* Study ID */,
-		age(etp, stp)::VARCHAR);
+	IF c2_rec.total > 0 THEN 
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_insert_extract', 
+			'[55803] Study ID % extract table INSERT % rows in %',
+			study_id::VARCHAR		/* Study ID */,
+			c2_rec.total::VARCHAR,	/* Total extract rows */
+			age(etp, stp)::VARCHAR);
+	ELSE
+		PERFORM rif40_log_pkg.rif40_error(-55810, 'rif40_insert_extract', 
+			'Study ID % no rows INSERTED into extract table',
+			study_id::VARCHAR		/* Study ID */);
+	END IF;
+	
 --
 	RETURN TRUE;
 --

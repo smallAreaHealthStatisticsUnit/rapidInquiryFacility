@@ -461,8 +461,14 @@ This may be added to extract creation later.
 	BEGIN TRY	
 		EXECUTE sp_executesql @sql_stmt;
 		SET @rowcount=@@ROWCOUNT;
-		PRINT 'SQL[' + USER + '] study_id: ' + CAST(@study_id AS VARCHAR) + 
-			' map table insert OK; rows: ' + CAST(@rowcount AS VARCHAR);
+		IF @rowcount > 0 
+			PRINT 'SQL[' + USER + '] study_id: ' + CAST(@study_id AS VARCHAR) + 
+				' map table insert OK; rows: ' + CAST(@rowcount AS VARCHAR)
+		ELSE BEGIN	
+			SET @err_msg = formatmessage(55810, @study_id); 
+				-- Study ID %i no rows INSERTED into map table.
+			THROW 55810, @err_msg, 1;
+		END;
 	END TRY
 	BEGIN CATCH		
 --	 		[55699] SQL statement had error: %s%sSQL[%s]> %s;	

@@ -312,6 +312,10 @@ BEGIN
          'Error message: ' + NULLIF(ERROR_MESSAGE(), 'N/A') + CHAR(10);
          PRINT @msg;
          EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';
+--
+-- Set study status [TO BE ADDED]
+--
+
     END CATCH;
 -- ============================================================
     SET @msg = 'Study extract ran ' + CAST(@study_id AS VARCHAR) + ' OK';
