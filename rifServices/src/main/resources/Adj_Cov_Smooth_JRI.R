@@ -1208,8 +1208,7 @@ runRSmoothingFunctions <- function() {
   sqlDrop(connDB, temporarySmoothedResultsTableName)
   
   print("Closing database connection")
-  #DONT DO THIS - YOU WILL GET A LOT OF OUTPUT!
-  #print(paste0("RESULT==", result, "=="))
+  #print(paste0("head(RESULT)==", head(result), "=="))
   
   odbcClose(connDB)
   return(exitValue)
