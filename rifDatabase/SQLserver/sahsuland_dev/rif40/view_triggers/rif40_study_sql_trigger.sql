@@ -37,15 +37,18 @@ BEGIN
 --
 -- Check (USER = username OR NULL) and USER is a RIF user; if OK INSERT
 --
+/*
 	DECLARE @insert_invalid_user VARCHAR(MAX) = 
 	(
-		select username, study_id, statement_number, line_number
+		select username, SUSER_SNAME() AS actual_username, study_id, statement_number, line_number
 		from inserted
-		where (username != SUSER_SNAME() and username is not null)
+		WHERE (username NOT IN (SUSER_SNAME(), 'rif40'))
 		OR ([rif40].[rif40_has_role](username,'rif_user') = 0
 		AND [rif40].[rif40_has_role](username,'rif_manager') = 0)
+		OR ([rif40].[rif40_has_role](SUSER_SNAME(),'rif_user') = 0
+		AND [rif40].[rif40_has_role](SUSER_SNAME(),'rif_manager') = 0)
 		FOR XML PATH('')
-	);
+	); 
 
 	IF @insert_invalid_user IS NOT NULL
 	BEGIN TRY
@@ -56,8 +59,15 @@ BEGIN
 	BEGIN CATCH
 		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_study_sql]';
 		THROW 51137, @err_msg1, 1;
-	END CATCH;	
-	
+	END CATCH; */
+
+	DECLARE @statement_number INTEGER = (
+		SELECT ISNULL(MAX(a.statement_number), 0)+1 
+		  FROM [rif40].[t_rif40_study_sql] a, inserted b
+ 		 WHERE a.study_id = isnull(b.study_id,
+									[rif40].[rif40_sequence_current_value]('rif40.rif40_study_id_seq'))
+		); 
+		
 	INSERT INTO [rif40].[t_rif40_study_sql] (
 				username,
 				study_id,
@@ -70,7 +80,7 @@ BEGIN
 				isnull(username,SUSER_SNAME()),
 				isnull(study_id,[rif40].[rif40_sequence_current_value]('rif40_study_id_seq')),
 				statement_type /* no default value */,
-				statement_number /* no default value */,
+				isnull(statement_number,@statement_number),
 				sql_text /* no default value */,
 				line_number /* no default value */,
 				status /* no default value */

@@ -37,6 +37,7 @@ BEGIN
 --
 -- Check (USER = username OR NULL) and USER is a RIF user; if OK INSERT
 --
+/*
 	DECLARE @insert_invalid_user VARCHAR(MAX) = 
 	(
 		select username, study_id, statement_number
@@ -56,8 +57,15 @@ BEGIN
 	BEGIN CATCH
 		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_study_sql_log]';
 		THROW 51140, @err_msg1, 1;
-	END CATCH;	
+	END CATCH;	*/
 
+	DECLARE @statement_number INTEGER = (
+	SELECT ISNULL(MAX(a.statement_number), 0)+1 
+	  FROM [rif40].[t_rif40_study_sql_log] a, inserted b
+	 WHERE a.study_id = isnull(b.study_id,
+								[rif40].[rif40_sequence_current_value]('rif40.rif40_study_id_seq'))
+	); 
+		
 	INSERT INTO [rif40].[t_rif40_study_sql_log] (
 				username,
 				study_id,
@@ -73,7 +81,7 @@ BEGIN
 				isnull(username,SUSER_SNAME()),
 				isnull(study_id,[rif40].[rif40_sequence_current_value]('rif40_study_id_seq')),
 				statement_type /* no default value */,
-				statement_number /* no default value */,
+				isnull(statement_number,@statement_number),
 				log_message /* no default value */,
 				isnull(audsid, @@spid),
 				log_sqlcode /* no default value */,

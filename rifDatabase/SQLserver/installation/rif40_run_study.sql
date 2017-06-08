@@ -316,6 +316,9 @@ BEGIN
 		'Study results have been computed and they are now ready to be used.');
 	SELECT * FROM study_status WHERE study_id = @study_id ORDER BY ith_update;
 	SELECT * FROM rif40.rif40_study_status WHERE study_id = @study_id ORDER BY ith_update;
+	SELECT statement_number, log_message, log_sqlcode, elapsed_time FROM rif40.rif40_study_sql_log 
+	 WHERE study_id = @study_id AND log_sqlcode != 0 ORDER BY statement_number;
+	SELECT COUNT(*) AS total FROM rif40.rif40_study_sql WHERE study_id = @study_id;
 	SELECT study_id AS t_rif40_studies_seq FROM ##t_rif40_studies_seq;
 	SELECT inv_id AS t_rif40_investigations_seq FROM ##t_rif40_investigations_seq;
 --

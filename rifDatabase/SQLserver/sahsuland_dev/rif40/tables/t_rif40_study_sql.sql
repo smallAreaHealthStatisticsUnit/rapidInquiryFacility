@@ -26,15 +26,11 @@ CONSTRAINT [t_rif40_study_sql_sid_line_fk] FOREIGN KEY([study_id], [statement_nu
 	REFERENCES [rif40].[t_rif40_study_sql_log] ([study_id], [statement_number])
 	ON UPDATE NO ACTION ON DELETE NO ACTION,
 CONSTRAINT [statement_type_ck2] CHECK  
-	(([statement_type]='DENOMINATOR_CHECK' OR [statement_type]='NUMERATOR_CHECK' OR [statement_type]='POST_INSERT' OR [statement_type]='INSERT' OR [statement_type]='CREATE'))
+	(([statement_type]='RUN_STUDY' OR [statement_type]='DENOMINATOR_CHECK' OR [statement_type]='NUMERATOR_CHECK' OR [statement_type]='POST_INSERT' OR [statement_type]='INSERT' OR [statement_type]='CREATE'))
 ) ON [PRIMARY]
 GO
 
 --permissions
-GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[t_rif40_study_sql] TO [rif_user]
-GO
-GRANT SELECT, UPDATE, INSERT, DELETE ON [rif40].[t_rif40_study_sql] TO [rif_manager]
-GO
 
 --comments
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'SQL created for study execution.' , @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_study_sql'

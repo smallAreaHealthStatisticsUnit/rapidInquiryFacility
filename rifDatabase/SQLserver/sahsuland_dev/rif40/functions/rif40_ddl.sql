@@ -85,6 +85,10 @@ BEGIN
 	DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
 	DECLARE @err_msg 	NVARCHAR(2048);
 --
+	DECLARE @statement_number INTEGER;
+	DECLARE @statement_number_table TABLE (statement_number INTEGER);
+	DECLARE @etime DATETIME, @stp DATETIME=GETDATE(), @etp DATETIME;
+--
 	OPEN c1_ddl;
 	FETCH NEXT FROM c1_ddl INTO @sql_stmt, @study_id;
 	WHILE @@FETCH_STATUS = 0
@@ -98,7 +102,20 @@ BEGIN
 				EXECUTE sp_executesql @sql_stmt,  
 					N'@study_id INTEGER',  
 					@study_id;
-				PRINT 'SQL[' + USER + '; study_id: ' + CAST(@study_id AS VARCHAR) + '] OK> ' + 
+
+				SET @etp=GETDATE();
+				SET @etime=CAST(@etp - @stp AS TIME);					
+				INSERT INTO rif40.rif40_study_sql_log(
+					study_id, statement_type, log_message, log_sqlcode, elapsed_time, [rowcount])
+				OUTPUT inserted.statement_number INTO @statement_number_table
+				VALUES (@study_id, 'RUN_STUDY', 'OK', 0, CONVERT(INT, @etime), @@ROWCOUNT);
+				SET @statement_number = (SELECT TOP 1 statement_number FROM @statement_number_table);
+				INSERT INTO rif40.rif40_study_sql(
+					study_id, statement_type, sql_text, statement_number, line_number, status)
+				VALUES (@study_id, 'RUN_STUDY', @sql_stmt, @statement_number, 1, 'R');
+				PRINT 'SQL[' + USER + '; study_id: ' + CAST(@study_id AS VARCHAR) + '; no: ' + 
+					COALESCE(CAST(@statement_number AS VARCHAR), 'NULL') + 
+					'; time taken ' + CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR) + '] OK> ' + 
 					@sql_stmt + ';';
 			END;
 		END TRY
@@ -116,7 +133,21 @@ BEGIN
 			END;
 
 			PRINT @err_msg;
-				
+
+			SET @etp=GETDATE();
+			SET @etime=CAST(@etp - @stp AS TIME);				
+			INSERT INTO rif40.rif40_study_sql_log(
+				study_id, statement_type, log_message, log_sqlcode, elapsed_time, [rowcount])
+			OUTPUT inserted.statement_number INTO @statement_number_table
+			VALUES (@study_id, 'RUN_STUDY', COALESCE(error_message(), 'No error!'), ERROR_NUMBER(), CONVERT(INT, @etime), 0);
+			SET @statement_number = (SELECT TOP 1 statement_number FROM @statement_number_table);
+			INSERT INTO rif40.rif40_study_sql(
+				study_id, statement_type, sql_text, statement_number, line_number, status)
+			VALUES (@study_id, 'RUN_STUDY', @sql_stmt, @statement_number, 1, 'R');
+			PRINT 'SQL[' + USER + '; study_id: ' + CAST(@study_id AS VARCHAR) + '; no: ' + 
+				COALESCE(CAST(@statement_number AS VARCHAR), 'NULL') + '] OK> ' + 
+				@sql_stmt + ';';
+					
 			THROW 55999, @err_msg, 1;
 		END CATCH;
 --

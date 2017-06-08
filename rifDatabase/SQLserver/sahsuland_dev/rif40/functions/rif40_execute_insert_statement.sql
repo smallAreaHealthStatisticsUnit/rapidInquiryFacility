@@ -74,6 +74,10 @@ Description:	Execute INSERT SQL statement
 	DECLARE @name		VARCHAR(20);
 	DECLARE @rowcount	INTEGER;
 --
+	DECLARE @statement_number INTEGER;
+	DECLARE @statement_number_table TABLE (statement_number INTEGER);
+	DECLARE @etime DATETIME, @stp DATETIME=GETDATE(), @etp DATETIME;
+--
 	DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
 	DECLARE @err_msg 	NVARCHAR(2048);
 --
@@ -102,7 +106,18 @@ Description:	Execute INSERT SQL statement
 					@yearstart=@year_start,
 					@yearstop=@year_stop;
 				SET @rowcount=@@ROWCOUNT;
-					
+				
+				SET @etp=GETDATE();
+				SET @etime=CAST(@etp - @stp AS TIME);				
+				INSERT INTO rif40.rif40_study_sql_log(
+					study_id, statement_type, log_message, log_sqlcode, elapsed_time, [rowcount])
+				OUTPUT inserted.statement_number INTO @statement_number_table
+				VALUES (@study_id, 'RUN_STUDY', 'OK', 0, CONVERT(INT, @etime), @@ROWCOUNT);
+				SET @statement_number = (SELECT TOP 1 statement_number FROM @statement_number_table);
+				INSERT INTO rif40.rif40_study_sql(
+					study_id, statement_type, sql_text, statement_number, line_number, status)
+				VALUES (@study_id, 'RUN_STUDY', @sql_stmt, @statement_number, 1, 'R');
+				
 				IF @rowcount > 0 
 					PRINT 'SQL[' + USER + '] study_id: ' + CAST(@study_id AS VARCHAR) + 
 						'; start: ' + CAST(@year_start AS VARCHAR) +
@@ -118,12 +133,24 @@ Description:	Execute INSERT SQL statement
 				END;
 
 			END TRY
-			BEGIN CATCH		
+			BEGIN CATCH	
+				
+				SET @etp=GETDATE();
+				SET @etime=CAST(@etp - @stp AS TIME);				
+				INSERT INTO rif40.rif40_study_sql_log(
+					study_id, statement_type, log_message, log_sqlcode, elapsed_time, [rowcount])
+				OUTPUT inserted.statement_number INTO @statement_number_table
+				VALUES (@study_id, 'RUN_STUDY', COALESCE(error_message(), 'No error!'), ERROR_NUMBER(), CONVERT(INT, @etime), 0);
+				SET @statement_number = (SELECT TOP 1 statement_number FROM @statement_number_table);
+				INSERT INTO rif40.rif40_study_sql(
+					study_id, statement_type, sql_text, statement_number, line_number, status)
+				VALUES (@study_id, 'RUN_STUDY', @sql_stmt, @statement_number, 1, 'R');
+				
 	--	 		[55999] SQL statement had error: %s%sSQL[%s]> %s;	
 				IF LEN(@sql_stmt) > 1900 BEGIN	
 					SET @err_msg = formatmessage(56699, error_message(), @crlf, USER, '[SQL statement too long for error; see SQL above]');
 					PRINT '[56699] SQL> ' + @sql_stmt;
-				END;
+					END;			
 				ELSE SET @err_msg = formatmessage(56699, error_message(), @crlf, USER, @sql_stmt); 
 				THROW 56699, @err_msg, 1;
 			END CATCH;

@@ -62,19 +62,15 @@ IF @XTYPE = 'U' OR @XTYPE = 'I'
 BEGIN
 	DECLARE @insert_user_check VARCHAR(MAX) = 
 	(
-		SELECT study_id, statement_number, line_number, username
+		SELECT study_id, statement_number, line_number, username, SUSER_SNAME() AS actual_username2
 		FROM inserted
-		WHERE username != SUSER_SNAME()
+		WHERE (username NOT IN (SUSER_SNAME(), 'rif40'))
+		OR ([rif40].[rif40_has_role](username,'rif_user') = 0
+		AND [rif40].[rif40_has_role](username,'rif_manager') = 0)
 		FOR XML PATH('')
 	);
 	IF @insert_user_check IS NOT NULL
 	BEGIN
-		IF @has_studies_check = 0 AND SUSER_SNAME()='RIF40'
-		BEGIN
-			EXEC [rif40].[rif40_log] 'DEBUG1', '[rif40].[t_rif40_study_sql]', 't_rif40_study_sql insert/update allowed during build';
-			RETURN;
-		END
-		ELSE 
 		BEGIN TRY
 			rollback;
 			DECLARE @err_msg2 VARCHAR(MAX) = formatmessage(51093, @insert_user_check);
