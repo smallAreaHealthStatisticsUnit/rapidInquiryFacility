@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 
 
 
@@ -214,6 +215,51 @@ public final class PGSQLQueryUtility {
 		}		
 	}
 	
+	/**
+	 * printWarnings. Print warning messages
+	 *
+	 * @param warning SQLWarning
+	 * @throws nothing
+	 */	
+	public static void printWarnings(SQLWarning warning) {
+		while (warning != null) {	
+			if (warning.getErrorCode() == 0) {
+				System.out.println(warning.getMessage());	       
+			}
+			else {
+				System.out.println("Message:" + warning.getMessage());
+				System.out.println("SQLState:" + warning.getSQLState());
+				System.out.print("Vendor error code: ");
+				System.out.println(warning.getErrorCode());
+				System.out.println("==");	       
+			}
+			warning = warning.getNextWarning();
+		}
+	}
+	
+	public static void commit(
+		final Connection connection ) 
+		throws RIFServiceException {
+		
+		if (connection == null) {
+			return;
+		}
+		
+		try {
+			connection.commit();
+			System.out.println("COMMIT");	
+		}
+		catch(SQLException sqlException) {
+			String errorMessage
+				= RIFGenericLibraryMessages.getMessage("general.db.error.unableToCommit");
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFGenericLibraryError.DB_UNABLE_TO_COMMIT,
+					errorMessage);
+			throw rifServiceException;
+		}		
+	}
+	
 	public static void rollback(
 		final Connection connection ) 
 		throws RIFServiceException {
@@ -224,6 +270,7 @@ public final class PGSQLQueryUtility {
 		
 		try {
 			connection.rollback();
+			System.out.println("ROLLBACK");	       
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
