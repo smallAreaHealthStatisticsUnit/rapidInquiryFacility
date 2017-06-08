@@ -1373,7 +1373,16 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
     * F: R failure, R has caught one or more exceptions [depends on the exception handler design]
     * W: R warning.  
 * SQL Logging added to SQL Server port.
-	
+* Managed to run a study through the SQL Server middleware. It died in R
+  ```
+[1] "Creating temporary table: peter.tmp_s3_map"
+Error in sqlSave(connDB, data, tablename = temporarySmoothedResultsTableName,  :
+  [RODBC] Failed exec in Update
+42000 8023 [Microsoft][SQL Server Native Client 11.0][SQL Server]The incoming tabular data stream (TDS) remote procedure call (RPC)
+protocol stream is incorrect. Parameter 15 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision.
+Calls: saveDataFrameToDatabaseTable -> sqlSave
+  ```
+  
 #### Current TODO list (June 2017): SQL Server Port
 
 * Fix missing level 4 geography tiles bug (areaid_count=0 in geolevels table)
