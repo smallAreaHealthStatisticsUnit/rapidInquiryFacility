@@ -52,7 +52,7 @@ angular.module("RIF")
                 $timeout(function () {
                     //make map
                     var view = $scope.child.myService.getState().center['viewermap'];
-                    $scope.child.map['viewermap'] = L.map('viewermap').setView([0, 0], 1);
+                    $scope.child.map['viewermap'] = L.map('viewermap', {condensedAttributionControl: false}).setView([0, 0], 1);
 
                     //search box
                     new L.Control.GeoSearch({
@@ -98,7 +98,10 @@ angular.module("RIF")
                     L.control.scale({position: 'bottomleft', imperial: false}).addTo($scope.child.map['viewermap']);
 
                     //Attributions to open in new window
-                    $scope.child.map['viewermap'].attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
+                    L.control.condensedAttribution({
+                        prefix: '<a href="http://leafletjs.com" target="_blank">Leaflet</a>'
+                    }).addTo($scope.child.map['viewermap']);
+
                     $scope.child.map['viewermap'].doubleClickZoom.disable();
                     $scope.child.map['viewermap'].keyboard.disable();
 

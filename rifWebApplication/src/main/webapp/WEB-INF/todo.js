@@ -8,15 +8,17 @@
  * This Method below does not really work, so need to write new method
  * http://localhost:8080/rifServices/studySubmission/getStudySubmission?userID=kgarwood&studyID=280
  * -- NOWHERE IN DB DOES IT STORE THE CALCULATION METHOD!!
- *  
- * -- How to submit bands ?
  * 
  * -- change file save filename in firefox
  * 
  * -- export map is not working always
  * 
- * -- configure database from login dialog
+ * -- configure database from login dialog / provide connection details
  * 
  * -- export geojson as text
+ * 
+ * -- auto breaks for risk mapping
+ * 
+ * -- 
  * 
  */

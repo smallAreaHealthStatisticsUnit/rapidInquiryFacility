@@ -46,7 +46,7 @@ angular.module("RIF")
                     restrict: 'AE',
                     link: function ($scope) {
 
-                        $scope.areamap = L.map('areamap').setView([0, 0], 1);
+                        $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);
                         $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("areamap"));
 
                         //Reference the child scope
@@ -102,7 +102,10 @@ angular.module("RIF")
                             $scope.areamap.setView([$scope.center.lat, $scope.center.lng], $scope.center.zoom);
 
                             //Attributions to open in new window
-                            $scope.areamap.attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
+                            L.control.condensedAttribution({
+                                prefix: '<a href="http://leafletjs.com" target="_blank">Leaflet</a>'
+                            }).addTo($scope.areamap);
+
                             $scope.areamap.doubleClickZoom.disable();
                             $scope.areamap.band = Math.max.apply(null, $scope.possibleBands);
                         });
@@ -323,7 +326,7 @@ angular.module("RIF")
                                     var lowestLevel = res.data[0].names[0];
                                     user.getTileMakerTilesAttributes(user.currentUser, thisGeography, lowestLevel).then(function (res) {
                                         maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
-                                        if ($scope.input.center.lng === 0) {
+                                        if (Math.abs($scope.input.center.lng) < 1 && Math.abs($scope.input.center.lat < 1)) {
                                             $scope.areamap.fitBounds(maxbounds);
                                         }
                                     });

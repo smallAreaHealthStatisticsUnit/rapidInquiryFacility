@@ -68,7 +68,7 @@ angular.module("RIF")
                     for (var i in $scope.child.myMaps) {
                         //initialise map
                         var container = angular.copy($scope.child.myMaps[i]);
-                        $scope.child.map[container] = L.map(container).setView([0, 0], 1);
+                        $scope.child.map[container] = L.map(container, {condensedAttributionControl: false}).setView([0, 0], 1);
 
                         //search box
                         new L.Control.GeoSearch({
@@ -115,7 +115,10 @@ angular.module("RIF")
                         L.control.scale({position: 'bottomleft', imperial: false}).addTo($scope.child.map[container]);
 
                         //Attributions to open in new window
-                        $scope.child.map[container].attributionControl.options.prefix = '<a href="http://leafletjs.com" target="_blank">Leaflet</a>';
+                        L.control.condensedAttribution({
+                            prefix: '<a href="http://leafletjs.com" target="_blank">Leaflet</a>'
+                        }).addTo($scope.child.map[container]);
+                        
                         $scope.child.map[container].doubleClickZoom.disable();
                         $scope.child.map[container].keyboard.disable();
 
