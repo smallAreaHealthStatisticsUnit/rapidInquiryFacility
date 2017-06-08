@@ -1,7 +1,5 @@
 package rifServices.dataStorageLayer.pg;
 
-
-import rifServices.statisticalServices.BayesianSmoothingService;
 import rifServices.businessConceptLayer.*;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.fileFormats.RIFZipFileWriter;
@@ -367,17 +365,6 @@ final class PGSQLRIFSubmissionManager
 				= studySubmission.getStudy().getInvestigations().get(0);
 			AbstractCovariate covariate
 				= investigation.getCovariates().get(0);
-			
-			BayesianSmoothingService bayesianSmoothingService
-				= new BayesianSmoothingService();
-			bayesianSmoothingService.initialise(
-				user.getUserID(), 
-				"blah", //@TODO KLG: we need to find a way to eliminate passwords from this 
-				rScriptFileName, 
-				rifServiceStartupOptions, 
-				studyID, 
-				covariate,
-				calculationMethod);
 			
 			writeStudyToZipFile(
 				connection,
