@@ -67,14 +67,12 @@ BEGIN
 				username,
 				study_id,
 				study_state,
-				creation_date,
 				ith_update,
 				message)
 	SELECT
 				isnull(username,SUSER_SNAME()),
 				isnull(study_id,[rif40].[rif40_sequence_current_value]('rif40.rif40_study_id_seq')),
 				study_state /* no default value */,
-				creation_date /* no default value */,
 				isnull(ith_update,@ith_update),
 				message /* no default value */
 	FROM inserted;

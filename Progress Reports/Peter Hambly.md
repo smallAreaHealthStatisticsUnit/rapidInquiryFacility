@@ -1359,7 +1359,20 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
 * Run rif40_run_study procedure in SQL Server, added JDBC call() support to MSSQL
 * Added SQL warnings (print messages) to Java in both ports
 * Test for no rows in extract
-  
+* Always commit on run study even if there is an error (to make the database state visible)
+* Added rif40_study_status support for SQL Server
+  * Add extra statii to studies/investigations for R success/failure/warning. Current states:
+    * C: created, not verified; 
+    * V: verified, but no other work done; 
+    * E: extracted imported or created, but no results or maps created; 
+    * R: initial results population, create map table; 
+    * U: upgraded record from V3.1 RIF (has an indeterminate state; probably analogous to R.
+  * New states:
+    * G: Extract failure, extract, results or maps not created;  
+    * S: R success;
+    * F: R failure, R has caught one or more exceptions [depends on the exception handler design]
+    * W: R warning.  
+	
 #### Current TODO list (June 2017): SQL Server Port
 
 * Fix missing level 4 geography tiles bug (areaid_count=0 in geolevels table)

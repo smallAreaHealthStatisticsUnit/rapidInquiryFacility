@@ -17,7 +17,7 @@ CREATE TABLE [rif40].[t_rif40_study_status](
 	[username] 		[varchar](90) NOT NULL DEFAULT (user_name()),
 	[study_id] 		[integer] NOT NULL CONSTRAINT t_rif40_study_status_study_id_seq DEFAULT ([rif40].[rif40_sequence_current_value](N'rif40.rif40_study_id_seq')),
 	[study_state] 	VARCHAR(1) NOT NULL CONSTRAINT [check_study_state]
-			CHECK (study_state IN ('C', 'V', 'E', 'R', 'R', 'S', 'F', 'W')),
+			CHECK (study_state IN ('C', 'V', 'E', 'G', 'R', 'R', 'S', 'F', 'W')),
 	[creation_date] DATETIME NOT NULL DEFAULT getdate(),
 	[ith_update] 	INTEGER NOT NULL,
 	[message] 		NVARCHAR(MAX)
@@ -47,6 +47,7 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Study state:
 C: created, not verified; 
 V: verified, but no other work done; 
 E: extracted imported or created, but no results or maps created; 
+G: Extract failure, extract, results or maps not created;
 R: initial results population, create map table; 
 S: R success;
 F: R failure, R has caught one or more exceptions [depends on the exception handler design]

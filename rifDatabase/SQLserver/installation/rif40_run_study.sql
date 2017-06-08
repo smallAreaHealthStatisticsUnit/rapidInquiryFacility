@@ -297,7 +297,7 @@ BEGIN
 				1 			/* Debug: 0/1 */,
 				@rval		/* Result */;	
 		INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'E', 1, 
-			'Study extracted imported or created but neither results nor maps have been created.');				
+			'Study extracted imported or created but neither results nor maps have been created.');			
 --
 	END TRY
 	BEGIN CATCH 
@@ -310,11 +310,12 @@ BEGIN
 							'Procedure line: ' + NULLIF(CAST(ERROR_LINE() AS VARCHAR), 'N/A') + CHAR(10) + 
 							'Error message: ' + NULLIF(ERROR_MESSAGE(), 'N/A') + CHAR(10);
 		PRINT @msg; 
-		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';		
 	END CATCH;
 	INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'R', 2, 
 		'Study results have been computed and they are now ready to be used.');
-	SELECT * FROM study_status WHERE study_id = @study_id;
+	SELECT * FROM study_status WHERE study_id = @study_id ORDER BY ith_update;
+	SELECT * FROM rif40.rif40_study_status WHERE study_id = @study_id ORDER BY ith_update;
 	SELECT study_id AS t_rif40_studies_seq FROM ##t_rif40_studies_seq;
 	SELECT inv_id AS t_rif40_investigations_seq FROM ##t_rif40_investigations_seq;
 --

@@ -154,10 +154,12 @@ Recurse until complete
 --
 -- Create extract, call: rif40.rif40_create_extract()
 --
-	IF @new_study_state = 'E' BEGIN
+	IF @new_study_state = 'E' BEGIN		
 		EXECUTE @rval=rif40.rif40_create_extract
 				@study_id	/* Study id */,
 				@debug		/* enable debug: 0/1) */;
+		INSERT INTO rif40.rif40_study_status(study_id, study_state, message) VALUES (@study_id, 'E', 
+			'Study extracted imported or created but neither results nor maps have been created.');				
 		IF @rval = 0 BEGIN
 			PRINT '55202: WARNING! rif40.rif40_create_extract() FAILED, see previous warnings';
 			RETURN @rval;
@@ -178,6 +180,14 @@ Recurse until complete
 		ELSE PRINT '55205: rif40.rif40_compute_results() OK';
 		END;
 
+	IF @study_state = 'C' INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+		VALUES (@study_id, 'C', 
+			'Study has been created but it has not been verified.');
+			
+	IF @new_study_state = 'V' INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+		VALUES (@study_id, 'V', 
+			'Study has been verified.');
+			
 --
 -- Do update. This forces verification
 -- (i.e. change in study_state on rif40_studies calls rif40.rif40_verify_state_change)
@@ -304,24 +314,56 @@ BEGIN
     BEGIN CATCH
          SET @rval=0;
          SET @msg='Caught error in rif40.rif40_run_study2(' + CAST(@study_id AS VARCHAR) + ')' + CHAR(10) +
-         'Error number: ' + NULLIF(CAST(ERROR_NUMBER() AS VARCHAR), 'N/A') + CHAR(10) +
-         'Error severity: ' + NULLIF(CAST(ERROR_SEVERITY() AS VARCHAR), 'N/A') + CHAR(10) +
-         'Error state: ' + NULLIF(CAST(ERROR_STATE() AS VARCHAR), 'N/A') + CHAR(10) +
-         'Procedure with error: ' + NULLIF(ERROR_PROCEDURE() + CHAR(10), 'N/A') +
-         'Procedure line: ' + NULLIF(CAST(ERROR_LINE() AS VARCHAR), 'N/A') + CHAR(10) +
-         'Error message: ' + NULLIF(ERROR_MESSAGE(), 'N/A') + CHAR(10);
+			 'Error number: ' + NULLIF(CAST(ERROR_NUMBER() AS VARCHAR), 'N/A') +
+			 '; severity: ' + NULLIF(CAST(ERROR_SEVERITY() AS VARCHAR), 'N/A') + 
+			 '; state: ' + NULLIF(CAST(ERROR_STATE() AS VARCHAR), 'N/A') + CHAR(10) +
+			 'Procedure: ' + NULLIF(ERROR_PROCEDURE(), 'N/A') +
+			 ';  line: ' + NULLIF(CAST(ERROR_LINE() AS VARCHAR), 'N/A') + CHAR(10) +
+			 'Error message: ' + NULLIF(ERROR_MESSAGE(), 'N/A') + CHAR(10);
          PRINT @msg;
-         EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';
 --
--- Set study status [TO BE ADDED]
+-- Set study status 
 --
+		BEGIN TRY
+			INSERT INTO rif40.rif40_study_status(study_id, study_state, message) VALUES(@study_id, 'G', @msg);
+-- ============================================================
+-- Always commit, even though this may fail because trigger failure have caused a rollback:
+-- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.
+-- ============================================================
+			COMMIT TRANSACTION;
+		END TRY
+		BEGIN CATCH	
+			 SET @msg='Caught error handler error in rif40.rif40_run_study2(' + CAST(@study_id AS VARCHAR) + ')' + CHAR(10) +
+				 'Error number: ' + NULLIF(CAST(ERROR_NUMBER() AS VARCHAR), 'N/A') +
+				 '; severity: ' + NULLIF(CAST(ERROR_SEVERITY() AS VARCHAR), 'N/A') + 
+				 '; state: ' + NULLIF(CAST(ERROR_STATE() AS VARCHAR), 'N/A') + CHAR(10) +
+				 'Procedure: ' + NULLIF(ERROR_PROCEDURE(), 'N/A') +
+				 ';  line: ' + NULLIF(CAST(ERROR_LINE() AS VARCHAR), 'N/A') + CHAR(10) +
+				 'Error message: ' + NULLIF(ERROR_MESSAGE(), 'N/A') + CHAR(10);
+			 PRINT @msg;
+			 EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';		
+		END CATCH;		
 
+--
+-- Call error proc; throws error
+--				
+        EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';
     END CATCH;
 -- ============================================================
-    SET @msg = 'Study extract ran ' + CAST(@study_id AS VARCHAR) + ' OK';
     IF @rval2 = 1 BEGIN
 		SET @rval=1;
+		SET @msg = 'Study extract ran ' + CAST(@study_id AS VARCHAR) + ' OK';
         PRINT @msg;
+--
+-- Set study status 
+--
+		INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+		SELECT @study_id, 'R', @msg
+		 WHERE NOT EXISTS (
+			SELECT study_id
+			  FROM rif40.rif40_study_status
+			 WHERE study_id = @study_id
+			   AND study_state = 'R');		
 -- ============================================================
 -- Always commit, even though this may fail because trigger failure have caused a rollback:
 -- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.
@@ -330,8 +372,20 @@ BEGIN
 		RETURN 1;
 		END
     ELSE BEGIN
-		SET @rval=0;	
+		SET @rval=0;
 		SET @rval2=COALESCE(@rval2, -1);
+		SET @msg = 'Study extract run ' + CAST(@study_id AS VARCHAR) + 
+			' FAILED; rval2=' + CAST(@rval2 AS VARCHAR) + ' (see previous errors)';	
+--
+-- Set study status 
+--
+		INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+		SELECT @study_id, 'R', @msg
+		 WHERE NOT EXISTS (
+			SELECT study_id
+			  FROM rif40.rif40_study_status
+			 WHERE study_id = @study_id
+			   AND study_state = 'R');	
 -- ============================================================
 -- Always commit, even though this may fail because trigger failure have caused a rollback:
 -- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.

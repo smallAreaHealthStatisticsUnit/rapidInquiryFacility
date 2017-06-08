@@ -317,7 +317,8 @@ BEGIN
 	END CATCH;
 	INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'R', 2, 
 		'Study results have been computed and they are now ready to be used.');
-	SELECT * FROM study_status WHERE study_id = @study_id;
+	SELECT * FROM study_status WHERE study_id = @study_id ORDER BY ith_update;
+	SELECT * FROM rif40.rif40_study_status WHERE study_id = @study_id ORDER BY ith_update;
 	SELECT study_id AS t_rif40_studies_seq FROM ##t_rif40_studies_seq;
 	SELECT inv_id AS t_rif40_investigations_seq FROM ##t_rif40_investigations_seq;
 --
