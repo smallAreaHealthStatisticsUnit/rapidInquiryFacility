@@ -116,7 +116,7 @@ Description:	Create INSERT SQL statement
 
 	DECLARE c8insext CURSOR FOR
 		SELECT b.denom_tab,
- 		       t.description, t.total_field, t.year_start, t.year_stop,
+ 		       COALESCE(t.description, 'N/A') AS description, t.total_field, t.year_start, t.year_stop,
    		       t.sex_field_name, t.age_group_field_name, t.age_sex_group_field_name, t.age_group_id, 
 		       MIN(a.offset) AS min_age_group, MAX(a.offset) AS max_age_group
 		  FROM rif40_studies b, rif40_tables t, rif40_age_groups a
@@ -403,6 +403,7 @@ Description:	Create INSERT SQL statement
 	CLOSE c4insext;
 	DEALLOCATE c4insext;
 
+	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: A';
 --
 -- Denominator CTE with covariates joined at study geolevel
 --
@@ -456,6 +457,8 @@ Description:	Create INSERT SQL statement
 	CLOSE c7insext;
 	DEALLOCATE c7insext;
 
+	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: B';
+	
 	SET @sql_stmt=@sql_stmt + @tab + '       SUM(COALESCE(d1.'+ coalesce(LOWER(@c8_rec_total_field), 'total') + 
 		', 0)) AS total_pop' + @crlf + @tab + '  FROM ' + @areas_table + ' s, rif_data.' +
 		LOWER(@c1_rec_denom_tab) + ' d1 ' + @tab + '/* Study or comparison area to be extracted */' + @crlf;
@@ -467,6 +470,9 @@ Description:	Create INSERT SQL statement
 		@tab + @tab + @tab + '    d1.' + LOWER(@c1_rec_study_geolevel_name) +
 		' = c.' + LOWER(@c1_rec_study_geolevel_name) + @tab + @tab + '/* Join at study geolevel */' + @crlf +
 		@tab + @tab + @tab + 'AND c.year = @yearstart)' + @crlf;
+
+	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: C';	
+	
 	SET @sql_stmt=@sql_stmt + @tab + ' WHERE d1.year = @yearstart' + @tab + @tab +  '/* Denominator (INSERT) year filter */' + @crlf;
 	
 	IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + 
@@ -489,6 +495,7 @@ Description:	Create INSERT SQL statement
 -- [Add gender filter]
 --
 
+	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: D';
 --
 -- Add GROUP BY clause
 --
@@ -497,10 +504,13 @@ Description:	Create INSERT SQL statement
 	ELSE SET @sql_stmt=@sql_stmt + @tab + 
 		' GROUP BY d1.year, s.area_id, s.band_id, d1.' + LOWER(@c8_rec_age_sex_group_field_name);
 
-	SET @sql_stmt=@sql_stmt + ', c.' + LOWER(@c7_rec_covariate_name); /* Multiple covariate support will be needed here */
+	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: D1';
+	
+	IF @c7_rec_covariate_name IS NOT NULL SET @sql_stmt=@sql_stmt + 
+		', c.' + LOWER(@c7_rec_covariate_name); /* Multiple covariate support will be needed here */
 	SET @sql_stmt=@sql_stmt + @crlf + ') /* End of denominator */' + @crlf;
 
-		
+	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: E';		
 --	
 -- Add INSERT
 --
@@ -549,7 +559,8 @@ Description:	Create INSERT SQL statement
 	CLOSE c3insext;
 	DEALLOCATE c3insext;
 	SET @sql_stmt=@sql_stmt + ') /* '+ CAST(@c3_rec_distinct_numerators AS VARCHAR) + ' numerator(s) */' + @crlf;
-	
+
+	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: F';	
 --
 -- SELECT statement
 --
@@ -570,11 +581,13 @@ Description:	Create INSERT SQL statement
 --		IF study_or_comparison = 'C' THEN
 --			sql_stmt:=sql_stmt||'       NULL::INTEGER AS '||LOWER(c7_rec.covariate_name)||','||E'\n';
 --		ELSE
-	SET @sql_stmt=@sql_stmt + '       d.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
+	IF @c7_rec_covariate_name IS NOT NULL SET @sql_stmt=@sql_stmt + 
+		'       d.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
 					/* Multiple covariate support will be needed here */
 --		END IF;
 
 
+	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: G';
 --
 -- Add investigations 
 --

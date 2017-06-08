@@ -1372,6 +1372,7 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
     * S: R success;
     * F: R failure, R has caught one or more exceptions [depends on the exception handler design]
     * W: R warning.  
+* SQL Logging added to SQL Server port.
 	
 #### Current TODO list (June 2017): SQL Server Port
 
