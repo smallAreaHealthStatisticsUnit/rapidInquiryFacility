@@ -76,6 +76,7 @@ CREATE TABLE [rif40].[t_rif40_studies](
 	[authorised_on] [datetime2](0) NULL,
 	[authorised_notes] [varchar](200) NULL,
 	[audsid] [varchar](90) NOT NULL DEFAULT (@@spid),
+	[stats_method] [varchar](4) NOT NULL DEFAULT (('NONE')),
  CONSTRAINT [t_rif40_studies_pk] PRIMARY KEY CLUSTERED 
 (
 	[study_id] ASC
@@ -97,6 +98,8 @@ CONSTRAINT [t_rif40_studies_study_state_ck] CHECK
 	(([study_state]='U' OR [study_state]='R' OR [study_state]='E' OR [study_state]='V' OR [study_state]='C')),
 CONSTRAINT [t_rif40_studies_study_type_ck] CHECK  
 	(([study_type]=(15) OR [study_type]=(14) OR [study_type]=(13) OR [study_type]=(12) OR [study_type]=(11) OR [study_type]=(1))),
+CONSTRAINT [check_stats_method] CHECK  
+	(([stats_method]='NONE' OR [stats_method]='HET' OR [stats_method]='BYM' OR [stats_method]='CAR')),
 CONSTRAINT [t_rif40_std_comp_geolevel_fk] FOREIGN KEY ([geography], [comparison_geolevel_name])
       REFERENCES [rif40].[t_rif40_geolevels] ([geography], [geolevel_name])
       ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -216,6 +219,10 @@ GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'IG authorisation notes. Must be filled in if EXTRACT_PERMITTED=1.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'authorised_notes'
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Link to Oracle audit subsystem. On Postgres is &quot;backend PID.Julian day.Seconds from midnight.uSeconds (backend start time)&quot;. This can be correlated to the logging messages.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'audsid'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'RIF Bayesian statistical method: HET, BYM, CAR or NONE', 
+		@level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',@level1name=N't_rif40_studies', @level2type=N'COLUMN',@level2name=N'stats_method'
 GO
 
 --indices

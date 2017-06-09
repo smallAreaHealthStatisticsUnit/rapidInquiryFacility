@@ -37,7 +37,8 @@ CREATE VIEW [rif40].[rif40_studies] AS
 	0 AS partition_parallelisation,  --does this apply to SQL Server?
     l.covariate_table,
     c.project,
-    pj.description AS project_description
+    pj.description AS project_description,
+	c.stats_method
    FROM [rif40].[t_rif40_studies] c
      LEFT JOIN [rif40].[rif40_study_shares] s ON c.study_id = s.study_id AND s.grantee_username=SUSER_SNAME()
      LEFT JOIN ( SELECT i2.study_id,
@@ -124,5 +125,8 @@ GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Project running the study. The user must be allocated to the project.', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_studies', @level2type=N'COLUMN',@level2name=N'project'
 GO
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'N/A', @level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_studies', @level2type=N'COLUMN',@level2name=N'project_description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'RIF Bayesian statistical method: HET, BYM, CAR or NONE', 
+	@level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',@level1name=N'rif40_studies', @level2type=N'COLUMN',@level2name=N'stats_method'
 GO
 

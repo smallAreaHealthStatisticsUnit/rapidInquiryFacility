@@ -84,7 +84,8 @@ BEGIN
 				authorised_on,
 				authorised_notes,
 				audsid,
-				project)
+				project,
+				stats_method)
 	SELECT
 				isnull(username, SUSER_SNAME()),
 				@study_id, 
@@ -109,7 +110,8 @@ BEGIN
 				authorised_on /* no default value */,
 				authorised_notes /* no default value */,
 				isnull(audsid, @@spid),
-				project /* no default value */
+				project /* no default value */,
+				stats_method /* No default value */
 	FROM inserted;
 END;
 

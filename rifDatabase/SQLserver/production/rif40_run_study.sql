@@ -93,7 +93,7 @@ INSERT /* 1 */ INTO rif40.rif40_studies (
  		geography, project, study_name, study_type,
  		comparison_geolevel_name, study_geolevel_name, denom_tab,
  		year_start, year_stop, max_age_group, min_age_group,
- 		suppression_value, extract_permitted, transfer_permitted)
+ 		suppression_value, extract_permitted, transfer_permitted, stats_method)
 	VALUES (
 		 'SAHSULAND' 								/* geography */,
 		 'TEST' 									/* project */,
@@ -108,7 +108,8 @@ INSERT /* 1 */ INTO rif40.rif40_studies (
 		 0 											/* min_age_group */,
 		 5 											/* suppression_value */,
 		 1 											/* extract_permitted */,
-		 1											/* transfer_permitted */);
+		 1											/* transfer_permitted */,
+		 'HET'										/* Stats method */);
 GO
 
 SELECT [rif40].[rif40_sequence_current_value]('rif40.rif40_study_id_seq');
