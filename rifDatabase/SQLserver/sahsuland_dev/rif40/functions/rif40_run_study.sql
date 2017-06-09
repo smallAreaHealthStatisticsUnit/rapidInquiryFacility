@@ -380,12 +380,12 @@ BEGIN
 -- Set study status 
 --
 		INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
-		SELECT @study_id, 'R', @msg
+		SELECT @study_id, 'G', @msg
 		 WHERE NOT EXISTS (
 			SELECT study_id
 			  FROM rif40.rif40_study_status
 			 WHERE study_id = @study_id
-			   AND study_state = 'R');	
+			   AND study_state = 'G');	
 -- ============================================================
 -- Always commit, even though this may fail because trigger failure have caused a rollback:
 -- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.

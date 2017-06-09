@@ -156,6 +156,7 @@ Recurse until complete
 	etp		TIMESTAMP WITH TIME ZONE;
 --	
 	v_detail		VARCHAR;
+	v_stack			VARCHAR;
 	msg		 		VARCHAR;
 BEGIN
 --
@@ -355,14 +356,16 @@ BEGIN
 		EXCEPTION
 			WHEN others THEN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-				msg:='Caught error handler error in rif40.rif40_run_study('||c1_rec.study_id::Text||')'||E'\n'||
-					v_detail||||E'\n'||
-					SQLERRM;
+				GET STACKED DIAGNOSTICS v_stack = PG_CONTEXT;
+				msg:='rif40.rif40_run_study error handler('||c1_rec.study_id::Text||')'||E'\n'||
+					'Detail: '||v_detail||E'\n'||
+					'Stack: '||v_stack||E'\n'||
+					'Error: '||SQLERRM;
 --
 -- Set study status 
 --
 				INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
-				SELECT c1_rec.study_id, 'D', msg
+				SELECT c1_rec.study_id, 'G', msg
 				 WHERE NOT EXISTS (
 					SELECT a.study_id
 					  FROM rif40_study_status a
@@ -377,7 +380,7 @@ BEGIN
 '* [55211] Completed study %                         *'||E'\n'||
 '*                                                                      *'||E'\n'||
 '************************************************************************',
-			RPAD(c1_rec.study_id::VARCHAR, 20)::VARCHAR);
+			RPAD(c1_rec.study_id::VARCHAR, 20)::VARCHAR);	
 --
 -- Set study status 
 --
@@ -387,7 +390,12 @@ BEGIN
 			SELECT a.study_id
 			  FROM rif40_study_status a
 			 WHERE a.study_id    = c1_rec.study_id
-			   AND a.study_state = 'R');				
+			   AND a.study_state = 'R');			
+--
+-- Test error
+--		
+--		RAISE EXCEPTION 'Stop processing';
+	
 	ELSE
 		OPEN c1_runst(study_id);
 		FETCH c1_runst INTO c1_rec;

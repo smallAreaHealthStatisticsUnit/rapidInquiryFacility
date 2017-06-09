@@ -142,6 +142,9 @@ BEGIN
 	IF study_ran_ok THEN
 		RAISE INFO 'test_4_study_id_1.sql: T4--12: Test 4; Study: % run OK', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 	ELSE
+		EXECUTE rif40_sql_pkg.rif40_method4(
+			'SELECT * FROM rif40.rif40_study_status WHERE study_id = currval(''rif40_study_id_seq''::regclass)::INTEGER ORDER BY ith_update', 'Study Status');
+--
 		RAISE EXCEPTION 'test_4_study_id_1.sql: T4--13: Test 4; Study: % run failed; see trace', currval('rif40_study_id_seq'::regclass)::VARCHAR;
 	END IF;
 END;
