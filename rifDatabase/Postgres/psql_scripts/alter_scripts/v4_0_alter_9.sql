@@ -149,6 +149,90 @@ COMMENT ON COLUMN "rif40_projects"."project" IS 'Project name';
 -- Needs study 1
 --
 -- SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(1) LIMIT 10;
+  
+DROP TABLE IF EXISTS t_rif40_study_status CASCADE;
+CREATE TABLE t_rif40_study_status (
+	username		VARCHAR(90) NOT NULL 	DEFAULT (current_user),
+	study_id 		INTEGER 				NOT NULL,
+	study_state 	VARCHAR(1) 	NOT NULL 	CONSTRAINT check_study_state
+			CHECK (study_state IN ('C', 'V', 'E', 'G', 'R', 'R', 'S', 'F', 'W')),
+	creation_date 	TIMESTAMP WITH TIME ZONE	NOT NULL 	DEFAULT (current_timestamp),
+	ith_update		SERIAL 		NOT NULL,
+	message 		Text,
+	CONSTRAINT t_rif40_study_status_pk PRIMARY KEY (study_id, study_state),
+	CONSTRAINT t_rif40_studystatus_study_id_fk FOREIGN KEY (study_id)
+			REFERENCES rif40.t_rif40_studies (study_id)
+);
+
+--permissions
+
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE t_rif40_study_status TO rif_user;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE t_rif40_study_status TO rif_manager;
+
+--comments
+COMMENT ON TABLE t_rif40_study_status IS 'Status events for a given study.';
+COMMENT ON COLUMN t_rif40_study_status.username IS 'Username';
+COMMENT ON COLUMN t_rif40_study_status.study_id IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
+COMMENT ON COLUMN t_rif40_study_status.study_state IS 'Study state: 
+C: created, not verified; 
+V: verified, but no other work done; 
+E: extracted imported or created, but no results or maps created; 
+G: Extract failure, extract, results or maps not created;
+R: initial results population, create map table; 
+S: R success;
+F: R failure, R has caught one or more exceptions [depends on the exception handler design]
+W: R warning.';
+COMMENT ON COLUMN t_rif40_study_status.creation_date IS 'Creation date';
+COMMENT ON COLUMN t_rif40_study_status.ith_update IS 'Update number (for ordering)';
+COMMENT ON COLUMN t_rif40_study_status.message IS 'Status message; includes exception where relevant';
+
+--indices
+CREATE INDEX t_rif40_study_status_uname ON t_rif40_study_status(username);
+
+CREATE OR REPLACE VIEW rif40_study_status AS 
+ SELECT c.username,
+    c.study_id,
+    c.study_state,
+    c.creation_date,
+    c.ith_update,
+    c.message
+   FROM t_rif40_study_status c
+     LEFT JOIN rif40_study_shares s ON c.study_id = s.study_id AND s.grantee_username::name = "current_user"()
+  WHERE c.username::name = "current_user"() OR 'RIF_MANAGER'::text = (( SELECT user_role_privs.granted_role
+           FROM user_role_privs
+          WHERE user_role_privs.granted_role = 'RIF_MANAGER'::text)) OR s.grantee_username IS NOT NULL AND s.grantee_username::text <> ''::text
+  ORDER BY c.username;  
+
+COMMENT ON VIEW rif40_study_status IS 'Status events for a given study.';
+COMMENT ON COLUMN rif40_study_status.username IS 'Username';
+COMMENT ON COLUMN rif40_study_status.study_id IS 'Unique study index: study_id. Created by SEQUENCE rif40_study_id_seq';
+COMMENT ON COLUMN rif40_study_status.study_state IS 'Study state: 
+C: created, not verified; 
+V: verified, but no other work done; 
+E: extracted imported or created, but no results or maps created; 
+G: Extract failure, extract, results or maps not created;
+R: initial results population, create map table; 
+S: R success;
+F: R failure, R has caught one or more exceptions [depends on the exception handler design]
+W: R warning.';
+COMMENT ON COLUMN rif40_study_status.creation_date IS 'Creation date';
+COMMENT ON COLUMN rif40_study_status.ith_update IS 'Update number (for ordering)';
+COMMENT ON COLUMN rif40_study_status.message IS 'Status message; includes exception where relevant'; 
+
+-- Grants
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_study_status TO rif_user;
+GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_study_status TO rif_manager;
+
+-- CRUD trigger
+\i ../PLpgsql/rif40_trg_pkg/trg_rif40_study_status.sql
+
+CREATE TRIGGER trg_rif40_study_status
+  INSTEAD OF INSERT OR UPDATE OR DELETE
+  ON rif40_study_status
+  FOR EACH ROW
+  EXECUTE PROCEDURE rif40_trg_pkg.trg_rif40_study_status();
+COMMENT ON TRIGGER trg_rif40_study_status ON rif40_study_status IS 
+	'INSTEAD OF trigger for view T_RIF40_STUDY_STATUS to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted.'; 
  
 --
 -- Testing stop
@@ -159,7 +243,8 @@ BEGIN
 	RAISE EXCEPTION 'Stop processing';
 END;
 $$;
- */  
+*/
+
 END;
 --
 --  Eof 

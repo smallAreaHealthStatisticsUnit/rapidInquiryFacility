@@ -1382,6 +1382,7 @@ Error in sqlSave(connDB, data, tablename = temporarySmoothedResultsTableName,  :
 protocol stream is incorrect. Parameter 15 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision.
 Calls: saveDataFrameToDatabaseTable -> sqlSave
   ```
+* Added rif40_study_status support for Postgres
   
 #### Current TODO list (June 2017): SQL Server Port
 

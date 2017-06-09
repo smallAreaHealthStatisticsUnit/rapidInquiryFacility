@@ -154,6 +154,9 @@ Recurse until complete
 --
 	stp		TIMESTAMP WITH TIME ZONE := clock_timestamp();
 	etp		TIMESTAMP WITH TIME ZONE;
+--	
+	v_detail		VARCHAR;
+	msg		 		VARCHAR;
 BEGIN
 --
 -- Check study state and define transition
@@ -248,6 +251,10 @@ BEGIN
 -- Create extract, call: rif40_sm_pkg.rif40_create_extract()
 --
 	IF new_study_state = 'E' THEN
+	
+		INSERT INTO rif40.rif40_study_status(study_id, study_state, message) VALUES (c1_rec.study_id, 'E', 
+			'Study extracted imported or created but neither results nor maps have been created.');	
+			
 		IF rif40_sm_pkg.rif40_create_extract(c1_rec.study_id) = FALSE THEN
 			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_run_study',
 				'[55202] Call rif40_create_extract() for study % failed, see previous warnings',
@@ -274,6 +281,12 @@ BEGIN
 				'[55205] Call rif40_compute_results() for study % OK',
 				c1_rec.study_id::VARCHAR);
 		END IF;
+	ELSIF c1_rec.study_state = 'C' THEN
+		INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+		VALUES (c1_rec.study_id, 'C', 'Study has been created but it has not been verified.');	
+	ELSIF new_study_state = 'V' THEN
+		INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+		VALUES (c1_rec.study_id, 'V', 'Study has been verified.');
 	END IF;
 
 --
@@ -321,14 +334,42 @@ BEGIN
 			n_recursion_level::VARCHAR,
 			new_study_state::VARCHAR,
 			c1_rec.study_id::VARCHAR);
-		IF rif40_sm_pkg.rif40_run_study(c1_rec.study_id, debug, n_recursion_level) = FALSE THEN /* Halt on failure */
-			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_run_study',
-				'[55210] Recurse [%] rif40_run_study to new state % for study % failed, see previous warnings',
-				n_recursion_level::VARCHAR,
-				new_study_state::VARCHAR,
-				c1_rec.study_id::VARCHAR);
-			RETURN FALSE;
-		END IF;
+		BEGIN
+			IF rif40_sm_pkg.rif40_run_study(c1_rec.study_id, debug, n_recursion_level) = FALSE THEN /* Halt on failure */
+				PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_run_study',
+					'[55210] Recurse [%] rif40_run_study to new state % for study % failed, see previous warnings',
+					n_recursion_level::VARCHAR,
+					new_study_state::VARCHAR,
+					c1_rec.study_id::VARCHAR);
+				msg:='[55210] Recurse ['||n_recursion_level::Text||'] rif40_run_study to new state '||new_study_state||
+						' for study '||c1_rec.study_id::Text||' failed, see previous warnings';
+				INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+				SELECT c1_rec.study_id, 'D', msg
+				 WHERE NOT EXISTS (
+					SELECT a.study_id
+					  FROM rif40_study_status a
+					 WHERE a.study_id    = c1_rec.study_id
+					   AND a.study_state = 'G');						   
+				RETURN FALSE;
+			END IF;
+		EXCEPTION
+			WHEN others THEN
+				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
+				msg:='Caught error handler error in rif40.rif40_run_study('||c1_rec.study_id::Text||')'||E'\n'||
+					v_detail||||E'\n'||
+					SQLERRM;
+--
+-- Set study status 
+--
+				INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+				SELECT c1_rec.study_id, 'D', msg
+				 WHERE NOT EXISTS (
+					SELECT a.study_id
+					  FROM rif40_study_status a
+					 WHERE a.study_id    = c1_rec.study_id
+					   AND a.study_state = 'G');		
+				RETURN FALSE;					   
+		END;
 	ELSIF new_study_state != c1_rec.study_state AND new_study_state = 'R' THEN
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study', E'\n'||
 '************************************************************************'||E'\n'||
@@ -337,6 +378,16 @@ BEGIN
 '*                                                                      *'||E'\n'||
 '************************************************************************',
 			RPAD(c1_rec.study_id::VARCHAR, 20)::VARCHAR);
+--
+-- Set study status 
+--
+		INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+		SELECT c1_rec.study_id, 'R', 'Study extract ran '||c1_rec.study_id::Text||' OK'
+		 WHERE NOT EXISTS (
+			SELECT a.study_id
+			  FROM rif40_study_status a
+			 WHERE a.study_id    = c1_rec.study_id
+			   AND a.study_state = 'R');				
 	ELSE
 		OPEN c1_runst(study_id);
 		FETCH c1_runst INTO c1_rec;

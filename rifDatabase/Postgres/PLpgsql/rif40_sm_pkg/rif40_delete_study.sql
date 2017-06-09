@@ -71,6 +71,7 @@ Returns:	Nothing
 Description:	Delete study from tables:
 
 RIF40_STUDY_SQL
+RIF40_STUDY_STATUS
 RIF40_STUDY_SQL_LOG
 RIF40_RESULTS
 RIF40_CONTEXTUAL_STATS
@@ -107,17 +108,18 @@ BEGIN
 	END IF;
 	CLOSE c1_delst;
 --
-	sql_stmt[1]:='DELETE FROM rif40_study_sql WHERE study_id = '||study_id::VARCHAR;
-	sql_stmt[2]:='DELETE FROM rif40_study_sql_log WHERE study_id = '||study_id::VARCHAR;
-	sql_stmt[3]:='DELETE FROM rif40_results WHERE study_id = '||study_id::VARCHAR;
-	sql_stmt[4]:='DELETE FROM rif40_contextual_stats WHERE study_id = '||study_id::VARCHAR;
-	sql_stmt[5]:='DELETE FROM rif40_inv_conditions WHERE study_id = '||study_id::VARCHAR;
-	sql_stmt[6]:='DELETE FROM rif40_inv_covariates WHERE study_id = '||study_id::VARCHAR;
-	sql_stmt[7]:='DELETE FROM rif40_investigations WHERE study_id = '||study_id::VARCHAR;
-	sql_stmt[8]:='DELETE FROM rif40_study_areas WHERE study_id = '||study_id::VARCHAR;
-	sql_stmt[9]:='DELETE FROM rif40_comparison_areas WHERE study_id = '||study_id::VARCHAR;
-	sql_stmt[10]:='DELETE FROM rif40_study_shares WHERE study_id = '||study_id::VARCHAR;
-	sql_stmt[11]:='DELETE FROM rif40_studies WHERE study_id = '||study_id::VARCHAR;
+	sql_stmt[1]:='DELETE FROM rif40_study_status WHERE study_id = '||study_id::VARCHAR;
+	sql_stmt[2]:='DELETE FROM rif40_study_sql WHERE study_id = '||study_id::VARCHAR;
+	sql_stmt[3]:='DELETE FROM rif40_study_sql_log WHERE study_id = '||study_id::VARCHAR;
+	sql_stmt[4]:='DELETE FROM rif40_results WHERE study_id = '||study_id::VARCHAR;
+	sql_stmt[5]:='DELETE FROM rif40_contextual_stats WHERE study_id = '||study_id::VARCHAR;
+	sql_stmt[6]:='DELETE FROM rif40_inv_conditions WHERE study_id = '||study_id::VARCHAR;
+	sql_stmt[7]:='DELETE FROM rif40_inv_covariates WHERE study_id = '||study_id::VARCHAR;
+	sql_stmt[8]:='DELETE FROM rif40_investigations WHERE study_id = '||study_id::VARCHAR;
+	sql_stmt[9]:='DELETE FROM rif40_study_areas WHERE study_id = '||study_id::VARCHAR;
+	sql_stmt[10]:='DELETE FROM rif40_comparison_areas WHERE study_id = '||study_id::VARCHAR;
+	sql_stmt[11]:='DELETE FROM rif40_study_shares WHERE study_id = '||study_id::VARCHAR;
+	sql_stmt[12]:='DELETE FROM rif40_studies WHERE study_id = '||study_id::VARCHAR;
 --
 -- Drop extract and map tables if defined
 -- (Cannot be dropped yets - requires definer function to cleanup all zero sized orphaned extract tables)
