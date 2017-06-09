@@ -1383,6 +1383,7 @@ protocol stream is incorrect. Parameter 15 (""): The supplied value is not a val
 Calls: saveDataFrameToDatabaseTable -> sqlSave
   ```
 * Added rif40_study_status support for Postgres
+* Added stats_method to rif40_studies
   
 #### Current TODO list (June 2017): SQL Server Port
 

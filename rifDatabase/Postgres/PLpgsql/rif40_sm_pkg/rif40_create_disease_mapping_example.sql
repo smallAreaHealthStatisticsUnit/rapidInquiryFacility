@@ -178,6 +178,7 @@ study_id 		(nextval('rif40_study_id_seq'::regclass))::integer
 study_date		LOCALIMESTAMP
 study_state		C
 audsid			sys_context('USERENV'::character varying, 'SESSIONID'::character varying)
+stats_method	HET
 
 RIF40_STUDIES defaults (from trigger):
 
@@ -386,7 +387,7 @@ BEGIN
 ' 		geography, project, study_name, study_type,'||E'\n'||
 ' 		comparison_geolevel_name, study_geolevel_name, denom_tab,'||E'\n'||            
 ' 		year_start, year_stop, max_age_group, min_age_group,'||E'\n'|| 
-' 		suppression_value, extract_permitted, transfer_permitted)'||E'\n'||
+' 		suppression_value, extract_permitted, transfer_permitted, stats_method)'||E'\n'||
 '	VALUES ('||E'\n'||
 '		 '''||geography||''' 					/* geography */,'||E'\n'||
 '		 '''||project||''' 						/* project */,'||E'\n'|| 
@@ -401,7 +402,8 @@ BEGIN
 '		 '||c1cdm_rec.min_age_group||' 	/* min_age_group */,'||E'\n'|| 
 '		 '||c2cdm_rec.suppression_value||' /* suppression_value */,'||E'\n'|| 
 '		 '||l_extract_permitted||' 		/* extract_permitted */,'||E'\n'|| 
-'		 '||l_transfer_permitted||'		/* transfer_permitted */)';
+'		 '||l_transfer_permitted||'		/* transfer_permitted */,'||E'\n'|| 
+'		 ''HET''						/* stats_method */)';
 	parent_test_id:=rif40_sm_pkg._rif40_create_disease_mapping_example(sql_stmt, study_name, 
 		parent_test_id, test_run_class,
 		ARRAY['trigger_fct_t_rif40_studies_checks']);

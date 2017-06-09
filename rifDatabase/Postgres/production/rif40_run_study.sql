@@ -55,6 +55,10 @@
 -- Start transaction
 --
 BEGIN;
+
+SELECT MAX(study_id)+1 AS new_study_id
+  FROM rif40_studies;
+  
 DO LANGUAGE plpgsql $$
 DECLARE
 	c2sm CURSOR FOR 
@@ -147,6 +151,8 @@ $$;
 -- Test rif40_GetAdjacencyMatrix()
 --
 SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(currval('rif40_study_id_seq'::regclass)::INTEGER) LIMIT 10;
+
+SELECT * FROM rif40_study_status WHERE study_id = currval('rif40_study_id_seq'::regclass)::INTEGER ORDER BY ith_update;
 
 --
 -- End transaction

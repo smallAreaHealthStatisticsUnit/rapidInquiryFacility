@@ -135,7 +135,7 @@ BEGIN
 -- Check USER = OLD.username; if OK DELETE
 --
 		IF USER = OLD.username THEN
-			DELETE FROM t_rif40_study_sql
+			DELETE FROM t_rif40_study_status
 			 WHERE study_id=OLD.study_id
 			   AND study_state=OLD.study_state;
 		ELSE
