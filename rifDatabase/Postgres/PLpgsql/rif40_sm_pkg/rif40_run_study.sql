@@ -356,10 +356,10 @@ BEGIN
 		EXCEPTION
 			WHEN others THEN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-				GET STACKED DIAGNOSTICS v_stack = PG_CONTEXT;
+--				GET STACKED DIAGNOSTICS v_stack = PG_CONTEXT;
 				msg:='rif40.rif40_run_study error handler('||c1_rec.study_id::Text||')'||E'\n'||
 					'Detail: '||v_detail||E'\n'||
-					'Stack: '||v_stack||E'\n'||
+--					'Stack: '||v_stack||E'\n'||
 					'Error: '||SQLERRM;
 --
 -- Set study status 

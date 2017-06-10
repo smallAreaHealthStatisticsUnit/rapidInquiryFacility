@@ -102,9 +102,9 @@ BEGIN
 	sql_stmt:='DROP VIEW IF EXISTS '||USER||'.rif40_user_version';
 	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
     PERFORM rif40_sql_pkg.rif40_startup();
-	IF USER != 'rif40' THEN
-	        PERFORM rif40_sql_pkg.rif40_ddl_checks();
-	END IF;
+--	IF USER != 'rif40' THEN
+--	        PERFORM rif40_sql_pkg.rif40_ddl_checks();
+--	END IF;
 	PERFORM rif40_log_pkg.rif40_remove_from_debug('rif40_ddl_checks');
 END;
 $$;
