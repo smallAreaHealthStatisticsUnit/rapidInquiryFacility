@@ -111,7 +111,7 @@ BEGIN
 				authorised_notes /* no default value */,
 				isnull(audsid, @@spid),
 				project /* no default value */,
-				stats_method /* No default value */
+				isnull(stats_method, 'NONE')
 	FROM inserted;
 END;
 
