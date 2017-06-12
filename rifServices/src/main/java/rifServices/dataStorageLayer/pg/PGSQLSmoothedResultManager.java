@@ -407,7 +407,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			results[15] = resultSet.getString(16);	
 			results[16] = resultSet.getString(17);	
 			results[17] = resultSet.getString(18);	
-			results[18] = resultSet.getString(19);
+			results[18] = getGender(resultSet.getString(19)); 
 			results[19] = resultSet.getString(20);
 		}
 		catch(SQLException exception) {
@@ -428,6 +428,17 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			return "Risk Analysis";
 		}
 	}
+	
+	private String getGender(final String gender) {
+		if (gender.equals("3")) {
+			return "Both";
+		} else if (gender.equals("2")){
+			return "Female";
+		} else {
+			return "Male";
+		}
+	}
+	
 
 	public String[] getHealthCodesForProcessedStudy(
 			final Connection connection,
@@ -478,11 +489,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			while(resultSet.next()) {
 				results[currentRow] = resultSet.getString("min_condition") + "-" + resultSet.getString("field_name");	
 				currentRow++;
-			}
-
-			resultSet.next();			
-			results[0] = resultSet.getString(1);
-			results[1] = resultSet.getString(2);				
+			}			
 		}
 		catch(SQLException exception) {
 			exception.printStackTrace(System.out);
