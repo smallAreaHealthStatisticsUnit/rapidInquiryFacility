@@ -1,0 +1,11 @@
+Potential characters: Peter!^@#$%^&*:.\`^|/?=+-_[]{}()^<^>
+(Not tested).
+
+Tested password: Peter!@$^~
+				 
+Note thjat the ^ are real character passwords; but are in the string to escape CMD control characters. The character ^ 
+cannot itself be escaped.
+
+ALTER LOGIN peter WITH PASSWORD = 'Peter!@$%^~';
+
+Rejected characters: NONE

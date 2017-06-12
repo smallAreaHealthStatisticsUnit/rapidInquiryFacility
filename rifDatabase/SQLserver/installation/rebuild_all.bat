@@ -67,6 +67,10 @@ REM
 (SET NEWDB=)
 (SET NEWUSER=)
 (SET NEWPW=)
+(SET SNEWDB=)
+(SET SNEWUSER=)
+(SET SNEWPW=)
+(SET SQLCMDPASSWORD=)
 
 REM
 REM Get DB settings
@@ -74,10 +78,18 @@ REM
 echo Creating development RIF databases
 SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
 SET NEWDB=sahsuland
-SET /P NEWPW=New user password [default %NEWUSER%]: %=% || SET NEWPW=%NEWUSER%
+REM
+REM Passwords tests: see test_pw.txt
+REM
+REM The ^s are escape characters
+REM
+SET "XNEWPW=Peter!^@#$%^^^&*:.\`^|/?=+-_[]{}()^<^>"
+SET "NEWPW=Peter!@$%^~"
+REM
+SET /P NEWPW=New user password [default %NEWPW%]: %=% || SET "NEWPW=%NEWPW%"
 SET REBUILD_ALL=Y
 SET SNEWUSER=%NEWUSER%
-SET SNEWPW=%NEWPW%
+SET "SNEWPW=%NEWPW%"
 SET SNEWDB=%NEWDB%
 ECHO ##########################################################################################
 ECHO #
@@ -92,6 +104,7 @@ PAUSE
 REM
 REM Create development database
 REM
+ECHO Create development database...
 sqlcmd -E -b -m-1 -e -r1 -i rif40_development_creation.sql -v newuser="%NEWUSER%"
 if %errorlevel% neq 0 (
 	ECHO rif40_development_creation.sql exiting with %errorlevel%
@@ -122,6 +135,7 @@ if %errorlevel% neq 0  (
 REM
 REM Create development user
 REM
+ECHO Create development user...
 sqlcmd -E -b -m-1 -e -i rif40_development_user.sql -v newuser="%SNEWUSER%" -v newpw="%SNEWPW%"
 if %errorlevel% neq 0  (
 	ECHO rif40_development_user.sql exiting with %errorlevel%
@@ -133,6 +147,7 @@ if %errorlevel% neq 0  (
 REM
 REM Create production user
 REM
+ECHO Create production user...
 sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser="%SNEWUSER%" -v newdb="%SNEWDB%" -v newpw="%SNEWPW%"
 if %errorlevel% neq 0  (
 	ECHO rif40_production_user.sql exiting with %errorlevel%
@@ -144,13 +159,16 @@ if %errorlevel% neq 0  (
 REM
 REM Run a test study
 REM
-sqlcmd -U %SNEWUSER% -P %SNEWPW% -d %SNEWDB% -b -m-1 -e -i rif40_run_study.sql
+ECHO Run a test study...
+SET "SQLCMDPASSWORD=%SNEWPW%"
+sqlcmd -U %SNEWUSER% -d %SNEWDB% -b -m-1 -e -i rif40_run_study.sql
 if %errorlevel% neq 0  (
 	ECHO Both %SNEWDB% and sahsuland_dev built OK
 	
 REM
 REM Clear seetings
 REM
+REM	(SET SQLCMDPASSWORD=)
 	(SET NEWDB=)
 	(SET NEWUSER=)
 	(SET NEWPW=)
@@ -169,6 +187,7 @@ REM
 REM
 REM Clear seetings
 REM
+REM (SET SQLCMDPASSWORD=)
 (SET NEWDB=)
 (SET NEWUSER=)
 (SET NEWPW=)

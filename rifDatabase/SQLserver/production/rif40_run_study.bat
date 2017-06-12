@@ -49,7 +49,7 @@ REM
 IF NOT DEFINED REBUILD_ALL (
 	SET /P NEWUSER=New user [default peter]: %=% || SET NEWUSER=peter
 	SET /P NEWDB=New RIF40 db [default sahsuland]: %=%|| SET NEWDB=sahsuland
-	SET /P NEWPW=New user password [default %NEWUSER%]: %=% || SET NEWPW=%NEWUSER%
+	SET /P NEWPW=New user password [default %SQLCMDPASSWORD%]: %=% || SET "NEWPW=%SQLCMDPASSWORD%"
 	SET REBUILD_ALL=N
 )
 
@@ -94,16 +94,37 @@ IF EXIST inv_id.txt DEL /F inv_id.txt
 IF DEFINED STUDY_ID SET STUDY_ID=
 IF DEFINED INV_ID SET INV_ID=
 
+SET "SQLCMDPASSWORD=%NEWPW%"
+ECHO ##########################################################################################
+ECHO #
+ECHO # Run a study.
+ECHO #
+ECHO # Test user: %NEWUSER%; password: %SQLCMDPASSWORD%
+ECHO #
+ECHO ##########################################################################################
+REM
+REM Test DB connection
+REM
+ECHO Test DB connection...
+SQLCMD -U %NEWUSER% -d %NEWDB% -W -b -Q "SET NOCOUNT ON; SELECT db_name()"
+if %errorlevel% neq 0  (
+	ECHO rif40_run_study.bat; unable to logon to database
+	exit /b 1
+)
+
+ECHO Get next study_id and inv_id from database...
 REM
 REM Get next study_id and inv_id from database
 REM
-SQLCMD  -U %NEWUSER% -P %NEWPW% -d %NEWDB% -W -Q "SET NOCOUNT ON; SELECT RTRIM(CAST([rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq') + 1 AS VARCHAR))" -h -1 > study_id.txt
+SQLCMD -U %NEWUSER% -d %NEWDB% -W -b -Q "SET NOCOUNT ON; SELECT RTRIM(CAST([rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq') + 1 AS VARCHAR))" -h -1 > study_id.txt
 if %errorlevel% neq 0  (
-	ECHO rif40_run_study procedure OK; unable to get study_id from database
+	ECHO rif40_run_study.bat: Unable to get study_id from database
+	exit /b 1
 )
-SQLCMD  -U %NEWUSER% -P %NEWPW% -d %NEWDB% -W -Q "SET NOCOUNT ON; SELECT RTRIM(CAST([rif40].[rif40_sequence_current_value] ('rif40.rif40_inv_id_seq') + 1 AS VARCHAR))" -h -1 > inv_id.txt
+SQLCMD -U %NEWUSER% -d %NEWDB% -W -b -Q "SET NOCOUNT ON; SELECT RTRIM(CAST([rif40].[rif40_sequence_current_value] ('rif40.rif40_inv_id_seq') + 1 AS VARCHAR))" -h -1 > inv_id.txt
 if %errorlevel% neq 0  (
-	ECHO rif40_run_study procedure OK; unable to get inv_id from database
+	ECHO rif40_run_study.bat: Unable to get inv_id from database
+	exit /b 1
 )
 REM
 
@@ -130,8 +151,8 @@ REM exit /b 1
 REM
 REM Run a test study
 REM
-ECHO Run study: %STUDY_ID%; investigation: %INV_ID%	
-sqlcmd -U %NEWUSER% -P %NEWPW% -d %NEWDB% -b -m-1 -e -i rif40_run_study.sql
+ECHO Run study: %STUDY_ID%; investigation: %INV_ID%	...
+sqlcmd -U %NEWUSER% -d %NEWDB% -b -m-1 -e -i rif40_run_study.sql
 if %errorlevel% neq 0  (
 	ECHO Test study failed: rif40_run_study procedure had error
 	exit /b 1
@@ -146,7 +167,7 @@ if %errorlevel% neq 0  (
 		%DB_DRIVER% ^
 		--db_host=localhost --db_port=5432 --db_name=%NEWDB% ^
 		--study_id=%STUDY_ID% --investigation_name=T_INV_1 --covariate_name=SES --investigation_id=%INV_ID% --r_model=het_r_procedure ^
-		--odbc_data_source=%ODBC_DATA_SOURCE% --user_id=%NEWUSER% --password=%NEWPW%
+		--odbc_data_source=%ODBC_DATA_SOURCE% --user_id=%NEWUSER% "--password=%NEWPW%"
 )
 
 REM
@@ -154,7 +175,7 @@ REM Clear seetings
 REM
 (SET NEWDB=)
 (SET NEWUSER=)
-(SET NEWPW=)
+REM (SET NEWPW=)
 (SET STUDY_ID=)
 (SET INV_ID=)
 (SET DB_DRIVER=)

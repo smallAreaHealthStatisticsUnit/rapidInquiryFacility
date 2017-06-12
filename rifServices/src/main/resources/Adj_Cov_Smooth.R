@@ -147,8 +147,16 @@ processCommandLineArguments <- function() {
       if (grepl('user_id', parametersDataFrame[i, 1]) == TRUE) {
         userID <<- parametersDataFrame[i, 2]
       } else if (grepl('password', parametersDataFrame[i, 1]) == TRUE){
-        password <<- parametersDataFrame[i, 2]
-		parametersDataFrame[i, 2] <- NA
+		sqlcmdpassword<-Sys.getenv("SQLCMDPASSWORD") # Support SQLCMDPASSWORD for funny character string tests
+		# Either CMD or RScript escapes ^ to ^^ which is wrong!
+		if (is.null(sqlcmdpassword)) {
+			password <<- parametersDataFrame[i, 2]
+		}
+		else {
+			password <<- sqlcmdpassword
+#			print(paste("Using SQLCMDPASSWORD: ", sqlcmdpassword))
+		}
+		parametersDataFrame[i, 2] <- NA	 
       } else if (grepl('db_name', parametersDataFrame[i, 1]) == TRUE){
         dbName <<- parametersDataFrame[i, 2]
       } else if (grepl('db_host', parametersDataFrame[i, 1]) == TRUE){
