@@ -9,7 +9,6 @@ import rifServices.system.*;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.StudyState;
 
-
 import java.sql.Connection;
 import java.util.ArrayList;
 
@@ -2946,6 +2945,79 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 		
 		return results;		
 }
+	
+	public String[] getDetailsForProcessedStudy(
+			final User _user,
+			final String studyID)
+			throws RIFServiceException {
+			
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			MSSQLConnectionManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user) == true) {
+				return null;
+			}
+			
+			String[] results = null;
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getDetailsForProcessedStudy",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"getDetailsForProcessedStudy",
+					"studyID",
+					studyID);
+				
+				//Check for security violations
+				validateUser(user);
+				fieldValidationUtility.checkMaliciousMethodParameter(
+					"getDetailsForProcessedStudy", 
+					"studyID", 
+					studyID);
+										
+				//Audit attempt to do operation
+				RIFLogger rifLogger = RIFLogger.getLogger();				
+				String auditTrailMessage
+					= RIFServiceMessages.getMessage("logging.getDetailsForProcessedStudy",
+						user.getUserID(),
+						user.getIPAddress(),
+						studyID);
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+		
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+		
+				//Delegate operation to a specialised manager class			
+				MSSQLSmoothedResultManager smoothedResultManager
+					= rifServiceResources.getSQLSmoothedResultManager();
+				results
+					= smoothedResultManager.getDetailsForProcessedStudy(connection, studyID);			
+			}
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getDetailsForProcessedStudy",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+			
+			return results;		
+	}
 
 	
 	

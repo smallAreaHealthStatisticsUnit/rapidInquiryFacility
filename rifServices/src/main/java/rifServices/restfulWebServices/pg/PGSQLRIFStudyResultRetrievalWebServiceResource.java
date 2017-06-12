@@ -1811,6 +1811,7 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 		
 	}	
 	
+	//TODO: (DM) I don't think this method is used or even complete
 	@GET	
 	@Produces({"application/json"})	
 	@Path("/getStudyResultGeneralInfo")
@@ -1876,6 +1877,44 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 				= getRIFStudyResultRetrievalService();
 			String[] results
 				= studyResultRetrievalService.getGeographyAndLevelForStudy(user, studyID);
+
+			//Convert results to support JSON
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					results);
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+		
+		return result;
+		
+	}	
+	
+	@GET	
+	@Produces({"application/json"})	
+	@Path("/getDetailsForProcessedStudy")
+	public String getDetailsForProcessedStudy(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("studyID") String studyID) {
+
+		String result = "";
+		
+		try {
+			//Convert URL parameters to RIF service API parameters			
+			User user = createUser(servletRequest, userID);
+			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
+			String[] results
+				= studyResultRetrievalService.getDetailsForProcessedStudy(user, studyID);
 
 			//Convert results to support JSON
 			result 

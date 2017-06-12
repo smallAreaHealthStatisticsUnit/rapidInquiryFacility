@@ -281,6 +281,7 @@ final class PGSQLRIFSubmissionManager
 	 * @throws RIFServiceException the RIF service exception
 	 */	
 
+	//TODO: (DM) This is probably never called and is what triggers the save to Zip file routines
 	public String submitStudy(
 		final Connection connection,
 		final User user,

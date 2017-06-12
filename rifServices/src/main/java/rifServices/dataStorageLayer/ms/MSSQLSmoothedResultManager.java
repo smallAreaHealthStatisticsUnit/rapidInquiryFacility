@@ -373,6 +373,68 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 			sex);
 	}
 	
+	public String[] getDetailsForProcessedStudy(
+			final Connection connection,
+			final String studyID) 
+					throws RIFServiceException {
+
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();		
+		
+		queryFormatter.addQueryLine(1, "SELECT");
+		queryFormatter.addQueryLine(2, "a.username, a.study_name, a.description, a.study_date, a.geography, "
+				+ "a.study_type, a.comparison_geolevel_name, a.denom_tab, a.year_start, a.year_stop,  "
+				+ "a.max_age_group, a.min_age_group, a.study_geolevel_name, a.project, a.project_description, "
+				+ "b.covariate_name, c.inv_name, c.genders, c.numer_tab");
+		queryFormatter.addQueryLine(1, "FROM");
+		queryFormatter.addQueryLine(2, "rif40.rif40_studies a left join rif40.rif40_inv_covariates b");
+		queryFormatter.addQueryLine(2, "on a.study_id = b.study_id,"); 
+		queryFormatter.addQueryLine(2, "rif40.rif40_investigations c");
+		queryFormatter.addQueryLine(1, "WHERE");
+		queryFormatter.addQueryLine(2, "a.study_id = c.study_id");
+		queryFormatter.addQueryLine(1, "AND");
+		queryFormatter.addQueryLine(2, "a.study_id = ?");
+
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		String[] results = new String[19];
+		try {
+			connection.setAutoCommit(false);
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setInt(1, Integer.valueOf(studyID));
+			resultSet = statement.executeQuery();
+			resultSet.next();			
+			results[0] = resultSet.getString(1);
+			results[1] = resultSet.getString(2);
+			results[2] = resultSet.getString(3);	
+			results[3] = resultSet.getString(4);	
+			results[4] = resultSet.getString(5);	
+			results[5] = resultSet.getString(6);	
+			results[6] = resultSet.getString(7);	
+			results[7] = resultSet.getString(8);	
+			results[8] = resultSet.getString(9);	
+			results[9] = resultSet.getString(10);	
+			results[10] = resultSet.getString(11);	
+			results[11] = resultSet.getString(12);	
+			results[12] = resultSet.getString(13);	
+			results[13] = resultSet.getString(14);	
+			results[14] = resultSet.getString(15);	
+			results[15] = resultSet.getString(16);	
+			results[16] = resultSet.getString(17);	
+			results[17] = resultSet.getString(18);	
+			results[18] = resultSet.getString(19);	
+		}
+		catch(SQLException exception) {
+			exception.printStackTrace(System.out);
+
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
+		}
+		return results;		
+	}	
+	
+	
 	public RIFResultTable getSmoothedResultsForAttributes(
 			final Connection connection,
 			final ArrayList<String> smoothedAttributesToInclude,

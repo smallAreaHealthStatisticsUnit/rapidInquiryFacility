@@ -72,7 +72,7 @@ import java.util.ArrayList;
  */
 
 public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
-		
+
 	/**
 	 * Gets the geometry.
 	 *
@@ -85,13 +85,13 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public String getGeometry(
-		final User user,	
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelView geoLevelView,
-		final ArrayList<MapArea> mapAreas) 
-		throws RIFServiceException;
-		
+			final User user,	
+			final Geography geography,
+			final GeoLevelSelect geoLevelSelect,
+			final GeoLevelView geoLevelView,
+			final ArrayList<MapArea> mapAreas) 
+					throws RIFServiceException;
+
 	/**
 	 * gets the bounds for one single area identifier
 	 * @param user
@@ -101,10 +101,10 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public BoundaryRectangle getGeoLevelBoundsForArea(
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext,
-		final MapArea mapArea)
-		throws RIFServiceException;
+			final User user,
+			final StudyResultRetrievalContext studyResultRetrievalContext,
+			final MapArea mapArea)
+					throws RIFServiceException;
 
 	/**
 	 * gets the centroids for all polygons 
@@ -118,7 +118,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final User user,
 			final Geography geography,
 			final GeoLevelSelect geoLevelSelect)
-			throws RIFServiceException;
+					throws RIFServiceException;
 
 	/*
 	 * Returns JSON stream for a given tile identifier
@@ -127,33 +127,33 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * 
 	 */
 	public String getTileMakerTiles(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final Integer zoomlevel,
-		final Integer x,
-		final Integer y)
-		throws RIFServiceException;
-	
+			final User user,
+			final Geography geography,
+			final GeoLevelSelect geoLevelSelect,
+			final Integer zoomlevel,
+			final Integer x,
+			final Integer y)
+					throws RIFServiceException;
+
 	public String getTiles(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final String tileIdentifier,
-		final Integer zoomLevel,
-		final BoundaryRectangle boundaryRectangle) 
-		throws RIFServiceException;
+			final User user,
+			final Geography geography,
+			final GeoLevelSelect geoLevelSelect,
+			final String tileIdentifier,
+			final Integer zoomLevel,
+			final BoundaryRectangle boundaryRectangle) 
+					throws RIFServiceException;
 
 
 	public String getTilesGivenTile(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final Integer zoomLevel,
-		final Integer xTileIdentifier,
-		final Integer yTileIdentifier) 
-		throws RIFServiceException;
-	
+			final User user,
+			final Geography geography,
+			final GeoLevelSelect geoLevelSelect,
+			final Integer zoomLevel,
+			final Integer xTileIdentifier,
+			final Integer yTileIdentifier) 
+					throws RIFServiceException;
+
 	/**
 	 * Given a given geo level and an attribute theme, returns 
 	 * a collection of map areas that are associated with a specific
@@ -166,12 +166,12 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public ArrayList<MapAreaAttributeValue> getMapAreaAttributeValues(
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext,
-		final GeoLevelAttributeSource geoLevelAttributeSource,
-		final String geoLevelAttribute) 
-		throws RIFServiceException;
-	
+			final User user,
+			final StudyResultRetrievalContext studyResultRetrievalContext,
+			final GeoLevelAttributeSource geoLevelAttributeSource,
+			final String geoLevelAttribute) 
+					throws RIFServiceException;
+
 	/**
 	 * Given a disease mapping study, this method returns 
 	 * @param user
@@ -181,10 +181,10 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @return
 	 */
 	public ArrayList<GeoLevelAttributeSource> getGeoLevelAttributeSources(
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext)
-		throws RIFServiceException; 
-	
+			final User user,
+			final StudyResultRetrievalContext studyResultRetrievalContext)
+					throws RIFServiceException; 
+
 	/**
 	 * 
 	 * @param user
@@ -194,12 +194,12 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public ArrayList<GeoLevelAttributeTheme> getGeoLevelAttributeThemes(
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext,
-		final GeoLevelAttributeSource geoLevelAttributeSource)
-		throws RIFServiceException;
+			final User user,
+			final StudyResultRetrievalContext studyResultRetrievalContext,
+			final GeoLevelAttributeSource geoLevelAttributeSource)
+					throws RIFServiceException;
 
-	
+
 	/**
 	 * There are multiple data attributes that may be associated at a given 
 	 * geo level select (eg: "region", "district"). The attributes are 
@@ -218,12 +218,12 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public String[] getAllAttributesForGeoLevelAttributeTheme(
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext,
-		final GeoLevelAttributeSource geoLevelAttributeSource,
-		final GeoLevelAttributeTheme geoLevelAttributeTheme)
-		throws RIFServiceException;
-		
+			final User user,
+			final StudyResultRetrievalContext studyResultRetrievalContext,
+			final GeoLevelAttributeSource geoLevelAttributeSource,
+			final GeoLevelAttributeTheme geoLevelAttributeTheme)
+					throws RIFServiceException;
+
 	/**
 	 * 
 	 * @param user
@@ -235,13 +235,13 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 */
 
 	public String[] getNumericAttributesForGeoLevelAttributeTheme(
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext,
-		final GeoLevelAttributeSource geoLevelAttributeSource,
-		final GeoLevelAttributeTheme geoLevelAttributeTheme) 
-		throws RIFServiceException;
+			final User user,
+			final StudyResultRetrievalContext studyResultRetrievalContext,
+			final GeoLevelAttributeSource geoLevelAttributeSource,
+			final GeoLevelAttributeTheme geoLevelAttributeTheme) 
+					throws RIFServiceException;
 
-	
+
 	/**
 	 * just displays the statistically calculated data
 	 * @param user
@@ -253,14 +253,14 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */	
 	public RIFResultTable getCalculatedResultsByBlock(
-		final User user,
-		final StudySummary studySummary,
-		final String[] calculatedResultColumnFieldNames,
-		final Integer startRowIndex,
-		final Integer endRowIndex)
-		throws RIFServiceException;
-	
-	
+			final User user,
+			final StudySummary studySummary,
+			final String[] calculatedResultColumnFieldNames,
+			final Integer startRowIndex,
+			final Integer endRowIndex)
+					throws RIFServiceException;
+
+
 	/**
 	 * accessing data from sources such as the health theme,
 	 * the covariates,or data from the extract table
@@ -273,13 +273,13 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getExtractResultsByBlock(
-		final User user,
-		final StudySummary studySummary,
-		final String[] calculatedResultColumnFieldNames,			
-		final Integer startRowIndex,
-		final Integer endRowIndex)
-		throws RIFServiceException;	
-	
+			final User user,
+			final StudySummary studySummary,
+			final String[] calculatedResultColumnFieldNames,			
+			final Integer startRowIndex,
+			final Integer endRowIndex)
+					throws RIFServiceException;	
+
 	/**
 	 * 
 	 * returns a table with the following fields:
@@ -297,22 +297,22 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getResultsStratifiedByGenderAndAgeGroup(
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext,
-		final GeoLevelToMap geoLevelToMap,
-		final GeoLevelAttributeSource geoLevelAttributeSource,
-		final String geoLevelAttribute,
-		final ArrayList<MapArea> mapAreas,
-		final Integer year)
-		throws RIFServiceException;
+			final User user,
+			final StudyResultRetrievalContext studyResultRetrievalContext,
+			final GeoLevelToMap geoLevelToMap,
+			final GeoLevelAttributeSource geoLevelAttributeSource,
+			final String geoLevelAttribute,
+			final ArrayList<MapArea> mapAreas,
+			final Integer year)
+					throws RIFServiceException;
 
-	
+
 	public ArrayList<AgeGroup> getResultAgeGroups(
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext,
-		final GeoLevelAttributeSource geoLevelSource,
-		final String geoLevalAttribute)
-		throws RIFServiceException;
+			final User user,
+			final StudyResultRetrievalContext studyResultRetrievalContext,
+			final GeoLevelAttributeSource geoLevelSource,
+			final String geoLevalAttribute)
+					throws RIFServiceException;
 
 	/**
 	 * returns data stratified by age group
@@ -325,19 +325,19 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getPyramidData(
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext,
-		final GeoLevelAttributeSource geoLevelSource,
-		final String geoLevelAttribute) 
-		throws RIFServiceException;	
+			final User user,
+			final StudyResultRetrievalContext studyResultRetrievalContext,
+			final GeoLevelAttributeSource geoLevelSource,
+			final String geoLevelAttribute) 
+					throws RIFServiceException;	
 	public RIFResultTable getPyramidDataByYear(
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext,
-		final GeoLevelAttributeSource geoLevelSource,
-		final String geoLevelAttribute,
-		final Integer year) 
-		throws RIFServiceException;
-		
+			final User user,
+			final StudyResultRetrievalContext studyResultRetrievalContext,
+			final GeoLevelAttributeSource geoLevelSource,
+			final String geoLevelAttribute,
+			final Integer year) 
+					throws RIFServiceException;
+
 	/**
 	 * returns a table with these fields:
 	 * eg:
@@ -352,36 +352,36 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getPyramidDataByMapAreas(
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext,
-		final GeoLevelToMap geoLevelToMap,
-		final GeoLevelAttributeSource geoLevelSource,
-		final String geoLevelAttribute,
-		final ArrayList<MapArea> mapAreas) 
-		throws RIFServiceException;
+			final User user,
+			final StudyResultRetrievalContext studyResultRetrievalContext,
+			final GeoLevelToMap geoLevelToMap,
+			final GeoLevelAttributeSource geoLevelSource,
+			final String geoLevelAttribute,
+			final ArrayList<MapArea> mapAreas) 
+					throws RIFServiceException;
 
-	
+
 	public String[] getResultFieldsStratifiedByAgeGroup(
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext,
-		final GeoLevelAttributeSource geoLevelAttributeSource)
-		throws RIFServiceException;
-	
-	
+			final User user,
+			final StudyResultRetrievalContext studyResultRetrievalContext,
+			final GeoLevelAttributeSource geoLevelAttributeSource)
+					throws RIFServiceException;
+
+
 	public ArrayList<Integer> getYearsForStudy(
-		final User user, 
-		final String studyID)
-		throws RIFServiceException;
-	
+			final User user, 
+			final String studyID)
+					throws RIFServiceException;
+
 	public ArrayList<Sex> getSexesForStudy(
-		final User user,
-		final String studyID)
-		throws RIFServiceException;
-	
+			final User user,
+			final String studyID)
+					throws RIFServiceException;
+
 	public String[] getGeographyAndLevelForStudy(
 			final User user,
 			final String studyID)
-			throws RIFServiceException;
+					throws RIFServiceException;
 
 	/**
 	 * returns field with the following headers:
@@ -391,9 +391,9 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @return
 	 */
 	public RIFResultTable getSMRValues(
-		final User user,
-		final StudySummary studySummary)
-		throws RIFServiceException;
+			final User user,
+			final StudySummary studySummary)
+					throws RIFServiceException;
 
 	/**
 	 * obtains RR (unsmoothed - adjusted) and its confidence intervals for the
@@ -404,10 +404,10 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getRRValues(
-		final User user,
-		final StudySummary studySummary)
-		throws RIFServiceException;
-	
+			final User user,
+			final StudySummary studySummary)
+					throws RIFServiceException;
+
 
 	/**
 	 * returns a table with the following columns
@@ -418,11 +418,11 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getRRUnadjustedValues(
-		final User user,
-		final StudySummary studySummary)
-		throws RIFServiceException;	
-	
-	
+			final User user,
+			final StudySummary studySummary)
+					throws RIFServiceException;	
+
+
 	/**
 	 * Returns a table with the following fields:
 	 *    Total denominator in study
@@ -442,42 +442,49 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 	 * @throws RIFServiceException
 	 */
 	public RIFResultTable getStudyResultGeneralInfo(
-		final User user,
-		final StudySummary studySummary)
-		throws RIFServiceException;
+			final User user,
+			final StudySummary studySummary)
+					throws RIFServiceException;
 
-	
+
 	public ArrayList<String> getSmoothedResultAttributes(
 			final User user) 
-			throws RIFServiceException;
-	
+					throws RIFServiceException;
+
 	public RIFResultTable getSmoothedResults(
-		final User user,
-		final String studyID,
-		final String sex) 
-		throws RIFServiceException;
+			final User user,
+			final String studyID,
+			final String sex) 
+					throws RIFServiceException;
 
 	public RIFResultTable getSmoothedResultsForAttributes(
-		final User user,
-		final ArrayList<String> smoothedAttributesToInclude,
-		final String studyID,
-		final String sex) 
-		throws RIFServiceException;
-	
+			final User user,
+			final ArrayList<String> smoothedAttributesToInclude,
+			final String studyID,
+			final String sex) 
+					throws RIFServiceException;
+
 	public RIFResultTable getPopulationPyramidData(
-		final User user,
-		final String studyID,
-		final String year)
-		throws RIFServiceException;
-	
+			final User user,
+			final String studyID,
+			final String year)
+					throws RIFServiceException;
+
 	public RIFResultTable getPopulationPyramidData(
-		final User user,
-		final String studyID,
-		final String year,
-		final ArrayList<MapArea> mapAreas)
-		throws RIFServiceException;
-	
-	public RIFResultTable getCurrentStatusAllStudies(final User user)
-		throws RIFServiceException;
-	
+			final User user,
+			final String studyID,
+			final String year,
+			final ArrayList<MapArea> mapAreas)
+					throws RIFServiceException;
+
+	public RIFResultTable getCurrentStatusAllStudies(
+			final User user)
+					throws RIFServiceException;
+
+	public String[] getDetailsForProcessedStudy(
+			final User user,
+			final String studyID)
+					throws RIFServiceException;
+
+
 }

@@ -82,7 +82,7 @@ import java.util.HashSet;
  */
 
 public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
-	
+
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -90,31 +90,31 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
+
 	private ArrayList<String> allAttributeColumnNames;
 	private Hashtable<String, String> columnDescriptionFromName;
 	private HashSet<String> numericColumns;
 	private HashSet<String> textColumns;
 	private HashSet<String> doublePrecisionColumns;
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
 	public PGSQLSmoothedResultManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+			final RIFDatabaseProperties rifDatabaseProperties) {
 
 		super(rifDatabaseProperties);
-				
+
 		numericColumns = new HashSet<String>();
 		doublePrecisionColumns = new HashSet<String>();
 		textColumns = new HashSet<String>();
-		
+
 		//initialise the list of attributes columns that the clients can
 		//use to construct queries
 		allAttributeColumnNames = new ArrayList<String>();
 		columnDescriptionFromName = new Hashtable<String, String>();
-		
+
 		//Below, we are trying to register all the possible fields we would see in the smoothed result file.
 		//Note that the second parameter is a property name for tool tip help text that could help comment
 		//the column names as they would appear in a web page display.  
@@ -124,9 +124,9 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		registerColumnComment("observed", "schemaComments.mapTable.observed");
 		registerColumnComment("expected", "schemaComments.mapTable.expected");
 		registerColumnComment("adjusted", "schemaComments.mapTable.adjusted");
-				
+
 		//We don't need to include the following attributes because they will ALWAYS be in the results
-		
+
 		registerNumericColumn("gid", "schemaComments.mapTable.gid");		
 		//registerTextColumn("gid_rowindex", "schemaComments.mapTable.gidRowIndex");
 		registerNumericColumn("inv_id", "schemaComments.mapTable.invID");
@@ -146,47 +146,47 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		registerDoublePrecisionColumn("smoothed_smr_lower95", "schemaComments.mapTable.smoothedSMRLower95");
 		registerDoublePrecisionColumn("smoothed_smr_upper95", "schemaComments.mapTable.smoothedSMRUpper95");	
 	}
-	
-	
+
+
 	private void registerColumnComment(
-		final String columnName,
-		final String columnDescriptionPropertyName) {
-		
+			final String columnName,
+			final String columnDescriptionPropertyName) {
+
 		String message
-			= RIFServiceMessages.getMessage(columnDescriptionPropertyName);
+		= RIFServiceMessages.getMessage(columnDescriptionPropertyName);
 		columnDescriptionFromName.put(columnName, message);		
 	}
-	
+
 	private void registerTextColumn(
-		final String columnName,
-		final String columnDescriptionPropertyName) {
-		
+			final String columnName,
+			final String columnDescriptionPropertyName) {
+
 		allAttributeColumnNames.add(columnName);
 		textColumns.add(columnName);
 
 		registerColumnComment(
-			columnName, 
-			columnDescriptionPropertyName);
+				columnName, 
+				columnDescriptionPropertyName);
 	}
 
-	
+
 	private void registerDoublePrecisionColumn(
-		final String columnName,
-		final String columnDescriptionPropertyName) {
-		
+			final String columnName,
+			final String columnDescriptionPropertyName) {
+
 		registerNumericColumn(columnName, columnDescriptionPropertyName);
 		doublePrecisionColumns.add(columnName);
 	}
-		
+
 	private void registerNumericColumn(
-		final String columnName,
-		final String columnDescriptionPropertyName) {
-		
+			final String columnName,
+			final String columnDescriptionPropertyName) {
+
 		allAttributeColumnNames.add(columnName);
 		numericColumns.add(columnName);
-		
+
 		String message
-			= RIFServiceMessages.getMessage(columnDescriptionPropertyName);
+		= RIFServiceMessages.getMessage(columnDescriptionPropertyName);
 		columnDescriptionFromName.put(columnName, message);				
 	}
 
@@ -194,33 +194,33 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
+
 	public ArrayList<Sex> getSexes(
-		final Connection connection,
-		final String studyID) 
-		throws RIFServiceException {
-		
+			final Connection connection,
+			final String studyID) 
+					throws RIFServiceException {
+
 		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
-		
+
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.addSelectField("genders");
 		queryFormatter.addFromTable("rif40_investigations");
 		queryFormatter.addWhereParameter("study_id");
-			
+
 		System.out.println("=======");
 		System.out.println(queryFormatter.generateQuery());
 		System.out.println("=======");
-		
+
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		ArrayList<Sex> results = new ArrayList<Sex>();
 		try {
-			
+
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
 			resultSet.next();	
-			
+
 			int sexID = resultSet.getInt(1);				
 
 			if (sexID == 3) {
@@ -236,11 +236,11 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+			= RIFServiceMessages.getMessage(
 					"smoothedResultsManager.error.unableToGetSexesForStudy",
 					studyID);
 			RIFServiceException rifServiceException
-				= new RIFServiceException(
+			= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
@@ -249,30 +249,30 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			PGSQLQueryUtility.close(statement);
 			PGSQLQueryUtility.close(resultSet);
 		}		
-		
+
 		return results;
 	}
-		
+
 	public ArrayList<Integer> getYears(
-		final Connection connection,
-		final String studyID) 
-		throws RIFServiceException {
-				
+			final Connection connection,
+			final String studyID) 
+					throws RIFServiceException {
+
 		String extractTableName
-			= deriveExtractTableName(studyID);
+		= deriveExtractTableName(studyID);
 		PGSQLSelectQueryFormatter queryFormatter
-			= new PGSQLSelectQueryFormatter();
+		= new PGSQLSelectQueryFormatter();
 		queryFormatter.setUseDistinct(true);
 		queryFormatter.addSelectField("year");
 		queryFormatter.addFromTable(extractTableName);
 		queryFormatter.addOrderByCondition("year");
-		
+
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;		
 		ArrayList<Integer> results = new ArrayList<Integer>();
 		try {
 			statement 
-				= connection.prepareStatement(queryFormatter.generateQuery());
+			= connection.prepareStatement(queryFormatter.generateQuery());
 			resultSet = statement.executeQuery();
 			while (resultSet.next()) {
 				results.add(resultSet.getInt(1));
@@ -281,11 +281,11 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+			= RIFServiceMessages.getMessage(
 					"smoothedResultsManager.error.unableToGetYearsForStudy", 
 					studyID);
 			RIFServiceException rifServiceException
-				= new RIFServiceException(
+			= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
@@ -294,10 +294,10 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			PGSQLQueryUtility.close(statement);
 			PGSQLQueryUtility.close(resultSet);
 		}		
-		
+
 		return results;
 	}
-	
+
 	/**
 	 * eg: adjusted, observed, expected, lower95, upper95 etc.
 	 * @return
@@ -306,26 +306,25 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		//@TODO: Make this more flexible.  Right now it's a hard-coded
 		//list of attributes that are likely to be in the s[study_id]_map
 		//result file for a long time to come.  
-		
+
 		return allAttributeColumnNames;
 	}
-	
+
 	public String[] getColumnNameDescriptions(final String[] columnNames) {
 		String[] results = new String[columnNames.length];
 		for (int i = 0; i < columnNames.length; i++) {
 			results[i] = columnDescriptionFromName.get(columnNames[i]);
 		}
-		
+
 		return results;
 	}
-	
-	
-	//TODO:(DM) new geography method
+
+
 	public String[] getGeographyAndLevelForStudy(
-		final Connection connection,
-		final String studyID) 
-		throws RIFServiceException {
-		
+			final Connection connection,
+			final String studyID) 
+					throws RIFServiceException {
+
 		PGSQLSelectQueryFormatter queryFormatter
 		= new PGSQLSelectQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
@@ -333,7 +332,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		queryFormatter.addSelectField("study_geolevel_name");
 		queryFormatter.addFromTable("rif40_studies");
 		queryFormatter.addWhereParameter("study_id");
-			
+
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		String[] results = new String[2];
@@ -348,42 +347,105 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		}
 		catch(SQLException exception) {
 			exception.printStackTrace(System.out);
-			
+
 		}
 		finally {
 			PGSQLQueryUtility.close(statement);
 			PGSQLQueryUtility.close(resultSet);
 		}
-//		String[] results = new String[2];
-//		results[0] = "SAHSU";
-	//	results[1] = "Level3";
+		//		String[] results = new String[2];
+		//		results[0] = "SAHSU";
+		//	results[1] = "Level3";
+		return results;			
+	}	
+
+	public String[] getDetailsForProcessedStudy(
+			final Connection connection,
+			final String studyID) 
+					throws RIFServiceException {
+
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();		
+		
+		queryFormatter.addQueryLine(1, "SELECT");
+		queryFormatter.addQueryLine(2, "a.username, a.study_name, a.description, a.study_date, a.geography, "
+				+ "a.study_type, a.comparison_geolevel_name, a.denom_tab, a.year_start, a.year_stop,  "
+				+ "a.max_age_group, a.min_age_group, a.study_geolevel_name, a.project, a.project_description, "
+				+ "b.covariate_name, c.inv_name, c.genders, c.numer_tab");
+		queryFormatter.addQueryLine(1, "FROM");
+		queryFormatter.addQueryLine(2, "rif40.rif40_studies a left join rif40.rif40_inv_covariates b");
+		queryFormatter.addQueryLine(2, "on a.study_id = b.study_id,"); 
+		queryFormatter.addQueryLine(2, "rif40.rif40_investigations c");
+		queryFormatter.addQueryLine(1, "WHERE");
+		queryFormatter.addQueryLine(2, "a.study_id = c.study_id");
+		queryFormatter.addQueryLine(1, "AND");
+		queryFormatter.addQueryLine(2, "a.study_id = ?");
+
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		String[] results = new String[19];
+		try {
+			connection.setAutoCommit(false);
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setInt(1, Integer.valueOf(studyID));
+			resultSet = statement.executeQuery();
+			resultSet.next();			
+			results[0] = resultSet.getString(1);
+			results[1] = resultSet.getString(2);
+			results[2] = resultSet.getString(3);	
+			results[3] = resultSet.getString(4);	
+			results[4] = resultSet.getString(5);	
+			results[5] = resultSet.getString(6);	
+			results[6] = resultSet.getString(7);	
+			results[7] = resultSet.getString(8);	
+			results[8] = resultSet.getString(9);	
+			results[9] = resultSet.getString(10);	
+			results[10] = resultSet.getString(11);	
+			results[11] = resultSet.getString(12);	
+			results[12] = resultSet.getString(13);	
+			results[13] = resultSet.getString(14);	
+			results[14] = resultSet.getString(15);	
+			results[15] = resultSet.getString(16);	
+			results[16] = resultSet.getString(17);	
+			results[17] = resultSet.getString(18);	
+			results[18] = resultSet.getString(19);	
+		}
+		catch(SQLException exception) {
+			exception.printStackTrace(System.out);
+
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
+		}
 		return results;			
 	}	
 	
+	
+
 	public RIFResultTable getSmoothedResults(
-		final Connection connection,
-		final String studyID,
-		final Sex sex) 
-		throws RIFServiceException {
+			final Connection connection,
+			final String studyID,
+			final Sex sex) 
+					throws RIFServiceException {
 
 		return getSmoothedResultsForAttributes(
-			connection, 
-			allAttributeColumnNames, 
-			studyID,
-			sex);
+				connection, 
+				allAttributeColumnNames, 
+				studyID,
+				sex);
 	}
-	
+
 	public RIFResultTable getSmoothedResultsForAttributes(
-		final Connection connection,
-		final ArrayList<String> smoothedAttributesToInclude,
-		final String studyID,
-		final Sex sex) 
-		throws RIFServiceException {
-		
+			final Connection connection,
+			final ArrayList<String> smoothedAttributesToInclude,
+			final String studyID,
+			final Sex sex) 
+					throws RIFServiceException {
+
 
 		String extractTableName = deriveExtractTableName(studyID);
 		String mapTableName	= deriveMapTableName(studyID);
-		
+
 		/*
 		 * Create the statement to obtain the total number of rows we should 
 		 * expect to get back when we fetch the entire table.  using a 
@@ -402,7 +464,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		 *    ... do stuff ...
 		 * }
 		 */
-				
+
 		SQLGeneralQueryFormatter countTableRowsQueryFormatter = new SQLGeneralQueryFormatter();
 		//otherwise, if it's both, don't filter by any sex value
 		countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
@@ -410,11 +472,11 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		countTableRowsQueryFormatter.addQueryLine(0, "FROM");
 		countTableRowsQueryFormatter.addQueryLine(1, mapTableName);
 		countTableRowsQueryFormatter.padAndFinishLine();
-		
+
 		/*
 		 * Create the SQL query to return all of the fields of interest
 		 */
-		
+
 		//Aggregate population totals for each area based on sex.  If sex is 'BOTH', aggregate male and female 
 		//totals together.  
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
@@ -433,65 +495,65 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		//otherwise, if it's both, don't filter by any sex value
 		queryFormatter.addQueryLine(1, "GROUP BY");
 		queryFormatter.addQueryLine(2, "area_id)");
-		
+
 		//now generate the main SELECT statement
 		String mapTableNameAlias = "a";
 		queryFormatter.addQueryLine(0, "SELECT");
 
 		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			"population_per_area",
-			"area_id",
-			false);		
-				
-		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			mapTableNameAlias,
-			"band_id",
-			true);
+				queryFormatter,
+				1,
+				"population_per_area",
+				"area_id",
+				false);		
 
 		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			mapTableNameAlias,
-			"genders",
-			true);
-		
-		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			mapTableNameAlias,
-			"observed",
-			true);
-				
-		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			mapTableNameAlias,
-			"expected",
-			true);
+				queryFormatter,
+				1,
+				mapTableNameAlias,
+				"band_id",
+				true);
 
 		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			"population_per_area",
-			"population",
-			true);
-		
-		
+				queryFormatter,
+				1,
+				mapTableNameAlias,
+				"genders",
+				true);
+
 		addSelectSmoothedFieldEntry(
-			queryFormatter,
-			1,
-			mapTableNameAlias,
-			"adjusted",
-			true);
-		
-		
+				queryFormatter,
+				1,
+				mapTableNameAlias,
+				"observed",
+				true);
+
+		addSelectSmoothedFieldEntry(
+				queryFormatter,
+				1,
+				mapTableNameAlias,
+				"expected",
+				true);
+
+		addSelectSmoothedFieldEntry(
+				queryFormatter,
+				1,
+				"population_per_area",
+				"population",
+				true);
+
+
+		addSelectSmoothedFieldEntry(
+				queryFormatter,
+				1,
+				mapTableNameAlias,
+				"adjusted",
+				true);
+
+
 		for (int i = 0; i < smoothedAttributesToInclude.size(); i++) {
 
-				addSelectSmoothedFieldEntry(
+			addSelectSmoothedFieldEntry(
 					queryFormatter,
 					1,
 					mapTableNameAlias,
@@ -511,17 +573,17 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		queryFormatter.addQueryPhrase(1, mapTableNameAlias);
 		queryFormatter.addQueryPhrase(".genders=?");
 		queryFormatter.padAndFinishLine();
-		
+
 		//add in join condition related to genders
 		logSQLQuery(
-			"getNumberOfResultsForMapDataSet", 
-			countTableRowsQueryFormatter, 
-			studyID);
+				"getNumberOfResultsForMapDataSet", 
+				countTableRowsQueryFormatter, 
+				studyID);
 		logSQLQuery(
-			"retrieveResultsForMapDataSet", 
-			queryFormatter, 
-			studyID);
-		
+				"retrieveResultsForMapDataSet", 
+				queryFormatter, 
+				studyID);
+
 		PreparedStatement countTableRowsStatement = null;
 		PreparedStatement retrieveDataStatement = null;
 		ResultSet totalRowCountResultSet = null;
@@ -529,14 +591,14 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		int numberOfRows = 0;
 		try {
 			countTableRowsStatement
-				= connection.prepareStatement(countTableRowsQueryFormatter.generateQuery());						
+			= connection.prepareStatement(countTableRowsQueryFormatter.generateQuery());						
 			totalRowCountResultSet
-				= countTableRowsStatement.executeQuery();
+			= countTableRowsStatement.executeQuery();
 			totalRowCountResultSet.next();
 			numberOfRows = totalRowCountResultSet.getInt(1);
-			
+
 			retrieveDataStatement
-				= connection.prepareStatement(queryFormatter.generateQuery());	
+			= connection.prepareStatement(queryFormatter.generateQuery());	
 
 			if (sex == Sex.MALES) {
 				retrieveDataStatement.setInt(1, 1);				
@@ -547,10 +609,10 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			else {
 				retrieveDataStatement.setInt(1, 3);				
 			}
-						
+
 			smoothedResultSet = retrieveDataStatement.executeQuery();
 
-			
+
 			/*
 			 * Format should look like:
 			 * area_id,
@@ -563,10 +625,10 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			 * 
 			 * + n
 			 */
-			
+
 			int numberOfColumns = smoothedAttributesToInclude.size();
 			String[][] data = new String[numberOfRows][7 + numberOfColumns];
-						
+
 			//Build up results table
 			int currentRow = 0;	
 			while(smoothedResultSet.next()) {
@@ -583,10 +645,10 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 				int currentColumn = 7;
 				for (String smoothedAttributeToInclude : smoothedAttributesToInclude) {
 					data[currentRow][currentColumn] 
-						= smoothedResultSet.getString(smoothedAttributeToInclude);
+							= smoothedResultSet.getString(smoothedAttributeToInclude);
 					currentColumn++;
 				}
-				
+
 				currentRow++;		
 			}
 
@@ -604,23 +666,23 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			for (int i = 0; i < numberOfSmoothedAttributesToInclude; i++) {
 				columnNames[7 + i] = smoothedAttributesToInclude.get(i);
 			}
-			
+
 			String[] columnNameDescriptions = getColumnNameDescriptions(columnNames);
-			
+
 			RIFResultTable.ColumnDataType[] columnDataTypes = deriveColumnDataTypes(columnNames);
 			rifResultTable.setColumnProperties(columnNames, columnNameDescriptions, columnDataTypes);
 			rifResultTable.setData(data);
 			return rifResultTable;
-			
+
 		}
 		catch(SQLException sqlException) {
 			sqlException.printStackTrace(System.out);
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+			= RIFServiceMessages.getMessage(
 					"smoothedResultsManager.error.unableToGetSmoothedResults", 
 					studyID);
 			RIFServiceException rifServiceException
-				= new RIFServiceException(RIFServiceError.DATABASE_QUERY_FAILED, errorMessage);
+			= new RIFServiceException(RIFServiceError.DATABASE_QUERY_FAILED, errorMessage);
 			throw rifServiceException;			
 		}
 		finally {
@@ -629,16 +691,16 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			PGSQLQueryUtility.close(countTableRowsStatement);
 			PGSQLQueryUtility.close(retrieveDataStatement);
 		}
-			
+
 	}
 
 	private void addSelectSmoothedFieldEntry(
-		final SQLGeneralQueryFormatter queryFormatter,
-		final int indentationLevel,
-		final String tableName,
-		final String columnName,
-		final boolean startsWithComma) {
-		
+			final SQLGeneralQueryFormatter queryFormatter,
+			final int indentationLevel,
+			final String tableName,
+			final String columnName,
+			final boolean startsWithComma) {
+
 		//KLG: round appropriately if the field is double precision
 		//for now we'll conserve whatever digits of precision that the R program
 		//produces.  It might be useful for exporting a data set to a zip file that
@@ -648,7 +710,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		//and (2) in the data viewer, the users explore the data through visual inspection
 		//and not through client-side statistical functions that can do additioanl analysis
 		//work.
-		
+
 		//KLG: @TODO The most useful way of rounding is to round to the correct number
 		//of significant digits, not decimal places.  But doing this requires developing 
 		//special code that may not be portable across SQL Server and PostgreSQL.  Moreover,
@@ -660,11 +722,11 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			queryFormatter.addQueryPhrase(",");
 			queryFormatter.finishLine();
 		}
-		
+
 		if (doublePrecisionColumns.contains(columnName)) {
-			
+
 			StringBuilder sqlRoundingFragment = new StringBuilder();
-						
+
 			sqlRoundingFragment.append("ROUND(");
 			sqlRoundingFragment.append(tableName);
 			sqlRoundingFragment.append(".");			
@@ -678,13 +740,13 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			queryFormatter.addQueryPhrase(indentationLevel, tableName + "." + columnName);
 		}	
 	}
-	
+
 
 	private RIFResultTable.ColumnDataType[] deriveColumnDataTypes(
-		final String[] columnNames) {
-		
+			final String[] columnNames) {
+
 		RIFResultTable.ColumnDataType[] results
-			= new RIFResultTable.ColumnDataType[columnNames.length];
+		= new RIFResultTable.ColumnDataType[columnNames.length];
 		for (int i = 0; i < columnNames.length; i++) {
 			if (numericColumns.contains(columnNames[i])) {
 				results[i] = RIFResultTable.ColumnDataType.NUMERIC;
@@ -693,24 +755,24 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 				results[i] = RIFResultTable.ColumnDataType.TEXT;				
 			}
 		}
-		
+
 		return results;
 	}
 
-	
+
 	RIFResultTable getPopulationPyramidData(
-		final Connection connection, 
-		final String studyID,
-		final Integer year) 
-		throws RIFServiceException {
-		
+			final Connection connection, 
+			final String studyID,
+			final Integer year) 
+					throws RIFServiceException {
+
 		String extractTableName = deriveExtractTableName(studyID);
-		
+
 		PGSQLCountTableRowsQueryFormatter getPyramidResultsCounter = new PGSQLCountTableRowsQueryFormatter();
 		getPyramidResultsCounter.setCountFieldName("age_group", true);
 		getPyramidResultsCounter.setTableName(extractTableName);
-		
-		
+
+
 		SQLGeneralQueryFormatter getPopulationPyramidData = new SQLGeneralQueryFormatter();		
 		getPopulationPyramidData.addQueryLine(0, "WITH males AS");
 		getPopulationPyramidData.addQueryLine(1, "(SELECT");
@@ -723,7 +785,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		getPopulationPyramidData.addQueryLine(2, "year = ?");
 		getPopulationPyramidData.addQueryLine(1, "GROUP BY");
 		getPopulationPyramidData.addQueryLine(2, "age_group),");
-		
+
 		getPopulationPyramidData.addQueryLine(0, "females AS");
 		getPopulationPyramidData.addQueryLine(1, "(SELECT");
 		getPopulationPyramidData.addQueryLine(2, "age_group,");
@@ -752,23 +814,23 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		getPopulationPyramidData.addQueryLine(0, "ORDER BY");
 		getPopulationPyramidData.addQueryLine(1, "rif40.rif40_age_groups.offset");
 
-				
+
 		PreparedStatement resultCounterStatement = null;
 		PreparedStatement mainResultsStatement = null;
-		
+
 		ResultSet resultCounterSet = null;
 		ResultSet mainResultSet = null;
 
 		RIFResultTable results = new RIFResultTable();
 
 		try {
-			
+
 			//Count the number of results first
 			resultCounterStatement = connection.prepareStatement(getPyramidResultsCounter.generateQuery());
 			resultCounterSet = resultCounterStatement.executeQuery();
 			resultCounterSet.next();
 			int totalNumberRowsInResults = resultCounterSet.getInt(1);
-			
+
 			//Now get the results
 			mainResultsStatement = connection.prepareStatement(getPopulationPyramidData.generateQuery());
 			mainResultsStatement.setInt(1, year);
@@ -776,20 +838,20 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			//"1" is associated with the group of age group identifiers that are typically used for dividing ages into
 			//different categories
 			mainResultsStatement.setInt(3, 1);
-			
+
 			String[] columnNames = new String[3];
 			columnNames[0] = "population_label";
 			columnNames[1] = "males";
 			columnNames[2] = "females";
-			
+
 			RIFResultTable.ColumnDataType[] columnDataTypes = new RIFResultTable.ColumnDataType[3];
 			columnDataTypes[0] = RIFResultTable.ColumnDataType.TEXT;
 			columnDataTypes[1] = RIFResultTable.ColumnDataType.NUMERIC;
 			columnDataTypes[2] = RIFResultTable.ColumnDataType.NUMERIC;
-			
+
 			String[][] data = new String[totalNumberRowsInResults][3];
 			int ithRow = 0;
-			
+
 			mainResultSet = mainResultsStatement.executeQuery();
 			while (mainResultSet.next()) {
 				data[ithRow][0] = mainResultSet.getString(1);
@@ -797,20 +859,20 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 				data[ithRow][2] = mainResultSet.getString(3);
 				ithRow++;
 			}	
-			
+
 			results.setColumnProperties(columnNames, columnDataTypes);
 			results.setData(data);
-			
+
 			return results;
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+			= RIFServiceMessages.getMessage(
 					"sqlSmoothedResultManager.error.unableToRetrievePopulationPyramidData",
 					studyID);
 			RIFServiceException rifServiceException
-				= new RIFServiceException(
+			= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
@@ -826,19 +888,19 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 
 
 	RIFResultTable getPopulationPyramidData(
-		final Connection connection, 
-		final String studyID,
-		final Integer year,
-		final ArrayList<MapArea> mapAreas) 
-		throws RIFServiceException {
-		
+			final Connection connection, 
+			final String studyID,
+			final Integer year,
+			final ArrayList<MapArea> mapAreas) 
+					throws RIFServiceException {
+
 		String extractTableName = deriveExtractTableName(studyID);
-		
+
 		PGSQLCountTableRowsQueryFormatter getPyramidResultsCounter = new PGSQLCountTableRowsQueryFormatter();
 		getPyramidResultsCounter.setCountFieldName("age_group", true);
 		getPyramidResultsCounter.setTableName(extractTableName);
-		
-		
+
+
 		SQLGeneralQueryFormatter getPopulationPyramidData = new SQLGeneralQueryFormatter();		
 		getPopulationPyramidData.addQueryLine(0, "WITH males AS");
 		getPopulationPyramidData.addQueryLine(1, "(SELECT");
@@ -849,7 +911,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		getPopulationPyramidData.addQueryLine(1, "WHERE");
 		getPopulationPyramidData.addQueryLine(2, "sex = 1 AND ");
 		getPopulationPyramidData.addQueryPhrase(2, "year = ?");
-				
+
 		StringBuilder mapAreasToIncludePhrase = new StringBuilder();
 		int numberOfMapAreas = mapAreas.size();
 		if (numberOfMapAreas > 0) {
@@ -867,10 +929,10 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			getPopulationPyramidData.addQueryPhrase(mapAreasToIncludePhrase.toString());
 			getPopulationPyramidData.finishLine();
 		}
-		
+
 		getPopulationPyramidData.addQueryLine(1, "GROUP BY");
 		getPopulationPyramidData.addQueryLine(2, "age_group),");
-		
+
 		getPopulationPyramidData.addQueryLine(0, "females AS");
 		getPopulationPyramidData.addQueryLine(1, "(SELECT");
 		getPopulationPyramidData.addQueryLine(2, "age_group,");
@@ -880,7 +942,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		getPopulationPyramidData.addQueryLine(1, "WHERE");
 		getPopulationPyramidData.addQueryLine(2, "sex = 2 AND ");
 		getPopulationPyramidData.addQueryLine(2, "year = ?");
-		
+
 		if (numberOfMapAreas > 0) {
 			getPopulationPyramidData.addQueryPhrase(mapAreasToIncludePhrase.toString());			
 			getPopulationPyramidData.finishLine();
@@ -904,23 +966,23 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		getPopulationPyramidData.addQueryLine(0, "ORDER BY");
 		getPopulationPyramidData.addQueryLine(1, "rif40.rif40_age_groups.offset");
 		logSQLQuery("getPopulationPyramidData", getPopulationPyramidData, String.valueOf(year), String.valueOf(year));
-				
+
 		PreparedStatement resultCounterStatement = null;
 		PreparedStatement mainResultsStatement = null;
-		
+
 		ResultSet resultCounterSet = null;
 		ResultSet mainResultSet = null;
 
 		RIFResultTable results = new RIFResultTable();
-		
+
 		try {
-			
+
 			//Count the number of results first
 			resultCounterStatement = connection.prepareStatement(getPyramidResultsCounter.generateQuery());
 			resultCounterSet = resultCounterStatement.executeQuery();
 			resultCounterSet.next();
 			int totalNumberRowsInResults = resultCounterSet.getInt(1);
-			
+
 			//Now get the results
 			mainResultsStatement = connection.prepareStatement(getPopulationPyramidData.generateQuery());
 			mainResultsStatement.setInt(1, year);
@@ -928,17 +990,17 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			//"1" is associated with the group of age group identifiers that are typically used for dividing ages into
 			//different categories
 			mainResultsStatement.setInt(3, 1);
-			
+
 			String[] columnNames = new String[3];
 			columnNames[0] = "population_label";
 			columnNames[1] = "males";
 			columnNames[2] = "females";
-			
+
 			RIFResultTable.ColumnDataType[] columnDataTypes = new RIFResultTable.ColumnDataType[3];
 			columnDataTypes[0] = RIFResultTable.ColumnDataType.TEXT;
 			columnDataTypes[1] = RIFResultTable.ColumnDataType.NUMERIC;
 			columnDataTypes[2] = RIFResultTable.ColumnDataType.NUMERIC;
-			
+
 			String[][] data = new String[totalNumberRowsInResults][3];
 			int ithRow = 0;
 
@@ -950,7 +1012,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 				data[ithRow][2] = mainResultSet.getString(3);
 				ithRow++;
 			}	
-			
+
 			results.setColumnProperties(columnNames, columnDataTypes);
 			results.setData(data);
 
@@ -960,11 +1022,11 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 
 			logSQLException(sqlException);
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+			= RIFServiceMessages.getMessage(
 					"sqlSmoothedResultManager.error.unableToRetrievePopulationPyramidData", 
 					studyID);
 			RIFServiceException rifServiceException
-				= new RIFServiceException(
+			= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED, 
 					errorMessage);
 			throw rifServiceException;
@@ -977,7 +1039,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			PGSQLQueryUtility.close(mainResultSet);		
 		}
 	}
-	
+
 	private String deriveMapTableName(final String studyID) {
 
 		StringBuilder result = new StringBuilder();
@@ -985,7 +1047,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		result.append("s");
 		result.append(studyID);
 		result.append("_map");
-		
+
 		return result.toString();
 	}
 
@@ -996,15 +1058,15 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		result.append("s");
 		result.append(studyID);
 		result.append("_extract");
-		
+
 		return result.toString();
 	}	
-	
+
 	public void extractCursorResults(final Connection connection) 
-		throws RIFServiceException {
-			
+			throws RIFServiceException {
+
 		PGSQLSelectQueryFormatter queryFormatter
-			= new PGSQLSelectQueryFormatter();
+		= new PGSQLSelectQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif_studies");
 		queryFormatter.addSelectField("area_id");
 		queryFormatter.addSelectField("observed");
@@ -1013,7 +1075,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		queryFormatter.addWhereParameterWithOperator("band_id", "<");
 		//queryFormatter.addWhereParameterWithOperator("band_id", "<");
 		//queryFormatter.addWh
-			
+
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
@@ -1023,7 +1085,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			//statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			statement.setFetchSize(10);
 			resultSet = statement.executeQuery();
-			
+
 			int currentRow = 1;
 			while (resultSet.next()) {
 				String areaID = resultSet.getString(1);
@@ -1035,17 +1097,17 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		}
 		catch(SQLException exception) {
 			exception.printStackTrace(System.out);
-			
+
 		}
 		finally {
 			PGSQLQueryUtility.close(statement);
 			PGSQLQueryUtility.close(resultSet);
 		}
-		
+
 	}
-	
-	
-	
+
+
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
