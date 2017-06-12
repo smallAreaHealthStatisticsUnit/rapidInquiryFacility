@@ -355,7 +355,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		}
 		//		String[] results = new String[2];
 		//		results[0] = "SAHSU";
-		//	results[1] = "Level3";
+		//		results[1] = "Level3";
 		return results;			
 	}	
 
@@ -365,12 +365,12 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 					throws RIFServiceException {
 
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();		
-		
+
 		queryFormatter.addQueryLine(1, "SELECT");
 		queryFormatter.addQueryLine(2, "a.username, a.study_name, a.description, a.study_date, a.geography, "
 				+ "a.study_type, a.comparison_geolevel_name, a.denom_tab, a.year_start, a.year_stop,  "
 				+ "a.max_age_group, a.min_age_group, a.study_geolevel_name, a.project, a.project_description, "
-				+ "b.covariate_name, c.inv_name, c.genders, c.numer_tab");
+				+ "a.stats_method, b.covariate_name, c.inv_name, c.genders, c.numer_tab");
 		queryFormatter.addQueryLine(1, "FROM");
 		queryFormatter.addQueryLine(2, "rif40.rif40_studies a left join rif40.rif40_inv_covariates b");
 		queryFormatter.addQueryLine(2, "on a.study_id = b.study_id,"); 
@@ -382,7 +382,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
-		String[] results = new String[19];
+		String[] results = new String[20];
 		try {
 			connection.setAutoCommit(false);
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
@@ -394,7 +394,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			results[2] = resultSet.getString(3);	
 			results[3] = resultSet.getString(4);	
 			results[4] = resultSet.getString(5);	
-			results[5] = resultSet.getString(6);	
+			results[5] = getStudyType(resultSet.getString(6));	
 			results[6] = resultSet.getString(7);	
 			results[7] = resultSet.getString(8);	
 			results[8] = resultSet.getString(9);	
@@ -407,7 +407,8 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			results[15] = resultSet.getString(16);	
 			results[16] = resultSet.getString(17);	
 			results[17] = resultSet.getString(18);	
-			results[18] = resultSet.getString(19);	
+			results[18] = resultSet.getString(19);
+			results[19] = resultSet.getString(20);
 		}
 		catch(SQLException exception) {
 			exception.printStackTrace(System.out);
@@ -419,8 +420,83 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		}
 		return results;			
 	}	
-	
-	
+
+	private String getStudyType(final String studyType) {
+		if (studyType.equals("1")) {
+			return "Disease Mapping";
+		} else {
+			return "Risk Analysis";
+		}
+	}
+
+	public String[] getHealthCodesForProcessedStudy(
+			final Connection connection,
+			final String studyID) 
+					throws RIFServiceException {
+
+		//Count the number of terms
+		SQLGeneralQueryFormatter countTableRowsQueryFormatter = new SQLGeneralQueryFormatter();
+		countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
+		countTableRowsQueryFormatter.addQueryLine(1, "COUNT(min_condition) AS total");
+		countTableRowsQueryFormatter.addQueryLine(0, "FROM");
+		countTableRowsQueryFormatter.addQueryLine(1, "rif40_inv_conditions");
+		countTableRowsQueryFormatter.addQueryLine(1, "WHERE study_id = ?");
+		//TODO:
+		PGSQLSelectQueryFormatter queryFormatter
+		= new PGSQLSelectQueryFormatter();
+		queryFormatter.setDatabaseSchemaName("rif40");
+		queryFormatter.addSelectField("min_condition");
+		queryFormatter.addSelectField("field_name");
+		queryFormatter.addFromTable("rif40_inv_conditions");
+		queryFormatter.addWhereParameter("study_id");
+
+		PreparedStatement statement = null;
+		PreparedStatement countTableRowsStatement = null;
+		ResultSet resultSet = null;
+		ResultSet totalRowCountResultSet = null;
+		int numberOfRows = 0;
+		String[] results = null;
+
+		try {
+			connection.setAutoCommit(false);
+
+			countTableRowsStatement
+			= connection.prepareStatement(countTableRowsQueryFormatter.generateQuery());	
+			countTableRowsStatement.setInt(1, Integer.valueOf(studyID));
+			totalRowCountResultSet
+			= countTableRowsStatement.executeQuery();
+			totalRowCountResultSet.next();
+			numberOfRows = totalRowCountResultSet.getInt(1);
+			
+			results = new String[numberOfRows];
+
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setInt(1, Integer.valueOf(studyID));
+
+			resultSet = statement.executeQuery();
+			int currentRow = 0;	
+			while(resultSet.next()) {
+				results[currentRow] = resultSet.getString("min_condition") + "-" + resultSet.getString("field_name");	
+				currentRow++;
+			}
+
+			resultSet.next();			
+			results[0] = resultSet.getString(1);
+			results[1] = resultSet.getString(2);				
+		}
+		catch(SQLException exception) {
+			exception.printStackTrace(System.out);
+
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
+			PGSQLQueryUtility.close(countTableRowsStatement);
+			PGSQLQueryUtility.close(totalRowCountResultSet);
+		}
+		return results;			
+	}	
+
 
 	public RIFResultTable getSmoothedResults(
 			final Connection connection,

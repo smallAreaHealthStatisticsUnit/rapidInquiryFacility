@@ -3,7 +3,6 @@ package rifServices.restfulWebServices.ms;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifServices.businessConceptLayer.*;
-
 import rifServices.restfulWebServices.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -1860,6 +1859,82 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 				= getRIFStudyResultRetrievalService();
 			String[] results
 				= studyResultRetrievalService.getGeographyAndLevelForStudy(user, studyID);
+
+			//Convert results to support JSON
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					results);
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+		
+		return result;
+		
+	}
+	
+	@GET	
+	@Produces({"application/json"})	
+	@Path("/getDetailsForProcessedStudy")
+	public String getDetailsForProcessedStudy(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("studyID") String studyID) {
+
+		String result = "";
+		
+		try {
+			//Convert URL parameters to RIF service API parameters			
+			User user = createUser(servletRequest, userID);
+			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
+			String[] results
+				= studyResultRetrievalService.getDetailsForProcessedStudy(user, studyID);
+
+			//Convert results to support JSON
+			result 
+				= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					results);
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+		
+		return result;
+		
+	}	
+	
+	@GET	
+	@Produces({"application/json"})	
+	@Path("/getHealthCodesForProcessedStudy")
+	public String getHealthCodesForProcessedStudy(
+		@Context HttpServletRequest servletRequest,	
+		@QueryParam("userID") String userID,
+		@QueryParam("studyID") String studyID) {
+
+		String result = "";
+		
+		try {
+			//Convert URL parameters to RIF service API parameters			
+			User user = createUser(servletRequest, userID);
+			
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+				= getRIFStudyResultRetrievalService();
+			String[] results
+				= studyResultRetrievalService.getHealthCodesForProcessedStudy(user, studyID);
 
 			//Convert results to support JSON
 			result 

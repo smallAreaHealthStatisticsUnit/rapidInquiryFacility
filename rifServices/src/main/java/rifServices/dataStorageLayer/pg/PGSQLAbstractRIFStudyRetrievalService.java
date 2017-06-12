@@ -2947,7 +2947,7 @@ abstract class PGSQLAbstractRIFStudyRetrievalService
 		
 		return results;		
 }
-	
+
 	public String[] getDetailsForProcessedStudy(
 			final User _user,
 			final String studyID)
@@ -3009,6 +3009,79 @@ abstract class PGSQLAbstractRIFStudyRetrievalService
 				logException(
 					user,
 					"getDetailsForProcessedStudy",
+					rifServiceException);			
+			}
+			finally {
+				//Reclaim pooled connection
+				sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+			}
+			
+			return results;		
+	}
+	
+	public String[] getHealthCodesForProcessedStudy(
+			final User _user,
+			final String studyID)
+			throws RIFServiceException {
+			
+			//Defensively copy parameters and guard against blocked users
+			User user = User.createCopy(_user);
+			PGSQLConnectionManager sqlConnectionManager
+				= rifServiceResources.getSqlConnectionManager();
+			if (sqlConnectionManager.isUserBlocked(user) == true) {
+				return null;
+			}
+		
+			String[] results = null;
+			Connection connection = null;
+			try {
+				//Check for empty parameters
+				FieldValidationUtility fieldValidationUtility
+					= new FieldValidationUtility();
+				fieldValidationUtility.checkNullMethodParameter(
+					"getHealthCodesForProcessedStudy",
+					"user",
+					user);
+				fieldValidationUtility.checkNullMethodParameter(
+					"getHealthCodesForProcessedStudy",
+					"studyID",
+					studyID);
+				
+				//Check for security violations
+				validateUser(user);
+				fieldValidationUtility.checkMaliciousMethodParameter(
+					"getHealthCodesForProcessedStudy", 
+					"studyID", 
+					studyID);
+										
+				//Audit attempt to do operation
+				RIFLogger rifLogger = RIFLogger.getLogger();				
+				String auditTrailMessage
+					= RIFServiceMessages.getMessage("logging.getHealthCodesForProcessedStudy",
+						user.getUserID(),
+						user.getIPAddress(),
+						studyID);
+				rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+		
+				//Assign pooled connection
+				connection
+					= sqlConnectionManager.assignPooledReadConnection(user);
+		
+				//Delegate operation to a specialised manager class			
+				PGSQLSmoothedResultManager smoothedResultManager
+					= rifServiceResources.getSQLSmoothedResultManager();
+				results
+					= smoothedResultManager.getHealthCodesForProcessedStudy(connection, studyID);			
+			}
+			catch(RIFServiceException rifServiceException) {
+				//Audit failure of operation
+				logException(
+					user,
+					"getHealthCodesForProcessedStudy",
 					rifServiceException);			
 			}
 			finally {
