@@ -1384,6 +1384,7 @@ Calls: saveDataFrameToDatabaseTable -> sqlSave
   ```
 * Added rif40_study_status support for Postgres
 * Added stats_method to rif40_studies
+* CDC password tests: Peter!@$^~ was OK
   
 #### Current TODO list (June 2017): SQL Server Port
 
