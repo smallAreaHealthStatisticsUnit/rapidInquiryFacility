@@ -1920,6 +1920,14 @@ UPDATE sahsu_grd_level1
 					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */,
 					""																/* 3: Schema; e.g. rif_data. or "" */), 
 				sqlArray, dbType);
+					
+			var sqlStmt=new Sql("Check areaid_count column in geolevels table using geometry table", 
+				getSqlFromFile("geolevels_areaid_check.sql", 
+					dbType, 
+					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* 1: Geolevels table */,
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */,
+					""																/* 3: Schema; e.g. rif_data. or "" */), 
+				sqlArray, dbType);
 				
 		} // End of insertGeometryTable()
 /*
@@ -2272,6 +2280,14 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				
 			var sqlStmt=new Sql("Update areaid_count column in geolevels table using geometry table", 
 				getSqlFromFile("geolevels_areaid_update.sql", 
+					dbType, 
+					"t_rif40_geolevels" 											/* 1: Geolevels table */,
+					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */,
+					schema															/* 3: Schema; e.g. rif_data. or "" */), 
+				sqlArray, dbType);		
+
+			var sqlStmt=new Sql("Check areaid_count column in geolevels table using geometry table", 
+				getSqlFromFile("geolevels_areaid_check.sql", 
 					dbType, 
 					"t_rif40_geolevels" 											/* 1: Geolevels table */,
 					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */,

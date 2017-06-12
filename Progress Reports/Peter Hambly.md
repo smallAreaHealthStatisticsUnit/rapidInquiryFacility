@@ -1384,11 +1384,18 @@ Calls: saveDataFrameToDatabaseTable -> sqlSave
   ```
 * Added rif40_study_status support for Postgres
 * Added stats_method to rif40_studies
+
+#### 12th to 16th June
+
 * CDC password tests: Peter!@$^~ was OK
-  
+
+Todo:
+
+* Fix missing level 4 geography tiles bug (areaid_count=0 in geolevels table) 
+* No area names in sahsuland geography. Setup is wrong.
+ 
 #### Current TODO list (June 2017): SQL Server Port
 
-* Fix missing level 4 geography tiles bug (areaid_count=0 in geolevels table)
 * Harden SQL Server port against SQL Injection getting past middleware into meta data
 * Process Utah geography
 * Disable guest logins on SQL Server
@@ -1398,8 +1405,7 @@ Calls: saveDataFrameToDatabaseTable -> sqlSave
   GET XHR https://peter-pc:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter [HTTP/1.1 200  25ms]
   09:09:31.552 Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://peter-pc:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter. (Reason: CORS header 'Access-Control-Allow-Origin' missing). 1 (unknown)
   ```
-  
-* Discuss changing passwords
+
 * Geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Add checks for studies:
 ```
 	-- SQL statement 75: Remove old geolevels meta data table >>>
@@ -1411,9 +1417,7 @@ Calls: saveDataFrameToDatabaseTable -> sqlSave
 	Msg 3621, Level 0, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
 	The statement has been terminated.
 ```
-* Test database and user account creation with db_create target. Need to keep postgres admin logged on
 * Assist with middleware (database fixes)
-* Drop script for SQL server to all rif40_sahsuland_dev_install.bat/rif40_sahsuland_install.bat to be re-run without rebuilding the entire database
 
 #### TileViewer TODO (deferred to August):
  
@@ -1449,7 +1453,6 @@ Calls: saveDataFrameToDatabaseTable -> sqlSave
 ####  TODO list:
 
 * Data loader to generate primary keys. PK on pop_sahsuland_pop_pk + cluster (see: v4_0_create_sahsuland.sql)
-* Fix for T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION
 * Convert remaining use of geography:: datatype in SQL Server to geometry::. The geography:: datatype is used in the build
   to intersect tiles and will may have issues. Production SQL Server is using the geometry:: datatype. This will be parked if 
   it is not a problem.
