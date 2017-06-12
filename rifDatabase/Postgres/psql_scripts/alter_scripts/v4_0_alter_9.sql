@@ -240,6 +240,11 @@ COMMENT ON TRIGGER trg_rif40_study_status ON rif40_study_status IS
 	'INSTEAD OF trigger for view T_RIF40_STUDY_STATUS to allow INSERT/UPDATE/DELETE. INSERT/UPDATE/DELETE of another users data is NOT permitted.'; 
  
 --
+-- Reload rif40_run_study code
+--
+\i ../PLpgsql/v4_0_rif40_sm_pkg.sql
+ 
+--
 -- 8. Add stats_method to rif40_studies
 --
 DO LANGUAGE plpgsql $$
