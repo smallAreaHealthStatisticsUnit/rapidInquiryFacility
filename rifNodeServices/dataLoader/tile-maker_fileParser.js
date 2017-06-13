@@ -1019,7 +1019,7 @@ function readDbfHeader(dbfData, fileName) {
 		var dataType=String.fromCharCode(fieldDescriptor[11]);
 		var field = {
 			position: 32+(i*32),
-			name:  ua2text(new Uint8Array(dbfData, 32+(i*32), 11), i),
+			name:  ua2text(new Uint8Array(dbfData, 32+(i*32), 11), i).toUpperCase(),
 			description: "",
 			type: dataType,
 			length: fieldDescriptor[16]

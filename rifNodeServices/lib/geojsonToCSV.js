@@ -132,6 +132,7 @@ var geojsonToCSV = function geojsonToCSV(response, xmlConfig, req, res, endCallb
 						var row = {};
 						if (csvFiles[i].rows[k] && csvFiles[i].rows[k].GID) { // Already added
 							csvFiles[i].rows[k][zoomlevelFieldName]=topojson.wkt[k];
+
 /*							
 							if (k<=9) {
 								console.error("geoJSON2WKTSeries() update k: " + k + 
@@ -142,12 +143,16 @@ var geojsonToCSV = function geojsonToCSV(response, xmlConfig, req, res, endCallb
 									"; wkt length: " + csvFiles[i].rows[k][zoomlevelFieldName].length + 
 									"; zoomlevelFieldName: " + zoomlevelFieldName + 
 									"; keys: " + Object.keys(csvFiles[i].rows[k]).length + 
+									"; properties: " + JSON.stringify(topojson.geojson.features[k].properties) + 
 									"; fileName: " + fileName );
-							} */
+							} 
+ */
 						}
 						else {
 							for (var key in topojson.geojson.features[k].properties) {
-								row[key] = (topojson.geojson.features[k].properties[key]||"");
+								row[key] = (topojson.geojson.features[k].properties[key]||
+									topojson.geojson.features[k].properties[key.toUpperCase()]||
+									"");
 							}
 							row[zoomlevelFieldName]=topojson.wkt[k];
 							csvFiles[i].rows.push(row);							
@@ -162,10 +167,11 @@ var geojsonToCSV = function geojsonToCSV(response, xmlConfig, req, res, endCallb
 									"; wkt length: " + csvFiles[i].rows[(csvFiles[i].rows.length-1)][zoomlevelFieldName].length + 
 									"; zoomlevelFieldName: " + zoomlevelFieldName + 
 									"; keys: " + Object.keys(csvFiles[i].rows[(csvFiles[i].rows.length-1)]).length + 
+									"; properties: " + JSON.stringify(topojson.geojson.features[k].properties) + 
 									"; fileName: " + fileName +
 									";\nrow: " + JSON.stringify(row, null, 2).substring(0, 400) + "...");
 							}	
- */							
+ */					
 							if (m != (csvFiles[i].rows.length-1)) {
 								throw new Error("geoJSON2WKTSeries() add CSV row m: " + m +
 									"; k: " + k + 

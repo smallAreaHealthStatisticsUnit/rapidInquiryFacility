@@ -929,23 +929,16 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 					if (response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox) { // Check bounding box present
 						response.file_list[shapefileData["shapefile_no"]-1].bbox=response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox; // Save bbox
 						
-						var msg="File: " + shapefileData["shapeFileName"] + 
-							"\nTotal time to process shapefile: " + shapefileData["elapsedReadTime"] + 
-							" S\nBounding box [" +
-							"xmin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0] + ", " +
-							"ymin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1] + ", " +
-							"xmax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2] + ", " +
-							"ymax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3] + "];" + 
-							"\nProjection name: " + shapefileData["mySrs"].name + "; " +
-							"srid: " + shapefileData["mySrs"].srid + "; " +
-							"proj4: " + shapefileData["mySrs"].proj4;
-			//					serverLog.serverLog2(__file, __line, "shapefileReadLastRecord", "WGS 84 geoJSON (1..4000 chars)>>>\n" +
-			//						JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson, null, 2).substring(0, 4000) + "\n\n<<< formatted WGS 84");
 						var dbf_fields = [];
+						var mixedCase = 0;
 
 						// Get DBF field names from features[i].properties
 						if (response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].properties) {
 							for (var key in response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].properties) {
+								// Force all property keys to uppercase
+								if (key.toUpperCase() != key) { // Mixed case - convert to upper case
+									mixedCase++;
+								}
 								dbf_fields.push(key.toUpperCase());
 							}		
 							shapefileData["dbf_fields"]=dbf_fields;
@@ -954,6 +947,22 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 						if (response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].geometry.coordinates[0]) {
 							var points=0;
 							for (var i=0;i < response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;i++) {
+								
+								// Force all property keys to uppercase
+								
+								var properties=response.file_list[shapefileData["shapefile_no"]-1].geojson.features[i].properties;
+								for (var key in response.file_list[shapefileData["shapefile_no"]-1].geojson.features[i].properties) {
+									if (key.toUpperCase() != key) { // Mixed case - conbvert to upper case
+										properties[key.toUpperCase()] = properties[key];
+										properties[key] = undefined;
+									}
+								}
+								if (shapefileData["areaName"] && 
+								    properties[shapefileData["areaName"]] && 
+									!properties["AREANAME"]) { // Define AREANAME property
+									properties["AREANAME"] = properties[shapefileData["areaName"]];
+								}
+										
 								for (var j=0;j < response.file_list[shapefileData["shapefile_no"]-1].geojson.features[i].geometry.coordinates.length;j++) {
 									var coordinates=response.file_list[shapefileData["shapefile_no"]-1].geojson.features[i].geometry.coordinates;
 									if (coordinates[j][0][0]) { // a further dimension
@@ -976,6 +985,26 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 							}
 							response.file_list[shapefileData["shapefile_no"]-1].points=points;
 						}
+						
+						var msg="File: " + shapefileData["shapeFileName"] + 
+							"; mixedCase fields: " +  mixedCase +
+							"\nTotal time to process shapefile: " + shapefileData["elapsedReadTime"] + 
+							" S\nBounding box [" +
+							"xmin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[0] + ", " +
+							"ymin: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[1] + ", " +
+							"xmax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[2] + ", " +
+							"ymax: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.bbox[3] + "];" + 
+							"\nAreaName: " + shapefileData["areaName"] + 
+//							"\nAREANAME: " + shapefileData["AREANAME"] + // Also defined
+							"\nproperties[0]: " + 
+								JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[0].properties) + 
+							"\nProjection name: " + shapefileData["mySrs"].name + "; " +
+							"srid: " + shapefileData["mySrs"].srid + "; " +
+							"proj4: " + shapefileData["mySrs"].proj4;
+							
+			//					serverLog.serverLog2(__file, __line, "shapefileReadLastRecord", "WGS 84 geoJSON (1..4000 chars)>>>\n" +
+			//						JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson, null, 2).substring(0, 4000) + "\n\n<<< formatted WGS 84");
+						
 						// Probably need to add geometry collection
 						
 			//					for (var i=0;i < response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length;i++) {
@@ -983,6 +1012,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 			//								console.error("Feature [" + i + "]: " + JSON.stringify(response.file_list[shapefileData["shapefile_no"]-1].geojson.features[i].properties, null, 2));
 			//							}
 			//					}
+			
 						if (recNo != response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length) { // Record check
 							var msg='ERROR! [' + shapefileData["uuidV1"] + "] in shapefile record check failed; expected: " + recNo + 
 								"; got: " + response.file_list[shapefileData["shapefile_no"]-1].geojson.features.length + 
@@ -2178,6 +2208,8 @@ This error in actually originating from the error handler function
 					response.message+="\nareaField: " + areaField + " not found";
 				}
 			}
+			shapefileData["AREANAME"]=shapefileData["areaName"];
+			response.message+='\nshapefileData["areaName"]: ' + shapefileData["areaName"];
 			
 			// Add to queue			
 // Called from: shpConvert.js:1236

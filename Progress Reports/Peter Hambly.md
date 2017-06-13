@@ -1388,11 +1388,13 @@ Calls: saveDataFrameToDatabaseTable -> sqlSave
 #### 12th to 16th June
 
 * CDC password tests: Peter!@$^~ was OK
-
+* Fix missing level 4 geography tiles bug (areaid_count=0 in geolevels table) 
+* No area names in sahsuland geography. Setup is correct; mixed and lowercase names not being handled correctly. Forced 
+  to uppercase.
+  
 Todo:
 
-* Fix missing level 4 geography tiles bug (areaid_count=0 in geolevels table) 
-* No area names in sahsuland geography. Setup is wrong.
+* Process SEER data on desktop using Postgres.
  
 #### Current TODO list (June 2017): SQL Server Port
 

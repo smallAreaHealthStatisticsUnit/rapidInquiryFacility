@@ -2100,7 +2100,7 @@ REFERENCE (from shapefile) {
 	 * Parameters:	adjacency processing callback: geometryProcessing(),
 	 *				Geography table object (dataLoader in XML), XML file directory (original location of XML file)
 	 * Returns:		Nothing
-	 * Description:	Dump lookup tsbles to CSV, call lookup processing callback: geometryProcessing()
+	 * Description:	Dump adjacency tables to CSV, call lookup processing callback: geometryProcessing()
 	 */	 
 	 function adjacencyProcessing(adjacencyProcessingCallback, dataLoader, xmlFileDir) {
 		var geographyName=getDataLoaderParameter(dataLoader, "geographyName");
@@ -2189,7 +2189,7 @@ REFERENCE (from shapefile) {
 	 * Parameters:	lookup processing callback: adjacencyProcessing(),
 	 *				Geography table object (dataLoader in XML), XML file directory (original location of XML file)
 	 * Returns:		Nothing
-	 * Description:	Dump lookup tsbles to CSV, call lookup processing callback: adjacencyProcessing()
+	 * Description:	Dump lookup tables to CSV, call lookup processing callback: adjacencyProcessing()
 	 */	
 	 
 	 function lookupProcessing(lookupProcessingCallback, dataLoader, xmlFileDir) {
