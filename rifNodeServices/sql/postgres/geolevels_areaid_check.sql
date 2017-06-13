@@ -3,7 +3,6 @@
  * Type:				Postgres SQL statement
  * Parameters:
  *						1: Geolevels table; e.g. geolevels_cb_2014_us_500k
- *						2: Geometry table geometry_cb_2014_us_500k
  *
  * Description:			Update areaid_count column in geolevels table using geometry table
  * Note:				%% becomes % after substitution

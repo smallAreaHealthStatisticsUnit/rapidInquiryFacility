@@ -1925,8 +1925,7 @@ UPDATE sahsu_grd_level1
 				getSqlFromFile("geolevels_areaid_check.sql", 
 					dbType, 
 					"geolevels_" + xmlConfig.dataLoader.geographyName.toLowerCase() /* 1: Geolevels table */,
-					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */,
-					""																/* 3: Schema; e.g. rif_data. or "" */), 
+					""																/* 2: Schema; e.g. rif_data. or "" */), 
 				sqlArray, dbType);
 				
 		} // End of insertGeometryTable()
@@ -2080,6 +2079,25 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				sqlStmt.nonsql=':SETVAR SchemaName @CurrentUser';
 				sqlStmt.dbType=dbType;
 				sqlArray.push(sqlStmt);
+			}
+			
+			if (dbType == "MSSQLServer") { 		
+				var sqlStmt=new Sql("Disable constraints on: rif40_covariates",
+					getSqlFromFile("e", 
+						dbType,nable_disable_constraint.sql
+						"rif40."						/* 1: Schema */,
+						"rif40_covariates"				/* 2: Table */,
+						"NOCHECK"						/* 3: DISABLE/ENABLE */,
+						"rif40_covariates_geolevel_fk"	/* 4: Constraint */),
+					sqlArray, dbType);		
+				var sqlStmt=new Sql("Disable constraints on: rif40_covariates",
+					getSqlFromFile("enable_disable_constraint.sql", 
+						dbType,
+						"rif40."						/* 1: Schema */,
+						"rif40_covariates"				/* 2: Table */,
+						"NOCHECK"						/* 3: DISABLE/ENABLE */,
+						"rif40_covariates_geog_fk"		/* 4: Constraint */),
+					sqlArray, dbType);					
 			}
 			
 			var newColumnList=['geometrytable', 'tiletable', 'minzoomlevel', 'maxzoomlevel', 'adjacencytable'];
@@ -2267,7 +2285,26 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					sqlArray, dbType);
 
 			} // End of for loop
-
+			
+			if (dbType == "MSSQLServer") { 		
+				var sqlStmt=new Sql("Enable constraints on: rif40_covariates",
+					getSqlFromFile("enable_disable_constraint.sql", 
+						dbType,
+						"rif40."						/* 1: Schema */,
+						"rif40_covariates"				/* 2: Table */,
+						"CHECK"							/* 3: DISABLE/ENABLE */,
+						"rif40_covariates_geolevel_fk"	/* 4: Constraint */),
+					sqlArray, dbType);			
+				var sqlStmt=new Sql("Enable constraints on: rif40_covariates",
+					getSqlFromFile("enable_disable_constraint.sql", 
+						dbType,
+						"rif40."						/* 1: Schema */,
+						"rif40_covariates"				/* 2: Table */,
+						"CHECK"							/* 3: DISABLE/ENABLE */,
+						"rif40_covariates_geog_fk"		/* 4: Constraint */),
+					sqlArray, dbType);			
+			}
+			
 			var sqlStmt=new Sql("Populate geography meta data table",
 				getSqlFromFile("update_geography.sql", 
 					undefined /* Common */,
@@ -2290,8 +2327,7 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				getSqlFromFile("geolevels_areaid_check.sql", 
 					dbType, 
 					"t_rif40_geolevels" 											/* 1: Geolevels table */,
-					"geometry_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 2: Geometry table */,
-					schema															/* 3: Schema; e.g. rif_data. or "" */), 
+					"rif40."														/* 2: Schema; e.g. rif_data. or "" */), 
 				sqlArray, dbType);		
 
 //

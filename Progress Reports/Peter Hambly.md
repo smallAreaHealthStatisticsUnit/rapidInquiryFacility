@@ -1391,6 +1391,7 @@ Calls: saveDataFrameToDatabaseTable -> sqlSave
 * Fix missing level 4 geography tiles bug (areaid_count=0 in geolevels table) 
 * No area names in sahsuland geography. Setup is correct; mixed and lowercase names not being handled correctly. Forced 
   to uppercase.
+* Data loader scripts disable/enable the foreign key constraint rif40_covariates_geolevel_fk (SQL Server only for the moment).
   
 Todo:
 
