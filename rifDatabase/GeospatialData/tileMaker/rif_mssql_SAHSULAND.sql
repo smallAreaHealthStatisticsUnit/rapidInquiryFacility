@@ -118,7 +118,7 @@ FETCH NEXT FROM c1 INTO @c1_total;
 IF @c1_total = 0
 	PRINT 'Geography: SAHSULAND is not used by any studies';
 ELSE
-	RAISERROR('Geography: SAHSULAND is used by: %d studies', 16, 1, @c1_total);
+	PRINT 'WARNING: Geography: SAHSULAND is used by: ' + CAST(@c1_total AS VARCHAR) + ' studies';
 CLOSE c1;
 DEALLOCATE c1;
 GO

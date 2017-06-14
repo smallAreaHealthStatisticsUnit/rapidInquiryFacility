@@ -1407,10 +1407,26 @@ Calls: saveDataFrameToDatabaseTable -> sqlSave
   
 Todo:
 
+* Trigger issues with SQL Server geospatial re-installs (DELETE FROM t_rif40_geolevels):
+  ```
+-- SQL statement 95: Remove old geolevels meta data table >>>
+DELETE FROM t_rif40_geolevels WHERE geography = 'SAHSULAND';
+
+(1 rows affected)
+Msg 51146, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_geolevel_check, Line 43
+Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
+  ```  
 * Process SEER data on desktop using Postgres.
 * Test plan
+* Check SAHSULAND dataloaded data
  
-#### Current TODO list (June 2017): SQL Server Port
+#### 26th to 30th June
+
+#### 1st July to 31st July
+
+* Holiday
+ 
+#### Database TODO list (deferred to August 2017): SQL Server Port
 
 * Harden SQL Server port against SQL Injection getting past middleware into meta data
 * Process Utah geography
@@ -1426,7 +1442,7 @@ Todo:
 ```
 * Assist with middleware (database fixes)
 
-#### TileViewer TODO (deferred to August):
+#### TileViewer TODO (deferred to August 2017):
  
 * Area tests (area_check.sql) is failing for Halland - suspect area is too small, could be projection ia wrong 
 * NVarchar support for areaName
