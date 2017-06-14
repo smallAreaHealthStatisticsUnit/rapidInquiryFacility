@@ -116,7 +116,7 @@ CREATE TABLE sahsu_grd_level1 (
 	area                           	NVARCHAR(1000) /* Area */,
 	gid                            	integer	NOT NULL /* Unique geographic index */,
 	areaid                         	varchar(100)	NOT NULL /* Area ID (LEVEL1): Level 1 name */,
-	areaname                       	NVARCHAR(1000)	NOT NULL /* Area name (LEVEL1): Level 1 description */,
+	areaname                       	NVARCHAR(1000)	NOT NULL /* Area name (LEVEL1): Level 1 ID */,
 	area_km2                       	numeric /* Area in square km */,
 	geographic_centroid_wkt        	text /* Wellknown text for geographic centroid */,
 	wkt_11                         	text /* Wellknown text for zoomlevel 11 */,
@@ -287,14 +287,14 @@ IF EXISTS (
 		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS WHERE [name] = @columnName AND [object_id] = OBJECT_ID(@tableName)))
     EXECUTE sp_updateextendedproperty
 		@name = N'MS_Description',   
-		@value = N'Area name (LEVEL1): Level 1 description', 
+		@value = N'Area name (LEVEL1): Level 1 ID', 
 		@level0type = N'Schema', @level0name = $(SchemaName),  
 		@level1type = N'Table', @level1name = 'sahsu_grd_level1',
 		@level2type = N'Column', @level2name = 'areaname'
 ELSE
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
-		@value = N'Area name (LEVEL1): Level 1 description', 
+		@value = N'Area name (LEVEL1): Level 1 ID', 
 		@level0type = N'Schema', @level0name = $(SchemaName),  
 		@level1type = N'Table', @level1name = 'sahsu_grd_level1',
 		@level2type = N'Column', @level2name = 'areaname';
@@ -2721,7 +2721,7 @@ CREATE TABLE sahsu_grd_level3 (
 	level3                         	NVARCHAR(1000) /* Level 3 */,
 	gid                            	integer	NOT NULL /* Unique geographic index */,
 	areaid                         	varchar(100)	NOT NULL /* Area ID (LEVEL3): Level 3 */,
-	areaname                       	NVARCHAR(1000)	NOT NULL /* Area name (LEVEL3): Level 3 name */,
+	areaname                       	NVARCHAR(1000)	NOT NULL /* Area name (LEVEL3): Level 3 ID */,
 	area_km2                       	numeric /* Area in square km */,
 	geographic_centroid_wkt        	text /* Wellknown text for geographic centroid */,
 	wkt_11                         	text /* Wellknown text for zoomlevel 11 */,
@@ -2892,14 +2892,14 @@ IF EXISTS (
 		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS WHERE [name] = @columnName AND [object_id] = OBJECT_ID(@tableName)))
     EXECUTE sp_updateextendedproperty
 		@name = N'MS_Description',   
-		@value = N'Area name (LEVEL3): Level 3 name', 
+		@value = N'Area name (LEVEL3): Level 3 ID', 
 		@level0type = N'Schema', @level0name = $(SchemaName),  
 		@level1type = N'Table', @level1name = 'sahsu_grd_level3',
 		@level2type = N'Column', @level2name = 'areaname'
 ELSE
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
-		@value = N'Area name (LEVEL3): Level 3 name', 
+		@value = N'Area name (LEVEL3): Level 3 ID', 
 		@level0type = N'Schema', @level0name = $(SchemaName),  
 		@level1type = N'Table', @level1name = 'sahsu_grd_level3',
 		@level2type = N'Column', @level2name = 'areaname';
@@ -4003,7 +4003,7 @@ CREATE TABLE sahsu_grd_level4 (
 	level3                         	NVARCHAR(1000) /* Level 3 */,
 	gid                            	integer	NOT NULL /* Unique geographic index */,
 	areaid                         	varchar(100)	NOT NULL /* Area ID (LEVEL4): Level 4 */,
-	areaname                       	NVARCHAR(1000)	NOT NULL /* Area name (LEVEL4): Level 4 name */,
+	areaname                       	NVARCHAR(1000)	NOT NULL /* Area name (LEVEL4): Level 4 ID */,
 	area_km2                       	numeric /* Area in square km */,
 	geographic_centroid_wkt        	text /* Wellknown text for geographic centroid */,
 	wkt_11                         	text /* Wellknown text for zoomlevel 11 */,
@@ -4174,14 +4174,14 @@ IF EXISTS (
 		   AND [minor_id] = (SELECT [column_id] FROM SYS.COLUMNS WHERE [name] = @columnName AND [object_id] = OBJECT_ID(@tableName)))
     EXECUTE sp_updateextendedproperty
 		@name = N'MS_Description',   
-		@value = N'Area name (LEVEL4): Level 4 name', 
+		@value = N'Area name (LEVEL4): Level 4 ID', 
 		@level0type = N'Schema', @level0name = $(SchemaName),  
 		@level1type = N'Table', @level1name = 'sahsu_grd_level4',
 		@level2type = N'Column', @level2name = 'areaname'
 ELSE
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
-		@value = N'Area name (LEVEL4): Level 4 name', 
+		@value = N'Area name (LEVEL4): Level 4 ID', 
 		@level0type = N'Schema', @level0name = $(SchemaName),  
 		@level1type = N'Table', @level1name = 'sahsu_grd_level4',
 		@level2type = N'Column', @level2name = 'areaname';
@@ -10196,15 +10196,63 @@ UPDATE a
   JOIN b ON a.geolevel_id = b.geolevel_id;
 GO
 
+-- SQL statement 351: Check areaid_count column in geolevels table using geometry table >>>
+/*
+ * SQL statement name: 	geolevels_areaid_check.sql
+ * Type:				MS SQL Server SQL statement
+ * Parameters:
+ *						1: Geolevels table; e.g. geolevels_cb_2014_us_500k
+ *						2: Schema; e.g. rif40. or ""
+ *
+ * Description:			Update areaid_count column in geolevels table using geometry table
+ * Note:				% becomes % after substitution
+ */
+DECLARE c1 CURSOR FOR
+		SELECT geolevel_id, geolevel_name, areaid_count
+		  FROM geolevels_sahsuland;
+--
+DECLARE @c1_rec_geolevel_id 	INTEGER;
+DECLARE @c1_rec_geolevel_name 	VARCHAR(30);
+DECLARE @c1_rec_areaid_count 	INTEGER;
+--
+DECLARE @errors INTEGER=0;
+
+OPEN c1;
+FETCH NEXT FROM c1 INTO @c1_rec_geolevel_id, @c1_rec_geolevel_name, @c1_rec_areaid_count;
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	IF @c1_rec_areaid_count > 0 
+		PRINT 'geolevel: ' + CAST(@c1_rec_geolevel_id AS VARCHAR) + ':' + @c1_rec_geolevel_name + 
+			' areaid_count: ' + CAST(@c1_rec_areaid_count AS VARCHAR)
+	ELSE IF @c1_rec_areaid_count IS NULL BEGIN
+			SET @errors=@errors+1;
+			PRINT 'WARNING: geolevel: ' + CAST(@c1_rec_geolevel_id AS VARCHAR) + ':' + @c1_rec_geolevel_name + 
+				' areaid_count IS NULL';	
+		END;
+	ELSE BEGIN
+		PRINT 'WARNING: geolevel: ' + CAST(@c1_rec_geolevel_id AS VARCHAR) + ':' + @c1_rec_geolevel_name + 
+			' errors is zero';
+		SET @errors=@errors+1;
+	END;
+    FETCH NEXT FROM c1 INTO @c1_rec_geolevel_id, @c1_rec_geolevel_name, @c1_rec_areaid_count;
+END;
+CLOSE c1;
+DEALLOCATE c1;
+IF @errors = 0
+	PRINT 'Geolevels table: geolevels_sahsuland no zero areaid_counts';
+ELSE
+	RAISERROR('Geolevels table: geolevels_sahsuland %i geolevels have zero areaid_counts', 16, 1, @errors);;
+GO
+
 --
 -- Adjacency table
 --
 
--- SQL statement 352: Drop table adjacency_sahsuland >>>
+-- SQL statement 353: Drop table adjacency_sahsuland >>>
 IF OBJECT_ID('adjacency_sahsuland', 'U') IS NOT NULL DROP TABLE adjacency_sahsuland;
 GO
 
--- SQL statement 353: Create table adjacency_sahsuland >>>
+-- SQL statement 354: Create table adjacency_sahsuland >>>
 /*
  * SQL statement name: 	create_adjacency_table.sql
  * Type:				Common SQL statement
@@ -10224,7 +10272,7 @@ CREATE TABLE adjacency_sahsuland (
 );
 GO
 
--- SQL statement 354: Comment table: adjacency_sahsuland >>>
+-- SQL statement 355: Comment table: adjacency_sahsuland >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -10265,7 +10313,7 @@ ELSE
 		@level1type = N'Table', @level1name = 'adjacency_sahsuland';
 GO
 
--- SQL statement 355: Comment column: adjacency_sahsuland.geolevel_id >>>
+-- SQL statement 356: Comment column: adjacency_sahsuland.geolevel_id >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -10309,7 +10357,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'geolevel_id';
 GO
 
--- SQL statement 356: Comment column: adjacency_sahsuland.areaid >>>
+-- SQL statement 357: Comment column: adjacency_sahsuland.areaid >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -10353,7 +10401,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'areaid';
 GO
 
--- SQL statement 357: Comment column: adjacency_sahsuland.num_adjacencies >>>
+-- SQL statement 358: Comment column: adjacency_sahsuland.num_adjacencies >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -10397,7 +10445,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'num_adjacencies';
 GO
 
--- SQL statement 358: Comment column: adjacency_sahsuland.adjacency_list >>>
+-- SQL statement 359: Comment column: adjacency_sahsuland.adjacency_list >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -10441,7 +10489,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'adjacency_list';
 GO
 
--- SQL statement 359: Insert into adjacency_sahsuland >>>
+-- SQL statement 360: Insert into adjacency_sahsuland >>>
 /*
  * SQL statement name: 	insert_adjacency.sql
  * Type:				Microsoft SQL Server SQL
@@ -10482,7 +10530,7 @@ GO
 -- Create tiles functions
 --
 
--- SQL statement 361: Create function: longitude2tile.sql >>>
+-- SQL statement 362: Create function: longitude2tile.sql >>>
 /*
  * SQL statement name: 	longitude2tile.sql
  * Type:				Postgres/PostGIS PL/pgsql function
@@ -10532,7 +10580,7 @@ y = [1 - (y / p)] / 2
    'function', 'tileMaker_longitude2tile';
 GO
 
--- SQL statement 362: Create function: latitude2tile.sql >>>
+-- SQL statement 363: Create function: latitude2tile.sql >>>
 /*
  * SQL statement name: 	latitude2tile.sql
  * Type:				Microsoft SQL Server T/sql function
@@ -10587,7 +10635,7 @@ y = [1 - (y / p)] / 2
    'function', 'tileMaker_latitude2tile';
 GO
 
--- SQL statement 363: Create function: tile2longitude.sql >>>
+-- SQL statement 364: Create function: tile2longitude.sql >>>
 /*
  * SQL statement name: 	tile2longitude.sql
  * Type:				Postgres/PostGIS PL/pgsql function
@@ -10620,7 +10668,7 @@ Description: Convert OSM tile x to longitude (WGS84 - 4326)
    'function', 'tileMaker_tile2longitude';
 GO
 
--- SQL statement 364: Create function: tile2latitude.sql >>>
+-- SQL statement 365: Create function: tile2latitude.sql >>>
 /*
  * SQL statement name: 	tileMaker_tile2latitude.sql
  * Type:				Postgres/PostGIS PL/pgsql function
@@ -10659,7 +10707,7 @@ Description: Convert OSM tile y to latitude (WGS84 - 4326)
    'function', 'tileMaker_tile2latitude';
 GO
 
--- SQL statement 365: Tile check >>>
+-- SQL statement 366: Tile check >>>
 /*
  * SQL statement name: 	tile_check.sql
  * Type:				MS SQL Server function
@@ -10721,11 +10769,11 @@ GO
 -- Create tiles tables
 --
 
--- SQL statement 367: Drop table t_tiles_sahsuland >>>
+-- SQL statement 368: Drop table t_tiles_sahsuland >>>
 IF OBJECT_ID('t_tiles_sahsuland', 'U') IS NOT NULL DROP TABLE t_tiles_sahsuland;
 GO
 
--- SQL statement 368: Create tiles table >>>
+-- SQL statement 369: Create tiles table >>>
 /*
  * SQL statement name: 	create_tiles_table.sql
  * Type:				Common SQL statement
@@ -10748,7 +10796,7 @@ CREATE TABLE t_tiles_sahsuland (
 	PRIMARY KEY (tile_id));
 GO
 
--- SQL statement 369: Comment tiles table >>>
+-- SQL statement 370: Comment tiles table >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -10789,7 +10837,7 @@ ELSE
 		@level1type = N'Table', @level1name = 't_tiles_sahsuland';
 GO
 
--- SQL statement 370: Comment tiles table column >>>
+-- SQL statement 371: Comment tiles table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -10833,7 +10881,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'geolevel_id';
 GO
 
--- SQL statement 371: Comment tiles table column >>>
+-- SQL statement 372: Comment tiles table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -10877,7 +10925,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'zoomlevel';
 GO
 
--- SQL statement 372: Comment tiles table column >>>
+-- SQL statement 373: Comment tiles table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -10921,7 +10969,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'x';
 GO
 
--- SQL statement 373: Comment tiles table column >>>
+-- SQL statement 374: Comment tiles table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -10965,7 +11013,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'y';
 GO
 
--- SQL statement 374: Comment tiles table column >>>
+-- SQL statement 375: Comment tiles table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -11009,7 +11057,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'optimised_topojson';
 GO
 
--- SQL statement 375: Comment tiles table column >>>
+-- SQL statement 376: Comment tiles table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -11053,7 +11101,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'tile_id';
 GO
 
--- SQL statement 376: Comment tiles table column >>>
+-- SQL statement 377: Comment tiles table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -11097,23 +11145,23 @@ ELSE
 		@level2type = N'Column', @level2name = 'areaid_count';
 GO
 
--- SQL statement 377: Add tiles index: t_tiles_sahsuland_x_tile >>>
+-- SQL statement 378: Add tiles index: t_tiles_sahsuland_x_tile >>>
 CREATE INDEX t_tiles_sahsuland_x_tile ON t_tiles_sahsuland (geolevel_id, zoomlevel, x);
 GO
 
--- SQL statement 378: Add tiles index: t_tiles_sahsuland_y_tile >>>
+-- SQL statement 379: Add tiles index: t_tiles_sahsuland_y_tile >>>
 CREATE INDEX t_tiles_sahsuland_y_tile ON t_tiles_sahsuland (geolevel_id, zoomlevel, x);
 GO
 
--- SQL statement 379: Add tiles index: t_tiles_sahsuland_xy_tile >>>
+-- SQL statement 380: Add tiles index: t_tiles_sahsuland_xy_tile >>>
 CREATE INDEX t_tiles_sahsuland_xy_tile ON t_tiles_sahsuland (geolevel_id, zoomlevel, x, y);
 GO
 
--- SQL statement 380: Add tiles index: t_tiles_sahsuland_areaid_count >>>
+-- SQL statement 381: Add tiles index: t_tiles_sahsuland_areaid_count >>>
 CREATE INDEX t_tiles_sahsuland_areaid_count ON t_tiles_sahsuland (areaid_count);
 GO
 
--- SQL statement 381: Create tiles view >>>
+-- SQL statement 382: Create tiles view >>>
 /*
  * SQL statement name: 	create_tiles_view.sql
  * Type:				Microsoft SQL Server SQL statement
@@ -11213,7 +11261,7 @@ SELECT z.geography,
 				h2.geolevel_id = 1);
 GO
 
--- SQL statement 382: Comment tiles view >>>
+-- SQL statement 383: Comment tiles view >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -11235,7 +11283,7 @@ EXECUTE sp_addextendedproperty
 @level1type = N'View', @level1name = 'tiles_sahsuland'   ;
 GO
 
--- SQL statement 383: Comment tiles view column >>>
+-- SQL statement 384: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -11259,7 +11307,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'geography';
 GO
 
--- SQL statement 384: Comment tiles view column >>>
+-- SQL statement 385: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -11283,7 +11331,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'geolevel_id';
 GO
 
--- SQL statement 385: Comment tiles view column >>>
+-- SQL statement 386: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -11307,7 +11355,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'zoomlevel';
 GO
 
--- SQL statement 386: Comment tiles view column >>>
+-- SQL statement 387: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -11331,7 +11379,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'x';
 GO
 
--- SQL statement 387: Comment tiles view column >>>
+-- SQL statement 388: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -11355,7 +11403,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'y';
 GO
 
--- SQL statement 388: Comment tiles view column >>>
+-- SQL statement 389: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -11379,7 +11427,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'optimised_topojson';
 GO
 
--- SQL statement 389: Comment tiles view column >>>
+-- SQL statement 390: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -11403,7 +11451,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'tile_id';
 GO
 
--- SQL statement 390: Comment tiles view column >>>
+-- SQL statement 391: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -11427,7 +11475,7 @@ EXECUTE sp_addextendedproperty
 @level2type = N'Column', @level2name = 'geolevel_name';
 GO
 
--- SQL statement 391: Comment tiles view column >>>
+-- SQL statement 392: Comment tiles view column >>>
 DECLARE @CurrentUser sysname /*
  * SQL statement name: 	comment_view_column.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -11455,7 +11503,7 @@ GO
 -- Create tile limits table
 --
 
--- SQL statement 393: Create tileMaker_STMakeEnvelope() >>>
+-- SQL statement 394: Create tileMaker_STMakeEnvelope() >>>
 /*
  * SQL statement name: 	tileMaker_STMakeEnvelope.sql
  * Type:				MS SQL Server SQL
@@ -11517,11 +11565,11 @@ by the SRID. If no SRID is specified the WGS 84 spatial reference system is assu
    'function', 'tileMaker_STMakeEnvelope' ;
 GO
 
--- SQL statement 394: Drop table tile_limits_sahsuland >>>
+-- SQL statement 395: Drop table tile_limits_sahsuland >>>
 IF OBJECT_ID('tile_limits_sahsuland', 'U') IS NOT NULL DROP TABLE tile_limits_sahsuland;
 GO
 
--- SQL statement 395: Create table tile_limits_sahsuland >>>
+-- SQL statement 396: Create table tile_limits_sahsuland >>>
 /*
  * SQL statement name: 	create_tile_limits_table.sql
  * Type:				MS SQL Server SQL
@@ -11573,7 +11621,7 @@ SELECT d.*,
   FROM d;
 GO
 
--- SQL statement 396: Comment tile limits table >>>
+-- SQL statement 397: Comment tile limits table >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -11614,7 +11662,7 @@ ELSE
 		@level1type = N'Table', @level1name = 'tile_limits_sahsuland';
 GO
 
--- SQL statement 397: Comment tile limits table column >>>
+-- SQL statement 398: Comment tile limits table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -11658,7 +11706,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'zoomlevel';
 GO
 
--- SQL statement 398: Comment tile limits table column >>>
+-- SQL statement 399: Comment tile limits table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -11702,7 +11750,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'x_min';
 GO
 
--- SQL statement 399: Comment tile limits table column >>>
+-- SQL statement 400: Comment tile limits table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -11746,7 +11794,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'x_max';
 GO
 
--- SQL statement 400: Comment tile limits table column >>>
+-- SQL statement 401: Comment tile limits table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -11790,7 +11838,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'y_min';
 GO
 
--- SQL statement 401: Comment tile limits table column >>>
+-- SQL statement 402: Comment tile limits table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -11834,7 +11882,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'y_max';
 GO
 
--- SQL statement 402: Comment tile limits table column >>>
+-- SQL statement 403: Comment tile limits table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -11878,7 +11926,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'y_mintile';
 GO
 
--- SQL statement 403: Comment tile limits table column >>>
+-- SQL statement 404: Comment tile limits table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -11922,7 +11970,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'y_maxtile';
 GO
 
--- SQL statement 404: Comment tile limits table column >>>
+-- SQL statement 405: Comment tile limits table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -11966,7 +12014,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'x_mintile';
 GO
 
--- SQL statement 405: Comment tile limits table column >>>
+-- SQL statement 406: Comment tile limits table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -12010,7 +12058,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'x_maxtile';
 GO
 
--- SQL statement 406: Comment tile limits table column >>>
+-- SQL statement 407: Comment tile limits table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -12054,7 +12102,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'bbox';
 GO
 
--- SQL statement 407: Make primary key not null >>>
+-- SQL statement 408: Make primary key not null >>>
 /*
  * SQL statement name: 	not_null.sql
  * Type:				MS SQL Server SQL
@@ -12068,23 +12116,23 @@ GO
 ALTER TABLE tile_limits_sahsuland ALTER COLUMN zoomlevel INTEGER NOT NULL;
 GO
 
--- SQL statement 408: Add primary key >>>
+-- SQL statement 409: Add primary key >>>
 ALTER TABLE tile_limits_sahsuland ADD PRIMARY KEY (zoomlevel);
 GO
 
--- SQL statement 409: Analyze table >>>
+-- SQL statement 410: Analyze table >>>
 UPDATE STATISTICS tile_limits_sahsuland;
 GO
 
--- SQL statement 410: Analyze table >>>
+-- SQL statement 411: Analyze table >>>
 SELECT zoomlevel, x_min, x_max, y_min, y_max, y_mintile, y_maxtile, x_mintile, x_maxtile FROM tile_limits_sahsuland;
 GO
 
--- SQL statement 411: Drop table tile_intersects_sahsuland >>>
+-- SQL statement 412: Drop table tile_intersects_sahsuland >>>
 IF OBJECT_ID('tile_intersects_sahsuland', 'U') IS NOT NULL DROP TABLE tile_intersects_sahsuland;
 GO
 
--- SQL statement 412: Create tile intersects table >>>
+-- SQL statement 413: Create tile intersects table >>>
 /*
  * SQL statement name: 	create_tile_intersects_table.sql
  * Type:				Common SQL statement
@@ -12107,7 +12155,7 @@ CREATE TABLE tile_intersects_sahsuland (
 );
 GO
 
--- SQL statement 413: Add geometry column: bbox >>>
+-- SQL statement 414: Add geometry column: bbox >>>
 /*
  * SQL statement name: 	add_geometry_column2.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -12124,7 +12172,7 @@ GO
 ALTER TABLE tile_intersects_sahsuland ADD bbox geometry;
 GO
 
--- SQL statement 414: Add geometry column: geom >>>
+-- SQL statement 415: Add geometry column: geom >>>
 /*
  * SQL statement name: 	add_geometry_column2.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -12141,7 +12189,7 @@ GO
 ALTER TABLE tile_intersects_sahsuland ADD geom geometry;
 GO
 
--- SQL statement 415: Comment tile intersects table >>>
+-- SQL statement 416: Comment tile intersects table >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -12182,7 +12230,7 @@ ELSE
 		@level1type = N'Table', @level1name = 'tile_intersects_sahsuland';
 GO
 
--- SQL statement 416: Comment tile intersects table column >>>
+-- SQL statement 417: Comment tile intersects table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -12226,7 +12274,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'geolevel_id';
 GO
 
--- SQL statement 417: Comment tile intersects table column >>>
+-- SQL statement 418: Comment tile intersects table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -12270,7 +12318,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'zoomlevel';
 GO
 
--- SQL statement 418: Comment tile intersects table column >>>
+-- SQL statement 419: Comment tile intersects table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -12314,7 +12362,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'areaid';
 GO
 
--- SQL statement 419: Comment tile intersects table column >>>
+-- SQL statement 420: Comment tile intersects table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -12358,7 +12406,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'x';
 GO
 
--- SQL statement 420: Comment tile intersects table column >>>
+-- SQL statement 421: Comment tile intersects table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -12402,7 +12450,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'y';
 GO
 
--- SQL statement 421: Comment tile intersects table column >>>
+-- SQL statement 422: Comment tile intersects table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -12446,7 +12494,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'optimised_geojson';
 GO
 
--- SQL statement 422: Comment tile intersects table column >>>
+-- SQL statement 423: Comment tile intersects table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -12490,7 +12538,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'within';
 GO
 
--- SQL statement 423: Comment tile intersects table column >>>
+-- SQL statement 424: Comment tile intersects table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -12534,7 +12582,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'bbox';
 GO
 
--- SQL statement 424: Comment tile intersects table column >>>
+-- SQL statement 425: Comment tile intersects table column >>>
 DECLARE @CurrentUser sysname
 DECLARE @columnName  sysname 
 DECLARE @tableName   sysname  /*
@@ -12578,7 +12626,7 @@ ELSE
 		@level2type = N'Column', @level2name = 'geom';
 GO
 
--- SQL statement 425: INSERT into tile intersects table >>>
+-- SQL statement 426: INSERT into tile intersects table >>>
 /*
  * SQL statement name: 	tile_intersects_insert.sql
  * Type:				MS SQL Server SQL
@@ -12655,15 +12703,15 @@ SELECT geolevel_id,
  ORDER BY geolevel_id, zoomlevel, x, y;
 GO
 
--- SQL statement 426: Add non clustered primary key >>>
+-- SQL statement 427: Add non clustered primary key >>>
 ALTER TABLE tile_intersects_sahsuland ADD PRIMARY KEY NONCLUSTERED (geolevel_id, zoomlevel, areaid, x, y) ;
 GO
 
--- SQL statement 427: Analyze table >>>
+-- SQL statement 428: Analyze table >>>
 UPDATE STATISTICS tile_intersects_sahsuland;
 GO
 
--- SQL statement 428: SELECT from tile intersects table >>>
+-- SQL statement 429: SELECT from tile intersects table >>>
 /*
  * SQL statement name: 	tile_intersects_select.sql
  * Type:				MS SQL Server SQL
@@ -12692,7 +12740,7 @@ SELECT geolevel_id,
  WHERE zoomlevel = 0 AND geolevel_id = 1;
 GO
 
--- SQL statement 429: INSERT into tile intersects table (MSSQLServer tile manufacture) >>>
+-- SQL statement 430: INSERT into tile intersects table (MSSQLServer tile manufacture) >>>
 /*
  * SQL statement name: 	tile_intersects_insert2.sql
  * Type:				MS SQL Server SQL
@@ -13102,7 +13150,7 @@ BEGIN
 END;
 GO
 
--- SQL statement 430: Special index on tile intersects table for MS SQL tuning >>>
+-- SQL statement 431: Special index on tile intersects table for MS SQL tuning >>>
 /*
  * SQL statement name: 	tile_intersects_usa_2014_tlidx.sql
  * Type:				Microsoft SQL Server T/sql anonymous block
@@ -13118,7 +13166,7 @@ ON tile_intersects_sahsuland ([geolevel_id],[zoomlevel],[x],[y])
 INCLUDE ([areaid],[geom]);
 GO
 
--- SQL statement 431: Tile intersects table % savings >>>
+-- SQL statement 432: Tile intersects table % savings >>>
 /*
  * SQL statement name: 	tile_intersects_select2.sql
  * Type:				MS SQL Server SQL
@@ -13166,7 +13214,7 @@ SELECT geolevel_id, zoomlevel,
  ORDER BY 1, 2;
 GO
 
--- SQL statement 432: Commit transaction >>>
+-- SQL statement 433: Commit transaction >>>
 COMMIT;
 GO
 
@@ -13174,123 +13222,123 @@ GO
 -- Analyze tables
 --
 
--- SQL statement 434: Describe table sahsu_grd_level1 >>>
+-- SQL statement 435: Describe table sahsu_grd_level1 >>>
 -- EXEC sp_help sahsu_grd_level1;
 GO
 
--- SQL statement 435: Analyze table sahsu_grd_level1 >>>
+-- SQL statement 436: Analyze table sahsu_grd_level1 >>>
 UPDATE STATISTICS sahsu_grd_level1;
 GO
 
--- SQL statement 436: Describe table lookup_sahsu_grd_level1 >>>
+-- SQL statement 437: Describe table lookup_sahsu_grd_level1 >>>
 -- EXEC sp_help lookup_sahsu_grd_level1;
 GO
 
--- SQL statement 437: Analyze table lookup_sahsu_grd_level1 >>>
+-- SQL statement 438: Analyze table lookup_sahsu_grd_level1 >>>
 UPDATE STATISTICS lookup_sahsu_grd_level1;
 GO
 
--- SQL statement 438: Describe table sahsu_grd_level2 >>>
+-- SQL statement 439: Describe table sahsu_grd_level2 >>>
 -- EXEC sp_help sahsu_grd_level2;
 GO
 
--- SQL statement 439: Analyze table sahsu_grd_level2 >>>
+-- SQL statement 440: Analyze table sahsu_grd_level2 >>>
 UPDATE STATISTICS sahsu_grd_level2;
 GO
 
--- SQL statement 440: Describe table lookup_sahsu_grd_level2 >>>
+-- SQL statement 441: Describe table lookup_sahsu_grd_level2 >>>
 -- EXEC sp_help lookup_sahsu_grd_level2;
 GO
 
--- SQL statement 441: Analyze table lookup_sahsu_grd_level2 >>>
+-- SQL statement 442: Analyze table lookup_sahsu_grd_level2 >>>
 UPDATE STATISTICS lookup_sahsu_grd_level2;
 GO
 
--- SQL statement 442: Describe table sahsu_grd_level3 >>>
+-- SQL statement 443: Describe table sahsu_grd_level3 >>>
 -- EXEC sp_help sahsu_grd_level3;
 GO
 
--- SQL statement 443: Analyze table sahsu_grd_level3 >>>
+-- SQL statement 444: Analyze table sahsu_grd_level3 >>>
 UPDATE STATISTICS sahsu_grd_level3;
 GO
 
--- SQL statement 444: Describe table lookup_sahsu_grd_level3 >>>
+-- SQL statement 445: Describe table lookup_sahsu_grd_level3 >>>
 -- EXEC sp_help lookup_sahsu_grd_level3;
 GO
 
--- SQL statement 445: Analyze table lookup_sahsu_grd_level3 >>>
+-- SQL statement 446: Analyze table lookup_sahsu_grd_level3 >>>
 UPDATE STATISTICS lookup_sahsu_grd_level3;
 GO
 
--- SQL statement 446: Describe table sahsu_grd_level4 >>>
+-- SQL statement 447: Describe table sahsu_grd_level4 >>>
 -- EXEC sp_help sahsu_grd_level4;
 GO
 
--- SQL statement 447: Analyze table sahsu_grd_level4 >>>
+-- SQL statement 448: Analyze table sahsu_grd_level4 >>>
 UPDATE STATISTICS sahsu_grd_level4;
 GO
 
--- SQL statement 448: Describe table lookup_sahsu_grd_level4 >>>
+-- SQL statement 449: Describe table lookup_sahsu_grd_level4 >>>
 -- EXEC sp_help lookup_sahsu_grd_level4;
 GO
 
--- SQL statement 449: Analyze table lookup_sahsu_grd_level4 >>>
+-- SQL statement 450: Analyze table lookup_sahsu_grd_level4 >>>
 UPDATE STATISTICS lookup_sahsu_grd_level4;
 GO
 
--- SQL statement 450: Describe table geolevels_sahsuland >>>
+-- SQL statement 451: Describe table geolevels_sahsuland >>>
 -- EXEC sp_help geolevels_sahsuland;
 GO
 
--- SQL statement 451: Analyze table geolevels_sahsuland >>>
+-- SQL statement 452: Analyze table geolevels_sahsuland >>>
 UPDATE STATISTICS geolevels_sahsuland;
 GO
 
--- SQL statement 452: Describe table geography_sahsuland >>>
+-- SQL statement 453: Describe table geography_sahsuland >>>
 -- EXEC sp_help geography_sahsuland;
 GO
 
--- SQL statement 453: Analyze table geography_sahsuland >>>
+-- SQL statement 454: Analyze table geography_sahsuland >>>
 UPDATE STATISTICS geography_sahsuland;
 GO
 
--- SQL statement 454: Describe table hierarchy_sahsuland >>>
+-- SQL statement 455: Describe table hierarchy_sahsuland >>>
 -- EXEC sp_help hierarchy_sahsuland;
 GO
 
--- SQL statement 455: Analyze table hierarchy_sahsuland >>>
+-- SQL statement 456: Analyze table hierarchy_sahsuland >>>
 UPDATE STATISTICS hierarchy_sahsuland;
 GO
 
--- SQL statement 456: Describe table geometry_sahsuland >>>
+-- SQL statement 457: Describe table geometry_sahsuland >>>
 -- EXEC sp_help geometry_sahsuland;
 GO
 
--- SQL statement 457: Analyze table geometry_sahsuland >>>
+-- SQL statement 458: Analyze table geometry_sahsuland >>>
 UPDATE STATISTICS geometry_sahsuland;
 GO
 
--- SQL statement 458: Describe table tile_intersects_sahsuland >>>
+-- SQL statement 459: Describe table tile_intersects_sahsuland >>>
 -- EXEC sp_help tile_intersects_sahsuland;
 GO
 
--- SQL statement 459: Analyze table tile_intersects_sahsuland >>>
+-- SQL statement 460: Analyze table tile_intersects_sahsuland >>>
 UPDATE STATISTICS tile_intersects_sahsuland;
 GO
 
--- SQL statement 460: Describe table tile_limits_sahsuland >>>
+-- SQL statement 461: Describe table tile_limits_sahsuland >>>
 -- EXEC sp_help tile_limits_sahsuland;
 GO
 
--- SQL statement 461: Analyze table tile_limits_sahsuland >>>
+-- SQL statement 462: Analyze table tile_limits_sahsuland >>>
 UPDATE STATISTICS tile_limits_sahsuland;
 GO
 
--- SQL statement 462: Describe table t_tiles_sahsuland >>>
+-- SQL statement 463: Describe table t_tiles_sahsuland >>>
 -- EXEC sp_help t_tiles_sahsuland;
 GO
 
--- SQL statement 463: Analyze table t_tiles_sahsuland >>>
+-- SQL statement 464: Analyze table t_tiles_sahsuland >>>
 UPDATE STATISTICS t_tiles_sahsuland;
 GO
 
@@ -13298,7 +13346,7 @@ GO
 -- Check areas
 --
 
--- SQL statement 465: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
+-- SQL statement 466: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
 DECLARE c1 CURSOR FOR
 /*
  * SQL statement name: 	area_check.sql
@@ -13371,7 +13419,7 @@ CLOSE c1;
 DEALLOCATE c1;;
 GO
 
--- SQL statement 466: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
+-- SQL statement 467: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
 DECLARE c1 CURSOR FOR
 /*
  * SQL statement name: 	area_check.sql
@@ -13444,7 +13492,7 @@ CLOSE c1;
 DEALLOCATE c1;;
 GO
 
--- SQL statement 467: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
+-- SQL statement 468: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
 DECLARE c1 CURSOR FOR
 /*
  * SQL statement name: 	area_check.sql
@@ -13517,7 +13565,7 @@ CLOSE c1;
 DEALLOCATE c1;;
 GO
 
--- SQL statement 468: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
+-- SQL statement 469: Test Turf and DB areas agree to within 1% (Postgres)/5% (SQL server) >>>
 DECLARE c1 CURSOR FOR
 /*
  * SQL statement name: 	area_check.sql
