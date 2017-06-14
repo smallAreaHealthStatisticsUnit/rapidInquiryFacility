@@ -1005,6 +1005,8 @@ BEGIN
 --
 	sql_stmt[1]:='DELETE FROM rif40_investigations'||E'\n'||
 '	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
+	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_study_status'||E'\n'||
+'	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
 	sql_stmt[array_length(sql_stmt, 1)+1]:='DELETE FROM rif40_studies'||E'\n'||
 '	 WHERE study_id = currval(''rif40_study_id_seq''::regclass)';
 --
