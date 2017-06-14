@@ -1404,7 +1404,9 @@ Calls: saveDataFrameToDatabaseTable -> sqlSave
 	The statement has been terminated.
 	
 #### 19th to 23rd June
-  
+ 
+#### 26th to 30th June
+ 
 Todo:
 
 * Trigger issues with SQL Server geospatial re-installs (DELETE FROM t_rif40_geolevels):
@@ -1417,10 +1419,10 @@ Msg 51146, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_geolevel
 Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
   ```  
 * Process SEER data on desktop using Postgres.
+* Automatic denominators: USA data not appearing (rif40_num_denom issue). USA data using wrong column 
+  names - should use geolevel_name. Bug therefore is in data loader setup. 
 * Test plan
 * Check SAHSULAND dataloaded data
- 
-#### 26th to 30th June
 
 #### 1st July to 31st July
 
