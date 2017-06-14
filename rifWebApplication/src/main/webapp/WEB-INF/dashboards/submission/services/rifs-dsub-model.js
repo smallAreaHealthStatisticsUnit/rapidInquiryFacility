@@ -203,7 +203,8 @@ angular.module("RIF")
                             '<section>Date:</section>' + _getAttr(modelJSON.rif_job_submission.job_submission_date) +
                             '<section>Study Name:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.name) +
                             '<section>Study Description:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.description) +
-                            '<section>Geography:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.geography.name);
+                            '<section>Geography:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.geography.name) + 
+                            '<section>Study Type:</section>' + _getAttr("Disease Mapping"); //TODO: 0/1 RISK MAPPING
 
                     //Study area
                     project += '<header>Study Area</header>' +

@@ -33,9 +33,10 @@
  */
 -->
 
-<!-- 
-HTML partial for ui-router Viewer
+<!--
+HTML partial export functionality
 -->
+
 <div class="topnav" id="myTopnav" ng-controller="TabCtrl">
     <div class='logOutUsername' ng-controller="TabCtrl" > 
         <a ng-click="logout()" id="user" tooltip-class="logoutToolTip" tooltip-placement="right" uib-tooltip="Log out {{username}}"></a> 
@@ -49,40 +50,27 @@ HTML partial for ui-router Viewer
 
 <div id="buttons">
     <div class='geoDropsMapping'>
-        <div class="mappingPageLabel">VIEW RESULTS</div>
+        <div class="mappingPageLabel">STUDY TO EXPORT</div>
         <div>
             <div>Study:</div>
-            <select ng-change='child.updateSex("viewermap")'id='studySelect' ng-model='studyID["viewermap"]' ng-options='(s.study_id +              ": " +              s.name) for s in child.studyIDs'></select>
+            <select id='studySelect' ng-model='studyID["exportmap"]' ng-options='(s.study_id +               ": " +               s.name) for s in studyIDs'></select>
         </div>
-        <div>
-            <div>Sex:</div>
-            <select ng-change='child.updateStudy("viewermap")' id='optionsSelect' ng-model="sex['viewermap']" ng-options="s for s in  child.sexes['viewermap']"></select>
-        </div>
-        <div id="studyInfo" get-study-info mapid="viewermap"></div>
+        <div id="studyInfo" get-study-info mapid="exportmap"></div>
     </div>
+    <button class="mapListButton" id="mapListButtonExport" ng-click="exportAllTables()">Export Study Tables</button>
 </div>
-<div ng-controller="leafletLayersCtrl" ui-layout="{flow : 'column'}">
-<div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 
-    <div ui-layout="{flow : 'row'}">
-        <div ui-layout-container id="hSplit1" max-size="100%" class="js-back" size="{{hSplit1}}%">
-            <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="distHisto"></button>
-            <dist-histo chart-data="histoData['viewermap']" name="distHistoName" width="distHistoCurrentWidth" height="distHistoCurrentHeight"></dist-histo>
-        </div>
-        <div ui-layout-container id="hSplit2" max-size="100%" class="js-back">
-            <button type="button" class="d3SaveButton" title="Quick export chart" saved3-chart mapid="poppyramid"></button>
-            <pyramid chart-data="populationData['viewermap']" width="pyramidCurrentWidth" height="pyramidCurrentHeight"></pyramid> 
-            <select id="yearPyramidSelect" ng-model="yearPop" ng-options="s for s in yearsPop" ng-change="updatePyramidForYear()"></select>
-        </div>
+
+<div ui-layout="{flow : 'column'}">
+    <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="35%"> 
+        
+        
     </div>
-</div>
-<div ui-layout-container ui-layout-loaded> 
-<div ui-layout="{flow : 'row'}">
-    <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="{{hSplit2}}%">            
-        <div id="viewermap"></div>
-    </div>
-    <div ui-layout-container class="js-back">
-        <div ng-controller="MultiSelectCtrl">
-            <div ui-grid="viewerTableOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns ui-grid-move-columns ui-grid-exporter class="grid-viewer" ng-mouseleave="mouseleave($event)" ng-grid="viewerTableOptions"></div>
+    <div ui-layout-container ui-layout-loaded> 
+        <div ui-layout="{flow : 'row'}">
+            <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="50%">            
+
+            </div>
+            <div ui-layout-container class="js-back">
+
+            </div>
         </div>
-    </div>
-</div>

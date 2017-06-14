@@ -688,6 +688,11 @@ select {
     text-decoration: underline;
 }
 
+#mapListButtonExport {
+    float: right;
+    margin-right: 10px;
+}
+
 input[type="text"].dropdownInput {
     padding: 0px;
     width: 100%;
@@ -1425,10 +1430,10 @@ input[type=number]+ label  {
     height: 24px;
     width: 18px;
     background: transparent url("../images/glyphicon/glyphicons-592-person-running.png") no-repeat;
-    opacity: 0.4;
+    opacity: 0.2;
 }
 #user:hover {
-    opacity: 0.8;
+    opacity: 0.6;
     cursor: pointer;
 }
 

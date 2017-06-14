@@ -273,6 +273,9 @@ angular.module("RIF")
                     $scope.attr[mapID] = ChoroService.getMaps(mapID).feature;
                     thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
 
+                    //draw histogram
+                    $scope.getD3chart(mapID, $scope.attr[mapID]);
+
                     //not a choropleth, but single colour
                     if (thisMap[mapID].range.length === 1) {
                         //remove existing legend
@@ -534,7 +537,7 @@ angular.module("RIF")
                                     
                                     //draw D3 plots
                                     $scope.getD3chart(mapID, $scope.attr[mapID]);
-
+                                    
                                 }, function (e) {
                                     console.log("Something went wrong when getting the attribute data");
                                     clearTheMapOnError(mapID);

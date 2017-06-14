@@ -37,8 +37,8 @@
 
 /* global L, key, topojson, d3 */
 angular.module("RIF")
-        .controller('ViewerCtrl', ['$scope', 'user', '$timeout', 'ViewerStateService', 'ChoroService', 'mapTools', '$compile',
-            function ($scope, user, $timeout, ViewerStateService, ChoroService, mapTools, $compile) {
+        .controller('ViewerCtrl', ['$scope', 'user', '$timeout', 'ViewerStateService', 'ChoroService', 'mapTools',
+            function ($scope, user, $timeout, ViewerStateService, ChoroService, mapTools) {
 
                 //Reference the child scope
                 $scope.child = {};
@@ -53,6 +53,11 @@ angular.module("RIF")
                     //make map
                     var view = $scope.child.myService.getState().center['viewermap'];
                     $scope.child.map['viewermap'] = L.map('viewermap', {condensedAttributionControl: false}).setView([0, 0], 1);
+
+                    //Attributions to open in new window
+                    L.control.condensedAttribution({
+                        prefix: '<a href="http://leafletjs.com" target="_blank">Leaflet</a>'
+                    }).addTo($scope.child.map['viewermap']);
 
                     //search box
                     new L.Control.GeoSearch({
@@ -96,11 +101,6 @@ angular.module("RIF")
 
                     //scalebar
                     L.control.scale({position: 'bottomleft', imperial: false}).addTo($scope.child.map['viewermap']);
-
-                    //Attributions to open in new window
-                    L.control.condensedAttribution({
-                        prefix: '<a href="http://leafletjs.com" target="_blank">Leaflet</a>'
-                    }).addTo($scope.child.map['viewermap']);
 
                     $scope.child.map['viewermap'].doubleClickZoom.disable();
                     $scope.child.map['viewermap'].keyboard.disable();

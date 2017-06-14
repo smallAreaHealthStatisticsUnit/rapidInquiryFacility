@@ -71,6 +71,11 @@ angular.module("RIF",
                             url: '/mapping',
                             templateUrl: "dashboards/mapping/partials/rifp-dmap-main.html",
                             controller: 'MappingCtrl'
+                        })
+                        .state('state4', {
+                            url: '/export',
+                            templateUrl: "dashboards/export/partials/rifp-expt-main.html",
+                            controller: 'ExportCtrl'
                         });
                 $urlRouterProvider.otherwise("/login");
             }])

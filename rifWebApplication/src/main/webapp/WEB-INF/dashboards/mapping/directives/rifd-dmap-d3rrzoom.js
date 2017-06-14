@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -322,7 +322,7 @@ angular.module("RIF")
                                     MappingStateService.getState().selected[panel] = scope.data[i];
                                     break;
                                 }
-                            }                            
+                            }
                             $rootScope.$broadcast('syncMapping2Events', {selected: selected, mapID: panel, map: data.map});
                         }
 
@@ -362,7 +362,7 @@ angular.module("RIF")
 
                         //the drop reference line
                         var selected = MappingStateService.getState().selected[panel];
-                        if (selected !== null) {
+                        if (selected !== null && selected.rr) {
                             focus.select("#bivariateHiglighter1" + panel).attr("transform", "translate(" + x(selected.x_order) + "," + 0 + ")");
                             context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
                             if (bConfidence) {
@@ -422,7 +422,7 @@ angular.module("RIF")
                                     }
                                 }
 
-                                if (selected !== null) {
+                                if (selected !== null && selected.rr) {
                                     context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
                                     if (bConfidence) {
                                         svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) +

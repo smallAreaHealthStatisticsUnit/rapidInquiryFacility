@@ -225,11 +225,26 @@ angular.module("RIF")
                     //http://localhost:8080/rifServices/studyResultRetrieval/pg/getTileMakerCentroids?userID=dwmorley&geographyName=SAHSULAND&geoLevelSelectName=SAHSU_GRD_LEVEL4
                     return $http.get(studyResultRetrievalURL + DatabaseService.getDatabase() + 'getTileMakerCentroids?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel);
                 };
-                
-                //get details of a completed study
-                //TODO: this method does not give complete information
+
+                //get areas used in a completed study (recycled faulty KG method)
                 self.getStudySubmission = function (username, studyID) {
                     //http://localhost:8080/rifServices/studySubmission/getStudySubmission?userID=kgarwood&studyID=274
                     return $http.get(studySubmissionURL + DatabaseService.getDatabase() + 'getStudySubmission?userID=' + username + '&studyID=' + studyID);
+                };
+                //get details of a completed study
+                self.getDetailsForProcessedStudy = function (username, studyID) {
+                    //http://localhost:8080/rifServices/studyResultRetrieval/pg/getDetailsForProcessedStudy?userID=dwmorley&studyID=35
+                    return $http.get(studyResultRetrievalURL + DatabaseService.getDatabase() + 'getDetailsForProcessedStudy?userID=' + username + '&studyID=' + studyID);
+                };
+                //get health codes used in a completed study
+                self.getHealthCodesForProcessedStudy = function (username, studyID) {
+                    //http://localhost:8080/rifServices/studyResultRetrieval/pg/getHealthCodesForProcessedStudy?userID=dwmorley&studyID=35
+                    return $http.get(studyResultRetrievalURL + DatabaseService.getDatabase() + 'getHealthCodesForProcessedStudy?userID=' + username + '&studyID=' + studyID);
+                };
+
+                //Save study tables to Zip file
+                self.getZipFile = function (username, studyID) {
+                    //http://localhost:8080/rifServices/studySubmission/pg/getZipFile?userID=dwmorley&studyID=46
+                    return $http.get(studySubmissionURL + DatabaseService.getDatabase() + 'getZipFile?userID=' + username + '&studyID=' + studyID);
                 };
             }]);

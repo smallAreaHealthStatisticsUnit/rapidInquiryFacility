@@ -236,6 +236,10 @@
     margin-left: 10px;
 }
 
+.leaflet-left .leaflet-control:nth-child(n+3) {
+    margin-top: 2px;
+}
+
 /*
 CONDENSED ATTRIBUTION
 */

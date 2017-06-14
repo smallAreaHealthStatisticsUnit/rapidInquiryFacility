@@ -44,36 +44,93 @@ angular.module("RIF")
                 $uibModalInstance.close();
             };
         })
-        .directive('getStudyInfo', ['$uibModal', 'user', function ($uibModal, user) {
+        .directive('getStudyInfo', ['$uibModal', 'user', '$sce', function ($uibModal, user, $sce) {
                 return {
                     restrict: 'A',
                     link: function (scope, element, attr) {
 
                         var alertScope = scope.$parent.$$childHead.$parent.$parent.$$childHead;
-
                         scope.summary = null;
-                        scope.toggleText = "Formatted";
-                        scope.toggleJSON = function () {
-                            scope.toggleText = scope.toggleText === "JSON" ? "Formatted" : "JSON";
-                        };
 
                         element.on('click', function (event) {
                             var thisStudy = scope.studyID[attr.mapid].study_id;
-
-                            getModel = function (x) {
-                                //TODO: this method by KG gives incomplete information
-                                user.getStudySubmission(user.currentUser, thisStudy).then(function (res) {
-                                    scope.summary = res.data;
-                                }, function () {
-                                    alertScope.showError("Could not get study information for study: " + thisStudy);
-                                });
-                                //TODO: formatting as in rifc-dsub-summary
-                                if (x === "JSON") {
-        
-                                } else {
-
-                                }
+                            _getAttr = function (v) {
+                                return '<attr>' + $sce.trustAsHtml(v) + '</attr></br>';
                             };
+                            function rerieveError() {
+                                alertScope.showError("Could not get information for study");
+                            }
+
+                            user.getHealthCodesForProcessedStudy(user.currentUser, thisStudy).then(function (invx) {
+                                var inv = invx.data[0];                               
+                                user.getDetailsForProcessedStudy(user.currentUser, thisStudy).then(function (res) {
+                                    var project = '<header>Overview</header><section>Project Name:</section>' + _getAttr(res.data[0][13]) +
+                                            '<section>Project Description:</section>' + _getAttr(res.data[0][14]) +
+                                            '<section>Submitted By:</section>' + _getAttr(res.data[0][0]) +
+                                            '<section>Date:</section>' + _getAttr(res.data[0][3]) +
+                                            '<section>Study Name:</section>' + _getAttr(res.data[0][1]) +
+                                            '<section>Study Description: "TODO: not returned from DB"</section>' + _getAttr(res.data[0][2]) +
+                                            '<section>Geography:</section>' + _getAttr(res.data[0][4]) +
+                                            '<section>Study Type:</section>' + _getAttr(res.data[0][5]);
+
+                                    //Study area
+                                    project += '<header>Study Area</header>' +
+                                            '<section>Resolution of Results:</section>' + _getAttr(res.data[0][12]);
+
+                                    //Comparision area
+                                    project += '<header>Comparison Area</header>' +
+                                            '<section>Resolution of Results:</section>' + _getAttr(res.data[0][6]);
+
+                                    //Investigations
+                                    project += '<header>Investigations</header>';
+                                    project += '<section>Health Theme:</section>' + _getAttr("TODO: not returned from DB") +
+                                            '<section>Numerator Table:</section>' + _getAttr(res.data[0][19]) +
+                                            '<section>Denominator Table:</section>' + _getAttr(res.data[0][7]);
+
+                                    //Table
+                                    var studyTable = "<table><tr>" +
+                                            "<th>Title</th>" +
+                                            "<th>Identifier</th>" +
+                                            "<th>Description</th>" +
+                                            "<th>Years</th>" +
+                                            "<th>Sex</th>" +
+                                            "<th>Age Range</th>" +
+                                            "<th>Covariates</th>" +
+                                            "</tr>";
+
+                                    //TODO: LUT for age range, ICD term
+                                    for (var j = 0; j < inv.length; j++) {
+                                        if (j === 0) {
+                                            studyTable += "<tr><td>" + res.data[0][17] + "</td><td>" +
+                                                    inv[j] + "</td>" +
+                                                    "<td>" + inv[j] + "</td>" +
+                                                    "<td>" + res.data[0][8] + "-" + res.data[0][9] + "</td>" +
+                                                    "<td>" + res.data[0][18] + "</td>" +
+                                                    "<td> LWR: " + res.data[0][11] + ", UPR: " + res.data[0][10] + "</td>" +
+                                                    "<td>" + function () {
+                                                        if (res.data[0][16]) {
+                                                            return res.data[0][16];
+                                                        } else {
+                                                            return "None";
+                                                        }
+                                                    }() + "</td>" +
+                                                    "</tr>";
+                                        } else {
+                                            studyTable += "<tr><td></td>" + "</td><td>" +
+                                                    inv[j] + "</td>" +
+                                                    "<td>" + inv[j] + "</td>" +
+                                                    "</tr>";
+                                        }
+                                    }
+                                    project += studyTable + "</table>";
+
+                                    //Statistics
+                                    project += '<header>Statistics</header>';
+                                    project += '<section>Calculation Method:</section>' + _getAttr(res.data[0][15]);
+
+                                    scope.summary = $sce.trustAsHtml("NOTE: This Information is a work in progress (RIF developers)" + project);
+                                }, rerieveError);
+                            }, rerieveError);
 
                             var modalInstance = $uibModal.open({
                                 animation: true,
@@ -83,11 +140,6 @@ angular.module("RIF")
                                 backdrop: 'static',
                                 scope: scope,
                                 keyboard: false
-                            });
-
-                            modalInstance.opened.then(function () {
-                                scope.summary = "Retrieving";
-                                getModel(scope.toggleText);
                             });
                         });
                     }

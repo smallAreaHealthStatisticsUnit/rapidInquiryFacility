@@ -161,6 +161,7 @@
 }
 .msettings-header a.modal_close:hover {
     opacity: 0.4;
+    cursor: pointer;
 }
 .msettings-header .modal_close {
     float: right;

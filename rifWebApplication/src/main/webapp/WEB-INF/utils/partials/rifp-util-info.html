@@ -44,16 +44,11 @@ HTML partial for study info
                 <a class="modal_close" ng-click="close()"></a>
             </div>
             <div class='modalContainer'>
-                <a class="toggleJSON" ng-click="toggleJSON()">View as {{toggleText}} </a>
-                <div class="modelViewer" ng-switch="toggleText">
-                    <div ng-switch-when="Formatted">
-                        <pre>{{summary| json}}</pre>
-                    </div>
-                    <div ng-switch-default>
-                        <p ng-bind-html="summary"></p>   
-                    </div>
-                </div>
+                <div class="modelViewer">
+                    <p ng-bind-html="summary"></p>
+                </div>                
             </div>
         </div>
     </div>
+</div>
 </div>
