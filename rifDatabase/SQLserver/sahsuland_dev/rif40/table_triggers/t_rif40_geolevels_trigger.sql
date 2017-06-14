@@ -53,6 +53,7 @@ DECLARE @has_studies_check VARCHAR(MAX) =
 );
 
 --delete not allowed
+/*
 IF @XTYPE = 'D' AND @has_studies_check>0
 BEGIN TRY
 	rollback;
@@ -63,7 +64,7 @@ BEGIN CATCH
 	EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[t_rif40_geolevels]';
 	THROW 51146, @err_msg0, 1;
 END CATCH;	
-
+ */
 --insert OK if during initial build
 
 IF @has_studies_check=0

@@ -1402,14 +1402,7 @@ Calls: saveDataFrameToDatabaseTable -> sqlSave
 	suland_dev", table "rif40.rif40_covariates".
 	Msg 3621, Level 0, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
 	The statement has been terminated.
-	
-#### 19th to 23rd June
- 
-#### 26th to 30th June
- 
-Todo:
-
-* Trigger issues with SQL Server geospatial re-installs (DELETE FROM t_rif40_geolevels):
+* Fixed trigger issues with SQL Server geospatial re-installs (DELETE FROM t_rif40_geolevels):
   ```
 -- SQL statement 95: Remove old geolevels meta data table >>>
 DELETE FROM t_rif40_geolevels WHERE geography = 'SAHSULAND';
@@ -1418,6 +1411,14 @@ DELETE FROM t_rif40_geolevels WHERE geography = 'SAHSULAND';
 Msg 51146, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_geolevel_check, Line 43
 Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
   ```  
+  
+#### 19th to 23rd June
+ 
+#### 26th to 30th June
+ 
+Todo:
+
+* SQL Server tiles appears to be missing some names. Looks OK in the tiles table
 * Process SEER data on desktop using Postgres.
 * Automatic denominators: USA data not appearing (rif40_num_denom issue). USA data using wrong column 
   names - should use geolevel_name. Bug therefore is in data loader setup. 
