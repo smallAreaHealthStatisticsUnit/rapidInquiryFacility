@@ -6,7 +6,6 @@ import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.fileFormats.RIFStudySubmissionContentHandler;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
@@ -18,7 +17,6 @@ import java.sql.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.util.Date;
-
 
 
 /**
@@ -164,14 +162,14 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				baseStudyName,
 				rifStudySubmission);
 	
-			/*
+			
 			writeRatesAndRisksFiles(
 				connection,
 				temporaryDirectoryPath,
 				submissionZipOutputStream,
 				baseStudyName,
 				rifStudySubmission);
-			
+			/*
 			writeStatisticalPostProcessingFiles(
 				connection,
 				temporaryDirectoryPath,
@@ -184,14 +182,12 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			*/	
 			submissionZipOutputStream.flush();
 			submissionZipOutputStream.close();
-			
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-			
+			exception.printStackTrace(System.out);	
 		}
 		finally {
-			temporaryDirectory.delete();				
+			temporaryDirectory.delete();
 		}
 	}
 
@@ -302,10 +298,11 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				
 		//Add extract file to zip file
 		StringBuilder extractTableName = new StringBuilder();
+		
 		extractTableName.append("s");
 		extractTableName.append(rifStudySubmission.getStudyID());
 		extractTableName.append("_extract");
-		
+				
 		StringBuilder extractFileName = new StringBuilder();
 		extractFileName.append(STUDY_EXTRACT_SUBDIRECTORY);
 		extractFileName.append(File.separator);
@@ -318,12 +315,12 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			extractTableName.toString(),
 			extractFileName.toString());
 	
-		
+		/* IG NOT YET INCLUDED
 		File infoGovernanceDirectory
 			= new File("C:" + File.separator + "rif_test_data" + File.separator + "information_governance");
 		File[] files = infoGovernanceDirectory.listFiles();
 		
-		for (File file : files) {
+		for (File file : files) { 
 			
 			StringBuilder zipEntryName = new StringBuilder();
 			zipEntryName.append(TERMS_CONDITIONS_SUBDIRECTORY);
@@ -336,37 +333,11 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				file);
 			
 		}
-		
-		//Add extract file to zip file
-/*		
-		StringBuilder mapTableName = new StringBuilder();
-		mapTableName.append("s");
-		mapTableName.append(rifStudySubmission.getStudyID());
-		mapTableName.append("_map");
-		
-		StringBuilder mapFileName = new StringBuilder();
-		mapFileName.append(temporaryDirectoryPath);
-		mapFileName.append(File.separator);
-		mapFileName.append(STUDY_EXTRACT_SUBDIRECTORY);
-		mapFileName.append(File.separator);
-		mapFileName.append(baseStudyName);
-		mapFileName.append(".csv");
-		
-		dumpDatabaseTableToCSVFile(
-			connection,
-			mapTableName.toString(),
-			mapFileName.toString());
-			
-		File mapFile = new File(extractFileName.toString());
-		addFileToZipFile(
-		submissionZipOutputStream, 
-			STUDY_EXTRACT_SUBDIRECTORY, 
-		    mapFile);	 
-		*/		
-		
+		*/
+
 	}
 	
-	/*
+	
 	private void writeRatesAndRisksFiles(
 		final Connection connection,
 		final String temporaryDirectoryPath,
@@ -375,55 +346,27 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 		final RIFStudySubmission rifStudySubmission)
 		throws Exception {
 	
-		//Add result data that do not consider the influence of covariates
-		StringBuilder unadjustedTableName = new StringBuilder();
-		unadjustedTableName.append("s");
-		unadjustedTableName.append(rifStudySubmission.getStudyID());
-		unadjustedTableName.append("_unadj");
+		//Add extract file to zip file
+		StringBuilder mapTableName = new StringBuilder();
 		
-		StringBuilder unadjustedFileName = new StringBuilder();
-		unadjustedFileName.append(temporaryDirectoryPath);
-		unadjustedFileName.append(File.separator);
-		unadjustedFileName.append(STUDY_EXTRACT_SUBDIRECTORY);
-		unadjustedFileName.append(File.separator);
-		unadjustedFileName.append(baseStudyName);
-		unadjustedFileName.append("_unadjusted.csv");
-		
-
-			
-		//KLG @TODO: For now, just create an empty file
-		File unadjustedResultsFile = new File(unadjustedFileName.toString());
-		unadjustedResultsFile.createNewFile();
-		    
-		addFileToZipFile(
-		    submissionZipOutputStream, 
-		    RATES_AND_RISKS_SUBDIRECTORY, 
-		    unadjustedResultsFile);
-			
-			
-		//Add result data that have considered the influence of covariates
-		StringBuilder adjustedTableName = new StringBuilder();		
-		adjustedTableName.append("s");
-		adjustedTableName.append(rifStudySubmission.getStudyID());
-		adjustedTableName.append("_adj");
-		
-		StringBuilder adjustedResultsFileName = new StringBuilder();
-		adjustedResultsFileName.append(temporaryDirectoryPath);
-		adjustedResultsFileName.append(File.separator);
-		adjustedResultsFileName.append(STUDY_EXTRACT_SUBDIRECTORY);
-		adjustedResultsFileName.append(File.separator);
-		adjustedResultsFileName.append(baseStudyName);
-		adjustedResultsFileName.append("_adjusted.csv");
-		
-		File adjustedResultsFile = new File(adjustedResultsFileName.toString());
-	    
-		addFileToZipFile(
-		    submissionZipOutputStream, 
-		    RATES_AND_RISKS_SUBDIRECTORY, 
-		    adjustedResultsFile);
+		mapTableName.append("s");
+		mapTableName.append(rifStudySubmission.getStudyID());
+		mapTableName.append("_map");
+				
+		StringBuilder mapFileName = new StringBuilder();
+		mapFileName.append(RATES_AND_RISKS_SUBDIRECTORY);
+		mapFileName.append(File.separator);
+		mapFileName.append(baseStudyName);
+		mapFileName.append(".csv");
+				
+		dumpDatabaseTableToCSVFile(
+			connection,
+			submissionZipOutputStream,
+			mapTableName.toString(),
+			mapFileName.toString());
 
 	}	
-	*/
+	
 	
 	/*
 	private void writeStatisticalPostProcessingFiles(
@@ -542,71 +485,8 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 		finally {
 			PGSQLQueryUtility.close(statement);
 		}
-
 	}
-		
-
-	
-	/*
-    private void addFileToZipFile(
-    	final ZipOutputStream submissionZipOutputStream, 
-    	final String zipFilePath, 
-    	final File file) throws Exception {
-    	
-    	
-    	if (file.isDirectory()) {
-    		addDirectoryToZipFile(
-    		submissionZipOutputStream,
-    		zipFilePath,
-    		file); 
-    		return;
-    	}
-    	
-    	//assume file is not a directory
-    	ZipEntry zipEntry
-    		= createZipEntry(
-    			zipFilePath,
-    			file);
-    	submissionZipOutputStream.putNextEntry(zipEntry);
-
-        FileInputStream fileInputStream 
-        	= new FileInputStream(file);
-        byte[] buffer = new byte[4092];
-        int byteCount = 0;
-        while ((byteCount = fileInputStream.read(buffer)) != -1)
-        {
-        	submissionZipOutputStream.write(buffer, 0, byteCount);
-            System.out.print('.');
-            System.out.flush();
-        }
-        System.out.println();
-
-        fileInputStream.close();
-        submissionZipOutputStream.closeEntry();
-    }
-    
-    	*/
-	
-	private ZipEntry createZipEntry(
-		String zipFilePath,
-		File file) 
-		throws Exception {
-		
-		FieldValidationUtility fieldValidationUtility
-			= new FieldValidationUtility();
-		
-		StringBuilder path = new StringBuilder();
-		
-		if (fieldValidationUtility.isEmpty(zipFilePath) == false) {
-			path.append(File.separator);
-		}
-		path.append(file.getAbsolutePath());
-		
-		ZipEntry zipEntry = new ZipEntry(path.toString());
-		
-		return zipEntry;
-	}
-    	
+		   	
 	
 	// ==========================================
 	// Section Errors and Validation

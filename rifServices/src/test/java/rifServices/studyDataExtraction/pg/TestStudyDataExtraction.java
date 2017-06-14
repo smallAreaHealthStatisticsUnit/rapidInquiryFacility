@@ -101,7 +101,7 @@ public final class TestStudyDataExtraction
 	public void testExtract1() {
 		try {
 			User validUser = cloneValidUser();
-			String validStudyID = "75";
+			String validStudyID = "45";
 			
 			PGSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
 				= getRIFServiceBundle();

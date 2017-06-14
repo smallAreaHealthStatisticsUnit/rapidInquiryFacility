@@ -220,7 +220,7 @@ public class AbstractRIFServiceTestCase
 		String maliciousFieldValue 
 			= fieldValidationUtility.getTestMaliciousFieldValue();		
 	
-		validUser = User.newInstance("kgarwood", "11.111.11.228");
+		validUser = User.newInstance("dwmorley", "11.111.11.228");
 		nonExistentUser = User.newInstance("nobody", "11.111.11.228");
 		emptyUser = User.newInstance(null, "11.111.11.228");
 		maliciousUser = User.newInstance(maliciousFieldValue, "11.111.11.228");
@@ -455,7 +455,8 @@ public class AbstractRIFServiceTestCase
 	public void setUp() {
 		try {
 			initialiseService();			
-			rifServiceBundle.login("kgarwood", "kgarwood");			
+			//rifServiceBundle.login("kgarwood", "kgarwood");
+			rifServiceBundle.login("dwmorley", "dwmorley");		
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);

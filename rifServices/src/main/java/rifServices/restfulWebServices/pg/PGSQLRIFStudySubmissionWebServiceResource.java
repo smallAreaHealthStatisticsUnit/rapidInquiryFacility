@@ -1554,20 +1554,12 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 		@FormDataParam("userID") String userID,
 		@FormDataParam("fileFormat") String fileFormat,		
 		@FormDataParam("fileField") InputStream inputStream) {
-
-			
+		
 		return super.submitStudy(
 			servletRequest, 
 			userID, 
 			fileFormat,
 			inputStream);
-
-		//WebServiceResponseGenerator webServiceResponseGenerator
-		//	= getWebServiceResponseGenerator();
-
-		//return webServiceResponseGenerator.generateWebServiceResponse(
-		//	servletRequest,
-		//	"Testing getStuff method");
 	}	
 	
 	
@@ -1584,15 +1576,20 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 			servletRequest, 
 			userID, 
 			studyID);
-
-		/*
-		WebServiceResponseGenerator webServiceResponseGenerator
-			= getWebServiceResponseGenerator();
-
-		return webServiceResponseGenerator.generateWebServiceResponse(
-			servletRequest,
-			"Testing getStuff method");
-		*/
+	}	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getZipFile")
+	public Response getZipFile(
+		@Context HttpServletRequest servletRequest,
+		@QueryParam("userID") String userID,
+		@QueryParam("studyID") String studyID) {
+	
+		return super.getZipFile(
+			servletRequest, 
+			userID, 
+			studyID);
 	}	
 	
 	// ==========================================
