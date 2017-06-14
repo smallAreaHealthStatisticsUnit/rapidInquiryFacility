@@ -2080,24 +2080,43 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 				sqlStmt.dbType=dbType;
 				sqlArray.push(sqlStmt);
 			}
-			
-			if (dbType == "MSSQLServer") { 		
-				var sqlStmt=new Sql("Disable constraints on: rif40_covariates",
-					getSqlFromFile("e", 
-						dbType,nable_disable_constraint.sql
-						"rif40."						/* 1: Schema */,
-						"rif40_covariates"				/* 2: Table */,
-						"NOCHECK"						/* 3: DISABLE/ENABLE */,
-						"rif40_covariates_geolevel_fk"	/* 4: Constraint */),
-					sqlArray, dbType);		
-				var sqlStmt=new Sql("Disable constraints on: rif40_covariates",
-					getSqlFromFile("enable_disable_constraint.sql", 
-						dbType,
-						"rif40."						/* 1: Schema */,
-						"rif40_covariates"				/* 2: Table */,
-						"NOCHECK"						/* 3: DISABLE/ENABLE */,
-						"rif40_covariates_geog_fk"		/* 4: Constraint */),
-					sqlArray, dbType);					
+	
+			var fkList = {
+				rif40_covariates: ['rif40_covariates_geolevel_fk', 'rif40_covariates_geog_fk'],
+				t_rif40_studies: ['t_rif40_std_study_geolevel_fk', 't_rif40_std_comp_geolevel_fk', 
+					't_rif40_studies_geography_fk'],
+				t_rif40_inv_covariates: ['t_rif40_inv_cov_geography_fk', 't_rif40_inv_cov_geolevel_fk']					
+			};
+			var tableList=Object.keys(fkList);	
+				
+			if (dbType == "MSSQLServer") { 			
+				for (var i=0; i<tableList.length; i++) {	
+					var fkArray=fkList[tableList[i]];		
+					for (var j=0; j<fkArray.length; j++) {
+						var sqlStmt=new Sql("Disable constraints: " + fkArray[j] + " on: " + tableList[i],
+							getSqlFromFile("enable_disable_constraint.sql", 
+								dbType,
+								"rif40."						/* 1: Schema */,
+								tableList[i]					/* 2: Table */,
+								"NOCHECK"						/* 3: DISABLE/ENABLE */,
+								fkArray[j]						/* 4: Constraint */),
+							sqlArray, dbType);									
+					}
+				}								
+			}
+			else if (dbType == "PostGres") { 
+		
+				for (var i=0; i<tableList.length; i++) {	
+					var fkArray=fkList[tableList[i]];		
+					for (var j=0; j<fkArray.length; j++) {
+						var sqlStmt=new Sql("Disable constraints: " + fkArray[j] + " on: " + tableList[i],
+							getSqlFromFile("drop_constraint.sql", 
+								dbType,
+								tableList[i]	/* 1: Table */,
+								fkArray[j]		/* 2: Constraint */),
+							sqlArray, dbType);		
+					}
+				}									
 			}
 			
 			var newColumnList=['geometrytable', 'tiletable', 'minzoomlevel', 'maxzoomlevel', 'adjacencytable'];
@@ -2285,25 +2304,91 @@ sqlcmd -E -b -m-1 -e -r1 -i mssql_cb_2014_us_500k.sql -v pwd="%cd%"
 					sqlArray, dbType);
 
 			} // End of for loop
+
+			sqlArray.push(new Sql("Re-enable foreign key constraints"));			
 			
 			if (dbType == "MSSQLServer") { 		
-				var sqlStmt=new Sql("Enable constraints on: rif40_covariates",
-					getSqlFromFile("enable_disable_constraint.sql", 
-						dbType,
-						"rif40."						/* 1: Schema */,
-						"rif40_covariates"				/* 2: Table */,
-						"CHECK"							/* 3: DISABLE/ENABLE */,
-						"rif40_covariates_geolevel_fk"	/* 4: Constraint */),
-					sqlArray, dbType);			
-				var sqlStmt=new Sql("Enable constraints on: rif40_covariates",
-					getSqlFromFile("enable_disable_constraint.sql", 
-						dbType,
-						"rif40."						/* 1: Schema */,
-						"rif40_covariates"				/* 2: Table */,
-						"CHECK"							/* 3: DISABLE/ENABLE */,
-						"rif40_covariates_geog_fk"		/* 4: Constraint */),
-					sqlArray, dbType);			
+	
+				var fkList = {
+					rif40_covariates: ['rif40_covariates_geolevel_fk', 'rif40_covariates_geog_fk'],
+					t_rif40_studies: ['t_rif40_std_study_geolevel_fk', 't_rif40_std_comp_geolevel_fk', 
+						't_rif40_studies_geography_fk'],
+					t_rif40_inv_covariates: ['t_rif40_inv_cov_geography_fk', 't_rif40_inv_cov_geolevel_fk']					
+				};
+				var tableList=Object.keys(fkList);	
+			
+				for (var i=0; i<tableList.length; i++) {	
+					var fkArray=fkList[tableList[i]];		
+					for (var j=0; j<fkArray.length; j++) {
+						var sqlStmt=new Sql("Enable constraints: " + fkArray[j] + " on: " + tableList[i],
+							getSqlFromFile("enable_disable_constraint.sql", 
+								dbType,
+								"rif40."						/* 1: Schema */,
+								tableList[i]					/* 2: Table */,
+								"CHECK"							/* 3: DISABLE/ENABLE */,
+								fkArray[j]						/* 4: Constraint */),
+							sqlArray, dbType);									
+					}
+				}								
 			}
+			else if (dbType == "PostGres") { 
+			
+				var fkList = {
+					rif40_covariates: {
+							constraints: [{
+									constraintName: 		'rif40_covariates_geolevel_fk',
+									foreignKey: 			'geography, geolevel_name',
+									referencedTableColumns: 't_rif40_geolevels (geography, geolevel_name)'
+								}, {
+									constraintName: 		'rif40_covariates_geog_fk',
+									foreignKey: 			'geography',
+									referencedTableColumns: 'rif40_geographies (geography)'
+								}]
+						},
+					t_rif40_studies: {
+							constraints: [{
+									constraintName: 		't_rif40_std_study_geolevel_fk',
+									foreignKey: 			'geography, study_geolevel_name',
+									referencedTableColumns: 't_rif40_geolevels (geography, geolevel_name)'
+								}, {
+									constraintName: 		't_rif40_std_comp_geolevel_fk',
+									foreignKey: 			'geography, comparison_geolevel_name',
+									referencedTableColumns: 't_rif40_geolevels (geography, geolevel_name)'
+								}, {
+									constraintName:			't_rif40_studies_geography_fk',
+									foreignKey: 			'geography',
+									referencedTableColumns: 'rif40_geographies (geography)'
+								}]
+						},
+					t_rif40_inv_covariates: {
+							constraints: [{
+									constraintName: 		't_rif40_inv_cov_geography_fk',
+									foreignKey: 			'geography',
+									referencedTableColumns: 'rif40_geographies (geography)'
+								}, {
+									constraintName: 		't_rif40_inv_cov_geolevel_fk',
+									foreignKey: 			'geography, study_geolevel_name',
+									referencedTableColumns: 't_rif40_geolevels (geography, geolevel_name)'
+								}]
+						}						
+				};
+				var tableList=Object.keys(fkList);	
+
+				for (var i=0; i<tableList.length; i++) {	
+					var fkConstraintsArray=fkList[tableList[i]].constraints;		
+					for (var j=0; j<fkConstraintsArray.length; j++) {
+						var constraint=fkConstraintsArray[j];
+						var sqlStmt=new Sql("Enable constraints: " + constraint["constraintName"] + " on: " + tableList[i],
+							getSqlFromFile("create_constraint.sql", 
+								dbType,
+								tableList[i] 							/* 1: Table; e.g. t_rif40_studies */,
+								constraint["constraintName"] 			/* 2: Constraint; e.g. t_rif40_std_comp_geolevel_fk */,
+								constraint["foreignKey"]				/* 3: Foreign key fields; e.g. geography, comparison_geolevel_name */,
+								constraint["referencedTableColumns"]	/* 4: Referenced table and columns; e.g. t_rif40_geolevels (geography, geolevel_name) */),
+							sqlArray, dbType);									
+					}
+				}			
+			}			
 			
 			var sqlStmt=new Sql("Populate geography meta data table",
 				getSqlFromFile("update_geography.sql", 

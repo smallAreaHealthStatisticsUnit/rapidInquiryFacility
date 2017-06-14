@@ -1392,10 +1392,23 @@ Calls: saveDataFrameToDatabaseTable -> sqlSave
 * No area names in sahsuland geography. Setup is correct; mixed and lowercase names not being handled correctly. Forced 
   to uppercase.
 * Data loader scripts disable/enable the foreign key constraint rif40_covariates_geolevel_fk (SQL Server only for the moment).
+  Resolves geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Modified checks for studies:
+```
+	-- SQL statement 75: Remove old geolevels meta data table >>>
+	DELETE FROM t_rif40_geolevels WHERE geography = 'SAHSULAND';
+
+	Msg 547, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
+	The DELETE statement conflicted with the REFERENCE constraint "rif40_covariates_geolevel_fk". The conflict occurred in database "sah
+	suland_dev", table "rif40.rif40_covariates".
+	Msg 3621, Level 0, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
+	The statement has been terminated.
+	
+#### 19th to 23rd June
   
 Todo:
 
 * Process SEER data on desktop using Postgres.
+* Test plan
  
 #### Current TODO list (June 2017): SQL Server Port
 
@@ -1409,16 +1422,7 @@ Todo:
   09:09:31.552 Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://peter-pc:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter. (Reason: CORS header 'Access-Control-Allow-Origin' missing). 1 (unknown)
   ```
 
-* Geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Add checks for studies:
-```
-	-- SQL statement 75: Remove old geolevels meta data table >>>
-	DELETE FROM t_rif40_geolevels WHERE geography = 'SAHSULAND';
 
-	Msg 547, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
-	The DELETE statement conflicted with the REFERENCE constraint "rif40_covariates_geolevel_fk". The conflict occurred in database "sah
-	suland_dev", table "rif40.rif40_covariates".
-	Msg 3621, Level 0, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
-	The statement has been terminated.
 ```
 * Assist with middleware (database fixes)
 

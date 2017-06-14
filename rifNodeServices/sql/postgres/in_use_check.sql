@@ -5,7 +5,7 @@ DO LANGUAGE plpgsql $$
  * Parameters:
  *						1: Geography; e.g. SAHSULAND
  *
- * Description:			Check if geography is in use in studies. Raise error if it is. 
+ * Description:			Check if geography is in use in studies. Warn error if it is. ADD ENV VAR OVERRIDE
  *						To prevent accidental replacement
  * Note:				%% becomes % after substitution
  */
@@ -23,7 +23,7 @@ BEGIN
 	IF c1_rec.total = 0 THEN
 		RAISE INFO 'Geography: %1 is not used by any studies';
 	ELSE
-		RAISE EXCEPTION 'Geography: %1 is used by: % studies', c1_rec.total;
+		RAISE WARNING 'Geography: %1 is used by: % studies', c1_rec.total;
 	END IF;
 END;
 $$
