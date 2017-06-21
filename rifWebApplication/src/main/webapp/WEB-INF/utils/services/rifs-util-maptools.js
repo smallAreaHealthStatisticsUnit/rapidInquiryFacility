@@ -1,3 +1,5 @@
+/* global L */
+
 /**
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
  * that rapidly addresses epidemiological and public health questions using 
@@ -72,6 +74,17 @@ angular.module("RIF")
                             '<select id="selectbands" class="dropdownBand" ng-options="n for n in possibleBands" ng-model="currentBand" ng-init="currentBand"></select>' +
                             '</div>';
 
+                    var areaMapExportSelect =
+                            '<div id="areaHolder">' +
+                            '<input ng-model="area.name" type="radio" name="area" value="study" ng-change="updateStudy(\'exportmap\')"> Study Area<br>' +
+                            '<input ng-model="area.name" type="radio" name="area" value="comparison" ng-change="updateStudy(\'exportmap\')"> Comparison Area<br>' +
+                            '<input ng-model="exportLevel" id="zoomLevel" type="number" min="6" max="11"> Detail Level</input><br>' +
+                            '<button ng-click="exportToGeoJSON()" id="exportGEOJSON" type="button">Export</button>' +
+                            '</div>';
+
+                    var zoomToStudy =
+                            '<button type="button" class="btn btn-zoomStudy" title="Zoom to study extent" zoom-area></button>';
+
                     function basicTools(scope, map) {
                         var tmp = [];
                         for (var i = 0; i < basicMapTools.length; i++) {
@@ -99,6 +112,12 @@ angular.module("RIF")
                     }
                     function bandDropDown(scope) {
                         return makeToolIcon(scope, bandMapDropDown, 'topright');
+                    }
+                    function areaExportSelect(scope) {
+                        return makeToolIcon(scope, areaMapExportSelect, 'topright');
+                    }
+                    function zoomToStudyTool(scope) {
+                        return makeToolIcon(scope, zoomToStudy, 'bottomleft');
                     }
                     function makeToolIcon(scope, html, pos) {
                         var tool = L.Control.extend({
@@ -128,6 +147,12 @@ angular.module("RIF")
                         },
                         getBandDropDown: function (scope) {
                             return bandDropDown(scope);
+                        },
+                        getAreaExportSelect: function (scope) {
+                            return areaExportSelect(scope);
+                        },
+                        getZoomToStudy: function (scope) {
+                            return zoomToStudyTool(scope);
                         }
                     };
                 });

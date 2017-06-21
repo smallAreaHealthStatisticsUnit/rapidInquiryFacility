@@ -69,6 +69,18 @@ angular.module("RIF")
                     }
                 };
             }])
+         .directive('zoomArea', [function () {
+                return {
+                    restrict: 'A',
+                    link: function (scope, element, attr) {
+                        element.on('click', function (event) {
+                            if (angular.isDefined(scope.studyBounds)) {
+                                scope.map['exportmap'].fitBounds(scope.studyBounds);
+                            }
+                        });
+                    }
+                };
+            }])
         .directive('zoomStudy', [function () {
                 return {
                     restrict: 'A',

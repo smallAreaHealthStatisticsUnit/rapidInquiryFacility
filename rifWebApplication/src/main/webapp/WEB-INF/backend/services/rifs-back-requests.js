@@ -241,6 +241,12 @@ angular.module("RIF")
                     //http://localhost:8080/rifServices/studyResultRetrieval/pg/getHealthCodesForProcessedStudy?userID=dwmorley&studyID=35
                     return $http.get(studyResultRetrievalURL + DatabaseService.getDatabase() + 'getHealthCodesForProcessedStudy?userID=' + username + '&studyID=' + studyID);
                 };
+                //get map or extract table preview of a completed study
+                self.getStudyTableForProcessedStudy = function (username, studyID, type, stt, stp) {
+                    //http://localhost:8080/rifServices/studyResultRetrieval/pg/getStudyTableForProcessedStudy?userID=dwmorley&studyID=35&type=extract&stt=2&stp=100
+                    return $http.get(studyResultRetrievalURL + DatabaseService.getDatabase() + 'getStudyTableForProcessedStudy?userID=' + username + '&studyID=' + studyID + 
+                            '&type=' + type + '&stt=' + stt + '&stp=' + stp);
+                };
 
                 //Save study tables to Zip file
                 self.getZipFile = function (username, studyID) {

@@ -128,6 +128,8 @@ angular.module("RIF")
                                 d3.select("#rrchart" + panel).remove();
                                 return;
                             }
+                        } else {
+                            return;
                         }
 
                         var xAxis = d3.axisBottom().scale(x).ticks(0);

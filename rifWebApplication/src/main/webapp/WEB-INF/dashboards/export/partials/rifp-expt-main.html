@@ -53,24 +53,36 @@ HTML partial export functionality
         <div class="mappingPageLabel">STUDY TO EXPORT</div>
         <div>
             <div>Study:</div>
-            <select id='studySelect' ng-model='studyID["exportmap"]' ng-options='(s.study_id +               ": " +               s.name) for s in studyIDs'></select>
+            <select ng-change='updateStudy("exportmap")' id='studySelect' ng-model='studyID["exportmap"]' ng-options='(s.study_id +                       ": " +                       s.name) for s in studyIDs'></select>
         </div>
         <div id="studyInfo" get-study-info mapid="exportmap"></div>
     </div>
     <button class="mapListButton" id="mapListButtonExport" ng-click="exportAllTables()">Export Study Tables</button>
 </div>
-
 <div ui-layout="{flow : 'column'}">
-    <div ui-layout-container ui-layout-loaded id="vSplit1" max-size="100%" size="35%"> 
-        
-        
+    <div ui-layout-container class="leaflet-box" ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 
+        <div id="exportmap"></div>
     </div>
     <div ui-layout-container ui-layout-loaded> 
         <div ui-layout="{flow : 'row'}">
-            <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="50%">            
-
+            <div ui-layout-container class="leaflet-box" id="hSplit2" max-size="100%" size="{{hSplit1}}%">            
+                <div class ="rowSelectorBar">
+                    <div class ="rowSelectorBarLabel"> Extract Table</div>
+                    <input ng-model="rows['extract'][0]" make-sure-numeric class="rowSelectorNumber">
+                    <input ng-model="rows['extract'][1]" make-sure-numeric class="rowSelectorNumber">
+                    <div class="rowSelectorInputLabel"> Preview Rows</div>
+                    <div class="rowSelectorGo" ng-click="preview('extract')"></div>
+                </div>
+                <div ui-grid="tableOptions['extract']" ui-grid-auto-resize ui-grid-resize-columns class="grid-export"  ng-grid="tableOptions['extract']"></div>
             </div>
             <div ui-layout-container class="js-back">
-
+                <div class ="rowSelectorBar">
+                    <div class ="rowSelectorBarLabel"> Results Table</div>
+                    <input ng-model="rows['results'][0]" make-sure-numeric class="rowSelectorNumber">
+                    <input ng-model="rows['results'][1]" make-sure-numeric class="rowSelectorNumber">
+                    <div class="rowSelectorInputLabel"> Preview Rows</div>
+                    <div class="rowSelectorGo" ng-click="preview('results')"></div>
+                </div>
+                <div ui-grid="tableOptions['results']" ui-grid-auto-resize ui-grid-resize-columns class="grid-export"  ng-grid="tableOptions['results']"></div>
             </div>
         </div>

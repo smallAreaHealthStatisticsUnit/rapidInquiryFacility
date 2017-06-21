@@ -50,14 +50,16 @@ angular.module("RIF")
                         areamap: defaultBaseMap,
                         viewermap: defaultBaseMap,
                         diseasemap1: defaultBaseMap,
-                        diseasemap2: defaultBaseMap
+                        diseasemap2: defaultBaseMap,
+                        exportmap: defaultBaseMap
                     };
                     //from checkbox, disable basemap
                     var noBaseMap = {
                         areamap: false,
                         viewermap: false,
                         diseasemap1: false,
-                        diseasemap2: false
+                        diseasemap2: false,
+                        exportmap: false
                     };
 
                     //https://leaflet-extras.github.io/leaflet-providers/preview/

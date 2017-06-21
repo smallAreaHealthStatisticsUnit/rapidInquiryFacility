@@ -49,6 +49,10 @@ angular.module("RIF")
                     $scope.child.map['viewermap'].remove();
                 });
 
+                $scope.$on('ui.layout.resize', function (e, beforeContainer, afterContainer) {
+                    $scope.child.map['viewermap'].invalidateSize();
+                });
+
                 $timeout(function () {
                     //make map
                     var view = $scope.child.myService.getState().center['viewermap'];
