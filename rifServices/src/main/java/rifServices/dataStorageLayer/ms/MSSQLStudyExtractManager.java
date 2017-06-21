@@ -7,6 +7,7 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.fileFormats.RIFStudySubmissionContentHandler;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
@@ -90,6 +91,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	private static final String STUDY_QUERY_SUBDIRECTORY = "study_query";
 	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
 	private static final String RATES_AND_RISKS_SUBDIRECTORY = "rates_and_risks";
+	private static final String GEOGRAPHY_SUBDIRECTORY = "geography";
 	private static final String STATISTICAL_POSTPROCESSING_SUBDIRECTORY = "statistical_post_processing";
 	
 	private static final String TERMS_CONDITIONS_SUBDIRECTORY = "terms_and_conditions";
@@ -164,14 +166,21 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 				baseStudyName,
 				rifStudySubmission);
 	
-			/*
 			writeRatesAndRisksFiles(
-				connection,
-				temporaryDirectoryPath,
-				submissionZipOutputStream,
-				baseStudyName,
-				rifStudySubmission);
+					connection,
+					temporaryDirectoryPath,
+					submissionZipOutputStream,
+					baseStudyName,
+					rifStudySubmission);
+
+			writeGeographyFiles(
+					connection,
+					temporaryDirectoryPath,
+					submissionZipOutputStream,
+					baseStudyName,
+					rifStudySubmission);
 			
+			/*
 			writeStatisticalPostProcessingFiles(
 				connection,
 				temporaryDirectoryPath,
@@ -293,38 +302,39 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	
 	
 	private void writeExtractFiles(
-		final Connection connection,
-		final String temporaryDirectoryPath,
-		final ZipOutputStream submissionZipOutputStream,
-		final String baseStudyName,
-		final RIFStudySubmission rifStudySubmission)
-		throws Exception {
-				
+			final Connection connection,
+			final String temporaryDirectoryPath,
+			final ZipOutputStream submissionZipOutputStream,
+			final String baseStudyName,
+			final RIFStudySubmission rifStudySubmission)
+					throws Exception {
+
 		//Add extract file to zip file
 		StringBuilder extractTableName = new StringBuilder();
+
 		extractTableName.append("s");
 		extractTableName.append(rifStudySubmission.getStudyID());
 		extractTableName.append("_extract");
-		
+
 		StringBuilder extractFileName = new StringBuilder();
 		extractFileName.append(STUDY_EXTRACT_SUBDIRECTORY);
 		extractFileName.append(File.separator);
 		extractFileName.append(baseStudyName);
 		extractFileName.append(".csv");
-				
+
 		dumpDatabaseTableToCSVFile(
-			connection,
-			submissionZipOutputStream,
-			extractTableName.toString(),
-			extractFileName.toString());
-	
-		
+				connection,
+				submissionZipOutputStream,
+				extractTableName.toString(),
+				extractFileName.toString());
+
+		/* IG NOT YET INCLUDED
 		File infoGovernanceDirectory
 			= new File("C:" + File.separator + "rif_test_data" + File.separator + "information_governance");
 		File[] files = infoGovernanceDirectory.listFiles();
-		
-		for (File file : files) {
-			
+
+		for (File file : files) { 
+
 			StringBuilder zipEntryName = new StringBuilder();
 			zipEntryName.append(TERMS_CONDITIONS_SUBDIRECTORY);
 			zipEntryName.append(File.separator);
@@ -334,96 +344,77 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 				submissionZipOutputStream,
 				zipEntryName.toString(),
 				file);
-			
+
 		}
-		
-		//Add extract file to zip file
-/*		
-		StringBuilder mapTableName = new StringBuilder();
-		mapTableName.append("s");
-		mapTableName.append(rifStudySubmission.getStudyID());
-		mapTableName.append("_map");
-		
-		StringBuilder mapFileName = new StringBuilder();
-		mapFileName.append(temporaryDirectoryPath);
-		mapFileName.append(File.separator);
-		mapFileName.append(STUDY_EXTRACT_SUBDIRECTORY);
-		mapFileName.append(File.separator);
-		mapFileName.append(baseStudyName);
-		mapFileName.append(".csv");
-		
-		dumpDatabaseTableToCSVFile(
-			connection,
-			mapTableName.toString(),
-			mapFileName.toString());
-			
-		File mapFile = new File(extractFileName.toString());
-		addFileToZipFile(
-		submissionZipOutputStream, 
-			STUDY_EXTRACT_SUBDIRECTORY, 
-		    mapFile);	 
-		*/		
+		 */
 		
 	}
 	
-	/*
 	private void writeRatesAndRisksFiles(
-		final Connection connection,
-		final String temporaryDirectoryPath,
-		final ZipOutputStream submissionZipOutputStream,
-		final String baseStudyName,
-		final RIFStudySubmission rifStudySubmission)
-		throws Exception {
-	
-		//Add result data that do not consider the influence of covariates
-		StringBuilder unadjustedTableName = new StringBuilder();
-		unadjustedTableName.append("s");
-		unadjustedTableName.append(rifStudySubmission.getStudyID());
-		unadjustedTableName.append("_unadj");
-		
-		StringBuilder unadjustedFileName = new StringBuilder();
-		unadjustedFileName.append(temporaryDirectoryPath);
-		unadjustedFileName.append(File.separator);
-		unadjustedFileName.append(STUDY_EXTRACT_SUBDIRECTORY);
-		unadjustedFileName.append(File.separator);
-		unadjustedFileName.append(baseStudyName);
-		unadjustedFileName.append("_unadjusted.csv");
-		
+			final Connection connection,
+			final String temporaryDirectoryPath,
+			final ZipOutputStream submissionZipOutputStream,
+			final String baseStudyName,
+			final RIFStudySubmission rifStudySubmission)
+					throws Exception {
 
-			
-		//KLG @TODO: For now, just create an empty file
-		File unadjustedResultsFile = new File(unadjustedFileName.toString());
-		unadjustedResultsFile.createNewFile();
-		    
-		addFileToZipFile(
-		    submissionZipOutputStream, 
-		    RATES_AND_RISKS_SUBDIRECTORY, 
-		    unadjustedResultsFile);
-			
-			
-		//Add result data that have considered the influence of covariates
-		StringBuilder adjustedTableName = new StringBuilder();		
-		adjustedTableName.append("s");
-		adjustedTableName.append(rifStudySubmission.getStudyID());
-		adjustedTableName.append("_adj");
-		
-		StringBuilder adjustedResultsFileName = new StringBuilder();
-		adjustedResultsFileName.append(temporaryDirectoryPath);
-		adjustedResultsFileName.append(File.separator);
-		adjustedResultsFileName.append(STUDY_EXTRACT_SUBDIRECTORY);
-		adjustedResultsFileName.append(File.separator);
-		adjustedResultsFileName.append(baseStudyName);
-		adjustedResultsFileName.append("_adjusted.csv");
-		
-		File adjustedResultsFile = new File(adjustedResultsFileName.toString());
-	    
-		addFileToZipFile(
-		    submissionZipOutputStream, 
-		    RATES_AND_RISKS_SUBDIRECTORY, 
-		    adjustedResultsFile);
+		//Add extract file to zip file
+		StringBuilder mapTableName = new StringBuilder();
+
+		mapTableName.append("s");
+		mapTableName.append(rifStudySubmission.getStudyID());
+		mapTableName.append("_map");
+
+		StringBuilder mapFileName = new StringBuilder();
+		mapFileName.append(RATES_AND_RISKS_SUBDIRECTORY);
+		mapFileName.append(File.separator);
+		mapFileName.append(baseStudyName);
+		mapFileName.append(".csv");
+
+		dumpDatabaseTableToCSVFile(
+				connection,
+				submissionZipOutputStream,
+				mapTableName.toString(),
+				mapFileName.toString());
 
 	}	
-	*/
+	
+	private void writeGeographyFiles(
+			final Connection connection,
+			final String temporaryDirectoryPath,
+			final ZipOutputStream submissionZipOutputStream,
+			final String baseStudyName,
+			final RIFStudySubmission rifStudySubmission)
+					throws Exception {
+
+		//Add extract file to zip file
+		StringBuilder tileTableName = new StringBuilder();
+		
+		tileTableName.append("rif_data.geometry_");
+		tileTableName.append("sahsuland"); //rifStudySubmission.getStudy().getGeography().toString()
+		tileTableName.append("_geolevel_id_");
+		tileTableName.append("3"); //TODO: needs variable
+		tileTableName.append("_zoomlevel_");
+		tileTableName.append("9"); //TODO: needs variable
+		
+		System.out.println(tileTableName);
+		
+		StringBuilder tileFileName = new StringBuilder();
+		tileFileName.append(GEOGRAPHY_SUBDIRECTORY);
+		tileFileName.append(File.separator);
+		tileFileName.append(baseStudyName);
+		tileFileName.append(".csv");
+
+		//rifStudySubmission.getStudy().
+		
+		dumpMapDatabaseTableToCSVFile(
+				connection,
+				submissionZipOutputStream,
+				tileTableName.toString(),
+				tileFileName.toString());
+
+	}	
+
 	
 	/*
 	private void writeStatisticalPostProcessingFiles(
@@ -587,24 +578,64 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
     
     	*/
 	
-	private ZipEntry createZipEntry(
-		String zipFilePath,
-		File file) 
-		throws Exception {
+	public void dumpMapDatabaseTableToCSVFile(
+			final Connection connection,
+			final ZipOutputStream submissionZipOutputStream,		
+			final String tableName,
+			final String outputFilePath)
+					throws Exception {
+
+	/*	PGSQLFunctionCallerQueryFormatter queryFormatter = new PGSQLFunctionCallerQueryFormatter();
+		queryFormatter.setDatabaseSchemaName("rif40_dmp_pkg");
+		queryFormatter.setFunctionName("csv_dump");
+		queryFormatter.setNumberOfFunctionParameters(1);
+
+		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(submissionZipOutputStream);
+		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
+
+		PreparedStatement statement
+		= createPreparedStatement(connection, queryFormatter);		
+		ResultSet resultSet = null;*/
 		
-		FieldValidationUtility fieldValidationUtility
-			= new FieldValidationUtility();
+		//TODO: if contains then write line
+		//return array of area_id x2
 		
-		StringBuilder path = new StringBuilder();
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();		
+
+		queryFormatter.addQueryLine(1, "SELECT * from rif_data.geometry_sahsuland_geolevel_id_3_zoomlevel_9 limit 10");
 		
-		if (fieldValidationUtility.isEmpty(zipFilePath) == false) {
-			path.append(File.separator);
+		//TODO: permission denied
+		
+		PreparedStatement statement
+		= createPreparedStatement(connection, queryFormatter);		
+		ResultSet resultSet = null;
+		
+		
+		//..
+		
+		
+		try {
+			statement = createPreparedStatement(connection, queryFormatter);
+			//statement.setString(1, tableName);
+			resultSet = statement.executeQuery();
+
+			//ZipEntry zipEntry = new ZipEntry(outputFilePath);
+			//submissionZipOutputStream.putNextEntry(zipEntry);
+
+			while (resultSet.next()) {
+				//bufferedWriter.write(resultSet.getString(1));
+				System.out.println("resultSet.getString(2)");
+				
+			}
+
+			//bufferedWriter.flush();
+			//submissionZipOutputStream.closeEntry();
+
+			connection.commit();
 		}
-		path.append(file.getAbsolutePath());
-		
-		ZipEntry zipEntry = new ZipEntry(path.toString());
-		
-		return zipEntry;
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}
 	}
     	
 	
