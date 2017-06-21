@@ -539,13 +539,11 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 		countTableRowsQueryFormatter.addQueryLine(1, tableName);
 
 		//get requested subset
-		//TODO: will not work in MSSQL
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "SELECT * FROM");
-		queryFormatter.addQueryLine(1, "(SELECT row_number() over(), * ");
+		queryFormatter.addQueryLine(1, "(select row_number() over(ORDER BY area_id ASC) as row_number, * ");
 		queryFormatter.addQueryLine(1, "from " + tableName + ") a ");
 		queryFormatter.addQueryLine(1, "where row_number >= ? and row_number <= ?");
-	
 		
 		PreparedStatement mainResultsStatement = null;
 		PreparedStatement resultCounterStatement = null;

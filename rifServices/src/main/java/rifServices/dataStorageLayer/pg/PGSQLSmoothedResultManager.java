@@ -531,7 +531,6 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		queryFormatter.addQueryLine(1, "(SELECT row_number() over(), * ");
 		queryFormatter.addQueryLine(1, "from " + tableName + ") a ");
 		queryFormatter.addQueryLine(1, "where row_number >= ? and row_number <= ?");
-	
 		
 		PreparedStatement mainResultsStatement = null;
 		PreparedStatement resultCounterStatement = null;
