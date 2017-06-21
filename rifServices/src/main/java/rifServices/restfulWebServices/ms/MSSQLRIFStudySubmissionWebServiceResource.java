@@ -5,14 +5,14 @@ import rifServices.businessConceptLayer.*;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.businessConceptLayer.User;
-
 import rifServices.restfulWebServices.*;
 
 import com.sun.jersey.multipart.*;
-import javax.ws.rs.*;
 
+import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.servlet.http.HttpServletRequest;
+
 import java.text.Collator;
 import java.util.ArrayList;
 import java.io.*;
@@ -1597,15 +1597,20 @@ public class MSSQLRIFStudySubmissionWebServiceResource
 			servletRequest, 
 			userID, 
 			studyID);
-
-		/*
-		WebServiceResponseGenerator webServiceResponseGenerator
-			= getWebServiceResponseGenerator();
-
-		return webServiceResponseGenerator.generateWebServiceResponse(
-			servletRequest,
-			"Testing getStuff method");
-		*/
+	}	
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getZipFile")
+	public Response getZipFile(
+		@Context HttpServletRequest servletRequest,
+		@QueryParam("userID") String userID,
+		@QueryParam("studyID") String studyID) {
+	
+		return super.getZipFile(
+			servletRequest, 
+			userID, 
+			studyID);
 	}	
 	
 	// ==========================================

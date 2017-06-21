@@ -18,6 +18,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 
 
+
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -1320,6 +1321,36 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			servletRequest,
 			result);		
 	}
+	
+	protected Response getZipFile(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) { 
+
+		String result = "";
+
+		try {
+			User user = createUser(servletRequest, userID);
+
+			RIFStudySubmissionAPI studySubmissionService
+			= getRIFStudySubmissionService();
+
+			studySubmissionService.createStudyExtract(
+					user, 
+					studyID);
+		}
+		catch(RIFServiceException rifServiceException) {
+			result 
+			= serialiseException(
+					servletRequest,
+					rifServiceException);			
+		}
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
+				servletRequest,
+				result);		
+	}
+
 	
 	protected Response submitStudy(
 		final HttpServletRequest servletRequest,
