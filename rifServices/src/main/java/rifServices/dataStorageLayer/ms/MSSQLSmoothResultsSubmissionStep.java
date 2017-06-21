@@ -181,7 +181,7 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 			validateCommandLineExpressionComponents();
 
 			//########################
-			boolean test = false; //true JRI false BATCH
+			boolean test = true; //true JRI false BATCH
 			int exitValue = 0;
 
 			if (test) {
@@ -206,6 +206,9 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 					//Check library path
 					rengine.eval("rm(list=ls())"); //just in case!
 					rengine.eval("print(.libPaths())");
+									
+					//Session Info
+					rengine.eval("print(sessionInfo())");
 
 					//set connection details and parameters
 					String[] parameters = generateParameterArray();
