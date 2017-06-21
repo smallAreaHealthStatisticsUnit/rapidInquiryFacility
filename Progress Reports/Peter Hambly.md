@@ -1423,7 +1423,8 @@ Todo:
 * Automatic denominators: USA data not appearing (rif40_num_denom issue). USA data using wrong column 
   names - should use geolevel_name. Bug therefore is in data loader setup. 
 * Test plan
-* Check SAHSULAND dataloaded data
+* 2017/18 forward plan. Highlight impact of no Java developer
+* Check SAHSULAND dataloaded data is the same
 
 #### 1st July to 31st July
 
@@ -1445,7 +1446,7 @@ Todo:
 ```
 * Assist with middleware (database fixes)
 
-#### TileViewer TODO (deferred to August 2017):
+#### TileViewer TODO (deferred to August 2017 and beyond):
  
 * Area tests (area_check.sql) is failing for Halland - suspect area is too small, could be projection ia wrong 
 * NVarchar support for areaName
@@ -1563,17 +1564,14 @@ Note: no bounding box (bbox) in tiles.
 * AreaName duplicates to be allowed; key enforcementment to be in the heirarchy table; this allows 
   for duplicate county names within a state
 * Change CREATE study to run in own schema; create procedure to transfer study/map tables to correct schema 
-  and grant back permissions [i.e. remove security issue with current code]
+  and grant back permissions [i.e. remove security issue with current Postgres code; SQL Server does not have this issue]
 * Add t_rif40_study_areas trigger check (once per INSERT/UPDATE) for correct use of band_id in rif40_study_shares. 
   Alternatively check in rif40_run_study
 * Rename offset in age_sex_groups (reserved keyword)
   
 ### New features (deffered)
 
-2. New study state "S" - Smoothed; new method: setStudyState(study_id, state) {…}
-2. New study status table: t_rif40_study_status(username, study_id, study_state, creation_date, ith_update, message); ith_update is auto increment
-   and updateable view rif40_study_status of the users own studies
-3. Separate test/build in makefile; remove Node dependency
+1. Separate test/build in makefile; remove Node dependency
   
 ### Park
 
