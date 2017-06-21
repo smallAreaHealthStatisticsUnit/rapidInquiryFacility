@@ -1918,6 +1918,48 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 	
 	@GET	
 	@Produces({"application/json"})	
+	@Path("/getStudyTableForProcessedStudy")
+	public String getStudyTableForProcessedStudy(
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID,
+			@QueryParam("type") String type,
+			@QueryParam("stt") String stt,
+			@QueryParam("stp") String stp) {
+
+		String result = "";
+
+		try {
+			//Convert URL parameters to RIF service API parameters			
+			User user = createUser(servletRequest, userID);
+
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+			= getRIFStudyResultRetrievalService();
+
+			RIFResultTable rifResultTable
+			= studyResultRetrievalService.getStudyTableForProcessedStudy(user, studyID, type, stt, stp);
+
+			//Convert results to support JSON
+			result 
+			= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					rifResultTable);	
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result 
+			= serialiseException(
+					servletRequest,
+					exception);			
+		}
+
+		return result;
+
+	}	
+	
+	@GET	
+	@Produces({"application/json"})	
 	@Path("/getHealthCodesForProcessedStudy")
 	public String getHealthCodesForProcessedStudy(
 		@Context HttpServletRequest servletRequest,	

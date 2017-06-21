@@ -1324,7 +1324,6 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 				result);		
 	}
 
-
 	protected Response submitStudy(
 			final HttpServletRequest servletRequest,
 			final String userID,

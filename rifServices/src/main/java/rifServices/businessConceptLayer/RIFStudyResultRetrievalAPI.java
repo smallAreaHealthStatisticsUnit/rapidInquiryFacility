@@ -486,6 +486,14 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final String studyID)
 					throws RIFServiceException;
 	
+	public RIFResultTable getStudyTableForProcessedStudy(
+			final User user,
+			final String studyID,
+			final String type,
+			final String stt,
+			final String stp)
+					throws RIFServiceException;
+	
 	public String[] getHealthCodesForProcessedStudy(
 			final User user,
 			final String studyID)

@@ -1591,6 +1591,7 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 			userID, 
 			studyID);
 	}	
+
 	
 	// ==========================================
 	// Section Errors and Validation

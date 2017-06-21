@@ -464,7 +464,7 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 		countTableRowsQueryFormatter.addQueryLine(0, "FROM");
 		countTableRowsQueryFormatter.addQueryLine(1, "rif40_inv_conditions");
 		countTableRowsQueryFormatter.addQueryLine(1, "WHERE study_id = ?");
-		//TODO:
+
 		PGSQLSelectQueryFormatter queryFormatter
 		= new PGSQLSelectQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
@@ -515,6 +515,190 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 		}
 		return results;			
 	}	
+	
+	public RIFResultTable getStudyTableForProcessedStudy(
+			final Connection connection, 
+			final String studyID,
+			final String type,
+			final String stt,
+			final String stp) 
+					throws RIFServiceException {
+
+		String tableName = "";
+		if (type.equals("extract")) {
+			tableName = deriveExtractTableName(studyID);
+		} else {
+			tableName = deriveMapTableName(studyID);
+		}
+		
+		//count total rows in table
+		SQLGeneralQueryFormatter countTableRowsQueryFormatter = new SQLGeneralQueryFormatter();
+		countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
+		countTableRowsQueryFormatter.addQueryLine(1, "COUNT(area_id) AS total");
+		countTableRowsQueryFormatter.addQueryLine(0, "FROM");
+		countTableRowsQueryFormatter.addQueryLine(1, tableName);
+
+		//get requested subset
+		//TODO: will not work in MSSQL
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.addQueryLine(0, "SELECT * FROM");
+		queryFormatter.addQueryLine(1, "(SELECT row_number() over(), * ");
+		queryFormatter.addQueryLine(1, "from " + tableName + ") a ");
+		queryFormatter.addQueryLine(1, "where row_number >= ? and row_number <= ?");
+	
+		
+		PreparedStatement mainResultsStatement = null;
+		PreparedStatement resultCounterStatement = null;
+		ResultSet mainResultSet = null;
+		ResultSet resultCounterSet = null;
+
+		RIFResultTable results = new RIFResultTable();
+
+		try {
+			resultCounterStatement = connection.prepareStatement(countTableRowsQueryFormatter.generateQuery());
+			resultCounterSet = resultCounterStatement.executeQuery();
+			resultCounterSet.next();
+			int totalNumberRowsInTable = resultCounterSet.getInt(1);
+			
+			Integer startRow = Integer.parseInt(stt);
+			Integer stopRow = Integer.parseInt(stp);
+			
+			//If request max is greater than total do not use upper
+			if (totalNumberRowsInTable < stopRow) {
+				stopRow = totalNumberRowsInTable;
+			}
+			
+			//get expected row count
+			Integer totalNumberRowsInResults = stopRow - startRow + 1;
+			Integer totalNumberColumnsInResults = 10;
+
+			//Now get the results
+			mainResultsStatement = connection.prepareStatement(queryFormatter.generateQuery());
+			mainResultsStatement.setInt(1, startRow);
+			mainResultsStatement.setInt(2, stopRow);	
+
+			String[] columnNames = null;
+			RIFResultTable.ColumnDataType[] columnDataTypes = null;
+			if (type.equals("extract")) {
+				totalNumberColumnsInResults = 10;
+				columnNames = new String[totalNumberColumnsInResults];
+				columnNames[0] = "row";
+				columnNames[1] = "year";
+				columnNames[2] = "study_or_comparison";
+				columnNames[3] = "study_id";
+				columnNames[4] = "area_id";
+				columnNames[5] = "band_id";
+				columnNames[6] = "sex";
+				columnNames[7] = "age_group";
+				columnNames[8] = "name";
+				columnNames[9] = "total_pop";
+
+				columnDataTypes = new RIFResultTable.ColumnDataType[totalNumberColumnsInResults];
+				columnDataTypes[0] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[1] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[2] = RIFResultTable.ColumnDataType.TEXT;
+				columnDataTypes[3] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[4] = RIFResultTable.ColumnDataType.TEXT;
+				columnDataTypes[5] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[6] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[7] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[8] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[9] = RIFResultTable.ColumnDataType.NUMERIC;
+
+			} else {
+				totalNumberColumnsInResults = 26;
+				columnNames = new String[totalNumberColumnsInResults];
+				columnNames[0] = "row";
+				columnNames[1] = "gid";
+				columnNames[2] = "gid_rowindex"; 
+				columnNames[3] = "area_id";
+				columnNames[4] = "username";
+				columnNames[5] = "study_id";
+				columnNames[6] = "inv_id";
+				columnNames[7] = "band_id";
+				columnNames[8] = "genders";
+				columnNames[9] = "direct_standardisation"; 
+				columnNames[10] = "adjusted";
+				columnNames[11] = "observed";
+				columnNames[12] = "expected";
+				columnNames[13] = "lower95";
+				columnNames[14] = "upper95";
+				columnNames[15] = "relative_risk"; 
+				columnNames[16] = "smoothed_relative_risk"; 
+				columnNames[17] = "posterior_probability";
+				columnNames[18] = "posterior_probability_upper95"; 
+				columnNames[19] = "posterior_probability_lower95";
+				columnNames[20] = "residual_relative_risk"; 
+				columnNames[21] = "residual_rr_lower95"; 
+				columnNames[22] = "residual_rr_upper95";
+				columnNames[23] = "smoothed_smr";
+				columnNames[24] = "smoothed_smr_lower95";
+				columnNames[25] = "smoothed_smr_upper95";
+
+				columnDataTypes = new RIFResultTable.ColumnDataType[totalNumberColumnsInResults];
+				columnDataTypes[0] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[1] = RIFResultTable.ColumnDataType.TEXT;
+				columnDataTypes[2] = RIFResultTable.ColumnDataType.TEXT;
+				columnDataTypes[3] = RIFResultTable.ColumnDataType.TEXT;
+				columnDataTypes[4] = RIFResultTable.ColumnDataType.TEXT;
+				columnDataTypes[5] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[6] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[7] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[8] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[9] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[10] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[11] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[12] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[13] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[14] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[15] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[16] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[17] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[18] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[19] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[20] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[21] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[22] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[23] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[24] = RIFResultTable.ColumnDataType.NUMERIC;
+				columnDataTypes[25] = RIFResultTable.ColumnDataType.NUMERIC;
+			}
+
+			String[][] data = new String[totalNumberRowsInResults][totalNumberColumnsInResults];
+			int ithRow = 0;
+
+			mainResultSet = mainResultsStatement.executeQuery();
+			while (mainResultSet.next()) {			
+				for (int j = 0; j < totalNumberColumnsInResults; j++) {
+					data[ithRow][j] = mainResultSet.getString(j + 1);
+				}
+				ithRow++;
+			}	
+
+			results.setColumnProperties(columnNames, columnDataTypes);
+			results.setData(data);
+
+			return results;
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			String errorMessage
+			= RIFServiceMessages.getMessage(
+					"sqlSmoothedResultsManager.error.unableToRetrieveStudyTableForProcessedStudy", 
+					studyID);
+			RIFServiceException rifServiceException
+			= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			PGSQLQueryUtility.close(mainResultsStatement);
+			PGSQLQueryUtility.close(mainResultSet);		
+			PGSQLQueryUtility.close(resultCounterStatement);
+			PGSQLQueryUtility.close(resultCounterSet);	
+		}
+	}
 	
 	public RIFResultTable getSmoothedResultsForAttributes(
 			final Connection connection,
@@ -839,7 +1023,7 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 	}
 
 	
-	RIFResultTable getPopulationPyramidData(
+	public RIFResultTable getPopulationPyramidData(
 		final Connection connection, 
 		final String studyID,
 		final Integer year) 
@@ -966,7 +1150,7 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 	}
 
 
-	RIFResultTable getPopulationPyramidData(
+	public RIFResultTable getPopulationPyramidData(
 		final Connection connection, 
 		final String studyID,
 		final Integer year,

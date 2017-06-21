@@ -100,7 +100,7 @@ import java.util.List;
 
 @Path("/")
 public class PGSQLRIFStudyResultRetrievalWebServiceResource 
-	extends PGSQLAbstractRIFWebServiceResource {
+extends PGSQLAbstractRIFWebServiceResource {
 
 	// ==========================================
 	// Section Constants
@@ -109,7 +109,7 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -123,168 +123,168 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	// ==========================================
 
 	//KLG: 
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getCurrentStatusAllStudies")
 	public Response getCurrentStatusAllStudies(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID) {
 
 		String result = "";
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
-			
+
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable resultTable
-				= studyResultRetrievalService.getCurrentStatusAllStudies(user);
+			= studyResultRetrievalService.getCurrentStatusAllStudies(user);
 			RIFResultTableJSONGenerator rifResultTableJSONGenerator
-				= new RIFResultTableJSONGenerator();
+			= new RIFResultTableJSONGenerator();
 			result = rifResultTableJSONGenerator.writeResultTable(resultTable);			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		WebServiceResponseGenerator webServiceResponseGenerator
-			= getWebServiceResponseGenerator();
+		= getWebServiceResponseGenerator();
 		return webServiceResponseGenerator.generateWebServiceResponse(
-			servletRequest,
-			result);
+				servletRequest,
+				result);
 	}
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeographies")
 	public Response getGeographies(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID) {
 
 		return 
-			super.getGeographies(
-				servletRequest,
-				userID);
+				super.getGeographies(
+						servletRequest,
+						userID);
 	}
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelSelectValues")
 	public Response getGeographicalLevelSelectValues(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName) {
-	
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName) {
+
 		return super.getGeographicalLevelSelectValues(
-			servletRequest,
-			userID, 
-			geographyName);
+				servletRequest,
+				userID, 
+				geographyName);
 	}	
-	
-	
+
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getDefaultGeoLevelSelectValue")
 	public Response getDefaultGeoLevelSelectValue(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName) {
 
 		return super.getDefaultGeoLevelSelectValue(
-			servletRequest,
-			userID,
-			geographyName);
+				servletRequest,
+				userID,
+				geographyName);
 	}	
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelAreaValues")
 	public Response getGeoLevelAreaValues(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
-	
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
+
 		return super.getGeoLevelAreaValues(
-			servletRequest,
-			userID, 
-			geographyName, 
-			geoLevelSelectName);
+				servletRequest,
+				userID, 
+				geographyName, 
+				geoLevelSelectName);
 	}	
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelViews")
 	public Response getGeoLevelViewValues(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
-	
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
+
 		return super.getGeoLevelViewValues(
-			servletRequest,
-			userID, 
-			geographyName, 
-			geoLevelSelectName);
+				servletRequest,
+				userID, 
+				geographyName, 
+				geoLevelSelectName);
 	}
-		
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getNumerator")
 	public Response getNumerator(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,		
-		@QueryParam("healthThemeDescription") String healthThemeDescription) {
-	
-	
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,		
+			@QueryParam("healthThemeDescription") String healthThemeDescription) {
+
+
 		return super.getNumerator(
-			servletRequest,
-			userID,
-			geographyName,
-			healthThemeDescription);
+				servletRequest,
+				userID,
+				geographyName,
+				healthThemeDescription);
 	}	
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getDenominator")
 	public Response getDenominator(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,		
-		@QueryParam("healthThemeDescription") String healthThemeDescription) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,		
+			@QueryParam("healthThemeDescription") String healthThemeDescription) {
 
 		return super.getDenominator(
-			servletRequest,
-			userID,
-			geographyName,
-			healthThemeDescription);
+				servletRequest,
+				userID,
+				geographyName,
+				healthThemeDescription);
 	}
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getYearRange")
 	public Response getYearRange(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,	
-		@QueryParam("numeratorTableName") String numeratorTableName) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,	
+			@QueryParam("numeratorTableName") String numeratorTableName) {
 
 		return super.getYearRange(
-			servletRequest,
-			userID, 
-			geographyName, 
-			numeratorTableName);		
+				servletRequest,
+				userID, 
+				geographyName, 
+				numeratorTableName);		
 	}
 
-	
+
 	/**
 	 * STUB
 	 * @param userID
@@ -298,58 +298,58 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeometry")
 	public String getGeometry(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,	
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("geoLevelViewName") String geoLevelViewName,
-		@QueryParam("gids") final List<String> geographicalIdentifiers) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,	
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("geoLevelViewName") String geoLevelViewName,
+			@QueryParam("gids") final List<String> geographicalIdentifiers) {
+
 		String result = "";
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
-				= GeoLevelSelect.newInstance(geoLevelSelectName);
+			= GeoLevelSelect.newInstance(geoLevelSelectName);
 			GeoLevelView geoLevelView
-				= GeoLevelView.newInstance(geoLevelViewName);
+			= GeoLevelView.newInstance(geoLevelViewName);
 			ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
 			for (String geographicalIdentifier : geographicalIdentifiers) {
 				//TODO: Not sure where the map area label might come in
 				MapArea mapArea
-					= MapArea.newInstance(geographicalIdentifier, "", "");
+				= MapArea.newInstance(geographicalIdentifier, "", "");
 				mapAreas.add(mapArea);
 			}
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			result
-				= studyResultRetrievalService.getGeometry(
+			= studyResultRetrievalService.getGeometry(
 					user, 
 					geography, 
 					geoLevelSelect,
 					geoLevelView, 
 					mapAreas);
-			
+
 			//Convert results to support JSON
 			serialiseStringResult(
-				result);
-			
+					result);
+
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
 
-	
+
 	/**
 	 * STUB
 	 * @param userID
@@ -360,10 +360,10 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getYearsForStudy")
 	public Response getYearsForStudy(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("study_id") String studyID) {
-				
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("study_id") String studyID) {
+
 		String result = "";
 		try {
 			//Convert URL parameters to RIF service API parameters
@@ -371,35 +371,35 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			ArrayList<Integer> years
-				= studyResultRetrievalService.getYearsForStudy(
+			= studyResultRetrievalService.getYearsForStudy(
 					user, 
 					studyID);
 			ArrayList<String> yearsAsStrings = new ArrayList<String>();
 			for (Integer year : years) {
 				yearsAsStrings.add(String.valueOf(year));
 			}
-			
+
 			result 
-				= serialiseNamedArray("years", yearsAsStrings);
+			= serialiseNamedArray("years", yearsAsStrings);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
 
 		WebServiceResponseGenerator webServiceResponseGenerator
-			= getWebServiceResponseGenerator();
+		= getWebServiceResponseGenerator();
 		return webServiceResponseGenerator.generateWebServiceResponse(
-			servletRequest,
-			result);		
+				servletRequest,
+				result);		
 	}	
-	
-	
+
+
 	/**
 	 * STUB
 	 * @param userID
@@ -410,21 +410,21 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getSexesForStudy")
 	public Response getSexesForStudy(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("study_id") String studyID) {
-				
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("study_id") String studyID) {
+
 		String result = "";
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
-			
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
-			
+			= getRIFStudyResultRetrievalService();
+
 			ArrayList<Sex> sexes
-				= studyResultRetrievalService.getSexesForStudy(
+			= studyResultRetrievalService.getSexesForStudy(
 					user, 
 					studyID);
 			String[] sexNames = new String[sexes.size()];
@@ -434,31 +434,31 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 
 			SexesProxy sexesProxy = new SexesProxy();
 			sexesProxy.setNames(sexNames);
-			
+
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					sexesProxy);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
 
 		WebServiceResponseGenerator webServiceResponseGenerator
-			= getWebServiceResponseGenerator();
+		= getWebServiceResponseGenerator();
 		return webServiceResponseGenerator.generateWebServiceResponse(
-			servletRequest,
-			result);		
+				servletRequest,
+				result);		
 	}	
-	
-	
-	
-	
-	
+
+
+
+
+
 	/**
 	 * STUB
 	 * @param userID
@@ -469,10 +469,10 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getSmoothedResultAttributes")
 	public String getSmoothedResultAttributes(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("study_id") String studyID) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("study_id") String studyID) {
+
 		String result = "";
 		try {
 			//Convert URL parameters to RIF service API parameters
@@ -480,26 +480,26 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			ArrayList<String> smoothedAttributes
-				= studyResultRetrievalService.getSmoothedResultAttributes(
+			= studyResultRetrievalService.getSmoothedResultAttributes(
 					user);
-			
+
 			result = serialiseArrayResult(servletRequest, smoothedAttributes);
-			
+
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
-	
-	
+
+
 	/**
 	 * STUB
 	 * @param userID
@@ -513,11 +513,11 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getSmoothedResults")
 	public String getSmoothedResults(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("studyID") String studyID,
-		@QueryParam("sex") String sex) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID,
+			@QueryParam("sex") String sex) {
+
 		String result = "";
 		try {
 			//Convert URL parameters to RIF service API parameters
@@ -525,30 +525,30 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable resultTable
-				= studyResultRetrievalService.getSmoothedResults(
+			= studyResultRetrievalService.getSmoothedResults(
 					user, 
 					studyID,
 					sex);
-			
+
 			RIFResultTableJSONGenerator rifResultTableJSONGenerator
-				= new RIFResultTableJSONGenerator();
+			= new RIFResultTableJSONGenerator();
 			result = rifResultTableJSONGenerator.writeResultTable(resultTable);
-			
+
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
-	
-	
+
+
 	/**
 	 * STUB
 	 * @param userID
@@ -562,88 +562,88 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getSmoothedResultsForAttributes")
 	public String getSmoothedResultsForAttributes(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("studyID") String studyID,
-		@QueryParam("sex") String sex,		
-		@QueryParam("smoothedAttribute") List<String> smoothedAttributeList) {
-	
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID,
+			@QueryParam("sex") String sex,		
+			@QueryParam("smoothedAttribute") List<String> smoothedAttributeList) {
+
 		String result = "";
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
-			
+
 			//We convert contents of a list into an ArrayList.  List is one of the 
 			//types supported by the @QueryParam feature, but the middleware method
 			//signatures tend to use ArrayLists for parameters containing lists
 			ArrayList<String> smoothedAttributesToInclude = new ArrayList<String>();
 			smoothedAttributesToInclude.addAll(smoothedAttributeList);
-			
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable resultTable
-				= studyResultRetrievalService.getSmoothedResultsForAttributes(
+			= studyResultRetrievalService.getSmoothedResultsForAttributes(
 					user, 
 					smoothedAttributesToInclude,
 					studyID,
 					sex);
 
 			RIFResultTableJSONGenerator rifResultTableJSONGenerator
-				= new RIFResultTableJSONGenerator();
+			= new RIFResultTableJSONGenerator();
 			result = rifResultTableJSONGenerator.writeResultTable(resultTable);	
-			
+
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
 
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getAllPopulationPyramidData")
 	public String getAllPopulationPyramidData(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("studyID") String studyID,
-		@QueryParam("year") String year) {
-	
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID,
+			@QueryParam("year") String year) {
+
 		String result = "";
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
-			
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable resultTable
-				= studyResultRetrievalService.getPopulationPyramidData(
+			= studyResultRetrievalService.getPopulationPyramidData(
 					user, 
 					studyID,
 					year);
-			
+
 			RIFResultTableJSONGenerator rifResultTableJSONGenerator
-				= new RIFResultTableJSONGenerator();
+			= new RIFResultTableJSONGenerator();
 			result = rifResultTableJSONGenerator.writeResultTable(resultTable);				
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
-	
+
 	/**
 	 * STUB
 	 * @param userID
@@ -656,52 +656,52 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getPopulationPyramidDataForAreas")
 	public String getPopulationPyramidDataForAreas(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("studyID") String studyID,
-		@QueryParam("year") String year,
-		@QueryParam("areaID") List<String> areaIDList) {
-	
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID,
+			@QueryParam("year") String year,
+			@QueryParam("areaID") List<String> areaIDList) {
+
 		String result = "";
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
-			
+
 			//We convert contents of a list into an ArrayList.  List is one of the 
 			//types supported by the @QueryParam feature, but the middleware method
 			//signatures tend to use ArrayLists for parameters containing lists
 			ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
-			
+
 			for (String areaID : areaIDList) {
 				mapAreas.add(MapArea.newInstance(areaID, areaID, areaID));
 			}
-						
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable resultTable
-				= studyResultRetrievalService.getPopulationPyramidData(
+			= studyResultRetrievalService.getPopulationPyramidData(
 					user, 
 					studyID,
 					year,
 					mapAreas);
-			
+
 			RIFResultTableJSONGenerator rifResultTableJSONGenerator
-				= new RIFResultTableJSONGenerator();
+			= new RIFResultTableJSONGenerator();
 			result = rifResultTableJSONGenerator.writeResultTable(resultTable);	
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
 
-	
+
 	/**
 	 * STUB
 	 * @param userID
@@ -711,25 +711,25 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	 * @param mapAreaValues
 	 * @return
 	 */
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelFullExtentForStudy")
 	public Response getGeoLevelFullExtentForStudy(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
 
 		return super.getGeoLevelFullExtentForStudy(
-			servletRequest,	
-			userID,
-			geographyName,
-			geoLevelSelectName,
-			diseaseMappingStudyID);		
+				servletRequest,	
+				userID,
+				geographyName,
+				geoLevelSelectName,
+				diseaseMappingStudyID);		
 	}	
-	
+
 
 	/**
 	 * STUB
@@ -744,53 +744,53 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelBoundsForArea")
 	public Response getGeoLevelBoundsForArea(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,	
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,		
-		@QueryParam("gid") String geographicalIdentifier) {
-			
-		
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,	
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,		
+			@QueryParam("gid") String geographicalIdentifier) {
+
+
 		return super.getGeoLevelBoundsForArea(
-			servletRequest, 
-			userID, 
-			geographyName, 
-			geoLevelSelectName, 
-			diseaseMappingStudyID, 
-			geographicalIdentifier);
+				servletRequest, 
+				userID, 
+				geographyName, 
+				geoLevelSelectName, 
+				diseaseMappingStudyID, 
+				geographicalIdentifier);
 	}		
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelFullExtent")
 	public Response getGeoLevelFullExtent(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
+
 
 		return super.getGeoLevelFullExtent(
-			servletRequest, 
-			userID, 
-			geographyName, 
-			geoLevelSelectName);
-		
+				servletRequest, 
+				userID, 
+				geographyName, 
+				geoLevelSelectName);
+
 	}
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getTileMakerTiles")
 	public Response getTileMakerTiles(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName, //SAHSU
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName, //LEVEL2
-		@QueryParam("zoomlevel") Integer zoomlevel,	//3	
-		@QueryParam("x") Integer x, //3
-		@QueryParam("y") Integer y) { //2
-				
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName, //SAHSU
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName, //LEVEL2
+			@QueryParam("zoomlevel") Integer zoomlevel,	//3	
+			@QueryParam("x") Integer x, //3
+			@QueryParam("y") Integer y) { //2
+
 		return super.getTileMakerTiles(
 				servletRequest, 
 				userID, 
@@ -800,80 +800,80 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 				x, 
 				y);	
 	}
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getTileMakerCentroids")
 	public Response getTileMakerCentroids(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName, //SAHSU
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName ) { //LEVEL2
-				
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName, //SAHSU
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName ) { //LEVEL2
+
 		return super.getTileMakerCentroids(
 				servletRequest, 
 				userID, 
 				geographyName, 
 				geoLevelSelectName);	
 	}
-		
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getTiles")
 	public Response getTiles(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("tileIdentifier") String tileIdentifier,
-		@QueryParam("zoomFactor") Integer zoomFactor,		
-		@QueryParam("yMax") String yMax,
-		@QueryParam("xMax") String xMax,
-		@QueryParam("yMin") String yMin,
-		@QueryParam("xMin") String xMin) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("tileIdentifier") String tileIdentifier,
+			@QueryParam("zoomFactor") Integer zoomFactor,		
+			@QueryParam("yMax") String yMax,
+			@QueryParam("xMax") String xMax,
+			@QueryParam("yMin") String yMin,
+			@QueryParam("xMin") String xMin) {
+
 		return super.getTiles(
-			servletRequest, 
-			userID, 
-			geographyName, 
-			geoLevelSelectName, 
-			tileIdentifier, 
-			zoomFactor, 
-			yMax, 
-			xMax, 
-			yMin, 
-			xMin);		
+				servletRequest, 
+				userID, 
+				geographyName, 
+				geoLevelSelectName, 
+				tileIdentifier, 
+				zoomFactor, 
+				yMax, 
+				xMax, 
+				yMin, 
+				xMin);		
 	}	
 
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getMapAreasForBoundaryRectangle")
 	public Response getMapAreasForBoundaryRectangle(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("tileIdentifier") String tileIdentifier,
-		@QueryParam("zoomFactor") Integer zoomFactor,		
-		@QueryParam("yMax") String yMax,
-		@QueryParam("xMax") String xMax,
-		@QueryParam("yMin") String yMin,
-		@QueryParam("xMin") String xMin) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("tileIdentifier") String tileIdentifier,
+			@QueryParam("zoomFactor") Integer zoomFactor,		
+			@QueryParam("yMax") String yMax,
+			@QueryParam("xMax") String xMax,
+			@QueryParam("yMin") String yMin,
+			@QueryParam("xMin") String xMin) {
+
 		return super.getMapAreasForBoundaryRectangle(
-			servletRequest, 
-			userID, 
-			geographyName, 
-			geoLevelSelectName, 
-			yMax, 
-			xMax, 
-			yMin, 
-			xMin);
-		
+				servletRequest, 
+				userID, 
+				geographyName, 
+				geoLevelSelectName, 
+				yMax, 
+				xMax, 
+				yMin, 
+				xMin);
+
 	}	
-	
-	
-	
+
+
+
 	/**
 	 * STUB
 	 * @param userID
@@ -888,36 +888,36 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getMapAreaAttributeValues")
 	public String getMapAreaAttributeValues(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-		@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
-		@QueryParam("geoLevelAttributeName") String geoLevelAttributeName) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
+			@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
+			@QueryParam("geoLevelAttributeName") String geoLevelAttributeName) {
+
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			Geography geography = Geography.newInstance(geographyName, "");
 			GeoLevelSelect geoLevelSelect
-				= GeoLevelSelect.newInstance(geoLevelSelectName);
+			= GeoLevelSelect.newInstance(geoLevelSelectName);
 			GeoLevelAttributeSource geoLevelAttributeSource
-				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
+			= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
 			DiseaseMappingStudy diseaseMappingStudy = null;
 			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
+			= StudyResultRetrievalContext.newInstance(
 					geographyName, 
 					geoLevelSelectName, 
 					diseaseMappingStudyID);
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();			
+			= getRIFStudyResultRetrievalService();			
 			ArrayList<MapAreaAttributeValue> mapAreaAttributeValues
-				= studyResultRetrievalService.getMapAreaAttributeValues(
+			= studyResultRetrievalService.getMapAreaAttributeValues(
 					user,
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
@@ -925,22 +925,22 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 
 			//Convert results to support JSON
 			result 
-				= serialiseArrayResult(
+			= serialiseArrayResult(
 					servletRequest,
 					mapAreaAttributeValues);			
-			
+
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
-	
+
 	/**
 	 * STUB
 	 * @param userID
@@ -954,52 +954,52 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelAttributeThemes")
 	public String getGeoLevelAttributeThemes(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-		@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
+			@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName) {
+
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
+			= StudyResultRetrievalContext.newInstance(
 					geographyName, 
 					geoLevelSelectName, 
 					diseaseMappingStudyID);
 			GeoLevelAttributeSource geoLevelAttributeSource
-				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
-			
+			= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			ArrayList<GeoLevelAttributeTheme> geoLevelAttributeThemes
-				= studyResultRetrievalService.getGeoLevelAttributeThemes(
+			= studyResultRetrievalService.getGeoLevelAttributeThemes(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelAttributeSource);
 
 			//Convert results to support JSON
 			result 
-				= serialiseArrayResult(
+			= serialiseArrayResult(
 					servletRequest,
 					geoLevelAttributeThemes);			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
-	
+
 
 	/**
 	 * STUB
@@ -1011,39 +1011,39 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	 * @param geoLevelAttributeName
 	 * @return
 	 */
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getAllAttributesForGeoLevelAttributeTheme")
 	public String getAllAttributesForGeoLevelAttributeTheme(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-		@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
-		@QueryParam("geoLevelAttributeThemeName") String geoLevelAttributeThemeName) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
+			@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
+			@QueryParam("geoLevelAttributeThemeName") String geoLevelAttributeThemeName) {
+
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
+			= StudyResultRetrievalContext.newInstance(
 					geographyName, 
 					geoLevelSelectName, 
 					diseaseMappingStudyID);
 			GeoLevelAttributeSource geoLevelAttributeSource
-				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
+			= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
 			GeoLevelAttributeTheme geoLevelAttributeTheme
-				= GeoLevelAttributeTheme.newInstance(geoLevelAttributeThemeName);
-						
+			= GeoLevelAttributeTheme.newInstance(geoLevelAttributeThemeName);
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			String[] attributes
-				= studyResultRetrievalService.getAllAttributesForGeoLevelAttributeTheme(
+			= studyResultRetrievalService.getAllAttributesForGeoLevelAttributeTheme(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelAttributeSource, 
@@ -1051,22 +1051,22 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					attributes);	
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
-	
-	
+
+
 	/**
 	 * STUB
 	 * @param userID
@@ -1077,40 +1077,40 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	 * @param geoLevelAttributeThemeName
 	 * @return
 	 */
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getNumericAttributesForGeoLevelAttributeTheme")
 	public String getNumericAttributesForGeoLevelAttributeTheme(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-		@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
-		@QueryParam("geoLevelAttributeThemeName") String geoLevelAttributeThemeName) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
+			@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
+			@QueryParam("geoLevelAttributeThemeName") String geoLevelAttributeThemeName) {
+
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			DiseaseMappingStudy diseaseMappingStudy = null;
 			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
+			= StudyResultRetrievalContext.newInstance(
 					geographyName, 
 					geoLevelSelectName, 
 					diseaseMappingStudyID);
 			GeoLevelAttributeSource geoLevelAttributeSource
-				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
+			= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
 			GeoLevelAttributeTheme geoLevelAttributeTheme
-				= GeoLevelAttributeTheme.newInstance(geoLevelAttributeThemeName);
-			
+			= GeoLevelAttributeTheme.newInstance(geoLevelAttributeThemeName);
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			String[] attributes
-				= studyResultRetrievalService.getNumericAttributesForGeoLevelAttributeTheme(
+			= studyResultRetrievalService.getNumericAttributesForGeoLevelAttributeTheme(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelAttributeSource, 
@@ -1118,7 +1118,7 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					attributes);						
 
@@ -1126,15 +1126,15 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
 
-	
+
 	/**
 	 * STUB
 	 * @param userID
@@ -1146,40 +1146,40 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	 * @param endRowIndexValue
 	 * @return
 	 */
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getCalculatedResultsByBlock")
 	public String getCalculatedResultsByBlock(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-		@QueryParam("calculatedResultColumnFieldNames") List<String> calculatedResultColumnFieldNames,
-		@QueryParam("startRowIndex") String startRowIndexValue,
-		@QueryParam("endRowIndex") String endRowIndexValue) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
+			@QueryParam("calculatedResultColumnFieldNames") List<String> calculatedResultColumnFieldNames,
+			@QueryParam("startRowIndex") String startRowIndexValue,
+			@QueryParam("endRowIndex") String endRowIndexValue) {
+
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			StudySummary studySummary
-				= StudySummary.newInstance(
+			= StudySummary.newInstance(
 					diseaseMappingStudyID, 
 					"", 
 					"");
 			String[] resultTableFieldNames
-				= calculatedResultColumnFieldNames.toArray(new String[0]);
+			= calculatedResultColumnFieldNames.toArray(new String[0]);
 			Integer startRowIndex = Integer.valueOf(startRowIndexValue);
 			Integer endRowIndex = Integer.valueOf(endRowIndexValue);
-			
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
-				= studyResultRetrievalService.getCalculatedResultsByBlock(
+			= studyResultRetrievalService.getCalculatedResultsByBlock(
 					user, 
 					studySummary,
 					resultTableFieldNames,
@@ -1188,21 +1188,21 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					rifResultTable);			
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
-	
+
 	/**
 	 * STUB
 	 * 
@@ -1218,40 +1218,40 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	 * @param endRowIndexValue
 	 * @return
 	 */
-	
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getExtractResultsByBlock")
 	public String getExtractResultsByBlock(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-		@QueryParam("calculatedResultColumnFieldNames") List<String> calculatedResultColumnFieldNames,
-		@QueryParam("startRowIndex") String startRowIndexValue,
-		@QueryParam("endRowIndex") String endRowIndexValue) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
+			@QueryParam("calculatedResultColumnFieldNames") List<String> calculatedResultColumnFieldNames,
+			@QueryParam("startRowIndex") String startRowIndexValue,
+			@QueryParam("endRowIndex") String endRowIndexValue) {
+
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			StudySummary studySummary
-				= StudySummary.newInstance(
+			= StudySummary.newInstance(
 					diseaseMappingStudyID, 
 					"", 
 					"");
 			String[] resultTableFieldNames
-				= calculatedResultColumnFieldNames.toArray(new String[0]);
+			= calculatedResultColumnFieldNames.toArray(new String[0]);
 			Integer startRowIndex = Integer.valueOf(startRowIndexValue);
 			Integer endRowIndex = Integer.valueOf(endRowIndexValue);
-			
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
-				= studyResultRetrievalService.getExtractResultsByBlock(
+			= studyResultRetrievalService.getExtractResultsByBlock(
 					user, 
 					studySummary,
 					resultTableFieldNames,
@@ -1260,19 +1260,19 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					rifResultTable);						
-			
+
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
 
@@ -1292,45 +1292,45 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getResultsStratifiedByGenderAndAgeGroup")
 	public String getResultsStratifiedByGenderAndAgeGroup(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-		@QueryParam("geoLevelToMapName") String geoLevelToMapName,
-		@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
-		@QueryParam("geoLevelAttribute") String geoLevelAttribute,
-		@QueryParam("gids") List<String> geographicalIdentifiers,
-		@QueryParam("year") String yearValue) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
+			@QueryParam("geoLevelToMapName") String geoLevelToMapName,
+			@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
+			@QueryParam("geoLevelAttribute") String geoLevelAttribute,
+			@QueryParam("gids") List<String> geographicalIdentifiers,
+			@QueryParam("year") String yearValue) {
+
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
+			= StudyResultRetrievalContext.newInstance(
 					geographyName,
 					geoLevelSelectName,
 					diseaseMappingStudyID);
 			GeoLevelToMap geoLevelToMap
-				= GeoLevelToMap.newInstance(geoLevelToMapName);
+			= GeoLevelToMap.newInstance(geoLevelToMapName);
 			GeoLevelAttributeSource geoLevelAttributeSource
-				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
+			= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
 			ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
 			for (String geographicalIdentifier : geographicalIdentifiers) {
-				//TODO: Not sure where the map area label might come in
+				//Not sure where the map area label might come in
 				MapArea mapArea
-					= MapArea.newInstance(geographicalIdentifier, "", "");
+				= MapArea.newInstance(geographicalIdentifier, "", "");
 				mapAreas.add(mapArea);
 			}
 			Integer year = Integer.valueOf(yearValue);
-			
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
-				= studyResultRetrievalService.getResultsStratifiedByGenderAndAgeGroup(
+			= studyResultRetrievalService.getResultsStratifiedByGenderAndAgeGroup(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelToMap,
@@ -1341,7 +1341,7 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					rifResultTable);						
 
@@ -1349,11 +1349,11 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
 
@@ -1371,56 +1371,56 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getResultAgeGroups")
 	public String getResultAgeGroups(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-		@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
-		@QueryParam("geoLevelAttribute") String geoLevelAttribute) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
+			@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
+			@QueryParam("geoLevelAttribute") String geoLevelAttribute) {
+
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
+			= StudyResultRetrievalContext.newInstance(
 					geographyName,
 					geoLevelSelectName,
 					diseaseMappingStudyID);
 			GeoLevelAttributeSource geoLevelAttributeSource
-				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
-			
+			= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			ArrayList<AgeGroup> ageGroups
-				= studyResultRetrievalService.getResultAgeGroups(
+			= studyResultRetrievalService.getResultAgeGroups(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
 					geoLevelAttribute);
-			
-			
+
+
 			//Convert results to support JSON	
 			AgeGroupJSONGenerator ageGroupJSONGenerator
-				= new AgeGroupJSONGenerator();
+			= new AgeGroupJSONGenerator();
 			result
-				= ageGroupJSONGenerator.writeJSONMapAreas(ageGroups);
+			= ageGroupJSONGenerator.writeJSONMapAreas(ageGroups);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
 
-	
+
 	/**
 	 * STUB
 	 * @param userID
@@ -1435,33 +1435,33 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getPyramidData")
 	public String getPyramidData(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-		@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
-		@QueryParam("geoLevelAttribute") String geoLevelAttribute) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
+			@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
+			@QueryParam("geoLevelAttribute") String geoLevelAttribute) {
+
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
+			= StudyResultRetrievalContext.newInstance(
 					geographyName,
 					geoLevelSelectName,
 					diseaseMappingStudyID);
 
 			GeoLevelAttributeSource geoLevelAttributeSource
-				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
-			
+			= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
-				= studyResultRetrievalService.getPyramidData(
+			= studyResultRetrievalService.getPyramidData(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
@@ -1469,22 +1469,22 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					rifResultTable);						
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
 
-	
+
 	/**
 	 * STUB
 	 * @param userID
@@ -1500,34 +1500,34 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getPyramidDataByYear")
 	public String getPyramidDataByYear(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-		@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
-		@QueryParam("geoLevelAttribute") String geoLevelAttribute,
-		@QueryParam("year") String yearValue) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
+			@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
+			@QueryParam("geoLevelAttribute") String geoLevelAttribute,
+			@QueryParam("year") String yearValue) {
+
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
+			= StudyResultRetrievalContext.newInstance(
 					geographyName,
 					geoLevelSelectName,
 					diseaseMappingStudyID);
 			GeoLevelAttributeSource geoLevelAttributeSource
-				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
+			= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
 			Integer year = Integer.valueOf(yearValue);
-			
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
-				= studyResultRetrievalService.getPyramidDataByYear(
+			= studyResultRetrievalService.getPyramidDataByYear(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelAttributeSource,
@@ -1536,64 +1536,64 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					rifResultTable);						
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
 
-	
-	
+
+
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getPyramidDataByMapAreas")
 	public String getPyramidDataByMapAreas(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("geoLevelToMapName") String geoLevelToMapName,		
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-		@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
-		@QueryParam("geoLevelAttribute") String geoLevelAttribute,
-		@QueryParam("geographicalIdentifiers") List<String> geographicalIdentifiers) {
-					
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("geoLevelToMapName") String geoLevelToMapName,		
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
+			@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName,
+			@QueryParam("geoLevelAttribute") String geoLevelAttribute,
+			@QueryParam("geographicalIdentifiers") List<String> geographicalIdentifiers) {
+
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
+			= StudyResultRetrievalContext.newInstance(
 					geographyName,
 					geoLevelSelectName,
 					diseaseMappingStudyID);
 			GeoLevelToMap geoLevelToMap
-				= GeoLevelToMap.newInstance(geoLevelToMapName);
+			= GeoLevelToMap.newInstance(geoLevelToMapName);
 			GeoLevelAttributeSource geoLevelAttributeSource
-				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
+			= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
 			ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
 			for (String geographicalIdentifier : geographicalIdentifiers) {
-				//TODO: Not sure where the map area label might come in
+				//Not sure where the map area label might come in
 				MapArea mapArea
-					= MapArea.newInstance(geographicalIdentifier, "", "");
+				= MapArea.newInstance(geographicalIdentifier, "", "");
 				mapAreas.add(mapArea);
 			}
-						
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
-				= studyResultRetrievalService.getPyramidDataByMapAreas(
+			= studyResultRetrievalService.getPyramidDataByMapAreas(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelToMap,
@@ -1603,19 +1603,19 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					rifResultTable);						
-			
+
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
 	}	
 
@@ -1623,355 +1623,397 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource
 	@Produces({"application/json"})	
 	@Path("/getResultFieldsStratifiedByAgeGroup")
 	public String getResultFieldsStratifiedByAgeGroup(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-		@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName,
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
+			@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName) {
 
 
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
+			= StudyResultRetrievalContext.newInstance(
 					geographyName,
 					geoLevelSelectName,
 					diseaseMappingStudyID);
 			GeoLevelAttributeSource geoLevelAttributeSource
-				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
+			= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			String[] resultFields
-				= studyResultRetrievalService.getResultFieldsStratifiedByAgeGroup(
+			= studyResultRetrievalService.getResultFieldsStratifiedByAgeGroup(
 					user, 
 					studyResultRetrievalContext,
 					geoLevelAttributeSource);
 
 			//Convert results to support JSON
 			result 
-				= serialiseArrayResult(
+			= serialiseArrayResult(
 					servletRequest,
 					resultFields);		
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
-		
+
 	}	
-	
+
 
 	@GET	
 	@Produces({"application/json"})	
 	@Path("/getSMRValues")
 	public String getSMRValues(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
 
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			StudySummary studySummary
-				= StudySummary.newInstance(
+			= StudySummary.newInstance(
 					diseaseMappingStudyID, 
 					"", 
 					"");
-			
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
-				= studyResultRetrievalService.getSMRValues(
+			= studyResultRetrievalService.getSMRValues(
 					user, 
 					studySummary);
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					rifResultTable);						
-						
+
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
-		
+
 	}	
-	
+
 
 	@GET	
 	@Produces({"application/json"})	
 	@Path("/getRRValues")
 	public String getRRValues(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
 
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			StudySummary studySummary
-				= StudySummary.newInstance(
+			= StudySummary.newInstance(
 					diseaseMappingStudyID, 
 					"", 
 					"");
-		
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
-				= studyResultRetrievalService.getRRValues(
+			= studyResultRetrievalService.getRRValues(
 					user, 
 					studySummary);
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					rifResultTable);						
-						
+
 		}
 		//Convert exceptions to support JSON
 		catch(Exception exception) {
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
-		
+
 	}	
-	
+
 
 	@GET	
 	@Produces({"application/json"})	
 	@Path("/getRRUnadjustedValues")
 	public String getRRUnadjustedValues(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
 
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			StudySummary studySummary
-				= StudySummary.newInstance(
+			= StudySummary.newInstance(
 					diseaseMappingStudyID, 
 					"", 
 					"");
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
-				= studyResultRetrievalService.getRRUnadjustedValues(
+			= studyResultRetrievalService.getRRUnadjustedValues(
 					user, 
 					studySummary);
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					rifResultTable);						
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
-		
+
 	}	
-	
+
 	//TODO: (DM) I don't think this method is used or even complete
 	@GET	
 	@Produces({"application/json"})	
 	@Path("/getStudyResultGeneralInfo")
 	public String getStudyResultGeneralInfo(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
 
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
 			StudySummary studySummary
-				= StudySummary.newInstance(
+			= StudySummary.newInstance(
 					diseaseMappingStudyID, 
 					"", 
 					"");
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			RIFResultTable rifResultTable
-				= studyResultRetrievalService.getStudyResultGeneralInfo(
+			= studyResultRetrievalService.getStudyResultGeneralInfo(
 					user, 
 					studySummary);
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					rifResultTable);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
-		
+
 	}	
-	
-	
+
+
 	@GET	
 	@Produces({"application/json"})	
 	@Path("/getGeographyAndLevelForStudy")
 	public String getGeographyAndLevelForStudy(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("studyID") String studyID) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID) {
 
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
-			
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			String[] results
-				= studyResultRetrievalService.getGeographyAndLevelForStudy(user, studyID);
+			= studyResultRetrievalService.getGeographyAndLevelForStudy(user, studyID);
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					results);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
-		
+
 	}	
-	
+
 	@GET	
 	@Produces({"application/json"})	
 	@Path("/getDetailsForProcessedStudy")
 	public String getDetailsForProcessedStudy(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("studyID") String studyID) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID) {
 
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
-			
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			String[] results
-				= studyResultRetrievalService.getDetailsForProcessedStudy(user, studyID);
+			= studyResultRetrievalService.getDetailsForProcessedStudy(user, studyID);
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					results);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
-		
+
 	}	
-	
+
+	@GET	
+	@Produces({"application/json"})	
+	@Path("/getStudyTableForProcessedStudy")
+	public String getStudyTableForProcessedStudy(
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID,
+			@QueryParam("type") String type,
+			@QueryParam("stt") String stt,
+			@QueryParam("stp") String stp) {
+
+		String result = "";
+
+		try {
+			//Convert URL parameters to RIF service API parameters			
+			User user = createUser(servletRequest, userID);
+
+			//Call service API
+			RIFStudyResultRetrievalAPI studyResultRetrievalService
+			= getRIFStudyResultRetrievalService();
+
+			RIFResultTable rifResultTable
+			= studyResultRetrievalService.getStudyTableForProcessedStudy(user, studyID, type, stt, stp);
+
+			//Convert results to support JSON
+			result 
+			= serialiseSingleItemAsArrayResult(
+					servletRequest,
+					rifResultTable);	
+		}
+		catch(Exception exception) {
+			//Convert exceptions to support JSON
+			result 
+			= serialiseException(
+					servletRequest,
+					exception);			
+		}
+
+		return result;
+
+	}	
+
 	@GET	
 	@Produces({"application/json"})	
 	@Path("/getHealthCodesForProcessedStudy")
 	public String getHealthCodesForProcessedStudy(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("studyID") String studyID) {
+			@Context HttpServletRequest servletRequest,	
+			@QueryParam("userID") String userID,
+			@QueryParam("studyID") String studyID) {
 
 		String result = "";
-		
+
 		try {
 			//Convert URL parameters to RIF service API parameters			
 			User user = createUser(servletRequest, userID);
-			
+
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
+			= getRIFStudyResultRetrievalService();
 			String[] results
-				= studyResultRetrievalService.getHealthCodesForProcessedStudy(user, studyID);
+			= studyResultRetrievalService.getHealthCodesForProcessedStudy(user, studyID);
 
 			//Convert results to support JSON
 			result 
-				= serialiseSingleItemAsArrayResult(
+			= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					results);
 		}
 		catch(Exception exception) {
 			//Convert exceptions to support JSON
 			result 
-				= serialiseException(
+			= serialiseException(
 					servletRequest,
 					exception);			
 		}
-		
+
 		return result;
-		
+
 	}	
-		
+
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

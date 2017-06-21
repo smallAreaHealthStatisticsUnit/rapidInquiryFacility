@@ -3094,6 +3094,111 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 			return results;		
 	}
 
+	public RIFResultTable getStudyTableForProcessedStudy(
+			final User _user,
+			final String studyID,
+			final String type,
+			final String stt,
+			final String stp)
+					throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		MSSQLConnectionManager sqlConnectionManager
+		= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+
+		RIFResultTable results = new RIFResultTable();
+		Connection connection = null;
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+					"getStudyTableForProcessedStudy",
+					"user",
+					user);
+			fieldValidationUtility.checkNullMethodParameter(
+					"getStudyTableForProcessedStudy",
+					"studyID",
+					studyID);
+			fieldValidationUtility.checkNullMethodParameter(
+					"getStudyTableForProcessedStudy",
+					"type",
+					type);
+			fieldValidationUtility.checkNullMethodParameter(
+					"getStudyTableForProcessedStudy",
+					"stt",
+					stt);
+			fieldValidationUtility.checkNullMethodParameter(
+					"getStudyTableForProcessedStudy",
+					"stp",
+					stt);
+
+			//Check for security violations
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+					"getStudyTableForProcessedStudy", 
+					"studyID", 
+					studyID);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+					"getStudyTableForProcessedStudy", 
+					"type", 
+					type);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+					"getStudyTableForProcessedStudy", 
+					"stt", 
+					stt);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+					"getStudyTableForProcessedStudy", 
+					"stp", 
+					stp);
+
+			//Audit attempt to do operation
+			RIFLogger rifLogger = RIFLogger.getLogger();				
+			String auditTrailMessage
+			= RIFServiceMessages.getMessage("logging.getStudyTableForProcessedStudy",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyID, type, stt, stp);
+			rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+			= sqlConnectionManager.assignPooledReadConnection(user);
+
+			//Delegate operation to a specialised manager class
+			MSSQLSmoothedResultManager sqlSmoothedResultQueryManager
+			= rifServiceResources.getSQLSmoothedResultManager();
+
+			results
+			= sqlSmoothedResultQueryManager.getStudyTableForProcessedStudy(
+					connection, 
+					studyID,
+					type,
+					stt,
+					stp);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+					user,
+					"getStudyTableForProcessedStudy",
+					rifServiceException);			
+		}
+		finally {
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledReadConnection(
+					user, 
+					connection);			
+		}
+
+		return results;
+	}
 	
 	
 	
