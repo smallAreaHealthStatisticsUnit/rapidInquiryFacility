@@ -1413,6 +1413,9 @@ Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
   ```  
   
 #### 19th to 23rd June
+
+* RIF work estimates going forward into 2018, RIF middlewre logging
+* Test 1001 comparisons
  
 #### 26th to 30th June
  
