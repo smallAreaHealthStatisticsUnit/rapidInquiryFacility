@@ -1435,6 +1435,18 @@ Todo:
  
 #### Database TODO list (deferred to August 2017): SQL Server Port
 
+* Data loader issues:
+  TOTAL_FIELD should be total
+  No covariate fields in data table
+* Port rif40_dmp_pkg.csv_dump(). Issues:
+
+  1. The function processes rows in batches of 100. On the last row of each batch a new line is not added (/n or whatever) 
+     so we get 2 rows on one row every 100 rows in the csv.
+ 
+     Probably here is the culprit (line 203)
+	```   
+	   RETURN NEXT trim(trailing line_term_text from select_text); /* Remove last CRLF */
+	``` 
 * Harden SQL Server port against SQL Injection getting past middleware into meta data
 * Process Utah geography
 * Disable guest logins on SQL Server
