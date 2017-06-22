@@ -128,7 +128,7 @@ Description:	Create INSERT SQL statement
    		       t.sex_field_name, t.age_group_field_name, t.age_sex_group_field_name, t.age_group_id;
 	DECLARE @c8_rec_denom_tab					VARCHAR(30);
 	DECLARE @c8_rec_description					VARCHAR(2000);
-	DECLARE @c8_rec_total_field					INTEGER;
+	DECLARE @c8_rec_total_field					VARCHAR(30);
 	DECLARE @c8_rec_year_start					INTEGER;
 	DECLARE @c8_rec_year_stop					INTEGER;
 	DECLARE @c8_rec_sex_field_name				VARCHAR(30);
