@@ -355,11 +355,15 @@ BEGIN
 --
 -- Add correct age_sex_group limits
 --
-		IF c5_rec.genders = 3 THEN
-			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||'        /* No genders filter required for numerator */'||E'\n';
+		IF single_gender_flag = FALSE THEN
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||
+				'        /* No genders filter required for numerator (multiple genders used) */'||E'\n';
+		ELSIF single_gender = 3 THEN
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||
+				'        /* No genders filter required for numerator (only one gender used) */'||E'\n';
 		ELSE
-			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND  TRUNC(c.'||LOWER(c8_rec.age_sex_group_field_name)||'/100) = '||
-				c5_rec.genders::VARCHAR||'       /* Numerator gender filter */'||E'\n';
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND  TRUNC(d1.'||LOWER(c8_rec.age_sex_group_field_name)||'/100) = '||
+				single_gender::VARCHAR||'              /* Numerator gender filter */'||E'\n';
 		END IF;
 			
 		IF c8_rec.min_age_group = c1_rec.min_age_group AND c8_rec.max_age_group = c1_rec.max_age_group THEN

@@ -257,12 +257,21 @@ Description:	Create INSERT SQL statement
 		DECLARE @c5_rec_min_age_group	INTEGER;
 		DECLARE @c5_rec_max_age_group	INTEGER;
 		DECLARE @c5_rec_inv_description VARCHAR(2000);
+		DECLARE @single_gender			INTEGER = NULL;
+		DECLARE @single_gender_flag		INTEGER = 0;
 --	
 		OPEN c5insext;
 		FETCH NEXT FROM c5insext INTO @c5_rec_inv_id, @c5_rec_inv_name, @c5_rec_year_start, @c5_rec_year_stop, @c5_rec_genders,
 			@c5_rec_min_age_group, @c5_rec_max_age_group, @c5_rec_inv_description;
 		WHILE @@FETCH_STATUS = 0
 		BEGIN	
+			IF @single_gender IS NULL BEGIN
+					SET @single_gender=@c5_rec_genders;
+					SET @single_gender_flag=1;
+				END;
+			ELSE IF @single_gender = @c5_rec_genders SET @single_gender_flag=1
+			ELSE SET @single_gender_flag=0;
+--		
 			SET @j=@j+1;
 			INSERT INTO @inv_array(inv) VALUES('       COALESCE(' + 
 				'n' + CAST(@i AS VARCHAR) + '.inv_' + CAST(@c5_rec_inv_id AS VARCHAR) + '_' + LOWER(@c5_rec_inv_name) +
@@ -318,12 +327,14 @@ Description:	Create INSERT SQL statement
 			ELSE IF @c4_rec_year_start = @c5_rec_year_start AND @c4_rec_year_stop = @c5_rec_year_stop SET @sql_stmt=@sql_stmt +
 				@tab + @tab + @tab + @tab + '        /* No year filter required for investigation ' + CAST(@j AS VARCHAR) + ' */' + @crlf
 			ELSE SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + '   AND  c.year BETWEEN ' + CAST(@c5_rec_year_start AS VARCHAR) +
-					' AND ' + CAST(@c5_rec_year_stop AS VARCHAR) + @crlf;
+					' AND ' + CAST(@c5_rec_year_stop AS VARCHAR) + 
+					' /* Investigation ' + CAST(@j AS VARCHAR) + ' year filter */' + @crlf;
 		
 			IF @c5_rec_genders = 3 SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
 				'        /* No genders filter required for investigation  ' + CAST(@j AS VARCHAR) + ' */' + @crlf
 			ELSE SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + 
-				'   AND  FLOOR(c.' + LOWER(@c4_rec_age_sex_group_field_name) + '/100) = ' + CAST(@c5_rec_genders AS VARCHAR) + @crlf;
+				'   AND  FLOOR(c.' + LOWER(@c4_rec_age_sex_group_field_name) + '/100) = ' + 
+					CAST(@c5_rec_genders AS VARCHAR) + '/* Investigation ' + CAST(@j AS VARCHAR) + ' gender filter */' + @crlf;
 		
 			IF @c8_rec_min_age_group = @c5_rec_min_age_group AND @c8_rec_max_age_group = @c5_rec_max_age_group SET @sql_stmt=@sql_stmt +
 				@tab + @tab + @tab + @tab + 
@@ -331,7 +342,7 @@ Description:	Create INSERT SQL statement
 			ELSE SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
 				'   AND (c.' + LOWER(@c4_rec_age_sex_group_field_name) + ' % 100) BETWEEN ' + 
 				CAST(@c5_rec_min_age_group AS VARCHAR) + ' AND ' + CAST(@c5_rec_max_age_group AS VARCHAR) +
-				' /* Investigation ' + CAST(@j AS VARCHAR) + ' year, age group filter */)' + @crlf;
+				' /* Investigation ' + CAST(@j AS VARCHAR) + ' age group filter */)' + @crlf;
 --
 			IF @c4_rec_total_field IS NULL /* Handle total fields */ SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + ') THEN 1' + @crlf
 			ELSE SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + ') THEN ' + LOWER(@c4_rec_total_field) + @crlf;
@@ -362,28 +373,36 @@ Description:	Create INSERT SQL statement
 -- From clause
 --
 		SET @sql_stmt=@sql_stmt + @tab + '  FROM rif_data.' + LOWER(@c4_rec_numer_tab) + ' c, ' + @tab +'/* ' + @c4_rec_description + ' */' + @crlf +
-			@tab + '       ' + @areas_table + ' s ' + @tab + '/* Study or comparision area to be extracted */' + @crlf;
+			@tab + '       ' + @areas_table + ' s ' + @tab + '/* Numerator study or comparison area to be extracted */' + @crlf;
 		IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + 
 			' WHERE c.' + LOWER(@c1_rec_comparison_geolevel_name) + ' = s.area_id ' + @tab + '/* Comparison selection */' + @crlf
 		ELSE SET @sql_stmt=@sql_stmt + @tab + ' WHERE c.' + LOWER(@c1_rec_study_geolevel_name) + ' = s.area_id ' + 
 			@tab + '/* Study selection */' + @crlf;
 --
--- [Add correct age_sex_group limits]
+-- Add correct age_sex_group limits
 --
+		IF @single_gender_flag = 0 SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
+			'        /* No genders filter required for numerator (multiple genders used) */' + @crlf
+		ELSE IF @single_gender = 3 SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
+			'        /* No genders filter required for numerator (only one gender used) */' + @crlf
+		ELSE SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + 
+			'   AND  FLOOR(c.' + LOWER(@c8_rec_age_sex_group_field_name) + '/100) = ' + 
+				CAST(@single_gender AS VARCHAR) + '       /* Numerator gender filter */' + @crlf;
+					
 		IF @c8_rec_min_age_group = @c1_rec_min_age_group AND @c8_rec_max_age_group = @c1_rec_max_age_group SET @sql_stmt=@sql_stmt + 
-			@tab + '       /* No age group filter required for denominator */' + @crlf
+			@tab + '       /* No age group filter required for numerator */' + @crlf
 		ELSE SET @sql_stmt=@sql_stmt + @tab + '   AND (c.' + LOWER(@c8_rec_age_sex_group_field_name) + ' % 100) BETWEEN ' +
 				CAST(@c1_rec_min_age_group AS VARCHAR) + ' AND ' + CAST(@c1_rec_max_age_group AS VARCHAR) +
-				' /* All valid age groups for denominator I */' + @crlf;
+				' /* Numerator age group filter */' + @crlf;
 		SET @sql_stmt=@sql_stmt + @tab + '   AND s.study_id = @studyid' + @tab + @tab + '/* Current study ID */' + @crlf;
 
 --
 -- Processing years filter
 --
 		IF @year_start = @year_stop SET @sql_stmt=@sql_stmt + @tab + '   AND c.year = @yearstart' + @tab + @tab + 
-			'/* Denominator (INSERT) year filter */' + @crlf
+			'/* Numerator (INSERT) year filter */' + @crlf
 		ELSE SET @sql_stmt=@sql_stmt + @tab + '   AND c.year BETWEEN @yearstart AND @yearstop' + @tab + 
-			'/* Denominator (INSERT) year filter */' + @crlf;
+			'/* Numerator (INSERT) year filter */' + @crlf;
 
 --
 -- Group by clause
@@ -461,7 +480,7 @@ Description:	Create INSERT SQL statement
 	
 	SET @sql_stmt=@sql_stmt + @tab + '       SUM(COALESCE(d1.'+ coalesce(LOWER(@c8_rec_total_field), 'total') + 
 		', 0)) AS total_pop' + @crlf + @tab + '  FROM ' + @areas_table + ' s, rif_data.' +
-		LOWER(@c1_rec_denom_tab) + ' d1 ' + @tab + '/* Study or comparison area to be extracted */' + @crlf;
+		LOWER(@c1_rec_denom_tab) + ' d1 ' + @tab + '/* Denominator study or comparison area to be extracted */' + @crlf;
 --
 -- This is joining at the study geolevel. For comparison areas this needs to be aggregated to the comparison area
 --			
@@ -473,8 +492,11 @@ Description:	Create INSERT SQL statement
 
 	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: C';	
 	
-	SET @sql_stmt=@sql_stmt + @tab + ' WHERE d1.year = @yearstart' + @tab + @tab +  '/* Denominator (INSERT) year filter */' + @crlf;
-	
+	IF @year_start = @year_stop SET @sql_stmt=@sql_stmt + @tab + ' WHERE d1.year = @yearstart' + @tab + @tab + 
+		'/* Denominator (INSERT) year filter */' + @crlf
+	ELSE SET @sql_stmt=@sql_stmt + @tab + ' WHERE d1.year BETWEEN @yearstart AND @yearstop' + @tab + 
+		'/* Denominator (INSERT) year filter */' + @crlf;
+			
 	IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + 
 		'   AND s.area_id  = d1.'+ LOWER(@c1_rec_comparison_geolevel_name) + @tab + '/* Comparison geolevel join */' + @crlf
 	ELSE SET @sql_stmt=@sql_stmt + @tab + 
@@ -483,14 +505,22 @@ Description:	Create INSERT SQL statement
 		@tab + '   AND s.study_id = @studyid' + @tab + @tab + '/* Current study ID */' + @crlf;
 
 --
--- [Add correct age_sex_group limits]
+-- Add correct age_sex_group limits
 --
+	IF @single_gender_flag = 0 SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
+		'        /* No genders filter required for denominator (multiple genders used) */' + @crlf
+	ELSE IF @single_gender = 3 SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
+		'        /* No genders filter required for denominator (only one gender used) */' + @crlf
+	ELSE SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + 
+		'   AND  FLOOR(d1.' + LOWER(@c8_rec_age_sex_group_field_name) + '/100) = ' + 
+			CAST(@single_gender AS VARCHAR) + '       /* Denominator gender filter */' + @crlf;
+				
 	IF @c8_rec_min_age_group = @c1_rec_min_age_group AND @c8_rec_max_age_group = @c1_rec_max_age_group SET @sql_stmt=@sql_stmt + @tab + 
 		'       /* No age group filter required for denominator */' + @crlf
 	ELSE SET @sql_stmt=@sql_stmt + @tab + 
 		'   AND (d1.' + LOWER(@c8_rec_age_sex_group_field_name) + ' % 100) BETWEEN ' + 
 			CAST(@c1_rec_min_age_group AS VARCHAR) + ' AND ' + CAST(@c1_rec_max_age_group AS VARCHAR) +
-			' /* All valid age groups for denominator II */' + @crlf;
+			' /* Denominator age group filter */' + @crlf;
 --
 -- [Add gender filter]
 --
