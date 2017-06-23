@@ -144,6 +144,9 @@ Description:	Create INSERT SQL statement
 	c7_rec RECORD;
 	c8_rec RECORD;
 --
+	single_gender_flag	BOOLEAN:=FALSE;
+	single_gender		INTEGER=NULL; 	-- If NULL multiple genders are in use
+--
 	covariate_table_name	VARCHAR;
 	sql_stmt	VARCHAR;
 	i		INTEGER:=0;
@@ -252,6 +255,15 @@ BEGIN
 -- Individual investigations [add age group/sex/year filters]
 -- 
 		FOR c5_rec IN c5insext(study_id, c4_rec.numer_tab) LOOP
+			IF single_gender IS NULL THEN
+				single_gender:=c5_rec.genders;
+				single_gender_flag:=TRUE;
+			ELSIF single_gender = c5_rec.genders THEN
+				single_gender_flag:=TRUE;
+			ELSE
+				single_gender_flag:=FALSE;
+			END IF;
+--
 			j:=j+1;
 			inv_array[j]:='       COALESCE('||
 				'n'||i::VARCHAR||'.inv_'||c5_rec.inv_id::VARCHAR||'_'||LOWER(c5_rec.inv_name)||
@@ -294,19 +306,20 @@ BEGIN
 				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||'        /* No year filter required for investigation '||j::VARCHAR||' */'||E'\n';
 			ELSE
 				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND  c.year BETWEEN '||c5_rec.year_start::VARCHAR||
-					' AND '||c5_rec.year_stop::VARCHAR||E'\n';
+					' AND '||c5_rec.year_stop::VARCHAR||||'/* Investigation '||j::VARCHAR||' year filter */'||E'\n';
 			END IF;
 			IF c5_rec.genders = 3 THEN
 				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||'        /* No genders filter required for investigation '||j::VARCHAR||' */'||E'\n';
 			ELSE
-				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND  TRUNC(c.'||LOWER(c4_rec.age_sex_group_field_name)||'/100) = '||c5_rec.genders::VARCHAR||E'\n';
+				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND  TRUNC(c.'||LOWER(c4_rec.age_sex_group_field_name)||'/100) = '||
+					c5_rec.genders::VARCHAR||'/* Investigation '||j::VARCHAR||' gender filter */'||E'\n';
 			END IF;
 			IF c8_rec.min_age_group = c5_rec.min_age_group AND c8_rec.max_age_group = c5_rec.max_age_group THEN
 				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||'        /* No age group filter required for investigation '||j::VARCHAR||' */)'||E'\n';
 			ELSE 
 				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND  MOD(c.'||LOWER(c4_rec.age_sex_group_field_name)||', 100) BETWEEN '||
 					c5_rec.min_age_group::VARCHAR||' AND '||c5_rec.max_age_group::VARCHAR||
-					' /* Investigation '||j::VARCHAR||' year, age group filter */)'||E'\n';
+					' /* Investigation '||j::VARCHAR||' age group filter */)'||E'\n';
 			END IF;
 --
 			IF c4_rec.total_field IS NULL THEN /* Handle total fields */
@@ -333,30 +346,37 @@ BEGIN
 -- From clause
 --
 		sql_stmt:=sql_stmt||E'\t'||'  FROM '||LOWER(c4_rec.numer_tab)||' c, '||E'\t'||'/* '||c4_rec.description||' */'||E'\n';
-		sql_stmt:=sql_stmt||E'\t'||'       '||areas_table||' s '||E'\t'||'/* Study or comparision area to be extracted */'||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||'       '||areas_table||' s '||E'\t'||'/* Numerator study or comparison area to be extracted */'||E'\n';
 		IF study_or_comparison = 'C' THEN
 			sql_stmt:=sql_stmt||E'\t'||' WHERE c.'||LOWER(c1_rec.comparison_geolevel_name)||' = s.area_id '||E'\t'||'/* Comparison selection */'||E'\n';
 		ELSE
 			sql_stmt:=sql_stmt||E'\t'||' WHERE c.'||LOWER(c1_rec.study_geolevel_name)||' = s.area_id '||E'\t'||'/* Study selection */'||E'\n';
 		END IF;
 --
--- [Add correct age_sex_group limits]
+-- Add correct age_sex_group limits
 --
+		IF c5_rec.genders = 3 THEN
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||'        /* No genders filter required for numerator */'||E'\n';
+		ELSE
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND  TRUNC(c.'||LOWER(c8_rec.age_sex_group_field_name)||'/100) = '||
+				c5_rec.genders::VARCHAR||'       /* Numerator gender filter */'||E'\n';
+		END IF;
+			
 		IF c8_rec.min_age_group = c1_rec.min_age_group AND c8_rec.max_age_group = c1_rec.max_age_group THEN
-			sql_stmt:=sql_stmt||E'\t'||'       /* No age group filter required for denominator */'||E'\n';
+			sql_stmt:=sql_stmt||E'\t'||'       /* No age group filter required for numerator */'||E'\n';
 		ELSE 
 			sql_stmt:=sql_stmt||E'\t'||'   AND MOD(c.'||LOWER(c8_rec.age_sex_group_field_name)||', 100) BETWEEN '||
 				c1_rec.min_age_group::VARCHAR||' AND '||c1_rec.max_age_group::VARCHAR||
-				' /* All valid age groups for denominator I */'||E'\n';
+				' /* Numerator age group filter */'||E'\n';
 		END IF;
 		sql_stmt:=sql_stmt||E'\t'||'   AND s.study_id = $1'||E'\t'||E'\t'||'/* Current study ID */'||E'\n';
 --
 -- Processing years filter
 --
 		IF year_start = year_stop THEN
-			sql_stmt:=sql_stmt||E'\t'||'   AND c.year = $2'||E'\t'||E'\t'||'/* Denominator (INSERT) year filter */'||E'\n';
+			sql_stmt:=sql_stmt||E'\t'||'   AND c.year = $2'||E'\t'||E'\t'||'/* Numerator (INSERT) year filter */'||E'\n';
 		ELSE
-			sql_stmt:=sql_stmt||E'\t'||'   AND c.year BETWEEN $2 AND $3'||E'\t'||'/* Denominator (INSERT) year filter */'||E'\n';
+			sql_stmt:=sql_stmt||E'\t'||'   AND c.year BETWEEN $2 AND $3'||E'\t'||'/* Numerator (INSERT) year filter */'||E'\n';
 		END IF;
 --
 -- Group by clause
@@ -420,7 +440,7 @@ BEGIN
 			', 0)) AS total_pop'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'  FROM '||quote_ident(areas_table)||' s, '||
 			quote_ident(LOWER(c1_rec.denom_tab))||' d1 '||
-			E'\t'||'/* Study or comparison area to be extracted */'||E'\n';
+			E'\t'||'/* Denominator study or comparison area to be extracted */'||E'\n';
 	IF covariate_table_name IS NOT NULL THEN
 		sql_stmt:=sql_stmt||E'\t'||E'\t'||'LEFT OUTER JOIN '||quote_ident(LOWER(covariate_table_name))||' c ON ('||E'\t'||'/* Covariates */'||E'\n';
 --
@@ -430,7 +450,11 @@ BEGIN
 			' = c.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||E'\t'||E'\t'||'/* Join at study geolevel */'||E'\n';
 		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'AND c.year = $2)'||E'\n';
 	END IF;
-	sql_stmt:=sql_stmt||E'\t'||' WHERE d1.year = $2'||E'\t'||E'\t'||'/* Denominator (INSERT) year filter */'||E'\n';
+	IF year_start = year_stop THEN
+		sql_stmt:=sql_stmt||E'\t'||' WHERE d1.year = $2'||E'\t'||E'\t'||'/* Denominator (INSERT) year filter */'||E'\n';
+	ELSE
+		sql_stmt:=sql_stmt||E'\t'||' WHERE d1.year BETWEEN $2 AND $3'||E'\t'||'/* Denominator (INSERT) year filter */'||E'\n';
+	END IF;	
 	IF study_or_comparison = 'C' THEN
 		sql_stmt:=sql_stmt||E'\t'||'   AND s.area_id  = d1.'||quote_ident(LOWER(c1_rec.comparison_geolevel_name))||E'\t'||'/* Comparison geolevel join */'||E'\n';
 	ELSE
@@ -438,19 +462,27 @@ BEGIN
 	END IF;
 	sql_stmt:=sql_stmt||E'\t'||'   AND s.area_id  IS NOT NULL'||E'\t'||'/* Exclude NULL geolevel */'||E'\n';
 	sql_stmt:=sql_stmt||E'\t'||'   AND s.study_id = $1'||E'\t'||E'\t'||'/* Current study ID */'||E'\n';
+		
 --
--- [Add correct age_sex_group limits]
+-- Add correct age_sex_group limits
 --
+	IF single_gender_flag = FALSE THEN
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||
+			'        /* No genders filter required for denominator (multiple genders used) */'||E'\n';
+	ELSIF single_gender = 3 THEN
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||
+			'        /* No genders filter required for denominator (only one gender used) */'||E'\n';
+	ELSE
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND  TRUNC(d1.'||LOWER(c8_rec.age_sex_group_field_name)||'/100) = '||
+			single_gender::VARCHAR||'              /* Denominator gender filter */'||E'\n';
+	END IF;
 	IF c8_rec.min_age_group = c1_rec.min_age_group AND c8_rec.max_age_group = c1_rec.max_age_group THEN
 		sql_stmt:=sql_stmt||E'\t'||'       /* No age group filter required for denominator */'||E'\n';
 	ELSE 
 		sql_stmt:=sql_stmt||E'\t'||'   AND MOD(d1.'||quote_ident(LOWER(c8_rec.age_sex_group_field_name))||', 100) BETWEEN '||
 			c1_rec.min_age_group::VARCHAR||' AND '||c1_rec.max_age_group::VARCHAR||
-			' /* All valid age groups for denominator II */'||E'\n';
+			' /* Denominator age groups */'||E'\n';
 	END IF;
---
--- [Add gender filter]
---
 
 --
 -- Add GROUP BY clause
