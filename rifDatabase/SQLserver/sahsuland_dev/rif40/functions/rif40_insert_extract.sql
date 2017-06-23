@@ -194,7 +194,7 @@ Description:	Insert data into extract table
 	IF @rval = 0 RETURN @rval;
 		
 	SET @yearno=@c1_rec_year_start;
-	WHILE @yearno < @c1_rec_year_stop BEGIN
+	WHILE @yearno <= @c1_rec_year_stop BEGIN
 
 		SET @msg='55801: Study ID ' + CAST(@c1_rec_study_id AS VARCHAR) + ' INSERT study year ' + CAST(@yearno AS VARCHAR);
 		PRINT @msg;		
