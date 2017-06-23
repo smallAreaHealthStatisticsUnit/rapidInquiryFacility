@@ -102,6 +102,11 @@ Description:	Execute INSERT SQL statement
 	l_statement_type VARCHAR:='INSERT' /* INSERT: Local Postgres statement */;
 	i		INTEGER:=0;
 BEGIN
+	IF sql_stmt IS NULL THEN
+		PERFORM rif40_log_pkg.rif40_error(-56600, 'rif40_execute_insert_statement', 
+			'No SQL statement generated for study ID % not found',
+			study_id::VARCHAR		/* Study ID */);
+	END IF;
 --
 -- Get the maximum statement number for the logs
 --
@@ -109,7 +114,7 @@ BEGIN
 	FETCH c1exinst INTO c1_rec;
 	IF NOT FOUND THEN
 		CLOSE c1exinst;
-		PERFORM rif40_log_pkg.rif40_error(-56600, 'rif40_execute_insert_statement', 
+		PERFORM rif40_log_pkg.rif40_error(-56601, 'rif40_execute_insert_statement', 
 			'Study ID % not found',
 			study_id::VARCHAR		/* Study ID */);
 	END IF;
@@ -134,7 +139,7 @@ BEGIN
 			END LOOP;
 			etp:=clock_timestamp();
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_execute_insert_statement', 
-				'[56601] Study ID %, statement: %'||E'\n'||'Description: %'||E'\n'||' query plan:'||E'\n'||'%'::VARCHAR,
+				'[56602] Study ID %, statement: %'||E'\n'||'Description: %'||E'\n'||' query plan:'||E'\n'||'%'::VARCHAR,
 				study_id::VARCHAR				/* Study ID */,
 				t_ddl::VARCHAR					/* Statement number */,
 				description::VARCHAR				/* Description */,
@@ -159,13 +164,13 @@ BEGIN
 		WHEN others THEN
 			etp:=clock_timestamp();
 			l_sqlcode:=SQLSTATE;
-			l_log_message:=format('ERROR, [56602] %s %s "%s" raised, took: %s', 
+			l_log_message:=format('ERROR, [56603] %s %s "%s" raised, took: %s', 
 				description::VARCHAR		/* Description */,
 				l_sqlcode::VARCHAR		/* SQLSTATE */,
 				sqlerrm::VARCHAR		/* Error */,
 				age(etp, stp)::VARCHAR		/* Human readable time take */);      
 			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_execute_insert_statement',
-				'[56603] Study %: statement % (%) error: % "%" raised by'||E'\n'||'SQL> %;'||E'\n'||'After: %'::VARCHAR,
+				'[56604] Study %: statement % (%) error: % "%" raised by'||E'\n'||'SQL> %;'||E'\n'||'After: %'::VARCHAR,
 				study_id::VARCHAR		/* Study ID */,
 				description::VARCHAR		/* Description */,
 				t_ddl::VARCHAR			/* Statement number */,
@@ -189,7 +194,7 @@ BEGIN
 	VALUES (USER, study_id, l_statement_type, t_ddl, sql_stmt, 1);  
 --
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_execute_insert_statement',
-		'[56604] Study %: %',
+		'[56605] Study %: %',
 		study_id::VARCHAR,		/* Study ID */
 		l_log_message::VARCHAR		/* Log message */);
 --
