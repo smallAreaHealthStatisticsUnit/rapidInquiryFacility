@@ -1415,7 +1415,9 @@ Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
 #### 19th to 23rd June
 
 * RIF work estimates going forward into 2018, RIF middlewre logging
-* Test 1001 comparisons
+* Test 1001 comparisons, Postgres and SQL Server sahsuland loads confirmed correct after fix to total_field.
+* Removed denominator gender data when not required by numerator
+* Fix to Postgres run study error handler
  
 #### 26th to 30th June
  

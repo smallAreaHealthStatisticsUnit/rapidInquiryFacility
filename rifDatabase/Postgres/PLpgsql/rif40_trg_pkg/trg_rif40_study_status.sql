@@ -86,6 +86,14 @@ BEGIN
 --
 		IF (USER = NEW.username OR NEW.username IS NULL /* Will be defaulted */) 
 				AND rif40_sql_pkg.is_rif40_user_manager_or_schema() THEN
+--			PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study',
+--				'[20101] Add to t_rif40_study_status(%,%,%,%,%,%)',
+--				COALESCE(NEW.username, "current_user"())::VARCHAR,
+--				COALESCE(NEW.study_id, (currval('rif40_study_id_seq'::regclass))::integer)::VARCHAR,
+--				NEW.study_state /* no default value */,
+--				COALESCE(NEW.creation_date, current_timestamp)::VARCHAR,
+--				COALESCE(NEW.ith_update, c1_rec.ith_update)::VARCHAR,
+--				NEW.message /* no default value */);
 			INSERT INTO t_rif40_study_status (
 				username,
 				study_id,

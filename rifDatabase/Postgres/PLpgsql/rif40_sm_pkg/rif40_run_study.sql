@@ -344,9 +344,8 @@ BEGIN
 					c1_rec.study_id::VARCHAR);
 				msg:='[55210] Recurse ['||n_recursion_level::Text||'] rif40_run_study to new state '||new_study_state||
 						' for study '||c1_rec.study_id::Text||' failed, see previous warnings';
-				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study', msg);
 				INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
-				SELECT c1_rec.study_id, 'D', msg
+				SELECT c1_rec.study_id, 'G', msg
 				 WHERE NOT EXISTS (
 					SELECT a.study_id
 					  FROM rif40_study_status a
@@ -357,17 +356,17 @@ BEGIN
 		EXCEPTION
 			WHEN others THEN
 				GET STACKED DIAGNOSTICS v_detail = PG_EXCEPTION_DETAIL;
-				IF SUBSTR(version(), 12, 3)::NUMERIC < 9.4 THEN
+--				IF SUBSTR(version(), 12, 3)::NUMERIC < 9.4 THEN
 					msg:='rif40.rif40_run_study error handler('||c1_rec.study_id::Text||')'||E'\n'||
 						'Detail: '||v_detail||E'\n'||
 						'Error: '||SQLERRM;
-				ELSE
-					GET STACKED DIAGNOSTICS v_stack = PG_CONTEXT;
-					msg:='rif40.rif40_run_study error handler('||c1_rec.study_id::Text||')'||E'\n'||
-						'Detail: '||v_detail||E'\n'||
-						'Stack: '||v_stack||E'\n'||
-						'Error: '||SQLERRM;
-				END IF;
+--				ELSE
+--					GET STACKED DIAGNOSTICS v_stack = PG_CONTEXT;
+--					msg:='rif40.rif40_run_study error handler('||c1_rec.study_id::Text||')'||E'\n'||
+--						'Detail: '||v_detail||E'\n'||
+--						'Stack: '||v_stack||E'\n'||
+--						'Error: '||SQLERRM;
+--				END IF;
 				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study', msg);	
 --
 -- Set study status 
