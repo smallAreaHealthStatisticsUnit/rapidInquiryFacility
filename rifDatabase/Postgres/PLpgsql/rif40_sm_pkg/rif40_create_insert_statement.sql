@@ -362,7 +362,7 @@ BEGIN
 			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||
 				'        /* No genders filter required for numerator (only one gender used) */'||E'\n';
 		ELSE
-			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND  TRUNC(d1.'||LOWER(c8_rec.age_sex_group_field_name)||'/100) = '||
+			sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND  TRUNC(c.'||LOWER(c8_rec.age_sex_group_field_name)||'/100) = '||
 				single_gender::VARCHAR||'              /* Numerator gender filter */'||E'\n';
 		END IF;
 			
@@ -470,16 +470,19 @@ BEGIN
 --
 -- Add correct age_sex_group limits
 --
-	IF single_gender_flag = FALSE THEN
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||
-			'        /* No genders filter required for denominator (multiple genders used) */'||E'\n';
-	ELSIF single_gender = 3 THEN
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||
-			'        /* No genders filter required for denominator (only one gender used) */'||E'\n';
-	ELSE
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND  TRUNC(d1.'||LOWER(c8_rec.age_sex_group_field_name)||'/100) = '||
-			single_gender::VARCHAR||'              /* Denominator gender filter */'||E'\n';
-	END IF;
+-- Gender filter removed as it was causing R a problem.
+--
+--	IF single_gender_flag = FALSE THEN
+--		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||
+--			'        /* No genders filter required for denominator (multiple genders used) */'||E'\n';
+--	ELSIF single_gender = 3 THEN
+--		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||
+--			'        /* No genders filter required for denominator (only one gender used) */'||E'\n';
+--	ELSE
+--		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND  TRUNC(d1.'||LOWER(c8_rec.age_sex_group_field_name)||'/100) = '||
+--			single_gender::VARCHAR||'              /* Denominator gender filter */'||E'\n';
+--	END IF;
+	
 	IF c8_rec.min_age_group = c1_rec.min_age_group AND c8_rec.max_age_group = c1_rec.max_age_group THEN
 		sql_stmt:=sql_stmt||E'\t'||'       /* No age group filter required for denominator */'||E'\n';
 	ELSE 

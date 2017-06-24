@@ -1416,8 +1416,11 @@ Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
 
 * RIF work estimates going forward into 2018, RIF middlewre logging
 * Test 1001 comparisons, Postgres and SQL Server sahsuland loads confirmed correct after fix to total_field.
+* Checked SAHSULAND dataloaded data is the same
 * Removed denominator gender data when not required by numerator
 * Fix to Postgres run study error handler
+* 2017/18 forward plan. Highlight impact of no Java developer
+* Regression test of both ports for PHE conference demo
  
 #### 26th to 30th June
  
@@ -1428,8 +1431,6 @@ Todo:
 * Automatic denominators: USA data not appearing (rif40_num_denom issue). USA data using wrong column 
   names - should use geolevel_name. Bug therefore is in data loader setup. 
 * Test plan
-* 2017/18 forward plan. Highlight impact of no Java developer
-* Check SAHSULAND dataloaded data is the same
 
 #### 1st July to 31st July
 
@@ -1437,6 +1438,61 @@ Todo:
  
 #### Database TODO list (deferred to August 2017): SQL Server Port
 
+* Postgres run study middleware code not stopping on error!
+* The R script does not handle only males in a study:
+```
+C:\rifDemo\scratchSpace>C:\"Program Files"\R\R-3.4.0\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"\\webapps\\rifServices\\WEB-INF\\classes\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432  --db_name=sahsuland  --db_driver_class_name=org.postgresql.Driver  --study_id=16  --investigation_name=TEST_1001  --covariate_name=NONE
+ --investigation_id=16  --r_model=het_r_procedure  --odbc_data_source=PostgreSQL30  --user_id=peter  --password=XXXXXX
+Loading required package: sp
+Loading required package: methods
+Loading required package: Matrix
+This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
+See www.r-inla.org/contact-us for how to get help.
+Checking rgeos availability: FALSE
+        Note: when rgeos is not available, polygon geometry     computations in maptools depend on gpclib,
+        which has a restricted licence. It is disabled by default;
+        to enable gpclib, type gpclibPermit()
+[1] "13 arguments were supplied"
+[1] "Parsing parameters"
+                   name                 value
+1      db_driver_prefix       jdbc:postgresql
+2               db_host             localhost
+3               db_port                  5432
+4               db_name             sahsuland
+5  db_driver_class_name org.postgresql.Driver
+6              study_id                    16
+7    investigation_name             TEST_1001
+8        covariate_name                  NONE
+9      investigation_id                    16
+10              r_model       het_r_procedure
+11     odbc_data_source          PostgreSQL30
+12              user_id                 peter
+13             password                  <NA>
+[1] "Study ID: 16"
+[1] "Connect to database: PostgreSQL30"
+        DBMS_Name          DBMS_Ver   Driver_ODBC_Ver  Data_Source_Name
+     "PostgreSQL"           "9.3.5"           "03.51"    "PostgreSQL30"
+      Driver_Name        Driver_Ver          ODBC_Ver       Server_Name
+"PSQLODBC35W.DLL"      "09.06.0310"      "03.80.0000"       "localhost"
+[1] "Performing basic stats and smoothing"
+[1] "============EXTRACT TABLE NAME ===================="
+[1] "rif_studies.s16_extract"
+[1] "============EXTRACT TABLE NAME ===================="
+[1] "rif_studies.s16_extract numberOfRows=216656=="
+[1] "rif40_GetAdjacencyMatrix numberOfRows=1229=="
+Error in POP[, 3, ] : subscript out of bounds
+Calls: performSmoothingActivity -> apply
+3: (function ()
+   {
+       traceback(2)
+       if (!is.null(connDB))
+           odbcClose(connDB)
+       quit("no", 1, FALSE)
+   })()
+2: apply(POP[, 3, ] * cRATESNoArea[, 3], MARGIN = 2, FUN = sum,
+       na.rm = TRUE)
+1: performSmoothingActivity()
+```
 * Data loader issues:
   TOTAL_FIELD should be total
   No covariate fields in data table
