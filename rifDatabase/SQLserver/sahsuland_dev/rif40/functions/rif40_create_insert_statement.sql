@@ -507,6 +507,9 @@ Description:	Create INSERT SQL statement
 --
 -- Add correct age_sex_group limits
 --
+--
+-- Note that the gender filter causes R to blob. This section is commented out in the Postgres port
+--
 	IF @single_gender_flag = 0 SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
 		'        /* No genders filter required for denominator (multiple genders used) */' + @crlf
 	ELSE IF @single_gender = 3 SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
