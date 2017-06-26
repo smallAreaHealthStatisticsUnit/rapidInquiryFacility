@@ -39,7 +39,7 @@
 ############################################################################################################
 
 ## CHECK & AUTO INSTALL MISSING PACKAGES
-#packages <- c("plyr", "abind", "maptools", "spdep", "RODBC")
+#packages <- c("plyr", "abind", "maptools", "spdep", "RODBC", "rJava")
 #if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
 #  install.packages(setdiff(packages, rownames(installed.packages())))  
 #}
@@ -53,6 +53,7 @@ library(abind)
 library(INLA)
 library(maptools)
 library(spdep)
+library(rJava)
 #library(Matrix)
 library(RODBC) #will need db libraries as well if we decide to use db specific packages e.g. RSQLServer and RPostgreSQL
 rm(list=ls()) 

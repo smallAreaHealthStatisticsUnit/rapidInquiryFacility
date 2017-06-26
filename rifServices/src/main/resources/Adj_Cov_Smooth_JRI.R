@@ -40,7 +40,7 @@
 
 ## CHECK & AUTO INSTALL MISSING PACKAGES
 ## CHECK .libPaths(), add lib="" argument and RUN AS ADMIN IF NEEDED
-#packages <- c("plyr", "abind", "maptools", "spdep", "RODBC")
+#packages <- c("plyr", "abind", "maptools", "spdep", "RODBC", "rJava")
 #if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
 #  install.packages(setdiff(packages, rownames(installed.packages())))  
 #}
@@ -54,6 +54,7 @@ library(INLA)
 library(maptools)
 library(spdep)
 library(RODBC)
+library(rJava)
 library(Matrix)
 
 
