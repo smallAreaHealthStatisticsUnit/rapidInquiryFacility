@@ -241,15 +241,16 @@ establishTableNames <-function(vstudyID) {
   temporarySmoothedResultsFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_map.csv", sep="")
   temporaryExtractFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_extract.csv", sep="")
   
-  #temporarySmoothedResultsTableName <<-paste("rif_studies.tmp_s", vstudyID, "_map", sep="")
-#
-# Would need to implement sqlSave() as the exists checks fail
-#  if (db_driver_prefix == "jdbc:sqlserver") {
-#	temporarySmoothedResultsTableName <<-paste(userID, ".#tmp_s", vstudyID, "_map", sep="")
-#  }
-#  else {
-	temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")	
-#  }
+  #The name of the temporary table that this script uses to hold the data frame
+  #containing smoothed results.  It should have a 1:1 correspondence between
+  #its fields and fields that appear in the map table skeleton.
+  if (db_driver_prefix == "jdbc:sqlserver") {
+		temporarySmoothedResultsTableName <<-paste("#tmp_s", vstudyID, "_map", sep="")
+  }
+  else {
+		temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")
+  }
+  
   mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")
 }
 
