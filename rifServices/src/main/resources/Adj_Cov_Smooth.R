@@ -238,7 +238,7 @@ establishTableNames <-function(vstudyID) {
 
   # Name of Rdata dump file for debugging results save
   # This needs to be passed in via interface
-  temporarySmoothedResultsFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_map.Rdata", sep="")
+  temporarySmoothedResultsFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_map.csv", sep="")
   
   #temporarySmoothedResultsTableName <<-paste("rif_studies.tmp_s", vstudyID, "_map", sep="")
 #

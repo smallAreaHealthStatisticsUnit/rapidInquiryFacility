@@ -126,7 +126,7 @@ establishTableNames <-function(vstudyID) {
 
   # Name of Rdata dump file for debugging results save
   # This needs to be passed in via interface
-  temporarySmoothedResultsFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_map.Rdata", sep="")
+  temporarySmoothedResultsFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_map.csv", sep="")
   
   #Would need to implement sqlSave() as the exists checks fail
 #  if (db_driver_prefix == "jdbc:sqlserver") {
