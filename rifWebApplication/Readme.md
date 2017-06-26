@@ -762,6 +762,51 @@ The downloaded binary packages are in
 
 4. Add R_HOME to the environment
 
+5. Add the 64bit JRI native library location and the R_HOME bin\x64 directory to the path
+
+   To use R from Tomcat Java you will need to install JRI. Fortunately, JRI is now a part of rJava and is installed with it.
+   JRI will require its own native shared library which is already installed with rJava. To locate JRI installed with 
+   rJava, use
+	```
+	> system.file("jri",package="rJava")
+	[1] "C:/Program Files/R/R-3.4.0/library/rJava/jri"
+	```
+   from inside of R [command-line]. Above command will give you a path. You will be able to find the 64 bit *libjri.so*
+   which is the shared library JRI is looking for.
+  
+   These directoies with the 32 or 64 bit subdirectory appended needs to be added to the path: 
+   *C:\Program Files\R\R-3.4.0\bin\x64;C:\Program Files\R\R-3.4.0\library\rJava\jri\x64*. This ensures that file "x64\jri.dll" is in java.library.path
+   Just after user logon the middleware can print the JAVA LIBRARY PATH: *System.getProperty("java.library.path")*
+
+	```
+	JAVA LIBRARY PATH >>>
+	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:\ProgramData\Ora
+	cle\Java\javapath;C:\Python27\;C:\Python27\Scripts;C:\Program Files (x86)\Intel\iCLS Client\;C:\Program Files\Intel\iCLS Client\;C:\
+	Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\Intel\Intel(R) Man
+	agement Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R)
+	 Management Engine Components\IPT;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\WiFi
+	\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\Users\admin\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Fi
+	les (x86)\Windows Kits\8.1\Windows Performance Toolkit\;C:\MinGW\msys\1.0\bin;C:\Program Files\PostgreSQL\9.5\bin;C:\Program Files\R
+	\R-3.2.3\bin\x64;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\110\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\1
+	20\Tools\Binn\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files\Microsoft SQL Server\120\DTS\Binn\;C:\Program
+	Files (x86)\Microsoft SQL Server\120\Tools\Binn\ManagementStudio\;C:\Program Files (x86)\Microsoft SQL Server\120\DTS\Binn\;C:\Progr
+	am Files\nodejs\;C:\Program Files\Apache Software Foundation\apache-maven-3.3.9\bin;C:\Program Files\R\R-3.4.0\bin;C:\Program Files
+	(x86)\Skype\Phone\;C:/Program Files/R/R-3.4.0/library/rJava/jri;.
+	```
+    
+	If there are errors loading JRI the middleware will crash with an error like:
+```
+=======getInvestigationID========2===
+About to call next
+called next
+Investigation name==TEST 1001  ID==12==
+Cannot find JRI native library!
+Please make sure that the JRI native library is in a directory listed in java.library.path.
+
+java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.0\library\rJava\jri\x64\jri.dll: Can't find dependent libraries
+```
+   In this case, the directory *C:\Program Files\R\R-3.4.0\bin\x64* was missing from the path.
+   
 ### 4.3.1 R Debugging
 
 Typical errors:

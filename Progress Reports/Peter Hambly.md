@@ -1423,6 +1423,9 @@ Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
 * Regression test of both ports for PHE conference demo
  
 #### 26th to 30th June
+
+* Install current version on RIF laptop
+* Integrated and tested Postgres JRI
  
 Todo:
 
