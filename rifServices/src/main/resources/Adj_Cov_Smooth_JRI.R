@@ -123,7 +123,10 @@ establishTableNames <-function(vstudyID) {
   #containing smoothed results.  It should have a 1:1 correspondence between
   #its fields and fields that appear in the map table skeleton.  
   temporarySmoothedResultsTableName <<-paste("rif_studies.tmp_s", vstudyID, "_map", sep="")
-  
+
+  # Name of Rdata dump file for debugging results save
+  # This needs to be passed in via interface
+  temporarySmoothedResultsFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_map.Rdata", sep="")
   
   #Would need to implement sqlSave() as the exists checks fail
 #  if (db_driver_prefix == "jdbc:sqlserver") {
@@ -1042,12 +1045,19 @@ convertToDBFormat=function(dataIn){
 
 
 saveDataFrameToDatabaseTable <- function(data) {
-  print(paste0("Creating temporary table: ", temporarySmoothedResultsTableName))
-  
+
   #
-  # Save data to table
-  #  
+  # Save data frame to file
+  #
+  print(paste0("Saving data frame to: ", temporarySmoothedResultsFileName))
+  write.table(data, file=temporarySmoothedResultsFileName, sep=',', col.names=TRUE)
+  #
+  # Save data frame to table
+  #
+  print(paste0("Creating temporary table: ", temporarySmoothedResultsTableName))
+  sqlDrop(connDB, temporarySmoothedResultsTableName, errors = FALSE) # Ignore errors 
   sqlSave(connDB, data, tablename=temporarySmoothedResultsTableName, verbose=FALSE)
+  
   #sqlSave(connDB, data, tablename = "kgarwood.rifSmoothTest")
   #Add indices to the new table so that its join with s[study_id]_map will be more 
   #efficient

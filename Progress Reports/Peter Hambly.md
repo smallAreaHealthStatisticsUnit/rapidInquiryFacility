@@ -1430,6 +1430,7 @@ Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
  
 Todo:
 
+* JRI causing <control-C> to be intercepted and not stop tomcat. Workaround is to run tomcat from bash.
 * SQL Server tiles appears to be missing some names. Looks OK in the tiles table
 * Process SEER data on desktop using Postgres.
 * Automatic denominators: USA data not appearing (rif40_num_denom issue). USA data using wrong column 

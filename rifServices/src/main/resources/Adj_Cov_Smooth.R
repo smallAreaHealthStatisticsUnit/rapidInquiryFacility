@@ -234,6 +234,11 @@ createDatabaseConnectionString <- function() {
 establishTableNames <-function(vstudyID) {
   print(paste("Study ID:", vstudyID))
   extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
+  
+
+  # This needs to be passed in via interface
+  temporarySmoothedResultsFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_map.Rdata", sep="")
+  
   #temporarySmoothedResultsTableName <<-paste("rif_studies.tmp_s", vstudyID, "_map", sep="")
 #
 # Would need to implement sqlSave() as the exists checks fail
@@ -1159,13 +1164,19 @@ convertToDBFormat=function(dataIn){
 
 
 saveDataFrameToDatabaseTable <- function(data) {
+
+  #
+  # Save data frame to file
+  #
+  print(paste0("Saving data frame to: ", temporarySmoothedResultsFileName))
+  write.table(data, file=temporarySmoothedResultsFileName, sep=',', col.names=TRUE)
+  #
+  # Save data frame to table
+  #
   print(paste0("Creating temporary table: ", temporarySmoothedResultsTableName))
- 
-  #
-  # Save data to table
-  #
   sqlDrop(connDB, temporarySmoothedResultsTableName, errors = FALSE) # Ignore errors 
   sqlSave(connDB, data, tablename=temporarySmoothedResultsTableName, verbose=FALSE)
+  
   #sqlSave(connDB, data, tablename = "kgarwood.rifSmoothTest")
   #Add indices to the new table so that its join with s[study_id]_map will be more 
   #efficient
