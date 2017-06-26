@@ -1426,6 +1426,7 @@ Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
 
 * Install current version on RIF laptop
 * Integrated and tested Postgres JRI
+* Integrated and tested MS SQL Server JRI: same fault as before
  
 Todo:
 
@@ -1441,6 +1442,31 @@ Todo:
  
 #### Database TODO list (deferred to August 2017): SQL Server Port
 
+* MSSQL run study bug - 2nd run after error (need to test for ##g_rif40_study_areas):
+```
+SQL[rif40] OK> GRANT SELECT,INSERT ON rif_studies.s6_extract TO peter;
+Function: [rif40].[rif40_ddl], SQL statement had error: There is already an object named '##g_rif40_study_areas' in the database.
+SQL[peter]> SELECT study_id, area_id, band_id
+  INTO ##g_rif40_study_areas
+  FROM rif40.rif40_study_areas
+ WHERE study_id = @study_id /* Current study ID */
+ ORDER BY study_id, area_id, band_id;
+Caught error in rif40.rif40_run_study2(6)
+Error number: 3930; severity: 16; state: 1
+Procedure: rif40_ddl;  line: 79
+Error message: The current transaction cannot be committed and cannot support operations that write to the log file. Roll back the t
+ransaction.
+
+Caught error handler error in rif40.rif40_run_study2(6)
+Error number: 3930; severity: 16; state: 1
+Procedure: rif40_run_study;  line: 33
+Error message: The current transaction cannot be committed and cannot support operations that write to the log file. Roll back the t
+ransaction.
+
+java.util.MissingResourceException: Can't find resource for bundle java.util.PropertyResourceBundle, key general.db.error.unableToCo
+mmit
+        at java.util.ResourceBundle.getObject(ResourceBundle.java:450)
+```		
 * Postgres run study middleware code not stopping on error!
 * The R script does not handle only males in a study:
 ```
