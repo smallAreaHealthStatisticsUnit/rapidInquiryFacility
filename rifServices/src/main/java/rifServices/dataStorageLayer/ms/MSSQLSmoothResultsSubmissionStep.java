@@ -181,7 +181,7 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 			validateCommandLineExpressionComponents();
 
 			//########################
-			boolean test = false; //true JRI false BATCH
+			boolean test = true; //true JRI false BATCH
 			int exitValue = 0;
 
 			if (test) {
