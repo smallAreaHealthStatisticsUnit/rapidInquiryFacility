@@ -345,6 +345,8 @@ public final class MSSQLConnectionManager
 
 			registeredUserIDs.add(userID);		
 			
+		//	System.out.println("JAVA LIBRARY PATH >>>");
+		//	System.out.println(System.getProperty("java.library.path"));
 			
 			System.out.println("XXXXXXXXXXX M S S Q L S E R V E R XXXXXXXXXX");
 		}
