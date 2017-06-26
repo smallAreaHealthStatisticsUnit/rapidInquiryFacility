@@ -127,12 +127,12 @@ establishTableNames <-function(vstudyID) {
   
   
   #Would need to implement sqlSave() as the exists checks fail
-  if (db_driver_prefix == "jdbc:sqlserver") {
+#  if (db_driver_prefix == "jdbc:sqlserver") {
 	   temporarySmoothedResultsTableName <<-paste(userID, ".#tmp_s", vstudyID, "_map", sep="")
-  }
-  else {
-    temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")	
-  }
+#  }
+#  else {
+#    temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")	
+#  }
 }
 
 ##====================================================================
