@@ -470,7 +470,7 @@ BEGIN
 --
 -- Add correct age_sex_group limits
 --
--- Gender filter removed as it was causing R a problem.
+-- Note that the gender filter causes R to blob. This section is also commented out in the SQL Server port
 --
 --	IF single_gender_flag = FALSE THEN
 --		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||

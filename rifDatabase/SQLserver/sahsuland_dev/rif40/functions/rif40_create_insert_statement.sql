@@ -507,16 +507,17 @@ Description:	Create INSERT SQL statement
 --
 -- Add correct age_sex_group limits
 --
+
 --
--- Note that the gender filter causes R to blob. This section is commented out in the Postgres port
+-- Note that the gender filter causes R to blob. This section is also commented out in the Postgres port
 --
-	IF @single_gender_flag = 0 SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
-		'        /* No genders filter required for denominator (multiple genders used) */' + @crlf
-	ELSE IF @single_gender = 3 SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
-		'        /* No genders filter required for denominator (only one gender used) */' + @crlf
-	ELSE SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + 
-		'   AND  FLOOR(d1.' + LOWER(@c8_rec_age_sex_group_field_name) + '/100) = ' + 
-			CAST(@single_gender AS VARCHAR) + '       /* Denominator gender filter */' + @crlf;
+--	IF @single_gender_flag = 0 SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
+--		'        /* No genders filter required for denominator (multiple genders used) */' + @crlf
+--	ELSE IF @single_gender = 3 SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab + 
+--		'        /* No genders filter required for denominator (only one gender used) */' + @crlf
+--	ELSE SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + 
+--		'   AND  FLOOR(d1.' + LOWER(@c8_rec_age_sex_group_field_name) + '/100) = ' + 
+--			CAST(@single_gender AS VARCHAR) + '       /* Denominator gender filter */' + @crlf;
 				
 	IF @c8_rec_min_age_group = @c1_rec_min_age_group AND @c8_rec_max_age_group = @c1_rec_max_age_group SET @sql_stmt=@sql_stmt + @tab + 
 		'       /* No age group filter required for denominator */' + @crlf
