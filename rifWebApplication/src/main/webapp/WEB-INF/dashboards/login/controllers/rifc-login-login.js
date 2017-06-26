@@ -37,10 +37,10 @@
 
 angular.module("RIF")
         .controller('LoginCtrl', ['$scope', 'user', '$injector', 'DatabaseService',
-            'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService',
+            'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ExportStateService',
             'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService',
             function ($scope, user, $injector, DatabaseService,
-                    SubmissionStateService, StudyAreaStateService, CompAreaStateService,
+                    SubmissionStateService, StudyAreaStateService, CompAreaStateService, ExportStateService,
                     ParameterStateService, StatsStateService, ViewerStateService, MappingStateService) {
 
             //    $scope.username = "";
@@ -71,7 +71,7 @@ angular.module("RIF")
                             //check if already logged on
                             user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
                             //In development, this bypasses password)
-                        //    user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
+                       //     user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
                         }, handleServerError);                  
                     }
                 };
@@ -105,6 +105,7 @@ angular.module("RIF")
                             StatsStateService.resetState();
                             ViewerStateService.resetState();
                             MappingStateService.resetState();
+                            ExportStateService.resetState();
 
                             //initialise the taxonomy service
                             user.initialiseService().then(handleInitialise, handleInitialiseError);

@@ -78,8 +78,7 @@ angular.module("RIF")
                             '<div id="areaHolder">' +
                             '<input ng-model="area.name" type="radio" name="area" value="study" ng-change="updateStudy(\'exportmap\')"> Study Area<br>' +
                             '<input ng-model="area.name" type="radio" name="area" value="comparison" ng-change="updateStudy(\'exportmap\')"> Comparison Area<br>' +
-                            '<input ng-model="exportLevel" id="zoomLevel" type="number" min="6" max="11"> Detail Level</input><br>' +
-                            '<button ng-click="exportToGeoJSON()" id="exportGEOJSON" type="button">Export</button>' +
+                            '<input ng-model="exportLevel" ng-change="detailLevelChange()" id="zoomLevel" type="number" min="6" max="11"> Detail Level</input><br>' +
                             '</div>';
 
                     var zoomToStudy =

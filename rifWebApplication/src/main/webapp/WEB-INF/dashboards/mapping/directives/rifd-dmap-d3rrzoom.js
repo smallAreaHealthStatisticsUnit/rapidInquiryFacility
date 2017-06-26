@@ -364,7 +364,7 @@ angular.module("RIF")
 
                         //the drop reference line
                         var selected = MappingStateService.getState().selected[panel];
-                        if (selected !== null && selected.rr) {
+                        if (selected !== null ) {
                             focus.select("#bivariateHiglighter1" + panel).attr("transform", "translate(" + x(selected.x_order) + "," + 0 + ")");
                             context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
                             if (bConfidence) {
@@ -424,7 +424,7 @@ angular.module("RIF")
                                     }
                                 }
 
-                                if (selected !== null && selected.rr) {
+                                if (selected !== null) { 
                                     context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
                                     if (bConfidence) {
                                         svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) +
