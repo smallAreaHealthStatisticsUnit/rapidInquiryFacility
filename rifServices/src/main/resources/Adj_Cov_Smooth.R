@@ -236,6 +236,7 @@ establishTableNames <-function(vstudyID) {
   extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
   
 
+  # Name of Rdata dump file for debugging results save
   # This needs to be passed in via interface
   temporarySmoothedResultsFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_map.Rdata", sep="")
   
