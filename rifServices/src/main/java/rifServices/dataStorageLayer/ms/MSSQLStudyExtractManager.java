@@ -123,11 +123,12 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	// ==========================================
 	
 	public void createStudyExtract(
-		final Connection connection,
-		final User user,
-		final RIFStudySubmission rifStudySubmission)
-		throws RIFServiceException {
-		
+			final Connection connection,
+			final User user,
+			final RIFStudySubmission rifStudySubmission,
+			final String zoomLevel)
+					throws RIFServiceException {
+
 		//Validate parameters
 		String temporaryDirectoryPath = null;
 		File temporaryDirectory = null;
@@ -135,37 +136,38 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			//Establish the phrase that will be used to help name the main zip
 			//file and data files within its directories
 			String baseStudyName 
-				= createBaseStudyFileName(rifStudySubmission);
-			
+			= createBaseStudyFileName(rifStudySubmission);
+
 			temporaryDirectoryPath = 
-				createTemporaryDirectoryPath(
-					user, 
-					baseStudyName);
+					createTemporaryDirectoryPath(
+							user, 
+							baseStudyName);
 			temporaryDirectory = new File(temporaryDirectoryPath);
-			
+
 			File submissionZipFile 
-				= createSubmissionZipFile(
+			= createSubmissionZipFile(
 					user,
 					baseStudyName);
 			ZipOutputStream submissionZipOutputStream 
-				= new ZipOutputStream(new FileOutputStream(submissionZipFile));
+			= new ZipOutputStream(new FileOutputStream(submissionZipFile));
 
-	
+
 			//write the study the user made when they first submitted their query
 			writeQueryFile(
-				submissionZipOutputStream,
-				user,
-				baseStudyName,
-				rifStudySubmission);
-			
-			
+					submissionZipOutputStream,
+					user,
+					baseStudyName,
+					rifStudySubmission);
+
+
 			writeExtractFiles(
-				connection,
-				temporaryDirectoryPath,
-				submissionZipOutputStream,
-				baseStudyName,
-				rifStudySubmission);
-	
+					connection,
+					temporaryDirectoryPath,
+					submissionZipOutputStream,
+					baseStudyName,
+					rifStudySubmission);
+
+
 			writeRatesAndRisksFiles(
 					connection,
 					temporaryDirectoryPath,
@@ -178,8 +180,9 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 					temporaryDirectoryPath,
 					submissionZipOutputStream,
 					baseStudyName,
+					zoomLevel,
 					rifStudySubmission);
-			
+
 			/*
 			writeStatisticalPostProcessingFiles(
 				connection,
@@ -187,20 +190,18 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 				submissionZipOutputStream,				
 				baseStudyName,
 				rifStudySubmission);
-			
+
 			writeTermsAndConditionsFiles(
 				submissionZipOutputStream);	
-			*/	
+			 */	
 			submissionZipOutputStream.flush();
 			submissionZipOutputStream.close();
-			
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
-			
+			exception.printStackTrace(System.out);	
 		}
 		finally {
-			temporaryDirectory.delete();				
+			temporaryDirectory.delete();
 		}
 	}
 
@@ -384,35 +385,57 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			final String temporaryDirectoryPath,
 			final ZipOutputStream submissionZipOutputStream,
 			final String baseStudyName,
+			final String zoomLevel,
 			final RIFStudySubmission rifStudySubmission)
 					throws Exception {
-
-		//Add extract file to zip file
-		StringBuilder tileTableName = new StringBuilder();
 		
+		String studyID = rifStudySubmission.getStudyID();
+	
+		//Add geographies to zip file
+		StringBuilder tileTableName = new StringBuilder();	
 		tileTableName.append("rif_data.geometry_");
-		tileTableName.append("sahsuland"); //rifStudySubmission.getStudy().getGeography().toString()
-		tileTableName.append("_geolevel_id_");
-		tileTableName.append("3"); //TODO: needs variable
-		tileTableName.append("_zoomlevel_");
-		tileTableName.append("9"); //TODO: needs variable
+		String geog = rifStudySubmission.getStudy().getGeography().getName();			
+		tileTableName.append(geog);
 		
-		System.out.println(tileTableName);
+	//	String geolevel = rifStudySubmission.getStudy().getGeography().getDescription();
+				
+		StringBuilder tileFilePath = new StringBuilder();
+		tileFilePath.append(GEOGRAPHY_SUBDIRECTORY);
+		tileFilePath.append(File.separator);
+		tileFilePath.append(baseStudyName);
 		
-		StringBuilder tileFileName = new StringBuilder();
-		tileFileName.append(GEOGRAPHY_SUBDIRECTORY);
-		tileFileName.append(File.separator);
-		tileFileName.append(baseStudyName);
-		tileFileName.append(".csv");
-
-		//rifStudySubmission.getStudy().
+		//Write study area
+		StringBuilder tileFileName = null;
+		tileFileName = new StringBuilder();
+		tileFileName.append(tileFilePath.toString());
+		tileFileName.append("_studyArea");
+		tileFileName.append(".txt");
 		
-		dumpMapDatabaseTableToCSVFile(
+		writeMapQueryTogeoJSONFile(
 				connection,
 				submissionZipOutputStream,
+				"rif40_study_areas",
 				tileTableName.toString(),
-				tileFileName.toString());
-
+				tileFileName.toString(),
+				3,
+				zoomLevel,
+				studyID);
+		
+		//Write comparison area
+		tileFileName = new StringBuilder();
+		tileFileName.append(tileFilePath.toString());
+		tileFileName.append("_comparisonArea");
+		tileFileName.append(".txt");
+		
+		writeMapQueryTogeoJSONFile(
+				connection,
+				submissionZipOutputStream,
+				"rif40_comparison_areas",
+				tileTableName.toString(),
+				tileFileName.toString(),
+				3,
+				zoomLevel,
+				studyID);
 	}	
 
 	
@@ -578,63 +601,110 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
     
     	*/
 	
-	public void dumpMapDatabaseTableToCSVFile(
+	public void writeMapQueryTogeoJSONFile(
 			final Connection connection,
-			final ZipOutputStream submissionZipOutputStream,		
+			final ZipOutputStream submissionZipOutputStream,	
+			final String areaTableName,
 			final String tableName,
-			final String outputFilePath)
+			final String outputFilePath,
+			final Integer geolevel,
+			final String zoomLevel,
+			final String studyID)
 					throws Exception {
-
-	/*	PGSQLFunctionCallerQueryFormatter queryFormatter = new PGSQLFunctionCallerQueryFormatter();
-		queryFormatter.setDatabaseSchemaName("rif40_dmp_pkg");
-		queryFormatter.setFunctionName("csv_dump");
-		queryFormatter.setNumberOfFunctionParameters(1);
-
+		
+		//count areas
+		SQLGeneralQueryFormatter countQueryFormatter = new SQLGeneralQueryFormatter();
+		countQueryFormatter.addQueryLine(0, "SELECT count(area_id) from rif40." + areaTableName + " where study_id = ?");
+		
+		//TODO: possible issues with Multi-polygon and point arrays
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.addQueryLine(0, "SELECT b.areaid, b.zoomlevel, b.wkt from (select area_id from rif40." + areaTableName + " where study_id = ?) a");
+		queryFormatter.addQueryLine(0, "left join " + tableName + " b ");
+		queryFormatter.addQueryLine(0, "on a.area_id = b.areaid");
+		queryFormatter.addQueryLine(0, "WHERE geolevel_id = ? AND zoomlevel = ?");
+		
 		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(submissionZipOutputStream);
 		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-
-		PreparedStatement statement
-		= createPreparedStatement(connection, queryFormatter);		
-		ResultSet resultSet = null;*/
 		
-		//TODO: if contains then write line
-		//return array of area_id x2
-		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();		
-
-		queryFormatter.addQueryLine(1, "SELECT * from rif_data.geometry_sahsuland_geolevel_id_3_zoomlevel_9 limit 10");
-		
-		//TODO: permission denied
-		
-		PreparedStatement statement
-		= createPreparedStatement(connection, queryFormatter);		
+		PreparedStatement countStatement = createPreparedStatement(connection, countQueryFormatter);		
+		ResultSet countResultSet = null;
+		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
 		ResultSet resultSet = null;
 		
+		String type = "S";
+		if (areaTableName.equals("rif40_comparison_areas")) {
+			type = "C";
+		}
 		
-		//..
-		
-		
-		try {
+		try {	
+			countStatement = createPreparedStatement(connection, countQueryFormatter);
+			countStatement.setInt(1, Integer.parseInt(studyID));	
+
+			countResultSet = countStatement.executeQuery();
+			countResultSet.next();
+			int rows = countResultSet.getInt(1);
+
 			statement = createPreparedStatement(connection, queryFormatter);
-			//statement.setString(1, tableName);
+			statement.setInt(1, Integer.parseInt(studyID));	
+			statement.setInt(2, 3);
+			statement.setInt(3, Integer.parseInt(zoomLevel));
+			
+			System.out.println("oooooooooooooooo");
+			System.out.println(zoomLevel);
+			System.out.println("oooooooooooooooo");
+			
 			resultSet = statement.executeQuery();
 
-			//ZipEntry zipEntry = new ZipEntry(outputFilePath);
-			//submissionZipOutputStream.putNextEntry(zipEntry);
-
+			ZipEntry zipEntry = new ZipEntry(outputFilePath);
+			submissionZipOutputStream.putNextEntry(zipEntry);
+			
+			//Write WKT to geoJSON
+			int i = 0;
+			bufferedWriter.write("{ \"type\": \"FeatureCollection\", \"features\": [\r\n");	
 			while (resultSet.next()) {
-				//bufferedWriter.write(resultSet.getString(1));
-				System.out.println("resultSet.getString(2)");
-				
+				bufferedWriter.write("{ \"type\": \"Feature\",\r\n");
+				bufferedWriter.write("\"geometry\": {\r\n\"type\": \"Polygon\",\r\n\"coordinates\": [");
+				bufferedWriter.write("[\r\n");
+				//Full wkt string
+				String polygon = resultSet.getString(3);				
+				//trim head and tail
+				polygon = polygon.replaceAll("MULTIPOLYGON", "");
+				polygon = polygon.replaceAll("[()]", "");				
+				//get coordinate pairs
+				String[] coords = polygon.split(",");
+				for (Integer j = 0; j < coords.length; j++) {
+					String node = coords[j].replaceFirst(" ", ",");
+					bufferedWriter.write("[" + node + "]");		
+					if (j != coords.length - 1) {
+						bufferedWriter.write(",");	
+					}
+				}				
+				//get properties
+				bufferedWriter.write("]\r\n");					
+				bufferedWriter.write("]},\r\n\"properties\": {\r\n");
+				bufferedWriter.write("\"area_id\": \"" + resultSet.getString(1) + "\",\r\n");
+				bufferedWriter.write("\"zoomLevel\": \"" + resultSet.getString(2) + "\",\r\n");
+				bufferedWriter.write("\"areatype\": \"" + type + "\"\r\n");
+				bufferedWriter.write("}\r\n");
+				bufferedWriter.write("}");
+				if (i != rows) {
+					bufferedWriter.write(","); 
+				}
+				bufferedWriter.write("\r\n");
+				i++;
 			}
+			
+			bufferedWriter.write("]\r\n");
+			bufferedWriter.write("}");
 
-			//bufferedWriter.flush();
-			//submissionZipOutputStream.closeEntry();
+			bufferedWriter.flush();
+			submissionZipOutputStream.closeEntry();
 
 			connection.commit();
 		}
 		finally {
 			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(countStatement);
 		}
 	}
     	

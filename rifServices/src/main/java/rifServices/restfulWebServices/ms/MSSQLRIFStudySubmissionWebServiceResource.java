@@ -1605,12 +1605,14 @@ public class MSSQLRIFStudySubmissionWebServiceResource
 	public Response getZipFile(
 		@Context HttpServletRequest servletRequest,
 		@QueryParam("userID") String userID,
-		@QueryParam("studyID") String studyID) {
+		@QueryParam("studyID") String studyID,
+		@QueryParam("zoomLevel") String zoomLevel) {
 	
 		return super.getZipFile(
 			servletRequest, 
 			userID, 
-			studyID);
+			studyID,
+			zoomLevel);
 	}	
 	
 	// ==========================================

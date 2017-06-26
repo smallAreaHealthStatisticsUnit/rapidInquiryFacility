@@ -1898,7 +1898,8 @@ implements RIFStudySubmissionAPI {
 
 	public void createStudyExtract(
 			final User _user,
-			final String studyID) 
+			final String studyID,
+			final String zoomLevel) 
 					throws RIFServiceException {
 
 
@@ -1925,6 +1926,10 @@ implements RIFStudySubmissionAPI {
 					"createStudyExtract",
 					"studyID",
 					studyID);	
+			fieldValidationUtility.checkNullMethodParameter(
+					"createStudyExtract",
+					"zoomLevel",
+					zoomLevel);	
 
 
 			//Check for security violations
@@ -1940,7 +1945,8 @@ implements RIFStudySubmissionAPI {
 			= RIFServiceMessages.getMessage("logging.createStudyExtract",
 					user.getUserID(),
 					user.getIPAddress(),
-					studyID);
+					studyID,
+					zoomLevel);
 			rifLogger.info(
 					getClass(),
 					auditTrailMessage);
@@ -1962,7 +1968,8 @@ implements RIFStudySubmissionAPI {
 			studyExtractManager.createStudyExtract(
 					connection, 
 					user, 
-					rifStudySubmission);
+					rifStudySubmission,
+					zoomLevel);
 
 		}
 		catch(RIFServiceException rifServiceException) {

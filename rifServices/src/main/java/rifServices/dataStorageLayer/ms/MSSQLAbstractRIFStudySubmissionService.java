@@ -8,6 +8,7 @@ import rifServices.system.*;
 import rifGenericLibrary.util.FieldValidationUtility;
 
 
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.sql.Connection;
@@ -1897,15 +1898,16 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 	
 	
 	public void createStudyExtract(
-		final User _user,
-		final String studyID) 
-		throws RIFServiceException {
-		
-		
+			final User _user,
+			final String studyID,
+			final String zoomLevel) 
+					throws RIFServiceException {
+
+
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();			
+		= rifServiceResources.getSqlConnectionManager();			
 		String result;
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
@@ -1913,72 +1915,78 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 
 		Connection connection = null;
 		try {
-			
+
 			//Part II: Check for empty parameter values
 			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
+			= new FieldValidationUtility();
 			fieldValidationUtility.checkNullMethodParameter(
-				"createStudyExtract",
-				"user",
-				user);
+					"createStudyExtract",
+					"user",
+					user);
 			fieldValidationUtility.checkNullMethodParameter(
-				"createStudyExtract",
-				"studyID",
-				studyID);	
-		
-			
+					"createStudyExtract",
+					"studyID",
+					studyID);	
+			fieldValidationUtility.checkNullMethodParameter(
+					"createStudyExtract",
+					"zoomLevel",
+					zoomLevel);	
+
+
 			//Check for security violations
 			validateUser(user);
 			fieldValidationUtility.checkMaliciousMethodParameter(
-				"createStudyExtract", 
-				"studyID", 
-				studyID);
+					"createStudyExtract", 
+					"studyID", 
+					studyID);
 
 			//Audit attempt to do operation
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.createStudyExtract",
+			= RIFServiceMessages.getMessage("logging.createStudyExtract",
 					user.getUserID(),
 					user.getIPAddress(),
-					studyID);
+					studyID,
+					zoomLevel);
 			rifLogger.info(
 					getClass(),
 					auditTrailMessage);
 
 			//Assign pooled connection
 			connection
-				= sqlConnectionManager.assignPooledWriteConnection(user);
-			
+			= sqlConnectionManager.assignPooledWriteConnection(user);
+
 			MSSQLRIFSubmissionManager sqlRIFSubmissionManager
-				= rifServiceResources.getRIFSubmissionManager();
+			= rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission
-				= sqlRIFSubmissionManager.getRIFStudySubmission(
+			= sqlRIFSubmissionManager.getRIFStudySubmission(
 					connection, 
 					user, 
 					studyID);
-			
+
 			MSSQLStudyExtractManager studyExtractManager
-				= rifServiceResources.getSQLStudyExtractManager();
+			= rifServiceResources.getSQLStudyExtractManager();
 			studyExtractManager.createStudyExtract(
-				connection, 
-				user, 
-				rifStudySubmission);
-			
+					connection, 
+					user, 
+					rifStudySubmission,
+					zoomLevel);
+
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
 			logException(
-				user,
-				"createStudyExtract",
-				rifServiceException);	
+					user,
+					"createStudyExtract",
+					rifServiceException);	
 		}
 		finally {
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
-				connection);			
+					user, 
+					connection);			
 		}
-		
+
 	}
 	
 		

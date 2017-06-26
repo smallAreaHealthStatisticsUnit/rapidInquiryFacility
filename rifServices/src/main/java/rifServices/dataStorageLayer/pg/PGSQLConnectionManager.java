@@ -342,7 +342,10 @@ extends PGSQLAbstractSQLManager {
 			}			
 			writeConnectionsFromUser.put(userID, writeOnlyConnectionQueue);
 
-			registeredUserIDs.add(userID);			
+			registeredUserIDs.add(userID);	
+			
+			System.out.println("JAVA LIBRARY PATH >>>");
+			System.out.println(System.getProperty("java.library.path"));
 
 			System.out.println("XXXXXXXXXXX P O S T G R E S Q L XXXXXXXXXX");
 		}

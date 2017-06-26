@@ -102,6 +102,7 @@ public final class TestStudyDataExtraction
 		try {
 			User validUser = cloneValidUser();
 			String validStudyID = "75";
+			String validZoomLevel = "9";
 			
 			MSSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
 				= getRIFServiceBundle();
@@ -111,7 +112,8 @@ public final class TestStudyDataExtraction
 		
 			testSubmissionService.createStudyExtract(
 				validUser, 
-				validStudyID);
+				validStudyID,
+				validZoomLevel);
 			
 		}
 		catch(RIFServiceException rifServiceException) {

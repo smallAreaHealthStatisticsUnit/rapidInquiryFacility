@@ -1298,7 +1298,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 	protected Response getZipFile(
 			final HttpServletRequest servletRequest,
 			final String userID,
-			final String studyID) { 
+			final String studyID,
+			final String zoomLevel) { 
 
 		String result = "";
 
@@ -1310,13 +1311,14 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 
 			studySubmissionService.createStudyExtract(
 					user, 
-					studyID);
+					studyID, 
+					zoomLevel);
 		}
 		catch(RIFServiceException rifServiceException) {
 			result 
 			= serialiseException(
 					servletRequest,
-					rifServiceException);			
+					rifServiceException);		
 		}
 
 		return webServiceResponseGenerator.generateWebServiceResponse(

@@ -19,6 +19,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 
 
+
+
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -1325,7 +1327,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 	protected Response getZipFile(
 			final HttpServletRequest servletRequest,
 			final String userID,
-			final String studyID) { 
+			final String studyID,
+			final String zoomLevel) { 
 
 		String result = "";
 
@@ -1337,7 +1340,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 
 			studySubmissionService.createStudyExtract(
 					user, 
-					studyID);
+					studyID,
+					zoomLevel);
 		}
 		catch(RIFServiceException rifServiceException) {
 			result 

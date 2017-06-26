@@ -101,7 +101,8 @@ public final class TestStudyDataExtraction
 	public void testExtract1() {
 		try {
 			User validUser = cloneValidUser();
-			String validStudyID = "45";
+			String validStudyID = "45";		
+			String validZoomLevel = "9";
 			
 			PGSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
 				= getRIFServiceBundle();
@@ -111,7 +112,8 @@ public final class TestStudyDataExtraction
 		
 			testSubmissionService.createStudyExtract(
 				validUser, 
-				validStudyID);
+				validStudyID,
+				validZoomLevel);
 			
 		}
 		catch(RIFServiceException rifServiceException) {

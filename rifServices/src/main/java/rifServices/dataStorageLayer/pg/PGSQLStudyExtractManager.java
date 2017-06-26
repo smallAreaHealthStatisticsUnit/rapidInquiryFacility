@@ -125,7 +125,8 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 	public void createStudyExtract(
 			final Connection connection,
 			final User user,
-			final RIFStudySubmission rifStudySubmission)
+			final RIFStudySubmission rifStudySubmission,
+			final String zoomLevel)
 					throws RIFServiceException {
 
 		//Validate parameters
@@ -179,6 +180,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 					temporaryDirectoryPath,
 					submissionZipOutputStream,
 					baseStudyName,
+					zoomLevel,
 					rifStudySubmission);
 
 			/*
@@ -278,8 +280,6 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				submissionZipOutputStream, 
 				commentInjector);
 
-		//KLG @TODO.  Right now we have only 
-
 		//write the query file to a special directory.
 		//this folder should only contain one file
 		StringBuilder queryFileName = new StringBuilder();
@@ -294,9 +294,6 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				user, 
 				rifStudySubmission);
 		submissionZipOutputStream.closeEntry();
-
-
-
 	}
 
 
@@ -384,6 +381,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			final String temporaryDirectoryPath,
 			final ZipOutputStream submissionZipOutputStream,
 			final String baseStudyName,
+			final String zoomLevel,
 			final RIFStudySubmission rifStudySubmission)
 					throws Exception {
 		
@@ -392,8 +390,11 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 		//Add geographies to zip file
 		StringBuilder tileTableName = new StringBuilder();	
 		tileTableName.append("rif_data.geometry_");
-		tileTableName.append("sahsuland"); //TODO: needed from variable rifStudySubmission.getStudy(). XXXXXXXXXXXXXXXXXXX
+		String geog = rifStudySubmission.getStudy().getGeography().getName();			
+		tileTableName.append(geog);
 		
+	//	String geolevel = rifStudySubmission.getStudy().getGeography().getDescription();
+				
 		StringBuilder tileFilePath = new StringBuilder();
 		tileFilePath.append(GEOGRAPHY_SUBDIRECTORY);
 		tileFilePath.append(File.separator);
@@ -412,6 +413,8 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				"rif40_study_areas",
 				tileTableName.toString(),
 				tileFileName.toString(),
+				3,
+				zoomLevel,
 				studyID);
 		
 		//Write comparison area
@@ -426,6 +429,8 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				"rif40_comparison_areas",
 				tileTableName.toString(),
 				tileFileName.toString(),
+				3,
+				zoomLevel,
 				studyID);
 	}	
 
@@ -556,6 +561,8 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			final String areaTableName,
 			final String tableName,
 			final String outputFilePath,
+			final Integer geolevel,
+			final String zoomLevel,
 			final String studyID)
 					throws Exception {
 		
@@ -594,7 +601,11 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			statement = createPreparedStatement(connection, queryFormatter);
 			statement.setInt(1, Integer.parseInt(studyID));	
 			statement.setInt(2, 3);
-			statement.setInt(3, 9);
+			statement.setInt(3, Integer.parseInt(zoomLevel));
+			
+			System.out.println("oooooooooooooooo");
+			System.out.println(zoomLevel);
+			System.out.println("oooooooooooooooo");
 			
 			resultSet = statement.executeQuery();
 
