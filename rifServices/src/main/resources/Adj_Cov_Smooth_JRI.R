@@ -54,7 +54,6 @@ library(INLA)
 library(maptools)
 library(spdep)
 library(RODBC)
-library(rJava)
 library(Matrix)
 
 
