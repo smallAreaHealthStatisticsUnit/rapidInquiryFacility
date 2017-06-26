@@ -315,7 +315,7 @@ performSmoothingActivity <- function() {
   # Save extrct data frame to file
   #
   print(paste0("Saving extract frame to: ", temporaryExtractFileName))
-  write.csv(data, file=temporaryExtractFileName, sep=',', col.names=TRUE)
+  write.csv(data, file=temporaryExtractFileName, col.names=TRUE)
   
   numberOfRows <- nrow(data)	
   if (is.null(nrow(data))) {
@@ -1177,7 +1177,7 @@ saveDataFrameToDatabaseTable <- function(data) {
   # Save data frame to file
   #
   print(paste0("Saving data frame to: ", temporarySmoothedResultsFileName))
-  write.table(data, file=temporarySmoothedResultsFileName, sep=',', col.names=TRUE)
+  write.table(data, file=temporarySmoothedResultsFileName, col.names=TRUE)
   #
   # Save data frame to table
   #
