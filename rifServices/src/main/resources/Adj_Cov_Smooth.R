@@ -1162,6 +1162,9 @@ convertToDBFormat=function(dataIn){
 saveDataFrameToDatabaseTable <- function(data) {
   print(paste0("Creating temporary table: ", temporarySmoothedResultsTableName))
  
+  #
+  # Save data to table
+  #
   sqlDrop(connDB, temporarySmoothedResultsTableName, errors = FALSE) # Ignore errors 
   sqlSave(connDB, data, tablename=temporarySmoothedResultsTableName, verbose=FALSE)
   #sqlSave(connDB, data, tablename = "kgarwood.rifSmoothTest")

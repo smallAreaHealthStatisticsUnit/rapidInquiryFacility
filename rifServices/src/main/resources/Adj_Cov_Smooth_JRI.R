@@ -1045,6 +1045,9 @@ convertToDBFormat=function(dataIn){
 saveDataFrameToDatabaseTable <- function(data) {
   print(paste0("Creating temporary table: ", temporarySmoothedResultsTableName))
   
+  #
+  # Save data to table
+  #  
   sqlSave(connDB, data, tablename=temporarySmoothedResultsTableName, verbose=FALSE)
   #sqlSave(connDB, data, tablename = "kgarwood.rifSmoothTest")
   #Add indices to the new table so that its join with s[study_id]_map will be more 
