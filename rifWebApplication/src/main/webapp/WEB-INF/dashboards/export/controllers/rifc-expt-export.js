@@ -43,7 +43,7 @@ angular.module("RIF")
                 //study 
                 $scope.studyIDs = [];
                 $scope.studyID = {
-                    "viewermap": ExportStateService.getState().study['exportmap']
+                    "exportmap": ExportStateService.getState().study['exportmap']
                 };
 
                 $scope.area = {
@@ -54,7 +54,7 @@ angular.module("RIF")
                 $scope.map = ({
                     "exportmap": {}
                 });
-                $scope.exportLevel = 9;
+                $scope.exportLevel = ExportStateService.getState().zoomLevel;
                 $scope.geoJSON = {};
                 $scope.studyBounds = new L.LatLngBounds();
 
@@ -200,12 +200,15 @@ angular.module("RIF")
                 $scope.$on('updateStudyDropDown', function (event, thisStudy) {
                     $scope.studyIDs.push(thisStudy);
                 });
-
+                
+                $scope.detailLevelChange = function() {
+                    ExportStateService.getState().zoomLevel = $scope.exportLevel;
+                };
 
                 //export query, map and extract tables as a Zip File
                 $scope.exportAllTables = function () {
                     $scope.showSuccess("Export started...");
-                    user.getZipFile(user.currentUser, $scope.studyID["exportmap"].study_id).then(function (res) {
+                    user.getZipFile(user.currentUser, $scope.studyID["exportmap"].study_id, $scope.exportLevel).then(function (res) {
                         if (res.data === "") {
                             $scope.showSuccess("Export finished: " + $scope.studyID["exportmap"].name + " please check your defined extract directory");
                         } else {
@@ -228,7 +231,7 @@ angular.module("RIF")
                     user.getStudyTableForProcessedStudy(user.currentUser, $scope.studyID["exportmap"].study_id, table,
                             $scope.rows[table][0], $scope.rows[table][1]).then(function (res) {
 
-                        //save row numbers
+                        //save row numbers used
                         ExportStateService.getState().rows[table] = [$scope.rows[table][0], $scope.rows[table][1]];
 
                         for (var i = 0; i < res.data[0].columnNames.length; i++) {
@@ -250,24 +253,15 @@ angular.module("RIF")
                     });
                 };
 
-                //export map geojson as a Zip File
-                $scope.exportToGeoJSON = function () {
-                    $scope.showWarning("This don't do nowt yet it don't");
-                };
-
-                //change the basemaps 
-                //TODO: do not need this of nt offering basemaps
+                //basemap
                 $scope.renderMap = function (mapID) {
                     $scope.map[mapID].removeLayer($scope.thisLayer[mapID]);
-                    //add new baselayer if requested
-                    if (!LeafletBaseMapService.getNoBaseMap(mapID)) {
-                        $scope.thisLayer[mapID] = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse(mapID));
-                        $scope.thisLayer[mapID].addTo($scope.map[mapID]);
-                    }
+                    $scope.thisLayer[mapID] = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse(mapID));
+                    $scope.thisLayer[mapID].addTo($scope.map[mapID]);
                 };
 
                 var areaIDs = [];
-                var bBB = true;
+                var bBB = true; //is bounding box defined yet
 
                 $scope.updateStudy = function (mapID) {
                     if ($scope.map[mapID].hasLayer($scope.geoJSON)) {
@@ -293,7 +287,7 @@ angular.module("RIF")
                                         .then(
                                                 function (res) {
                                                     areaIDs.length = 0;
-                                                    //TODO: will cause issues for risk analysis study
+                                                    //TODO: will cause issues for a risk analysis study
                                                     var whyDidYouDoItLikeThatKevin = "disease_mapping_study_area";
                                                     if ($scope.area.name !== "study") {
                                                         whyDidYouDoItLikeThatKevin = "comparison_area";

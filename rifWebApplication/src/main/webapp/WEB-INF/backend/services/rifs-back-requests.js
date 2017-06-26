@@ -249,8 +249,8 @@ angular.module("RIF")
                 };
 
                 //Save study tables to Zip file
-                self.getZipFile = function (username, studyID) {
+                self.getZipFile = function (username, studyID, zoomLevel) {
                     //http://localhost:8080/rifServices/studySubmission/pg/getZipFile?userID=dwmorley&studyID=46
-                    return $http.get(studySubmissionURL + DatabaseService.getDatabase() + 'getZipFile?userID=' + username + '&studyID=' + studyID);
+                    return $http.get(studySubmissionURL + DatabaseService.getDatabase() + 'getZipFile?userID=' + username + '&studyID=' + studyID + "&zoomLevel=" + zoomLevel);
                 };
             }]);

@@ -54,6 +54,7 @@ angular.module("RIF")
                         transparency: {
                             'exportmap': 0.7
                         },
+                        zoomLevel: 9,
                         vSplit1: 35,
                         hSplit1: 50
                     };
