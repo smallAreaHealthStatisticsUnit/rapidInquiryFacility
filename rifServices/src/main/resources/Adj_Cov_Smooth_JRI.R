@@ -124,9 +124,10 @@ establishTableNames <-function(vstudyID) {
   #its fields and fields that appear in the map table skeleton.  
   temporarySmoothedResultsTableName <<-paste("rif_studies.tmp_s", vstudyID, "_map", sep="")
 
-  # Name of Rdata dump file for debugging results save
+  # Name of Rdata CSV file for debugging results save
   # This needs to be passed in via interface
   temporarySmoothedResultsFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_map.csv", sep="")
+  temporaryExtractFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_extract.csv", sep="")
   
   #Would need to implement sqlSave() as the exists checks fail
 #  if (db_driver_prefix == "jdbc:sqlserver") {
@@ -191,6 +192,12 @@ performSmoothingActivity <- function() {
   # Get the adjacency matrix from the db
   #data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
   
+  #
+  # Save extrct data frame to file
+  #
+  print(paste0("Saving extract frame to: ", temporaryExtractFileName))
+  write.csv(data, file=temporaryExtractFileName, sep=',', col.names=TRUE)
+
   numberOfRows <- nrow(data)	
   if (is.null(nrow(data))) {
     print(paste("ERROR IN FETCH! (null data returned): ", extractTableName, ", error: ", odbcGetErrMsg(connDB)))
@@ -1050,7 +1057,7 @@ saveDataFrameToDatabaseTable <- function(data) {
   # Save data frame to file
   #
   print(paste0("Saving data frame to: ", temporarySmoothedResultsFileName))
-  write.table(data, file=temporarySmoothedResultsFileName, sep=',', col.names=TRUE)
+  write.csv(data, file=temporarySmoothedResultsFileName, sep=',', col.names=TRUE) 
   #
   # Save data frame to table
   #
