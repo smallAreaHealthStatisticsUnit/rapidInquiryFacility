@@ -345,6 +345,7 @@ public final class MSSQLConnectionManager
 
 			registeredUserIDs.add(userID);		
 			
+			
 			System.out.println("XXXXXXXXXXX M S S Q L S E R V E R XXXXXXXXXX");
 		}
 		catch(ClassNotFoundException classNotFoundException) {

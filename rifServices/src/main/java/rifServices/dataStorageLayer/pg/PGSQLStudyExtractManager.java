@@ -392,9 +392,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 		tileTableName.append("rif_data.geometry_");
 		String geog = rifStudySubmission.getStudy().getGeography().getName();			
 		tileTableName.append(geog);
-		
-	//	String geolevel = rifStudySubmission.getStudy().getGeography().getDescription();
-				
+						
 		StringBuilder tileFilePath = new StringBuilder();
 		tileFilePath.append(GEOGRAPHY_SUBDIRECTORY);
 		tileFilePath.append(File.separator);
@@ -413,7 +411,6 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				"rif40_study_areas",
 				tileTableName.toString(),
 				tileFileName.toString(),
-				3,
 				zoomLevel,
 				studyID);
 		
@@ -429,7 +426,6 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				"rif40_comparison_areas",
 				tileTableName.toString(),
 				tileFileName.toString(),
-				3,
 				zoomLevel,
 				studyID);
 	}	
@@ -561,11 +557,25 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			final String areaTableName,
 			final String tableName,
 			final String outputFilePath,
-			final Integer geolevel,
 			final String zoomLevel,
 			final String studyID)
 					throws Exception {
 		
+		//Type of area
+		String type = "S";
+		
+		//get geolevel
+		SQLGeneralQueryFormatter geolevelQueryFormatter = new SQLGeneralQueryFormatter();	
+		geolevelQueryFormatter.addQueryLine(0, "SELECT b.geolevel_id");
+		geolevelQueryFormatter.addQueryLine(0, "FROM rif40_studies a, rif40_geolevels b");
+		geolevelQueryFormatter.addQueryLine(0, "WHERE study_id = ?");
+		if (areaTableName.equals("rif40_comparison_areas")) {
+			geolevelQueryFormatter.addQueryLine(0, "AND a.comparison_geolevel_name = b.geolevel_name");
+			type = "C";
+		} else {
+			geolevelQueryFormatter.addQueryLine(0, "AND a.study_geolevel_name = b.geolevel_name");
+		}
+	
 		//count areas
 		SQLGeneralQueryFormatter countQueryFormatter = new SQLGeneralQueryFormatter();
 		countQueryFormatter.addQueryLine(0, "SELECT count(area_id) from rif40." + areaTableName + " where study_id = ?");
@@ -580,33 +590,32 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(submissionZipOutputStream);
 		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
 		
+		PreparedStatement geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);		
+		ResultSet geolevelResultSet = null;
 		PreparedStatement countStatement = createPreparedStatement(connection, countQueryFormatter);		
 		ResultSet countResultSet = null;
 		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
 		ResultSet resultSet = null;
 		
-		String type = "S";
-		if (areaTableName.equals("rif40_comparison_areas")) {
-			type = "C";
-		}
-		
-		try {	
+		try {
+			geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);
+			geolevelStatement.setInt(1, Integer.parseInt(studyID));	
+			geolevelResultSet = geolevelStatement.executeQuery();
+			geolevelResultSet.next();
+			Integer geolevel = geolevelResultSet.getInt(1);
+			
+			
 			countStatement = createPreparedStatement(connection, countQueryFormatter);
 			countStatement.setInt(1, Integer.parseInt(studyID));	
-
 			countResultSet = countStatement.executeQuery();
 			countResultSet.next();
 			int rows = countResultSet.getInt(1);
 
 			statement = createPreparedStatement(connection, queryFormatter);
 			statement.setInt(1, Integer.parseInt(studyID));	
-			statement.setInt(2, 3);
+			statement.setInt(2, geolevel);
 			statement.setInt(3, Integer.parseInt(zoomLevel));
-			
-			System.out.println("oooooooooooooooo");
-			System.out.println(zoomLevel);
-			System.out.println("oooooooooooooooo");
-			
+						
 			resultSet = statement.executeQuery();
 
 			ZipEntry zipEntry = new ZipEntry(outputFilePath);
@@ -659,6 +668,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 		finally {
 			PGSQLQueryUtility.close(statement);
 			PGSQLQueryUtility.close(countStatement);
+			PGSQLQueryUtility.close(geolevelStatement);
 		}
 	}
 
