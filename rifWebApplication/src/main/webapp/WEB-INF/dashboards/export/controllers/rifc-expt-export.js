@@ -40,6 +40,10 @@ angular.module("RIF")
         .controller('ExportCtrl', ['$scope', 'user', '$timeout', 'LeafletBaseMapService', 'mapTools', 'ExportStateService',
             function ($scope, user, $timeout, LeafletBaseMapService, mapTools, ExportStateService) {
 
+                $scope.$on("$destroy", function () {
+                    ExportStateService.getState().initial = true;
+                });
+
                 //study 
                 $scope.studyIDs = [];
                 $scope.studyID = {
@@ -82,7 +86,9 @@ angular.module("RIF")
 
                 $timeout(function () {
                     //make map
-                    $scope.map['exportmap'] = L.map('exportmap', {condensedAttributionControl: false}).setView([0, 0], 1);
+                    $scope.map['exportmap'] = L.map('exportmap', {
+                        condensedAttributionControl: false}
+                    ).setView([0, 0], 1);
 
                     //Attributions to open in new window
                     L.control.condensedAttribution({
@@ -200,8 +206,8 @@ angular.module("RIF")
                 $scope.$on('updateStudyDropDown', function (event, thisStudy) {
                     $scope.studyIDs.push(thisStudy);
                 });
-                
-                $scope.detailLevelChange = function() {
+
+                $scope.detailLevelChange = function () {
                     ExportStateService.getState().zoomLevel = $scope.exportLevel;
                 };
 
@@ -218,11 +224,15 @@ angular.module("RIF")
                 };
 
                 $scope.preview = function (table) {
+                    if (angular.isUndefined($scope.rows[table][0]) | angular.isUndefined($scope.rows[table][1])) {
+                        $scope.showError("Row number cannot be empty");
+                        return;
+                    }
                     if ($scope.rows[table][0] === 0 | $scope.rows[table][1] === 0) {
                         $scope.showError("Row number cannot be zero");
                         return;
                     }
-                    if ($scope.rows[table][0] >= $scope.rows[table][1]) {
+                    if ($scope.rows[table][0] > $scope.rows[table][1]) {
                         $scope.showError("Upper bound must be higher than lower bound");
                         return;
                     }
@@ -300,9 +310,6 @@ angular.module("RIF")
                                         .then(
                                                 function () {
                                                     var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, thisResolution);
-                                                    if (bBB) {
-                                                        bBB = false;
-                                                    }
                                                     $scope.geoJSON = new L.topoJsonGridLayer(topojsonURL, {
                                                         attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
                                                         layers: {
@@ -317,10 +324,24 @@ angular.module("RIF")
                                                                     });
                                                                 },
                                                                 onEachFeature: function (feature, layer) {
-                                                                    if (!bBB) {
-                                                                        if (areaIDs.indexOf(layer.feature.properties.area_id) !== -1) {
-                                                                            $scope.studyBounds.extend(layer.getBounds());
-                                                                        }
+                                                                    if (areaIDs.indexOf(layer.feature.properties.area_id) !== -1) {
+                                                                        layer.bindPopup(feature.properties.area_id, {
+                                                                            closeButton: false,
+                                                                            autoPan: false
+                                                                        });
+                                                                        layer.on('mouseover', function () {
+                                                                            layer.openPopup();
+                                                                            this.setStyle({
+                                                                                fillOpacity: function () {
+                                                                                    return($scope.transparency[mapID] - 0.3 > 0 ? $scope.transparency[mapID] - 0.3 : 0.1);
+                                                                                }()
+                                                                            });
+
+                                                                        });
+                                                                        layer.on('mouseout', function () {
+                                                                            layer.closePopup();
+                                                                            $scope.geoJSON._geojsons.default.eachLayer($scope.handleLayer);
+                                                                        });
                                                                     }
                                                                 }
                                                             }
@@ -328,7 +349,20 @@ angular.module("RIF")
                                                     });
                                                     $scope.geoJSON.on('load', function (e) {
                                                         $scope.geoJSON._geojsons.default.eachLayer($scope.handleLayer);
-                                                        bBB = true;
+                                                        if (bBB) {
+                                                            if (ExportStateService.getState().initial) {
+                                                                if (ExportStateService.getState().center['exportmap'].lat === 0) {
+                                                                    $scope.map['exportmap'].fitBounds($scope.studyBounds);
+                                                                } else {
+                                                                    var centre = ExportStateService.getState().center['exportmap'];
+                                                                    $scope.map['exportmap'].setView([centre.lat, centre.lng], centre.zoom);
+                                                                }
+                                                            } else {
+                                                                $scope.map['exportmap'].fitBounds($scope.studyBounds);
+                                                            }
+                                                            bBB = false;
+                                                            ExportStateService.getState().initial = false;
+                                                        }
                                                     });
                                                     $scope.map[mapID].addLayer($scope.geoJSON);
                                                     $scope.preview('extract');
@@ -354,6 +388,9 @@ angular.module("RIF")
                             fillColor: "transparent"
                         });
                     } else {
+                        if (bBB) {
+                            $scope.studyBounds.extend(layer.getBounds());
+                        }
                         layer.setStyle({
                             weight: 1,
                             color: "gray",
@@ -366,14 +403,6 @@ angular.module("RIF")
                             }(),
                             fillOpacity: $scope.transparency["exportmap"]
                         });
-                        if (!bBB) {
-                            if (ExportStateService.getState().center['exportmap'].lat === 0) {
-                                $scope.map['exportmap'].fitBounds($scope.studyBounds);
-                            } else {
-                                var centre = ExportStateService.getState().center['exportmap'];
-                                $scope.map['exportmap'].setView([centre.lat, centre.lng], centre.zoom);
-                            }
-                        }
                     }
                 };
             }]);

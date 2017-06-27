@@ -250,6 +250,11 @@ angular.module("RIF")
                     //make array for d3 areas
                     var rs = [];
                     for (var i = 0; i < $scope.child.tableData[mapID].length; i++) {
+                        //check for invalid column, therefore no graph possible
+                        if ($scope.child.tableData[mapID][i][attribute] === null) {
+                            $scope.rrChartData[mapID] = [];
+                            return;
+                        }                       
                         //Handle inconsistant naming in results table
                         //Handle if there are no confidence intervals
                         var ciString = ["lower95", "upper95"];

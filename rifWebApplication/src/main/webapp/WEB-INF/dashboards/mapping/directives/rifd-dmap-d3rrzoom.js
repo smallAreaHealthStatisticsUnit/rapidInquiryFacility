@@ -364,14 +364,18 @@ angular.module("RIF")
 
                         //the drop reference line
                         var selected = MappingStateService.getState().selected[panel];
-                        if (selected !== null ) {
+                        if (selected !== null) {
                             focus.select("#bivariateHiglighter1" + panel).attr("transform", "translate(" + x(selected.x_order) + "," + 0 + ")");
                             context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
-                            if (bConfidence) {
-                                svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) + " (" + selected.cl.toFixed(3) +
-                                        " - " + selected.ul.toFixed(3) + ")");
+                            if (angular.isNumber(selected.rr)) {
+                                if (bConfidence) {
+                                    svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) + " (" + selected.cl.toFixed(3) +
+                                            " - " + selected.ul.toFixed(3) + ")");
+                                } else {
+                                    svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3));
+                                }
                             } else {
-                                svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3));
+                                svg.select("#currentFiguresLineBivariate" + panel).text("Invalid results");
                             }
                         }
 
@@ -424,13 +428,17 @@ angular.module("RIF")
                                     }
                                 }
 
-                                if (selected !== null) { 
+                                if (selected !== null) {
                                     context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
-                                    if (bConfidence) {
-                                        svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) +
-                                                " (" + selected.cl.toFixed(3) + " - " + selected.ul.toFixed(3) + ")");
+                                    if (angular.isNumber(selected.rr)) {
+                                        if (bConfidence) {
+                                            svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) +
+                                                    " (" + selected.cl.toFixed(3) + " - " + selected.ul.toFixed(3) + ")");
+                                        } else {
+                                            svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3));
+                                        }
                                     } else {
-                                        svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3));
+                                        svg.select("#currentFiguresLineBivariate" + panel).text("Invalid results");
                                     }
                                     //is highlighter out of x range?
                                     if (selected.x_order >= x.domain()[0] && selected.x_order <= x.domain()[1]) {

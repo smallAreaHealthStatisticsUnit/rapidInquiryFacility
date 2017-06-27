@@ -38,6 +38,7 @@ angular.module("RIF")
         .factory('ExportStateService',
                 function () {
                     var s = {
+                        initial: true,
                         center: {
                             'exportmap': {'zoom': 1, 'lng': 0, 'lat': 0}
                         },

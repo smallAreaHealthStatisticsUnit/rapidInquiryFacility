@@ -194,6 +194,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 					if(rengine == null) {
 						rengine = new Rengine(new String[] {"--vanilla"}, false, new LoggingConsole(log)); 
 					}
+					
 
 					if (!rengine.waitForR()) {
 						System.out.println("Cannot load the R engine");
@@ -245,6 +246,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 					exitValue = 1;
 				} finally {
 					rengine.end();
+					//rengine.destroy();// TODO: try this to see if it stops TC from freezing
 					System.out.println("Rengine Stopped");
 				}
 			}
