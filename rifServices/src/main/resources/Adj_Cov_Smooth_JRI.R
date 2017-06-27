@@ -127,12 +127,12 @@ establishTableNames <-function(vstudyID) {
   #The name of the temporary table that this script uses to hold the data frame
   #containing smoothed results.  It should have a 1:1 correspondence between
   #its fields and fields that appear in the map table skeleton.
-  if (db_driver_prefix == "jdbc:sqlserver") {
-		temporarySmoothedResultsTableName <<-paste("#tmp_s", vstudyID, "_map", sep="")
-  }
-  else {
+#  if (db_driver_prefix == "jdbc:sqlserver") {
+#		temporarySmoothedResultsTableName <<-paste("#tmp_s", vstudyID, "_map", sep="")
+# }
+#  else {
 		temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")
-  }
+#  }
 }
 
 ##====================================================================
@@ -190,10 +190,10 @@ performSmoothingActivity <- function() {
   #data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
   
   #
-  # Save extrct data frame to file
+  # Save extract data frame to file
   #
   print(paste0("Saving extract frame to: ", temporaryExtractFileName))
-  write.csv(data, file=temporaryExtractFileName, col.names=TRUE)
+  write.csv(data, file=temporaryExtractFileName)
 
   numberOfRows <- nrow(data)	
   if (is.null(nrow(data))) {
@@ -1054,7 +1054,7 @@ saveDataFrameToDatabaseTable <- function(data) {
   # Save data frame to file
   #
   print(paste0("Saving data frame to: ", temporarySmoothedResultsFileName))
-  write.csv(data, file=temporarySmoothedResultsFileName, col.names=TRUE) 
+  write.csv(data, file=temporarySmoothedResultsFileName) 
   #
   # Save data frame to table
   #
