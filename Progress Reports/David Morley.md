@@ -119,6 +119,16 @@ Principal Work Area: JavaScript User interface development
 - Correct resizing issues in KG's D3 code
 - Main navbar is now responsive to page resize
 
-## (June)
+## June
+
+- JRI method to run R scripts in Java
+- Fix export to Zip File methods for map and extract tables
+- New methods to download polygons as geoJSON
+- New export tab on front-end
+- Methods to get info on a previous study (still needs work in back-end)
+- Various ad hoc middleware fixes requested by PH
+- Created System Validation Document
+
+## (July)
 
 
