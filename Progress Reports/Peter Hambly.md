@@ -1427,6 +1427,11 @@ Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
 * Install current version on RIF laptop
 * Integrated and tested Postgres JRI
 * Integrated and tested MS SQL Server JRI: same fault as before
+* Added dump of extract and results frames to CSV (on by default)
+* Confirmed that control of signal handling is not supported on R windows ports (i.e. control-C handling has to be solved in 
+  JRI). Basically JRI cannot handle control-C (SIGINT)
+* Confirmed that tomcat service in unaffacted by JRI; so the work around is to use bash which does handle control-C and 
+  will stop tomcat.
  
 Todo:
 
