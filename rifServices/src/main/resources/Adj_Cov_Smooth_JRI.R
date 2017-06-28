@@ -71,6 +71,9 @@ if (adj.1 == "TRUE") {
   adj <- TRUE
 }
 
+# Ignore CONTROL-C interrupts
+#signal("SIGINT","ignore") # DOES NOT WORK!
+
 #name of adjustment (covariate) variable (except age group and sex). 
 #todo add more adjustment variables and test the capabilities. 
 #Reformat Java type > R
@@ -121,12 +124,20 @@ establishTableNames <-function(vstudyID) {
 
   # Name of Rdata CSV file for debugging results save
   # This needs to be passed in via interface
-  temporarySmoothedResultsFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_map.csv", sep="")
-  temporaryExtractFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_extract.csv", sep="")
+  if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
+	  scratchSpace <<- "c:\\rifDemo\\scratchSpace\\"
+  }
+  if (exists("dumpFramesToCsv") == FALSE || dumpFramesToCsv == "") {
+	  dumpFramesToCsv <<- TRUE
+  }
+  temporarySmoothedResultsFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_map.csv", sep="")
+  temporaryExtractFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_extract.csv", sep="")
   
   #The name of the temporary table that this script uses to hold the data frame
   #containing smoothed results.  It should have a 1:1 correspondence between
   #its fields and fields that appear in the map table skeleton.
+  
+  # temporarySmoothedResultsTableName does NOT support SQL Server temporary tables
 #  if (db_driver_prefix == "jdbc:sqlserver") {
 #		temporarySmoothedResultsTableName <<-paste("#tmp_s", vstudyID, "_map", sep="")
 # }
@@ -192,9 +203,10 @@ performSmoothingActivity <- function() {
   #
   # Save extract data frame to file
   #
-  print(paste0("Saving extract frame to: ", temporaryExtractFileName))
-  write.csv(data, file=temporaryExtractFileName)
-
+  if (dumpFramesToCsv == TRUE) {
+	  print(paste0("Saving extract frame to: ", temporaryExtractFileName))
+	  write.csv(data, file=temporaryExtractFileName)
+  }
   numberOfRows <- nrow(data)	
   if (is.null(nrow(data))) {
     print(paste("ERROR IN FETCH! (null data returned): ", extractTableName, ", error: ", odbcGetErrMsg(connDB)))
@@ -1052,9 +1064,11 @@ saveDataFrameToDatabaseTable <- function(data) {
 
   #
   # Save data frame to file
-  #
-  print(paste0("Saving data frame to: ", temporarySmoothedResultsFileName))
-  write.csv(data, file=temporarySmoothedResultsFileName) 
+  # 
+  if (dumpFramesToCsv == TRUE) {
+	  print(paste0("Saving data frame to: ", temporarySmoothedResultsFileName))
+	  write.csv(data, file=temporarySmoothedResultsFileName) 
+  }
   #
   # Save data frame to table
   #

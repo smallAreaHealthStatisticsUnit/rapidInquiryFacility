@@ -103,6 +103,13 @@ mapTableName <- ""
 #its fields and fields that appear in the map table skeleton.  
 temporarySmoothedResultsTableName <- ""
 
+#File names for smoothed (temporarySmoothedResultsFileName) and extract data frames (temporaryExtractFileName)
+#Variable to control dumping franes (dumpFramesToCsv)
+defaultScratchSpace <- "c:\\rifDemo\\scratchSpace\\"
+defaultDumpFramesToCsv <- TRUE
+scratchSpace <- ""
+dumpFramesToCsv <- ""
+ 
 #The name of the investigation. Is an input parameter, but default is set here for debug purposes
 investigationName <- "inv_1"
 #The id of the investigation - used when writing the results back to the database. Input paremeter
@@ -167,6 +174,12 @@ processCommandLineArguments <- function() {
         db_driver_prefix <<- parametersDataFrame[i, 2]
       } else if (grepl('db_driver_class_name', parametersDataFrame[i, 1]) == TRUE){
         db_driver_class_name <<- parametersDataFrame[i, 2]	
+      } else if (grepl('scratchspace', parametersDataFrame[i, 1]) == TRUE){
+        scratchSpace <<- parametersDataFrame[i, 2]
+      } else if (grepl('dumpframestocsv', parametersDataFrame[i, 1]) == TRUE){
+		if (parametersDataFrame[i, 2] == "true" || parametersDataFrame[i, 2] == "TRUE") {
+			dumpFramesToCsv <<- TRUE
+		}
       } else if (grepl('study_id', parametersDataFrame[i, 1]) == TRUE){
         studyID <<- parametersDataFrame[i, 2]
       } else if (grepl('num_investigations', parametersDataFrame[i, 1]) == TRUE){
@@ -197,6 +210,18 @@ processCommandLineArguments <- function() {
 		}
       }
     }
+
+	# Set defaults
+	if (scratchSpace == "") {
+	  scratchSpace <<- defaultScratchSpace
+	  newRow <- data.frame(name="scratchSpace", value=scratchSpace)
+	  parametersDataFrame = rbind(parametersDataFrame, newRow)
+	}
+	if (dumpFramesToCsv == "") {
+	  dumpFramesToCsv <<- defaultDumpFramesToCsv
+	  newRow <- data.frame(name="dumpFramesToCsv", value=dumpFramesToCsv)
+	  parametersDataFrame = rbind(parametersDataFrame, newRow)
+	}
 	
     return(parametersDataFrame)
   }
@@ -238,18 +263,22 @@ establishTableNames <-function(vstudyID) {
 
   # Name of Rdata CSV file for debugging results save
   # This needs to be passed in via interface
-  temporarySmoothedResultsFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_map.csv", sep="")
-  temporaryExtractFileName <<-paste("c:\\rifDemo\\scratchSpace\\tmp_s", vstudyID, "_extract.csv", sep="")
   
   #The name of the temporary table that this script uses to hold the data frame
   #containing smoothed results.  It should have a 1:1 correspondence between
   #its fields and fields that appear in the map table skeleton.
+  # temporarySmoothedResultsTableName does NOT support SQL Server temporary tables  
 #  if (db_driver_prefix == "jdbc:sqlserver") {
 #		temporarySmoothedResultsTableName <<-paste("#tmp_s", vstudyID, "_map", sep="")
 #  }
 #  else {
 		temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")
 #  }
+
+# Name of Rdata CSV file for debugging results save
+# This needs to be passed in via interface
+  temporarySmoothedResultsFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_map.csv", sep="")
+  temporaryExtractFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_extract.csv", sep="")
   
   mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")
 }
@@ -315,8 +344,10 @@ performSmoothingActivity <- function() {
   #
   # Save extract data frame to file
   #
-  print(paste0("Saving extract frame to: ", temporaryExtractFileName))
-  write.csv(data, file=temporaryExtractFileName)
+  if (dumpFramesToCsv == TRUE) {
+	  print(paste0("Saving extract frame to: ", temporaryExtractFileName))
+	  write.csv(data, file=temporaryExtractFileName)
+  }
   
   numberOfRows <- nrow(data)	
   if (is.null(nrow(data))) {
@@ -1177,8 +1208,10 @@ saveDataFrameToDatabaseTable <- function(data) {
   #
   # Save data frame to file
   #
-  print(paste0("Saving data frame to: ", temporarySmoothedResultsFileName))
-  write.csv(data, file=temporarySmoothedResultsFileName)
+  if (dumpFramesToCsv == TRUE) {
+	  print(paste0("Saving data frame to: ", temporarySmoothedResultsFileName))
+	  write.csv(data, file=temporarySmoothedResultsFileName)
+  }
   #
   # Save data frame to table
   #

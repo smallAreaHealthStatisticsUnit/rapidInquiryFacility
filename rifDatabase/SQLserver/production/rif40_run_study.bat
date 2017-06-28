@@ -142,6 +142,13 @@ REM	type inv_id.txt
 	ECHO Test study failed: no inv_id.txt
 	exit /b 1
 )
+
+REM
+REM Edit to chnage if required. Enables dump to R data frames to scratch directory
+REM
+SET SCRATCHSPACE=c:\rifDemo\scratchSpace\
+SET DUMPFRAMESTOCSV=TRUE
+
 REM ECHO STUDY_ID=%STUDY_ID%
 REM ECHO INV_ID=%INV_ID%
 REM (SET STUDY_ID=)
@@ -163,11 +170,13 @@ if %errorlevel% neq 0  (
 	ECHO --db_host=localhost --db_port=5432 --db_name=%NEWDB% ^^
 	ECHO --study_id=%STUDY_ID% --investigation_name=T_INV_1 --covariate_name=SES --investigation_id=%INV_ID% --r_model=het_r_procedure ^^
 	ECHO --odbc_data_source=%ODBC_DATA_SOURCE% --user_id=%NEWUSER% --password=XXXXXXXXXXXXXXXXXXXXXX
+	ECHO --scratchspace=%SCRATCHSPACE% --dumpframestocsv=%DUMPFRAMESTOCSV%
 	call RScript.bat "%R_HOME%\bin\x64\RScript" "%CATALINA_HOME%\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth.R" ^
 		%DB_DRIVER% ^
 		--db_host=localhost --db_port=5432 --db_name=%NEWDB% ^
 		--study_id=%STUDY_ID% --investigation_name=T_INV_1 --covariate_name=SES --investigation_id=%INV_ID% --r_model=het_r_procedure ^
-		--odbc_data_source=%ODBC_DATA_SOURCE% --user_id=%NEWUSER% "--password=%NEWPW%"
+		--odbc_data_source=%ODBC_DATA_SOURCE% --user_id=%NEWUSER% "--password=%NEWPW%" ^
+		--scratchspace=%SCRATCHSPACE% --dumpframestocsv=%DUMPFRAMESTOCSV%
 )
 
 REM
