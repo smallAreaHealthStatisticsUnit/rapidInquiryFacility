@@ -127,7 +127,7 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 				false);
 
 
-		System.out.println("AbstractRIFWebServiceResource validation policy=="+rifServiceStartupOptions.useStrictValidationPolicy()+"==");
+		//System.out.println("AbstractRIFWebServiceResource validation policy=="+rifServiceStartupOptions.useStrictValidationPolicy()+"==");
 		webServiceResponseGenerator = new WebServiceResponseGenerator();
 
 		try {

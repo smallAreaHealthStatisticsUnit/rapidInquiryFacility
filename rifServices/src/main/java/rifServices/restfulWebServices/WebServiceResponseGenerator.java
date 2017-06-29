@@ -282,7 +282,8 @@ final public class WebServiceResponseGenerator {
 		//doesn't contain "Chrome", we'll assume it's Internet Explorer.
 		//again, the question of what information do we use to determine if we
 		//send JSON content type back or not needs to be discussed more
-		System.out.println("isClientBrowserIE=="+result+"==");
+		
+		//System.out.println("isClientBrowserIE=="+result+"==");
 		
 		//System.out.println("clientBrowserIsInternetExplorer IS TRUE");
 		//@TODO
