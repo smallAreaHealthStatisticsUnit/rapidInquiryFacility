@@ -49,8 +49,8 @@ angular.module("RIF")
                 $scope.username = "dwmorley";
                 $scope.password = "dwmorley";
                 
-             //   $scope.username = "peter";
-             //   $scope.password = "peter";
+               // $scope.username = "peter";
+              //  $scope.password = "peter";
 
                 $scope.showSpinner = false;
 
@@ -69,9 +69,9 @@ angular.module("RIF")
                             }
         
                             //check if already logged on
-                       //     user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
+                            user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
                             //In development, this bypasses password)
-                            user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
+                       //     user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
                         }, handleServerError);                  
                     }
                 };

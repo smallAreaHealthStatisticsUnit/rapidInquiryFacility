@@ -394,7 +394,7 @@ angular.module("RIF")
                     //update map
                     if (map) {
                         $scope.thisPoly[mapID] = gid;
-                        $scope.child.geoJSON[mapID]._geojsons.default.eachLayer($scope.child.handleLayer); //TODO: scope error here
+                        $scope.child.geoJSON[mapID]._geojsons.default.eachLayer($scope.child.handleLayer);
                         $scope.child.infoBox2[mapID].update($scope.thisPoly[mapID]);
                         if ($scope.bLockSelect) {
                             var otherMap = MappingService.getOtherMap(mapID);

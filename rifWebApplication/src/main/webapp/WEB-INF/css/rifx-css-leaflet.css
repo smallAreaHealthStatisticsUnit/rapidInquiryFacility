@@ -42,7 +42,7 @@
 /* LEAFLET LEGEND */
 .info {
     padding: 6px 8px;
-    background: white;
+    background: transparent;
     background: rgba(255,255,255,1);
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
     border-radius: 5px;
@@ -129,11 +129,8 @@
 .btn-zoomSelected, .btn-zoomSelected:active {
     background: white url("../images/glyphicon/glyphicons-487-fit-frame-to-image.png") no-repeat;
 }
-.btn-exportChart, .btn-exportChart:active {
-    background: white url("../images/glyphicon/glyphicons-42-charts.png") no-repeat;
-}
 .btn-exportMap, .btn-exportMap:active {
-    background: white url("../images/glyphicon/glyphicons-503-map.png") no-repeat;
+    background: white url("../images/glyphicon/glyphicons-444-floppy-disk.png") no-repeat;
 }
 .btn-switchSymbology, .btn-switchSymbology:active {
     background: white url("../images/glyphicon/glyphicons-230-retweet-2.png") no-repeat;

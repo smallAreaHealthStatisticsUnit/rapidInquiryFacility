@@ -48,7 +48,7 @@ angular.module("RIF")
                 $scope.studyIds;
 
                 //In DEBUG set false to keep Tomcat console clear
-                var bPoll = false;
+                var bPoll = true;
 
                 stop = $interval(function () {
                     if (bPoll) {
@@ -60,12 +60,34 @@ angular.module("RIF")
                                     check.push(studies[i].study_id);
                                 }
                             }
-                            $scope.studyIds = angular.copy(check);
-                        }, function (e) {
-                            //console.log("Could not retrieve study status");
+                            if (angular.isUndefined($scope.studyIds)) {
+                                $scope.studyIds = angular.copy(check);
+                            } else {
+                                if (check.length === ($scope.studyIds.length + 1)) {
+                                    var s = arrayDifference(check, $scope.studyIds);
+                                    var name = "";
+                                    for (var i = 0; i < studies.length; i++) {
+                                        if (studies[i].study_id === s[0]) {
+                                            name = studies[i].study_name;
+                                            break;
+                                        }
+                                    }
+                                    $scope.showSuccess("Study " + s + " - " + name + " has been processed");
+                                    $scope.studyIds = angular.copy(check);
+
+                                    //update study lists in other tabs
+                                    $rootScope.$broadcast('updateStudyDropDown', {study_id: s[0], name: name});
+                                }
+                            }
                         });
                     }
                 }, ms);
+
+                function arrayDifference(source, target) {
+                    return source.filter(function (current) {
+                        return target.indexOf(current) === -1;
+                    });
+                }
 
                 $scope.hamburger = function () {
                     var x = document.getElementById("myTopnav");
@@ -82,31 +104,6 @@ angular.module("RIF")
                         stop = undefined;
                     }
                 });
-
-                $scope.$watchCollection('studyIds', function (newNames, oldNames) {
-                    if (!angular.isUndefined(oldNames)) {
-                        if (newNames === oldNames) {
-                            return;
-                        }
-                        var s = arrayDifference(newNames, oldNames);
-                        var name = "";
-                        for (var i = 0; i < studies.length; i++) {
-                            if (studies[i].study_id === s[0]) {
-                                name = studies[i].study_name;
-                                break;
-                            }
-                        }
-                        $scope.showSuccess("Study " + s + " - " + name + " has been processed");
-                        //update study lists in other tabs
-                        $rootScope.$broadcast('updateStudyDropDown', {study_id: s[0], name: name});
-                    }
-                });
-
-                function arrayDifference(source, target) {
-                    return source.filter(function (current) {
-                        return target.indexOf(current) === -1;
-                    });
-                }
 
                 //yes-no modal for $scope.logout
                 $scope.openLogout = function () {

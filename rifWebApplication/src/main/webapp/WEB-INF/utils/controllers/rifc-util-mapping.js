@@ -451,6 +451,7 @@ angular.module("RIF")
                                                 //do not get maxbounds for diseasemap2
                                                 if ($scope.myService.getState().center[mapID].lat === 0) {
                                                     $scope.map[mapID].fitBounds($scope.maxbounds);
+                                                    $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
                                                 } else {
                                                     var centre = $scope.myService.getState().center[mapID];
                                                     $scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
@@ -534,10 +535,10 @@ angular.module("RIF")
                                         $scope.viewerTableOptions.data = $scope.tableData.viewermap;
                                         $scope.updateTable();
                                     }
-                                    
+
                                     //draw D3 plots
                                     $scope.getD3chart(mapID, $scope.attr[mapID]);
-                                    
+
                                 }, function (e) {
                                     console.log("Something went wrong when getting the attribute data");
                                     clearTheMapOnError(mapID);
@@ -559,6 +560,7 @@ angular.module("RIF")
                     function closureInfoBoxUpdate(m) {
                         return function (poly) {
                             if (poly) {
+                                this._div.style["display"] = "inline";
                                 this._div.innerHTML =
                                         function () {
                                             var feature = ChoroService.getMaps(m).feature;
@@ -579,6 +581,7 @@ angular.module("RIF")
                                         }();
                             } else {
                                 this._div.innerHTML = '';
+                                this._div.style["display"] = "none";
                             }
                         };
                     }
@@ -587,6 +590,7 @@ angular.module("RIF")
                         return function (poly) {
                             if (poly === null) {
                                 this._div.innerHTML = "";
+                                this._div.style["display"] = "none";
                             } else {
                                 var results = null;
                                 for (var i = 0; i < $scope.tableData[m].length; i++) {
@@ -595,6 +599,7 @@ angular.module("RIF")
                                     }
                                 }
                                 if (results !== null) {
+                                    this._div.style["display"] = "inline";
                                     this._div.innerHTML =
                                             '<h5>ID: ' + poly + '</br>' +
                                             'Population: ' + results.population + '</br>' +
@@ -602,6 +607,7 @@ angular.module("RIF")
                                             'Expected: ' + Number(results.expected).toFixed(2) + '</br>' + '</h5>';
                                 } else {
                                     this._div.innerHTML = "";
+                                    this._div.style["display"] = "none";
                                 }
                             }
                         };

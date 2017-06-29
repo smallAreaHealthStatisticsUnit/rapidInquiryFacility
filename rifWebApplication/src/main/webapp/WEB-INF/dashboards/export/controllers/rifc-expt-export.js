@@ -279,6 +279,13 @@ angular.module("RIF")
                     }
                     bBB = true;
 
+                    if (!ExportStateService.getState().initial) {
+                        $scope.rows = {
+                            extract: [1, 100],
+                            results: [1, 100]
+                        };
+                    }
+
                     var thisGeography;
                     var thisResolution;
 
