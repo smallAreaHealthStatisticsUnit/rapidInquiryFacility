@@ -1074,9 +1074,22 @@ saveDataFrameToDatabaseTable <- function(data) {
   #
   print(paste0("Creating temporary table: ", temporarySmoothedResultsTableName))
   sqlDrop(connDB, temporarySmoothedResultsTableName, errors = FALSE) # Ignore errors 
-  sqlSave(connDB, data, tablename=temporarySmoothedResultsTableName, verbose=FALSE)
   
-  #sqlSave(connDB, data, tablename = "kgarwood.rifSmoothTest")
+  if (db_driver_prefix == "jdbc:postgresql") {
+		sqlSave(connDB, data, tablename=temporarySmoothedResultsTableName
+#			, verbose=TRUE				# Enable save debug (1 row/tuple!)
+			)
+  }
+  else if (db_driver_prefix == "jdbc:sqlserver") {
+		ndata<-do.call(data.frame, lapply(data, function(x) {
+				replace(x, is.infinite(x),NA) # Replace INF will NA for SQL Server
+			}
+			))
+		sqlSave(connDB, ndata, tablename=temporarySmoothedResultsTableName
+#			, verbose=TRUE				# Enable save debug (1 row/tuple!)
+			)
+  }
+  
   #Add indices to the new table so that its join with s[study_id]_map will be more 
   #efficient
   print("Creating study_id index on temporary table")

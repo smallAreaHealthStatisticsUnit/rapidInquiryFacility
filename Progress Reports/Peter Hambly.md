@@ -1432,6 +1432,15 @@ Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
   JRI). Basically JRI cannot handle control-C (SIGINT)
 * Confirmed that tomcat service in unaffacted by JRI; so the work around is to use bash which does handle control-C and 
   will stop tomcat.
+* SQL Server save bug is caused by INF values in R data frames: ```42000 8023 [Microsoft][SQL Server Native Client 11.0][SQL Server]The incoming tabular data stream (TDS) remote procedure call (RPC)
+  protocol stream is incorrect. Parameter 15 (""): The supplied value is not a valid instance of data type float. Check the source dat
+  a for invalid values. An example of an invalid value is data of numeric type with scale greater than precision.```
+
+  Fails in row 2, column 15:
+  ```
+  30-Jun-2017 08:38:09.340 INFO [http-nio-8080-exec-1] rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole.rWriteConsole rWriteConsole: no: 15: upper95 inf/***/
+  ```
+  Fixed.
  
 Todo:
 
