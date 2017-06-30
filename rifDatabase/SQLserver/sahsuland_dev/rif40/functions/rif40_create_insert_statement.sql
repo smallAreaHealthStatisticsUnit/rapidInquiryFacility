@@ -163,10 +163,26 @@ Description:	Create INSERT SQL statement
 	DECLARE @msg	 	VARCHAR(MAX);
 	
 	DECLARE @areas_table	VARCHAR(30)='##g_rif40_study_areas';
+/*
+SELECT study_id, area_id, band_id
+INTO ##me
+FROM rif40.rif40_study_areas;
+SELECT TOP 10 * FROM ##me;
+GO
+IF OBJECT_ID('tempdb..##me') IS NOT NULL 
+DROP TABLE ##me;
+GO
+SELECT study_id, area_id, band_id
+INTO ##me
+FROM rif40.rif40_study_areas;
+SELECT TOP 10 * FROM ##me;
+GO
+ */
 --
 -- Use different areas_table for comparison (it has no band_id)
 --	
-	IF @study_or_comparison = 'C' SET @areas_table='##g_rif40_comparison_areas';
+	IF @study_or_comparison = 'C' 
+		SET @areas_table='##g_rif40_comparison_areas';
 --
 	OPEN c1insext;	
 	FETCH NEXT FROM c1insext INTO @c1_rec_study_id, @c1_rec_extract_table, 

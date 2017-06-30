@@ -1441,23 +1441,7 @@ Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
   30-Jun-2017 08:38:09.340 INFO [http-nio-8080-exec-1] rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole.rWriteConsole rWriteConsole: no: 15: upper95 inf/***/
   ```
   Fixed.
- 
-Todo:
-
-* JRI causing <control-C> to be intercepted and not stop tomcat. Workaround is to run tomcat from bash.
-* SQL Server tiles appears to be missing some names. Looks OK in the tiles table
-* Process SEER data on desktop using Postgres.
-* Automatic denominators: USA data not appearing (rif40_num_denom issue). USA data using wrong column 
-  names - should use geolevel_name. Bug therefore is in data loader setup. 
-* Test plan
-
-#### 1st July to 31st July
-
-* Holiday
- 
-#### Database TODO list (deferred to August 2017): SQL Server Port
-
-* MSSQL run study bug - 2nd run after error (need to test for ##g_rif40_study_areas):
+* Fixed MSSQL run study bug - 2nd run in middleware (need to test for ##g_rif40_study_areas, ##g_rif40_comparison_areas):
 ```
 SQL[rif40] OK> GRANT SELECT,INSERT ON rif_studies.s6_extract TO peter;
 Function: [rif40].[rif40_ddl], SQL statement had error: There is already an object named '##g_rif40_study_areas' in the database.
@@ -1481,7 +1465,22 @@ ransaction.
 java.util.MissingResourceException: Can't find resource for bundle java.util.PropertyResourceBundle, key general.db.error.unableToCo
 mmit
         at java.util.ResourceBundle.getObject(ResourceBundle.java:450)
-```		
+```		 
+Todo:
+
+* JRI causing <control-C> to be intercepted and not stop tomcat. Workaround is to run tomcat from bash.
+* SQL Server tiles appears to be missing some names. Looks OK in the tiles table
+* Process SEER data on desktop using Postgres.
+* Automatic denominators: USA data not appearing (rif40_num_denom issue). USA data using wrong column 
+  names - should use geolevel_name. Bug therefore is in data loader setup. 
+* Test plan
+
+#### 1st July to 31st July
+
+* Holiday
+ 
+#### Database TODO list (deferred to August 2017): SQL Server Port
+
 * Postgres run study middleware code not stopping on error!
 * The R script does not handle only males in a study:
 ```

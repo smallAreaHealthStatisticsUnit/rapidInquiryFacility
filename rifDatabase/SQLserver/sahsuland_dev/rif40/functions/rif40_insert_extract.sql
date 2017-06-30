@@ -100,21 +100,31 @@ Description:	Insert data into extract table
 		THROW 55800, @err_msg, 1;
 	END;
 	CLOSE c1insext2;
-	DEALLOCATE c1insext2;
+	DEALLOCATE c1insext2;	
 	
 --
 -- Study area insert
 --
+	SET @sql_stmt='IF OBJECT_ID(''tempdb..##g_rif40_study_areas'') IS NOT NULL' + @crlf + 
+			'DROP TABLE ##g_rif40_study_areas';
+	SET @t_ddl=@t_ddl+1;	
+	INSERT INTO @ddl_stmts(sql_stmt, study_id) VALUES (@sql_stmt, @study_id);
+
 	SET @sql_stmt='SELECT study_id, area_id, band_id' + @crlf +
 		'  INTO ##g_rif40_study_areas' + @crlf + 
 		'  FROM rif40.rif40_study_areas' + @crlf +
 		' WHERE study_id = @study_id /* Current study ID */' + @crlf +
 		' ORDER BY study_id, area_id, band_id';
 	SET @t_ddl=@t_ddl+1;	
-	INSERT INTO @ddl_stmts(sql_stmt, study_id) VALUES (@sql_stmt, @study_id);
+	INSERT INTO @ddl_stmts(sql_stmt, study_id) VALUES (@sql_stmt, @study_id);	
 	
 --
 -- Comparison area insert
+--	
+	SET @sql_stmt='IF OBJECT_ID(''tempdb..##g_rif40_comparison_areas'') IS NOT NULL' + @crlf + 
+			'DROP TABLE ##g_rif40_comparison_areas';
+	SET @t_ddl=@t_ddl+1;	
+	INSERT INTO @ddl_stmts(sql_stmt, study_id) VALUES (@sql_stmt, @study_id);
 --
 	SET @sql_stmt='SELECT study_id, area_id' + @crlf +
 		'  INTO ##g_rif40_comparison_areas' + @crlf + 
