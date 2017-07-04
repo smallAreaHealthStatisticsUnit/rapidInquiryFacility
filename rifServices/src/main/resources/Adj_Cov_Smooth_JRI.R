@@ -1222,7 +1222,7 @@ updateMapTableFromSmoothedResultsTable <- function() {
 ##DESCRIPTION
 ##Run the functions defined this script as source
 ##Called direectly from JRI in the middleware
-##Returns (exitvalue) 1 on success, 0 on failure 
+##Returns (exitvalue) 0 on success, 1 on failure 
 ##================================================================================
 runRSmoothingFunctions <- function() {
   establishTableNames(studyID)

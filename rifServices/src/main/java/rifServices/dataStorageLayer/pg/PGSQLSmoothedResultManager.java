@@ -422,6 +422,10 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 	}	
 
 	private String getStudyType(final String studyType) {
+		//TODO: (DM) Multiple Risk Analysis types are possible
+		//Study type: 1 - disease mapping, 11 - Risk Analysis (many areas, one band), 
+		//12 - Risk Analysis (point sources), 13 - Risk Analysis (exposure covariates), 
+		//14 - Risk Analysis (coverage shapefile), 15 - Risk Analysis (exposure shapefile)
 		if (studyType.equals("1")) {
 			return "Disease Mapping";
 		} else {

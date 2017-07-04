@@ -1,17 +1,15 @@
 package rifServices.dataStorageLayer.ms;
 
-
 import rifServices.businessConceptLayer.*;
 import rifServices.system.RIFServiceStartupOptions;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Properties;
 import java.util.logging.Logger;
 import java.io.*;
 
@@ -109,14 +107,6 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 
 		setUser(userID, password);
 
-		//Establish the path of the R program we want to run.
-		StringBuilder rifScriptPath = new StringBuilder();
-		rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
-		rifScriptPath.append(File.separator);
-		rifScriptPath.append("Adj_Cov_Smooth.R");
-		System.out.println("SQLSmoothResultsSubmissionStep rScriptPath=="+rifScriptPath+"==");
-		setRFilePath(rifScriptPath.toString());
-
 		ArrayList<Parameter> rifStartupOptionParameters
 		= rifStartupOptions.extractParameters();
 		addParameters(rifStartupOptionParameters);
@@ -139,6 +129,8 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 			final RIFStudySubmission studySubmission, 
 			final String studyID) 
 					throws RIFServiceException {
+		
+		StringBuilder rifScriptPath = new StringBuilder();	
 
 		try {		
 			addParameterToVerify("study_id");		
@@ -178,99 +170,79 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 
 			setCalculationMethod(studySubmission.getCalculationMethods().get(0));
 
-			validateCommandLineExpressionComponents();
-
-			//########################
-			boolean test = true; //true JRI false BATCH
 			int exitValue = 0;
 
-			if (test) {
+			Rengine rengine = null;
 
-				Rengine rengine = null;
-
-				try {	
-					//Create an R engine with JRI
-					rengine = Rengine.getMainEngine();
-					if(rengine == null) {
-						rengine = new Rengine(new String[] {"--vanilla"}, false, new LoggingConsole(log)); 
-					}
-
-					if (!rengine.waitForR()) {
-						System.out.println("Cannot load the R engine");
-					}
-					Rengine.DEBUG = 10;
-					System.out.println("Rengine Started");
-
-					//Start R operations
-
-					//Check library path
-					rengine.eval("rm(list=ls())"); //just in case!
-					rengine.eval("print(.libPaths())");
-									
-					//Session Info
-					rengine.eval("print(sessionInfo())");
-
-					//set connection details and parameters
-					String[] parameters = generateParameterArray();
-					rengine.assign("userID", parameters[12]);
-					rengine.assign("password", parameters[11]);
-					rengine.assign("dbName", parameters[3]);
-					rengine.assign("dbHost", parameters[1]);
-					rengine.assign("dbPort", parameters[2]);
-					rengine.assign("db_driver_prefix", parameters[0]);
-					rengine.assign("db_driver_class_name", parameters[4]);
-					rengine.assign("studyID", parameters[5]);
-					rengine.assign("investigationName", parameters[6]);
-					rengine.assign("investigationId", parameters[8]);
-					rengine.assign("odbcDataSource", parameters[10]);
-					rengine.assign("model", getRRoutineModelCode(parameters[9]));
-					rengine.assign("names.adj.1", parameters[7]);			
-					rengine.assign("adj.1", getRAdjust(parameters[7]));
-
-					//RUN "Adj_Cov_Smooth_JRI.R"
-					StringBuilder rifScriptPath = new StringBuilder();	
-					rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
-					rifScriptPath.append(File.separator);
-					rifScriptPath.append(File.separator);
-					rifScriptPath.append("Adj_Cov_Smooth_JRI.R");
-					System.out.println("rScriptPath=="+rifScriptPath+"==");
-					rengine.eval("source(\"" + rifScriptPath + "\")");
-
-					//RUN the actual smoothing
-					REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
-					exitValue  = exitValueFromR.asInt();
+			try {	
+				//Create an R engine with JRI
+				rengine = Rengine.getMainEngine();
+				if(rengine == null) {
+					rengine = new Rengine(new String[] {"--vanilla"}, false, new LoggingConsole(log)); 
 				}
-				catch(Exception error) {
-					System.out.println("JRI R ERROR");
-					exitValue = 1;
-				} finally {
-					rengine.end();
-					System.out.println("Rengine Stopped");
+
+				if (!rengine.waitForR()) {
+					System.out.println("Cannot load the R engine");
 				}
+				Rengine.DEBUG = 10;
+				System.out.println("Rengine Started");
+
+				//Start R operations
+
+				//Check library path
+				rengine.eval("rm(list=ls())"); //just in case!
+				rengine.eval("print(.libPaths())");
+
+				//Session Info
+				rengine.eval("print(sessionInfo())");
+
+				//set connection details and parameters
+				String[] parameters = generateParameterArray();
+				rengine.assign("userID", parameters[12]);
+				rengine.assign("password", parameters[11]);
+				rengine.assign("dbName", parameters[3]);
+				rengine.assign("dbHost", parameters[1]);
+				rengine.assign("dbPort", parameters[2]);
+				rengine.assign("db_driver_prefix", parameters[0]);
+				rengine.assign("db_driver_class_name", parameters[4]);
+				rengine.assign("studyID", parameters[5]);
+				rengine.assign("investigationName", parameters[6]);
+				rengine.assign("investigationId", parameters[8]);
+				rengine.assign("odbcDataSource", parameters[10]);
+				rengine.assign("model", getRRoutineModelCode(parameters[9]));
+				rengine.assign("names.adj.1", parameters[7]);			
+				rengine.assign("adj.1", getRAdjust(parameters[7]));
+
+				//RUN "Adj_Cov_Smooth_JRI.R"
+				
+				rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
+				rifScriptPath.append(File.separator);
+				rifScriptPath.append(File.separator);
+				rifScriptPath.append("Adj_Cov_Smooth_JRI.R");
+				System.out.println("rScriptPath=="+rifScriptPath+"==");
+				rengine.eval("source(\"" + rifScriptPath + "\")");
+
+				//RUN the actual smoothing
+				REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
+				exitValue  = exitValueFromR.asInt();
 			}
-			else {
-				//TODO: (DM) BATCH FILE to delete 
-				System.out.println("command=="+generateCommandLineExpression() + "==");
-				//ProcessBuilder processBuilder = new ProcessBuilder(commandLineComponents);
-
-				File batchFile 
-				= createBatchFile(
-						rifStartupOptions.getExtractDirectory(), "kevTest22");
-
-				Process process = Runtime.getRuntime().exec(batchFile.getAbsolutePath());
-				exitValue = process.waitFor(); 
-				//batchFile.delete();	
-
+			catch(Exception error) {
+				System.out.println("JRI R ERROR");
+				exitValue = 1;
+			} finally {
+				rengine.end();
+				//rengine.destroy();
+				System.out.println("Rengine Stopped");
 			}
 
 			System.out.println("Exit value=="+ exitValue +"==");
 
 		}
 		catch(Exception ioException) {
-			ioException.printStackTrace(System.out);
+			ioException.printStackTrace(System.out);		
 			RIFServiceExceptionFactory rifServiceExceptionFactory
 			= new RIFServiceExceptionFactory();
-			rifServiceExceptionFactory.createFileCommandLineRunException(generateCommandLineExpression());
+			rifServiceExceptionFactory.createFileCommandLineRunException(rifScriptPath.toString());
 		}		
 	}
 
@@ -326,25 +298,6 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 	}
 
 
-	private String createRCommandLineInvocation(
-			final String commandLineExecutable,
-			final ArrayList<Parameter> parameters) {
-
-		StringBuilder commandLineInvocation = new StringBuilder();
-		commandLineInvocation.append(commandLineExecutable);
-		//commandLineInvocation.append(" CMD BATCH");
-
-		for (Parameter parameter : parameters) {
-			commandLineInvocation.append(" --");
-			commandLineInvocation.append(parameter.getName());
-			commandLineInvocation.append("=");
-			commandLineInvocation.append(parameter.getValue());
-		}
-
-		return commandLineInvocation.toString();		
-	}
-
-
 	public Integer getInvestigationID(
 			final Connection connection,
 			final String studyID, 
@@ -355,7 +308,7 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 
 		System.out.println("SQLSmoothedResultsSubmissionStep getInvestigationID studyID=="+studyID+"==investigation_name=="+investigation.getTitle()+"==inv_description=="+investigation.getDescription()+"==");
 
-		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+		MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.addFromTable("rif40_investigations");
 		queryFormatter.addSelectField("inv_id");
@@ -386,8 +339,8 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 			investigationID = resultSet.getInt(1);
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);			
-			PGSQLQueryUtility.close(statement);			
+			MSSQLQueryUtility.close(resultSet);			
+			MSSQLQueryUtility.close(statement);			
 		}
 
 		return investigationID;
@@ -397,204 +350,6 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-
-	private void checkMissingParameters(
-			final ArrayList<Parameter> parameters) 
-					throws RIFServiceException {
-
-
-		//Check for parameters related to database access
-		RIFServiceExceptionFactory rifServiceExceptionFactory
-		= new RIFServiceExceptionFactory();		
-		Parameter userParameter
-		= Parameter.getParameter("user", parameters);
-		if (userParameter == null) {
-			throw rifServiceExceptionFactory.createNonExistentParameter("user");
-		}
-		Parameter passwordParameter
-		= Parameter.getParameter("password", parameters);
-		if (passwordParameter == null) {
-			throw rifServiceExceptionFactory.createNonExistentParameter("password");
-		}
-
-		Parameter databasePrefixParameter
-		= Parameter.getParameter("db_driver_prefix", parameters);
-		if (databasePrefixParameter == null) {
-			throw rifServiceExceptionFactory.createNonExistentParameter("db_driver_prefix");
-		}				
-		Parameter databaseDriverClassNameParameter
-		= Parameter.getParameter("db_driver_class_name", parameters);		
-		if (databaseDriverClassNameParameter == null) {
-			throw rifServiceExceptionFactory.createNonExistentParameter("db_driver_class_name");
-		}		
-		Parameter databaseHostParameter
-		= Parameter.getParameter("db_host", parameters);		
-		if (databaseHostParameter == null) {
-			throw rifServiceExceptionFactory.createNonExistentParameter("db_host");
-		}			
-		Parameter databasePortParameter
-		= Parameter.getParameter("db_port", parameters);		
-		if (databasePortParameter == null) {
-			throw rifServiceExceptionFactory.createNonExistentParameter("db_port");
-		}			
-		Parameter databaseNameParameter
-		= Parameter.getParameter("db_name", parameters);		
-		if (databaseNameParameter == null) {
-			throw rifServiceExceptionFactory.createNonExistentParameter("db_name");
-		}		
-
-		//Check for parameters related to input and output file access
-		Parameter rSourceFileParameter
-		= Parameter.getParameter("r_source_file", parameters);
-		if (rSourceFileParameter == null) {
-			throw rifServiceExceptionFactory.createNonExistentParameter("r_source_file");
-		}
-		Parameter rOutputFileParameter
-		= Parameter.getParameter("r_out_file", parameters);
-		if (rOutputFileParameter == null) {
-			throw rifServiceExceptionFactory.createNonExistentParameter("r_out_file");
-		}	
-
-		//Check for parameters related to model operation
-		Parameter rModelParameter
-		= Parameter.getParameter("r_model", parameters);
-		if (rModelParameter == null) {
-			throw rifServiceExceptionFactory.createNonExistentParameter("r_model");
-		}		
-		Parameter studyIDParameter
-		= Parameter.getParameter("study_id", parameters);
-		if (studyIDParameter == null) {
-			throw rifServiceExceptionFactory.createNonExistentParameter("study_id");
-		}			
-	}
-
-	/**
-	 * This routine mainly checks that files that are specified exist and have the 
-	 * appropriate permissions.  For example, we'd like to verify that the command-line
-	 * executable actually is executable.  If it's on Windows, then we have to append
-	 * *.exe and check that the file exists.
-	 * 
-	 * @param parameters
-	 * @param rCodeFile
-	 * @param operatingSystemType
-	 * @throws RIFServiceException
-	 */
-	private void checkInputOutputFileProperties(
-			final String commandLineExecutable,
-			final ArrayList<Parameter> parameters, 
-			final String rSourceCodeFileName,
-			final OperatingSystemType operatingSystemType) 
-					throws RIFServiceException {
-
-		File rSourceCodeFile = new File(rSourceCodeFileName);
-
-		RIFServiceExceptionFactory rifServiceExceptionFactory
-		= new RIFServiceExceptionFactory();
-
-		/**
-		 * Check whether the command-line executable file exists and has
-		 * executable permissions
-		 */
-		StringBuilder commandLineExecutableFilePath = new StringBuilder();
-		commandLineExecutableFilePath.append(commandLineExecutable);
-		if (operatingSystemType == OperatingSystemType.WINDOWS) {
-			//append .exe
-			commandLineExecutableFilePath.append(".exe");
-		}		
-		File commandLineExecutableFile 
-		= new File(commandLineExecutableFilePath.toString());
-		if (commandLineExecutableFile.exists() == false) {
-			//Error: command line executable was incorrectly specified
-			//and does not exist
-			rifServiceExceptionFactory.createNonExistentFile(
-					commandLineExecutableFile.getAbsolutePath());
-		}
-		//Check that the command-line executable has execution permissions
-		if (commandLineExecutableFile.canExecute() == false) {
-			//Error: command line executable was incorrectly specified
-			//and does not exist
-			rifServiceExceptionFactory.createFileExecutionProblemException(
-					commandLineExecutableFile.getAbsolutePath());
-		}
-
-		/**
-		 * Check that R source code file exists
-		 */
-		if (rSourceCodeFile.exists() == false) {
-			//Error: non-existent file
-			rifServiceExceptionFactory.createNonExistentFile(
-					rSourceCodeFile.getAbsolutePath());
-		}
-	}
-
-	/**
-	 * Assemble database connection parameters together and test whether a JDBC connection
-	 * is possible.  This is important for when the db connection parameters are passed to
-	 * the R program.
-	 * 
-	 * @param parameter
-	 */
-	private void checkDatabaseConnectionString(
-			final ArrayList<Parameter> parameters) 
-					throws RIFServiceException {
-
-
-		Parameter databaseDriverPrefix
-		= Parameter.getParameter("db_driver_prefix", parameters);
-		Parameter databaseDriverClassNameParameter
-		= Parameter.getParameter("db_driver_class_name", parameters);		
-		Parameter databaseHostParameter
-		= Parameter.getParameter("db_host", parameters);		
-		Parameter databasePortParameter
-		= Parameter.getParameter("db_port", parameters);		
-		Parameter databaseNameParameter
-		= Parameter.getParameter("db_name", parameters);		
-
-		StringBuilder databaseConnectionString = new StringBuilder();
-		databaseConnectionString.append(databaseDriverPrefix.getValue());
-		databaseConnectionString.append(":");		
-		databaseConnectionString.append(":");
-		databaseConnectionString.append("//");
-		databaseConnectionString.append(databaseHostParameter.getValue());
-		databaseConnectionString.append(":");
-		databaseConnectionString.append(databasePortParameter.getValue());
-		databaseConnectionString.append("/");
-		databaseConnectionString.append(databaseNameParameter.getValue());
-
-		Properties databaseProperties = new Properties();
-		Parameter userParameter
-		= Parameter.getParameter("user", parameters);
-		Parameter passwordParameter
-		= Parameter.getParameter("password", parameters);
-		databaseProperties.setProperty("user", userParameter.getValue());
-		databaseProperties.setProperty("password", passwordParameter.getValue());
-		System.out.println("User=="+userParameter.getValue()+"==password=="+passwordParameter.getValue()+"==");
-
-		/*
-		Connection connection = null;
-		try {
-			//We are only checking if it's possible to make a connection
-			//If we can, we assume that when the R program gets the parameters
-			//to make a connection string, it will be able to connect with no
-			//problem.
-			connection
-				= DriverManager.getConnection(
-					databaseConnectionString.toString());
-			connection.close();
-		}
-		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
-			RIFServiceExceptionFactory rifServiceExceptionFactory
-				= new RIFServiceExceptionFactory();
-			throw rifServiceExceptionFactory.createUnableToUseDBConnectionString(
-				databaseConnectionString.toString());
-		}
-		finally {
-			SQLQueryUtility.close(connection);
-		}
-		 */
-
-	}
 
 	// ==========================================
 	// Section Interfaces

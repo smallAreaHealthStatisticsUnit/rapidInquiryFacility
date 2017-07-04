@@ -1,17 +1,9 @@
 package rifServices.dataStorageLayer.pg;
 
-
 import rifServices.businessConceptLayer.CalculationMethod;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.util.FilePathCleaner;
 
 import java.util.ArrayList;
-import java.util.Map;
-import java.io.*;
-import java.util.Date;
 import java.util.logging.Logger;
 
 import org.rosuda.JRI.RMainLoopCallbacks;
@@ -92,18 +84,11 @@ public abstract class PGSQLAbstractRService {
 	private String userID;
 	private String password;
 
-	
-	//private String rScriptFileName;
 	private String rFilePath;
 	private String rScriptProgramPath;
 	
-	
-	private OperatingSystemType operatingSystemType;
-	private ArrayList<Parameter> parameters;
-	
+	private ArrayList<Parameter> parameters;	
 	private ArrayList<String> parametersToVerify;
-	private ArrayList<String> commandLineComponents;
-	
 	private CalculationMethod calculationMethod;
 	
 	// ==========================================
@@ -114,13 +99,7 @@ public abstract class PGSQLAbstractRService {
 		parameters = new ArrayList<Parameter>();
 		
 		parametersToVerify = new ArrayList<String>();
-		commandLineComponents = new ArrayList<String>();
-		rFilePath = "";
-		String separatorCharacter = "\\\\";
-		rScriptProgramPath 
-			= FilePathCleaner.correctWindowsPathForSpaces(
-					separatorCharacter, 
-					generateDefaultRScriptProgramPath());
+		rFilePath = "";	
 	}
 
 	// ==========================================
@@ -153,75 +132,12 @@ public abstract class PGSQLAbstractRService {
 	
 	protected void setODBCDataSourceName(final String odbcDataSourceName) {
 		this.odbcDataSourceName = odbcDataSourceName;
-	}
-
-	
-	protected String getRFilePath() {
-		return rFilePath;
-	}
-	
-	/*
-	 * This refers to the path of the R program we want to run (eg: R-based Bayesian smoothing routine)
-	 * @TODO KLG: for some reason, when we generate a batch file, we have to put a double back slash
-	 * into the path of the R program. 
-	 */
-	protected void setRFilePath(
-		final String rFilePath) {
-
-		this.rFilePath
-			= FilePathCleaner.correctWindowsPathForSpaces(
-				"\\\\", 
-				rFilePath);
-		System.out.println("AbstractRService setRScriptFileName 2 cleanedPath=="+this.rFilePath+"==");		
-	}
-
-	protected String getRScriptProgramPath() {
-		return this.rScriptProgramPath;		
-	}
-	
-	protected void setRScriptProgramPath(
-		final String rScriptProgramPath) {
-		
-		String separatorCharacter = System.getProperty("file.separator");
-
-		this.rScriptProgramPath
-			= FilePathCleaner.correctWindowsPathForSpaces(
-				separatorCharacter, 
-				rScriptProgramPath);
-		System.out.println("AbstractRService setRScriptFileName 3 cleanedPath==" + this.rScriptProgramPath + "==");			
-	}
-	
-	private String generateDefaultRScriptProgramPath() {
-	
-
-		StringBuilder mainCommand = new StringBuilder();
-		
-		Map<String, String> environmentVariables = System.getenv();
-		
-		String rHomeValue = environmentVariables.get("R_HOME");
-		System.out.println("R HOME IS=="+rHomeValue+"==");
-		mainCommand.append(rHomeValue);
-		mainCommand.append(File.separator);
-		mainCommand.append("bin");
-		mainCommand.append(File.separator);
-		mainCommand.append("x64");		
-		mainCommand.append(File.separator);
-		mainCommand.append("RScript");
-
-		return mainCommand.toString();
-	}
-		
+	}	
 	
 	protected void setCalculationMethod(final CalculationMethod calculationMethod) {
 		this.calculationMethod = calculationMethod;
 		
 		addParameter("r_model", calculationMethod.getName());
-	}
-	
-	protected void setOperatingSystemType(final OperatingSystemType operatingSystemType) {
-		//Might be useful if someone names their R file with a space in it,
-		//which is something that may be common in Windows.
-		this.operatingSystemType = operatingSystemType;
 	}
 	
 	//Generate param string array
@@ -255,111 +171,12 @@ public abstract class PGSQLAbstractRService {
 		 */
 		return parametersArray;
 	}
-	
-	//TODO: (DM) delete all batch file stuff from everywhere
-	protected String generateCommandLineExpression() {
-
-		commandLineComponents.clear();
-		
-		StringBuilder mainCommand = new StringBuilder();
-		mainCommand.append(getRScriptProgramPath());
-		mainCommand.append(" ");
-		mainCommand.append(getRFilePath());
-		commandLineComponents.add(mainCommand.toString());
-			
-		for (Parameter parameter : parameters) {
-			
-			StringBuilder parameterPhrase = new StringBuilder();
-			parameterPhrase.append(" --");
-			parameterPhrase.append(parameter.getName());
-			parameterPhrase.append("=");
-			parameterPhrase.append(parameter.getValue());			
-			commandLineComponents.add(parameterPhrase.toString());
-		}		
-		
-		commandLineComponents.add(" --odbc_data_source=" + odbcDataSourceName);
-		commandLineComponents.add(" --user_id=" + userID);
-		commandLineComponents.add(" --password=" + password);
-		
-		
-		StringBuilder expression = new StringBuilder();
-		for (int i = 0; i < commandLineComponents.size(); i++) {
-			if (i != 0) {
-				expression.append(" ");
-			}
-			expression.append(commandLineComponents.get(i));			
-		}
-		
-		return expression.toString();
-	}
-
-	//TODO: (DM) delete all batch file
-	protected File createBatchFile(
-		final String directoryName,
-		final String baseFileName) 
-		throws IOException {
-
-		StringBuilder fileName = new StringBuilder();
-		fileName.append(directoryName);
-		fileName.append(File.separator);
-		fileName.append(baseFileName);
-		fileName.append("_");
-		fileName.append(RIFGenericLibraryMessages.getDatePhrase(new Date(System.currentTimeMillis())));
-		fileName.append(".bat");
-		
-		File file = new File(fileName.toString());
-		
-		OutputStreamWriter outputStreamWriter
-			= new OutputStreamWriter(new FileOutputStream(file), "Cp1252");
-		BufferedWriter writer = new BufferedWriter(outputStreamWriter);
-		System.out.println("Writing batch file=="+generateCommandLineExpression());
-		writer.write(generateCommandLineExpression());
-		
-		writer.flush();
-		writer.close();
-		
-		file.setExecutable(true);
-		return file;
-	}
-	
 
 	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
 
-	private void validateParametersToVerify() 
-		throws RIFServiceException {
-		
-		ArrayList<String> errorMessages = new ArrayList<String>();
-		
-		for (String parameterToVerify : parametersToVerify) {
-			Parameter expectedParameter
-				= Parameter.getParameter(parameterToVerify, parameters);
-			if (expectedParameter == null) {
-		
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"",
-						parameterToVerify);
-			}
-		}
-
-		/*
-		if (errorMessages.size() > 0) {
-			RIFServiceException rifServiceException
-				= new RIFServiceException(RIFServiceError, errorMessages);
-			throw rifServiceException;			
-		}
-		*/
-		
-	}
-	
-	protected void validateCommandLineExpressionComponents() 
-		throws RIFServiceException {
-
-		validateParametersToVerify();
-	}
 	
 	/*
 	 * Logging R console output in Tomcat
