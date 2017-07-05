@@ -74,25 +74,6 @@ import java.util.ArrayList;
 public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 
 	/**
-	 * Gets the geometry.
-	 *
-	 * @param user the user
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @param geoLevelToMap the geo level to map
-	 * @param mapAreas the map areas
-	 * @return the geometry
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public String getGeometry(
-			final User user,	
-			final Geography geography,
-			final GeoLevelSelect geoLevelSelect,
-			final GeoLevelView geoLevelView,
-			final ArrayList<MapArea> mapAreas) 
-					throws RIFServiceException;
-
-	/**
 	 * gets the centroids for all polygons 
 	 * @param user
 	 * @param geography

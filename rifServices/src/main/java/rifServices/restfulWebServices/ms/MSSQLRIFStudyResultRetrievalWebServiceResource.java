@@ -283,72 +283,7 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 			numeratorTableName);		
 	}
 
-	
-	/**
-	 * STUB
-	 * @param userID
-	 * @param geographyName
-	 * @param geoLevelSelectName
-	 * @param geoLevelToMapName
-	 * @param mapAreaValues
-	 * @return
-	 */
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getGeometry")
-	public String getGeometry(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,	
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("geoLevelViewName") String geoLevelViewName,
-		@QueryParam("gids") final List<String> geographicalIdentifiers) {
-					
-		String result = "";
-		try {
-			//Convert URL parameters to RIF service API parameters
-			User user = createUser(servletRequest, userID);
-			Geography geography = Geography.newInstance(geographyName, "");
-			GeoLevelSelect geoLevelSelect
-				= GeoLevelSelect.newInstance(geoLevelSelectName);
-			GeoLevelView geoLevelView
-				= GeoLevelView.newInstance(geoLevelViewName);
-			ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
-			for (String geographicalIdentifier : geographicalIdentifiers) {
-				//TODO: Not sure where the map area label might come in
-				MapArea mapArea
-					= MapArea.newInstance(geographicalIdentifier, "", "");
-				mapAreas.add(mapArea);
-			}
 
-			//Call service API
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
-			result
-				= studyResultRetrievalService.getGeometry(
-					user, 
-					geography, 
-					geoLevelSelect,
-					geoLevelView, 
-					mapAreas);
-			
-			//Convert results to support JSON
-			serialiseStringResult(
-				result);
-			
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
-		
-		return result;
-	}	
-
-	
 	/**
 	 * STUB
 	 * @param userID
