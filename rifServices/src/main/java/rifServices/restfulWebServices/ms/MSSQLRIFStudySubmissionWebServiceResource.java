@@ -1424,36 +1424,7 @@ public class MSSQLRIFStudySubmissionWebServiceResource
 			xMin);
 		
 	}	
-	
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getTiles")
-	public Response getTiles(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("tileIdentifier") String tileIdentifier,
-		@QueryParam("zoomFactor") Integer zoomFactor,		
-		@QueryParam("yMax") String yMax,
-		@QueryParam("xMax") String xMax,
-		@QueryParam("yMin") String yMin,
-		@QueryParam("xMin") String xMin) {
-					
-		return super.getTiles(
-			servletRequest, 
-			userID, 
-			geographyName, 
-			geoLevelSelectName, 
-			tileIdentifier, 
-			zoomFactor, 
-			yMax, 
-			xMax, 
-			yMin, 
-			xMin);		
-	}	
-
-	
+		
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getTilesGivenTile")

@@ -941,64 +941,6 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 				result);	
 	}
 	
-	
-	protected Response getTiles(
-			final HttpServletRequest servletRequest,	
-			final String userID,
-			final String geographyName,
-			final String geoLevelSelectName,
-			final String tileIdentifier,
-			final Integer zoomFactor,
-			final String yMax,
-			final String xMax,
-			final String yMin,
-			final String xMin) {
-						
-			String result = "";
-			
-			try {
-				
-				//Convert URL parameters to RIF service API parameters			
-				User user = createUser(servletRequest, userID);
-				Geography geography = Geography.newInstance(geographyName, "");
-				GeoLevelSelect geoLevelSelect
-					= GeoLevelSelect.newInstance(geoLevelSelectName);
-				BoundaryRectangle boundaryRectangle
-					= BoundaryRectangle.newInstance();
-				boundaryRectangle.setYMax(yMax);
-				boundaryRectangle.setXMax(xMax);
-				boundaryRectangle.setYMin(yMin);
-				boundaryRectangle.setXMin(xMin);
-
-				
-				//Call service API
-				RIFStudyResultRetrievalAPI studyResultRetrievalService
-					= getRIFStudyResultRetrievalService();
-				result
-					= studyResultRetrievalService.getTiles(
-						user, 
-						geography, 
-						geoLevelSelect,
-						tileIdentifier,
-						zoomFactor,
-						boundaryRectangle);
-
-				
-			}
-			catch(Exception exception) {
-				result 
-					= serialiseException(
-						servletRequest,
-						exception);			
-			}
-
-			
-			return webServiceResponseGenerator.generateWebServiceResponse(
-				servletRequest,
-				result);		
-		}	
-
-	
 	protected Response getTilesGivenTile(
 		final HttpServletRequest servletRequest,	
 		final String userID,

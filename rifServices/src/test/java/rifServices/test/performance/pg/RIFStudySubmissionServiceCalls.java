@@ -185,45 +185,6 @@ public final class RIFStudySubmissionServiceCalls
 			fail();
 		}		
 	}
-
-	@Test
-	public void getTiles() {
-		try {
-			User validUser = cloneValidUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelSelect validGeoLevelSelect = cloneValidGeoLevelSelect();
-			validGeoLevelSelect.setName("LEVEL3");
-			BoundaryRectangle validBoundaryRectangle = cloneValidBoundaryRectangle();
-			validBoundaryRectangle.setYMax("55.5268");
-			validBoundaryRectangle.setXMax("-4.88654");
-			validBoundaryRectangle.setYMin("52.6875");
-			validBoundaryRectangle.setXMin("-7.58829");
-			//y_max  |  x_max   |  y_min  |  x_min
-			 //---------+----------+---------+----------
-			 // 55.5268 | -4.88654 | 52.6875 | -7.58829
-			 //(1 row)			
-			
-			long startTime = System.currentTimeMillis();
-			for (int i = 0; i < NUMBER_REPETITIONS; i++) {
-				rifStudyRetrievalService.getTiles(
-					validUser, 
-					validGeography, 
-					validGeoLevelSelect,
-					"123",
-					5,
-					validBoundaryRectangle);
-			}
-
-			long finishTime = System.currentTimeMillis();	
-			double duration = (finishTime - startTime) / 1000; //in milliseconds
-			double averageRoundTripTime = (duration/(double) NUMBER_REPETITIONS );
-		}
-		catch(RIFServiceException rifServiceException) {
-			
-			fail();
-		}
-	}
-	
 	
 	private void printPerformanceResult(
 		final String methodName,
