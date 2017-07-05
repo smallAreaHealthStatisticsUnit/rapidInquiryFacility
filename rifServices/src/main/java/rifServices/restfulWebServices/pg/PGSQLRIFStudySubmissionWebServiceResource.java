@@ -1411,25 +1411,7 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 			xMin);
 		
 	}	
-				
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getGeoLevelFullExtent")
-	public Response getGeoLevelFullExtent(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
-					
-
-		return super.getGeoLevelFullExtent(
-			servletRequest, 
-			userID, 
-			geographyName, 
-			geoLevelSelectName);
-		
-	}
-		
+						
 	@POST
 	@Produces({"application/json"})	
 	@Path("/submitStudy")

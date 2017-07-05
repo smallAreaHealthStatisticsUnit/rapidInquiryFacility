@@ -169,14 +169,6 @@ public interface RIFStudyServiceAPI {
 		final GeoLevelSelect geoLevelSelect) 
 		throws RIFServiceException;	
 
-			
-	public BoundaryRectangle getGeoLevelFullExtent(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect) 
-		throws RIFServiceException;	
-
-	
 	/**
 	 * Gets the studies.
 	 *
