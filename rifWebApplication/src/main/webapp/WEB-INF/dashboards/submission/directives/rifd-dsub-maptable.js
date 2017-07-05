@@ -210,6 +210,7 @@ angular.module("RIF")
                             //clear selection
                             $scope.clear();
                             //offer the correct number of bands
+                            SubmissionStateService.getState().studyType = $scope.input.type;
                             if ($scope.input.type === "Risk Analysis") {
                                 $scope.possibleBands = [1, 2, 3, 4, 5, 6];
                                 $scope.areamap.band = 6;

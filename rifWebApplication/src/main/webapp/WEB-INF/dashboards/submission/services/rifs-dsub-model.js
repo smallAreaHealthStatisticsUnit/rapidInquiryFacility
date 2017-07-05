@@ -37,7 +37,16 @@
 angular.module("RIF")
         .factory('ModelService', function (StudyAreaStateService, CompAreaStateService, StatsStateService,
                 SubmissionStateService, ParameterStateService, user) {
+
+            var type = "disease_mapping_study";
+            var areaType = "disease_mapping_study_area";
+
             updateModel = function () {
+                if (SubmissionStateService.getState().studyType === "Risk Analysis") {
+                    type = 'risk_analysis_study';
+                    areaType = 'risk_analysis_study_area';
+                } 
+                
                 var model = {
                     "rif_job_submission": {
                         "submitted_by": user.currentUser,
@@ -48,75 +57,6 @@ angular.module("RIF")
                         "project": {
                             "name": SubmissionStateService.getState().projectName,
                             "description": SubmissionStateService.getState().projectDescription
-                        },
-                        "disease_mapping_study": {
-                            "name": SubmissionStateService.getState().studyName,
-                            "description": SubmissionStateService.getState().studyDescription,
-                            "geography": {
-                                "name": SubmissionStateService.getState().geography,
-                                "description": SubmissionStateService.getState().geography
-                            },
-                            "disease_mapping_study_area": {
-                                "geo_levels": {
-                                    "geolevel_select": {
-                                        name: StudyAreaStateService.getState().selectAt
-                                    },
-                                    "geolevel_area": {
-                                        name: ""
-                                    },
-                                    "geolevel_view": {
-                                        name: StudyAreaStateService.getState().studyResolution
-                                    },
-                                    "geolevel_to_map": {
-                                        name: StudyAreaStateService.getState().studyResolution
-                                    }
-                                },
-                                "map_areas": {
-                                    "map_area": function () {
-                                        var tmp = [];
-                                        for (var i = 0; i < StudyAreaStateService.getState().polygonIDs.length; i++) {
-                                            tmp.push({
-                                                "id": StudyAreaStateService.getState().polygonIDs[i].id,
-                                                "gid": StudyAreaStateService.getState().polygonIDs[i].gid,
-                                                "label": StudyAreaStateService.getState().polygonIDs[i].label,
-                                                "band": StudyAreaStateService.getState().polygonIDs[i].band
-                                            });
-                                        }
-                                        return tmp;
-                                    }()
-                                }
-                            },
-                            "comparison_area": {
-                                "geo_levels": {
-                                    "geolevel_select": {
-                                        name: CompAreaStateService.getState().selectAt
-                                    },
-                                    "geolevel_area": {
-                                        name: ""
-                                    },
-                                    "geolevel_view": {
-                                        name: CompAreaStateService.getState().studyResolution
-                                    },
-                                    "geolevel_to_map": {
-                                        name: CompAreaStateService.getState().studyResolution
-                                    }
-                                },
-                                "map_areas": {
-                                    "map_area": function () {
-                                        var tmp = [];
-                                        for (var i = 0; i < CompAreaStateService.getState().polygonIDs.length; i++) {
-                                            tmp.push({
-                                                "id": CompAreaStateService.getState().polygonIDs[i].id,
-                                                "gid": CompAreaStateService.getState().polygonIDs[i].gid,
-                                                "label": CompAreaStateService.getState().polygonIDs[i].label,
-                                                "band": CompAreaStateService.getState().polygonIDs[i].band
-                                            });
-                                        }
-                                        return tmp;
-                                    }()
-                                }
-                            },
-                            "investigations": {"investigation": ParameterStateService.getModelInvestigation()}
                         },
                         "calculation_methods": {
                             "calculation_method": StatsStateService.getModelStats()
@@ -130,8 +70,82 @@ angular.module("RIF")
                         }
                     }
                 };
+
+                model["rif_job_submission"][type] = {
+                    "name": SubmissionStateService.getState().studyName,
+                    "description": SubmissionStateService.getState().studyDescription,
+                    "geography": {
+                        "name": SubmissionStateService.getState().geography,
+                        "description": SubmissionStateService.getState().geography
+                    },
+                    "investigations": {"investigation": ParameterStateService.getModelInvestigation()}
+                };
+
+                model["rif_job_submission"][type][areaType] = {
+                    "geo_levels": {
+                        "geolevel_select": {
+                            name: StudyAreaStateService.getState().selectAt
+                        },
+                        "geolevel_area": {
+                            name: ""
+                        },
+                        "geolevel_view": {
+                            name: StudyAreaStateService.getState().studyResolution
+                        },
+                        "geolevel_to_map": {
+                            name: StudyAreaStateService.getState().studyResolution
+                        }
+                    },
+                    "map_areas": {
+                        "map_area": function () {
+                            var tmp = [];
+                            for (var i = 0; i < StudyAreaStateService.getState().polygonIDs.length; i++) {
+                                tmp.push({
+                                    "id": StudyAreaStateService.getState().polygonIDs[i].id,
+                                    "gid": StudyAreaStateService.getState().polygonIDs[i].gid,
+                                    "label": StudyAreaStateService.getState().polygonIDs[i].label,
+                                    "band": StudyAreaStateService.getState().polygonIDs[i].band
+                                });
+                            }
+                            return tmp;
+                        }()
+                    }
+                };
+
+                model["rif_job_submission"][type]["comparison_area"] = {
+                    "geo_levels": {
+                        "geolevel_select": {
+                            name: CompAreaStateService.getState().selectAt
+                        },
+                        "geolevel_area": {
+                            name: ""
+                        },
+                        "geolevel_view": {
+                            name: CompAreaStateService.getState().studyResolution
+                        },
+                        "geolevel_to_map": {
+                            name: CompAreaStateService.getState().studyResolution
+                        }
+                    },
+                    "map_areas": {
+                        "map_area": function () {
+                            var tmp = [];
+                            for (var i = 0; i < CompAreaStateService.getState().polygonIDs.length; i++) {
+                                tmp.push({
+                                    "id": CompAreaStateService.getState().polygonIDs[i].id,
+                                    "gid": CompAreaStateService.getState().polygonIDs[i].gid,
+                                    "label": CompAreaStateService.getState().polygonIDs[i].label,
+                                    "band": CompAreaStateService.getState().polygonIDs[i].band
+                                });
+                            }
+                            return tmp;
+                        }()
+                    }
+                };
+
                 return model;
             };
+
             //HTML formatting functions below
             areaTable = function (areas) {
                 var studyAreaTable = "<table><tr>" +
@@ -201,29 +215,29 @@ angular.module("RIF")
                             '<section>Project Description:</section>' + _getAttr(modelJSON.rif_job_submission.project.description) +
                             '<section>Submitted By:</section>' + _getAttr(modelJSON.rif_job_submission.submitted_by) +
                             '<section>Date:</section>' + _getAttr(modelJSON.rif_job_submission.job_submission_date) +
-                            '<section>Study Name:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.name) +
-                            '<section>Study Description:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.description) +
-                            '<section>Geography:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.geography.name) + 
-                            '<section>Study Type:</section>' + _getAttr("Disease Mapping"); //TODO: 0/1 RISK MAPPING
+                            '<section>Study Name:</section>' + _getAttr(modelJSON.rif_job_submission[type].name) +
+                            '<section>Study Description:</section>' + _getAttr(modelJSON.rif_job_submission[type].description) +
+                            '<section>Geography:</section>' + _getAttr(modelJSON.rif_job_submission[type].geography.name) +
+                            '<section>Study Type:</section>' + _getAttr(SubmissionStateService.getState().studyType);
 
                     //Study area
                     project += '<header>Study Area</header>' +
-                            '<section>Selection Resolution:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.disease_mapping_study_area.geo_levels.geolevel_select.name) +
-                            '<section>Resolution of Results:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.disease_mapping_study_area.geo_levels.geolevel_to_map.name);
-                    if (modelJSON.rif_job_submission.disease_mapping_study.disease_mapping_study_area.map_areas.map_area.length !== 0) {
-                        project += areaTable(modelJSON.rif_job_submission.disease_mapping_study.disease_mapping_study_area.map_areas.map_area);
+                            '<section>Selection Resolution:</section>' + _getAttr(modelJSON.rif_job_submission[type][areaType].geo_levels.geolevel_select.name) +
+                            '<section>Resolution of Results:</section>' + _getAttr(modelJSON.rif_job_submission[type][areaType].geo_levels.geolevel_to_map.name);
+                    if (modelJSON.rif_job_submission[type][areaType].map_areas.map_area.length !== 0) {
+                        project += areaTable(modelJSON.rif_job_submission[type][areaType].map_areas.map_area);
                     }
 
                     //Comparision area
                     project += '<header>Comparison Area</header>' +
-                            '<section>Selection Resolution:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.comparison_area.geo_levels.geolevel_select.name) +
-                            '<section>Resolution of Results:</section>' + _getAttr(modelJSON.rif_job_submission.disease_mapping_study.comparison_area.geo_levels.geolevel_to_map.name);
-                    if (modelJSON.rif_job_submission.disease_mapping_study.comparison_area.map_areas.map_area.length !== 0) {
-                        project += areaTable(modelJSON.rif_job_submission.disease_mapping_study.comparison_area.map_areas.map_area);
+                            '<section>Selection Resolution:</section>' + _getAttr(modelJSON.rif_job_submission[type].comparison_area.geo_levels.geolevel_select.name) +
+                            '<section>Resolution of Results:</section>' + _getAttr(modelJSON.rif_job_submission[type].comparison_area.geo_levels.geolevel_to_map.name);
+                    if (modelJSON.rif_job_submission[type].comparison_area.map_areas.map_area.length !== 0) {
+                        project += areaTable(modelJSON.rif_job_submission[type].comparison_area.map_areas.map_area);
                     }
 
                     //Investigations
-                    var investigations = modelJSON.rif_job_submission.disease_mapping_study.investigations.investigation;
+                    var investigations = modelJSON.rif_job_submission[type].investigations.investigation;
                     project += '<header>Investigations</header>';
                     if (investigations) {
                         project += '<section>Health Theme:</section>' + _getAttr(investigations[0].health_theme.name + " - " + investigations[0].health_theme.description) +
@@ -232,7 +246,7 @@ angular.module("RIF")
                                 '<section>Denominator Table:</section>' + _getAttr(investigations[0].numerator_denominator_pair.denominator_table_name + " - " +
                                         investigations[0].numerator_denominator_pair.denominator_table_description);
                     }
-                    if (modelJSON.rif_job_submission.disease_mapping_study.investigations.investigation) {
+                    if (modelJSON.rif_job_submission[type].investigations.investigation) {
                         project += investigationTable(investigations);
                     }
 
@@ -251,8 +265,8 @@ angular.module("RIF")
                      statParams = statParams.substring(0, statParams.length - 2);
                      project += '<section>Parameters:</section>' + _getAttr(statParams);
                      */
-                    
-                    
+
+
                     //Output
                     //DEPRECIATED?
 //                    project += '<header>Output Options</header>';

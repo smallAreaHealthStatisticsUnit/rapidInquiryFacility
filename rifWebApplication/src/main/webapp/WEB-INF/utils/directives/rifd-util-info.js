@@ -53,6 +53,8 @@ angular.module("RIF")
                         scope.summary = null;
 
                         element.on('click', function (event) {
+                            scope.summary = "Fetching Study Information...";
+                            
                             var thisStudy = scope.studyID[attr.mapid].study_id;
                             _getAttr = function (v) {
                                 return '<attr>' + $sce.trustAsHtml(v) + '</attr></br>';
@@ -62,7 +64,8 @@ angular.module("RIF")
                             }
 
                             user.getHealthCodesForProcessedStudy(user.currentUser, thisStudy).then(function (invx) {
-                                var inv = invx.data[0];                               
+                                var inv = invx.data[0];
+
                                 user.getDetailsForProcessedStudy(user.currentUser, thisStudy).then(function (res) {
                                     var project = '<header>Overview</header><section>Project Name:</section>' + _getAttr(res.data[0][13]) +
                                             '<section>Project Description:</section>' + _getAttr(res.data[0][14]) +
@@ -98,37 +101,42 @@ angular.module("RIF")
                                             "<th>Covariates</th>" +
                                             "</tr>";
 
-                                    //TODO: LUT for age range, ICD term
-                                    for (var j = 0; j < inv.length; j++) {
-                                        if (j === 0) {
-                                            studyTable += "<tr><td>" + res.data[0][17] + "</td><td>" +
-                                                    inv[j] + "</td>" +
-                                                    "<td>" + inv[j] + "</td>" +
-                                                    "<td>" + res.data[0][8] + "-" + res.data[0][9] + "</td>" +
-                                                    "<td>" + res.data[0][18] + "</td>" +
-                                                    "<td> LWR: " + res.data[0][11] + ", UPR: " + res.data[0][10] + "</td>" +
-                                                    "<td>" + function () {
-                                                        if (res.data[0][16]) {
-                                                            return res.data[0][16];
-                                                        } else {
-                                                            return "None";
-                                                        }
-                                                    }() + "</td>" +
-                                                    "</tr>";
-                                        } else {
-                                            studyTable += "<tr><td></td>" + "</td><td>" +
-                                                    inv[j] + "</td>" +
-                                                    "<td>" + inv[j] + "</td>" +
-                                                    "</tr>";
+                                    user.getAgeGroups(user.currentUser, res.data[0][4], res.data[0][19]).then(function (resAge) {
+                                        for (var j = 0; j < inv.length; j++) {
+                                            if (j === 0) {
+                                                //match age group limits to fieldname
+                                                var lwr = resAge.data[0].name[res.data[0][11]];
+                                                var upr = resAge.data[0].name[res.data[0][10]];
+                                                
+                                                studyTable += "<tr><td>" + res.data[0][17] + "</td><td>" +
+                                                        inv[j] + "</td>" +
+                                                        "<td>" + inv[j] + "</td>" +
+                                                        "<td>" + res.data[0][8] + "-" + res.data[0][9] + "</td>" +
+                                                        "<td>" + res.data[0][18] + "</td>" +
+                                                        "<td> LWR: " + lwr + ", UPR: " + upr + "</td>" +
+                                                        "<td>" + function () {
+                                                            if (res.data[0][16]) {
+                                                                return res.data[0][16];
+                                                            } else {
+                                                                return "None";
+                                                            }
+                                                        }() + "</td>" +
+                                                        "</tr>";
+                                            } else {
+                                                studyTable += "<tr><td></td>" + "</td><td>" +
+                                                        inv[j] + "</td>" +
+                                                        "<td>" + inv[j] + "</td>" +
+                                                        "</tr>";
+                                            }
                                         }
-                                    }
-                                    project += studyTable + "</table>";
+                                        project += studyTable + "</table>";
 
-                                    //Statistics
-                                    project += '<header>Statistics</header>';
-                                    project += '<section>Calculation Method:</section>' + _getAttr(res.data[0][15]);
+                                        //Statistics
+                                        project += '<header>Statistics</header>';
+                                        project += '<section>Calculation Method:</section>' + _getAttr(res.data[0][15]);
 
-                                    scope.summary = $sce.trustAsHtml("NOTE: This Information is a work in progress (RIF developers)" + project);
+                                        scope.summary = $sce.trustAsHtml("NOTE: This Information is a work in progress (RIF developers)" + project);
+                                    });
                                 }, rerieveError);
                             }, rerieveError);
 

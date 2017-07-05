@@ -217,14 +217,6 @@ body {
     height: 100%;
     position: absolute;
 }
-#diseasemap1 {
-    display: inline-block;
-    float: left;
-}
-#diseasemap2 {
-    display: inline-block;
-    float:right;
-}
 
 #studyInfo {
     background: transparent url("../images/glyphicon/glyphicons-196-info-sign.png") no-repeat;
@@ -243,10 +235,6 @@ body {
     -khtml-opacity: 1;
     opacity: 1;
     cursor: pointer;
-}
-
-div.transparency {
-    width: 50px !important
 }
 
 #content {  
@@ -364,48 +352,8 @@ select {
     padding: 0px;
     display: inline;
 }
-/* DT styles for sliding doors */
 
-.dropdown dt > div {
-    display: block;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    font-size: 1em;
-    background: #F7F7F7;
-    border: 1px solid #cccccc;
-    width: 178px;
-    height: 20px;
-    padding: 3px 2px;
-    cursor: pointer;
-    display: block;
-}
-/* UL styles */
-
-.dropdown .palette {
-    display: none;
-    list-style: none;
-    position: absolute;
-    width: auto;
-    ;
-}
-.dropdown dd ul li {
-    margin: 4px 0
-}
-.dropdown span.value {
-    display: none;
-}
-.dropdown dd ul li a {
-    display: block;
-}
-
-.dropDownArrow {
-    background: url(../images/arrow.jpg) no-repeat;
-    width: 9px;
-    height: 10px;
-    float: right;
-    margin-top: 5px;
-}
-
+/* Login page footer */
 #footer {
     width: 100%;
     background-color: #331a00; 
@@ -453,9 +401,7 @@ select {
     font-weight: bold;
 }
 
-/*
- *  Disease Submission
- */
+/* Disease Submission */
 .positioning {
     width: 90%;
     margin-left: 5%;
@@ -957,12 +903,7 @@ textarea.description {
     float:left;
 }
 
-/****************************************/
-/****************************************/
 /* Ivestigation parameter modal dialog  */
-/****************************************/
-/****************************************/
-
 .pbox {
     margin:1% 1% 0% 2%;
     float:left;
@@ -1215,9 +1156,7 @@ header:first-child {
     background-color: #A1A1A1;
 }
 
-/*
-* LOGIN SCREEN
-*/
+/* LOGIN SCREEN*/
 .login-box {
     position: fixed;
     top: 50%;
@@ -1292,9 +1231,7 @@ input[type="text"].dropdownInput:focus, .style-4 input[type="text"].focus {
     outline: none
 }
 
-/*
-* STATS
-*/
+/*STATS*/
 .statsInfo{
     padding:15px 15px 0px 15px;
     position: relative;

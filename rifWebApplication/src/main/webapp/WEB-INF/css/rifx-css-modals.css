@@ -70,9 +70,6 @@
     border: 1px solid #cccccc;
     color: #999999;
 }
-.msettings .txt-fld input[name="numOfRows"] {
-    float: left
-}
 .msettings .txt-fld {
     padding: 14px 30px;
     border-bottom: 1px solid #EEE;
@@ -535,4 +532,3 @@
     width: 150px;
     margin-top: 5px;
 }
-

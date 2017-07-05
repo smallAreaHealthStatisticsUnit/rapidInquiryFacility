@@ -260,6 +260,11 @@ angular.module("RIF")
                     }).then(function () {
                         $scope.tableOptions[table].columnDefs = colDef;
                         $scope.tableOptions[table].data = tableData;
+                        //fix upper bound to max possible
+                        var maxn = parseInt(tableData[tableData.length - 1]['row']);
+                        if ($scope.rows[table][1] > maxn) {
+                            $scope.rows[table][1] = maxn;
+                        }
                     });
                 };
 
@@ -271,7 +276,7 @@ angular.module("RIF")
                 };
 
                 var areaIDs = [];
-                var bBB = true; //is bounding box defined yet
+                var bBB = true; //is bounding box not defined yet
 
                 $scope.updateStudy = function (mapID) {
                     if ($scope.map[mapID].hasLayer($scope.geoJSON)) {

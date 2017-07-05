@@ -51,7 +51,8 @@ angular.module("RIF")
                         //these are in the run-study modal
                         projectName: "",
                         projectDescription: "",
-                        studyDescription: ""
+                        studyDescription: "",
+                        studyType: "Disease Mapping"
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
