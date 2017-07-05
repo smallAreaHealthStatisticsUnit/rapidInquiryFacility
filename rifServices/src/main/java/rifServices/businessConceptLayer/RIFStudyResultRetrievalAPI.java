@@ -103,24 +103,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 					throws RIFServiceException;
 
 	/**
-	 * Given a given geo level and an attribute theme, returns 
-	 * a collection of map areas that are associated with a specific
-	 * type of value.  For example, if the attribute theme were
-	 * @param user
-	 * @param geography
-	 * @param geoLevelSelect
-	 * @param geoLevelAttribute - the name of an attribute eg: "area", "total_males", etc
-	 * @return
-	 * @throws RIFServiceException
-	 */
-	public ArrayList<MapAreaAttributeValue> getMapAreaAttributeValues(
-			final User user,
-			final StudyResultRetrievalContext studyResultRetrievalContext,
-			final GeoLevelAttributeSource geoLevelAttributeSource,
-			final String geoLevelAttribute) 
-					throws RIFServiceException;
-
-	/**
 	 * Given a disease mapping study, this method returns 
 	 * @param user
 	 * @param geography
