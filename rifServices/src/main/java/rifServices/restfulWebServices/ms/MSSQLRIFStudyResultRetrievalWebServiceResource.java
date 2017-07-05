@@ -729,36 +729,6 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 			diseaseMappingStudyID);		
 	}	
 	
-
-	/**
-	 * STUB
-	 * @param userID
-	 * @param geographyName
-	 * @param geoLevelSelectName
-	 * @param geoLevelToMapName
-	 * @param mapAreaValues
-	 * @return
-	 */
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getGeoLevelBoundsForArea")
-	public Response getGeoLevelBoundsForArea(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,	
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,		
-		@QueryParam("gid") String geographicalIdentifier) {
-			
-		
-		return super.getGeoLevelBoundsForArea(
-			servletRequest, 
-			userID, 
-			geographyName, 
-			geoLevelSelectName, 
-			diseaseMappingStudyID, 
-			geographicalIdentifier);
-	}		
 	
 	@GET
 	@Produces({"application/json"})	

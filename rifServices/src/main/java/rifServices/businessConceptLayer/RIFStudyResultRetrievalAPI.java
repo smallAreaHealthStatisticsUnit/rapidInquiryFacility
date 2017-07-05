@@ -93,20 +93,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 					throws RIFServiceException;
 
 	/**
-	 * gets the bounds for one single area identifier
-	 * @param user
-	 * @param studyResultRetrievalContext
-	 * @param mapArea
-	 * @return
-	 * @throws RIFServiceException
-	 */
-	public BoundaryRectangle getGeoLevelBoundsForArea(
-			final User user,
-			final StudyResultRetrievalContext studyResultRetrievalContext,
-			final MapArea mapArea)
-					throws RIFServiceException;
-
-	/**
 	 * gets the centroids for all polygons 
 	 * @param user
 	 * @param geography

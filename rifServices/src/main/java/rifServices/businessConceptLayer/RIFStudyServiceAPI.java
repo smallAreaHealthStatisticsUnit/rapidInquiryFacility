@@ -192,11 +192,6 @@ public interface RIFStudyServiceAPI {
 		throws RIFServiceException;	
 
 	
-	public BoundaryRectangle getGeographyFullExtent(
-		final User user,
-		final Geography geography) 
-		throws RIFServiceException;		
-	
 	/**
 	 * Gets the studies.
 	 *
