@@ -941,65 +941,7 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 				result);	
 	}
 	
-	
-	protected Response getGeoLevelFullExtentForStudy(
-		final HttpServletRequest servletRequest,	
-		final String userID,
-		final String geographyName,
-		final String geoLevelSelectName,
-		final String diseaseMappingStudyID) {
-					
-		String result = "";
-				
-		try {
-			//Convert URL parameters to RIF service API parameters			
-			User user = createUser(servletRequest, userID);
 
-			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
-					geographyName,
-					geoLevelSelectName,
-					diseaseMappingStudyID);
-
-			//Call service API
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
-			BoundaryRectangle boundaryRectangle
-				= studyResultRetrievalService.getGeoLevelFullExtentForStudy(
-					user, 
-					studyResultRetrievalContext);
-
-			//convert into JSON using proxy object
-			BoundaryRectangleProxy boundaryRectangleProxy
-				= new BoundaryRectangleProxy();
-			boundaryRectangleProxy.setXMin(
-					String.valueOf(boundaryRectangle.getXMin()));
-			boundaryRectangleProxy.setYMin(
-				String.valueOf(boundaryRectangle.getYMin()));
-			boundaryRectangleProxy.setXMax(
-				String.valueOf(boundaryRectangle.getXMax()));			
-			boundaryRectangleProxy.setYMax(
-				String.valueOf(boundaryRectangle.getYMax()));			
-			result 
-				= serialiseSingleItemAsArrayResult(
-					servletRequest,
-					boundaryRectangleProxy);
-			
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
-		
-		return webServiceResponseGenerator.generateWebServiceResponse(
-			servletRequest,
-			result);
-	}	
-
-	
 	protected Response getGeoLevelFullExtent(
 		final HttpServletRequest servletRequest,	
 		final String userID,

@@ -169,22 +169,7 @@ public interface RIFStudyServiceAPI {
 		final GeoLevelSelect geoLevelSelect) 
 		throws RIFServiceException;	
 
-	
-	/**
-	 * gets the extent for only areas on the study area and not the 
-	 * whole geolevel
-	 * 
-	 * @param user
-	 * @param studyResultRetrievalContext
-	 * @return
-	 * @throws RIFServiceException
-	 */
-	public BoundaryRectangle getGeoLevelFullExtentForStudy(
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext) 
-		throws RIFServiceException;	
-	
-		
+			
 	public BoundaryRectangle getGeoLevelFullExtent(
 		final User user,
 		final Geography geography,

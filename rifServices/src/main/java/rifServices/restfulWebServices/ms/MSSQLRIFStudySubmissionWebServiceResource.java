@@ -1424,25 +1424,7 @@ public class MSSQLRIFStudySubmissionWebServiceResource
 			xMin);
 		
 	}	
-
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getGeoLevelFullExtentForStudy")
-	public Response getGeoLevelFullExtentForStudy(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
-
-		return super.getGeoLevelFullExtentForStudy(
-			servletRequest,	
-			userID,
-			geographyName,
-			geoLevelSelectName,
-			diseaseMappingStudyID);		
-	}	
-				
+	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeoLevelFullExtent")
