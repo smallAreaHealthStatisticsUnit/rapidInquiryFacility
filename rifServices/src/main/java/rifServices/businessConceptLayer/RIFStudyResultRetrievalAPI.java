@@ -135,15 +135,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final Integer y)
 					throws RIFServiceException;
 
-	public String getTilesGivenTile(
-			final User user,
-			final Geography geography,
-			final GeoLevelSelect geoLevelSelect,
-			final Integer zoomLevel,
-			final Integer xTileIdentifier,
-			final Integer yTileIdentifier) 
-					throws RIFServiceException;
-
 	/**
 	 * Given a given geo level and an attribute theme, returns 
 	 * a collection of map areas that are associated with a specific
