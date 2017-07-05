@@ -103,19 +103,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 					throws RIFServiceException;
 
 	/**
-	 * Given a disease mapping study, this method returns 
-	 * @param user
-	 * @param geography
-	 * @param geoLevelSelect
-	 * @param diseaseMappingStudy
-	 * @return
-	 */
-	public ArrayList<GeoLevelAttributeSource> getGeoLevelAttributeSources(
-			final User user,
-			final StudyResultRetrievalContext studyResultRetrievalContext)
-					throws RIFServiceException; 
-
-	/**
 	 * 
 	 * @param user
 	 * @param geography
