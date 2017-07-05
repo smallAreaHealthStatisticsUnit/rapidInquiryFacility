@@ -684,66 +684,6 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 			xMin);
 		
 	}	
-		
-	/**
-	 * STUB
-	 * @param userID
-	 * @param geographyName
-	 * @param geoLevelSelectName
-	 * @param diseaseMappingStudyID
-	 * @return
-	 */
-
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getGeoLevelAttributeThemes")
-	public String getGeoLevelAttributeThemes(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-		@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName) {
-					
-		String result = "";
-		
-		try {
-			//Convert URL parameters to RIF service API parameters			
-			User user = createUser(servletRequest, userID);
-			StudyResultRetrievalContext studyResultRetrievalContext
-				= StudyResultRetrievalContext.newInstance(
-					geographyName, 
-					geoLevelSelectName, 
-					diseaseMappingStudyID);
-			GeoLevelAttributeSource geoLevelAttributeSource
-				= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
-			
-			//Call service API
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
-			ArrayList<GeoLevelAttributeTheme> geoLevelAttributeThemes
-				= studyResultRetrievalService.getGeoLevelAttributeThemes(
-					user, 
-					studyResultRetrievalContext,
-					geoLevelAttributeSource);
-
-			//Convert results to support JSON
-			result 
-				= serialiseArrayResult(
-					servletRequest,
-					geoLevelAttributeThemes);			
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
-		
-		return result;
-	}	
-	
 
 	/**
 	 * STUB
