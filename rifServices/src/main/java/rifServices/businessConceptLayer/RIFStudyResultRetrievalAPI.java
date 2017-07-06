@@ -103,24 +103,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 					throws RIFServiceException;
 
 	/**
-	 * 
-	 * @param user
-	 * @param geography
-	 * @param geoLevelSelect
-	 * @param geoLevelAttributeTheme
-	 * @return
-	 * @throws RIFServiceException
-	 */
-
-	public String[] getNumericAttributesForGeoLevelAttributeTheme(
-			final User user,
-			final StudyResultRetrievalContext studyResultRetrievalContext,
-			final GeoLevelAttributeSource geoLevelAttributeSource,
-			final GeoLevelAttributeTheme geoLevelAttributeTheme) 
-					throws RIFServiceException;
-
-
-	/**
 	 * just displays the statistically calculated data
 	 * @param user
 	 * @param study
