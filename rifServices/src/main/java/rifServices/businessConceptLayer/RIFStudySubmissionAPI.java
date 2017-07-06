@@ -318,27 +318,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 		final User user) 
 		throws RIFServiceException;
 	
-	/**
-	 * Gets the image.
-	 *
-	 * @param user the user
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @param geoLevelArea the geo level area
-	 * @param geoLevelView the geo level view
-	 * @param mapAreas the map areas
-	 * @return the image
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public BufferedImage getImage(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelArea geoLevelArea,
-		final GeoLevelView geoLevelView,
-		final ArrayList<MapArea> mapAreas)
-		throws RIFServiceException;
-	
+
 	/**
 	 * Submit study.
 	 *
