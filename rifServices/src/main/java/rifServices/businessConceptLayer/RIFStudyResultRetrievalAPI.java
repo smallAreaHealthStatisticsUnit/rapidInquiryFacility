@@ -101,34 +101,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final Integer x,
 			final Integer y)
 					throws RIFServiceException;
-
-	/**
-	 * 
-	 * returns a table with the following fields:
-	 * age group  |  sex  |  popcount
-	 * 
-	 * @param user
-	 * @param geography
-	 * @param geoLevelSelect
-	 * @param diseaseMappingStudy
-	 * @param geoLevelAttributeTheme
-	 * @param geoLevelAttribute
-	 * @param mapAreas
-	 * @param year
-	 * @return
-	 * @throws RIFServiceException
-	 */
-	public RIFResultTable getResultsStratifiedByGenderAndAgeGroup(
-			final User user,
-			final StudyResultRetrievalContext studyResultRetrievalContext,
-			final GeoLevelToMap geoLevelToMap,
-			final GeoLevelAttributeSource geoLevelAttributeSource,
-			final String geoLevelAttribute,
-			final ArrayList<MapArea> mapAreas,
-			final Integer year)
-					throws RIFServiceException;
-
-
+	
 	public ArrayList<AgeGroup> getResultAgeGroups(
 			final User user,
 			final StudyResultRetrievalContext studyResultRetrievalContext,
@@ -152,6 +125,7 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final GeoLevelAttributeSource geoLevelSource,
 			final String geoLevelAttribute) 
 					throws RIFServiceException;	
+	
 	public RIFResultTable getPyramidDataByYear(
 			final User user,
 			final StudyResultRetrievalContext studyResultRetrievalContext,
