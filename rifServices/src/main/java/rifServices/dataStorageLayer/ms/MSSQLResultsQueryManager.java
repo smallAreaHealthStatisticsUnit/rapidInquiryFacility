@@ -335,62 +335,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			MSSQLQueryUtility.close(resultSet2);
 		}			
 	}
-			
-
-	public RIFResultTable getResultStudyGeneralInfo(
-		final Connection connection,
-		final User user,
-		final StudySummary studySummary)
-		throws RIFServiceException {
-	
-		ValidationPolicy validationPolicy = getValidationPolicy();
-		studySummary.checkErrors(validationPolicy);
-		String studyID = studySummary.getStudyID();
-		sqlDiseaseMappingStudyManager.checkDiseaseMappingStudyExists(
-			connection, 
-			studyID);
-				
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();		
-		
-
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;		
-		RIFResultTable results = new RIFResultTable();		
-		try {
-			
-			statement 
-				= createPreparedStatement(
-					connection,
-					queryFormatter);			
-			resultSet
-				= statement.executeQuery();
-			
-			
-			
-			
-			
-			connection.commit();
-			return results;
-		}
-		catch(SQLException sqlException) {
-			logSQLException(sqlException);
-			//Record original exception, throw sanitised, human-readable version			
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlResultsQueryManager.error.unableToGetResultStudyGeneralInfo");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-			throw rifServiceException;			
-		}
-		finally {
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);			
-		}
-	}
-
-		
+					
 	public String getStudyName(
 		final Connection connection,
 		final String studyID)
