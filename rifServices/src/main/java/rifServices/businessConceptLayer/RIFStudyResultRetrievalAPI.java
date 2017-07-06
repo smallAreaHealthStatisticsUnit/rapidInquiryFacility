@@ -103,25 +103,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 					throws RIFServiceException;
 
 	/**
-	 * just displays the statistically calculated data
-	 * @param user
-	 * @param study
-	 * @param investigation
-	 * @param startRowIndex
-	 * @param endRowIndex
-	 * @return
-	 * @throws RIFServiceException
-	 */	
-	public RIFResultTable getCalculatedResultsByBlock(
-			final User user,
-			final StudySummary studySummary,
-			final String[] calculatedResultColumnFieldNames,
-			final Integer startRowIndex,
-			final Integer endRowIndex)
-					throws RIFServiceException;
-
-
-	/**
 	 * accessing data from sources such as the health theme,
 	 * the covariates,or data from the extract table
 	 * @param user
