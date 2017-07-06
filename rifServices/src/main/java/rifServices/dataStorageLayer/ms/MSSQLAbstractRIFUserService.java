@@ -237,61 +237,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		return result;		
 
 	}
-			
-	
-	
-	
-	public ArrayList<DiseaseMappingStudy> getDiseaseMappingStudies(
-		final User _user) 
-		throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
-			return null;
-		}
-
-		ArrayList<DiseaseMappingStudy> results
-			= new ArrayList<DiseaseMappingStudy>();
-		try {
 				
-			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getDiseaseMappingStudies",
-				"user",
-				user);
-		
-			//Check for security violations
-			validateUser(user);
-			
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getDiseaseMappingStudies",
-					user.getUserID(),
-					user.getIPAddress());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-
-			//Delegate operation to a specialised manager class
-
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getDiseaseMappingStudies",
-				rifServiceException);
-		}
-			
-		return results;		
-	}
-	
 	public ArrayList<Geography> getGeographies(
 		final User _user) 
 		throws RIFServiceException {

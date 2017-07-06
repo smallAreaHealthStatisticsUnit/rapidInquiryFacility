@@ -472,45 +472,6 @@ public class MSSQLRIFStudySubmissionWebServiceResource
 			servletRequest,
 			result);
 	}
-		
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getDiseaseMappingStudies")
-	public Response getDiseaseMappingStudies(
-		@Context HttpServletRequest servletRequest,
-		@QueryParam("userID") String userID) {
-				
-		String result = "";
-		
-		
-		try {
-			//Convert URL parameters to RIF service API parameters
-			User user = createUser(servletRequest, userID);
-
-			//Call service API
-			RIFStudySubmissionAPI studySubmissionService
-				= getRIFStudySubmissionService();	
-			ArrayList<DiseaseMappingStudy> diseaseMappingStudies
-				= studySubmissionService.getDiseaseMappingStudies(user);
-			
-			//Convert results to support JSON
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
-		
-		WebServiceResponseGenerator webServiceResponseGenerator
-			= getWebServiceResponseGenerator();
-	
-		return webServiceResponseGenerator.generateWebServiceResponse(
-			servletRequest,
-			result);		
-	}
-
 	
 	@GET
 	@Produces({"application/json"})	

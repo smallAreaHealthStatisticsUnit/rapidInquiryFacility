@@ -78,17 +78,6 @@ public interface RIFStudyServiceAPI {
 		final String studyID)
 		throws RIFServiceException;
 		
-	/**
-	 * Gets the disease mapping studies.
-	 *
-	 * @param user the user
-	 * @return the disease mapping studies
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<DiseaseMappingStudy> getDiseaseMappingStudies(
-		final User user) 
-		throws RIFServiceException;
-		
 	//Features for RIF Context
 	/**
 	 * Gets the geographies.
