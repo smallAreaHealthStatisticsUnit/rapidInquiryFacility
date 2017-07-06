@@ -141,44 +141,9 @@ final class MSSQLMapDataManager
 
 	// ==========================================
 	// Section Accessors and Mutators///////
-	// ==========================================?//
+	// ==========================================//
 
-	/**
-	 * Gets the map area summary information.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @param geoLevelArea the geo level area
-	 * @param geoLevelToMap the geo level to map
-	 * @param mapAreas the map areas
-	 * @return the map area summary information
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public MapAreaSummaryData getMapAreaSummaryInformation (
-		final Connection connection,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect,
-		final GeoLevelArea geoLevelArea,
-		final GeoLevelToMap geoLevelToMap,
-		final ArrayList<MapArea> mapAreas) throws RIFServiceException {
-
-		validateCommonMethodParameters(
-			connection,
-			geography,
-			geoLevelSelect,
-			geoLevelArea,
-			geoLevelToMap,
-			mapAreas);	
-		
-		//TODO: Add in operations to compute total area and total population
-		MapAreaSummaryData result
-			= MapAreaSummaryData.newInstance();
-		result.setTotalViewAreas(mapAreas.size());
-		
-		return result;
-	}
-		
+	
 	/**
 	 * Gets the summary data for extent areas.
 	 *
