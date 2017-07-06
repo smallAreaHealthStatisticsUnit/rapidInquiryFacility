@@ -103,30 +103,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 					throws RIFServiceException;
 
 	/**
-	 * There are multiple data attributes that may be associated at a given 
-	 * geo level select (eg: "region", "district"). The attributes are 
-	 * categorised by a geo level attribute theme (eg: "health", "geometry")
-	 * and depend on which result source (GeoLevelAttributeSource) is being used
-	 * (eg: "map table", "extract table"). 
-	 * 
-	 * @param user
-	 * @param geoLevelSelect describes the kind of area being considered. eg: region,
-	 * district, ward.
-	 * @param geoLevelAttributeSource describes a table whose column names would 
-	 * provide geo level attributes
-	 * @param geoLevelAttributeTheme: used to group the column names of a result
-	 * table into themes
-	 * @return list of data attributes that are available for the 
-	 * @throws RIFServiceException
-	 */
-	public String[] getAllAttributesForGeoLevelAttributeTheme(
-			final User user,
-			final StudyResultRetrievalContext studyResultRetrievalContext,
-			final GeoLevelAttributeSource geoLevelAttributeSource,
-			final GeoLevelAttributeTheme geoLevelAttributeTheme)
-					throws RIFServiceException;
-
-	/**
 	 * 
 	 * @param user
 	 * @param geography
