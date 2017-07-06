@@ -701,59 +701,6 @@ extends PGSQLAbstractRIFWebServiceResource {
 
 	}	
 
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getResultFieldsStratifiedByAgeGroup")
-	public String getResultFieldsStratifiedByAgeGroup(
-			@Context HttpServletRequest servletRequest,	
-			@QueryParam("userID") String userID,
-			@QueryParam("geographyName") String geographyName,
-			@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID,
-			@QueryParam("geoLevelAttributeSourceName") String geoLevelAttributeSourceName) {
-
-
-		String result = "";
-
-		try {
-			//Convert URL parameters to RIF service API parameters			
-			User user = createUser(servletRequest, userID);
-			StudyResultRetrievalContext studyResultRetrievalContext
-			= StudyResultRetrievalContext.newInstance(
-					geographyName,
-					geoLevelSelectName,
-					diseaseMappingStudyID);
-			GeoLevelAttributeSource geoLevelAttributeSource
-			= GeoLevelAttributeSource.newInstance(geoLevelAttributeSourceName);
-
-			//Call service API
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-			= getRIFStudyResultRetrievalService();
-			String[] resultFields
-			= studyResultRetrievalService.getResultFieldsStratifiedByAgeGroup(
-					user, 
-					studyResultRetrievalContext,
-					geoLevelAttributeSource);
-
-			//Convert results to support JSON
-			result 
-			= serialiseArrayResult(
-					servletRequest,
-					resultFields);		
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-			= serialiseException(
-					servletRequest,
-					exception);			
-		}
-
-		return result;
-
-	}	
-
-
 	@GET	
 	@Produces({"application/json"})	
 	@Path("/getSMRValues")

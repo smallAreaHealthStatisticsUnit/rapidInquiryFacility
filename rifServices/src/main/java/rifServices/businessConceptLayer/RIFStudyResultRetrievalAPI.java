@@ -101,13 +101,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final Integer x,
 			final Integer y)
 					throws RIFServiceException;
-	
-	public String[] getResultFieldsStratifiedByAgeGroup(
-			final User user,
-			final StudyResultRetrievalContext studyResultRetrievalContext,
-			final GeoLevelAttributeSource geoLevelAttributeSource)
-					throws RIFServiceException;
-
 
 	public ArrayList<Integer> getYearsForStudy(
 			final User user, 

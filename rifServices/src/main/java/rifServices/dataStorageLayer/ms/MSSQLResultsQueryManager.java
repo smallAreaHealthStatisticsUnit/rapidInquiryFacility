@@ -646,47 +646,6 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 	}
 		
 
-	public String[] getResultFieldsStratifiedByAgeGroup(
-		final Connection connection,
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext,
-		final GeoLevelAttributeSource geoLevelAttributeSource)
-		throws RIFServiceException {
-	
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;		
-		String[] results = new String[0];
-		try {
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		
-			logSQLQuery(
-				"getPyramidDataByYear",
-				queryFormatter);
-			
-			statement 
-				= createPreparedStatement(
-					connection,
-					queryFormatter);			
-
-			resultSet = statement.executeQuery();
-			while(resultSet.next()) {
-				//KLG: @TODO - fill in
-			}
-			
-			connection.commit();
-		}
-		catch(SQLException sqlException) {
-			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
-		}
-		finally {
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);			
-		}
-		
-		return results;
-	}
-	
 	public RIFResultTable getSMRValues(
 		final Connection connection,
 		final User user,
