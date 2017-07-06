@@ -518,67 +518,6 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 			servletRequest,
 			result);		
 	}
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getGeoLevelToMapValues")
-	public Response getGeoLevelToMapValues(
-		@Context HttpServletRequest servletRequest,
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
-				
-		String result = "";
-		
-		
-		try {
-			//Convert URL parameters to RIF service API parameters
-			User user = createUser(servletRequest, userID);
-			Geography geography = Geography.newInstance(geographyName, "");
-			GeoLevelSelect geoLevelSelect
-				= GeoLevelSelect.newInstance(geoLevelSelectName);
-
-			//Call service API
-			RIFStudySubmissionAPI studySubmissionService
-				= getRIFStudySubmissionService();		
-			ArrayList<GeoLevelToMap> geoLevelToMaps
-				= studySubmissionService.getGeoLevelToMapValues(
-					user, 
-					geography, 
-					geoLevelSelect);
-
-			//Convert results to support JSON			
-			GeoLevelToMapsProxy geoLevelToMapsProxy 
-				= new GeoLevelToMapsProxy();
-			ArrayList<String> geoLevelToMapsNames = new ArrayList<String>();
-			
-			for (GeoLevelToMap geoLevelToMap : geoLevelToMaps) {
-				geoLevelToMapsNames.add(geoLevelToMap.getName());
-			}
-			geoLevelToMapsProxy.setNames(geoLevelToMapsNames.toArray(new String[0]));			
-			result 
-				= serialiseSingleItemAsArrayResult(
-					servletRequest,
-					geoLevelToMapsProxy);
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
-
-		
-		WebServiceResponseGenerator webServiceResponseGenerator
-			= getWebServiceResponseGenerator();
-
-		return webServiceResponseGenerator.generateWebServiceResponse(
-			servletRequest,
-			result);		
-		
-	}
-
-	
 	
 	@POST
 	@Produces({"application/json"})	

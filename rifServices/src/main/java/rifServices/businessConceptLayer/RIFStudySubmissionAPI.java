@@ -108,21 +108,6 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 		throws RIFServiceException;
 	
 	/**
-	 * Gets the geo level to map values.
-	 *
-	 * @param user the user
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @return the geo level to map values
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<GeoLevelToMap> getGeoLevelToMapValues(
-		final User user,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect) 
-		throws RIFServiceException;
-	
-	/**
 	 * Gets the health themes.
 	 *
 	 * @param user the user

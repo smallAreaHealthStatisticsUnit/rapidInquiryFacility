@@ -191,18 +191,7 @@ public final class TestGUIScenario
 			for (GeoLevelView geoLevelView : geoLevelViews) {
 				System.out.println("GEOLEVELVIEW:=="+geoLevelView.getDisplayName()+"==");
 			}
-			
-			System.out.println();
-			System.out.println("Now get geo level view objects appropriate for geolevelSelect=="+validSAHSUGeoLevelSelectValue.getDisplayName()+"==");
-			ArrayList<GeoLevelToMap> geoLevelToMaps
-				= rifStudySubmissionService.getGeoLevelToMapValues(
-					testUser, 
-					sahsuGeography, 
-					validSAHSUGeoLevelSelectValue);
-			for (GeoLevelToMap geoLevelToMap : geoLevelToMaps) {
-				System.out.println("GEOLEVELTOMAP:=="+geoLevelToMap.getDisplayName()+"==");
-			}
-
+		
 			System.out.println();
 			System.out.println("Get Age groups for the ND pair=="+cancerNDPair.getDisplayName()+"==");
 			ArrayList<AgeGroup> ageGroups
