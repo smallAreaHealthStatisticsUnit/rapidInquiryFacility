@@ -1292,68 +1292,6 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager {
 			PGSQLQueryUtility.close(resultSet);			
 		}
 	}
-
-	public ArrayList<AgeGroup> getResultAgeGroups(
-		final Connection connection,
-		final User user,
-		final StudyResultRetrievalContext studyResultRetrievalContext,
-		final GeoLevelAttributeSource geoLevelAttributeSource,
-		final String geoLevelSourceAttribute)
-		throws RIFServiceException {
-		
-		ValidationPolicy validationPolicy = getValidationPolicy();
-		user.checkErrors();
-		studyResultRetrievalContext.checkErrors(validationPolicy);
-		geoLevelAttributeSource.checkErrors(validationPolicy);
-
-		//@TODO: KLG - we need to implement this database method
-
-		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();
-		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		try {
-			
-			statement 
-				= createPreparedStatement(
-					connection,
-					queryFormatter);			
-			resultSet = statement.executeQuery();
-			
-			while (resultSet.next()) {
-				AgeGroup ageGroup = AgeGroup.newInstance();
-				results.add(ageGroup);
-			}
-			
-			
-			connection.commit();
-		}
-		catch(SQLException sqlException) {
-			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
-			//Record original exception, throw sanitised, human-readable version			
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlResultsQueryManager.error.unableToGetResultAgeGroups",
-					studyResultRetrievalContext.getStudyID(),
-					geoLevelAttributeSource.getName(),
-					geoLevelSourceAttribute);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
-		}
-		
-		
-		return results;
-	}
 		
 	public String getStudyName(
 		final Connection connection,
