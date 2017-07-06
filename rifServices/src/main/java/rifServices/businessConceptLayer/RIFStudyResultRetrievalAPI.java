@@ -117,19 +117,8 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final String studyID)
 					throws RIFServiceException;
 
-	public ArrayList<String> getSmoothedResultAttributes(
-			final User user) 
-					throws RIFServiceException;
-
 	public RIFResultTable getSmoothedResults(
 			final User user,
-			final String studyID,
-			final String sex) 
-					throws RIFServiceException;
-
-	public RIFResultTable getSmoothedResultsForAttributes(
-			final User user,
-			final ArrayList<String> smoothedAttributesToInclude,
 			final String studyID,
 			final String sex) 
 					throws RIFServiceException;
@@ -138,13 +127,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final User user,
 			final String studyID,
 			final String year)
-					throws RIFServiceException;
-
-	public RIFResultTable getPopulationPyramidData(
-			final User user,
-			final String studyID,
-			final String year,
-			final ArrayList<MapArea> mapAreas)
 					throws RIFServiceException;
 
 	public RIFResultTable getCurrentStatusAllStudies(

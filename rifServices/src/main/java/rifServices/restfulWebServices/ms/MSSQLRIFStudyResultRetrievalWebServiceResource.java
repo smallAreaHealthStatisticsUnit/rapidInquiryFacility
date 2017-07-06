@@ -389,51 +389,7 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 			result);		
 	}	
 	
-	
-	
-	
-	
-	/**
-	 * STUB
-	 * @param userID
-	 * @param study_id
-	 * @return
-	 */
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getSmoothedResultAttributes")
-	public String getSmoothedResultAttributes(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("study_id") String studyID) {
-					
-		String result = "";
-		try {
-			//Convert URL parameters to RIF service API parameters
-			User user = createUser(servletRequest, userID);
-
-			//Call service API
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
-			ArrayList<String> smoothedAttributes
-				= studyResultRetrievalService.getSmoothedResultAttributes(
-					user);
-			
-			result = serialiseArrayResult(servletRequest, smoothedAttributes);
-			
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
 		
-		return result;
-	}	
-	
-	
 	/**
 	 * STUB
 	 * @param userID
@@ -482,64 +438,6 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 		return result;
 	}	
 	
-	
-	/**
-	 * STUB
-	 * @param userID
-	 * @param geographyName
-	 * @param geoLevelSelectName
-	 * @param geoLevelToMapName
-	 * @param mapAreaValues
-	 * @return
-	 */
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getSmoothedResultsForAttributes")
-	public String getSmoothedResultsForAttributes(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("studyID") String studyID,
-		@QueryParam("sex") String sex,		
-		@QueryParam("smoothedAttribute") List<String> smoothedAttributeList) {
-	
-		String result = "";
-		try {
-			//Convert URL parameters to RIF service API parameters
-			User user = createUser(servletRequest, userID);
-			
-			//We convert contents of a list into an ArrayList.  List is one of the 
-			//types supported by the @QueryParam feature, but the middleware method
-			//signatures tend to use ArrayLists for parameters containing lists
-			ArrayList<String> smoothedAttributesToInclude = new ArrayList<String>();
-			smoothedAttributesToInclude.addAll(smoothedAttributeList);
-			
-			//Call service API
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
-			RIFResultTable resultTable
-				= studyResultRetrievalService.getSmoothedResultsForAttributes(
-					user, 
-					smoothedAttributesToInclude,
-					studyID,
-					sex);
-
-			RIFResultTableJSONGenerator rifResultTableJSONGenerator
-				= new RIFResultTableJSONGenerator();
-			result = rifResultTableJSONGenerator.writeResultTable(resultTable);	
-			
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
-		
-		return result;
-	}	
-
-	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getAllPopulationPyramidData")
@@ -578,64 +476,7 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 		return result;
 	}	
 	
-	/**
-	 * STUB
-	 * @param userID
-	 * @param studyID
-	 * @param areaIDList
-	 * @return
-	 */
 
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getPopulationPyramidDataForAreas")
-	public String getPopulationPyramidDataForAreas(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("studyID") String studyID,
-		@QueryParam("year") String year,
-		@QueryParam("areaID") List<String> areaIDList) {
-	
-		String result = "";
-		try {
-			//Convert URL parameters to RIF service API parameters
-			User user = createUser(servletRequest, userID);
-			
-			//We convert contents of a list into an ArrayList.  List is one of the 
-			//types supported by the @QueryParam feature, but the middleware method
-			//signatures tend to use ArrayLists for parameters containing lists
-			ArrayList<MapArea> mapAreas = new ArrayList<MapArea>();
-			
-			for (String areaID : areaIDList) {
-				mapAreas.add(MapArea.newInstance(areaID, areaID, areaID));
-			}
-						
-			//Call service API
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-				= getRIFStudyResultRetrievalService();
-			RIFResultTable resultTable
-				= studyResultRetrievalService.getPopulationPyramidData(
-					user, 
-					studyID,
-					year,
-					mapAreas);
-			
-			RIFResultTableJSONGenerator rifResultTableJSONGenerator
-				= new RIFResultTableJSONGenerator();
-			result = rifResultTableJSONGenerator.writeResultTable(resultTable);	
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
-		
-		return result;
-	}	
-
-	
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getTileMakerTiles")
