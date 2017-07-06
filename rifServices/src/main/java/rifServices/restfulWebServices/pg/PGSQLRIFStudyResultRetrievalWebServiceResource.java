@@ -286,7 +286,6 @@ extends PGSQLAbstractRIFWebServiceResource {
 
 
 	/**
-	 * STUB
 	 * @param userID
 	 * @param study_id
 	 * @return
@@ -336,7 +335,6 @@ extends PGSQLAbstractRIFWebServiceResource {
 
 
 	/**
-	 * STUB
 	 * @param userID
 	 * @param study_id
 	 * @return
@@ -392,7 +390,6 @@ extends PGSQLAbstractRIFWebServiceResource {
 
 
 	/**
-	 * STUB
 	 * @param userID
 	 * @param geographyName
 	 * @param geoLevelSelectName

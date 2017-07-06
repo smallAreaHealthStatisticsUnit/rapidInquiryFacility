@@ -232,62 +232,6 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 	
 	}
 
-	
-	
-	public ArrayList<RIFOutputOption> getAvailableRIFOutputOptions(
-		final User _user)
-		throws RIFServiceException {
-		
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();		
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
-			return null;
-		}
-
-		ArrayList<RIFOutputOption> results
-			= new ArrayList<RIFOutputOption>();
-		try {
-
-			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getAvailableRIFOutputOptions",
-				"user",
-				user);
-		
-			//Check for security violations
-			validateUser(user);
-
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getAvailableRIFOutputOptions",
-					user.getUserID(),
-					user.getIPAddress());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);
-
-			//Perform operation
-			results.add(RIFOutputOption.DATA);
-			results.add(RIFOutputOption.MAPS);
-			results.add(RIFOutputOption.RATIOS_AND_RATES);
-			results.add(RIFOutputOption.POPULATION_HOLES);
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getAvailableRIFOutputOptions",
-				rifServiceException);
-		}
-		
-		return results;
-	}
-		
 	public ArrayList<CalculationMethod> getAvailableCalculationMethods(
 		final User _user) 
 		throws RIFServiceException {

@@ -285,7 +285,6 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 
 
 	/**
-	 * STUB
 	 * @param userID
 	 * @param study_id
 	 * @return
@@ -335,7 +334,6 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 	
 	
 	/**
-	 * STUB
 	 * @param userID
 	 * @param study_id
 	 * @return
@@ -391,7 +389,6 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 	
 		
 	/**
-	 * STUB
 	 * @param userID
 	 * @param geographyName
 	 * @param geoLevelSelectName

@@ -359,52 +359,6 @@ public class MSSQLRIFStudySubmissionWebServiceResource
 	}
 	
 	/**
-	 * STUB
-	 * @param userID
-	 * @return
-	 */
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getAvailableRIFOutputOptions")
-	public Response getAvailableRIFOutputOptions(
-		@Context HttpServletRequest servletRequest,
-		@QueryParam("userID") String userID) {
-				
-		String result = "";
-		
-		
-		try {
-			//Convert URL parameters to RIF service API parameters			
-			User user = createUser(servletRequest, userID);
-			
-			//Call service API
-			RIFStudySubmissionAPI studySubmissionService
-				= getRIFStudySubmissionService();	
-			ArrayList<RIFOutputOption> rifOutputOptions
-				= studySubmissionService.getAvailableRIFOutputOptions(user);
-			
-			//Convert results to support JSON
-			//@TODO
-			
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
-		
-		WebServiceResponseGenerator webServiceResponseGenerator
-			= getWebServiceResponseGenerator();
-		
-		return webServiceResponseGenerator.generateWebServiceResponse(
-			servletRequest,
-			result);
-		
-	}
-	
-	/**
 	 * @param userID
 	 * @return
 	 */	

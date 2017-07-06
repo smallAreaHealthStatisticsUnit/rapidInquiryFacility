@@ -86,17 +86,6 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 		throws RIFServiceException;
 	
 	/**
-	 * Gets the available rif output options.
-	 *
-	 * @param user the user
-	 * @return the available rif output options
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<RIFOutputOption> getAvailableRIFOutputOptions(
-		final User user)
-		throws RIFServiceException;
-	
-	/**
 	 * Gets the available calculation methods.
 	 *
 	 * @param user the user
