@@ -6,14 +6,12 @@ import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
-import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -105,7 +103,6 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager {
 	private PGSQLRIFContextManager sqlRIFContextManager;
 	private PGSQLMapDataManager sqlMapDataManager;
 	private PGSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager;
-	private PGSQLInMemoryTileCache inMemoryTileCache;	
 	private PGSQLFunctionCallerQueryFormatter getTilesQueryFormatter;
 	// ==========================================
 	// Section Construction
@@ -121,10 +118,7 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager {
 		this.sqlRIFContextManager = sqlRIFContextManager;
 		this.sqlMapDataManager = sqlMapDataManager;
 		this.sqlDiseaseMappingStudyManager = sqlDiseaseMappingStudyManager;
-			
-		inMemoryTileCache = PGSQLInMemoryTileCache.getInMemoryTileCache();
-
-		
+					
 		getTilesQueryFormatter
 			= new PGSQLFunctionCallerQueryFormatter();
 		configureQueryFormatterForDB(getTilesQueryFormatter);

@@ -1,6 +1,5 @@
 package rifServices.test.services.pg;
 
-import rifServices.businessConceptLayer.BoundaryRectangle;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.system.RIFServiceError;

@@ -6,14 +6,12 @@ import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
-import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -105,7 +103,6 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 	private MSSQLRIFContextManager sqlRIFContextManager;
 	private MSSQLMapDataManager sqlMapDataManager;
 	private MSSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager;
-	private MSSQLInMemoryTileCache inMemoryTileCache;	
 	private MSSQLFunctionCallerQueryFormatter getTilesQueryFormatter;
 	// ==========================================
 	// Section Construction
@@ -121,10 +118,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		this.sqlRIFContextManager = sqlRIFContextManager;
 		this.sqlMapDataManager = sqlMapDataManager;
 		this.sqlDiseaseMappingStudyManager = sqlDiseaseMappingStudyManager;
-			
-		inMemoryTileCache = MSSQLInMemoryTileCache.getInMemoryTileCache();
 
-		
 		getTilesQueryFormatter
 			= new MSSQLFunctionCallerQueryFormatter(false);
 		configureQueryFormatterForDB(getTilesQueryFormatter);

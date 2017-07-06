@@ -172,10 +172,6 @@ public class AbstractRIFServiceTestCase
 	private MapArea nonExistentMapArea;
 
 	private MapArea maliciousMapArea;
-	
-	private BoundaryRectangle validBoundaryRectangle;
-	
-	private BoundaryRectangle invalidBoundaryRectangle;	
 
 	private GeoLevelAttributeSource validGeoLevelAttributeSource;
 	private GeoLevelAttributeSource emptyGeoLevelAttributeSource;
@@ -368,20 +364,6 @@ public class AbstractRIFServiceTestCase
 				maliciousFieldValue, 
 				maliciousFieldValue, 
 				maliciousFieldValue);
-
-		validBoundaryRectangle
-			= BoundaryRectangle.newInstance(
-				"-7.00093",
-				"54.2998",
-				"-6.57221",
-				"54.7442");
-
-		invalidBoundaryRectangle
-			= BoundaryRectangle.newInstance(
-				"-6.57221",
-				"54.7442",
-				"-7.00093",
-				"54.2998");
 		
 		validGeoLevelAttributeSource
 			= GeoLevelAttributeSource.newInstance("s1_map");
@@ -683,16 +665,7 @@ public class AbstractRIFServiceTestCase
 		mapAreas.add(MapArea.createCopy(maliciousMapArea));
 		return mapAreas;
 	}
-	
-	protected BoundaryRectangle cloneValidBoundaryRectangle() {
-		return BoundaryRectangle.createCopy(validBoundaryRectangle);
-	}
-
-	protected BoundaryRectangle cloneInvalidBoundaryRectangle() {
-		return BoundaryRectangle.createCopy(invalidBoundaryRectangle);
-	}
-	
-	
+		
 	protected GeoLevelAttributeSource cloneValidGeoLevelAttributeSource() {
 		return GeoLevelAttributeSource.createCopy(validGeoLevelAttributeSource);
 	}
