@@ -117,45 +117,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final String studyID)
 					throws RIFServiceException;
 
-	/**
-	 * returns field with the following headers:
-	 * GID, SMR, CL, CU
-	 * @param user
-	 * @param diseaseMappingStudy
-	 * @return
-	 */
-	public RIFResultTable getSMRValues(
-			final User user,
-			final StudySummary studySummary)
-					throws RIFServiceException;
-
-	/**
-	 * obtains RR (unsmoothed - adjusted) and its confidence intervals for the
-	 * study area
-	 * @param user
-	 * @param diseaseMappingStudy
-	 * @return
-	 * @throws RIFServiceException
-	 */
-	public RIFResultTable getRRValues(
-			final User user,
-			final StudySummary studySummary)
-					throws RIFServiceException;
-
-
-	/**
-	 * returns a table with the following columns
-	 * GID  |  RR_unadj  | CL  | CU
-	 * @param user
-	 * @param diseaseMappingStudy
-	 * @return
-	 * @throws RIFServiceException
-	 */
-	public RIFResultTable getRRUnadjustedValues(
-			final User user,
-			final StudySummary studySummary)
-					throws RIFServiceException;	
-
 
 	/**
 	 * Returns a table with the following fields:
