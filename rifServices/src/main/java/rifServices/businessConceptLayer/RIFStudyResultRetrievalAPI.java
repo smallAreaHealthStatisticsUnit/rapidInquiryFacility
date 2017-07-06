@@ -102,54 +102,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final Integer y)
 					throws RIFServiceException;
 	
-	/**
-	 * returns data stratified by age group
-	 * @param user
-	 * @param geography
-	 * @param geoLevelSelect
-	 * @param geoLevelSource
-	 * @param geoLevelAttribute
-	 * @return
-	 * @throws RIFServiceException
-	 */
-	public RIFResultTable getPyramidData(
-			final User user,
-			final StudyResultRetrievalContext studyResultRetrievalContext,
-			final GeoLevelAttributeSource geoLevelSource,
-			final String geoLevelAttribute) 
-					throws RIFServiceException;	
-	
-	public RIFResultTable getPyramidDataByYear(
-			final User user,
-			final StudyResultRetrievalContext studyResultRetrievalContext,
-			final GeoLevelAttributeSource geoLevelSource,
-			final String geoLevelAttribute,
-			final Integer year) 
-					throws RIFServiceException;
-
-	/**
-	 * returns a table with these fields:
-	 * eg:
-	 * agegroup     | sex    popcount
-	 * @param user
-	 * @param studyResultRetrievalContext
-	 * @param geoLevelToMap
-	 * @param geoLevelSource
-	 * @param geoLevelAttribute
-	 * @param mapAreas
-	 * @return
-	 * @throws RIFServiceException
-	 */
-	public RIFResultTable getPyramidDataByMapAreas(
-			final User user,
-			final StudyResultRetrievalContext studyResultRetrievalContext,
-			final GeoLevelToMap geoLevelToMap,
-			final GeoLevelAttributeSource geoLevelSource,
-			final String geoLevelAttribute,
-			final ArrayList<MapArea> mapAreas) 
-					throws RIFServiceException;
-
-
 	public String[] getResultFieldsStratifiedByAgeGroup(
 			final User user,
 			final StudyResultRetrievalContext studyResultRetrievalContext,
