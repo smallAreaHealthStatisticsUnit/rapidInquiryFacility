@@ -145,19 +145,6 @@ public interface RIFStudyServiceAPI {
 		final Geography geography,
 		final GeoLevelSelect geoLevelSelect) 
 		throws RIFServiceException;	
-
-	/**
-	 * Gets the studies.
-	 *
-	 * @param user the user
-	 * @param project the project
-	 * @return the studies
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<AbstractStudy> getStudies(
-		final User user,
-		final Project project) 
-		throws RIFServiceException;
 	
 	public void initialise(final Object startupParameter)
 		throws RIFServiceException;

@@ -202,43 +202,6 @@ final class MSSQLDiseaseMappingStudyManager
 		return results;
 	}
 	
-	/**
-	 * Gets the studies.
-	 *
-	 * @param connection the connection
-	 * @param user the user
-	 * @param project the project
-	 * @return the studies
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<AbstractStudy> getStudies(
-		final Connection connection,
-		final User user,
-		final Project project) 
-		throws RIFServiceException {
-		
-		ValidationPolicy validationPolicy = getValidationPolicy();
-		
-		project.checkErrors(validationPolicy);
-		
-		ArrayList<AbstractStudy> results
-			= new ArrayList<AbstractStudy>();
-	
-		//TODO: faking the output here
-		MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-			= new MSSQLSampleTestObjectGenerator();
-		DiseaseMappingStudy diseaseMappingStudy1
-			= sampleTestObjectGenerator.createSampleDiseaseMappingStudy();
-		diseaseMappingStudy1.setName(user.getUserID()+"==study 1");
-		DiseaseMappingStudy diseaseMappingStudy2
-			= sampleTestObjectGenerator.createSampleDiseaseMappingStudy();
-		diseaseMappingStudy2.setName(user.getUserID()+"==study 2");
-		results.add(diseaseMappingStudy1);
-		results.add(diseaseMappingStudy2);
-		
-		return results;
-	}
-	
 	public void clearStudiesForUser(
 		final Connection connection,
 		final User user) 
