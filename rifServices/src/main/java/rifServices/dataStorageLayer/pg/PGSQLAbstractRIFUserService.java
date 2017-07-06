@@ -954,62 +954,6 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		return results;		
 	}
 
-	protected String getStudyName(
-		final Connection connection,
-		final String studyID)
-		throws RIFServiceException {
-					
-		PGSQLSelectQueryFormatter queryFormatter
-			= new PGSQLSelectQueryFormatter();
-		queryFormatter.addSelectField("study_name");
-		queryFormatter.addFromTable("rif40_studies");
-		queryFormatter.addWhereParameter("study_id");
-			
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		try {
-			statement 
-				= PGSQLQueryUtility.createPreparedStatement(
-					connection, 
-					queryFormatter);
-			statement.setInt(
-				1, 
-				Integer.valueOf(studyID));
-			resultSet = statement.executeQuery();
-			if (resultSet.next() == false) {
-				String recordType
-					= RIFServiceMessages.getMessage("diseaseMappingStudy.label");
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"general.validation.nonExistentRecord",
-						recordType,
-						studyID);
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.NON_EXISTENT_DISEASE_MAPPING_STUDY, 
-							errorMessage);
-					throw rifServiceException;
-			}
-				return resultSet.getString(1);
-		}
-		catch(SQLException sqlException) {
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlResultsQueryManager.unableToGetStudyName",
-					studyID);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
-		}
-			
-	}
-	
 	public RIFResultTable getTileMakerCentroids(
 			final User _user,
 			final Geography _geography,
