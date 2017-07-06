@@ -499,33 +499,6 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 				y);	
 	}
 		
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getMapAreasForBoundaryRectangle")
-	public Response getMapAreasForBoundaryRectangle(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("tileIdentifier") String tileIdentifier,
-		@QueryParam("zoomFactor") Integer zoomFactor,		
-		@QueryParam("yMax") String yMax,
-		@QueryParam("xMax") String xMax,
-		@QueryParam("yMin") String yMin,
-		@QueryParam("xMin") String xMin) {
-					
-		return super.getMapAreasForBoundaryRectangle(
-			servletRequest, 
-			userID, 
-			geographyName, 
-			geoLevelSelectName, 
-			yMax, 
-			xMax, 
-			yMin, 
-			xMin);
-		
-	}	
-	
 	@GET	
 	@Produces({"application/json"})	
 	@Path("/getGeographyAndLevelForStudy")

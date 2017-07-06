@@ -73,26 +73,12 @@ import java.util.ArrayList;
 
 public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 
-	/**
-	 * gets the centroids for all polygons 
-	 * @param user
-	 * @param geography
-	 * @param geoLevelSelect
-	 * @return
-	 * @throws RIFServiceException
-	 */
 	public RIFResultTable getTileMakerCentroids(
 			final User user,
 			final Geography geography,
 			final GeoLevelSelect geoLevelSelect)
 					throws RIFServiceException;
 
-	/*
-	 * Returns JSON stream for a given tile identifier
-	 * 
-	 * geom - contains geoJson
-	 * 
-	 */
 	public String getTileMakerTiles(
 			final User user,
 			final Geography geography,
@@ -150,6 +136,5 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final User user,
 			final String studyID)
 					throws RIFServiceException;
-
 
 }

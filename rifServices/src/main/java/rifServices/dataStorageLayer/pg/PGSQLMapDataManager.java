@@ -334,6 +334,7 @@ final class PGSQLMapDataManager
 		return result;		
 	}
 	
+	//TODO: (DM) to clean once study submission pruned
 	//TOUR_ADD_METHOD-3
 	/*
 	 * The service method will delegate to a manager class, which is responsible

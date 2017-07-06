@@ -729,81 +729,6 @@ public class MSSQLRIFStudySubmissionWebServiceResource
 			servletRequest,
 			result);		
 	}
-	
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getMapAreas")
-	public Response getGeoLevelToMapAreas(
-		@Context HttpServletRequest servletRequest,
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("geoLevelAreaName") String geoLevelAreaName,
-		@QueryParam("geoLevelToMapName") String geoLevelToMapName) {
-				
-		String result = "";
-		
-		
-		try {
-			//Convert URL parameters to RIF service API parameters
-			User user = createUser(servletRequest, userID);
-			Geography geography = Geography.newInstance(geographyName, "");
-			GeoLevelSelect geoLevelSelect
-				= GeoLevelSelect.newInstance(geoLevelSelectName);
-			GeoLevelArea geoLevelArea
-				= GeoLevelArea.newInstance(geoLevelAreaName);
-			GeoLevelToMap geoLevelToMap
-				= GeoLevelToMap.newInstance(geoLevelToMapName);			
-			
-			
-			//Call service API
-			RIFStudySubmissionAPI studySubmissionService
-				= getRIFStudySubmissionService();	
-			ArrayList<MapArea> mapAreas
-				= studySubmissionService.getMapAreas(
-					user, 
-					geography, 
-					geoLevelSelect,
-					geoLevelArea,
-					geoLevelToMap);
-			
-			//Convert results to support JSON			
-			/*
-			ArrayList<MapAreaProxy> mapAreaProxies 
-				= new ArrayList<MapAreaProxy>();
-			for (MapArea mapArea : mapAreas) {
-				MapAreaProxy mapAreaProxy
-					= new MapAreaProxy();
-				mapAreaProxy.setIdentifier(mapArea.getIdentifier());
-				mapAreaProxy.setLabel(mapArea.getLabel());
-				mapAreaProxies.add(mapAreaProxy);
-			}
-			*/
-			
-			//use a specialised serialiser to produce a useful way of 
-			//rendering map areas
-			
-			MapAreaJSONGenerator mapAreaJSONGenerator
-				= new MapAreaJSONGenerator();
-			result
-				= mapAreaJSONGenerator.writeJSONMapAreas(mapAreas);
-			
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-				= serialiseException(
-					servletRequest,
-					exception);			
-		}
-		
-		WebServiceResponseGenerator webServiceResponseGenerator
-			= getWebServiceResponseGenerator();
-
-		return webServiceResponseGenerator.generateWebServiceResponse(
-			servletRequest,
-			result);		
-	}
 		
 	@GET
 	@Produces({"application/json"})	
@@ -1398,33 +1323,7 @@ public class MSSQLRIFStudySubmissionWebServiceResource
 			servletRequest,
 			result);		
 	}
-	
-
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getMapAreasForBoundaryRectangle")
-	public Response getMapAreasForBoundaryRectangle(
-		@Context HttpServletRequest servletRequest,	
-		@QueryParam("userID") String userID,
-		@QueryParam("geographyName") String geographyName,
-		@QueryParam("geoLevelSelectName") String geoLevelSelectName,
-		@QueryParam("yMax") String yMax,
-		@QueryParam("xMax") String xMax,
-		@QueryParam("yMin") String yMin,
-		@QueryParam("xMin") String xMin) {
-					
-		return super.getMapAreasForBoundaryRectangle(
-			servletRequest, 
-			userID, 
-			geographyName, 
-			geoLevelSelectName, 
-			yMax, 
-			xMax, 
-			yMin, 
-			xMin);
 		
-	}	
-	
 	@POST
 	@Produces({"application/json"})	
 	@Path("/submitStudy")

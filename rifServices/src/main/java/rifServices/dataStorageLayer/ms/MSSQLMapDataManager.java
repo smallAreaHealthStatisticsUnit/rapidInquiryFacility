@@ -1301,7 +1301,6 @@ final class MSSQLMapDataManager
 				= getGeographyTableName(
 					connection, 
 					geographyName);
-
 			SQLRecordExistsQueryFormatter queryFormatter
 				= new SQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
