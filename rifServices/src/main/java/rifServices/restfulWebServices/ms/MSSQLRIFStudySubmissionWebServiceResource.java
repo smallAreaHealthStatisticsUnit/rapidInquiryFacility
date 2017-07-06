@@ -188,20 +188,7 @@ public class MSSQLRIFStudySubmissionWebServiceResource
 					servletRequest, 
 					userID);	
 	}
-	
-	
-	@GET
-	@Produces({"application/json"})	
-	@Path("/getStudySummaries")
-	public Response getStudySummaries(
-		@Context HttpServletRequest servletRequest,
-		@QueryParam("userID") String userID) {
-	
-		return super.getStudySummaries(
-			servletRequest, 
-			userID);
-	}
-	
+		
 	@GET
 	@Produces({"application/json"})	
 	@Path("/getGeographies")

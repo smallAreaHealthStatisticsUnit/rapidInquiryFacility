@@ -265,55 +265,6 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 				result);		
 	}
 
-
-	protected Response getStudySummaries(
-			final HttpServletRequest servletRequest,
-			final String userID) {
-
-		String result = "";
-
-		try {
-			//Convert URL parameters to RIF service API parameters
-			User user = createUser(servletRequest, userID);
-			System.out.println("AbstractRIFWebServices 1");
-			//Call service API
-			RIFStudySubmissionAPI studySubmissionService
-			= rifStudyServiceBundle.getRIFStudySubmissionService();
-
-			ArrayList<StudySummary> studySummaries
-			= studySubmissionService.getStudySummaries(
-					user);
-			ArrayList<StudySummaryProxy> studySummaryProxies
-			= new ArrayList<StudySummaryProxy>();
-			for (StudySummary studySummary : studySummaries) {
-				StudySummaryProxy studySummaryProxy 
-				= StudySummaryProxy.newInstance(
-						studySummary.getStudyID(), 
-						studySummary.getStudyName(), 
-						studySummary.getStudySummary());
-				studySummaryProxies.add(studySummaryProxy);
-			}
-
-			result 
-			= serialiseArrayResult(
-					servletRequest, 
-					studySummaryProxies);
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-			= serialiseException(
-					servletRequest,
-					exception);			
-		}
-
-		return webServiceResponseGenerator.generateWebServiceResponse(
-				servletRequest,
-				result);
-	}
-
-
-
 	protected Response getGeographies(
 			final HttpServletRequest servletRequest,
 			final String userID) {

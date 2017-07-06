@@ -69,20 +69,8 @@ import rifGenericLibrary.system.RIFServiceException;
 
 public interface RIFStudyServiceAPI {
 	
-
-	
 	public boolean isInformationGovernancePolicyActive(
 		final User user) 
-		throws RIFServiceException;
-	
-	/**
-	 * gets summaries of studies created by each user
-	 * @param user
-	 * @return
-	 * @throws RIFServiceException
-	 */
-	public ArrayList<StudySummary> getStudySummaries(
-		final User user)
 		throws RIFServiceException;
 
 	public DiseaseMappingStudy getDiseaseMappingStudy(

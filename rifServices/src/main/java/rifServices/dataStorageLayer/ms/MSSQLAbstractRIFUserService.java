@@ -159,74 +159,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		return false;		
 	
 	}
-	
-	
-	public ArrayList<StudySummary> getStudySummaries(
-		final User _user)
-		throws RIFServiceException {
-				
-		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
-			return null;
-		}
-
-		ArrayList<StudySummary> results = new ArrayList<StudySummary>();
-		Connection connection = null;
-		try {
 			
-			//Check for empty parameters
-			FieldValidationUtility fieldValidationUtility
-				= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-				"getStudySummaries",
-				"user",
-				user);
-		
-			//Check for security violations
-			validateUser(user);
-			
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
-			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getStudySummaries",
-					user.getUserID(),
-					user.getIPAddress());
-			rifLogger.info(
-				getClass(),
-				auditTrailMessage);			
-
-			//Assign pooled connection
-			connection 
-				= sqlConnectionManager.assignPooledReadConnection(user);
-
-			
-			MSSQLRIFSubmissionManager rifSubmissionManager
-				= rifServiceResources.getRIFSubmissionManager();
-			results
-				= rifSubmissionManager.getStudySummariesForUser(
-					connection, 
-					user);
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"getStudySummaries",
-				rifServiceException);	
-		}
-		finally {
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledReadConnection(
-				user, 
-				connection);			
-		}		
-
-		return results;
-	}
-		
 	public DiseaseMappingStudy getDiseaseMappingStudy(
 		final User _user,
 		final String studyID)
