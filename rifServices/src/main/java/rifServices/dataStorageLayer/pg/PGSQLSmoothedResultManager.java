@@ -1163,52 +1163,6 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		return result.toString();
 	}	
 
-	public void extractCursorResults(final Connection connection) 
-			throws RIFServiceException {
-
-		PGSQLSelectQueryFormatter queryFormatter
-		= new PGSQLSelectQueryFormatter();
-		queryFormatter.setDatabaseSchemaName("rif_studies");
-		queryFormatter.addSelectField("area_id");
-		queryFormatter.addSelectField("observed");
-		queryFormatter.addSelectField("expected");
-		queryFormatter.addFromTable("s1_map");
-		queryFormatter.addWhereParameterWithOperator("band_id", "<");
-		//queryFormatter.addWhereParameterWithOperator("band_id", "<");
-		//queryFormatter.addWh
-
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		try {
-			connection.setAutoCommit(false);
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
-			statement.setInt(1, 100);
-			//statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			statement.setFetchSize(10);
-			resultSet = statement.executeQuery();
-
-			int currentRow = 1;
-			while (resultSet.next()) {
-				String areaID = resultSet.getString(1);
-				Double observed = resultSet.getDouble(2);
-				Double expected = resultSet.getDouble(3);
-				currentRow++;
-			}
-			//connection.setAutoCommit(false);			
-		}
-		catch(SQLException exception) {
-			exception.printStackTrace(System.out);
-
-		}
-		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
-		}
-
-	}
-
-
-
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
