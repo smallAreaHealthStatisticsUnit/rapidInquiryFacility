@@ -7,12 +7,14 @@ import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.businessConceptLayer.User;
 
 import com.sun.jersey.multipart.*;
+
 import javax.ws.rs.*;
 
 import rifServices.restfulWebServices.*;
 
 import javax.ws.rs.core.*;
 import javax.servlet.http.HttpServletRequest;
+
 import java.text.Collator;
 import java.util.ArrayList;
 import java.io.*;
@@ -392,7 +394,6 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 	}
 	
 	/**
-	 * STUB 
 	 * @param userID
 	 * @return
 	 */	
@@ -458,6 +459,57 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 		return webServiceResponseGenerator.generateWebServiceResponse(
 			servletRequest,
 			result);
+	}
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getProjects")
+	public Response getProjects(
+		@Context HttpServletRequest servletRequest,
+		@QueryParam("userID") String userID) {
+				
+		String result = "";
+		
+		
+		try {
+			//Convert URL parameters to RIF service API parameters
+			User user = createUser(servletRequest, userID);
+
+			//Call service API
+			RIFStudySubmissionAPI studySubmissionService
+				= getRIFStudySubmissionService();	
+			ArrayList<Project> projects
+				= studySubmissionService.getProjects(user);			
+
+			//Convert results to support JSON
+			ArrayList<ProjectProxy> projectProxies 
+				= new ArrayList<ProjectProxy>();
+			for (Project project : projects) {
+				ProjectProxy projectProxy
+					= new ProjectProxy();
+				projectProxy.setName(project.getName());
+				projectProxies.add(projectProxy);
+			}		
+			result 
+				= serialiseArrayResult(
+					servletRequest,
+					projectProxies);
+		}
+		catch(Exception exception) {
+			exception.printStackTrace(System.out);
+			//Convert exceptions to support JSON
+			result 
+				= serialiseException(
+					servletRequest,
+					exception);			
+		}
+		
+		WebServiceResponseGenerator webServiceResponseGenerator
+			= getWebServiceResponseGenerator();
+	
+		return webServiceResponseGenerator.generateWebServiceResponse(
+			servletRequest,
+			result);		
 	}
 			
 	@GET

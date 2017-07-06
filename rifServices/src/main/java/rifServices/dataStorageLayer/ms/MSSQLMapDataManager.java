@@ -1,8 +1,6 @@
 package rifServices.dataStorageLayer.ms;
 
-import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
@@ -11,12 +9,9 @@ import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
-import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.MapArea;
-import rifServices.businessConceptLayer.MapAreaSummaryData;
-import rifServices.businessConceptLayer.BoundaryRectangle;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
@@ -24,15 +19,6 @@ import rifGenericLibrary.util.FieldValidationUtility;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.io.File;
-import java.io.IOException;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.image.BufferedImage;
-
-import javax.imageio.ImageIO;
 
 
 /**
@@ -115,8 +101,6 @@ final class MSSQLMapDataManager
 	/** The sql rif context manager. */
 	private MSSQLRIFContextManager sqlRIFContextManager;
 	
-	/** The point from map identifier. */
-	private HashMap<String, Point> pointFromMapIdentifier;
 	
 	// ==========================================
 	// Section Construction
@@ -135,8 +119,6 @@ final class MSSQLMapDataManager
 		super(rifServiceStartupOptions.getRIFDatabaseProperties());
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		this.sqlRIFContextManager = sqlRIFContextManager;
-		
-		pointFromMapIdentifier = new HashMap<String, Point>();
 	}
 
 	// ==========================================
@@ -144,118 +126,6 @@ final class MSSQLMapDataManager
 	// ==========================================//
 
 		
-	//TOUR_ADD_METHOD-3
-	/*
-	 * The service method will delegate to a manager class, which is responsible
-	 * for executing the SQL query.  By this point in the execution path, we
-	 * assume that the parameter values are:
-	 * <ul>
-	 * <li>not null</li>
-	 * <li>contain no malicious code</code>
-	 * </ul>
-	 */
-	public String getMapAreasForBoundaryRectangle(
-			final Connection connection,
-			final Geography geography,
-			final GeoLevelSelect geoLevelSelect,
-			final BoundaryRectangle boundaryRectangle) 
-			throws RIFServiceException {
-
-		//Validate parameters
-		validateCommonMethodParameters(
-			connection,
-			geography,
-			geoLevelSelect,
-			null,
-			null,
-			null);	
-		
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		StringBuilder results = new StringBuilder();
-		try {
-
-			ValidationPolicy validationPolicy = getValidationPolicy();
-			boundaryRectangle.checkErrors(validationPolicy);
-		
-			/*
-			 * In many cases we're just calling a stored procedure in the database
-			 * Some of these may be migrated into the middleware if it turns out that
-			 * SQL Server and PostgreSQL cannot support them uniformly.  We may also
-			 * choose to migrate them into the middleware if the function call produces
-			 * too great a performance overhead.  In these cases, we would presumably 
-			 * obtain better performance by running the code within the functions here
-			 * 'inline'.
-			 */
-			SQLGeneralQueryFormatter queryFormatter
-				= new SQLGeneralQueryFormatter();
-			queryFormatter.addPaddedQueryLine(0, "SELECT");
-			queryFormatter.addQueryPhrase("rif40_xml_pkg.rif40_getMapAreas(?,?,?,?,?,?)");
-			queryFormatter.padAndFinishLine();		
-			queryFormatter.addQueryPhrase(0, "LIMIT 4");
-				
-			logSQLQuery("getMapAreasForBoundaryRectangle", 
-				queryFormatter, 
-				geography.getName(),
-				geoLevelSelect.getName(),
-				String.valueOf( Float.valueOf(boundaryRectangle.getYMax())),
-				String.valueOf( Float.valueOf(boundaryRectangle.getXMax())),
-				String.valueOf( Float.valueOf(boundaryRectangle.getYMin())),
-				String.valueOf( Float.valueOf(boundaryRectangle.getXMin())));
-									
-			statement 
-				= createPreparedStatement(
-					connection, 
-					queryFormatter);
-			statement.setString(1, geography.getName());
-			statement.setString(2, geoLevelSelect.getName());
-			statement.setFloat(3, Float.valueOf(boundaryRectangle.getYMax()));
-			statement.setFloat(4, Float.valueOf(boundaryRectangle.getXMax()));
-			statement.setFloat(5, Float.valueOf(boundaryRectangle.getYMin()));
-			statement.setFloat(6, Float.valueOf(boundaryRectangle.getXMin()));
-			
-			resultSet = statement.executeQuery();
-			connection.commit();
-
-			while (resultSet.next()) {
-				//the method returns a JSON string.  We're just concatenating them together
-				results.append(resultSet.getString(1));
-			}
-			
-			connection.commit();
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version			
-			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlMapDataManager.error.unableToGetMapAreasForBoundaryRectangle",
-					geography.getDisplayName(),
-					geoLevelSelect.getDisplayName(),
-					boundaryRectangle.getDisplayName());
-			
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				MSSQLMapDataManager.class, 
-				errorMessage, 
-				sqlException);
-								
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);			
-		}
-		
-		return results.toString();		
-	}
-	
 	public ArrayList<MapArea> getAllRelevantMapAreas(
 		final Connection connection,
 		final Geography geography,

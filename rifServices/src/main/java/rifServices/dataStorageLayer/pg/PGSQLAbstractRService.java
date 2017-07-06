@@ -83,13 +83,9 @@ public abstract class PGSQLAbstractRService {
 	private String odbcDataSourceName;
 	private String userID;
 	private String password;
-
-	private String rFilePath;
-	private String rScriptProgramPath;
 	
 	private ArrayList<Parameter> parameters;	
 	private ArrayList<String> parametersToVerify;
-	private CalculationMethod calculationMethod;
 	
 	// ==========================================
 	// Section Construction
@@ -99,7 +95,6 @@ public abstract class PGSQLAbstractRService {
 		parameters = new ArrayList<Parameter>();
 		
 		parametersToVerify = new ArrayList<String>();
-		rFilePath = "";	
 	}
 
 	// ==========================================
@@ -134,9 +129,7 @@ public abstract class PGSQLAbstractRService {
 		this.odbcDataSourceName = odbcDataSourceName;
 	}	
 	
-	protected void setCalculationMethod(final CalculationMethod calculationMethod) {
-		this.calculationMethod = calculationMethod;
-		
+	protected void setCalculationMethod(final CalculationMethod calculationMethod) {		
 		addParameter("r_model", calculationMethod.getName());
 	}
 	

@@ -83,13 +83,9 @@ public abstract class MSSQLAbstractRService {
 	private String odbcDataSourceName;
 	private String userID;
 	private String password;
-
-	private String rFilePath;
-	private String rScriptProgramPath;
 	
 	private ArrayList<Parameter> parameters;	
 	private ArrayList<String> parametersToVerify;
-	private CalculationMethod calculationMethod;
 	
 	// ==========================================
 	// Section Construction
@@ -99,7 +95,6 @@ public abstract class MSSQLAbstractRService {
 		parameters = new ArrayList<Parameter>();
 		
 		parametersToVerify = new ArrayList<String>();
-		rFilePath = "";	
 	}
 
 	// ==========================================
@@ -135,8 +130,6 @@ public abstract class MSSQLAbstractRService {
 	}	
 	
 	protected void setCalculationMethod(final CalculationMethod calculationMethod) {
-		this.calculationMethod = calculationMethod;
-		
 		addParameter("r_model", calculationMethod.getName());
 	}
 	
