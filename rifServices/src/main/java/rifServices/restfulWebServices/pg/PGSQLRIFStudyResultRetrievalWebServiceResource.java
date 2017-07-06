@@ -701,54 +701,6 @@ extends PGSQLAbstractRIFWebServiceResource {
 
 	}	
 
-
-	//TODO: (DM) I don't think this method is used or even complete
-	@GET	
-	@Produces({"application/json"})	
-	@Path("/getStudyResultGeneralInfo")
-	public String getStudyResultGeneralInfo(
-			@Context HttpServletRequest servletRequest,	
-			@QueryParam("userID") String userID,
-			@QueryParam("diseaseMappingStudyID") String diseaseMappingStudyID) {
-
-		String result = "";
-
-		try {
-			//Convert URL parameters to RIF service API parameters			
-			User user = createUser(servletRequest, userID);
-			StudySummary studySummary
-			= StudySummary.newInstance(
-					diseaseMappingStudyID, 
-					"", 
-					"");
-
-			//Call service API
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-			= getRIFStudyResultRetrievalService();
-			RIFResultTable rifResultTable
-			= studyResultRetrievalService.getStudyResultGeneralInfo(
-					user, 
-					studySummary);
-
-			//Convert results to support JSON
-			result 
-			= serialiseSingleItemAsArrayResult(
-					servletRequest,
-					rifResultTable);
-		}
-		catch(Exception exception) {
-			//Convert exceptions to support JSON
-			result 
-			= serialiseException(
-					servletRequest,
-					exception);			
-		}
-
-		return result;
-
-	}	
-
-
 	@GET	
 	@Produces({"application/json"})	
 	@Path("/getGeographyAndLevelForStudy")

@@ -117,31 +117,6 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final String studyID)
 					throws RIFServiceException;
 
-
-	/**
-	 * Returns a table with the following fields:
-	 *    Total denominator in study
-	 *    Observed in study
-		- Number of areas in study
-		- Average observed in study
-		- Total expected adj
-		- Average expected adj
-		- Relative Risk adj
-		- Total expected unadj
-		- Average expected unadj
-		- Relative Risk unadj
-	 * 
-	 * @param user
-	 * @param diseaseMappingStudy
-	 * @return
-	 * @throws RIFServiceException
-	 */
-	public RIFResultTable getStudyResultGeneralInfo(
-			final User user,
-			final StudySummary studySummary)
-					throws RIFServiceException;
-
-
 	public ArrayList<String> getSmoothedResultAttributes(
 			final User user) 
 					throws RIFServiceException;
