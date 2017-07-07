@@ -106,64 +106,6 @@ public final class MSSQLTestRIFStudySubmissionService
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
-	
-	/*
-	 * This is a method used to test whether the RIF will correctly write a 
-	 * study submission and its results to a single zip file
-	 */
-	public void writeStudyToZipFile(
-		final User user,
-		final RIFStudySubmission rifStudySubmission,
-		final Integer studyID) throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked users
-		MSSQLConnectionManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();	
-		
-		Connection connection = null;
-		try {			
-			
-			connection
-				= sqlConnectionManager.assignPooledWriteConnection(user);
-			
-			MSSQLPublishResultsSubmissionStep fileExportService
-				= new MSSQLPublishResultsSubmissionStep();
-			RIFServiceStartupOptions rifServiceStartupOptions
-				= getRIFServiceStartupOptions();
-			File scratchSpaceDirectory 
-				= new File(rifServiceStartupOptions.getExtractDirectory());
-			
-			File extraFilesDirectory 
-				= new File(rifServiceStartupOptions.getExtraExtractFilesDirectoryPath());
-			fileExportService.initialise(
-				scratchSpaceDirectory, 
-				extraFilesDirectory);
-			
-			fileExportService.performStep(
-				connection, 
-				user,
-				rifStudySubmission, 
-				String.valueOf(studyID));
-
-			
-			sqlConnectionManager.reclaimPooledWriteConnection(user, connection);
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-				user,
-				"submitStudy",
-				rifServiceException);	
-		}
-		finally {
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledWriteConnection(
-				user, 
-				connection);			
-		}
-		
-	}
 		
 	// ==========================================
 	// Section Errors and Validation

@@ -124,6 +124,7 @@ final class PGSQLRIFContextManager
 	 * @return the geographies
 	 * @throws RIFServiceException the RIF service exception
 	 */
+
 	public ArrayList<Geography> getGeographies(
 		final Connection connection) 
 		throws RIFServiceException {

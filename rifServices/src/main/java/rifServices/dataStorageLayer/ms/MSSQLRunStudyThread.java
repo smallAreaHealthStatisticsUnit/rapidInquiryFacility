@@ -94,7 +94,6 @@ public class MSSQLRunStudyThread
 	private MSSQLCreateStudySubmissionStep createStudySubmissionStep;
 	private MSSQLGenerateResultsSubmissionStep generateResultsSubmissionStep;
 	private MSSQLSmoothResultsSubmissionStep smoothResultsSubmissionStep;
-	private MSSQLPublishResultsSubmissionStep publishResultsSubmissionStep;
 	
 	// ==========================================
 	// Section Construction
@@ -141,22 +140,7 @@ public class MSSQLRunStudyThread
 		smoothResultsSubmissionStep.initialise(
 			user.getUserID(), 
 			user.getUserID(), 
-			rifServiceStartupOptions);
-
-		String extractDirectory
-			= rifServiceStartupOptions.getExtractDirectory();
-		File scratchSpaceDirectory = new File(extractDirectory);		
-		String extraDirectoryForExtractFilesPath
-			= rifServiceStartupOptions.getExtraExtractFilesDirectoryPath();
-		File extraDirectoryForExtractFiles 
-			= new File(extraDirectoryForExtractFilesPath);
-
-		publishResultsSubmissionStep
-			= new MSSQLPublishResultsSubmissionStep();
-		publishResultsSubmissionStep.initialise(
-			scratchSpaceDirectory, 
-			extraDirectoryForExtractFiles);
-			
+			rifServiceStartupOptions);			
 	}
 		
 	// ==========================================
@@ -195,9 +179,6 @@ public class MSSQLRunStudyThread
 					System.out.println("run smooth results AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 				}
 				else {
-					System.out.println("run advertise results BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
-					advertiseDataSet();
-					System.out.println("run advertise results AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 					break;
 				}
 				
@@ -285,24 +266,7 @@ public class MSSQLRunStudyThread
 				"studyState.studyResultsComputed.description");
 		updateStudyStatusState(statusMessage);
 	}
-	
-	private void advertiseDataSet() 
-		throws RIFServiceException {
-		
-		//This is where we should save the study to a ZIP file
-		publishResultsSubmissionStep.performStep(
-			connection, 
-			user, 
-			studySubmission, 
-			studyID);
 
-		String statusMessage
-			= RIFServiceMessages.getMessage(
-				"studyState.readyForUse");
-		updateStudyStatusState(statusMessage);
-
-		System.out.println("RIF study should be FINISHED!!");
-	}
 
 	private void updateStudyStatusState(final String statusMessage) 
 		throws RIFServiceException {
