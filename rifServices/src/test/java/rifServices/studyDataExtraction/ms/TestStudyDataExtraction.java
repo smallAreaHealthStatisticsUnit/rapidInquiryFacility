@@ -122,44 +122,6 @@ public final class TestStudyDataExtraction
 	}
 	
 	@Test
-	public void runStudy_COMMON1() {		
-		try {
-			User validUser = cloneValidUser();
-			String validStudyID = "31";
-			
-			MSSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
-				= getRIFServiceBundle();
-			
-			MSSQLTestRIFStudySubmissionService testSubmissionService
-				= (MSSQLTestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
-			testSubmissionService.runStudy(validUser, validStudyID);			
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
-	}
-	
-	@Test
-	public void clearStudiesForUser() {		
-		try {
-			User validUser = cloneValidUser();
-			String validStudyID = "19";
-			
-			MSSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
-				= getRIFServiceBundle();
-			
-			MSSQLTestRIFStudySubmissionService testSubmissionService
-				= (MSSQLTestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
-			testSubmissionService.clearRIFJobSubmissionsForUser(validUser);		
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
-	}	
-	
-	@Test
 	public void deleteStudy() {		
 		try {
 			User validUser = cloneValidUser();
