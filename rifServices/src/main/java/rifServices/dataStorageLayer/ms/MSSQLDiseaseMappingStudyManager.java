@@ -309,13 +309,6 @@ final class MSSQLDiseaseMappingStudyManager
 			geoLevelSelect.getName(), 
 			geoLevelToMap.getName(),
 			true);
-	
-		ArrayList<MapArea> mapAreas = area.getMapAreas();
-		mapDataManager.checkAreasExist(
-			connection, 
-			geographyName, 
-			geoLevelToMap.getName(), 
-			mapAreas);		
 	}
 		
 	public void checkDiseaseMappingStudyExists(
