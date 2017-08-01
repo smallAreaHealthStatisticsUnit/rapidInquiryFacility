@@ -87,6 +87,8 @@ import java.util.ArrayList;
 
 final class PGSQLMapDataManager 
 	extends PGSQLAbstractSQLManager {
+	
+	//TODO: (DM) class is full of unused methods
 
 	// ==========================================
 	// Section Constants

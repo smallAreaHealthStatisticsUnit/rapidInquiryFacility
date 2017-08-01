@@ -9,7 +9,6 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 
-import java.io.File;
 import java.sql.*;
 
 /**
@@ -84,7 +83,6 @@ public class MSSQLRunStudyThread
 	// ==========================================
 	private Connection connection;
 	private User user;
-	private MSSQLRIFSubmissionManager studySubmissionManager;
 	private RIFStudySubmission studySubmission;
 	private String studyID;
 	
@@ -124,7 +122,6 @@ public class MSSQLRunStudyThread
 			= rifServiceStartupOptions.getRIFDatabaseProperties();
 		
 		studyStateManager = new MSSQLStudyStateManager(rifDatabaseProperties);
-		studySubmissionManager = rifServiceResources.getRIFSubmissionManager();
 		
 		createStudySubmissionStep 
 			= new MSSQLCreateStudySubmissionStep(
