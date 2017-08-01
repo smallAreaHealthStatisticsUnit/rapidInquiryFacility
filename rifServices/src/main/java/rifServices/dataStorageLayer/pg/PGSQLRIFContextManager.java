@@ -10,7 +10,6 @@ import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelView;
-import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;

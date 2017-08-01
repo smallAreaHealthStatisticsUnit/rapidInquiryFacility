@@ -12,7 +12,6 @@ import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelToMap;
-import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.system.RIFServiceError;
@@ -97,7 +96,6 @@ final class MSSQLInvestigationManager
 	// ==========================================
 	private MSSQLRIFContextManager rifContextManager;
 	private MSSQLAgeGenderYearManager ageGenderYearManager;
-	private MSSQLHealthOutcomeManager healthOutcomeManager;
 	private MSSQLCovariateManager covariateManager;
 	
 	// ==========================================
@@ -118,7 +116,6 @@ final class MSSQLInvestigationManager
 		this.rifContextManager = rifContextManager;
 		this.ageGenderYearManager = ageGenderYearManager;
 		this.covariateManager = covariateManager;
-		this.healthOutcomeManager = healthOutcomeManager;
 	}
 
 	// ==========================================

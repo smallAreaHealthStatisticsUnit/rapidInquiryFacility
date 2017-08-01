@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.sql.*;
 
 import rifServices.businessConceptLayer.*;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+//import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
@@ -91,7 +91,7 @@ final class PGSQLDiseaseMappingStudyManager
 	// ==========================================
 	private PGSQLRIFContextManager rifContextManager;
 	private PGSQLInvestigationManager investigationManager;
-	private PGSQLMapDataManager mapDataManager;
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -108,7 +108,7 @@ final class PGSQLDiseaseMappingStudyManager
 		super(rifDatabaseProperties);
 		this.rifContextManager = rifContextManager;
 		this.investigationManager = investigationManager;
-		this.mapDataManager = mapDataManager;
+
 	}
 
 	// ==========================================
@@ -274,11 +274,11 @@ final class PGSQLDiseaseMappingStudyManager
 			connection, 
 			geographyName, 
 			geoLevelSelect.getName());
-
+		/*
 		ValidationPolicy validationPolicy
 			= getValidationPolicy();
 		
-		/*
+
 		if (getValidationPolicy() == ValidationPolicy.STRICT) {
 			GeoLevelArea geoLevelArea
 				= area.getGeoLevelArea();

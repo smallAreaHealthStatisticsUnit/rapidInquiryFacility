@@ -6,7 +6,6 @@ import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.fileFormats.RIFStudySubmissionContentHandler;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
@@ -92,9 +91,9 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
 	private static final String RATES_AND_RISKS_SUBDIRECTORY = "rates_and_risks";
 	private static final String GEOGRAPHY_SUBDIRECTORY = "geography";
-	private static final String STATISTICAL_POSTPROCESSING_SUBDIRECTORY = "statistical_post_processing";
+	//private static final String STATISTICAL_POSTPROCESSING_SUBDIRECTORY = "statistical_post_processing";
 	
-	private static final String TERMS_CONDITIONS_SUBDIRECTORY = "terms_and_conditions";
+	//private static final String TERMS_CONDITIONS_SUBDIRECTORY = "terms_and_conditions";
 
 	private static final int BASE_FILE_STUDY_NAME_LENGTH = 10;
 	
@@ -102,7 +101,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	// Section Properties
 	// ==========================================
 	
-	private File termsAndConditionsDirectory;
+	//private File termsAndConditionsDirectory;
 	
 	// ==========================================
 	// Section Construction

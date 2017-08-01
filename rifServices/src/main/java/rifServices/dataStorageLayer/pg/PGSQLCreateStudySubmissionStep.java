@@ -842,8 +842,6 @@ final class PGSQLCreateStudySubmissionStep
 				getOutcomeGroupNameResultSet.next();
 				String outcomeGroupName
 					= getOutcomeGroupNameResultSet.getString(1);
-				String fieldName
-					= getOutcomeGroupNameResultSet.getString(2);
 
 				//determine what kinds of codes the numerator table supports
 				

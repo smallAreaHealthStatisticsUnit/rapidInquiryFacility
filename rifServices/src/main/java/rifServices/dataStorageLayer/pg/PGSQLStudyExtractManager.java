@@ -9,7 +9,6 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFDateFormat;
@@ -18,7 +17,6 @@ import java.io.*;
 import java.sql.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.util.ArrayList;
 import java.util.Date;
 
 
@@ -92,9 +90,9 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
 	private static final String RATES_AND_RISKS_SUBDIRECTORY = "rates_and_risks";
 	private static final String GEOGRAPHY_SUBDIRECTORY = "geography";
-	private static final String STATISTICAL_POSTPROCESSING_SUBDIRECTORY = "statistical_post_processing";
+	//private static final String STATISTICAL_POSTPROCESSING_SUBDIRECTORY = "statistical_post_processing";
 
-	private static final String TERMS_CONDITIONS_SUBDIRECTORY = "terms_and_conditions";
+	//private static final String TERMS_CONDITIONS_SUBDIRECTORY = "terms_and_conditions";
 
 	private static final int BASE_FILE_STUDY_NAME_LENGTH = 10;
 
@@ -102,7 +100,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 	// Section Properties
 	// ==========================================
 
-	private File termsAndConditionsDirectory;
+	//private File termsAndConditionsDirectory;
 
 	// ==========================================
 	// Section Construction

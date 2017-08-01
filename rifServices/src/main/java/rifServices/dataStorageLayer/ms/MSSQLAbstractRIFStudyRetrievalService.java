@@ -8,8 +8,6 @@ import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.StudyState;
-import rifServices.dataStorageLayer.pg.PGSQLConnectionManager;
-import rifServices.dataStorageLayer.pg.PGSQLSmoothedResultManager;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -258,7 +256,6 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 			return;
 		}
 		
-		RIFResultTable result = null;
 		Connection connection = null;
 		try {
 			

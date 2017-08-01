@@ -1,9 +1,7 @@
 package rifServices.dataStorageLayer.pg;
 
-import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
-import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.Sex;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
@@ -12,7 +10,6 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.businessConceptLayer.User;
 
 import java.sql.*;
 import java.util.Hashtable;
@@ -94,7 +91,6 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 	private ArrayList<String> allAttributeColumnNames;
 	private Hashtable<String, String> columnDescriptionFromName;
 	private HashSet<String> numericColumns;
-	private HashSet<String> textColumns;
 	private HashSet<String> doublePrecisionColumns;
 
 	// ==========================================
@@ -108,7 +104,6 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 
 		numericColumns = new HashSet<String>();
 		doublePrecisionColumns = new HashSet<String>();
-		textColumns = new HashSet<String>();
 
 		//initialise the list of attributes columns that the clients can
 		//use to construct queries
@@ -156,19 +151,6 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		= RIFServiceMessages.getMessage(columnDescriptionPropertyName);
 		columnDescriptionFromName.put(columnName, message);		
 	}
-
-	private void registerTextColumn(
-			final String columnName,
-			final String columnDescriptionPropertyName) {
-
-		allAttributeColumnNames.add(columnName);
-		textColumns.add(columnName);
-
-		registerColumnComment(
-				columnName, 
-				columnDescriptionPropertyName);
-	}
-
 
 	private void registerDoublePrecisionColumn(
 			final String columnName,

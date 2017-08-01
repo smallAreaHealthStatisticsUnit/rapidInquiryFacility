@@ -2,7 +2,6 @@ package rifServices.dataStorageLayer.ms;
 
 import rifServices.system.*;
 import rifGenericLibrary.dataStorageLayer.*;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;

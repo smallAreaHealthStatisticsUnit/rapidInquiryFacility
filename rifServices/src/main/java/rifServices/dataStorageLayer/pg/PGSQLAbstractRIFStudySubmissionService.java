@@ -7,11 +7,6 @@ import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifGenericLibrary.util.FieldValidationUtility;
 
-
-
-
-
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -1099,7 +1094,7 @@ implements RIFStudySubmissionAPI {
 		User user = User.createCopy(_user);
 		PGSQLConnectionManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();			
-		String result;
+
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
 		}

@@ -17,10 +17,6 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.ontologyServices.HealthCodeProviderInterface;
 import rifGenericLibrary.util.FieldValidationUtility;
 
-
-import rifServices.system.RIFServiceStartupOptions;
-
-import java.io.File;
 import java.sql.Connection;
 import java.util.ArrayList;
 

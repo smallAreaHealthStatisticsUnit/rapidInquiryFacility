@@ -378,6 +378,7 @@ final class MSSQLCovariateManager
 	}
 	
 	
+	@SuppressWarnings("resource")
 	public void checkNonExistentCovariates(
 		final Connection connection,
 		final Geography geography,
@@ -423,7 +424,7 @@ final class MSSQLCovariateManager
 				
 				resultSet = statement.executeQuery();
 				if (resultSet.next() == false) {
-					String recordType = covariate.getRecordType();
+
 					String errorMessage
 						= RIFServiceMessages.getMessage(
 							"covariateManager.error.noCovariateFound",

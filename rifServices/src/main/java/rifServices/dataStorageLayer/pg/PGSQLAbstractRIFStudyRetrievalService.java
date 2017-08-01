@@ -258,7 +258,6 @@ implements RIFStudyResultRetrievalAPI {
 			return;
 		}
 
-		RIFResultTable result = null;
 		Connection connection = null;
 		try {
 

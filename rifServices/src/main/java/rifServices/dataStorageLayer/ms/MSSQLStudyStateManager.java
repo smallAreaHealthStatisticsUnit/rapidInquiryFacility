@@ -3,16 +3,13 @@ package rifServices.dataStorageLayer.ms;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.StudyState;
-import rifServices.businessConceptLayer.StudySummary;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreateTableQueryFormatter;
+//import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreateTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
 
@@ -24,7 +21,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
 
 /**
  *
@@ -584,55 +580,55 @@ final class MSSQLStudyStateManager
 	 * Creates a status table for a given study, stored
 	 * in the schema of the user
 	 */
-	private void createStatusTable(
-		final Connection connection,
-		final User user)
-		throws SQLException, 
-		RIFServiceException {
-		
-		String userID = user.getUserID();
-		String statusTableName
-			= deriveStatusTableName(
-				userID);
-	
-		MSSQLCreateTableQueryFormatter queryFormatter
-			= new MSSQLCreateTableQueryFormatter(false);
-	//	queryFormatter.setUseIfExists(true);
-		queryFormatter.setTableName(statusTableName);
-		queryFormatter.addIntegerFieldDeclaration("study_id", false);
-		queryFormatter.addTextFieldDeclaration("study_state", false);
-	//	queryFormatter.addTimeStampFieldDeclaration("creation_date", false);
-	//	queryFormatter.addAutoIncrementFieldDeclaration("ith_update");
-		queryFormatter.addTextFieldDeclaration("message", 255, true);
-
-		logSQLQuery(
-			"createStatusTable", 
-			queryFormatter, 
-			"user");
-		
-		PreparedStatement statement = null;
-		try {
-			statement = connection.prepareStatement(queryFormatter.generateQuery());
-			statement.executeUpdate();
-			connection.commit();
-		}
-		catch(SQLException sqlException) {
-			logSQLException(sqlException);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlStudyStateManager.error.unableToCreateUserStudyStatusTable",
-					user.getUserID());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;			
-		}
-		finally {
-			MSSQLQueryUtility.close(statement);	
-		}
-		
-	}
+//	private void createStatusTable(
+//		final Connection connection,
+//		final User user)
+//		throws SQLException, 
+//		RIFServiceException {
+//		
+//		String userID = user.getUserID();
+//		String statusTableName
+//			= deriveStatusTableName(
+//				userID);
+//	
+//		MSSQLCreateTableQueryFormatter queryFormatter
+//			= new MSSQLCreateTableQueryFormatter(false);
+//	//	queryFormatter.setUseIfExists(true);
+//		queryFormatter.setTableName(statusTableName);
+//		queryFormatter.addIntegerFieldDeclaration("study_id", false);
+//		queryFormatter.addTextFieldDeclaration("study_state", false);
+//	//	queryFormatter.addTimeStampFieldDeclaration("creation_date", false);
+//	//	queryFormatter.addAutoIncrementFieldDeclaration("ith_update");
+//		queryFormatter.addTextFieldDeclaration("message", 255, true);
+//
+//		logSQLQuery(
+//			"createStatusTable", 
+//			queryFormatter, 
+//			"user");
+//		
+//		PreparedStatement statement = null;
+//		try {
+//			statement = connection.prepareStatement(queryFormatter.generateQuery());
+//			statement.executeUpdate();
+//			connection.commit();
+//		}
+//		catch(SQLException sqlException) {
+//			logSQLException(sqlException);
+//			String errorMessage
+//				= RIFServiceMessages.getMessage(
+//					"sqlStudyStateManager.error.unableToCreateUserStudyStatusTable",
+//					user.getUserID());
+//			RIFServiceException rifServiceException
+//				= new RIFServiceException(
+//					RIFServiceError.DATABASE_QUERY_FAILED, 
+//					errorMessage);
+//			throw rifServiceException;			
+//		}
+//		finally {
+//			MSSQLQueryUtility.close(statement);	
+//		}
+//		
+//	}
 	
 	private String deriveStatusTableName(
 		final String userID) {

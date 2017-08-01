@@ -1,7 +1,6 @@
 package rifServices.dataStorageLayer.pg;
 
 import rifServices.businessConceptLayer.RIFServiceInformation;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 

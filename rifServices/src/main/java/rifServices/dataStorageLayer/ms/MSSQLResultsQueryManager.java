@@ -97,9 +97,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private MSSQLRIFContextManager sqlRIFContextManager;
-	private MSSQLMapDataManager sqlMapDataManager;
-	private MSSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager;
+
 	private MSSQLFunctionCallerQueryFormatter getTilesQueryFormatter;
 	// ==========================================
 	// Section Construction
@@ -112,9 +110,6 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		final MSSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager) {
 		
 		super(rifDatabaseProperties);
-		this.sqlRIFContextManager = sqlRIFContextManager;
-		this.sqlMapDataManager = sqlMapDataManager;
-		this.sqlDiseaseMappingStudyManager = sqlDiseaseMappingStudyManager;
 
 		getTilesQueryFormatter
 			= new MSSQLFunctionCallerQueryFormatter(false);

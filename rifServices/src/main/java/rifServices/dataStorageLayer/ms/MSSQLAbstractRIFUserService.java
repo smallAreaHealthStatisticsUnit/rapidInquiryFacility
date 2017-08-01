@@ -1,19 +1,13 @@
 package rifServices.dataStorageLayer.ms;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractCovariate;
-import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
@@ -22,10 +16,7 @@ import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.Project;
-import rifServices.businessConceptLayer.StudyResultRetrievalContext;
 import rifServices.businessConceptLayer.YearRange;
-import rifServices.businessConceptLayer.StudySummary;
 import rifServices.dataStorageLayer.ms.MSSQLConnectionManager;
 import rifServices.dataStorageLayer.ms.MSSQLResultsQueryManager;
 import rifServices.system.RIFServiceError;

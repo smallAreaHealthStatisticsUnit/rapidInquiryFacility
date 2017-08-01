@@ -3,7 +3,6 @@ package rifServices.dataStorageLayer.pg;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.businessConceptLayer.StudyState;
-import rifServices.businessConceptLayer.StudySummary;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
@@ -11,7 +10,6 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
 
@@ -23,7 +21,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
 
 /**
  *

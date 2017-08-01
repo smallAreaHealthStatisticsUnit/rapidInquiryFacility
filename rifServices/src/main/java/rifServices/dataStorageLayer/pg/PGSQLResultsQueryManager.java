@@ -97,9 +97,7 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private PGSQLRIFContextManager sqlRIFContextManager;
-	private PGSQLMapDataManager sqlMapDataManager;
-	private PGSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager;
+	
 	private PGSQLFunctionCallerQueryFormatter getTilesQueryFormatter;
 	// ==========================================
 	// Section Construction
@@ -112,9 +110,6 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager {
 		final PGSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager) {
 		
 		super(rifDatabaseProperties);
-		this.sqlRIFContextManager = sqlRIFContextManager;
-		this.sqlMapDataManager = sqlMapDataManager;
-		this.sqlDiseaseMappingStudyManager = sqlDiseaseMappingStudyManager;
 					
 		getTilesQueryFormatter
 			= new PGSQLFunctionCallerQueryFormatter();

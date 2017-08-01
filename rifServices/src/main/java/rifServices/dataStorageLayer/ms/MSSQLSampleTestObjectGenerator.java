@@ -611,7 +611,6 @@ public final class MSSQLSampleTestObjectGenerator {
 		comparisonAreaGeoLevelSelect.setNewRecord(false);
 		GeoLevelArea comparisonAreaGeoLevelArea = GeoLevelArea.newInstance("Abellan");
 		comparisonAreaGeoLevelArea.setNewRecord(false);
-		GeoLevelView comparisonAreaGeoLevelView = GeoLevelView.newInstance("LEVEL2");
 		studyAreaGeoLevelView.setNewRecord(false);
 		GeoLevelToMap comparisonAreaGeoLevelToMap = GeoLevelToMap.newInstance("LEVEL2");
 		comparisonAreaGeoLevelToMap.setNewRecord(false);		

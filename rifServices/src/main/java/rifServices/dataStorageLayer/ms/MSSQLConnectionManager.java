@@ -2,7 +2,6 @@ package rifServices.dataStorageLayer.ms;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
-import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
