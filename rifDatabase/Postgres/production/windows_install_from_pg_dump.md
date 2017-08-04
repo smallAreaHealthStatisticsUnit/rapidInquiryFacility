@@ -9,6 +9,7 @@ Windows Postgres Install using pg_dump and scripts
       - [1.1.1 Postgres User Setup](#111-postgres-user-setup)
       - [1.1.2 Fixing Windows Code page errors](#112-fixing-windows-code-page-errors)
 - [2. Installing a production database](#2-installing=a-production-database)
+  - [2.1 Changing the postgres database adminstrator password](#21-Changing-the-postgres-database-adminstrator-password)
 
 # 1. Installation Prerequistes
 ## 1.1 Postgres
@@ -21,21 +22,34 @@ This is standard PostGres as packaged by Enterprise DB and not their own Postgre
 Enterprise/Standard/Developer. An installation guide is at: 
 http://get.enterprisedb.com/docs/PostgreSQL_Installation_Guide_v9.6.pdf
 
-The Postgres installer then runs stack builder to download and install the additional packages. The following additional packages need to be installed:
+The Postgres installer then runs stack builder to download and install the additional packages. 
+Choose the local port. The following additional packages need to be installed:
 
 * PostGres (database, PG Admin III administration tool, and common extensions)
 * PostGIS (Geospatial integration)
-* pgODBC (ODBC database connector for PostGres)
+* pgODBC (ODBC database connector for PostGres, 32 and 64 bit)
+
+The PostGIS installer will ask to enable the builtin GDAL (Geospatial Data Abstraction Library). This 
+**MUST** be *chosen*.
 
 Once the install is complete:
 
-* Add the Postgres bin directory (e.g. **) to the path
+* Add the Postgres bin directory (e.g. *C:\Program Files\PostgreSQL\9.5\bin*) to the path
 * The following should normally be set in your environment:
 
   * PGDATABASE - sahusland
   * PGHOST - localhost
 
-* If you get a code page error om Windows see 1.1.2 below.
+* Check you can logon as postgres
+
+  ```
+  C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>psql -U postgres -d postgres
+  psql (9.5.0)
+  Type "help" for help.
+
+  postgres=#  
+  ```
+  * If you get a code page error om Windows see 1.1.2 below.
 
 ### 1.1.1 Postgres User Setup
 
@@ -73,9 +87,24 @@ cmd.exe /c chcp 1252
 ```
 * Or: modify the cmd shortcut to run *cmd.exe /k chcp 1252*
 
-2. Installing a production database
+# 2. Installing a production database
 
-Run the datbase installer batch script: rif40_database_install.bat
+Run the datbase installer batch script as an adminstrator: rif40_database_install.bat.
+
+The script will ask the user for:
+
+* The production RIF user name (default: *peter*)
+* The database name (default: *sahsuland*)
+* Postgres databaase adminstrator password (set as part of the database install)
+* RIF40 user password (default: *rif40*)
+* The production RIF user password (default: *peter*)
+
+The script will create the user pgpass.conf (in C:\Users\%USERNAME%\AppData\Roaming\postgresql) and the 
+create the psqlrc psql logon script.
+
+The script runs *db_create.sql* to create the database and users and then restores the database from the
+supplied sahsuland_dev.dump using *pg_restore*.
+
 ```
 C:\rifDemo\Postgres\production>rif40_database_install.bat
 Creating production RIF Postgres database
@@ -402,9 +431,9 @@ pg_restore exiting with error code: 1
 C:\rifDemo\Postgres\production>
 ```
 
+## 2.1 Changing the postgres database adminstrator password
 
-
-Once you have setup the *pgpass* file, check you can logon using psql as the database adminstrator account; *postgres*.
+Check you can logon using psql as the database adminstrator account; *postgres*.
 ```
 psql -d postgres -U postgres
 You are connected to database "postgres" as user "postgres" on host "wpea-rif1" at port "5432".
@@ -414,9 +443,9 @@ Type "help" for help.
 postgres=#
 ```
 
-**IT IS STRONGLY ADVISED TO LEAVE THIS WINDOW OPEN SO YOU CANNOT LOCK YOURSELF OUT OF THE DATABASE IF YOU SET IT UP WRONG**. This scripts 
-do check the setup is correct; but this could fail. It is possible to login to postgres as postgres without a password using the administrator or 
-root accounts. If you lock yourself out the hba.conf file will need the following line temporary added at the top of the file:
+It is possible to login to postgres as postgres without a password using the administrator or 
+root accounts. If you lock yourself out the hba.conf file will need the following line temporary 
+added at the top of the file:
 
 ```
 local  all   all   trust

@@ -127,9 +127,7 @@ IF EXIST %PGPASSWORDFILE% (
 	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:%NEWUSER%:" %PGPASSWORDFILE%') DO (
 	  SET NEWPW=%%F
 	)
-)
-ELSE (
-)
+) 
 
 REM
 REM Otherwise ask the user
