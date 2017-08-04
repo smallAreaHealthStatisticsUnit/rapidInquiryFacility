@@ -129,6 +129,11 @@ Principal Work Area: JavaScript User interface development
 - Various ad hoc middleware fixes requested by PH
 - Created System Validation Document
 
-## (July)
+## July
+
+- Removing redundant code from rifServices
+- Demos to possible RIF users and/or testers
+
+## (August)
 
 
