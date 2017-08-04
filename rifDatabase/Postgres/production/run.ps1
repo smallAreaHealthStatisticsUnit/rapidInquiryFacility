@@ -75,10 +75,10 @@ Set-Location $curdir
 #
 # Clean up log files
 #
-If (Test-Path $log".err"){
+If (Test-Path $log".err") {
 	Remove-Item $log".err"
 }
-If (Test-Path $log){
+If (Test-Path $log) {
 	Remove-Item $log
 }
 
@@ -89,7 +89,7 @@ Try {
 Catch {
 	Write-Host "Error in Invoke-expression"
 	$error[0]
-	If (Test-Path $log){
+	If (Test-Path $log) {
 		rename-item -path $log -Newname $log".err" -force -verbose
 	}
 	exit 2
@@ -99,7 +99,9 @@ if ($process.ExitCode -ne 0) {
 	Write-Host "Error in command execution"
 	$error[0]
 	sleep 1
-	rename-item -path $log -Newname $log".err" -force -verbose
+	If (Test-Path $log) {
+		rename-item -path $log -Newname $log".err" -force
+	}
 	exit 1
 }
 else {

@@ -57,9 +57,15 @@ NET SESSION >nul 2>&1
 if %errorlevel% equ 0 (
     ECHO Administrator PRIVILEGES Detected! 
 	
-	IF NOT EXIST %PG_SYSCONFDIR%\psqlrc IF EXIST psqlrc (
+	IF NOT EXIST "%PG_SYSCONFDIR%" (
+		MKDIR "%PG_SYSCONFDIR%"
+		if %errorlevel% neq 0 (
+			ECHO Unable to create directory %PG_SYSCONFDIR%
+		)		
+	)
+	IF NOT EXIST "%PG_SYSCONFDIR%\psqlrc" IF EXIST psqlrc (
 		ECHO Copy psqlrc to %PG_SYSCONFDIR%
-		COPY psqlrc %PG_SYSCONFDIR%\psqlrc
+		COPY psqlrc "%PG_SYSCONFDIR%\psqlrc"
 		if %errorlevel% neq 0 (
 			ECHO Unable to copy psqlrc to %PG_SYSCONFDIR%
 		)		
@@ -68,15 +74,27 @@ if %errorlevel% equ 0 (
  	runas /noprofile /user:%COMPUTERNAME%\Administrator "NET SESSION" < one_line.txt 2>&1 > nul
  	if %errorlevel% equ 0 (
  		ECHO Power user PRIVILEGES Detected! 
+		
+		IF NOT EXIST "%PG_SYSCONFDIR%" (
+			MKDIR "%PG_SYSCONFDIR%"
+			if %errorlevel% neq 0 (
+				ECHO Unable to create PG system configuration directory %PG_SYSCONFDIR%
+			)		
+		)
 			
-		IF NOT EXIST %PG_SYSCONFDIR%\psqlrc IF EXIST psqlrc (
+		IF NOT EXIST "%PG_SYSCONFDIR%\psqlrc" IF EXIST psqlrc (
 			ECHO Copy psqlrc to %PG_SYSCONFDIR%
-			COPY psqlrc %PG_SYSCONFDIR%\psqlrc
+			COPY psqlrc "%PG_SYSCONFDIR%\psqlrc"
 			if %errorlevel% neq 0 (
 				ECHO Unable to copy psqlrc to %PG_SYSCONFDIR%
 			)		
 		)
  	)
+	else (
+		ECHO This script must be run privileged
+		PAUSE
+		exit /b 1
+	)
 )
 
 IF NOT DEFINED NEWUSER (
@@ -89,17 +107,28 @@ IF NOT DEFINED NEWDB (
 REM
 REM Get passwords from C:\Users\%USERNAME%\AppData\Roaming\postgresql\pgpass.conf if it exists
 REM
-SET PGPASSFILE="C:\Users\%USERNAME%\AppData\Roaming\postgresql\pgpass.conf"
-IF EXIST %PGPASSFILE% (
-	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:postgres:" %PGPASSFILE%') DO (
+SET PGPASSWORDDIR="C:\Users\%USERNAME%\AppData\Roaming\postgresql"
+SET PGPASSWORDFILE="C:\Users\%USERNAME%\AppData\Roaming\postgresql\pgpass.conf"
+	
+IF NOT EXIST "%PGPASSWORDDIR%" (
+	MKDIR "%PGPASSWORDDIR%"
+	if %errorlevel% neq 0 (
+		ECHO Unable to create PG password directory %PGPASSWORDDIR%
+	)		
+)
+		
+IF EXIST %PGPASSWORDFILE% (
+	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:postgres:" %PGPASSWORDFILE%') DO (
 	  SET PGPASSWORD=%%F
 	)
-	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:rif40:" %PGPASSFILE%') DO (
+	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:rif40:" %PGPASSWORDFILE%') DO (
 	  SET RIF40PW=%%F
 	)
-	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:%NEWUSER%:" %PGPASSFILE%') DO (
+	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:%NEWUSER%:" %PGPASSWORDFILE%') DO (
 	  SET NEWPW=%%F
 	)
+)
+ELSE (
 )
 
 REM
@@ -123,6 +152,8 @@ ECHO #
 ECHO # Test user: %NEWUSER%; password: %NEWPW%
 ECHO # Postgres password:       %PGPASSWORD%
 ECHO # Schema (rif40) password: %RIF40PW%
+ECHO # PG password directory:   %PGPASSDIR%
+ECHO # PG sysconfig directory:  %PG_SYSCONFDIR%
 ECHO #
 ECHO ##########################################################################################
 PAUSE
