@@ -10,6 +10,7 @@ RIF Web Services
      - [1.3.1 Apache Tomcat on a single host](#131-apache-tomcat-on-a-single-host)	
      - [1.3.2 Apache Tomcat for internet use](#132-apache-tomcat-for-internet-use)	
 	 - [1.3.3 Running Tomcat on the command line](#133-running-tomcat-on-the-command-line)
+	 - [1.3.4 Running Tomcat as a service](#134-running-tomcat-as-a-service)
    - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
    - [2.1 Building Using Make](#21-building-using-make)	
@@ -96,9 +97,10 @@ JRE_HOME is used by the Apache tomcat manual start script *catalina.bat*. Normal
 directory as installed, but if Java is upgraded by hand or re-installed these environment settings may need to 
 be changed.
 
-Configure Tomcat to use the default Java installed on the machine. This prevents upgrades from breaking *tomcat*!
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/configure_tomcat_app_java.png?raw=true "Setting Java version autodetect")
-This make tomcat Java uopgrade proof; but this may have unintended effects if:
+Use the configure Tomcat application (tomcatw) to use the default Java installed on the machine. 
+This prevents upgrades from breaking *tomcat*!
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
+This makes tomcat Java uopgrade proof; but this may have unintended effects if:
 
 * You have not removed all the old Java releases
 * You install another version of Java (e.g. the Oracle installer may do this)
@@ -208,14 +210,46 @@ This pops up a Java scrollable window:
 ```
 
 * In this case the service is still running, hence the *Address already in use* error;
+* You are advised to make the Java window and buffer bigger; e.g. 132x40 with a 132x9999 line buffer;
 * To abort, use *catalina.bat stop* or quit the Java window. Use of control-C in the Java Window 
   will not work once a study have been run.
+
+### 1.3.4 Running Tomcat as a service
+  
+* Use the configure Tomcat application (tomcatw) to make the startup type automatic.
+
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_1.PNG?raw=true "Setting Java version autodetect")
+
+* Use the configure Tomcat application (tomcatw) to set the logging level to debug.
+
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_1.PNG?raw=true "Setting Java version autodetect")
+
+* Edit %CATALINA_HOME%/conf/logging.properties and change the default log level enable debugging 
+  (*ALL* not *DEBUG*!)
+  ```
+  ############################################################
+# Facility specific properties.
+# Provides extra control for each logger.
+############################################################
+
+# org.apache.catalina.core.ContainerBase.[Catalina].[localhost].level = INFO
+org.apache.catalina.core.ContainerBase.[Catalina].[localhost].level = ALL
+  ```
+  
+* Restart Tomcat using the configure Tomcat application (tomcatw) or the services panel.   
+  The *tomcat* output trace will appear in %CATALINA_HOME%/logs as:
+  *tomcat8-stdout.<date in format YYYY-MM-DD>*.
+  
+More controllable logging will be added during Autumn 2017 using log4j.
 
 ## 1.4 R
 
 Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
 
 R setup is in: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#43-setup-r
+
+As with Java, do NOT use the 32 bit only version unless you have to. These instructions assume you you the 64 
+bit version
 
 # 2. Building Web Services using Maven
 
@@ -384,6 +418,13 @@ If SAHSU has supplied a taxonomyServices.war file skip to step 3.
 
 1) Get the Taxonomy Service XML file *ClaML.dtd*. This is stored in is stored in ...rifServices\src\main\resources. A complete ICD10 version 
    is available from SAHSU for Organisations compliant with the WHO licence.
+   
+   For a full ICD10 listing add the following SAHSU supplied files to: 
+   %CATALINE_HOME%\webapps\taxonomyServices\WEB-INF\classes and restart tomcat
+
+   * icdClaML2016ens.xml
+   * TaxonomyServicesConfiguration.xml
+
 2) Build the Taxonomy Service using *maven*.
    Either: 
    - if you have *make* installed, in the top level github directory type *make taxonomyservice" as per Maven build instructions or
@@ -416,12 +457,6 @@ If SAHSU has supplied a taxonomyServices.war file skip to step 3.
 	```
 
 3) Copy ‘taxonomyServices.war’ from the *target* directory into the Tomcat webapps folder as with rifServices. 
-
-4) For a full ICD10 listing add the following SAHSU supplied files to: 
-%CATALINE_HOME%\webapps\taxonomyServices\WEB-INF\classes and restart tomcat
-
-* icdClaML2016ens.xml
-* TaxonomyServicesConfiguration.xml
 
 ## 3.2 RIF Web Application
 
@@ -836,10 +871,12 @@ The downloaded binary packages are in
    from inside of R [command-line]. Above command will give you a path. You will be able to find the 64 bit *libjri.so*
    which is the shared library JRI is looking for.
   
-   These directoies with the 32 or 64 bit subdirectory appended needs to be added to the path: 
+   These directories with the 32 or 64 bit subdirectory appended needs to be added to the path: 
    *C:\Program Files\R\R-3.4.0\bin\x64;C:\Program Files\R\R-3.4.0\library\rJava\jri\x64*. This ensures that file "x64\jri.dll" is in java.library.path
    Just after user logon the middleware can print the JAVA LIBRARY PATH: *System.getProperty("java.library.path")*
 
+   As with Java and R, normally the 64 bit version is used.
+   
 	```
 	JAVA LIBRARY PATH >>>
 	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:\ProgramData\Ora
@@ -871,7 +908,9 @@ java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.0\library\rJava\jri\x64
    
 ### 4.3.1 R Debugging
 
-Typical errors:
+Since R now uses JRI, all errors appear in the tomcat logs.
+
+Typical errors for the older batch script version (now obsolecent):
 
 * *R_HOME* not setup: ```command==null\bin\x64\RScript```
 * No scratchSpace directory: *c:\rifDemo\scratchSpace\* ```(The system cannot find the path specified)```
@@ -1031,6 +1070,11 @@ A errors are to be found in the $CATALINA_BASE/logs directory, e.g.: *C:\Program
 ```
 10-Apr-2017 13:45:12.240 SEVERE [main] org.apache.tomcat.util.net.SSLUtilBase.getStore Failed to load keystore type [JKS] with path [conf/localhost-rsa.jks] due to [C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks (The system cannot find the file specified)]
 ```
+
+If the RIF is started as per these instructions, the *tomcat* output trace will appear in 
+*tomcat8-stdout.<date in format YYYY-MM-DD>*.
+
+If it does not, check the tomcat service setup.
 
 ### 4.4.1 Logon RIF Serice Call Incorrect
 
@@ -1279,4 +1323,4 @@ To be added. Files to be saved/restored:
 * *%CATALINA_HOME%/conf/server.xml*
 * *%CATALINA_HOME%/conf/web.xml*
  
-Peter Hambly, 12th April 2017
+Peter Hambly, 12th April 2017; revised 4th August 2017
