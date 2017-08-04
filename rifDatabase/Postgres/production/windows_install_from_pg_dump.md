@@ -7,9 +7,10 @@ Windows Postgres Install using pg_dump and scripts
 - [1. Installation Prerequistes](#1-installation-prerequistes)
    - [1.1 Postgres](#11-postgres)	
       - [1.1.1 Postgres User Setup](#111-postgres-user-setup)
-      - [1.1.2 Fixing Windows Code page errors](#112-fixing-wndows-code-page-errors)
+      - [1.1.2 Fixing Windows Code page errors](#112-fixing-windows-code-page-errors)
 - [2. Installing a production database](#2-installing=a-production-database)
 
+# 1. Installation Prerequistes
 ## 1.1 Postgres
  
 * Uses *pg_dump* and Powershell
