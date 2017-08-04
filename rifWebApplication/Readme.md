@@ -99,7 +99,7 @@ be changed.
 
 Use the configure Tomcat application (tomcatw) to use the default Java installed on the machine. 
 This prevents upgrades from breaking *tomcat*!
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.png?raw=true "Setting Java version autodetect")
 This makes tomcat Java uopgrade proof; but this may have unintended effects if:
 
 * You have not removed all the old Java releases
@@ -218,22 +218,22 @@ This pops up a Java scrollable window:
   
 * Use the configure Tomcat application (tomcatw) to make the startup type automatic.
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_1.PNG?raw=true "Setting Java version autodetect")
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_1.png?raw=true "Make the startup type automatic")
 
 * Use the configure Tomcat application (tomcatw) to set the logging level to debug.
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_1.PNG?raw=true "Setting Java version autodetect")
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_2.png?raw=true "Set the logging level to debug")
 
 * Edit %CATALINA_HOME%/conf/logging.properties and change the default log level enable debugging 
-  (*ALL* not *DEBUG*!)
+  (*ALL* not *DEBUG*!):
   ```
   ############################################################
-# Facility specific properties.
-# Provides extra control for each logger.
-############################################################
-
-# org.apache.catalina.core.ContainerBase.[Catalina].[localhost].level = INFO
-org.apache.catalina.core.ContainerBase.[Catalina].[localhost].level = ALL
+  # Facility specific properties.
+  # Provides extra control for each logger.
+  ############################################################
+  
+  # org.apache.catalina.core.ContainerBase.[Catalina].[localhost].level = INFO
+  org.apache.catalina.core.ContainerBase.[Catalina].[localhost].level = ALL
   ```
   
 * Restart Tomcat using the configure Tomcat application (tomcatw) or the services panel.   
