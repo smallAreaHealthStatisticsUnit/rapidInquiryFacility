@@ -45,7 +45,24 @@ RIF Web Services
    
 # 1. Installation Prerequistes
 
+These instructions are for Windows Apache Tomcat. Linux Tomcat will be very similar. It is assumed that the 
+installer knows how to:
+
+* Set environment variables; check settings; setup up the executable and library search paths
+* Can install and de-install programs 
+* Can start and stop system services
+* Is able to administer the installation machine.
+
+The RIF web application will install on a modern laptop.
+
+Complex Apacahe Tomcat setup (e.g. clustering, runtime deployment of updated WAR files) are not within the scope of this document 
+od this document and are not required for simple RIF setups.
+
+
 ## 1.1 Apache Maven
+
+Apache Maven is required to build the RIF web application (War) files and the data loader tool from source. It is 
+not required if you are supplied with pre-built copies.
 
 Download and install Apache Maven: https://maven.apache.org/download.cgi
 
@@ -55,18 +72,43 @@ The Java Runtime Environment (JRE) can be used if the war files are pre-supplied
 version string from HTTP error messages by repacking  %CATALINA_HOME%/server/lib/catalina.jar with an updated 
 *ServerInfo.properties* file is not required. 
 
+Make sure all the older versions of Java are removed before you install Java; **especially the 32 bit versions**.
+To test for you Java version, use *java -showversion*, e.g.
+```
+C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>java -showversion
+java version "1.8.0_144"
+Java(TM) SE Runtime Environment (build 1.8.0_144-b01)
+Java HotSpot(TM) 64-Bit Server VM (build 25.144-b01, mixed mode)
+...
+```
+
 Download and install the Java Development Environment (JDK): http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
 
-Make sure all the older versions of Java are removed.
+**Make sure to install the 64 bit version of Java**, unless you have a 32 bit ONLY machine (*This is very unlikely 
+and has not been tested - we DO NOT have any!*). The 32 bit version will cause 32/64 bit issues with R.
+
+- If you use the Java Runtime Environment (JRE), set *JRE_HOME* in the environment (*C:\Program Files\Java\jre1.8.0_111*).
+- If you use the Java Development Environment (JDK), set *JAVA_HOME* in the environment (*C:\Program Files\Java\jdk1.8.0_111*).
+- Add the Java bin directory (*C:\Program Files\Java\jdk1.8.0_111\bin*) to the path.
+- Test Java is installed correctly with *java -showversion* in a new command window.
+
+JRE_HOME is used by the Apache tomcat manual start script *catalina.bat*. Normally, Java upgrades go into the same 
+directory as installed, but if Java is upgraded by hand or re-installed these environment settings may need to 
+be changed.
 
 Configure Tomcat to use the default Java installed on the machine. This prevents upgrades from breaking *tomcat*!
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/configure_tomcat_app_java.png?raw=true "Setting Java version autodetect")
+This make tomcat Java uopgrade proof; but this may have unintended effects if:
 
+* You have not removed all the old Java releases
+* You install another version of Java (e.g. the Oracle installer may do this)
+ 
 ## 1.3 Apache Tomcat
 
 Apache Tomcat can be downloaded from: https://tomcat.apache.org/download-80.cgi
 
-Please use tomcat version 8, not 9 as we have not tested 9. The version tested was 8.5.13.
+Please use tomcat version 8, not 9 as we have not tested 9. The version tested was 8.5.13. It is advised to use the MSI
+version.
 
 ### 1.3.1 Apache Tomcat on a single host
 
@@ -89,7 +131,9 @@ Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.
 - Complete tomcat installation, but do not start service.
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web 
   services will not work [The web services will crash on user logon if it is not set]; see:
-  4.4.5 RIF Services crash on logon.
+  4.4.5 RIF Services crash on logon. If *CATALINA_HOME* is 
+  *C:\Program Files (x86)\Apache Software Foundation\Tomcat 8.5* you have installed the 32 bit version of Java.
+  Remove tomcat and Java and re-install a 64 bit Java (unless you are on a really old 32 bit only Machine...)
   
 When accessed from the internet the RIF **must** be secured using TLS to protect the login details and any health data viewed.
 
@@ -107,10 +151,25 @@ Tomcat can be run from the command line. The advantage of this is all the output
 stopped (i.e. in the Windows services panel or via Linux runvel scripts (/etc/init.d/tomcat*). Notmally tomcat is run as a server (i.e. as a 
 daemon in Unix parlance).
 
-cd to %CATALINA_HOME%\bin; run *tomcat8.exe* e.g.
+cd to %CATALINA_HOME%\bin; run *catalina.bat* with the parameter *start* or *stop*. 
+
+Do NOT run *tomcat8.exe*; this will work but you will not be able to interupt Tomcat! (This is caused by the 
+Java R interface remving the control-C handler)
+
+e.g.
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility> cd %CATALINA_HOME%\bin
-C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin> tomcat8.exe
+C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin> catalina.bat start*
+Using CATALINA_BASE:   "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
+Using CATALINA_HOME:   "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
+Using CATALINA_TMPDIR: "C:\Program Files\Apache Software Foundation\Tomcat 8.5\temp"
+Using JRE_HOME:        "C:\Program Files\Java\jdk1.8.0_111"
+Using CLASSPATH:       "C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin\bootstrap.jar;C:\Program Files\Apache Software Fo
+undation\Tomcat 8.5\bin\tomcat-juli.jar"
+```
+
+This pops up a Java scrollable window:
+```
 11-Apr-2017 14:38:54.070 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version:        Apache Tomcat/8.5.13
 11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Mar 27 2017 14:25:04 UTC
 11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server number:         8.5.13.0
@@ -149,11 +208,14 @@ C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin> tomcat8.exe
 ```
 
 * In this case the service is still running, hence the *Address already in use* error;
-* To abort, use control-C or quit the command window.
+* To abort, use *catalina.bat stop* or quit the Java window. Use of control-C in the Java Window 
+  will not work once a study have been run.
 
 ## 1.4 R
 
 Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
+
+R setup is in: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#43-setup-r
 
 # 2. Building Web Services using Maven
 
