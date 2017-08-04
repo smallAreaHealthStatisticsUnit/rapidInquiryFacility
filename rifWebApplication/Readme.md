@@ -99,7 +99,7 @@ be changed.
 
 Use the configure Tomcat application (tomcatw) to use the default Java installed on the machine. 
 This prevents upgrades from breaking *tomcat*!
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.png?raw=true "Setting Java version autodetect")
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
 This makes tomcat Java uopgrade proof; but this may have unintended effects if:
 
 * You have not removed all the old Java releases
@@ -222,7 +222,7 @@ This pops up a Java scrollable window:
 
 * Use the configure Tomcat application (tomcatw) to set the logging level to debug.
 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_2.png?raw=true "Set the logging level to debug")
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_2.PNG?raw=true "Set the logging level to debug")
 
 * Edit %CATALINA_HOME%/conf/logging.properties and change the default log level enable debugging 
   (*ALL* not *DEBUG*!):
