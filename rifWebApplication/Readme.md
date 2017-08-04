@@ -246,7 +246,7 @@ More controllable logging will be added during Autumn 2017 using log4j.
 
 Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
 
-R setup is in: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#43-setup-r
+See: [R setup](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#43-setup-r)
 
 As with Java, do NOT use the 32 bit only version unless you have to. These instructions assume you you the 64 
 bit version
@@ -706,8 +706,9 @@ To sign the certificates, follow the instructions in: https://tomcat.apache.org/
 This setup will support:
 
 - Android 4.4.2 and later
-- Firefox 32 and later
+- Firefox 32 and later. Note that Firefox 45 does not work!
 - IE 11 and later
+- Microsoft Edge 38 and later
 - IE Mobile 11 and later
 - Java 8 b132 (March 10, 2014)
 - Safari 7 and later
