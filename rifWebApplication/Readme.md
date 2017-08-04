@@ -214,6 +214,15 @@ This pops up a Java scrollable window:
 * To abort, use *catalina.bat stop* or quit the Java window. Use of control-C in the Java Window 
   will not work once a study have been run.
 
+Two scripts are provided to start and stop the RIF from the command line:
+  
+* start_rif.bat
+* stop_rif.bat
+
+These can be placed on the desktop. The shortcuts created then need to be run as an Adminstrator.
+
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/setting_runas_administrator.png?raw=true "Make a shortcut run as an administrator")
+
 ### 1.3.4 Running Tomcat as a service
   
 * Use the configure Tomcat application (tomcatw) to make the startup type automatic.
@@ -910,6 +919,26 @@ java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.0\library\rJava\jri\x64
 ### 4.3.1 R Debugging
 
 Since R now uses JRI, all errors appear in the tomcat logs.
+
+Beware of 32 bit Java errors
+
+```
+=======getInvestigationID========2===
+About to call next
+called next
+Investigation name==TEST 1001  ID==5==
+Cannot find JRI native library!
+Please make sure that the JRI native library is in a directory listed in java.library.path.
+
+java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.1\library\rJava\jri\x64\jri.dll: Can't load AMD 64-bit .dll on a IA 32-bit platform
+        at java.lang.ClassLoader$NativeLibrary.load(Native Method)
+        at java.lang.ClassLoader.loadLibrary0(Unknown Source)
+        at java.lang.ClassLoader.loadLibrary(Unknown Source)
+        at java.lang.Runtime.loadLibrary0(Unknown Source)
+        at java.lang.System.loadLibrary(Unknown Source)
+        at org.rosuda.JRI.Rengine.<clinit>(Rengine.java:19)
+        at rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep.performStep(PGSQLSmoothResultsSubmissionStep.java:193)
+```
 
 Typical errors for the older batch script version (now obsolecent):
 
