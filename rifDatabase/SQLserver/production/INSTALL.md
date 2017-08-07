@@ -121,8 +121,10 @@ Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
 	```
 	sqlcmd -E -S PETER-PC\SAHSU -d rif40 -b -m-1 -e -r1 -i rif40_production_creation.sql -v import_dir="%cd%\" -v newdb="%NEWDB%"
 	```  
-    If you set this it will ned to be set in the environment as *SQLCMDSERVER*. This is usually caused by 
-    multiple installations of SQL server on the machine in the past, i.e. the *DefaultLocalInstance* registry key is wrong.
+    If you set this it will need to be set in the environment as *SQLCMDSERVER*. This is usually caused by 
+    multiple installations of SQL server on the machine in the past, i.e. the *DefaultLocalInstance* registry 
+	key is wrong. In Windows 10/SQL Server 2012 setting the instance name caused an error (i.e. PETER-PC worked but 
+	PETER-PC\SAHSU did not).
   * Check if remote access is enabled (it should be) using SQL Server Management Studio as adminstrator: https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx
   * Check TCP access is enabled using SQL Server Configuration Manager as adminstrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
   * Check your firewall permits access to TCP port 1433. **Be careful _not_ to allow Internet access unless you intend it.**
