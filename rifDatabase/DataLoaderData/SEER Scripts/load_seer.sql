@@ -58,6 +58,216 @@
 
 BEGIN TRANSACTION;
 
+DROP TABLE IF EXISTS seer9_yr1973_2013_fixed_length;
+DROP TABLE IF EXISTS seer9_yr1973_2013;
+
+--
+-- Load singleages.txt as a fixed length record
+--
+CREATE TABLE seer9_yr1973_2013_fixed_length (
+	record_value VARCHAR(358)
+);
+/*
+C:\Users\Peter\Documents\Local data loading>wc -l SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9*.TXT
+    769261 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/BREAST.TXT
+    528452 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/COLRECT.TXT
+    364018 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/DIGOTHR.TXT
+    434960 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/FEMGEN.TXT
+    381579 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/LYMYLEUK.TXT
+    636118 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/MALEGEN.TXT
+    784697 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/OTHER.TXT
+    643924 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/RESPIR.TXT
+    320405 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/URINARY.TXT
+   4863414 total
+ */
+
+\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\BREAST.TXT' WITH CSV;
+\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\COLRECT.TXT' WITH CSV;
+\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\DIGOTHR.TXT' WITH CSV;
+\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\FEMGEN.TXT' WITH CSV;
+\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\LYMYLEUK.TXT' WITH CSV;
+\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\MALEGEN.TXT' WITH CSV;
+\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\OTHER.TXT' WITH CSV;
+\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\RESPIR.TXT' WITH CSV;
+\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\URINARY.TXT' WITH CSV;
+
+--
+-- Check rowcount
+--
+SELECT COUNT(*) AS total FROM seer9_yr1973_2013_fixed_length;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(*) AS total
+ 		  FROM seer9_yr1973_2013_fixed_length;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.total = 4863414 THEN
+		RAISE INFO 'Table: seer9_yr1973_2013_fixed_length has % rows', c1_rec.total;
+	ELSE
+		RAISE EXCEPTION 'Table: seer9_yr1973_2013_fixed_length has % rows; expecting 4863414', c1_rec.total;
+	END IF;
+END;
+$$;
+
+--
+-- Convert datatypes
+--
+CREATE TABLE seer9_yr1973_2013
+AS
+SELECT SUBSTRING(record_value FROM 39 FOR 4)::INTEGER AS year_dx,	/* Year of diagnosis */
+       SUBSTRING(record_value FROM 24 FOR 1)::INTEGER AS sex,		/* Sex */
+       SUBSTRING(record_value FROM 25 FOR 3)::INTEGER AS age_dx, 	/* Age at diagnosis */
+       SUBSTRING(record_value FROM 246 FOR 2)::Text AS state_fips_code,	 /* State FIPS code */
+       SUBSTRING(record_value FROM 248 FOR 3)::Text AS county_fips_code, /* County FIPS code */ 
+       SUBSTRING(record_value FROM 208 FOR 4)::Text AS icdot10v, 	/* Recode ICD-O-2 to 10 */
+       SUBSTRING(record_value FROM 1 FOR 8)::INTEGER AS pubcsnum,	/* Patient ID */
+       SUBSTRING(record_value FROM 35 FOR 2)::INTEGER AS seq_num,  	/* Sequence number */
+       SUBSTRING(record_value FROM 53 FOR 4)::Text AS histo3v,		/* Histologic Type ICD-O-3 */
+       SUBSTRING(record_value FROM 57 FOR 1)::Text AS beho3v,		/* Behavior code ICD-O-3 */
+       SUBSTRING(record_value FROM 233 FOR 1)::INTEGER AS rac_reca,	/* Race recode A (WHITE, BLACK, OTHER) */
+       SUBSTRING(record_value FROM 234 FOR 1)::INTEGER AS rac_recy,	/* Race recode Y (W, B, AI, API) */	  
+       SUBSTRING(record_value FROM 235 FOR 1)::INTEGER AS origrecb,	/* Origin Recode NHIA (HISPANIC, NON-HISP) */	 
+       SUBSTRING(record_value FROM 255 FOR 5)::Text AS codpub,	  	/* Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html) */
+       SUBSTRING(record_value FROM 9 FOR 10)::INTEGER AS reg		/* SEER registry */   
+  FROM seer9_yr1973_2013_fixed_length;
+
+/* Cancer reigsatry codes:
+
+Code			Description (first year of data)
+0000001501		San Francisco-Oakland SMSA (1973)
+0000001502		Connecticut (1973)
+0000001520		Metropolitan Detroit (1973)
+0000001521		Hawaii (1973)
+0000001522		Iowa (1973)
+0000001523		New Mexico (1973)
+0000001525		Seattle (Puget Sound) (1974)
+0000001526		Utah (1973)
+0000001527		Metropolitan Atlanta (1975)
+0000001529		Alaska*
+0000001531		San Jose-Monterey*
+0000001535		Los Angeles*
+0000001537		Rural Georgia*
+0000001541		Greater California (excluding SF, Los Angeles & SJ)**
+0000001542		Kentucky**
+0000001543		Louisiana**
+0000001544		New Jersey**
+0000001547		Greater Georgia (excluding AT and RG)**
+(Year in parentheses refers to first diagnosis year data reported to SEER)
+
+*Note: The incidence/yr1992_2013.sj_la_rg_ak directory files contain cases for Alaska, San Jose-Monterey, Los Angeles and 
+       Rural Georgia registries beginning in 1992. Cases have been collected by SEER for these registries prior to 1992 but have 
+       been excluded from the SEER Research Data file.
+**Note: The incidence/yr2000_2013.ca_ky_lo_nj_ga directory files contain cases for Greater California, Kentucky, Louisiana, 
+        New Jersey and Greater Georgia registries beginning in 2000. For the year 2005, only January through June diagnoses are
+		included for Louisiana. The July through December incidence cases can be found in the yr2005.lo_2nd_half directory.
+*/  
+
+--
+-- Extract cancer
+-- * Convert age, sex to RIF age_sex_group 1
+-- * Convert FIPS codes to the geographic Names Information System (GNIS) codes used by the RIF
+-- * Enforce primary key (Patient ID, Sequence number)
+-- * Check AGE_SEX_GROUP, handle uncoded age
+-- * Convert unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g.
+--   900 series to represent county/independent city combinations in Virginia.
+-- * Use icdot10v (ICD 10 site code - recoded from ICD-O-2 to 10) as the ICD field
+--
+DROP TABLE IF EXISTS seer_cancer;  
+CREATE TABLE seer_cancer
+AS  
+SELECT a.year_dx AS year, 
+	   'US'::Text AS cb_2014_us_nation_5m,
+       d.statens AS cb_2014_us_state_500k, 
+       COALESCE(c.countyns, 'UNKNOWN: '||a.county_fips_code) AS cb_2014_us_county_500k,
+	   (a.sex*100)+
+			CASE WHEN a.age_dx = 999 THEN 99
+			ELSE                     b.offset END AS age_sex_group, 
+	   a.icdot10v,		/* ICD 10 site code - recoded from ICD-O-2 to 10 */
+	   a.pubcsnum,		/* Patient ID */
+	   a.seq_num,		/* Sequence number */
+       a.histo3v,		/* Histologic Type ICD-O-3 */
+       a.beho3v,		/* Behavior code ICD-O-3 */
+       a.rac_reca,		/* Race recode A (WHITE, BLACK, OTHER) */
+       a.rac_recy,		/* Race recode Y (W, B, AI, API) */	   
+	   a.origrecb,		/* Origin Recode NHIA (HISPANIC, NON-HISP) */
+	   a.codpub,	  	/* Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html) */
+       a.reg-1500 AS reg		/* SEER registry (minus 1500 so same as population file) */   	   
+  FROM seer9_yr1973_2013 a
+		LEFT OUTER JOIN rif40_age_groups b ON (b.age_group_id = 1 AND a.age_dx BETWEEN b.low_age AND b.high_age /* limit 255! */)
+		LEFT OUTER JOIN cb_2014_us_county_500k c ON (a.state_fips_code = c.statefp AND a.county_fips_code = c.countyfp)
+		LEFT OUTER JOIN cb_2014_us_state_500k d ON (a.state_fips_code = d.statefp)
+ ORDER BY a.pubcsnum, a.seq_num;
+ 
+COMMENT ON TABLE seer_cancer IS 'SEER Cancer data 1973-2013. 9 States in total';
+COMMENT ON COLUMN seer_cancer.year IS 'Year';
+COMMENT ON COLUMN seer_cancer.cb_2014_us_nation_5m IS 'United States to county level including territories';
+COMMENT ON COLUMN seer_cancer.cb_2014_us_state_500k IS 'State geographic Names Information System (GNIS) code';
+COMMENT ON COLUMN seer_cancer.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
+COMMENT ON COLUMN seer_cancer.age_sex_group IS 'RIF age_sex_group 1 (21 bands)';
+COMMENT ON COLUMN seer_cancer.icdot10v IS 'ICD 10 site code - recoded from ICD-O-2 to 10';
+COMMENT ON COLUMN seer_cancer.pubcsnum IS 'Patient ID';
+COMMENT ON COLUMN seer_cancer.seq_num IS 'Sequence number';
+COMMENT ON COLUMN seer_cancer.histo3v IS 'Histologic Type ICD-O-3';
+COMMENT ON COLUMN seer_cancer.beho3v IS 'Behavior code ICD-O-3';
+COMMENT ON COLUMN seer_cancer.rac_reca IS 'Race recode A (WHITE, BLACK, OTHER)';
+COMMENT ON COLUMN seer_cancer.rac_recy IS 'Race recode Y (W, B, AI, API)';
+COMMENT ON COLUMN seer_cancer.origrecb IS 'Origin Recode NHIA (HISPANIC, NON-HISP)';
+COMMENT ON COLUMN seer_cancer.codpub IS 'Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html)';
+COMMENT ON COLUMN seer_cancer.reg IS 'SEER registry (minus 1500 so same as population file)';
+
+--
+-- Check rowcount
+--
+SELECT COUNT(*) AS total FROM seer_cancer;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(*) AS total
+ 		  FROM seer_cancer;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.total = 4863414 THEN
+		RAISE INFO 'Table: seer_cancer has % rows', c1_rec.total;
+	ELSE
+		RAISE EXCEPTION 'Table: seer_cancer has % rows; expecting 4863414', c1_rec.total;
+	END IF;
+END;
+$$;
+
+ALTER TABLE seer_cancer ALTER COLUMN year SET NOT NULL;
+ALTER TABLE seer_cancer ALTER COLUMN cb_2014_us_state_500k SET NOT NULL;
+ALTER TABLE seer_cancer ALTER COLUMN cb_2014_us_county_500k SET NOT NULL;
+
+ALTER TABLE seer_cancer ADD CONSTRAINT seer_cancer_asg_ck 
+	CHECK (age_sex_group BETWEEN 100 AND 121 OR age_sex_group BETWEEN 200 AND 221 OR age_sex_group IN (199, 299) /* No age coded */);
+	
+ALTER TABLE seer_cancer ALTER COLUMN age_sex_group SET NOT NULL;
+
+\copy seer_cancer TO 'seer_cancer.csv' WITH CSV HEADER;
+\dS+ seer_cancer
+ 
+ALTER TABLE seer_cancer ADD CONSTRAINT seer_cancer_pk 
+	PRIMARY KEY (pubcsnum, seq_num);	
+CREATE INDEX seer_cancer_year ON seer_cancer (year);
+CREATE INDEX seer_cancer_cb_2014_us_nation_5m ON seer_cancer(cb_2014_us_nation_5m);
+CREATE INDEX seer_cancer_cb_2014_us_state_500k ON seer_cancer(cb_2014_us_state_500k);
+CREATE INDEX seer_cancer_cb_2014_us_county_500k ON seer_cancer(cb_2014_us_county_500k);
+CREATE INDEX seer_cancer_age_sex_group ON seer_cancer(age_sex_group);
+CREATE INDEX seer_cancer_icdot10v ON seer_cancer(icdot10v);	
+CREATE INDEX seer_cancer_reg ON seer_cancer(reg);	
+	
+--END;	
+--\q
+  
 DROP TABLE IF EXISTS seer_wbo_single_ages_fixed_length;
 DROP TABLE IF EXISTS seer_wbo_single_ages;
 
@@ -94,18 +304,6 @@ BEGIN
 END;
 $$;
 
-SELECT SUBSTRING(record_value FROM 1 FOR 4)::INTEGER AS year,
-       SUBSTRING(record_value FROM 5 FOR 2) AS state_postal_abbreviation,
-       SUBSTRING(record_value FROM 7 FOR 2)::Text AS state_fips_code,
-       SUBSTRING(record_value FROM 9 FOR 3)::Text AS county_fips_code,
-       SUBSTRING(record_value FROM 12 FOR 2)::INTEGER AS registry,
-       SUBSTRING(record_value FROM 14 FOR 1)::INTEGER AS race,
-       SUBSTRING(record_value FROM 15 FOR 1)::INTEGER AS origin,
-       SUBSTRING(record_value FROM 16 FOR 1)::INTEGER AS sex,
-       SUBSTRING(record_value FROM 17 FOR 2)::INTEGER AS age,
-       SUBSTRING(record_value FROM 19 FOR 10)::NUMERIC AS population
-  FROM seer_wbo_single_ages_fixed_length LIMIT 10;
-
 --
 -- Convert datatypes
 --
@@ -122,7 +320,29 @@ SELECT SUBSTRING(record_value FROM 1 FOR 4)::INTEGER AS year,
        SUBSTRING(record_value FROM 17 FOR 2)::INTEGER AS age,
        SUBSTRING(record_value FROM 19 FOR 10)::NUMERIC AS population
   FROM seer_wbo_single_ages_fixed_length;
-  
+/* 
+ * Registry codes:
+ *
+	01 = San Francisco-Oakland SMSA
+	02 = Connecticut
+	20 = Detroit (Metropolitan)
+	21 = Hawaii
+	22 = Iowa
+	23 = New Mexico
+	25 = Seattle (Puget Sound)
+	26 = Utah
+	27 = Atlanta (Metropolitan)
+	29 = Alaska Natives
+	31 = San Jose-Monterey
+	35 = Los Angeles
+	37 = Rural Georgia
+	41 = California excluding SF/SJM/LA
+	42 = Kentucky
+	43 = Louisiana
+	44 = New Jersey
+	47 = Greater Georgia
+ */
+ 
 --
 -- Extract population
 -- * Convert age, sex to RIF age_sex_group 1
@@ -135,7 +355,9 @@ SELECT SUBSTRING(record_value FROM 1 FOR 4)::INTEGER AS year,
 DROP TABLE IF EXISTS seer_population;  
 CREATE TABLE seer_population
 AS  
-SELECT a.year, d.statens AS cb_2014_us_state_500k, 
+SELECT a.year, 
+	   'US'::Text AS cb_2014_us_nation_5m,
+       d.statens AS cb_2014_us_state_500k, 
        COALESCE(c.countyns, 'UNKNOWN: '||a.county_fips_code) AS cb_2014_us_county_500k,
 	   (a.sex*100)+b.offset AS age_sex_group, 
        SUM(a.population) AS population
@@ -146,172 +368,48 @@ SELECT a.year, d.statens AS cb_2014_us_state_500k,
  GROUP BY a.year, d.statens, COALESCE(c.countyns, 'UNKNOWN: '||a.county_fips_code), a.sex, b.offset
  ORDER BY 1,2,3,4,5;
  
-COMMENT ON TABLE seer_population IS 'SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States total';
+COMMENT ON TABLE seer_population IS 'SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States in total';
 COMMENT ON COLUMN seer_population.year IS 'Year';
+COMMENT ON COLUMN seer_population.cb_2014_us_nation_5m IS 'United States to county level including territories';
 COMMENT ON COLUMN seer_population.cb_2014_us_state_500k IS 'State geographic Names Information System (GNIS) code';
 COMMENT ON COLUMN seer_population.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
 COMMENT ON COLUMN seer_population.age_sex_group IS 'RIF age_sex_group 1 (21 bands)';
 COMMENT ON COLUMN seer_population.population IS 'Population';
 
-SELECT * FROM seer_population LIMIT 10;
-SELECT statefp, areaname FROM cb_2014_us_state_500k ORDER BY 2;
-SELECT countyfp, areaname FROM cb_2014_us_county_500k WHERE statefp = '06' ORDER BY 2;
-
-WITH a AS (
-	SELECT a.year, a.cb_2014_us_state_500k, d.name, SUM(a.population) AS population
-	  FROM seer_population a
-			LEFT OUTER JOIN cb_2014_us_state_500k d ON (a.cb_2014_us_state_500k = d.statens)
-	 GROUP BY a.year, a.cb_2014_us_state_500k, d.name
-)
-SELECT a13.name, 
-       a73.population AS y1973,
-       a74.population AS y1974,
-       a75.population AS y1975,
-       a76.population AS y1976,
-       a77.population AS y1977,
-       a78.population AS y1978,
-       a79.population AS y1979,
-       a80.population AS y1980,
-       a81.population AS y1981,
-       a82.population AS y1982, 
-	   a83.population AS y1983
-  FROM a a13
-	LEFT OUTER JOIN a a73 ON (a13.cb_2014_us_state_500k = a73.cb_2014_us_state_500k AND a73.year = 1973)
-	LEFT OUTER JOIN a a74 ON (a13.cb_2014_us_state_500k = a74.cb_2014_us_state_500k AND a74.year = 1974)
-	LEFT OUTER JOIN a a75 ON (a13.cb_2014_us_state_500k = a75.cb_2014_us_state_500k AND a75.year = 1975)
-	LEFT OUTER JOIN a a76 ON (a13.cb_2014_us_state_500k = a76.cb_2014_us_state_500k AND a76.year = 1976)
-	LEFT OUTER JOIN a a77 ON (a13.cb_2014_us_state_500k = a77.cb_2014_us_state_500k AND a77.year = 1977)
-	LEFT OUTER JOIN a a78 ON (a13.cb_2014_us_state_500k = a78.cb_2014_us_state_500k AND a78.year = 1978)
-	LEFT OUTER JOIN a a79 ON (a13.cb_2014_us_state_500k = a79.cb_2014_us_state_500k AND a79.year = 1979)
-	LEFT OUTER JOIN a a80 ON (a13.cb_2014_us_state_500k = a80.cb_2014_us_state_500k AND a80.year = 1980)
-	LEFT OUTER JOIN a a81 ON (a13.cb_2014_us_state_500k = a81.cb_2014_us_state_500k AND a81.year = 1981)
-	LEFT OUTER JOIN a a82 ON (a13.cb_2014_us_state_500k = a82.cb_2014_us_state_500k AND a82.year = 1982)
-	LEFT OUTER JOIN a a83 ON (a13.cb_2014_us_state_500k = a83.cb_2014_us_state_500k AND a83.year = 1983)
- WHERE a13.year = 2013
- ORDER BY 1,2,3; 
+--
+-- Check rowcount
+--
+SELECT COUNT(*) AS total FROM seer_population;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(*) AS total
+ 		  FROM seer_population;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.total = 354326 THEN
+		RAISE INFO 'Table: seer_population has % rows', c1_rec.total;
+	ELSE
+		RAISE EXCEPTION 'Table: seer_population has % rows; expecting 354326', c1_rec.total;
+	END IF;
+END;
+$$;
  
-WITH a AS (
-	SELECT a.year, a.cb_2014_us_state_500k, d.name, SUM(a.population) AS population
-	  FROM seer_population a
-			LEFT OUTER JOIN cb_2014_us_state_500k d ON (a.cb_2014_us_state_500k = d.statens)
-	 GROUP BY a.year, a.cb_2014_us_state_500k, d.name
-)
-SELECT a13.name, 
-       a83.population AS y1983,
-       a84.population AS y1984,
-       a85.population AS y1985,
-       a86.population AS y1986,
-       a87.population AS y1987,
-       a88.population AS y1988,
-       a89.population AS y1989,
-       a90.population AS y1990,
-       a91.population AS y1991,
-       a92.population AS y1992, 
-	   a93.population AS y1993 
-  FROM a a13
-	LEFT OUTER JOIN a a83 ON (a13.cb_2014_us_state_500k = a83.cb_2014_us_state_500k AND a83.year = 1983)
-	LEFT OUTER JOIN a a84 ON (a13.cb_2014_us_state_500k = a84.cb_2014_us_state_500k AND a84.year = 1984)
-	LEFT OUTER JOIN a a85 ON (a13.cb_2014_us_state_500k = a85.cb_2014_us_state_500k AND a85.year = 1985)
-	LEFT OUTER JOIN a a86 ON (a13.cb_2014_us_state_500k = a86.cb_2014_us_state_500k AND a86.year = 1986)
-	LEFT OUTER JOIN a a87 ON (a13.cb_2014_us_state_500k = a87.cb_2014_us_state_500k AND a87.year = 1987)
-	LEFT OUTER JOIN a a88 ON (a13.cb_2014_us_state_500k = a88.cb_2014_us_state_500k AND a88.year = 1988)
-	LEFT OUTER JOIN a a89 ON (a13.cb_2014_us_state_500k = a89.cb_2014_us_state_500k AND a89.year = 1989)
-	LEFT OUTER JOIN a a90 ON (a13.cb_2014_us_state_500k = a90.cb_2014_us_state_500k AND a90.year = 1990)
-	LEFT OUTER JOIN a a91 ON (a13.cb_2014_us_state_500k = a91.cb_2014_us_state_500k AND a91.year = 1991)
-	LEFT OUTER JOIN a a92 ON (a13.cb_2014_us_state_500k = a92.cb_2014_us_state_500k AND a92.year = 1992)
-	LEFT OUTER JOIN a a93 ON (a13.cb_2014_us_state_500k = a93.cb_2014_us_state_500k AND a93.year = 1993)
- WHERE a13.year = 2013
- ORDER BY 1,2,3; 
- 
-WITH a AS (
-	SELECT a.year, a.cb_2014_us_state_500k, d.name, SUM(a.population) AS population
-	  FROM seer_population a
-			LEFT OUTER JOIN cb_2014_us_state_500k d ON (a.cb_2014_us_state_500k = d.statens)
-	 GROUP BY a.year, a.cb_2014_us_state_500k, d.name
-)
-SELECT a13.name, 
-       a93.population AS y1993,
-       a94.population AS y1994,
-       a95.population AS y1995,
-       a96.population AS y1996,
-       a97.population AS y1997,
-       a98.population AS y1998,
-       a99.population AS y1999,
-       a00.population AS y2000,
-       a01.population AS y2001,
-       a02.population AS y2002, 
-	   a03.population AS y2003 
-  FROM a a13
-	LEFT OUTER JOIN a a93 ON (a13.cb_2014_us_state_500k = a93.cb_2014_us_state_500k AND a93.year = 1993)
-	LEFT OUTER JOIN a a94 ON (a13.cb_2014_us_state_500k = a94.cb_2014_us_state_500k AND a94.year = 1994)
-	LEFT OUTER JOIN a a95 ON (a13.cb_2014_us_state_500k = a95.cb_2014_us_state_500k AND a95.year = 1995)
-	LEFT OUTER JOIN a a96 ON (a13.cb_2014_us_state_500k = a96.cb_2014_us_state_500k AND a96.year = 1996)
-	LEFT OUTER JOIN a a97 ON (a13.cb_2014_us_state_500k = a97.cb_2014_us_state_500k AND a97.year = 1997)
-	LEFT OUTER JOIN a a98 ON (a13.cb_2014_us_state_500k = a98.cb_2014_us_state_500k AND a98.year = 1998)
-	LEFT OUTER JOIN a a99 ON (a13.cb_2014_us_state_500k = a99.cb_2014_us_state_500k AND a99.year = 1999)
-	LEFT OUTER JOIN a a00 ON (a13.cb_2014_us_state_500k = a00.cb_2014_us_state_500k AND a00.year = 2000)
-	LEFT OUTER JOIN a a01 ON (a13.cb_2014_us_state_500k = a01.cb_2014_us_state_500k AND a01.year = 2001)
-	LEFT OUTER JOIN a a02 ON (a13.cb_2014_us_state_500k = a02.cb_2014_us_state_500k AND a02.year = 2002)
-	LEFT OUTER JOIN a a03 ON (a13.cb_2014_us_state_500k = a03.cb_2014_us_state_500k AND a03.year = 2003)
- WHERE a13.year = 2013
- ORDER BY 1,2,3; 
- 
-WITH a AS (
-	SELECT a.year, a.cb_2014_us_state_500k, d.name, SUM(a.population) AS population
-	  FROM seer_population a
-			LEFT OUTER JOIN cb_2014_us_state_500k d ON (a.cb_2014_us_state_500k = d.statens)
-	 GROUP BY a.year, a.cb_2014_us_state_500k, d.name
-)
-SELECT a13.name, 
-       a03.population AS y2003,
-       a04.population AS y2004,
-       a05.population AS y2005,
-       a06.population AS y2006,
-       a07.population AS y2007,
-       a08.population AS y2008,
-       a09.population AS y2009,
-       a10.population AS y2010,
-       a11.population AS y2011,
-       a12.population AS y2012, 
-	   a13.population AS y2013
-  FROM a a13
-	LEFT OUTER JOIN a a03 ON (a13.cb_2014_us_state_500k = a03.cb_2014_us_state_500k AND a03.year = 2003)
-	LEFT OUTER JOIN a a04 ON (a13.cb_2014_us_state_500k = a04.cb_2014_us_state_500k AND a04.year = 2004)
-	LEFT OUTER JOIN a a05 ON (a13.cb_2014_us_state_500k = a05.cb_2014_us_state_500k AND a05.year = 2005)
-	LEFT OUTER JOIN a a06 ON (a13.cb_2014_us_state_500k = a06.cb_2014_us_state_500k AND a06.year = 2006)
-	LEFT OUTER JOIN a a07 ON (a13.cb_2014_us_state_500k = a07.cb_2014_us_state_500k AND a07.year = 2007)
-	LEFT OUTER JOIN a a08 ON (a13.cb_2014_us_state_500k = a08.cb_2014_us_state_500k AND a08.year = 2008)
-	LEFT OUTER JOIN a a09 ON (a13.cb_2014_us_state_500k = a09.cb_2014_us_state_500k AND a09.year = 2009)
-	LEFT OUTER JOIN a a10 ON (a13.cb_2014_us_state_500k = a10.cb_2014_us_state_500k AND a10.year = 2010)
-	LEFT OUTER JOIN a a11 ON (a13.cb_2014_us_state_500k = a11.cb_2014_us_state_500k AND a11.year = 2011)
-	LEFT OUTER JOIN a a12 ON (a13.cb_2014_us_state_500k = a12.cb_2014_us_state_500k AND a12.year = 2012)
- WHERE a13.year = 2013
- ORDER BY 1,2,3; 
- 
-SELECT a.cb_2014_us_state_500k, a.cb_2014_us_county_500k, d.name, 
-       SUM(a.population) AS population, MIN(a.year) AS min_year, MAX(a.year) AS max_year
-  FROM seer_population a
-		LEFT OUTER JOIN cb_2014_us_county_500k d ON (a.cb_2014_us_county_500k = d.countyns)
- WHERE d.name IS NULL
- GROUP BY a.cb_2014_us_state_500k, a.cb_2014_us_county_500k, d.name
- ORDER BY 1,2,3;
- 
-WITH a AS ( 
-	SELECT a.year, TRUNC(a.age_sex_group/100) AS sex, SUM(a.population) AS population
-	  FROM seer_population a
-	 GROUP BY a.year, TRUNC(a.age_sex_group/100)
-)
-SELECT a.year, SUM(a.population) AS population, m.population AS males, f.population AS females
-  FROM a
-	LEFT OUTER JOIN a m ON (a.year = m.year AND m.sex = 1)
-	LEFT OUTER JOIN a f ON (a.year = f.year AND f.sex = 2)
- GROUP BY a.year, m.population, f.population
- ORDER BY a.year;
-   
 ALTER TABLE seer_population ADD CONSTRAINT seer_population_pk 
-	PRIMARY KEY (year, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group);	
+	PRIMARY KEY (year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group);	
 ALTER TABLE seer_population ADD CONSTRAINT seer_population_asg_ck 
 	CHECK (age_sex_group BETWEEN 100 AND 121 OR age_sex_group BETWEEN 200 AND 221);
+
+CLUSTER seer_population USING seer_population_pk;
+CREATE INDEX seer_population_year ON seer_population (year);
+CREATE INDEX seer_population_cb_2014_us_nation_5m ON seer_population(cb_2014_us_nation_5m);
+CREATE INDEX seer_population_cb_2014_us_state_500k ON seer_population(cb_2014_us_state_500k);
+CREATE INDEX seer_population_cb_2014_us_county_500k ON seer_population(cb_2014_us_county_500k);
+CREATE INDEX seer_population_age_sex_group ON seer_population(age_sex_group);
 
 \copy seer_population TO 'seer_population.csv' WITH CSV HEADER;
 \dS+ seer_population
@@ -329,7 +427,9 @@ DROP TABLE IF EXISTS seer_wbo_ethnicity;
 CREATE TABLE seer_wbo_ethnicity
 AS  
 WITH a AS (
-	SELECT a.year, d.statens AS cb_2014_us_state_500k, 
+	SELECT a.year, 
+	       'US'::Text AS cb_2014_us_nation_5m,
+	       d.statens AS cb_2014_us_state_500k, 
 		   COALESCE(c.countyns, 'UNKNOWN: '||a.county_fips_code) AS cb_2014_us_county_500k,
 		   CASE WHEN a.year < 1992 AND a.race = 3 /* Recode other to 9 */ THEN 9 ELSE a.race END AS race, 
 		   a.origin,
@@ -342,34 +442,43 @@ WITH a AS (
 			  COALESCE(c.countyns, 'UNKNOWN: '||a.county_fips_code), 
 			  CASE WHEN a.year < 1992 AND a.race = 3 /* Recode other to 9 */ THEN 9 ELSE a.race END, a.origin
 )
-SELECT year, cb_2014_us_state_500k, cb_2014_us_county_500k, (10*race)+COALESCE(origin, 0) AS ethnicity, a.population
+SELECT year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, 
+      (10*race)+COALESCE(origin, 0) AS ethnicity, a.population
   FROM a
- ORDER BY 1,2,3,4;
+ ORDER BY 1,2,3,4,5;
 
-COMMENT ON TABLE seer_wbo_ethnicity IS 'SEER Ethnicity 1972-2013; white/blacks/other + hispanic/non-hispanic';
+COMMENT ON TABLE seer_wbo_ethnicity IS 'SEER Ethnicity 1972-2013; white/blacks/other + hispanic/non-hispanic. 9 States in total';
 COMMENT ON COLUMN seer_wbo_ethnicity.year IS 'Year';
+COMMENT ON COLUMN seer_wbo_ethnicity.cb_2014_us_nation_5m IS 'United States to county level including territories';
 COMMENT ON COLUMN seer_wbo_ethnicity.cb_2014_us_state_500k IS 'State geographic Names Information System (GNIS) code';
 COMMENT ON COLUMN seer_wbo_ethnicity.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
 COMMENT ON COLUMN seer_wbo_ethnicity.ethnicity IS 'Ethnicity coded 19: White; 29: Black, 39: American Indian/Alaska Native (1992 onwards); 99: Other (1973-1991); all with no hispanic data ';
 COMMENT ON COLUMN seer_wbo_ethnicity.population IS 'Population'; 
+
+-- 
+-- Add PK, make index organised table
+--
 ALTER TABLE seer_wbo_ethnicity ADD CONSTRAINT seer_wbo_ethnicity_pk 
 	PRIMARY KEY (year, cb_2014_us_state_500k, cb_2014_us_county_500k, ethnicity);
+CLUSTER seer_wbo_ethnicity USING seer_wbo_ethnicity_pk;
+
+CREATE INDEX seer_wbo_ethnicity_year ON seer_wbo_ethnicity (year);
+CREATE INDEX seer_wbo_ethnicity_cb_2014_us_nation_5m ON seer_wbo_ethnicity(cb_2014_us_nation_5m);
+CREATE INDEX seer_wbo_ethnicity_cb_2014_us_state_500k ON seer_wbo_ethnicity(cb_2014_us_state_500k);
+CREATE INDEX seer_wbo_ethnicity_cb_2014_us_county_500k ON seer_wbo_ethnicity(cb_2014_us_county_500k);
+CREATE INDEX seer_wbo_ethnicity_ethnicity ON seer_wbo_ethnicity(ethnicity);
+
 \copy seer_wbo_ethnicity TO 'seer_wbo_ethnicity.csv' WITH CSV HEADER;
 \dS+ seer_wbo_ethnicity
-
-SELECT CASE	
-			WHEN a.ethnicity = 19 THEN 'White, no hispanic data'
-			WHEN a.ethnicity = 29 THEN 'Black, no hispanic data'
-			WHEN a.ethnicity = 39 THEN 'American Indian/Alaska Native, no hispanic data'
-			WHEN a.ethnicity = 99 THEN 'Other, no hispanic data'
-			ELSE                       'Unknown: '||a.ethnicity::Text
-	   END AS ethnicity,
-	   SUM(a.population) AS population, MIN(a.year) AS min_year, MAX(a.year) AS max_year
-  FROM seer_wbo_ethnicity a
- GROUP BY a.ethnicity
- ORDER BY 1;
  
 END;
+
+--
+-- Analyse tables
+--
+ANALYZE VERBOSE seer_cancer;
+ANALYZE VERBOSE seer_population;
+ANALYZE VERBOSE seer_wbo_ethnicity;
 
 --
 -- Eof
