@@ -50,6 +50,7 @@ angular.module("RIF")
                         if (StatsStateService.getState().model.length === 0) {
                             var myModel = [];
                             for (var i = 0; i < res.data.length; i++) {
+                                //Params not used at present - may or may not in future depending on stats methods used
                                 var params = [];
                                 for (var j = 0; j < res.data[i].parameterProxies.length; j++) {
                                     params.push(Number(res.data[i].parameterProxies[j].value));

@@ -37,7 +37,9 @@
 angular.module("RIF")
         .factory('DatabaseService',
                 function () {
-                    var s = "pg"; //"ms" or "pg"
+                    //this is used to inform the URL in requests to the middleware as to which web service to use
+                    //note that the middleware is in dire need of refactoring so this service may not be needed in future
+                    var s = "pg"; //"ms" or "pg"                 
                     return {
                         getDatabase: function () {
                             return s + "/";

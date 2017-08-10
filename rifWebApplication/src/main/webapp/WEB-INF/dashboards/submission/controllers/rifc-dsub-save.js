@@ -33,6 +33,7 @@
 
 /* 
  * CONTROLLER for disease submission save study 
+ * just saves JSON as a text file
  */
 
 /* global URL */

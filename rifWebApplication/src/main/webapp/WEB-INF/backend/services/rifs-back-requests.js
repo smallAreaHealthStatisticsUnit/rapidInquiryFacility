@@ -33,6 +33,7 @@
 
 /*
  * SERVICE for all requests to the middleware
+ * Note that when the middleware is refactored the DatabaseService.getDatabase() should not be needed in the URLS
  */
 angular.module("RIF")
         .service('user', ['$http', 'studySubmissionURL', 'studyResultRetrievalURL', 'taxonomyServicesURL', 'DatabaseService',

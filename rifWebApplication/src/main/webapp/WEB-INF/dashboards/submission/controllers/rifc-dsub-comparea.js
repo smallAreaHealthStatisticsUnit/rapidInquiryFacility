@@ -93,7 +93,7 @@ angular.module("RIF")
             $scope.input.geography = CompAreaStateService.getState().geography;
             $scope.input.transparency = CompAreaStateService.getState().transparency;
             $scope.input.showSwitch = false;
-            $scope.input.bands = [1];
+            $scope.input.bands = [1]; //comparison has 1 band only
 
             $scope.close = function () {
                 $uibModalInstance.dismiss();

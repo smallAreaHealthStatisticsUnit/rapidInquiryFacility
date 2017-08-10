@@ -38,6 +38,11 @@
 angular.module("RIF")
         .controller('ModalStatusCtrl', ['$scope', '$uibModal', 'user', 'uiGridConstants',
             function ($scope, $uibModal, user, uiGridConstants) {
+                
+                //Possibly TODO:
+                //1) Allow user to click on row do do something, e.g. transfer to data viewer
+                //2) Sort out study state reporting - this is being sorted out in the middleware
+                //3) A button to delete study (?? backend method may exist, middleware method may not)
 
                 $scope.statusTableOptions = {
                     enableFiltering: true,

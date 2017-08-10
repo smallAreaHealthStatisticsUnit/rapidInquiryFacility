@@ -32,7 +32,7 @@
  */
 
 /* 
- * CONTROLLER for disease mapping 
+ * CONTROLLER for disease mapping and viewer (shared)
  */
 
 /* global L, key, topojson, d3 */
@@ -41,7 +41,9 @@ angular.module("RIF")
         .controller('MappingCtrl', ['$scope', '$timeout', 'MappingStateService', 'ChoroService', 'MappingService', 'mapTools',
             function ($scope, $timeout, MappingStateService, ChoroService, MappingService, mapTools) {
 
-                //Reference the child scope
+                //Reference the child scope (controller is embedded)
+                //child scope will be on either the mapping or viewer dashboards
+                //controller instance recreated in each case
                 $scope.child = {};
 
                 //A flag to keep renderers if changing tabs
@@ -98,7 +100,7 @@ angular.module("RIF")
 
                         }).addTo($scope.child.map[container]);
 
-                        //left map only tools
+                        //left map only tools (the linking controls)
                         if (container === "diseasemap1") {
                             var tools = mapTools.getExtraTools($scope.child);
                             for (var i = 0; i < tools.length; i++) {
@@ -315,7 +317,7 @@ angular.module("RIF")
                 });
 
                 /*
-                 * Specific to handle 2 Leaflet Panels
+                 * Specific to handle 2 Leaflet Panels in disease mapping
                  */
                 //sync map extents
                 $scope.bLockCenters = MappingStateService.getState().extentLock;
@@ -355,7 +357,7 @@ angular.module("RIF")
                     }
                 };
 
-                //use current symbology on left map on the right map as well
+                //transfer current symbology on left map on the right map as well
                 $scope.copySymbology = function () {
                     if (angular.isDefined($scope.studyID["diseasemap1"])) {
                         ChoroService.getMaps("diseasemap2").renderer = angular.copy(ChoroService.getMaps("diseasemap1").renderer);

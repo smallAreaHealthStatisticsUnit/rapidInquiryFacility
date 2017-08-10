@@ -40,6 +40,7 @@ angular.module("RIF")
         .controller('ExportCtrl', ['$scope', 'user', '$timeout', 'LeafletBaseMapService', 'mapTools', 'ExportStateService',
             function ($scope, user, $timeout, LeafletBaseMapService, mapTools, ExportStateService) {
 
+                //reset the form to untouched
                 $scope.$on("$destroy", function () {
                     ExportStateService.getState().initial = true;
                 });
@@ -57,7 +58,7 @@ angular.module("RIF")
                 //preview map
                 $scope.map = ({
                     "exportmap": {}
-                });
+                });        
                 $scope.exportLevel = ExportStateService.getState().zoomLevel;
                 $scope.geoJSON = {};
                 $scope.studyBounds = new L.LatLngBounds();
@@ -72,6 +73,7 @@ angular.module("RIF")
                     "exportmap": LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("exportmap"))
                 };
 
+                //ui-layout
                 $scope.vSplit1 = ExportStateService.getState().vSplit1;
                 $scope.hSplit1 = ExportStateService.getState().hSplit1;
 
@@ -160,11 +162,13 @@ angular.module("RIF")
                     }
                 };
 
+                //remember what has been selected, default is 1 - 100
                 $scope.rows = {
                     extract: ExportStateService.getState().rows.extract,
                     results: ExportStateService.getState().rows.results
                 };
 
+                //fills the selction drop-down
                 $scope.getStudies = function () {
                     user.getCurrentStatusAllStudies(user.currentUser).then(function (res) {
                         for (var i = 0; i < res.data.smoothed_results.length; i++) {
@@ -207,6 +211,8 @@ angular.module("RIF")
                     $scope.studyIDs.push(thisStudy);
                 });
 
+                //TileMaker can give tiles at varying levels of details
+                //user has to decide how detailed they want to download
                 $scope.detailLevelChange = function () {
                     ExportStateService.getState().zoomLevel = $scope.exportLevel;
                 };
@@ -223,6 +229,7 @@ angular.module("RIF")
                     });
                 };
 
+                //get rows from the database
                 $scope.preview = function (table) {
                     if (angular.isUndefined($scope.rows[table][0]) | angular.isUndefined($scope.rows[table][1])) {
                         $scope.showError("Row number cannot be empty");
@@ -268,7 +275,7 @@ angular.module("RIF")
                     });
                 };
 
-                //basemap
+                //basemap, this is not changeable here (but could be as in other dashboards)
                 $scope.renderMap = function (mapID) {
                     $scope.map[mapID].removeLayer($scope.thisLayer[mapID]);
                     $scope.thisLayer[mapID] = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse(mapID));
@@ -276,7 +283,7 @@ angular.module("RIF")
                 };
 
                 var areaIDs = [];
-                var bBB = true; //is bounding box not defined yet
+                var bBB = true; //is bounding box not defined yet, needed to set zoom to layer
 
                 $scope.updateStudy = function (mapID) {
                     if ($scope.map[mapID].hasLayer($scope.geoJSON)) {
@@ -310,6 +317,7 @@ angular.module("RIF")
                                                 function (res) {
                                                     areaIDs.length = 0;
                                                     //TODO: will cause issues for a risk analysis study
+                                                    //This naming does not seem very consistent or logical - middleware issue                                                          
                                                     var whyDidYouDoItLikeThatKevin = "disease_mapping_study_area";
                                                     if ($scope.area.name !== "study") {
                                                         whyDidYouDoItLikeThatKevin = "comparison_area";
@@ -401,12 +409,14 @@ angular.module("RIF")
                         });
                     } else {
                         if (bBB) {
+                            //get the bounding box for the area
                             $scope.studyBounds.extend(layer.getBounds());
                         }
                         layer.setStyle({
                             weight: 1,
                             color: "gray",
                             fillColor: function () {
+                                //colour study and comparison areas differently
                                 if ($scope.area.name === "study") {
                                     return "blue";
                                 } else {

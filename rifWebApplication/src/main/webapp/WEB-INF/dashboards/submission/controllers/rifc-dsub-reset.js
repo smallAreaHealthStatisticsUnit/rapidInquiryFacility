@@ -50,6 +50,7 @@ angular.module("RIF")
 
                 $scope.resetState = function () {
                     //Reload submission (state1)
+                    //i.e. gray the trees
                     $state.go('state1').then(function () {
                         $state.reload();
                     });

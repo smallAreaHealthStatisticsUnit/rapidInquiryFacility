@@ -33,6 +33,7 @@
 
 /* 
  * SERVICE $httpInterceptor to handle in and outgoing requests
+ * This is just a generic interceptor found on the web somewhere
  */
 angular.module("RIF")
         .factory('authInterceptor', ['$q', '$injector',

@@ -52,7 +52,7 @@ angular.module("RIF")
         .directive('riskAnalysis', ['$rootScope', '$uibModal', '$q',
             function ($rootScope, $uibModal, $q) {
                 return {
-                    restrict: 'A',
+                    restrict: 'A', //added as attribute to in to selectionMapTools > btn-addAOI in rifs-utils-mapTools
                     link: function (scope, element, attr) {
 
                         var alertScope = scope.$parent.$$childHead.$parent.$parent.$$childHead;
@@ -78,6 +78,7 @@ angular.module("RIF")
                                 keyboard: false
                             });
                             //ng-show which options to display
+                            //depending on the type of shapefile uploaded
                             scope.selectionMethod = 1;
                             scope.bProgress = false;
                             scope.isPolygon = false;
@@ -147,7 +148,7 @@ angular.module("RIF")
                                                 }
                                             },
                                             onEachFeature: function (feature, layer) {
-                                                //add markers with pop-ups
+                                                //add markers with pop-ups if points
                                                 if (feature.geometry.type === "Point") {
                                                     layer.setIcon(factory);
                                                     var popupContent = "";

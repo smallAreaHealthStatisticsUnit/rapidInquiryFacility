@@ -33,6 +33,8 @@
 
 /*
  * DIRECTIVE for map and table linked area selections
+ * TODO: This prob needs refactoring / overhauling to fit in with the mapping controllers
+ * although it does work fine as it is
  */
 
 /* global L, d3, key, topojson */
@@ -50,6 +52,7 @@ angular.module("RIF")
                         $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("areamap"));
 
                         //Reference the child scope
+                        //will be from the comparison area or study area controller
                         $scope.child = {};
                         var alertScope = $scope.$parent.$$childHead.$parent.$parent.$$childHead;
 
@@ -135,7 +138,8 @@ angular.module("RIF")
                         $scope.transparency = $scope.input.transparency;
 
                         /*
-                         * TOOL STRIP
+                         * TOOL STRIP 
+                         * These repeat stuff in the leafletTools directive - possible refactor
                          */
                         //Clear all selection from map and table
                         $scope.clear = function () {

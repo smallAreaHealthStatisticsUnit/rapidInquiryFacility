@@ -84,6 +84,7 @@ angular.module("RIF")
                 /*
                  * TABLE SET UP (2)
                  * table setups recap table
+                 * this may be converted into an 'investigation list' table when we have >1 investigation
                  */
                 $scope.thisICDselection = ParameterStateService.getState().terms;
 
@@ -283,7 +284,7 @@ angular.module("RIF")
                     }
 
                     /* CURRENTLY NOT IMPLEMENTED
-                     //calculate possible intervals
+                     //calculate possible intervals, would need to add another drop-down to UI
                      $scope.intervals.length = 0;
                      var diff = $scope.endYear - $scope.startYear + 1;
                      for (var i = 1; i <= diff; i++) {

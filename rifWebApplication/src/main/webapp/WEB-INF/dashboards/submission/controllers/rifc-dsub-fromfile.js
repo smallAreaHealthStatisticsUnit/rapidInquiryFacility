@@ -59,7 +59,8 @@ angular.module("RIF")
                 var tmpCovariate;
 
                 /*
-                 * THE FUNCIONS FOR CHECKING RIFJOB
+                 * THE FUNCIONS FOR CHECKING RIFJOB JSON
+                 * This is done in a chain of promises
                  */
                 //checking this is a valid RIF study object
                 function uploadCheckStructure() {
@@ -160,6 +161,7 @@ angular.module("RIF")
                         return true;
                     }
                     //check method is actually availble to user
+                    //currently, it always will be
                     var statErr = user.getAvailableCalculationMethods(user.currentUser).then(uploadHandleAvailableCalculationMethods, fromFileError);
 
                     function uploadHandleAvailableCalculationMethods(res) {
@@ -213,6 +215,7 @@ angular.module("RIF")
                     return projectErr;
                 }
 
+                //will need adjusting when rif can handle multiple investigations
                 function uploadInvestigations() {
                     //terms
                     var inv = rifJob.disease_mapping_study.investigations.investigation;

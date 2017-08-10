@@ -42,16 +42,18 @@ angular.module("RIF")
             function ($scope, user, $injector, DatabaseService,
                     SubmissionStateService, StudyAreaStateService, CompAreaStateService, ExportStateService,
                     ParameterStateService, StatsStateService, ViewerStateService, MappingStateService) {
-
+                
+                //will be the default placeholder
+                $scope.username = "dwmorley"; 
+                $scope.password = "dwmorley";
+                
             //    $scope.username = "";
             //    $scope.password = "";
-                
-                $scope.username = "dwmorley";
-                $scope.password = "dwmorley";
                 
                // $scope.username = "peter";
               //  $scope.password = "peter";
 
+                //The angular material button has a progress spinner
                 $scope.showSpinner = false;
 
                 $scope.login = function () {
@@ -59,6 +61,7 @@ angular.module("RIF")
                         $scope.showSpinner = true;
 
                         //which database is being used PG or MS?
+                        //May not be needed after middleware refactoring
                         user.getDatabaseType($scope.username).then(function (res) {   
                             if (res.data[0].result === "jdbc:sqlserver") {
                                 DatabaseService.setDatabase("ms");
@@ -70,8 +73,9 @@ angular.module("RIF")
         
                             //check if already logged on
                             user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
-                            //In development, this bypasses password)
-                       //     user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
+                           
+                            //In development, this bypasses password)                           
+                            //user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
                         }, handleServerError);                  
                     }
                 };
@@ -110,7 +114,7 @@ angular.module("RIF")
                             //initialise the taxonomy service
                             user.initialiseService().then(handleInitialise, handleInitialiseError);
                             function handleInitialise(res) {
-                                // console.log("taxonomy initialised");
+                                // console.log("taxonomy initialised"); 
                             }
                             function handleInitialiseError(e) {
                                 $scope.showError('Could not initialise the taxonomy service');
@@ -124,6 +128,7 @@ angular.module("RIF")
                     }
                 }
                 function handleServerError(res) {
+                    //Tomcat probably not running, could also be CORS error or we are trying to connect to the wrong localhost (check rifs-back-urls)
                     $scope.showSpinner = false;
                     $scope.showError('Could not establish a connection to Tomcat (is it running?)');
                 }
