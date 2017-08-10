@@ -40,7 +40,9 @@ angular.module("RIF")
         .controller('ViewerCtrl', ['$scope', 'user', '$timeout', 'ViewerStateService', 'ChoroService', 'mapTools',
             function ($scope, user, $timeout, ViewerStateService, ChoroService, mapTools) {
 
-                //Reference the child scope
+                //Reference the child scope (controller is embedded)
+                //child scope will be on either the mapping or viewer dashboards
+                //controller instance recreated in each case
                 $scope.child = {};
 
                 $scope.$on("$destroy", function () {
@@ -281,7 +283,7 @@ angular.module("RIF")
                 /*
                  * Watch for Changes
                  */
-                //Watch selectedPolygon array for any changes
+                //Watch thisPoly array for any changes
                 $scope.$watchCollection('thisPoly', function (newNames, oldNames) {
                     if (newNames === oldNames) {
                         return;

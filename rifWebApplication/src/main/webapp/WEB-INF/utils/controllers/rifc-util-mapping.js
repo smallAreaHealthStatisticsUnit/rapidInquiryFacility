@@ -42,7 +42,7 @@ angular.module("RIF")
             function ($scope, user, LeafletBaseMapService, ChoroService,
                     MappingStateService, ViewerStateService, MappingService) {
 
-                //Reference the parent scope
+                //Reference the parent scope, viewer or disease mapping
                 var parentScope = $scope.$parent;
                 parentScope.child = $scope;
 

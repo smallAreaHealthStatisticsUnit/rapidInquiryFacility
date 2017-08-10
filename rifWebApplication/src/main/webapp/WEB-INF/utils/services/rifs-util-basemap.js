@@ -35,9 +35,7 @@
  * SERVICE to supply pre-defined basemaps tiles to leaflet
  */
 
-
 /* global L */
-
 angular.module("RIF")
         .factory('LeafletBaseMapService',
                 function () {

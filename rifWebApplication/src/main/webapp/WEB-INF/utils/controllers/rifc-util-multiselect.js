@@ -33,6 +33,8 @@
 
 /* 
  * CONTROLLER to re-enable multiple selections on ui-grids
+ * selections on ui-grid are disabled to allow syncing to map
+ * all selections are done using a $watch
  */
 angular.module("RIF")
         .controller('MultiSelectCtrl', ['$scope', 'GridService', function ($scope, GridService) {

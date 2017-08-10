@@ -113,7 +113,7 @@ angular.module("RIF")
                                     return "translate(" + x(d.x0) + "," + y(d.length) + ")";
                                 });
 
-                        if (height > 0 & width > 0 & !angular.isUndefined(bins[ 0 ])) {
+                        if (height > 0 & width > 0 & !angular.isUndefined(bins[0])) {
                             bar.append("rect")
                                     .attr("x", 0)
                                     .attr("width", function (d) {
@@ -143,7 +143,7 @@ angular.module("RIF")
 
                             function customXAxis(g) {
                                 g.call(xAxis);
-                                g.attr("transform", "translate(0," + height + ")")
+                                g.attr("transform", "translate(0," + height + ")");
                                 g.selectAll(".tick text").style("font-size", function (d) {
                                     return Math.min((width / 20), 10);
                                 });
