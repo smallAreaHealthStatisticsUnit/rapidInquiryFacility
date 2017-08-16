@@ -4,6 +4,7 @@
 --
 -- Rapid Enquiry Facility (RIF) - Checks the SEER data in the RIF
 --								  * Requires the user has "seer_user" role
+--                                Postgres script
 --
 -- Copyright:
 --
@@ -41,7 +42,7 @@
 --
 -- Postgres RIF40 specific parameters
 --
--- Usage: psql -w -e -f check_seer.sql
+-- Usage: psql -w -e -f pg_check_seer.sql
 -- Connect flags if required: -d <Postgres database name> -h <host> -p <port>
 --
 \pset pager off

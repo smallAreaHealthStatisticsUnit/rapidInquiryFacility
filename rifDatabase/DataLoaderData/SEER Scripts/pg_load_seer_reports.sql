@@ -9,6 +9,7 @@
 -- Description:
 --
 -- Rapid Enquiry Facility (RIF) - Load SEER data reports
+--                                Postgres script
 --
 --
 -- Copyright:
@@ -45,7 +46,7 @@
 --
 -- Peter Hambly, SAHSU
 --
--- Usage: psql -U rif40 -w -e -f load_seer_reports.sql 
+-- Usage: psql -U rif40 -w -e -f pg_load_seer_reports.sql 
 -- Connect flags if required: -d <Postgres database name> -h <host> -p <port>
 --
 -- Requires RIF USA county level geography to be loaded: rif_pg_USA_2014.sql
@@ -287,6 +288,18 @@ SELECT CASE
   FROM seer_wbo_ethnicity a
  GROUP BY a.ethnicity
  ORDER BY 1;
+
+ 
+SELECT * FROM saipe_county_poverty_1989_2015 WHERE cb_2014_us_county_500k LIKE 'UNKNOWN%' LIMIT 10; 
+SELECT * FROM saipe_county_poverty_1989_2015
+ WHERE median_household_income_qunitile != median_pct_not_in_poverty_all_ages_qunitile LIMIT 10; 
+
+SELECT year, SUM(total_poverty_all_ages) AS total_poverty_all_ages, COUNT(total_poverty_all_ages) AS counties,
+       MIN(median_household_income_qunitile) AS minq,
+       MAX(median_household_income_qunitile) AS maxq
+  FROM saipe_county_poverty_1989_2015
+ GROUP BY year
+ ORDER BY year;
  
 --
 -- Eof
