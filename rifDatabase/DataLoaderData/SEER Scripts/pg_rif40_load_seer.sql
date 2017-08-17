@@ -599,12 +599,12 @@ COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.med_pct_not_in_pov_quin
 --
 -- Check rowcount
 --
-SELECT COUNT(*) AS total FROM saipe_state_poverty_1989_2015;
+SELECT COUNT(*) AS total FROM rif_data.saipe_state_poverty_1989_2015;
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR
 		SELECT COUNT(*) AS total
- 		  FROM saipe_state_poverty_1989_2015;
+ 		  FROM rif_data.saipe_state_poverty_1989_2015;
 	c1_rec RECORD;
 BEGIN
 	OPEN c1;
@@ -619,7 +619,53 @@ BEGIN
 END;
 $$;
 
-
+SELECT year, COUNT(year) AS total
+  FROM rif_data.saipe_state_poverty_1989_2015
+ GROUP BY year
+ ORDER BY year;
+ 
+--
+-- Cope with holes:
+--    No county/state level 96 data; use 95 data
+--    No county/state level 94 data; use 93 data
+--    No county/state level 90-92 data; use 89 data
+--
+INSERT INTO rif_data.saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
+SELECT 1996 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
+  FROM rif_data.saipe_state_poverty_1989_2015 WHERE year = 1995;
+INSERT INTO rif_data.saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
+SELECT 1994 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
+  FROM rif_data.saipe_state_poverty_1989_2015 WHERE year = 1993;
+INSERT INTO rif_data.saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
+SELECT 1992 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
+  FROM rif_data.saipe_state_poverty_1989_2015 WHERE year = 1989;
+INSERT INTO rif_data.saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
+SELECT 1991 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
+  FROM rif_data.saipe_state_poverty_1989_2015 WHERE year = 1989;
+INSERT INTO rif_data.saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
+SELECT 1990 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
+  FROM rif_data.saipe_state_poverty_1989_2015 WHERE year = 1989;
+  
 --
 -- Convert to index organised table
 --
@@ -680,6 +726,10 @@ CREATE TABLE rif_data.cov_cb_2014_us_county_500k
   CONSTRAINT cov_cb_2014_us_county_500k_pkey PRIMARY KEY (year, cb_2014_us_county_500k)
 );
 
+
+--
+-- Cope with holes: before 89 use 1989 data
+--
 INSERT INTO rif_data.cov_cb_2014_us_county_500k(year, cb_2014_us_county_500k, areaname,
        total_poverty_all_ages,
 	   pct_poverty_all_ages,
@@ -699,20 +749,27 @@ WITH a AS (
 	  FROM a CROSS JOIN rif_data.lookup_cb_2014_us_county_500k b
 )
 SELECT b.year, b.cb_2014_us_county_500k, b.areaname,
-       c.total_poverty_all_ages,
-	   c.pct_poverty_all_ages,
-	   c.pct_poverty_0_17,
-	   c.pct_poverty_related_5_17,
-	   c.median_household_income,
-	   c.median_hh_income_quin,
-	   c.med_pct_not_in_pov_quin,
-	   c.med_pct_not_in_pov_0_17_quin,
-	   c.med_pct_not_in_pov_5_17r_quin
+       COALESCE(c.total_poverty_all_ages, c89.total_poverty_all_ages) AS total_poverty_all_ages,
+	   COALESCE(c.pct_poverty_all_ages, c89.pct_poverty_all_ages) AS pct_poverty_all_ages,
+	   COALESCE(c.pct_poverty_0_17, c89.pct_poverty_0_17) AS pct_poverty_0_17,
+	   COALESCE(c.pct_poverty_related_5_17, c89.pct_poverty_related_5_17) AS pct_poverty_related_5_17,
+	   COALESCE(c.median_household_income, c89.median_household_income) AS median_household_income,
+	   COALESCE(c.median_hh_income_quin, c89.median_hh_income_quin) AS median_hh_income_quin,
+	   COALESCE(c.med_pct_not_in_pov_quin, c89.med_pct_not_in_pov_quin) AS med_pct_not_in_pov_quin,
+	   COALESCE(c.med_pct_not_in_pov_0_17_quin, c89.med_pct_not_in_pov_0_17_quin) AS med_pct_not_in_pov_0_17_quin,
+	   COALESCE(c.med_pct_not_in_pov_5_17r_quin, c89.med_pct_not_in_pov_5_17r_quin) AS med_pct_not_in_pov_5_17r_quin
   FROM b
 	LEFT OUTER JOIN rif_data.saipe_county_poverty_1989_2015 c ON 
 		(b.year = c.year AND b.cb_2014_us_county_500k = c.cb_2014_us_county_500k)
+	LEFT OUTER JOIN rif_data.saipe_county_poverty_1989_2015 c89 ON 
+		(1989 = c89.year AND b.cb_2014_us_county_500k = c89.cb_2014_us_county_500k)
  ORDER BY 1, 2;
  
+SELECT year, COUNT(year) AS total, COUNT(median_hh_income_quin) AS t_median_hh_income_quin
+  FROM rif_data.cov_cb_2014_us_county_500k
+ GROUP BY year
+ ORDER BY year;
+  
 --
 -- Convert to index organised table
 --
@@ -773,20 +830,27 @@ WITH a AS (
 	  FROM a CROSS JOIN rif_data.lookup_cb_2014_us_state_500k b
 )
 SELECT b.year, b.cb_2014_us_state_500k, b.areaname,
-       c.total_poverty_all_ages,
-	   c.pct_poverty_all_ages,
-	   c.pct_poverty_0_17,
-	   c.pct_poverty_related_5_17,
-	   c.median_household_income,
-	   c.median_hh_income_quin,
-	   c.med_pct_not_in_pov_quin,
-	   c.med_pct_not_in_pov_0_17_quin,
-	   c.med_pct_not_in_pov_5_17r_quin
+       COALESCE(c.total_poverty_all_ages, c89.total_poverty_all_ages) AS total_poverty_all_ages,
+	   COALESCE(c.pct_poverty_all_ages, c89.pct_poverty_all_ages) AS pct_poverty_all_ages,
+	   COALESCE(c.pct_poverty_0_17, c89.pct_poverty_0_17) AS pct_poverty_0_17,
+	   COALESCE(c.pct_poverty_related_5_17, c89.pct_poverty_related_5_17) AS pct_poverty_related_5_17,
+	   COALESCE(c.median_household_income, c89.median_household_income) AS median_household_income,
+	   COALESCE(c.median_hh_income_quin, c89.median_hh_income_quin) AS median_hh_income_quin,
+	   COALESCE(c.med_pct_not_in_pov_quin, c89.med_pct_not_in_pov_quin) AS med_pct_not_in_pov_quin,
+	   COALESCE(c.med_pct_not_in_pov_0_17_quin, c89.med_pct_not_in_pov_0_17_quin) AS med_pct_not_in_pov_0_17_quin,
+	   COALESCE(c.med_pct_not_in_pov_5_17r_quin, c89.med_pct_not_in_pov_5_17r_quin) AS med_pct_not_in_pov_5_17r_quin
   FROM b
-	LEFT OUTER JOIN rif_data.saipe_state_poverty_1989_2015 c ON 
+	LEFT OUTER JOIN rif_data.saipe_county_poverty_1989_2015 c ON 
 		(b.year = c.year AND b.cb_2014_us_state_500k = c.cb_2014_us_state_500k)
+	LEFT OUTER JOIN rif_data.saipe_county_poverty_1989_2015 c89 ON 
+		(1989 = c89.year AND b.cb_2014_us_state_500k = c89.cb_2014_us_state_500k)
  ORDER BY 1, 2;
- 
+  
+SELECT year, COUNT(year) AS total, COUNT(median_hh_income_quin) AS t_median_hh_income_quin
+  FROM rif_data.cov_cb_2014_us_state_500k
+ GROUP BY year
+ ORDER BY year; 	
+  
 --
 -- Convert to index organised table
 --
@@ -847,12 +911,41 @@ SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
        MAX(med_pct_not_in_pov_5_17r_quin),	/* Maximum value */
 	   1 									/* Type: integer score */
   FROM rif_data.cov_cb_2014_us_county_500k;  
+
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
+       'CB_2014_US_STATE_500K', 	/* Name of geolevel. This will be a column name in the numerator/denominator tables */
+       'MEDIAN_HH_INCOME_QUIN', 	/* Covariate name. This will be a column name in RIF40_GEOLEVELS.COVARIATE_TABLE */
+       MIN(median_hh_income_quin), 	/* Minimum value */
+       MAX(median_hh_income_quin),	/* Maximum value */
+	   1 							/* Type: integer score */
+  FROM rif_data.cov_cb_2014_us_state_500k;
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
+       'CB_2014_US_STATE_500K', 	/* Name of geolevel. This will be a column name in the numerator/denominator tables */
+       'MED_PCT_NOT_IN_POV_QUIN', 	/* Covariate name. This will be a column name in RIF40_GEOLEVELS.COVARIATE_TABLE */
+       MIN(med_pct_not_in_pov_quin), 	/* Minimum value */
+       MAX(med_pct_not_in_pov_quin),	/* Maximum value */
+	   1 								/* Type: integer score */
+  FROM rif_data.cov_cb_2014_us_state_500k; 
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
+       'CB_2014_US_STATE_500K', 	/* Name of geolevel. This will be a column name in the numerator/denominator tables */
+       'MED_PCT_NOT_IN_POV_0_17_QUIN', 	/* Covariate name. This will be a column name in RIF40_GEOLEVELS.COVARIATE_TABLE */
+       MIN(med_pct_not_in_pov_0_17_quin), 	/* Minimum value */
+       MAX(med_pct_not_in_pov_0_17_quin),	/* Maximum value */
+	   1 									/* Type: integer score */
+  FROM rif_data.cov_cb_2014_us_state_500k; 
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
+       'CB_2014_US_STATE_500K', 	/* Name of geolevel. This will be a column name in the numerator/denominator tables */
+       'MED_PCT_NOT_IN_POV_5_17R_QUIN', 	/* Covariate name. This will be a column name in RIF40_GEOLEVELS.COVARIATE_TABLE */
+       MIN(med_pct_not_in_pov_5_17r_quin), 	/* Minimum value */
+       MAX(med_pct_not_in_pov_5_17r_quin),	/* Maximum value */
+	   1 									/* Type: integer score */
+  FROM rif_data.cov_cb_2014_us_state_500k;    
   
 -- TODO: 
----* Cope with holes:
---    No county level 96 data
---    No county level 94 data
---    No county level 90-92 data
 -- * Add ethnicity
 
 --
