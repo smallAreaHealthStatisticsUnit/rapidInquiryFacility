@@ -170,14 +170,14 @@ BEGIN
 	IF NEW.min >= NEW.max THEN
 		PERFORM rif40_log_pkg.rif40_error(-20142, 'trigger_fct_rif40_covariates_checks', 
 			'Error: RIF40_COVARIATES min >= max: % >= % for geolevel_name: % covariate: %',
-			TO_CHAR(NEW.min)::VARCHAR		/* New min */,
-			TO_CHAR(NEW.max)::VARCHAR		/* New max */,
+			NEW.min::VARCHAR		/* New min */,
+			NEW.max::VARCHAR		/* New max */,
 			NEW.geolevel_name::VARCHAR		/* Geolevel name */,
 			NEW.covariate_name::VARCHAR		/* Covariate name */);
 	ELSIF NEW.type = 1 AND ROUND(NEW.max) != NEW.max THEN /* integer score */
 		PERFORM rif40_log_pkg.rif40_error(-20143, 'trigger_fct_rif40_covariates_checks', 
 			'Error: RIF40_COVARIATES type = 1 (integer score) and max is not an integer: % for geolevel_name: % covariate: % for geolevel_name: % covariate: %',
-			TO_CHAR(NEW.max)::VARCHAR		/* New max */,
+			NEW.max::VARCHAR		/* New max */,
 			NEW.geolevel_name::VARCHAR		/* Geolevel name */,
 			NEW.covariate_name::VARCHAR		/* Covariate name */,
 			NEW.geolevel_name::VARCHAR		/* Geolevel name */,
@@ -185,7 +185,7 @@ BEGIN
 	ELSIF NEW.type = 1 AND ROUND(NEW.min) != NEW.min THEN /* integer score */
 		PERFORM rif40_log_pkg.rif40_error(-20144, 'trigger_fct_rif40_covariates_checks', 
 			'Error: RIF40_COVARIATES type = 1 (integer score) and min is not an integer: % for geolevel_name: % covariate: % for geolevel_name: % covariate: %',
-			TO_CHAR(NEW.min)::VARCHAR		/* New min */,
+			NEW.min::VARCHAR		/* New min */,
 			NEW.geolevel_name::VARCHAR	/* Geolevel name */,
 			NEW.covariate_name::VARCHAR		/* Covariate name */,
 			NEW.geolevel_name::VARCHAR		/* Geolevel name */,
@@ -193,7 +193,7 @@ BEGIN
 	ELSIF NEW.type = 1 AND NEW.min < 0 THEN /* integer score */
 		PERFORM rif40_log_pkg.rif40_error(-20145, 'trigger_fct_rif40_covariates_checks', 
 			'Error: RIF40_COVARIATES type = 1 (integer score) and min <0: % for geolevel_name: % covariate: % for geolevel_name: % covariate: %',
-			TO_CHAR(NEW.min)::VARCHAR		/* New min */,
+			NEW.min::VARCHAR		/* New min */,
 			NEW.geolevel_name::VARCHAR		/* Geolevel name */,
 			NEW.covariate_name::VARCHAR		/* Covariate name */,
 			NEW.geolevel_name::VARCHAR		/* Geolevel name */,
