@@ -246,10 +246,10 @@ SELECT a.year, a.cb_2014_us_nation_5m, a.cb_2014_us_state_500k,
 	   a.pct_poverty_0_17,
 	   a.pct_poverty_related_5_17,
 	   a.median_household_income,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY a.median_household_income) AS median_hh_income_quin,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_0_17) AS med_pct_not_in_pov_0_17_quin,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_related_5_17) AS med_pct_not_in_pov_5_17rel_quin,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_all_ages) AS med_pct_not_in_pov_quin
+	   CASE WHEN a.median_household_income IS NOT NULL THEN NTILE(5) OVER (PARTITION BY a.year ORDER BY a.median_household_income) ELSE NULL END AS median_hh_income_quin,
+	   CASE WHEN a.pct_poverty_0_17 IS NOT NULL THEN NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_0_17) ELSE NULL END AS med_pct_not_in_pov_0_17_quin,
+	   CASE WHEN a.pct_poverty_related_5_17 IS NOT NULL THEN NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_related_5_17) ELSE NULL END AS med_pct_not_in_pov_5_17rel_quin,
+	   CASE WHEN a.pct_poverty_all_ages IS NOT NULL THEN NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_all_ages) ELSE NULL END AS med_pct_not_in_pov_quin
   FROM a
  ORDER BY 1,2,3;
 --
@@ -328,10 +328,10 @@ SELECT a.year, a.cb_2014_us_nation_5m, a.cb_2014_us_state_500k, a.cb_2014_us_cou
 	   a.pct_poverty_0_17,
 	   a.pct_poverty_related_5_17,
 	   a.median_household_income,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY a.median_household_income) AS median_hh_income_quin,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_0_17) AS med_pct_not_in_pov_0_17_quin,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_related_5_17) AS med_pct_not_in_pov_5_17rel_quin,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_all_ages) AS med_pct_not_in_pov_quin
+	   CASE WHEN a.median_household_income IS NOT NULL THEN NTILE(5) OVER (PARTITION BY a.year ORDER BY a.median_household_income) ELSE NULL END AS median_hh_income_quin,
+	   CASE WHEN a.pct_poverty_0_17 IS NOT NULL THEN NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_0_17) ELSE NULL END AS med_pct_not_in_pov_0_17_quin,
+	   CASE WHEN a.pct_poverty_related_5_17 IS NOT NULL THEN NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_related_5_17) ELSE NULL END AS med_pct_not_in_pov_5_17rel_quin,
+	   CASE WHEN a.pct_poverty_all_ages IS NOT NULL THEN NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_all_ages) ELSE NULL END AS med_pct_not_in_pov_quin
   FROM a
  ORDER BY 1,2,3,4;
  
@@ -781,7 +781,7 @@ COMMENT ON COLUMN seer_wbo_ethnicity.cb_2014_us_state_500k IS 'State geographic 
 COMMENT ON COLUMN seer_wbo_ethnicity.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
 COMMENT ON COLUMN seer_wbo_ethnicity.ethnicity IS 'Ethnicity coded 19: White; 29: Black, 39: American Indian/Alaska Native (1992 onwards); 99: Other (1973-1991); all with no hispanic data ';
 COMMENT ON COLUMN seer_wbo_ethnicity.population IS 'Population'; 
-
+ 
 -- 
 -- Add PK, make index organised table
 --
@@ -797,6 +797,58 @@ CREATE INDEX seer_wbo_ethnicity_ethnicity ON seer_wbo_ethnicity(ethnicity);
 
 \copy seer_wbo_ethnicity TO 'seer_wbo_ethnicity.csv' WITH CSV HEADER;
 \dS+ seer_wbo_ethnicity
+
+DROP TABLE IF EXISTS seer_wbo_ethnicity_covariates; 
+CREATE TABLE seer_wbo_ethnicity_covariates
+AS
+WITH a AS (
+	SELECT year, cb_2014_us_county_500k, SUM(population) AS population
+       FROM seer_wbo_ethnicity
+	  GROUP BY year, cb_2014_us_county_500k
+), b AS (
+	SELECT year, cb_2014_us_county_500k, SUM(population) AS whites
+       FROM seer_wbo_ethnicity
+	  WHERE ethnicity = 19
+	  GROUP BY year, cb_2014_us_county_500k
+), c AS (
+	SELECT year, cb_2014_us_county_500k, SUM(population) AS blacks
+       FROM seer_wbo_ethnicity
+	  WHERE ethnicity = 29
+	  GROUP BY year, cb_2014_us_county_500k
+), d AS (
+	SELECT a.year, a.cb_2014_us_county_500k, 
+		   ROUND(CAST((b.whites/a.population)*100 AS NUMERIC),2) AS pct_white, 
+		   ROUND(CAST((c.blacks/a.population)*100 AS NUMERIC),2) AS pct_black
+	  FROM a
+			LEFT OUTER JOIN b ON (a.year = b.year AND a.cb_2014_us_county_500k = b.cb_2014_us_county_500k)
+			LEFT OUTER JOIN c ON (a.year = c.year AND a.cb_2014_us_county_500k = c.cb_2014_us_county_500k)
+)
+SELECT d.year, d.cb_2014_us_county_500k, d.pct_white, d.pct_black,	
+		/* Handle NULLs in the data: should not have a quantile and not impact on the distribution */	
+	   CASE WHEN d.pct_white IS NOT NULL THEN NTILE(5) OVER(PARTITION BY d.year ORDER BY d.pct_white) ELSE NULL END AS pct_white_quintile,
+	   CASE WHEN d.pct_black IS NOT NULL THEN NTILE(5) OVER(PARTITION BY d.year ORDER BY d.pct_black) ELSE NULL END AS pct_black_quintile
+  FROM d
+ ORDER BY d.year, d.cb_2014_us_county_500k;
+ 
+COMMENT ON TABLE seer_wbo_ethnicity_covariates IS 'SEER Ethnicity covariates 1972-2013. 9 States in total';
+COMMENT ON COLUMN seer_wbo_ethnicity_covariates.year IS 'Year';
+COMMENT ON COLUMN seer_wbo_ethnicity_covariates.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
+COMMENT ON COLUMN seer_wbo_ethnicity_covariates.pct_white IS '% White'; 
+COMMENT ON COLUMN seer_wbo_ethnicity_covariates.pct_black IS '% Black'; 
+COMMENT ON COLUMN seer_wbo_ethnicity_covariates.pct_white_quintile IS '% White quintile (1=least white, 5=most)'; 
+COMMENT ON COLUMN seer_wbo_ethnicity_covariates.pct_black_quintile IS '% Black quintile (1=least black, 5=most)'; 
+ 
+-- 
+-- Add PK, make index organised table
+--
+ALTER TABLE seer_wbo_ethnicity_covariates ADD CONSTRAINT seer_wbo_ethnicity_covariates_pk 
+	PRIMARY KEY (year, cb_2014_us_county_500k);
+CLUSTER seer_wbo_ethnicity_covariates USING seer_wbo_ethnicity_covariates_pk;
+
+CREATE INDEX seer_wbo_ethnicity_covariates_year ON seer_wbo_ethnicity_covariates (year);
+
+\copy seer_wbo_ethnicity_covariates TO 'seer_wbo_ethnicity_covariates.csv' WITH CSV HEADER;
+\dS+ seer_wbo_ethnicity_covariates
  
 END;
 
@@ -806,6 +858,7 @@ END;
 ANALYZE VERBOSE seer_cancer;
 ANALYZE VERBOSE seer_population;
 ANALYZE VERBOSE seer_wbo_ethnicity;
+ANALYZE VERBOSE seer_wbo_ethnicity_covariates;
 ANALYZE VERBOSE saipe_county_poverty_1989_2015;
 
 --

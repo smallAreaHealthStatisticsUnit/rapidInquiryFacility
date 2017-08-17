@@ -701,6 +701,49 @@ CREATE INDEX saipe_state_poverty_1989_2015_year
 --
 GRANT SELECT ON rif_data.saipe_county_poverty_1989_2015 TO seer_user;
 
+DROP TABLE IF EXISTS rif_data.seer_wbo_ethnicity_covariates;
+
+CREATE TABLE rif_data.seer_wbo_ethnicity_covariates
+(
+  year integer NOT NULL, -- Year
+  cb_2014_us_county_500k text NOT NULL, -- County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.
+  pct_white numeric, -- % White
+  pct_black numeric, -- % Black
+  pct_white_quintile integer, -- % White quintile (1=least white, 5=most)
+  pct_black_quintile integer, -- % Black quintile (1=least black, 5=most)
+  CONSTRAINT seer_wbo_ethnicity_covariates_pk PRIMARY KEY (year, cb_2014_us_county_500k)
+);
+COMMENT ON TABLE rif_data.seer_wbo_ethnicity_covariates
+  IS 'SEER Ethnicity covariates 1972-2013. 9 States in total';
+COMMENT ON COLUMN rif_data.seer_wbo_ethnicity_covariates.year IS 'Year';
+COMMENT ON COLUMN rif_data.seer_wbo_ethnicity_covariates.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
+COMMENT ON COLUMN rif_data.seer_wbo_ethnicity_covariates.pct_white IS '% White';
+COMMENT ON COLUMN rif_data.seer_wbo_ethnicity_covariates.pct_black IS '% Black';
+COMMENT ON COLUMN rif_data.seer_wbo_ethnicity_covariates.pct_white_quintile IS '% White quintile (1=least white, 5=most)';
+COMMENT ON COLUMN rif_data.seer_wbo_ethnicity_covariates.pct_black_quintile IS '% Black quintile (1=least black, 5=most)';
+
+--
+-- Load
+--
+\copy rif_data.seer_wbo_ethnicity_covariates FROM 'seer_wbo_ethnicity_covariates.csv' WITH CSV HEADER;
+
+-- Index: peter.seer_wbo_ethnicity_covariates_year
+
+-- DROP INDEX peter.seer_wbo_ethnicity_covariates_year;
+
+CREATE INDEX seer_wbo_ethnicity_covariates_year
+  ON rif_data.seer_wbo_ethnicity_covariates
+  USING btree
+  (year);
+ 
+CLUSTER rif_data.seer_wbo_ethnicity_covariates USING seer_wbo_ethnicity_covariates_pk;
+ 
+--
+-- Grant
+-- * The role SEER_USER needs to be created by an administrator
+--
+GRANT SELECT ON rif_data.seer_wbo_ethnicity_covariates TO seer_user;
+ 
 --
 -- Covariates tables
 --
@@ -719,16 +762,19 @@ CREATE TABLE rif_data.cov_cb_2014_us_county_500k
   pct_poverty_0_17									INTEGER,
   pct_poverty_related_5_17							INTEGER,
   median_household_income							INTEGER,
-  median_hh_income_quin					INTEGER,
-  med_pct_not_in_pov_quin		INTEGER,
-  med_pct_not_in_pov_0_17_quin			INTEGER,
-  med_pct_not_in_pov_5_17r_quin	INTEGER,
+  median_hh_income_quin								INTEGER,
+  med_pct_not_in_pov_quin							INTEGER,
+  med_pct_not_in_pov_0_17_quin						INTEGER,
+  med_pct_not_in_pov_5_17r_quin						INTEGER,
+  pct_white_quintile								INTEGER,
+  pct_black_quintile								INTEGER,
   CONSTRAINT cov_cb_2014_us_county_500k_pkey PRIMARY KEY (year, cb_2014_us_county_500k)
 );
 
 
 --
--- Cope with holes: before 89 use 1989 data
+-- Cope with holes in SAIPE data: before 89 use 1989 data
+-- Allow holes in SEER ethnicty data
 --
 INSERT INTO rif_data.cov_cb_2014_us_county_500k(year, cb_2014_us_county_500k, areaname,
        total_poverty_all_ages,
@@ -739,7 +785,9 @@ INSERT INTO rif_data.cov_cb_2014_us_county_500k(year, cb_2014_us_county_500k, ar
 	   median_hh_income_quin,
 	   med_pct_not_in_pov_quin,
 	   med_pct_not_in_pov_0_17_quin,
-	   med_pct_not_in_pov_5_17r_quin)
+	   med_pct_not_in_pov_5_17r_quin,
+	   pct_white_quintile,
+	   pct_black_quintile)
 WITH a AS (
 	SELECT generate_series(year_start::INTEGER, year_stop::INTEGER) AS year
 	  FROM rif40.rif40_tables
@@ -757,12 +805,16 @@ SELECT b.year, b.cb_2014_us_county_500k, b.areaname,
 	   COALESCE(c.median_hh_income_quin, c89.median_hh_income_quin) AS median_hh_income_quin,
 	   COALESCE(c.med_pct_not_in_pov_quin, c89.med_pct_not_in_pov_quin) AS med_pct_not_in_pov_quin,
 	   COALESCE(c.med_pct_not_in_pov_0_17_quin, c89.med_pct_not_in_pov_0_17_quin) AS med_pct_not_in_pov_0_17_quin,
-	   COALESCE(c.med_pct_not_in_pov_5_17r_quin, c89.med_pct_not_in_pov_5_17r_quin) AS med_pct_not_in_pov_5_17r_quin
+	   COALESCE(c.med_pct_not_in_pov_5_17r_quin, c89.med_pct_not_in_pov_5_17r_quin) AS med_pct_not_in_pov_5_17r_quin,
+	   d.pct_white_quintile,
+	   d.pct_black_quintile
   FROM b
 	LEFT OUTER JOIN rif_data.saipe_county_poverty_1989_2015 c ON 
 		(b.year = c.year AND b.cb_2014_us_county_500k = c.cb_2014_us_county_500k)
 	LEFT OUTER JOIN rif_data.saipe_county_poverty_1989_2015 c89 ON 
 		(1989 = c89.year AND b.cb_2014_us_county_500k = c89.cb_2014_us_county_500k)
+		LEFT OUTER JOIN rif_data.seer_wbo_ethnicity_covariates d ON 
+		(b.year = d.year AND b.cb_2014_us_county_500k = d.cb_2014_us_county_500k)
  ORDER BY 1, 2;
  
 SELECT year, COUNT(year) AS total, COUNT(median_hh_income_quin) AS t_median_hh_income_quin
@@ -789,6 +841,8 @@ COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.median_hh_income_quin IS '
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_white_quintile IS '% White quintile (1=least white, 5=most)'; 
+COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_black_quintile IS '% Black quintile (1=least black, 5=most)';
  
 -- Table: rif_data.cov_cb_2014_us_state_500k
 
@@ -829,6 +883,13 @@ WITH a AS (
 	SELECT a.year, b.cb_2014_us_state_500k, b.areaname
 	  FROM a CROSS JOIN rif_data.lookup_cb_2014_us_state_500k b
 )
+/*
+SELECT b.year, b.cb_2014_us_state_500k, b.areaname, COUNT(*) AS total
+  FROM b
+  WHERE b.year = 1973
+  GROUP BY b.year, b.cb_2014_us_state_500k, b.areaname
+  ORDER BY b.areaname;
+ */
 SELECT b.year, b.cb_2014_us_state_500k, b.areaname,
        COALESCE(c.total_poverty_all_ages, c89.total_poverty_all_ages) AS total_poverty_all_ages,
 	   COALESCE(c.pct_poverty_all_ages, c89.pct_poverty_all_ages) AS pct_poverty_all_ages,
@@ -840,9 +901,9 @@ SELECT b.year, b.cb_2014_us_state_500k, b.areaname,
 	   COALESCE(c.med_pct_not_in_pov_0_17_quin, c89.med_pct_not_in_pov_0_17_quin) AS med_pct_not_in_pov_0_17_quin,
 	   COALESCE(c.med_pct_not_in_pov_5_17r_quin, c89.med_pct_not_in_pov_5_17r_quin) AS med_pct_not_in_pov_5_17r_quin
   FROM b
-	LEFT OUTER JOIN rif_data.saipe_county_poverty_1989_2015 c ON 
+	LEFT OUTER JOIN rif_data.saipe_state_poverty_1989_2015 c ON 
 		(b.year = c.year AND b.cb_2014_us_state_500k = c.cb_2014_us_state_500k)
-	LEFT OUTER JOIN rif_data.saipe_county_poverty_1989_2015 c89 ON 
+	LEFT OUTER JOIN rif_data.saipe_state_poverty_1989_2015 c89 ON 
 		(1989 = c89.year AND b.cb_2014_us_state_500k = c89.cb_2014_us_state_500k)
  ORDER BY 1, 2;
   
@@ -878,6 +939,7 @@ GRANT SELECT ON rif_data.cov_cb_2014_us_state_500k TO seer_user;
 
 --
 -- RIF40_COVARIATES integration. Continuous variable type (2) not yet supported.
+-- * Add ethnicity: % white, black quintilised
 --
 INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
 SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
@@ -910,6 +972,22 @@ SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
        MIN(med_pct_not_in_pov_5_17r_quin), 	/* Minimum value */
        MAX(med_pct_not_in_pov_5_17r_quin),	/* Maximum value */
 	   1 									/* Type: integer score */
+  FROM rif_data.cov_cb_2014_us_county_500k;  
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
+       'CB_2014_US_COUNTY_500K', 	/* Name of geolevel. This will be a column name in the numerator/denominator tables */
+       'PCT_WHITE_QUINTILE', 		/* Covariate name. This will be a column name in RIF40_GEOLEVELS.COVARIATE_TABLE */
+       MIN(pct_white_quintile), 	/* Minimum value */
+       MAX(pct_white_quintile),		/* Maximum value */
+	   1 							/* Type: integer score */
+  FROM rif_data.cov_cb_2014_us_county_500k;   
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
+       'CB_2014_US_COUNTY_500K', 	/* Name of geolevel. This will be a column name in the numerator/denominator tables */
+       'PCT_BLACK_QUINTILE', 		/* Covariate name. This will be a column name in RIF40_GEOLEVELS.COVARIATE_TABLE */
+       MIN(pct_black_quintile), 	/* Minimum value */
+       MAX(pct_black_quintile),		/* Maximum value */
+	   1 							/* Type: integer score */
   FROM rif_data.cov_cb_2014_us_county_500k;  
 
 INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
@@ -944,9 +1022,6 @@ SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
        MAX(med_pct_not_in_pov_5_17r_quin),	/* Maximum value */
 	   1 									/* Type: integer score */
   FROM rif_data.cov_cb_2014_us_state_500k;    
-  
--- TODO: 
--- * Add ethnicity
 
 --
 -- End transaction (COMMIT)
@@ -962,6 +1037,7 @@ ANALYZE VERBOSE rif_data.saipe_county_poverty_1989_2015;
 ANALYZE VERBOSE rif_data.saipe_state_poverty_1989_2015;
 ANALYZE VERBOSE rif_data.cov_cb_2014_us_county_500k;
 ANALYZE VERBOSE rif_data.cov_cb_2014_us_state_500k;
+ANALYZE VERBOSE rif_data.seer_wbo_ethnicity_covariates;
 
 --
 -- Eof
