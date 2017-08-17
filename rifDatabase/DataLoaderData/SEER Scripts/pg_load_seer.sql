@@ -70,6 +70,32 @@ CREATE TABLE saipe_state_county_yr1989_2015_fixed_length (
 	year INTEGER
 );
 
+/*
+wc -l US_census_county_poverty_estimates/est*.txt
+    3192 US_census_county_poverty_estimates/est00ALL.txt
+    3193 US_census_county_poverty_estimates/est01ALL.txt
+    3193 US_census_county_poverty_estimates/est02ALL.txt
+    3193 US_census_county_poverty_estimates/est03ALL.txt
+    3193 US_census_county_poverty_estimates/est04ALL.txt
+    3193 US_census_county_poverty_estimates/est05ALL.txt
+    3193 US_census_county_poverty_estimates/est06ALL.txt
+    3193 US_census_county_poverty_estimates/est07ALL.txt
+    3194 US_census_county_poverty_estimates/est08ALL.txt
+    3195 US_census_county_poverty_estimates/est09ALL.txt
+    3195 US_census_county_poverty_estimates/est10ALL.txt
+    3195 US_census_county_poverty_estimates/est11all.txt
+    3195 US_census_county_poverty_estimates/est12ALL.txt
+    3195 US_census_county_poverty_estimates/est13ALL.txt
+    3194 US_census_county_poverty_estimates/est14ALL.txt
+    3194 US_census_county_poverty_estimates/est15ALL.txt
+    3193 US_census_county_poverty_estimates/est89ALL.txt
+    3195 US_census_county_poverty_estimates/est93ALL.txt
+    3194 US_census_county_poverty_estimates/est95ALL.txt
+    3193 US_census_county_poverty_estimates/est97ALL.txt
+    3193 US_census_county_poverty_estimates/est98ALL.txt
+    3193 US_census_county_poverty_estimates/est99ALL.txt
+   70261 total
+ */
 \copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est15all.txt' WITH CSV;
 UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2015 WHERE year IS NULL;
 \copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est14all.txt' WITH CSV;
@@ -117,6 +143,29 @@ UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 1993 WHERE year IS
 -- No county level 90-92 data
 \copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est89all.txt' WITH CSV;
 UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 1989 WHERE year IS NULL;
+
+--
+-- Check rowcount
+--
+SELECT COUNT(*) AS total FROM saipe_state_county_yr1989_2015_fixed_length;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(*) AS total
+ 		  FROM saipe_state_county_yr1989_2015_fixed_length;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.total = 70261 THEN
+		RAISE INFO 'Table: saipe_state_county_yr1989_2015_fixed_length has % rows', c1_rec.total;
+	ELSE
+		RAISE EXCEPTION 'Table: saipe_state_county_yr1989_2015_fixed_length has % rows; expecting 70261', c1_rec.total;
+	END IF;
+END;
+$$;
 
 SELECT * FROM saipe_state_county_yr1989_2015_fixed_length LIMIT 10;
 --
@@ -197,12 +246,34 @@ SELECT a.year, a.cb_2014_us_nation_5m, a.cb_2014_us_state_500k,
 	   a.pct_poverty_0_17,
 	   a.pct_poverty_related_5_17,
 	   a.median_household_income,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY a.median_household_income) AS median_household_income_qunitile,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_0_17) AS median_pct_not_in_poverty_0_17_qunitile,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_related_5_17) AS median_pct_not_in_poverty_related_5_17_qunitile,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_all_ages) AS median_pct_not_in_poverty_all_ages_qunitile
+	   NTILE(5) OVER (PARTITION BY a.year ORDER BY a.median_household_income) AS median_hh_income_quin,
+	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_0_17) AS med_pct_not_in_pov_0_17_quin,
+	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_related_5_17) AS med_pct_not_in_pov_5_17rel_quin,
+	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_all_ages) AS med_pct_not_in_pov_quin
   FROM a
  ORDER BY 1,2,3;
+--
+-- Check rowcount
+--
+SELECT COUNT(*) AS total FROM saipe_state_poverty_1989_2015;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(*) AS total
+ 		  FROM saipe_state_poverty_1989_2015;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.total = 1122 THEN
+		RAISE INFO 'Table: saipe_state_poverty_1989_2015 has % rows', c1_rec.total;
+	ELSE
+		RAISE EXCEPTION 'Table: saipe_state_poverty_1989_2015 has % rows; expecting 1122', c1_rec.total;
+	END IF;
+END;
+$$;
 
 COMMENT ON TABLE saipe_state_poverty_1989_2015 IS 'US Census Small Area Income and Poverty Estimates 1989-2015 by county';
 COMMENT ON COLUMN saipe_state_poverty_1989_2015.year IS 'Year';
@@ -213,10 +284,10 @@ COMMENT ON COLUMN saipe_state_poverty_1989_2015.pct_poverty_all_ages IS 'Estimat
 COMMENT ON COLUMN saipe_state_poverty_1989_2015.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
 COMMENT ON COLUMN saipe_state_poverty_1989_2015.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
 COMMENT ON COLUMN saipe_state_poverty_1989_2015.median_household_income IS 'Estimate of median household income';
-COMMENT ON COLUMN saipe_state_poverty_1989_2015.median_household_income_qunitile IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
-COMMENT ON COLUMN saipe_state_poverty_1989_2015.median_pct_not_in_poverty_all_ages_qunitile IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN saipe_state_poverty_1989_2015.median_pct_not_in_poverty_0_17_qunitile IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN saipe_state_poverty_1989_2015.median_pct_not_in_poverty_related_5_17_qunitile IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN saipe_state_poverty_1989_2015.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
+COMMENT ON COLUMN saipe_state_poverty_1989_2015.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN saipe_state_poverty_1989_2015.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN saipe_state_poverty_1989_2015.med_pct_not_in_pov_5_17rel_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
 
 ALTER TABLE saipe_state_poverty_1989_2015 ADD CONSTRAINT saipe_state_poverty_1989_2015_pk 
 	PRIMARY KEY (year, cb_2014_us_state_500k);	
@@ -257,12 +328,35 @@ SELECT a.year, a.cb_2014_us_nation_5m, a.cb_2014_us_state_500k, a.cb_2014_us_cou
 	   a.pct_poverty_0_17,
 	   a.pct_poverty_related_5_17,
 	   a.median_household_income,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY a.median_household_income) AS median_household_income_qunitile,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_0_17) AS median_pct_not_in_poverty_0_17_qunitile,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_related_5_17) AS median_pct_not_in_poverty_related_5_17_qunitile,
-	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_all_ages) AS median_pct_not_in_poverty_all_ages_qunitile
+	   NTILE(5) OVER (PARTITION BY a.year ORDER BY a.median_household_income) AS median_hh_income_quin,
+	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_0_17) AS med_pct_not_in_pov_0_17_quin,
+	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_related_5_17) AS med_pct_not_in_pov_5_17rel_quin,
+	   NTILE(5) OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_all_ages) AS med_pct_not_in_pov_quin
   FROM a
  ORDER BY 1,2,3,4;
+ 
+--
+-- Check rowcount
+--
+SELECT COUNT(*) AS total FROM saipe_county_poverty_1989_2015;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(*) AS total
+ 		  FROM saipe_county_poverty_1989_2015;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.total = 69117 THEN
+		RAISE INFO 'Table: saipe_county_poverty_1989_2015 has % rows', c1_rec.total;
+	ELSE
+		RAISE EXCEPTION 'Table: saipe_county_poverty_1989_2015 has % rows; expecting 69117', c1_rec.total;
+	END IF;
+END;
+$$;
  
 COMMENT ON TABLE saipe_county_poverty_1989_2015 IS 'US Census Small Area Income and Poverty Estimates 1989-2015 by county';
 COMMENT ON COLUMN saipe_county_poverty_1989_2015.year IS 'Year';
@@ -274,10 +368,10 @@ COMMENT ON COLUMN saipe_county_poverty_1989_2015.pct_poverty_all_ages IS 'Estima
 COMMENT ON COLUMN saipe_county_poverty_1989_2015.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
 COMMENT ON COLUMN saipe_county_poverty_1989_2015.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
 COMMENT ON COLUMN saipe_county_poverty_1989_2015.median_household_income IS 'Estimate of median household income';
-COMMENT ON COLUMN saipe_county_poverty_1989_2015.median_household_income_qunitile IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
-COMMENT ON COLUMN saipe_county_poverty_1989_2015.median_pct_not_in_poverty_all_ages_qunitile IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN saipe_county_poverty_1989_2015.median_pct_not_in_poverty_0_17_qunitile IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN saipe_county_poverty_1989_2015.median_pct_not_in_poverty_related_5_17_qunitile IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN saipe_county_poverty_1989_2015.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
+COMMENT ON COLUMN saipe_county_poverty_1989_2015.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN saipe_county_poverty_1989_2015.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN saipe_county_poverty_1989_2015.med_pct_not_in_pov_5_17rel_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
 
 ALTER TABLE saipe_county_poverty_1989_2015 ADD CONSTRAINT saipe_county_poverty_1989_2015_pk 
 	PRIMARY KEY (year, cb_2014_us_county_500k);	
@@ -290,11 +384,6 @@ CLUSTER saipe_county_poverty_1989_2015 USING saipe_county_poverty_1989_2015_pk;
 	
 \copy saipe_county_poverty_1989_2015 TO 'saipe_county_poverty_1989_2015.csv' WITH CSV HEADER;
 \dS+ saipe_county_poverty_1989_2015
-
--- Remove
-END;
-
-\q
 
 DROP TABLE IF EXISTS seer9_yr1973_2013_fixed_length;
 DROP TABLE IF EXISTS seer9_yr1973_2013;

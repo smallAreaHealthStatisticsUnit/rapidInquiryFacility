@@ -155,6 +155,9 @@ DROP TABLE IF EXISTS rif_data.seer_population;
 DELETE FROM rif40.rif40_tables 
 WHERE table_name='SEER_POPULATION';
 
+DELETE FROM rif40_covariates
+ WHERE geography = 'USA_2014';
+
 --
 -- Create SEER_CANCER numerator table
 --
@@ -458,10 +461,10 @@ CREATE TABLE rif_data.saipe_county_poverty_1989_2015
   pct_poverty_0_17 numeric, -- Estimated percent of people age 0-17 in poverty
   pct_poverty_related_5_17 numeric, -- Estimated percent of related children age 5-17 in families in poverty
   median_household_income integer, -- Estimate of median household income
-  median_household_income_qunitile integer, -- Quintile: estimate of median household income (1=most deprived, 5=least)
-  median_pct_not_in_poverty_0_17_qunitile integer, -- Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)
-  median_pct_not_in_poverty_related_5_17_qunitile integer, -- Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)
-  median_pct_not_in_poverty_all_ages_qunitile integer, -- Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)
+  median_hh_income_quin integer, -- Quintile: estimate of median household income (1=most deprived, 5=least)
+  med_pct_not_in_pov_0_17_quin integer, -- Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)
+  med_pct_not_in_pov_5_17r_quin integer, -- Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)
+  med_pct_not_in_pov_quin integer, -- Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)
   CONSTRAINT saipe_county_poverty_1989_2015_pk PRIMARY KEY (year, cb_2014_us_county_500k)
 );
 
@@ -469,6 +472,29 @@ CREATE TABLE rif_data.saipe_county_poverty_1989_2015
 -- Load
 --
 \copy rif_data.saipe_county_poverty_1989_2015 FROM 'saipe_county_poverty_1989_2015.csv' WITH CSV HEADER;
+ 
+--
+-- Check rowcount
+--
+SELECT COUNT(*) AS total FROM saipe_county_poverty_1989_2015;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(*) AS total
+ 		  FROM saipe_county_poverty_1989_2015;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.total = 69117 THEN
+		RAISE INFO 'Table: saipe_county_poverty_1989_2015 has % rows', c1_rec.total;
+	ELSE
+		RAISE EXCEPTION 'Table: saipe_county_poverty_1989_2015 has % rows; expecting 69117', c1_rec.total;
+	END IF;
+END;
+$$;
 
 --
 -- Convert to index organised table
@@ -486,10 +512,10 @@ COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.pct_poverty_all_ages I
 COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
 COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
 COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.median_household_income IS 'Estimate of median household income';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.median_household_income_qunitile IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.median_pct_not_in_poverty_0_17_qunitile IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.median_pct_not_in_poverty_related_5_17_qunitile IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.median_pct_not_in_poverty_all_ages_qunitile IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
 
 
 -- Index: peter.saipe_county_poverty_1989_2015_cb_2014_us_county_500k
@@ -544,10 +570,10 @@ CREATE TABLE rif_data.saipe_state_poverty_1989_2015
   pct_poverty_0_17 numeric, -- Estimated percent of people age 0-17 in poverty
   pct_poverty_related_5_17 numeric, -- Estimated percent of related children age 5-17 in families in poverty
   median_household_income integer, -- Estimate of median household income
-  median_household_income_qunitile integer, -- Quintile: estimate of median household income (1=most deprived, 5=least)
-  median_pct_not_in_poverty_0_17_qunitile integer, -- Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)
-  median_pct_not_in_poverty_related_5_17_qunitile integer, -- Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)
-  median_pct_not_in_poverty_all_ages_qunitile integer, -- Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)
+  median_hh_income_quin integer, -- Quintile: estimate of median household income (1=most deprived, 5=least)
+  med_pct_not_in_pov_0_17_quin integer, -- Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)
+  med_pct_not_in_pov_5_17r_quin integer, -- Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)
+  med_pct_not_in_pov_quin integer, -- Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)
   CONSTRAINT saipe_state_poverty_1989_2015_pk PRIMARY KEY (year, cb_2014_us_state_500k)
 );
 COMMENT ON TABLE rif_data.saipe_state_poverty_1989_2015
@@ -560,15 +586,39 @@ COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.pct_poverty_all_ages IS
 COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
 COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
 COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.median_household_income IS 'Estimate of median household income';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.median_household_income_qunitile IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.median_pct_not_in_poverty_0_17_qunitile IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.median_pct_not_in_poverty_related_5_17_qunitile IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.median_pct_not_in_poverty_all_ages_qunitile IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
 
 --
 -- Load
 --
 \copy rif_data.saipe_state_poverty_1989_2015 FROM 'saipe_state_poverty_1989_2015.csv' WITH CSV HEADER;
+
+--
+-- Check rowcount
+--
+SELECT COUNT(*) AS total FROM saipe_state_poverty_1989_2015;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(*) AS total
+ 		  FROM saipe_state_poverty_1989_2015;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.total = 1122 THEN
+		RAISE INFO 'Table: saipe_state_poverty_1989_2015 has % rows', c1_rec.total;
+	ELSE
+		RAISE EXCEPTION 'Table: saipe_state_poverty_1989_2015 has % rows; expecting 1122', c1_rec.total;
+	END IF;
+END;
+$$;
+
 
 --
 -- Convert to index organised table
@@ -623,10 +673,10 @@ CREATE TABLE rif_data.cov_cb_2014_us_county_500k
   pct_poverty_0_17									INTEGER,
   pct_poverty_related_5_17							INTEGER,
   median_household_income							INTEGER,
-  median_household_income_qunitile					INTEGER,
-  median_pct_not_in_poverty_all_ages_qunitile		INTEGER,
-  median_pct_not_in_poverty_0_17_qunitile			INTEGER,
-  median_pct_not_in_poverty_related_5_17_qunitile	INTEGER,
+  median_hh_income_quin					INTEGER,
+  med_pct_not_in_pov_quin		INTEGER,
+  med_pct_not_in_pov_0_17_quin			INTEGER,
+  med_pct_not_in_pov_5_17r_quin	INTEGER,
   CONSTRAINT cov_cb_2014_us_county_500k_pkey PRIMARY KEY (year, cb_2014_us_county_500k)
 );
 
@@ -636,10 +686,10 @@ INSERT INTO rif_data.cov_cb_2014_us_county_500k(year, cb_2014_us_county_500k, ar
 	   pct_poverty_0_17,
 	   pct_poverty_related_5_17,
 	   median_household_income,
-	   median_household_income_qunitile,
-	   median_pct_not_in_poverty_all_ages_qunitile,
-	   median_pct_not_in_poverty_0_17_qunitile,
-	   median_pct_not_in_poverty_related_5_17_qunitile)
+	   median_hh_income_quin,
+	   med_pct_not_in_pov_quin,
+	   med_pct_not_in_pov_0_17_quin,
+	   med_pct_not_in_pov_5_17r_quin)
 WITH a AS (
 	SELECT generate_series(year_start::INTEGER, year_stop::INTEGER) AS year
 	  FROM rif40.rif40_tables
@@ -654,10 +704,10 @@ SELECT b.year, b.cb_2014_us_county_500k, b.areaname,
 	   c.pct_poverty_0_17,
 	   c.pct_poverty_related_5_17,
 	   c.median_household_income,
-	   c.median_household_income_qunitile,
-	   c.median_pct_not_in_poverty_all_ages_qunitile,
-	   c.median_pct_not_in_poverty_0_17_qunitile,
-	   c.median_pct_not_in_poverty_related_5_17_qunitile
+	   c.median_hh_income_quin,
+	   c.med_pct_not_in_pov_quin,
+	   c.med_pct_not_in_pov_0_17_quin,
+	   c.med_pct_not_in_pov_5_17r_quin
   FROM b
 	LEFT OUTER JOIN rif_data.saipe_county_poverty_1989_2015 c ON 
 		(b.year = c.year AND b.cb_2014_us_county_500k = c.cb_2014_us_county_500k)
@@ -678,10 +728,10 @@ COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_poverty_all_ages IS 'E
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.median_household_income IS 'Estimate of median household income';
-COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.median_household_income_qunitile IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.median_pct_not_in_poverty_all_ages_qunitile IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.median_pct_not_in_poverty_0_17_qunitile IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.median_pct_not_in_poverty_related_5_17_qunitile IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
  
 -- Table: rif_data.cov_cb_2014_us_state_500k
 
@@ -697,10 +747,10 @@ CREATE TABLE rif_data.cov_cb_2014_us_state_500k
   pct_poverty_0_17									INTEGER,
   pct_poverty_related_5_17							INTEGER,
   median_household_income							INTEGER,
-  median_household_income_qunitile					INTEGER,
-  median_pct_not_in_poverty_all_ages_qunitile		INTEGER,
-  median_pct_not_in_poverty_0_17_qunitile			INTEGER,
-  median_pct_not_in_poverty_related_5_17_qunitile	INTEGER,
+  median_hh_income_quin					INTEGER,
+  med_pct_not_in_pov_quin		INTEGER,
+  med_pct_not_in_pov_0_17_quin			INTEGER,
+  med_pct_not_in_pov_5_17r_quin	INTEGER,
   CONSTRAINT cov_cb_2014_us_state_500k_pkey PRIMARY KEY (year, cb_2014_us_state_500k)
 );
 
@@ -710,10 +760,10 @@ INSERT INTO rif_data.cov_cb_2014_us_state_500k(year, cb_2014_us_state_500k, area
 	   pct_poverty_0_17,
 	   pct_poverty_related_5_17,
 	   median_household_income,
-	   median_household_income_qunitile,
-	   median_pct_not_in_poverty_all_ages_qunitile,
-	   median_pct_not_in_poverty_0_17_qunitile,
-	   median_pct_not_in_poverty_related_5_17_qunitile)
+	   median_hh_income_quin,
+	   med_pct_not_in_pov_quin,
+	   med_pct_not_in_pov_0_17_quin,
+	   med_pct_not_in_pov_5_17r_quin)
 WITH a AS (
 	SELECT generate_series(year_start::INTEGER, year_stop::INTEGER) AS year
 	  FROM rif40.rif40_tables
@@ -728,10 +778,10 @@ SELECT b.year, b.cb_2014_us_state_500k, b.areaname,
 	   c.pct_poverty_0_17,
 	   c.pct_poverty_related_5_17,
 	   c.median_household_income,
-	   c.median_household_income_qunitile,
-	   c.median_pct_not_in_poverty_all_ages_qunitile,
-	   c.median_pct_not_in_poverty_0_17_qunitile,
-	   c.median_pct_not_in_poverty_related_5_17_qunitile
+	   c.median_hh_income_quin,
+	   c.med_pct_not_in_pov_quin,
+	   c.med_pct_not_in_pov_0_17_quin,
+	   c.med_pct_not_in_pov_5_17r_quin
   FROM b
 	LEFT OUTER JOIN rif_data.saipe_state_poverty_1989_2015 c ON 
 		(b.year = c.year AND b.cb_2014_us_state_500k = c.cb_2014_us_state_500k)
@@ -751,16 +801,59 @@ COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.pct_poverty_all_ages IS 'Es
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.median_household_income IS 'Estimate of median household income';
-COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.median_household_income_qunitile IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.median_pct_not_in_poverty_all_ages_qunitile IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.median_pct_not_in_poverty_0_17_qunitile IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.median_pct_not_in_poverty_related_5_17_qunitile IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
+COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
 
 --
 -- Grant
 -- * The role SEER_USER needs to be created by an administrator
 --
 GRANT SELECT ON rif_data.cov_cb_2014_us_state_500k TO seer_user;
+
+--
+-- RIF40_COVARIATES integration. Continuous variable type (2) not yet supported.
+--
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
+       'CB_2014_US_COUNTY_500K', 	/* Name of geolevel. This will be a column name in the numerator/denominator tables */
+       'MEDIAN_HH_INCOME_QUIN', 	/* Covariate name. This will be a column name in RIF40_GEOLEVELS.COVARIATE_TABLE */
+       MIN(median_hh_income_quin), 	/* Minimum value */
+       MAX(median_hh_income_quin),	/* Maximum value */
+	   1 							/* Type: integer score */
+  FROM rif_data.cov_cb_2014_us_county_500k;
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
+       'CB_2014_US_COUNTY_500K', 	/* Name of geolevel. This will be a column name in the numerator/denominator tables */
+       'MED_PCT_NOT_IN_POV_QUIN', 	/* Covariate name. This will be a column name in RIF40_GEOLEVELS.COVARIATE_TABLE */
+       MIN(med_pct_not_in_pov_quin), 	/* Minimum value */
+       MAX(med_pct_not_in_pov_quin),	/* Maximum value */
+	   1 								/* Type: integer score */
+  FROM rif_data.cov_cb_2014_us_county_500k; 
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
+       'CB_2014_US_COUNTY_500K', 	/* Name of geolevel. This will be a column name in the numerator/denominator tables */
+       'MED_PCT_NOT_IN_POV_0_17_QUIN', 	/* Covariate name. This will be a column name in RIF40_GEOLEVELS.COVARIATE_TABLE */
+       MIN(med_pct_not_in_pov_0_17_quin), 	/* Minimum value */
+       MAX(med_pct_not_in_pov_0_17_quin),	/* Maximum value */
+	   1 									/* Type: integer score */
+  FROM rif_data.cov_cb_2014_us_county_500k; 
+INSERT INTO rif40_covariates(geography, geolevel_name, covariate_name, min, max, type)
+SELECT 'USA_2014', 					/* Geography (e.g EW2001) */
+       'CB_2014_US_COUNTY_500K', 	/* Name of geolevel. This will be a column name in the numerator/denominator tables */
+       'MED_PCT_NOT_IN_POV_5_17R_QUIN', 	/* Covariate name. This will be a column name in RIF40_GEOLEVELS.COVARIATE_TABLE */
+       MIN(med_pct_not_in_pov_5_17r_quin), 	/* Minimum value */
+       MAX(med_pct_not_in_pov_5_17r_quin),	/* Maximum value */
+	   1 									/* Type: integer score */
+  FROM rif_data.cov_cb_2014_us_county_500k;  
+  
+-- TODO: 
+---* Cope with holes:
+--    No county level 96 data
+--    No county level 94 data
+--    No county level 90-92 data
+-- * Add ethnicity
 
 --
 -- End transaction (COMMIT)
