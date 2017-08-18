@@ -1375,12 +1375,12 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
 * SQL Logging added to SQL Server port.
 * Managed to run a study through the SQL Server middleware. It died in R
   ```
-[1] "Creating temporary table: peter.tmp_s3_map"
-Error in sqlSave(connDB, data, tablename = temporarySmoothedResultsTableName,  :
-  [RODBC] Failed exec in Update
-42000 8023 [Microsoft][SQL Server Native Client 11.0][SQL Server]The incoming tabular data stream (TDS) remote procedure call (RPC)
-protocol stream is incorrect. Parameter 15 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision.
-Calls: saveDataFrameToDatabaseTable -> sqlSave
+  [1] "Creating temporary table: peter.tmp_s3_map"
+  Error in sqlSave(connDB, data, tablename = temporarySmoothedResultsTableName,  :
+    [RODBC] Failed exec in Update
+  42000 8023 [Microsoft][SQL Server Native Client 11.0][SQL Server]The incoming tabular data stream (TDS) remote procedure call (RPC)
+  protocol stream is incorrect. Parameter 15 (""): The supplied value is not a valid instance of data type float. Check the source data for invalid values. An example of an invalid value is data of numeric type with scale greater than precision.
+  Calls: saveDataFrameToDatabaseTable -> sqlSave
   ```
 * Added rif40_study_status support for Postgres
 * Added stats_method to rif40_studies
@@ -1393,7 +1393,7 @@ Calls: saveDataFrameToDatabaseTable -> sqlSave
   to uppercase.
 * Data loader scripts disable/enable the foreign key constraint rif40_covariates_geolevel_fk (SQL Server only for the moment).
   Resolves geospatial SQL Server and Postgres install issue (caused by pre-exsiting studies). Modified checks for studies:
-```
+  ```
 	-- SQL statement 75: Remove old geolevels meta data table >>>
 	DELETE FROM t_rif40_geolevels WHERE geography = 'SAHSULAND';
 
@@ -1402,14 +1402,15 @@ Calls: saveDataFrameToDatabaseTable -> sqlSave
 	suland_dev", table "rif40.rif40_covariates".
 	Msg 3621, Level 0, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
 	The statement has been terminated.
+  ```	
 * Fixed trigger issues with SQL Server geospatial re-installs (DELETE FROM t_rif40_geolevels):
   ```
--- SQL statement 95: Remove old geolevels meta data table >>>
-DELETE FROM t_rif40_geolevels WHERE geography = 'SAHSULAND';
+  -- SQL statement 95: Remove old geolevels meta data table >>>
+  DELETE FROM t_rif40_geolevels WHERE geography = 'SAHSULAND';
 
-(1 rows affected)
-Msg 51146, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_geolevel_check, Line 43
-Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
+  (1 rows affected)
+  Msg 51146, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Procedure tr_geolevel_check, Line 43
+  Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
   ```  
   
 #### 19th to 23rd June
@@ -1442,30 +1443,30 @@ Table name: [rif40].[t_rif40_geolevels], Cannot DELETE from T_RIF40_GEOLEVELS
   ```
   Fixed.
 * Fixed MSSQL run study bug - 2nd run in middleware (need to test for ##g_rif40_study_areas, ##g_rif40_comparison_areas):
-```
-SQL[rif40] OK> GRANT SELECT,INSERT ON rif_studies.s6_extract TO peter;
-Function: [rif40].[rif40_ddl], SQL statement had error: There is already an object named '##g_rif40_study_areas' in the database.
-SQL[peter]> SELECT study_id, area_id, band_id
-  INTO ##g_rif40_study_areas
-  FROM rif40.rif40_study_areas
- WHERE study_id = @study_id /* Current study ID */
- ORDER BY study_id, area_id, band_id;
-Caught error in rif40.rif40_run_study2(6)
-Error number: 3930; severity: 16; state: 1
-Procedure: rif40_ddl;  line: 79
-Error message: The current transaction cannot be committed and cannot support operations that write to the log file. Roll back the t
+  ```
+  SQL[rif40] OK> GRANT SELECT,INSERT ON rif_studies.s6_extract TO peter;
+  Function: [rif40].[rif40_ddl], SQL statement had error: There is already an object named '##g_rif40_study_areas' in the database.
+  SQL[peter]> SELECT study_id, area_id, band_id
+    INTO ##g_rif40_study_areas
+    FROM rif40.rif40_study_areas
+   WHERE study_id = @study_id /* Current study ID */
+   ORDER BY study_id, area_id, band_id;
+  Caught error in rif40.rif40_run_study2(6)
+  Error number: 3930; severity: 16; state: 1
+  Procedure: rif40_ddl;  line: 79
+  Error message: The current transaction cannot be committed and cannot support operations that write to the log file. Roll back the t
 ransaction.
 
-Caught error handler error in rif40.rif40_run_study2(6)
-Error number: 3930; severity: 16; state: 1
-Procedure: rif40_run_study;  line: 33
-Error message: The current transaction cannot be committed and cannot support operations that write to the log file. Roll back the t
+  Caught error handler error in rif40.rif40_run_study2(6)
+  Error number: 3930; severity: 16; state: 1
+  Procedure: rif40_run_study;  line: 33
+  Error message: The current transaction cannot be committed and cannot support operations that write to the log file. Roll back the t
 ransaction.
 
-java.util.MissingResourceException: Can't find resource for bundle java.util.PropertyResourceBundle, key general.db.error.unableToCo
+  java.util.MissingResourceException: Can't find resource for bundle java.util.PropertyResourceBundle, key general.db.error.unableToCo
 mmit
         at java.util.ResourceBundle.getObject(ResourceBundle.java:450)
-```		 
+  ```		 
 Todo:
 
 * JRI causing <control-C> to be intercepted and not stop tomcat. Workaround is to run tomcat from bash.
@@ -1497,8 +1498,8 @@ Todo:
 * CDC Support
 * USA_2014/SEER data integration and testing:
   * RIF40_GEOGRAPHIES set up wrong: default study and comnparison area names use original field name, no setup field names
-  * Script fixed, reload needed DELETE FROM rif40_covariates WHERE geography = 'USA_2014' adding.
-  Now able to setp and GA Lung Cancer study aprt from the investigation section with the werror:
+  * Script fixed, reload needed ```DELETE FROM rif40_covariates WHERE geography = 'USA_2014'``` adding.
+  Now able to setp and GA Lung Cancer study aprt from the investigation section with the error:
   ```
   Error: Numerator-DEnominator Pair 'SEER_CANCER - POP_SAHSULAND_POP' not found in database
   ```
@@ -1508,13 +1509,13 @@ Todo:
 	?userID=peter
 	&geographyName=USA_2014
 	&healthThemeDescription=covering%20various%20types%20of%20cancers
-	```
-	Returns the correct data:
-	```
-	[{"numeratorTableName":"NUM_SAHSULAND_CANCER","numeratorTableDescription":"cancer numerator","denominatorTableName":"POP_SAHSULAND_POP","denominatorTableDescription":"population health file"},
-     {"numeratorTableName":"SEER_CANCER","numeratorTableDescription":"SEER Cancer data 1973-2013. 9 States in total","denominatorTableName":"SEER_POPULATION","denominatorTableDescription":"SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States in total"}]
-    ```
-	There are no exceptions in the Java so probably a front end issue processing this JSON.
+  ```
+  Returns the correct data:
+  ```
+  [{"numeratorTableName":"NUM_SAHSULAND_CANCER","numeratorTableDescription":"cancer numerator","denominatorTableName":"POP_SAHSULAND_POP","denominatorTableDescription":"population health file"},
+   {"numeratorTableName":"SEER_CANCER","numeratorTableDescription":"SEER Cancer data 1973-2013. 9 States in total","denominatorTableName":"SEER_POPULATION","denominatorTableDescription":"SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States in total"}]
+  ```
+  There are no exceptions in the Java so probably a front end issue processing this JSON.
 	
 #### Database TODO list (deferred to September 2017): SQL Server Port
 
@@ -1522,8 +1523,8 @@ Todo:
   * RIF40_GEOGRAPHIES set up wrong: default study and comnparison area names use original field name, no setup field names
     Tomcat error:
 ```
-AbstractSQLManager logSQLQuery 1rifServices.dataStorageLayer.pg.PGSQLRIFContextManager==
-==========================================================
+    AbstractSQLManager logSQLQuery 1rifServices.dataStorageLayer.pg.PGSQLRIFContextManager==
+    ==========================================================
 QUERY NAME:checkGeoLevelViewExistsQuery
 PARAMETERS:
         1:"GEOID"
@@ -1537,8 +1538,6 @@ FROM
 WHERE
    geolevel_name=? AND
    geography=?;
-;
-
 
 ==========================================================
 
@@ -1546,7 +1545,7 @@ rifGenericLibrary.system.RIFServiceException: Record "Area types" with value "GE
         at rifServices.dataStorageLayer.pg.PGSQLRIFContextManager.checkGeoLevelSelectExists(PGSQLRIFContextManager.java:1192)
         at rifServices.dataStorageLayer.pg.PGSQLRIFContextManager.validateCommonMethodParameters(PGSQLRIFContextManager.
 ```
-    This is caused by the wrong setup in rif40_geogrpaphies (i.e. tilemaker)
+  This is caused by the wrong setup in rif40_geogrpaphies (i.e. tilemaker)
 ```
 sahsuland=> select * from rif40_geographies;
  geography |               description                |   hierarchytable    | srid  | defaultcomparea  | defaultstudyarea | postal_population_table | postal_point_column | partition | max_geojson_digits |   geometrytable    |    tiletable    | minzoomlevel | maxzoomlevel |   adjacencytable
