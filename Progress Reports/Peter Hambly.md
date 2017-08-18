@@ -1637,9 +1637,6 @@ Calls: performSmoothingActivity -> apply
   GET XHR https://peter-pc:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter [HTTP/1.1 200  25ms]
   09:09:31.552 Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://peter-pc:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter. (Reason: CORS header 'Access-Control-Allow-Origin' missing). 1 (unknown)
   ```
-
-
-```
 * Assist with middleware (database fixes)
 * Data loader to generate primary keys. PK on pop_sahsuland_pop_pk + cluster (see: v4_0_create_sahsuland.sql)
 * SQL load script generator: still todo, all can wait:
