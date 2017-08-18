@@ -1479,8 +1479,93 @@ Todo:
 
 * Holiday
  
-#### Database TODO list (deferred to August 2017): SQL Server Port
+#### 1st to 4th August
 
+* RIF meeting
+* New RIF laptop build, Pippa laptop build
+* Document setup and services logging
+
+#### 7th to 11th
+
+* Regression testing
+* Build SQL Server DB for CDC
+* SEER data loading
+
+#### 14th to 18th August
+
+* SEER Covariates
+* CDC Support
+* USA_2014/SEER data integration and testing:
+  * RIF40_GEOGRAPHIES set up wrong: default study and comnparison area names use original field name, no setup field names
+  * Script fixed, reload needed DELETE FROM rif40_covariates WHERE geography = 'USA_2014' adding.
+  Now able to setp and GA Lung Cancer study aprt from the investigation section with the werror:
+  ```
+  Error: Numerator-DEnominator Pair 'SEER_CANCER - POP_SAHSULAND_POP' not found in database
+  ```
+  Running the middleware query:
+  ```
+  http://localhost:8080/rifServices/studySubmission/pg/getNumerator
+	?userID=peter
+	&geographyName=USA_2014
+	&healthThemeDescription=covering%20various%20types%20of%20cancers
+	```
+	Returns the correct data:
+	```
+	[{"numeratorTableName":"NUM_SAHSULAND_CANCER","numeratorTableDescription":"cancer numerator","denominatorTableName":"POP_SAHSULAND_POP","denominatorTableDescription":"population health file"},
+     {"numeratorTableName":"SEER_CANCER","numeratorTableDescription":"SEER Cancer data 1973-2013. 9 States in total","denominatorTableName":"SEER_POPULATION","denominatorTableDescription":"SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States in total"}]
+    ```
+	There are no exceptions in the Java so probably a front end issue processing this JSON.
+	
+#### Database TODO list (deferred to September 2017): SQL Server Port
+
+* USA_2014 integration: 
+  * RIF40_GEOGRAPHIES set up wrong: default study and comnparison area names use original field name, no setup field names
+    Tomcat error:
+```
+AbstractSQLManager logSQLQuery 1rifServices.dataStorageLayer.pg.PGSQLRIFContextManager==
+==========================================================
+QUERY NAME:checkGeoLevelViewExistsQuery
+PARAMETERS:
+        1:"GEOID"
+        2:"USA_2014"
+        3:"1"
+
+SQL QUERY TEXT
+SELECT 1
+FROM
+   rif40_geolevels
+WHERE
+   geolevel_name=? AND
+   geography=?;
+;
+
+
+==========================================================
+
+rifGenericLibrary.system.RIFServiceException: Record "Area types" with value "GEOID" not found in the database.
+        at rifServices.dataStorageLayer.pg.PGSQLRIFContextManager.checkGeoLevelSelectExists(PGSQLRIFContextManager.java:1192)
+        at rifServices.dataStorageLayer.pg.PGSQLRIFContextManager.validateCommonMethodParameters(PGSQLRIFContextManager.
+```
+    This is caused by the wrong setup in rif40_geogrpaphies (i.e. tilemaker)
+```
+sahsuland=> select * from rif40_geographies;
+ geography |               description                |   hierarchytable    | srid  | defaultcomparea  | defaultstudyarea | postal_population_table | postal_point_column | partition | max_geojson_digits |   geometrytable    |    tiletable    | minzoomlevel | maxzoomlevel |   adjacencytable
+-----------+------------------------------------------+---------------------+-------+------------------+------------------+-------------------------+---------------------+-----------+--------------------+--------------------+-----------------+--------------+--------------+---------------------
+ SAHSULAND | SAHSU Example geography                  | HIERARCHY_SAHSULAND | 27700 | SAHSU_GRD_LEVEL1 | SAHSU_GRD_LEVEL3 |                         |                     |         1 |                  6 | GEOMETRY_SAHSULAND | TILES_SAHSULAND |            6 |           11 | ADJACENCY_SAHSULAND
+ USA_2014  | US 2014 Census geography to county level | HIERARCHY_USA_2014  |  4269 | GEOID            | STATENS          |                         |                     |         1 |                  6 | GEOMETRY_USA_2014  | TILES_USA_2014  |            6 |            9 |
+(2 rows)
+```
+    Attempt at fix failed (trigger fault) 
+```
+UPDATE rif40_geographies
+   SET defaultcomparea  = 'CB_2014_US_STATE_500K'
+ WHERE defaultcomparea  = 'GEOID' AND geography = 'USA_2014';
+UPDATE rif40_geographies
+   SET defaultstudyarea = 'CB_2014_US_COUNTY_500K'
+ WHERE  geography = 'USA_2014';
+```
+  So the script was fixed, reload needed DELETE FROM rif40_covariates WHERE geography = 'USA_2014' adding.
+  This was fixed from before; I appear to have used an older script!
 * Postgres run study middleware code not stopping on error!
 * The R script does not handle only males in a study:
 ```
@@ -1561,8 +1646,11 @@ Calls: performSmoothingActivity -> apply
 
 ```
 * Assist with middleware (database fixes)
-
-#### TileViewer TODO (deferred to August 2017 and beyond):
+* Data loader to generate primary keys. PK on pop_sahsuland_pop_pk + cluster (see: v4_0_create_sahsuland.sql)
+* SQL load script generator: still todo, all can wait:
+  * Add search path to user schema, check user schema exists, to Postgres version
+  
+#### TileViewer TODO (deferred to October 2017 and beyond):
  
 * Area tests (area_check.sql) is failing for Halland - suspect area is too small, could be projection ia wrong 
 * NVarchar support for areaName
@@ -1592,22 +1680,12 @@ Calls: performSmoothingActivity -> apply
   These will need to use a suitable projection within bounds and also be translated to the desired place. i.e. using proj4 in Node.
   
 * Fix zoomlevel field miss-set from config file (defaults are wrong)
-
-####  TODO list:
-
-* Data loader to generate primary keys. PK on pop_sahsuland_pop_pk + cluster (see: v4_0_create_sahsuland.sql)
 * Convert remaining use of geography:: datatype in SQL Server to geometry::. The geography:: datatype is used in the build
   to intersect tiles and will may have issues. Production SQL Server is using the geometry:: datatype. This will be parked if 
   it is not a problem.
 * JSZip 3.0 upgrade required (forced to 2.6.0) for present
-* SQL load script generator: still todo, all can wait:
-  * Add search path to user schema, check user schema exists, to Postgres version
-* Get methods: 
-  * ZIP results;
-  * Run front end and batch from XML config file.
-  * Add CSV files meta to XML config;
 * Tilemaker etc:
-  * Add old fileds in DBF file to lookup tables;  
+  * Add old files in DBF file to lookup tables;  
   * Drive database script generator from XML config file (not internal data structures);
   * Missing comments on other columns from shapefile via extended attributes XML file;
   * Dump SQL to XML/JSON files (Postgres and SQL Server) so Kevin does not need to generate it;
@@ -1618,7 +1696,11 @@ Calls: performSmoothingActivity -> apply
     - Too few points in geometry component at or near point -91.774770828512843 46.946012696542709
   * Check Turf JS centroid code (figures are wrong);
   * Compare Turf/PostGIS/SQL Server area and centroid caculations;
-
+* Tilemaker Get methods: 
+  * ZIP results;
+  * Run front end and batch from XML config file.
+  * Add CSV files meta to XML config;
+  
 Note: no bounding box (bbox) in tiles.
 
 #### Parked TODO (todon't) list (as required):
