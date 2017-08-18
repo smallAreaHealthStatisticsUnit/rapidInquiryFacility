@@ -1454,17 +1454,13 @@ UPDATE study_status SET ith_update = 1 WHERE study_state = 'E';
   Caught error in rif40.rif40_run_study2(6)
   Error number: 3930; severity: 16; state: 1
   Procedure: rif40_ddl;  line: 79
-  Error message: The current transaction cannot be committed and cannot support operations that write to the log file. Roll back the t
-ransaction.
-
+  Error message: The current transaction cannot be committed and cannot support operations that write to the log file. Roll back the transaction.
   Caught error handler error in rif40.rif40_run_study2(6)
   Error number: 3930; severity: 16; state: 1
   Procedure: rif40_run_study;  line: 33
-  Error message: The current transaction cannot be committed and cannot support operations that write to the log file. Roll back the t
-ransaction.
+  Error message: The current transaction cannot be committed and cannot support operations that write to the log file. Roll back the t ransaction.
 
-  java.util.MissingResourceException: Can't find resource for bundle java.util.PropertyResourceBundle, key general.db.error.unableToCo
-mmit
+  java.util.MissingResourceException: Can't find resource for bundle java.util.PropertyResourceBundle, key general.db.error.unableToCommit
         at java.util.ResourceBundle.getObject(ResourceBundle.java:450)
   ```		 
 Todo:
