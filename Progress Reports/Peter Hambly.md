@@ -1497,7 +1497,7 @@ Todo:
   * Script fixed, reload needed ```DELETE FROM rif40_covariates WHERE geography = 'USA_2014'``` adding.
   Now able to setp and GA Lung Cancer study aprt from the investigation section with the error:
   ```
-  Error: Numerator-DEnominator Pair 'SEER_CANCER - POP_SAHSULAND_POP' not found in database
+  Error: Numerator-Denominator Pair 'SEER_CANCER - POP_SAHSULAND_POP' not found in database
   ```
   Running the middleware query:
   ```
@@ -1511,7 +1511,8 @@ Todo:
   [{"numeratorTableName":"NUM_SAHSULAND_CANCER","numeratorTableDescription":"cancer numerator","denominatorTableName":"POP_SAHSULAND_POP","denominatorTableDescription":"population health file"},
    {"numeratorTableName":"SEER_CANCER","numeratorTableDescription":"SEER Cancer data 1973-2013. 9 States in total","denominatorTableName":"SEER_POPULATION","denominatorTableDescription":"SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States in total"}]
   ```
-  There are no exceptions in the Java so probably a front end issue processing this JSON.
+  There are no exceptions in the Java so probably a front end issue processing the above JSON. I could find no other get methods
+  that would cause this.
 	
 #### Database TODO list (deferred to September 2017): SQL Server Port
 
