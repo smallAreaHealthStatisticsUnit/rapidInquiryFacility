@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -100,8 +100,18 @@ angular.module("RIF")
                     for (var i = 0; i < res.data.length; i++) {
                         $scope.fractions.push(res.data[i]);
                     }
-                    $scope.numerator = $scope.fractions[0];
-                    $scope.denominator = $scope.fractions[0].denominatorTableName;                                    
+                    if (SubmissionStateService.getState().numerator.length !== 0) {
+                        for (var i = 0; i < $scope.fractions.length; i++) {
+                            var thisNum = SubmissionStateService.getState().numerator;
+                            if ($scope.fractions[i].numeratorTableName === thisNum) {
+                                $scope.numerator = $scope.fractions[i];
+                                $scope.denominator = $scope.fractions[i].denominatorTableName;
+                            }
+                        }
+                    } else {
+                        $scope.numerator = $scope.fractions[0];
+                        $scope.denominator = $scope.fractions[0].denominatorTableName;
+                    }
                     SubmissionStateService.getState().numerator = $scope.numerator;
                     SubmissionStateService.getState().denominator = $scope.numerator;
                 }
