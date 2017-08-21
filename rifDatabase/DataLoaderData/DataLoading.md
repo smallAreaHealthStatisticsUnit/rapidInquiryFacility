@@ -124,6 +124,9 @@ The following are restrictions on the naming of columns:
 Postgres uses the *\copy* command to load and unload data. *\copy* cannot handle fixed length data; this 
 is loaded as a fioxed length string and parsed using SQL.
 
+The SEER data required USA load phase data pg_USQ_2014.sql to be loaded as a RIF user (not rif40) and 
+the production data (rif_pg_usa_2014.sql) needs to be loaded into the rif40 account in the rif_data schema.
+
 ## 2.2 SQL Server
 
 To be added.
@@ -144,5 +147,14 @@ To be added.
 
 ## 4.1 Auditing
 
+## 5. Data Loader Issues
+
+The folowing are known issues with the RIF data loader. 
+
+* The properties file RIFDataLoaderToolStartupProperties.properties used is the hard coded one at compile time.
+  Needs to be set to read this file from the current directory. This means the soujrce has to be edited to change
+  the database type and connection settings. The current default is localhost and Postgres.
+  
+  
 Peter Hambly
 17th August 2017
