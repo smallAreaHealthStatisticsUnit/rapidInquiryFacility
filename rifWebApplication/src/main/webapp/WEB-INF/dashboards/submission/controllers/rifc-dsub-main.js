@@ -71,6 +71,8 @@ angular.module("RIF")
                     SubmissionStateService.getState().comparisonTree = false;
                     SubmissionStateService.getState().studyTree = false;
                     SubmissionStateService.getState().investigationTree = false;
+                    SubmissionStateService.getState().numerator = "";
+                    SubmissionStateService.getState().denominator = "";
                     $scope.resetState();
                 };
 
