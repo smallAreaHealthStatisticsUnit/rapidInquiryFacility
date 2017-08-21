@@ -43,11 +43,11 @@ angular.module("RIF")
                         comparisonTree: false,
                         investigationTree: false,
                         statsTree: false,
-                        studyName: "", //1
-                        healthTheme: "", //2
-                        geography: "SAHSU", //3
-                        numerator: "", //4
-                        denominator: "", //5
+                        studyName: "", //1 input
+                        healthTheme: "", //2 drop-down
+                        geography: "SAHSU", //3 drop-down
+                        numerator: "", //4 drop-down
+                        denominator: "", //5 non-editable input
                         //these are in the run-study modal
                         projectName: "",
                         projectDescription: "",

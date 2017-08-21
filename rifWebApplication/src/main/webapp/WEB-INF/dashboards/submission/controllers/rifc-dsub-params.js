@@ -451,7 +451,11 @@ angular.module("RIF")
                     });
                     modalInstance.result.then(function () {
                         //Change tree icon colour
-                        if ($scope.thisICDselection.length !== 0 & 
+                        
+                        //ParameterStateService.getState().terms
+                         //if ($scope.thisICDselection.length !== 0 & 
+                        
+                        if (ParameterStateService.getState().terms.length !== 0 & 
                                 ParameterStateService.getState().title !== "" &
                                 ParameterStateService.getState().start !== "" & 
                                 ParameterStateService.getState().end !== "" & 

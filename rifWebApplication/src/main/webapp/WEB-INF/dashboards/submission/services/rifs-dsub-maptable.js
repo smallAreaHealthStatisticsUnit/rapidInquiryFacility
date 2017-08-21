@@ -53,7 +53,7 @@ angular.module("RIF")
                     };
                     var areaTableColumnDefs = [
                         {field: 'area_id', enableHiding: false, width: "*"},
-                        {field: 'label', enableHiding: false, width: "*"},
+                        {field: 'label', sort: { direction: 'asc', priority: 0 }, enableHiding: false, width: "*"},
                         {field: 'band', enableHiding: false, width: "*"}
                     ];
 

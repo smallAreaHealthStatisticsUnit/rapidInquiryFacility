@@ -101,9 +101,9 @@ angular.module("RIF")
                         $scope.fractions.push(res.data[i]);
                     }
                     $scope.numerator = $scope.fractions[0];
-                    $scope.denominator = $scope.fractions[0].denominatorTableName;
+                    $scope.denominator = $scope.fractions[0].denominatorTableName;                                    
                     SubmissionStateService.getState().numerator = $scope.numerator;
-                    SubmissionStateService.getState().denominator = $scope.fractions[0];
+                    SubmissionStateService.getState().denominator = $scope.numerator;
                 }
 
                 //sync the denominator
@@ -114,8 +114,7 @@ angular.module("RIF")
                         $scope.denominator = "";
                     }
                     SubmissionStateService.getState().numerator = $scope.numerator;
-                    SubmissionStateService.getState().denominator = $scope.fractions[0];
-
+                    SubmissionStateService.getState().denominator = $scope.numerator;
                     //This will have an impact on investigations year range, so reset investigation parameters
                     ParameterStateService.resetState();
                 };

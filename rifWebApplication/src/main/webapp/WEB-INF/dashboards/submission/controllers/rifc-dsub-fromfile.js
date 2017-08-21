@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -41,6 +41,8 @@ angular.module("RIF")
                     StudyAreaStateService, CompAreaStateService, SubmissionStateService, StatsStateService, ParameterStateService) {
 
                 var rifJob;
+                var studyType = "disease_mapping_study";
+                var studyAreaType = "disease_mapping_study_area";
                 var tmpProjects;
                 var tmpGeography;
                 var tmpGeoLevel;
@@ -73,12 +75,21 @@ angular.module("RIF")
                     if (angular.isUndefined(rifJob) || rifJob === null) {
                         return "Not a valid or recognised RIF job";
                     }
-                    //Expected headers present for RIF study
-                    var expectedHeaders = ['submitted_by', 'job_submission_date', 'project', 'disease_mapping_study', 'calculation_methods', 'rif_output_options'];
+
+                    //JSON headers
                     var thisHeaders = [];
                     for (var i in rifJob) {
                         thisHeaders.push(rifJob[i]);
                     }
+
+                    //Risk analysis OR disease mapping study?
+                    if (thisHeaders.indexOf("risk_analysis_study") !== -1) {
+                        studyType = "risk_analysis_study";
+                        studyAreaType = "risk_analysis_study_area";
+                    }
+
+                    //Expected headers present for RIF study
+                    var expectedHeaders = ['submitted_by', 'job_submission_date', 'project', studyType, 'calculation_methods', 'rif_output_options'];
                     if (expectedHeaders.length !== thisHeaders.length) {
                         return "Not a recognised RIF job, expected headers not found";
                     } else {
@@ -93,9 +104,9 @@ angular.module("RIF")
 
                 //checking if the Health theme exists and matches geography
                 function uploadHealthThemes() {
-                    tmpHealthThemeName = rifJob.disease_mapping_study.investigations.investigation[0].health_theme.name;
-                    tmpHealthThemeDescription = rifJob.disease_mapping_study.investigations.investigation[0].health_theme.description;
-                    var themeErr = user.getHealthThemes(user.currentUser, rifJob.disease_mapping_study.geography.name).then(uploadHandleHealthThemes, fromFileError);
+                    tmpHealthThemeName = rifJob[studyType].investigations.investigation[0].health_theme.name;
+                    tmpHealthThemeDescription = rifJob[studyType].investigations.investigation[0].health_theme.description;
+                    var themeErr = user.getHealthThemes(user.currentUser, rifJob[studyType].geography.name).then(uploadHandleHealthThemes, fromFileError);
 
                     function uploadHandleHealthThemes(res) {
                         var bFound = false;
@@ -116,8 +127,8 @@ angular.module("RIF")
 
                 //Checking if the geography exists in the user database
                 function uploadCheckGeography() {
-                    tmpGeography = rifJob.disease_mapping_study.geography.name;
-                    tmpGeoLevel = rifJob.disease_mapping_study.disease_mapping_study_area.geo_levels.geolevel_select.name;
+                    tmpGeography = rifJob[studyType].geography.name;
+                    tmpGeoLevel = rifJob[studyType][studyAreaType].geo_levels.geolevel_select.name;
                     var bFound = false;
                     for (var i = 0; i < $scope.$parent.geographies.length; i++) {
                         if ($scope.$parent.geographies[i] === tmpGeography) {
@@ -218,7 +229,7 @@ angular.module("RIF")
                 //will need adjusting when rif can handle multiple investigations
                 function uploadInvestigations() {
                     //terms
-                    var inv = rifJob.disease_mapping_study.investigations.investigation;
+                    var inv = rifJob[studyType].investigations.investigation;
                     for (var j = 0; j < inv[0].health_codes.health_code.length; j++) {
                         tmpFullICDselection.push([inv[0].health_codes.health_code[j].code + '-' + inv[0].health_codes.health_code[j].name_space,
                             inv[0].health_codes.health_code[j].description]);
@@ -293,32 +304,32 @@ angular.module("RIF")
                  */
                 function confirmStateChanges() {
                     //general
-                    SubmissionStateService.getState().studyName = rifJob.disease_mapping_study.name;
-                    SubmissionStateService.getState().geography = rifJob.disease_mapping_study.geography.name;
-                    SubmissionStateService.getState().numerator = rifJob.disease_mapping_study.investigations.investigation[0].numerator_denominator_pair.numerator_table_name;
-                    SubmissionStateService.getState().denominator = rifJob.disease_mapping_study.investigations.investigation[0].numerator_denominator_pair.denominator_table_name;
-                    SubmissionStateService.getState().studyDescription = rifJob.disease_mapping_study.description;
-                    SubmissionStateService.getState().healthTheme = rifJob.disease_mapping_study.investigations.investigation[0].health_theme.name;
+                    SubmissionStateService.getState().studyName = rifJob[studyType].name;
+                    SubmissionStateService.getState().geography = rifJob[studyType].geography.name;
+                    SubmissionStateService.getState().numerator = rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.numerator_table_name;
+                    SubmissionStateService.getState().denominator = rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.denominator_table_name;
+                    SubmissionStateService.getState().studyDescription = rifJob[studyType].description;
+                    SubmissionStateService.getState().healthTheme = rifJob[studyType].investigations.investigation[0].health_theme.name;
 
                     //Study area
-                    StudyAreaStateService.getState().selectAt = rifJob.disease_mapping_study.disease_mapping_study_area.geo_levels.geolevel_select.name;
-                    StudyAreaStateService.getState().studyResolution = rifJob.disease_mapping_study.disease_mapping_study_area.geo_levels.geolevel_to_map.name;
-                    StudyAreaStateService.getState().polygonIDs = rifJob.disease_mapping_study.disease_mapping_study_area.map_areas.map_area;
-                    StudyAreaStateService.getState().geography = rifJob.disease_mapping_study.geography.name;
+                    StudyAreaStateService.getState().selectAt = rifJob[studyType][studyAreaType].geo_levels.geolevel_select.name;
+                    StudyAreaStateService.getState().studyResolution = rifJob[studyType][studyAreaType].geo_levels.geolevel_to_map.name;
+                    StudyAreaStateService.getState().polygonIDs = rifJob[studyType][studyAreaType].map_areas.map_area;
+                    StudyAreaStateService.getState().geography = rifJob[studyType].geography.name;
                     if (StudyAreaStateService.getState().polygonIDs.length !== 0) {
                         SubmissionStateService.getState().studyTree = true;
                     }
                     //Comparison area
-                    CompAreaStateService.getState().selectAt = rifJob.disease_mapping_study.comparison_area.geo_levels.geolevel_select.name;
-                    CompAreaStateService.getState().studyResolution = rifJob.disease_mapping_study.comparison_area.geo_levels.geolevel_to_map.name;
-                    CompAreaStateService.getState().polygonIDs = rifJob.disease_mapping_study.comparison_area.map_areas.map_area;
-                    CompAreaStateService.getState().geography = rifJob.disease_mapping_study.geography.name;
+                    CompAreaStateService.getState().selectAt = rifJob[studyType].comparison_area.geo_levels.geolevel_select.name;
+                    CompAreaStateService.getState().studyResolution = rifJob[studyType].comparison_area.geo_levels.geolevel_to_map.name;
+                    CompAreaStateService.getState().polygonIDs = rifJob[studyType].comparison_area.map_areas.map_area;
+                    CompAreaStateService.getState().geography = rifJob[studyType].geography.name;
                     if (CompAreaStateService.getState().polygonIDs.length !== 0) {
                         SubmissionStateService.getState().comparisonTree = true;
                     }
 
                     //Parameters
-                    var inv = rifJob.disease_mapping_study.investigations.investigation;
+                    var inv = rifJob[studyType].investigations.investigation;
                     ParameterStateService.getState().title = inv[0].title;
                     ParameterStateService.getState().start = inv[0].year_range.lower_bound;
                     ParameterStateService.getState().end = inv[0].year_range.upper_bound;
@@ -327,7 +338,7 @@ angular.module("RIF")
                     ParameterStateService.getState().interval = inv[0].years_per_interval;
                     ParameterStateService.getState().sex = inv[0].sex;
                     ParameterStateService.getState().covariate = tmpCovariate;
-                    ParameterStateService.getState().activeHealthTheme = rifJob.disease_mapping_study.investigations.investigation[0].health_theme.name;
+                    ParameterStateService.getState().activeHealthTheme = rifJob[studyType].investigations.investigation[0].health_theme.name;
                     ParameterStateService.getState().terms = tmpFullICDselection;
                     if (tmpFullICDselection.length !== 0) {
                         SubmissionStateService.getState().investigationTree = true;
@@ -356,7 +367,7 @@ angular.module("RIF")
                     };
 
                     $scope.uploadFile = function () {
-                        
+
                         $scope.showSuccess("Starting upload...");
 
                         //check initial file structure
