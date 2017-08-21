@@ -306,7 +306,7 @@ BEGIN
 				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||'        /* No year filter required for investigation '||j::VARCHAR||' */'||E'\n';
 			ELSE
 				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'   AND  c.year BETWEEN '||c5_rec.year_start::VARCHAR||
-					' AND '||c5_rec.year_stop::VARCHAR||||'/* Investigation '||j::VARCHAR||' year filter */'||E'\n';
+					' AND '||c5_rec.year_stop::VARCHAR||'/* Investigation '||j::VARCHAR||' year filter */'||E'\n';
 			END IF;
 			IF c5_rec.genders = 3 THEN
 				sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||E'\t'||'        /* No genders filter required for investigation '||j::VARCHAR||' */'||E'\n';
