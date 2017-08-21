@@ -132,8 +132,7 @@
     opacity: 0.8;
 }
 
-.ui-grid-row:nth-child(odd):hover .ui-grid-cell,
-.ui-grid-row:nth-child(even):hover .ui-grid-cell {
+.ui-grid-row:hover {
     opacity: 0.7;
 }
 
