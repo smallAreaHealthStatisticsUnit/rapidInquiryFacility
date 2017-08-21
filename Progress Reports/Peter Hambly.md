@@ -1513,7 +1513,16 @@ Todo:
   ```
   There are no exceptions in the Java so probably a front end issue processing the above JSON. I could find no other get methods
   that would cause this.
-	
+
+#### 21st to 25th August
+
+* Data loader documentation
+* Data loader testing on SEER data
+* Fix for numerator-denoominator pair. Able to submit study
+  * -20207 Error caused by comparea=1 for state! (fixed by hand; setup needs to be fixed)
+  * Fixed COVARIATE_NAME in rif40_inv_covariates: made same as COVARIATE table. SQL SERVER did not need 
+    changing.
+  
 #### Database TODO list (deferred to September 2017): SQL Server Port
 
 * USA_2014 integration: 

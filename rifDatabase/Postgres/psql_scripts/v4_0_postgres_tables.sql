@@ -371,7 +371,7 @@ ALTER TABLE t_rif40_user_projects ADD CONSTRAINT t_rif40_user_projects_date_ck C
 CREATE TABLE t_rif40_inv_covariates (
 	inv_id integer NOT NULL,
 	study_id integer NOT NULL,
-	covariate_name varchar(20) NOT NULL,
+	covariate_name varchar(30) NOT NULL,
 	username varchar(90) DEFAULT USER,
 	geography varchar(30) NOT NULL,
 	study_geolevel_name varchar(30),
