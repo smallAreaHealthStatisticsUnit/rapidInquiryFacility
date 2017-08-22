@@ -102,7 +102,7 @@ angular.module("RIF")
                     for (var i = 0; i < res.data.length; i++) {
                         $scope.fractions.push(res.data[i]);
                     }
-                    if (SubmissionStateService.getState().numerator.length !== 0) {
+                    if (SubmissionStateService.getState().numerator.length && SubmissionStateService.getState().numerator.length !== 0) {
                         for (var i = 0; i < $scope.fractions.length; i++) {
                             var thisNum = SubmissionStateService.getState().numerator;
                             if ($scope.fractions[i].numeratorTableName === thisNum) {

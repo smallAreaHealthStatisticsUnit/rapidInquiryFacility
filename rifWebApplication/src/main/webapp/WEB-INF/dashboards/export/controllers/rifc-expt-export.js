@@ -58,7 +58,7 @@ angular.module("RIF")
                 //preview map
                 $scope.map = ({
                     "exportmap": {}
-                });        
+                });
                 $scope.exportLevel = ExportStateService.getState().zoomLevel;
                 $scope.geoJSON = {};
                 $scope.studyBounds = new L.LatLngBounds();
@@ -231,6 +231,9 @@ angular.module("RIF")
 
                 //get rows from the database
                 $scope.preview = function (table) {
+                    if (angular.isUndefined($scope.studyID["exportmap"])) {
+                        return;
+                    }
                     if (angular.isUndefined($scope.rows[table][0]) | angular.isUndefined($scope.rows[table][1])) {
                         $scope.showError("Row number cannot be empty");
                         return;
@@ -303,102 +306,107 @@ angular.module("RIF")
 
                     $scope.studyBounds = new L.LatLngBounds();
 
-                    user.getGeographyAndLevelForStudy(user.currentUser, $scope.studyID[mapID].study_id).then(
-                            function (res) {
-                                //Store this study selection
-                                ExportStateService.getState().study['exportmap'] = $scope.studyID['exportmap'];
-                                ExportStateService.getState().area.name = $scope.area.name;
+                    if ($scope.studyID[mapID]) {
 
-                                thisGeography = res.data[0][0];
-                                thisResolution = res.data[0][1];
 
-                                user.getStudySubmission(user.currentUser, $scope.studyID["exportmap"].study_id)
-                                        .then(
-                                                function (res) {
-                                                    areaIDs.length = 0;
-                                                    //TODO: will cause issues for a risk analysis study
-                                                    //This naming does not seem very consistent or logical - middleware issue                                                          
-                                                    var whyDidYouDoItLikeThatKevin = "disease_mapping_study_area";
-                                                    if ($scope.area.name !== "study") {
-                                                        whyDidYouDoItLikeThatKevin = "comparison_area";
-                                                    }
-                                                    var tmp = res.data.rif_job_submission.disease_mapping_study[whyDidYouDoItLikeThatKevin].map_areas.map_area;
-                                                    for (var i = 0; i < tmp.length; i++) {
-                                                        areaIDs.push(tmp[i].id);
-                                                    }
-                                                })
-                                        .then(
-                                                function () {
-                                                    var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, thisResolution);
-                                                    $scope.geoJSON = new L.topoJsonGridLayer(topojsonURL, {
-                                                        attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
-                                                        layers: {
-                                                            default: {
-                                                                renderer: L.canvas(),
-                                                                style: function (feature) {
-                                                                    return({
-                                                                        weight: 1,
-                                                                        opacity: 1,
-                                                                        color: "gray",
-                                                                        fillColor: "transparent"
-                                                                    });
-                                                                },
-                                                                onEachFeature: function (feature, layer) {
-                                                                    if (areaIDs.indexOf(layer.feature.properties.area_id) !== -1) {
-                                                                        layer.bindPopup(feature.properties.area_id, {
-                                                                            closeButton: false,
-                                                                            autoPan: false
+
+                        user.getGeographyAndLevelForStudy(user.currentUser, $scope.studyID[mapID].study_id).then(
+                                function (res) {
+                                    //Store this study selection
+                                    ExportStateService.getState().study['exportmap'] = $scope.studyID['exportmap'];
+                                    ExportStateService.getState().area.name = $scope.area.name;
+
+                                    thisGeography = res.data[0][0];
+                                    thisResolution = res.data[0][1];
+
+                                    user.getStudySubmission(user.currentUser, $scope.studyID["exportmap"].study_id)
+                                            .then(
+                                                    function (res) {
+                                                        areaIDs.length = 0;
+                                                        //TODO: will cause issues for a risk analysis study
+                                                        //This naming does not seem very consistent or logical - middleware issue                                                          
+                                                        var whyDidYouDoItLikeThatKevin = "disease_mapping_study_area";
+                                                        if ($scope.area.name !== "study") {
+                                                            whyDidYouDoItLikeThatKevin = "comparison_area";
+                                                        }
+                                                        var tmp = res.data.rif_job_submission.disease_mapping_study[whyDidYouDoItLikeThatKevin].map_areas.map_area;
+                                                        for (var i = 0; i < tmp.length; i++) {
+                                                            areaIDs.push(tmp[i].id);
+                                                        }
+                                                    })
+                                            .then(
+                                                    function () {
+                                                        var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, thisResolution);
+                                                        $scope.geoJSON = new L.topoJsonGridLayer(topojsonURL, {
+                                                            attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
+                                                            layers: {
+                                                                default: {
+                                                                    renderer: L.canvas(),
+                                                                    style: function (feature) {
+                                                                        return({
+                                                                            weight: 1,
+                                                                            opacity: 1,
+                                                                            color: "gray",
+                                                                            fillColor: "transparent"
                                                                         });
-                                                                        layer.on('mouseover', function () {
-                                                                            layer.openPopup();
-                                                                            this.setStyle({
-                                                                                fillOpacity: function () {
-                                                                                    return($scope.transparency[mapID] - 0.3 > 0 ? $scope.transparency[mapID] - 0.3 : 0.1);
-                                                                                }()
+                                                                    },
+                                                                    onEachFeature: function (feature, layer) {
+                                                                        if (areaIDs.indexOf(layer.feature.properties.area_id) !== -1) {
+                                                                            layer.bindPopup(feature.properties.area_id, {
+                                                                                closeButton: false,
+                                                                                autoPan: false
                                                                             });
+                                                                            layer.on('mouseover', function () {
+                                                                                layer.openPopup();
+                                                                                this.setStyle({
+                                                                                    fillOpacity: function () {
+                                                                                        return($scope.transparency[mapID] - 0.3 > 0 ? $scope.transparency[mapID] - 0.3 : 0.1);
+                                                                                    }()
+                                                                                });
 
-                                                                        });
-                                                                        layer.on('mouseout', function () {
-                                                                            layer.closePopup();
-                                                                            $scope.geoJSON._geojsons.default.eachLayer($scope.handleLayer);
-                                                                        });
+                                                                            });
+                                                                            layer.on('mouseout', function () {
+                                                                                layer.closePopup();
+                                                                                $scope.geoJSON._geojsons.default.eachLayer($scope.handleLayer);
+                                                                            });
+                                                                        }
                                                                     }
                                                                 }
                                                             }
-                                                        }
-                                                    });
-                                                    $scope.geoJSON.on('load', function (e) {
-                                                        $scope.geoJSON._geojsons.default.eachLayer($scope.handleLayer);
-                                                        if (bBB) {
-                                                            if (ExportStateService.getState().initial) {
-                                                                if (ExportStateService.getState().center['exportmap'].lat === 0) {
-                                                                    $scope.map['exportmap'].fitBounds($scope.studyBounds);
+                                                        });
+                                                        $scope.geoJSON.on('load', function (e) {
+                                                            $scope.geoJSON._geojsons.default.eachLayer($scope.handleLayer);
+                                                            if (bBB) {
+                                                                if (ExportStateService.getState().initial) {
+                                                                    if (ExportStateService.getState().center['exportmap'].lat === 0) {
+                                                                        $scope.map['exportmap'].fitBounds($scope.studyBounds);
+                                                                    } else {
+                                                                        var centre = ExportStateService.getState().center['exportmap'];
+                                                                        $scope.map['exportmap'].setView([centre.lat, centre.lng], centre.zoom);
+                                                                    }
                                                                 } else {
-                                                                    var centre = ExportStateService.getState().center['exportmap'];
-                                                                    $scope.map['exportmap'].setView([centre.lat, centre.lng], centre.zoom);
+                                                                    $scope.map['exportmap'].fitBounds($scope.studyBounds);
                                                                 }
-                                                            } else {
-                                                                $scope.map['exportmap'].fitBounds($scope.studyBounds);
+                                                                bBB = false;
+                                                                ExportStateService.getState().initial = false;
                                                             }
-                                                            bBB = false;
-                                                            ExportStateService.getState().initial = false;
-                                                        }
-                                                    });
-                                                    $scope.map[mapID].addLayer($scope.geoJSON);
-                                                    $scope.preview('extract');
-                                                    $scope.preview('results');
+                                                        });
+                                                        $scope.map[mapID].addLayer($scope.geoJSON);
+                                                        $scope.preview('extract');
+                                                        $scope.preview('results');
 
-                                                    //pan events                            
-                                                    $scope.map[mapID].on('zoomend', function (e) {
-                                                        ExportStateService.getState().center[mapID].zoom = $scope.map[mapID].getZoom();
+                                                        //pan events                            
+                                                        $scope.map[mapID].on('zoomend', function (e) {
+                                                            ExportStateService.getState().center[mapID].zoom = $scope.map[mapID].getZoom();
+                                                        });
+                                                        $scope.map[mapID].on('moveend', function (e) {
+                                                            ExportStateService.getState().center[mapID].lng = $scope.map[mapID].getCenter().lng;
+                                                            ExportStateService.getState().center[mapID].lat = $scope.map[mapID].getCenter().lat;
+                                                        });
                                                     });
-                                                    $scope.map[mapID].on('moveend', function (e) {
-                                                        ExportStateService.getState().center[mapID].lng = $scope.map[mapID].getCenter().lng;
-                                                        ExportStateService.getState().center[mapID].lat = $scope.map[mapID].getCenter().lat;
-                                                    });
-                                                });
-                            }
-                    );
+                                }
+                        );
+                    }
                 };
 
                 $scope.handleLayer = function (layer) {
