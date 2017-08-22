@@ -732,7 +732,7 @@ performSmoothingActivity <- function() {
           #          colNums<-c(colNums,whichIndex[1])
           
           if (length(whichIndex) == 0) {
-            print(paste0("Area: ", AdjRowset$area_id[i], " Invalid adjacent Area: "  ,neighbours[[1]][j]))
+            print(paste0("[Ignored] Area: ", AdjRowset$area_id[i], " Invalid adjacent Area: "  ,neighbours[[1]][j]))
             # Print a message, but ignore the nieghbours which shouldn't be in the list
           }
           else {
@@ -1199,7 +1199,7 @@ updateMapTableFromSmoothedResultsTable <- function() {
                     exitValue <<- 1
                   },
                   error=function(e) {
-                    print(paste("ERROR IN QUERY! SQL> ", updateMapTableSQLQuery, "; error: ", odbcGetErrMsg(connDB)))
+                    print(paste("CATCH ERROR IN QUERY! SQL> ", updateMapTableSQLQuery, "; error: ", odbcGetErrMsg(connDB)))
                     exitValue <<- 1
                   }) 
   if (res != 1) {
@@ -1238,8 +1238,9 @@ runRSmoothingFunctions <- function() {
              print(paste("ERROR CONNECTING! ", geterrmessage()))
              exitValue <<- 1
            })
+  odbcSetAutoCommit(connDB, autoCommit = FALSE)
   print(odbcGetInfo(connDB))
-  
+
   #odbcSetAutoCommit(connDB, autoCommit=FALSE)
   print("Performing basic stats and smoothing")
   result <- performSmoothingActivity()
@@ -1247,14 +1248,17 @@ runRSmoothingFunctions <- function() {
   if (exitValue == 0) {
     saveDataFrameToDatabaseTable(result)
     updateMapTableFromSmoothedResultsTable()
+    print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
+    sqlDrop(connDB, temporarySmoothedResultsTableName)
   }
 
-  print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
-  sqlDrop(connDB, temporarySmoothedResultsTableName)
+
+
   
   print("Closing database connection")
   #print(paste0("head(RESULT)==", head(result), "=="))
   
+  odbcEndTran(connDB, commit = TRUE)
   odbcClose(connDB)
   return(exitValue)
 }
