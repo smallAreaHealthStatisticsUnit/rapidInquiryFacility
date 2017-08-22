@@ -339,6 +339,10 @@ angular.module("RIF")
 
                                 //Get overall layer properties
                                 user.getTileMakerTilesAttributes(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
+                                    if (angular.isUndefined(res.data.objects)) {
+                                        alertScope.showError("Could not get district polygons from database");
+                                        return;
+                                    }                                  
                                     //populate the table
                                     for (var i = 0; i < res.data.objects.collection.geometries.length; i++) {
                                         var thisPoly = res.data.objects.collection.geometries[i];
@@ -486,7 +490,7 @@ angular.module("RIF")
                             for (var i = 0; i < $scope.gridOptions.data.length; i++) {
                                 $scope.gridOptions.data[i].band = 0;
                                 for (var j = 0; j < $scope.selectedPolygon.length; j++) {
-                                    if ($scope.gridOptions.data[i].label === $scope.selectedPolygon[j].label) {
+                                    if ($scope.gridOptions.data[i].area_id === $scope.selectedPolygon[j].id) {
                                         $scope.gridOptions.data[i].band = $scope.selectedPolygon[j].band;
                                     }
                                 }
