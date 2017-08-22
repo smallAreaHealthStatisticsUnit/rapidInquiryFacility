@@ -382,7 +382,7 @@ performSmoothingActivity <- function() {
     concADJ=apply(ADJ,MARGIN=1,FUN=conc)
     
     #ADJcomb is a vector with all encoutered adjustement stratas, m the number of stratas
-    ADJcomb=unique(c(concADJ),)
+    ADJcomb=unique(c(concADJ))
     ADJcomb=ADJcomb[order(ADJcomb)]
     m=length(ADJcomb)
     
@@ -1252,9 +1252,6 @@ runRSmoothingFunctions <- function() {
     sqlDrop(connDB, temporarySmoothedResultsTableName)
   }
 
-
-
-  
   print("Closing database connection")
   #print(paste0("head(RESULT)==", head(result), "=="))
   
