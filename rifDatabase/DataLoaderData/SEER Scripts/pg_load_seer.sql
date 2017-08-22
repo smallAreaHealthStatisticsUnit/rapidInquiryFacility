@@ -59,8 +59,8 @@
 
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS saipe_state_county_yr1989_2015_fixed_length;
-DROP TABLE IF EXISTS saipe_state_county_yr1989_2015;
+DROP TABLE IF EXISTS :USER.saipe_state_county_yr1989_2015_fixed_length;
+DROP TABLE IF EXISTS :USER.saipe_state_county_yr1989_2015;
 
 --
 -- Load est*all.txt as a fixed length record
@@ -219,7 +219,7 @@ SELECT * FROM saipe_state_county_yr1989_2015 LIMIT 10;
 --	   median_household_income
 --
 
-DROP TABLE IF EXISTS saipe_state_poverty_1989_2015;  
+DROP TABLE IF EXISTS :USER.saipe_state_poverty_1989_2015;  
 CREATE TABLE saipe_state_poverty_1989_2015
 AS  
 WITH a AS (
@@ -300,7 +300,7 @@ CLUSTER saipe_state_poverty_1989_2015 USING saipe_state_poverty_1989_2015_pk;
 \copy saipe_state_poverty_1989_2015 TO 'saipe_state_poverty_1989_2015.csv' WITH CSV HEADER;
 \dS+ saipe_state_poverty_1989_2015
 
-DROP TABLE IF EXISTS saipe_county_poverty_1989_2015;  
+DROP TABLE IF EXISTS :USER.saipe_county_poverty_1989_2015;  
 CREATE TABLE saipe_county_poverty_1989_2015
 AS  
 WITH a AS (
@@ -385,8 +385,8 @@ CLUSTER saipe_county_poverty_1989_2015 USING saipe_county_poverty_1989_2015_pk;
 \copy saipe_county_poverty_1989_2015 TO 'saipe_county_poverty_1989_2015.csv' WITH CSV HEADER;
 \dS+ saipe_county_poverty_1989_2015
 
-DROP TABLE IF EXISTS seer9_yr1973_2013_fixed_length;
-DROP TABLE IF EXISTS seer9_yr1973_2013;
+DROP TABLE IF EXISTS :USER.seer9_yr1973_2013_fixed_length;
+DROP TABLE IF EXISTS :USER.seer9_yr1973_2013;
 
 --
 -- Load yr1973_2013.seer9.txt as a fixed length record
@@ -504,13 +504,15 @@ Code			Description (first year of data)
 --   900 series to represent county/independent city combinations in Virginia.
 -- * Use icdot10v (ICD 10 site code - recoded from ICD-O-2 to 10) as the ICD field
 --
-DROP TABLE IF EXISTS seer_cancer;  
+DROP TABLE IF EXISTS :USER.seer_cancer;  
 CREATE TABLE seer_cancer
 AS  
 SELECT a.year_dx AS year, 
 	   'US'::Text AS cb_2014_us_nation_5m,
        d.statens AS cb_2014_us_state_500k, 
        COALESCE(c.countyns, 'UNKNOWN: '||a.county_fips_code) AS cb_2014_us_county_500k,
+	   a.sex,
+	   a.age_dx,
 	   (a.sex*100)+
 			CASE WHEN a.age_dx = 999 THEN 99
 			ELSE                     b.offset END AS age_sex_group, 
@@ -536,6 +538,8 @@ COMMENT ON COLUMN seer_cancer.cb_2014_us_nation_5m IS 'United States to county l
 COMMENT ON COLUMN seer_cancer.cb_2014_us_state_500k IS 'State geographic Names Information System (GNIS) code';
 COMMENT ON COLUMN seer_cancer.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
 COMMENT ON COLUMN seer_cancer.age_sex_group IS 'RIF age_sex_group 1 (21 bands)';
+COMMENT ON COLUMN seer_cancer.age_dx IS 'Age';
+COMMENT ON COLUMN seer_cancer.sex IS 'Sex';
 COMMENT ON COLUMN seer_cancer.icdot10v IS 'ICD 10 site code - recoded from ICD-O-2 to 10';
 COMMENT ON COLUMN seer_cancer.pubcsnum IS 'Patient ID';
 COMMENT ON COLUMN seer_cancer.seq_num IS 'Sequence number';
@@ -595,8 +599,8 @@ CREATE INDEX seer_cancer_reg ON seer_cancer(reg);
 --END;	
 --\q
   
-DROP TABLE IF EXISTS seer_wbo_single_ages_fixed_length;
-DROP TABLE IF EXISTS seer_wbo_single_ages;
+DROP TABLE IF EXISTS :USER.seer_wbo_single_ages_fixed_length;
+DROP TABLE IF EXISTS :USER.seer_wbo_single_ages;
 
 --
 -- Load singleages.txt as a fixed length record
@@ -679,7 +683,7 @@ SELECT SUBSTRING(record_value FROM 1 FOR 4)::INTEGER AS year,
 -- * Convert unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g.
 --   900 series to represent county/independent city combinations in Virginia.
 --
-DROP TABLE IF EXISTS seer_population;  
+DROP TABLE IF EXISTS :USER.seer_population;  
 CREATE TABLE seer_population
 AS  
 SELECT a.year, 
@@ -687,12 +691,14 @@ SELECT a.year,
        d.statens AS cb_2014_us_state_500k, 
        COALESCE(c.countyns, 'UNKNOWN: '||a.county_fips_code) AS cb_2014_us_county_500k,
 	   (a.sex*100)+b.offset AS age_sex_group, 
+	   a.sex,
+	   a.age,
        SUM(a.population) AS population
   FROM seer_wbo_single_ages a
 		LEFT OUTER JOIN rif40_age_groups b ON (b.age_group_id = 1 AND a.age BETWEEN b.low_age AND b.high_age)
 		LEFT OUTER JOIN cb_2014_us_county_500k c ON (a.state_fips_code = c.statefp AND a.county_fips_code = c.countyfp)
 		LEFT OUTER JOIN cb_2014_us_state_500k d ON (a.state_fips_code = d.statefp)
- GROUP BY a.year, d.statens, COALESCE(c.countyns, 'UNKNOWN: '||a.county_fips_code), a.sex, b.offset
+ GROUP BY a.year, d.statens, COALESCE(c.countyns, 'UNKNOWN: '||a.county_fips_code), a.sex, b.offset, a.age
  ORDER BY 1,2,3,4,5;
  
 COMMENT ON TABLE seer_population IS 'SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States in total';
@@ -702,6 +708,8 @@ COMMENT ON COLUMN seer_population.cb_2014_us_state_500k IS 'State geographic Nam
 COMMENT ON COLUMN seer_population.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
 COMMENT ON COLUMN seer_population.age_sex_group IS 'RIF age_sex_group 1 (21 bands)';
 COMMENT ON COLUMN seer_population.population IS 'Population';
+COMMENT ON COLUMN seer_population.age IS 'Age';
+COMMENT ON COLUMN seer_population.sex IS 'Sex';
 
 --
 -- Check rowcount
@@ -718,16 +726,16 @@ BEGIN
 	FETCH c1 INTO c1_rec;
 	CLOSE c1;
 --
-	IF c1_rec.total = 354326 THEN
+	IF c1_rec.total = 1384190 THEN
 		RAISE INFO 'Table: seer_population has % rows', c1_rec.total;
 	ELSE
-		RAISE EXCEPTION 'Table: seer_population has % rows; expecting 354326', c1_rec.total;
+		RAISE EXCEPTION 'Table: seer_population has % rows; expecting 1384190', c1_rec.total;
 	END IF;
 END;
 $$;
  
 ALTER TABLE seer_population ADD CONSTRAINT seer_population_pk 
-	PRIMARY KEY (year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group);	
+	PRIMARY KEY (year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age, sex);	
 ALTER TABLE seer_population ADD CONSTRAINT seer_population_asg_ck 
 	CHECK (age_sex_group BETWEEN 100 AND 121 OR age_sex_group BETWEEN 200 AND 221);
 
@@ -750,7 +758,7 @@ CREATE INDEX seer_population_age_sex_group ON seer_population(age_sex_group);
 -- * Convert unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g.
 --   900 series to represent county/independent city combinations in Virginia.
 --
-DROP TABLE IF EXISTS seer_wbo_ethnicity; 
+DROP TABLE IF EXISTS :USER.seer_wbo_ethnicity; 
 CREATE TABLE seer_wbo_ethnicity
 AS  
 WITH a AS (
@@ -798,7 +806,7 @@ CREATE INDEX seer_wbo_ethnicity_ethnicity ON seer_wbo_ethnicity(ethnicity);
 \copy seer_wbo_ethnicity TO 'seer_wbo_ethnicity.csv' WITH CSV HEADER;
 \dS+ seer_wbo_ethnicity
 
-DROP TABLE IF EXISTS seer_wbo_ethnicity_covariates; 
+DROP TABLE IF EXISTS :USER.seer_wbo_ethnicity_covariates; 
 CREATE TABLE seer_wbo_ethnicity_covariates
 AS
 WITH a AS (

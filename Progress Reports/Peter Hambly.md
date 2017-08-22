@@ -1519,9 +1519,14 @@ Todo:
 * Data loader documentation
 * Data loader testing on SEER data
 * Fix for numerator-denoominator pair. Able to submit study
+  * Fix for default study/comparison area
   * -20207 Error caused by comparea=1 for state! (fixed by hand; setup needs to be fixed)
   * Fixed COVARIATE_NAME in rif40_inv_covariates: made same as COVARIATE table. SQL SERVER did not need 
     changing.
+  * Need to change the centroid code to use ST_Centroid rather than the Turf library. i.e. Computes the geometric
+    center of a geometry, or equivalently, the center of mass of the geometry as a POINT. Turf takes one or more 
+	features and calculates the centroid using the mean of all vertices. This causes areas with a mix of straight
+    and wiggly boundaries to have a centroid baised toward the wiggly.	
   
 #### Database TODO list (deferred to September 2017): SQL Server Port
 

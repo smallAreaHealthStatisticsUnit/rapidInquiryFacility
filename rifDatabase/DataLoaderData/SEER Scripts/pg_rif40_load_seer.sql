@@ -167,6 +167,8 @@ CREATE TABLE rif_data.seer_cancer
   cb_2014_us_nation_5m text, -- United States to county level including territories
   cb_2014_us_state_500k text NOT NULL, -- State geographic Names Information System (GNIS) code
   cb_2014_us_county_500k text NOT NULL, -- County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.
+  sex INTEGER,
+  age INTEGER,
   age_sex_group integer NOT NULL, -- RIF age_sex_group 1 (21 bands)
   icdot10v text, -- ICD 10 site code - recoded from ICD-O-2 to 10
   pubcsnum integer NOT NULL, -- Patient ID
@@ -199,6 +201,8 @@ COMMENT ON COLUMN rif_data.seer_cancer.rac_recy IS 'Race recode Y (W, B, AI, API
 COMMENT ON COLUMN rif_data.seer_cancer.origrecb IS 'Origin Recode NHIA (HISPANIC, NON-HISP)';
 COMMENT ON COLUMN rif_data.seer_cancer.codpub IS 'Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html)';
 COMMENT ON COLUMN rif_data.seer_cancer.reg IS 'SEER registry (minus 1500 so same as population file)';
+COMMENT ON COLUMN rif_data.seer_cancer.age IS 'Age';
+COMMENT ON COLUMN rif_data.seer_cancer.sex IS 'Sex';
 
 --
 -- Load
@@ -324,6 +328,19 @@ FROM rif_data.seer_cancer;
 --
 GRANT SELECT ON rif_data.seer_cancer TO seer_user;
   
+DROP TABLE IF EXISTS rif_data.seer_population_tmp;
+CREATE TABLE rif_data.seer_population_tmp
+(
+  year integer NOT NULL, -- Year
+  cb_2014_us_nation_5m text NOT NULL, -- United States to county level including territories
+  cb_2014_us_state_500k text NOT NULL, -- State geographic Names Information System (GNIS) code
+  cb_2014_us_county_500k text NOT NULL, -- County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.
+  age_sex_group integer NOT NULL, -- RIF age_sex_group 1 (21 bands)
+  sex integer NOT NULL, -- sex
+  age integer NOT NULL, -- age
+  population numeric -- Population
+);
+
 --
 -- Create SEER_POPULATION numerator table
 --
@@ -350,7 +367,15 @@ COMMENT ON COLUMN rif_data.seer_population.population IS 'Population';
 --
 -- Load
 --
-\copy rif_data.seer_population FROM 'seer_population.csv' WITH CSV HEADER;
+\copy rif_data.seer_population_tmp FROM 'seer_population.csv' WITH CSV HEADER;
+
+INSERT INTO rif_data.seer_population (year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group, population)
+SELECT year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group, SUM(population) AS population
+  FROM rif_data.seer_population_tmp
+ GROUP BY year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group
+ ORDER BY year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group;
+
+DROP TABLE IF EXISTS rif_data.seer_population_tmp;
 
 --
 -- Check rowcount
@@ -843,6 +868,13 @@ COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_0_17_qu
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_white_quintile IS '% White quintile (1=least white, 5=most)'; 
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_black_quintile IS '% Black quintile (1=least black, 5=most)';
+ 
+
+--
+-- Grant
+-- * The role SEER_USER needs to be created by an administrator
+--
+GRANT SELECT ON rif_data.cov_cb_2014_us_county_500k TO seer_user;
  
 -- Table: rif_data.cov_cb_2014_us_state_500k
 

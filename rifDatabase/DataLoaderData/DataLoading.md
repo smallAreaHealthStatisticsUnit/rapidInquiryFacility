@@ -154,7 +154,7 @@ The folowing are known issues with the RIF data loader.
 * The properties file RIFDataLoaderToolStartupProperties.properties used is the hard coded one at compile time.
   Needs to be set to read this file from the current directory. This means the soujrce has to be edited to change
   the database type and connection settings. The current default is localhost and Postgres.
-  
+* Numeric total fields to be supported  
   
 Peter Hambly
 17th August 2017
