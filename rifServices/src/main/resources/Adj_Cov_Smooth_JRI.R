@@ -1276,16 +1276,9 @@ runRSmoothingFunctions <- function() {
   result <- performSmoothingActivity()
   
   if (exitValue == 0) {
-    
-    ######## TODO: CASTING AREA_ID
-    print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1])))
-    
     if (typeof(result$area_id[1]) == "integer") {
       result$area_id <- sapply(result$area_id, as.character)
-		  print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1])))
     }
-    ########
-
     saveDataFrameToDatabaseTable(result)
     updateMapTableFromSmoothedResultsTable() # may set exitValue
   }
