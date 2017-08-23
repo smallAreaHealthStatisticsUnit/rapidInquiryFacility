@@ -1283,7 +1283,7 @@ runRSmoothingFunctions <- function() {
     print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
     sqlDrop(connDB, temporarySmoothedResultsTableName)
   }
- #
+ # Dummy change to check conflict is resolved
  print("Closing database connection")
   #print(paste0("head(RESULT)==", head(result), "=="))
   
