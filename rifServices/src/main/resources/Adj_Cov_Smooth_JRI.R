@@ -835,10 +835,10 @@ performSmoothingActivity <- function() {
       # the line above used to work until this code was moved into a function, which breats the get() call
       # replaced with the explicit lines below
       result = c()
-      if (adj==FALSE){
-        result=inla(formula, family='poisson', E=EXP_UNADJ, data=data[whichrows,])
-      }else{
-        result=inla(formula, family='poisson', E=EXP_ADJ, data=data[whichrows,])
+      if (adj==FALSE) {
+        result=inla(formula, family='poisson', E=EXP_UNADJ, data=data[whichrows,], verbose = TRUE)
+      } else {
+        result=inla(formula, family='poisson', E=EXP_ADJ, data=data[whichrows,], verbose = TRUE)
       }
       
       # store the results the dataframe
