@@ -505,6 +505,8 @@ Code			Description (first year of data)
 -- * Use icdot10v (ICD 10 site code - recoded from ICD-O-2 to 10) as the ICD field
 --
 DROP TABLE IF EXISTS :USER.seer_cancer;  
+DROP VIEW IF EXISTS :USER.dataloader_seer_cancer;
+
 CREATE TABLE seer_cancer
 AS  
 SELECT a.year_dx AS year, 
@@ -583,6 +585,49 @@ ALTER TABLE seer_cancer ADD CONSTRAINT seer_cancer_asg_ck
 	
 ALTER TABLE seer_cancer ALTER COLUMN age_sex_group SET NOT NULL;
 
+CREATE VIEW dataloader_seer_cancer
+AS
+SELECT year, 
+	   cb_2014_us_nation_5m,
+       cb_2014_us_state_500k, 
+       cb_2014_us_county_500k,
+	   sex,
+	   age_dx,
+	   age_sex_group, 
+	   icdot10v,		/* ICD 10 site code - recoded from ICD-O-2 to 10 */
+	   pubcsnum,		/* Patient ID */
+	   seq_num,		/* Sequence number */
+       histo3v,		/* Histologic Type ICD-O-3 */
+       beho3v,		/* Behavior code ICD-O-3 */
+       rac_reca,		/* Race recode A (WHITE, BLACK, OTHER) */
+       rac_recy,		/* Race recode Y (W, B, AI, API) */	   
+	   origrecb,		/* Origin Recode NHIA (HISPANIC, NON-HISP) */
+	   codpub,	  	/* Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html) */
+       reg,
+	   COUNT(reg) AS total
+  FROM seer_cancer
+ GROUP BY year, 
+	   cb_2014_us_nation_5m,
+       cb_2014_us_state_500k, 
+       cb_2014_us_county_500k,
+	   sex,
+	   age_dx,
+	   age_sex_group, 
+	   icdot10v,		/* ICD 10 site code - recoded from ICD-O-2 to 10 */
+	   pubcsnum,		/* Patient ID */
+	   seq_num,		/* Sequence number */
+       histo3v,		/* Histologic Type ICD-O-3 */
+       beho3v,		/* Behavior code ICD-O-3 */
+       rac_reca,		/* Race recode A (WHITE, BLACK, OTHER) */
+       rac_recy,		/* Race recode Y (W, B, AI, API) */	   
+	   origrecb,		/* Origin Recode NHIA (HISPANIC, NON-HISP) */
+	   codpub,	  	/* Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html) */
+       reg
+ ORDER BY pubcsnum, seq_num;
+
+SELECT * FROM dataloader_seer_cancer LIMIT 10;
+
+\copy (SELECT * FROM dataloader_seer_cancer) TO 'dataloader_seer_cancer.csv' WITH CSV HEADER;
 \copy seer_cancer TO 'seer_cancer.csv' WITH CSV HEADER;
 \dS+ seer_cancer
  
