@@ -1222,16 +1222,16 @@ updateMapTableFromSmoothedResultsTable <- function() {
  #  print(updateMapTableSQLQuery)
 		print(paste0("Updated map table: ", mapTableName))
   }
-  else if (res == -1) {
+  else if (res == -1) { # This can be no rows updated!
     print(paste("SQL ERROR IN QUERY! SQL> ", updateMapTableSQLQuery,  
 		"; error: ", odbcGetErrMsg(connDB)))
     exitValue <<- 1
   }	
-  else if (res == -2) {
-    print(paste("NO ROWS UPDATED BY QUERY! SQL> ", updateMapTableSQLQuery,
-		"; error: ", odbcGetErrMsg(connDB)))
-    exitValue <<- 1
-  }	
+#  else if (res == -2) {
+#    print(paste("NO ROWS UPDATED BY QUERY! SQL> ", updateMapTableSQLQuery,
+#		"; error: ", odbcGetErrMsg(connDB)))
+#    exitValue <<- 1
+#  }	
   else {
     print(paste("UNKNOWN ERROR IN QUERY! SQL> ", updateMapTableSQLQuery,  
 		"; res: ", res,
@@ -1282,6 +1282,7 @@ runRSmoothingFunctions <- function() {
     
     if (typeof(result$area_id[1]) == "integer") {
       result$area_id <- as.character(result$area_id)
+		print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1])))
     }
     ########
 
