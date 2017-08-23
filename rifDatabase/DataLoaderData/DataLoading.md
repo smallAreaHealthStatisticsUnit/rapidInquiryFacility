@@ -97,7 +97,7 @@ It is planned to remove the following restrictions progressively in future relea
   
 The data loader tool in its current prototype form is severly limited in its ability to transform data by:
 
-* Aggregation
+* Aggregation of data. The data loader tool requires aggregate data
 * Re-gecoding data
 * Performing complex cleaning and remapping of data (e.g. chosing between provisiomnal and final causes of death)
 
@@ -155,6 +155,8 @@ The folowing are known issues with the RIF data loader.
   Needs to be set to read this file from the current directory. This means the soujrce has to be edited to change
   the database type and connection settings. The current default is localhost and Postgres.
 * Numeric total fields to be supported  
+* Numerators without a total field needs to be supported; exception is not handled correctly. Data loader
+  tol only support aggregate data.
   
 Peter Hambly
 17th August 2017

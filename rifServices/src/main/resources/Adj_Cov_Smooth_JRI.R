@@ -1129,6 +1129,19 @@ generateTableIndexSQLQuery <- function(tableName, columnName) {
 ##================================================================================
 updateMapTableFromSmoothedResultsTable <- function() {
   
+##================================================================================
+##
+## R reads the area_id and auto casts into to a integer. This causes the UPDATE to 
+## do not rows which in turn raises an Cound not SQLEXecDireect error
+##
+## We need to detect if the frame area)id is an integer and then add a cast
+## to the Postgres/SQL Server versions
+##
+## Postgres: 	n.area_id::INTEGER
+## SQL Server: 	CAST(b.area_id AS INTEGER)
+##
+##================================================================================
+
   if (db_driver_prefix == "jdbc:postgresql") {	
     updateMapTableSQLQuery <- paste0(
       "UPDATE ", mapTableName, " a ",
@@ -1199,15 +1212,31 @@ updateMapTableFromSmoothedResultsTable <- function() {
                     exitValue <<- 1
                   },
                   error=function(e) {
-                    print(paste("CATCH ERROR IN QUERY! SQL> ", updateMapTableSQLQuery, "; error: ", odbcGetErrMsg(connDB)))
+                    print(paste("CATCH ERROR IN QUERY! SQL> ", updateMapTableSQLQuery, 
+						"; error: ", e,
+						"; ODBC error: ", odbcGetErrMsg(connDB)))
                     exitValue <<- 1
                   }) 
-  if (res != 1) {
-    print(paste("ERROR IN QUERY! SQL> ", updateMapTableSQLQuery, "; error: ", odbcGetErrMsg(connDB)))
+  if (res == 1) {
+ #  print(updateMapTableSQLQuery)
+		print(paste0("Updated map table: ", mapTableName))
+  }
+  else if (res == -1) {
+    print(paste("SQL ERROR IN QUERY! SQL> ", updateMapTableSQLQuery,  
+		"; error: ", odbcGetErrMsg(connDB)))
     exitValue <<- 1
   }	
-  #  print(updateMapTableSQLQuery)
-  print(paste0("Updated map table: ", mapTableName))
+  else if (res == -2) {
+    print(paste("NO ROWS UPDATED BY QUERY! SQL> ", updateMapTableSQLQuery,
+		"; error: ", odbcGetErrMsg(connDB)))
+    exitValue <<- 1
+  }	
+  else {
+    print(paste("UNKNOWN ERROR IN QUERY! SQL> ", updateMapTableSQLQuery,  
+		"; res: ", res,
+		"; error: ", odbcGetErrMsg(connDB)))
+    exitValue <<- 1
+  }	  
 }
 
 #make and ODBC connection
@@ -1247,14 +1276,14 @@ runRSmoothingFunctions <- function() {
   
   if (exitValue == 0) {
     saveDataFrameToDatabaseTable(result)
-    updateMapTableFromSmoothedResultsTable()
+    updateMapTableFromSmoothedResultsTable() # may set exitValue
+  }
+	
+  if (exitValue == 0) {
     print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
     sqlDrop(connDB, temporarySmoothedResultsTableName)
   }
-
-
-
-  
+ 
   print("Closing database connection")
   #print(paste0("head(RESULT)==", head(result), "=="))
   
