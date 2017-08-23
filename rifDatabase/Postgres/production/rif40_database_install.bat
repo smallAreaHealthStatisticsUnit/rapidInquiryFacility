@@ -127,7 +127,9 @@ IF EXIST %PGPASSWORDFILE% (
 	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:%NEWUSER%:" %PGPASSWORDFILE%') DO (
 	  SET NEWPW=%%F
 	)
-) 
+)
+ELSE (
+)
 
 REM
 REM Otherwise ask the user
@@ -190,16 +192,25 @@ REM
 			ECHO Unable to copy pgpass.conf to %PGPASSFILE%
 		)
 	)
-	CALL powershell -ExecutionPolicy ByPass -file run.ps1 pg_restore.rpt "%CD%" ^
-		pg_restore -d %NEWDB% -U postgres sahsuland_dev.dump
+	
+REM
+REM Run sahsuland.sql (which can be edited) if present; otherwise use pg_restore on the binary dump file
+REM	
+	IF EXIST sahsuland.sql (
+		CALL powershell -ExecutionPolicy ByPass -file run.ps1 pg_restore.rpt "%CD%" ^
+			psql -d %NEWDB% -U postgres -f sahsuland.sql
+	) else (		
+		CALL powershell -ExecutionPolicy ByPass -file run.ps1 pg_restore.rpt "%CD%" ^
+			pg_restore -d %NEWDB% -U postgres sahsuland_dev.dump
+	)
 	if %errorlevel% neq 0 (
-		ECHO pg_restore exiting with error code: %errorlevel%	
+		ECHO pg_restore/psql exiting with error code: %errorlevel%	
 		(SET NEWPW=)
 		(SET PGPASSWORD=)
 		(SET RIF40PW=)
 		exit /b 1
 	) else (		
-		ECHO pg_restore restored %NEWDB% OK
+		ECHO pg_restore/psql restored %NEWDB% OK
 REM
 REM Clear settings
 REM
