@@ -1134,14 +1134,15 @@ updateMapTableFromSmoothedResultsTable <- function() {
 ## R reads the area_id and auto casts into to a integer. This causes the UPDATE to 
 ## do not rows which in turn raises an Cound not SQLEXecDireect error
 ##
-## We need to detect if the frame area)id is an integer and then add a cast
+## We need to detect if the frame area_id is an integer and then add a cast
 ## to the Postgres/SQL Server versions
 ##
-## Postgres: 	n.area_id::INTEGER
-## SQL Server: 	CAST(b.area_id AS INTEGER)
+## Cast the maptable to same as temp table which orig. from df
+## Postgres: 	a.area_id::INTEGER
+## SQL Server: 	CAST(a.area_id AS INTEGER)
 ##
 ##================================================================================
-
+  
   if (db_driver_prefix == "jdbc:postgresql") {	
     updateMapTableSQLQuery <- paste0(
       "UPDATE ", mapTableName, " a ",
@@ -1275,6 +1276,15 @@ runRSmoothingFunctions <- function() {
   result <- performSmoothingActivity()
   
   if (exitValue == 0) {
+    
+    ######## TODO: CASTING AREA_ID
+    print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1])))
+    
+    if (typeof(result$area_id[1]) == "integer") {
+      result$area_id <- as.character(result$area_id)
+    }
+    ########
+
     saveDataFrameToDatabaseTable(result)
     updateMapTableFromSmoothedResultsTable() # may set exitValue
   }
