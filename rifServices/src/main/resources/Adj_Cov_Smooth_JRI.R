@@ -1127,7 +1127,7 @@ generateTableIndexSQLQuery <- function(tableName, columnName) {
 ##This method updates cell values in the skeleton map file with values from 
 ##corresponding fields that exist in the temporary table.
 ##================================================================================
-updateMapTableFromSmoothedResultsTable <- function() {
+updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
   
 ##================================================================================
 ##
@@ -1144,67 +1144,133 @@ updateMapTableFromSmoothedResultsTable <- function() {
 ##================================================================================
   
   if (db_driver_prefix == "jdbc:postgresql") {	
-    updateMapTableSQLQuery <- paste0(
-      "UPDATE ", mapTableName, " a ",
-      "SET ",
-      "genders=b.genders,",
-      "direct_standardisation=b.direct_standardisation,",
-      "adjusted=b.adjusted,",
-      "observed=b.observed,",
-      "expected=b.expected,",
-      "lower95=b.lower95,",
-      "upper95=b.upper95,",
-      "relative_risk=b.relative_risk,",
-      "smoothed_relative_risk=b.smoothed_relative_risk,",
-      "posterior_probability=b.posterior_probability,",
-      "posterior_probability_upper95=b.posterior_probability_upper95,",
-      "posterior_probability_lower95=b.posterior_probability_lower95,",
-      "residual_relative_risk=b.residual_relative_risk,",
-      "residual_rr_lower95=b.residual_rr_lower95,",
-      "residual_rr_upper95=b.residual_rr_upper95,",
-      "smoothed_smr=b.smoothed_smr,",
-      "smoothed_smr_lower95=b.smoothed_smr_lower95,",					
-      "smoothed_smr_upper95=b.smoothed_smr_upper95 ",
-      "FROM ",
-      temporarySmoothedResultsTableName,
-      " b ",
-      "WHERE ",
-      "a.study_id=b.study_id AND ",
-      "a.band_id=b.band_id AND ",
-      "a.inv_id=b.inv_id AND ",
-      "a.genders=b.genders AND ",
-      "a.area_id=b.area_id");
+	if (area_id_is_integer) {
+		updateMapTableSQLQuery <- paste0(
+		  "UPDATE ", mapTableName, " a ",
+		  "SET ",
+		  "genders=b.genders,",
+		  "direct_standardisation=b.direct_standardisation,",
+		  "adjusted=b.adjusted,",
+		  "observed=b.observed,",
+		  "expected=b.expected,",
+		  "lower95=b.lower95,",
+		  "upper95=b.upper95,",
+		  "relative_risk=b.relative_risk,",
+		  "smoothed_relative_risk=b.smoothed_relative_risk,",
+		  "posterior_probability=b.posterior_probability,",
+		  "posterior_probability_upper95=b.posterior_probability_upper95,",
+		  "posterior_probability_lower95=b.posterior_probability_lower95,",
+		  "residual_relative_risk=b.residual_relative_risk,",
+		  "residual_rr_lower95=b.residual_rr_lower95,",
+		  "residual_rr_upper95=b.residual_rr_upper95,",
+		  "smoothed_smr=b.smoothed_smr,",
+		  "smoothed_smr_lower95=b.smoothed_smr_lower95,",					
+		  "smoothed_smr_upper95=b.smoothed_smr_upper95 ",
+		  "FROM ",
+		  temporarySmoothedResultsTableName,
+		  " b ",
+		  "WHERE ",
+		  "a.study_id=b.study_id AND ",
+		  "a.band_id=b.band_id AND ",
+		  "a.inv_id=b.inv_id AND ",
+		  "a.genders=b.genders AND ",
+		  "a.area_id::INTEGER=b.area_id::INTEGER");
+	}
+	else {	
+		updateMapTableSQLQuery <- paste0(
+		  "UPDATE ", mapTableName, " a ",
+		  "SET ",
+		  "genders=b.genders,",
+		  "direct_standardisation=b.direct_standardisation,",
+		  "adjusted=b.adjusted,",
+		  "observed=b.observed,",
+		  "expected=b.expected,",
+		  "lower95=b.lower95,",
+		  "upper95=b.upper95,",
+		  "relative_risk=b.relative_risk,",
+		  "smoothed_relative_risk=b.smoothed_relative_risk,",
+		  "posterior_probability=b.posterior_probability,",
+		  "posterior_probability_upper95=b.posterior_probability_upper95,",
+		  "posterior_probability_lower95=b.posterior_probability_lower95,",
+		  "residual_relative_risk=b.residual_relative_risk,",
+		  "residual_rr_lower95=b.residual_rr_lower95,",
+		  "residual_rr_upper95=b.residual_rr_upper95,",
+		  "smoothed_smr=b.smoothed_smr,",
+		  "smoothed_smr_lower95=b.smoothed_smr_lower95,",					
+		  "smoothed_smr_upper95=b.smoothed_smr_upper95 ",
+		  "FROM ",
+		  temporarySmoothedResultsTableName,
+		  " b ",
+		  "WHERE ",
+		  "a.study_id=b.study_id AND ",
+		  "a.band_id=b.band_id AND ",
+		  "a.inv_id=b.inv_id AND ",
+		  "a.genders=b.genders AND ",
+		  "a.area_id=b.area_id");
+	}
   }
-  else if (db_driver_prefix == "jdbc:sqlserver") { 
-    updateMapTableSQLQuery <- paste0(
-      "UPDATE a ",
-      "SET ",
-      "genders=b.genders,",
-      "direct_standardisation=b.direct_standardisation,",
-      "adjusted=b.adjusted,",
-      "observed=b.observed,",
-      "expected=b.expected,",
-      "lower95=b.lower95,",
-      "upper95=b.upper95,",
-      "relative_risk=b.relative_risk,",
-      "smoothed_relative_risk=b.smoothed_relative_risk,",
-      "posterior_probability=b.posterior_probability,",
-      "posterior_probability_upper95=b.posterior_probability_upper95,",
-      "posterior_probability_lower95=b.posterior_probability_lower95,",
-      "residual_relative_risk=b.residual_relative_risk,",
-      "residual_rr_lower95=b.residual_rr_lower95,",
-      "residual_rr_upper95=b.residual_rr_upper95,",
-      "smoothed_smr=b.smoothed_smr,",
-      "smoothed_smr_lower95=b.smoothed_smr_lower95,",					
-      "smoothed_smr_upper95=b.smoothed_smr_upper95 ",
-      "FROM ", mapTableName, " AS a INNER JOIN ",
-      temporarySmoothedResultsTableName, " AS b ",
-      "ON (",
-      "a.study_id=b.study_id AND ",
-      "a.band_id=b.band_id AND ",
-      "a.inv_id=b.inv_id AND ",
-      "a.genders=b.genders AND ",
-      "a.area_id=b.area_id)");
+  else if (db_driver_prefix == "jdbc:sqlserver") { 	
+	if (area_id_is_integer) {
+		updateMapTableSQLQuery <- paste0(
+		  "UPDATE a ",
+		  "SET ",
+		  "genders=b.genders,",
+		  "direct_standardisation=b.direct_standardisation,",
+		  "adjusted=b.adjusted,",
+		  "observed=b.observed,",
+		  "expected=b.expected,",
+		  "lower95=b.lower95,",
+		  "upper95=b.upper95,",
+		  "relative_risk=b.relative_risk,",
+		  "smoothed_relative_risk=b.smoothed_relative_risk,",
+		  "posterior_probability=b.posterior_probability,",
+		  "posterior_probability_upper95=b.posterior_probability_upper95,",
+		  "posterior_probability_lower95=b.posterior_probability_lower95,",
+		  "residual_relative_risk=b.residual_relative_risk,",
+		  "residual_rr_lower95=b.residual_rr_lower95,",
+		  "residual_rr_upper95=b.residual_rr_upper95,",
+		  "smoothed_smr=b.smoothed_smr,",
+		  "smoothed_smr_lower95=b.smoothed_smr_lower95,",					
+		  "smoothed_smr_upper95=b.smoothed_smr_upper95 ",
+		  "FROM ", mapTableName, " AS a INNER JOIN ",
+		  temporarySmoothedResultsTableName, " AS b ",
+		  "ON (",
+		  "a.study_id=b.study_id AND ",
+		  "a.band_id=b.band_id AND ",
+		  "a.inv_id=b.inv_id AND ",
+		  "a.genders=b.genders AND ",
+		  "CAST(a.area_id AS INTEGER)=CAST(b.area_id AS INTEGER))");
+	else {
+		updateMapTableSQLQuery <- paste0(
+		  "UPDATE a ",
+		  "SET ",
+		  "genders=b.genders,",
+		  "direct_standardisation=b.direct_standardisation,",
+		  "adjusted=b.adjusted,",
+		  "observed=b.observed,",
+		  "expected=b.expected,",
+		  "lower95=b.lower95,",
+		  "upper95=b.upper95,",
+		  "relative_risk=b.relative_risk,",
+		  "smoothed_relative_risk=b.smoothed_relative_risk,",
+		  "posterior_probability=b.posterior_probability,",
+		  "posterior_probability_upper95=b.posterior_probability_upper95,",
+		  "posterior_probability_lower95=b.posterior_probability_lower95,",
+		  "residual_relative_risk=b.residual_relative_risk,",
+		  "residual_rr_lower95=b.residual_rr_lower95,",
+		  "residual_rr_upper95=b.residual_rr_upper95,",
+		  "smoothed_smr=b.smoothed_smr,",
+		  "smoothed_smr_lower95=b.smoothed_smr_lower95,",					
+		  "smoothed_smr_upper95=b.smoothed_smr_upper95 ",
+		  "FROM ", mapTableName, " AS a INNER JOIN ",
+		  temporarySmoothedResultsTableName, " AS b ",
+		  "ON (",
+		  "a.study_id=b.study_id AND ",
+		  "a.band_id=b.band_id AND ",
+		  "a.inv_id=b.inv_id AND ",
+		  "a.genders=b.genders AND ",
+		  "a.area_id=b.area_id)");
+	}
   }
   
   res <- tryCatch(odbcQuery(connDB, updateMapTableSQLQuery, FALSE),
@@ -1238,7 +1304,7 @@ updateMapTableFromSmoothedResultsTable <- function() {
 		"; error: ", odbcGetErrMsg(connDB)))
     exitValue <<- 1
   }	  
-}
+} # End of updateMapTableFromSmoothedResultsTable()
 
 #make and ODBC connection
 #dbHost = 'networkRif'
@@ -1277,17 +1343,20 @@ runRSmoothingFunctions <- function() {
   
   if (exitValue == 0) {
     
-    ######## TODO: CASTING AREA_ID
+	
+    # Cast area_id to char. This is ignored by sqlSave!
+	area_id_is_integer <- FALSE
     print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1])))
     
     if (typeof(result$area_id[1]) == "integer") {
-      result$area_id <- sapply(result$area_id, as.character)
-		  print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1])))
+		area_id_is_integer <- TRUE
+		result$area_id <- sapply(result$area_id, as.character)
+		print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1])))
     }
-    ########
+    #
 
     saveDataFrameToDatabaseTable(result)
-    updateMapTableFromSmoothedResultsTable() # may set exitValue
+    updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue
   }
 	
   if (exitValue == 0) {
