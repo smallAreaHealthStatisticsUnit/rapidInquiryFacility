@@ -1281,7 +1281,7 @@ runRSmoothingFunctions <- function() {
     print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1])))
     
     if (typeof(result$area_id[1]) == "integer") {
-      result$area_id <- as.character(result$area_id)
+		result$area_id <- as.character(result$area_id)
 		print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1])))
     }
     ########
