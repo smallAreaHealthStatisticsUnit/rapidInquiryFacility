@@ -97,7 +97,7 @@ JRE_HOME is used by the Apache tomcat manual start script *catalina.bat*. Normal
 directory as installed, but if Java is upgraded by hand or re-installed these environment settings may need to 
 be changed.
 
-Use the configure Tomcat application (tomcatw) to use the default Java installed on the machine. 
+Use the configure Tomcat application (tomcat8w) to use the default Java installed on the machine. 
 This prevents upgrades from breaking *tomcat*!
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
 This makes tomcat Java uopgrade proof; but this may have unintended effects if:
@@ -223,13 +223,19 @@ These can be placed on the desktop. The shortcuts created then need to be run as
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/setting_runas_administrator.png?raw=true "Make a shortcut run as an administrator")
 
+When running Tomcat at the command line on Windows 10 the new Unix like copy paste functionality will prevent
+the buffer from scrolling and thence cause tomcat to hang. This can be alleviated by typing <enter> or 
+<return> in the log window and fixed by changing the properies of the log window:
+
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat_console_properties.png?raw=true "Windows 10 Tomcat console window properties")
+
 ### 1.3.4 Running Tomcat as a service
   
-* Use the configure Tomcat application (tomcatw) to make the startup type automatic.
+* Use the configure Tomcat application (tomcat8w) to make the startup type automatic.
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_1.png?raw=true "Make the startup type automatic")
 
-* Use the configure Tomcat application (tomcatw) to set the logging level to debug.
+* Use the configure Tomcat application (tomcat8w) to set the logging level to debug.
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_2.PNG?raw=true "Set the logging level to debug")
 
@@ -245,9 +251,9 @@ These can be placed on the desktop. The shortcuts created then need to be run as
   org.apache.catalina.core.ContainerBase.[Catalina].[localhost].level = ALL
   ```
   
-* Restart Tomcat using the configure Tomcat application (tomcatw) or the services panel.   
+* Restart Tomcat using the configure Tomcat application (tomcat8w) or the services panel.   
   The *tomcat* output trace will appear in %CATALINA_HOME%/logs as:
-  *tomcat8-stdout.<date in format YYYY-MM-DD>*.
+  *tomcat8-stderr.<date in format YYYY-MM-DD>* and also possibly *tomcat8-stdout.<date in format YYYY-MM-DD>*.
   
 More controllable logging will be added during Autumn 2017 using log4j.
 
