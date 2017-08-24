@@ -1272,6 +1272,9 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 #[1] "check.integer: 1e4; as.numeric(str): 10000; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: FALSE"
 #[1] FALSE <<<< WRONG!
 #
+##
+## Beware:
+##
 # isNotRounded will return false when used on a data frame: check.integer(result$area_id[1])
 #> check.integer(result$area_id[1]) where the data is "01.001.01000"
 #[1] "check.integer: 01.001.01000; as.numeric(str): 1; isNumeric: TRUE; isInteger: FALSE; isNotRounded: TRUE; isIntRegexp: FALSE"
