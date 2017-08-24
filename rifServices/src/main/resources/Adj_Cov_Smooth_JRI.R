@@ -1142,11 +1142,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 ## SQL Server: 	CAST(a.area_id AS INTEGER)
 ##
 ##================================================================================
-  
-  if (db_driver_prefix == "jdbc:postgresql") {	
-	if (area_id_is_integer) {
-		updateMapTableSQLQuery <- paste0(
-		  "UPDATE ", mapTableName, " a ",
+  updateStmt <- paste0("UPDATE ", mapTableName, " a ",
 		  "SET ",
 		  "genders=b.genders,",
 		  "direct_standardisation=b.direct_standardisation,",
@@ -1165,7 +1161,11 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 		  "residual_rr_upper95=b.residual_rr_upper95,",
 		  "smoothed_smr=b.smoothed_smr,",
 		  "smoothed_smr_lower95=b.smoothed_smr_lower95,",					
-		  "smoothed_smr_upper95=b.smoothed_smr_upper95 ",
+		  "smoothed_smr_upper95=b.smoothed_smr_upper95 ")
+  if (db_driver_prefix == "jdbc:postgresql") {	
+	if (area_id_is_integer) {
+		updateMapTableSQLQuery <- paste0(
+		  updateStmt,
 		  "FROM ",
 		  temporarySmoothedResultsTableName,
 		  " b ",
@@ -1178,26 +1178,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 	}
 	else {	
 		updateMapTableSQLQuery <- paste0(
-		  "UPDATE ", mapTableName, " a ",
-		  "SET ",
-		  "genders=b.genders,",
-		  "direct_standardisation=b.direct_standardisation,",
-		  "adjusted=b.adjusted,",
-		  "observed=b.observed,",
-		  "expected=b.expected,",
-		  "lower95=b.lower95,",
-		  "upper95=b.upper95,",
-		  "relative_risk=b.relative_risk,",
-		  "smoothed_relative_risk=b.smoothed_relative_risk,",
-		  "posterior_probability=b.posterior_probability,",
-		  "posterior_probability_upper95=b.posterior_probability_upper95,",
-		  "posterior_probability_lower95=b.posterior_probability_lower95,",
-		  "residual_relative_risk=b.residual_relative_risk,",
-		  "residual_rr_lower95=b.residual_rr_lower95,",
-		  "residual_rr_upper95=b.residual_rr_upper95,",
-		  "smoothed_smr=b.smoothed_smr,",
-		  "smoothed_smr_lower95=b.smoothed_smr_lower95,",					
-		  "smoothed_smr_upper95=b.smoothed_smr_upper95 ",
+		  updateStmt,
 		  "FROM ",
 		  temporarySmoothedResultsTableName,
 		  " b ",
@@ -1212,26 +1193,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
   else if (db_driver_prefix == "jdbc:sqlserver") { 	
 	if (area_id_is_integer) {
 		updateMapTableSQLQuery <- paste0(
-		  "UPDATE a ",
-		  "SET ",
-		  "genders=b.genders,",
-		  "direct_standardisation=b.direct_standardisation,",
-		  "adjusted=b.adjusted,",
-		  "observed=b.observed,",
-		  "expected=b.expected,",
-		  "lower95=b.lower95,",
-		  "upper95=b.upper95,",
-		  "relative_risk=b.relative_risk,",
-		  "smoothed_relative_risk=b.smoothed_relative_risk,",
-		  "posterior_probability=b.posterior_probability,",
-		  "posterior_probability_upper95=b.posterior_probability_upper95,",
-		  "posterior_probability_lower95=b.posterior_probability_lower95,",
-		  "residual_relative_risk=b.residual_relative_risk,",
-		  "residual_rr_lower95=b.residual_rr_lower95,",
-		  "residual_rr_upper95=b.residual_rr_upper95,",
-		  "smoothed_smr=b.smoothed_smr,",
-		  "smoothed_smr_lower95=b.smoothed_smr_lower95,",					
-		  "smoothed_smr_upper95=b.smoothed_smr_upper95 ",
+		  updateStmt,
 		  "FROM ", mapTableName, " AS a INNER JOIN ",
 		  temporarySmoothedResultsTableName, " AS b ",
 		  "ON (",
@@ -1240,28 +1202,10 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 		  "a.inv_id=b.inv_id AND ",
 		  "a.genders=b.genders AND ",
 		  "CAST(a.area_id AS INTEGER)=CAST(b.area_id AS INTEGER))");
+	}
 	else {
 		updateMapTableSQLQuery <- paste0(
-		  "UPDATE a ",
-		  "SET ",
-		  "genders=b.genders,",
-		  "direct_standardisation=b.direct_standardisation,",
-		  "adjusted=b.adjusted,",
-		  "observed=b.observed,",
-		  "expected=b.expected,",
-		  "lower95=b.lower95,",
-		  "upper95=b.upper95,",
-		  "relative_risk=b.relative_risk,",
-		  "smoothed_relative_risk=b.smoothed_relative_risk,",
-		  "posterior_probability=b.posterior_probability,",
-		  "posterior_probability_upper95=b.posterior_probability_upper95,",
-		  "posterior_probability_lower95=b.posterior_probability_lower95,",
-		  "residual_relative_risk=b.residual_relative_risk,",
-		  "residual_rr_lower95=b.residual_rr_lower95,",
-		  "residual_rr_upper95=b.residual_rr_upper95,",
-		  "smoothed_smr=b.smoothed_smr,",
-		  "smoothed_smr_lower95=b.smoothed_smr_lower95,",					
-		  "smoothed_smr_upper95=b.smoothed_smr_upper95 ",
+		  updateStmt,
 		  "FROM ", mapTableName, " AS a INNER JOIN ",
 		  temporarySmoothedResultsTableName, " AS b ",
 		  "ON (",
