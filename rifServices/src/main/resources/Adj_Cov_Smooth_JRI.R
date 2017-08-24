@@ -1255,6 +1255,73 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 #dbName = 'rif_studies'
 #studyID = '1'
 
+##================================================================================
+##FUNCTION: check.integer
+##DESCRIPTION
+##Check if string is an integer 
+##
+## Inspiration:
+##
+## https://stackoverflow.com/questions/3476782/check-if-the-number-is-integer
+## https://rosettacode.org/wiki/Determine_if_a_string_is_numeric#R
+##
+## Test cases: 
+##
+## isNotRounded is the best test; isInteger is useless (see manual for why!); isIntRegexp needs a better regexp! [string "1e4" give the wrong answer]
+##> check.integer("1e4")
+#[1] "check.integer: 1e4; as.numeric(str): 10000; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: FALSE"
+#[1] FALSE <<<< WRONG!
+##
+#> check.integer(1)
+#[1] "check.integer: 1; as.numeric(str): 1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: TRUE"
+#[1] TRUE
+#> check.integer(1.1)
+#[1] "check.integer: 1.1; as.numeric(str): 1.1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: FALSE; isIntRegexp: FALSE"
+#[1] FALSE
+#> check.integer("1")
+#[1] "check.integer: 1; as.numeric(str): 1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: TRUE"
+#[1] TRUE
+#> check.integer("1e4")
+#[1] "check.integer: 1e4; as.numeric(str): 10000; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: FALSE"
+#[1] FALSE <<<< WRONG!
+#> check.integer(1e4)
+#[1] "check.integer: 10000; as.numeric(str): 10000; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: TRUE"
+#[1] TRUE
+#> check.integer("Hello")
+#[1] "check.integer: Hello; as.numeric(str): NA; isNumeric: FALSE; isInteger: FALSE; isNotRounded: FALSE; isIntRegexp: FALSE"
+#[1] FALSE
+#> check.integer("01.01.1000")
+#[1] "check.integer: 01.01.1000; as.numeric(str): NA; isNumeric: FALSE; isInteger: FALSE; isNotRounded: FALSE; isIntRegexp: FALSE"
+#[1] FALSE
+#> check.integer("1.001")
+#[1] "check.integer: 1.001; as.numeric(str): 1.001; isNumeric: TRUE; isInteger: TRUE; isNotRounded: FALSE; isIntRegexp: FALSE"
+#[1] FALSE
+#> check.integer("0011001")
+#[1] "check.integer: 0011001; as.numeric(str): 11001; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: TRUE"
+#[1] TRUE
+#> check.integer("00.11001")
+#[1] "check.integer: 00.11001; as.numeric(str): 0.11001; isNumeric: TRUE; isInteger: FALSE; isNotRounded: FALSE; isIntRegexp: FALSE"
+#[1] FALSE
+##================================================================================
+check.integer <- function(N) {
+	str<-N # COPY
+	isNumeric<-suppressWarnings(!is.na(as.numeric(str)))
+	isInteger<-suppressWarnings(!is.na(as.integer(str)) && as.integer(str))
+	isNotRounded<-suppressWarnings(isNumeric && as.numeric(str) == round(as.numeric(str)))
+	isIntRegexp<-suppressWarnings(!grepl("[^[:digit:]]", format(N,  digits = 20, scientific = FALSE)))
+	
+	check.integer.Result<-(isNumeric && isInteger && isNotRounded && isIntRegexp)
+	
+	print(paste0("check.integer: ", str,
+		"; as.numeric(str): ", suppressWarnings(as.numeric(str)),
+		"; isNumeric: ", isNumeric,
+		"; isInteger: ", isInteger,
+		"; isNotRounded: ", isNotRounded,
+		"; isIntRegexp: ", isIntRegexp,
+		"; check.integer.Result: ", check.integer.Result))
+	
+    return(check.integer.Result)
+}
 
 
 ##================================================================================
@@ -1290,12 +1357,15 @@ runRSmoothingFunctions <- function() {
 	
     # Cast area_id to char. This is ignored by sqlSave!
 	area_id_is_integer <- FALSE
-    print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1])))
+    print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]), 
+		"; check.integer(result$area_id[1]): ", check.integer(result$area_id[1]),
+		"; result$area_id[1]: ", result$area_id[1]))
     
-    if (typeof(result$area_id[1]) == "integer") {
+    if (check.integer(result$area_id[1])) {
 		area_id_is_integer <- TRUE
 		result$area_id <- sapply(result$area_id, as.character)
-		print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1])))
+		print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]),
+			"; result$area_id[1]: ", result$area_id[1]))
     }
     #
 
