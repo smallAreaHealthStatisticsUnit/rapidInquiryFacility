@@ -1142,8 +1142,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 ## SQL Server: 	CAST(a.area_id AS INTEGER)
 ##
 ##================================================================================
-  updateStmt <- paste0("UPDATE ", mapTableName, " a ",
-		  "SET ",
+  updateStmt <- paste0("SET ",
 		  "genders=b.genders,",
 		  "direct_standardisation=b.direct_standardisation,",
 		  "adjusted=b.adjusted,",
@@ -1164,7 +1163,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 		  "smoothed_smr_upper95=b.smoothed_smr_upper95 ")
   if (db_driver_prefix == "jdbc:postgresql") {	
 	if (area_id_is_integer) {
-		updateMapTableSQLQuery <- paste0(
+		updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName, " a ",	  
 		  updateStmt,
 		  "FROM ",
 		  temporarySmoothedResultsTableName,
@@ -1177,7 +1176,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 		  "a.area_id::INTEGER=b.area_id::INTEGER");
 	}
 	else {	
-		updateMapTableSQLQuery <- paste0(
+		updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName, " a ",
 		  updateStmt,
 		  "FROM ",
 		  temporarySmoothedResultsTableName,
@@ -1192,7 +1191,8 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
   }
   else if (db_driver_prefix == "jdbc:sqlserver") { 	
 	if (area_id_is_integer) {
-		updateMapTableSQLQuery <- paste0(
+		updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName,
+		 
 		  updateStmt,
 		  "FROM ", mapTableName, " AS a INNER JOIN ",
 		  temporarySmoothedResultsTableName, " AS b ",
@@ -1204,7 +1204,7 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 		  "CAST(a.area_id AS INTEGER)=CAST(b.area_id AS INTEGER))");
 	}
 	else {
-		updateMapTableSQLQuery <- paste0(
+		updateMapTableSQLQuery <- paste0("UPDATE ", mapTableName,
 		  updateStmt,
 		  "FROM ", mapTableName, " AS a INNER JOIN ",
 		  temporarySmoothedResultsTableName, " AS b ",
