@@ -276,6 +276,11 @@ SELECT a.year, SUM(a.population) AS population, m.population AS males, f.populat
  GROUP BY a.year, m.population, f.population
  ORDER BY a.year;
 
+SELECT a.cb_2014_us_state_500k, b.areaname, COUNT(a.cb_2014_us_state_500k) AS total, MIN(a.year) AS min_year, MAX(a.year) AS max_year
+  FROM seer_cancer a
+	LEFT OUTER JOIN lookup_cb_2014_us_state_500k b ON (a.cb_2014_us_state_500k = b.cb_2014_us_state_500k)
+ GROUP BY a.cb_2014_us_state_500k, b.areaname
+ ORDER BY 2;
  
 SELECT CASE	
 			WHEN a.ethnicity = 19 THEN 'White, no hispanic data'
@@ -301,5 +306,33 @@ SELECT year, SUM(total_poverty_all_ages) AS total_poverty_all_ages, COUNT(total_
  GROUP BY year
  ORDER BY year;
  
+ 
+SELECT * FROM rif_data.seer_wbo_ethnicity_covariates LIMIT 20;
+ 
+/*
+ year | cb_2014_us_county_500k | pct_white | pct_black | pct_white_quintile | pct_black_quintile
+------+------------------------+-----------+-----------+--------------------+--------------------
+ 1973 | 00212338               |     92.39 |      7.17 |                  1 |                  5
+ 1973 | 00212668               |     98.20 |      1.28 |                  2 |                  4
+ 1973 | 00212794               |     92.03 |      7.45 |                  1 |                  5
+ 1973 | 00212796               |     98.93 |      0.80 |                  3 |                  4
+ 1973 | 00212797               |     96.46 |      3.19 |                  1 |                  4
+ 1973 | 00212798               |     91.56 |      7.97 |                  1 |                  5
+ 1973 | 00212799               |     95.72 |      3.38 |                  1 |                  4
+ 1973 | 00212801               |     99.00 |      0.64 |                  3 |                  4
+ 1973 | 00277285               |     95.57 |      2.50 |                  1 |                  4
+ 1973 | 00277302               |     70.14 |     13.28 |                  1 |                  5
+ 1973 | 00277305               |     89.07 |      5.50 |                  1 |                  5
+ 1973 | 00465190               |     99.81 |           |                  5 |                  5
+ 1973 | 00465191               |     99.84 |           |                  5 |                  5
+ 1973 | 00465192               |     99.76 |      0.05 |                  4 |                  2
+ 1973 | 00465193               |     98.80 |      0.94 |                  2 |                  4
+ 1973 | 00465194               |     99.88 |           |                  5 |                  5
+ 1973 | 00465195               |     99.85 |      0.01 |                  5 |                  1
+ 1973 | 00465196               |     94.21 |      5.37 |                  1 |                  5
+ 1973 | 00465197               |     99.63 |      0.14 |                  4 |                  2
+ 1973 | 00465198               |     99.48 |      0.27 |                  3 |                  3
+(20 rows)
+ */ 
 --
 -- Eof
