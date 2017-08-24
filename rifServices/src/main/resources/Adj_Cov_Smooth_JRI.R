@@ -1271,6 +1271,11 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 ##> check.integer("1e4")
 #[1] "check.integer: 1e4; as.numeric(str): 10000; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: FALSE"
 #[1] FALSE <<<< WRONG!
+#
+# isNotRounded will return false when used on a data frame: check.integer(result$area_id[1])
+#> check.integer(result$area_id[1]) where the data is "01.001.01000"
+#[1] "check.integer: 01.001.01000; as.numeric(str): 1; isNumeric: TRUE; isInteger: FALSE; isNotRounded: TRUE; isIntRegexp: FALSE"
+#[1] FALSE
 ##
 #> check.integer(1)
 #[1] "check.integer: 1; as.numeric(str): 1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: TRUE"
@@ -1360,14 +1365,14 @@ runRSmoothingFunctions <- function() {
     print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]), 
 		"; check.integer(result$area_id[1]): ", check.integer(result$area_id[1]),
 		"; result$area_id[1]: ", result$area_id[1]))
-    
+ 
+# Use check.integer() to reliably test if the string is an integer 
     if (check.integer(result$area_id[1])) {
 		area_id_is_integer <- TRUE
 		result$area_id <- sapply(result$area_id, as.character)
 		print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]),
 			"; result$area_id[1]: ", result$area_id[1]))
     }
-    #
 
     saveDataFrameToDatabaseTable(result)
     updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue

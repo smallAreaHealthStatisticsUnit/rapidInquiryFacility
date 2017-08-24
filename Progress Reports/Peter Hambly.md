@@ -1527,6 +1527,10 @@ Todo:
     center of a geometry, or equivalently, the center of mass of the geometry as a POINT. Turf takes one or more 
 	features and calculates the centroid using the mean of all vertices. This causes areas with a mix of straight
     and wiggly boundaries to have a centroid baised toward the wiggly.	
+  * Fixed cast issue in R. US FIPS codes contain leading 0-2 leading zeros and are stored as strings in the 
+    database. These are auto casted to integers in R; causing the update of the results map table to fail.
+	R is bad at detecting integers; so a complex multi test check.integer() function was created. If integers
+	are detected the database update join on area_id is cast to integers.
   
 #### Database TODO list (deferred to September 2017): SQL Server Port
 
