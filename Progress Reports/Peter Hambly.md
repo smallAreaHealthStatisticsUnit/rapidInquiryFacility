@@ -1531,9 +1531,39 @@ Todo:
     database. These are auto casted to integers in R; causing the update of the results map table to fail.
 	R is bad at detecting integers; so a complex multi test check.integer() function was created. If integers
 	are detected the database update join on area_id is cast to integers.
+  * Managed to crash inla on US Atlanta five counties when using median income quintiles as a covariate. 
+  * R syntax fault: ```Error in if (y == "NULL") { : missing value where TRUE/FALSE needed``` in GA lung cancer 
+    with covariates and no smoothing.
+  * Fixed issue running Tomcat at the command line on Windows 10 (caused by new Unix like copy paste preventing
+    the buffer from scrolling. Added notes to install instructions)
+  * Year filter fix
+  * Updates to SEER script to support dataloader. Need to add in more SEER data
+  * Run all SEER states data study for Lung Cancer, 2000 onwards, no covariates
+  * I also advise waiting for it to complete looking at the tomcat logs to avoid complaints from the data 
+    viewer whilst studies are running. I suspect there is a middleware transaction control bug which cans the 
+	study at this point.
+* Added support to rif40_database_install.bat for the sahsuland.sql SQL dump (which can be edited unlike the 
+  dump file)
+  
+#### 28th August to 1st September
+
+Todo:
+
+* Add more SEER data
+* Test covariates in dataloader
+* Add and test SQL Server support
+* Run dataloader, check outputs
+* More dataloader documentation
+  
+September:
+
+* More work on SEER data, dataloader
+* US geography and centroids fixes
+* Add area name to results map table
   
 #### Database TODO list (deferred to September 2017): SQL Server Port
 
+* Add area name to results map table
 * USA_2014 integration: 
   * RIF40_GEOGRAPHIES set up wrong: default study and comnparison area names use original field name, no setup field names
     Tomcat error:
