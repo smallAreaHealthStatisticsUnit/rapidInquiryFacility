@@ -1544,6 +1544,7 @@ Todo:
 	study at this point.
 * Added support to rif40_database_install.bat for the sahsuland.sql SQL dump (which can be edited unlike the 
   dump file)
+* SQL Server regression test: A cursor with the name 'c1_creex' already exists (2nd run))
   
 #### 28th August to 1st September
 
@@ -1554,6 +1555,7 @@ Todo:
 * Add and test SQL Server support
 * Run dataloader, check outputs
 * More dataloader documentation
+* Fix missing SQL Server deallocate cursor: 'c1_creex' already exists
   
 September:
 
