@@ -312,7 +312,7 @@ final public class MSSQLConvertWorkflowManager
 					ageSexConversionFunction.generateQueryFragment());				
 			}
 		}
-		else {
+		else if (fieldsWithConversions.size() > 0)  {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"convertWorkflowManager.error.unknownConversionActivity");

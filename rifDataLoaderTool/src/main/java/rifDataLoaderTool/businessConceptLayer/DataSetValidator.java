@@ -266,7 +266,7 @@ public class DataSetValidator {
 				dataSet, 
 				FieldPurpose.GEOGRAPHICAL_RESOLUTION, 
 				FieldRequirementLevel.REQUIRED_BY_RIF);
-		if (resolutionFields.size() != 1) {
+		if (resolutionFields.size() < 1) {
 			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
 					"dataSetValidator.error.atLeastOneResolutionField");
