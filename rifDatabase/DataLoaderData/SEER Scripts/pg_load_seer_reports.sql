@@ -108,7 +108,162 @@ WITH a AS (
 SELECT icd, cases, people
   FROM b
  ORDER BY 1;
+
+-- County misjoins
+WITH a AS ( 
+	SELECT a.cb_2014_us_state_500k, a.cb_2014_us_county_500k, 
+		   COUNT(a.cb_2014_us_county_500k) AS total, MIN(year) AS min_year, MAX(year) AS max_year
+	  FROM seer_population a  
+	 GROUP BY a.cb_2014_us_state_500k, a.cb_2014_us_county_500k  
+)
+SELECT s.areaname AS state, COALESCE(c.areaname, a.cb_2014_us_county_500k) AS county,
+       a.total, a.min_year, a.max_year
+  FROM a
+	LEFT OUTER JOIN lookup_cb_2014_us_state_500k s ON (a.cb_2014_us_state_500k = s.cb_2014_us_state_500k)
+	LEFT OUTER JOIN lookup_cb_2014_us_county_500k c ON (a.cb_2014_us_county_500k = c.cb_2014_us_county_500k)
+ WHERE c.areaname IS NULL
+ ORDER BY 1, 2;
+/*
+   state    |    county    | total | min_year | max_year
+------------+--------------+-------+----------+----------
+ Alaska     | UNKNOWN: 900 |   968 |     1992 |     2013
+ Hawaii     | UNKNOWN: 900 |  1188 |     1973 |     1999
+ New Mexico | UNKNOWN: 910 |   396 |     1973 |     1981
+(3 rows)
+ */ 
  
+WITH a AS ( 
+	SELECT a.cb_2014_us_state_500k, a.cb_2014_us_county_500k, 
+		   COUNT(a.cb_2014_us_county_500k) AS total, MIN(year) AS min_year, MAX(year) AS max_year
+	  FROM seer_population a  
+	 GROUP BY a.cb_2014_us_state_500k, a.cb_2014_us_county_500k  
+), b AS (
+	SELECT c.cb_2014_us_state_500k, COUNT(c.cb_2014_us_county_500k) AS missing_counties
+	  FROM (
+		SELECT b.cb_2014_us_state_500k, b.cb_2014_us_county_500k
+		  FROM hierarchy_usa_2014 b 
+		EXCEPT
+		SELECT a.cb_2014_us_state_500k, a.cb_2014_us_county_500k
+		  FROM a
+	 ) AS c
+	  GROUP BY c.cb_2014_us_state_500k
+)
+SELECT s.areaname AS state,
+       CASE WHEN c.areaname IS NULL THEN 'No' ELSE 'Yes' END AS county_join,
+       SUM(a.total) AS total, MIN(a.min_year) AS min_year, MAX(a.max_year) AS max_year,
+	   COUNT(DISTINCT(a.cb_2014_us_county_500k)) AS counties, b.missing_counties
+  FROM a
+	LEFT OUTER JOIN lookup_cb_2014_us_state_500k s ON (a.cb_2014_us_state_500k = s.cb_2014_us_state_500k)
+	LEFT OUTER JOIN lookup_cb_2014_us_county_500k c ON (a.cb_2014_us_county_500k = c.cb_2014_us_county_500k)
+	LEFT OUTER JOIN b ON (b.cb_2014_us_state_500k = a.cb_2014_us_state_500k)
+  GROUP BY s.areaname,
+       CASE WHEN c.areaname IS NULL THEN 'No' ELSE 'Yes' END, b.missing_counties 
+ ORDER BY 1, 2;
+/*
+Same as Cancer:
+    state    | county_join | total  | min_year | max_year | counties | missing_counties
+-------------+-------------+--------+----------+----------+----------+------------------
+ Alaska      | No          |    968 |     1992 |     2013 |        1 |               29
+ California  | Yes         |  43426 |     1973 |     2013 |       58 |
+ Connecticut | Yes         |  14432 |     1973 |     2013 |        8 |
+ Georgia     | Yes         | 106964 |     1975 |     2013 |      159 |
+ Hawaii      | No          |   1188 |     1973 |     1999 |        1 |
+ Hawaii      | Yes         |   2820 |     2000 |     2013 |        5 |
+ Iowa        | Yes         | 178596 |     1973 |     2013 |       99 |
+ Kentucky    | Yes         |  73916 |     2000 |     2013 |      120 |
+ Louisiana   | Yes         |  39424 |     2000 |     2013 |       64 |
+ Michigan    | Yes         |   5412 |     1973 |     2013 |        3 |               80
+ New Jersey  | Yes         |  12936 |     2000 |     2013 |       21 |
+ New Mexico  | No          |    396 |     1973 |     1981 |        1 |
+ New Mexico  | Yes         |  58699 |     1973 |     2013 |       33 |
+ Utah        | Yes         |  52303 |     1973 |     2013 |       29 |
+ Washington  | Yes         |  22880 |     1974 |     2013 |       13 |               26
+(15 rows)
+ */
+ 
+-- County misjoins
+WITH a AS ( 
+	SELECT a.cb_2014_us_state_500k, a.cb_2014_us_county_500k, 
+		   COUNT(a.cb_2014_us_county_500k) AS total, MIN(year) AS min_year, MAX(year) AS max_year
+	  FROM seer_cancer a  
+	 GROUP BY a.cb_2014_us_state_500k, a.cb_2014_us_county_500k  
+)
+SELECT s.areaname AS state, COALESCE(c.areaname, a.cb_2014_us_county_500k) AS county,
+       a.total, a.min_year, a.max_year
+  FROM a
+	LEFT OUTER JOIN lookup_cb_2014_us_state_500k s ON (a.cb_2014_us_state_500k = s.cb_2014_us_state_500k)
+	LEFT OUTER JOIN lookup_cb_2014_us_county_500k c ON (a.cb_2014_us_county_500k = c.cb_2014_us_county_500k)
+ WHERE c.areaname IS NULL
+ ORDER BY 1, 2;
+/*
+    state    |    county    | total | min_year | max_year
+-------------+--------------+-------+----------+----------
+ Alaska      | UNKNOWN: 900 |  8080 |     1992 |     2013
+ Connecticut | UNKNOWN: 999 |   290 |     1973 |     2013
+ Hawaii      | UNKNOWN: 911 | 12248 |     1973 |     1999
+ Hawaii      | UNKNOWN: 912 | 77935 |     1973 |     1999
+ Hawaii      | UNKNOWN: 913 |    33 |     1973 |     1998
+ Hawaii      | UNKNOWN: 914 |  4773 |     1973 |     1999
+ Hawaii      | UNKNOWN: 915 |  8997 |     1973 |     1999
+ Hawaii      | UNKNOWN: 999 |     7 |     2006 |     2012
+ New Jersey  | UNKNOWN: 999 |   484 |     2000 |     2013
+ New Mexico  | UNKNOWN: 910 |  1171 |     1973 |     1981
+ New Mexico  | UNKNOWN: 999 |  2103 |     1973 |     2013
+ Utah        | UNKNOWN: 999 |    20 |     1973 |     2012
+(12 rows)
+ */ 
+-- Alaska and Hawaii are a mess!
+WITH a AS ( 
+	SELECT a.cb_2014_us_state_500k, a.cb_2014_us_county_500k, 
+		   COUNT(a.cb_2014_us_county_500k) AS total, MIN(year) AS min_year, MAX(year) AS max_year
+	  FROM seer_cancer a  
+	 GROUP BY a.cb_2014_us_state_500k, a.cb_2014_us_county_500k  
+), b AS (
+	SELECT c.cb_2014_us_state_500k, COUNT(c.cb_2014_us_county_500k) AS missing_counties
+	  FROM (
+		SELECT b.cb_2014_us_state_500k, b.cb_2014_us_county_500k
+		  FROM hierarchy_usa_2014 b 
+		EXCEPT
+		SELECT a.cb_2014_us_state_500k, a.cb_2014_us_county_500k
+		  FROM a
+	 ) AS c
+	  GROUP BY c.cb_2014_us_state_500k
+)
+SELECT s.areaname AS state,
+       CASE WHEN c.areaname IS NULL THEN 'No' ELSE 'Yes' END AS county_join,
+       SUM(a.total) AS total, MIN(a.min_year) AS min_year, MAX(a.max_year) AS max_year,
+	   COUNT(DISTINCT(a.cb_2014_us_county_500k)) AS counties, b.missing_counties
+  FROM a
+	LEFT OUTER JOIN lookup_cb_2014_us_state_500k s ON (a.cb_2014_us_state_500k = s.cb_2014_us_state_500k)
+	LEFT OUTER JOIN lookup_cb_2014_us_county_500k c ON (a.cb_2014_us_county_500k = c.cb_2014_us_county_500k)
+	LEFT OUTER JOIN b ON (b.cb_2014_us_state_500k = a.cb_2014_us_state_500k)
+  GROUP BY s.areaname,
+       CASE WHEN c.areaname IS NULL THEN 'No' ELSE 'Yes' END, b.missing_counties 
+ ORDER BY 1, 2;
+/*
+     state    | county_join |  total  | min_year | max_year | counties | missing_counties
+-------------+-------------+---------+----------+----------+----------+------------------
+ Alaska      | No          |    8080 |     1992 |     2013 |        1 |               29
+ California  | Yes         | 3185854 |     1973 |     2013 |       58 |
+ Connecticut | No          |     290 |     1973 |     2013 |        1 |
+ Connecticut | Yes         |  752971 |     1973 |     2013 |        8 |
+ Georgia     | Yes         |  810910 |     1975 |     2013 |      159 |
+ Hawaii      | No          |  103993 |     1973 |     2012 |        6 |
+ Hawaii      | Yes         |   97085 |     2000 |     2013 |        5 |
+ Iowa        | Yes         |  632565 |     1973 |     2013 |       99 |
+ Kentucky    | Yes         |  366513 |     2000 |     2013 |      120 |
+ Louisiana   | Yes         |  340659 |     2000 |     2013 |       64 |
+ Michigan    | Yes         |  854021 |     1973 |     2013 |        3 |               80
+ New Jersey  | No          |     484 |     2000 |     2013 |        1 |
+ New Jersey  | Yes         |  752115 |     2000 |     2013 |       21 |
+ New Mexico  | No          |    3274 |     1973 |     2013 |        2 |
+ New Mexico  | Yes         |  264387 |     1973 |     2013 |       33 |
+ Utah        | No          |      20 |     1973 |     2012 |        1 |
+ Utah        | Yes         |  260654 |     1973 |     2013 |       29 |
+ Washington  | Yes         |  743088 |     1974 |     2013 |       13 |               26
+(18 rows)
+ */
+  
 SELECT SUBSTRING(record_value FROM 1 FOR 4)::INTEGER AS year,
        SUBSTRING(record_value FROM 5 FOR 2) AS state_postal_abbreviation,
        SUBSTRING(record_value FROM 7 FOR 2)::Text AS state_fips_code,
@@ -276,11 +431,6 @@ SELECT a.year, SUM(a.population) AS population, m.population AS males, f.populat
  GROUP BY a.year, m.population, f.population
  ORDER BY a.year;
 
-SELECT a.cb_2014_us_state_500k, b.areaname, COUNT(a.cb_2014_us_state_500k) AS total, MIN(a.year) AS min_year, MAX(a.year) AS max_year
-  FROM seer_cancer a
-	LEFT OUTER JOIN lookup_cb_2014_us_state_500k b ON (a.cb_2014_us_state_500k = b.cb_2014_us_state_500k)
- GROUP BY a.cb_2014_us_state_500k, b.areaname
- ORDER BY 2;
  
 SELECT CASE	
 			WHEN a.ethnicity = 19 THEN 'White, no hispanic data'
