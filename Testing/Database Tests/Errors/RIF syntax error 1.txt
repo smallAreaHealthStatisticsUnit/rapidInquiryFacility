@@ -1,0 +1,14 @@
+24-Aug-2017 11:07:09.320 INFO [http-nio-8080-exec-1] rifServices.dataStorageLayer.pg.PGSQLAbstractRService$LoggingConsole.rWriteCons
+ole rWriteConsole: [1]
+24-Aug-2017 11:07:09.322 INFO [http-nio-8080-exec-1] rifServices.dataStorageLayer.pg.PGSQLAbstractRService$LoggingConsole.rWriteCons
+ole rWriteConsole:  "rif40_GetAdjacencyMatrix numberOfRows=509=="
+24-Aug-2017 11:07:09.322 INFO [http-nio-8080-exec-1] rifServices.dataStorageLayer.pg.PGSQLAbstractRService$LoggingConsole.rWriteCons
+ole rWriteConsole:
+
+24-Aug-2017 11:07:09.532 INFO [http-nio-8080-exec-1] rifServices.dataStorageLayer.pg.PGSQLAbstractRService$LoggingConsole.rWriteCons
+ole rWriteConsole: Error in if (y == "NULL") { : missing value where TRUE/FALSE needed
+
+Rengine.eval(as.integer(a <- runRSmoothingFunctions())): END (ERR)Thread[http-nio-8080-exec-1,5,main]
+JRI R ERROR
+Rengine Stopped
+Exit value==1==

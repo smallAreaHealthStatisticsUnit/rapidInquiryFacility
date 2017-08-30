@@ -1548,9 +1548,10 @@ Todo:
   
 #### 28th August to 1st September
 
+* Add more SEER data
+
 Todo:
 
-* Add more SEER data
 * Test covariates in dataloader
 * Add and test SQL Server support
 * Run dataloader, check outputs

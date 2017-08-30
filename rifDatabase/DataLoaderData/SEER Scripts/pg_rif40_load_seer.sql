@@ -220,10 +220,10 @@ BEGIN
 	FETCH c1 INTO c1_rec;
 	CLOSE c1;
 --
-	IF c1_rec.total = 4863414 THEN
+	IF c1_rec.total = 9176963 THEN
 		RAISE INFO 'Table: seer_cancer has % rows', c1_rec.total;
 	ELSE
-		RAISE EXCEPTION 'Table: seer_cancer has % rows; expecting 4863414', c1_rec.total;
+		RAISE EXCEPTION 'Table: seer_cancer has % rows; expecting 9176963', c1_rec.total;
 	END IF;
 END;
 $$;
@@ -367,10 +367,10 @@ BEGIN
 	FETCH c1 INTO c1_rec;
 	CLOSE c1;
 --
-	IF c1_rec.total = 354326 THEN
+	IF c1_rec.total = 614360 THEN
 		RAISE INFO 'Table: seer_population has % rows', c1_rec.total;
 	ELSE
-		RAISE EXCEPTION 'Table: seer_population has % rows; expecting 354326', c1_rec.total;
+		RAISE EXCEPTION 'Table: seer_population has % rows; expecting 614360', c1_rec.total;
 	END IF;
 END;
 $$;
@@ -473,10 +473,28 @@ CREATE TABLE rif_data.cov_cb_2014_us_county_500k
 
 \copy cov_cb_2014_us_county_500k FROM 'cov_cb_2014_us_county_500k.csv' WITH CSV HEADER;
  
-SELECT year, COUNT(year) AS total, COUNT(median_hh_income_quin) AS t_median_hh_income_quin
-  FROM rif_data.cov_cb_2014_us_county_500k
- GROUP BY year
- ORDER BY year;
+--
+-- Check rowcount
+--
+SELECT COUNT(*) AS total FROM cov_cb_2014_us_county_500k;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(*) AS total
+ 		  FROM cov_cb_2014_us_county_500k;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.total = 132553 THEN
+		RAISE INFO 'Table: cov_cb_2014_us_county_500k has % rows', c1_rec.total;
+	ELSE
+		RAISE EXCEPTION 'Table: cov_cb_2014_us_county_500k has % rows; expecting 132553', c1_rec.total;
+	END IF;
+END;
+$$;
   
 --
 -- Convert to index organised table
@@ -528,11 +546,26 @@ CREATE TABLE rif_data.cov_cb_2014_us_state_500k
 );
 
 \copy cov_cb_2014_us_state_500k FROM 'cov_cb_2014_us_state_500k.csv' WITH CSV HEADER;
-  
-SELECT year, COUNT(year) AS total, COUNT(median_hh_income_quin) AS t_median_hh_income_quin
-  FROM rif_data.cov_cb_2014_us_state_500k
- GROUP BY year
- ORDER BY year; 	
+
+SELECT COUNT(*) AS total FROM cov_cb_2014_us_state_500k;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(*) AS total
+ 		  FROM cov_cb_2014_us_state_500k;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.total = 2296 THEN
+		RAISE INFO 'Table: cov_cb_2014_us_state_500k has % rows', c1_rec.total;
+	ELSE
+		RAISE EXCEPTION 'Table: cov_cb_2014_us_state_500k has % rows; expecting 2296', c1_rec.total;
+	END IF;
+END;
+$$;
   
 --
 -- Convert to index organised table
