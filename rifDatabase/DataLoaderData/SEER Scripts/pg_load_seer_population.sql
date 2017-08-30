@@ -57,8 +57,8 @@
 \set ON_ERROR_STOP ON
 \timing
 
-DROP TABLE IF EXISTS seer_wbo_single_ages_fixed_length;
-DROP TABLE IF EXISTS seer_wbo_single_ages;
+DROP TABLE IF EXISTS :USER.seer_wbo_single_ages_fixed_length;
+DROP TABLE IF EXISTS :USER.seer_wbo_single_ages;
 
 --
 -- Load singleages.txt as a fixed length record
@@ -143,7 +143,7 @@ SELECT SUBSTRING(record_value FROM 1 FOR 4)::INTEGER AS year,
 -- * Convert unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g.
 --   900 series to represent county/independent city combinations in Virginia.
 --
-DROP TABLE IF EXISTS seer_population;  
+DROP TABLE IF EXISTS :USER.seer_population;  
 CREATE TABLE seer_population
 AS  
 SELECT a.year, 
