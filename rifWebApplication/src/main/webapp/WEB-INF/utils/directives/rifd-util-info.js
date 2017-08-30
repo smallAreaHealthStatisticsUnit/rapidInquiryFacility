@@ -35,6 +35,8 @@
  * DIRECTIVE to get info on a completed study
  */
 
+//TODO: LOTS TO SORT OUT HERE IN BACKEND FIRST
+
 angular.module("RIF")
         .controller('ModalInfoInstanceCtrl', function ($scope, $uibModalInstance) {
             $scope.close = function () {

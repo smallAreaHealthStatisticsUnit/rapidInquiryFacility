@@ -26,7 +26,7 @@
  * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
-
+ 
  * David Morley
  * @author dmorley
  */
@@ -75,7 +75,7 @@ angular.module("RIF")
             $scope.close = function () {
                 $uibModalInstance.dismiss();
             };
-            
+
             $scope.submit = function () {
                 //check ready to submit
                 var errMsg = [];
@@ -100,7 +100,11 @@ angular.module("RIF")
                     $scope.showError("Please enter a study name (MY RIF STUDY is a just a placeholder)");
                     return;
                 }
-                
+                if (SubmissionStateService.getState().studyName.length > 20) {
+                    $scope.showError("Study name [" + SubmissionStateService.getState().studyName + " is too long (20 char max)");
+                    return;
+                }
+
                 //TODO: error if year params not set (if loaded from file)
 
                 //If tests passed, then submitStudy

@@ -516,8 +516,8 @@ angular.module("RIF")
                         var drawnItems;
                         LeafletDrawService.getCircleCapability();
                         LeafletDrawService.getPolygonCapability();
+                        
                         //Add Leaflet.Draw toolbar
-
                         L.drawLocal.draw.toolbar.buttons.circle = "Select by concentric bands";
                         L.drawLocal.draw.toolbar.buttons.polygon = "Select by freehand polygons";
                         drawnItems = new L.FeatureGroup();
