@@ -167,8 +167,6 @@ CREATE TABLE rif_data.seer_cancer
   cb_2014_us_nation_5m text, -- United States to county level including territories
   cb_2014_us_state_500k text NOT NULL, -- State geographic Names Information System (GNIS) code
   cb_2014_us_county_500k text NOT NULL, -- County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.
-  sex INTEGER,
-  age INTEGER,
   age_sex_group integer NOT NULL, -- RIF age_sex_group 1 (21 bands)
   icdot10v text, -- ICD 10 site code - recoded from ICD-O-2 to 10
   pubcsnum integer NOT NULL, -- Patient ID
@@ -201,8 +199,6 @@ COMMENT ON COLUMN rif_data.seer_cancer.rac_recy IS 'Race recode Y (W, B, AI, API
 COMMENT ON COLUMN rif_data.seer_cancer.origrecb IS 'Origin Recode NHIA (HISPANIC, NON-HISP)';
 COMMENT ON COLUMN rif_data.seer_cancer.codpub IS 'Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html)';
 COMMENT ON COLUMN rif_data.seer_cancer.reg IS 'SEER registry (minus 1500 so same as population file)';
-COMMENT ON COLUMN rif_data.seer_cancer.age IS 'Age';
-COMMENT ON COLUMN rif_data.seer_cancer.sex IS 'Sex';
 
 --
 -- Load
@@ -224,10 +220,10 @@ BEGIN
 	FETCH c1 INTO c1_rec;
 	CLOSE c1;
 --
-	IF c1_rec.total = 4863414 THEN
+	IF c1_rec.total = 9176963 THEN
 		RAISE INFO 'Table: seer_cancer has % rows', c1_rec.total;
 	ELSE
-		RAISE EXCEPTION 'Table: seer_cancer has % rows; expecting 4863414', c1_rec.total;
+		RAISE EXCEPTION 'Table: seer_cancer has % rows; expecting 9176963', c1_rec.total;
 	END IF;
 END;
 $$;
@@ -328,19 +324,6 @@ FROM rif_data.seer_cancer;
 --
 GRANT SELECT ON rif_data.seer_cancer TO seer_user;
   
-DROP TABLE IF EXISTS rif_data.seer_population_tmp;
-CREATE TABLE rif_data.seer_population_tmp
-(
-  year integer NOT NULL, -- Year
-  cb_2014_us_nation_5m text NOT NULL, -- United States to county level including territories
-  cb_2014_us_state_500k text NOT NULL, -- State geographic Names Information System (GNIS) code
-  cb_2014_us_county_500k text NOT NULL, -- County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.
-  age_sex_group integer NOT NULL, -- RIF age_sex_group 1 (21 bands)
-  sex integer NOT NULL, -- sex
-  age integer NOT NULL, -- age
-  population numeric -- Population
-);
-
 --
 -- Create SEER_POPULATION numerator table
 --
@@ -367,15 +350,7 @@ COMMENT ON COLUMN rif_data.seer_population.population IS 'Population';
 --
 -- Load
 --
-\copy rif_data.seer_population_tmp FROM 'seer_population.csv' WITH CSV HEADER;
-
-INSERT INTO rif_data.seer_population (year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group, population)
-SELECT year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group, SUM(population) AS population
-  FROM rif_data.seer_population_tmp
- GROUP BY year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group
- ORDER BY year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group;
-
-DROP TABLE IF EXISTS rif_data.seer_population_tmp;
+\copy rif_data.seer_population FROM 'seer_population.csv' WITH CSV HEADER;
 
 --
 -- Check rowcount
@@ -392,10 +367,10 @@ BEGIN
 	FETCH c1 INTO c1_rec;
 	CLOSE c1;
 --
-	IF c1_rec.total = 354326 THEN
+	IF c1_rec.total = 614360 THEN
 		RAISE INFO 'Table: seer_population has % rows', c1_rec.total;
 	ELSE
-		RAISE EXCEPTION 'Table: seer_population has % rows; expecting 354326', c1_rec.total;
+		RAISE EXCEPTION 'Table: seer_population has % rows; expecting 614360', c1_rec.total;
 	END IF;
 END;
 $$;
@@ -470,306 +445,6 @@ FROM rif_data.seer_population;
 GRANT SELECT ON rif_data.seer_population TO seer_user;
 
 --
--- US Census Small Area Income and Poverty Estimates 1989-2015 by county
---
-
-DROP TABLE IF EXISTS rif_data.saipe_county_poverty_1989_2015;
-
-CREATE TABLE rif_data.saipe_county_poverty_1989_2015
-(
-  year integer NOT NULL, -- Year
-  cb_2014_us_nation_5m text, -- United States to county level including territories
-  cb_2014_us_state_500k text, -- State geographic Names Information System (GNIS) code
-  cb_2014_us_county_500k text NOT NULL, -- County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.
-  total_poverty_all_ages integer, -- Estimate of people of all ages in poverty
-  pct_poverty_all_ages numeric, -- Estimate percent of people of all ages in poverty
-  pct_poverty_0_17 numeric, -- Estimated percent of people age 0-17 in poverty
-  pct_poverty_related_5_17 numeric, -- Estimated percent of related children age 5-17 in families in poverty
-  median_household_income integer, -- Estimate of median household income
-  median_hh_income_quin integer, -- Quintile: estimate of median household income (1=most deprived, 5=least)
-  med_pct_not_in_pov_0_17_quin integer, -- Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)
-  med_pct_not_in_pov_5_17r_quin integer, -- Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)
-  med_pct_not_in_pov_quin integer, -- Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)
-  CONSTRAINT saipe_county_poverty_1989_2015_pk PRIMARY KEY (year, cb_2014_us_county_500k)
-);
-
---
--- Load
---
-\copy rif_data.saipe_county_poverty_1989_2015 FROM 'saipe_county_poverty_1989_2015.csv' WITH CSV HEADER;
- 
---
--- Check rowcount
---
-SELECT COUNT(*) AS total FROM saipe_county_poverty_1989_2015;
-DO LANGUAGE plpgsql $$
-DECLARE
-	c1 CURSOR FOR
-		SELECT COUNT(*) AS total
- 		  FROM saipe_county_poverty_1989_2015;
-	c1_rec RECORD;
-BEGIN
-	OPEN c1;
-	FETCH c1 INTO c1_rec;
-	CLOSE c1;
---
-	IF c1_rec.total = 69117 THEN
-		RAISE INFO 'Table: saipe_county_poverty_1989_2015 has % rows', c1_rec.total;
-	ELSE
-		RAISE EXCEPTION 'Table: saipe_county_poverty_1989_2015 has % rows; expecting 69117', c1_rec.total;
-	END IF;
-END;
-$$;
-
---
--- Convert to index organised table
---
-CLUSTER rif_data.saipe_county_poverty_1989_2015 USING saipe_county_poverty_1989_2015_pk;
-
-COMMENT ON TABLE rif_data.saipe_county_poverty_1989_2015
-  IS 'US Census Small Area Income and Poverty Estimates 1989-2015 by county';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.year IS 'Year';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.cb_2014_us_nation_5m IS 'United States to county level including territories';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.cb_2014_us_state_500k IS 'State geographic Names Information System (GNIS) code';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.total_poverty_all_ages IS 'Estimate of people of all ages in poverty';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.pct_poverty_all_ages IS 'Estimate percent of people of all ages in poverty';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.median_household_income IS 'Estimate of median household income';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.saipe_county_poverty_1989_2015.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
-
-
--- Index: peter.saipe_county_poverty_1989_2015_cb_2014_us_county_500k
-
--- DROP INDEX peter.saipe_county_poverty_1989_2015_cb_2014_us_county_500k;
-
-CREATE INDEX saipe_county_poverty_1989_2015_cb_2014_us_county_500k
-  ON rif_data.saipe_county_poverty_1989_2015
-  (cb_2014_us_county_500k);
-
--- Index: peter.saipe_county_poverty_1989_2015_cb_2014_us_nation_5m
-
--- DROP INDEX peter.saipe_county_poverty_1989_2015_cb_2014_us_nation_5m;
-
-CREATE INDEX saipe_county_poverty_1989_2015_cb_2014_us_nation_5m
-  ON rif_data.saipe_county_poverty_1989_2015
-  (cb_2014_us_nation_5m);
-
--- Index: peter.saipe_county_poverty_1989_2015_cb_2014_us_state_500k
-
--- DROP INDEX peter.saipe_county_poverty_1989_2015_cb_2014_us_state_500k;
-
-CREATE INDEX saipe_county_poverty_1989_2015_cb_2014_us_state_500k
-  ON rif_data.saipe_county_poverty_1989_2015
-  (cb_2014_us_state_500k);
-
--- Index: peter.saipe_county_poverty_1989_2015_year
-
--- DROP INDEX peter.saipe_county_poverty_1989_2015_year;
-
-CREATE INDEX saipe_county_poverty_1989_2015_year
-  ON rif_data.saipe_county_poverty_1989_2015
-  (year);
- 
---
--- Grant
--- * The role SEER_USER needs to be created by an administrator
---
-GRANT SELECT ON rif_data.saipe_county_poverty_1989_2015 TO seer_user;
-
--- Table: peter.saipe_state_poverty_1989_2015
-
-DROP TABLE IF EXISTS rif_data.saipe_state_poverty_1989_2015;
-
-CREATE TABLE rif_data.saipe_state_poverty_1989_2015
-(
-  year integer NOT NULL, -- Year
-  cb_2014_us_nation_5m text, -- United States to county level including territories
-  cb_2014_us_state_500k text NOT NULL, -- State geographic Names Information System (GNIS) code
-  total_poverty_all_ages integer, -- Estimate of people of all ages in poverty
-  pct_poverty_all_ages numeric, -- Estimate percent of people of all ages in poverty
-  pct_poverty_0_17 numeric, -- Estimated percent of people age 0-17 in poverty
-  pct_poverty_related_5_17 numeric, -- Estimated percent of related children age 5-17 in families in poverty
-  median_household_income integer, -- Estimate of median household income
-  median_hh_income_quin integer, -- Quintile: estimate of median household income (1=most deprived, 5=least)
-  med_pct_not_in_pov_0_17_quin integer, -- Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)
-  med_pct_not_in_pov_5_17r_quin integer, -- Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)
-  med_pct_not_in_pov_quin integer, -- Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)
-  CONSTRAINT saipe_state_poverty_1989_2015_pk PRIMARY KEY (year, cb_2014_us_state_500k)
-);
-COMMENT ON TABLE rif_data.saipe_state_poverty_1989_2015
-  IS 'US Census Small Area Income and Poverty Estimates 1989-2015 by county';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.year IS 'Year';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.cb_2014_us_nation_5m IS 'United States to county level including territories';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.cb_2014_us_state_500k IS 'State geographic Names Information System (GNIS) code';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.total_poverty_all_ages IS 'Estimate of people of all ages in poverty';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.pct_poverty_all_ages IS 'Estimate percent of people of all ages in poverty';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.median_household_income IS 'Estimate of median household income';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
-COMMENT ON COLUMN rif_data.saipe_state_poverty_1989_2015.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
-
---
--- Load
---
-\copy rif_data.saipe_state_poverty_1989_2015 FROM 'saipe_state_poverty_1989_2015.csv' WITH CSV HEADER;
-
---
--- Check rowcount
---
-SELECT COUNT(*) AS total FROM rif_data.saipe_state_poverty_1989_2015;
-DO LANGUAGE plpgsql $$
-DECLARE
-	c1 CURSOR FOR
-		SELECT COUNT(*) AS total
- 		  FROM rif_data.saipe_state_poverty_1989_2015;
-	c1_rec RECORD;
-BEGIN
-	OPEN c1;
-	FETCH c1 INTO c1_rec;
-	CLOSE c1;
---
-	IF c1_rec.total = 1122 THEN
-		RAISE INFO 'Table: saipe_state_poverty_1989_2015 has % rows', c1_rec.total;
-	ELSE
-		RAISE EXCEPTION 'Table: saipe_state_poverty_1989_2015 has % rows; expecting 1122', c1_rec.total;
-	END IF;
-END;
-$$;
-
-SELECT year, COUNT(year) AS total
-  FROM rif_data.saipe_state_poverty_1989_2015
- GROUP BY year
- ORDER BY year;
- 
---
--- Cope with holes:
---    No county/state level 96 data; use 95 data
---    No county/state level 94 data; use 93 data
---    No county/state level 90-92 data; use 89 data
---
-INSERT INTO rif_data.saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
-	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
-	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
-SELECT 1996 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
-	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
-	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
-  FROM rif_data.saipe_state_poverty_1989_2015 WHERE year = 1995;
-INSERT INTO rif_data.saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
-	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
-	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
-SELECT 1994 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
-	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
-	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
-  FROM rif_data.saipe_state_poverty_1989_2015 WHERE year = 1993;
-INSERT INTO rif_data.saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
-	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
-	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
-SELECT 1992 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
-	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
-	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
-  FROM rif_data.saipe_state_poverty_1989_2015 WHERE year = 1989;
-INSERT INTO rif_data.saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
-	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
-	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
-SELECT 1991 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
-	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
-	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
-  FROM rif_data.saipe_state_poverty_1989_2015 WHERE year = 1989;
-INSERT INTO rif_data.saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
-	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
-	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
-SELECT 1990 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
-	pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
-	median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
-  FROM rif_data.saipe_state_poverty_1989_2015 WHERE year = 1989;
-  
---
--- Convert to index organised table
---
-CLUSTER rif_data.saipe_state_poverty_1989_2015 USING saipe_state_poverty_1989_2015_pk;
-
--- Index: peter.saipe_state_poverty_1989_2015_cb_2014_us_nation_5m
-
--- DROP INDEX peter.saipe_state_poverty_1989_2015_cb_2014_us_nation_5m;
-
-CREATE INDEX saipe_state_poverty_1989_2015_cb_2014_us_nation_5m
-  ON rif_data.saipe_state_poverty_1989_2015
-  (cb_2014_us_nation_5m);
-
--- Index: peter.saipe_state_poverty_1989_2015_cb_2014_us_state_500k
-
--- DROP INDEX peter.saipe_state_poverty_1989_2015_cb_2014_us_state_500k;
-
-CREATE INDEX saipe_state_poverty_1989_2015_cb_2014_us_state_500k
-  ON rif_data.saipe_state_poverty_1989_2015
-  (cb_2014_us_state_500k);
-
--- Index: peter.saipe_state_poverty_1989_2015_year
-
--- DROP INDEX peter.saipe_state_poverty_1989_2015_year;
-
-CREATE INDEX saipe_state_poverty_1989_2015_year
-  ON rif_data.saipe_state_poverty_1989_2015
-  (year);
-
---
--- Grant
--- * The role SEER_USER needs to be created by an administrator
---
-GRANT SELECT ON rif_data.saipe_county_poverty_1989_2015 TO seer_user;
-
-DROP TABLE IF EXISTS rif_data.seer_wbo_ethnicity_covariates;
-
-CREATE TABLE rif_data.seer_wbo_ethnicity_covariates
-(
-  year integer NOT NULL, -- Year
-  cb_2014_us_county_500k text NOT NULL, -- County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.
-  pct_white numeric, -- % White
-  pct_black numeric, -- % Black
-  pct_white_quintile integer, -- % White quintile (1=least white, 5=most)
-  pct_black_quintile integer, -- % Black quintile (1=least black, 5=most)
-  CONSTRAINT seer_wbo_ethnicity_covariates_pk PRIMARY KEY (year, cb_2014_us_county_500k)
-);
-COMMENT ON TABLE rif_data.seer_wbo_ethnicity_covariates
-  IS 'SEER Ethnicity covariates 1972-2013. 9 States in total';
-COMMENT ON COLUMN rif_data.seer_wbo_ethnicity_covariates.year IS 'Year';
-COMMENT ON COLUMN rif_data.seer_wbo_ethnicity_covariates.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
-COMMENT ON COLUMN rif_data.seer_wbo_ethnicity_covariates.pct_white IS '% White';
-COMMENT ON COLUMN rif_data.seer_wbo_ethnicity_covariates.pct_black IS '% Black';
-COMMENT ON COLUMN rif_data.seer_wbo_ethnicity_covariates.pct_white_quintile IS '% White quintile (1=least white, 5=most)';
-COMMENT ON COLUMN rif_data.seer_wbo_ethnicity_covariates.pct_black_quintile IS '% Black quintile (1=least black, 5=most)';
-
---
--- Load
---
-\copy rif_data.seer_wbo_ethnicity_covariates FROM 'seer_wbo_ethnicity_covariates.csv' WITH CSV HEADER;
-
--- Index: peter.seer_wbo_ethnicity_covariates_year
-
--- DROP INDEX peter.seer_wbo_ethnicity_covariates_year;
-
-CREATE INDEX seer_wbo_ethnicity_covariates_year
-  ON rif_data.seer_wbo_ethnicity_covariates
-  USING btree
-  (year);
- 
-CLUSTER rif_data.seer_wbo_ethnicity_covariates USING seer_wbo_ethnicity_covariates_pk;
- 
---
--- Grant
--- * The role SEER_USER needs to be created by an administrator
---
-GRANT SELECT ON rif_data.seer_wbo_ethnicity_covariates TO seer_user;
- 
---
 -- Covariates tables
 --
 
@@ -796,56 +471,30 @@ CREATE TABLE rif_data.cov_cb_2014_us_county_500k
   CONSTRAINT cov_cb_2014_us_county_500k_pkey PRIMARY KEY (year, cb_2014_us_county_500k)
 );
 
-
---
--- Cope with holes in SAIPE data: before 89 use 1989 data
--- Allow holes in SEER ethnicty data
---
-INSERT INTO rif_data.cov_cb_2014_us_county_500k(year, cb_2014_us_county_500k, areaname,
-       total_poverty_all_ages,
-	   pct_poverty_all_ages,
-	   pct_poverty_0_17,
-	   pct_poverty_related_5_17,
-	   median_household_income,
-	   median_hh_income_quin,
-	   med_pct_not_in_pov_quin,
-	   med_pct_not_in_pov_0_17_quin,
-	   med_pct_not_in_pov_5_17r_quin,
-	   pct_white_quintile,
-	   pct_black_quintile)
-WITH a AS (
-	SELECT generate_series(year_start::INTEGER, year_stop::INTEGER) AS year
-	  FROM rif40.rif40_tables
-	 WHERE table_name = 'SEER_POPULATION'
-), b AS (
-	SELECT a.year, b.cb_2014_us_county_500k, b.areaname
-	  FROM a CROSS JOIN rif_data.lookup_cb_2014_us_county_500k b
-)
-SELECT b.year, b.cb_2014_us_county_500k, b.areaname,
-       COALESCE(c.total_poverty_all_ages, c89.total_poverty_all_ages) AS total_poverty_all_ages,
-	   COALESCE(c.pct_poverty_all_ages, c89.pct_poverty_all_ages) AS pct_poverty_all_ages,
-	   COALESCE(c.pct_poverty_0_17, c89.pct_poverty_0_17) AS pct_poverty_0_17,
-	   COALESCE(c.pct_poverty_related_5_17, c89.pct_poverty_related_5_17) AS pct_poverty_related_5_17,
-	   COALESCE(c.median_household_income, c89.median_household_income) AS median_household_income,
-	   COALESCE(c.median_hh_income_quin, c89.median_hh_income_quin) AS median_hh_income_quin,
-	   COALESCE(c.med_pct_not_in_pov_quin, c89.med_pct_not_in_pov_quin) AS med_pct_not_in_pov_quin,
-	   COALESCE(c.med_pct_not_in_pov_0_17_quin, c89.med_pct_not_in_pov_0_17_quin) AS med_pct_not_in_pov_0_17_quin,
-	   COALESCE(c.med_pct_not_in_pov_5_17r_quin, c89.med_pct_not_in_pov_5_17r_quin) AS med_pct_not_in_pov_5_17r_quin,
-	   d.pct_white_quintile,
-	   d.pct_black_quintile
-  FROM b
-	LEFT OUTER JOIN rif_data.saipe_county_poverty_1989_2015 c ON 
-		(b.year = c.year AND b.cb_2014_us_county_500k = c.cb_2014_us_county_500k)
-	LEFT OUTER JOIN rif_data.saipe_county_poverty_1989_2015 c89 ON 
-		(1989 = c89.year AND b.cb_2014_us_county_500k = c89.cb_2014_us_county_500k)
-		LEFT OUTER JOIN rif_data.seer_wbo_ethnicity_covariates d ON 
-		(b.year = d.year AND b.cb_2014_us_county_500k = d.cb_2014_us_county_500k)
- ORDER BY 1, 2;
+\copy cov_cb_2014_us_county_500k FROM 'cov_cb_2014_us_county_500k.csv' WITH CSV HEADER;
  
-SELECT year, COUNT(year) AS total, COUNT(median_hh_income_quin) AS t_median_hh_income_quin
-  FROM rif_data.cov_cb_2014_us_county_500k
- GROUP BY year
- ORDER BY year;
+--
+-- Check rowcount
+--
+SELECT COUNT(*) AS total FROM cov_cb_2014_us_county_500k;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(*) AS total
+ 		  FROM cov_cb_2014_us_county_500k;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.total = 132553 THEN
+		RAISE INFO 'Table: cov_cb_2014_us_county_500k has % rows', c1_rec.total;
+	ELSE
+		RAISE EXCEPTION 'Table: cov_cb_2014_us_county_500k has % rows; expecting 132553', c1_rec.total;
+	END IF;
+END;
+$$;
   
 --
 -- Convert to index organised table
@@ -869,13 +518,12 @@ COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_5_17r_q
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_white_quintile IS '% White quintile (1=least white, 5=most)'; 
 COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_black_quintile IS '% Black quintile (1=least black, 5=most)';
  
-
 --
 -- Grant
 -- * The role SEER_USER needs to be created by an administrator
 --
 GRANT SELECT ON rif_data.cov_cb_2014_us_county_500k TO seer_user;
- 
+
 -- Table: rif_data.cov_cb_2014_us_state_500k
 
 DROP TABLE IF EXISTS rif_data.cov_cb_2014_us_state_500k;
@@ -897,52 +545,27 @@ CREATE TABLE rif_data.cov_cb_2014_us_state_500k
   CONSTRAINT cov_cb_2014_us_state_500k_pkey PRIMARY KEY (year, cb_2014_us_state_500k)
 );
 
-INSERT INTO rif_data.cov_cb_2014_us_state_500k(year, cb_2014_us_state_500k, areaname,
-       total_poverty_all_ages,
-	   pct_poverty_all_ages,
-	   pct_poverty_0_17,
-	   pct_poverty_related_5_17,
-	   median_household_income,
-	   median_hh_income_quin,
-	   med_pct_not_in_pov_quin,
-	   med_pct_not_in_pov_0_17_quin,
-	   med_pct_not_in_pov_5_17r_quin)
-WITH a AS (
-	SELECT generate_series(year_start::INTEGER, year_stop::INTEGER) AS year
-	  FROM rif40.rif40_tables
-	 WHERE table_name = 'SEER_POPULATION'
-), b AS (
-	SELECT a.year, b.cb_2014_us_state_500k, b.areaname
-	  FROM a CROSS JOIN rif_data.lookup_cb_2014_us_state_500k b
-)
-/*
-SELECT b.year, b.cb_2014_us_state_500k, b.areaname, COUNT(*) AS total
-  FROM b
-  WHERE b.year = 1973
-  GROUP BY b.year, b.cb_2014_us_state_500k, b.areaname
-  ORDER BY b.areaname;
- */
-SELECT b.year, b.cb_2014_us_state_500k, b.areaname,
-       COALESCE(c.total_poverty_all_ages, c89.total_poverty_all_ages) AS total_poverty_all_ages,
-	   COALESCE(c.pct_poverty_all_ages, c89.pct_poverty_all_ages) AS pct_poverty_all_ages,
-	   COALESCE(c.pct_poverty_0_17, c89.pct_poverty_0_17) AS pct_poverty_0_17,
-	   COALESCE(c.pct_poverty_related_5_17, c89.pct_poverty_related_5_17) AS pct_poverty_related_5_17,
-	   COALESCE(c.median_household_income, c89.median_household_income) AS median_household_income,
-	   COALESCE(c.median_hh_income_quin, c89.median_hh_income_quin) AS median_hh_income_quin,
-	   COALESCE(c.med_pct_not_in_pov_quin, c89.med_pct_not_in_pov_quin) AS med_pct_not_in_pov_quin,
-	   COALESCE(c.med_pct_not_in_pov_0_17_quin, c89.med_pct_not_in_pov_0_17_quin) AS med_pct_not_in_pov_0_17_quin,
-	   COALESCE(c.med_pct_not_in_pov_5_17r_quin, c89.med_pct_not_in_pov_5_17r_quin) AS med_pct_not_in_pov_5_17r_quin
-  FROM b
-	LEFT OUTER JOIN rif_data.saipe_state_poverty_1989_2015 c ON 
-		(b.year = c.year AND b.cb_2014_us_state_500k = c.cb_2014_us_state_500k)
-	LEFT OUTER JOIN rif_data.saipe_state_poverty_1989_2015 c89 ON 
-		(1989 = c89.year AND b.cb_2014_us_state_500k = c89.cb_2014_us_state_500k)
- ORDER BY 1, 2;
-  
-SELECT year, COUNT(year) AS total, COUNT(median_hh_income_quin) AS t_median_hh_income_quin
-  FROM rif_data.cov_cb_2014_us_state_500k
- GROUP BY year
- ORDER BY year; 	
+\copy cov_cb_2014_us_state_500k FROM 'cov_cb_2014_us_state_500k.csv' WITH CSV HEADER;
+
+SELECT COUNT(*) AS total FROM cov_cb_2014_us_state_500k;
+DO LANGUAGE plpgsql $$
+DECLARE
+	c1 CURSOR FOR
+		SELECT COUNT(*) AS total
+ 		  FROM cov_cb_2014_us_state_500k;
+	c1_rec RECORD;
+BEGIN
+	OPEN c1;
+	FETCH c1 INTO c1_rec;
+	CLOSE c1;
+--
+	IF c1_rec.total = 2296 THEN
+		RAISE INFO 'Table: cov_cb_2014_us_state_500k has % rows', c1_rec.total;
+	ELSE
+		RAISE EXCEPTION 'Table: cov_cb_2014_us_state_500k has % rows; expecting 2296', c1_rec.total;
+	END IF;
+END;
+$$;
   
 --
 -- Convert to index organised table
@@ -1065,11 +688,8 @@ END;
 --
 ANALYZE VERBOSE rif_data.seer_cancer;
 ANALYZE VERBOSE rif_data.seer_population;
-ANALYZE VERBOSE rif_data.saipe_county_poverty_1989_2015;
-ANALYZE VERBOSE rif_data.saipe_state_poverty_1989_2015;
 ANALYZE VERBOSE rif_data.cov_cb_2014_us_county_500k;
 ANALYZE VERBOSE rif_data.cov_cb_2014_us_state_500k;
-ANALYZE VERBOSE rif_data.seer_wbo_ethnicity_covariates;
 
 --
 -- Eof

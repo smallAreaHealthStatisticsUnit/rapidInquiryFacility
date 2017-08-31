@@ -8,10 +8,10 @@ Windows Postgres Install using pg_dump and scripts
    - [1.1 Postgres](#11-postgres)	
       - [1.1.1 Postgres User Setup](#111-postgres-user-setup)
       - [1.1.2 Fixing Windows Code page errors](#112-fixing-windows-code-page-errors)
-- [2. Installing a production database](#2-installing=a-production-database)
+- [2. Installing a production database](#2-installing-a-production-database)
   - [2.1 Changing the postgres database adminstrator password](#21-Changing-the-postgres-database-adminstrator-password)
 
-# 1. Installation Prerequistes
+# 1 Installation Prerequistes
 ## 1.1 Postgres
  
 * Uses *pg_dump* and Powershell
@@ -87,7 +87,7 @@ cmd.exe /c chcp 1252
 ```
 * Or: modify the cmd shortcut to run *cmd.exe /k chcp 1252*
 
-# 2. Installing a production database
+# 2 Installing a production database
 
 Run the datbase installer batch script as an adminstrator: rif40_database_install.bat.
 
@@ -110,7 +110,6 @@ C:\rifDemo\Postgres\production>rif40_database_install.bat
 Creating production RIF Postgres database
 PG_SYSCONFDIR=C:/PROGRA~1/POSTGR~1/9.6/etc
 Administrator PRIVILEGES Detected!
-'ELSE' is not recognized as an internal or external command,
 operable program or batch file.
 ##########################################################################################
 #

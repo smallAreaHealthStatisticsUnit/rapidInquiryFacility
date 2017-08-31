@@ -1548,23 +1548,26 @@ Todo:
   
 #### 28th August to 1st September
 
+* Add more SEER data
+* Fix for missing SQL Server deallocate cursor: 'c1_creex' already exists (rif40_create_extract.sql)
+
 Todo:
 
-* Add more SEER data
 * Test covariates in dataloader
 * Add and test SQL Server support
 * Run dataloader, check outputs
 * More dataloader documentation
-* Fix missing SQL Server deallocate cursor: 'c1_creex' already exists
   
 September:
 
 * More work on SEER data, dataloader
+* Add log4j to Java, setup; fix results reporting from run stust and R code. Possibly add support for ri40_study_status
 * US geography and centroids fixes
 * Add area name to results map table
   
 #### Database TODO list (deferred to September 2017): SQL Server Port
 
+* Add unique keys to description fileds on tables/projects/health themes to protect against Kev using them as a Key
 * Add area name to results map table
 * USA_2014 integration: 
   * RIF40_GEOGRAPHIES set up wrong: default study and comnparison area names use original field name, no setup field names

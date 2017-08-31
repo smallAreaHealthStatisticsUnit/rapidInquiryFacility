@@ -57,8 +57,8 @@
 \set ON_ERROR_STOP ON
 \timing
 
-DROP TABLE IF EXISTS seer9_yr1973_2013_fixed_length;
-DROP TABLE IF EXISTS seer9_yr1973_2013;
+DROP TABLE IF EXISTS :USER.seer9_yr1973_2013_fixed_length;
+DROP TABLE IF EXISTS :USER.seer9_yr1973_2013;
 
 --
 -- Load yr1973_2013.seer9.txt as a fixed length record
@@ -245,7 +245,7 @@ Code			Description (first year of data)
 --   900 series to represent county/independent city combinations in Virginia.
 -- * Use icdot10v (ICD 10 site code - recoded from ICD-O-2 to 10) as the ICD field
 --
-DROP TABLE IF EXISTS seer_cancer;  
+DROP TABLE IF EXISTS :USER.seer_cancer;  
 CREATE TABLE seer_cancer
 AS  
 SELECT a.year_dx AS year, 

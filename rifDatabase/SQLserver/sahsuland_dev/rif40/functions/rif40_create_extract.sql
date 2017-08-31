@@ -220,6 +220,8 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 		SET @err_msg = formatmessage(55400, @study_id); -- Study ID %i not found
 		THROW 55400, @err_msg, 1;
 	END;
+	CLOSE c1_creex;
+	DEALLOCATE c1_creex;
 	
 --
 -- Check extract table does not exist

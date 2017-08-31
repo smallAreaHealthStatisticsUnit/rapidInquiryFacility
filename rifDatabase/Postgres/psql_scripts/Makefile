@@ -291,6 +291,10 @@ repatch:
 	$(MAKE) -C alter_scripts all PGDATABASE=sahsuland
 	$(MAKE) -C test_scripts all PGDATABASE=sahsuland
 	$(MAKE) v4_0_vacuum_analyse_dev
+
+#- world: fully rebuild databases from source
+world:
+	$(MAKE) db_setup
 	
 #- dev: Run all alter scripts in development
 dev: $(PLR_DIRS)
@@ -336,21 +340,22 @@ topojson_convert:
 #-
 #- 3. installers
 #-	
-#- sahsuland_dump: Dump sahsuland database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
-sahsuland_dump: ../install/sahsuland.sql
-	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v -C sahsuland > ../install/sahsuland.sql
-sahsuland.dump: ../install/sahsuland.dump
-	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../install/sahsuland.dump		
+#- sahsuland.sql: Dump sahsuland database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
+sahsuland.sql: ../production/sahsuland.sql
+sahsuland.dump: ../production/sahsuland.dump	
 # make dependent on completed target
-../install/sahsuland.sql: 
+../production/sahsuland.sql: 
+	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v -C sahsuland > ../production/sahsuland.sql
+../production/sahsuland.dump:	
+	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../production/sahsuland.dump	
 #- sahsuland_dev_dump: Dump sahsuland_dev database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
 #-                     Used to create sahsuland
 sahsuland_dev_dump: ../production/sahsuland_dev.dump 
 ../production/sahsuland_dev.dump:
 	pg_dump -U postgres -w -F custom -Z 9 -T '*x_uk*' -T '*.x_ew01*' -v sahsuland_dev > ../production/sahsuland_dev.dump	
 #
-../install/sahsuland.dump:
-	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../install/sahsuland.dump		
+../production/sahsuland.dump:
+	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../production/sahsuland.dump		
 	
 #-
 #- 4. test
@@ -381,7 +386,10 @@ verbose_test:
 clean:
 	$(MAKE) -C alter_scripts clean
 	$(MAKE) -C test_scripts clean
-	$(DELETE) db_setup.rpt db_create.rpt recreate_sahsuland_empty_db.rpt recreate_sahsuland_empty_db.rpt v4_0_create_sahsuland.rpt v4_0_create_sahsuland_empty.rpt v4_0_vacuum_analyse.rpt ../production/sahsuland_dev.dump ../install/sahsuland.dump ../install/sahsuland.sql
+	$(DELETE) db_setup.rpt db_create.rpt recreate_sahsuland_empty_db.rpt recreate_sahsuland_empty_db.rpt \
+			v4_0_create_sahsuland.rpt v4_0_create_sahsuland_empty.rpt v4_0_vacuum_analyse.rpt \
+			../production/sahsuland_dev.dump ../production/sahsuland.dump ../production/sahsuland.sql \
+			../install/sahsuland_dev.dump ../install/sahsuland.dump ../install/sahsuland.sql
 #- devclean: Remove logs so alter scripts in development can be r-run 
 #-           Not normally needed as they abort.
 devclean:
@@ -433,7 +441,7 @@ endif
 #	$(MAKE) -C ../Node topojson_convert PGDATABASE=sahsuland
 	$(MAKE) clean v4_0_vacuum_analyse_dev PGDATABASE=sahsuland
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
-	$(MAKE) sahsuland_dump
+	$(MAKE) sahsuland.sql
 ifneq ($(OS),Windows_NT)
 ifneq ($(UNAME_S),Darwin)	
 	-$(MAKE) -C ../../ERD dbms_tools
@@ -447,17 +455,11 @@ erd:
 #
 # Now has Node, ERD integration, pg_restore allowed to fail on Postgres 9.4.1
 #
-
+#- db_create: Create empty database
 db_create: 
 	-$(MAKE) clean
 	$(MAKE) db_create.rpt PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all
 
-#- db_install: Re-create empty sahsuland, sahsuland_dev; restore from production pg_dump 
-db_install: db_create ../install/sahsuland/sahsuland.dump
-	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland -U postgres -v ../install/sahsuland/sahsuland.dump
-	$(RUN) pg_restore.rpt ../install pg_restore -d sahsuland_dev -U postgres -v ../install/sahsuland/sahsuland.dump
-	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
-	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland_dev	
 
 #
 # Files to create/install
