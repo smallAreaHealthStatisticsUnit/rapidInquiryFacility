@@ -110,7 +110,6 @@ C:\rifDemo\Postgres\production>rif40_database_install.bat
 Creating production RIF Postgres database
 PG_SYSCONFDIR=C:/PROGRA~1/POSTGR~1/9.6/etc
 Administrator PRIVILEGES Detected!
-'ELSE' is not recognized as an internal or external command,
 operable program or batch file.
 ##########################################################################################
 #
