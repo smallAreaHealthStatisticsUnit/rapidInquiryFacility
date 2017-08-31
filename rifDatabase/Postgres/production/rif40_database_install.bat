@@ -121,14 +121,31 @@ IF EXIST %PGPASSWORDFILE% (
 	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:postgres:" %PGPASSWORDFILE%') DO (
 	  SET PGPASSWORD=%%F
 	)
+	IF NOT DEFINED PGPASSWORD (
+		FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:\*:\*:postgres:" %PGPASSWORDFILE%') DO (
+		  SET PGPASSWORD=%%F
+		)	
+	)
 	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:rif40:" %PGPASSWORDFILE%') DO (
 	  SET RIF40PW=%%F
+	)
+	IF NOT DEFINED RIF40PW (
+		FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:\*:\*:rif40:" %PGPASSWORDFILE%') DO (
+		  SET RIF40PW=%%F
+		)
 	)
 	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:%NEWUSER%:" %PGPASSWORDFILE%') DO (
 	  SET NEWPW=%%F
 	)
-)
-ELSE (
+	IF NOT DEFINED NEWPW (
+		FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:\*:\*:%NEWUSER%:" %PGPASSWORDFILE%') DO (
+		  SET NEWPW=%%F
+		)	
+	)
+) ELSE (
+	ECHO PGPASSWORDFILE %PGPASSWORDFILE% does not exist
+	PAUSE
+	exit /b 1
 )
 
 REM
