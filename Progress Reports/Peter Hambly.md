@@ -1615,7 +1615,7 @@ UPDATE rif40_geographies
 ```
   So the script was fixed, reload needed DELETE FROM rif40_covariates WHERE geography = 'USA_2014' adding.
   This was fixed from before; I appear to have used an older script!
-* Postgres run study middleware code not stopping on error!
+  Also STATE was not a comparison are; this is probably a fault in the scripts. All flags should be set in rif40_geolevels* Postgres run study middleware code not stopping on error!
 * The R script does not handle only males in a study:
 ```
 C:\rifDemo\scratchSpace>C:\"Program Files"\R\R-3.4.0\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"\\webapps\\rifServices\\WEB-INF\\classes\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432  --db_name=sahsuland  --db_driver_class_name=org.postgresql.Driver  --study_id=16  --investigation_name=TEST_1001  --covariate_name=NONE
