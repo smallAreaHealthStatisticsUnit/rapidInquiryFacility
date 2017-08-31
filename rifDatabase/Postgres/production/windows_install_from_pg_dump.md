@@ -11,7 +11,7 @@ Windows Postgres Install using pg_dump and scripts
 - [2. Installing a production database](#2-installing=a-production-database)
   - [2.1 Changing the postgres database adminstrator password](#21-Changing-the-postgres-database-adminstrator-password)
 
-# 1. Installation Prerequistes
+# 1 Installation Prerequistes
 ## 1.1 Postgres
  
 * Uses *pg_dump* and Powershell
@@ -87,7 +87,7 @@ cmd.exe /c chcp 1252
 ```
 * Or: modify the cmd shortcut to run *cmd.exe /k chcp 1252*
 
-# 2. Installing a production database
+# 2 Installing a production database
 
 Run the datbase installer batch script as an adminstrator: rif40_database_install.bat.
 
