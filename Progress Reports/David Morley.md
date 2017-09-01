@@ -2,7 +2,7 @@
 
 Principal Work Area: JavaScript User interface development
 
-- Started in position 1st June 2016
+- In position 1st June 2016 - 29th September 2017
 
 # 2016
 ## June
