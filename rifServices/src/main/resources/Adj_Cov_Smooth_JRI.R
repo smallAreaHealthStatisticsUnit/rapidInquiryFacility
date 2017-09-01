@@ -61,8 +61,9 @@ library(Matrix)
 # SCRIPT VARIABLES
 ##====================================================================
 
-connDB <- ""
-exitValue <- 0 #0 success, 1 failure
+connDB <- ""	# Database connection
+exitValue <- 0 	# 0 success, 1 failure
+errorCount <- 0	# Smoothing error count
 
 #Adjust for other covariate(s) or not
 #Reformat Java type > R
@@ -1331,6 +1332,38 @@ check.integer <- function(N) {
     return(check.integer.Result)
 }
 
+# Error tracing function
+# https://stackoverflow.com/questions/40629715/how-to-show-error-location-in-trycatch
+withErrorTracing = function(expr, silentSuccess=FALSE) {
+    hasFailed = FALSE
+    messages = list()
+    warnings = list()
+
+    errorTracer = function(obj) {
+
+        # Storing the call stack 
+        calls = sys.calls()
+        calls = calls[1:length(calls)-1]
+        # Keeping the calls only
+        trace = limitedLabels(c(calls, attr(obj, "calls")))
+
+        # Printing the 2nd and 3rd traces that contain the line where the error occured
+        # This is the part you might want to edit to suit your needs
+        #print(paste0("Error occuring: ", trace[length(trace):1][2:3]))
+        print(paste0("Error occuring: ", trace[length(trace):1]))
+
+        # Muffle any redundant output of the same message
+        optionalRestart = function(r) { res = findRestart(r); if (!is.null(res)) invokeRestart(res) }
+        optionalRestart("muffleMessage")
+        optionalRestart("muffleWarning")
+    }
+
+    vexpr = withCallingHandlers(withVisible(expr),  error=errorTracer)
+    if (silentSuccess && !hasFailed) {
+        cat(paste(warnings, collapse=""))
+    }
+    if (vexpr$visible) vexpr$value else invisible(vexpr$value)
+}
 
 ##================================================================================
 ##FUNCTION: runRSmoothingFunctions
@@ -1347,7 +1380,7 @@ runRSmoothingFunctions <- function() {
            #tryCatch(connDB <- odbcConnect(odbcDataSource),
            warning=function(w) {
              print(paste("UNABLE TO CONNECT! ", w))
-             exitValue <<- 1
+             exitValue <<- 0
            },
            error=function(e) {
              print(paste("ERROR CONNECTING! ", geterrmessage()))
@@ -1357,39 +1390,57 @@ runRSmoothingFunctions <- function() {
   print(odbcGetInfo(connDB))
 
   #odbcSetAutoCommit(connDB, autoCommit=FALSE)
+  # tryCatch()is trouble because it replaces the stack!
   print("Performing basic stats and smoothing")
-  result <- performSmoothingActivity()
-  
-  if (exitValue == 0) {
-    
+  tryCatch({
+			withErrorTracing({result <- performSmoothingActivity()})
+		},
+		warning=function(w) {
+			print(paste("performSmoothingActivity() WARNING: ", w))
+		},
+		error=function(e) {
+			e <<- e
+			errorCount<<-errorCount+1
+			print(paste("performSmoothingActivity() ERROR[",errorCount,"]: ", e$message, "; call stack: ", e$call))
+			exitValue <<- 1
+		},
+		finally={
+			print(paste0("performSmoothingActivity exitValue: ", exitValue))
+		})  
 	
-    # Cast area_id to char. This is ignored by sqlSave!
-	area_id_is_integer <- FALSE
-    print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]), 
-		"; check.integer(result$area_id[1]): ", check.integer(result$area_id[1]),
-		"; result$area_id[1]: ", result$area_id[1]))
- 
-# Use check.integer() to reliably test if the string is an integer 
-    if (check.integer(result$area_id[1])) {
-		area_id_is_integer <- TRUE
-		result$area_id <- sapply(result$area_id, as.character)
-		print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]),
+  if (exitValue == 0) {
+		print(paste("performSmoothingActivity() OK: ", exitValue))
+    		
+		# Cast area_id to char. This is ignored by sqlSave!
+		area_id_is_integer <- FALSE
+		print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]), 
+			"; check.integer(result$area_id[1]): ", check.integer(result$area_id[1]),
 			"; result$area_id[1]: ", result$area_id[1]))
-    }
+		 
+		# Use check.integer() to reliably test if the string is an integer 
+		if (check.integer(result$area_id[1])) {
+			area_id_is_integer <- TRUE
+			result$area_id <- sapply(result$area_id, as.character)
+			print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]),
+				"; result$area_id[1]: ", result$area_id[1]))
+		}
 
-    saveDataFrameToDatabaseTable(result)
-    updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue
+		saveDataFrameToDatabaseTable(result)
+		updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue  
   }
-	
-  if (exitValue == 0) {
+  
+  if (exitValue == 0 && !is.na(connDB)) {
     print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
     sqlDrop(connDB, temporarySmoothedResultsTableName)
   }
- # Dummy change to check conflict is resolved
- print("Closing database connection")
-  #print(paste0("head(RESULT)==", head(result), "=="))
+	# Dummy change to check conflict is resolved
   
-  odbcEndTran(connDB, commit = TRUE)
-  odbcClose(connDB)
+	if (!is.na(connDB)) {
+		print("Closing database connection")
+		odbcEndTran(connDB, commit = TRUE)
+		odbcClose(connDB)
+	}
+  print(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue))
+
   return(exitValue)
 }
