@@ -134,6 +134,16 @@ Principal Work Area: JavaScript User interface development
 - Removing redundant code from rifServices
 - Demos to possible RIF users and/or testers
 
-## (August)
+## August
+
+- Removing redundant code from rifServices
+- Starting handover docs
+- Preparing fron-end for risk analysis
+- Scoping for risk analysis in middleware
+- Fixes from first round of ad hoc user tests
+
+## September
+
+- Documentation
 
 
