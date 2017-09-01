@@ -1,6 +1,8 @@
 # David Morley Progress Report RIF 4.0
 
-Principal Work Area: JavaScript User interface development
+Principal Work Area: 
+-JavaScript User interface development
+-Java rifServices
 
 - In position 1st June 2016 - 29th September 2017
 
