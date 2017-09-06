@@ -44,14 +44,14 @@ angular.module("RIF")
                     ParameterStateService, StatsStateService, ViewerStateService, MappingStateService) {
                 
                 //will be the default placeholder
-                $scope.username = "dwmorley"; 
-                $scope.password = "dwmorley";
+            //    $scope.username = "dwmorley"; 
+            //    $scope.password = "dwmorley";
                 
             //    $scope.username = "";
             //    $scope.password = "";
                 
-               // $scope.username = "peter";
-              //  $scope.password = "peter";
+                $scope.username = "peter";
+                $scope.password = "peter";
 
                 //The angular material button has a progress spinner
                 $scope.showSpinner = false;
