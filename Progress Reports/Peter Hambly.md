@@ -1551,6 +1551,35 @@ Todo:
 * Add more SEER data
 * Fix for missing SQL Server deallocate cursor: 'c1_creex' already exists (rif40_create_extract.sql)
 
+#### 4th to 8th September
+
+* Caving in the Vercours
+
+#### 11th to 15th September
+
+* Add log4j to Java middleware, setup; 
+* Rengine not being shutdown correctly on restart of server:
+  ```
+  Cannot find JRI native library!
+  Please make sure that the JRI native library is in a directory listed in java.library.path.
+
+  java.lang.UnsatisfiedLinkError: Native Library C:\Program Files\R\R-3.4.0\library\rJava\jri\x64\jri.dll already loaded in another classloader
+        at java.lang.ClassLoader.loadLibrary0(Unknown Source)
+        at java.lang.ClassLoader.loadLibrary(Unknown Source)
+        at java.lang.Runtime.loadLibrary0(Unknown Source)
+        at java.lang.System.loadLibrary(Unknown Source)
+        at org.rosuda.JRI.Rengine.<clinit>(Rengine.java:19)
+        at rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep.performStep(PGSQLSmoothResultsSubmissionStep.java:183)
+        at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.smoothResults(PGSQLRunStudyThread.java:257)
+        at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.run(PGSQLRunStudyThread.java:176)
+        at java.lang.Thread.run(Unknown Source)
+        at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.submitStudy(PGSQLAbstractRIFStudySubmissionService
+  ```
+  1. Server reload needs to stop R
+  2. R crashes and error needs to stop R
+* Test log4j integration
+* Tomcat to do! [some R messages still go to the console!]
+
 Todo:
 
 * Test covariates in dataloader
@@ -1561,7 +1590,7 @@ Todo:
 September:
 
 * More work on SEER data, dataloader
-* Add log4j to Java, setup; fix results reporting from run stust and R code. Possibly add support for ri40_study_status
+* fix results reporting from run study and R code. Possibly add support for ri40_study_status
 * US geography and centroids fixes
 * Add area name to results map table
   

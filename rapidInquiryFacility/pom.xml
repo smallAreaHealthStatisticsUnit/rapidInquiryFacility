@@ -28,7 +28,9 @@
   		<groupId>junit</groupId>
   		<artifactId>junit</artifactId>
   		<version>4.11</version>
-  	</dependency>
+  	</dependency>	
+	
+	<!-- Removed - replaced with Log4j as requested by CDC PH 11/9/2017
   	<dependency>
   		<groupId>org.slf4j</groupId>
   		<artifactId>log4j-over-slf4j</artifactId>
@@ -39,6 +41,7 @@
   		<artifactId>slf4j-log4j13</artifactId>
   		<version>1.0.1</version>
   	</dependency>
+	-->
   	
 	<dependency>
     	<groupId>com.microsoft.sqlserver</groupId>
