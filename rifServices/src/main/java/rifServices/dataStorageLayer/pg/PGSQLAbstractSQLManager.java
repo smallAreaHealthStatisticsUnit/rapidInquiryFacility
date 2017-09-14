@@ -98,7 +98,7 @@ public abstract class PGSQLAbstractSQLManager {
 	private static Properties prop = null;
 	private static String lineSeparator = System.getProperty("line.separator");
 	
-	protected RIFLogger rifLogger = RIFLogger.getLogger();
+	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
 	
 	// ==========================================
 	// Section Construction

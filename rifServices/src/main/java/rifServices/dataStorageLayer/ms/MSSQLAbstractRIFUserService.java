@@ -89,7 +89,9 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	private static String lineSeparator = System.getProperty("line.separator");
+	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -186,8 +188,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 				"studyID", 
 				studyID);
 			
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getDiseaseMappingStudy",
 					user.getUserID(),
@@ -254,8 +255,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 			//Check for security violations
 			validateUser(user);
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeographies",
 					user.getUserID(),
@@ -335,8 +335,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 			validateUser(user);
 			geography.checkSecurityViolations();
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeographicalLevelSelectValues",
 					user.getUserID(),
@@ -412,8 +411,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 			validateUser(user);
 			geography.checkSecurityViolations();
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getDefaultGeoLevelSelectValue",
 					user.getUserID(),
@@ -511,8 +509,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 			geography.checkSecurityViolations();
 			geoLevelSelect.checkSecurityViolations();
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation			
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelAreaValues",
 					user.getUserID(),
@@ -619,8 +616,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 			geography.checkSecurityViolations();
 			geoLevelSelect.checkSecurityViolations();
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelViewValues",
 					user.getUserID(),
@@ -731,8 +727,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 			geography.checkSecurityViolations();
 			ndPair.checkSecurityViolations();
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getYearRange",
 					user.getUserID(),
@@ -823,8 +818,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 			 * will be a source of contention.  The logger is managed as a single
 			 * instance that will be used by all threads.  
 			 */
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getHealthThemes",
 					user.getUserID(),
@@ -906,8 +900,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 			geography.checkSecurityViolations();
 			geoLevelToMap.checkSecurityViolations();
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getCovariates",
 					user.getUserID(),
@@ -991,10 +984,9 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 				geography.checkSecurityViolations();
 				geoLevelSelect.checkSecurityViolations();	
 				
-				//System.out.println(geography.getDisplayName());
+				//rifLogger.info(this.getClass(), geography.getDisplayName());
 									
-				//Audit attempt to do operation
-				RIFLogger rifLogger = RIFLogger.getLogger();				
+				//Audit attempt to do operation				
 				String auditTrailMessage
 					= RIFServiceMessages.getMessage("logging.getTileMakerCentroids",
 						user.getUserID(),
@@ -1107,10 +1099,9 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 			geography.checkSecurityViolations();
 			geoLevelSelect.checkSecurityViolations();	
 			
-			//System.out.println(geography.getDisplayName());
+			//rifLogger.info(this.getClass(), geography.getDisplayName());
 								
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getTileMakerTiles",
 					user.getUserID(),

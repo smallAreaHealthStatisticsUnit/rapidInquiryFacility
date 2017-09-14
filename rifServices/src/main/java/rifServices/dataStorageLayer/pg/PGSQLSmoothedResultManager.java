@@ -10,6 +10,7 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
 
 import java.sql.*;
 import java.util.Hashtable;
@@ -83,6 +84,8 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	private static String lineSeparator = System.getProperty("line.separator");
+	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
 
 	// ==========================================
 	// Section Properties
@@ -189,9 +192,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		queryFormatter.addFromTable("rif40_investigations");
 		queryFormatter.addWhereParameter("study_id");
 
-		System.out.println("=======");
-		System.out.println(queryFormatter.generateQuery());
-		System.out.println("=======");
+		rifLogger.info(this.getClass(), "=======" + queryFormatter.generateQuery()+ "=======");
 
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
@@ -316,8 +317,8 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			results[1] = resultSet.getString(2);				
 		}
 		catch(SQLException exception) {
-			exception.printStackTrace(System.out);
-
+			rifLogger.error(this.getClass(), 
+				"PGSQLSmoothedResultManager.getGeographyAndLevelForStudy error", exception);
 		}
 		finally {
 			PGSQLQueryUtility.close(statement);
@@ -381,8 +382,8 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			results[19] = resultSet.getString(20);
 		}
 		catch(SQLException exception) {
-			exception.printStackTrace(System.out);
-
+			rifLogger.error(this.getClass(), 
+				"PGSQLSmoothedResultManager.getDetailsForProcessedStudy error", exception);
 		}
 		finally {
 			PGSQLQueryUtility.close(statement);
@@ -465,8 +466,8 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 			}			
 		}
 		catch(SQLException exception) {
-			exception.printStackTrace(System.out);
-
+			rifLogger.error(this.getClass(), 
+				"PGSQLSmoothedResultManager.getHealthCodesForProcessedStudy error", exception);
 		}
 		finally {
 			PGSQLQueryUtility.close(statement);
@@ -913,7 +914,8 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), 
+				"PGSQLSmoothedResultManager.getSmoothedResultsForAttributes error", sqlException);
 			String errorMessage
 			= RIFServiceMessages.getMessage(
 					"smoothedResultsManager.error.unableToGetSmoothedResults", 
