@@ -3,6 +3,7 @@ package rifServices.dataStorageLayer.ms;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
+import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
@@ -87,6 +88,8 @@ final class MSSQLMapDataManager
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");	
 
 	// ==========================================
 	// Section Properties
@@ -120,7 +123,7 @@ final class MSSQLMapDataManager
 		final AbstractGeographicalArea geographicalArea)
 		throws RIFServiceException {
 		
-		System.out.println("SQLMapDataManager getAllRelevantAreas!!!!!!!!!!!");
+		rifLogger.info(this.getClass(), "SQLMapDataManager getAllRelevantAreas!!!!!!!!!!!");
 		ArrayList<MapArea> allRelevantMapAreas = new ArrayList<MapArea>();
 
 		GeoLevelSelect geoLevelSelect

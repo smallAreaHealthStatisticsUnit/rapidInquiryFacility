@@ -16,6 +16,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import rifGenericLibrary.system.RIFServiceException;
 import taxonomyServices.system.TaxonomyServiceMessages;
 
+import rifGenericLibrary.util.RIFLogger;
 
 //TOUR_WEB_SERVICES-7
 /*
@@ -205,7 +206,9 @@ final class WebServiceResponseUtility {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -294,9 +297,10 @@ final class WebServiceResponseUtility {
 		//doesn't contain "Chrome", we'll assume it's Internet Explorer.
 		//again, the question of what information do we use to determine if we
 		//send JSON content type back or not needs to be discussed more
-		System.out.println("isClientBrowserIE=="+result+"==");
+		//rifLogger.info(this.getClass(), "isClientBrowserIE=="+result+"==");
+		// Yes this is pretty lame. PH!
 		
-		//System.out.println("clientBrowserIsInternetExplorer IS TRUE");
+		//rifLogger.info(this.getClass(), "clientBrowserIsInternetExplorer IS TRUE");
 		//@TODO
 		
 		return result;
@@ -464,7 +468,7 @@ final class WebServiceResponseUtility {
 		message.append("session id:=="+sessionID+"==\n");
 		message.append("==================================================\n");
 		//message.append("IP address:=="+ipAdress+"")
-		System.out.println(message.toString());
+		rifLogger.info(this.getClass(), message.toString());
 		
 	}
 	

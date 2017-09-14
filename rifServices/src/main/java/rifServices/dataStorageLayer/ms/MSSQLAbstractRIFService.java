@@ -79,7 +79,8 @@ public class MSSQLAbstractRIFService {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -233,7 +234,6 @@ public class MSSQLAbstractRIFService {
 			//sqlConnectionManager.resetConnectionPoolsForUser(user);					
 		}
 				
-		RIFLogger rifLogger = RIFLogger.getLogger();
 		rifLogger.error(
 			MSSQLAbstractRIFService.class, 
 			methodName, 
@@ -268,8 +268,7 @@ public class MSSQLAbstractRIFService {
 			//Check for security violations
 			validateUser(user);
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getRIFSubmissionServiceInformation",
 					user.getUserID(),

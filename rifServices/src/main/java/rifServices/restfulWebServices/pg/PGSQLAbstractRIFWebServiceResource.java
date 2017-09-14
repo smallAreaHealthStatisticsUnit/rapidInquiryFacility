@@ -20,6 +20,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
+
 import rifServices.restfulWebServices.*;
 import rifServices.dataStorageLayer.pg.PGSQLProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.pg.PGSQLSampleTestObjectGenerator;
@@ -107,6 +109,9 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 	// ==========================================
 	private static final PGSQLProductionRIFStudyServiceBundle rifStudyServiceBundle 
 	= PGSQLProductionRIFStudyServiceBundle.getRIFServiceBundle();
+	
+	private RIFLogger rifLogger = RIFLogger.getLogger();
+	
 	private SimpleDateFormat sd;
 	private Date startTime;
 
@@ -127,14 +132,14 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 				false);
 
 
-		//System.out.println("AbstractRIFWebServiceResource validation policy=="+rifServiceStartupOptions.useStrictValidationPolicy()+"==");
+		//rifLogger.info(this.getClass(), "AbstractRIFWebServiceResource validation policy=="+rifServiceStartupOptions.useStrictValidationPolicy()+"==");
 		webServiceResponseGenerator = new WebServiceResponseGenerator();
 
 		try {
 			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
 		}
 		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), "PGSQLAbstractRIFWebServiceResource rifStudyServiceBundle.initialise error", exception);
 		}
 	}
 
@@ -149,7 +154,7 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			result = serialiseStringResult(isLoggedInMessage);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), "PGSQLAbstractRIFWebServiceResource.isLoggedIn error", exception);
 			//Convert exceptions to support JSON
 			result 
 			= serialiseException(
@@ -175,7 +180,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			result = serialiseStringResult(loginMessage);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), "PGSQLAbstractRIFWebServiceResource.login error", exception);
+
 			//Convert exceptions to support JSON
 			result 
 			= serialiseException(
@@ -202,6 +208,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			result = serialiseStringResult(logoutMessage);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "PGSQLAbstractRIFWebServiceResource.logout error", exception);
+
 			//Convert exceptions to support JSON
 			result 
 			= serialiseException(
@@ -253,6 +261,9 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			serialiseStringResult(result);			
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.isInformationGovernancePolicyActive error", exception);
+			
 			//Convert exceptions to support JSON
 			result 
 			= serialiseException(
@@ -296,7 +307,7 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			}			
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), "PGSQLAbstractRIFWebServiceResource.getGeographies error", exception);
 			//Convert exceptions to support JSON
 			result 
 			= serialiseException(
@@ -343,6 +354,9 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 					geoLevelSelectProxy);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.getGeographicalLevelSelectValues error", exception);
+
 			//Convert exceptions to support JSON
 			result 
 			= serialiseException(
@@ -388,7 +402,9 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 					servletRequest,
 					geoLevelSelectProxy);
 		}
-		catch(Exception exception) {
+		catch(Exception exception) {	
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.getDefaultGeoLevelSelectValue error", exception);
 			//Convert exceptions to support JSON
 			result 
 			= serialiseException(
@@ -473,6 +489,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 					geoLevelAreasProxy);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.getGeoLevelAreaValues error", exception);
 			//Convert exceptions to support JSON
 			result 
 			= serialiseException(
@@ -548,6 +566,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 					geoLevelViewsProxy);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.getGeoLevelViewValues error", exception);
 			//Convert exceptions to support JSON
 			result 
 			= serialiseException(
@@ -612,6 +632,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 					ndPairProxies);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.getNumerator error", exception);
 			//Convert exceptions to support JSON
 			result 
 			= serialiseException(
@@ -669,6 +691,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 					firstResult);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.getDenominator error", exception);
 			//Convert exceptions to support JSON
 			result 
 			= serialiseException(
@@ -716,6 +740,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 					yearRangeProxy);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.getYearRange error", exception);
 			//Convert exceptions to support JSON			
 			result 
 			= serialiseException(
@@ -760,6 +786,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.getTileMakerCentroids error", exception);
 			result 
 			= serialiseException(
 					servletRequest,
@@ -802,6 +830,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 					y);	
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.getTileMakerTiles error", exception);
 			result 
 			= serialiseException(
 					servletRequest,
@@ -851,6 +881,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			result = jsonObject.toString(4);
 		}
 		catch(RIFServiceException rifServiceException) {
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.getStudySubmission error", rifServiceException);
 			result 
 			= serialiseException(
 					servletRequest,
@@ -882,6 +914,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 					zoomLevel);
 		}
 		catch(RIFServiceException rifServiceException) {
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.getZipFile error", rifServiceException);
 			result 
 			= serialiseException(
 					servletRequest,
@@ -901,13 +935,13 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 
 		String result = "";
 
-		System.out.println("ARWS-submitStudy122 userID=="+userID+"==");
-		System.out.println("ARWS-submitStudy122 fileFormat=="+format+"==");
+		rifLogger.info(this.getClass(), "ARWS-submitStudy122 userID=="+userID+"==");
+		rifLogger.info(this.getClass(), "ARWS-submitStudy122 fileFormat=="+format+"==");
 		if (inputStream == null) {
-			System.out.println("ARWS-submitStudy123 nothing submitted for input study");
+			rifLogger.info(this.getClass(), "ARWS-submitStudy123 nothing submitted for input study");
 		}
 		else {
-			System.out.println("ARWS-submitStudy123 something specified for the input file");			
+			rifLogger.info(this.getClass(), "ARWS-submitStudy123 something specified for the input file");			
 		}
 
 		try {			
@@ -917,14 +951,14 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			RIFStudySubmission rifStudySubmission = null;
 
 			String tmpFormat = "JSON";
-			System.out.println("ARWS-submitStudy122 fileFormat=="+format+"==");
+			rifLogger.info(this.getClass(), "ARWS-submitStudy122 fileFormat=="+format+"==");
 			if (StudySubmissionFormat.JSON.matchesFormat(tmpFormat)) {
-				System.out.println("ARWS-submitStudy122 JSON");				
+				rifLogger.info(this.getClass(), "ARWS-submitStudy122 JSON");				
 				rifStudySubmission
 				= getRIFSubmissionFromJSONSource(inputStream);
 			}
 			else {
-				System.out.println("ARWS-submitStudy122 ");				
+				rifLogger.info(this.getClass(), "ARWS-submitStudy122 ");				
 				rifStudySubmission
 				= getRIFSubmissionFromXMLSource(inputStream);
 			}
@@ -942,7 +976,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			rifServiceException.printErrors();
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.submitStudy error", exception);
 			result 
 			= serialiseException(
 					servletRequest,
@@ -960,7 +995,7 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 					throws RIFServiceException {
 
 		try {
-			System.out.println("ARWS - getRIFSubmissionFromJSONSource start");
+			rifLogger.info(this.getClass(), "ARWS - getRIFSubmissionFromJSONSource start");
 			BufferedReader reader 
 			= new BufferedReader(
 					new InputStreamReader(inputStream, "UTF-8"));
@@ -979,11 +1014,13 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			String xml = XML.toString(jsonObject);
 			InputStream xmlInputStream 
 			= new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
-			System.out.println("ARWS - getRIFSubmissionFromJSONSource JSON TO XML=="+xml+"==");			
+			
+			rifLogger.info(this.getClass(), "ARWS - getRIFSubmissionFromJSONSource JSON TO XML=="+xml+"==");			
 			return getRIFSubmissionFromXMLSource(xmlInputStream);			
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.getRIFSubmissionFromJSONSource error", exception);
 			String errorMessage
 			= RIFServiceMessages.getMessage("webService.submitStudy.error.unableToConvertJSONToXML");
 			RIFServiceException rifServiceException
@@ -999,14 +1036,14 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			final InputStream inputStream) 
 					throws RIFServiceException {
 
-		System.out.println("ARWS - getRIFSubmissionFromXMLSource start");
+		rifLogger.info(this.getClass(), "ARWS - getRIFSubmissionFromXMLSource start");
 
 		RIFStudySubmissionXMLReader rifStudySubmissionReader2
 		= new RIFStudySubmissionXMLReader();
 		rifStudySubmissionReader2.readFile(inputStream);
 		RIFStudySubmission rifStudySubmission
 		= rifStudySubmissionReader2.getStudySubmission();
-		System.out.println("ARWS - getRIFSubmissionFromXMLSource stop");
+		rifLogger.info(this.getClass(), "ARWS - getRIFSubmissionFromXMLSource stop");
 		return rifStudySubmission;
 	}
 
@@ -1158,7 +1195,12 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 					rifServiceExceptionProxy);
 		}
 		catch(Exception exception) {
+			
+			rifLogger.error(this.getClass(), 
+				"PGSQLAbstractRIFWebServiceResource.serialiseException error", exception);
+				
 			//Convert exceptions to support JSON
+				
 			serialiseException(
 					servletRequest,
 					exception);
@@ -1190,7 +1232,7 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 		message.append("session id:=="+sessionID+"==\n");
 		message.append("==================================================\n");
 		//message.append("IP address:=="+ipAdress+"")
-		System.out.println(message.toString());
+		rifLogger.debug(this.getClass(), message.toString());
 
 	}
 
@@ -1209,7 +1251,7 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 		long elapsed = date.getTime() - startTime.getTime();
 		buffer.append(elapsed);
 		buffer.append(" milliseconds since start time");
-		System.out.println(buffer.toString());		
+		rifLogger.info(this.getClass(), buffer.toString());		
 	}
 
 

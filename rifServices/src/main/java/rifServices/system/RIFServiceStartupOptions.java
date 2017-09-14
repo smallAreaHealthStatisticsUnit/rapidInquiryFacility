@@ -8,6 +8,9 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.businessConceptLayer.Parameter;
 
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
@@ -92,7 +95,8 @@ public final class RIFServiceStartupOptions {
 	// ==========================================
 
 	private int maximumMapAreasAllowedForSingleDisplay;
-	
+	private RIFLogger rifLogger = RIFLogger.getLogger();
+
 	private boolean isWebDeployment;
 	
 	private String databaseDriverClassName;
@@ -184,7 +188,7 @@ public final class RIFServiceStartupOptions {
 			= RIFServiceStartupProperties.isSSLSupported();
 
 		if (sslSupported) {
-			System.out.println("RIFServicesStartupOptions -- using SSL debug");
+			rifLogger.info(this.getClass(), "RIFServicesStartupOptions -- using SSL debug");
 			useSSLDebug
 				= RIFServiceStartupProperties.useSSLDebug();
 			if (useSSLDebug) {			
@@ -438,7 +442,8 @@ public final class RIFServiceStartupOptions {
 		this.rifServiceClassDirectoryPath = rifServiceClassDirectoryPath;		
 	}
 	
-	public String getRIFServiceResourcePath() {
+	public String getRIFServiceResourcePath()
+		throws RIFServiceException {
 		/*
 		String currentDirectoryPath = null;
 		if (rifServiceClassDirectoryPath == null) {
@@ -454,37 +459,45 @@ public final class RIFServiceStartupOptions {
 		//path.append(File.separator);
 
 		if (isWebDeployment) {
-			System.out.println("RIFServiceStartupOptions is web deployment");
+			rifLogger.info(this.getClass(), "RIFServiceStartupOptions is web deployment");
 			Map<String, String> environmentalVariables = System.getenv();
 
 
-			String catalineHome = "C:\\Program Files\\Apache Software Foundation\\Tomcat 8.0";
+//			String catalineHome = "C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5";
 			
 			String catalinaHome = environmentalVariables.get("CATALINA_HOME");
+			if (catalinaHome == null) {
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.INVALID_STARTUP_OPTIONS, 
+						"CATALINA_HOME not set in the environment");
+				rifLogger.error(this.getClass(), "RIFServiceStartupOptions error", rifServiceException);
+				throw rifServiceException;
+			}
 			/*
 			String[] tokens2 = catalinaHome.split("\\");
 			if (tokens2 == null) {
-				System.out.println("tokens are null");
+				rifLogger.info(this.getClass(), "tokens are null");
 			}
 			else {
 				for (String token2 : tokens2) {
-					System.out.println("token222:"+token2+"==");
+					rifLogger.info(this.getClass(), "token222:"+token2+"==");
 				}	
 			}
 			
 			String[] tokens3 = catalinaHome.split("\\");
 			if (tokens3 == null) {
-				System.out.println("tokens are null");
+				rifLogger.info(this.getClass(), "tokens are null");
 			}
 			else {
 				for (String token3 : tokens3) {
-					System.out.println("token333:"+token3+"==");
+					rifLogger.info(this.getClass(), "token333:"+token3+"==");
 				}	
 			}
 			*/
 					
 			String catalinaHomeDirectoryPath = environmentalVariables.get("CATALINA_HOME");
-			System.out.println("C A T A L I N A  H O M E=="+catalinaHomeDirectoryPath+"==");
+			rifLogger.info(this.getClass(), "Get CATALINA_HOME="+catalinaHomeDirectoryPath);
 			catalinaHomeDirectoryPath = catalinaHomeDirectoryPath.replace("\\", "\\\\");
 			path.append(catalinaHomeDirectoryPath);
 			path.append("\\\\");
@@ -498,7 +511,7 @@ public final class RIFServiceStartupOptions {
 			
 		}
 		else {
-			System.out.println("RIFServiceStartupOptions is NOT web deployment");
+			rifLogger.info(this.getClass(), "RIFServiceStartupOptions is NOT web deployment");
 			path.append((new File(".")).getAbsolutePath());
 			path.append(File.separator);
 			path.append("target");
@@ -733,6 +746,7 @@ public final class RIFServiceStartupOptions {
 				= new RIFServiceException(
 					RIFServiceError.INVALID_STARTUP_OPTIONS, 
 					errorMessages);
+			rifLogger.error(this.getClass(), "RIFServiceStartupOptions error", rifServiceException);
 			throw rifServiceException;
 		}
 	}

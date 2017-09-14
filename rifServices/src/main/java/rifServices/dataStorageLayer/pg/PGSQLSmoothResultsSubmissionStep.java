@@ -10,11 +10,14 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.logging.Logger;
+import java.util.logging.LogManager;
 import java.io.*;
 
 import org.rosuda.JRI.*;
 
+import rifGenericLibrary.util.RIFLogger;
 
 /**
  *
@@ -82,6 +85,14 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 	// Section Constants
 	// ==========================================
 
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");	
+
+	// Logging for JRI	
+	private static LogManager logManager;
+	private Logger log;	// Not used - uses RIFLogger
+	private LoggingConsole loggingConsole;
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================	
@@ -92,7 +103,50 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 	// ==========================================
 
 	public PGSQLSmoothResultsSubmissionStep() {
+	/*
+	Also change tomcat startup options:
+	
+From: 
 
+-Dcatalina.home=C:\Program Files\Apache Software Foundation\Tomcat 8.5
+-Dcatalina.base=C:\Program Files\Apache Software Foundation\Tomcat 8.5
+-Djava.io.tmpdir=C:\Program Files\Apache Software Foundation\Tomcat 8.5\temp
+-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+-Djava.util.logging.config.file=C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\logging.properties
+
+To:
+
+-Dcatalina.home=C:\Program Files\Apache Software Foundation\Tomcat 8.5
+-Dcatalina.base=C:\Program Files\Apache Software Foundation\Tomcat 8.5
+-Djava.io.tmpdir=C:\Program Files\Apache Software Foundation\Tomcat 8.5\temp
+-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+-Djava.util.logging.config.file=C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\logging.properties
+
+     */	
+		String logManagerName=System.getProperty("java.util.logging.manager");
+		if (logManagerName == null || !logManagerName.equals("java.util.logging.manager")) {
+			System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
+			rifLogger.info(this.getClass(), "Set java.util.logging.manager=" +
+				System.getProperty("java.util.logging.manager"));
+		}
+		logManager = LogManager.getLogManager();
+		log=Logger.getLogger("rifGenericLibrary.util.RIFLogger");
+		loggingConsole=new LoggingConsole(log);
+		Enumeration<String> loggerNames = logManager.getLoggerNames();
+		if (!loggerNames.hasMoreElements()) {
+			rifLogger.warning(this.getClass(), "java.util.logging.manager has no loggers");
+		}
+		while (loggerNames.hasMoreElements()) {
+			String name = loggerNames.nextElement();
+			if (name.equals("rifGenericLibrary.util.RIFLogger")) {
+				rifLogger.info(this.getClass(), "Found java.util.logging.manager logger: " + name);
+			}
+			else {
+				rifLogger.debug(this.getClass(), "Other java.util.logging.manager logger: " + name);
+			}
+		}
+		
+		rifLogger.printLoggers();
 	}
 
 	// ==========================================
@@ -120,10 +174,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 		addParameterToVerify(startupOptionParameterNames);
 
 	}
-
-	//Logging for JRI	
-	private static Logger log = Logger.getLogger("Runner");
-
+			
 	public void performStep(
 			final Connection connection,
 			final RIFStudySubmission studySubmission, 
@@ -161,7 +212,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 					connection,
 					studyID, 
 					firstInvestigation);
-			System.out.println("Investigation name=="+firstInvestigation.getTitle() + "  ID=="+investigationID+"==");
+			rifLogger.info(this.getClass(), "Investigation name=="+firstInvestigation.getTitle() + "  ID=="+investigationID+"==");
 
 			addParameterToVerify("investigation_id");
 			addParameter(
@@ -173,19 +224,21 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 			int exitValue = 0;
 
 			Rengine rengine = null;
-
 			try {	
 				//Create an R engine with JRI
 				rengine = Rengine.getMainEngine();
 				if(rengine == null) {
-					rengine = new Rengine(new String[] {"--vanilla"}, false, new LoggingConsole(log)); 
+					rengine = new Rengine(new String[] {"--vanilla"}, 	// Args
+						false, 											// runMainLoop
+						loggingConsole); 								// RMainLoopCallbacks implementaton
+																		// Logger log not used - uses RIFLogger
 				}
 
 				if (!rengine.waitForR()) {
-					System.out.println("Cannot load the R engine");
+					rifLogger.warning(this.getClass(), "Cannot load the R engine");
 				}
 				Rengine.DEBUG = 10;
-				System.out.println("Rengine Started");
+				rifLogger.info(this.getClass(), "Rengine Started");
 
 				//Start R operations
 
@@ -219,27 +272,70 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 				rifScriptPath.append(File.separator);
 				rifScriptPath.append(File.separator);
 				rifScriptPath.append("Adj_Cov_Smooth_JRI.R");
-				System.out.println("rScriptPath=="+rifScriptPath+"==");
+				rifLogger.info(this.getClass(), "rScriptPath=="+rifScriptPath+"==");
 				rengine.eval("source(\"" + rifScriptPath + "\")");
 
 				//RUN the actual smoothing
 				REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
-				exitValue  = exitValueFromR.asInt();
+				if (exitValueFromR != null) {
+					exitValue  = exitValueFromR.asInt();
+				}
+				else {
+					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR is NULL");
+					exitValue = 1;
+				}
 			}
 			catch(Exception error) {
-				System.out.println("JRI R ERROR");
-				exitValue = 1;
-			} finally {
-				rengine.end();
-				//rengine.destroy();
-				System.out.println("Rengine Stopped");
+				try {
+					loggingConsole.rFlushConsole(rengine);
+				}
+				catch(Exception error2) {
+					rifLogger.error(this.getClass(), "JRI rFlushConsole() ERROR", error2);
+				}
+				finally {
+					rifLogger.error(this.getClass(), "JRI R ERROR", error);
+					exitValue = 1;
+				}
+			} 
+			finally {
+				try {
+					loggingConsole.rFlushConsole(rengine);
+				}
+				catch(Exception error2) {
+					rifLogger.error(this.getClass(), "JRI rFlushConsole() ERROR", error2);
+				}
+				finally {
+					if (exitValue != 0) {
+						try {
+//							rengine.eval("q(\"no\", " + exitValue + ")");	// Causes Java to quit
+//							rengine.destroy(); 								// causes thread to exit; 
+																			// rengine.end() then causes exception)
+						}
+						catch(Exception error3) {
+							rifLogger.error(this.getClass(), "JRI rengine.destroy() ERROR", error3);
+						}
+						finally {
+							rifLogger.info(this.getClass(), "Rengine Stopped, exit value=="+ exitValue +"==");
+						}					
+					}
+					else {	
+						try {
+							rengine.end();
+						}
+						catch(Exception error3) {
+							rifLogger.error(this.getClass(), "JRI rengine.end() ERROR", error3);
+							exitValue = 1;
+						}
+						finally {
+							rifLogger.info(this.getClass(), "Rengine Stopped, exit value=="+ exitValue +"==");
+						}			
+					}
+				}
 			}
-
-			System.out.println("Exit value=="+ exitValue +"==");
-
 		}
 		catch(Exception ioException) {
-			ioException.printStackTrace(System.out);		
+			rifLogger.error(this.getClass(), "JRI R exception", ioException);
+			
 			RIFServiceExceptionFactory rifServiceExceptionFactory
 			= new RIFServiceExceptionFactory();
 			rifServiceExceptionFactory.createFileCommandLineRunException(rifScriptPath.toString());
@@ -306,7 +402,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 					RIFServiceException {
 
 
-		System.out.println("SQLSmoothedResultsSubmissionStep getInvestigationID studyID=="+studyID+"==investigation_name=="+investigation.getTitle()+"==inv_description=="+investigation.getDescription()+"==");
+		rifLogger.info(this.getClass(), "SQLSmoothedResultsSubmissionStep getInvestigationID studyID=="+studyID+"==investigation_name=="+investigation.getTitle()+"==inv_description=="+investigation.getDescription()+"==");
 
 		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
@@ -315,11 +411,11 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 		queryFormatter.addWhereParameter("study_id");
 		queryFormatter.addWhereParameter("inv_name");
 
-		System.out.println("=======getInvestigationID========1===");
-		System.out.println("StudyID=="+studyID+"==");
-		System.out.println("Inv_name=="+investigation.getTitle().toUpperCase()+"==");
-		System.out.println(queryFormatter.generateQuery());
-		System.out.println("=======getInvestigationID========2===");
+		rifLogger.info(this.getClass(), "=======getInvestigationID========1===" + lineSeparator +
+			"StudyID=="+studyID+"=="  + lineSeparator +
+			"Inv_name=="+investigation.getTitle().toUpperCase()+"==" + lineSeparator +
+			queryFormatter.generateQuery()  + lineSeparator +
+			"=======getInvestigationID========2===");
 
 		String databaseFriendlyInvestigationName
 		= createDatabaseFriendlyInvestigationName(investigation.getTitle());
@@ -333,9 +429,9 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 			statement.setInt(1, Integer.valueOf(studyID));
 			statement.setString(2, databaseFriendlyInvestigationName);
 			resultSet = statement.executeQuery();
-			System.out.println("About to call next");
+			rifLogger.info(this.getClass(), "About to call next");
 			resultSet.next();
-			System.out.println("called next");
+			rifLogger.info(this.getClass(), "called next");
 			investigationID = resultSet.getInt(1);
 		}
 		finally {

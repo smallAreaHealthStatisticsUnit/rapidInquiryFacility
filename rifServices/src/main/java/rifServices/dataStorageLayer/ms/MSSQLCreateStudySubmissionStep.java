@@ -88,6 +88,9 @@ final class MSSQLCreateStudySubmissionStep
 	// ==========================================
 	// Section Constants
 	// ==========================================
+
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
 	
 	// ==========================================
 	// Section Properties
@@ -165,7 +168,7 @@ final class MSSQLCreateStudySubmissionStep
 			result = getCurrentStudyID(connection);	
 			connection.commit();
 			
-			System.out.println("======SQLCREATESTUDYSUBMISSIONSTEP====studyID=="+result+"==");
+			rifLogger.info(this.getClass(), "======SQLCREATESTUDYSUBMISSIONSTEP====studyID=="+result+"==");
 			return result;
 		}
 		catch(SQLException sqlException) {
@@ -867,9 +870,10 @@ final class MSSQLCreateStudySubmissionStep
 				for (int i = 1; i <= totalHealthCodes; i++) {
 					HealthCode currentHealthCode = healthCodes.get(i - 1);
 					
-					System.out.println("XXXXXXXXXX currentHealthCode XXXXXXXXXXXXXXXXXXXXXX");
-					System.out.println(currentHealthCode);
-					System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+					rifLogger.info(this.getClass(), 
+						"XXXXXXXXXX currentHealthCode XXXXXXXXXXXXXXXXXXXXXX" + lineSeparator +
+						currentHealthCode + lineSeparator + 
+						"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 					
 					logSQLQuery(
 						"add_inv_condition", 
@@ -1003,7 +1007,6 @@ final class MSSQLCreateStudySubmissionStep
 					recordType,
 					project.getName());
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
 				errorMessage, 

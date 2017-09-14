@@ -9,6 +9,8 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 
+import rifGenericLibrary.util.RIFLogger;
+
 import java.sql.*;
 
 /**
@@ -78,6 +80,9 @@ public class PGSQLRunStudyThread
 	// Section Constants
 	// ==========================================
 	private static final int SLEEP_TIME = 200;
+
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -161,20 +166,20 @@ public class PGSQLRunStudyThread
 				if (currentState == StudyState.STUDY_NOT_CREATED) {
 					//Study has not been created.  We need to add parts of it to the database.  At the end,
 					//we will have a description where we can generate extract tables
-					System.out.println("run create study BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					rifLogger.info(this.getClass(), "run create study BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 					createStudy();
-					System.out.println("run create study AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					rifLogger.info(this.getClass(), "run create study AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 				}
 				else if (currentState == StudyState.STUDY_CREATED) {
-					System.out.println("run generate results BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					rifLogger.info(this.getClass(), "run generate results BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 					generateResults();
-					System.out.println("run generate results AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					rifLogger.info(this.getClass(), "run generate results AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 				}
 				else if (currentState == StudyState.STUDY_EXTRACTED) {
 					//we are done.  Break out of the loop so that the thread can stop
-					System.out.println("run smooth results BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					rifLogger.info(this.getClass(), "run smooth results BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 					smoothResults();
-					System.out.println("run smooth results AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					rifLogger.info(this.getClass(), "run smooth results AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
 				}
 				else {
 					break;
@@ -183,11 +188,11 @@ public class PGSQLRunStudyThread
 				Thread.sleep(SLEEP_TIME);
 			}
 			
-			System.out.println("Finished!!");
+			rifLogger.info(this.getClass(), "Finished!!");
 			
 		}
 		catch(InterruptedException interruptedException) {
-			interruptedException.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), "PGSQLRunStudyThread ERROR", interruptedException);
 
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -280,7 +285,7 @@ public class PGSQLRunStudyThread
 //				"studyState.readyForUse");
 //		updateStudyStatusState(statusMessage);
 //
-//		System.out.println("RIF study should be FINISHED!!");
+//		rifLogger.info(this.getClass(), "RIF study should be FINISHED!!");
 //	}
 
 	private void updateStudyStatusState(final String statusMessage) 

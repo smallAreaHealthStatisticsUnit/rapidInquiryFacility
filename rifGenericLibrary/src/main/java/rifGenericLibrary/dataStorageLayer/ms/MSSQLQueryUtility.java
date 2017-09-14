@@ -87,6 +87,7 @@ public final class MSSQLQueryUtility {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
 	// ==========================================
 	// Section Properties
@@ -128,7 +129,6 @@ public final class MSSQLQueryUtility {
 			String errorMessage
 				= RIFGenericLibraryMessages.getMessage("sqlConnectionManager.error.unableToCloseResource");
 			
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLQueryUtility.class, 
 				errorMessage, 
@@ -164,8 +164,7 @@ public final class MSSQLQueryUtility {
 			String errorMessage
 				= RIFGenericLibraryMessages.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
-			
-			RIFLogger rifLogger = RIFLogger.getLogger();
+			;
 			rifLogger.error(
 				MSSQLQueryUtility.class, 
 				errorMessage, 
@@ -201,7 +200,6 @@ public final class MSSQLQueryUtility {
 				= RIFGenericLibraryMessages.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
 			
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLQueryUtility.class, 
 				errorMessage, 

@@ -78,6 +78,9 @@ final class MSSQLGenerateResultsSubmissionStep
 	// ==========================================
 	// Section Constants
 	// ==========================================
+
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");	
 	
 	// ==========================================
 	// Section Properties
@@ -144,9 +147,9 @@ final class MSSQLGenerateResultsSubmissionStep
 			runStudyStatement.setInt(2, 1);		
 			runStudyStatement.registerOutParameter(3, java.sql.Types.INTEGER);
 			
-			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-			System.out.print(generalQueryFormatter.generateQuery());
-			System.out.println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+			rifLogger.info(this.getClass(), "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" + lineSeparator + 
+				generalQueryFormatter.generateQuery() + lineSeparator + 
+				"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 			
 			res = runStudyStatement.execute();
 			rval=-1;
@@ -162,10 +165,10 @@ final class MSSQLGenerateResultsSubmissionStep
 			result = String.valueOf(rval);		
 						
 			if (rval == 1) {
-				System.out.println("XXXXXXXXXX Study " + studyID + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
+				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
 			}
 			else {
-				System.out.println("XXXXXXXXXX Study " + studyID + " failed with code: " + result + 
+				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID + " failed with code: " + result + 
 					" XXXXXXXXXXXXXXXXXXXXXX");
 			}
 			
@@ -182,7 +185,6 @@ final class MSSQLGenerateResultsSubmissionStep
 					"sqlRIFSubmissionManager.error.unableToRunStudy",
 					studyID);
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLGenerateResultsSubmissionStep.class, 
 				errorMessage, 
@@ -195,11 +197,9 @@ final class MSSQLGenerateResultsSubmissionStep
 			throw rifServiceException;
 		}
 		finally {
-			try {
-				PGSQLQueryUtility.printWarnings(runStudyStatement.getWarnings()); // Print output from T-SQL
-			}			
-			catch(SQLException sqlException) { // Do nothing - they are warnings!
-			}
+			PGSQLQueryUtility query=new PGSQLQueryUtility();
+			query.printWarnings(runStudyStatement); // Print output from T-SQL
+		
 			//Cleanup database resources			
 			PGSQLQueryUtility.close(runStudyStatement);
 			PGSQLQueryUtility.close(runStudyResultSet);

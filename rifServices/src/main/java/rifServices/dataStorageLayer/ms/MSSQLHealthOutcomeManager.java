@@ -96,6 +96,7 @@ final class MSSQLHealthOutcomeManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
 	// ==========================================
 	// Section Properties
@@ -112,7 +113,8 @@ final class MSSQLHealthOutcomeManager {
 	/**
 	 * Instantiates a new SQL health outcome manager.
 	 */
-	public MSSQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
+	public MSSQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) 
+		throws RIFServiceException {
 		healthCodeProviders = new ArrayList<HealthCodeProviderInterface>();
 		
 		
@@ -121,7 +123,7 @@ final class MSSQLHealthOutcomeManager {
 		if (targetPathValue == null) {
 			targetPathValue = ClassFileLocator.getClassRootLocation("rifServices");
 		}
-		System.out.println("HealthOutcomeManager init targetPathValue=="+targetPathValue+"==");
+		rifLogger.info(this.getClass(), "HealthOutcomeManager init targetPathValue=="+targetPathValue+"==");
 		
 		//initialise each health code provider
 		try {			
@@ -140,7 +142,6 @@ final class MSSQLHealthOutcomeManager {
 			healthCodeProviders.add(icd9TaxonomyProvider);
 		}
 		catch(RIFServiceException rifServiceException) {
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLHealthOutcomeManager.class, 
 				"constructor", 
@@ -163,7 +164,6 @@ final class MSSQLHealthOutcomeManager {
 			healthCodeProviders.add(icd10TaxonomyProvider);
 		}
 		catch(RIFServiceException rifServiceException) {
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLHealthOutcomeManager.class, 
 				"constructor", 
@@ -187,7 +187,6 @@ final class MSSQLHealthOutcomeManager {
 			healthCodeProviders.add(opcsCodeProvider);	
 		}
 		catch(RIFServiceException rifServiceException) {
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLHealthOutcomeManager.class, 
 				"constructor", 
@@ -212,7 +211,6 @@ final class MSSQLHealthOutcomeManager {
 			healthCodeProviders.add(icd10ClaMLCodeProvider);	
 		}
 		catch(RIFServiceException rifServiceException) {
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLHealthOutcomeManager.class, 
 				"constructor", 
@@ -388,7 +386,6 @@ final class MSSQLHealthOutcomeManager {
 					diseaseMappingStudy.getDisplayName(),
 					investigation.getDisplayName());
 			
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLHealthOutcomeManager.class, 
 				errorMessage, 

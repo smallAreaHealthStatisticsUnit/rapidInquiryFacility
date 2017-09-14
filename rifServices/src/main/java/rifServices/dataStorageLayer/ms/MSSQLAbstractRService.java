@@ -5,10 +5,12 @@ import rifGenericLibrary.businessConceptLayer.Parameter;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
+import java.time.*;
 
 import org.rosuda.JRI.RMainLoopCallbacks;
 import org.rosuda.JRI.Rengine;
 
+import rifGenericLibrary.util.RIFLogger;
 
 /**
  *
@@ -172,25 +174,54 @@ public abstract class MSSQLAbstractRService {
 
 	
 	/*
-	 * Logging R console output in Tomcat
+	 * Logging R console output to RIFLogger
 	 */
 	static class LoggingConsole implements RMainLoopCallbacks {
-		private Logger log;
-
-		LoggingConsole(Logger log) {
-			this.log = log;
+		// ==========================================
+		// Section Constants
+		// ==========================================
+		private static Logger log; 	// Not used! 
+									// [Keeps RMainLoopCallbacks happy which uses 
+									// java.util.logging.Logger and not
+									// org.apache.logging.log4j.Logger;]
+		private static final RIFLogger rifLogger = RIFLogger.getLogger();
+		private static String lineSeparator = System.getProperty("line.separator");		
+		private static int logCalls=0;
+		private static int rFlushCount=0;
+		private static StringBuilder message = new StringBuilder();
+		private Instant start=Instant.now();
+		private Instant end;
+		
+		LoggingConsole(Logger log) { // Constructor
+			this.log = log; // Not used!
 		}
-
+		
+		private void addMessage(String text) {
+			logCalls++;
+			message.append(text);
+		}
+		
 		public void rWriteConsole(Rengine re, String text, int oType) {
-			log.info(String.format("rWriteConsole: %s", text));
+			long millis = Duration.between(start, Instant.now()).toMillis();
+			
+			if (oType == 1) { // Error/Warning		
+				addMessage("R Error/Warning/Notice: " + text);
+			}
+			else {
+				addMessage(text);
+			}
+			
+			if (millis > 1000) { // Force flush every second
+				this.rFlushConsole(re);
+			}
 		}
 
 		public void rBusy(Rengine re, int which) {
-			log.info(String.format("rBusy: %s", which));
+			addMessage(lineSeparator + "rBusy[" + Integer.toString(which) + "]" + lineSeparator);
 		}
 
 		public void rShowMessage(Rengine re, String message) {
-			log.info(String.format("rShowMessage: %s",  message));
+			addMessage(lineSeparator + "rShowMessage: " + message + lineSeparator);
 		}
 
 		public String rReadConsole(Rengine re, String prompt, int addToHistory) {
@@ -202,6 +233,17 @@ public abstract class MSSQLAbstractRService {
 		}
 
 		public void rFlushConsole(Rengine re) {
+			end=Instant.now();
+
+			rFlushCount++;
+			rifLogger.info(this.getClass(), 
+				"rFlushConsole[" + Integer.toString(rFlushCount) + "] calls: " + Integer.toString(logCalls) + 
+				", length: " + Integer.toString(message.length()) + 
+				", time period: " + Duration.between(start, end).toString() +
+				lineSeparator + message.toString());
+			message.delete(1, message.length());
+			logCalls=0;
+			start=Instant.now();
 		}
 
 		public void rLoadHistory(Rengine re, String filename) {

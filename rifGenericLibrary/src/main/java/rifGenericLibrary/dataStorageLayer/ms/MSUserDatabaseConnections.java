@@ -85,7 +85,12 @@ public final class MSUserDatabaseConnections {
 	// ==========================================
 	private static final int READ_CONNECTIONS_PER_PERSON = 5;
 	private static final int WRITE_CONNECTIONS_PER_PERSON = 5;
-	
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");	
+	private static String callingClassName="rifGenericLibrary.dataStorageLayer.ms.MSUserDatabaseConnections"; 
+		// this.getClass().getName();
+		// So you can call the static safe RIFLogger functions
+		
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -207,7 +212,8 @@ public final class MSUserDatabaseConnections {
 			return userDatabaseConnections;
 		}
 		catch(ClassNotFoundException classNotFoundException) {
-			classNotFoundException.printStackTrace(System.out);
+			rifLogger.error(callingClassName, "Jdb.error.unableToLoadDatabaseDriver ERROR", 
+				classNotFoundException);
 			String errorMessage
 				= RIFGenericLibraryMessages.getMessage(
 					"db.error.unableToLoadDatabaseDriver");
@@ -218,13 +224,13 @@ public final class MSUserDatabaseConnections {
 			throw rifServiceException;			
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
+			rifLogger.error(callingClassName, "Jdb.error.unableToLoadDatabaseDriver ERROR", 
+				sqlException);
 			String errorMessage
 				= RIFGenericLibraryMessages.getMessage(
 					"db.error.unableToRegisterUser",
 					userID);
 			
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 					MSUserDatabaseConnections.class, 
 				errorMessage, 

@@ -6,6 +6,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
 import rifGenericLibrary.taxonomyServices.TaxonomyTermManager;
 
+import rifGenericLibrary.util.RIFLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -105,7 +106,9 @@ public final class ICD10TaxonomyTermParser {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -126,9 +129,12 @@ public final class ICD10TaxonomyTermParser {
 			parseICD10ClaMLFile(icd10File);		
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
 			String errorMessage 
 				= "Something wrong happened when ICD10 taxonomy (ClaML) service was initialised";
+			rifLogger.error(
+				this.getClass(), 
+				errorMessage, 
+				exception);
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					TaxonomyServiceError.HEALTH_CODE_TAXONOMY_SERVICE_ERROR,
@@ -171,7 +177,7 @@ public final class ICD10TaxonomyTermParser {
 			//taxonomyContainer.put(chapterNamesInArray[i], chapter);
 		}
 
-		System.out.println("ICD10TaxonomyTermParser 2");
+		rifLogger.info(this.getClass(), "ICD10TaxonomyTermParser 2");
 		
 		NodeList taxonomyTermList 
 			= icd10Source.getElementsByTagName("Class");

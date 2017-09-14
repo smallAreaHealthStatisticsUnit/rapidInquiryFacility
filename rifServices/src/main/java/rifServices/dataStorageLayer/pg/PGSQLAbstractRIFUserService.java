@@ -87,7 +87,8 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -184,8 +185,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 				"studyID", 
 				studyID);
 			
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getDiseaseMappingStudy",
 					user.getUserID(),
@@ -252,8 +252,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			//Check for security violations
 			validateUser(user);
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeographies",
 					user.getUserID(),
@@ -334,7 +333,6 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			geography.checkSecurityViolations();
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeographicalLevelSelectValues",
 					user.getUserID(),
@@ -410,8 +408,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			validateUser(user);
 			geography.checkSecurityViolations();
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getDefaultGeoLevelSelectValue",
 					user.getUserID(),
@@ -509,8 +506,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			geography.checkSecurityViolations();
 			geoLevelSelect.checkSecurityViolations();
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelAreaValues",
 					user.getUserID(),
@@ -617,8 +613,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			geography.checkSecurityViolations();
 			geoLevelSelect.checkSecurityViolations();
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getGeoLevelViewValues",
 					user.getUserID(),
@@ -729,8 +724,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			geography.checkSecurityViolations();
 			ndPair.checkSecurityViolations();
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getYearRange",
 					user.getUserID(),
@@ -819,8 +813,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			 * will be a source of contention.  The logger is managed as a single
 			 * instance that will be used by all threads.  
 			 */
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getHealthThemes",
 					user.getUserID(),
@@ -902,8 +895,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			geography.checkSecurityViolations();
 			geoLevelToMap.checkSecurityViolations();
 
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getCovariates",
 					user.getUserID(),
@@ -987,8 +979,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 				geography.checkSecurityViolations();
 				geoLevelSelect.checkSecurityViolations();	
 								
-				//Audit attempt to do operation
-				RIFLogger rifLogger = RIFLogger.getLogger();				
+				//Audit attempt to do operation				
 				String auditTrailMessage
 					= RIFServiceMessages.getMessage("logging.getTileMakerCentroids",
 						user.getUserID(),
@@ -1102,10 +1093,9 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			geography.checkSecurityViolations();
 			geoLevelSelect.checkSecurityViolations();	
 			
-			//System.out.println(geography.getDisplayName());
+			//rifLogger.info(this.getClass(), geography.getDisplayName());
 								
-			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();				
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= RIFServiceMessages.getMessage("logging.getTileMakerTiles",
 					user.getUserID(),

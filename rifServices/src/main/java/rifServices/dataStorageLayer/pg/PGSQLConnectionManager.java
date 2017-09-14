@@ -109,6 +109,8 @@ extends PGSQLAbstractSQLManager {
 
 	private static final int MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD = 5;
 
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -344,10 +346,10 @@ extends PGSQLAbstractSQLManager {
 
 			registeredUserIDs.add(userID);	
 			
-		//	System.out.println("JAVA LIBRARY PATH >>>");
-		//	System.out.println(System.getProperty("java.library.path"));
+		//	rifLogger.info(this.getClass(), "JAVA LIBRARY PATH >>>");
+		//	rifLogger.info(this.getClass(), System.getProperty("java.library.path"));
 
-			System.out.println("XXXXXXXXXXX P O S T G R E S Q L XXXXXXXXXX");
+			rifLogger.info(this.getClass(), "XXXXXXXXXXX P O S T G R E S Q L XXXXXXXXXX");
 		}
 		catch(ClassNotFoundException classNotFoundException) {
 			RIFServiceExceptionFactory exceptionFactory
@@ -355,7 +357,6 @@ extends PGSQLAbstractSQLManager {
 			throw exceptionFactory.createUnableLoadDBDriver();
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
 			readOnlyConnectionQueue.closeAllConnections();
 			writeOnlyConnectionQueue.closeAllConnections();				
 			String errorMessage
@@ -363,7 +364,6 @@ extends PGSQLAbstractSQLManager {
 					"sqlConnectionManager.error.unableToRegisterUser",
 					userID);
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 					PGSQLConnectionManager.class, 
 					errorMessage, 
@@ -419,7 +419,6 @@ extends PGSQLAbstractSQLManager {
 			= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToAssignReadConnection");
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 					PGSQLConnectionManager.class, 
 					errorMessage, 
@@ -459,7 +458,6 @@ extends PGSQLAbstractSQLManager {
 			= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToReclaimReadConnection");
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 					PGSQLConnectionManager.class, 
 					errorMessage, 
@@ -501,7 +499,6 @@ extends PGSQLAbstractSQLManager {
 			= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToReclaimWriteConnection");
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 					PGSQLConnectionManager.class, 
 					errorMessage, 
@@ -558,7 +555,6 @@ extends PGSQLAbstractSQLManager {
 			= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToAssignWriteConnection");
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 					PGSQLConnectionManager.class, 
 					errorMessage, 

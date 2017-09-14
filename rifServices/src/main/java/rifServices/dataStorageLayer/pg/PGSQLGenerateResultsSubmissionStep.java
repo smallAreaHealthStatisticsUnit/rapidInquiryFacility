@@ -79,6 +79,8 @@ final class PGSQLGenerateResultsSubmissionStep
 	// ==========================================
 	// Section Constants
 	// ==========================================
+
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	
 	// ==========================================
 	// Section Properties
@@ -142,16 +144,17 @@ final class PGSQLGenerateResultsSubmissionStep
 					runStudyQueryFormatter);
 			runStudyStatement.setInt(1, Integer.valueOf(studyID));
 			runStudyStatement.setBoolean(2, true);
+				
 			runStudyResultSet
 				= runStudyStatement.executeQuery();
 			runStudyResultSet.next();
 			
 			result = String.valueOf(runStudyResultSet.getBoolean(1));	
 			if (runStudyResultSet.getBoolean(1)) {
-				System.out.println("XXXXXXXXXX Study " + studyID + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
+				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
 			}
 			else {
-				System.out.println("XXXXXXXXXX Study " + studyID + " failed with code: " + result + 
+				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID + " failed with code: " + result + 
 					" XXXXXXXXXXXXXXXXXXXXXX");
 			}
 			
@@ -168,7 +171,6 @@ final class PGSQLGenerateResultsSubmissionStep
 					"sqlRIFSubmissionManager.error.unableToRunStudy",
 					studyID);
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLGenerateResultsSubmissionStep.class, 
 				errorMessage, 
@@ -181,11 +183,9 @@ final class PGSQLGenerateResultsSubmissionStep
 			throw rifServiceException;
 		}
 		finally {
-			try {
-				PGSQLQueryUtility.printWarnings(runStudyStatement.getWarnings()); // Print output from T-SQL
-			}			
-			catch(SQLException sqlException) { // Do nothing - they are warnings!
-			}
+			PGSQLQueryUtility query=new PGSQLQueryUtility();
+			query.printWarnings(runStudyStatement); // Print output from PGSQL	
+			
 			//Cleanup database resources			
 			PGSQLQueryUtility.close(runStudyStatement);
 			PGSQLQueryUtility.close(runStudyResultSet);

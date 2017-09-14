@@ -196,7 +196,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			submissionZipOutputStream.close();
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);	
+			rifLogger.error(this.getClass(), "PGSQLStudyExtractManager ERROR", exception);
 		}
 		finally {
 			temporaryDirectory.delete();

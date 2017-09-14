@@ -197,7 +197,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			submissionZipOutputStream.close();
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);	
+			rifLogger.error(this.getClass(), "MSSQLStudyExtractManager ERROR", exception);
 		}
 		finally {
 			temporaryDirectory.delete();
@@ -585,10 +585,8 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
         while ((byteCount = fileInputStream.read(buffer)) != -1)
         {
         	submissionZipOutputStream.write(buffer, 0, byteCount);
-            System.out.print('.');
-            System.out.flush();
+            rifLogger.info(this.getClass(), '.');
         }
-        System.out.println();
 
         fileInputStream.close();
         submissionZipOutputStream.closeEntry();

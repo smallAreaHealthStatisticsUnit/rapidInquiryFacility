@@ -6,6 +6,7 @@ import javax.ws.rs.core.Application;
 import java.util.Set;
 import java.util.HashSet;
 
+import rifGenericLibrary.util.RIFLogger;
 /**
  *
  * <hr>
@@ -74,6 +75,8 @@ public class RIFTaxonomyWebServiceApplication extends Application {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	private static RIFLogger rifLogger;
+	private static String lineSeparator = System.getProperty("line.separator");
 
 	// ==========================================
 	// Section Properties
@@ -84,7 +87,8 @@ public class RIFTaxonomyWebServiceApplication extends Application {
 	// ==========================================
 
 	public RIFTaxonomyWebServiceApplication() {
-		System.out.println("!!!!!!!!!!!!!!!!!!!!!RIFTaxonomyWebServiceApplication !!!!!!");
+		rifLogger = RIFLogger.getLogger();
+		rifLogger.info(this.getClass(), "!!!!!!!!!!!!!!!!!!!!! RIFTaxonomyWebServiceApplication !!!!!!");
 	}
 
 	// ==========================================

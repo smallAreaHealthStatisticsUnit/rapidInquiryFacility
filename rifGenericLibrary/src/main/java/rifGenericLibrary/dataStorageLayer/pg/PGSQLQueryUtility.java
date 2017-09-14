@@ -82,12 +82,18 @@ import java.sql.SQLWarning;
  *
  */
 
-public final class PGSQLQueryUtility {
+public class PGSQLQueryUtility {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
 
+	private static String callingClassName="rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility"; 
+		// this.getClass().getName();
+		// So you can call the static safe RIFLogger functions
+		
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -99,7 +105,7 @@ public final class PGSQLQueryUtility {
 	/**
 	 * Instantiates a new SQL query utility.
 	 */
-	private PGSQLQueryUtility() {
+	public PGSQLQueryUtility() { // Made public for printWarnings()
 
 	}
 
@@ -128,7 +134,6 @@ public final class PGSQLQueryUtility {
 			String errorMessage
 				= RIFGenericLibraryMessages.getMessage("sqlConnectionManager.error.unableToCloseResource");
 			
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLQueryUtility.class, 
 				errorMessage, 
@@ -165,7 +170,6 @@ public final class PGSQLQueryUtility {
 				= RIFGenericLibraryMessages.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
 			
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLQueryUtility.class, 
 				errorMessage, 
@@ -201,7 +205,6 @@ public final class PGSQLQueryUtility {
 				= RIFGenericLibraryMessages.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
 			
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLQueryUtility.class, 
 				errorMessage, 
@@ -221,19 +224,35 @@ public final class PGSQLQueryUtility {
 	 * @param warning SQLWarning
 	 * @throws nothing
 	 */	
-	public static void printWarnings(SQLWarning warning) {
-		while (warning != null) {	
-			if (warning.getErrorCode() == 0) {
-				System.out.println(warning.getMessage());	       
+	public void printWarnings(PreparedStatement runStudyStatement) {
+		SQLWarning warnings;
+		StringBuilder message;
+		
+		try {
+			warnings=runStudyStatement.getWarnings();
+			message = new StringBuilder();
+			
+			while (warnings != null) {	
+				if (warnings.getErrorCode() == 0) {
+					message.append(warnings.getMessage() + lineSeparator);	       
+				}
+				else {
+					rifLogger.warning(this.getClass(), 
+						"SQL Error/Warning >>>" + lineSeparator +
+						"Message:           " + warnings.getMessage() +lineSeparator +
+						"SQLState:          " + warnings.getSQLState() + lineSeparator +
+						"Vendor error code: " +	warnings.getErrorCode() + lineSeparator);	       
+				}
+				warnings = warnings.getNextWarning();
 			}
-			else {
-				System.out.println("Message:" + warning.getMessage());
-				System.out.println("SQLState:" + warning.getSQLState());
-				System.out.print("Vendor error code: ");
-				System.out.println(warning.getErrorCode());
-				System.out.println("==");	       
-			}
-			warning = warning.getNextWarning();
+			
+			if (message.length() > 0) {
+				rifLogger.info(this.getClass(), message.toString());
+			}	
+		}		
+		catch(SQLException sqlException) { // Do nothing - they are warnings!
+			rifLogger.warning(this.getClass(), "PGSQLQueryUtility.printWarnings() caught sqlException: " + 
+				sqlException.getMessage());
 		}
 	}
 	
@@ -247,7 +266,7 @@ public final class PGSQLQueryUtility {
 		
 		try {
 			connection.commit();
-			System.out.println("COMMIT");	
+			rifLogger.info(callingClassName, "COMMIT");	
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
@@ -270,7 +289,7 @@ public final class PGSQLQueryUtility {
 		
 		try {
 			connection.rollback();
-			System.out.println("ROLLBACK");	       
+			rifLogger.info(callingClassName, "ROLLBACK");	       
 		}
 		catch(SQLException sqlException) {
 			String errorMessage

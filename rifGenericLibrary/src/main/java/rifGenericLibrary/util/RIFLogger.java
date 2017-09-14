@@ -66,6 +66,16 @@ package rifGenericLibrary.util;
  * (4)            Section Override
  *
  */
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang.exception.ExceptionUtils;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.Enumeration;
+import java.util.Map;
 
 public final class RIFLogger {
 
@@ -98,53 +108,296 @@ public final class RIFLogger {
 	 * it won't report exceptions should rifLogger fail to instantiate.
 	 */
 	private static final RIFLogger rifLogger = new RIFLogger();
+	private static Logger log;
+	private static String lineSeparator = System.getProperty("line.separator");
+	private static Properties prop = null;
 	
 	// ==========================================
-	// Section Construction
+	// Section Construction: log4j
 	// ==========================================
-
+	
 	private RIFLogger() {
-
+//		System.out.println("RIFLogger() INIT");
+		/* Get actual class name to be printed on */
+		String message = "Created RIFLogger: " + RIFLogger.class.getName();
+		boolean setManager=false;
+		
+		String logManagerName=System.getProperty("java.util.logging.manager");
+		if (logManagerName == null || !logManagerName.equals("java.util.logging.manager")) {
+			System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
+			setManager=true;
+		}
+		
+		try {
+			log=LogManager.getLogger(RIFLogger.class.getName());	
+															// Get logger called: "RIFLogger" 	
+		}
+		catch(Exception e) {
+			System.out.println("RIFLogger() LogManager.getLogger: Caught exception: " + e.getMessage());
+		}
+		finally {
+			if (log != null) {
+				log.info("[RIFLogger]: " + message);
+				if (setManager) {
+					log.info("[RIFLogger]: Set java.util.logging.manager=" +
+						System.getProperty("java.util.logging.manager"));
+				}
+			}
+			else {	
+				System.out.println("INFO(no RIFLogger) " + message);
+			}			
+		}
 	}
 	
-	public static RIFLogger getLogger() {
-		return rifLogger;
+	public void printLoggers() {
+		if (log == null) {	
+			System.out.println("INFO(no RIFLogger) [printLoggers]");
+			return;
+		}	
 	}
+	
+	public static RIFLogger getLogger() { // Return this static object
+		return rifLogger;
+	}	
 	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	// 
+	
+	/**
+	 * error() print error message and stack trace. Contains message, root cause message, throwable count,
+	 * All root cause stack traces.
+	 * <p>
+	 * May NOT be used in statically defined functions (because of this.getClass()). 
+	 *
+	 * @param  callingClass  Calling class (object); usually this.getClass()
+	 * @param  errorHeading  Textual error heading
+	 * @param  throwableItem Exception caught
+	 * @return Nothing
+	 */
 	public void error(
 		final Class callingClass,
 		final String errorHeading,
 		final Throwable throwableItem) {
+			
+		StringBuilder errorString = new StringBuilder();
 		
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(callingClass.getName());
-		buffer.append(".");
-		buffer.append(errorHeading);
+		errorString.append("getMessage:          " + ExceptionUtils.getMessage(throwableItem) + lineSeparator);
+        errorString.append("getRootCauseMessage: " + ExceptionUtils.getRootCauseMessage(throwableItem) + lineSeparator);
+        errorString.append("getThrowableCount:   " + ExceptionUtils.getThrowableCount(throwableItem) + lineSeparator);
+		errorString.append("getRootCauseStackTrace >>>" + lineSeparator);
+		for (String cause : ExceptionUtils.getRootCauseStackTrace(throwableItem)) {
+			errorString.append(cause + lineSeparator);
+		}
+		errorString.append("<<< End getRootCauseStackTrace.");
 		
-		throwableItem.printStackTrace(System.out);
+		if (log != null) {
+			log.error("["+callingClass.getName()+"]:" + lineSeparator + 
+				errorHeading + lineSeparator + errorString);
+		}
+		else {	
+			System.out.println("ERROR(no RIFLogger):" + lineSeparator + "["+callingClass.getName()+"]" + 
+				errorHeading + lineSeparator + throwableItem.getStackTrace());
+		}
+	}
+	
+	public void error( // For use in Kev's endless statically defined functions
+		final String callingClassName,
+		final String errorHeading,
+		final Throwable throwableItem) {
+			
+		StringBuilder errorString = new StringBuilder();
 		
-		//to be implemented, hopefully by using the SL4J tools
-		//in the worst case scenario we can build our own but it's not the best idea
+		errorString.append("getMessage:          " + ExceptionUtils.getMessage(throwableItem) + lineSeparator);
+        errorString.append("getRootCauseMessage: " + ExceptionUtils.getRootCauseMessage(throwableItem) + lineSeparator);
+        errorString.append("getThrowableCount:   " + ExceptionUtils.getThrowableCount(throwableItem) + lineSeparator);
+		errorString.append("getRootCauseStackTrace >>>" + lineSeparator);
+		for (String cause : ExceptionUtils.getRootCauseStackTrace(throwableItem)) {
+			errorString.append(cause + lineSeparator);
+		}
+		errorString.append("<<< End getRootCauseStackTrace.");
 		
-		//Logger logger = LoggerFactory.getLogger(ProductionRIFJobSubmissionService.class);
-		//logger.error(methodName, rifServiceException);
+		if (log != null) {
+			log.error("["+callingClassName+"]:" + lineSeparator + 
+				errorHeading + lineSeparator + errorString);
+		}
+		else {	
+			System.out.println("ERROR(no RIFLogger):" + lineSeparator + "["+callingClassName+"]" + 
+				errorHeading + lineSeparator + throwableItem.getStackTrace());
+		}
+	}
+	
+	// error() do not print stack trace
+	public void error(
+		final Class callingClass,
+		final String errorHeading) {		
+		
+		if (log != null) {
+			log.error("["+callingClass.getName()+"]:" + lineSeparator + 
+				errorHeading);
+		}
+		else {	
+			System.out.println("ERROR(no RIFLogger):" + lineSeparator + "["+callingClass.getName()+"]" + 
+				errorHeading);
+		}
+	}
+	
+	// warning() print stack tracr
+	public void warning(
+		final Class callingClass,
+		final String errorHeading,
+		final Throwable throwableItem) {
+			
+		StringBuilder errorString = new StringBuilder();
+		
+		errorString.append("getMessage:          " + ExceptionUtils.getMessage(throwableItem) + lineSeparator);
+        errorString.append("getRootCauseMessage: " + ExceptionUtils.getRootCauseMessage(throwableItem) + lineSeparator);
+        errorString.append("getThrowableCount:   " + ExceptionUtils.getThrowableCount(throwableItem) + lineSeparator);
+		errorString.append("getRootCauseStackTrace >>>" + lineSeparator);
+		for (String cause : ExceptionUtils.getRootCauseStackTrace(throwableItem)) {
+			errorString.append(cause + lineSeparator);
+		}
+		errorString.append("<<< End getRootCauseStackTrace.");
+		
+		if (log != null) {
+			log.warn("["+callingClass.getName()+"]:" + lineSeparator + 
+				errorHeading + lineSeparator + errorString);
+		}
+		else {	
+			System.out.println("WARNING(no RIFLogger):" + lineSeparator + "["+callingClass.getName()+"]" + 
+				errorHeading + lineSeparator + throwableItem.getStackTrace());
+		}
+	}
+		
+	public void warning(
+		final Class callingClass,			
+		final String message) {
+		
+		if (log != null) {
+			log.warn("["+callingClass.getName()+"]:" + lineSeparator + message);
+		}
+		else {	
+			System.out.println("WARNING(no RIFLogger):" + lineSeparator + "["+callingClass.getName()+"]" + message);
+		}
+	}
+
+	protected boolean checkIfInfoLoggingEnabled(
+		final String className) {
+
+		if (prop == null) {
+			Map<String, String> environmentalVariables = System.getenv();
+			prop = new Properties();
+			InputStream input = null;
+			String fileName;
+			String catalinaHome = environmentalVariables.get("CATALINA_HOME");
+			if (catalinaHome != null) {
+				fileName=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\RIFLogger.properties";
+			}
+			else {
+				rifLogger.warning(this.getClass(), 
+					"RIFLogger.checkIfInfoLoggingEnabled: CATALINA_HOME not set in environment"); 
+				fileName="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\RIFLogger.properties";
+			}
+
+			try {
+				input = new FileInputStream(fileName);
+				// load a properties file
+				prop.load(input);
+			} 
+			catch (IOException ioException) {
+				rifLogger.warning(this.getClass(), 
+					"RIFLogger.checkIfInfoLoggingEnabled error for file: " + fileName, 
+					ioException);
+				return true;
+			} 
+			finally {
+				if (input != null) {
+					try {
+						input.close();
+					} 
+					catch (IOException ioException) {
+						rifLogger.warning(this.getClass(), 
+							"RIFLogger.checkIfInfoLoggingEnabled error for file: " + fileName, 
+							ioException);
+						return true;
+					}
+				}
+			}
+		}
+		
+		if (prop == null) { // There would have been previous warnings
+			return true;
+		}			
+		else {
+			String value = prop.getProperty(className);
+			if (value != null) {	
+				if (value.toLowerCase().equals("true")) {
+					rifLogger.debug(this.getClass(), 
+						"RIFLogger checkIfInfoLoggingEnabled=TRUE property: " + 
+						className + "=" + value);
+					return true;			
+				}
+				else {
+					rifLogger.debug(this.getClass(), 
+						"RIFLogger checkIfInfoLoggingEnabled=FALSE property: " + 
+						className + "=" + value);
+					return false;	
+				}		
+			}
+			else {
+				rifLogger.warning(this.getClass(), 
+					"RIFLogger checkIfInfoLoggingEnabled=FALSE property: " + 
+					className + " NOT FOUND");	
+				return false;
+			}
+		}
+	}
+
+	public void info( // For use in Kev's endless statically defined functions
+		final String callingClassName,			
+		final String message) {
+		
+		if (log != null) {
+			if (checkIfInfoLoggingEnabled(callingClassName) == false) {
+				log.debug("["+callingClassName+"]:" + lineSeparator + message);
+			}
+			else {
+				log.info("["+callingClassName+"]:" + lineSeparator + message);
+			}
+		}
+		else {	
+			System.out.println("INFO(no RIFLogger):" + lineSeparator + "["+callingClassName+"]" + message);
+		}
 	}
 	
 	public void info(
 		final Class callingClass,			
 		final String message) {
 		
-
+		if (log != null) {
+			if (checkIfInfoLoggingEnabled(callingClass.getName()) == false) {
+				log.debug("["+callingClass.getName()+"]:" + lineSeparator + message);
+			}
+			else {
+				log.info("["+callingClass.getName()+"]:" + lineSeparator + message);
+			}
+		}
+		else {	
+			System.out.println("INFO(no RIFLogger):" + lineSeparator + "["+callingClass.getName()+"]" + message);
+		}
 	}
 
 	public void debug(
 		final Class callingClass,			
 		final String message) {
-			
-		System.out.println(message);
+
+		if (log != null) {		
+			log.debug("["+callingClass.getName()+"]:" + lineSeparator + message);
+		}
+		else {	
+			System.out.println("DEBUG(no RIFLogger) " + "["+callingClass.getName()+"]:" + lineSeparator + message);
+		}
 	}
 
 	public void debugQuery(
@@ -164,8 +417,13 @@ public final class RIFLogger {
 		
 		System.out.println(buffer.toString());
 		*/
-		System.out.println();
-		System.out.println(message);
+		if (log != null) {
+			log.debug("DEBUG " + debugLabel + ": " + message);
+		}
+		else {	
+			System.out.println("DEBUG(no RIFLogger) " + debugLabel + ": " + message);
+		}
+			
 	}
 	
 	
@@ -173,7 +431,12 @@ public final class RIFLogger {
 		final String debugLabel,
 		final String message) {
 				
-		System.out.println("DEBUG " + debugLabel + ": " + message);
+		if (log != null) {
+			log.debug("DEBUG " + debugLabel + ": " + message);
+		}
+		else {	
+			System.out.println("DEBUG(no RIFLogger) " + debugLabel + ": " + message);
+		}
 	}
 	
 	// ==========================================

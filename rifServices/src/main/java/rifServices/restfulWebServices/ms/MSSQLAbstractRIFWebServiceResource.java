@@ -24,6 +24,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
+
 import rifServices.restfulWebServices.*;
 import rifServices.dataStorageLayer.ms.MSSQLProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.ms.MSSQLSampleTestObjectGenerator;
@@ -110,6 +112,9 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 	// ==========================================
 	private static final MSSQLProductionRIFStudyServiceBundle rifStudyServiceBundle 
 		= MSSQLProductionRIFStudyServiceBundle.getRIFServiceBundle();
+		
+	private RIFLogger rifLogger = RIFLogger.getLogger();
+	
 	private SimpleDateFormat sd;
 	private Date startTime;
 	
@@ -130,14 +135,14 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 				false);
 		
 		
-		//System.out.println("AbstractRIFWebServiceResource validation policy=="+rifServiceStartupOptions.useStrictValidationPolicy()+"==");
+		//rifLogger.info(this.getClass(), "AbstractRIFWebServiceResource validation policy=="+rifServiceStartupOptions.useStrictValidationPolicy()+"==");
 		webServiceResponseGenerator = new WebServiceResponseGenerator();
 		
 		try {
 			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
 		}
 		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), "MSSQLAbstractRIFWebServiceResource rifStudyServiceBundle.initialise error", exception);
 		}
 	}
 
@@ -152,7 +157,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			result = serialiseStringResult(isLoggedInMessage);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), "MSSQLAbstractRIFWebServiceResource.isLoggedIn error", exception);
+
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -178,7 +184,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			result = serialiseStringResult(loginMessage);
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), "MSSQLAbstractRIFWebServiceResource.login error", exception);
+
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -205,6 +212,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			result = serialiseStringResult(logoutMessage);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "MSSQLAbstractRIFWebServiceResource.logout error", exception);
+
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -256,6 +265,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			serialiseStringResult(result);			
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.isInformationGovernancePolicyActive error", exception);
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -327,7 +338,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			}			
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), "MSSQLAbstractRIFWebServiceResource.getGeographies error", exception);
+			
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -374,6 +386,9 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 					geoLevelSelectProxy);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getGeographicalLevelSelectValues error", exception);
+
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -420,6 +435,9 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 					geoLevelSelectProxy);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getDefaultGeoLevelSelectValue error", exception);
+			
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -504,6 +522,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 					geoLevelAreasProxy);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getGeoLevelAreaValues error", exception);
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -579,6 +599,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 					geoLevelViewsProxy);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getGeoLevelViewValues error", exception);
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -643,6 +665,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 					ndPairProxies);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getNumerator error", exception);
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -700,6 +724,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 					firstResult);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getDenominator error", exception);
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -747,6 +773,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 					yearRangeProxy);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getYearRange error", exception);
 			//Convert exceptions to support JSON			
 			result 
 				= serialiseException(
@@ -788,6 +816,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 				result = rifResultTableJSONGenerator.writeResultTable(resultTable);
 			}
 			catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getTileMakerCentroids error", exception);
 				result 
 					= serialiseException(
 						servletRequest,
@@ -830,6 +860,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 					y);	
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getTileMakerTiles error", exception);
 			result 
 				= serialiseException(
 					servletRequest,
@@ -878,6 +910,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			result = jsonObject.toString(4);
 		}
 		catch(RIFServiceException rifServiceException) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getStudySubmission error", rifServiceException);
 			result 
 				= serialiseException(
 					servletRequest,
@@ -909,6 +943,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 					zoomLevel);
 		}
 		catch(RIFServiceException rifServiceException) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getZipFile error", rifServiceException);
 			result 
 			= serialiseException(
 					servletRequest,
@@ -929,13 +965,13 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 		
 		String result = "";
 
-		System.out.println("ARWS-submitStudy122 userID=="+userID+"==");
-		System.out.println("ARWS-submitStudy122 fileFormat=="+format+"==");
+		rifLogger.info(this.getClass(), "ARWS-submitStudy122 userID=="+userID+"==");
+		rifLogger.info(this.getClass(), "ARWS-submitStudy122 fileFormat=="+format+"==");
 		if (inputStream == null) {
-			System.out.println("ARWS-submitStudy123 nothing submitted for input study");
+			rifLogger.info(this.getClass(), "ARWS-submitStudy123 nothing submitted for input study");
 		}
 		else {
-			System.out.println("ARWS-submitStudy123 something specified for the input file");			
+			rifLogger.info(this.getClass(), "ARWS-submitStudy123 something specified for the input file");			
 		}
 		
 		try {			
@@ -945,14 +981,14 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			RIFStudySubmission rifStudySubmission = null;
 			
 			String tmpFormat = "JSON";
-			System.out.println("ARWS-submitStudy122 fileFormat=="+format+"==");
+			rifLogger.info(this.getClass(), "ARWS-submitStudy122 fileFormat=="+format+"==");
 			if (StudySubmissionFormat.JSON.matchesFormat(tmpFormat)) {
-				System.out.println("ARWS-submitStudy122 JSON");				
+				rifLogger.info(this.getClass(), "ARWS-submitStudy122 JSON");				
 				rifStudySubmission
 					= getRIFSubmissionFromJSONSource(inputStream);
 			}
 			else {
-				System.out.println("ARWS-submitStudy122 ");				
+				rifLogger.info(this.getClass(), "ARWS-submitStudy122 ");				
 				rifStudySubmission
 					= getRIFSubmissionFromXMLSource(inputStream);
 			}
@@ -970,7 +1006,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			rifServiceException.printErrors();
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.submitStudy error", exception);
 			result 
 				= serialiseException(
 					servletRequest,
@@ -988,7 +1025,7 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 		throws RIFServiceException {
 		
 		try {
-			System.out.println("ARWS - getRIFSubmissionFromJSONSource start");
+			rifLogger.info(this.getClass(), "ARWS - getRIFSubmissionFromJSONSource start");
 			BufferedReader reader 
 				= new BufferedReader(
 					new InputStreamReader(inputStream, "UTF-8"));
@@ -1007,11 +1044,12 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 			String xml = XML.toString(jsonObject);
 			InputStream xmlInputStream 
 				= new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
-			System.out.println("ARWS - getRIFSubmissionFromJSONSource JSON TO XML=="+xml+"==");			
+			rifLogger.info(this.getClass(), "ARWS - getRIFSubmissionFromJSONSource JSON TO XML=="+xml+"==");			
 			return getRIFSubmissionFromXMLSource(xmlInputStream);			
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getRIFSubmissionFromJSONSource error", exception);
 			String errorMessage
 				= RIFServiceMessages.getMessage("webService.submitStudy.error.unableToConvertJSONToXML");
 			RIFServiceException rifServiceException
@@ -1027,14 +1065,14 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 		final InputStream inputStream) 
 		throws RIFServiceException {
 
-		System.out.println("ARWS - getRIFSubmissionFromXMLSource start");
+		rifLogger.info(this.getClass(), "ARWS - getRIFSubmissionFromXMLSource start");
 				
 		RIFStudySubmissionXMLReader rifStudySubmissionReader2
 			= new RIFStudySubmissionXMLReader();
 		rifStudySubmissionReader2.readFile(inputStream);
 		RIFStudySubmission rifStudySubmission
 			= rifStudySubmissionReader2.getStudySubmission();
-		System.out.println("ARWS - getRIFSubmissionFromXMLSource stop");
+		rifLogger.info(this.getClass(), "ARWS - getRIFSubmissionFromXMLSource stop");
 		return rifStudySubmission;
 	}
 	
@@ -1186,6 +1224,8 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 				rifServiceExceptionProxy);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.serialiseException error", exception);
 			//Convert exceptions to support JSON
 			serialiseException(
 				servletRequest,
@@ -1218,7 +1258,7 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 		message.append("session id:=="+sessionID+"==\n");
 		message.append("==================================================\n");
 		//message.append("IP address:=="+ipAdress+"")
-		System.out.println(message.toString());
+		rifLogger.debug(this.getClass(), message.toString());
 		
 	}
 	
@@ -1237,7 +1277,7 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 		long elapsed = date.getTime() - startTime.getTime();
 		buffer.append(elapsed);
 		buffer.append(" milliseconds since start time");
-		System.out.println(buffer.toString());		
+		rifLogger.info(this.getClass(), buffer.toString());		
 	}
 	
 

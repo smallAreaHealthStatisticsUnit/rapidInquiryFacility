@@ -12,6 +12,7 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
+import rifGenericLibrary.util.RIFLogger;
 
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
@@ -91,6 +92,7 @@ final class PGSQLStudyStateManager
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
 	// ==========================================
 	// Section Properties
@@ -248,7 +250,6 @@ final class PGSQLStudyStateManager
 					"sqlStudyStateManager.error.unableToGetStudyState",
 					studyID);
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLStudyStateManager.class, 
 				errorMessage, 
@@ -312,7 +313,9 @@ final class PGSQLStudyStateManager
 		
 		PreparedStatement statement = null;
 		try {
-			System.out.println("SQLStudyStateManager updateStudyStatus 1");
+			rifLogger.info(this.getClass(), "SQLStudyStateManager updateStudyStatus: study_id: " + studyID + 
+				"; state: " + studyState.getCode() + 
+				"; statusMessage: " + statusMessage);
 			createStatusTable(connection, user);
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(studyID));
@@ -321,7 +324,7 @@ final class PGSQLStudyStateManager
 			statement.setString(4, statusMessage);
 			statement.executeUpdate();
 			connection.commit();
-			System.out.println("SQLStudyStateManager updateStudyStatus 2");
+			rifLogger.info(this.getClass(), "SQLStudyStateManager: study_id: " + studyID + "; COMMIT");
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
@@ -465,7 +468,7 @@ final class PGSQLStudyStateManager
 			
 			//Disabled to keep tomcat window clear (called every 4 seconds by front-end)
 			/*
-			System.out.println("getCurrentStatusAllStudies 2  number of updates==" + expectedNumberOfStatusUpdates+"==");
+			rifLogger.info(this.getClass(), "getCurrentStatusAllStudies 2  number of updates==" + expectedNumberOfStatusUpdates+"==");
 
 			logSQLQuery(
 				"getCurrentStatusAllStudies", 
@@ -565,7 +568,7 @@ final class PGSQLStudyStateManager
 		queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_id = most_recent_updates.study_id");
 
 		
-		//System.out.println(queryFormatter.generateQuery());
+		//rifLogger.info(this.getClass(), queryFormatter.generateQuery());
 		
 		Integer result = 0;
 		PreparedStatement statement = null;		
@@ -714,7 +717,6 @@ final class PGSQLStudyStateManager
 					recordType,
 					studyID);
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLRIFContextManager.class, 
 				errorMessage, 

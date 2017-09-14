@@ -109,6 +109,7 @@ public final class MSSQLConnectionManager
 	
 	private static final int MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD = 5;
 	
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -344,10 +345,10 @@ public final class MSSQLConnectionManager
 
 			registeredUserIDs.add(userID);		
 			
-		//	System.out.println("JAVA LIBRARY PATH >>>");
-		//	System.out.println(System.getProperty("java.library.path"));
+		//	rifLogger.info(this.getClass(), "JAVA LIBRARY PATH >>>");
+		//	rifLogger.info(this.getClass(), System.getProperty("java.library.path"));
 			
-			System.out.println("XXXXXXXXXXX M S S Q L S E R V E R XXXXXXXXXX");
+			rifLogger.info(this.getClass(), "XXXXXXXXXXX M S S Q L S E R V E R XXXXXXXXXX");
 		}
 		catch(ClassNotFoundException classNotFoundException) {
 			RIFServiceExceptionFactory exceptionFactory
@@ -355,7 +356,6 @@ public final class MSSQLConnectionManager
 			throw exceptionFactory.createUnableLoadDBDriver();
 		}
 		catch(SQLException sqlException) {
-			sqlException.printStackTrace(System.out);
 			readOnlyConnectionQueue.closeAllConnections();
 			writeOnlyConnectionQueue.closeAllConnections();				
 			String errorMessage
@@ -363,7 +363,6 @@ public final class MSSQLConnectionManager
 					"sqlConnectionManager.error.unableToRegisterUser",
 					userID);
 			
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 					MSSQLConnectionManager.class, 
 				errorMessage, 
@@ -419,7 +418,6 @@ public final class MSSQLConnectionManager
 				= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToAssignReadConnection");
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLConnectionManager.class, 
 				errorMessage, 
@@ -459,7 +457,7 @@ public final class MSSQLConnectionManager
 				= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToReclaimReadConnection");
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
+
 			rifLogger.error(
 				MSSQLConnectionManager.class, 
 				errorMessage, 
@@ -501,7 +499,6 @@ public final class MSSQLConnectionManager
 				= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToReclaimWriteConnection");
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLConnectionManager.class, 
 				errorMessage, 
@@ -558,7 +555,6 @@ public final class MSSQLConnectionManager
 				= RIFServiceMessages.getMessage(
 					"sqlConnectionManager.error.unableToAssignWriteConnection");
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLConnectionManager.class, 
 				errorMessage, 

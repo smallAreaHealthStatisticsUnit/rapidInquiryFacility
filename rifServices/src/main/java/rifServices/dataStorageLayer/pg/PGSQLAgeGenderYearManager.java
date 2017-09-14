@@ -93,7 +93,9 @@ final class PGSQLAgeGenderYearManager
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -274,7 +276,6 @@ final class PGSQLAgeGenderYearManager
 			String errorMessage
 				= RIFServiceMessages.getMessage("ageGroup.error.unableToGetAgeGroups");
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLAgeGenderYearManager.class, 
 				errorMessage, 
@@ -408,7 +409,6 @@ final class PGSQLAgeGenderYearManager
 					"sqlAgeGenderYearManager.error.unableToGetStartEndYear",
 					ndPair.getDisplayName());
 			
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLAgeGenderYearManager.class, 
 				errorMessage, 
@@ -470,7 +470,7 @@ final class PGSQLAgeGenderYearManager
 		throws RIFServiceException {
 			
 		for (AgeBand ageBand : ageBands) {
-			System.out.println("SQGYM checkNonExistentAgeGroups age band=="+ ageBand.getDisplayName()+"==");
+			rifLogger.info(this.getClass(), "SQGYM checkNonExistentAgeGroups age band=="+ ageBand.getDisplayName()+"==");
 			AgeGroup lowerAgeGroup = ageBand.getLowerLimitAgeGroup();
 			checkNonExistentAgeGroup(
 				connection, 
@@ -490,7 +490,7 @@ final class PGSQLAgeGenderYearManager
 		final AgeGroup ageGroup) 
 		throws RIFServiceException {
 			
-		System.out.println("checkNonExistentAgeGroup name=="+ageGroup.getName()+"==");
+		rifLogger.info(this.getClass(), "checkNonExistentAgeGroup name=="+ageGroup.getName()+"==");
 		
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
@@ -591,7 +591,6 @@ final class PGSQLAgeGenderYearManager
 					ageGroup.getRecordType(),
 					ageGroup.getDisplayName());
 
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLAgeGenderYearManager.class, 
 				errorMessage, 

@@ -8,7 +8,14 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility; // Only used for createPreparedCall
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
+import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.Map;
 
 import java.sql.*;
 
@@ -87,6 +94,10 @@ public abstract class MSSQLAbstractSQLManager {
 	private RIFDatabaseProperties rifDatabaseProperties;
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
 	private boolean enableLogging = true;
+	private static String lineSeparator = System.getProperty("line.separator");
+	private static Properties prop = null;
+	
+	protected RIFLogger rifLogger = RIFLogger.getLogger();
 	
 	// ==========================================
 	// Section Construction
@@ -194,43 +205,107 @@ public abstract class MSSQLAbstractSQLManager {
 		final AbstractSQLQueryFormatter queryFormatter,
 		final String... parameters) {
 		
-		System.out.println("AbstractSQLManager logSQLQuery 1" + this.getClass().getName()+"==");
-		if (enableLogging == false) {
+		if (enableLogging == false || checkIfQueryLoggingEnabled(queryName) == false) {
 			return;
 		}
 
 		
 		StringBuilder queryLog = new StringBuilder();
-		queryLog.append("==========================================================\n");
-		queryLog.append("QUERY NAME:");
-		queryLog.append(queryName);
-		queryLog.append("\n");
-		
-		queryLog.append("PARAMETERS:");
-		queryLog.append("\n");
+		queryLog.append("QUERY NAME: " + queryName + lineSeparator);
+		queryLog.append("PARAMETERS:" + lineSeparator);
 		for (int i = 0; i < parameters.length; i++) {
 			queryLog.append("\t");
 			queryLog.append(i + 1);
 			queryLog.append(":\"");
 			queryLog.append(parameters[i]);
-			queryLog.append("\"\n");			
+			queryLog.append("\"" + lineSeparator);			
 		}
-		queryLog.append("\n");
-		queryLog.append("SQL QUERY TEXT\n");
-		queryLog.append(queryFormatter.generateQuery());
-		queryLog.append("\n");
-		queryLog.append("==========================================================\n");
-		
-		System.out.println(queryLog.toString());	
+		queryLog.append("MSSQL QUERY TEXT: " + lineSeparator);
+		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
+		queryLog.append("<<< End MSSQLAbstractSQLManager logSQLQuery" + lineSeparator);
+	
+		rifLogger.info(this.getClass(), "MSSQLAbstractSQLManager logSQLQuery >>>" + lineSeparator + queryLog.toString());	
 
 	}
 	
 	protected void logSQLException(final SQLException sqlException) {
-		sqlException.printStackTrace();
+		rifLogger.error(this.getClass(), "MSSQLAbstractSQLManager.logSQLException error", sqlException);
 	}
 
 	protected void logException(final Exception exception) {
-		exception.printStackTrace();
+		rifLogger.error(this.getClass(), "MSSQLAbstractSQLManager.logException error", exception);
+	}
+		
+	protected boolean checkIfQueryLoggingEnabled(
+		final String queryName) {
+
+		if (prop == null) {
+			Map<String, String> environmentalVariables = System.getenv();
+			prop = new Properties();
+			InputStream input = null;
+			String fileName;
+			String catalinaHome = environmentalVariables.get("CATALINA_HOME");
+			if (catalinaHome != null) {
+				fileName=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\AbstractSQLManager.properties";
+			}
+			else {
+				rifLogger.warning(this.getClass(), 
+					"PGSQLAbstractSQLManager.checkIfQueryLoggingEnabled: CATALINA_HOME not set in environment"); 
+				fileName="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\AbstractSQLManager.properties";
+			}
+
+			try {
+				input = new FileInputStream(fileName);
+				// load a properties file
+				prop.load(input);
+			} 
+			catch (IOException ioException) {
+				rifLogger.warning(this.getClass(), 
+					"MSSQLAbstractSQLManager.checkIfQueryLoggingEnabled error for file: " + fileName, 
+					ioException);
+				return true;
+			} 
+			finally {
+				if (input != null) {
+					try {
+						input.close();
+					} 
+					catch (IOException ioException) {
+						rifLogger.warning(this.getClass(), 
+							"MSSQLAbstractSQLManager.checkIfQueryLoggingEnabled error for file: " + fileName, 
+							ioException);
+						return true;
+					}
+				}
+			}
+		}
+	
+		if (prop == null) { // There would have been previous warnings
+			return true;
+		}			
+		else {
+			String value = prop.getProperty(queryName);
+			if (value != null) {	
+				if (value.toLowerCase().equals("true")) {
+					rifLogger.debug(this.getClass(), 
+						"MSSQLAbstractSQLManager checkIfQueryLoggingEnabled=TRUE property: " + 
+						queryName + "=" + value);
+					return true;			
+				}
+				else {
+					rifLogger.debug(this.getClass(), 
+						"MSSQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " + 
+						queryName + "=" + value);
+					return false;	
+				}		
+			}
+			else {
+				rifLogger.warning(this.getClass(), 
+					"MSSQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " + 
+					queryName + " NOT FOUND");	
+				return false;
+			}
+		}
 	}
 	
 	protected void setAutoCommitOn(
