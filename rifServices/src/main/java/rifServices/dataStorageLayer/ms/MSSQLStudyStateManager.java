@@ -660,7 +660,7 @@ final class MSSQLStudyStateManager
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("study_id");
-			queryFormatter.setFromTable("rif40_studies");		
+			queryFormatter.setFromTable("rif40.rif40_studies");		
 			logSQLQuery(
 				"checkNonExistentStudyID", 
 				queryFormatter, 

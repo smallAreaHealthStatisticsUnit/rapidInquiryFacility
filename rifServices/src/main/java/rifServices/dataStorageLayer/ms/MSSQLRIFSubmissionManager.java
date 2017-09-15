@@ -301,6 +301,7 @@ final class MSSQLRIFSubmissionManager
 
 			retrieveInvestigationsForStudy(
 				connection,
+				user, 
 				result);
 			return result;
 		}
@@ -330,7 +331,7 @@ final class MSSQLRIFSubmissionManager
 		try {
 			PGSQLSelectQueryFormatter queryFormatter
 				= new PGSQLSelectQueryFormatter();
-			queryFormatter.addFromTable("rif40_studies");
+			queryFormatter.addFromTable("rif40.rif40_studies");
 			queryFormatter.addSelectField("study_name");
 			queryFormatter.addSelectField("geography");
 			//queryFormatter.addSelectField("project");
@@ -393,7 +394,7 @@ final class MSSQLRIFSubmissionManager
 		try {
 			PGSQLSelectQueryFormatter queryFormatter
 				= new PGSQLSelectQueryFormatter();
-			queryFormatter.addFromTable("rif40_study_areas");
+			queryFormatter.addFromTable("rif40.rif40_study_areas");
 			queryFormatter.addSelectField("area_id");
 			queryFormatter.addSelectField("band_id");
 			queryFormatter.addWhereParameter("study_id");
@@ -443,7 +444,7 @@ final class MSSQLRIFSubmissionManager
 		try {
 			PGSQLSelectQueryFormatter queryFormatter
 			= new PGSQLSelectQueryFormatter();
-			queryFormatter.addFromTable("rif40_comparison_areas");
+			queryFormatter.addFromTable("rif40.rif40_comparison_areas");
 			queryFormatter.addSelectField("area_id");
 			queryFormatter.addWhereParameter("study_id");
 			
@@ -485,6 +486,7 @@ final class MSSQLRIFSubmissionManager
 	
 	private void retrieveInvestigationsForStudy(
 		final Connection connection,
+		final User user, 
 		final DiseaseMappingStudy diseaseMappingStudy)
 		throws SQLException,
 		RIFServiceException {
@@ -504,7 +506,7 @@ final class MSSQLRIFSubmissionManager
 			queryFormatter.addSelectField("genders");
 			queryFormatter.addSelectField("numer_tab");
 		
-			queryFormatter.addFromTable("rif40_investigations");
+			queryFormatter.addFromTable("rif40.rif40_investigations");
 			queryFormatter.addWhereParameter("study_id");
 			
 			logSQLQuery(
@@ -583,6 +585,7 @@ final class MSSQLRIFSubmissionManager
 				NumeratorDenominatorPair ndPair
 					= getNDPairForNumeratorTableName(
 						connection,
+						user,
 						numeratorTableName);
 				investigation.setNdPair(ndPair);
 			
@@ -617,7 +620,7 @@ final class MSSQLRIFSubmissionManager
 			
 			PGSQLSelectQueryFormatter queryFormatter
 				= new PGSQLSelectQueryFormatter();
-			queryFormatter.addFromTable("rif40_age_groups");
+			queryFormatter.addFromTable("rif40.rif40_age_groups");
 			queryFormatter.addSelectField("low_age");
 			queryFormatter.addSelectField("high_age");
 			queryFormatter.addSelectField("fieldname");	
@@ -656,6 +659,7 @@ final class MSSQLRIFSubmissionManager
 	
 	private NumeratorDenominatorPair getNDPairForNumeratorTableName(
 		final Connection connection,
+		final User user, 
 		final String numeratorTableName) 
 		throws SQLException,
 		RIFServiceException {
@@ -670,7 +674,7 @@ final class MSSQLRIFSubmissionManager
 			queryFormatter.addSelectField("numerator_description");
 			queryFormatter.addSelectField("denominator_table");
 			queryFormatter.addSelectField("denominator_description");		
-			queryFormatter.addFromTable("rif40_num_denom");
+			queryFormatter.addFromTable(user.getUserID() + ".rif40_num_denom");
 			queryFormatter.addWhereParameter("numerator_table");		
 
 			logSQLQuery(
