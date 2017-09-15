@@ -11,7 +11,8 @@ RIF Web Services
      - [1.3.2 Apache Tomcat for internet use](#132-apache-tomcat-for-internet-use)	
 	 - [1.3.3 Running Tomcat on the command line](#133-running-tomcat-on-the-command-line)
 	 - [1.3.4 Running Tomcat as a service](#134-running-tomcat-as-a-service)
-	 - [1.3.5 Logging (Log4j2) Setup](#135-logging-log4j2-setup) 
+	 - [1.3.5 Middleware Logging (Log4j2) Setup](#135-middleware-logging-log4j2-setup)
+	 - [1.3.6 Tomcat Logging (Log4j2) Setup](#135-tomcat-logging-log4j2-setup) 
    - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
    - [2.1 Building Using Make](#21-building-using-make)	
@@ -257,7 +258,7 @@ the buffer from scrolling and thence cause tomcat to hang. This can be alleviate
   The *tomcat* output trace will appear in %CATALINA_HOME%/logs as:
   *tomcat8-stderr.<date in format YYYY-MM-DD>* and also possibly *tomcat8-stdout.<date in format YYYY-MM-DD>*.
 
-### 1.3.5 Logging (Log4j2) Setup
+### 1.3.5 Middleware Logging (Log4j2) Setup
 
 The RIF middleware now uses Log4j version 2 for logging. The configuration file: 
 *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up two loggers:
@@ -391,6 +392,10 @@ getAgeIDQuery=false
 #
 createStatusTable=true
 ```
+
+### 1.3.6 Tomcat Logging (Log4j2) Setup
+
+To be added.
 
 ## 1.4 R
 
