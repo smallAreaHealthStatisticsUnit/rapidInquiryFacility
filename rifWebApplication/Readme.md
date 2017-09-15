@@ -260,12 +260,12 @@ the buffer from scrolling and thence cause tomcat to hang. This can be alleviate
 ### 1.3.5 Logging (Log4j2) Setup
 
 The RIF middleware now uses Log4j version 2 for logging. The configuration file: 
-%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml sets up two loggers:
+*%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up two loggers:
   
-  1. The default logger: rifGenericLibrary.util.RIFLogger used by the middleware: RIF_middleware.log
-  2. "Other" for logger output not from rifGenericLibrary.util.RIFLogger: Other.log
+  1. The default logger: *rifGenericLibrary.util.RIFLogger* used by the middleware: RIF_middleware.log
+  2. "Other" for logger output not from *rifGenericLibrary.util.RIFLogger*: Other.log
   
-  Logs go to STDOUT and ${sys:catalina.base}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME%/log4j2/<YYYY>-<MM>/
+  Logs go to STDOUT and ```${sys:catalina.base}/log4j2/<YYYY>-<MM>/``` and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/```
   Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
   messages not using *rifGenericLibrary.util.RIFLogger*
   
@@ -344,7 +344,7 @@ Logging output within the application is controlled in three ways:
 
 1. The logging level. This should be WARN, DEBUG or INFO. INFO is normally sufficient
 2. INFO logging is controlled by class using the properties file: 
-   %CATALINA_HOME%\webapps\rifServices\src\main\resources\RIFLogger.properties. Note that
+   *%CATALINA_HOME%\webapps\rifServices\src\main\resources\RIFLogger.properties*. Note that
    most database later classes have Postgres and SQLServer versions so have two entries.
    
 ```
@@ -372,7 +372,7 @@ rifServices.dataStorageLayer.pg.PGSQLRIFContextManager=true
 
 ```
 3. SQL Query INFO logging is controlled by query name using the properties file: 
-   %CATALINA_HOME%\webapps\rifServices\src\main\resources\AbstractSQLManager.properties
+   *%CATALINA_HOME%\webapps\rifServices\src\main\resources\AbstractSQLManager.properties*
 ```
 # MS/PGSQL AbstractSQLManager.logSQLQuery logging enabler/disabler by queryName
 # To enable queryName must be set to TRUE (any case)
