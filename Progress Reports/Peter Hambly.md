@@ -1588,6 +1588,47 @@ September:
 * fix results reporting from run study and R code. Possibly add support for ri40_study_status
 * US geography and centroids fixes
 * Add area name to results map table
+* Fix inability to detect errors correctly in run study, R, CVS extract and report to user. SQL Server 
+  does detect but does not trap the error correctly, i..e the **tomcat** log has
+  ```
+15-Sep-2017 10:55:04.188 SEVERE [https-jsse-nio-8080-exec-7] com.sun.jersey.spi.container.ContainerResponse.mapMappableContainerExce
+ption The exception contained within MappableContainerException could not be mapped to a response, re-throwing to the HTTP container
+
+ java.lang.NoSuchMethodError
+        at java.lang.Thread.destroy(Thread.java:990)
+        at rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep.performStep(MSSQLSmoothResultsSubmissionStep.java:290)
+        at rifServices.dataStorageLayer.ms.MSSQLRunStudyThread.smoothResults(MSSQLRunStudyThread.java:262)
+        at rifServices.dataStorageLayer.ms.MSSQLRunStudyThread.run(MSSQLRunStudyThread.java:181)
+        at java.lang.Thread.run(Thread.java:745)
+        at rifServices.dataStorageLayer.ms.MSSQLAbstractRIFStudySubmissionService.submitStudy(MSSQLAbstractRIFStudySubmissionService
+.java:1067)
+        at rifServices.restfulWebServices.ms.MSSQLAbstractRIFWebServiceResource.submitStudy(MSSQLAbstractRIFWebServiceResource.java:
+1000)
+        at rifServices.restfulWebServices.ms.MSSQLRIFStudySubmissionWebServiceResource.submitStudy(MSSQLRIFStudySubmissionWebService
+Resource.java:1178)
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)  
+  ```
+* Add rif40_dmp_pkg.csv_dump to SQL server port (and fix the Postgres one!):
+
+```
+10:42:00.274 [https-jsse-nio-8080-exec-10] ERROR: [rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager]:
+MSSQLStudyExtractManager ERROR
+getMessage:          SQLServerException: Invalid object name 'rif40_dmp_pkg.csv_dump'.
+getRootCauseMessage: SQLServerException: Invalid object name 'rif40_dmp_pkg.csv_dump'.
+getThrowableCount:   1
+getRootCauseStackTrace >>>
+com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_pkg.csv_dump'.
+	at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDatabaseError(SQLServerException.java:232)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.getNextResult(SQLServerStatement.java:1672)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.doExecutePreparedStatement(SQLServerPreparedStatement.java:460)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement$PrepStmtExecCmd.doExecute(SQLServerPreparedStatement.java:405)
+	at com.microsoft.sqlserver.jdbc.TDSCommand.execute(IOBuffer.java:7535)
+	at com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(SQLServerConnection.java:2438)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeCommand(SQLServerStatement.java:208)
+	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(SQLServerStatement.java:183)
+	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.executeQuery(SQLServerPreparedStatement.java:317)
+	at rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager.dumpDatabaseTableToCSVFile(MSSQLStudyExtractManager.java:537)
+```
   
 #### Database TODO list (deferred to September 2017): SQL Server Port
 
