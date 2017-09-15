@@ -11,6 +11,7 @@ RIF Web Services
      - [1.3.2 Apache Tomcat for internet use](#132-apache-tomcat-for-internet-use)	
 	 - [1.3.3 Running Tomcat on the command line](#133-running-tomcat-on-the-command-line)
 	 - [1.3.4 Running Tomcat as a service](#134-running-tomcat-as-a-service)
+	 - [1.3.5 Logging (Log4j2) Setup](#135-logging-log4j2-setup) 
    - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
    - [2.1 Building Using Make](#21-building-using-make)	
@@ -39,6 +40,7 @@ RIF Web Services
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
+   - [5.3 R Issues](#53-r-issues)
 - [ 6. Patching](#6-patching)
    - [6.1 RIF Web Application](#61-rif-web-application)
    - [6.2 RIF Middleware](#62-rif-middleware)
@@ -254,8 +256,143 @@ the buffer from scrolling and thence cause tomcat to hang. This can be alleviate
 * Restart Tomcat using the configure Tomcat application (tomcat8w) or the services panel.   
   The *tomcat* output trace will appear in %CATALINA_HOME%/logs as:
   *tomcat8-stderr.<date in format YYYY-MM-DD>* and also possibly *tomcat8-stdout.<date in format YYYY-MM-DD>*.
+
+### 1.3.5 Logging (Log4j2) Setup
+
+The RIF middleware now uses Log4j version 2 for logging. The configuration file: 
+%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml sets up two loggers:
   
-More controllable logging will be added during Autumn 2017 using log4j.
+  1. The default logger: rifGenericLibrary.util.RIFLogger used by the middleware: RIF_middleware.log
+  2. "Other" for logger output not from rifGenericLibrary.util.RIFLogger: Other.log
+  
+  Logs go to STDOUT and ${sys:catalina.base}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME%/log4j2/<YYYY>-<MM>/
+  Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
+  messages not using *rifGenericLibrary.util.RIFLogger*
+  
+  Logs are rotated everyday or every 100 MB in the year/month specific directory
+  
+  Typical log entry: 
+    ```
+	14:29:37.812 [http-nio-8080-exec-5] INFO  rifGenericLibrary.util.RIFLogger: [rifServices.dataStorageLayer.pg.PGSQLRIFContextManager]:
+	PGSQLAbstractSQLManager logSQLQuery >>>
+	QUERY NAME: getGeographies
+	PARAMETERS:
+	PGSQL QUERY TEXT: 
+	SELECT DISTINCT 
+	   geography 
+	FROM 
+	   rif40_geographies 
+	ORDER BY 
+	   geography ASC;
+
+
+	;
+	<<< End PGSQLAbstractSQLManager logSQLQuery
+	```
+	
+	Configuration file:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="debug" monitorInterval="30" name="RIF Services Default">
+  <Properties>
+    <!-- Log file names -->
+    <Property name="rif_middleware">RIF_middleware.log</Property>
+    <Property name="other">Other.log</Property>
+    <Property name="rif_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level: %msg%n</Property> 
+										<!-- No logging source; always rifGenericLibrary.util.RIFLogger -->
+    <Property name="other_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %logger{36}: %msg%n</Property>
+  </Properties>
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT" direct="true">
+      <PatternLayout pattern="${other_log_pattern}"/>
+    </Console>
+	<!-- File logs are in ${catalina.base}/log4j2 - %CATALINA_HOME/log4j2 -->
+    <RollingFile name="RIF_middleware" 
+				 filePattern="${sys:catalina.base}/log4j2/$${date:yyyy-MM}/${rif_middleware}-%d{yyyy-MM-dd}-%i.log"
+				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
+      <PatternLayout pattern="${rif_log_pattern}"/>
+	  <Policies>
+		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+	  </Policies>
+    </RollingFile>
+    <RollingFile name="Other" 
+				 filePattern="${sys:catalina.base}/log4j2/$${date:yyyy-MM}/${other}-%d{yyyy-MM-dd}-%i.log"
+				 immediateFlush="false" bufferedIO="true" bufferSize="1024">
+      <PatternLayout pattern="${other_log_pattern}"/>
+	  <Policies>
+		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+	  </Policies>
+    </RollingFile>
+  </Appenders>
+  <Loggers>
+    <!-- Default logger: rifGenericLibrary.util.RIFLogger -->
+    <Logger name="rifGenericLibrary.util.RIFLogger" level="info" additivity="false">
+      <!-- Disable the console to check all messages go through rifGenericLibrary.util.RIFLogger -->
+      <!-- <AppenderRef ref="Console"/> -->
+      <AppenderRef ref="RIF_middleware"/>
+    </Logger>
+	<!-- Other logging -->
+    <Root level="trace">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="Other"/>
+    </Root>
+  </Loggers>
+</Configuration>
+```
+
+Logging output within the application is controlled in three ways:
+
+1. The logging level. This should be WARN, DEBUG or INFO. INFO is normally sufficient
+2. INFO logging is controlled by class using the properties file: 
+   %CATALINA_HOME%\webapps\rifServices\src\main\resources\RIFLogger.properties. Note that
+   most database later classes have Postgres and SQLServer versions so have two entries.
+   
+```
+#
+# All logging is usually enabled unless it is irritating 
+# (e.g. rifServices.restfulWebServices.pg.PGSQLRIFStudySubmissionWebServiceResource)
+#
+rifServices.system.RIFServiceStartupOptions=true
+
+taxonomyServices.RIFTaxonomyWebServiceApplication=true
+taxonomyServices.WebServiceResponseUtility=true
+taxonomyServices.ICD10TaxonomyTermParser=true
+
+rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility=true
+rifGenericLibrary.dataStorageLayer.pg.PGUserDatabaseConnections=true
+rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility=true
+
+rifServices.restfulWebServices.pg.PGSQLRIFStudySubmissionWebServiceResource=true
+
+rifServices.dataStorageLayer.pg.PGSQLProductionRIFStudyRetrievalService=false
+
+rifServices.dataStorageLayer.pg.PGSQLRIFContextManager=true
+
+...
+
+```
+3. SQL Query INFO logging is controlled by query name using the properties file: 
+   %CATALINA_HOME%\webapps\rifServices\src\main\resources\AbstractSQLManager.properties
+```
+# MS/PGSQL AbstractSQLManager.logSQLQuery logging enabler/disabler by queryName
+# To enable queryName must be set to TRUE (any case)
+#
+# Default: GET methods are FALSE
+#
+getGeographies=false
+getHealthThemes=false
+getProjects=false
+getAgeIDQuery=false
+
+...
+
+#
+# Default: DO methods are TRUE
+#
+createStatusTable=true
+```
 
 ## 1.4 R
 
@@ -1326,6 +1463,32 @@ The service address and port used should match what you setup up in *4.2 Setup N
 * Restart tomcat;
 * Flush your browser cache (this is especially important for Google Chrome and Mozilla Firefox).
 
+## 5.3 R Issues
+
+The RIF uses Java R integration to access R directly from Java
+
+* Rengine not being shutdown correctly on reload of service:
+  ```
+  Cannot find JRI native library!
+  Please make sure that the JRI native library is in a directory listed in java.library.path.
+
+  java.lang.UnsatisfiedLinkError: Native Library C:\Program Files\R\R-3.4.0\library\rJava\jri\x64\jri.dll already loaded in another classloader
+        at java.lang.ClassLoader.loadLibrary0(Unknown Source)
+        at java.lang.ClassLoader.loadLibrary(Unknown Source)
+        at java.lang.Runtime.loadLibrary0(Unknown Source)
+        at java.lang.System.loadLibrary(Unknown Source)
+        at org.rosuda.JRI.Rengine.<clinit>(Rengine.java:19)
+        at rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep.performStep(PGSQLSmoothResultsSubmissionStep.java:183)
+        at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.smoothResults(PGSQLRunStudyThread.java:257)
+        at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.run(PGSQLRunStudyThread.java:176)
+        at java.lang.Thread.run(Unknown Source)
+        at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.submitStudy(PGSQLAbstractRIFStudySubmissionService
+  ```
+  The solution is to restart tomcat.
+  
+  1. Server reload needs to stop R
+  2. R crashes (usually inla) and ideally script errors need to stop R
+  
 # 6. Patching 
 
 ## 6.1 RIF Web Application  

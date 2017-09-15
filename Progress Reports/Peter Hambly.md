@@ -1558,7 +1558,7 @@ Todo:
 #### 11th to 15th September
 
 * Add log4j to Java middleware, setup; 
-* Rengine not being shutdown correctly on restart of server:
+* Rengine not being shutdown correctly on reload of service:
   ```
   Cannot find JRI native library!
   Please make sure that the JRI native library is in a directory listed in java.library.path.
@@ -1575,9 +1575,11 @@ Todo:
         at java.lang.Thread.run(Unknown Source)
         at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.submitStudy(PGSQLAbstractRIFStudySubmissionService
   ```
+  The solution is to restart tomcat.
+  
   1. Server reload needs to stop R
-  2. R crashes and error needs to stop R
-* Test log4j integration
+  2. R crashes (usually inla) and ideally script errors need to stop R
+* Tested log4j integration, all RIF middleware calls works OK on Postgres and SQL Server and log correctly
 * Tomcat to do! [some R messages still go to the console!]
 
 Todo:
