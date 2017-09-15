@@ -94,7 +94,7 @@ public abstract class AbstractSQLQueryFormatter {
 	public AbstractSQLQueryFormatter() {
 		isCaseSensitive = true;
 		query = new StringBuilder();
-		endWithSemiColon = true;
+		endWithSemiColon = false;
 	}
 
 	// ==========================================
@@ -280,7 +280,7 @@ public abstract class AbstractSQLQueryFormatter {
 		if (endWithSemiColon) {
 			result.append(";");
 		}
-		result.append("\n\n");
+		result.append("\n");
 		return result.toString();
 	}
 	

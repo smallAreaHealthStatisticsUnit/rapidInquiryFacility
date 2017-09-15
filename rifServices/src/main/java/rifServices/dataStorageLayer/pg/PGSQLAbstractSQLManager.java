@@ -261,7 +261,8 @@ public abstract class PGSQLAbstractSQLManager {
 		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
 		queryLog.append("<<< End PGSQLAbstractSQLManager logSQLQuery" + lineSeparator);
 	
-		rifLogger.info(this.getClass(), "PGSQLAbstractSQLManager logSQLQuery >>>" + lineSeparator + queryLog.toString());	
+		rifLogger.info(this.getClass(), "PGSQLAbstractSQLManager logSQLQuery >>>" + 
+			lineSeparator + queryLog.toString());	
 
 	}
 	

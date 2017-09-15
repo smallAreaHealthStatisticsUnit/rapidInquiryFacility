@@ -192,8 +192,11 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		queryFormatter.addFromTable("rif40_investigations");
 		queryFormatter.addWhereParameter("study_id");
 
-		rifLogger.info(this.getClass(), "=======" + queryFormatter.generateQuery()+ "=======");
-
+		logSQLQuery(
+			"getSexes",
+			queryFormatter,
+			studyID);
+				
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		ArrayList<Sex> results = new ArrayList<Sex>();

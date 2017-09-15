@@ -192,7 +192,10 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 			queryFormatter.addFromTable("rif40_investigations");
 			queryFormatter.addWhereParameter("study_id");
 				
-			rifLogger.info(this.getClass(), "=======" + queryFormatter.generateQuery() + "=======");
+			logSQLQuery(
+				"getSexes",
+				queryFormatter,
+				studyID);
 			
 			PreparedStatement statement = null;
 			ResultSet resultSet = null;
