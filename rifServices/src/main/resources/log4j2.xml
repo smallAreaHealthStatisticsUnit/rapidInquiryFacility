@@ -66,8 +66,8 @@
   -->
   <Properties>
     <!-- Log file names -->
-    <Property name="rif_middleware">RIF_middleware.log</Property>
-    <Property name="other">Other.log</Property>
+    <Property name="rif_middleware">RIF_middleware</Property>
+    <Property name="other">Other</Property>
     <Property name="rif_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level: %msg%n</Property> 
 										<!-- No logging source; always rifGenericLibrary.util.RIFLogger -->
     <Property name="other_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %logger{36}: %msg%n</Property>
@@ -76,7 +76,7 @@
     <Console name="Console" target="SYSTEM_OUT" direct="true">
       <PatternLayout pattern="${other_log_pattern}"/>
     </Console>
-	<!-- File logs are in ${catalina.base}/log4j2 - %CATALINA_HOME/log4j2 -->
+	<!-- File logs are in ${catalina.base}/log4j2 - %CATALINA_HOME%/log4j2 -->
     <RollingFile name="RIF_middleware" 
 				 filePattern="${sys:catalina.base}/log4j2/$${date:yyyy-MM}/${rif_middleware}-%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
