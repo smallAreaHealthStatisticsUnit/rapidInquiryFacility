@@ -1581,22 +1581,21 @@ Todo:
   2. R crashes (usually inla) and ideally script errors need to stop R
 * Tested log4j integration, all RIF middleware calls works OK on Postgres and SQL Server and log correctly
 * Tomcat to do! [some R messages still go to the console!]
-
-Todo:
-
-* Test covariates in dataloader
-* Add and test SQL Server support
-* Run dataloader, check outputs
-* More dataloader documentation
   
 September:
 
-* More work on SEER data, dataloader
+* Dump adjacency matrix in R to CSV
 * fix results reporting from run study and R code. Possibly add support for ri40_study_status
 * US geography and centroids fixes
 * Add area name to results map table
   
 #### Database TODO list (deferred to September 2017): SQL Server Port
+
+* More work on SEER data, dataloader
+	* Test covariates in dataloader
+	* Add and test dataloader SQL Server support
+	* Run dataloader, check outputs
+	* More dataloader documentation
 
 * Add unique keys to description fileds on tables/projects/health themes to protect against Kev using them as a Key
 * Add area name to results map table
