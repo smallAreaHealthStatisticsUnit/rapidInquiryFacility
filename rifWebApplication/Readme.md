@@ -272,26 +272,23 @@ The RIF middleware now uses Log4j version 2 for logging. The configuration file:
   Logs are rotated everyday or every 100 MB in the year/month specific directory
   
   Typical log entry: 
-    ```
-	14:29:37.812 [http-nio-8080-exec-5] INFO  rifGenericLibrary.util.RIFLogger: [rifServices.dataStorageLayer.pg.PGSQLRIFContextManager]:
-	PGSQLAbstractSQLManager logSQLQuery >>>
-	QUERY NAME: getGeographies
-	PARAMETERS:
-	PGSQL QUERY TEXT: 
-	SELECT DISTINCT 
-	   geography 
-	FROM 
-	   rif40_geographies 
-	ORDER BY 
-	   geography ASC;
-
-
-	;
-	<<< End PGSQLAbstractSQLManager logSQLQuery
-	```
+```
+14:29:37.812 [http-nio-8080-exec-5] INFO  rifGenericLibrary.util.RIFLogger: [rifServices.dataStorageLayer.pg.PGSQLRIFContextManager]:
+PGSQLAbstractSQLManager logSQLQuery >>>
+QUERY NAME: getGeographies
+PARAMETERS:
+PGSQL QUERY TEXT: 
+SELECT DISTINCT 
+   geography 
+FROM 
+   rif40_geographies 
+ORDER BY 
+   geography ASC;
+<<< End PGSQLAbstractSQLManager logSQLQuery
+```
 	
 	Configuration file:
-```
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="debug" monitorInterval="30" name="RIF Services Default">
   <Properties>
