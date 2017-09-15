@@ -287,7 +287,8 @@ ORDER BY
 <<< End PGSQLAbstractSQLManager logSQLQuery
 ```
 	
-	Configuration file:
+  Configuration file:
+	
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="debug" monitorInterval="30" name="RIF Services Default">
