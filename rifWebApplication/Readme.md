@@ -12,7 +12,7 @@ RIF Web Services
 	 - [1.3.3 Running Tomcat on the command line](#133-running-tomcat-on-the-command-line)
 	 - [1.3.4 Running Tomcat as a service](#134-running-tomcat-as-a-service)
 	 - [1.3.5 Middleware Logging (Log4j2) Setup](#135-middleware-logging-log4j2-setup)
-	 - [1.3.6 Tomcat Logging (Log4j2) Setup](#135-tomcat-logging-log4j2-setup) 
+	 - [1.3.6 Tomcat Logging (Log4j2) Setup](#136-tomcat-logging-log4j2-setup) 
    - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
    - [2.1 Building Using Make](#21-building-using-make)	
