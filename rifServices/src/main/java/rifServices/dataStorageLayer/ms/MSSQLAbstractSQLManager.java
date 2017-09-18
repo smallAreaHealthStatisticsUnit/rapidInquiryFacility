@@ -243,27 +243,42 @@ public abstract class MSSQLAbstractSQLManager {
 			Map<String, String> environmentalVariables = System.getenv();
 			prop = new Properties();
 			InputStream input = null;
-			String fileName;
+			String fileName1;
+			String fileName2;
 			String catalinaHome = environmentalVariables.get("CATALINA_HOME");
 			if (catalinaHome != null) {
-				fileName=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\AbstractSQLManager.properties";
+				fileName1=catalinaHome + "\\conf\\AbstractSQLManager.properties";
+				fileName2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\AbstractSQLManager.properties";
 			}
 			else {
 				rifLogger.warning(this.getClass(), 
-					"PGSQLAbstractSQLManager.checkIfQueryLoggingEnabled: CATALINA_HOME not set in environment"); 
-				fileName="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\AbstractSQLManager.properties";
+					"MSSQLAbstractSQLManager.checkIfQueryLoggingEnabled: CATALINA_HOME not set in environment"); 
+				fileName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\AbstractSQLManager.properties";
+				fileName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\AbstractSQLManager.properties";
 			}
 
 			try {
-				input = new FileInputStream(fileName);
+				input = new FileInputStream(fileName1);
+					rifLogger.warning(this.getClass(), 
+						"MSSQLAbstractSQLManager.checkIfInfoLoggingEnabled: using: " + fileName1);
 				// load a properties file
 				prop.load(input);
 			} 
 			catch (IOException ioException) {
-				rifLogger.warning(this.getClass(), 
-					"MSSQLAbstractSQLManager.checkIfQueryLoggingEnabled error for file: " + fileName, 
-					ioException);
-				return true;
+				try {
+					input = new FileInputStream(fileName2);
+						rifLogger.warning(this.getClass(), 
+							"MSSQLAbstractSQLManager.checkIfInfoLoggingEnabled: using: " + fileName2);
+					// load a properties file
+					prop.load(input);
+				} 
+				catch (IOException ioException2) {				
+					rifLogger.warning(this.getClass(), 
+						"MSSQLAbstractSQLManager.checkIfQueryLoggingEnabled error for files: " + 
+							fileName1 + " and " + fileName2, 
+						ioException2);
+					return true;
+				}
 			} 
 			finally {
 				if (input != null) {
@@ -272,7 +287,8 @@ public abstract class MSSQLAbstractSQLManager {
 					} 
 					catch (IOException ioException) {
 						rifLogger.warning(this.getClass(), 
-							"MSSQLAbstractSQLManager.checkIfQueryLoggingEnabled error for file: " + fileName, 
+							"MSSQLAbstractSQLManager.checkIfQueryLoggingEnabled error for files: " + 
+								fileName1 + " and " + fileName2, 
 							ioException);
 						return true;
 					}

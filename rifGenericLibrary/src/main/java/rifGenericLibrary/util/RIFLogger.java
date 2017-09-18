@@ -289,27 +289,48 @@ public final class RIFLogger {
 			Map<String, String> environmentalVariables = System.getenv();
 			prop = new Properties();
 			InputStream input = null;
-			String fileName;
+			String fileName1;
+			String fileName2;
 			String catalinaHome = environmentalVariables.get("CATALINA_HOME");
 			if (catalinaHome != null) {
-				fileName=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\RIFLogger.properties";
+//
+// Search for RIFLogger.properties in:
+//
+// %CATALINA_HOME%\
+// %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\
+//
+				fileName1=catalinaHome + "\\conf\\RIFLogger.properties";
+				fileName2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\RIFLogger.properties";
 			}
 			else {
 				rifLogger.warning(this.getClass(), 
 					"RIFLogger.checkIfInfoLoggingEnabled: CATALINA_HOME not set in environment"); 
-				fileName="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\RIFLogger.properties";
+				fileName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\RIFLogger.properties";
+				fileName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\RIFLogger.properties";
 			}
 
 			try {
-				input = new FileInputStream(fileName);
+				input = new FileInputStream(fileName1);
+				rifLogger.warning(this.getClass(), 
+					"RIFLogger.checkIfInfoLoggingEnabled: using: " + fileName1);
 				// load a properties file
 				prop.load(input);
 			} 
 			catch (IOException ioException) {
-				rifLogger.warning(this.getClass(), 
-					"RIFLogger.checkIfInfoLoggingEnabled error for file: " + fileName, 
-					ioException);
-				return true;
+				try {
+					input = new FileInputStream(fileName2);
+					rifLogger.warning(this.getClass(), 
+						"RIFLogger.checkIfInfoLoggingEnabled: using: " + fileName2);
+					// load a properties file
+					prop.load(input);
+				} 
+				catch (IOException ioException2) {
+					rifLogger.warning(this.getClass(), 
+						"RIFLogger.checkIfInfoLoggingEnabled error for files: " + 
+							fileName1 + " and " + fileName2, 
+						ioException2);
+					return true;
+				}
 			} 
 			finally {
 				if (input != null) {
@@ -318,7 +339,8 @@ public final class RIFLogger {
 					} 
 					catch (IOException ioException) {
 						rifLogger.warning(this.getClass(), 
-							"RIFLogger.checkIfInfoLoggingEnabled error for file: " + fileName, 
+							"RIFLogger.checkIfInfoLoggingEnabled error for files: " + 
+								fileName1 + " and " + fileName2, 
 							ioException);
 						return true;
 					}

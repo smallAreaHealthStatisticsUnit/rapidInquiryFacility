@@ -330,7 +330,7 @@ ORDER BY
     <!-- Default logger: rifGenericLibrary.util.RIFLogger -->
     <Logger name="rifGenericLibrary.util.RIFLogger" level="info" additivity="false">
       <!-- Disable the console to check all messages go through rifGenericLibrary.util.RIFLogger -->
-      <!-- <AppenderRef ref="Console"/> -->
+      <!-- <AppenderRef ref="Console"/> uncomment to see RIF middleware output on the console -->
       <AppenderRef ref="RIF_middleware"/>
     </Logger>
 	<!-- Other logging -->
@@ -342,13 +342,35 @@ ORDER BY
 </Configuration>
 ```
 
-**To send  RIF output to the console uncomment ```<AppenderRef ref="Console"/>```**
+**To send  RIF output to the console uncomment: 
+```<!-- <AppenderRef ref="Console"/> uncomment to see RIF middleware output on the console -->```**. 
+
+R stdout/stderroutput always appears on the comnsole and cannot be redirected:
+```
+Rengine.eval(rm(list=ls())): BEGIN Thread[http-nio-8080-exec-8,5,main]
+Rengine.eval(rm(list=ls())): END (OK)Thread[http-nio-8080-exec-8,5,main]
+Rengine.eval(print(.libPaths())): BEGIN Thread[http-nio-8080-exec-8,5,main]
+Rengine.eval(print(.libPaths())): END (OK)Thread[http-nio-8080-exec-8,5,main]
+Rengine.eval(print(sessionInfo())): BEGIN Thread[http-nio-8080-exec-8,5,main]
+Rengine.eval(print(sessionInfo())): END (OK)Thread[http-nio-8080-exec-8,5,main]
+Rengine.eval(source("C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smoo
+th_JRI.R")): BEGIN Thread[http-nio-8080-exec-8,5,main]
+Rengine.eval(source("C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smoo
+th_JRI.R")): END (OK)Thread[http-nio-8080-exec-8,5,main]
+Rengine.eval(as.integer(a <- runRSmoothingFunctions())): BEGIN Thread[http-nio-8080-exec-8,5,main]
+Rengine.eval(as.integer(a <- runRSmoothingFunctions())): END (OK)Thread[http-nio-8080-exec-8,5,main]
+Terminating R thread.
+```
 
 Logging output within the application is controlled in three ways:
 
 1. The logging level. This should be WARN, DEBUG or INFO. INFO is normally sufficient
-2. INFO logging is controlled by class using the properties file: 
-   *%CATALINA_HOME%\webapps\rifServices\src\main\resources\RIFLogger.properties*. Note that
+2. INFO logging is controlled by class using the properties file; these are searched for in the order:
+
+   * *%CATALINA_HOME%\comf\RIFLogger.properties*
+   * *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFLogger.properties*
+   
+   The source is in: rapidInquiryFacility\rifServices\src\main\resources\RIFLogger.properties*. Note that
    most database later classes have Postgres and SQLServer versions so have two entries.
    
 ```
@@ -375,8 +397,12 @@ rifServices.dataStorageLayer.pg.PGSQLRIFContextManager=true
 ...
 
 ```
-3. SQL Query INFO logging is controlled by query name using the properties file: 
-   *%CATALINA_HOME%\webapps\rifServices\src\main\resources\AbstractSQLManager.properties*
+3. SQL Query INFO logging is controlled by query name using the properties file; these are searched for in the order:
+
+   * *%CATALINA_HOME%\comf\AbstractSQLManager.properties*
+   * *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\AbstractSQLManager.properties*
+   
+   The source is in: rapidInquiryFacility\rifGenericLibrary\src\main\resources\AbstractSQLManager.properties*
 ```
 # MS/PGSQL AbstractSQLManager.logSQLQuery logging enabler/disabler by queryName
 # To enable queryName must be set to TRUE (any case)
@@ -398,14 +424,13 @@ createStatusTable=true
 
 ### 1.3.6 Tomcat Logging (Log4j2) Setup
 
-THIS IS NOGT COMPLETE. DO NOT USE YET!
-
 This uses the log4j JDK Logging Adapter. The JDK Logging Adapter is a custom implementation of 
 java.util.logging.LogManager that uses Log4j. 
 
 Create a log4j version 2 XML configuation file for tomcat. Two choices are provided here:
 
-1. Stock tomcat logging, as per the standard setup but in the *%CATALINA_HOME%/log4j2 diretory*
+1. Stock tomcat logging, as per the standard setup but in the *%CATALINA_HOME%/log4j2 diretory*. Beware that 
+   this configuiartion will overide the Middleware Logging (Log4j2) Setup in the previous section.
 2. RIF Tomcat logging to the following files:
 
    * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/tomcat.log-<N>```
@@ -415,7 +440,7 @@ Create a log4j version 2 XML configuation file for tomcat. Two choices are provi
    where ```<YYYY>``` is the  year, ```<MM>``` is the numeric month numeric and ```<N>``` is the log sequence number.
    Logs are rotated everyday or every 100 MB in the year/month specific directory
 
-   This configuartion superceeds the rifServices configuation file.
+   This configuration superceeds the rifServices configuration file.
    
 Both send non RIF output to the console.
 
@@ -493,11 +518,19 @@ Stock tomcat logging configuarion:
 </Configuration>
 ```
 
-RIF Tomcat logging configuarion:
+RIF Tomcat logging configuarion. This file must be placed in: *%CATALINA_HOME%\comf\log4j2.xml*
+and an example is found in: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml*
+   
+The source is in: rapidInquiryFacility\rifGenericLibrary\src\main\resources\log4j2.xml*
+
+**To send  RIF output to the console uncomment: 
+```<!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF middleware output on the console -->```**. 
+
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <Configuration status="debug" monitorInterval="30" name="RIF Tomcat Default">
   <Properties>
+   <Properties>
     <Property name="logdir">${sys:catalina.base}/log4j2/$${date:yyyy-MM}</Property>
     <Property name="default_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %class %logger{36}: %msg%n</Property>
     <Property name="rif_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %class : %msg%n</Property> 
@@ -566,7 +599,7 @@ RIF Tomcat logging configuarion:
       <!-- RIF middleware logger: rifGenericLibrary.util.RIFLogger -->
     <Logger name="rifGenericLibrary.util.RIFLogger"
 		level="info" additivity="false">
-      <AppenderRef ref="CONSOLE"/> 
+      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF middleware output on the console -->
       <AppenderRef ref="RIF_MIDDLEWARE"/>
     </Logger>
 		
@@ -574,7 +607,8 @@ RIF Tomcat logging configuarion:
 </Configuration>
 ```
 
-Create an environment overrides file for catalina.bat as %CATALINA_HOME%\bin\setenv.bat
+Create an environment overrides file for catalina.bat as %CATALINA_HOME%\bin\setenv.bat. A copy is provided in:
+%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes
 ```bat
 REM Tomcat log4j2 setup
 REM 
