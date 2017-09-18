@@ -259,7 +259,7 @@ public abstract class MSSQLAbstractSQLManager {
 
 			try {
 				input = new FileInputStream(fileName1);
-					rifLogger.warning(this.getClass(), 
+					rifLogger.info(this.getClass(), 
 						"MSSQLAbstractSQLManager.checkIfInfoLoggingEnabled: using: " + fileName1);
 				// load a properties file
 				prop.load(input);
@@ -267,7 +267,7 @@ public abstract class MSSQLAbstractSQLManager {
 			catch (IOException ioException) {
 				try {
 					input = new FileInputStream(fileName2);
-						rifLogger.warning(this.getClass(), 
+						rifLogger.info(this.getClass(), 
 							"MSSQLAbstractSQLManager.checkIfInfoLoggingEnabled: using: " + fileName2);
 					// load a properties file
 					prop.load(input);

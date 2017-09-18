@@ -3,9 +3,19 @@ package rifServices.system;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 
+import rifGenericLibrary.util.RIFLogger;
+
 import java.text.Collator;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.PropertyResourceBundle;
+import java.util.Map;
+
+import java.io.*;
+
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
 
 /**
@@ -84,7 +94,9 @@ public final class RIFServiceStartupProperties {
 
     /** The collator. */
     private static Collator collator = Collator.getInstance(Locale.getDefault());
-
+	
+	protected static RIFLogger rifLogger = RIFLogger.getLogger();
+	
     // ==========================================
     // Section Properties
     // ==========================================
@@ -97,24 +109,119 @@ public final class RIFServiceStartupProperties {
     // ==========================================
 
     static {
-    	
-        resourceBundle = ResourceBundle.getBundle("RIFServiceStartupProperties");
+		resourceBundle=initRIFServiceStartupProperties();
     }
 
     // ==========================================
     // Section Accessors
     // ==========================================
-
+	
+   /**
+     * Constructor function.
+     *
+     * @return the ResourceBundle
+     */
+	private static ResourceBundle initRIFServiceStartupProperties() {		
+		ResourceBundle resourceBundle1=null;
+		ResourceBundle resourceBundle2=null;
+		Map<String, String> environmentalVariables = System.getenv();
+		String dirName1;
+		String dirName2;
+		String fileName="RIFServiceStartupProperties.properties";
+		String catalinaHome = environmentalVariables.get("CATALINA_HOME");
+		if (catalinaHome != null) {
+//
+// Search for RIFServiceStartupProperties.properties in:
+//
+// %CATALINA_HOME%\
+// %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\
+//
+			dirName1=catalinaHome + "\\conf";
+			dirName2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes";
+		}
+		else {
+			rifLogger.warning("rifServices.system.RIFServiceStartupProperties", 
+				"RIFServiceStartupProperties: CATALINA_HOME not set in environment"); 
+			dirName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf";
+			dirName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes";
+		}   	
+		InputStreamReader reader = null;
+		FileInputStream fis = null;
+		try {
+			File file = new File(dirName1, fileName);
+            fis = new FileInputStream(file);
+            reader = new InputStreamReader(fis);
+            resourceBundle1 = new PropertyResourceBundle(reader);
+			rifLogger.info("rifServices.system.RIFServiceStartupProperties", 
+				"RIFServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
+			System.out.println("RIFServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
+		} 
+		catch (IOException ioException) {
+			try {
+				File file = new File(dirName2, fileName);
+				fis = new FileInputStream(file);
+				reader = new InputStreamReader(fis);
+				resourceBundle2 = new PropertyResourceBundle(reader);
+			
+				rifLogger.info("rifServices.system.RIFServiceStartupProperties", 
+					"RIFServiceStartupProperties: using:  " + dirName2 + "\\" + fileName);
+				System.out.println("RIFServiceStartupProperties: using: " + dirName2 + "\\" + fileName);
+			} 
+			catch (IOException ioException2) {
+				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+					"RIFServiceStartupProperties error for files: " + 
+						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
+					ioException2);
+			}
+		} 
+		finally {
+			try {
+				if (fis != null) {
+					fis.close();
+				}
+				if (reader != null) {
+					reader.close();
+				}
+			}	
+			catch (IOException ioException3) {
+				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+					"RIFServiceStartupProperties error for files: " + 
+						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
+					ioException3);
+			}
+		}
+		
+		if (resourceBundle1 != null) {
+			return resourceBundle1;
+		}
+		else if (resourceBundle2 != null) {
+			return resourceBundle2;
+		}
+		else { // Should never get here
+			try {
+				RIFServiceExceptionFactory exceptionFactory
+					= new RIFServiceExceptionFactory();
+				throw exceptionFactory.createFileReadingProblemException();	
+			}
+			catch (RIFServiceException rifServiceException) {
+				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+					"RIFServiceStartupProperties error for files: " + 
+						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
+					rifServiceException);
+				return null;
+			}
+		}
+	}
    /**
      * Gets the collator.
      *
      * @return the collator
-     */
+     */	
     public static Collator getCollator() {	  
     	
 	  Collator result = (Collator) collator.clone();
 	  return result;
-   }
+    }
 
     public static boolean isSSLSupported() {
     	String property

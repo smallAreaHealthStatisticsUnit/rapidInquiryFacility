@@ -242,7 +242,33 @@ public final class RIFLogger {
 				errorHeading);
 		}
 	}
-	
+
+	public void warning( // For use in Kev's endless statically defined functions
+		final String callingClassName,
+		final String errorHeading,
+		final Throwable throwableItem) {
+			
+		StringBuilder errorString = new StringBuilder();
+		
+		errorString.append("getMessage:          " + ExceptionUtils.getMessage(throwableItem) + lineSeparator);
+        errorString.append("getRootCauseMessage: " + ExceptionUtils.getRootCauseMessage(throwableItem) + lineSeparator);
+        errorString.append("getThrowableCount:   " + ExceptionUtils.getThrowableCount(throwableItem) + lineSeparator);
+		errorString.append("getRootCauseStackTrace >>>" + lineSeparator);
+		for (String cause : ExceptionUtils.getRootCauseStackTrace(throwableItem)) {
+			errorString.append(cause + lineSeparator);
+		}
+		errorString.append("<<< End getRootCauseStackTrace.");
+		
+		if (log != null) {
+			log.warn("["+callingClassName+"]:" + lineSeparator + 
+				errorHeading + lineSeparator + errorString);
+		}
+		else {	
+			System.out.println("WARNING(no RIFLogger):" + lineSeparator + "["+callingClassName+"]" + 
+				errorHeading + lineSeparator + throwableItem.getStackTrace());
+		}
+	}
+			
 	// warning() print stack tracr
 	public void warning(
 		final Class callingClass,
@@ -270,6 +296,18 @@ public final class RIFLogger {
 		}
 	}
 		
+	public void warning( // For use in Kev's endless statically defined functions
+		final String callingClassName,			
+		final String message) {
+		
+		if (log != null) {
+			log.warn("["+callingClassName+"]:" + lineSeparator + message);
+		}
+		else {	
+			System.out.println("WARNING(no RIFLogger):" + lineSeparator + "["+callingClassName+"]" + message);
+		}
+	}	
+	
 	public void warning(
 		final Class callingClass,			
 		final String message) {
@@ -311,7 +349,7 @@ public final class RIFLogger {
 
 			try {
 				input = new FileInputStream(fileName1);
-				rifLogger.warning(this.getClass(), 
+				rifLogger.info(this.getClass(), 
 					"RIFLogger.checkIfInfoLoggingEnabled: using: " + fileName1);
 				// load a properties file
 				prop.load(input);
@@ -319,7 +357,7 @@ public final class RIFLogger {
 			catch (IOException ioException) {
 				try {
 					input = new FileInputStream(fileName2);
-					rifLogger.warning(this.getClass(), 
+					rifLogger.info(this.getClass(), 
 						"RIFLogger.checkIfInfoLoggingEnabled: using: " + fileName2);
 					// load a properties file
 					prop.load(input);
@@ -367,7 +405,17 @@ public final class RIFLogger {
 					return false;	
 				}		
 			}
-			else {
+			// Always true
+			else if (className.equals("rifGenericLibrary.util.RIFLogger")) {
+					return true;			
+			}
+			else if (className.equals("rifServices.system.RIFServiceStartupProperties")) {
+					return true;			
+			}
+			else if (className.equals("rifServices.system.RIFServiceStartupOptions")) {
+					return true;			
+			}
+			else { // Found in RIFLogger.properties
 				rifLogger.warning(this.getClass(), 
 					"RIFLogger checkIfInfoLoggingEnabled=FALSE property: " + 
 					className + " NOT FOUND");	

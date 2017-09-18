@@ -345,7 +345,7 @@ ORDER BY
 **To send  RIF output to the console uncomment: 
 ```<!-- <AppenderRef ref="Console"/> uncomment to see RIF middleware output on the console -->```**. 
 
-R stdout/stderroutput always appears on the comnsole and cannot be redirected:
+R stdout/stderroutput always appears on the console and cannot be redirected:
 ```
 Rengine.eval(rm(list=ls())): BEGIN Thread[http-nio-8080-exec-8,5,main]
 Rengine.eval(rm(list=ls())): END (OK)Thread[http-nio-8080-exec-8,5,main]
@@ -433,9 +433,9 @@ Create a log4j version 2 XML configuation file for tomcat. Two choices are provi
    this configuiartion will overide the Middleware Logging (Log4j2) Setup in the previous section.
 2. RIF Tomcat logging to the following files:
 
-   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/tomcat.log-<N>```
-   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>```
-   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/Other.log-<N>```
+   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/tomcat.log-<N>```: Tomcat/catalina messages (org.apache.catalina.core.ContainerBase.[Catalina].[localhost]*)
+   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>```: RIF messages
+   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/Other.log-<N>```: Other messages
    
    where ```<YYYY>``` is the  year, ```<MM>``` is the numeric month numeric and ```<N>``` is the log sequence number.
    Logs are rotated everyday or every 100 MB in the year/month specific directory
@@ -444,7 +444,9 @@ Create a log4j version 2 XML configuation file for tomcat. Two choices are provi
    
 Both send non RIF output to the console.
 
-The configuration file is in *%CATALINA_HOME%/conf/log4j2.xml*
+The configuration file is in *%CATALINA_HOME%/conf/log4j2.xml*. This configuration file completely replaces the 
+configuration in the previous section (which is a subset).
+
 Stock tomcat logging configuarion:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -521,7 +523,7 @@ Stock tomcat logging configuarion:
 RIF Tomcat logging configuarion. This file must be placed in: *%CATALINA_HOME%\comf\log4j2.xml*
 and an example is found in: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml*
    
-The source is in: rapidInquiryFacility\rifGenericLibrary\src\main\resources\log4j2.xml*
+The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log4j2.xml*
 
 **To send  RIF output to the console uncomment: 
 ```<!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF middleware output on the console -->```**. 
