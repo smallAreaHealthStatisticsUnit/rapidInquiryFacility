@@ -63,8 +63,9 @@ library(Matrix)
 
 connDB <- ""	# Database connection
 exitValue <- 0 	# 0 success, 1 failure
-errorCount <- 0	# Smoothing error count
-
+errorTrace <-c("Error trace")
+				# Error trace
+				
 #Adjust for other covariate(s) or not
 #Reformat Java type > R
 adj <- FALSE #either true or false
@@ -1350,8 +1351,8 @@ withErrorTracing = function(expr, silentSuccess=FALSE) {
         # Printing the 2nd and 3rd traces that contain the line where the error occured
         # This is the part you might want to edit to suit your needs
         #print(paste0("Error occuring: ", trace[length(trace):1][2:3]))
-        print(paste0("Error occuring: ", trace[length(trace):1]))
-
+        print(paste0("Error tracer: ", trace[length(trace):1]))
+		append(errorTrace, paste0("Error tracer: ", trace[length(trace):1]))
         # Muffle any redundant output of the same message
         optionalRestart = function(r) { res = findRestart(r); if (!is.null(res)) invokeRestart(res) }
         optionalRestart("muffleMessage")
@@ -1373,42 +1374,50 @@ withErrorTracing = function(expr, silentSuccess=FALSE) {
 ##Returns (exitvalue) 0 on success, 1 on failure 
 ##================================================================================
 runRSmoothingFunctions <- function() {
-  establishTableNames(studyID)
-  print(paste0("Connect to database: ", odbcDataSource))
+	establishTableNames(studyID)
+	print(paste0("Connect to database: ", odbcDataSource))
   
-  tryCatch(connDB <<- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password)),
-           #tryCatch(connDB <- odbcConnect(odbcDataSource),
-           warning=function(w) {
-             print(paste("UNABLE TO CONNECT! ", w))
-             exitValue <<- 0
-           },
-           error=function(e) {
-             print(paste("ERROR CONNECTING! ", geterrmessage()))
-             exitValue <<- 1
-           })
-  odbcSetAutoCommit(connDB, autoCommit = FALSE)
-  print(odbcGetInfo(connDB))
-
-  #odbcSetAutoCommit(connDB, autoCommit=FALSE)
-  # tryCatch()is trouble because it replaces the stack!
-  print("Performing basic stats and smoothing")
-  tryCatch({
-			withErrorTracing({result <- performSmoothingActivity()})
+	tryCatch({
+			append(errorTrace, connDB <<- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password)))
 		},
-		warning=function(w) {
-			print(paste("performSmoothingActivity() WARNING: ", w))
-		},
-		error=function(e) {
-			e <<- e
-			errorCount<<-errorCount+1
-			print(paste("performSmoothingActivity() ERROR[",errorCount,"]: ", e$message, "; call stack: ", e$call))
-			exitValue <<- 1
-		},
+        warning=function(w) {
+#			append(errorTrace, paste("UNABLE TO CONNECT! ", w))
+            print(paste("UNABLE TO CONNECT! ", w))
+            exitValue <<- 0
+        },
+        error=function(e) {
+#			append(errorTrace, paste("ERROR CONNECTING! ", geterrmessage()))
+            print(paste("ERROR CONNECTING! ", geterrmessage()))
+            exitValue <<- 1
+        },
 		finally={
-			print(paste0("performSmoothingActivity exitValue: ", exitValue))
-		})  
+			odbcSetAutoCommit(connDB, autoCommit = FALSE)
+			print(odbcGetInfo(connDB))
+		})
+
+	if (exitValue == 0) {
 	
-  if (exitValue == 0) {
+		# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
+		print("Performing basic stats and smoothing")
+		tryCatch({
+				append(errorTrace, withErrorTracing({result <- performSmoothingActivity()}))
+			},
+			warning=function(w) {
+#				append(errorTrace, paste("performSmoothingActivity() WARNING: ", w))
+				print(paste("performSmoothingActivity() WARNING: ", w))
+			},
+			error=function(e) {
+				e <<- e
+#				append(errorTrace, paste("performSmoothingActivity() ERROR: ", e$message, "; call stack: ", e$call))
+				print(paste("performSmoothingActivity() ERROR: ", e$message, "; call stack: ", e$call))
+				exitValue <<- 1
+			},
+			finally={
+				print(paste0("performSmoothingActivity exitValue: ", exitValue))
+			})  
+	}
+  
+	if (exitValue == 0) {
 		print(paste("performSmoothingActivity() OK: ", exitValue))
     		
 		# Cast area_id to char. This is ignored by sqlSave!
@@ -1427,12 +1436,12 @@ runRSmoothingFunctions <- function() {
 
 		saveDataFrameToDatabaseTable(result)
 		updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue  
-  }
+	}
   
-  if (exitValue == 0 && !is.na(connDB)) {
-    print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
-    sqlDrop(connDB, temporarySmoothedResultsTableName)
-  }
+	if (exitValue == 0 && !is.na(connDB)) {
+		print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
+		sqlDrop(connDB, temporarySmoothedResultsTableName)
+	}
 	# Dummy change to check conflict is resolved
   
 	if (!is.na(connDB)) {
@@ -1440,7 +1449,7 @@ runRSmoothingFunctions <- function() {
 		odbcEndTran(connDB, commit = TRUE)
 		odbcClose(connDB)
 	}
-  print(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue))
+	print(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1))
 
-  return(exitValue)
+	return(list(exitValue=exitValue, errorTrace=errorTrace))
 }
