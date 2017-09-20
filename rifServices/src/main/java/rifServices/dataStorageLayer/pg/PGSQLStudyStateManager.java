@@ -23,6 +23,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.lang.Integer;
+
 /**
  *
  *
@@ -309,8 +311,16 @@ final class PGSQLStudyStateManager
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "INSERT INTO " + statusTableName);
 		queryFormatter.addQueryLine(1, " (study_id, study_state, creation_date, ith_update, message) ");
-		queryFormatter.addQueryLine(1, "VALUES (?, ?, NOW(), ?, ?)");						
-		
+		queryFormatter.addQueryLine(1, "VALUES (?, ?, NOW(), ?, ?)");		
+		Integer ithUpdate=new Integer(getIthUpdate(studyState.getCode()));		
+		logSQLQuery(
+			"updateStudyStatus", 
+			queryFormatter,
+			studyID.toString(), 
+			studyState.getCode(), 
+			ithUpdate.toString(), 
+			statusMessage);
+			
 		PreparedStatement statement = null;
 		try {
 			rifLogger.info(this.getClass(), "SQLStudyStateManager updateStudyStatus: study_id: " + studyID + 
@@ -469,11 +479,11 @@ final class PGSQLStudyStateManager
 			//Disabled to keep tomcat window clear (called every 4 seconds by front-end)
 			/*
 			rifLogger.info(this.getClass(), "getCurrentStatusAllStudies 2  number of updates==" + expectedNumberOfStatusUpdates+"==");
-
+*/
 			logSQLQuery(
 				"getCurrentStatusAllStudies", 
 				queryFormatter, 
-				"userID");*/
+				"userID");
 			
 			statement
 				= createPreparedStatement(
@@ -567,7 +577,10 @@ final class PGSQLStudyStateManager
 		queryFormatter.addQueryLine(0, "WHERE ");
 		queryFormatter.addQueryLine(1, rifStudiesTableName + ".study_id = most_recent_updates.study_id");
 
-		
+		logSQLQuery(
+			"getExpectedNumberOfStatusUpdates", 
+			queryFormatter);
+			
 		//rifLogger.info(this.getClass(), queryFormatter.generateQuery());
 		
 		Integer result = 0;

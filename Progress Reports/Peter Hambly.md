@@ -1582,10 +1582,14 @@ Todo:
 * Tested log4j integration, all RIF middleware calls works OK on Postgres and SQL Server and log correctly
 * Tomcat to do! [some R messages still go to the console!]
   
+#### 18th to 22nd September
+ 
+* Configuration using the %CATALINA_HOME%/conf directory
+ 
 September:
 
 * Dump adjacency matrix in R to CSV
-* fix results reporting from run study and R code. Possibly add support for ri40_study_status
+* Fix results reporting from run study and R code. Possibly add support for ri40_study_status
 * US geography and centroids fixes
 * Add area name to results map table
 * Fix inability to detect errors correctly in run study, R, CVS extract and report to user. SQL Server 

@@ -164,7 +164,7 @@ public final class RIFServiceStartupProperties {
 				resourceBundle2 = new PropertyResourceBundle(reader);
 			
 				rifLogger.info("rifServices.system.RIFServiceStartupProperties", 
-					"RIFServiceStartupProperties: using:  " + dirName2 + "\\" + fileName);
+					"RIFServiceStartupProperties: using: " + dirName2 + "\\" + fileName);
 				System.out.println("RIFServiceStartupProperties: using: " + dirName2 + "\\" + fileName);
 			} 
 			catch (IOException ioException2) {

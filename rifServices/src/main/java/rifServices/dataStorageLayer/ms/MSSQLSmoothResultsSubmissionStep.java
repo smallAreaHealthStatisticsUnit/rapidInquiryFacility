@@ -141,7 +141,7 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 		setUser(userID, password);
 
 		ArrayList<Parameter> rifStartupOptionParameters
-		= rifStartupOptions.extractParameters();
+			= rifStartupOptions.extractParameters();
 		addParameters(rifStartupOptionParameters);
 
 		setODBCDataSourceName(rifStartupOptions.getODBCDataSourceName());
@@ -149,7 +149,7 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 		//register the names of parameters that we will want to check are
 		//not empty
 		ArrayList<String> startupOptionParameterNames
-		= Parameter.extractParameterNames(rifStartupOptionParameters);
+			= Parameter.extractParameterNames(rifStartupOptionParameters);
 		addParameterToVerify(startupOptionParameterNames);
 
 	}
@@ -160,7 +160,8 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 			final String studyID) 
 					throws RIFServiceException {
 		
-		StringBuilder rifScriptPath = new StringBuilder();	
+		StringBuilder rifScriptPath = new StringBuilder();
+		String RerrorTrace="No R error tracer";
 
 		try {		
 			addParameterToVerify("study_id");		
@@ -174,7 +175,7 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 			//investigation name assumes that eventually we will make a study have one investigation
 			//rather than multiple investigations.
 			Investigation firstInvestigation
-			= studySubmission.getStudy().getInvestigations().get(0);
+				= studySubmission.getStudy().getInvestigations().get(0);
 
 			addParameter(
 					"investigation_name", 
@@ -187,7 +188,7 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 					covariateName);
 
 			Integer investigationID
-			= getInvestigationID(
+				= getInvestigationID(
 					connection,
 					studyID, 
 					firstInvestigation);
@@ -256,7 +257,9 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 				rengine.eval("source(\"" + rifScriptPath + "\")");
 
 				//RUN the actual smoothing
-				REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
+				//REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
+				rengine.eval("returnValues <- runRSmoothingFunctions()");
+				REXP exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
 				if (exitValueFromR != null) {
 					exitValue  = exitValueFromR.asInt();
 				}
@@ -264,6 +267,18 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR is NULL");
 					exitValue = 1;
 				}
+				REXP errorTraceFromR = rengine.eval("returnValues$errorTrace");
+				if (errorTraceFromR != null) {
+					String[] strArr=errorTraceFromR.asStringArray();
+					StringBuilder strBuilder = new StringBuilder();
+					for (int i = 0; i < strArr.length; i++) {
+					   strBuilder.append(strArr[i] + lineSeparator);
+					}
+					RerrorTrace = strBuilder.toString();
+				}
+				else {
+					rifLogger.warning(this.getClass(), "JRI R ERROR: errorTraceFromR is NULL");
+				}	
 			}
 			catch(Exception error) {
 				try {
@@ -273,7 +288,7 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 					rifLogger.error(this.getClass(), "JRI rFlushConsole() ERROR", error2);
 				}
 				finally {
-					rifLogger.error(this.getClass(), "JRI R ERROR", error);
+					rifLogger.error(this.getClass(), "JRI R script ERROR", error);
 					exitValue = 1;
 				}
 			} 
@@ -287,20 +302,27 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 				finally {
 					if (exitValue != 0) {
 						try {
-							rengine.destroy();
+//							rengine.eval("q(\"no\", " + exitValue + ")");	// Causes Java to quit
+//							rengine.destroy(); 								// causes thread to exit; 
+																			// rengine.end() then causes exception)
+							rengine.end();
 						}
 						catch(Exception error3) {
 							rifLogger.error(this.getClass(), "JRI rengine.destroy() ERROR", error3);
 						}
 						finally {
 							rifLogger.info(this.getClass(), "Rengine Stopped, exit value=="+ exitValue +"==");
-						}					
+							
+						}				
+
+						RIFServiceExceptionFactory rifServiceExceptionFactory
+						= new RIFServiceExceptionFactory();
+						RIFServiceException rifServiceException = 
+							rifServiceExceptionFactory.createRScriptException(RerrorTrace);
+						throw rifServiceException;						
 					}
 					else {	
 						try {
-//							rengine.eval("q(\"no\", " + exitValue + ")");	// Causes Java to quit
-//							rengine.destroy(); 								// causes thread to exit; 
-																			// rengine.end() then causes exception)
 							rengine.end();
 						}
 						catch(Exception error3) {
@@ -315,11 +337,17 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 			}
 
 		}
-		catch(Exception ioException) {
-			rifLogger.error(this.getClass(), "JRI R exception", ioException);		
+		catch (RIFServiceException rifServiceException) {
+			rifLogger.error(this.getClass(), "JRI R script exception", rifServiceException);
+			throw rifServiceException;
+		}
+		catch(Exception rException) {
+			rifLogger.error(this.getClass(), "JRI R engine exception", rException);		
 			RIFServiceExceptionFactory rifServiceExceptionFactory
 			= new RIFServiceExceptionFactory();
-			rifServiceExceptionFactory.createFileCommandLineRunException(rifScriptPath.toString());
+			RIFServiceException rifServiceException = 
+				rifServiceExceptionFactory.createREngineException(rifScriptPath.toString());
+			throw rifServiceException;
 		}		
 	}
 

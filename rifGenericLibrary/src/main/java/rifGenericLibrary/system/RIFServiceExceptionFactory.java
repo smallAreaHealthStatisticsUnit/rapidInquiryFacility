@@ -98,17 +98,30 @@ public class RIFServiceExceptionFactory {
 		return rifServiceException;
 	}	
 
+	public RIFServiceException createRScriptException(
+		final String rScriptExceptionTrace) {
+		
+		String errorMessage
+			= RIFGenericLibraryMessages.getMessage(
+				"R.error.RscriptExecution",
+				rScriptExceptionTrace);
+		RIFServiceException rifServiceException
+			= new RIFServiceException(
+				RIFGenericLibraryError.R_ERROR,
+				errorMessage);
+		return rifServiceException;
+	}	
 	
-	public RIFServiceException createFileCommandLineRunException(
+	public RIFServiceException createREngineException(
 		final String commandLineExecutable) {
 		
 		String errorMessage
 			= RIFGenericLibraryMessages.getMessage(
-				"io.error.unableToRunCommandLineProgram",
+				"R.error.unableToCreateREngine",
 				commandLineExecutable);
 		RIFServiceException rifServiceException
 			= new RIFServiceException(
-				RIFGenericLibraryError.FILE_PARSING_PROBLEM,
+				RIFGenericLibraryError.R_ERROR,
 				errorMessage);
 		return rifServiceException;
 	}	

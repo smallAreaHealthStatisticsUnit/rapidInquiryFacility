@@ -103,26 +103,6 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 	// ==========================================
 
 	public PGSQLSmoothResultsSubmissionStep() {
-	/*
-	Also change tomcat startup options:
-	
-From: 
-
--Dcatalina.home=C:\Program Files\Apache Software Foundation\Tomcat 8.5
--Dcatalina.base=C:\Program Files\Apache Software Foundation\Tomcat 8.5
--Djava.io.tmpdir=C:\Program Files\Apache Software Foundation\Tomcat 8.5\temp
--Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
--Djava.util.logging.config.file=C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\logging.properties
-
-To:
-
--Dcatalina.home=C:\Program Files\Apache Software Foundation\Tomcat 8.5
--Dcatalina.base=C:\Program Files\Apache Software Foundation\Tomcat 8.5
--Djava.io.tmpdir=C:\Program Files\Apache Software Foundation\Tomcat 8.5\temp
--Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
--Djava.util.logging.config.file=C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\logging.properties
-
-     */	
 		String logManagerName=System.getProperty("java.util.logging.manager");
 		if (logManagerName == null || !logManagerName.equals("java.util.logging.manager")) {
 			System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
@@ -162,7 +142,7 @@ To:
 		setUser(userID, password);
 
 		ArrayList<Parameter> rifStartupOptionParameters
-		= rifStartupOptions.extractParameters();
+			= rifStartupOptions.extractParameters();
 		addParameters(rifStartupOptionParameters);
 
 		setODBCDataSourceName(rifStartupOptions.getODBCDataSourceName());
@@ -170,7 +150,7 @@ To:
 		//register the names of parameters that we will want to check are
 		//not empty
 		ArrayList<String> startupOptionParameterNames
-		= Parameter.extractParameterNames(rifStartupOptionParameters);
+			= Parameter.extractParameterNames(rifStartupOptionParameters);
 		addParameterToVerify(startupOptionParameterNames);
 
 	}
@@ -182,7 +162,8 @@ To:
 					throws RIFServiceException {
 		
 		StringBuilder rifScriptPath = new StringBuilder();	
-
+		String RerrorTrace="No R error tracer";
+			
 		try {		
 			addParameterToVerify("study_id");		
 
@@ -276,7 +257,9 @@ To:
 				rengine.eval("source(\"" + rifScriptPath + "\")");
 
 				//RUN the actual smoothing
-				REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
+				//REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
+				rengine.eval("returnValues <- runRSmoothingFunctions()");
+				REXP exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
 				if (exitValueFromR != null) {
 					exitValue  = exitValueFromR.asInt();
 				}
@@ -284,6 +267,18 @@ To:
 					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR is NULL");
 					exitValue = 1;
 				}
+				REXP errorTraceFromR = rengine.eval("returnValues$errorTrace");
+				if (errorTraceFromR != null) {
+					String[] strArr=errorTraceFromR.asStringArray();
+					StringBuilder strBuilder = new StringBuilder();
+					for (int i = 0; i < strArr.length; i++) {
+					   strBuilder.append(strArr[i] + lineSeparator);
+					}
+					RerrorTrace = strBuilder.toString();
+				}
+				else {
+					rifLogger.warning(this.getClass(), "JRI R ERROR: errorTraceFromR is NULL");
+				}				
 			}
 			catch(Exception error) {
 				try {
@@ -293,7 +288,7 @@ To:
 					rifLogger.error(this.getClass(), "JRI rFlushConsole() ERROR", error2);
 				}
 				finally {
-					rifLogger.error(this.getClass(), "JRI R ERROR", error);
+					rifLogger.error(this.getClass(), "JRI R script ERROR", error);
 					exitValue = 1;
 				}
 			} 
@@ -310,13 +305,20 @@ To:
 //							rengine.eval("q(\"no\", " + exitValue + ")");	// Causes Java to quit
 //							rengine.destroy(); 								// causes thread to exit; 
 																			// rengine.end() then causes exception)
+							rengine.end();
 						}
 						catch(Exception error3) {
 							rifLogger.error(this.getClass(), "JRI rengine.destroy() ERROR", error3);
 						}
 						finally {
 							rifLogger.info(this.getClass(), "Rengine Stopped, exit value=="+ exitValue +"==");
-						}					
+						}	
+						
+						RIFServiceExceptionFactory rifServiceExceptionFactory
+						= new RIFServiceExceptionFactory();
+						RIFServiceException rifServiceException = 
+							rifServiceExceptionFactory.createRScriptException(RerrorTrace);
+						throw rifServiceException;					
 					}
 					else {	
 						try {
@@ -333,12 +335,17 @@ To:
 				}
 			}
 		}
-		catch(Exception ioException) {
-			rifLogger.error(this.getClass(), "JRI R exception", ioException);
-			
+		catch (RIFServiceException rifServiceException) {
+			rifLogger.error(this.getClass(), "JRI R script exception", rifServiceException);
+			throw rifServiceException;
+		}
+		catch(Exception rException) {
+			rifLogger.error(this.getClass(), "JRI R engine exception", rException);		
 			RIFServiceExceptionFactory rifServiceExceptionFactory
 			= new RIFServiceExceptionFactory();
-			rifServiceExceptionFactory.createFileCommandLineRunException(rifScriptPath.toString());
+			RIFServiceException rifServiceException = 
+				rifServiceExceptionFactory.createREngineException(rifScriptPath.toString());
+			throw rifServiceException;
 		}		
 	}
 

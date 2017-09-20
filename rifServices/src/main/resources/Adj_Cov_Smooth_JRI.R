@@ -63,8 +63,7 @@ library(Matrix)
 
 connDB <- ""	# Database connection
 exitValue <- 0 	# 0 success, 1 failure
-errorTrace <-c("Error trace")
-				# Error trace
+errorCount <- 0	# Smoothing error count
 				
 #Adjust for other covariate(s) or not
 #Reformat Java type > R
@@ -185,9 +184,8 @@ performSmoothingActivity <- function() {
   #Part I: Read in the extract table
   #=================================
   #Read original extract table data into a data frame
-  print("============EXTRACT TABLE NAME ====================")
-  print(extractTableName)
-  print("============EXTRACT TABLE NAME ====================")
+  
+  print(paste0("EXTRACT TABLE NAME: ", extractTableName))
   #extract the relevant Study data
   
   data=tryCatch(sqlFetch(connDB, extractTableName),
@@ -1339,7 +1337,7 @@ withErrorTracing = function(expr, silentSuccess=FALSE) {
     hasFailed = FALSE
     messages = list()
     warnings = list()
-
+		
     errorTracer = function(obj) {
 
         # Storing the call stack 
@@ -1351,8 +1349,7 @@ withErrorTracing = function(expr, silentSuccess=FALSE) {
         # Printing the 2nd and 3rd traces that contain the line where the error occured
         # This is the part you might want to edit to suit your needs
         #print(paste0("Error occuring: ", trace[length(trace):1][2:3]))
-        print(paste0("Error tracer: ", trace[length(trace):1]))
-		append(errorTrace, paste0("Error tracer: ", trace[length(trace):1]))
+        print(paste0("Stack tracer: ", trace[length(trace):1]))
         # Muffle any redundant output of the same message
         optionalRestart = function(r) { res = findRestart(r); if (!is.null(res)) invokeRestart(res) }
         optionalRestart("muffleMessage")
@@ -1364,6 +1361,46 @@ withErrorTracing = function(expr, silentSuccess=FALSE) {
         cat(paste(warnings, collapse=""))
     }
     if (vexpr$visible) vexpr$value else invisible(vexpr$value)
+	return
+}
+
+callPerformSmoothingActivity <- function() {
+	# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
+	print("Performing basic stats and smoothing")
+			
+	tryCatch({
+			withErrorTracing({result <- performSmoothingActivity()})
+		},
+		warning=function(w) {		
+			print(paste("callPerformSmoothingActivity() WARNING: ", w))
+		},
+		error=function(e) {
+			e <<- e
+			print(paste("callPerformSmoothingActivity() ERROR: ", e$message, 
+				"; call stack: ", e$call))
+			exitValue <<- 1
+		},
+		finally={
+			print(paste0("callPerformSmoothingActivity exitValue: ", exitValue))
+		})  
+}
+
+callodbcConnect <- function() {
+	tryCatch({
+			connDB <<- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password))
+		},
+        warning=function(w) {
+            print(paste("UNABLE TO CONNECT! ", w))
+            exitValue <<- 0
+        },
+        error=function(e) {
+            print(paste("ERROR CONNECTING! ", geterrmessage()))
+            exitValue <<- 1
+        },
+		finally={
+			odbcSetAutoCommit(connDB, autoCommit = FALSE)
+			print(odbcGetInfo(connDB))
+		})
 }
 
 ##================================================================================
@@ -1377,44 +1414,10 @@ runRSmoothingFunctions <- function() {
 	establishTableNames(studyID)
 	print(paste0("Connect to database: ", odbcDataSource))
   
-	tryCatch({
-			append(errorTrace, connDB <<- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password)))
-		},
-        warning=function(w) {
-#			append(errorTrace, paste("UNABLE TO CONNECT! ", w))
-            print(paste("UNABLE TO CONNECT! ", w))
-            exitValue <<- 0
-        },
-        error=function(e) {
-#			append(errorTrace, paste("ERROR CONNECTING! ", geterrmessage()))
-            print(paste("ERROR CONNECTING! ", geterrmessage()))
-            exitValue <<- 1
-        },
-		finally={
-			odbcSetAutoCommit(connDB, autoCommit = FALSE)
-			print(odbcGetInfo(connDB))
-		})
+	errorTrace<-capture.output(callodbcConnect())
 
 	if (exitValue == 0) {
-	
-		# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
-		print("Performing basic stats and smoothing")
-		tryCatch({
-				append(errorTrace, withErrorTracing({result <- performSmoothingActivity()}))
-			},
-			warning=function(w) {
-#				append(errorTrace, paste("performSmoothingActivity() WARNING: ", w))
-				print(paste("performSmoothingActivity() WARNING: ", w))
-			},
-			error=function(e) {
-				e <<- e
-#				append(errorTrace, paste("performSmoothingActivity() ERROR: ", e$message, "; call stack: ", e$call))
-				print(paste("performSmoothingActivity() ERROR: ", e$message, "; call stack: ", e$call))
-				exitValue <<- 1
-			},
-			finally={
-				print(paste0("performSmoothingActivity exitValue: ", exitValue))
-			})  
+		errorTrace<-capture.output(callPerformSmoothingActivity())
 	}
   
 	if (exitValue == 0) {

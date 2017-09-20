@@ -67,6 +67,8 @@ public enum RIFGenericLibraryError {
 	/** The invalid user. */
 	INVALID_USER,
 	
+	R_ERROR,
+	
 	DB_UNABLE_TO_ADJUST_AUTO_COMMIT,
 	DB_UNABLE_TO_LOAD_DRIVER,
 	DB_MAX_READ_CONNECTIONS_EXCEEDED,
