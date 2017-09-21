@@ -2,7 +2,7 @@ package rifGenericLibrary.system;
 
 import java.util.ArrayList;
 
-
+import rifGenericLibrary.util.RIFLogger;
 
 /**
  *<p>
@@ -86,6 +86,7 @@ public class RIFServiceException
 	// ==========================================
 
 	private static final long serialVersionUID = 609449213280772202L;
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
 	// ==========================================
 	// Section Properties
@@ -186,7 +187,7 @@ public class RIFServiceException
 	
 	public void printErrors() {
 		for (String errorMessage : errorMessages) {
-			System.out.println(errorMessage);
+			rifLogger.error(this.getClass(), (errorMessage));
 		}
 	}
 	// ==========================================
