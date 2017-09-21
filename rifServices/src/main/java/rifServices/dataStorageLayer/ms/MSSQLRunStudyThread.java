@@ -232,42 +232,68 @@ public class MSSQLRunStudyThread
 	private void createStudy() 
 		throws RIFServiceException {
 
-		studyID = createStudySubmissionStep.performStep(
-			connection, 
-			user, 
-			studySubmission);
-		
-		String statusMessage
-			= RIFServiceMessages.getMessage(
-				"studyState.studyCreated.description");
-		updateStudyStatusState(statusMessage);			
+		try {		
+			studyID = createStudySubmissionStep.performStep(
+				connection, 
+				user, 
+				studySubmission);
+			
+			String statusMessage
+				= RIFServiceMessages.getMessage(
+					"studyState.studyCreated.description");
+			updateStudyStatusState(statusMessage);	
+		}	
+		catch (RIFServiceException rifServiceException) {
+			// Do not uodate status
+			throw rifServiceException;
+		}			
 	}
 	
 	private void generateResults() 
 		throws RIFServiceException {
 
-		generateResultsSubmissionStep.performStep(
-			connection, 
-			studyID);
-		
-		String statusMessage
-			= RIFServiceMessages.getMessage(
-				"studyState.studyExtracted.description");
-		updateStudyStatusState(statusMessage);		
+		try {			
+			generateResultsSubmissionStep.performStep(
+				connection, 
+				studyID);
+			
+			String statusMessage
+				= RIFServiceMessages.getMessage(
+					"studyState.studyExtracted.description");
+			updateStudyStatusState(statusMessage);	
+		}	
+		catch (RIFServiceException rifServiceException) {
+			StudyState errorStudyState = studyStateMachine.ExtractFailure();
+			String statusMessage
+				= RIFServiceMessages.getMessage(
+					"studyState.studyExtractFailure.description");
+			updateStudyStatusState(statusMessage, rifServiceException, errorStudyState);
+			throw rifServiceException;
+		}	
 	}
 	
 	private void smoothResults() 
 		throws RIFServiceException {
 
-		smoothResultsSubmissionStep.performStep(
-			connection,
-			studySubmission, 
-			studyID);
+		try {
+			smoothResultsSubmissionStep.performStep(
+				connection,
+				studySubmission, 
+				studyID);
+			String statusMessage
+				= RIFServiceMessages.getMessage(
+					"studyState.studyResultsComputed.description");
+			updateStudyStatusState(statusMessage);
+		}	
+		catch (RIFServiceException rifServiceException) {
+			StudyState errorStudyState = studyStateMachine.RFailure();
+			String statusMessage
+				= RIFServiceMessages.getMessage(
+					"studyState.studyResultsRFailure.description");
+			updateStudyStatusState(statusMessage, rifServiceException, errorStudyState);
+			throw rifServiceException;
+		}
 
-		String statusMessage
-			= RIFServiceMessages.getMessage(
-				"studyState.studyResultsComputed.description");
-		updateStudyStatusState(statusMessage);
 	}
 	
 //	private void advertiseDataSet() 
@@ -287,7 +313,8 @@ public class MSSQLRunStudyThread
 //
 //		rifLogger.info(this.getClass(), "RIF study should be FINISHED!!");
 //	}
-
+	
+	// Normal state transition
 	private void updateStudyStatusState(final String statusMessage) 
 		throws RIFServiceException {
 
@@ -298,6 +325,18 @@ public class MSSQLRunStudyThread
 			user, 
 			studyID, 
 			currentStudyState,
+			statusMessage);
+	}
+	
+	// Error 
+	private void updateStudyStatusState(final String statusMessage, final RIFServiceException rifServiceException, StudyState errorStudyState) 
+		throws RIFServiceException {
+				
+		studyStateManager.updateStudyStatus(
+			connection,
+			user, 
+			studyID, 
+			errorStudyState,
 			statusMessage);
 	}
 	

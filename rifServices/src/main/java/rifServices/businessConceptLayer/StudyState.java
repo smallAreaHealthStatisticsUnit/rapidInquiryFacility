@@ -63,11 +63,23 @@ import rifServices.system.RIFServiceMessages;
  *
  */
 
+ /*
+	C: created, not verified; 
+	V: verified, but no other work done; [NOT USED BY MIDDLEWARE]
+	E: extracted imported or created, but no results or maps created; 
+	G: Extract failure, extract, results or maps not created;
+	R: initial results population, create map table; [NOT USED BY MIDDLEWARE]
+	S: R success;
+	F: R failure, R has caught one or more exceptions [depends on the exception handler design]
+	W: R warning. [NOT USED BY MIDDLEWARE]
+ */
 public enum StudyState {
+	// Not used in the database
 	STUDY_NOT_CREATED(
 		"X",
 		"studyState.studyNotCreated.name",
 		"studyState.studyNotCreated.description"),
+		
 	STUDY_CREATED(
 		"C",
 		"studyState.studyCreated.name",
@@ -76,16 +88,36 @@ public enum StudyState {
 		"E",
 		"studyState.studyExtracted.name",		
 		"studyState.studyExtracted.description"),
-	STUDY_RESULTS_COMPUTED(
+		STUDY_EXTRACT_FAILURE(
+			"G",
+			"studyState.studyExtractFailure.name",		
+			"studyState.studyExtractFailure.description"),
+			
+	// Not currently used
+	STUDY_RESULTS_CREATED(
 		"R",
+		"studyState.studyResultsCreated.name",		
+		"studyState.studyResultsCreated.description"),
+	STUDY_RESULTS_COMPUTED(
+		"S",
 		"studyState.studyResultsComputed.name",		
 		"studyState.studyResultsComputed.description"),
+		STUDY_RESULTS_RFAILURE(
+			"F",
+			"studyState.studyResultsRFailure.name",		
+			"studyState.studyResultsRFailure.description"),
+		STUDY_RESULTS_RWARNING(
+			"W",
+			"studyState.studyResultsRWarning.name",		
+			"studyState.studyResultsRWarning.description"),
+		
+	// Not used in the database
 	STUDY_STATE_UNKNOWN(
 		"U", 
 		"studyState.studyStateUnknown.name",		
 		"studyState.studyStateUnknown.description");
 
-	/*
+	/* Not used by middleware
 	STUDY_VERIFIED(
 			"V",
 			"studyState.studyVerified.description"),
@@ -129,14 +161,26 @@ public enum StudyState {
 		else if (STUDY_CREATED.getCode().equals(studyStateName)) {
 			return STUDY_CREATED;
 		}
-		//else if (STUDY_VERIFIED.getName().equals(studyStateName)) {
-		//	return STUDY_VERIFIED;
-		//}
+//		else if (STUDY_VERIFIED.getName().equals(studyStateName)) {
+//			return STUDY_VERIFIED;
+//		}
 		else if (STUDY_EXTRACTED.getCode().equals(studyStateName)) {
 			return STUDY_EXTRACTED;
 		}
+		else if (STUDY_EXTRACT_FAILURE.getCode().equals(studyStateName)) {
+			return STUDY_EXTRACT_FAILURE;
+		}
+		else if (STUDY_RESULTS_CREATED.getCode().equals(studyStateName)) {
+			return STUDY_RESULTS_CREATED;
+		}
 		else if (STUDY_RESULTS_COMPUTED.getCode().equals(studyStateName)) {
 			return STUDY_RESULTS_COMPUTED;
+		}
+		else if (STUDY_RESULTS_RFAILURE.getCode().equals(studyStateName)) {
+			return STUDY_RESULTS_RFAILURE;
+		}
+		else if (STUDY_RESULTS_RWARNING.getCode().equals(studyStateName)) {
+			return STUDY_RESULTS_RWARNING;
 		}
 		else {
 			return null;

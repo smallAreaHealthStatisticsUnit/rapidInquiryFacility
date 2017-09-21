@@ -279,14 +279,29 @@ final class PGSQLStudyStateManager
 		if (studyState.equals("C")) {
 			return 0;
 		}
-		else if (studyState.equals("E")) {
+		else if (studyState.equals("V")) {
 			return 1;
 		}
-		else if (studyState.equals("R")) {
+		else if (studyState.equals("E")) {
 			return 2;
 		} 
+		else if (studyState.equals("G")) {
+			return 3;
+		}
+		else if (studyState.equals("R")) {
+			return 4;
+		} 		
+		else if (studyState.equals("S")) {
+			return 5;
+		}
+		else if (studyState.equals("F")) {
+			return 6;
+		} 
+		else if (studyState.equals("W")) {
+			return 7;
+		} 
 		else {
-			return 0;
+			return -1;
 		}
 	}	
 

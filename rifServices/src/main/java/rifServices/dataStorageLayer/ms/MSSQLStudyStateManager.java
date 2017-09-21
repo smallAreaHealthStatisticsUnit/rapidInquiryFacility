@@ -269,21 +269,46 @@ final class MSSQLStudyStateManager
 		assert result != null;
 		return result;
 	}
-	
+
+ /*
+	C: created, not verified; 
+	V: verified, but no other work done; [NOT USED BY MIDDLEWARE]
+	E: extracted imported or created, but no results or maps created; 
+	G: Extract failure, extract, results or maps not created;
+	R: initial results population, create map table; [NOT USED BY MIDDLEWARE]
+	S: R success;
+	F: R failure, R has caught one or more exceptions [depends on the exception handler design]
+	W: R warning. [NOT USED BY MIDDLEWARE]
+ */	
 	private int getIthUpdate(
 			final String studyState) {
 		
 		if (studyState.equals("C")) {
 			return 0;
 		}
-		else if (studyState.equals("E")) {
+		else if (studyState.equals("V")) {
 			return 1;
 		}
-		else if (studyState.equals("R")) {
+		else if (studyState.equals("E")) {
 			return 2;
 		} 
+		else if (studyState.equals("G")) {
+			return 3;
+		}
+		else if (studyState.equals("R")) {
+			return 4;
+		} 		
+		else if (studyState.equals("S")) {
+			return 5;
+		}
+		else if (studyState.equals("F")) {
+			return 6;
+		} 
+		else if (studyState.equals("W")) {
+			return 7;
+		} 
 		else {
-			return 0;
+			return -1;
 		}
 	}
 	
@@ -651,7 +676,7 @@ final class MSSQLStudyStateManager
 				
 		StringBuilder statusTableName = new StringBuilder();
 		statusTableName.append(userID);
-		statusTableName.append(".study_status");
+		statusTableName.append(".rif40_study_status");
 		
 		return statusTableName.toString();
 	}

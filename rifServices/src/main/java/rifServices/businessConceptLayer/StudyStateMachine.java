@@ -1,5 +1,7 @@
 package rifServices.businessConceptLayer;
 
+import rifGenericLibrary.util.RIFLogger;
+
 /**
  *
  * <hr>
@@ -65,7 +67,9 @@ public class StudyStateMachine {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	protected static RIFLogger rifLogger = RIFLogger.getLogger();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -105,9 +109,13 @@ public class StudyStateMachine {
 		if (currentState == StudyState.STUDY_RESULTS_COMPUTED) {
 			currentState = StudyState.STUDY_EXTRACTED;
 		}
+		//else if (currentState == StudyState.STUDY_RESULTS_CREATED) {
+		//	currentState = StudyState.STUDY_EXTRACTED;		
+		//}		
 		else if (currentState == StudyState.STUDY_EXTRACTED) {
 			currentState = StudyState.STUDY_CREATED;		
 		}
+		// Used by the database
 		//else if (currentState == StudyState.STUDY_VERIFIED) {
 		//	currentState = StudyState.STUDY_CREATED;		
 		//}
@@ -120,6 +128,16 @@ public class StudyStateMachine {
 		
 		return currentState;
 		
+	}
+	
+	public StudyState ExtractFailure() {
+		return StudyState.STUDY_EXTRACT_FAILURE;
+	}
+	public StudyState RFailure() {
+		return StudyState.STUDY_RESULTS_RFAILURE;
+	}
+	public StudyState RWarning() {
+		return StudyState.STUDY_RESULTS_RWARNING;
 	}
 	
 	public StudyState next() {
@@ -136,11 +154,14 @@ public class StudyStateMachine {
 		//else if (currentState == StudyState.STUDY_VERIFIED) {
 		//	currentState = StudyState.STUDY_EXTRACTED;		
 		//}
+		//else if (currentState == StudyState.STUDY_EXTRACTED) {
+		//	currentState = StudyState.STUDY_RESULTS_CREATED;		
+		//}
 		else if (currentState == StudyState.STUDY_EXTRACTED) {
 			currentState = StudyState.STUDY_RESULTS_COMPUTED;		
 		}
 		else {
-			System.out.println("StudyStateMachine -- next -- this should never happen.");
+			rifLogger.warning(this.getClass(), "StudyStateMachine -- next -- this should never happen.");
 			assert false;
 		}
 		
