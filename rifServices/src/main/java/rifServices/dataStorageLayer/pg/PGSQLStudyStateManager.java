@@ -304,7 +304,32 @@ final class PGSQLStudyStateManager
 			return -1;
 		}
 	}	
+	
 
+	public void rollbackStudy(
+		final Connection connection, 
+		final String studyID)  
+		throws RIFServiceException {
+		try {
+			connection.rollback();
+			rifLogger.info(this.getClass(), "PGSQLStudyStateManager: study_id: " + studyID + "; ROLLBACK");	
+		}
+		catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version						
+			logSQLException(sqlException);
+
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlStudyStateManager.error.unableToRollback", 
+					studyID);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED, 
+					errorMessage);
+			throw rifServiceException;
+		}			
+	}
+	
 	public void updateStudyStatus(
 		final Connection connection, 
 		final User user,
@@ -338,7 +363,7 @@ final class PGSQLStudyStateManager
 			
 		PreparedStatement statement = null;
 		try {
-			rifLogger.info(this.getClass(), "SQLStudyStateManager updateStudyStatus: study_id: " + studyID + 
+			rifLogger.info(this.getClass(), "PGSQLStudyStateManager updateStudyStatus: study_id: " + studyID + 
 				"; state: " + studyState.getCode() + 
 				"; statusMessage: " + statusMessage);
 			createStatusTable(connection, user);
@@ -349,7 +374,7 @@ final class PGSQLStudyStateManager
 			statement.setString(4, statusMessage);
 			statement.executeUpdate();
 			connection.commit();
-			rifLogger.info(this.getClass(), "SQLStudyStateManager: study_id: " + studyID + "; COMMIT");
+			rifLogger.info(this.getClass(), "PGSQLStudyStateManager: study_id: " + studyID + "; COMMIT");
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
@@ -675,8 +700,8 @@ final class PGSQLStudyStateManager
 		final String userID) {
 				
 		StringBuilder statusTableName = new StringBuilder();
-		statusTableName.append(userID);
-		statusTableName.append(".study_status");
+//		statusTableName.append(userID);
+		statusTableName.append("rif40.rif40_study_status");
 		
 		return statusTableName.toString();
 	}
