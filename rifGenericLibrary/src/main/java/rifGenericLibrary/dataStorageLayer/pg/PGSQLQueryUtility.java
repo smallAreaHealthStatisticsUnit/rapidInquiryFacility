@@ -227,12 +227,14 @@ public class PGSQLQueryUtility {
 	public void printWarnings(PreparedStatement runStudyStatement) {
 		SQLWarning warnings;
 		StringBuilder message;
+		int warningCount=0;
 		
 		try {
 			warnings=runStudyStatement.getWarnings();
 			message = new StringBuilder();
 			
 			while (warnings != null) {	
+				warningCount++;
 				if (warnings.getErrorCode() == 0) {
 					message.append(warnings.getMessage() + lineSeparator);	       
 				}
@@ -247,8 +249,12 @@ public class PGSQLQueryUtility {
 			}
 			
 			if (message.length() > 0) {
-				rifLogger.info(this.getClass(), message.toString());
-			}	
+				rifLogger.info(this.getClass(), warningCount + " warnings/messages" + lineSeparator +
+					message.toString());
+			}	 
+			else {
+				rifLogger.warning(this.getClass(), "No warnings/messages found.");
+			}
 		}		
 		catch(SQLException sqlException) { // Do nothing - they are warnings!
 			rifLogger.warning(this.getClass(), "PGSQLQueryUtility.printWarnings() caught sqlException: " + 

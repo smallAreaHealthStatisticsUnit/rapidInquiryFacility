@@ -386,7 +386,6 @@ taxonomyServices.ICD10TaxonomyTermParser=true
 
 rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility=true
 rifGenericLibrary.dataStorageLayer.pg.PGUserDatabaseConnections=true
-rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility=true
 
 rifServices.restfulWebServices.pg.PGSQLRIFStudySubmissionWebServiceResource=true
 
