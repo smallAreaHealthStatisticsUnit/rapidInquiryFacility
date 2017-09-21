@@ -325,6 +325,8 @@ BEGIN
 -- Set study status 
 --
 		BEGIN TRY
+			ROLLBACK TRANSACTION;		
+			BEGIN TRANSACTION;
 			INSERT INTO rif40.rif40_study_status(study_id, study_state, message) VALUES(@study_id, 'G', @msg);
 -- ============================================================
 -- Always commit, even though this may fail because trigger failure have caused a rollback:
@@ -350,7 +352,7 @@ BEGIN
         EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';
     END CATCH;
 -- ============================================================
-    IF @rval2 = 1 BEGIN
+    IF @rval2 = 1 BEGIN		/* Study ran OK; transaction still running */
 		SET @rval=1;
 		SET @msg = 'Study extract ran ' + CAST(@study_id AS VARCHAR) + ' OK';
         PRINT @msg;
