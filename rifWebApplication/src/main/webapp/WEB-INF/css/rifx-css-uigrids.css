@@ -180,6 +180,30 @@
       color: black;
       opacity: 0.8;*/
 }
+
+.statusS .ui-grid-cell-contents {
+    /*  background-color: lightgreen;
+      color: black;
+      opacity: 0.8;*/
+}
+
+.statusF .ui-grid-cell-contents {
+    /*  background-color: lightgreen;
+      color: black;
+      opacity: 0.8;*/
+}
+
+.statusW .ui-grid-cell-contents {
+    /*  background-color: lightgreen;
+      color: black;
+      opacity: 0.8;*/
+}
+
+.statusG .ui-grid-cell-contents {
+    /*  background-color: lightgreen;
+      color: black;
+      opacity: 0.8;*/
+}
 .statusU .ui-grid-cell-contents {
     background-color: pink;
     color: black;

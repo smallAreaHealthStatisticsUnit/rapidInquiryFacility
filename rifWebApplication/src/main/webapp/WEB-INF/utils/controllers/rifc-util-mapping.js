@@ -167,12 +167,44 @@ angular.module("RIF")
                 $scope.$on('updateStudyDropDown', function (event, thisStudy) {
                     $scope.studyIDs.push(thisStudy);
                 });
-
+				 /*
+					C: created, not verified; 
+					V: verified, but no other work done; [NOT USED BY MIDDLEWARE]
+					E: extracted imported or created, but no results or maps created; 
+					G: Extract failure, extract, results or maps not created;
+					R: initial results population, create map table; [NOT USED BY MIDDLEWARE]
+					S: R success;
+					F: R failure, R has caught one or more exceptions [depends on the exception handler design]
+					W: R warning. [NOT USED BY MIDDLEWARE]
+				 */
                 //Get the possible studies initially
                 $scope.getStudies = function () {
                     user.getCurrentStatusAllStudies(user.currentUser).then(function (res) {
                         for (var i = 0; i < res.data.smoothed_results.length; i++) {
-                            if (res.data.smoothed_results[i].study_state === "R") {
+							if (res.data.smoothed_results[i].study_state === "S") { // New success
+                                var thisStudy = {
+                                    "study_id": res.data.smoothed_results[i].study_id,
+                                    "name": res.data.smoothed_results[i].study_name
+                                };
+                                $scope.studyIDs.push(thisStudy);
+                            }
+                            else if (res.data.smoothed_results[i].study_state === "R") { // Old success
+                                var thisStudy = {
+                                    "study_id": res.data.smoothed_results[i].study_id,
+                                    "name": res.data.smoothed_results[i].study_name
+                                };
+                                $scope.studyIDs.push(thisStudy);
+                            }
+							else if (res.data.smoothed_results[i].study_state === "G") {
+								// G: Extract failure, extract, results or maps not created
+                                var thisStudy = {
+                                    "study_id": res.data.smoothed_results[i].study_id,
+                                    "name": res.data.smoothed_results[i].study_name
+                                };
+                                $scope.studyIDs.push(thisStudy);
+                            }
+							else if (res.data.smoothed_results[i].study_state === "F") {
+								// F: R failure, R has caught one or more exceptions 
                                 var thisStudy = {
                                     "study_id": res.data.smoothed_results[i].study_id,
                                     "name": res.data.smoothed_results[i].study_name
@@ -202,7 +234,9 @@ angular.module("RIF")
                             $scope.updateSex(parentScope.myMaps[j]);
                         }
                     }, function (e) {
-                        $scope.showError("Could not retrieve study status");
+                        $scope.showError("Unable to retrieve study status");
+						console.log("[rifc-util-mapping.js] Unable to retrieve study status: " + 
+							JSON.stringify(e));
                     });
                 };
 

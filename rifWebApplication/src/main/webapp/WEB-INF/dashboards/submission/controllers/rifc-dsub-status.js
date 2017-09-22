@@ -69,13 +69,27 @@ angular.module("RIF")
                     }
                 };
 
+				 /*
+					C: created, not verified; 
+					V: verified, but no other work done; [NOT USED BY MIDDLEWARE]
+					E: extracted imported or created, but no results or maps created; 
+					G: Extract failure, extract, results or maps not created;
+					R: initial results population, create map table; [NOT USED BY MIDDLEWARE]
+					S: R success;
+					F: R failure, R has caught one or more exceptions [depends on the exception handler design]
+					W: R warning. [NOT USED BY MIDDLEWARE]
+				 */
                 function rowTemplate() {
                     return  '<div id="testdiv" tabindex="0">' +
                             '<div style="height: 100%" ng-class="{ ' +
                             "statusC: row.entity.study_state==='C'," + //C: created, not verfied
                             "statusV: row.entity.study_state==='V'," + //V: verified, but no other work done;
                             "statusE: row.entity.study_state==='E'," + //E: extracted imported or created
+                            "statusG: row.entity.study_state==='G'," + //G: Extract failure, extract, results or maps not created
                             "statusR: row.entity.study_state==='R'," + //R: results computed
+                            "statusS: row.entity.study_state==='S'," + //S: R success
+                            "statusF: row.entity.study_state==='F'," + //F: R failure, R has caught one or more exceptions
+                            "statusW: row.entity.study_state==='W'," + //W: R warning
                             "statusU: study_state==='U'," + //U: upgraded record from V3.1 RIF (has an indeterminate state; probably R.
                             '}">' +
                             '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ui-grid-cell></div>' +
@@ -88,7 +102,9 @@ angular.module("RIF")
                 }, handleStudyError);
 
                 function handleStudyError(e) {
-                    $scope.showError("Could not retrieve study status");
+                    $scope.showError("Could not retrieve status of studies");
+                    console.log("[rifc-dsub-status.js] Could not retrieve status of studies: " + 
+						JSON.stringify(e));
                 }
 
                 $scope.open = function () {

@@ -167,12 +167,28 @@ angular.module("RIF")
                     extract: ExportStateService.getState().rows.extract,
                     results: ExportStateService.getState().rows.results
                 };
-
+				 /*
+					C: created, not verified; 
+					V: verified, but no other work done; [NOT USED BY MIDDLEWARE]
+					E: extracted imported or created, but no results or maps created; 
+					G: Extract failure, extract, results or maps not created;
+					R: initial results population, create map table; [NOT USED BY MIDDLEWARE]
+					S: R success;
+					F: R failure, R has caught one or more exceptions [depends on the exception handler design]
+					W: R warning. [NOT USED BY MIDDLEWARE]
+				 */
                 //fills the selction drop-down
                 $scope.getStudies = function () {
                     user.getCurrentStatusAllStudies(user.currentUser).then(function (res) {
                         for (var i = 0; i < res.data.smoothed_results.length; i++) {
-                            if (res.data.smoothed_results[i].study_state === "R") {
+                            if (res.data.smoothed_results[i].study_state === "S") { // New success
+                                var thisStudy = {
+                                    "study_id": res.data.smoothed_results[i].study_id,
+                                    "name": res.data.smoothed_results[i].study_name
+                                };
+                                $scope.studyIDs.push(thisStudy);
+                            }
+                            else if (res.data.smoothed_results[i].study_state === "R") { // Old success
                                 var thisStudy = {
                                     "study_id": res.data.smoothed_results[i].study_id,
                                     "name": res.data.smoothed_results[i].study_name
@@ -197,7 +213,9 @@ angular.module("RIF")
                             $scope.studyID['exportmap'] = $scope.studyIDs[0];
                         }
                     }, function (e) {
-                        $scope.showError("Could not retrieve study status");
+                        $scope.showError("Could not retrieve study status; unable to export or view data");
+						console.log("[rifc-expt-export.js] Could not retrieve study status; unable to export or view data" + 
+							JSON.stringify(e));
                     }).then(function () {
                         //fill initial preview
                         $scope.updateStudy("exportmap");
