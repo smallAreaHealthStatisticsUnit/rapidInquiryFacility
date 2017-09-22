@@ -294,7 +294,8 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 				user, 
 				studyID, 
 				studyState,
-				message);
+				message,
+				null);
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation

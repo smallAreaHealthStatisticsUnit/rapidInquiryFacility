@@ -1,14 +1,16 @@
 package rifServices.dataStorageLayer.pg;
 
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.StudyState;
 import rifServices.businessConceptLayer.StudyStateMachine;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 
 import java.sql.*;
@@ -162,31 +164,58 @@ public class PGSQLRunStudyThread
 
 				StudyState currentState
 					= studyStateMachine.getCurrentStudyState();
-
+				StudyState newState;
+				
 				if (currentState == StudyState.STUDY_NOT_CREATED) {
 					//Study has not been created.  We need to add parts of it to the database.  At the end,
 					//we will have a description where we can generate extract tables
-					rifLogger.info(this.getClass(), "run create study BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					rifLogger.info(this.getClass(), "Create study BEFORE state=="+currentState.getName()+"==");
 					createStudy();
-					rifLogger.info(this.getClass(), "run create study AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					
+					newState = studyStateMachine.getCurrentStudyState();
+					rifLogger.info(this.getClass(), "Study: " + studyID + 
+						"; run create study AFTER state=="+newState.getName()+"==");
 				}
 				else if (currentState == StudyState.STUDY_CREATED) {
-					rifLogger.info(this.getClass(), "run generate results BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					rifLogger.info(this.getClass(), "Study: " + studyID + 
+						"; run generate results BEFORE state=="+currentState.getName()+"==");
 					generateResults();
-					rifLogger.info(this.getClass(), "run generate results AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					
+					newState = studyStateMachine.getCurrentStudyState();
+					rifLogger.info(this.getClass(), "Study: " + studyID + 
+						"; run generate results AFTER state=="+newState.getName()+"==");
 				}
 				else if (currentState == StudyState.STUDY_EXTRACTED) {
 					//we are done.  Break out of the loop so that the thread can stop
-					rifLogger.info(this.getClass(), "run smooth results BEFORE state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					rifLogger.info(this.getClass(), "Study: " + studyID + 
+						"; run smooth results BEFORE state=="+currentState.getName()+"==");
 					smoothResults();
-					rifLogger.info(this.getClass(), "run smooth results AFTER state=="+studyStateMachine.getCurrentStudyState().getName()+"==");
+					
+					newState = studyStateMachine.getCurrentStudyState();
+					rifLogger.info(this.getClass(), "Study: " + studyID + 
+						"; run smooth results AFTER state=="+newState.getName()+"==");
 				}
 				else {
-					break;
+					String errorMessage = "Study: " + studyID + 
+							"; unexpected state: " + studyStateMachine.getCurrentStudyState().getName();
+					RIFServiceException rifServiceException
+						= new RIFServiceException(
+							RIFServiceError.STATE_MACHINE_ERROR, 
+							errorMessage);
+					throw rifServiceException; 
 				}
 				
+				if (newState.getName().equals(currentState.getName())) {
+					String errorMessage = "Study: " + studyID + 
+							"; no change in state: " + currentState.getName();
+					RIFServiceException rifServiceException
+						= new RIFServiceException(
+							RIFServiceError.STATE_MACHINE_ERROR, 
+							errorMessage);
+					throw rifServiceException; 
+				}
 				Thread.sleep(SLEEP_TIME);
-			}
+			} // End of while loop
 			
 			rifLogger.info(this.getClass(), "Finished!!");
 			
@@ -236,15 +265,16 @@ public class PGSQLRunStudyThread
 			studyID = createStudySubmissionStep.performStep(
 				connection, 
 				user, 
-				studySubmission);
-			
+				studySubmission);			
 			String statusMessage
 				= RIFServiceMessages.getMessage(
 					"studyState.studyCreated.description");
 			updateStudyStatusState(statusMessage);	
 		}	
 		catch (RIFServiceException rifServiceException) {
-			// Do not uodate status
+			// Do not update status; 
+			// because this is a database procedure that failed the transaction must be rolled back
+			rollbackStudy();
 			throw rifServiceException;
 		}			
 	}
@@ -256,13 +286,19 @@ public class PGSQLRunStudyThread
 			generateResultsSubmissionStep.performStep(
 				connection, 
 				studyID);
+			StudyState currentStudyState = studyStateMachine.next(); // Advance to next state
 			
-			String statusMessage
-				= RIFServiceMessages.getMessage(
-					"studyState.studyExtracted.description");
-			updateStudyStatusState(statusMessage);	
+// Done by DB procedure - will generate duplicate PK
+//			String statusMessage
+//				= RIFServiceMessages.getMessage(
+//					"studyState.studyExtracted.description");
+//			updateStudyStatusState(statusMessage);
 		}	
 		catch (RIFServiceException rifServiceException) {
+			// because this is a database procedure that failed the transaction must be rolled back
+			rollbackStudy();
+
+// Done by DB procedure - will generate duplicate PK			
 			StudyState errorStudyState = studyStateMachine.ExtractFailure();
 			String statusMessage
 				= RIFServiceMessages.getMessage(
@@ -318,27 +354,44 @@ public class PGSQLRunStudyThread
 	private void updateStudyStatusState(final String statusMessage) 
 		throws RIFServiceException {
 
-		StudyState currentStudyState = studyStateMachine.next();
+		StudyState currentStudyState = studyStateMachine.next(); // Advance to next state
 				
 		studyStateManager.updateStudyStatus(
 			connection,
 			user, 
 			studyID, 
 			currentStudyState,
-			statusMessage);
+			statusMessage,
+			null);
 	}
 	
 	// Error 
-	private void updateStudyStatusState(final String statusMessage, final RIFServiceException rifServiceException, StudyState errorStudyState) 
+	private void updateStudyStatusState(
+			final String statusMessage, 
+			final RIFServiceException rifServiceException, 
+			StudyState errorStudyState) 
 		throws RIFServiceException {
+		
+		StringBuilder errorString = new StringBuilder();
+		for (String errorMessage : rifServiceException.getErrorMessages()) {
+			errorString.append(errorMessage + lineSeparator);
+		}	
 				
 		studyStateManager.updateStudyStatus(
 			connection,
 			user, 
 			studyID, 
 			errorStudyState,
-			statusMessage);
+			statusMessage,
+			errorString.toString());
 	}
+	
+	private void rollbackStudy() 
+		throws RIFServiceException {
+				
+		studyStateManager.rollbackStudy(
+			connection, studyID);
+	}	
 	
 	// ==========================================
 	// Section Override

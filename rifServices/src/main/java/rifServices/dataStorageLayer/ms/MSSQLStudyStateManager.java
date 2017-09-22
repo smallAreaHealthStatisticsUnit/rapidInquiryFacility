@@ -12,8 +12,6 @@ import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 
-import rifGenericLibrary.util.RIFLogger;
-
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
@@ -341,7 +339,8 @@ final class MSSQLStudyStateManager
 		final User user,
 		final String studyID, 
 		final StudyState studyState,
-		final String statusMessage) 
+		final String statusMessage,
+		final String traceMessage) 
 		throws RIFServiceException {
 		
 		if (studyState == StudyState.STUDY_NOT_CREATED) {
@@ -355,18 +354,33 @@ final class MSSQLStudyStateManager
 		String statusTableName = deriveStatusTableName(user.getUserID());
 				
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryLine(0, "INSERT INTO " + statusTableName);
-		queryFormatter.addQueryLine(1, " (study_id, study_state, ith_update, message) ");
-		queryFormatter.addQueryLine(1, "VALUES (?, ?, ?, ?)");
-		Integer ithUpdate=new Integer(getIthUpdate(studyState.getCode()));		
-		logSQLQuery(
-			"updateStudyStatus", 
-			queryFormatter,
-			studyID.toString(), 
-			studyState.getCode(), 
-			ithUpdate.toString(), 
-			statusMessage);
-						
+		if (traceMessage == null) {
+			queryFormatter.addQueryLine(0, "INSERT INTO " + statusTableName);
+			queryFormatter.addQueryLine(1, " (study_id, study_state, ith_update, message) ");
+			queryFormatter.addQueryLine(1, "VALUES (?, ?, ?, ?)");
+			Integer ithUpdate=new Integer(getIthUpdate(studyState.getCode()));		
+			logSQLQuery(
+				"updateStudyStatus", 
+				queryFormatter,
+				studyID.toString(), 
+				studyState.getCode(), 
+				ithUpdate.toString(), 
+				statusMessage);
+		}		
+		else {
+			queryFormatter.addQueryLine(0, "INSERT INTO " + statusTableName);
+			queryFormatter.addQueryLine(1, " (study_id, study_state, ith_update, message, trace) ");
+			queryFormatter.addQueryLine(1, "VALUES (?, ?, ?, ?, ?)");
+			Integer ithUpdate=new Integer(getIthUpdate(studyState.getCode()));		
+			logSQLQuery(
+				"updateStudyStatus", 
+				queryFormatter,
+				studyID.toString(), 
+				studyState.getCode(), 
+				ithUpdate.toString(), 
+				statusMessage,
+				traceMessage);
+		}		
 		PreparedStatement statement = null;
 		try {
 			rifLogger.info(this.getClass(), "MSSQLStudyStateManager updateStudyStatus: study_id: " + studyID +
@@ -376,7 +390,10 @@ final class MSSQLStudyStateManager
 			statement.setInt(1, Integer.valueOf(studyID));
 			statement.setString(2, studyState.getCode());
 			statement.setInt(3, getIthUpdate(studyState.getCode()));
-			statement.setString(4, statusMessage);		
+			statement.setString(4, statusMessage);	
+			if (traceMessage != null) {
+				statement.setString(5, traceMessage);	
+			}			
 			statement.executeUpdate();
 			connection.commit();
 			rifLogger.info(this.getClass(), "MSSQLStudyStateManager: study_id: " + studyID + "; COMMIT");

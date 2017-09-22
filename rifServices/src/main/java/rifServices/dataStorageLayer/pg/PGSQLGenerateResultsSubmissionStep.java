@@ -123,6 +123,7 @@ final class PGSQLGenerateResultsSubmissionStep
 		PreparedStatement computeResultsStatement = null;
 		ResultSet runStudyResultSet = null;
 		ResultSet computeResultSet = null;
+		Boolean resultBoolean = false;
 		
 		try {
 			
@@ -149,22 +150,15 @@ final class PGSQLGenerateResultsSubmissionStep
 				= runStudyStatement.executeQuery();
 			runStudyResultSet.next();
 			
-			result = String.valueOf(runStudyResultSet.getBoolean(1));	
-			if (runStudyResultSet.getBoolean(1)) {
-				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
-			}
-			else {
-				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID + " failed with code: " + result + 
-					" XXXXXXXXXXXXXXXXXXXXXX");
-			}
+			result = String.valueOf(runStudyResultSet.getBoolean(1));
+			resultBoolean=runStudyResultSet.getBoolean(1);
 			
 			PGSQLQueryUtility.commit(connection); 
-			
-			return result;
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
+		
 			PGSQLQueryUtility.commit(connection); 
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -179,7 +173,7 @@ final class PGSQLGenerateResultsSubmissionStep
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
+					sqlException.getMessage());
 			throw rifServiceException;
 		}
 		finally {
@@ -191,6 +185,29 @@ final class PGSQLGenerateResultsSubmissionStep
 			PGSQLQueryUtility.close(runStudyResultSet);
 			PGSQLQueryUtility.close(computeResultsStatement);
 			PGSQLQueryUtility.close(computeResultSet);
+
+			if (result == null) {
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.DATABASE_QUERY_FAILED,
+						"Study " + studyID + " had NULL result");
+				throw rifServiceException;
+			}
+			
+			if (resultBoolean) {
+				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID + " ran OK XXXXXXXXXXXXXXXXXXXXXX");
+			}
+			else {
+				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID + " failed with code: " + result + 
+					" XXXXXXXXXXXXXXXXXXXXXX");
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						RIFServiceError.DATABASE_QUERY_FAILED,
+						"Study " + studyID + " failed with code: " + result);
+				throw rifServiceException;
+			}
+	
+			return result;
 		}
 	}
 		
