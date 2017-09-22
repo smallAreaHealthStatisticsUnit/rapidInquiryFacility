@@ -1584,8 +1584,13 @@ Todo:
   
 #### 18th to 22nd September
  
-* Configuration using the %CATALINA_HOME%/conf directory
- 
+* Configuration using the %CATALINA_HOME%/conf directory; support for conf based RIF properties, 
+  common log4j2 setup
+* Meetings (Hima, DM, FP)
+* R exception handling and errors
+* Study state machine and transactional control: obsolete study_status, move to rif40_study_status; trace 
+  error support
+
 September:
 
 * Dump adjacency matrix in R to CSV
