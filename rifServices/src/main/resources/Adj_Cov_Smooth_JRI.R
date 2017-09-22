@@ -1364,29 +1364,19 @@ withErrorTracing = function(expr, silentSuccess=FALSE) {
 	return
 }
 
-callPerformSmoothingActivity <- function() {
-	# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
-	print("Performing basic stats and smoothing")
-			
-	tryCatch({
-			withErrorTracing({result <- performSmoothingActivity()})
-		},
-		warning=function(w) {		
-			print(paste("callPerformSmoothingActivity() WARNING: ", w))
-		},
-		error=function(e) {
-			e <<- e
-			print(paste("callPerformSmoothingActivity() ERROR: ", e$message, 
-				"; call stack: ", e$call))
-			exitValue <<- 1
-		},
-		finally={
-			print(paste0("callPerformSmoothingActivity exitValue: ", exitValue))
-		})  
-}
-
-callodbcConnect <- function() {
-	tryCatch({
+##================================================================================
+##FUNCTION: runRSmoothingFunctions
+##DESCRIPTION
+##Run the functions defined this script as source
+##Called direectly from JRI in the middleware
+##Returns (exitvalue) 0 on success, 1 on failure 
+##================================================================================
+runRSmoothingFunctions <- function() {
+	establishTableNames(studyID)
+	print(paste0("Connect to database: ", odbcDataSource))
+  
+	errorTrace<-capture.output({
+		tryCatch({
 			connDB <<- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password))
 		},
         warning=function(w) {
@@ -1400,45 +1390,51 @@ callodbcConnect <- function() {
 		finally={
 			odbcSetAutoCommit(connDB, autoCommit = FALSE)
 			print(odbcGetInfo(connDB))
+		}) # End of tryCatch
+	})
+
+	if (exitValue == 0) {
+		errorTrace<-capture.output({
+			# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
+			print("Performing basic stats and smoothing")
+					
+			tryCatch({
+					withErrorTracing({result <- performSmoothingActivity()})
+				},
+				warning=function(w) {		
+					print(paste("callPerformSmoothingActivity() WARNING: ", w))
+				},
+				error=function(e) {
+					e <<- e
+					print(paste("callPerformSmoothingActivity() ERROR: ", e$message, 
+						"; call stack: ", e$call))
+					exitValue <<- 1
+				},
+				finally={
+					print(paste0("callPerformSmoothingActivity exitValue: ", exitValue))
+					if (exitValue == 0) {
+						print(paste("performSmoothingActivity() OK: ", exitValue))
+							
+						# Cast area_id to char. This is ignored by sqlSave!
+						area_id_is_integer <- FALSE
+						print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]), 
+							"; check.integer(result$area_id[1]): ", check.integer(result$area_id[1]),
+							"; result$area_id[1]: ", result$area_id[1]))
+						 
+						# Use check.integer() to reliably test if the string is an integer 
+						if (check.integer(result$area_id[1])) {
+							area_id_is_integer <- TRUE
+							result$area_id <- sapply(result$area_id, as.character)
+							print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]),
+								"; result$area_id[1]: ", result$area_id[1]))
+						}
+
+						saveDataFrameToDatabaseTable(result)
+						updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue  
+					}
+				}
+			) # End of tryCatch
 		})
-}
-
-##================================================================================
-##FUNCTION: runRSmoothingFunctions
-##DESCRIPTION
-##Run the functions defined this script as source
-##Called direectly from JRI in the middleware
-##Returns (exitvalue) 0 on success, 1 on failure 
-##================================================================================
-runRSmoothingFunctions <- function() {
-	establishTableNames(studyID)
-	print(paste0("Connect to database: ", odbcDataSource))
-  
-	errorTrace<-capture.output(callodbcConnect())
-
-	if (exitValue == 0) {
-		errorTrace<-capture.output(callPerformSmoothingActivity())
-	}
-  
-	if (exitValue == 0) {
-		print(paste("performSmoothingActivity() OK: ", exitValue))
-    		
-		# Cast area_id to char. This is ignored by sqlSave!
-		area_id_is_integer <- FALSE
-		print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]), 
-			"; check.integer(result$area_id[1]): ", check.integer(result$area_id[1]),
-			"; result$area_id[1]: ", result$area_id[1]))
-		 
-		# Use check.integer() to reliably test if the string is an integer 
-		if (check.integer(result$area_id[1])) {
-			area_id_is_integer <- TRUE
-			result$area_id <- sapply(result$area_id, as.character)
-			print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]),
-				"; result$area_id[1]: ", result$area_id[1]))
-		}
-
-		saveDataFrameToDatabaseTable(result)
-		updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue  
 	}
   
 	if (exitValue == 0 && !is.na(connDB)) {
