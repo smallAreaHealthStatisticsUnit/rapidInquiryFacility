@@ -100,14 +100,16 @@ BEGIN
 				study_state,
 				creation_date,
 				ith_update,
-				message)
+				message,
+				trace)
 			VALUES(
 				COALESCE(NEW.username, "current_user"()),
 				COALESCE(NEW.study_id, (currval('rif40_study_id_seq'::regclass))::integer),
 				NEW.study_state /* no default value */,
 				COALESCE(NEW.creation_date, current_timestamp),
 				COALESCE(NEW.ith_update, c1_rec.ith_update),
-				NEW.message /* no default value */);
+				NEW.message 	/* no default value */,
+				NEW.trace 		/* no default value */);
 		ELSE
 			PERFORM rif40_log_pkg.rif40_error(-20999, 'trg_rif40_study_status',
 				'Cannot INSERT: User % must have rif_user or rif_manager role, NEW.username (%) must be USER or NULL', 
@@ -129,7 +131,8 @@ BEGIN
 			       study_state=NEW.study_state,
 			       creation_date=NEW.creation_date,
 			       ith_update=COALESCE(NEW.ith_update, c1_rec.ith_update),
-			       message=NEW.message
+			       message=NEW.message,
+				   trace=NEW.trace
 			 WHERE study_id=OLD.study_id
 			   AND study_state=OLD.study_state;
 		ELSE

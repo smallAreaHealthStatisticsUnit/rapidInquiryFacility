@@ -180,9 +180,12 @@ Recurse until complete
 		ELSE PRINT '55205: rif40.rif40_compute_results() OK';
 		END;
 
-	IF @study_state = 'C' INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
-		VALUES (@study_id, 'C', 
-			'Study has been created but it has not been verified.');
+--
+-- Done by middleware
+--	
+--	IF @study_state = 'C' INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+--		VALUES (@study_id, 'C', 
+--			'Study has been created but it has not been verified.');
 			
 	IF @new_study_state = 'V' INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
 		VALUES (@study_id, 'V', 
@@ -327,7 +330,8 @@ BEGIN
 		BEGIN TRY
 			ROLLBACK TRANSACTION;		
 			BEGIN TRANSACTION;
-			INSERT INTO rif40.rif40_study_status(study_id, study_state, message) VALUES(@study_id, 'G', @msg);
+			INSERT INTO rif40.rif40_study_status(study_id, study_state, message, trace) 
+				VALUES(@study_id, 'G', 'Study extract failed and neither results nor maps have been created', @msg);
 -- ============================================================
 -- Always commit, even though this may fail because trigger failure have caused a rollback:
 -- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.

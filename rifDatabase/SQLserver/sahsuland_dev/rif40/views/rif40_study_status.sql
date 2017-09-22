@@ -14,7 +14,8 @@ SELECT c.username,
     c.study_state,
     c.creation_date,
 	c.ith_update,
-	c.message
+	c.message,
+	c.trace
    FROM [rif40].[t_rif40_study_status] c
      LEFT JOIN [rif40].[rif40_study_shares] s ON c.study_id = s.study_id AND s.grantee_username=SUSER_SNAME()
   WHERE c.username=SUSER_SNAME() OR 
@@ -42,6 +43,7 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Study state:
 C: created, not verified; 
 V: verified, but no other work done; 
 E: extracted imported or created, but no results or maps created; 
+G: Extract failure, extract, results or maps not created;
 R: initial results population, create map table; 
 S: R success;
 F: R failure, R has caught one or more exceptions [depends on the exception handler design]
@@ -57,7 +59,12 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Update number 
 	@level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',
 	@level1name=N'rif40_study_status', @level2type=N'COLUMN',@level2name=N'ith_update'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Status message; includes ezception where relevant', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Status message', 
 	@level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',
 	@level1name=N'rif40_study_status', @level2type=N'COLUMN',@level2name=N'message'
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Trace message; includes exception where relevant', 
+	@level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'VIEW',
+	@level1name=N'rif40_study_status', @level2type=N'COLUMN',@level2name=N'trace'
 GO

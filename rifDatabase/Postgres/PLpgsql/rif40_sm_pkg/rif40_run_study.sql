@@ -136,7 +136,8 @@ Recurse until complete
 		 ORDER BY 1 DESC, 3;		   
 	c4sm CURSOR FOR 
 		SELECT CURRENT_SETTING('rif40.debug_level') AS debug_level;		   
-	c1_rec RECORD;
+	c1_rec RECORD;	   
+	c1a_rec RECORD;
 	c1sm_rec RECORD;
 	c4sm_rec RECORD;
 --
@@ -170,6 +171,7 @@ BEGIN
 			'Study ID % not found',
 			study_id::VARCHAR);
 	END IF;
+	CLOSE c1_runst;
 --
 	IF c1_rec.study_state = 'C' THEN
 		 new_study_state = 'V';
@@ -178,7 +180,6 @@ BEGIN
 	ELSIF c1_rec.study_state = 'E' THEN
 		 new_study_state = 'R';
 	ELSE
-		CLOSE c1_runst;
 		PERFORM rif40_log_pkg.rif40_error(-55201, 'rif40_run_study', 
 			'Study ID % cannot be run, in state: %, needs to be in ''V'' or ''E''',
 			study_id::VARCHAR,
@@ -260,7 +261,6 @@ BEGIN
 			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_run_study',
 				'[55202] Call rif40_create_extract() for study % failed, see previous warnings',
 				c1_rec.study_id::VARCHAR);
-			CLOSE c1_runst;
 			RETURN FALSE;
 		ELSE
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_run_study',
@@ -275,16 +275,18 @@ BEGIN
 			PERFORM rif40_log_pkg.rif40_log('WARNING', 'rif40_run_study',
 				'[55204] Call rif40_compute_results() for study % failed, see previous warnings',
 				c1_rec.study_id::VARCHAR);
-			CLOSE c1_runst;
 			RETURN FALSE;
 		ELSE
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_run_study',
 				'[55205] Call rif40_compute_results() for study % OK',
 				c1_rec.study_id::VARCHAR);
 		END IF;
-	ELSIF c1_rec.study_state = 'C' THEN
-		INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
-		VALUES (c1_rec.study_id, 'C', 'Study has been created but it has not been verified.');	
+--	ELSIF c1_rec.study_state = 'C' THEN
+--
+-- Done by middleware
+--
+--		INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+--		VALUES (c1_rec.study_id, 'C', 'Study has been created but it has not been verified.');	
 	ELSIF new_study_state = 'V' THEN
 		INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
 		VALUES (c1_rec.study_id, 'V', 'Study has been verified.');
@@ -315,17 +317,28 @@ BEGIN
 --
 	UPDATE rif40_studies a SET study_state = new_study_state WHERE a.study_id = c1_rec.study_id;
 	GET DIAGNOSTICS study_count = ROW_COUNT;
+--
+-- Check study state
+--
+	OPEN c1_runst(study_id);
+	FETCH c1_runst INTO c1a_rec;
+	IF NOT FOUND THEN
+		CLOSE c1_runst;
+		PERFORM rif40_log_pkg.rif40_error(-55200, 'rif40_run_study', 
+			'Study ID % not found',
+			study_id::VARCHAR);
+	END IF;	
+	CLOSE c1_runst;
 	etp:=clock_timestamp();
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study',
 		'[55208] Recurse [%] Completed state transition (%=>%) for study % with % investigation(s); time taken %',
 		n_recursion_level::VARCHAR,
 		c1_rec.study_state::VARCHAR,
-		new_study_state::VARCHAR,
+		c1a_rec.study_state::VARCHAR,
 		c1_rec.study_id::VARCHAR,
 		investigation_count::VARCHAR,
 		age(etp, stp)::VARCHAR);
- 
-	CLOSE c1_runst;
+
 --
 -- Recurse until complete
 --
@@ -405,35 +418,46 @@ BEGIN
 	
 	ELSE
 		OPEN c1_runst(study_id);
-		FETCH c1_runst INTO c1_rec;
+		FETCH c1_runst INTO c1a_rec;
 		IF NOT FOUND THEN
 			CLOSE c1_runst;
 			PERFORM rif40_log_pkg.rif40_error(-55212, 'rif40_run_study', 
 				'Study ID % not found, study in unexpected and unknown state',
 				study_id::VARCHAR);
 		END IF;
+		CLOSE c1_runst;
 		PERFORM rif40_log_pkg.rif40_error(-55213, 'rif40_run_study', 
 			'Study % in unexpected state %',
-			c1_rec.study_id::VARCHAR,
-			c1_rec.study_state::VARCHAR);
+			c1a_rec.study_id::VARCHAR,
+			c1a_rec.study_state::VARCHAR);
 	END IF;
 --
--- All recursion unwound
+-- All recursion unwound, check study state
+--
+	OPEN c1_runst(study_id);
+	FETCH c1_runst INTO c1a_rec;
+	IF NOT FOUND THEN
+		CLOSE c1_runst;
+		PERFORM rif40_log_pkg.rif40_error(-55200, 'rif40_run_study', 
+			'Study ID % not found',
+			study_id::VARCHAR);
+	END IF;
+	CLOSE c1_runst;
 --
 	etp:=clock_timestamp();
 	IF recursion_level = 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_run_study',
-			'[55214] Recursion complete, state %, rif40_run_study study % with % investigation(s); time taken %',
-			c1_rec.study_state::VARCHAR,
-			c1_rec.study_id::VARCHAR,
+			'[55214] Recursion complete, new state %, rif40_run_study study % with % investigation(s); time taken %',
+			c1a_rec.study_state::VARCHAR,
+			c1a_rec.study_id::VARCHAR,
 			investigation_count::VARCHAR,
 			age(etp, stp)::VARCHAR);
 	ELSE
 		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_run_study',
-			'[55215] Recursion %, state %, rif40_run_study study % with % investigation(s); time taken %',
+			'[55215] Recursion %, new state %, rif40_run_study study % with % investigation(s); time taken %',
 			recursion_level::VARCHAR,
-			c1_rec.study_state::VARCHAR,
-			c1_rec.study_id::VARCHAR,
+			c1a_rec.study_state::VARCHAR,
+			c1a_rec.study_id::VARCHAR,
 			investigation_count::VARCHAR,
 			age(etp, stp)::VARCHAR);
 	END IF;

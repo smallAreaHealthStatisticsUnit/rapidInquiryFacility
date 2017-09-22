@@ -20,7 +20,8 @@ CREATE TABLE [rif40].[t_rif40_study_status](
 			CHECK (study_state IN ('C', 'V', 'E', 'G', 'R', 'R', 'S', 'F', 'W')),
 	[creation_date] DATETIME NOT NULL DEFAULT getdate(),
 	[ith_update] 	INTEGER NOT NULL,
-	[message] 		NVARCHAR(MAX)
+	[message] 		NVARCHAR(MAX),
+	[trace] 		NVARCHAR(MAX)
  CONSTRAINT [t_rif40_study_status_pk] PRIMARY KEY CLUSTERED 
 (
 	[study_id], [study_state]
@@ -63,9 +64,13 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Update number 
 	@level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',
 	@level1name=N't_rif40_study_status', @level2type=N'COLUMN',@level2name=N'ith_update'
 GO
-EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Status message; includes exception where relevant', 
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Status message', 
 	@level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',
 	@level1name=N't_rif40_study_status', @level2type=N'COLUMN',@level2name=N'message'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'Trace message; includes exception where relevant', 
+	@level0type=N'SCHEMA',@level0name=N'rif40', @level1type=N'TABLE',
+	@level1name=N't_rif40_study_status', @level2type=N'COLUMN',@level2name=N'trace'
 GO
 
 --indices

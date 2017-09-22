@@ -51,6 +51,9 @@
 --
 -- Peter Hambly, SAHSU
 --
+-- Working directory: c:/Users/Peter/Documents/GitHub/rapidInquiryFacility/rifDatabase/Postgres/psql_scripts
+-- psql -U rif40 -d sahsuland -w -e -P pager=off -f alter_scripts/v4_0_alter_9.sql
+--
 \set ECHO all
 \set ON_ERROR_STOP ON
 \timing
@@ -160,10 +163,11 @@ CREATE TABLE t_rif40_study_status (
 	username		VARCHAR(90) NOT NULL 	DEFAULT (current_user),
 	study_id 		INTEGER 				NOT NULL,
 	study_state 	VARCHAR(1) 	NOT NULL 	CONSTRAINT check_study_state
-			CHECK (study_state IN ('C', 'V', 'E', 'G', 'R', 'R', 'S', 'F', 'W')),
+			CHECK (study_state IN ('C', 'V', 'E', 'G', 'R', 'S', 'F', 'W')),
 	creation_date 	TIMESTAMP WITH TIME ZONE	NOT NULL 	DEFAULT (current_timestamp),
 	ith_update		SERIAL 		NOT NULL,
 	message 		Text,
+	trace 			Text,
 	CONSTRAINT t_rif40_study_status_pk PRIMARY KEY (study_id, study_state),
 	CONSTRAINT t_rif40_studystatus_study_id_fk FOREIGN KEY (study_id)
 			REFERENCES rif40.t_rif40_studies (study_id)
@@ -189,7 +193,8 @@ F: R failure, R has caught one or more exceptions [depends on the exception hand
 W: R warning.';
 COMMENT ON COLUMN t_rif40_study_status.creation_date IS 'Creation date';
 COMMENT ON COLUMN t_rif40_study_status.ith_update IS 'Update number (for ordering)';
-COMMENT ON COLUMN t_rif40_study_status.message IS 'Status message; includes exception where relevant';
+COMMENT ON COLUMN t_rif40_study_status.message IS 'Status message';
+COMMENT ON COLUMN t_rif40_study_status.trace IS 'Exceution trace; includes exception where relevant';
 
 --indices
 CREATE INDEX t_rif40_study_status_uname ON t_rif40_study_status(username);
@@ -200,7 +205,8 @@ CREATE OR REPLACE VIEW rif40_study_status AS
     c.study_state,
     c.creation_date,
     c.ith_update,
-    c.message
+    c.message,
+	c.trace
    FROM t_rif40_study_status c
      LEFT JOIN rif40_study_shares s ON c.study_id = s.study_id AND s.grantee_username::name = "current_user"()
   WHERE c.username::name = "current_user"() OR 'RIF_MANAGER'::text = (( SELECT user_role_privs.granted_role
@@ -222,7 +228,8 @@ F: R failure, R has caught one or more exceptions [depends on the exception hand
 W: R warning.';
 COMMENT ON COLUMN rif40_study_status.creation_date IS 'Creation date';
 COMMENT ON COLUMN rif40_study_status.ith_update IS 'Update number (for ordering)';
-COMMENT ON COLUMN rif40_study_status.message IS 'Status message; includes exception where relevant'; 
+COMMENT ON COLUMN rif40_study_status.message IS 'Status message';
+COMMENT ON COLUMN rif40_study_status.trace IS 'Exceution trace; includes exception where relevant'; 
 
 -- Grants
 GRANT SELECT, UPDATE, INSERT, DELETE ON TABLE rif40_study_status TO rif_user;
