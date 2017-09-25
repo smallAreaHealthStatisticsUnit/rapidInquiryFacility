@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
+import rifGenericLibrary.util.RIFLogger;
 
 /**
  * This class advertises API methods found in 
@@ -104,6 +105,7 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
 	// ==========================================
 	// Section Properties
@@ -146,6 +148,10 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 			result = rifResultTableJSONGenerator.writeResultTable(resultTable);			
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getCurrentStatusAllStudies method failed: ", 
+				exception);			
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -318,6 +324,10 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 				= serialiseNamedArray("years", yearsAsStrings);
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getYearsForStudy method failed: ", 
+				exception);			
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -373,6 +383,10 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 					sexesProxy);
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getSexesForStudy method failed: ", 
+				exception);	
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -425,6 +439,10 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 			
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getSmoothedResults method failed: ", 
+				exception);	
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -463,6 +481,10 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 			result = rifResultTableJSONGenerator.writeResultTable(resultTable);				
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getAllPopulationPyramidData method failed: ", 
+				exception);	
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -523,6 +545,10 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 					results);
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getTileMakerTiles method failed: ", 
+				exception);	
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -561,6 +587,10 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 					results);
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getDetailsForProcessedStudy method failed: ", 
+				exception);	
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
@@ -603,6 +633,10 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 					rifResultTable);	
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getStudyTableForProcessedStudy method failed: ", 
+				exception);	
 			//Convert exceptions to support JSON
 			result 
 			= serialiseException(
@@ -641,6 +675,10 @@ public class MSSQLRIFStudyResultRetrievalWebServiceResource
 					results);
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getHealthCodesForProcessedStudy method failed: ", 
+				exception);	
 			//Convert exceptions to support JSON
 			result 
 				= serialiseException(
