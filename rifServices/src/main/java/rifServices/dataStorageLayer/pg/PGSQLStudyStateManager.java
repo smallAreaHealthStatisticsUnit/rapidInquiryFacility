@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import java.lang.Integer;
+import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  *
@@ -463,21 +464,23 @@ final class PGSQLStudyStateManager
 		
 		RIFResultTable rifResultTable = new RIFResultTable();
 		
-		String[] columnNames = new String[6];
+		String[] columnNames = new String[7];
 		columnNames[0] = "study_id";
 		columnNames[1] = "study_name";		
 		columnNames[2] = "study_description";
 		columnNames[3] = "study_state";
 		columnNames[4] = "date";
 		columnNames[5] = "message";
+		columnNames[6] = "trace";
 		
-		RIFResultTable.ColumnDataType[] columnDataTypes = new RIFResultTable.ColumnDataType[6];
+		RIFResultTable.ColumnDataType[] columnDataTypes = new RIFResultTable.ColumnDataType[7];
 		columnDataTypes[0] = RIFResultTable.ColumnDataType.TEXT;
 		columnDataTypes[1] = RIFResultTable.ColumnDataType.TEXT;
 		columnDataTypes[2] = RIFResultTable.ColumnDataType.TEXT;
 		columnDataTypes[3] = RIFResultTable.ColumnDataType.TEXT;		
 		columnDataTypes[4] = RIFResultTable.ColumnDataType.TEXT;
-		columnDataTypes[5] = RIFResultTable.ColumnDataType.TEXT;		
+		columnDataTypes[5] = RIFResultTable.ColumnDataType.TEXT;
+		columnDataTypes[6] = RIFResultTable.ColumnDataType.TEXT;		
 
 		rifResultTable.setColumnProperties(columnNames, columnDataTypes);
 		
@@ -492,9 +495,10 @@ final class PGSQLStudyStateManager
 		queryFormatter.addQueryLine(1, "(SELECT ");		
 		queryFormatter.addQueryLine(2, "study_id,");
 		queryFormatter.addQueryLine(2, "study_state,");
-		queryFormatter.addQueryLine(2, "creation_date,");
+		queryFormatter.addQueryLine(2, "TO_CHAR(creation_date, \"DD MON YYYY HH24:MI:SS\") AS creation_date,");
 		queryFormatter.addQueryLine(2, "row_number() OVER(PARTITION BY study_id ORDER BY ith_update DESC) AS update_number,");
-		queryFormatter.addQueryLine(2, "message");
+		queryFormatter.addQueryLine(1, "message,");		
+		queryFormatter.addQueryLine(1, "trace");
 		queryFormatter.addQueryLine(1, "FROM ");
 		queryFormatter.addQueryLine(2, statusTableName);
 		queryFormatter.addQueryLine(1, "ORDER BY ");
@@ -503,8 +507,9 @@ final class PGSQLStudyStateManager
 		queryFormatter.addQueryLine(1, "(SELECT ");
 		queryFormatter.addQueryLine(2, "study_id,");
 		queryFormatter.addQueryLine(2, "study_state,");
-		queryFormatter.addQueryLine(2, "creation_date,");
-		queryFormatter.addQueryLine(2, "message ");
+		queryFormatter.addQueryLine(2, "creation_date,");		
+		queryFormatter.addQueryLine(1, "message,");		
+		queryFormatter.addQueryLine(1, "trace");
 		queryFormatter.addQueryLine(1, "FROM ");
 		queryFormatter.addQueryLine(2, "ordered_updates ");
 		queryFormatter.addQueryLine(1, "WHERE ");
@@ -515,7 +520,8 @@ final class PGSQLStudyStateManager
 		queryFormatter.addQueryLine(1, rifStudiesTableName + ".description,");
 		queryFormatter.addQueryLine(1, "most_recent_updates.study_state,");
 		queryFormatter.addQueryLine(1, "creation_date,");		
-		queryFormatter.addQueryLine(1, "message");
+		queryFormatter.addQueryLine(1, "message,");		
+		queryFormatter.addQueryLine(1, "trace");
 		queryFormatter.addQueryLine(0, "FROM ");
 		queryFormatter.addQueryLine(1, rifStudiesTableName + ",");
 		queryFormatter.addQueryLine(1, "most_recent_updates");
@@ -555,22 +561,29 @@ final class PGSQLStudyStateManager
 			queryFormatter.addQueryLine(1, rifStudiesTableName + ".description,");
 			queryFormatter.addQueryLine(1, "most_recent_updates.study_state,");
 			queryFormatter.addQueryLine(1, "creation_date,");		
-			queryFormatter.addQueryLine(1, "message");			
+			queryFormatter.addQueryLine(1, "message,");		
+			queryFormatter.addQueryLine(1, "trace");			
 			
 			int ithRecord = 0;
-			String[][] data = new String[expectedNumberOfStatusUpdates][6];
+			String[][] data = new String[expectedNumberOfStatusUpdates][7];
 			while (resultSet.next() ) {		
 				data[ithRecord][0] = resultSet.getString(1); //study ID
 				data[ithRecord][1] = resultSet.getString(2); //study name
 				data[ithRecord][2] = resultSet.getString(3); //description
 				data[ithRecord][3] = resultSet.getString(4); //study state
 
-				java.util.Date time 
-					= new java.util.Date(resultSet.getDate(5).getTime()); 
-				data[ithRecord][4] 
-					= RIFGenericLibraryMessages.getTimePhrase(time);
+//				java.util.Date time 
+//					= new java.util.Date(resultSet.getDate(5).getTime()); 
+//				data[ithRecord][4] 
+//					= RIFGenericLibraryMessages.getTimePhrase(time);
+				data[ithRecord][4] = resultSet.getString(5); //creation_date formatted as DD MON YYYY HH24:MI:SS
 			
 				data[ithRecord][5] = resultSet.getString(6); //message
+				data[ithRecord][6] = StringEscapeUtils.escapeJavaScript(resultSet.getString(7)); //trace
+				if (data[ithRecord][6] == null || data[ithRecord][6].equals("null")) {
+					data[ithRecord][6]="";
+				}
+					
 				ithRecord++;
 			}
 			
