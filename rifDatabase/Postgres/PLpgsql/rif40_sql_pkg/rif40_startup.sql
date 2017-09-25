@@ -1095,24 +1095,6 @@ E'\n'||
 		i:=i+1;
 	END IF;
 --
--- f) Study status table required by Java middleware
---
-	sql_stmt:='CREATE TABLE IF NOT EXISTS study_status ('||E'\n'||
-'  study_id 			integer NOT NULL,'||E'\n'||
-'  study_state 		character varying NOT NULL,'||E'\n'||
-'  creation_date 	timestamp without time zone NOT NULL,'||E'\n'||
-'  ith_update 		serial NOT NULL,'||E'\n'||
-'  message 			character varying(255))';
-	PERFORM rif40_sql_pkg.rif40_ddl(sql_stmt);
-	PERFORM rif40_sql_pkg.rif40_ddl(
-		'COMMENT ON TABLE study_status IS ''Temporary study status table required by middleware. Will be replaced''');
-	PERFORM rif40_sql_pkg.rif40_ddl('COMMENT ON SEQUENCE study_status_ith_update_seq IS ''ith_update sequence''');
-	PERFORM rif40_sql_pkg.rif40_ddl('COMMENT ON COLUMN study_status.study_id IS ''study_id''');
-	PERFORM rif40_sql_pkg.rif40_ddl('COMMENT ON COLUMN study_status.study_state IS ''study_state''');
-	PERFORM rif40_sql_pkg.rif40_ddl('COMMENT ON COLUMN study_status.creation_date IS ''creation_date''');
-	PERFORM rif40_sql_pkg.rif40_ddl('COMMENT ON COLUMN study_status.ith_update IS ''ith_update''');
-	PERFORM rif40_sql_pkg.rif40_ddl('COMMENT ON COLUMN study_status.message IS ''message''');
---
 	IF i > 0 OR j > 0 THEN
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_startup', 'Deleted %, created % tables/views/foreign data wrapper tables', 
 			j::VARCHAR, i::VARCHAR);

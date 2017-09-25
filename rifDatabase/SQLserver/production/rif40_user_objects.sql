@@ -76,22 +76,6 @@ SELECT * FROM sys.schemas WHERE name = N'$(NEWUSER)';
 GO
 
 --
--- To be replaced by rif40.rif40_study_status table/view pair
---
-IF NOT EXISTS (SELECT *
-           FROM   sys.objects
-           WHERE  object_id = OBJECT_ID(N'[$(NEWUSER)].[study_status]')
-                  AND type IN ( N'U' ))
-	CREATE TABLE [$(NEWUSER)].[study_status] (
-		  study_id 		INTEGER NOT NULL,
-		  study_state 	VARCHAR(1) NOT NULL,
-		  creation_date DATETIME NOT NULL DEFAULT getdate(),
-		  ith_update 	INTEGER NOT NULL,
-		  message 		VARCHAR(255)
-	);
-GO 
-
---
 -- Save sequence in current valid sequences object for later use by
 -- CURRVAL function: [rif40].[rif40_sequence_current_value]()
 --
