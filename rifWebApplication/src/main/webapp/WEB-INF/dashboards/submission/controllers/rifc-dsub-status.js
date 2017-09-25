@@ -43,13 +43,42 @@ angular.module("RIF")
                 //1) Allow user to click on row do do something, e.g. transfer to data viewer
                 //2) Sort out study state reporting - this is being sorted out in the middleware
                 //3) A button to delete study (?? backend method may exist, middleware method may not)
-
+				
                 $scope.statusTableOptions = {
                     enableFiltering: true,
                     enableColumnResizing: true,
-                    enableRowHeaderSelection: false,
-                    enableHorizontalScrollbar: 0,
-                    rowHeight: 25,
+//                    enableRowHeaderSelection: false,
+					enableHiding: false,
+					enableCellEdit: false,
+                    enableHorizontalScrollbar: 0,  
+					enableFullRowSelection: true,
+//					enableRowSelection: true, 
+//					enableSelectAll: false,
+//					multiSelect: false,  
+					enableGridMenu: false,
+                    rowHeight: 25,				
+					appScopeProvider: { 
+						onClickTrace: function(row) {//For trace only
+							if (row.trace) {
+								var modalInstance=$uibModal.open({
+									animation: true,
+									templateUrl: 'dashboards/submission/partials/rifp-dsub-trace.html',
+									controller: 'ModalTraceInstanceCtrl',
+									windowClass: 'trace-Modal',
+									keyboard: false,
+									resolve: {
+									   getTrace: function() {
+										   return row.trace
+									   }
+									}
+								});
+//								alert(row.trace);
+							}
+						}/*,				 
+						onDblClickRow: function(row) {//To navigate to study
+							alert('Row: ' + JSON.stringify(row, null, 2));
+						} */
+					},
                     rowTemplate: rowTemplate(),
                     columnDefs: [
                         {
@@ -61,8 +90,10 @@ angular.module("RIF")
                         },
                         {name: 'study_name', enableHiding: false, width: 150},
                         {name: 'message', enableHiding: false, width: "*"},
-                        {name: 'date', enableHiding: false, width: 150},
-                        {name: 'study_state', enableHiding: false, width: 100}
+						{name: 'date', enableHiding: false, width: 150},
+                        {name: 'study_state', enableHiding: false, width: 100},
+                        {name: 'trace', enableHiding: false, width: 46, enableFiltering: false,
+							cellTemplate: '<div><button ng-if="row.entity.trace" ng-click="grid.appScope.onClickTrace(row.entity)">View</button></div>'}
                     ],
                     onRegisterApi: function (gridApi) {
                         $scope.gridApi = gridApi;
@@ -80,7 +111,8 @@ angular.module("RIF")
 					W: R warning. [NOT USED BY MIDDLEWARE]
 				 */
                 function rowTemplate() {
-                    return  '<div id="testdiv" tabindex="0">' +
+                    return  '<div id="testdiv" tabindex="0"' +
+//							' ng-dblclick="grid.appScope.onDblClickRow(row)>' +
                             '<div style="height: 100%" ng-class="{ ' +
                             "statusC: row.entity.study_state==='C'," + //C: created, not verfied
                             "statusV: row.entity.study_state==='V'," + //V: verified, but no other work done;
@@ -90,7 +122,7 @@ angular.module("RIF")
                             "statusS: row.entity.study_state==='S'," + //S: R success
                             "statusF: row.entity.study_state==='F'," + //F: R failure, R has caught one or more exceptions
                             "statusW: row.entity.study_state==='W'," + //W: R warning
-                            "statusU: study_state==='U'," + //U: upgraded record from V3.1 RIF (has an indeterminate state; probably R.
+                            "statusU: row.entity.study_state==='U'," + //U: upgraded record from V3.1 RIF (has an indeterminate state; probably R.
                             '}">' +
                             '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ui-grid-cell></div>' +
                             '</div>';
@@ -123,5 +155,5 @@ angular.module("RIF")
             };
             $scope.submit = function () {
                 $uibModalInstance.close();
-            };
+            }; 
         });

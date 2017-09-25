@@ -503,6 +503,15 @@
     margin: auto;
 }
 
+.trace-Modal .modal-dialog{
+    width: 900px;
+    height: 500px;
+    position: absolute;
+    top:0; bottom: 0; left: 0; right: 0;
+    margin: auto;
+    overflow-y: auto;
+}
+
 .status-Modal .modal-dialog{
     width:1000px;
     height: 700px;
