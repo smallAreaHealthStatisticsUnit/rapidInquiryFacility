@@ -1588,16 +1588,9 @@ Todo:
   common log4j2 setup
 * Meetings (Hima, DM, FP)
 * R exception handling and errors
-* Study state machine and transactional control: obsolete study_status, move to rif40_study_status; trace 
-  error support
-
-September:
-
-* Dump adjacency matrix in R to CSV
-* Fix results reporting from run study and R code. Possibly add support for ri40_study_status
-* US geography and centroids fixes
-* Add area name to results map table
-* Fix inability to detect errors correctly in run study, R, CVS extract and report to user. SQL Server 
+* Study state machine and transactional control: obsolete study_status, move to rif40_study_status, trace 
+  error support. State machine now handles errors correctly
+* Fixed inability to detect errors correctly in run study, R, CVS extract (TODO: report to user). SQL Server 
   does detect but does not trap the error correctly, i..e the **tomcat** log has
   ```
 15-Sep-2017 10:55:04.188 SEVERE [https-jsse-nio-8080-exec-7] com.sun.jersey.spi.container.ContainerResponse.mapMappableContainerExce
@@ -1617,6 +1610,13 @@ ption The exception contained within MappableContainerException could not be map
 Resource.java:1178)
         at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)  
   ```
+  
+September:
+
+* Dump adjacency matrix in R to CSV
+* Fix results reporting from run study and R code. Possibly add support for ri40_study_status
+* US geography and centroids fixes
+* Add area name to results map table
 * Add rif40_dmp_pkg.csv_dump to SQL server port (and fix the Postgres one!):
 
 ```
@@ -1638,6 +1638,13 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.executeQuery(SQLServerPreparedStatement.java:317)
 	at rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager.dumpDatabaseTableToCSVFile(MSSQLStudyExtractManager.java:537)
 ```
+
+#### 25th to 29th September
+
+* Remove old study_status table creates
+* Add trace to getCurrentStatusAllStudies method (safely formatted), fixed creation date to add time
+* Added error logging to all GET methods with exception handlers (others are super classes)
+* Added trace to study status; checked can maintain Angular code. Now have basic understanding of what it is doing.
   
 #### Database TODO list (deferred to September 2017): SQL Server Port
 
