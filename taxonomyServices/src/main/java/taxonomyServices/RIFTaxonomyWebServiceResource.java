@@ -12,6 +12,7 @@ import javax.servlet.ServletContext;
 
 import java.util.ArrayList;
 
+import rifGenericLibrary.util.RIFLogger;
 
 /*
  * Code Road Map:
@@ -41,6 +42,7 @@ public class RIFTaxonomyWebServiceResource {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
 	// ==========================================
 	// Section Properties
@@ -82,7 +84,11 @@ public class RIFTaxonomyWebServiceResource {
 			webServiceResponseUtility.serialiseStringResult(String.valueOf(true));
 			result = String.valueOf(true);
 		}
-		catch(Exception exception) {
+		catch(Exception exception) {	
+			rifLogger.error(
+				this.getClass(), 
+				"GET /initialiseService method failed: ", 
+				exception);
 			result 
 				= webServiceResponseUtility.serialiseException(
 					servletRequest, 
@@ -128,6 +134,10 @@ public class RIFTaxonomyWebServiceResource {
 					serviceProviderProxies);
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getTaxonomyServiceProviders method failed: ", 
+				exception);
 			result 
 				= webServiceResponseUtility.serialiseException(
 					servletRequest, 
@@ -161,6 +171,10 @@ public class RIFTaxonomyWebServiceResource {
 					rootTerms);
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getRootTerms method failed: ", 
+				exception);
 			result
 				= webServiceResponseUtility.serialiseException(
 					servletRequest, 
@@ -200,6 +214,10 @@ public class RIFTaxonomyWebServiceResource {
 
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getMatchingTerms method failed: ", 
+				exception);
 			result
 				= webServiceResponseUtility.serialiseException(
 					servletRequest, 
@@ -236,6 +254,10 @@ public class RIFTaxonomyWebServiceResource {
 					childTerms);
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getImmediateChildTerms method failed: ", 
+				exception);
 			result = 
 				webServiceResponseUtility.serialiseException(
 					servletRequest, 
@@ -270,6 +292,10 @@ public class RIFTaxonomyWebServiceResource {
 						parentTerm);
 		}
 		catch(Exception exception) {
+			rifLogger.error(
+				this.getClass(), 
+				"GET /getParentTerm method failed: ", 
+				exception);
 			result
 				= webServiceResponseUtility.serialiseException(
 					servletRequest, 
