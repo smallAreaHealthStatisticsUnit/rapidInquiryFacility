@@ -224,6 +224,21 @@
     height: 700px;
 }
 
+/* This is for the Status Window which is having problems on laptops (the top is off the screen)
+   Positioning is still wrong! Margins make a mess!   */
+.msettingsNotSoLarge {
+/*    position: relative;
+    top: 50px; */
+    padding-bottom: 2px;
+    display: block;
+    background: #FFF;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    width: 1000px;
+    height: 600px;
+}
+
 .msettingsStats {
     padding-bottom: 2px;
     display: block;

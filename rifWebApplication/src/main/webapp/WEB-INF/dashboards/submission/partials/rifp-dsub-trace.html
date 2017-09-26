@@ -37,14 +37,16 @@
 HTML partial for ui-router
 Disease submission modal to show study trace
 -->
-<div class="msettingsLarge" ng-controller="ModalTraceCtrl">
+<div class="msettingsWide" ng-controller="ModalTraceCtrl">
     <div class="msettings-ct">
         <div class="msettings-header">
-            <h2>Trace</h2>
-            <a class="modal_close" ng-click="close()"></a>
+            <h2>Diagnostic Trace</h2>
+            <a class="modal_close" ng-click="traceClose()"></a>
         </div>       
         <div class='modalContainer saveModalDialog'>
-           <pre ng-bind="studyTrace"></pre>           
+		   <div id='traceContents'>
+              <pre ng-bind="studyTrace"></pre>           
+           </div>          
         </div>
     </div>
 </div>
