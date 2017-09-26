@@ -37,18 +37,24 @@
 
 angular.module("RIF")
 	.controller('ModalTraceCtrl', ['$scope', 
-		function ($scope) {	
+		function ($scope) {					
+ /*           $scope.close = function () {
+                $modalInstance.dismiss();
+            };
+            $scope.submit = function () {
+                $modalInstance.close();
+            }; */
 		}])
 		
 	.controller('ModalTraceInstanceCtrl', ['$scope', '$uibModalInstance', 'getTrace',
 		function ($scope, $uibModalInstance, getTrace) {
 
 			$scope.studyTrace=getTrace;
-				
+/*				
             $scope.close = function () {
                 $uibModalInstance.dismiss();
             };
             $scope.submit = function () {
                 $uibModalInstance.close();
-            }; 
+            }; */
         }]);

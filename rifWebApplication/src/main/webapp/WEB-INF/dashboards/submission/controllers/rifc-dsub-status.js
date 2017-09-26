@@ -60,7 +60,7 @@ angular.module("RIF")
 					appScopeProvider: { 
 						onClickTrace: function(row) {//For trace only
 							if (row.trace) {
-								var modalInstance=$uibModal.open({
+								$scope.traceModalInstance=$uibModal.open({
 									animation: true,
 									templateUrl: 'dashboards/submission/partials/rifp-dsub-trace.html',
 									controller: 'ModalTraceInstanceCtrl',
@@ -68,10 +68,15 @@ angular.module("RIF")
 									keyboard: false,
 									resolve: {
 									   getTrace: function() {
-										   return row.trace
+										   return row.trace;
 									   }
 									}
 								});
+								$scope.traceClose = function () {
+									console.log("traceClose");
+								   $scope.traceModalInstance.close();
+								};
+								
 //								alert(row.trace);
 							}
 						}/*,				 

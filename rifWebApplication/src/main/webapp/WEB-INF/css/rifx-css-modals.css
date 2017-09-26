@@ -202,6 +202,17 @@
     height: 400px;
 }
 
+.msettingsWide {
+    padding-bottom: 2px;
+    display: block;
+    background: #FFF;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    width: 1000px;
+    height: 400px;
+}
+
 .msettingsLarge {
     padding-bottom: 2px;
     display: block;
@@ -504,12 +515,22 @@
 }
 
 .trace-Modal .modal-dialog{
-    width: 900px;
-    height: 500px;
+    width: 950px;
+    height: 400px;
     position: absolute;
     top:0; bottom: 0; left: 0; right: 0;
     margin: auto;
-    overflow-y: auto;
+    overflow: none;
+}
+
+#traceContents  {
+/*    width: 960px; 900px OK */
+    width: 950px;
+    height: 300px;
+    position: absolute;
+    top:80px; bottom: 0; left: 20px; right: 0;
+    margin: auto;
+    overflow: scroll;
 }
 
 .status-Modal .modal-dialog{
