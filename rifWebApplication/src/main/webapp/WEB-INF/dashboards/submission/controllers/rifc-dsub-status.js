@@ -89,27 +89,19 @@ angular.module("RIF")
                 };
 
 				function openTrace(row) {
-					$scope.$traceModalInstance=$uibModal.open({
+					$scope.traceModalInstance=$uibModal.open({
 						animation: true,
 						templateUrl: 'dashboards/submission/partials/rifp-dsub-trace.html',
 						controller: 'ModalTraceInstanceCtrl',
 						windowClass: 'trace-Modal',
 						keyboard: false,
 						resolve: {
-						   getTrace: function() {
+							getTrace: function() {
 								return row.trace;
-						   }
+							}
 						},
 					    scope: $scope 
-					});		
-					$scope.traceClose = function() {
-						$scope.$traceModalInstance.close();
-					};			
-				}
-
-				function closeTrace(reason) {
-					console.log("closeTrace(): " + reason);
-					return true;
+					});				
 				}
 				
 				 /*

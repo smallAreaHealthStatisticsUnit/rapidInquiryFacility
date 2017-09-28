@@ -40,8 +40,8 @@ angular.module("RIF")
 		function ($scope, $uibModal) {			
 			
             $scope.traceClose = function () {
-				console.log("traceClose A");
-//				$uibModal.close();
+//				console.log("traceClose A");
+				this.closeTrace();
             };
 		}])
 		
@@ -51,4 +51,8 @@ angular.module("RIF")
 			console.log("getTrace");
 			$scope.studyTrace=getTrace;
 			
+			$scope.closeTrace = function () {
+//				console.log("closeTrace B");
+				$uibModalInstance.close();
+			}
         }]);
