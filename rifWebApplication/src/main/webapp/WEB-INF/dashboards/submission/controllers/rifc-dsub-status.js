@@ -43,7 +43,7 @@ angular.module("RIF")
                 //1) Allow user to click on row do do something, e.g. transfer to data viewer
                 //2) Sort out study state reporting - this is being sorted out in the middleware
                 //3) A button to delete study (?? backend method may exist, middleware method may not)
-				
+								
                 $scope.statusTableOptions = {
                     enableFiltering: true,
                     enableColumnResizing: true,
@@ -60,24 +60,7 @@ angular.module("RIF")
 					appScopeProvider: { 
 						onClickTrace: function(row) {//For trace only
 							if (row.trace) {
-								$scope.traceModalInstance=$uibModal.open({
-									animation: true,
-									templateUrl: 'dashboards/submission/partials/rifp-dsub-trace.html',
-									controller: 'ModalTraceInstanceCtrl',
-									windowClass: 'trace-Modal',
-									keyboard: false,
-									resolve: {
-									   getTrace: function() {
-										   return row.trace;
-									   }
-									}
-								});
-								$scope.traceClose = function () {
-									console.log("traceClose");
-								   $scope.traceModalInstance.close();
-								};
-								
-//								alert(row.trace);
+								openTrace(row);	
 							}
 						}/*,				 
 						onDblClickRow: function(row) {//To navigate to study
@@ -105,6 +88,30 @@ angular.module("RIF")
                     }
                 };
 
+				function openTrace(row) {
+					$scope.$traceModalInstance=$uibModal.open({
+						animation: true,
+						templateUrl: 'dashboards/submission/partials/rifp-dsub-trace.html',
+						controller: 'ModalTraceInstanceCtrl',
+						windowClass: 'trace-Modal',
+						keyboard: false,
+						resolve: {
+						   getTrace: function() {
+								return row.trace;
+						   }
+						},
+					    scope: $scope 
+					});		
+					$scope.traceClose = function() {
+						$scope.$traceModalInstance.close();
+					};			
+				}
+
+				function closeTrace(reason) {
+					console.log("closeTrace(): " + reason);
+					return true;
+				}
+				
 				 /*
 					C: created, not verified; 
 					V: verified, but no other work done; [NOT USED BY MIDDLEWARE]
@@ -153,6 +160,7 @@ angular.module("RIF")
                         keyboard: false
                     });
                 };
+						
             }])
         .controller('ModalStatusInstanceCtrl', function ($scope, $uibModalInstance) {
             $scope.close = function () {

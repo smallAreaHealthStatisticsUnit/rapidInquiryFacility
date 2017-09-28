@@ -535,17 +535,21 @@
     position: absolute;
     top:0; bottom: 0; left: 0; right: 0;
     margin: auto;
-    overflow: none;
+    overflow: none !important;
 }
 
+#traceContents  pre {
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
 #traceContents  {
 /*    width: 960px; 900px OK */
-    width: 950px;
+    width: 930px;
     height: 300px;
     position: absolute;
     top:80px; bottom: 0; left: 20px; right: 0;
     margin: auto;
-    overflow: scroll;
+    overflow: auto;
 }
 
 .status-Modal .modal-dialog{
