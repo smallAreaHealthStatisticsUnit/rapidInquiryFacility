@@ -8,6 +8,8 @@ import javax.ws.rs.core.Application;
 import java.util.Set;
 import java.util.HashSet;
 
+import rifGenericLibrary.util.RIFLogger;
+
 /**
  *
  * <hr>
@@ -87,6 +89,8 @@ public class PGSQLRIFStudySubmissionWebServiceApplication extends Application {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	private static RIFLogger rifLogger;
+	private static String lineSeparator = System.getProperty("line.separator");
 
 	// ==========================================
 	// Section Properties
@@ -97,7 +101,8 @@ public class PGSQLRIFStudySubmissionWebServiceApplication extends Application {
 	// ==========================================
 
 	public PGSQLRIFStudySubmissionWebServiceApplication() {
-		
+		rifLogger = RIFLogger.getLogger();
+		rifLogger.info(this.getClass(), "!!!!!!!!!!!!!!!!!!!!! PGSQLRIFStudySubmissionWebServiceApplication !!!!!!");
 	}
 
 	// ==========================================
