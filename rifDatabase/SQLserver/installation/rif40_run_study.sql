@@ -291,14 +291,13 @@ BEGIN
 	DECLARE @msg VARCHAR(MAX);
 --
 	BEGIN TRY
-		INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'C', 0, 
+		INSERT INTO rif40.rif40_study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'C', 0, 
 			'Study has been created but it has not been verified.');	
 		 EXECUTE @rval2=rif40.rif40_run_study
 				@study_id 	/* Study_id */, 
 				1 			/* Debug: 0/1 */,
 				@rval		/* Result */;	
-		INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'E', 1, 
-			'Study extracted imported or created but neither results nor maps have been created.');			
+				
 --
 	END TRY
 	BEGIN CATCH 
@@ -313,9 +312,6 @@ BEGIN
 		PRINT @msg; 
 		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';		
 	END CATCH;
-	INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'R', 2, 
-		'Study results have been computed and they are now ready to be used.');
-	SELECT * FROM study_status WHERE study_id = @study_id ORDER BY ith_update;
 	SELECT * FROM rif40.rif40_study_status WHERE study_id = @study_id ORDER BY ith_update;
 	SELECT statement_number, log_message, log_sqlcode, elapsed_time FROM rif40.rif40_study_sql_log 
 	 WHERE study_id = @study_id AND log_sqlcode != 0 ORDER BY statement_number;

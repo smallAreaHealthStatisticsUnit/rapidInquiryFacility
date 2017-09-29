@@ -5,6 +5,7 @@ import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
 
 import java.sql.*;
@@ -81,6 +82,7 @@ final class PGSQLGenerateResultsSubmissionStep
 	// ==========================================
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");	
 	
 	// ==========================================
 	// Section Properties
@@ -121,9 +123,11 @@ final class PGSQLGenerateResultsSubmissionStep
 		String result = null;
 		PreparedStatement runStudyStatement = null;
 		PreparedStatement computeResultsStatement = null;
+		PGSQLQueryUtility query=new PGSQLQueryUtility();
 		ResultSet runStudyResultSet = null;
 		ResultSet computeResultSet = null;
 		Boolean resultBoolean = false;
+		String traceMessage = null;
 		
 		try {
 			
@@ -153,10 +157,23 @@ final class PGSQLGenerateResultsSubmissionStep
 			result = String.valueOf(runStudyResultSet.getBoolean(1));
 			resultBoolean=runStudyResultSet.getBoolean(1);
 			
+			query.printWarnings(runStudyStatement); // Print output from PL/PGSQL
+			
 			PGSQLQueryUtility.commit(connection); 
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
+			
+			if (result == null) {
+				result="NULL [EXCEPTION THROWN BY DB]";
+			}
+			
+			traceMessage=query.printWarnings(runStudyStatement); // Print output from PL/PGSQL
+			if (traceMessage == null) {
+				traceMessage="No trace from PL/PGSQL Statement.";
+			}	
+			traceMessage = sqlException.getMessage() + lineSeparator + traceMessage; 
+			
 			logSQLException(sqlException);
 		
 			PGSQLQueryUtility.commit(connection); 
@@ -164,7 +181,7 @@ final class PGSQLGenerateResultsSubmissionStep
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToRunStudy",
 					studyID);
-
+/* DO NOT RETHROW!
 			rifLogger.error(
 				PGSQLGenerateResultsSubmissionStep.class, 
 				errorMessage, 
@@ -175,10 +192,9 @@ final class PGSQLGenerateResultsSubmissionStep
 					RIFServiceError.DATABASE_QUERY_FAILED, 
 					sqlException.getMessage());
 			throw rifServiceException;
+ */
 		}
 		finally {
-			PGSQLQueryUtility query=new PGSQLQueryUtility();
-			query.printWarnings(runStudyStatement); // Print output from PGSQL	
 			
 			//Cleanup database resources			
 			PGSQLQueryUtility.close(runStudyStatement);
@@ -200,11 +216,15 @@ final class PGSQLGenerateResultsSubmissionStep
 			else {
 				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID + " failed with code: " + result + 
 					" XXXXXXXXXXXXXXXXXXXXXX");
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.DATABASE_QUERY_FAILED,
-						"Study " + studyID + " failed with code: " + result);
-				throw rifServiceException;
+
+				if (traceMessage == null) {
+					traceMessage="No trace from PL/PGSQL Statement.";
+				}			
+				RIFServiceExceptionFactory rifServiceExceptionFactory
+					= new RIFServiceExceptionFactory();
+				RIFServiceException rifServiceException = 
+					rifServiceExceptionFactory.createExtractException(traceMessage);
+				throw rifServiceException;	
 			}
 	
 			return result;

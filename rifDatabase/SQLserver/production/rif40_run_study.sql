@@ -220,7 +220,6 @@ SELECT * /* 3 */ FROM rif40.rif40_inv_conditions WHERE study_id = [rif40].[rif40
 GO
 DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
 DECLARE @inv_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_inv_id_seq');
-
 --
 -- Test sequence numbers
 --
@@ -235,15 +234,13 @@ DECLARE @rif40_investigations VARCHAR(MAX) = (
 		SELECT * /* 2 */
 		  FROM rif40.rif40_investigations WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq')
 		   FOR XML PATH('row'));
-SET @rif40_investigations = 'Investigations for study: ' + 
-	CAST(@study_id AS VARCHAR) + CHAR(10) + 
+SET @rif40_investigations = 'Investigations for study: ' + CAST(@study_id AS VARCHAR) + CHAR(10) + 
 	REPLACE(REPLACE(@rif40_investigations, '><', '>'+CHAR(10)+'  <'), '  </row>', '</row>');
 DECLARE @rif40_studies VARCHAR(MAX) = (
 		SELECT * /* 1 */
 		  FROM rif40.rif40_studies WHERE study_id = [rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq')
 		   FOR XML PATH('row'));
-SET @rif40_studies = 'Study: ' + CAST(@study_id AS VARCHAR) + 
-	CHAR(10) + REPLACE(REPLACE(@rif40_studies, '><', '>'+CHAR(10)+'  <'), '  </row>', '</row>');
+SET @rif40_studies = 'Study: ' + CAST(@study_id AS VARCHAR) + CHAR(10) + REPLACE(REPLACE(@rif40_studies, '><', '>'+CHAR(10)+'  <'), '  </row>', '</row>');
 --
 PRINT @rif40_investigations;
 PRINT @rif40_studies;
@@ -289,19 +286,18 @@ BEGIN
 -- @study_id needs to be restored via a variable to be safe
 	DECLARE @study_id INT=[rif40].[rif40_sequence_current_value] ('rif40.rif40_study_id_seq');
 	BEGIN TRANSACTION;
-	DECLARE @rval INT=-3;
-	DECLARE @rval2 INT=-4;
+	DECLARE @rval INT=-5;
+	DECLARE @rval2 INT=-6;
 	DECLARE @msg VARCHAR(MAX);
 --
 	BEGIN TRY
-		INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'C', 0, 
+		INSERT INTO rif40.rif40_study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'C', 0, 
 			'Study has been created but it has not been verified.');	
 		 EXECUTE @rval2=rif40.rif40_run_study
 				@study_id 	/* Study_id */, 
 				1 			/* Debug: 0/1 */,
-				@rval		/* Result */;		
-		INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'E', 1, 
-			'Study extracted imported or created but neither results nor maps have been created.');				
+				@rval		/* Result */;	
+				
 --
 	END TRY
 	BEGIN CATCH 
@@ -314,14 +310,11 @@ BEGIN
 							'Procedure line: ' + NULLIF(CAST(ERROR_LINE() AS VARCHAR), 'N/A') + CHAR(10) + 
 							'Error message: ' + NULLIF(ERROR_MESSAGE(), 'N/A') + CHAR(10);
 		PRINT @msg; 
-		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';
+		EXEC [rif40].[ErrorLog_proc] @Error_Location='[rif40].[rif40_run_study]';		
 	END CATCH;
-	INSERT INTO study_status(study_id, study_state, ith_update, message) VALUES (@study_id, 'R', 2, 
-		'Study results have been computed and they are now ready to be used.');
-	SELECT * FROM study_status WHERE study_id = @study_id ORDER BY ith_update;
 	SELECT * FROM rif40.rif40_study_status WHERE study_id = @study_id ORDER BY ith_update;
-	SELECT statement_number, log_message, log_sqlcode, elapsed_time FROM rif40.rif40_study_sql_log
-	 WHERE study_id = @study_id  AND log_sqlcode != 0ORDER BY statement_number;
+	SELECT statement_number, log_message, log_sqlcode, elapsed_time FROM rif40.rif40_study_sql_log 
+	 WHERE study_id = @study_id AND log_sqlcode != 0 ORDER BY statement_number;
 	SELECT COUNT(*) AS total FROM rif40.rif40_study_sql WHERE study_id = @study_id;
 	SELECT study_id AS t_rif40_studies_seq FROM ##t_rif40_studies_seq;
 	SELECT inv_id AS t_rif40_investigations_seq FROM ##t_rif40_investigations_seq;
@@ -329,12 +322,12 @@ BEGIN
 	SET @rval=COALESCE(@rval2, @rval);
 	SET @rval=COALESCE(@rval, -1);
 	SET @msg = 'Study test run ' + CAST(@study_id AS VARCHAR) + ' OK';
-	
 	COMMIT TRANSACTION;	
 	IF @rval = 1
 		PRINT @msg;
 	ELSE 
 		RAISERROR('Study test run %i FAILED; rval=%i (see previous errors)', 16, 1, @study_id, @rval);
+
 END;
 GO
 

@@ -111,11 +111,12 @@ Recurse until complete
 			  FROM rif40.rif40_investigations c
 			 WHERE @study_id = c.study_id
 		)
-		SELECT study_state, b.investigation_count 
+		SELECT a.study_state, b.investigation_count, a.study_name 
 		  FROM rif40.t_rif40_studies a, b /* MUST USE TABLE NOT VIEWS WHEN USING LOCKS/WHERE CURRENT OF */
 		 WHERE @study_id = a.study_id
 		   FOR UPDATE;
 	DECLARE @study_state VARCHAR(1);
+	DECLARE @study_name VARCHAR(200);
 	DECLARE @new_study_state VARCHAR(1);
 	DECLARE @investigation_count INT;
 	DECLARE @actual_investigation_count INT;
@@ -125,12 +126,19 @@ Recurse until complete
 -- Check and lock table
 --
 	OPEN c1_runst; 
-	FETCH NEXT FROM c1_runst INTO @study_state, @investigation_count;
+	FETCH NEXT FROM c1_runst INTO @study_state, @investigation_count, @study_name;
 	IF @@CURSOR_ROWS = 0 BEGIN
 			CLOSE c1_runst;
 			DEALLOCATE c1_runst;
 			SET @err_msg = formatmessage(55200, @study_id); -- Study ID %i not found
 			THROW 55200, @err_msg, 1;
+		END;
+	ELSE IF @study_name = 'EXCEPTION'BEGIN
+			CLOSE c1_runst;
+			DEALLOCATE c1_runst;
+			PRINT 'Test debug message';
+			SET @err_msg = 'This is a test error (the study name is EXCEPTION)';
+			THROW 55299, @err_msg, 1;
 		END;
 --
 -- Check study state
@@ -197,7 +205,9 @@ Recurse until complete
 --
 	SET @msg='55206: Start state transition (' + @study_state + '=>' + @new_study_state + ') for study ' + CAST(@study_id AS VARCHAR);
 	PRINT @msg;
-	UPDATE rif40.rif40_investigations SET investigation_state = @new_study_state WHERE study_id = @study_id AND investigation_state = @study_state;
+	UPDATE rif40.rif40_investigations
+       SET investigation_state = @new_study_state
+	 WHERE study_id = @study_id AND investigation_state = @study_state;
 	SET @actual_investigation_count = @@ROWCOUNT;
 	IF @actual_investigation_count != @investigation_count BEGIN
 --	
@@ -325,18 +335,18 @@ BEGIN
 			 'Error message: ' + NULLIF(ERROR_MESSAGE(), 'N/A') + CHAR(10);
          PRINT @msg;
 --
--- Set study status 
+-- Set study status [Done by Middleware]
 --
 		BEGIN TRY
 			ROLLBACK TRANSACTION;		
-			BEGIN TRANSACTION;
-			INSERT INTO rif40.rif40_study_status(study_id, study_state, message, trace) 
-				VALUES(@study_id, 'G', 'Study extract failed and neither results nor maps have been created', @msg);
+--			BEGIN TRANSACTION;
+--			INSERT INTO rif40.rif40_study_status(study_id, study_state, message, trace) 
+--				VALUES(@study_id, 'G', 'Study extract failed and neither results nor maps have been created', @msg);
 -- ============================================================
 -- Always commit, even though this may fail because trigger failure have caused a rollback:
 -- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.
 -- ============================================================
-			COMMIT TRANSACTION;
+--			COMMIT TRANSACTION;
 		END TRY
 		BEGIN CATCH	
 			 SET @msg='Caught error handler error in rif40.rif40_run_study2(' + CAST(@study_id AS VARCHAR) + ')' + CHAR(10) +
@@ -383,15 +393,15 @@ BEGIN
 		SET @msg = 'Study extract run ' + CAST(@study_id AS VARCHAR) + 
 			' FAILED; rval2=' + CAST(@rval2 AS VARCHAR) + ' (see previous errors)';	
 --
--- Set study status 
+-- Set study status [Done by middleware]
 --
-		INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
-		SELECT @study_id, 'G', @msg
-		 WHERE NOT EXISTS (
-			SELECT study_id
-			  FROM rif40.rif40_study_status
-			 WHERE study_id = @study_id
-			   AND study_state = 'G');	
+--		INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+--		SELECT @study_id, 'G', @msg
+--		 WHERE NOT EXISTS (
+--			SELECT study_id
+--			  FROM rif40.rif40_study_status
+--			 WHERE study_id = @study_id
+--			   AND study_state = 'G');	
 -- ============================================================
 -- Always commit, even though this may fail because trigger failure have caused a rollback:
 -- The COMMIT TRANSACTION request has no corresponding BEGIN TRANSACTION.

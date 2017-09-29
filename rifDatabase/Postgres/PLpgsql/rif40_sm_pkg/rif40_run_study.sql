@@ -108,7 +108,7 @@ Recurse until complete
 			  FROM rif40_investigations c
 			 WHERE l_study_id = c.study_id
 		)
-		SELECT study_state, a.study_id, b.investigation_count 
+		SELECT a.study_state, a.study_id, b.investigation_count, a.study_name 
 		  FROM t_rif40_studies a, b /* MUST USE TABLE NOT VIEWS WHEN USING LOCKS/WHERE CURRENT OF */
 		 WHERE l_study_id = a.study_id
 		   FOR UPDATE;
@@ -173,7 +173,10 @@ BEGIN
 	END IF;
 	CLOSE c1_runst;
 --
-	IF c1_rec.study_state = 'C' THEN
+	IF c1_rec.study_name = 'EXCEPTION' THEN
+		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study', 'Test debug messaage');
+		RAISE EXCEPTION '[55299] This is a test error (the study name is EXCEPTION)';
+	ELSIF c1_rec.study_state = 'C' THEN
 		 new_study_state = 'V';
 	ELSIF c1_rec.study_state = 'V' THEN
 		 new_study_state = 'E';
@@ -357,13 +360,16 @@ BEGIN
 					c1_rec.study_id::VARCHAR);
 				msg:='[55210] Recurse ['||n_recursion_level::Text||'] rif40_run_study to new state '||new_study_state||
 						' for study '||c1_rec.study_id::Text||' failed, see previous warnings';
-				INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
-				SELECT c1_rec.study_id, 'G', msg
-				 WHERE NOT EXISTS (
-					SELECT a.study_id
-					  FROM rif40_study_status a
-					 WHERE a.study_id    = c1_rec.study_id
-					   AND a.study_state = 'G');						   
+--
+-- Done by Middleware
+--
+--				INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+--				SELECT c1_rec.study_id, 'G', msg
+--				 WHERE NOT EXISTS (
+--					SELECT a.study_id
+--					  FROM rif40_study_status a
+--					 WHERE a.study_id    = c1_rec.study_id
+--					   AND a.study_state = 'G');						   
 				RETURN FALSE;
 			END IF;
 		EXCEPTION
@@ -382,15 +388,15 @@ BEGIN
 --				END IF;
 				PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_run_study', msg);	
 --
--- Set study status 
+-- Set study status [Done by middleware]
 --
-				INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
-				SELECT c1_rec.study_id, 'G', msg
-				 WHERE NOT EXISTS (
-					SELECT a.study_id
-					  FROM rif40_study_status a
-					 WHERE a.study_id    = c1_rec.study_id
-					   AND a.study_state = 'G');		
+--				INSERT INTO rif40.rif40_study_status(study_id, study_state, message) 
+--				SELECT c1_rec.study_id, 'G', msg
+--				 WHERE NOT EXISTS (
+--					SELECT a.study_id
+--					  FROM rif40_study_status a
+--					 WHERE a.study_id    = c1_rec.study_id
+--					   AND a.study_state = 'G');		
 				RETURN FALSE;					   
 		END;
 	ELSIF new_study_state != c1_rec.study_state AND new_study_state = 'R' THEN

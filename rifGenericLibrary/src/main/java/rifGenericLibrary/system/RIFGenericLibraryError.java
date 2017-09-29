@@ -81,6 +81,8 @@ public enum RIFGenericLibraryError {
 	DB_UNABLE_REGISTER_USER,	
 	/** The db unable deregister user. */
 	DB_UNABLE_DEREGISTER_USER,
+	/* A database exception occurred */
+	DB_EXCEPTION,
 	
 	COMMAND_LINE_EXECUTION_PROBLEM,
 	FILE_PARSING_PROBLEM,

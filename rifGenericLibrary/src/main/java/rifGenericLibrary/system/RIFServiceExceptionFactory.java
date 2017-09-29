@@ -124,9 +124,22 @@ public class RIFServiceExceptionFactory {
 				RIFGenericLibraryError.R_ERROR,
 				errorMessage);
 		return rifServiceException;
+	}		
+	
+	public RIFServiceException createExtractException(
+		final String dbExceptionTrace) {
+		
+		String errorMessage
+			= RIFGenericLibraryMessages.getMessage(
+				"db.error.extractexception",
+				dbExceptionTrace);
+		RIFServiceException rifServiceException
+			= new RIFServiceException(
+				RIFGenericLibraryError.DB_EXCEPTION,
+				errorMessage);
+		return rifServiceException;
 	}	
 
-	
 	public RIFServiceException createFileReadingProblemException(
 		final String fileName) {
 		

@@ -224,7 +224,7 @@ public class PGSQLQueryUtility {
 	 * @param warning SQLWarning
 	 * @throws nothing
 	 */	
-	public void printWarnings(PreparedStatement runStudyStatement) {
+	public String printWarnings(PreparedStatement runStudyStatement) {
 		SQLWarning warnings;
 		StringBuilder message;
 		int warningCount=0;
@@ -239,9 +239,15 @@ public class PGSQLQueryUtility {
 					message.append(warnings.getMessage() + lineSeparator);	       
 				}
 				else {
+					message.append(
+						"SQL Error/Warning >>>" + lineSeparator +
+						"Message:           " + warnings.getMessage() + lineSeparator +
+						"SQLState:          " + warnings.getSQLState() + lineSeparator +
+						"Vendor error code: " +	warnings.getErrorCode() + lineSeparator);
+						
 					rifLogger.warning(this.getClass(), 
 						"SQL Error/Warning >>>" + lineSeparator +
-						"Message:           " + warnings.getMessage() +lineSeparator +
+						"Message:           " + warnings.getMessage() + lineSeparator +
 						"SQLState:          " + warnings.getSQLState() + lineSeparator +
 						"Vendor error code: " +	warnings.getErrorCode() + lineSeparator);	       
 				}
@@ -251,15 +257,20 @@ public class PGSQLQueryUtility {
 			if (message.length() > 0) {
 				rifLogger.info(this.getClass(), warningCount + " warnings/messages" + lineSeparator +
 					message.toString());
+					
+					return warningCount + " warnings/messages" + lineSeparator + message.toString();
 			}	 
 			else {
 				rifLogger.warning(this.getClass(), "No warnings/messages found.");
+				return "No warnings/messages found.";
 			}
 		}		
 		catch(SQLException sqlException) { // Do nothing - they are warnings!
 			rifLogger.warning(this.getClass(), "PGSQLQueryUtility.printWarnings() caught sqlException: " + 
 				sqlException.getMessage());
 		}
+		
+		return null;
 	}
 	
 	public static void commit(

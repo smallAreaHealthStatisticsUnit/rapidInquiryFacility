@@ -495,7 +495,7 @@ final class PGSQLStudyStateManager
 		queryFormatter.addQueryLine(1, "(SELECT ");		
 		queryFormatter.addQueryLine(2, "study_id,");
 		queryFormatter.addQueryLine(2, "study_state,");
-		queryFormatter.addQueryLine(2, "TO_CHAR(creation_date, \"DD MON YYYY HH24:MI:SS\") AS creation_date,");
+		queryFormatter.addQueryLine(2, "TO_CHAR(creation_date, 'DD MON YYYY HH24:MI:SS') AS creation_date,");
 		queryFormatter.addQueryLine(2, "row_number() OVER(PARTITION BY study_id ORDER BY ith_update DESC) AS update_number,");
 		queryFormatter.addQueryLine(1, "message,");		
 		queryFormatter.addQueryLine(1, "trace");

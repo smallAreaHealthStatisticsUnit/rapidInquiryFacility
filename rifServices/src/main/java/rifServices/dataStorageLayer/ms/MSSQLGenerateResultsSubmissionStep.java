@@ -4,6 +4,7 @@ import rifServices.system.*;
 import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
 
 import java.sql.*;
@@ -121,10 +122,12 @@ final class MSSQLGenerateResultsSubmissionStep
 		String result = null;
 		CallableStatement runStudyStatement = null;
 		PreparedStatement computeResultsStatement = null;
+		PGSQLQueryUtility query=new PGSQLQueryUtility();
 		ResultSet runStudyResultSet = null;
 		ResultSet computeResultSet = null;
 		boolean res;
 		int rval=-1;
+		String traceMessage = null;
 		
 		try {
 			SQLGeneralQueryFormatter generalQueryFormatter = new SQLGeneralQueryFormatter();		
@@ -163,32 +166,44 @@ final class MSSQLGenerateResultsSubmissionStep
 		
 			result = String.valueOf(rval);	
 			
+			query.printWarnings(runStudyStatement); // Print output from T-SQL
+			
 			PGSQLQueryUtility.commit(connection); 	
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version, print warning dialogs
-
+			
+			if (result == null) {
+				result="NULL [EXCEPTION THROWN BY DB]";
+				rval=-3;
+			}
+			
+			traceMessage=query.printWarnings(runStudyStatement); // Print output from T-SQL
+			if (traceMessage == null) {
+				traceMessage="No trace from T-SQL Statement.";
+			}	
+			traceMessage = sqlException.getMessage() + lineSeparator + traceMessage; 
+				
 			logSQLException(sqlException);
 			PGSQLQueryUtility.commit(connection);
+			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToRunStudy",
 					studyID);
-
+/* DO NOT RETHROW!
 			rifLogger.error(
 				MSSQLGenerateResultsSubmissionStep.class, 
 				errorMessage, 
 				sqlException);
-			
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED, 
 					sqlException.getMessage());
-			throw rifServiceException;
+ */		
+	
 		}
 		finally {
-			PGSQLQueryUtility query=new PGSQLQueryUtility();
-			query.printWarnings(runStudyStatement); // Print output from T-SQL
 		
 			//Cleanup database resources			
 			PGSQLQueryUtility.close(runStudyStatement);
@@ -210,11 +225,15 @@ final class MSSQLGenerateResultsSubmissionStep
 			else {
 				rifLogger.info(this.getClass(), "XXXXXXXXXX Study " + studyID + " failed with code: " + result + 
 					" XXXXXXXXXXXXXXXXXXXXXX");
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.DATABASE_QUERY_FAILED,
-						"Study " + studyID + " failed with code: " + result);
-				throw rifServiceException;
+
+				if (traceMessage == null) {
+					traceMessage="No trace from T-SQL Statement.";
+				}			
+				RIFServiceExceptionFactory rifServiceExceptionFactory
+					= new RIFServiceExceptionFactory();
+				RIFServiceException rifServiceException = 
+					rifServiceExceptionFactory.createExtractException(traceMessage);
+				throw rifServiceException;	
 			}
 			
 			return result;			
