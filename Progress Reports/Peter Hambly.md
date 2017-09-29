@@ -1591,7 +1591,7 @@ Todo:
 * Study state machine and transactional control: obsolete study_status, move to rif40_study_status, trace 
   error support. State machine now handles errors correctly
 * Fixed inability to detect errors correctly in run study, R, CVS extract (TODO: report to user). SQL Server 
-  does detect but does not trap the error correctly, i..e the **tomcat** log has
+  does detect but does not trap the error correctly, i.e. the **tomcat** log has
   ```
 15-Sep-2017 10:55:04.188 SEVERE [https-jsse-nio-8080-exec-7] com.sun.jersey.spi.container.ContainerResponse.mapMappableContainerExce
 ption The exception contained within MappableContainerException could not be mapped to a response, re-throwing to the HTTP container
@@ -1610,14 +1610,6 @@ ption The exception contained within MappableContainerException could not be map
 Resource.java:1178)
         at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)  
   ```
-  
-September:
-
-* Dump adjacency matrix in R to CSV
-* Fix results reporting from run study and R code. Possibly add support for ri40_study_status
-* US geography and centroids fixes
-* Add area name to results map table
-* Add rif40_dmp_pkg.csv_dump to SQL server port (and fix the Postgres one!):
 
 ```
 10:42:00.274 [https-jsse-nio-8080-exec-10] ERROR: [rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager]:
@@ -1641,12 +1633,30 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 
 #### 25th to 29th September
 
-* Remove old study_status table creates
+* Remove old study_status table creates, add support for ri40_study_status
 * Add trace to getCurrentStatusAllStudies method (safely formatted), fixed creation date to add time
 * Added error logging to all GET methods with exception handlers (others are super classes)
 * Added trace to study status; checked can maintain Angular code. Now have basic understanding of what it is doing.
+* Completed results reporting from run study and R code. 
   
-#### Database TODO list (deferred to September 2017): SQL Server Port
+October TODO:
+
+* Dump adjacency matrix in R to CSV
+* Develop script to re-run R without front end (i.e. recreate the R faults)
+* Fix rifc-util-tabctrl.js to handle studies completing correctly
+* US geography and centroids fixes
+* Add area name to results map table
+* Add rif40_dmp_pkg.csv_dump to SQL server port (and fix the Postgres one!). Issues:
+
+  1. The function processes rows in batches of 100. On the last row of each batch a new line is not added (/n or whatever) 
+     so we get 2 rows on one row every 100 rows in the csv.
+ 
+     Probably here is the culprit (line 203)
+	```   
+	   RETURN NEXT trim(trailing line_term_text from select_text); /* Remove last CRLF */
+	``` 
+ 
+#### Database TODO list (deferred to November 2017): SQL Server Port
 
 * More work on SEER data, dataloader
 	* Test covariates in dataloader
@@ -1760,15 +1770,6 @@ Calls: performSmoothingActivity -> apply
 * Data loader issues:
   TOTAL_FIELD should be total
   No covariate fields in data table
-* Port rif40_dmp_pkg.csv_dump(). Issues:
-
-  1. The function processes rows in batches of 100. On the last row of each batch a new line is not added (/n or whatever) 
-     so we get 2 rows on one row every 100 rows in the csv.
- 
-     Probably here is the culprit (line 203)
-	```   
-	   RETURN NEXT trim(trailing line_term_text from select_text); /* Remove last CRLF */
-	``` 
 * Harden SQL Server port against SQL Injection getting past middleware into meta data
 * Process Utah geography
 * Disable guest logins on SQL Server
@@ -1778,12 +1779,11 @@ Calls: performSmoothingActivity -> apply
   GET XHR https://peter-pc:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter [HTTP/1.1 200  25ms]
   09:09:31.552 Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://peter-pc:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter. (Reason: CORS header 'Access-Control-Allow-Origin' missing). 1 (unknown)
   ```
-* Assist with middleware (database fixes)
 * Data loader to generate primary keys. PK on pop_sahsuland_pop_pk + cluster (see: v4_0_create_sahsuland.sql)
 * SQL load script generator: still todo, all can wait:
   * Add search path to user schema, check user schema exists, to Postgres version
   
-#### TileViewer TODO (deferred to October 2017 and beyond):
+#### TileViewer TODO (deferred to November 2017 and beyond):
  
 * Area tests (area_check.sql) is failing for Halland - suspect area is too small, could be projection ia wrong 
 * NVarchar support for areaName
