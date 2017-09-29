@@ -6,6 +6,8 @@ import javax.ws.rs.core.Application;
 import java.util.Set;
 import java.util.HashSet;
 
+import rifGenericLibrary.util.RIFLogger;
+
 /**
  *
  * <hr>
@@ -72,6 +74,8 @@ public class MSSQLRIFStudyResultRetrievalWebServiceApplication extends Applicati
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	private static RIFLogger rifLogger;
+	private static String lineSeparator = System.getProperty("line.separator");
 
 	// ==========================================
 	// Section Properties
@@ -82,7 +86,8 @@ public class MSSQLRIFStudyResultRetrievalWebServiceApplication extends Applicati
 	// ==========================================
 
 	public MSSQLRIFStudyResultRetrievalWebServiceApplication() {
-
+		rifLogger = RIFLogger.getLogger();
+		rifLogger.info(this.getClass(), "!!!!!!!!!!!!!!!!!!!!! MSSQLRIFStudyResultRetrievalWebServiceApplication !!!!!!");
 	}
 
 	// ==========================================
