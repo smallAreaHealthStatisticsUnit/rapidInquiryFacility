@@ -1577,7 +1577,7 @@ Todo:
   ```
   The solution is to restart tomcat.
   
-  1. Server reload needs to stop R
+  1. Server reload needs to stop R. This requires a @WebListener [Context Listener (javax.servlet.ServletContextListener)]
   2. R crashes (usually inla) and ideally script errors need to stop R
 * Tested log4j integration, all RIF middleware calls works OK on Postgres and SQL Server and log correctly
 * Tomcat to do! [some R messages still go to the console!]
