@@ -290,6 +290,10 @@ Currently there are two manuals:
 
 # 8. For Developers
 
+## RIF Architecture
+
+![RIF Architecture](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/RIF_architecture.png)
+
 This section is a series of links to developer documentation
 
 * [RIF Re-development](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/The-RIF-re-development)
