@@ -347,6 +347,8 @@ dbConnect <- function() {
 			}
 		}) # End of tryCatch
 	})
+	
+	return(connDB);
 }
 
 ##================================================================================
@@ -434,7 +436,7 @@ getAdjacencyMatrix <- function() {
 #
 	if (dumpFramesToCsv == TRUE) {
 		print(paste0("Saving adjacency matrix to: ", adjacencyMatrixFileName))
-		write.csv(data, file=adjacencyMatrixFileName)
+		write.csv(AdjRowset, file=adjacencyMatrixFileName)
 	}
 	
   return(AdjRowset);

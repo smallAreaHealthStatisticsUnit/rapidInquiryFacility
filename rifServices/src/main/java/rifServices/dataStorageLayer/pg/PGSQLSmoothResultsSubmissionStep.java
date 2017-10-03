@@ -164,6 +164,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 		StringBuilder rifScriptPath = new StringBuilder();	
 		StringBuilder Adj_Cov_Smooth_JRI = new StringBuilder();
 		StringBuilder RIF_odbc = new StringBuilder();
+		StringBuilder performSmoothingActivity = new StringBuilder();
 		String RerrorTrace="No R error tracer (see Tomcat log)";
 			
 		try {		
@@ -254,14 +255,20 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 				rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
 				rifScriptPath.append(File.separator);
 				rifScriptPath.append(File.separator);
+				
 				Adj_Cov_Smooth_JRI.append(rifScriptPath);
 				Adj_Cov_Smooth_JRI.append("Adj_Cov_Smooth_JRI.R");
 				RIF_odbc.append(rifScriptPath);
 				RIF_odbc.append("RIF_odbc.R");
+				performSmoothingActivity.append(rifScriptPath);
+				performSmoothingActivity.append("performSmoothingActivity.R");
+				
 				rifLogger.info(this.getClass(), "Source: Adj_Cov_Smooth_JRI=\""+Adj_Cov_Smooth_JRI+"\"");
-				rifLogger.info(this.getClass(), "Source: RIF_odbc=\""+RIF_odbc+"\"");
 				rengine.eval("source(\"" + Adj_Cov_Smooth_JRI + "\")");
+				rifLogger.info(this.getClass(), "Source: RIF_odbc=\""+RIF_odbc+"\"");
 				rengine.eval("source(\"" + RIF_odbc + "\")");
+				rifLogger.info(this.getClass(), "Source: performSmoothingActivity=\""+performSmoothingActivity+"\"");
+				rengine.eval("source(\"" + performSmoothingActivity + "\")");
 
 				//RUN the actual smoothing
 				//REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
