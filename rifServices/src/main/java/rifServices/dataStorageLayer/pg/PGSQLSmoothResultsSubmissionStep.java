@@ -288,6 +288,11 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 					for (int i = 0; i < strArr.length; i++) {
 					   strBuilder.append(strArr[i] + lineSeparator);
 					}
+					int index = -1;
+					String toReplace="'";
+					while ((index = strBuilder.lastIndexOf(toReplace)) != -1) {
+						strBuilder.replace(index, index + toReplace.length(), "\""); // Replace ' with " to reduce JSON parse errors
+					}
 					RerrorTrace = strBuilder.toString();
 				}
 				else {
