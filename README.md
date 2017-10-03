@@ -51,10 +51,9 @@ an impact on health in a local population.  The tool can generate standardised r
 The RIF allows for full flexibility in the selection of a range of ages; a time frame specifying an era for data set collections; and 
 a geographic area.
  
- 
 The software application was originally developed in the late 1990s by SAHSU staff. The most widely used RIF distribution 
 (version 3.x) an embedded plug-in for ArcGIS 9.x has been employed by many institution and public health practitioners around the world 
-to both automatically  generate disease maps and asses disease risk in proximity to known source of pollution.
+to both automatically generate disease maps and asses disease risk in proximity to known source of pollution.
 
 ## 1.2 References
 
@@ -66,7 +65,7 @@ to both automatically  generate disease maps and asses disease risk in proximity
   Health and Environment Information Systems for Exposure and Disease Mapping, and Risk Assessment. 
   Environ Health Perspect 2004; 112(9): 995–997. doi:  10.1289/ehp.6736.
 * Juhasz A, Nagy C, Paldy A, Beale, L, 2009, 
-  Development of Deprivation Index and its relation to premature mortality due to diseases of  circulatory system in Hungary, 1998-2004.
+  Development of Deprivation Index and its relation to premature mortality due to diseases of circulatory system in Hungary, 1998-2004.
   Social Science & Medicine, Elsevier, vol. 70(9), pages 1342-1349.
 * Holowaty EJ, Norwood TA, Wanigaratne S, Abellan JJ, Beale L, 2010, 
   International Feasibility and utility of mapping disease risk at the neighbourhood level within a Canadian public health unit: an
@@ -255,7 +254,7 @@ Detailed build instructions for Postgres:
  
 ### 6.1.2 Installing the RIF Postgres Database
 
-See: [Installing a Windows RIF database from a pg_dump (Postgres database dump) file](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md)
+See: [Installing a Windows RIF database from a SAHSU supplied pg_dump (Postgres database dump) file](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md)
 
 ## 6.2 Microsoft SQL Server
 
