@@ -269,7 +269,24 @@ runRSmoothingFunctions <- function() {
 			# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
 					
 			tryCatch({
-					withErrorTracing({result <- performSmoothingActivity()})
+					withErrorTracing({  				
+						print("Performing basic stats and smoothing")	
+#
+# extract the relevant Study data
+#
+#data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
+						data=fetchExtractTable()
+
+#
+# Get Adjacency matrix
+#  	
+						AdjRowset=getAdjacencyMatrix()
+
+#
+# Call: performSmoothingActivity()
+#						
+						result <- performSmoothingActivity(data, AdjRowset)
+					})
 				},
 				warning=function(w) {		
 					print(paste("callPerformSmoothingActivity() WARNING: ", w))

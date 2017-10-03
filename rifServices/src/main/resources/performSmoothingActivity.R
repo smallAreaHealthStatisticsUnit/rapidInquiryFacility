@@ -38,23 +38,12 @@
 
 ##====================================================================
 ##FUNCTION: performSmoothingActivity
+##PARAMETERS: Extract data frame, adjacency matrix frame
 ##DESCRIPTION: assembles pieces of database information such as
 ##the host, port and database name to create a database connection
 ##string that can be used to make an ODBC connection
 ##====================================================================
-performSmoothingActivity <- function() {
-  				
-						print("Performing basic stats and smoothing")	
-#
-# extract the relevant Study data
-#
-#data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
-						data=fetchExtractTable()
-
-#
-# Get Adjacency matrix
-#  	
-						AdjRowset=getAdjacencyMatrix()
+performSmoothingActivity <- function(data, AdjRowset) {
 						
   if (investigationName != "inv_1"){
     #add a column (inv_1) to data and populate is with InvestigationName data for simplicity
