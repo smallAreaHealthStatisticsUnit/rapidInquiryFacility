@@ -352,6 +352,27 @@ dbConnect <- function() {
 }
 
 ##================================================================================
+##FUNCTION: dropTemporaryTable
+##DESCRIPTION
+##Drops temporary table used for results update
+##Set (exitvalue) 0 on success, 1 on failure 
+##================================================================================
+dropTemporaryTable <- function() {
+	tryCatch({
+			print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
+			sqlDrop(connDB, temporarySmoothedResultsTableName)
+		},
+        warning=function(w) {
+            print(paste("UNABLE to drop temporary table: ", temporarySmoothedResultsTableName, w))
+            exitValue <<- 0
+        },
+        error=function(e) {
+            print(paste("WARNING: An error occurred dropping temporary table: ", temporarySmoothedResultsTableName, geterrmessage()))
+            exitValue <<- 1
+        })
+}
+
+##================================================================================
 ##FUNCTION: dbDisConnect
 ##DESCRIPTION
 ##Disconnect from ODBC database

@@ -103,39 +103,52 @@ if (names.adj.1 == "NONE") {
 #
 ##==========================================================================
 establishTableNames <-function(vstudyID) {
+ 
+#The name of the extract table that is created by the middleware for a given
+#study.  It is of the format rif_studies.s[study_id]_extract
+	extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
   
-  #The name of the extract table that is created by the middleware for a given
-  #study.  It is of the format rif_studies.s[study_id]_extract
-  extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
-  
-  #The name of the skeleton table created by the RIF middleware to hold smoothed results
-  #for a given study.  Initially the values for smoothed columns will be empty.  It is 
-  #of the format rif_studies.s[study_id]_map 
-  mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")
+#The name of the skeleton table created by the RIF middleware to hold smoothed results
+#for a given study.  Initially the values for smoothed columns will be empty.  It is 
+#of the format rif_studies.s[study_id]_map 
+	mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")
 
-  # Name of Rdata CSV file for debugging results save
-  # This needs to be passed in via interface
-  if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
-	  scratchSpace <<- "c:\\rifDemo\\scratchSpace\\"
-  }
-  if (exists("dumpFramesToCsv") == FALSE || dumpFramesToCsv == "") {
-	  dumpFramesToCsv <<- TRUE
-  }
-  temporarySmoothedResultsFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_map.csv", sep="")
-  temporaryExtractFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_extract.csv", sep="")
-  adjacencyMatrixFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_adjacency_matrix.csv", sep="")
+# Name of Rdata CSV file for debugging results save
+# This needs to be passed in via interface
+
+	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
+		scratchSpace <<- "c:\\rifDemo\\scratchSpace\\"
+	}
+	scratchSpace <<- paste0(scratchSpace, "s", vstudyID, "\\")
+		
+	tryCatch({
+			#Put all scratch files in sub directory s<study_id>
+			if (!file.exists(scratchSpace)) {
+				dir.create(scratchSpace)
+			}
+	  	},
+		warning=function(w) {
+			print(paste("UNABLE to create scratchSpace: ", scratchSpace, w))
+			exitValue <<- 0
+		},
+		error=function(e) {
+			print(paste("ERROR creating scratchSpace: ", scratchSpace, geterrmessage()))
+			exitValue <<- 1
+		}) # End of tryCatch
+
+	if (exists("dumpFramesToCsv") == FALSE || dumpFramesToCsv == "") {
+		dumpFramesToCsv <<- TRUE
+	}		
+	temporarySmoothedResultsFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_map.csv", sep="")
+	temporaryExtractFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_extract.csv", sep="")
+	adjacencyMatrixFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_adjacency_matrix.csv", sep="")
   
-  #The name of the temporary table that this script uses to hold the data frame
-  #containing smoothed results.  It should have a 1:1 correspondence between
-  #its fields and fields that appear in the map table skeleton.
+#The name of the temporary table that this script uses to hold the data frame
+#containing smoothed results.  It should have a 1:1 correspondence between
+#its fields and fields that appear in the map table skeleton.
   
-  # temporarySmoothedResultsTableName does NOT support SQL Server temporary tables
-#  if (db_driver_prefix == "jdbc:sqlserver") {
-#		temporarySmoothedResultsTableName <<-paste("#tmp_s", vstudyID, "_map", sep="")
-# }
-#  else {
-		temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")
-#  }
+	temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")
+
 }
 
 
@@ -290,6 +303,7 @@ runRSmoothingFunctions <- function() {
 				},
 				warning=function(w) {		
 					print(paste("callPerformSmoothingActivity() WARNING: ", w))
+					exitValue <<- 1
 				},
 				error=function(e) {
 					e <<- e
@@ -304,20 +318,26 @@ runRSmoothingFunctions <- function() {
 							
 						# Cast area_id to char. This is ignored by sqlSave!
 						area_id_is_integer <- FALSE
-						print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]), 
-							"; check.integer(result$area_id[1]): ", check.integer(result$area_id[1]),
-							"; result$area_id[1]: ", result$area_id[1]))
-						 
-						# Use check.integer() to reliably test if the string is an integer 
-						if (check.integer(result$area_id[1])) {
-							area_id_is_integer <- TRUE
-							result$area_id <- sapply(result$area_id, as.character)
-							print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]),
+						if ("area_id" %in% colnames(result)) {
+							print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]), 
+								"; check.integer(result$area_id[1]): ", check.integer(result$area_id[1]),
 								"; result$area_id[1]: ", result$area_id[1]))
-						}
+							 
+							# Use check.integer() to reliably test if the string is an integer 
+							if (check.integer(result$area_id[1])) {
+								area_id_is_integer <- TRUE
+								result$area_id <- sapply(result$area_id, as.character)
+								print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]),
+									"; result$area_id[1]: ", result$area_id[1]))
+							}
 
-						saveDataFrameToDatabaseTable(result)
-						updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue  
+							saveDataFrameToDatabaseTable(result)
+							updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue  
+						}
+						else {
+							print("ERROR! No result$area_id column found")
+							exitValue <<- 1
+						}
 					}
 				}
 			) # End of tryCatch
@@ -330,8 +350,7 @@ runRSmoothingFunctions <- function() {
 	}
 	
 	if (exitValue == 0 && !is.na(connDB)) {
-		print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
-		sqlDrop(connDB, temporarySmoothedResultsTableName)
+		dropTemporaryTable()
 	}
 	# Dummy change to check conflict is resolved
   
