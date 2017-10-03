@@ -1642,6 +1642,7 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 #### 2nd to 10th October
 
 * Major documentation/FAQ sort to make consistent for job advert (and new starter!)
+* Factor out R ODBC code into separate R file (for JDBC conversion, and CSV version for tracing R faults)
  
 #### Database TODO list (deferred to November 2017): SQL Server Port
 

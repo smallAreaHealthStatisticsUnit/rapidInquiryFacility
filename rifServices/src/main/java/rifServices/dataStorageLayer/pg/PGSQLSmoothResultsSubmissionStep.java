@@ -162,7 +162,9 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 					throws RIFServiceException {
 		
 		StringBuilder rifScriptPath = new StringBuilder();	
-		String RerrorTrace="No R error tracer";
+		StringBuilder Adj_Cov_Smooth_JRI = new StringBuilder();
+		StringBuilder RIF_odbc = new StringBuilder();
+		String RerrorTrace="No R error tracer (see Tomcat log)";
 			
 		try {		
 			addParameterToVerify("study_id");		
@@ -216,7 +218,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 				}
 
 				if (!rengine.waitForR()) {
-					rifLogger.warning(this.getClass(), "Cannot load the R engine");
+					rifLogger.warning(this.getClass(), "Cannot load the R engine (probably already loaded)");
 				}
 				Rengine.DEBUG = 10;
 				rifLogger.info(this.getClass(), "Rengine Started");
@@ -252,9 +254,14 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 				rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
 				rifScriptPath.append(File.separator);
 				rifScriptPath.append(File.separator);
-				rifScriptPath.append("Adj_Cov_Smooth_JRI.R");
-				rifLogger.info(this.getClass(), "rScriptPath=="+rifScriptPath+"==");
-				rengine.eval("source(\"" + rifScriptPath + "\")");
+				Adj_Cov_Smooth_JRI.append(rifScriptPath);
+				Adj_Cov_Smooth_JRI.append("Adj_Cov_Smooth_JRI.R");
+				RIF_odbc.append(rifScriptPath);
+				RIF_odbc.append("RIF_odbc.R");
+				rifLogger.info(this.getClass(), "Source: Adj_Cov_Smooth_JRI=\""+Adj_Cov_Smooth_JRI+"\"");
+				rifLogger.info(this.getClass(), "Source: RIF_odbc=\""+RIF_odbc+"\"");
+				rengine.eval("source(\"" + Adj_Cov_Smooth_JRI + "\")");
+				rengine.eval("source(\"" + RIF_odbc + "\")");
 
 				//RUN the actual smoothing
 				//REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
