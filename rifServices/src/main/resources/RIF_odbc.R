@@ -44,9 +44,9 @@
 ##====================================================================
 createDatabaseConnectionString <- function() {
   
-  #print( paste0("host==", dbHost, "=="))
-  #print( paste0("port==", dbPort, "=="))
-  #print( paste0("datatabase name==", dbName, "=="))
+  #cat( paste0("host==", dbHost, "==", "\n"), sep="")
+  #cat( paste0("port==", dbPort, "==", "\n"), sep="")
+  #cat( paste0("datatabase name==", dbName, "==", "\n"), sep="")
   
   return(paste0(dbHost, ":", dbPort, "/", dbName))
 }
@@ -63,15 +63,15 @@ fetchExtractTable <- function() {
   #=================================
   #Read original extract table data into a data frame
   
-  print(paste0("EXTRACT TABLE NAME: ", extractTableName))
+  cat(paste0("EXTRACT TABLE NAME: ", extractTableName, "\n"), sep="")
   
   data=tryCatch(sqlFetch(connDB, extractTableName),
 		warning=function(w) {
-		  print(paste("UNABLE TO FETCH! ", w))
+		  cat(paste("UNABLE TO FETCH! ", w, "\n"), sep="")
 		  exitValue <<- 1
 		},
 		error=function(e) {
-		  print(paste("ERROR FETCHING! ", geterrmessage()))
+		  cat(paste("ERROR FETCHING! ", geterrmessage(), "\n"), sep="")
 		  exitValue <<- 1
 		})	
   
@@ -79,15 +79,15 @@ fetchExtractTable <- function() {
 # Save extract data frame to file
 #
 	if (dumpFramesToCsv == TRUE) {
-		print(paste0("Saving extract frame to: ", temporaryExtractFileName))
+		cat(paste0("Saving extract frame to: ", temporaryExtractFileName, "\n"), sep="")
 		write.csv(data, file=temporaryExtractFileName)
 	}
 	numberOfRows <- nrow(data)	
 	if (is.null(nrow(data))) {
-		print(paste("ERROR IN FETCH! (null data returned): ", extractTableName, ", error: ", odbcGetErrMsg(connDB)))
+		cat(paste("ERROR IN FETCH! (null data returned): ", extractTableName, ", error: ", odbcGetErrMsg(connDB), "\n"), sep="")
 		exitValue <<- 1
 	}	  
-	print(paste0(extractTableName," numberOfRows=",numberOfRows, "=="))
+	cat(paste0(extractTableName," numberOfRows=",numberOfRows, "==", "\n"), sep="")
   
 	if (exitValue != 0) {
 		throw("Error reading in the extract table from the database");
@@ -105,15 +105,15 @@ fetchExtractTable <- function() {
 doSQLQuery <- function(sql) {
   sqlData <- tryCatch(sqlQuery(connDB, sql, FALSE),
                       warning=function(w) {
-                        print(paste("UNABLE TO QUERY! SQL> ", sql, "; warning: ", w))
+                        cat(paste("UNABLE TO QUERY! SQL> ", sql, "; warning: ", w, "\n"), sep="")
                         exitValue <<- 1
                       },
                       error=function(e) {
-                        print(paste("ERROR IN QUERY! SQL> ", sql, "; error: ", odbcGetErrMsg(connDB)))
+                        cat(paste("ERROR IN QUERY! SQL> ", sql, "; error: ", odbcGetErrMsg(connDB), "\n"), sep="")
                         exitValue <<- 1
                       })
   if (is.null(nrow(sqlData))) {
-    print(paste("ERROR IN QUERY! (null data returned); SQL> ", sql, "; error: ", odbcGetErrMsg(connDB)))
+    cat(paste("ERROR IN QUERY! (null data returned); SQL> ", sql, "; error: ", odbcGetErrMsg(connDB), "\n"), sep="")
     exitValue <<- 1
   } 
   
@@ -126,13 +126,13 @@ saveDataFrameToDatabaseTable <- function(data) {
   # Save data frame to file
   # 
   if (dumpFramesToCsv == TRUE) {
-	  print(paste0("Saving data frame to: ", temporarySmoothedResultsFileName))
+	  cat(paste0("Saving data frame to: ", temporarySmoothedResultsFileName, "\n"), sep="")
 	  write.csv(data, file=temporarySmoothedResultsFileName) 
   }
   #
   # Save data frame to table
   #
-  print(paste0("Creating temporary table: ", temporarySmoothedResultsTableName))
+  cat(paste0("Creating temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
   sqlDrop(connDB, temporarySmoothedResultsTableName, errors = FALSE) # Ignore errors 
   
   if (db_driver_prefix == "jdbc:postgresql") {
@@ -152,13 +152,13 @@ saveDataFrameToDatabaseTable <- function(data) {
   
   #Add indices to the new table so that its join with s[study_id]_map will be more 
   #efficient
-  print("Creating study_id index on temporary table")
+  cat("Creating study_id index on temporary table\n")
   sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "study_id"))
-  print("Creating area_id index on temporary table")
+  cat("Creating area_id index on temporary table\n")
   sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "area_id"))
-  print("Creating genders index on temporary table")
+  cat("Creating genders index on temporary table\n")
   sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "genders"))
-  print("Created indices on temporary table")
+  cat("Created indices on temporary table\n")
   #sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "band_id"))
   #sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "inv_id"))
   #sqlQuery(connDB, generateTableIndexSQLQuery(temporarySmoothedResultsTableName, "adjusted"))
@@ -279,33 +279,32 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
   
   res <- tryCatch(odbcQuery(connDB, updateMapTableSQLQuery, FALSE),
                   warning=function(w) {
-                    print(paste("UNABLE TO QUERY! SQL> ", updateMapTableSQLQuery, "; warning: ", w))
+                    cat(paste("UNABLE TO QUERY! SQL> ", updateMapTableSQLQuery, "; warning: ", w, "\n"), sep="")
                     exitValue <<- 1
                   },
                   error=function(e) {
-                    print(paste("CATCH ERROR IN QUERY! SQL> ", updateMapTableSQLQuery, 
+                    cat(paste("CATCH ERROR IN QUERY! SQL> ", updateMapTableSQLQuery, 
 						"; error: ", e,
-						"; ODBC error: ", odbcGetErrMsg(connDB)))
+						"; ODBC error: ", odbcGetErrMsg(connDB), "\n"), sep="")
                     exitValue <<- 1
                   }) 
   if (res == 1) {
- #  print(updateMapTableSQLQuery)
-		print(paste0("Updated map table: ", mapTableName))
+		cat(paste0("Updated map table: ", mapTableName, "\n"), sep="")
   }
   else if (res == -1) { # This can be no rows updated!
-    print(paste("SQL ERROR IN QUERY! SQL> ", updateMapTableSQLQuery,  
-		"; error: ", odbcGetErrMsg(connDB)))
+    cat(paste("SQL ERROR IN QUERY! SQL> ", updateMapTableSQLQuery,  
+		"; error: ", odbcGetErrMsg(connDB), "\n"), sep="")
     exitValue <<- 1
   }	
 #  else if (res == -2) {
-#    print(paste("NO ROWS UPDATED BY QUERY! SQL> ", updateMapTableSQLQuery,
-#		"; error: ", odbcGetErrMsg(connDB)))
+#    cat(paste("NO ROWS UPDATED BY QUERY! SQL> ", updateMapTableSQLQuery,
+#		"; error: ", odbcGetErrMsg(connDB), "\n"), sep="")
 #    exitValue <<- 1
 #  }	
   else {
-    print(paste("UNKNOWN ERROR IN QUERY! SQL> ", updateMapTableSQLQuery,  
+    cat(paste("UNKNOWN ERROR IN QUERY! SQL> ", updateMapTableSQLQuery,  
 		"; res: ", res,
-		"; error: ", odbcGetErrMsg(connDB)))
+		"; error: ", odbcGetErrMsg(connDB), "\n"), sep="")
     exitValue <<- 1
   }	  
   
@@ -321,23 +320,23 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 ##Set (exitvalue) 0 on success, 1 on failure 
 ##================================================================================
 dbConnect <- function() {
-	print(paste0("Connect to database: ", odbcDataSource))
+	cat(paste0("Connect to database: ", odbcDataSource, "\n"), sep="")
   
 	errorTrace<-capture.output({
 		tryCatch({
 			connDB <<- odbcConnect(odbcDataSource, uid=as.character(userID), pwd=as.character(password))
 		},
         warning=function(w) {
-            print(paste("UNABLE TO CONNECT! ", w))
+            cat(paste("UNABLE TO CONNECT! ", w, "\n"), sep="")
             exitValue <<- 0
         },
         error=function(e) {
-            print(paste("ERROR CONNECTING! ", geterrmessage()))
+            cat(paste("ERROR CONNECTING! ", geterrmessage(), "\n"), sep="")
             exitValue <<- 1
         },
 		finally={
 			odbcSetAutoCommit(connDB, autoCommit = FALSE)
-			print(odbcGetInfo(connDB))
+			cat(odbcGetInfo(connDB), "\n", sep="")
 #
 # Run rif40_startup() procedure on Postgres
 #
@@ -359,15 +358,15 @@ dbConnect <- function() {
 ##================================================================================
 dropTemporaryTable <- function() {
 	tryCatch({
-			print(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName))
+			cat(paste0("Dropping temporary table: ", temporarySmoothedResultsTableName, "\n"), sep="")
 			sqlDrop(connDB, temporarySmoothedResultsTableName)
 		},
         warning=function(w) {
-            print(paste("UNABLE to drop temporary table: ", temporarySmoothedResultsTableName, w))
+            cat(paste("UNABLE to drop temporary table: ", temporarySmoothedResultsTableName, w, "\n"), sep="")
             exitValue <<- 0
         },
         error=function(e) {
-            print(paste("WARNING: An error occurred dropping temporary table: ", temporarySmoothedResultsTableName, geterrmessage()))
+            cat(paste("WARNING: An error occurred dropping temporary table: ", temporarySmoothedResultsTableName, geterrmessage(), "\n"), sep="")
             exitValue <<- 1
         })
 }
@@ -379,7 +378,7 @@ dropTemporaryTable <- function() {
 ##Set (exitvalue) 0 on success, 1 on failure 
 ##================================================================================
 dbDisConnect <- function() {
-		print("Closing database connection")
+		cat("Closing database connection\n")
 		odbcEndTran(connDB, commit = TRUE)
 		odbcClose(connDB)
 }
@@ -405,11 +404,11 @@ getAdjacencyMatrix <- function() {
     adjacencyTableRes=doSQLQuery(sql)
     numberOfRows <- nrow(adjacencyTableRes)
     if (numberOfRows != 1) {
-      print(paste("Expected 1 row; got: " + numberOfRows + "; SQL> ", sql))
+      cat(paste("Expected 1 row; got: " + numberOfRows + "; SQL> ", sql, "\n"), sep="")
       exitValue <<- 1
     }	
     adjacencyTable <- tolower(adjacencyTableRes$adjacencytable[1])	
-    print(adjacencyTable);
+#    print(adjacencyTable);
     sql <- paste("WITH b AS ( /* Tilemaker: has adjacency table */
                  SELECT b1.area_id, b3.geolevel_id
                  FROM [rif40].[rif40_study_areas] b1, [rif40].[rif40_studies] b2, [rif40].[rif40_geolevels] b3
@@ -426,7 +425,7 @@ getAdjacencyMatrix <- function() {
     numberOfRows <- nrow(AdjRowset)	   
   }  
   else {
-    print(paste("Unsupported port: ", db_driver_prefix))
+    cat(paste("Unsupported port: ", db_driver_prefix, "\n"), sep="")
     exitValue <<- 1
   }
  
@@ -435,7 +434,7 @@ getAdjacencyMatrix <- function() {
 		throw("Error getting adjacency matrix");
 	}
 	
-  print(paste0("rif40_GetAdjacencyMatrix numberOfRows=",numberOfRows, "=="))
+  cat(paste0("rif40_GetAdjacencyMatrix numberOfRows=",numberOfRows, "==", "\n"), sep="")
   #
   # areaid               num_adjacencies adjacency_list_truncated
   # -------------------- --------------- ------------------------------------------------------------------------------------------
@@ -450,13 +449,13 @@ getAdjacencyMatrix <- function() {
   # 01.002.000300.5                    3 01.002.000300.3,01.002.000300.4,01.002.000400.3
   # 01.002.000400.1                    6 01.002.000400.2,01.002.000400.5,01.002.000400.7,01.002.001700.1,01.002.001700.2,01.002.001
   #  
-  #   print(head(AdjRowset, n=10))
+  #   cat(head(AdjRowset, n=10, "\n"), sep="")
   
   #
 # Save extract data frame to file
 #
 	if (dumpFramesToCsv == TRUE) {
-		print(paste0("Saving adjacency matrix to: ", adjacencyMatrixFileName))
+		cat(paste0("Saving adjacency matrix to: ", adjacencyMatrixFileName, "\n"), sep="")
 		write.csv(AdjRowset, file=adjacencyMatrixFileName)
 	}
 	

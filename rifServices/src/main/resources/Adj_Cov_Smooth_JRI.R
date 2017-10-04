@@ -128,11 +128,11 @@ establishTableNames <-function(vstudyID) {
 			}
 	  	},
 		warning=function(w) {
-			print(paste("UNABLE to create scratchSpace: ", scratchSpace, w))
+			cat(paste("UNABLE to create scratchSpace: ", scratchSpace, w, "\n"), sep="")
 			exitValue <<- 0
 		},
 		error=function(e) {
-			print(paste("ERROR creating scratchSpace: ", scratchSpace, e))
+			cat(paste("ERROR creating scratchSpace: ", scratchSpace, e, "\n"), sep="")
 			exitValue <<- 1
 		}) # End of tryCatch
 
@@ -156,64 +156,64 @@ establishTableNames <-function(vstudyID) {
 		performSmoothingActivityScriptA<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\performSmoothingActivity.R") # Source
 		performSmoothingActivityScriptB<-paste0(scratchSpace, "performSmoothingActivity.R") # Target
 		if (!file.exists(performSmoothingActivityScriptB)) {
-			print(paste("Copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB))	
+			cat(paste("Copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, "\n"), sep="")	
 
 			tryCatch({			
 				file.copy(performSmoothingActivityScriptA, performSmoothingActivityScriptB)
 			},
 			warning=function(w) {
-				print(paste("UNABLE to copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, w))
+				cat(paste("UNABLE to copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, w, "\n"), sep="")
 				exitValue <<- 0
 			},
 			error=function(e) {
-				print(paste("ERROR copying: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, e))
+				cat(paste("ERROR copying: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, e, "\n"), sep="")
 				exitValue <<- 1
 			}) # End of tryCatch
 		}
 		else {
-			print(paste("WARNING! No need to copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB))
+			cat(paste("WARNING! No need to copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, "\n"), sep="")
 		}
 		
 		Adj_Cov_Smooth_csvA<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth_csv.R") # Source
 		Adj_Cov_Smooth_csvB<-paste0(scratchSpace, "Adj_Cov_Smooth_csv.R") # Target
 		if (!file.exists(Adj_Cov_Smooth_csvB)) {
-			print(paste("Copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB))	
+			cat(paste("Copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, "\n"), sep="")	
 
 			tryCatch({			
 				file.copy(Adj_Cov_Smooth_csvA, Adj_Cov_Smooth_csvB)
 			},
 			warning=function(w) {
-				print(paste("UNABLE to copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, w))
+				cat(paste("UNABLE to copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, w, "\n"), sep="")
 				exitValue <<- 0
 			},
 			error=function(e) {
-				print(paste("ERROR copying: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, e))
+				cat(paste("ERROR copying: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, e, "\n"), sep="")
 				exitValue <<- 1
 			}) # End of tryCatch
 		}
 		else {
-			print(paste("WARNING! No need to copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB))
+			cat(paste("WARNING! No need to copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, "\n"), sep="")
 		}
 				
 		rif40_run_RA<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\rif40_run_R.bat") # Source
 		rif40_run_RB<-paste0(scratchSpace, "rif40_run_R.bat") # Target
 		if (!file.exists(rif40_run_RB)) {
-			print(paste("Copy: ", rif40_run_RA, " to: ", rif40_run_RB))	
+			cat(paste("Copy: ", rif40_run_RA, " to: ", rif40_run_RB, "\n"), sep="")	
 
 			tryCatch({			
 				file.copy(rif40_run_RA, rif40_run_RB)
 			},
 			warning=function(w) {
-				print(paste("UNABLE to copy: ", rif40_run_RA, " to: ", rif40_run_RB, w))
+				cat(paste("UNABLE to copy: ", rif40_run_RA, " to: ", rif40_run_RB, w, "\n"), sep="")
 				exitValue <<- 0
 			},
 			error=function(e) {
-				print(paste("ERROR copying: ", rif40_run_RA, " to: ", rif40_run_RB, e))
+				cat(paste("ERROR copying: ", rif40_run_RA, " to: ", rif40_run_RB, e, "\n"), sep="")
 				exitValue <<- 1
 			}) # End of tryCatch
 		}
 		else {
-			print(paste("WARNING! No need to copy: ", rif40_run_RA, " to: ", rif40_run_RB))
+			cat(paste("WARNING! No need to copy: ", rif40_run_RA, " to: ", rif40_run_RB, "\n"), sep="")
 		}
 		
 #
@@ -237,16 +237,16 @@ establishTableNames <-function(vstudyID) {
 		
 		rif40_run_R_envB<-paste0(scratchSpace, "rif40_run_R_env.bat") # Target
 		
-		print(paste("Create: ", rif40_run_R_envB))	
+		cat(paste("Create: ", rif40_run_R_envB, "\n"), sep="")	
 		tryCatch({			
 			cat(rif40_run_R_env, file=rif40_run_R_envB)
 		},
 		warning=function(w) {
-			print(paste("UNABLE to create: ", rif40_run_RB, w))
+			cat(paste("UNABLE to create: ", rif40_run_RB, w, "\n"), sep="")
 			exitValue <<- 0
 		},
 		error=function(e) {
-			print(paste("ERROR creating: ", rif40_run_RB, e))
+			cat(paste("ERROR creating: ", rif40_run_RB, e, "\n"), sep="")
 			exitValue <<- 1
 		}) # End of tryCatch
 	}
