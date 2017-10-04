@@ -62,6 +62,7 @@ IF EXIST rif40_run_R_env.bat (
 	exit /b 1
 )
 IF NOT DEFINED PASSWORD (
+	SET /P PASSWORD=Password [default %USERID%]: %=% || SET NEWUSER=%USERID%
 )
 
 ECHO ##########################################################################################
