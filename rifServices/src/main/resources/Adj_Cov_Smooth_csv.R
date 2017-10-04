@@ -37,7 +37,7 @@
 #   Adjusted for covariates
 #   Apply Bayesian smoothing with INLA
 #
-#   JRI version for calling from Middleware
+#   CSV file driven version for trace
 #
 ############################################################################################################
 
@@ -67,7 +67,6 @@ library(Matrix)
 connDB <- ""	# Database connection
 exitValue <- 0 	# 0 success, 1 failure
 errorCount <- 0	# Smoothing error count
-
 				
 #Adjust for other covariate(s) or not
 #Reformat Java type > R
@@ -132,7 +131,7 @@ establishTableNames <-function(vstudyID) {
 			exitValue <<- 0
 		},
 		error=function(e) {
-			print(paste("ERROR creating scratchSpace: ", scratchSpace, e))
+			print(paste("ERROR creating scratchSpace: ", scratchSpace, geterrmessage()))
 			exitValue <<- 1
 		}) # End of tryCatch
 
@@ -148,110 +147,9 @@ establishTableNames <-function(vstudyID) {
 #its fields and fields that appear in the map table skeleton.
   
 	temporarySmoothedResultsTableName <<-paste(userID, ".tmp_s", vstudyID, "_map", sep="")
-	
-#
-# Install scripts required to re-run study
-#
-	if (exists("catalina_home")) {
-		performSmoothingActivityScriptA<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\performSmoothingActivity.R") # Source
-		performSmoothingActivityScriptB<-paste0(scratchSpace, "performSmoothingActivity.R") # Target
-		if (!file.exists(performSmoothingActivityScriptB)) {
-			print(paste("Copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB))	
 
-			tryCatch({			
-				file.copy(performSmoothingActivityScriptA, performSmoothingActivityScriptB)
-			},
-			warning=function(w) {
-				print(paste("UNABLE to copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, w))
-				exitValue <<- 0
-			},
-			error=function(e) {
-				print(paste("ERROR copying: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, e))
-				exitValue <<- 1
-			}) # End of tryCatch
-		}
-		else {
-			print(paste("WARNING! No need to copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB))
-		}
-		
-		Adj_Cov_Smooth_csvA<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth_csv.R") # Source
-		Adj_Cov_Smooth_csvB<-paste0(scratchSpace, "Adj_Cov_Smooth_csv.R") # Target
-		if (!file.exists(Adj_Cov_Smooth_csvB)) {
-			print(paste("Copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB))	
-
-			tryCatch({			
-				file.copy(Adj_Cov_Smooth_csvA, Adj_Cov_Smooth_csvB)
-			},
-			warning=function(w) {
-				print(paste("UNABLE to copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, w))
-				exitValue <<- 0
-			},
-			error=function(e) {
-				print(paste("ERROR copying: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, e))
-				exitValue <<- 1
-			}) # End of tryCatch
-		}
-		else {
-			print(paste("WARNING! No need to copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB))
-		}
-				
-		rif40_run_RA<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\rif40_run_R.bat") # Source
-		rif40_run_RB<-paste0(scratchSpace, "rif40_run_R.bat") # Target
-		if (!file.exists(rif40_run_RB)) {
-			print(paste("Copy: ", rif40_run_RA, " to: ", rif40_run_RB))	
-
-			tryCatch({			
-				file.copy(rif40_run_RA, rif40_run_RB)
-			},
-			warning=function(w) {
-				print(paste("UNABLE to copy: ", rif40_run_RA, " to: ", rif40_run_RB, w))
-				exitValue <<- 0
-			},
-			error=function(e) {
-				print(paste("ERROR copying: ", rif40_run_RA, " to: ", rif40_run_RB, e))
-				exitValue <<- 1
-			}) # End of tryCatch
-		}
-		else {
-			print(paste("WARNING! No need to copy: ", rif40_run_RA, " to: ", rif40_run_RB))
-		}
-		
-#
-# Create rif40_run_R_env.bat
-#
-		rif40_run_R_env=paste(
-					paste0("SET USERID=", userID),
-					paste0("SET PASSWORD=", password),
-					paste0("SET DBNAME=", dbName),
-					paste0("SET DBHOST=", dbHost),
-					paste0("SET DBPORT=", dbPort),
-					paste0("SET DB_DRIVER_PREFIX=", db_driver_prefix),
-					paste0("SET DB_DRIVER_CLASS_NAME=", db_driver_class_name),
-					paste0("SET STUDYID=", studyID),
-					paste0("SET INVESTIGATIONNAME=", investigationName),
-					paste0("SET INVESTIGATIONID=", investigationId),
-					paste0("SET ODBCDATASOURCE=", odbcDataSource),
-					paste0("SET MODEL=", model),
-					paste0("SET NAMES.ADJ.1=", names.adj.1),			
-					paste0("SET ADJ.1=", adj.1),
-				sep="\n");
-		
-		rif40_run_R_envB<-paste0(scratchSpace, "rif40_run_R_env.bat") # Target
-		
-		print(paste("Create: ", rif40_run_R_envB))	
-		tryCatch({			
-			cat(rif40_run_R_env, file=rif40_run_R_envB)
-		},
-		warning=function(w) {
-			print(paste("UNABLE to create: ", rif40_run_RB, w))
-			exitValue <<- 0
-		},
-		error=function(e) {
-			print(paste("ERROR creating: ", rif40_run_RB, e))
-			exitValue <<- 1
-		}) # End of tryCatch
-	}
 }
+
 
 #make and ODBC connection
 #dbHost = 'networkRif'
@@ -447,7 +345,7 @@ runRSmoothingFunctions <- function() {
 
 	# Print trace
 	if (length(errorTrace)-1 > 0) {
-		cat(errorTrace, sep="\n")
+		print(paste(errorTrace, sep="\n"))
 	}
 	
 	if (exitValue == 0 && !is.na(connDB)) {
@@ -461,4 +359,159 @@ runRSmoothingFunctions <- function() {
 	print(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1))
 
 	return(list(exitValue=exitValue, errorTrace=errorTrace))
+}
+
+##====================================================================
+## FUNCTION: processCommandLineArguments
+## DESCRIPTION: parses the command line arguments and returns a data
+## frame that has two named columns: name and value
+##====================================================================
+processCommandLineArguments <- function() {
+ 
+#File names for smoothed (temporarySmoothedResultsFileName) and extract data frames (temporaryExtractFileName)
+#Variable to control dumping franes (dumpFramesToCsv)
+  defaultScratchSpace <- "c:\\rifDemo\\scratchSpace\\"
+  defaultDumpFramesToCsv <- FALSE
+ 
+  allArgs <- commandArgs(trailingOnly=TRUE)
+  numCommandLineArgs <- length(allArgs)
+  
+  refinedList <- list()
+  
+  if (numCommandLineArgs==0) {
+    print("No arguments supplied")
+  }else{
+    print(paste0(numCommandLineArgs, " arguments were supplied"))
+    for (i in 1:numCommandLineArgs) {
+      ##Filter command arguments that fit the form
+      ##--X=Y
+      if (grepl('^--', allArgs[i]) == TRUE) {
+        refinedList <- c(refinedList, allArgs[i])
+      }
+    }
+    parsedNameValuePairs <- strsplit(sub("^--", "", refinedList), "=")
+    parametersDataFrame <- as.data.frame(do.call("rbind", parsedNameValuePairs))
+    names(parametersDataFrame)[1] <- paste("name")
+    names(parametersDataFrame)[2] <- paste("value")	
+    
+    print("Parsing parameters")
+    for (i in 1:nrow(parametersDataFrame)) {
+		
+      if (grepl('userID', parametersDataFrame[i, 1]) == TRUE) {
+        userID <<- parametersDataFrame[i, 2]
+      } else if (grepl('password', parametersDataFrame[i, 1]) == TRUE){
+		password <<- parametersDataFrame[i, 2]
+		parametersDataFrame[i, 2] <- NA	 
+      } else if (grepl('dbName', parametersDataFrame[i, 1]) == TRUE){
+        dbName <<- parametersDataFrame[i, 2]
+      } else if (grepl('dbHost', parametersDataFrame[i, 1]) == TRUE){
+        dbHost <<- parametersDataFrame[i, 2]
+      } else if (grepl('dbPort', parametersDataFrame[i, 1]) == TRUE){
+        dbPort <<- parametersDataFrame[i, 2]
+      } else if (grepl('db_driver_prefix', parametersDataFrame[i, 1]) == TRUE){
+        db_driver_prefix <<- parametersDataFrame[i, 2]
+      } else if (grepl('db_driver_class_name', parametersDataFrame[i, 1]) == TRUE){
+        db_driver_class_name <<- parametersDataFrame[i, 2]	
+      } else if (grepl('scratchspace', parametersDataFrame[i, 1]) == TRUE){
+        scratchSpace <<- parametersDataFrame[i, 2]
+      } else if (grepl('dumpframestocsv', parametersDataFrame[i, 1]) == TRUE){
+		if (parametersDataFrame[i, 2] == "true" || parametersDataFrame[i, 2] == "TRUE") {
+			dumpFramesToCsv <<- TRUE
+		}
+      } else if (grepl('study_id', parametersDataFrame[i, 1]) == TRUE){
+        studyID <<- parametersDataFrame[i, 2]
+      } else if (grepl('num_investigations', parametersDataFrame[i, 1]) == TRUE){
+        numberOfInvestigations <<- parametersDataFrame[i, 2]
+      } else if (grepl('investigationName', parametersDataFrame[i, 1]) == TRUE){
+        investigationName <<- parametersDataFrame[i, 2]
+      } else if (grepl('investigationId', parametersDataFrame[i, 1]) == TRUE){
+        investigationId <<- parametersDataFrame[i, 2]
+      } else if (grepl('odbcDataSource', parametersDataFrame[i, 1]) == TRUE){
+        odbcDataSource <<- parametersDataFrame[i, 2]
+      } else if (grepl('model', parametersDataFrame[i, 1]) == TRUE){
+        model <<- parametersDataFrame[i, 2]
+      } else if (grepl('names.adj.1', parametersDataFrame[i, 1]) == TRUE){
+        names.adj.1 <<- parametersDataFrame[i, 2]
+      } else if (grepl('adj.1', parametersDataFrame[i, 1]) == TRUE){
+       adj.1 <<- parametersDataFrame[i, 2]
+      } else if (grepl('scratchSpace', parametersDataFrame[i, 1]) == TRUE){
+       scratchSpace <<- parametersDataFrame[i, 2]
+      } else if (grepl('dumpFramesToCsv', parametersDataFrame[i, 1]) == TRUE){
+       dumpFramesToCsv <<- parametersDataFrame[i, 2]
+      }
+    }
+
+	# Set defaults
+	if (scratchSpace == "") {
+	  scratchSpace <<- defaultScratchSpace
+	  newRow <- data.frame(name="scratchSpace", value=scratchSpace)
+	  parametersDataFrame = rbind(parametersDataFrame, newRow)
+	}
+	if (dumpFramesToCsv == "") {
+	  dumpFramesToCsv <<- defaultDumpFramesToCsv
+	  newRow <- data.frame(name="dumpFramesToCsv", value=dumpFramesToCsv)
+	  parametersDataFrame = rbind(parametersDataFrame, newRow)
+	}
+	
+    return(parametersDataFrame)
+  }
+}
+
+#
+hasperformSmoothingActivityScript<-FALSE
+hasAdj_Cov_Smooth_csv<-FALSE
+if (exists("catalina_home")) {
+	performSmoothingActivityScript<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\performSmoothingActivity.R")
+	
+	if (!file.exists(performSmoothingActivityScript)) {
+		hasperformSmoothingActivityScript<-TRUE
+		print(paste("Source: ", performSmoothingActivityScript))
+		source(performSmoothingActivityScript)
+	}
+	
+	Adj_Cov_Smooth_csvScript<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth_csv.R")
+	
+	if (file.exists(Adj_Cov_Smooth_csvScript)) {
+		hasAdj_Cov_Smooth_csv<-TRUE
+		print(paste("Source: ", Adj_Cov_Smooth_csvScript))
+		source(Adj_Cov_Smooth_csvScript)
+	}	
+}
+else if (!hasperformSmoothingActivityScript) {
+	performSmoothingActivityScript<-paste0(catalina_home, "performSmoothingActivity.R")
+	
+	if (file.exists(performSmoothingActivityScript)) {
+		hasperformSmoothingActivityScript<-TRUE
+		print(paste("Source: ", performSmoothingActivityScript))
+		source(performSmoothingActivityScript)
+	}
+
+}
+else if (!hasAdj_Cov_Smooth_csv) {	
+	Adj_Cov_Smooth_csvScript<-paste0(catalina_home, "Adj_Cov_Smooth_csv.R")
+	
+	if (file.exists(Adj_Cov_Smooth_csvScript)) {
+		hasAdj_Cov_Smooth_csv<-TRUE
+		print(paste("Source: ", Adj_Cov_Smooth_csvScript))
+		source(Adj_Cov_Smooth_csvScript)
+	}	
+}
+
+if (hasperformSmoothingActivityScript && hasAdj_Cov_Smooth_csv) {
+#
+		processCommandLineArguments()
+#	returnValues <- runRSmoothingFunctions()
+}
+else {
+	returnValues <- list(exitValue=1, errorTrace="Cannot find R scripts")
+}
+
+if (returnValues$list == 0) {
+	print("R script had error:")
+	print(errorTrace)
+	quit("no", 0, FALSE)
+}
+else {
+	print("R script ran OK")
+	quit("no", 1, FALSE)
 }
