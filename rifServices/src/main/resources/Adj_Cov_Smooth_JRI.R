@@ -322,13 +322,13 @@ check.integer <- function(N) {
 	
 	check.integer.Result<-(isNumeric && isInteger && isNotRounded && isIntRegexp)
 	
-	print(paste0("check.integer: ", str,
+	cat(paste0("check.integer: ", str,
 		"; as.numeric(str): ", suppressWarnings(as.numeric(str)),
 		"; isNumeric: ", isNumeric,
 		"; isInteger: ", isInteger,
 		"; isNotRounded: ", isNotRounded,
 		"; isIntRegexp: ", isIntRegexp,
-		"; check.integer.Result: ", check.integer.Result))
+		"; check.integer.Result: ", check.integer.Result, "\n"), sep="")
 	
     return(check.integer.Result)
 }
@@ -378,12 +378,12 @@ runRSmoothingFunctions <- function() {
 	connDB=dbConnect()
 
 	if (exitValue == 0) {  
+		cat("Performing basic stats and smoothing\n")	
 		errorTrace<-capture.output({
 			# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
 					
 			tryCatch({
 					withErrorTracing({  				
-						print("Performing basic stats and smoothing")	
 #
 # extract the relevant Study data
 #
@@ -402,40 +402,40 @@ runRSmoothingFunctions <- function() {
 					})
 				},
 				warning=function(w) {		
-					print(paste("callPerformSmoothingActivity() WARNING: ", w))
+					cat(paste("callPerformSmoothingActivity() WARNING: ", w, "\n"), sep="")
 					exitValue <<- 1
 				},
 				error=function(e) {
 					e <<- e
-					print(paste("callPerformSmoothingActivity() ERROR: ", e$message, 
-						"; call stack: ", e$call))
+					cat(paste("callPerformSmoothingActivity() ERROR: ", e$message, 
+						"; call stack: ", e$call, "\n"), sep="")
 					exitValue <<- 1
 				},
 				finally={
-					print(paste0("callPerformSmoothingActivity exitValue: ", exitValue))
+					cat(paste0("callPerformSmoothingActivity exitValue: ", exitValue, "\n"), sep="")
 					if (exitValue == 0) {
-						print(paste("performSmoothingActivity() OK: ", exitValue))
+						cat(paste("performSmoothingActivity() OK: ", exitValue, "\n"), sep="")
 							
 						# Cast area_id to char. This is ignored by sqlSave!
 						area_id_is_integer <- FALSE
 						if ("area_id" %in% colnames(result)) {
-							print(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]), 
+							cat(paste("typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]), 
 								"; check.integer(result$area_id[1]): ", check.integer(result$area_id[1]),
-								"; result$area_id[1]: ", result$area_id[1]))
+								"; result$area_id[1]: ", result$area_id[1], "\n"), sep="")
 							 
 							# Use check.integer() to reliably test if the string is an integer 
 							if (check.integer(result$area_id[1])) {
 								area_id_is_integer <- TRUE
 								result$area_id <- sapply(result$area_id, as.character)
-								print(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]),
-									"; result$area_id[1]: ", result$area_id[1]))
+								cat(paste("AFTER CAST typeof(result$area_id[1]) ----> ", typeof(result$area_id[1]),
+									"; result$area_id[1]: ", result$area_id[1], "\n"), sep="")
 							}
 
 							saveDataFrameToDatabaseTable(result)
 							updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue  
 						}
 						else {
-							print("ERROR! No result$area_id column found")
+							cat("ERROR! No result$area_id column found\n")
 							exitValue <<- 1
 						}
 					}
@@ -457,7 +457,7 @@ runRSmoothingFunctions <- function() {
 	if (!is.na(connDB)) {
 		dbDisConnect()
 	}
-	print(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1))
+	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 
 	return(list(exitValue=exitValue, errorTrace=errorTrace))
 }

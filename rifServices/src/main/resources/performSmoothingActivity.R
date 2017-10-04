@@ -45,6 +45,7 @@
 ##====================================================================
 performSmoothingActivity <- function(data, AdjRowset) {
 						
+  cat("Covariates: ", paste0(names.adj), "\n", sep="")
   if (investigationName != "inv_1"){
     #add a column (inv_1) to data and populate is with InvestigationName data for simplicity
     inv_1 = 0;
@@ -54,7 +55,8 @@ performSmoothingActivity <- function(data, AdjRowset) {
     ColNames = toupper(names(data))
     invcol =  which(ColNames==toupper(investigationName))
     if (length(invcol)==0){
-      print(paste('The column defined by the investigation_name parameter: ', investigationName, 'not found in data table. Data assumed to be all zero!'))
+      cat(paste('The column defined by the investigation_name parameter: ', investigationName, 
+		'not found in data table. Data assumed to be all zero!\n'), sep="")
     }
     else{
       #copy to the new inv_1 column
@@ -87,7 +89,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
       id=which(toupper(names(data))==toupper(names.adj[i]))
       ic=which(toupper(names(comp))==toupper(names.adj[i]))
       if (length(id)==0|length(ic)==0){
-        print(paste('covariate', names.adj[i], 'not found, data will not be adjusted for it!'))
+        cat(paste('covariate', names.adj[i], 'not found, data will not be adjusted for it!\n'), sep="")
       }else{
         i.d.adj=c(i.d.adj,id)
         i.c.adj=c(i.c.adj,ic)
@@ -447,7 +449,9 @@ performSmoothingActivity <- function(data, AdjRowset) {
       Exp='EXP_ADJ'
       Sadj='ADJ'
     }
-    if (length(which(names(data)==Exp))==0) {print('The Expected counts for the adjustement given does not exist in data.')}
+    if (length(which(names(data)==Exp))==0) {
+		cat('The Expected counts for the adjustement given does not exist in data.\n')
+	}
     
     # do we need the mean_neigh function?
     
@@ -484,7 +488,6 @@ performSmoothingActivity <- function(data, AdjRowset) {
       else if (length(wr) > 1) {
         #throw an exception because there are duplicate areas_ids in the adjacency list
         stop(paste("duplicate areas_ids: ", wr , " in the adjacency list"))
-        #		print(paste("duplicate areas_ids: ", wr , " in the adjacency list"))
       } 
       else if (length(wr) == 1){
         rowNums<-c(rowNums,i)
@@ -499,7 +502,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
           #          colNums<-c(colNums,whichIndex[1])
           
           if (length(whichIndex) == 0) {
-            print(paste0("[Ignored] Area: ", AdjRowset$area_id[i], " Invalid adjacent Area: "  ,neighbours[[1]][j]))
+            cat(paste0("[Ignored] Area: ", AdjRowset$area_id[i], " Invalid adjacent Area: "  ,neighbours[[1]][j], "\n"), sep="")
             # Print a message, but ignore the nieghbours which shouldn't be in the list
           }
           else {
@@ -522,7 +525,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     data$POSTERIOR_PROBABILITY=NA
     if (adj==FALSE){
       if (model=='BYM'){
-        print("Bayes smoothing with BYM model type no adjustment")
+        cat("Bayes smoothing with BYM model type no adjustment\n")
         # need to set adjust.for.con.comp = FALSE for now
         # while the GetAdjacencyRows function isn't working propery. This means the BYM and CAR models won't work propery
         formula=observed~f(area_order,model='bym',graph=IM, adjust.for.con.comp = FALSE, 
@@ -537,7 +540,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
         data$BYM_ssRRU95_UNADJ=NA
       }
       if (model=='HET'){
-        print("Bayes smoothing with HET model type no adjustment")
+        cat("Bayes smoothing with HET model type no adjustment\n")
         formula=observed~f(area_order, model='iid',
                            hyper=list(prec=list(param=c(0.5,0.0005))))
         data$HET_RR_UNADJ=NA
@@ -545,7 +548,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
         data$HET_RRU95_UNADJ=NA
       }
       if (model=='CAR'){
-        print("Bayes smoothing with CAR model type no adjustment")
+        cat("Bayes smoothing with CAR model type no adjustment\n")
         # need to set adjust.for.con.comp = FALSE for now
         # while the GetAdjacencyRows function isn't working propery. This means the BYM and CAR models won't work propery
         formula=observed~f(area_order, model='besag', graph=IM,adjust.for.con.comp = FALSE,
@@ -556,7 +559,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
       }
     }else {
       if (model=='BYM'){
-        print("Bayes smoothing with BYM model type, adjusted")
+        cat("Bayes smoothing with BYM model type, adjusted\n")
         # need to set adjust.for.con.comp = FALSE for now
         # while the GetAdjacencyRows function isn't working propery. This means the BYM and CAR models won't work propery
         formula=observed~f(area_order,model='bym',graph=IM, adjust.for.con.comp = FALSE,
@@ -571,7 +574,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
         data$BYM_ssRRU95_ADJ=NA
       }
       if (model=='HET'){
-        print("Bayes smoothing with HET model type, adjusted")
+        cat("Bayes smoothing with HET model type, adjusted\n")
         formula=observed~f(area_order, model='iid',
                            hyper=list(prec=list(param=c(0.5,0.0005))))
         data$HET_RR_ADJ=NA
@@ -579,7 +582,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
         data$HET_RRU95_ADJ=NA
       }
       if (model=='CAR'){
-        print("Bayes smoothing with CAR model type, adjusted")
+        cat("Bayes smoothing with CAR model type, adjusted\n")
         # need to set adjust.for.con.comp = FALSE for now
         # while the GetAdjacencyRows function isn't working propery. This means the BYM and CAR models won't work propery
         formula=observed~f(area_order, model='besag',graph=IM, adjust.for.con.comp = FALSE, 
@@ -663,10 +666,10 @@ performSmoothingActivity <- function(data, AdjRowset) {
       prob.csi<- lapply(csi, function(x) {1 - inla.pmarginal(a, x)})
       data$POSTERIOR_PROBABILITY[whichrows]=unlist(prob.csi)
     }
-    print("Posterior probability calculated")
+    cat("Posterior probability calculated\n")
   }  #end if model == BYM or HET or CAR
   else {       
-    print("No Bayesian smoothing performed") 
+    cat("No Bayesian smoothing performed\n") 
     }
   
   # call the function to convert data to the format the db is expecting
