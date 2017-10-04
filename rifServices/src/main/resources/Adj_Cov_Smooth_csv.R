@@ -457,7 +457,7 @@ processCommandLineArguments <- function() {
            adj <<- TRUE
         } else {
 		   adj <<- FALSE
-		   names.adj <<- c()
+		   names.adj<-c('none')
 		}
       } else {
 		cat(paste("WARNING! Unexpected paremeter: ",  parametersDataFrame[i, 1], "=",  parametersDataFrame[i, 2], "\n", sep=""))
