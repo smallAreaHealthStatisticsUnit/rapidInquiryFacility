@@ -1,13 +1,13 @@
-10:17:38.889 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep]:
+17:06:02.767 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
 Rengine Started
-10:17:38.925 [http-nio-8080-exec-9] INFO : [rifServices.system.RIFServiceStartupOptions]:
+17:06:02.787 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
 RIFServiceStartupOptions is web deployment
-10:17:38.925 [http-nio-8080-exec-9] INFO : [rifServices.system.RIFServiceStartupOptions]:
+17:06:02.787 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
 Get CATALINA_HOME=C:\Program Files\Apache Software Foundation\Tomcat 8.5
-10:17:38.925 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep]:
-rScriptPath==C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth_JRI.R==
-10:17:40.791 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLAbstractRService$LoggingConsole]:
-rFlushConsole[2] calls: 61, length: 1458, time period: PT2.153S
+17:06:02.788 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
+Source: Adj_Cov_Smooth_JRI="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth_JRI.R"
+17:06:04.418 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
+rFlushConsole[1] calls: 62, length: 1458, time period: PT1.892S
 
 R version 3.4.0 (2017-04-21) -- "You Stupid Darkness"
 Copyright (C) 2017 The R Foundation for Statistical Computing
@@ -49,90 +49,66 @@ R Error/Warning/Notice: Loading required package: Matrix
 R Error/Warning/Notice: This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
 See www.r-inla.org/contact-us for how to get help.
 
-10:17:43.105 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLAbstractRService$LoggingConsole]:
-rFlushConsole[3] calls: 28, length: 638, time period: PT2.313S
+17:06:04.980 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
+Source: RIF_odbc="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\RIF_odbc.R"
+17:06:04.996 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
+Source: performSmoothingActivity="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\performSmoothingActivity.R"
+17:06:24.801 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
+rFlushConsole[2] calls: 8, length: 957, time period: PT20.382S
 
 R Error/Warning/Notice: Checking rgeos availability: FALSE
  	Note: when rgeos is not available, polygon geometry 	computations in maptools depend on gpclib,
  	which has a restricted licence. It is disabled by default;
  	to enable gpclib, type gpclibPermit()
-[1] "Connect to database: PostgreSQL35W"
-        DBMS_Name          DBMS_Ver   Driver_ODBC_Ver  Data_Source_Name 
-     "PostgreSQL"           "9.5.0"           "03.51"   "PostgreSQL35W" 
-      Driver_Name        Driver_Ver          ODBC_Ver       Server_Name 
-"PSQLODBC35W.DLL"      "09.06.0200"      "03.80.0000"       "localhost" 
-[1] "Performing basic stats and smoothing"
-[1]
-10:17:46.251 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLAbstractRService$LoggingConsole]:
-rFlushConsole[4] calls: 9, length: 147, time period: PT3.146S
+Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\performSmoothingActivity.R  to:  c:\rifDemo\scratchSpace\s33\performSmoothingActivity.R 
+Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\Adj_Cov_Smooth_csv.R  to:  c:\rifDemo\scratchSpace\s33\Adj_Cov_Smooth_csv.R 
+Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\rif40_run_R.bat  to:  c:\rifDemo\scratchSpace\s33\rif40_run_R.bat 
+Create:  c:\rifDemo\scratchSpace\s33\rif40_run_R_env.bat 
+Connect to database: SQLServer11
+Performing basic stats and smoothing
+EXTRACT TABLE NAME: rif_studies.s33_extract
+17:06:24.816 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
+rFlushConsole[3] calls: 75, length: 2422, time period: PT59.244S
 
- "============EXTRACT TABLE NAME ===================="
-[1] "rif_studies.s39_extract"
-[1] "============EXTRACT TABLE NAME ===================="
-[1]
-10:17:49.791 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLAbstractRService$LoggingConsole]:
-rFlushConsole[5] calls: 3, length: 79, time period: PT3.54S
 
- "Saving extract frame to: c:\\rifDemo\\scratchSpace\\tmp_s39_extract.csv"
-[1]
-10:18:00.550 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLAbstractRService$LoggingConsole]:
-rFlushConsole[6] calls: 6, length: 104, time period: PT10.759S
+Saving extract frame to: c:\rifDemo\scratchSpace\s33\tmp_s33_extract.csv
+rif_studies.s33_extract numberOfRows=433312==
+rif40_GetAdjacencyMatrix numberOfRows=1229==
+Saving adjacency matrix to: c:\rifDemo\scratchSpace\s33\tmp_s33_adjacency_matrix.csv
+Covariates: none
+Bayes smoothing with BYM model type no adjustment
+Stack tracer >>>
 
- "rif_studies.s39_extract numberOfRows=433312=="
-[1] "rif40_GetAdjacencyMatrix numberOfRows=1229=="
-[1]
-10:18:01.088 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLAbstractRService$LoggingConsole]:
-rFlushConsole[7] calls: 77, length: 3130, time period: PT0.538S
+ .handleSimpleError(function (obj) 
+{
+    calls = sys.calls()
+    calls = ca <text>#1: INLA::f(area_order, model = "bym", graph = IM, adjust.for.con.com eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo inla.interpret.formula(formula, data.same.len = data.same.len, data = data, performSmoothingActivity.R#609: inla(formula, family = "poisson", E = EXP_U performSmoothingActivity(data, AdjRowset) Adj_Cov_Smooth_JRI.R#360: withVisible(expr) Adj_Cov_Smooth_JRI.R#360: withCallingHandlers(withVisible(expr), error = er withErrorTracing({
+    data = fetchExtractTable()
+    AdjRowset = getAdjace doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names, parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryCatch({
+    withErrorTracing({
+        data = fetchExtractTable()
+       eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) Adj_Cov_Smooth_JRI.R#381: capture.output({
+    tryCatch({
+        withError runRSmoothingFunctions() 
+<<< End of stack tracer.
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  if 
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  scale.model 
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
+    if (constr) 
+        rankdef = rankdef + 1
+    if (!empty.extraconstr(extraconstr)) 
+        rankdef = rankdef + dim(extraconstr$A)[1]
+} 
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
+    if (constr) 
+        rankdef = rankdef + 1
+    rankdef = rankdef + cc.n1
+    if (!empty.extraconstr(extraconstr)) 
+        rankdef = rankdef + dim(extraconstr$A)[1]
+} 
+callPerformSmoothingActivity exitValue: 1
+Closing database connection
+Adj_Cov_Smooth_JRI.R exitValue: 1; error tracer: 36
 
- "Bayes smoothing with BYM model type no adjustment"
- [1] "Error occuring: .handleSimpleError(function (obj) \n{\n    calls = sys.calls()\n    calls = ca"   
- [2] "Error occuring: <text>#1: INLA::f(area_order, model = \"bym\", graph = IM, adjust.for.con.com"    
- [3] "Error occuring: eval(parse(text = gsub(\"^f\\\\(\", \"INLA::f(\", terms[i])), envir = data, enclo"
- [4] "Error occuring: eval(parse(text = gsub(\"^f\\\\(\", \"INLA::f(\", terms[i])), envir = data, enclo"
- [5] "Error occuring: inla.interpret.formula(formula, data.same.len = data.same.len, data = data,"      
- [6] "Error occuring: Adj_Cov_Smooth_JRI.R#840: inla(formula, family = \"poisson\", E = EXP_UNADJ, "    
- [7] "Error occuring: Adj_Cov_Smooth_JRI.R#1396: performSmoothingActivity()"                            
- [8] "Error occuring: Adj_Cov_Smooth_JRI.R#1361: withVisible(expr)"                                     
- [9] "Error occuring: Adj_Cov_Smooth_JRI.R#1361: withCallingHandlers(withVisible(expr), error = e"      
-[10] "Error occuring: Adj_Cov_Smooth_JRI.R#1396: withErrorTracing({\n    result <- performSmoothin"     
-[11] "Error occuring: doTryCatch(return(expr), name, parentenv, handler)"                               
-[12] "Error occuring: tryCatchOne(expr, names, parentenv, handlers[[1]])"                               
-[13] "Error occuring: tryCatchList(expr, names[-nh], parentenv, handlers[-nh])"                         
-[14] "Error occuring: doTryCatch(return(expr), name, parentenv, handler)"                               
-[15] "Error occuring: tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names"      
-[16] "Error occuring: tryCatchList(expr, classes, parentenv, handlers)"                                 
-[17] "Error occuring: Adj_Cov_Smooth_JRI.R#1395: tryCatch({\n    withErrorTracing({\n        result"    
-[18] "Error occuring: runRSmoothingFunctions()"                                                         
-[1] "performSmoothingActivity() ERROR[ 1 ]:  argument is of length zero ; call stack:  if"                                                                                                                                                                                
-[2] "performSmoothingActivity() ERROR[ 1 ]:  argument is of length zero ; call stack:  scale.model"                                                                                                                                                                       
-[3] "performSmoothingActivity() ERROR[ 1 ]:  argument is of length zero ; call stack:  {\n    if (constr) \n        rankdef = rankdef + 1\n    if (!empty.extraconstr(extraconstr)) \n        rankdef = rankdef + dim(extraconstr$A)[1]\n}"                               
-[4] "performSmoothingActivity() ERROR[ 1 ]:  argument is of length zero ; call stack:  {\n    if (constr) \n        rankdef = rankdef + 1\n    rankdef = rankdef + cc.n1\n    if (!empty.extraconstr(extraconstr)) \n        rankdef = rankdef + dim(extraconstr$A)[1]\n}"
-[1] "performSmoothingActivity exitValue: 1"
-[1] "Closing database connection"
-[1] "Adj_Cov_Smooth_JRI.R exitValue: 1"
-
-10:18:01.088 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep]:
+17:06:24.817 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
 Rengine Stopped, exit value==1==
-10:18:01.088 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLStudyStateManager]:
-SQLStudyStateManager updateStudyStatus: study_id: 39; state: R; statusMessage: The study results have been computed and they are now ready to be used.
-10:18:01.088 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLStudyStateManager]:
-PGSQLAbstractSQLManager logSQLQuery >>>
-QUERY NAME: createStatusTable
-PARAMETERS:
-	1:"user"
-PGSQL QUERY TEXT: 
-CREATE TABLE IF NOT EXISTS peter.study_status ( 
-   study_id INTEGER NOT NULL,
-   study_state VARCHAR NOT NULL,
-   creation_date TIMESTAMP NOT NULL,
-   ith_update SERIAL NOT NULL,
-   message VARCHAR(255))
-
-<<< End PGSQLAbstractSQLManager logSQLQuery
-
-10:18:01.092 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLStudyStateManager]:
-SQLStudyStateManager: study_id: 39; COMMIT
-10:18:01.092 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLRunStudyThread]:
-run smooth results AFTER state==Study results computed==
-10:18:01.293 [http-nio-8080-exec-9] INFO : [rifServices.dataStorageLayer.pg.PGSQLRunStudyThread]:
-Finished!!

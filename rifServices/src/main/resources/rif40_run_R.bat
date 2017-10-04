@@ -61,13 +61,15 @@ IF EXIST rif40_run_R_env.bat (
 	ECHO File not found: rif40_run_R_env.bat
 	exit /b 1
 )
+IF NOT DEFINED PASSWORD (
+	SET /P PASSWORD=Password [default %USERID%]: %=% || SET NEWUSER=%USERID%
+)
 
 ECHO ##########################################################################################
 ECHO #
 ECHO # Run R script on a study extract.
 ECHO # 
 ECHO # USERID=%USERID%
-ECHO # PASSWORD=%PASSWORD%
 ECHO # DBNAME=%DBNAME%
 ECHO # DBHOST=%DBHOST%
 ECHO # DBPORT=%DBPORT%
