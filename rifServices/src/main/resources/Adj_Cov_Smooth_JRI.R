@@ -351,7 +351,7 @@ withErrorTracing = function(expr, silentSuccess=FALSE) {
         # Printing the 2nd and 3rd traces that contain the line where the error occured
         # This is the part you might want to edit to suit your needs
         #print(paste0("Error occuring: ", trace[length(trace):1][2:3]))
-        cat("Stack tracer:", trace[length(trace):1], "\n")
+        cat("Stack tracer >>>\n\n", trace[length(trace):1], "\n<<< End of stack tracer.\n")
         # Muffle any redundant output of the same message
         optionalRestart = function(r) { res = findRestart(r); if (!is.null(res)) invokeRestart(res) }
         optionalRestart("muffleMessage")
