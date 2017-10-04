@@ -1646,6 +1646,7 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Factor out R smoothing code into separate file (for tracing R faults)
 * Per study scratch directory
 * Create scripts in scratch directory to re-run R
+* Now able to re-run R analysis from scratch directory without needing tomcat/Java etc
  
 #### Database TODO list (deferred to November 2017): SQL Server Port
 

@@ -68,26 +68,64 @@ connDB <- ""	# Database connection
 exitValue <- 0 	# 0 success, 1 failure
 errorCount <- 0	# Smoothing error count
 				
-#Adjust for other covariate(s) or not
-#Reformat Java type > R
-adj <- FALSE #either true or false
-if (adj.1 == "TRUE") {
-  adj <- TRUE
-}
+#CATALINA_HOME
+catalina_home<-Sys.getenv("CATALINA_HOME")
 
-# Ignore CONTROL-C interrupts
-#signal("SIGINT","ignore") # DOES NOT WORK!
+##====================================================================
+# SCRIPT VARIABLES
+##====================================================================
+#Variables that hold database connectivity information.  For now, we
+#will rely on named ODBC sources but in future the script should be 
+#altered to use host:port/databaseName
+userID <- ""
+password <- ""
+dbName <- "rif_studies"
+dbHost <- ""
+dbPort <- ""
+db_driver_prefix <- ""
+db_driver_class_name <- ""
+dbConnectionString <- ""
+odbcDataSource <- "networkRif"
+numberOfInvestigations <- ""
+
+#The identifier of the study whose extract table fields need to be smoothed.
+studyID <- "1"
+
+#We expect model to have one of the three values: 'BYM', 'CAR' or 'HET'
+model <- "NONE"
+
+#Adjust for other covariate(s) or not
+adj=FALSE #either true or false
+
+#The name of the extract table that is created by the middleware for a given
+#study.  It is of the format rif_studies.s[study_id]_extract
+extractTableName <- ""
+
+#The name of the skeleton table created by the RIF middleware to hold smoothed results
+#for a given study.  Initially the values for smoothed columns will be empty.  It is 
+#of the format rif_studies.s[study_id]_map 
+mapTableName <- ""
+
+#The name of the temporary table that this script uses to hold the data frame
+#containing smoothed results.  It should have a 1:1 correspondence between
+#its fields and fields that appear in the map table skeleton.  
+temporarySmoothedResultsTableName <- ""
+
+#File names for smoothed (temporarySmoothedResultsFileName) and extract data frames (temporaryExtractFileName)
+#Variable to control dumping franes (dumpFramesToCsv)
+defaultScratchSpace <- "c:\\rifDemo\\scratchSpace\\"
+defaultDumpFramesToCsv <- FALSE
+scratchSpace <- ""
+dumpFramesToCsv <- ""
+ 
+#The name of the investigation. Is an input parameter, but default is set here for debug purposes
+investigationName <- "inv_1"
+#The id of the investigation - used when writing the results back to the database. Input paremeter
+investigationId <- "272"
 
 #name of adjustment (covariate) variable (except age group and sex). 
 #todo add more adjustment variables and test the capabilities. 
-#Reformat Java type > R
-if (names.adj.1 == "NONE") {
-  names.adj<-c('none')
-} else {
-  names.adj<-c(names.adj.1)
-}
-#CATALINA_HOME
-catalina_home<-Sys.getenv("CATALINA_HOME")
+names.adj<-c('ses')
 
 ##==========================================================================
 #FUNCTION: establishTableNames
@@ -119,24 +157,9 @@ establishTableNames <-function(vstudyID) {
 		scratchSpace <<- "c:\\rifDemo\\scratchSpace\\"
 	}
 	scratchSpace <<- paste0(scratchSpace, "s", vstudyID, "\\")
-		
-	tryCatch({
-			#Put all scratch files in sub directory s<study_id>
-			if (!file.exists(scratchSpace)) {
-				dir.create(scratchSpace)
-			}
-	  	},
-		warning=function(w) {
-			print(paste("UNABLE to create scratchSpace: ", scratchSpace, w))
-			exitValue <<- 0
-		},
-		error=function(e) {
-			print(paste("ERROR creating scratchSpace: ", scratchSpace, geterrmessage()))
-			exitValue <<- 1
-		}) # End of tryCatch
 
 	if (exists("dumpFramesToCsv") == FALSE || dumpFramesToCsv == "") {
-		dumpFramesToCsv <<- TRUE
+		dumpFramesToCsv <<- defaultDumpFramesToCsv
 	}		
 	temporarySmoothedResultsFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_map.csv", sep="")
 	temporaryExtractFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_extract.csv", sep="")
@@ -250,7 +273,7 @@ withErrorTracing = function(expr, silentSuccess=FALSE) {
         # Printing the 2nd and 3rd traces that contain the line where the error occured
         # This is the part you might want to edit to suit your needs
         #print(paste0("Error occuring: ", trace[length(trace):1][2:3]))
-        print(paste0("Stack tracer: ", trace[length(trace):1]))
+        cat("Stack tracer:", trace[length(trace):1], "\n")
         # Muffle any redundant output of the same message
         optionalRestart = function(r) { res = findRestart(r); if (!is.null(res)) invokeRestart(res) }
         optionalRestart("muffleMessage")
@@ -274,7 +297,7 @@ withErrorTracing = function(expr, silentSuccess=FALSE) {
 ##================================================================================
 runRSmoothingFunctions <- function() {
 	establishTableNames(studyID)
-	connDB=dbConnect()
+#	connDB=dbConnect()
 
 	if (exitValue == 0) {  
 		errorTrace<-capture.output({
@@ -286,13 +309,14 @@ runRSmoothingFunctions <- function() {
 #
 # extract the relevant Study data
 #
-#data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
-						data=fetchExtractTable()
+						data=read.table(temporaryExtractFileName,header=TRUE,sep=',')
+#						data=fetchExtractTable()
 
 #
 # Get Adjacency matrix
 #  	
-						AdjRowset=getAdjacencyMatrix()
+						AdjRowset=read.table(adjacencyMatrixFileName,header=TRUE,sep=',')
+#						AdjRowset=getAdjacencyMatrix()
 
 #
 # Call: performSmoothingActivity()
@@ -330,8 +354,8 @@ runRSmoothingFunctions <- function() {
 									"; result$area_id[1]: ", result$area_id[1]))
 							}
 
-							saveDataFrameToDatabaseTable(result)
-							updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue  
+#							saveDataFrameToDatabaseTable(result)
+#							updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue  
 						}
 						else {
 							print("ERROR! No result$area_id column found")
@@ -345,17 +369,17 @@ runRSmoothingFunctions <- function() {
 
 	# Print trace
 	if (length(errorTrace)-1 > 0) {
-		print(paste(errorTrace, sep="\n"))
+		cat(errorTrace, sep="\n")
 	}
 	
-	if (exitValue == 0 && !is.na(connDB)) {
-		dropTemporaryTable()
-	}
+#	if (exitValue == 0 && !is.na(connDB)) {
+#		dropTemporaryTable()
+#	}
 	# Dummy change to check conflict is resolved
   
-	if (!is.na(connDB)) {
-		dbDisConnect()
-	}
+#	if (!is.na(connDB)) {
+#		dbDisConnect()
+#	}
 	print(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1))
 
 	return(list(exitValue=exitValue, errorTrace=errorTrace))
@@ -368,11 +392,6 @@ runRSmoothingFunctions <- function() {
 ##====================================================================
 processCommandLineArguments <- function() {
  
-#File names for smoothed (temporarySmoothedResultsFileName) and extract data frames (temporaryExtractFileName)
-#Variable to control dumping franes (dumpFramesToCsv)
-  defaultScratchSpace <- "c:\\rifDemo\\scratchSpace\\"
-  defaultDumpFramesToCsv <- FALSE
- 
   allArgs <- commandArgs(trailingOnly=TRUE)
   numCommandLineArgs <- length(allArgs)
   
@@ -381,7 +400,7 @@ processCommandLineArguments <- function() {
   if (numCommandLineArgs==0) {
     print("No arguments supplied")
   }else{
-    print(paste0(numCommandLineArgs, " arguments were supplied"))
+    cat(numCommandLineArgs, " arguments were supplied", "\n")
     for (i in 1:numCommandLineArgs) {
       ##Filter command arguments that fit the form
       ##--X=Y
@@ -394,9 +413,9 @@ processCommandLineArguments <- function() {
     names(parametersDataFrame)[1] <- paste("name")
     names(parametersDataFrame)[2] <- paste("value")	
     
-    print("Parsing parameters")
+    cat("Parsing parameters\n")
     for (i in 1:nrow(parametersDataFrame)) {
-		
+	
       if (grepl('userID', parametersDataFrame[i, 1]) == TRUE) {
         userID <<- parametersDataFrame[i, 2]
       } else if (grepl('password', parametersDataFrame[i, 1]) == TRUE){
@@ -417,8 +436,10 @@ processCommandLineArguments <- function() {
       } else if (grepl('dumpframestocsv', parametersDataFrame[i, 1]) == TRUE){
 		if (parametersDataFrame[i, 2] == "true" || parametersDataFrame[i, 2] == "TRUE") {
 			dumpFramesToCsv <<- TRUE
+		} else if (parametersDataFrame[i, 2] == "false" || parametersDataFrame[i, 2] == "FALSE") {
+			dumpFramesToCsv <<- FALSE
 		}
-      } else if (grepl('study_id', parametersDataFrame[i, 1]) == TRUE){
+      } else if (grepl('studyID', parametersDataFrame[i, 1]) == TRUE){
         studyID <<- parametersDataFrame[i, 2]
       } else if (grepl('num_investigations', parametersDataFrame[i, 1]) == TRUE){
         numberOfInvestigations <<- parametersDataFrame[i, 2]
@@ -430,15 +451,17 @@ processCommandLineArguments <- function() {
         odbcDataSource <<- parametersDataFrame[i, 2]
       } else if (grepl('model', parametersDataFrame[i, 1]) == TRUE){
         model <<- parametersDataFrame[i, 2]
-      } else if (grepl('names.adj.1', parametersDataFrame[i, 1]) == TRUE){
-        names.adj.1 <<- parametersDataFrame[i, 2]
-      } else if (grepl('adj.1', parametersDataFrame[i, 1]) == TRUE){
-       adj.1 <<- parametersDataFrame[i, 2]
-      } else if (grepl('scratchSpace', parametersDataFrame[i, 1]) == TRUE){
-       scratchSpace <<- parametersDataFrame[i, 2]
-      } else if (grepl('dumpFramesToCsv', parametersDataFrame[i, 1]) == TRUE){
-       dumpFramesToCsv <<- parametersDataFrame[i, 2]
-      }
+      } else if (grepl('covariateName', parametersDataFrame[i, 1]) == TRUE){
+	    names.adj <<- c(toupper(parametersDataFrame[i, 2]))
+        if (names.adj[1] != "NONE") {
+           adj <<- TRUE
+        } else {
+		   adj <<- FALSE
+		   names.adj <<- c()
+		}
+      } else {
+		cat(paste("WARNING! Unexpected paremeter: ",  parametersDataFrame[i, 1], "=",  parametersDataFrame[i, 2], "\n", sep=""))
+	  }
     }
 
 	# Set defaults
@@ -449,7 +472,7 @@ processCommandLineArguments <- function() {
 	}
 	if (dumpFramesToCsv == "") {
 	  dumpFramesToCsv <<- defaultDumpFramesToCsv
-	  newRow <- data.frame(name="dumpFramesToCsv", value=dumpFramesToCsv)
+	  newRow <- data.frame(name="dumpframestocsv", value=dumpFramesToCsv)
 	  parametersDataFrame = rbind(parametersDataFrame, newRow)
 	}
 	
@@ -459,59 +482,42 @@ processCommandLineArguments <- function() {
 
 #
 hasperformSmoothingActivityScript<-FALSE
-hasAdj_Cov_Smooth_csv<-FALSE
 if (exists("catalina_home")) {
+	cat("CATALINA_HOME=", catalina_home, "\n", sep="")
 	performSmoothingActivityScript<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\performSmoothingActivity.R")
-	
-	if (!file.exists(performSmoothingActivityScript)) {
-		hasperformSmoothingActivityScript<-TRUE
-		print(paste("Source: ", performSmoothingActivityScript))
-		source(performSmoothingActivityScript)
-	}
-	
-	Adj_Cov_Smooth_csvScript<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth_csv.R")
-	
-	if (file.exists(Adj_Cov_Smooth_csvScript)) {
-		hasAdj_Cov_Smooth_csv<-TRUE
-		print(paste("Source: ", Adj_Cov_Smooth_csvScript))
-		source(Adj_Cov_Smooth_csvScript)
-	}	
-}
-else if (!hasperformSmoothingActivityScript) {
-	performSmoothingActivityScript<-paste0(catalina_home, "performSmoothingActivity.R")
 	
 	if (file.exists(performSmoothingActivityScript)) {
 		hasperformSmoothingActivityScript<-TRUE
-		print(paste("Source: ", performSmoothingActivityScript))
+		cat("Source: ", performSmoothingActivityScript, "\n", sep="")
 		source(performSmoothingActivityScript)
-	}
-
-}
-else if (!hasAdj_Cov_Smooth_csv) {	
-	Adj_Cov_Smooth_csvScript<-paste0(catalina_home, "Adj_Cov_Smooth_csv.R")
-	
-	if (file.exists(Adj_Cov_Smooth_csvScript)) {
-		hasAdj_Cov_Smooth_csv<-TRUE
-		print(paste("Source: ", Adj_Cov_Smooth_csvScript))
-		source(Adj_Cov_Smooth_csvScript)
 	}	
+} else {
+	cat("CATALINA_HOME not set\n")
+	if (!hasperformSmoothingActivityScript) {
+
+		performSmoothingActivityScript<-"performSmoothingActivity.R"
+	
+		if (file.exists(performSmoothingActivityScript)) {
+			hasperformSmoothingActivityScript<-TRUE
+			cat("Source: ", performSmoothingActivityScript, "\n", sep="")
+			source(performSmoothingActivityScript)
+		}
+	}
 }
 
-if (hasperformSmoothingActivityScript && hasAdj_Cov_Smooth_csv) {
+if (hasperformSmoothingActivityScript) {
 #
-		processCommandLineArguments()
-#	returnValues <- runRSmoothingFunctions()
-}
-else {
+	parametersDataFrame=processCommandLineArguments()
+	print(parametersDataFrame)
+	returnValues <- runRSmoothingFunctions()
+} else {
 	returnValues <- list(exitValue=1, errorTrace="Cannot find R scripts")
 }
 
-if (returnValues$list == 0) {
-	print("R script had error:")
-	print(errorTrace)
+if (returnValues$exitValue == 0) {
+	cat("R script ran OK\n")
 	quit("no", 0, FALSE)
-}
-else {
-	print("R script ran OK")
+} else {
+	cat("R script had error:" , returnValues$errorTrace, "\n", sep="")
 	quit("no", 1, FALSE)
 }

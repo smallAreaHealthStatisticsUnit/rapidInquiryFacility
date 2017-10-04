@@ -232,8 +232,7 @@ establishTableNames <-function(vstudyID) {
 					paste0("SET INVESTIGATIONID=", investigationId),
 					paste0("SET ODBCDATASOURCE=", odbcDataSource),
 					paste0("SET MODEL=", model),
-					paste0("SET NAMES.ADJ.1=", names.adj.1),			
-					paste0("SET ADJ.1=", adj.1),
+					paste0("SET COVARIATENAME=", paste0(names.adj)),
 				sep="\n");
 		
 		rif40_run_R_envB<-paste0(scratchSpace, "rif40_run_R_env.bat") # Target
@@ -352,7 +351,7 @@ withErrorTracing = function(expr, silentSuccess=FALSE) {
         # Printing the 2nd and 3rd traces that contain the line where the error occured
         # This is the part you might want to edit to suit your needs
         #print(paste0("Error occuring: ", trace[length(trace):1][2:3]))
-        print(paste0("Stack tracer: ", trace[length(trace):1]))
+        cat("Stack tracer:", trace[length(trace):1], "\n")
         # Muffle any redundant output of the same message
         optionalRestart = function(r) { res = findRestart(r); if (!is.null(res)) invokeRestart(res) }
         optionalRestart("muffleMessage")

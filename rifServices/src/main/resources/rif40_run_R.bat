@@ -78,8 +78,7 @@ ECHO # INVESTIGATIONNAME=%INVESTIGATIONNAME%
 ECHO # INVESTIGATIONID=%INVESTIGATIONID%
 ECHO # ODBCDATASOURCE=%ODBCDATASOURCE%
 ECHO # MODEL=%MODEL%
-ECHO # NAMES.ADJ.1=%NAMES.ADJ.1%
-ECHO # ADJ.1=%ADJ.1%
+ECHO # COVARIATENAME=%COVARIATENAME%
 ECHO #
 ECHO ##########################################################################################
 
@@ -95,16 +94,15 @@ REM
 ECHO "%R_HOME%\bin\x64\RScript" Adj_Cov_Smooth_csv.R ^^
 ECHO --db_driver_prefix=%DB_DRIVER_PREFIX% --db_driver_class_name=%DB_DRIVER_CLASS_NAME% --odbcDataSource=%ODBCDATASOURCE% ^^
 ECHO --dbHost=%DBHOST% --dbPort=%DBPORT% --dbName=%DBNAME% ^^
-ECHO --studyID=%STUDY_ID% --investigationName=%INVESTIGATIONNAME% --investigationId=%INVESTIGATIONID% ^^
-ECHO --model=%MODEL% --names.adj.1=%NAMES.ADJ.1% --adj.1=%ADJ.1% ^^
+ECHO --studyID=%STUDYID% --investigationName=%INVESTIGATIONNAME% --investigationId=%INVESTIGATIONID% ^^
+ECHO --model=%MODEL% --covariateName=%COVARIATENAME% ^^
 ECHO --userID=%USERID% --password=XXXXXXXXXXXXXXXXXXXXXX ^^
 ECHO --scratchspace=%SCRATCHSPACE% --dumpframestocsv=%DUMPFRAMESTOCSV%
 "%R_HOME%\bin\x64\RScript" Adj_Cov_Smooth_csv.R ^
 	--db_driver_prefix=%DB_DRIVER_PREFIX% --db_driver_class_name=%DB_DRIVER_CLASS_NAME% --odbcDataSource=%ODBCDATASOURCE% ^
 	--dbHost=%DBHOST% --dbPort=%DBPORT% --dbName=%DBNAME% ^
-	--studyID=%STUDY_ID% --investigationName=%INVESTIGATIONNAME% --investigationId=%INVESTIGATIONID% ^
-	--model=%MODEL% --names.adj.1=%NAMES.ADJ.1% --adj.1=%ADJ.1% ^
- 	--odbc_data_source=%ODBC_DATA_SOURCE% ^
+	--studyID=%STUDYID% --investigationName=%INVESTIGATIONNAME% --investigationId=%INVESTIGATIONID% ^
+	--model=%MODEL% --covariateName=%COVARIATENAME% ^
 	--scratchspace=%SCRATCHSPACE% --dumpframestocsv=%DUMPFRAMESTOCSV%
 SET SERRORLEVEL=%errorlevel%
 REM
@@ -125,13 +123,13 @@ REM
 (SET NEWDB=)
 (SET NEWUSER=)
 
-if %SERRORLEVEL% neq 0  (
+if %SERRORLEVEL% neq 0 (
 	ECHO Test study failed: Adj_Cov_Smooth_csv.R procedure had error for study: %STUDYID%; investigation: %INVESTIGATIONID%	
 	(SET STUDYID=)
 	(SET INVESTIGATIONID=)
 	(SET SERRORLEVEL=)
 	exit /b 1
-) else (
+) ELSE (
 	ECHO Adj_Cov_Smooth_csv.R procedure OK for study: %STUDYID%; investigation: %INVESTIGATIONID%
 	(SET STUDYID=)
 	(SET INVESTIGATIONID=)
