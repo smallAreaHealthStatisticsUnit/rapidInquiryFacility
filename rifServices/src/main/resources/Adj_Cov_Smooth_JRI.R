@@ -43,7 +43,7 @@
 
 ## CHECK & AUTO INSTALL MISSING PACKAGES
 ## CHECK .libPaths(), add lib="" argument and RUN AS ADMIN IF NEEDED
-#packages <- c("plyr", "abind", "maptools", "spdep", "RODBC", "rJava")
+#packages <- c("pryr", "plyr", "abind", "maptools", "spdep", "RODBC", "rJava")
 #if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
 #  install.packages(setdiff(packages, rownames(installed.packages())))  
 #}
@@ -51,6 +51,7 @@
 #	install.packages("INLA", repos="https://www.math.ntnu.no/inla/R/stable")
 #}
 
+library(pryr)
 library(plyr)
 library(abind)
 library(INLA)
@@ -456,6 +457,27 @@ runRSmoothingFunctions <- function() {
 	if (!is.na(connDB)) {
 		dbDisConnect()
 	}
+	
+
+#
+# Free up memory: required for JRI version as the server keeps running! 
+#
+	cat(paste0("Total memory is use: ", format(mem_used()), "\nMemory by object:\n"), sep="")
+	ototal<-0
+	for (oname in ls()) {
+		osize<-as.integer(object_size(get(oname)))
+		ototal<-ototal+osize
+		cat(oname, ": ", format(osize), "\n", sep="")	
+	}
+	rm(list=c("result", "AdjRowset", "area_id_is_integer", "data")) 
+	gc(verbose=true)
+	cat(paste0("Free ", ototal , " memory; total memory is use: ", format(mem_used()), "\nMemory by object:\n"), sep="")
+	rm(list=c("osize", "ototal")) 
+	for (oname in ls()) {
+		if (oname != "oname") {
+			cat(oname, ": ", format(object_size(get(oname))), "\n", sep="")
+		}
+	}	
 	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 
 	return(list(exitValue=exitValue, errorTrace=errorTrace))

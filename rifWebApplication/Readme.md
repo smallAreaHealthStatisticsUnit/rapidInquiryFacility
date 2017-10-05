@@ -1162,7 +1162,7 @@ extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies
 
 ```R
 # CHECK & AUTO INSTALL MISSING PACKAGES
-packages <- c("plyr", "abind", "maptools", "spdep", "RODBC", "MatrixModels", "rJava")
+packages <- c("pryr", "plyr", "abind", "maptools", "spdep", "RODBC", "MatrixModels", "rJava")
 if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
   install.packages(setdiff(packages, rownames(installed.packages())))  
 }
