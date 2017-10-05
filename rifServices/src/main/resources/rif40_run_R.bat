@@ -61,8 +61,15 @@ IF EXIST rif40_run_R_env.bat (
 	ECHO File not found: rif40_run_R_env.bat
 	exit /b 1
 )
+
+REM
+REM The R script currently does NOT use ODBC; but it can. If you want to use ODBC and modify Adj_Cov_Smooth_csv, uncomment the below line
+REM Beware: access to the database depends on network setup and a network database being used. i.e. localhost will ONLY work on the original
+REM RIF platform
+REM
 IF NOT DEFINED PASSWORD (
-	SET /P PASSWORD=Password [default %USERID%]: %=% || SET NEWUSER=%USERID%
+	SET PASSWORD=UNKNOWN
+REM	SET /P PASSWORD=Password [default %USERID%]: %=% || SET NEWUSER=%USERID%
 )
 
 ECHO ##########################################################################################

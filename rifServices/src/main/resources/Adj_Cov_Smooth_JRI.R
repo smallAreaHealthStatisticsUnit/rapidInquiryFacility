@@ -469,7 +469,7 @@ runRSmoothingFunctions <- function() {
 		ototal<-ototal+osize
 		cat(oname, ": ", format(osize), "\n", sep="")	
 	}
-	rm(list=c("result", "AdjRowset", "area_id_is_integer", "data")) 
+	rm(list=c("result", "AdjRowset", "area_id_is_integer", "data", "connDB")) 
 	gc(verbose=true)
 	cat(paste0("Free ", ototal , " memory; total memory is use: ", format(mem_used()), "\nMemory by object:\n"), sep="")
 	rm(list=c("osize", "ototal")) 
