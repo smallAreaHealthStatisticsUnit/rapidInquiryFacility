@@ -18,6 +18,7 @@ import java.io.*;
 import org.rosuda.JRI.*;
 
 import rifGenericLibrary.util.RIFLogger;
+import rifGenericLibrary.util.RIFMemoryManager;
 
 /**
  *
@@ -86,6 +87,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 	// ==========================================
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static final RIFMemoryManager rifMemoryManager = RIFMemoryManager.getMemoryManager();
 	private static String lineSeparator = System.getProperty("line.separator");	
 
 	// Logging for JRI	
@@ -319,6 +321,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 					rifLogger.error(this.getClass(), "JRI rFlushConsole() ERROR", error2);
 				}
 				finally {
+					rifMemoryManager.printThreadMemory();
 					if (exitValue != 0) {
 						try {
 //							rengine.eval("q(\"no\", " + exitValue + ")");	// Causes Java to quit
