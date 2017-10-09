@@ -224,7 +224,13 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 					rifLogger.warning(this.getClass(), "Cannot load the R engine (probably already loaded)");
 				}
 				Rengine.DEBUG = 10;
-				rifLogger.info(this.getClass(), "Rengine Started; thread ID: " + rengine.currentThread().getId());
+				rengine.eval("Rpid<-Sys.getpid()");
+				REXP Rpid = rengine.eval("Rpid");
+				rifLogger.info(this.getClass(), "Rengine Started" +
+					"; Rpid: " + Rpid.asInt() +
+					"; JRI version: " + rengine.getVersion() + 
+//					"; RNI binary version: " + rengine.rniGetVersion() + // Same as getVersion()
+					"; thread ID: " + rengine.currentThread().getId());
 						// Is current thread
 
 				//Start R operations

@@ -1651,7 +1651,8 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 #### 9th to 13th October
 
 * Added print of memory in use by thread, with warning is available memory drops below 500M
-
+* Added JConsole support
+* Added print of R process ID. It is not possible to access procxcess related information for this sub process in Java.
 
 #### Database TODO list (deferred to November 2017): SQL Server Port
 
