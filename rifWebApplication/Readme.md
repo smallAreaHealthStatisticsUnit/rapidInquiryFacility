@@ -613,11 +613,18 @@ Create an environment overrides file for catalina.bat as %CATALINA_HOME%\bin\set
 ```bat
 REM Tomcat log4j2 setup
 REM 
-REM Add this script to %CATALINA_HOME%\bin as setenv.bat
+REM Add this script to %CATALINA_HOME%\bin
+REM
+REM A copy of this script is provided in %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\
 REM
 REM Do not set LOGGING_MANAGER to jul, tomcat will NOT sart
 REM set LOGGING_MANAGER=org.apache.logging.log4j.jul.LogManager
+REM
+REM To enable Jconsole add %ENABLE_JMX% to CATALINA_OPTS. Set to run on port 9999 and only allow connections from localhost
+REM
+set ENABLE_JMX=-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=localhost
 set CATALINA_OPTS=-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile="%CATALINA_HOME%\conf\log4j2.xml"
+
 REM
 REM Add -Dlog4j2.debug=true if tomcat exceptions/does not start 
 REM (catalina.bat run is useful if no output)
@@ -625,7 +632,7 @@ REM
 REM Default CLASSPATH; no need to be added
 REM set CLASSPATH=%CATALINA_HOME%\bin\bootstrap.jar;%CATALINA_HOME%\bin\tomcat-juli.jar
 REM
-REM Added JUL and Log4j2 to tomcat CLASSPATH
+REM Added JUL and Log4j2 to tomcat CLASSAPATH
 set CLASSPATH=%CATALINA_HOME%\lib\log4j-core-2.9.0.jar;%CATALINA_HOME%\lib\log4j-api-2.9.0.jar;%CATALINA_HOME%\lib\log4j-jul-2.9.0.jar
 REM
 REM Do not do this, use CATALINA_OPTS instead. This will work on Linux
@@ -640,7 +647,7 @@ Add the following files to *%CATALINA_HOME%\lib*:
 * log4j-core-2.9.0.jar
 * log4j-jul-2.9.0.jar
 
-If you use MAven to build the Middleware, these files are in subdirectories below 
+If you use Maven to build the Middleware, these files are in subdirectories below 
 *%USER%\.m2\repository\org\apache\logging\log4j\*
 
 Do NOT set the enviroment variables LOGGING_MANAGER or LOGGING_CONFIG.
@@ -655,6 +662,24 @@ Debugging:
 * Adding  -Dlog4j2.debug=true to CATALINA_OPTS if tomcat exceptions/does not start 
 * Use catalina.bat run if there is no output from te script and the Java windows disappears immediately
 * Set the configuration status to **debug**
+
+### 1.3.7 Using Jconsole with Tomcat
+
+The Java Development Kit (JDK) must be installed.
+
+Set the following *CATALINA_OPTS* in *%CATALINA_HOME%\bin\setenv.bat*:
+
+```
+-Dcom.sun.management.jmxremote
+-Dcom.sun.management.jmxremote.port=9999
+-Dcom.sun.management.jmxremote.authenticate=false
+-Dcom.sun.management.jmxremote.ssl=false 
+-Djava.rmi.server.hostname=localhost
+```
+
+Run Jconsole from *%JAVA_HOME%\bin* e.g. ```"%JAVA_HOME%\bin\Jconsole"```
+
+ ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Jconsole.png?raw=true "Jconsole")
 
 ## 1.4 R
 Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
@@ -1782,5 +1807,7 @@ To be added. Files to be saved/restored:
 
 * *%CATALINA_HOME%/conf/server.xml*
 * *%CATALINA_HOME%/conf/web.xml*
+ 
+ALWAYS RESTART THE SERVER!
  
 Peter Hambly, 12th April 2017; revised 4th August 2017

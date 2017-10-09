@@ -6,7 +6,12 @@ REM A copy of this script is provided in %CATALINA_HOME%\webapps\rifServices\WEB
 REM
 REM Do not set LOGGING_MANAGER to jul, tomcat will NOT sart
 REM set LOGGING_MANAGER=org.apache.logging.log4j.jul.LogManager
+REM
+REM To enable Jconsole add %ENABLE_JMX% to CATALINA_OPTS. Set to run on port 9999 and only allow connections from localhost
+REM
+set ENABLE_JMX=-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=localhost
 set CATALINA_OPTS=-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile="%CATALINA_HOME%\conf\log4j2.xml"
+
 REM
 REM Add -Dlog4j2.debug=true if tomcat exceptions/does not start 
 REM (catalina.bat run is useful if no output)
