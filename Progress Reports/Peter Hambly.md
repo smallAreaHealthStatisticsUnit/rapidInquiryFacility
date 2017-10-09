@@ -1639,7 +1639,7 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Added trace to study status; checked can maintain Angular code. Now have basic understanding of what it is doing.
 * Completed results reporting from run study and R code. 
   
-#### 2nd to 10th October
+#### 2nd to 6th October
 
 * Major documentation/FAQ sort to make consistent for job advert (and new starter!)
 * Factor out R ODBC code into separate R file (for JDBC conversion, and CSV version for tracing R faults)
@@ -1648,6 +1648,11 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Create scripts in scratch directory to re-run R
 * Now able to re-run R analysis from scratch directory without needing tomcat/Java etc
  
+#### 9th to 13th October
+
+* Added print of memory in use by thread, with warning is available memory drops below 500M
+
+
 #### Database TODO list (deferred to November 2017): SQL Server Port
 
 * More work on SEER data, dataloader

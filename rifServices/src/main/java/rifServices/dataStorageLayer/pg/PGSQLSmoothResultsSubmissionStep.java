@@ -213,7 +213,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 			try {	
 				//Create an R engine with JRI
 				rengine = Rengine.getMainEngine();
-				if(rengine == null) {
+				if (rengine == null) {
 					rengine = new Rengine(new String[] {"--vanilla"}, 	// Args
 						false, 											// runMainLoop
 						loggingConsole); 								// RMainLoopCallbacks implementaton
@@ -224,7 +224,8 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 					rifLogger.warning(this.getClass(), "Cannot load the R engine (probably already loaded)");
 				}
 				Rengine.DEBUG = 10;
-				rifLogger.info(this.getClass(), "Rengine Started");
+				rifLogger.info(this.getClass(), "Rengine Started; thread ID: " + rengine.currentThread().getId());
+						// Is current thread
 
 				//Start R operations
 
