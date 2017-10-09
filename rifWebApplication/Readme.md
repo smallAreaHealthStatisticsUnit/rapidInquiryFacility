@@ -13,7 +13,7 @@ RIF Web Services
 	 - [1.3.4 Running Tomcat as a service](#134-running-tomcat-as-a-service)
 	 - [1.3.5 Middleware Logging (Log4j2) Setup](#135-middleware-logging-log4j2-setup)
 	 - [1.3.6 Tomcat Logging (Log4j2) Setup](#136-tomcat-logging-log4j2-setup) 
-	 - [1.3.7 Using Jconsole with Tomcat](#137-using-jconsole-with-tomcat) 
+	 - [1.3.7 Using JConsole with Tomcat](#137-using-jconsole-with-tomcat) 
   - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
    - [2.1 Building Using Make](#21-building-using-make)	
@@ -664,7 +664,7 @@ Debugging:
 * Use catalina.bat run if there is no output from te script and the Java windows disappears immediately
 * Set the configuration status to **debug**
 
-### 1.3.7 Using Jconsole with Tomcat
+### 1.3.7 Using JConsole with Tomcat
 
 The JConsole graphical user interface is a monitoring tool for Java applications. JConsole is composed of six tabs:
 
