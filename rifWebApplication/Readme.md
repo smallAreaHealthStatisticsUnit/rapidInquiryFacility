@@ -666,6 +666,17 @@ Debugging:
 
 ### 1.3.7 Using Jconsole with Tomcat
 
+The JConsole graphical user interface is a monitoring tool for Java applications. JConsole is composed of six tabs:
+
+* Overview: Displays overview information about the Java VM and monitored values.
+* Memory: Displays information about memory use.
+* Threads: Displays information about thread use.
+* Classes: Displays information about class loading.
+* VM: Displays information about the Java VM.
+* MBeans: Displays information about MBeans
+
+See: http://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html
+
 The Java Development Kit (JDK) must be installed.
 
 Set the following *CATALINA_OPTS* in *%CATALINA_HOME%\bin\setenv.bat*:
