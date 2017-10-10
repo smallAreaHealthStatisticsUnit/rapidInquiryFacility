@@ -1324,7 +1324,9 @@ The downloaded binary packages are in
    which is the shared library JRI is looking for.
   
    These directories with the 32 or 64 bit subdirectory appended needs to be added to the path: 
-   *C:\Program Files\R\R-3.4.0\bin\x64;C:\Program Files\R\R-3.4.0\library\rJava\jri\x64*. This ensures that file "x64\jri.dll" is in java.library.path
+   *C:\Program Files\R\R-3.4.0\bin\x64;C:\Program Files\R\R-3.4.0\library\rJava\jri\x64*. This ensures that file "x64\jri.dll" 
+   is in java.library.path
+   
    Just after user logon the middleware can print the JAVA LIBRARY PATH: *System.getProperty("java.library.path")*
 
    As with Java and R, normally the 64 bit version is used.
@@ -1344,16 +1346,19 @@ The downloaded binary packages are in
 	am Files\nodejs\;C:\Program Files\Apache Software Foundation\apache-maven-3.3.9\bin;C:\Program Files\R\R-3.4.0\bin;C:\Program Files
 	(x86)\Skype\Phone\;C:/Program Files/R/R-3.4.0/library/rJava/jri;.
 	```
- 
-=======getInvestigationID========2===
-About to call next
-called next
-Investigation name==TEST 1001  ID==12==
-Cannot find JRI native library!
-Please make sure that the JRI native library is in a directory listed in java.library.path.
+	
+6. JRI Errors
+	
+	``` 
+	=======getInvestigationID========2===
+	About to call next
+	called next
+	Investigation name==TEST 1001  ID==12==
+	Cannot find JRI native library!
+	Please make sure that the JRI native library is in a directory listed in java.library.path.
 
-java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.0\library\rJava\jri\x64\jri.dll: Can't find dependent libraries
-```
+	java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.0\library\rJava\jri\x64\jri.dll: Can't find dependent libraries
+	```
    In this case, the directory *C:\Program Files\R\R-3.4.0\bin\x64* was missing from the path.
    
 ### 4.3.1 R Debugging
