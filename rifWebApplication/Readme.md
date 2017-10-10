@@ -1389,16 +1389,18 @@ java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.1\library\rJava\jri\x64
 
    * *R_HOME* not setup: ```command==null\bin\x64\RScript```
    * No scratchSpace directory: *c:\rifDemo\scratchSpace\* ```(The system cannot find the path specified)```
-
+   * R script errors
+   
    If there are R script errors JRI the middleware will crash with an error. This will be saved in the *Study status* pane:
    
    ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/study-status.png?raw=true "Study status")  
 
-   Clicking on the *trace* button will brinng up the trace pane. 
+   Clicking on the *trace* button will bring up the trace pane. 
   
    ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/R-trace.png?raw=true "R Trace")  
-
-   If there are R script errors JRI the middleware will crash with an error such as:
+   
+   If there are R script errors JRI will log them to the middleware log: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>```:
+   
 ```
 17:06:02.767 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
 Rengine Started
@@ -1532,6 +1534,8 @@ Rengine Stopped, exit value==1==
    * *tmp_s33_adjacency_matrix.csv* - adjacency matrix for extract
    * *tmp_s33_extract.csv* - study data extract
 
+   **This will be added to the extract during October 2017.**
+   
 ```bat
 C:\rifDemo\scratchSpace\s33>rif40_run_R.bat
 New user [default peter]:
@@ -1672,7 +1676,10 @@ callPerformSmoothingActivity exitValue: 1
 Test study failed: Adj_Cov_Smooth_csv.R procedure had error for study: 33; investigation: 33
 ```
 
-4. Tomcat sucessful run:
+4. A JRI sucessful run:
+
+A typical JRI sucsssful run looks like:
+
 ```
 16:08:27.201 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
 Source: Adj_Cov_Smooth_JRI="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth_JRI.R"
@@ -1794,8 +1801,8 @@ Adj_Cov_Smooth_JRI.R exitValue: 0; error tracer: 20
 
 ### 4.3.2 R Memory Management
 
-R is run as a sub process from the first midleware worker thread that runs a study. The per thread memory usage is printed at the end of each 
-smoothing operation so that thread memory leakage can be detected:
+R is run as a attached DLL from the first midleware worker thread that runs a study. The per thread memory usage is printed at the end 
+of each smoothing operation so that thread memory leakage can be detected:
 
 ```
 16:09:03.744 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifGenericLibrary.util.RIFMemoryManager]:
@@ -1869,8 +1876,19 @@ R Error/Warning/Notice: 33.4 Mbytes of vectors used (26%)
 Free 18470072 memory; total memory is use: 144247440
 ```
 
-As Java cannot manage the memory used by *R* or *inla* the *R* script prints outs the process ID of the R processs. This allows 
-performance monitoring tools to be attached.
+As Java cannot manage the memory used by *R* or *inla* the *R* script prints outs the process ID of the R processs. As R is attached as 
+a DLL this is the process id of *tomcat*. 
+
+[Process Explorer](https://docs.microsoft.com/en-gb/sysinternals/downloads/process-explorer) is a Windows tool that aloows the user to 
+see the hidden R thread.
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/process-explorer-1.png?raw=true "Process explorer")
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/process-explorer-2.png?raw=true "Java Process details")
+
+R will be limited to the maximum private memory (resident set size) of Java, typically around 3.3GB on Windows 8.1. To go beyond this 
+you will need to a) use 64bit Java! and b) set the *-Xmx* flag in  *%CATALINA_HOME%\bin\setenv.bat*; e.g. add ```-Xmx6g``` to 
+*CATALINA_OPTS*
 
 ```
 16:08:27.167 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
