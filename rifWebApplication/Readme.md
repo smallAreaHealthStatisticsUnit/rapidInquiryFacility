@@ -1880,7 +1880,14 @@ As Java cannot manage the memory used by *R* or *inla* the *R* script prints out
 a DLL this is the process id of *tomcat*. 
 
 [Process Explorer](https://docs.microsoft.com/en-gb/sysinternals/downloads/process-explorer) is a Windows tool that aloows the user to 
-see the hidden R thread.
+see the hidden R thread and the *inla* sub process.
+
+R process ID tracer:
+
+```
+16:08:27.167 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
+Rengine Started; Rpid: 10644; JRI version: 266; thread ID: 30
+```
 
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/process-explorer-1.png?raw=true "Process explorer")
 
@@ -1889,11 +1896,6 @@ see the hidden R thread.
 R will be limited to the maximum private memory (resident set size) of Java, typically around 3.3GB on Windows 8.1. To go beyond this 
 you will need to a) use 64bit Java! and b) set the *-Xmx* flag in  *%CATALINA_HOME%\bin\setenv.bat*; e.g. add ```-Xmx6g``` to 
 *CATALINA_OPTS*
-
-```
-16:08:27.167 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
-Rengine Started; Rpid: 10644; JRI version: 266; thread ID: 30
-```
 
 ## 4.4 Common Setup Errors
 
