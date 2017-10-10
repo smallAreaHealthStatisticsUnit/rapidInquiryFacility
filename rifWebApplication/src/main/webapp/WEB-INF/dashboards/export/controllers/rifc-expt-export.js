@@ -238,8 +238,8 @@ angular.module("RIF")
                 //export query, map and extract tables as a Zip File
                 $scope.exportAllTables = function () {
                     $scope.showSuccess("Export started...");
-                    user.getZipFile(user.currentUser, $scope.studyID["exportmap"].study_id, $scope.exportLevel).then(function (res) {
-                        if (res.data === "") {
+                    user.createZipFile(user.currentUser, $scope.studyID["exportmap"].study_id, $scope.exportLevel).then(function (res) {
+                        if (res.data === "OK") {
                             $scope.showSuccess("Export finished: " + $scope.studyID["exportmap"].name + " please check your defined extract directory");
                         } else {
                             $scope.showError("Error exporting study tables");

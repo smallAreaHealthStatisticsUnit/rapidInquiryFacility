@@ -894,13 +894,13 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 				result);		
 	}
 
-	protected Response getZipFile(
+		protected Response createZipFile(
 			final HttpServletRequest servletRequest,
 			final String userID,
 			final String studyID,
 			final String zoomLevel) { 
 
-		String result = "";
+		String result = "OK";
 
 		try {
 			User user = createUser(servletRequest, userID);
@@ -909,6 +909,39 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			= getRIFStudySubmissionService();
 
 			studySubmissionService.createStudyExtract(
+					user, 
+					studyID,
+					zoomLevel);
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.createZipFile error", rifServiceException);
+			result 
+			= serialiseException(
+					servletRequest,
+					rifServiceException);			
+		}
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
+				servletRequest,
+				result);		
+	}
+	
+	protected Response getZipFile(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID,
+			final String zoomLevel) { 
+
+		String result = "OK";
+
+		try {
+			User user = createUser(servletRequest, userID);
+
+			RIFStudySubmissionAPI studySubmissionService
+			= getRIFStudySubmissionService();
+
+			studySubmissionService.getStudyExtract(
 					user, 
 					studyID, 
 					zoomLevel);

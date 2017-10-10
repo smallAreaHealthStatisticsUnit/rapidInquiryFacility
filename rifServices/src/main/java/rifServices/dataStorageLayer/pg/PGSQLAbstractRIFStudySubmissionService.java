@@ -1081,8 +1081,7 @@ implements RIFStudySubmissionAPI {
 		return result;
 	}
 
-
-
+	
 	public void createStudyExtract(
 			final User _user,
 			final String studyID,
@@ -1094,11 +1093,12 @@ implements RIFStudySubmissionAPI {
 		User user = User.createCopy(_user);
 		PGSQLConnectionManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();			
-
+		
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
 		}
 
+		RIFLogger rifLogger = RIFLogger.getLogger();
 		Connection connection = null;
 		try {
 
@@ -1127,7 +1127,6 @@ implements RIFStudySubmissionAPI {
 					studyID);
 
 			//Audit attempt to do operation
-			RIFLogger rifLogger = RIFLogger.getLogger();
 			String auditTrailMessage
 			= RIFServiceMessages.getMessage("logging.createStudyExtract",
 					user.getUserID(),
@@ -1167,6 +1166,102 @@ implements RIFStudySubmissionAPI {
 					rifServiceException);	
 		}
 		finally {
+			rifLogger.info(getClass(), "Create ZIP completed OK");
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledWriteConnection(
+					user, 
+					connection);			
+		}
+
+	}
+	
+
+	public void getStudyExtract(
+			final User _user,
+			final String studyID,
+			final String zoomLevel) 
+					throws RIFServiceException {
+
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		PGSQLConnectionManager sqlConnectionManager
+		= rifServiceResources.getSqlConnectionManager();			
+
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return;
+		}
+
+		RIFLogger rifLogger = RIFLogger.getLogger();
+		Connection connection = null;
+		try {
+
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+					"getStudyExtract",
+					"user",
+					user);
+			fieldValidationUtility.checkNullMethodParameter(
+					"getStudyExtract",
+					"studyID",
+					studyID);	
+			fieldValidationUtility.checkNullMethodParameter(
+					"getStudyExtract",
+					"zoomLevel",
+					zoomLevel);	
+
+
+			//Check for security violations
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+					"getStudyExtract", 
+					"studyID", 
+					studyID);
+
+			//Audit attempt to do operation
+			String auditTrailMessage
+			= RIFServiceMessages.getMessage("logging.getStudyExtract",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyID,
+					zoomLevel);
+			rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+			= sqlConnectionManager.assignPooledWriteConnection(user);
+
+			PGSQLRIFSubmissionManager sqlRIFSubmissionManager
+			= rifServiceResources.getRIFSubmissionManager();
+			RIFStudySubmission rifStudySubmission
+			= sqlRIFSubmissionManager.getRIFStudySubmission(
+					connection, 
+					user, 
+					studyID);
+
+			PGSQLStudyExtractManager studyExtractManager
+			= rifServiceResources.getSQLStudyExtractManager();
+//			studyExtractManager.getStudyExtract( // Needs to be changed
+			studyExtractManager.createStudyExtract(
+					connection, 
+					user, 
+					rifStudySubmission,
+					zoomLevel);
+
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+					user,
+					"getStudyExtract",
+					rifServiceException);	
+		}
+		finally {
+			rifLogger.info(getClass(), "Extract ZIP GET completed OK");
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(
 					user, 

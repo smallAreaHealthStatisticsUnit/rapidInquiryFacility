@@ -1207,6 +1207,22 @@ public class MSSQLRIFStudySubmissionWebServiceResource
 	
 	@GET
 	@Produces({"application/json"})	
+	@Path("/createZipFile")
+	public Response createZipFile(
+		@Context HttpServletRequest servletRequest,
+		@QueryParam("userID") String userID,
+		@QueryParam("studyID") String studyID,
+		@QueryParam("zoomLevel") String zoomLevel) {
+	
+		return super.createZipFile(
+			servletRequest, 
+			userID, 
+			studyID,
+			zoomLevel);
+	}		
+	
+	@GET
+	@Produces({"application/zip"})	
 	@Path("/getZipFile")
 	public Response getZipFile(
 		@Context HttpServletRequest servletRequest,

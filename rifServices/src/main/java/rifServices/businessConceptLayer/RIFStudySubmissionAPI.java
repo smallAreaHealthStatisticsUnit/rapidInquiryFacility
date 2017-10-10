@@ -312,6 +312,12 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 		final User user,
 		final String studyID,
 		final String zoomLevel)
+		throws RIFServiceException;	
+		
+	public void getStudyExtract(
+		final User user,
+		final String studyID,
+		final String zoomLevel)
 		throws RIFServiceException;
 		
 	public void test(final User user) 
