@@ -11,6 +11,9 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.util.RIFDateFormat;
 
 import java.io.*;
@@ -198,6 +201,18 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), "MSSQLStudyExtractManager ERROR", exception);
+			temporaryDirectory.delete();
+				
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlStudyStateManager.error.unableToCreateStudyExtract",
+					user.getUserID(),
+					temporaryDirectoryPath);
+			RIFServiceException rifServiceExeption
+				= new RIFServiceException(
+					RIFServiceError.ZIPFILE_CREATE_FAILED, 
+					errorMessage);
+			throw rifServiceExeption;
 		}
 		finally {
 			temporaryDirectory.delete();

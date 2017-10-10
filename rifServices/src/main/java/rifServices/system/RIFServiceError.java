@@ -295,6 +295,8 @@ public enum RIFServiceError {
 	/** covariate does not exist */
 	NON_EXISTENT_COVARIATE,
 	
+	ZIPFILE_CREATE_FAILED,/* Unable to create Zipfile */
+	
 	NO_ND_PAIR_FOR_NUMERATOR_TABLE_NAME,
 	NO_HEALTH_TAXONOMY_FOR_NAMESPACE,	
 	HEALTH_CODE_NOT_KNOWN_TO_PROVIDER,
