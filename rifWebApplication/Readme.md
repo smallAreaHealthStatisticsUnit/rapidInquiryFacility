@@ -1882,7 +1882,7 @@ a DLL this is the process id of *tomcat*.
 [Process Explorer](https://docs.microsoft.com/en-gb/sysinternals/downloads/process-explorer) is a Windows tool that aloows the user to 
 see the hidden R thread and the *inla* sub process.
 
-R process ID tracer:
+R process ID tracer from the middleware log:
 
 ```
 16:08:27.167 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
