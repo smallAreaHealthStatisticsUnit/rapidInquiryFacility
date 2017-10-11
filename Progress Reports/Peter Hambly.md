@@ -1637,7 +1637,8 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Add trace to getCurrentStatusAllStudies method (safely formatted), fixed creation date to add time
 * Added error logging to all GET methods with exception handlers (others are super classes)
 * Added trace to study status; checked can maintain Angular code. Now have basic understanding of what it is doing.
-* Completed results reporting from run study and R code. 
+* Completed results reporting from run study and R code.
+* Create separate createZipFile and getZipFile methods. 
   
 #### 2nd to 6th October
 
@@ -1653,6 +1654,10 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Added print of memory in use by thread, with warning is available memory drops below 500M
 * Added JConsole support
 * Added print of R process ID. It is not possible to access procxcess related information for this sub process in Java.
+* Document R debugging and memory management.
+* Rewrote ZIP file extract to use all files in R temporary directory, changed ZIP file extension to .zip so windows understands it, 
+  supported directory trees, fixed error handling, added support for separate *createZipFile* and *getZipFile* methods [both do 
+  create at present]
 
 #### Database TODO list (deferred to November 2017): SQL Server Port
 
@@ -1662,7 +1667,7 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 	* Run dataloader, check outputs
 	* More dataloader documentation
 
-* Add unique keys to description fileds on tables/projects/health themes to protect against Kev using them as a Key
+* Add unique keys to description files on rif tables/projects/health themes to protect against Kev using them as a Key
 * Add area name to results map table
 * USA_2014 integration: 
   * RIF40_GEOGRAPHIES set up wrong: default study and comnparison area names use original field name, no setup field names

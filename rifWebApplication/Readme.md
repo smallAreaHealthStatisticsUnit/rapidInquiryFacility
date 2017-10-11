@@ -1521,9 +1521,10 @@ Rengine Stopped, exit value==1==
 3. Tracing R script errors
 
    You will almost certainly get no results in the data viewer; the extract R processing can be re-run manually using a batch 
-   file (*rif40_run_R.bat*) created in the R script scratch area: ```extractDirectory=c:\\rifDemo\\scratchSpace```:
+   file (*rif40_run_R.bat*) created in the R script scratch area: ```extractDirectory=c:\\rifDemo\\scratchSpace```
+   in the *<study id>\\data\\* sub directory.
 
-   e.g. *C:\rifDemo\scratchSpace\s33*
+   e.g. *C:\rifDemo\scratchSpace\s33\data*
 
    This contains the following files:
 
@@ -1537,7 +1538,7 @@ Rengine Stopped, exit value==1==
    **This will be added to the extract during October 2017.**
    
 ```bat
-C:\rifDemo\scratchSpace\s33>rif40_run_R.bat
+C:\rifDemo\scratchSpace\s33\data>rif40_run_R.bat
 New user [default peter]:
 ##########################################################################################
 #
