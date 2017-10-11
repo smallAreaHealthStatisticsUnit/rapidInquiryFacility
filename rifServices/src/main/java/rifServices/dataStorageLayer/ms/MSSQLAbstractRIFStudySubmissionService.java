@@ -1158,7 +1158,8 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 					connection, 
 					user, 
 					rifStudySubmission,
-					zoomLevel);
+					zoomLevel,
+					studyID);
 
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -1169,7 +1170,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 					rifServiceException);	
 		}
 		finally {
-			rifLogger.info(getClass(), "Create ZIP completed OK");
+			rifLogger.info(getClass(), "Create ZIP file completed OK");
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(
 					user, 
@@ -1253,7 +1254,8 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 					connection, 
 					user, 
 					rifStudySubmission,
-					zoomLevel);
+					zoomLevel,
+					studyID);
 
 		}
 		catch(RIFServiceException rifServiceException) {

@@ -1155,7 +1155,8 @@ implements RIFStudySubmissionAPI {
 					connection, 
 					user, 
 					rifStudySubmission,
-					zoomLevel);
+					zoomLevel,
+					studyID);
 
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -1166,7 +1167,7 @@ implements RIFStudySubmissionAPI {
 					rifServiceException);	
 		}
 		finally {
-			rifLogger.info(getClass(), "Create ZIP completed OK");
+			rifLogger.info(getClass(), "Create ZIP file completed OK");
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(
 					user, 
@@ -1250,7 +1251,8 @@ implements RIFStudySubmissionAPI {
 					connection, 
 					user, 
 					rifStudySubmission,
-					zoomLevel);
+					zoomLevel,
+					studyID);
 
 		}
 		catch(RIFServiceException rifServiceException) {

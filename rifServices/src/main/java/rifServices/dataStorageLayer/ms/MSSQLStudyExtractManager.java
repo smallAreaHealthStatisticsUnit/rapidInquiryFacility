@@ -98,7 +98,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	
 	//private static final String TERMS_CONDITIONS_SUBDIRECTORY = "terms_and_conditions";
 
-	private static final int BASE_FILE_STUDY_NAME_LENGTH = 10;
+	private static final int BASE_FILE_STUDY_NAME_LENGTH = 100;
 	
 	// ==========================================
 	// Section Properties
@@ -128,25 +128,36 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			final Connection connection,
 			final User user,
 			final RIFStudySubmission rifStudySubmission,
-			final String zoomLevel)
+			final String zoomLevel,
+			final String studyID)
 					throws RIFServiceException {
 
 		//Validate parameters
 		String temporaryDirectoryPath = null;
 		File temporaryDirectory = null;
+		File submissionZipFile = null;
+		
 		try {
 			//Establish the phrase that will be used to help name the main zip
 			//file and data files within its directories
 			String baseStudyName 
-			= createBaseStudyFileName(rifStudySubmission);
+			= createBaseStudyFileName(rifStudySubmission, studyID);
 
 			temporaryDirectoryPath = 
 					createTemporaryDirectoryPath(
 							user, 
-							baseStudyName);
+							studyID);
 			temporaryDirectory = new File(temporaryDirectoryPath);
-
-			File submissionZipFile 
+			if (temporaryDirectory.exists()) {
+				rifLogger.info(this.getClass(), "Found R temporary directory: "  + 
+					temporaryDirectory.getAbsolutePath());
+			}
+			else {
+				throw new Exception("R temporary directory: "  + 
+					temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
+			}
+			
+			submissionZipFile 
 			= createSubmissionZipFile(
 					user,
 					baseStudyName);
@@ -161,8 +172,10 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 					baseStudyName,
 					rifStudySubmission);
 
-
-			writeExtractFiles(
+			addRFiles(
+				temporaryDirectory,
+				submissionZipOutputStream);
+/*			writeExtractFiles(
 					connection,
 					temporaryDirectoryPath,
 					submissionZipOutputStream,
@@ -175,7 +188,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 					temporaryDirectoryPath,
 					submissionZipOutputStream,
 					baseStudyName,
-					rifStudySubmission);
+					rifStudySubmission); */
 
 			writeGeographyFiles(
 					connection,
@@ -201,13 +214,13 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), "MSSQLStudyExtractManager ERROR", exception);
-			temporaryDirectory.delete();
+//			temporaryDirectory.delete();
 				
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlStudyStateManager.error.unableToCreateStudyExtract",
 					user.getUserID(),
-					temporaryDirectoryPath);
+					submissionZipFile.getAbsolutePath());
 			RIFServiceException rifServiceExeption
 				= new RIFServiceException(
 					RIFServiceError.ZIPFILE_CREATE_FAILED, 
@@ -215,7 +228,9 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			throw rifServiceExeption;
 		}
 		finally {
-			temporaryDirectory.delete();
+			rifLogger.info(this.getClass(), "Created ZIP file: " + 
+				submissionZipFile.getAbsolutePath() + File.separator + submissionZipFile.getName());
+//			temporaryDirectory.delete();
 		}
 	}
 
@@ -227,16 +242,16 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 		fileName.append(EXTRACT_DIRECTORY);
 		fileName.append(File.separator);
 		fileName.append(user.getUserID());		
-		fileName.append("-");
+		fileName.append("_");
 		fileName.append(baseStudyName);
-		fileName.append("-");
+		fileName.append("_");
 		
 		RIFDateFormat rifDateFormat = RIFDateFormat.getRIFDateFormat();
 		String timeStamp = rifDateFormat.getFileTimeStamp(new Date());
 		if (timeStamp != null) {
 			fileName.append(timeStamp);
 		}		
-		fileName.append(".rifZ");
+		fileName.append(".zip");
 		
 		return new File(fileName.toString());		
 	}
@@ -246,10 +261,12 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	 * Produces the base name for result files.
 	 */
 	private String createBaseStudyFileName(
-		final RIFStudySubmission rifStudySubmission) {
+		final RIFStudySubmission rifStudySubmission,
+		final String studyID) {
 		
 		AbstractStudy study = rifStudySubmission.getStudy();
-		String name = study.getName().toLowerCase();
+//		String name = study.getName().toLowerCase();
+		String name = "s" + studyID + "_" + study.getName().toLowerCase();
 		//concatenate study name length.  We need to be mindful about
 		//the length of file names we produce so that they are not too
 		//long for some operating systems to handle.
@@ -267,12 +284,12 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	
 	private String createTemporaryDirectoryPath(
 		final User user,
-		final String baseStudyName) {
+		final String studyID) {
 		
 		StringBuilder fileName = new StringBuilder();
 		fileName.append(EXTRACT_DIRECTORY);
 		fileName.append(File.separator);
-		fileName.append(baseStudyName);
+		fileName.append("s" + studyID);
 	
 		return fileName.toString();
 	}
@@ -310,13 +327,48 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			user, 
 			rifStudySubmission);
 		submissionZipOutputStream.closeEntry();
-		
-		
-		
+
+		rifLogger.info(this.getClass(), "Add to ZIP file: " + queryFileName);		
 	}
 	
 	
-	private void writeExtractFiles(
+	private void addRFiles(
+			final File temporaryDirectory,
+			final ZipOutputStream submissionZipOutputStream)
+					throws Exception {
+						
+		File[] listOfFiles = temporaryDirectory.listFiles();
+
+		for (int i = 0; i < listOfFiles.length; i++) {	
+		
+			if (listOfFiles[i].isFile()) {
+				rifLogger.info(this.getClass(), "Adding R file: " + temporaryDirectory.getAbsolutePath() + File.separator + 
+					listOfFiles[i].getName() + " to ZIP file");
+				
+				File file=new File(temporaryDirectory.getAbsolutePath() + File.separator + listOfFiles[i].getName());
+				ZipEntry zipEntry = new ZipEntry(listOfFiles[i].getName());
+				submissionZipOutputStream.putNextEntry(zipEntry);
+
+				FileInputStream fileInputStream  = new FileInputStream(file);
+				byte[] buffer = new byte[4092];
+				int byteCount = 0;
+				while ((byteCount = fileInputStream.read(buffer)) != -1) {
+					submissionZipOutputStream.write(buffer, 0, byteCount);
+				}
+
+				fileInputStream.close();
+				submissionZipOutputStream.closeEntry();
+			}
+			else if (listOfFiles[i].isDirectory()) {
+				rifLogger.info(this.getClass(), "Adding R directory: " + temporaryDirectory.getAbsolutePath() + File.separator + 
+					listOfFiles[i].getName() + File.separator + " to ZIP file");	
+				submissionZipOutputStream.putNextEntry(
+					new ZipEntry(temporaryDirectory.getAbsolutePath() + File.separator + listOfFiles[i].getName() + File.separator));
+			}
+    	}
+	}
+					
+	private void writeExtractFiles( // Obsoleted, use R versions
 			final Connection connection,
 			final String temporaryDirectoryPath,
 			final ZipOutputStream submissionZipOutputStream,
@@ -337,11 +389,11 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 		extractFileName.append(baseStudyName);
 		extractFileName.append(".csv");
 
-		dumpDatabaseTableToCSVFile(
+/*		dumpDatabaseTableToCSVFile(
 				connection,
 				submissionZipOutputStream,
 				extractTableName.toString(),
-				extractFileName.toString());
+				extractFileName.toString()); */
 
 		/* IG NOT YET INCLUDED
 		File infoGovernanceDirectory
@@ -362,10 +414,10 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 
 		}
 		 */
-		
+		rifLogger.info(this.getClass(), "Add to ZIP file: " + extractFileName);
 	}
 	
-	private void writeRatesAndRisksFiles(
+	private void writeRatesAndRisksFiles( // Obsoleted, use R versions
 			final Connection connection,
 			final String temporaryDirectoryPath,
 			final ZipOutputStream submissionZipOutputStream,
@@ -386,12 +438,13 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 		mapFileName.append(baseStudyName);
 		mapFileName.append(".csv");
 
-		dumpDatabaseTableToCSVFile(
+/*		dumpDatabaseTableToCSVFile(
 				connection,
 				submissionZipOutputStream,
 				mapTableName.toString(),
-				mapFileName.toString());
+				mapFileName.toString()); */
 
+		rifLogger.info(this.getClass(), "Add to ZIP file: " + mapFileName);
 	}	
 	
 	private void writeGeographyFiles(
@@ -446,6 +499,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 				tileFileName.toString(),
 				zoomLevel,
 				studyID);
+		rifLogger.info(this.getClass(), "Add to ZIP file: " + tileFileName);
 	}	
 
 	
@@ -505,29 +559,8 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	/*
 	 * General methods for writing to zip files
 	 */
-
-	public void addFileToZipFile(
-		final ZipOutputStream submissionZipOutputStream,
-		final String zipEntryName,
-		final File inputFile)
-		throws Exception {
-		
-		ZipEntry rifQueryFileNameZipEntry = new ZipEntry(zipEntryName);
-		submissionZipOutputStream.putNextEntry(rifQueryFileNameZipEntry);
-				
-		byte[] BUFFER = new byte[4096 * 1024];
-		FileInputStream fileInputStream = new FileInputStream(inputFile);		
-		int bytesRead = fileInputStream.read(BUFFER);		
-		while (bytesRead != -1) {
-			submissionZipOutputStream.write(BUFFER, 0, bytesRead);			
-			bytesRead = fileInputStream.read(BUFFER);
-		}
-		submissionZipOutputStream.flush();
-		fileInputStream.close();
-		submissionZipOutputStream.closeEntry();
-	}
-
-	public void dumpDatabaseTableToCSVFile(
+/*
+	public void dumpDatabaseTableToCSVFile( // csv_dump() not implemented on SQL Server!
 		final Connection connection,
 		final ZipOutputStream submissionZipOutputStream,		
 		final String tableName,
@@ -567,11 +600,33 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			PGSQLQueryUtility.close(statement);
 		}
 
-	}
+	} */
 		
-
 	
 	/*
+	public void addFileToZipFile(
+		final ZipOutputStream submissionZipOutputStream,
+		final String zipEntryName,
+		final File inputFile)
+		throws Exception {
+		
+		ZipEntry rifQueryFileNameZipEntry = new ZipEntry(zipEntryName);
+		submissionZipOutputStream.putNextEntry(rifQueryFileNameZipEntry);
+				
+		byte[] BUFFER = new byte[4096 * 1024];
+		FileInputStream fileInputStream = new FileInputStream(inputFile);		
+		int bytesRead = fileInputStream.read(BUFFER);		
+		while (bytesRead != -1) {
+			submissionZipOutputStream.write(BUFFER, 0, bytesRead);			
+			bytesRead = fileInputStream.read(BUFFER);
+		}
+		submissionZipOutputStream.flush();
+		fileInputStream.close();
+		submissionZipOutputStream.closeEntry();
+		
+		rifLogger.info(this.getClass(), "Add to ZIP file: " + inputFile);
+	}
+
     private void addFileToZipFile(
     	final ZipOutputStream submissionZipOutputStream, 
     	final String zipFilePath, 
@@ -625,7 +680,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 		//get geolevel
 		SQLGeneralQueryFormatter geolevelQueryFormatter = new SQLGeneralQueryFormatter();	
 		geolevelQueryFormatter.addQueryLine(0, "SELECT b.geolevel_id");
-		geolevelQueryFormatter.addQueryLine(0, "FROM rif40_studies a, rif40_geolevels b");
+		geolevelQueryFormatter.addQueryLine(0, "FROM rif40.rif40_studies a, rif40.rif40_geolevels b");
 		geolevelQueryFormatter.addQueryLine(0, "WHERE study_id = ?");
 		if (areaTableName.equals("rif40_comparison_areas")) {
 			geolevelQueryFormatter.addQueryLine(0, "AND a.comparison_geolevel_name = b.geolevel_name");
