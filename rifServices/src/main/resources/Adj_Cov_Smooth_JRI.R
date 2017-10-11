@@ -120,17 +120,17 @@ establishTableNames <-function(vstudyID) {
 	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
 		scratchSpace <<- "c:\\rifDemo\\scratchSpace\\"
 	}
-	scratchSpace <<- paste0(scratchSpace, "s", vstudyID, "\\")
+	scratchSpace <<- paste0(scratchSpace, "s", vstudyID, "\\data\\")
 		
 	tryCatch({
 			#Put all scratch files in sub directory s<study_id>
 			if (!file.exists(scratchSpace)) {
-				dir.create(scratchSpace)
+				dir.create(scratchSpace, recursive=TRUE)
 			}
 	  	},
 		warning=function(w) {
 			cat(paste("UNABLE to create scratchSpace: ", scratchSpace, w, "\n"), sep="")
-			exitValue <<- 0
+			exitValue <<- 1
 		},
 		error=function(e) {
 			cat(paste("ERROR creating scratchSpace: ", scratchSpace, e, "\n"), sep="")

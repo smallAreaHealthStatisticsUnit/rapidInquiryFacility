@@ -174,7 +174,8 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 
 			addRFiles(
 				temporaryDirectory,
-				submissionZipOutputStream);
+				submissionZipOutputStream,
+				null);
 /*			writeExtractFiles(
 					connection,
 					temporaryDirectoryPath,
@@ -334,7 +335,8 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	
 	private void addRFiles(
 			final File temporaryDirectory,
-			final ZipOutputStream submissionZipOutputStream)
+			final ZipOutputStream submissionZipOutputStream,
+			final String relativePath)
 					throws Exception {
 						
 		File[] listOfFiles = temporaryDirectory.listFiles();
@@ -346,7 +348,13 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 					listOfFiles[i].getName() + " to ZIP file");
 				
 				File file=new File(temporaryDirectory.getAbsolutePath() + File.separator + listOfFiles[i].getName());
-				ZipEntry zipEntry = new ZipEntry(listOfFiles[i].getName());
+				ZipEntry zipEntry = null;
+				if (relativePath != null) {
+					zipEntry = new ZipEntry(relativePath + File.separator + listOfFiles[i].getName());
+				}
+				else {
+					zipEntry = new ZipEntry(listOfFiles[i].getName());
+				}
 				submissionZipOutputStream.putNextEntry(zipEntry);
 
 				FileInputStream fileInputStream  = new FileInputStream(file);
@@ -361,9 +369,20 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			}
 			else if (listOfFiles[i].isDirectory()) {
 				rifLogger.info(this.getClass(), "Adding R directory: " + temporaryDirectory.getAbsolutePath() + File.separator + 
-					listOfFiles[i].getName() + File.separator + " to ZIP file");	
-				submissionZipOutputStream.putNextEntry(
-					new ZipEntry(temporaryDirectory.getAbsolutePath() + File.separator + listOfFiles[i].getName() + File.separator));
+					listOfFiles[i].getName() + File.separator + " to ZIP file");
+				if (relativePath != null) {
+					submissionZipOutputStream.putNextEntry(
+						new ZipEntry(listOfFiles[i].getName() + File.separator));
+				}
+				else {
+					submissionZipOutputStream.putNextEntry(
+						new ZipEntry(listOfFiles[i].getName() + File.separator));
+				}					
+				addRFiles(listOfFiles[i], submissionZipOutputStream, listOfFiles[i].getName()); // Recurse!!!
+			}
+			else {
+				rifLogger.info(this.getClass(), "Ignoring R file: " + temporaryDirectory.getAbsolutePath() + File.separator + 
+					listOfFiles[i].getName());
 			}
     	}
 	}

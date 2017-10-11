@@ -157,7 +157,7 @@ establishTableNames <-function(vstudyID) {
 	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
 		scratchSpace <<- "c:\\rifDemo\\scratchSpace\\"
 	}
-	scratchSpace <<- paste0(scratchSpace, "s", vstudyID, "\\")
+	scratchSpace <<- paste0(scratchSpace, "s", vstudyID, "\\data\\")
 
 	if (exists("dumpFramesToCsv") == FALSE || dumpFramesToCsv == "") {
 		dumpFramesToCsv <<- defaultDumpFramesToCsv
