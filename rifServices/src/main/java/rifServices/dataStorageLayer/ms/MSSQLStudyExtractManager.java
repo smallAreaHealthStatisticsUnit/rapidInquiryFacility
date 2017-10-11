@@ -176,20 +176,6 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 				temporaryDirectory,
 				submissionZipOutputStream,
 				null);
-/*			writeExtractFiles(
-					connection,
-					temporaryDirectoryPath,
-					submissionZipOutputStream,
-					baseStudyName,
-					rifStudySubmission);
-
-
-			writeRatesAndRisksFiles(
-					connection,
-					temporaryDirectoryPath,
-					submissionZipOutputStream,
-					baseStudyName,
-					rifStudySubmission); */
 
 			writeGeographyFiles(
 					connection,
@@ -386,85 +372,6 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			}
     	}
 	}
-					
-	private void writeExtractFiles( // Obsoleted, use R versions
-			final Connection connection,
-			final String temporaryDirectoryPath,
-			final ZipOutputStream submissionZipOutputStream,
-			final String baseStudyName,
-			final RIFStudySubmission rifStudySubmission)
-					throws Exception {
-
-		//Add extract file to zip file
-		StringBuilder extractTableName = new StringBuilder();
-
-		extractTableName.append("s");
-		extractTableName.append(rifStudySubmission.getStudyID());
-		extractTableName.append("_extract");
-
-		StringBuilder extractFileName = new StringBuilder();
-		extractFileName.append(STUDY_EXTRACT_SUBDIRECTORY);
-		extractFileName.append(File.separator);
-		extractFileName.append(baseStudyName);
-		extractFileName.append(".csv");
-
-/*		dumpDatabaseTableToCSVFile(
-				connection,
-				submissionZipOutputStream,
-				extractTableName.toString(),
-				extractFileName.toString()); */
-
-		/* IG NOT YET INCLUDED
-		File infoGovernanceDirectory
-			= new File("C:" + File.separator + "rif_test_data" + File.separator + "information_governance");
-		File[] files = infoGovernanceDirectory.listFiles();
-
-		for (File file : files) { 
-
-			StringBuilder zipEntryName = new StringBuilder();
-			zipEntryName.append(TERMS_CONDITIONS_SUBDIRECTORY);
-			zipEntryName.append(File.separator);
-			zipEntryName.append(file.getName());
-
-			addFileToZipFile(
-				submissionZipOutputStream,
-				zipEntryName.toString(),
-				file);
-
-		}
-		 */
-		rifLogger.info(this.getClass(), "Add to ZIP file: " + extractFileName);
-	}
-	
-	private void writeRatesAndRisksFiles( // Obsoleted, use R versions
-			final Connection connection,
-			final String temporaryDirectoryPath,
-			final ZipOutputStream submissionZipOutputStream,
-			final String baseStudyName,
-			final RIFStudySubmission rifStudySubmission)
-					throws Exception {
-
-		//Add extract file to zip file
-		StringBuilder mapTableName = new StringBuilder();
-
-		mapTableName.append("s");
-		mapTableName.append(rifStudySubmission.getStudyID());
-		mapTableName.append("_map");
-
-		StringBuilder mapFileName = new StringBuilder();
-		mapFileName.append(RATES_AND_RISKS_SUBDIRECTORY);
-		mapFileName.append(File.separator);
-		mapFileName.append(baseStudyName);
-		mapFileName.append(".csv");
-
-/*		dumpDatabaseTableToCSVFile(
-				connection,
-				submissionZipOutputStream,
-				mapTableName.toString(),
-				mapFileName.toString()); */
-
-		rifLogger.info(this.getClass(), "Add to ZIP file: " + mapFileName);
-	}	
 	
 	private void writeGeographyFiles(
 			final Connection connection,
@@ -578,48 +485,6 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	/*
 	 * General methods for writing to zip files
 	 */
-/*
-	public void dumpDatabaseTableToCSVFile( // csv_dump() not implemented on SQL Server!
-		final Connection connection,
-		final ZipOutputStream submissionZipOutputStream,		
-		final String tableName,
-		final String outputFilePath)
-		throws Exception {
-				
-		PGSQLFunctionCallerQueryFormatter queryFormatter = new PGSQLFunctionCallerQueryFormatter();
-		queryFormatter.setDatabaseSchemaName("rif40_dmp_pkg");
-		queryFormatter.setFunctionName("csv_dump");
-		queryFormatter.setNumberOfFunctionParameters(1);
-		
-		
-		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(submissionZipOutputStream);
-		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-		
-		PreparedStatement statement
-			= createPreparedStatement(connection, queryFormatter);		
-		ResultSet resultSet = null;
-		try {
-			statement = createPreparedStatement(connection, queryFormatter);
-			statement.setString(1, tableName);
-			resultSet = statement.executeQuery();
-			
-			ZipEntry zipEntry = new ZipEntry(outputFilePath);
-			submissionZipOutputStream.putNextEntry(zipEntry);
-			
-			while (resultSet.next()) {
-				bufferedWriter.write(resultSet.getString(1));
-			}
-
-			bufferedWriter.flush();
-			submissionZipOutputStream.closeEntry();
-			
-			connection.commit();
-		}
-		finally {
-			PGSQLQueryUtility.close(statement);
-		}
-
-	} */
 		
 	
 	/*
