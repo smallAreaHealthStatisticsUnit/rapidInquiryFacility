@@ -1179,7 +1179,18 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 
 	} 
 	
-	
+	public String getStudyExtractFIleName(
+			final User user,
+			final String studyID)
+		throws RIFServiceException {
+		
+			MSSQLStudyExtractManager studyExtractManager
+			= rifServiceResources.getSQLStudyExtractManager();
+			return studyExtractManager.getStudyExtractFIleName(
+					user, 
+					studyID);			
+		}
+		
 	public FileInputStream getStudyExtract(
 			final User _user,
 			final String studyID,

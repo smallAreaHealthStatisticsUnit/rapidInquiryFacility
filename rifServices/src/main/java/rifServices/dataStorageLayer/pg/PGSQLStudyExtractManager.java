@@ -121,7 +121,21 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 
 	// ==========================================
 	// Section Accessors and Mutators
-	// ==========================================
+	// ==========================================	
+	public String getStudyExtractFIleName(
+			final User user,
+			final String studyID)
+					throws RIFServiceException {
+						
+		StringBuilder fileName = new StringBuilder();
+		fileName.append(user.getUserID());		
+		fileName.append("_");
+		fileName.append("s" + studyID);
+		fileName.append(".zip");
+		
+		return fileName.toString();		
+		}
+		
 	public FileInputStream getStudyExtract(
 			final Connection connection,
 			final User user,
@@ -291,13 +305,6 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 		fileName.append(user.getUserID());		
 		fileName.append("_");
 		fileName.append(baseStudyName);
-		fileName.append("_");
-
-		RIFDateFormat rifDateFormat = RIFDateFormat.getRIFDateFormat();
-		String timeStamp = rifDateFormat.getFileTimeStamp(new Date());
-		if (timeStamp != null) {
-			fileName.append(timeStamp);
-		}		
 		fileName.append(".zip");
 
 		return new File(fileName.toString());		

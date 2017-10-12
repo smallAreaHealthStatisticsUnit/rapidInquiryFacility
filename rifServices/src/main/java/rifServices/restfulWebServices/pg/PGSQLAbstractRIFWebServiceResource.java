@@ -935,7 +935,7 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 		
 		StringBuilder result = new StringBuilder();
 		FileInputStream fileInputStream = null;
-		String fileName = "test.zip";
+		String fileName = null;
 		
 		try {
 			User user = createUser(servletRequest, userID);
@@ -943,6 +943,10 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			RIFStudySubmissionAPI studySubmissionService
 			= getRIFStudySubmissionService();
 
+			fileName=studySubmissionService.getStudyExtractFIleName(
+					user, 
+					studyID);
+					
 			fileInputStream=studySubmissionService.getStudyExtract(
 					user, 
 					studyID, 

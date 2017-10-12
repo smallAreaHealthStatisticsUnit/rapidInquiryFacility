@@ -313,11 +313,14 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 		final String studyID,
 		final String zoomLevel)
 		throws RIFServiceException;	
-		
 	public FileInputStream getStudyExtract(
 		final User user,
 		final String studyID,
 		final String zoomLevel)
+		throws RIFServiceException;		
+	public String getStudyExtractFIleName(
+		final User user,
+		final String studyID)
 		throws RIFServiceException;
 		
 	public void test(final User user) 

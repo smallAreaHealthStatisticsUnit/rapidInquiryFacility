@@ -237,25 +237,14 @@ final public class WebServiceResponseGenerator {
 		}
 
 		
-	public Response generateWebServiceResponse(
+	public Response generateWebServiceResponse( // streaming version
 			final HttpServletRequest servletRequest,
 			final FileInputStream fileInputStream,
 			final String fileName) throws FileNotFoundException, IOException {
 						
-//        FileOutputStream out = new FileOutputStream(fileName);
 			ResponseBuilder responseBuilder = null;
-			
-			
-/*            int bufferSize = 1024;
-            byte[] buf = new byte[bufferSize];
-            int n = fileInputStream.read(buf);
-			int len=0;
-            while (n >= 0) {
-                out.write(buf, 0, n);
-				n = fileInputStream.read(buf);
-				len+=n;
-            } */
-			rifLogger.info(this.getClass(), "Create ZIP response: " + fileName + "; length: " + len);
+				
+			rifLogger.info(this.getClass(), "Create ZIP response: " + fileName + "; length: " + fileInputStream.getChannel().size());
 
             responseBuilder = Response.ok(fileInputStream);
 //			responseBuilder.setContentLength(len);
@@ -263,9 +252,6 @@ final public class WebServiceResponseGenerator {
 			
             responseBuilder.header("Content-Disposition",
                     "attachment; filename=\"" + fileName + "\"");
- 
-            out.flush();
-            out.close();		
 			
 			return responseBuilder.build();
 		}

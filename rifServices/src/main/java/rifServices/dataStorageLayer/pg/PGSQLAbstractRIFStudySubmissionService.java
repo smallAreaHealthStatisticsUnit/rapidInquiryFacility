@@ -1176,7 +1176,18 @@ implements RIFStudySubmissionAPI {
 
 	}
 	
-
+	public String getStudyExtractFIleName(
+			final User user,
+			final String studyID)
+		throws RIFServiceException {
+		
+			PGSQLStudyExtractManager studyExtractManager
+			= rifServiceResources.getSQLStudyExtractManager();
+			return studyExtractManager.getStudyExtractFIleName(
+					user, 
+					studyID);			
+		}
+		
 	public FileInputStream getStudyExtract(
 			final User _user,
 			final String studyID,
