@@ -1658,6 +1658,7 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Rewrote ZIP file extract to use all files in R temporary directory, changed ZIP file extension to .zip so windows understands it, 
   supported directory trees, fixed error handling, added support for separate *createZipFile* and *getZipFile* methods [both do 
   create at present]
+* Added getZipFile.
 
 #### Database TODO list (deferred to November 2017): SQL Server Port
 
