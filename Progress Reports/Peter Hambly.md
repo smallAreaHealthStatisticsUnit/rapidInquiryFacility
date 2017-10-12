@@ -1658,7 +1658,21 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Rewrote ZIP file extract to use all files in R temporary directory, changed ZIP file extension to .zip so windows understands it, 
   supported directory trees, fixed error handling, added support for separate *createZipFile* and *getZipFile* methods [both do 
   create at present]
-* Added getZipFile.
+* Added getZipFile
+* Removed timestamp from zip file names to remove midnight uncertaincy
+* Fixed BP's github
+* Example stack for documnet restful services
+```
+java.lang.NullPointerException
+	rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility.createPreparedStatement(PGSQLQueryUtility.java:328)
+	rifServices.dataStorageLayer.ms.MSSQLAbstractSQLManager.createPreparedStatement(MSSQLAbstractSQLManager.java:163)
+	rifServices.dataStorageLayer.ms.MSSQLStudyStateManager.checkNonExistentStudyID(MSSQLStudyStateManager.java:761)
+	rifServices.dataStorageLayer.ms.MSSQLRIFSubmissionManager.getDiseaseMappingStudy(MSSQLRIFSubmissionManager.java:280)
+	rifServices.dataStorageLayer.ms.MSSQLRIFSubmissionManager.getRIFStudySubmission(MSSQLRIFSubmissionManager.java:258)
+	rifServices.dataStorageLayer.ms.MSSQLAbstractRIFStudySubmissionService.getStudyExtractFIleName(MSSQLAbstractRIFStudySubmissionService.java:1194)
+	rifServices.restfulWebServices.ms.MSSQLAbstractRIFWebServiceResource.getZipFile(MSSQLAbstractRIFWebServiceResource.java:975)
+	rifServices.restfulWebServices.ms.MSSQLRIFStudySubmissionWebServiceResource.getZipFile(MSSQLRIFStudySubmissionWebServiceResource.java:1233)
+```
 
 #### Database TODO list (deferred to November 2017): SQL Server Port
 
