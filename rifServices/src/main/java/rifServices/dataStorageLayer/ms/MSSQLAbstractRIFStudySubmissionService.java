@@ -7,7 +7,7 @@ import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
 import rifGenericLibrary.util.FieldValidationUtility;
 
-import java.io.File;
+import java.io.*;
 import java.sql.Connection;
 import java.util.ArrayList;
 
@@ -1177,10 +1177,10 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 					connection);			
 		}
 
-	}
+	} 
 	
 	
-	public void getStudyExtract(
+	public FileInputStream getStudyExtract(
 			final User _user,
 			final String studyID,
 			final String zoomLevel) 
@@ -1189,11 +1189,12 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
+		FileInputStream fileInputStream = null;
 		MSSQLConnectionManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();			
 		
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
-			return;
+			return null;
 		}
 
 		RIFLogger rifLogger = RIFLogger.getLogger();
@@ -1249,8 +1250,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 
 			MSSQLStudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
-			studyExtractManager.createStudyExtract( 
-//			studyExtractManager.getStudyExtract( // Needs to be changed
+			fileInputStream = studyExtractManager.getStudyExtract(
 					connection, 
 					user, 
 					rifStudySubmission,
@@ -1274,6 +1274,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 					connection);			
 		}
 
+		return fileInputStream;
 	}
 			
 	/**

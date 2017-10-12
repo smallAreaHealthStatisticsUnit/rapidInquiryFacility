@@ -932,32 +932,47 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			final String userID,
 			final String studyID,
 			final String zoomLevel) { 
-
-		String result = "OK";
-
+		
+		StringBuilder result = new StringBuilder();
+		FileInputStream fileInputStream = null;
+		String fileName = "test.zip";
+		
 		try {
 			User user = createUser(servletRequest, userID);
 
 			RIFStudySubmissionAPI studySubmissionService
 			= getRIFStudySubmissionService();
 
-			studySubmissionService.getStudyExtract(
+			fileInputStream=studySubmissionService.getStudyExtract(
 					user, 
 					studyID, 
 					zoomLevel);
+										
+			return webServiceResponseGenerator.generateWebServiceResponse( // streaming version
+					servletRequest,
+					fileInputStream,
+					fileName);		
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifLogger.error(this.getClass(), 
-				"PGSQLAbstractRIFWebServiceResource.getZipFile error", rifServiceException);
-			result 
-			= serialiseException(
+				"MSSQLAbstractRIFWebServiceResource.getZipFile getStudyExtract error", rifServiceException);	
+			String message=serialiseException(
+						servletRequest,
+						rifServiceException);
+			return webServiceResponseGenerator.generateWebServiceResponse(
 					servletRequest,
-					rifServiceException);		
+					message);		
 		}
-
-		return webServiceResponseGenerator.generateWebServiceResponse(
-				servletRequest,
-				result);		
+		catch(IOException exception) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getZipFile IO error", exception);	
+			String message=serialiseException(
+						servletRequest,
+						exception);
+			return webServiceResponseGenerator.generateWebServiceResponse(
+					servletRequest,
+					message);		
+		}
 	}
 
 	protected Response submitStudy(

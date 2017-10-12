@@ -1,10 +1,13 @@
 package rifServices.restfulWebServices;
 
+import java.io.*;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import rifGenericLibrary.util.RIFLogger;
 
 //TOUR_WEB_SERVICES-7
 /*
@@ -199,6 +202,8 @@ final public class WebServiceResponseGenerator {
 	// Section Properties
 	// ==========================================
 
+	private RIFLogger rifLogger = RIFLogger.getLogger();
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -231,6 +236,39 @@ final public class WebServiceResponseGenerator {
 			}
 		}
 
+		
+	public Response generateWebServiceResponse(
+			final HttpServletRequest servletRequest,
+			final FileInputStream fileInputStream,
+			final String fileName) throws FileNotFoundException, IOException {
+						
+//        FileOutputStream out = new FileOutputStream(fileName);
+			ResponseBuilder responseBuilder = null;
+			
+			
+/*            int bufferSize = 1024;
+            byte[] buf = new byte[bufferSize];
+            int n = fileInputStream.read(buf);
+			int len=0;
+            while (n >= 0) {
+                out.write(buf, 0, n);
+				n = fileInputStream.read(buf);
+				len+=n;
+            } */
+			rifLogger.info(this.getClass(), "Create ZIP response: " + fileName + "; length: " + len);
+
+            responseBuilder = Response.ok(fileInputStream);
+//			responseBuilder.setContentLength(len);
+//			responseBuilder.setContentType("application/zip");
+			
+            responseBuilder.header("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"");
+ 
+            out.flush();
+            out.close();		
+			
+			return responseBuilder.build();
+		}
 	
 	
 	/*

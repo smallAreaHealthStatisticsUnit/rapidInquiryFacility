@@ -122,7 +122,68 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	public FileInputStream getStudyExtract(
+			final Connection connection,
+			final User user,
+			final RIFStudySubmission rifStudySubmission,
+			final String zoomLevel,
+			final String studyID)
+					throws RIFServiceException {
+		//Validate parameters
+		String temporaryDirectoryPath = null;
+		File temporaryDirectory = null;
+		File submissionZipFile = null;
+		FileInputStream fileInputStream = null;
+		
+		try {
+			//Establish the phrase that will be used to help name the main zip
+			//file and data files within its directories
+			String baseStudyName 
+			= createBaseStudyFileName(rifStudySubmission, studyID);
 
+			temporaryDirectoryPath = 
+					createTemporaryDirectoryPath(
+							user, 
+							studyID);
+			temporaryDirectory = new File(temporaryDirectoryPath);
+			if (temporaryDirectory.exists()) {
+				rifLogger.info(this.getClass(), "Found R temporary directory: "  + 
+					temporaryDirectory.getAbsolutePath());
+			}
+			else {
+				throw new Exception("R temporary directory: "  + 
+					temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
+			}
+			
+			submissionZipFile 
+			= createSubmissionZipFile(
+					user,
+					baseStudyName);
+					
+			fileInputStream = new FileInputStream(submissionZipFile);	
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "MSSQLStudyExtractManager ERROR", exception);
+				
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlStudyStateManager.error.unableToGetStudyExtract",
+					user.getUserID(),
+					submissionZipFile.getAbsolutePath());
+			RIFServiceException rifServiceExeption
+				= new RIFServiceException(
+					RIFServiceError.ZIPFILE_CREATE_FAILED, 
+					errorMessage);
+			throw rifServiceExeption;
+		}
+		finally {
+			rifLogger.info(this.getClass(), "Fetched ZIP file: " + 
+				submissionZipFile.getAbsolutePath());
+		}	
+
+		return fileInputStream;
+	}
+	
 	public void createStudyExtract(
 			final Connection connection,
 			final User user,
@@ -215,7 +276,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 		}
 		finally {
 			rifLogger.info(this.getClass(), "Created ZIP file: " + 
-				submissionZipFile.getAbsolutePath() + File.separator + submissionZipFile.getName());
+				submissionZipFile.getAbsolutePath());
 //			temporaryDirectory.delete();
 		}
 	}

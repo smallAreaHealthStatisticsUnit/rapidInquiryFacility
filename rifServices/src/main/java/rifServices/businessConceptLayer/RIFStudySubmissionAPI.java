@@ -5,7 +5,7 @@ import rifGenericLibrary.system.RIFServiceException;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.io.File;
+import java.io.*;
 
 
 
@@ -314,7 +314,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 		final String zoomLevel)
 		throws RIFServiceException;	
 		
-	public void getStudyExtract(
+	public FileInputStream getStudyExtract(
 		final User user,
 		final String studyID,
 		final String zoomLevel)
