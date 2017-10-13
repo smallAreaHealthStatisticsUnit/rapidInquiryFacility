@@ -855,11 +855,14 @@ class DataSetFieldPropertyEditorPanel
 			//if it is meant to be the total field, then there is no choice
 			//in the clean and convert field names - they should be total as well
 			cleanComboBox.setSelectedItem("total");
-			convertComboBox.setSelectedItem("total");			
+			convertComboBox.setSelectedItem("total");
+			cleanComboBox.setEditable(false);
+			convertComboBox.setEditable(false);
 		}
 		else {
 			//let user specify whatever clean field name they want
 			cleanComboBox.setEditable(true);
+			convertComboBox.setEditable(true);
 				
 			DefaultComboBoxModel<String> defaultComboBoxModel
 				= new DefaultComboBoxModel<String>(new String[0]);
