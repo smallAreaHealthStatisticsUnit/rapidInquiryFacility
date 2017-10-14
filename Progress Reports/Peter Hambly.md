@@ -1661,18 +1661,17 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Added getZipFile
 * Removed timestamp from zip file names to remove midnight uncertaincy
 * Fixed BP's github
-* Example stack for documnet restful services
-```
-java.lang.NullPointerException
-	rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility.createPreparedStatement(PGSQLQueryUtility.java:328)
-	rifServices.dataStorageLayer.ms.MSSQLAbstractSQLManager.createPreparedStatement(MSSQLAbstractSQLManager.java:163)
-	rifServices.dataStorageLayer.ms.MSSQLStudyStateManager.checkNonExistentStudyID(MSSQLStudyStateManager.java:761)
-	rifServices.dataStorageLayer.ms.MSSQLRIFSubmissionManager.getDiseaseMappingStudy(MSSQLRIFSubmissionManager.java:280)
-	rifServices.dataStorageLayer.ms.MSSQLRIFSubmissionManager.getRIFStudySubmission(MSSQLRIFSubmissionManager.java:258)
-	rifServices.dataStorageLayer.ms.MSSQLAbstractRIFStudySubmissionService.getStudyExtractFIleName(MSSQLAbstractRIFStudySubmissionService.java:1194)
-	rifServices.restfulWebServices.ms.MSSQLAbstractRIFWebServiceResource.getZipFile(MSSQLAbstractRIFWebServiceResource.java:975)
-	rifServices.restfulWebServices.ms.MSSQLRIFStudySubmissionWebServiceResource.getZipFile(MSSQLRIFStudySubmissionWebServiceResource.java:1233)
-```
+
+#### 16th to 20th October
+
+* Only create ZIP file once, create as .sav to avoid file races
+* File download(getZipFile) complete
+
+In progress:
+
+* Use numbered directories (1-100 etc) to reduce files/directories per directory to 100 (filesystem performance)
+* getExtractStatus web service - to remove the need to do unnecessary ZIP creates. Will also be used in futiure 
+  to enforce the IG roadblock (i.e. so you cannot create an extract unless IG permission has been granted)
 
 #### Database TODO list (deferred to November 2017): SQL Server Port
 
