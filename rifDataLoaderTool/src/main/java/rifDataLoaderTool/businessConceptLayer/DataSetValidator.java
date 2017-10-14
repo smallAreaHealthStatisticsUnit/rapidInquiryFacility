@@ -247,13 +247,15 @@ public class DataSetValidator {
 					"dataSetValidator.error.singleRequiredTotalField");
 			errorMessages.add(errorMessage);
 		}		
-			
-		RIFDataType rifDataType = totalFields.get(0).getRIFDataType();
-		if (rifDataType != RIFDataTypeFactory.RIF_INTEGER_DATA_TYPE) {
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"dataSetValidator.error.totalMustBeInteger");
-			errorMessages.add(errorMessage);
+
+		if (totalFields.size() >0) {
+			RIFDataType rifDataType = totalFields.get(0).getRIFDataType();
+			if (rifDataType != RIFDataTypeFactory.RIF_INTEGER_DATA_TYPE) {
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage(
+						"dataSetValidator.error.totalMustBeInteger");
+				errorMessages.add(errorMessage);
+			}
 		}
 	}	
 	
@@ -273,13 +275,15 @@ public class DataSetValidator {
 			errorMessages.add(errorMessage);
 		}
 
-		RIFDataType rifDataType = resolutionFields.get(0).getRIFDataType();
-		if (rifDataType != RIFDataTypeFactory.RIF_TEXT_DATA_TYPE) {
-			String errorMessage
-				= RIFDataLoaderToolMessages.getMessage(
-					"dataSetValidator.error.resolutionFieldsMustBeText");
-			errorMessages.add(errorMessage);
-		}		
+		if (resolutionFields.size() > 0) {
+			RIFDataType rifDataType = resolutionFields.get(0).getRIFDataType();
+			if (rifDataType != RIFDataTypeFactory.RIF_TEXT_DATA_TYPE) {
+				String errorMessage
+					= RIFDataLoaderToolMessages.getMessage(
+						"dataSetValidator.error.resolutionFieldsMustBeText");
+				errorMessages.add(errorMessage);
+			}
+		}
 	}
 	
 	private void checkSingleRequiredHealthCodeFieldExists(

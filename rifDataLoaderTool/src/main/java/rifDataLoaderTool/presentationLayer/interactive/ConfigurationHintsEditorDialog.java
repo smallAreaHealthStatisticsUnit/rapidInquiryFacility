@@ -201,7 +201,7 @@ public class ConfigurationHintsEditorDialog
 			= userInterfaceFactory.createLeftRightSplitPane(
 				dataSetFieldHintTablePanel.getPanel(), 
 				rightPanel);
-		splitPane.setDividerLocation(400);
+		splitPane.setDividerLocation(350);
 		panel.add(splitPane, panelGC);
 		panel.setBorder(LineBorder.createGrayLineBorder());
 		
