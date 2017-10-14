@@ -231,47 +231,61 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 					temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
 			}
 
-			submissionZipFile 
-			= createSubmissionZipFile(
+			File submissionZipSavFile = createSubmissionZipFile(
+					user,
+					baseStudyName + ".sav");
+			submissionZipFile = createSubmissionZipFile(
 					user,
 					baseStudyName);
-			ZipOutputStream submissionZipOutputStream 
-			= new ZipOutputStream(new FileOutputStream(submissionZipFile));
+			if (submissionZipFile.isFile()) { // ZIP file exists - no need to recreate
+				rifLogger.info(this.getClass(), "No need to create ZIP file: " + 
+					submissionZipFile.getAbsolutePath() + "; already exists");
+			}
+			else if (submissionZipSavFile.isFile()) { // Sav file exists - being created
+				rifLogger.info(this.getClass(), "No need to create ZIP file: " + 
+					submissionZipSavFile.getAbsolutePath() + "; being created");
+			}
+			else { // No zip file - can be created
+				ZipOutputStream submissionZipOutputStream 
+				= new ZipOutputStream(new FileOutputStream(submissionZipSavFile));
 
+				//write the study the user made when they first submitted their query
+				writeQueryFile(
+						submissionZipOutputStream,
+						user,
+						baseStudyName,
+						rifStudySubmission);
 
-			//write the study the user made when they first submitted their query
-			writeQueryFile(
+				addRFiles(
+					temporaryDirectory,
 					submissionZipOutputStream,
-					user,
-					baseStudyName,
-					rifStudySubmission);
+					null);
 
-			addRFiles(
-				temporaryDirectory,
-				submissionZipOutputStream,
-				null);
+				writeGeographyFiles(
+						connection,
+						temporaryDirectoryPath,
+						submissionZipOutputStream,
+						baseStudyName,
+						zoomLevel,
+						rifStudySubmission);
 
-			writeGeographyFiles(
+				/*
+				writeStatisticalPostProcessingFiles(
 					connection,
 					temporaryDirectoryPath,
-					submissionZipOutputStream,
+					submissionZipOutputStream,				
 					baseStudyName,
-					zoomLevel,
 					rifStudySubmission);
 
-			/*
-			writeStatisticalPostProcessingFiles(
-				connection,
-				temporaryDirectoryPath,
-				submissionZipOutputStream,				
-				baseStudyName,
-				rifStudySubmission);
-
-			writeTermsAndConditionsFiles(
-				submissionZipOutputStream);	
-			 */	
-			submissionZipOutputStream.flush();
-			submissionZipOutputStream.close();
+				writeTermsAndConditionsFiles(
+					submissionZipOutputStream);	
+				 */	
+				submissionZipOutputStream.flush();
+				submissionZipOutputStream.close();
+				submissionZipSavFile.renameTo(submissionZipFile);
+				rifLogger.info(this.getClass(), "Created ZIP file: " + 
+					submissionZipFile.getAbsolutePath());
+			}
 		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), "PGSQLStudyExtractManager ERROR", exception);
@@ -289,8 +303,6 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			throw rifServiceExeption;
 		}
 		finally {
-			rifLogger.info(this.getClass(), "Created ZIP file: " + 
-				submissionZipFile.getAbsolutePath());
 //			temporaryDirectory.delete();
 		}
 	}
