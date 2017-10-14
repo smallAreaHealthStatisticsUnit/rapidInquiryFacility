@@ -243,14 +243,14 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 					user,
 					baseStudyName);
 			if (submissionZipFile.isFile()) { // ZIP file exists - no need to recreate
+				Thread.sleep(500); // Sleep to allow JS promises time to work
 				rifLogger.info(this.getClass(), "No need to create ZIP file: " + 
 					submissionZipFile.getAbsolutePath() + "; already exists");
-				Thread.sleep(200); // Sleep to allow JS promises time to work
 			}
 			else if (submissionZipSavFile.isFile()) { // Sav file exists - being created
+				Thread.sleep(500); // Sleep to allow JS promises time to work
 				rifLogger.info(this.getClass(), "No need to create ZIP file: " + 
 					submissionZipSavFile.getAbsolutePath() + "; being created");
-				Thread.sleep(200); // Sleep to allow JS promises time to work
 			}
 			else { // No zip file - can be created
 				ZipOutputStream submissionZipOutputStream 
