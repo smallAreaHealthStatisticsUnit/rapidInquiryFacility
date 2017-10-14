@@ -255,8 +255,8 @@ angular.module("RIF")
                     return $http.get(studySubmissionURL + DatabaseService.getDatabase() + 'createZipFile?userID=' + username + '&studyID=' + studyID + "&zoomLevel=" + zoomLevel);
                 };                
 				//Fetch Zip file
-                self.getZipFile = function (username, studyID, zoomLevel) {
+               self.getZipFileURL = function (username, studyID, zoomLevel) {
                     //http://localhost:8080/rifServices/studySubmission/pg/getZipFile?userID=dwmorley&studyID=46
-                    return $http.get(studySubmissionURL + DatabaseService.getDatabase() + 'getZipFile?userID=' + username + '&studyID=' + studyID + "&zoomLevel=" + zoomLevel);
+                    return studySubmissionURL + DatabaseService.getDatabase() + 'getZipFile?userID=' + username + '&studyID=' + studyID + "&zoomLevel=" + zoomLevel;
                 };
             }]);

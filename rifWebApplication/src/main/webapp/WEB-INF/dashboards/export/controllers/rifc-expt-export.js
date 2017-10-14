@@ -45,6 +45,8 @@ angular.module("RIF")
                     ExportStateService.getState().initial = true;
                 });
 
+				$scope.exportTAG="Export Study Tables";
+				
                 //study 
                 $scope.studyIDs = [];
                 $scope.studyID = {
@@ -236,13 +238,18 @@ angular.module("RIF")
                 };
 
                 //export query, map and extract tables as a Zip File
-                $scope.exportAllTables = function () {
+                $scope.exportAllTables = function (e) {
                     $scope.showSuccess("Export started...");
                     user.createZipFile(user.currentUser, $scope.studyID["exportmap"].study_id, $scope.exportLevel).then(function (res) {
                         if (res.data === "OK") {
-                            $scope.showSuccess("Export finished: " + $scope.studyID["exportmap"].name + " please check your defined extract directory");
+                            $scope.showSuccess("Export finished: " + $scope.studyID["exportmap"].name + "; ready to download.");
+							$scope.exportURL = user.getZipFileURL(user.currentUser, $scope.studyID["exportmap"].study_id, 
+								$scope.exportLevel); // Set mapListButtonExport URL
+							$scope.exportTAG="Download Study Export";
+													// Set mapListButtonExport text
                         } else {
                             $scope.showError("Error exporting study tables");
+							$scope.exportTAG="Export Study Tables";
                         }
                     });
                 };
@@ -307,6 +314,9 @@ angular.module("RIF")
                 var bBB = true; //is bounding box not defined yet, needed to set zoom to layer
 
                 $scope.updateStudy = function (mapID) {
+					$scope.exportURL = "";
+					$scope.exportTAG="Export Study Tables";
+					
                     if ($scope.map[mapID].hasLayer($scope.geoJSON)) {
                         $scope.map[mapID].removeLayer($scope.geoJSON);
                     }
