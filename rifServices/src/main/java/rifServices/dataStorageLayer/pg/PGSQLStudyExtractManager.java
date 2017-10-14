@@ -174,10 +174,18 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 					user,
 					baseStudyName);
 					
-			fileInputStream = new FileInputStream(submissionZipFile);	
+			if (submissionZipFile.isFile()) { // No file (i.e. NULL) handled in PGSQLAbstractRIFWebServiceResource.java
+				fileInputStream = new FileInputStream(submissionZipFile);	
+				rifLogger.info(this.getClass(), "Fetched ZIP file: " + 
+					submissionZipFile.getAbsolutePath());
+			}
+			else {
+				rifLogger.info(this.getClass(), "Unable to fetch ZIP file: " + 
+					submissionZipFile.getAbsolutePath() + "; file does not exist");
+			}
 		}
 		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "MSSQLStudyExtractManager ERROR", exception);
+			rifLogger.error(this.getClass(), "PGSQLStudyExtractManager ERROR", exception);
 				
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -190,10 +198,6 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 					errorMessage);
 			throw rifServiceExeption;
 		}
-		finally {
-			rifLogger.info(this.getClass(), "Fetched ZIP file: " + 
-				submissionZipFile.getAbsolutePath());
-		}	
 
 		return fileInputStream;
 	}
@@ -240,10 +244,12 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			if (submissionZipFile.isFile()) { // ZIP file exists - no need to recreate
 				rifLogger.info(this.getClass(), "No need to create ZIP file: " + 
 					submissionZipFile.getAbsolutePath() + "; already exists");
+				Thread.sleep(200); // Sleep to allow JS promises time to work
 			}
 			else if (submissionZipSavFile.isFile()) { // Sav file exists - being created
 				rifLogger.info(this.getClass(), "No need to create ZIP file: " + 
 					submissionZipSavFile.getAbsolutePath() + "; being created");
+				Thread.sleep(200); // Sleep to allow JS promises time to work
 			}
 			else { // No zip file - can be created
 				ZipOutputStream submissionZipOutputStream 

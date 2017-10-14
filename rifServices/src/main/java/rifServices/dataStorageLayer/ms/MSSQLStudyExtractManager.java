@@ -175,7 +175,15 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 					user,
 					baseStudyName);
 					
-			fileInputStream = new FileInputStream(submissionZipFile);	
+			if (submissionZipFile.isFile()) { // No file (i.e. NULL) handled in MSSQLAbstractRIFWebServiceResource.java
+				fileInputStream = new FileInputStream(submissionZipFile);	
+				rifLogger.info(this.getClass(), "Fetched ZIP file: " + 
+					submissionZipFile.getAbsolutePath());
+			}
+			else {
+				rifLogger.info(this.getClass(), "Unable to fetch ZIP file: " + 
+					submissionZipFile.getAbsolutePath() + "; file does not exist");
+			}
 		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), "MSSQLStudyExtractManager ERROR", exception);
@@ -187,13 +195,9 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 					submissionZipFile.getAbsolutePath());
 			RIFServiceException rifServiceExeption
 				= new RIFServiceException(
-					RIFServiceError.ZIPFILE_CREATE_FAILED, 
+				RIFServiceError.ZIPFILE_CREATE_FAILED, 
 					errorMessage);
 			throw rifServiceExeption;
-		}
-		finally {
-			rifLogger.info(this.getClass(), "Fetched ZIP file: " + 
-				submissionZipFile.getAbsolutePath());
 		}	
 
 		return fileInputStream;
@@ -245,10 +249,12 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			else if (submissionZipSavFile.isFile()) { // Sav file exists - being created
 				rifLogger.info(this.getClass(), "No need to create ZIP file: " + 
 					submissionZipSavFile.getAbsolutePath() + "; being created");
+				Thread.sleep(200); // Sleep to allow JS promises time to work
 			}
 			else { // No zip file - can be created
 				ZipOutputStream submissionZipOutputStream 
 				= new ZipOutputStream(new FileOutputStream(submissionZipFile));
+				Thread.sleep(200); // Sleep to allow JS promises time to work
 
 
 				//write the study the user made when they first submitted their query

@@ -981,10 +981,17 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 					studyID,
 					zoomLevel);
 				
-			return webServiceResponseGenerator.generateWebServiceResponse( // streaming version
-					servletRequest,
-					fileInputStream,
-					fileName);		
+			if (fileInputStream != null) {
+				return webServiceResponseGenerator.generateWebServiceResponse( // streaming version
+						servletRequest,
+						fileInputStream,
+						fileName);		
+			}
+			else {
+				return webServiceResponseGenerator.generateWebServiceResponse(
+						servletRequest,
+						""); // Null response
+			}			
 
 		}
 		catch(RIFServiceException rifServiceException) {
