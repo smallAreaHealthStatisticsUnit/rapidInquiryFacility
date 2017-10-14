@@ -245,6 +245,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			if (submissionZipFile.isFile()) { // ZIP file exists - no need to recreate
 				rifLogger.info(this.getClass(), "No need to create ZIP file: " + 
 					submissionZipFile.getAbsolutePath() + "; already exists");
+				Thread.sleep(200); // Sleep to allow JS promises time to work
 			}
 			else if (submissionZipSavFile.isFile()) { // Sav file exists - being created
 				rifLogger.info(this.getClass(), "No need to create ZIP file: " + 
@@ -254,7 +255,6 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			else { // No zip file - can be created
 				ZipOutputStream submissionZipOutputStream 
 				= new ZipOutputStream(new FileOutputStream(submissionZipFile));
-				Thread.sleep(200); // Sleep to allow JS promises time to work
 
 
 				//write the study the user made when they first submitted their query
