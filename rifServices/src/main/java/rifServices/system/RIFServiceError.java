@@ -296,6 +296,7 @@ public enum RIFServiceError {
 	NON_EXISTENT_COVARIATE,
 	
 	ZIPFILE_CREATE_FAILED,/* Unable to create Zipfile */
+	ZIPFILE_GET_STATUS_FAILED,/* Unable to get Zipfile status*/
 	
 	NO_ND_PAIR_FOR_NUMERATOR_TABLE_NAME,
 	NO_HEALTH_TAXONOMY_FOR_NAMESPACE,	

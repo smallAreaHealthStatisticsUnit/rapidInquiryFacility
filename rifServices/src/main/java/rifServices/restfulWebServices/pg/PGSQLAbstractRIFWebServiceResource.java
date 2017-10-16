@@ -927,6 +927,37 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 				result);		
 	}
 	
+	protected Response getExtractStatus(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) { 
+			
+		String result = null;
+
+		try {
+			User user = createUser(servletRequest, userID);
+
+			RIFStudySubmissionAPI studySubmissionService
+			= getRIFStudySubmissionService();
+
+			result=studySubmissionService.getExtractStatus(
+					user, 
+					studyID);
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getExtractStatus error", rifServiceException);
+			result 
+			= serialiseException(
+					servletRequest,
+					rifServiceException);			
+		}
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
+				servletRequest,
+				result);		
+	}
+	
 	protected Response getZipFile(
 			final HttpServletRequest servletRequest,
 			final String userID,

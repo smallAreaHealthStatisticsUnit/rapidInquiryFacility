@@ -1203,7 +1203,21 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 			studyID,
 			zoomLevel);
 	}		
-		
+
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getExtractStatus")
+	public Response getExtractStatus(
+		@Context HttpServletRequest servletRequest,
+		@QueryParam("userID") String userID,
+		@QueryParam("studyID") String studyID) {
+	
+		return super.getExtractStatus(
+			servletRequest, 
+			userID, 
+			studyID);
+	}	
+	
 	@GET
 	@Produces({"application/zip"})	
 	@Path("/getZipFile")

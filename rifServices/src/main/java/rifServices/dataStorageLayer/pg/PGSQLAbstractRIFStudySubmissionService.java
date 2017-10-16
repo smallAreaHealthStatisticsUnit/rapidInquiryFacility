@@ -1081,6 +1081,135 @@ implements RIFStudySubmissionAPI {
 		return result;
 	}
 
+	/**
+	 * Get textual extract status of a study.                          
+	 * <p>   
+	 * This fucntion determines whether a study can be extracted from the database and the results returned to the user in a ZIP file 
+	 * </p>
+	 * <p>
+	 * Returns the following textual strings:
+	 * <il>
+	 *   <li>STUDY_INCOMPLETE_NOT_ZIPPABLE: returned for the following rif40_studies.study_status codes/meanings:
+	 *     <ul>
+	 *	     <li>C: created, not verified;</li>
+	 *	     <li>V: verified, but no other work done; [NOT USED BY MIDDLEWARE]</li>
+	 *	     <li>E: extracted imported or created, but no results or maps created;</li> 
+	 *	     <li>R: initial results population, create map table; [NOT USED BY MIDDLEWARE] design]</li>
+	 *	     <li>W: R warning. [NOT USED BY MIDDLEWARE]</li>
+	 *     <ul>
+	 *   </li>
+	 *   <li>STUDY_FAILED_NOT_ZIPPABLE: returned for the following rif40_studies.study_status codes/meanings:
+	 *	     <li>G: Extract failure, extract, results or maps not created;</li> 
+	 *	     <li>F: R failure, R has caught one or more exceptions [depends on the exception handler]</li> 
+	 *   </li>
+	 *   <li>STUDY_EXTRACTABLE_NEEDS_ZIPPING: returned for the following rif40_studies.study_status code/meaning of: S: R success; 
+	 *       when the ZIP extrsct file has not yet been created
+	 *   </il>
+	 *   <li>STUDY_EXTRABLE_ZIPPID: returned for the following rif40_studies.study_statu  code/meaning of: S: R success; 
+	 *       when the ZIP extrsct file has been created
+	 *   </il>
+	 *   <il>STUDY_NOT_FOUND: returned where the studyID was not found in rif40_studies
+	 *   </il>
+	 * </il>
+	 * </p>
+	 * <p>
+	 * Calls MSSQLStudyExtractManager.getExtractStatus()
+	 * </p>
+	 *
+	 * @param  _user 		Database username of logged on user.
+	 * @param  studyID 		Integer study identifier (database study_id field).
+	 *
+	 * @return 				Textual extract status 
+	 *						NULL on exception or permission denied by sqlConnectionManager
+	 */
+	public String getExtractStatus(
+			final User _user,
+			final String studyID) 
+					throws RIFServiceException {
+						
+		String result = null;
+		RIFLogger rifLogger = RIFLogger.getLogger();
+		
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		PGSQLConnectionManager sqlConnectionManager
+		= rifServiceResources.getSqlConnectionManager();			
+		
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+
+		Connection connection = null;
+		try {
+
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+					"getExtractStatus",
+					"user",
+					user);
+			fieldValidationUtility.checkNullMethodParameter(
+					"getExtractStatus",
+					"studyID",
+					studyID);	
+
+			//Check for security violations
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+					"getExtractStatus", 
+					"studyID", 
+					studyID);
+
+			//Audit attempt to do operation
+			String auditTrailMessage
+			= RIFServiceMessages.getMessage("logging.getExtractStatus",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyID);
+			rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+			= sqlConnectionManager.assignPooledWriteConnection(user);
+
+			PGSQLRIFSubmissionManager sqlRIFSubmissionManager
+			= rifServiceResources.getRIFSubmissionManager();
+			RIFStudySubmission rifStudySubmission
+			= sqlRIFSubmissionManager.getRIFStudySubmission(
+					connection, 
+					user, 
+					studyID);
+
+			PGSQLStudyExtractManager studyExtractManager
+			= rifServiceResources.getSQLStudyExtractManager();
+			result=studyExtractManager.getExtractStatus(
+					connection, 
+					user, 
+					rifStudySubmission,
+					studyID);
+
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+					user,
+					"getExtractStatus",
+					rifServiceException);	
+			// Effectively return NULL
+		}
+		finally {
+			rifLogger.info(getClass(), "get ZIP file extract status: " + result);
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledWriteConnection(
+					user, 
+					connection);			
+		}	
+		
+		return result;
+	}
 	
 	public void createStudyExtract(
 			final User _user,

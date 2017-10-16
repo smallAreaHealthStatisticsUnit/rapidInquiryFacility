@@ -321,6 +321,10 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	public String getStudyExtractFIleName(
 		final User user,
 		final String studyID)
+		throws RIFServiceException;	
+	public String getExtractStatus(
+		final User user,
+		final String studyID)
 		throws RIFServiceException;
 		
 	public void test(final User user) 
