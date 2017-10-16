@@ -307,6 +307,7 @@ This section is a series of links to developer documentation
 * [Opening the RIF repository in Eclipse for editing](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/Opening-the-RIF-repository-in-Eclipse-for-editing)
 * [Setting up JRI in Eclipse](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/Setting-up-JRI-in-Eclipse)
 * [RIF Front End Description](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/RIF-front-end-description)
+* [Creating a new restful web service](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/Creating-a-new-restful-web-service)
 
 # 9. TODO list
 
