@@ -254,15 +254,16 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 					throws RIFServiceException {
 		String result=null;
 		File submissionZipFile = null;
+		String zipFileName="UNKNOWN";
 		
 		try {
 			//Establish the phrase that will be used to help name the main zip
 			//file and data files within its directories
 			
 			String studyStatus=getRif40StudyState(connection, studyID);
-			
-			if (studyStatus == null) { // Study ID does not exist
-				result="STUDY_NOT_FOUND";
+			if (studyStatus == null) { 	// Study ID does not exist. You will not get this
+										// [this is raised as an exception in the calling function: RIFStudySubmission.getRIFStudySubmission()]
+				throw new Exception("STUDY_NOT_FOUND: " + studyID);
 			}
 			if (result != null && studyStatus != null) { 
 				switch (studyStatus.charAt(0)) {
@@ -291,6 +292,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 				submissionZipFile = createSubmissionZipFile(
 						user,
 						baseStudyName);
+				zipFileName=submissionZipFile.getAbsolutePath();
 				if (submissionZipFile.isFile()) { // ZIP file exists - no need to recreate
 					result="STUDY_EXTRABLE_ZIPPID";
 				}
@@ -306,16 +308,16 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 				= RIFServiceMessages.getMessage(
 					"sqlStudyStateManager.error.unableToGetExtractStatus",
 					user.getUserID(),
-					submissionZipFile.getAbsolutePath());
+					studyID,
+					zipFileName);
 			RIFServiceException rifServiceExeption
 				= new RIFServiceException(
 					RIFServiceError.ZIPFILE_GET_STATUS_FAILED, 
 					errorMessage);
 			throw rifServiceExeption;
 		}
-		finally {
-			return result;
-		}
+
+		return result;
 	}
 	
 	public void createStudyExtract(
@@ -777,9 +779,8 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 				exception);
 			throw exception;
 		}
-		finally {
-			return studyStatus;
-		}
+		return studyStatus;
+
 	}
 					
 	public void writeMapQueryTogeoJSONFile(
