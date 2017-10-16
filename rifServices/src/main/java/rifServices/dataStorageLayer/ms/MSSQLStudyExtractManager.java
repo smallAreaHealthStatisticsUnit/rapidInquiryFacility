@@ -212,7 +212,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	 * <p>
 	 * Returns the following textual strings:
 	 * <il>
-	 *   <li>STUDY_INCOMPLETE_NOT_ZIPPABLE: returned for the following rif40_studies.study_status codes/meanings:
+	 *   <li>STUDY_INCOMPLETE_NOT_ZIPPABLE: returned for the following rif40_studies.study_state codes/meanings:
 	 *     <ul>
 	 *	     <li>C: created, not verified;</li>
 	 *	     <li>V: verified, but no other work done; [NOT USED BY MIDDLEWARE]</li>
@@ -221,11 +221,11 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	 *	     <li>W: R warning. [NOT USED BY MIDDLEWARE]</li>
 	 *     <ul>
 	 *   </li>
-	 *   <li>STUDY_FAILED_NOT_ZIPPABLE: returned for the following rif40_studies.study_status codes/meanings:
+	 *   <li>STUDY_FAILED_NOT_ZIPPABLE: returned for the following rif40_studies.study_state codes/meanings:
 	 *	     <li>G: Extract failure, extract, results or maps not created;</li> 
 	 *	     <li>F: R failure, R has caught one or more exceptions [depends on the exception handler]</li> 
 	 *   </li>
-	 *   <li>STUDY_EXTRACTABLE_NEEDS_ZIPPING: returned for the following rif40_studies.study_status code/meaning of: S: R success; 
+	 *   <li>STUDY_EXTRACTABLE_NEEDS_ZIPPING: returned for the following rif40_studies.study_state code/meaning of: S: R success; 
 	 *       when the ZIP extrsct file has not yet been created
 	 *   </il>
 	 *   <li>STUDY_EXTRABLE_ZIPPID: returned for the following rif40_studies.study_statu  code/meaning of: S: R success; 
@@ -280,7 +280,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 					case 'S':	/* R success */
 						break;
 					default:
-						throw new Exception("Invalid rif40_studies.study_status: " + studyStatus);
+						throw new Exception("Invalid rif40_studies.study_state: " + studyStatus);
 				}
 			}
 			
