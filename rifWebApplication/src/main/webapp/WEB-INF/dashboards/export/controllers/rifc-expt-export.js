@@ -46,6 +46,7 @@ angular.module("RIF")
                 });
 
 				$scope.exportTAG="Export Study Tables";
+				$scope.disableMapListButton=false;
 				
                 //study 
                 $scope.studyIDs = [];
@@ -214,6 +215,9 @@ angular.module("RIF")
                         } else {
                             $scope.studyID['exportmap'] = $scope.studyIDs[0];
                         }
+						// Study ID now set as: $scope.studyID["exportmap"].study_id
+						$scope.setupZipButton();
+
                     }, function (e) {
                         $scope.showError("Could not retrieve study status; unable to export or view data");
 						console.log("[rifc-expt-export.js] Could not retrieve study status; unable to export or view data" + 
@@ -226,6 +230,37 @@ angular.module("RIF")
                     });
                 };
 
+				$scope.setupZipButton = function setupZipButton() {
+					$scope.extractStatus=user.getExtractStatus(user.currentUser, $scope.studyID["exportmap"].study_id).then(function (res) {
+						if (res.data === "STUDY_EXTRACTABLE_NEEDS_ZIPPING") {			
+							$scope.exportTAG="Export Study Tables";
+							$scope.exportURL = undefined;
+							$scope.disableMapListButton=false;
+						}
+						else if (res.data === "STUDY_EXTRABLE_ZIPPID") {
+							$scope.exportURL = user.getZipFileURL(user.currentUser, $scope.studyID["exportmap"].study_id, 
+								$scope.exportLevel); // Set mapListButtonExport URL
+							$scope.exportTAG="Download Study Export";
+							$scope.disableMapListButton=false;
+						}
+						else if (res.data === "STUDY_INCOMPLETE_NOT_ZIPPABLE") {
+							$scope.exportTAG="Study Incomplete";
+							$scope.exportURL = undefined;
+							$scope.disableMapListButton=true;
+						}
+						else if (res.data === "STUDY_FAILED_NOT_ZIPPABLE") {
+							$scope.exportTAG="Study Failed";
+							$scope.exportURL = undefined;
+							$scope.disableMapListButton=true;
+						}
+						else {		
+							$scope.exportTAG="Study NOT Exportable";
+							$scope.exportURL = undefined;
+							$scope.disableMapListButton=true;
+						}
+					});
+				}
+					
                 //update study list if new study processed
                 $scope.$on('updateStudyDropDown', function (event, thisStudy) {
                     $scope.studyIDs.push(thisStudy);
@@ -252,6 +287,7 @@ angular.module("RIF")
                         } else {
                             $scope.showError("Error exporting study tables");
 							$scope.exportTAG="Export Study Tables";
+							$scope.exportURL = undefined;
                         }
                     });
                 };
@@ -349,6 +385,8 @@ angular.module("RIF")
                                     thisGeography = res.data[0][0];
                                     thisResolution = res.data[0][1];
 
+									$scope.setupZipButton();
+									
                                     user.getStudySubmission(user.currentUser, $scope.studyID["exportmap"].study_id)
                                             .then(
                                                     function (res) {

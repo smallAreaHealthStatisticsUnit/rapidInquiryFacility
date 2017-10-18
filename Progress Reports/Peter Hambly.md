@@ -1666,12 +1666,13 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 
 * Only create ZIP file once, create as .sav to avoid file races
 * File download(getZipFile) complete
-
+* getExtractStatus web service - to remove the need to do unnecessary ZIP creates. Will also be used in future 
+  to enforce the IG roadblock (i.e. so you cannot create an extract unless IG permission has been granted)
+* Document adding a new restfull web service: Creating-a-new-restful-web-service.md i n developer FAQ
+ 
 In progress:
 
 * Use numbered directories (1-100 etc) to reduce files/directories per directory to 100 (filesystem performance)
-* getExtractStatus web service - to remove the need to do unnecessary ZIP creates. Will also be used in futiure 
-  to enforce the IG roadblock (i.e. so you cannot create an extract unless IG permission has been granted)
 
 #### Database TODO list (deferred to November 2017): SQL Server Port
 

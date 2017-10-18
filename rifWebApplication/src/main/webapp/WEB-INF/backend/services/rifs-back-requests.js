@@ -258,5 +258,10 @@ angular.module("RIF")
                self.getZipFileURL = function (username, studyID, zoomLevel) {
                     //http://localhost:8080/rifServices/studySubmission/pg/getZipFile?userID=dwmorley&studyID=46
                     return studySubmissionURL + DatabaseService.getDatabase() + 'getZipFile?userID=' + username + '&studyID=' + studyID + "&zoomLevel=" + zoomLevel;
+                };         
+				//Get Extract Status - can Zip file be created/fetched
+               self.getExtractStatus = function (username, studyID) {
+                    //http://localhost:8080/rifServices/studySubmission/pg/getExtractStatus=dwmorley&studyID=46
+                    return $http.get(studySubmissionURL + DatabaseService.getDatabase() + 'getExtractStatus?userID=' + username + '&studyID=' + studyID);
                 };
             }]);
