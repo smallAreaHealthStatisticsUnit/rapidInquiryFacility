@@ -1201,7 +1201,7 @@ implements RIFStudySubmissionAPI {
 			// Effectively return NULL
 		}
 		finally {
-			rifLogger.info(getClass(), "get ZIP file extract status: " + result);
+			rifLogger.info(getClass(), "get ZIP file extract status, study: " + studyID + ": " + result);
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(
 					user, 
