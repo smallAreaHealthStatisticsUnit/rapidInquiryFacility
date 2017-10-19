@@ -478,6 +478,15 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 
 		StringBuilder fileName = new StringBuilder();
 		fileName.append(EXTRACT_DIRECTORY);
+		
+		// Numbered directory support (1-100 etc) to reduce the number of files/directories per directory to 100. This is to improve filesystem 
+		// performance on Windows Tomcat servers 	
+		Integer centile=Integer.parseInt(studyID) / 100; // 1273 = 12
+		// Number directory: d1201-1300
+		String numberDir = "d" + ((centile*100)+1) + "-" + (centile+1)*100;
+		fileName.append(File.separator);
+		fileName.append(numberDir);
+		
 		fileName.append(File.separator);
 		fileName.append("s" + studyID);
 

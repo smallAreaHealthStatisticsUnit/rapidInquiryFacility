@@ -108,7 +108,13 @@ establishTableNames <-function(vstudyID) {
 #The name of the extract table that is created by the middleware for a given
 #study.  It is of the format rif_studies.s[study_id]_extract
 	extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
-  
+	
+#Numbered directory support (1-100 etc) to reduce the number of files/directories per directory to 100. This is to improve filesystem 
+#performance on Windows Tomcat servers 
+	centile <- as.integer(vstudyID) %/% 100 # 1273 = 12
+	# Number directory: d1201-1300\
+	numberDir <- paste0("d", (centile*100)+1, "-", (centile+1)*100, '\\')
+	
 #The name of the skeleton table created by the RIF middleware to hold smoothed results
 #for a given study.  Initially the values for smoothed columns will be empty.  It is 
 #of the format rif_studies.s[study_id]_map 
@@ -120,7 +126,8 @@ establishTableNames <-function(vstudyID) {
 	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
 		scratchSpace <<- "c:\\rifDemo\\scratchSpace\\"
 	}
-	scratchSpace <<- paste0(scratchSpace, "s", vstudyID, "\\data\\")
+	# Typically: c:\rifDemo\scratchSpace\d1201-1300\s1273\data
+	scratchSpace <<- paste0(scratchSpace, numberDir, "s", vstudyID, "\\data\\")
 		
 	tryCatch({
 			#Put all scratch files in sub directory s<study_id>
