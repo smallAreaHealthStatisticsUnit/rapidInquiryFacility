@@ -160,7 +160,7 @@ establishTableNames <-function(vstudyID) {
 # Name of Rdata CSV file for debugging results save
 # This needs to be passed in via interface
 
-	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {:want
+	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
 	# Typically: c:\rifDemo\scratchSpace\d1201-1300\s1273\data
 		scratchSpace <<- paste0(defaultScratchSpace, numberDir, "s", vstudyID, "\\data\\")
 	}
