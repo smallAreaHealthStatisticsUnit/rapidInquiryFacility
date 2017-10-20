@@ -1,0 +1,34 @@
+PLEASE ASK FOR tmp_s7_extract.csv - it was NOT commited as it contained [de-identified] SEER data.
+
+Bayes smoothing with BYM model type no adjustment
+Stack tracer >>>
+
+ .handleSimpleError(function (obj) 
+{
+    calls = sys.calls()
+    calls = ca <text>#1: INLA::f(area_order, model = "bym", graph = IM, adjust.for.con.com eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo inla.interpret.formula(formula, data.same.len = data.same.len, data = data, performSmoothingActivity.R#609: inla(formula, family = "poisson", E = EXP_U performSmoothingActivity(data, AdjRowset) Adj_Cov_Smooth_JRI.R#361: withVisible(expr) Adj_Cov_Smooth_JRI.R#361: withCallingHandlers(withVisible(expr), error = er withErrorTracing({
+    data = fetchExtractTable()
+    AdjRowset = getAdjace doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names, parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryCatch({
+    withErrorTracing({
+        data = fetchExtractTable()
+       eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) Adj_Cov_Smooth_JRI.R#382: capture.output({
+    tryCatch({
+        withError runRSmoothingFunctions() 
+<<< End of stack tracer.
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  if 
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  scale.model 
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
+    if (constr) 
+        rankdef = rankdef + 1
+    if (!empty.extraconstr(extraconstr)) 
+        rankdef = rankdef + dim(extraconstr$A)[1]
+} 
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
+    if (constr) 
+        rankdef = rankdef + 1
+    rankdef = rankdef + cc.n1
+    if (!empty.extraconstr(extraconstr)) 
+        rankdef = rankdef + dim(extraconstr$A)[1]
+} 
+callPerformSmoothingActivity exitValue: 1
+.
