@@ -92,9 +92,11 @@ ECHO #
 ECHO ##########################################################################################
 
 REM
-REM Edit to chnage if required. Enables dump to R data frames to scratch directory
+REM Edit to change if required. Disable dump to R data frames to scratch directory. Set scratch
+REM directory to be current working directory
 REM
-SET SCRATCHSPACE=c:\rifDemo\scratchSpace\
+REM SET SCRATCHSPACE=c:\rifDemo\scratchSpace\
+SET SCRATCHSPACE=%CD%\\
 SET DUMPFRAMESTOCSV=FALSE
 	
 REM
@@ -106,13 +108,13 @@ ECHO --dbHost=%DBHOST% --dbPort=%DBPORT% --dbName=%DBNAME% ^^
 ECHO --studyID=%STUDYID% --investigationName=%INVESTIGATIONNAME% --investigationId=%INVESTIGATIONID% ^^
 ECHO --model=%MODEL% --covariateName=%COVARIATENAME% ^^
 ECHO --userID=%USERID% --password=XXXXXXXXXXXXXXXXXXXXXX ^^
-ECHO --scratchspace=%SCRATCHSPACE% --dumpframestocsv=%DUMPFRAMESTOCSV%
+ECHO --scratchspace="%SCRATCHSPACE%" --dumpframestocsv=%DUMPFRAMESTOCSV%
 "%R_HOME%\bin\x64\RScript" Adj_Cov_Smooth_csv.R ^
 	--db_driver_prefix=%DB_DRIVER_PREFIX% --db_driver_class_name=%DB_DRIVER_CLASS_NAME% --odbcDataSource=%ODBCDATASOURCE% ^
 	--dbHost=%DBHOST% --dbPort=%DBPORT% --dbName=%DBNAME% ^
 	--studyID=%STUDYID% --investigationName=%INVESTIGATIONNAME% --investigationId=%INVESTIGATIONID% ^
 	--model=%MODEL% --covariateName=%COVARIATENAME% ^
-	--scratchspace=%SCRATCHSPACE% --dumpframestocsv=%DUMPFRAMESTOCSV%
+	--scratchspace="%SCRATCHSPACE%" --dumpframestocsv=%DUMPFRAMESTOCSV%
 SET SERRORLEVEL=%errorlevel%
 REM
 REM Clear seetings
