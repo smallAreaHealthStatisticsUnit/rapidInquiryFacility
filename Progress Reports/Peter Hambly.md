@@ -1674,6 +1674,13 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
   performance on Windows Tomcat servers. 
 * Reloaded SEER data, replicated SAHSULAND BYM fault with no covariates
 * Ported SEER load sacript to MSMSQL
+
+#### 23rd to 27th October
+
+* R ERROR: argument is of length zero ; call stack: if scale.model confimrted fixed by INLA upgrade to 
+  INLA_17.06.20 or greater
+* Re-instsall SEER test data, add SQL Server SEER test data
+* Test study completion code
   
 In progress:
 
