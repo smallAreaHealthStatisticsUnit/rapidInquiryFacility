@@ -50,6 +50,7 @@ RIF Web Services
    - [6.1 RIF Web Application](#61-rif-web-application)
    - [6.2 RIF Middleware](#62-rif-middleware)
    - [6.3 Tomcat](#63-tomcat)
+   - [6.4 R](#64-r)
    
 # 1. Installation Prerequistes
 
@@ -2194,6 +2195,19 @@ This occurs under INLA 0.0-1485844051; re-install the latest R-INLA:
 
 ```install.packages("INLA", repos="https://inla.r-inla-download.org/R/stable", dep=TRUE)```
 
+After the upgrade you should get INLA_17.06.20 or later:
+
+```
+> library('INLA')
+Loading required package: sp
+Loading required package: Matrix
+This is INLA_17.06.20 built 2017-06-20 03:42:30 UTC.
+See www.r-inla.org/contact-us for how to get help.
+>
+```
+
+This fixesthe error : "R BYM sahsuland fault\R BYM sahsuland fault - no covariates.txt"
+
 # 6. Patching 
 
 ## 6.1 RIF Web Application  
@@ -2229,4 +2243,8 @@ To be added. Files to be saved/restored:
  
 ALWAYS RESTART THE SERVER!
  
+## 6.4 R
+
+To be added.
+
 Peter Hambly, 12th April 2017; revised 4th August 2017
