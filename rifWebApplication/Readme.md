@@ -44,7 +44,7 @@ RIF Web Services
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
    - [5.3 R Issues](#53-r-issues)
-     - [5.3.2 R ERROR: argument is of length zero ; call stack: if scale.model](#532-r-error-argument-is-of-length-zero-call-stack-if-scale-model)
+     - [5.3.2 R ERROR: argument is of length zero ; call stack: if scale.model](#532-r-error-argument-is-of-length-zero--call-stack-if-scalemodel)
      - [5.3.1 Cannot find JRI native library](#531-cannot-find-jri-native-library)
 - [ 6. Patching](#6-patching)
    - [6.1 RIF Web Application](#61-rif-web-application)
