@@ -52,11 +52,24 @@ angular.module("RIF")
 
                 stop = $interval(function () {
                     if (bPoll) {
+						/*
+						 * Ignore:
+						 *	C: created, not verified; 
+						 *	V: verified, but no other work done; [NOT USED BY MIDDLEWARE]
+						 *	E: extracted imported or created, but no results or maps created; 
+						 *	R: initial results population, create map table; [NOT USED BY MIDDLEWARE] design]
+						 *	W: R warning. [NOT USED BY MIDDLEWARE]
+						 * Handle:
+						 *
+						 *	G: Extract failure, extract, results or maps not created;
+						 *	S: R success;
+						 *	F: R failure, R has caught one or more exceptions [depends on the exception handler
+						 */	
                         user.getCurrentStatusAllStudies(user.currentUser).then(function (res) {
                             studies = res.data.smoothed_results;
                             var check = [];
                             for (var i = 0; i < studies.length; i++) {
-                                if (studies[i].study_state === "R") {
+                                if (studies[i].study_state === "S") {
                                     check.push(studies[i].study_id);
                                 }
                             }
