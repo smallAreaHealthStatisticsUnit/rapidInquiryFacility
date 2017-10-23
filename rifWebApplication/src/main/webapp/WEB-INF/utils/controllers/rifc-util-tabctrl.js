@@ -52,6 +52,7 @@ angular.module("RIF")
 
                 stop = $interval(function () {
                     if (bPoll) {
+						bPoll = false; // Prevent function stacking
 						/*
 						 * Ignore:
 						 *	C: created, not verified; 
@@ -64,34 +65,95 @@ angular.module("RIF")
 						 *	G: Extract failure, extract, results or maps not created;
 						 *	S: R success;
 						 *	F: R failure, R has caught one or more exceptions [depends on the exception handler
+						 *
+						 * NEEDS TO COPE WITH FAILURE
 						 */	
                         user.getCurrentStatusAllStudies(user.currentUser).then(function (res) {
                             studies = res.data.smoothed_results;
                             var check = [];
                             for (var i = 0; i < studies.length; i++) {
-                                if (studies[i].study_state === "S") {
+                                if (studies[i].study_state === "S") { // OK
                                     check.push(studies[i].study_id);
                                 }
-                            }
+								else if (studies[i].study_state === "G"|| studies[i].study_state === "F") {
+									// G: Extract failure, extract, results or maps not created
+									// F: R failure, R has caught one or more exceptions 
+                                    if (!angular.isUndefined($scope.studyIds)) {
+										var name = "";
+										var id = "";
+										var study_state = "";
+										for (var k = 0; k < $scope.studyIds.length; k++) {
+											if (studies[i].study_id === $scope.studyIds[k]) {
+												name = studies[i].study_name;
+												id = studies[i].study_id;
+												study_state = studies[i].study_state;
+												if (study_state == "G") {
+													// G: Extract failure, extract, results or maps not created
+													$scope.showWarning("Study " + id + " - " + name + " failed to be extracted");
+												}
+												else if (study_state == "F") {
+													// F: R failure, R has caught one or more exceptions 
+													$scope.showWarning("Study " + id + " - " + name + " failed to complete statistical processing");
+												}
+											}	
+										}
+									}
+								}
+								else if (studies[i].study_state === "C"|| studies[i].study_state === "V" ||
+								         studies[i].study_state === "E"|| studies[i].study_state === "R") {
+						/*	C: created, not verified; 
+						 *	V: verified, but no other work done; [NOT USED BY MIDDLEWARE]
+						 *	E: extracted imported or created, but no results or maps created; 
+						 *	R: initial results population, create map table; [NOT USED BY MIDDLEWARE] design] */
+                                    check.push(studies[i].study_id);
+								}
+							}
                             if (angular.isUndefined($scope.studyIds)) {
                                 $scope.studyIds = angular.copy(check);
-                            } else {
-                                if (check.length === ($scope.studyIds.length + 1)) {
-                                    var s = arrayDifference(check, $scope.studyIds);
-                                    var name = "";
-                                    for (var i = 0; i < studies.length; i++) {
-                                        if (studies[i].study_id === s[0]) {
-                                            name = studies[i].study_name;
-                                            break;
-                                        }
-                                    }
-                                    $scope.showSuccess("Study " + s + " - " + name + " has been processed");
-                                    $scope.studyIds = angular.copy(check);
+                            } 
+							else if (check.length != $scope.studyIds.length) {
+								var s = arrayDifference(check, $scope.studyIds); // Should only be one - checked above
+								console.log("getCurrentStatusAllStudies() check(" + check.length + "); " + 
+									"; s(" + s.length + "): " + JSON.stringify(s, null, 2))
+								for (var j = 0; j < s.length; j++) {
+									var name = "";
+									var id = "";
+									var study_state = "";
+									for (var i = 0; i < studies.length; i++) {
+										if (studies[i].study_id === s[j]) {
+											name = studies[i].study_name;
+											id = studies[i].study_id;
+											study_state = studies[i].study_state;
+											break;
+										}
+									}
+									if (name == undefined || id == undefined || study_state == undefined) {
+										$scope.showError("Unable to deduce study name/id/study_state for study " + j + "/" + s.length + " : " + s[j])
+										console.log("Unable to deduce study name/id/study_state for study " + (j+1) + "/" + s.length + " : " + s[j])
+									}
+									else if (study_state == 'S') { // OK
+										$scope.showSuccess("Study " + id + " - " + name + " has been processed");
+										$scope.studyIds = angular.copy(check);
 
-                                    //update study lists in other tabs
-                                    $rootScope.$broadcast('updateStudyDropDown', {study_id: s[0], name: name});
-                                }
+										//update study lists in other tabs
+										$rootScope.$broadcast('updateStudyDropDown', {study_id: s[j], name: name});								
+									}		
+									else if (studies[i].study_state === "C"|| studies[i].study_state === "V" ||
+											 studies[i].study_state === "E"|| studies[i].study_state === "R") { // Intermediate state: ignore
+							/*	C: created, not verified; 
+							 *	V: verified, but no other work done; [NOT USED BY MIDDLEWARE]
+							 *	E: extracted imported or created, but no results or maps created; 
+							 *	R: initial results population, create map table; [NOT USED BY MIDDLEWARE] design] */
+									}
+									else {
+										$scope.showWarning("Study " + id + " - " + name + " is in an unexpected study state: " + study_state)
+									}
+								}
                             }
+							else {
+								console.log("getCurrentStatusAllStudies() check: " + check.length)
+							}				
+							bPoll = true;
                         });
                     }
                 }, ms);
