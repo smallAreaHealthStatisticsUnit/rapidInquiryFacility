@@ -318,7 +318,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 
 			rifLogger.info(getClass(), "get tile for geogrpahy: " + geography.getName().toUpperCase() +
 				"; tileTable: " + myTileTable + 
-				"; zoomlevel: " + geoLevelSelect.getName().toUpperCase() + " x/y: " + x + "/" + y +
+				"; zoomlevel: " + zoomlevel.toString() + 
+				"; geolevel: " + geoLevelSelect.getName().toUpperCase() + " x/y: " + x + "/" + y +
 				"; length: " + result.length());
 			
 			connection.commit();				
