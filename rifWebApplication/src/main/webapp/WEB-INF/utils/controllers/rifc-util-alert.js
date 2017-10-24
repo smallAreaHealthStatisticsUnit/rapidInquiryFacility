@@ -36,19 +36,19 @@
  */
 angular.module("RIF")
         .controller('AlertCtrl', function ($scope, notifications) {
-            $scope.delay = 0;
+            $scope.delay = 30000; // mS
             //uses ngNotificationsBar.min and ngNotificationsBar.css
             $scope.showError = function (msg) {
                 //Limit to one error alert at a time
-                var box = document.getElementsByClassName('error');
-                if (box.length === 0) {
+//                var box = document.getElementsByClassName('error');
+//                if (box.length === 0) {
                     notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: true});
-                }
+//                }
             };
             $scope.showWarning = function (msg) {
                 notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: true});
             };
             $scope.showSuccess = function (msg) {
-                notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: false});
+                notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: true});
             };
         });
