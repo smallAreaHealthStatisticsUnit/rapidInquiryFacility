@@ -36,19 +36,62 @@
  */
 angular.module("RIF")
         .controller('AlertCtrl', function ($scope, notifications) {
-            $scope.delay = 30000; // mS
+            $scope.delay = 0; // mS
+			$scope.lastMessage = undefined;
+			
             //uses ngNotificationsBar.min and ngNotificationsBar.css
+            $scope.showErrorNoHide = function (msg) {
+                //Limit to one error alert at a time
+//                var box = document.getElementsByClassName('error');
+//                if (box.length === 0) {
+				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
+                    notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: false});	
+				}
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.lastMessage = angular.copy(msg);
+				}
+            };			
             $scope.showError = function (msg) {
                 //Limit to one error alert at a time
 //                var box = document.getElementsByClassName('error');
 //                if (box.length === 0) {
-                    notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: true});
-//                }
+				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
+					notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: true});
+                }
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.lastMessage = angular.copy(msg);
+				}
             };
             $scope.showWarning = function (msg) {
-                notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: true});
+				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
+					notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: true});
+				}
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.lastMessage = angular.copy(msg);
+				}
             };
             $scope.showSuccess = function (msg) {
-                notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: true});
+				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
+					notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: true});
+				}
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.lastMessage = angular.copy(msg);
+				}
+            };
+            $scope.showWarningNoHide = function (msg) {
+				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
+					notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: false});
+				}
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.lastMessage = angular.copy(msg);
+				}
+            };
+            $scope.showSuccessNoHide = function (msg) {
+				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
+					notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: false});
+				}
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.lastMessage = angular.copy(msg);
+				}
             };
         });

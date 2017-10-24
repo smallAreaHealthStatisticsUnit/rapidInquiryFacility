@@ -46,13 +46,17 @@ angular.module("RIF")
                 var stop;
                 var studies;
                 $scope.studyIds;
-
+				$scope.bPoll;
+				
                 //In DEBUG set false to keep Tomcat console clear
                 var bPoll = true;
-
+				if (angular.isUndefined($scope.bPoll)) {
+                    $scope.bPoll = angular.copy(bPoll);
+				}
                 stop = $interval(function () {
-                    if (bPoll) {
+                    if ($scope.bPoll) {
 						bPoll = false; // Prevent function stacking
+						$scope.bPoll = angular.copy(bPoll);
 						/*
 						 * Ignore:
 						 *	C: created, not verified; 
@@ -132,18 +136,18 @@ angular.module("RIF")
 										}
 									}
 									if (name == "") {
-										$scope.showError("Unable to deduce study name/id/study_state for study " + j + "/" + s.length + " : " + s[j])
+										$scope.showErrorNoHide("Unable to deduce study name/id/study_state for study " + j + "/" + s.length + " : " + s[j])
 										console.log("getCurrentStatusAllStudies() Unable to deduce study name/id/study_state for study " + (j+1) + "/" + s.length + " : " + s[j])
 									}
 									else if (study_state == 'S') { // OK
 										console.log("getCurrentStatusAllStudies() completed study: " + studies[i].study_id);
-										$scope.showSuccess("Study " + id + " - " + name + " has been processed");
+										$scope.showSuccessNoHide("Study " + id + " - " + name + " has been processed");
 
 										//update study lists in other tabs
 										$rootScope.$broadcast('updateStudyDropDown', {study_id: s[j], name: name});								
 									}		
 									else {
-										$scope.showError("Study " + id + " - " + name + " is in an unexpected study state: " + study_state)
+										$scope.showErrorNoHide("Study " + id + " - " + name + " is in an unexpected study state: " + study_state)
 									}
 								}
 //								console.log("getCurrentStatusAllStudies() changed check of OK: (" + 
@@ -167,22 +171,22 @@ angular.module("RIF")
 										}
 									}
 									if (name == "") {
-										$scope.showError("Unable to deduce study name/id/study_state for study " + j + "/" + s.length + " : " + s[j])
+										$scope.showErrorNoHide("Unable to deduce study name/id/study_state for study " + j + "/" + s.length + " : " + s[j])
 										console.log("getCurrentStatusAllStudies() Unable to deduce study name/id/study_state for study " + (j+1) + "/" + s.length + " : " + s[j])
 									}
 									if (study_state == "G") {
 										// G: Extract failure, extract, results or maps not created
-										$scope.showError("Study " + id + " - " + name + " failed to be extracted");
+										$scope.showErrorNoHide("Study " + id + " - " + name + " failed to be extracted");
 										console.log("getCurrentStatusAllStudies() study: " + studies[i].study_id + " failed to be extracted");
 									}
 									else if (study_state == "F") {
 										// F: R failure, R has caught one or more exceptions 
-										$scope.showError("Study " + id + " - " + name + " failed to complete statistical processing");
+										$scope.showErrorNoHide("Study " + id + " - " + name + " failed to complete statistical processing");
 										console.log("getCurrentStatusAllStudies() study: " + studies[i].study_id + 
 											" failed to complete statistical processing");
 									}	
 									else {
-										$scope.showError("Study " + id + " - " + name + " is in an unexpected study state: " + study_state)
+										$scope.showErrorNoHide("Study " + id + " - " + name + " is in an unexpected study state: " + study_state)
 									}
 								}
 //								console.log("getCurrentStatusAllStudies() changed check of FAILED: (" + 
@@ -199,6 +203,7 @@ angular.module("RIF")
 								$scope.studyIds = angular.copy(check);
 							}				
 							bPoll = true;
+							$scope.bPoll = angular.copy(bPoll);
                         });
                     }
                 }, ms);
