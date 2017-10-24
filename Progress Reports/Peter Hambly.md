@@ -1673,7 +1673,11 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Implemented numbered directories (1-100 etc) to reduce the number of files/directories per directory to 100. This is to improve filesystem 
   performance on Windows Tomcat servers. 
 * Reloaded SEER data, replicated SAHSULAND BYM fault with no covariates
-* Ported SEER load sacript to MSMSQL
+* Ported SEER load script to MSSQL
+* Fixed status messages so you only get one and all but the most important disapper after ~5 seconds
+* Regression tested noth ports. Maps broken on Postgres with >1 geography.
+* Issue with SEER data in R; (character) areaIDs are cast to numeric by R and therefore do not match 
+  textual string list of areaIDs in the adjacency matrix.
 
 #### 23rd to 27th October
 
