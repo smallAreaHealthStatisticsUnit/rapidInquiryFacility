@@ -104,6 +104,7 @@ angular.module("RIF")
 											console.log("getCurrentStatusAllStudies() Added new running study: " + studies[i].study_id +
 												"; state: " + studies[i].study_state + 
 												"; running: (" + check.running.length + "): " + check.running.sort());
+											$scope.showSuccess("Study " + studies[i].study_id + " - " + studies[i].study_name + " is now running");
 										}
 									}
 								}
