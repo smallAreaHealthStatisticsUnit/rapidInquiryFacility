@@ -246,7 +246,12 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		getMapTileTableQueryFormatter.addSelectField("rif40_geographies", "tiletable");
 		getMapTileTableQueryFormatter.addFromTable("rif40_geographies");
 		getMapTileTableQueryFormatter.addWhereParameter("geography");
-				
+						
+		logSQLQuery(
+			"getTileMakerTiles",
+			getMapTileTableQueryFormatter,
+			geography.getName().toUpperCase());	
+			
 		//For tile table name
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
@@ -311,7 +316,9 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			resultSet2.next();
 			String result = resultSet2.getString(1);
 
-			rifLogger.info(getClass(), "get tile for zoomlevel: " + geoLevelSelect.getName().toUpperCase() + " x/y: " + x + "/" + y +
+			rifLogger.info(getClass(), "get tile for geogrpahy: " + geography.getName().toUpperCase() +
+				"; tileTable: " + myTileTable + 
+				"; zoomlevel: " + geoLevelSelect.getName().toUpperCase() + " x/y: " + x + "/" + y +
 				"; length: " + result.length());
 			
 			connection.commit();				
