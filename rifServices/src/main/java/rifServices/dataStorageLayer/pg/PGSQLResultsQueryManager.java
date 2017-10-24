@@ -10,6 +10,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
+import rifGenericLibrary.util.RIFLogger;
 
 import java.sql.*;
 
@@ -93,6 +94,7 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	RIFLogger rifLogger = RIFLogger.getLogger();
 
 	// ==========================================
 	// Section Properties
@@ -286,7 +288,15 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager {
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "zoomlevel");
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "x");
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "y");
-													
+			
+			logSQLQuery(
+				"getTileMakerTiles",
+				getMapTilesQueryFormatter,
+				geoLevelSelect.getName().toUpperCase(),
+				zoomlevel.toString(),
+				x.toString(),
+				y.toString());
+				
 			statement2 = connection.prepareStatement(getMapTilesQueryFormatter.generateQuery());	
 			statement2.setString(1, geoLevelSelect.getName().toUpperCase());
 			statement2.setInt(2, zoomlevel);
@@ -296,6 +306,9 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager {
 			resultSet2 = statement2.executeQuery();
 			resultSet2.next();
 			String result = resultSet2.getString(1);
+
+			rifLogger.info(getClass(), "get tile for zoomlevel: " + geoLevelSelect.getName().toUpperCase() + " x/y: " + x + "/" + y +
+				"; length: " + result.length());
 
 			connection.commit();				
 			return result;
