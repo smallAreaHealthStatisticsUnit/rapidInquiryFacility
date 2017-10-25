@@ -50,7 +50,8 @@
 library(leaflet)
 library(mapview)
 
-rm(m)
+rm(list=c("m"))
+
 #
 # This is a slight variation on: https://rstudio.github.io/leaflet/
 # i.e. I added setView, scale bar, chnaged the baseMap
