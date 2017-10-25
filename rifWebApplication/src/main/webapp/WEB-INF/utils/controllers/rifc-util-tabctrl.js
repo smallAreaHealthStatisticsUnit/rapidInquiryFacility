@@ -105,9 +105,9 @@ angular.module("RIF")
 											}
 										}
 										if (name == "") { // New study
-											console.log("getCurrentStatusAllStudies() Added new running study: " + studies[i].study_id +
-												"; state: " + studies[i].study_state + 
-												"; running: (" + check.running.length + "): " + check.running.sort());
+//											console.log("getCurrentStatusAllStudies() Added new running study: " + studies[i].study_id +
+//												"; state: " + studies[i].study_state + 
+//												"; running: (" + check.running.length + "): " + check.running.sort());
 											$scope.showSuccess("Study " + studies[i].study_id + " - " + studies[i].study_name + " is now running");
 										}
 									}
@@ -116,10 +116,10 @@ angular.module("RIF")
 							
                             if (angular.isUndefined($scope.studyIds)) {
                                 $scope.studyIds = angular.copy(check);
-								console.log("getCurrentStatusAllStudies() create check OK: (" + 
-									check.ok.length + "): " + check.ok.sort() +
-									"; running: " + check.running.length + "): " + check.running.sort() +
-									"; failed: " + check.failed.length + "): " + check.failed.sort());
+//								console.log("getCurrentStatusAllStudies() create check OK: (" + 
+//									check.ok.length + "): " + check.ok.sort() +
+//									"; running: " + check.running.length + "): " + check.running.sort() +
+//									"; failed: " + check.failed.length + "): " + check.failed.sort());
                             } 
 							else if (check.ok.length != $scope.studyIds.ok.length) { // Something has completed
 								var s = arrayDifference(check.ok, $scope.studyIds.ok); // Should only be one - checked above
@@ -137,7 +137,6 @@ angular.module("RIF")
 									}
 									if (name == "") {
 										$scope.showErrorNoHide("Unable to deduce study name/id/study_state for study " + j + "/" + s.length + " : " + s[j])
-										console.log("getCurrentStatusAllStudies() Unable to deduce study name/id/study_state for study " + (j+1) + "/" + s.length + " : " + s[j])
 									}
 									else if (study_state == 'S') { // OK
 										console.log("getCurrentStatusAllStudies() completed study: " + studies[i].study_id);
@@ -172,18 +171,14 @@ angular.module("RIF")
 									}
 									if (name == "") {
 										$scope.showErrorNoHide("Unable to deduce study name/id/study_state for study " + j + "/" + s.length + " : " + s[j])
-										console.log("getCurrentStatusAllStudies() Unable to deduce study name/id/study_state for study " + (j+1) + "/" + s.length + " : " + s[j])
 									}
 									if (study_state == "G") {
 										// G: Extract failure, extract, results or maps not created
 										$scope.showErrorNoHide("Study " + id + " - " + name + " failed to be extracted");
-										console.log("getCurrentStatusAllStudies() study: " + studies[i].study_id + " failed to be extracted");
 									}
 									else if (study_state == "F") {
 										// F: R failure, R has caught one or more exceptions 
 										$scope.showErrorNoHide("Study " + id + " - " + name + " failed to complete statistical processing");
-										console.log("getCurrentStatusAllStudies() study: " + studies[i].study_id + 
-											" failed to complete statistical processing");
 									}	
 									else {
 										$scope.showErrorNoHide("Study " + id + " - " + name + " is in an unexpected study state: " + study_state)

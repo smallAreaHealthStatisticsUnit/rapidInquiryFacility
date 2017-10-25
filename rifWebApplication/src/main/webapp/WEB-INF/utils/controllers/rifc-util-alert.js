@@ -38,60 +38,105 @@ angular.module("RIF")
         .controller('AlertCtrl', function ($scope, notifications) {
             $scope.delay = 0; // mS
 			$scope.lastMessage = undefined;
+			$scope.messageList = [];
+			$scope.messageCount = undefined;
+			$scope.messageStart = new Date().getTime();
 			
             //uses ngNotificationsBar.min and ngNotificationsBar.css
             $scope.showErrorNoHide = function (msg) {
-                //Limit to one error alert at a time
-//                var box = document.getElementsByClassName('error');
-//                if (box.length === 0) {
-				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
-                    notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: false});	
-				}
 				if (angular.isUndefined($scope.lastMessage)) {
-                    $scope.lastMessage = angular.copy(msg);
+                    $scope.messageCount = 0;
 				}
+				angular.copy(($scope.messageCount++));
+				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
+                    notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: false});
+					var end=new Date().getTime();
+					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
+					console.log("+" + elapsed + ": [" + $scope.messageCount + "] ERROR: " + msg);
+				}
+                $scope.lastMessage = angular.copy(msg);
+				var msgList = $scope.messageList;
+				msgList.push(msg); 
+				$scope.messageList = angular.copy(msgList);
             };			
             $scope.showError = function (msg) {
-                //Limit to one error alert at a time
-//                var box = document.getElementsByClassName('error');
-//                if (box.length === 0) {
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.messageCount = 0;
+				}
+				angular.copy(($scope.messageCount++));
 				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
 					notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: true});
+					var end=new Date().getTime();
+					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
+					console.log("+" + elapsed + ": [" + $scope.messageCount + "] ERROR: " + msg);
                 }
-				if (angular.isUndefined($scope.lastMessage)) {
-                    $scope.lastMessage = angular.copy(msg);
-				}
+                $scope.lastMessage = angular.copy(msg);
+				var msgList = $scope.messageList;
+				msgList.push(msg); 
+				$scope.messageList = angular.copy(msgList);
             };
             $scope.showWarning = function (msg) {
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.messageCount = 0;
+				}
+				angular.copy(($scope.messageCount++));
 				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
 					notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: true});
+					var end=new Date().getTime();
+					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
+					console.log("+" + elapsed + ": [" + $scope.messageCount + "] WARNING: " + msg);
 				}
-				if (angular.isUndefined($scope.lastMessage)) {
-                    $scope.lastMessage = angular.copy(msg);
-				}
+                $scope.lastMessage = angular.copy(msg);
+				var msgList = $scope.messageList;
+				msgList.push(msg); 
+				$scope.messageList = angular.copy(msgList);
             };
             $scope.showSuccess = function (msg) {
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.messageCount = 0;
+				}
+				angular.copy(($scope.messageCount++));
 				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
 					notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: true});
+					var end=new Date().getTime();
+					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
+					console.log("+" + elapsed + ": [" + $scope.messageCount + "] SUCCESS: " + msg);
 				}
-				if (angular.isUndefined($scope.lastMessage)) {
-                    $scope.lastMessage = angular.copy(msg);
-				}
+                $scope.lastMessage = angular.copy(msg);
+				var msgList = $scope.messageList;
+				msgList.push(msg); 
+				$scope.messageList = angular.copy(msgList);
             };
             $scope.showWarningNoHide = function (msg) {
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.messageCount = 0;
+				}
+				angular.copy(($scope.messageCount++));
 				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
 					notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: false});
+					var end=new Date().getTime();
+					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
+					console.log("+" + elapsed + ": [" + $scope.messageCount + "] WARNING: " + msg);
 				}
-				if (angular.isUndefined($scope.lastMessage)) {
-                    $scope.lastMessage = angular.copy(msg);
-				}
+                $scope.lastMessage = angular.copy(msg);
+				var msgList = $scope.messageList;
+				msgList.push(msg); 
+				$scope.messageList = angular.copy(msgList);
             };
             $scope.showSuccessNoHide = function (msg) {
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.messageCount = 0;
+				}
+				angular.copy(($scope.messageCount++));
 				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
 					notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: false});
+					var end=new Date().getTime();
+					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
+					console.log("+" + elapsed + ": [" + $scope.messageCount + "] SUCCESS: " + msg);
 				}
-				if (angular.isUndefined($scope.lastMessage)) {
-                    $scope.lastMessage = angular.copy(msg);
-				}
+                $scope.lastMessage = angular.copy(msg);
+				var msgList = $scope.messageList;
+				msgList.push(msg); 
+				$scope.messageList = angular.copy(msgList);
             };
         });
