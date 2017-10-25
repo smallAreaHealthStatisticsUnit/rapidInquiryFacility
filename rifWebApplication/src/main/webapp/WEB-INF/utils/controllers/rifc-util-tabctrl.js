@@ -139,8 +139,8 @@ angular.module("RIF")
 										$scope.showErrorNoHide("Unable to deduce study name/id/study_state for study " + j + "/" + s.length + " : " + s[j])
 									}
 									else if (study_state == 'S') { // OK
-										console.log("getCurrentStatusAllStudies() completed study: " + studies[i].study_id);
-										$scope.showSuccessNoHide("Study " + id + " - " + name + " has been processed");
+//										console.log("getCurrentStatusAllStudies() completed study: " + studies[i].study_id);
+										$scope.showSuccessNoHide("Study " + id + " - " + name + " has been fully processed");
 
 										//update study lists in other tabs
 										$rootScope.$broadcast('updateStudyDropDown', {study_id: s[j], name: name});								
