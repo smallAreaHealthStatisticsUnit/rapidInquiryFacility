@@ -329,13 +329,13 @@ check.integer <- function(N) {
 	
 	check.integer.Result<-(isNumeric && isInteger && isNotRounded && isIntRegexp)
 	
-	cat(paste0("check.integer: ", str,
-		"; as.numeric(str): ", suppressWarnings(as.numeric(str)),
-		"; isNumeric: ", isNumeric,
-		"; isInteger: ", isInteger,
-		"; isNotRounded: ", isNotRounded,
-		"; isIntRegexp: ", isIntRegexp,
-		"; check.integer.Result: ", check.integer.Result, "\n"), sep="")
+#	cat(paste0("check.integer: ", str,
+#		"; as.numeric(str): ", suppressWarnings(as.numeric(str)),
+#		"; isNumeric: ", isNumeric,
+#		"; isInteger: ", isInteger,
+#		"; isNotRounded: ", isNotRounded,
+#		"; isIntRegexp: ", isIntRegexp,
+#		"; check.integer.Result: ", check.integer.Result, "\n"), sep="")
 	
     return(check.integer.Result)
 }

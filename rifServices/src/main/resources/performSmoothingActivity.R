@@ -479,6 +479,8 @@ performSmoothingActivity <- function(data, AdjRowset) {
     # Create the sparse matrix of neighbours:
     rowNums = c()
     colNums = c()
+	invalidAdjacentAreas <- 0
+	totalAdjacentAreas <- 0
     for (i in 1:narea){
       wr = which(AdjRowset$area_id == data$area_id[i * 3])
       if (length(wr) == 0) { #empty - treat as an 'island' with no neighbours (add just diagonal)
@@ -494,15 +496,33 @@ performSmoothingActivity <- function(data, AdjRowset) {
         colNums<-c(colNums,i)
         # go through the neighbours of this row and AdjRows and find the index in data
         neighbours = strsplit(AdjRowset$adjacency_list[wr], split=",")
+		isInteger<-(check.integer(data$area_id) && check.integer(neighbours[[1]][1])) # Just check the first element in the list
         for (j in 1:length(neighbours[[1]])){
-          whichIndex = data$area_order[which(data$area_id == neighbours[[1]][j])]
+		  totalAdjacentAreas <- totalAdjacentAreas + 1;
+		  # if data$area_id and neighbours[[1]][j] are integers, perform tests as if they are integers
+		  # whichIndex = data$area_order[which(data$area_id == neighbours[[1]][j])]
+		  # Line 498          whichIndex = data$area_order[which(data$area_id == as.integer(neighbours[[1]][j]))]
+		  # Line 505              cat(paste0("[Ignored] Area: ", AdjRowset$area_id[i], " Invalid adjacent Area: "  ,as.integer(neighbours[[1]][j]), "\n"), sep="")
+		  if (isInteger) {
+				whichIndex = data$area_order[which(data$area_id == as.integer(neighbours[[1]][j]))]
+		  }
+		  else {
+				whichIndex = data$area_order[which(data$area_id == neighbours[[1]][j])]
+		  }
           
           #          if (length(whichIndex) == 0) {} # through an exception because neighbour file contains unknown neighbours
           #          rowNums<-c(rowNums,i)
           #          colNums<-c(colNums,whichIndex[1])
           
           if (length(whichIndex) == 0) {
-            cat(paste0("[Ignored] Area: ", AdjRowset$area_id[i], " Invalid adjacent Area: "  ,neighbours[[1]][j], "\n"), sep="")
+		    
+		    invalidAdjacentAreas <- invalidAdjacentAreas + 1;
+			if (isInteger) {
+				cat(paste0("[Ignored] Area: ", AdjRowset$area_id[i], " Invalid adjacent Area: "  ,neighbours[[1]][j], "[INTEGER]\n"), sep="")
+			}
+			else {
+				cat(paste0("[Ignored] Area: ", AdjRowset$area_id[i], " Invalid adjacent Area: "  ,neighbours[[1]][j], "\n"), sep="")
+			}
             # Print a message, but ignore the nieghbours which shouldn't be in the list
           }
           else {
@@ -512,6 +532,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
         }
       }
     }
+	cat(paste0("Removed: ", invalidAdjacentAreas, " of ", totalAdjacentAreas, " non adjacent areas\n"), sep="")
     
     # TODO need to findout if we need the 'identifying island' code from SmoothingBYM-HET-CAR.R
     # hopefully not because that will require the shapefile!
