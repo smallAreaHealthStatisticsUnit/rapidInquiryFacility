@@ -1703,6 +1703,7 @@ In progress:
 * Generate GeoJSON for mapping. This will include the result data which will need to be flattened (e.g. relative_risk_males_no_covariates);
 * Add support for runing R scripts pre zip file creation. This is to add maps using the map setup choosen by the user in the mapping dashboard.
   The intention in to support all the potential map options like the last RIF, and also add the D3 graphics: population pyramids...
+* Angular exception handler
 * Alert messages list popup
 
 #### Database TODO list (deferred to November 2017): SQL Server Port
