@@ -229,9 +229,9 @@ establishTableNames <-function(vstudyID) {
 #
 		rif40_run_R_env=paste(
 					paste0("SET USERID=", userID),
-					paste0("SET DBNAME=", dbName),
-					paste0("SET DBHOST=", dbHost),
-					paste0("SET DBPORT=", dbPort),
+					paste0("SET DB_NAME=", db_name),
+					paste0("SET DB_HOST=", db_host),
+					paste0("SET DB_PORT=", db_port),
 					paste0("SET DB_DRIVER_PREFIX=", db_driver_prefix),
 					paste0("SET DB_DRIVER_CLASS_NAME=", db_driver_class_name),
 					paste0("SET STUDYID=", studyID),

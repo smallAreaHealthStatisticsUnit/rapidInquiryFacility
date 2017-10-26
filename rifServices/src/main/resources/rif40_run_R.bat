@@ -77,9 +77,9 @@ ECHO #
 ECHO # Run R script on a study extract.
 ECHO # 
 ECHO # USERID=%USERID%
-ECHO # DBNAME=%DBNAME%
-ECHO # DBHOST=%DBHOST%
-ECHO # DBPORT=%DBPORT%
+ECHO # DB_NAME=%DB_NAME%
+ECHO # DB_HOST=%DB_HOST%
+ECHO # DB_PORT=%DB_PORT%
 ECHO # DB_DRIVER_PREFIX=%DB_DRIVER_PREFIX%
 ECHO # DB_DRIVER_CLASS_NAME=%DB_DRIVER_CLASS_NAME%
 ECHO # STUDYID=%STUDYID%
@@ -104,14 +104,14 @@ REM Run R
 REM
 ECHO "%R_HOME%\bin\x64\RScript" Adj_Cov_Smooth_csv.R ^^
 ECHO --db_driver_prefix=%DB_DRIVER_PREFIX% --db_driver_class_name=%DB_DRIVER_CLASS_NAME% --odbcDataSource=%ODBCDATASOURCE% ^^
-ECHO --dbHost=%DBHOST% --dbPort=%DBPORT% --dbName=%DBNAME% ^^
+ECHO --dbHost=%DB_HOST% --dbPort=%DB_PORT% --dbName=%DB_NAME% ^^
 ECHO --studyID=%STUDYID% --investigationName=%INVESTIGATIONNAME% --investigationId=%INVESTIGATIONID% ^^
 ECHO --model=%MODEL% --covariateName=%COVARIATENAME% ^^
 ECHO --userID=%USERID% --password=XXXXXXXXXXXXXXXXXXXXXX ^^
 ECHO --scratchspace="%SCRATCHSPACE%" --dumpframestocsv=%DUMPFRAMESTOCSV%
 "%R_HOME%\bin\x64\RScript" Adj_Cov_Smooth_csv.R ^
 	--db_driver_prefix=%DB_DRIVER_PREFIX% --db_driver_class_name=%DB_DRIVER_CLASS_NAME% --odbcDataSource=%ODBCDATASOURCE% ^
-	--dbHost=%DBHOST% --dbPort=%DBPORT% --dbName=%DBNAME% ^
+	--dbHost=%DB_HOST% --dbPort=%DB_PORT% --dbName=%DB_NAME% ^
 	--studyID=%STUDYID% --investigationName=%INVESTIGATIONNAME% --investigationId=%INVESTIGATIONID% ^
 	--model=%MODEL% --covariateName=%COVARIATENAME% ^
 	--scratchspace="%SCRATCHSPACE%" --dumpframestocsv=%DUMPFRAMESTOCSV%

@@ -169,11 +169,11 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 		String RerrorTrace="No R error tracer (see Tomcat log)";
 
 		try {		
-			addParameterToVerify("study_id");		
+			addParameterToVerify("studyID");		
 
 			//KLG: For now it only works with the first study.  For some reason, newer extract
 			//tables cause the R program we use to generate an error.
-			addParameter("study_id", studyID);
+			addParameter("studyID", studyID);
 
 			//add a parameter for investigation name.  This will appear as a column in the extract
 			//table that the R program will need to know about.  Note that specifying a single
@@ -183,9 +183,9 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 				= studySubmission.getStudy().getInvestigations().get(0);
 
 			addParameter(
-					"investigation_name", 
+					"investigationName", 
 					createDatabaseFriendlyInvestigationName(firstInvestigation.getTitle()));
-			addParameterToVerify("investigation_name");
+			addParameterToVerify("investigationName");
 
 			String covariateName = getCovariateName(studySubmission);
 			addParameter(
@@ -197,11 +197,21 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 					connection,
 					studyID, 
 					firstInvestigation);
-			rifLogger.info(this.getClass(), "Investigation name=="+firstInvestigation.getTitle() + "  ID=="+investigationID+"==");
-
-			addParameterToVerify("investigation_id");
+					
+			String studyName=studySubmission.getStudy().getDescription();
+			addParameterToVerify("studyName");
 			addParameter(
-					"investigation_id", 
+					"studyName", 
+					studyName);
+					
+			rifLogger.info(this.getClass(), "Study id: " + studyID + 
+				"; Study name: " + studyName + 
+				"; Investigation name: " + firstInvestigation.getTitle() + 
+				"; ID: "+ investigationID);
+
+			addParameterToVerify("investigationId");
+			addParameter(
+					"investigationId", 
 					String.valueOf(investigationID));
 
 			setCalculationMethod(studySubmission.getCalculationMethods().get(0));
@@ -243,22 +253,78 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 				rengine.eval("print(sessionInfo())");
 
 				//set connection details and parameters
-				String[] parameters = generateParameterArray();
-				rengine.assign("userID", parameters[12]);
-				rengine.assign("password", parameters[11]);
+				StringBuilder str = new StringBuilder();
+				for (Parameter parameter : getParameterArray()) {
+					String name=parameter.getName();
+					String value=parameter.getValue();
+					
+					if (name == "password") {
+						str.append(name + "=XXXXXXXX"  + lineSeparator); // Hide password
+						rengine.assign(name, value);
+					}
+					else {
+						if (name == "covariate_name") {
+							str.append("names.adj.1=" + value + lineSeparator);
+							rengine.assign("names.adj.1", value);
+							str.append("adj.1=" + getRAdjust(value) + lineSeparator);
+							rengine.assign("adj.1", getRAdjust(value));
+						}
+						else {
+							str.append(name + "=" + value + lineSeparator);
+							rengine.assign(name, value);
+						}
+					}
+				}	
+				rifLogger.info(this.getClass(), "R parameters: " + lineSeparator + str.toString());	
+
+		//same order of args as in the old batch file
+		/*
+		0		"jdbc:postgresql", //db_driver_prefix
+		1		"localhost", //dbHost
+		2		"5432", //dbPort
+		3		"sahsuland_dev", //dbName
+		4		"db_driver_class_name", //org.postgresql.Driver
+		5		"14", //studyID
+		6		"MY_NEW_INVESTIGATION", //investigationName
+		7		"NONE", //covariate_name 
+		8		"9", //investigationId
+		9		"het_r_procedure", //r_model
+		10		"odbcDataSource", //PostgreSQL30
+		11		"dwmorley", //userID
+		12		"*******" //password
+		
+db_driver_prefix=jdbc:postgresql
+db_host=localhost
+db_port=5432
+db_name=sahsuland
+db_driver_class_name=org.postgresql.Driver
+study_id=327
+investigation_name=TEST_1001
+covariate_name=NONE
+study_name=R Test exception
+investigation_id=325
+r_model=het_r_procedure
+odbcDataSource=PostgreSQL35W
+userID=peter
+password=XXXXXXXX
+		 */
+/*
+				rengine.assign("userID", parameters[13]);
+				rengine.assign("password", parameters[12]);
 				rengine.assign("dbName", parameters[3]);
 				rengine.assign("dbHost", parameters[1]);
 				rengine.assign("dbPort", parameters[2]);
 				rengine.assign("db_driver_prefix", parameters[0]);
 				rengine.assign("db_driver_class_name", parameters[4]);
 				rengine.assign("studyID", parameters[5]);
+				rengine.assign("study_name", getParameter("study_name").getValue());
 				rengine.assign("investigationName", parameters[6]);
 				rengine.assign("investigationId", parameters[8]);
-				rengine.assign("odbcDataSource", parameters[10]);
+				rengine.assign("odbcDataSource", parameters[11]);
 				rengine.assign("model", getRRoutineModelCode(parameters[9]));
 				rengine.assign("names.adj.1", parameters[7]);			
 				rengine.assign("adj.1", getRAdjust(parameters[7]));
-
+ */
 				//RUN "Adj_Cov_Smooth_JRI.R"
 				
 				rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
