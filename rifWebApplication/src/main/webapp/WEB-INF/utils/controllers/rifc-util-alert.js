@@ -42,101 +42,72 @@ angular.module("RIF")
 			$scope.messageCount = undefined;
 			$scope.messageStart = new Date().getTime();
 			
-            //uses ngNotificationsBar.min and ngNotificationsBar.css
-            $scope.showErrorNoHide = function (msg) {
+			/*
+			 * Function:	rifMessage()
+			 * Parameters:	Level [ERROR/WARNING/SUCCESS], message, auto hide (after about 5s): true/false, rif Error object [optional] 
+			 * Desription:	Call notifications.show* to display message to user
+			 *				Log message to console with relative timestamp; save message in array
+             *				Uses ngNotificationsBar.min and ngNotificationsBar.css
+			 */
+			function rifMessage(messageLevel, msg, rifHide, rifError) {
+				var err; // Get stack
+				if (rifError) {
+					err=rifError;
+				}
+				else {
+					err=new Error("Dummy");
+				}
+				
 				if (angular.isUndefined($scope.lastMessage)) {
                     $scope.messageCount = 0;
 				}
 				angular.copy(($scope.messageCount++));
 				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
-                    notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: false});
 					var end=new Date().getTime();
 					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
-					console.log("+" + elapsed + ": [" + $scope.messageCount + "] ERROR: " + msg);
+					console.log("+" + elapsed + ": [" + $scope.messageCount + "] " + messageLevel + ": " + msg);
+					
+					if (messageLevel.toUpperCase() == "ERROR") {	
+						notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: rifHide});	
+						console.log("Stack: " + err.stack);
+					}
+					else if (messageLevel.toUpperCase() == "WARNING") {
+						notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: rifHide});
+					}
+					else if (messageLevel.toUpperCase() == "SUCCESS") {
+						notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: rifHide});
+					}	
 				}
                 $scope.lastMessage = angular.copy(msg);
 				var msgList = $scope.messageList;
+				var msgItem = {
+					sequence:	$scope.messageCount,
+					message: 	msg,
+					time:		end,
+					stack:		err.stack,
+					relative:	elapsed,
+					level:		messageLevel
+				}
 				msgList.push(msg); 
-				$scope.messageList = angular.copy(msgList);
-            };			
+				$scope.messageList = angular.copy(msgList);			
+			}
+			
             $scope.showError = function (msg) {
-				if (angular.isUndefined($scope.lastMessage)) {
-                    $scope.messageCount = 0;
-				}
-				angular.copy(($scope.messageCount++));
-				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
-					notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: true});
-					var end=new Date().getTime();
-					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
-					console.log("+" + elapsed + ": [" + $scope.messageCount + "] ERROR: " + msg);
-                }
-                $scope.lastMessage = angular.copy(msg);
-				var msgList = $scope.messageList;
-				msgList.push(msg); 
-				$scope.messageList = angular.copy(msgList);
+				rifMessage("ERROR", msg, true);
             };
             $scope.showWarning = function (msg) {
-				if (angular.isUndefined($scope.lastMessage)) {
-                    $scope.messageCount = 0;
-				}
-				angular.copy(($scope.messageCount++));
-				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
-					notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: true});
-					var end=new Date().getTime();
-					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
-					console.log("+" + elapsed + ": [" + $scope.messageCount + "] WARNING: " + msg);
-				}
-                $scope.lastMessage = angular.copy(msg);
-				var msgList = $scope.messageList;
-				msgList.push(msg); 
-				$scope.messageList = angular.copy(msgList);
+				rifMessage("WARNING", msg, true);
             };
             $scope.showSuccess = function (msg) {
-				if (angular.isUndefined($scope.lastMessage)) {
-                    $scope.messageCount = 0;
-				}
-				angular.copy(($scope.messageCount++));
-				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
-					notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: true});
-					var end=new Date().getTime();
-					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
-					console.log("+" + elapsed + ": [" + $scope.messageCount + "] SUCCESS: " + msg);
-				}
-                $scope.lastMessage = angular.copy(msg);
-				var msgList = $scope.messageList;
-				msgList.push(msg); 
-				$scope.messageList = angular.copy(msgList);
+				rifMessage("SUCCESS", msg, true);
             };
+            $scope.showErrorNoHide = function (msg) {
+				rifMessage("ERROR", msg, false);
+            };						
             $scope.showWarningNoHide = function (msg) {
-				if (angular.isUndefined($scope.lastMessage)) {
-                    $scope.messageCount = 0;
-				}
-				angular.copy(($scope.messageCount++));
-				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
-					notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: false});
-					var end=new Date().getTime();
-					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
-					console.log("+" + elapsed + ": [" + $scope.messageCount + "] WARNING: " + msg);
-				}
-                $scope.lastMessage = angular.copy(msg);
-				var msgList = $scope.messageList;
-				msgList.push(msg); 
-				$scope.messageList = angular.copy(msgList);
+				rifMessage("WARNING", msg, false);
             };
             $scope.showSuccessNoHide = function (msg) {
-				if (angular.isUndefined($scope.lastMessage)) {
-                    $scope.messageCount = 0;
-				}
-				angular.copy(($scope.messageCount++));
-				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
-					notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: false});
-					var end=new Date().getTime();
-					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
-					console.log("+" + elapsed + ": [" + $scope.messageCount + "] SUCCESS: " + msg);
-				}
-                $scope.lastMessage = angular.copy(msg);
-				var msgList = $scope.messageList;
-				msgList.push(msg); 
-				$scope.messageList = angular.copy(msgList);
+				rifMessage("SUCCESS", msg, false);
             };
         });
