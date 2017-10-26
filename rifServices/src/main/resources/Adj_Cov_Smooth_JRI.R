@@ -236,6 +236,7 @@ establishTableNames <-function(vstudyID) {
 					paste0("SET DB_DRIVER_CLASS_NAME=", db_driver_class_name),
 					paste0("SET STUDYID=", studyID),
 					paste0("SET INVESTIGATIONNAME=", investigationName),
+					paste0("SET STUDYNAME=", studyName),
 					paste0("SET INVESTIGATIONID=", investigationId),
 					paste0("SET ODBCDATASOURCE=", odbcDataSource),
 					paste0("SET MODEL=", model),

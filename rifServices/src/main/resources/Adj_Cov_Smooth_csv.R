@@ -121,6 +121,7 @@ dumpFramesToCsv <- ""
  
 #The name of the investigation. Is an input parameter, but default is set here for debug purposes
 investigationName <- "inv_1"
+studyName <- "UNKNOWN"
 #The id of the investigation - used when writing the results back to the database. Input paremeter
 investigationId <- "272"
 
@@ -471,6 +472,8 @@ processCommandLineArguments <- function() {
         numberOfInvestigations <<- parametersDataFrame[i, 2]
       } else if (grepl('investigationName', parametersDataFrame[i, 1]) == TRUE){
         investigationName <<- parametersDataFrame[i, 2]
+      } else if (grepl('studyName', parametersDataFrame[i, 1]) == TRUE){
+        studyName <<- parametersDataFrame[i, 2]
       } else if (grepl('investigationId', parametersDataFrame[i, 1]) == TRUE){
         investigationId <<- parametersDataFrame[i, 2]
       } else if (grepl('odbcDataSource', parametersDataFrame[i, 1]) == TRUE){

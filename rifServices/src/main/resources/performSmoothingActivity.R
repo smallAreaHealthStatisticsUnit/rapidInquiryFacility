@@ -44,7 +44,11 @@
 ##string that can be used to make an ODBC connection
 ##====================================================================
 performSmoothingActivity <- function(data, AdjRowset) {
-						
+  if (studyName == "REXCEPTION") {
+	cat("REXCEPTION test study detected: ", studyDescription, "\n", sep="")
+	stop("REXCEPTION test study")
+  }	
+  
   cat("Covariates: ", paste0(names.adj), "\n", sep="")
   if (investigationName != "inv_1"){
     #add a column (inv_1) to data and populate is with InvestigationName data for simplicity

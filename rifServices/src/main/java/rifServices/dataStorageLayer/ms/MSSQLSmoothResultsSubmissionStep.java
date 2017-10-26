@@ -198,14 +198,21 @@ public class MSSQLSmoothResultsSubmissionStep extends MSSQLAbstractRService {
 					studyID, 
 					firstInvestigation);
 					
-			String studyName=studySubmission.getStudy().getDescription();
+			String studyName=studySubmission.getStudy().getName();
 			addParameterToVerify("studyName");
 			addParameter(
 					"studyName", 
 					studyName);
 					
+			String studyDescription=studySubmission.getStudy().getDescription();
+			addParameterToVerify("studyDescription");
+			addParameter(
+					"studyDescription", 
+					studyDescription);
+					
 			rifLogger.info(this.getClass(), "Study id: " + studyID + 
 				"; Study name: " + studyName + 
+				"; Study description: " + studyDescription + 
 				"; Investigation name: " + firstInvestigation.getTitle() + 
 				"; ID: "+ investigationID);
 
