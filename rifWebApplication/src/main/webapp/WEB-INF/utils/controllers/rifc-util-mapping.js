@@ -188,29 +188,14 @@ angular.module("RIF")
                                 };
                                 $scope.studyIDs.push(thisStudy);
                             }
-                            else if (res.data.smoothed_results[i].study_state === "R") { // Old success
+/*							
+							else if (res.data.smoothed_results[i].study_state === "W") { // R warning. [NOT USED BY MIDDLEWARE]
                                 var thisStudy = {
                                     "study_id": res.data.smoothed_results[i].study_id,
                                     "name": res.data.smoothed_results[i].study_name
                                 };
                                 $scope.studyIDs.push(thisStudy);
-                            }
-							else if (res.data.smoothed_results[i].study_state === "G") {
-								// G: Extract failure, extract, results or maps not created
-                                var thisStudy = {
-                                    "study_id": res.data.smoothed_results[i].study_id,
-                                    "name": res.data.smoothed_results[i].study_name
-                                };
-                                $scope.studyIDs.push(thisStudy);
-                            }
-							else if (res.data.smoothed_results[i].study_state === "F") {
-								// F: R failure, R has caught one or more exceptions 
-                                var thisStudy = {
-                                    "study_id": res.data.smoothed_results[i].study_id,
-                                    "name": res.data.smoothed_results[i].study_name
-                                };
-                                $scope.studyIDs.push(thisStudy);
-                            }
+                            } */
                         }
                         //sort array on ID with most recent first
                         $scope.studyIDs.sort(function (a, b) {

@@ -368,7 +368,7 @@ angular.module("RIF")
 
                     $scope.uploadFile = function () {
 
-                        $scope.showSuccess("Starting upload...");
+//                        $scope.showSuccess("Starting upload...");
 
                         //check initial file structure
                         var d1 = $q.defer();

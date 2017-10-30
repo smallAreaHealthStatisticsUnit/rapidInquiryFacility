@@ -10,6 +10,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
+import rifGenericLibrary.util.RIFLogger;
 
 import java.sql.*;
 
@@ -93,6 +94,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	RIFLogger rifLogger = RIFLogger.getLogger();
 
 	// ==========================================
 	// Section Properties
@@ -244,7 +246,12 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 		getMapTileTableQueryFormatter.addSelectField("rif40_geographies", "tiletable");
 		getMapTileTableQueryFormatter.addFromTable("rif40_geographies");
 		getMapTileTableQueryFormatter.addWhereParameter("geography");
-				
+						
+		logSQLQuery(
+			"getTileMakerTiles",
+			getMapTileTableQueryFormatter,
+			geography.getName().toUpperCase());	
+			
 		//For tile table name
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
@@ -290,7 +297,15 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "zoomlevel");
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "x");
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "y");
-													
+			
+			logSQLQuery(
+				"getTileMakerTiles",
+				getMapTilesQueryFormatter,
+				geoLevelSelect.getName().toUpperCase(),
+				zoomlevel.toString(),
+				x.toString(),
+				y.toString());
+				
 			statement2 = connection.prepareStatement(getMapTilesQueryFormatter.generateQuery());	
 			statement2.setString(1, geoLevelSelect.getName().toUpperCase());
 			statement2.setInt(2, zoomlevel);
@@ -301,6 +316,12 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager {
 			resultSet2.next();
 			String result = resultSet2.getString(1);
 
+			rifLogger.info(getClass(), "get tile for geogrpahy: " + geography.getName().toUpperCase() +
+				"; tileTable: " + myTileTable + 
+				"; zoomlevel: " + zoomlevel.toString() + 
+				"; geolevel: " + geoLevelSelect.getName().toUpperCase() + " x/y: " + x + "/" + y +
+				"; length: " + result.length());
+			
 			connection.commit();				
 			return result;
 		}

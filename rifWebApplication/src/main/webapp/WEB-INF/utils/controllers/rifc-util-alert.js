@@ -36,19 +36,78 @@
  */
 angular.module("RIF")
         .controller('AlertCtrl', function ($scope, notifications) {
-            $scope.delay = 0;
-            //uses ngNotificationsBar.min and ngNotificationsBar.css
+            $scope.delay = 0; // mS
+			$scope.lastMessage = undefined;
+			$scope.messageList = [];
+			$scope.messageCount = undefined;
+			$scope.messageStart = new Date().getTime();
+			
+			/*
+			 * Function:	rifMessage()
+			 * Parameters:	Level [ERROR/WARNING/SUCCESS], message, auto hide (after about 5s): true/false, rif Error object [optional] 
+			 * Desription:	Call notifications.show* to display message to user
+			 *				Log message to console with relative timestamp; save message in array
+             *				Uses ngNotificationsBar.min and ngNotificationsBar.css
+			 */
+			function rifMessage(messageLevel, msg, rifHide, rifError) {
+				var err; // Get stack
+				if (rifError) {
+					err=rifError;
+				}
+				else {
+					err=new Error("Dummy");
+				}
+				
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.messageCount = 0;
+				}
+				angular.copy(($scope.messageCount++));
+				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
+					var end=new Date().getTime();
+					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
+					console.log("+" + elapsed + ": [" + $scope.messageCount + "] " + messageLevel + ": " + msg);
+					
+					if (messageLevel.toUpperCase() == "ERROR") {	
+						notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: rifHide});	
+						console.log("Stack: " + err.stack);
+					}
+					else if (messageLevel.toUpperCase() == "WARNING") {
+						notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: rifHide});
+					}
+					else if (messageLevel.toUpperCase() == "SUCCESS") {
+						notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: rifHide});
+					}	
+				}
+                $scope.lastMessage = angular.copy(msg);
+				var msgList = $scope.messageList;
+				var msgItem = {
+					sequence:	$scope.messageCount,
+					message: 	msg,
+					time:		end,
+					stack:		err.stack,
+					relative:	elapsed,
+					level:		messageLevel
+				}
+				msgList.push(msg); 
+				$scope.messageList = angular.copy(msgList);			
+			}
+			
             $scope.showError = function (msg) {
-                //Limit to one error alert at a time
-                var box = document.getElementsByClassName('error');
-                if (box.length === 0) {
-                    notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: true});
-                }
+				rifMessage("ERROR", msg, true);
             };
             $scope.showWarning = function (msg) {
-                notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: true});
+				rifMessage("WARNING", msg, true);
             };
             $scope.showSuccess = function (msg) {
-                notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: false});
+				rifMessage("SUCCESS", msg, true);
+            };
+            $scope.showErrorNoHide = function (msg) {
+				rifMessage("ERROR", msg, false);
+            };						
+            $scope.showWarningNoHide = function (msg) {
+				rifMessage("WARNING", msg, false);
+            };
+            $scope.showSuccessNoHide = function (msg) {
+				rifMessage("SUCCESS", msg, false);
             };
         });

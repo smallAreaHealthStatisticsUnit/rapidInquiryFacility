@@ -46,39 +46,159 @@ angular.module("RIF")
                 var stop;
                 var studies;
                 $scope.studyIds;
-
+				$scope.bPoll;
+				
                 //In DEBUG set false to keep Tomcat console clear
                 var bPoll = true;
-
+				if (angular.isUndefined($scope.bPoll)) {
+                    $scope.bPoll = angular.copy(bPoll);
+				}
                 stop = $interval(function () {
-                    if (bPoll) {
+                    if ($scope.bPoll) {
+						bPoll = false; // Prevent function stacking
+						$scope.bPoll = angular.copy(bPoll);
+						/*
+						 * Ignore:
+						 *	C: created, not verified; 
+						 *	V: verified, but no other work done; [NOT USED BY MIDDLEWARE]
+						 *	E: extracted imported or created, but no results or maps created; 
+						 *	R: initial results population, create map table; [NOT USED BY MIDDLEWARE] design]
+						 *	W: R warning. [NOT USED BY MIDDLEWARE]
+						 * Handle:
+						 *
+						 *	G: Extract failure, extract, results or maps not created;
+						 *	S: R success;
+						 *	F: R failure, R has caught one or more exceptions [depends on the exception handler]
+						 */	
                         user.getCurrentStatusAllStudies(user.currentUser).then(function (res) {
                             studies = res.data.smoothed_results;
-                            var check = [];
+                            var check = {
+								ok: [],
+								running: [],
+								failed: []
+							};
                             for (var i = 0; i < studies.length; i++) {
-                                if (studies[i].study_state === "R") {
-                                    check.push(studies[i].study_id);
+                                if (studies[i].study_state === "S") { // OK
+                                    check.ok.push(studies[i].study_id);
                                 }
-                            }
+								else if (studies[i].study_state === "G" || studies[i].study_state === "F") {
+									
+                                    check.failed.push(studies[i].study_id);
+									// G: Extract failure, extract, results or maps not created
+									// F: R failure, R has caught one or more exceptions 
+								}
+								else if (studies[i].study_state === "C" || studies[i].study_state === "V" ||
+								         studies[i].study_state === "E" || studies[i].study_state === "R") {
+						/*	C: created, not verified; 
+						 *	V: verified, but no other work done; [NOT USED BY MIDDLEWARE]
+						 *	E: extracted imported or created, but no results or maps created; 
+						 *	R: initial results population, create map table; [NOT USED BY MIDDLEWARE] design] */
+                                    check.running.push(studies[i].study_id);
+									
+									// Detect running study
+                                    if (!angular.isUndefined($scope.studyIds)) {
+										var name = "";
+										for (var k = 0; k < $scope.studyIds.running.length; k++) {
+											if (studies[i].study_id === $scope.studyIds.running[k]) {
+												name = studies[i].study_name;
+												break;
+											}
+										}
+										if (name == "") { // New study
+//											console.log("getCurrentStatusAllStudies() Added new running study: " + studies[i].study_id +
+//												"; state: " + studies[i].study_state + 
+//												"; running: (" + check.running.length + "): " + check.running.sort());
+											$scope.showSuccess("Study " + studies[i].study_id + " - " + studies[i].study_name + " is now running");
+										}
+									}
+								}
+							} // End of studies loop
+							
                             if (angular.isUndefined($scope.studyIds)) {
                                 $scope.studyIds = angular.copy(check);
-                            } else {
-                                if (check.length === ($scope.studyIds.length + 1)) {
-                                    var s = arrayDifference(check, $scope.studyIds);
-                                    var name = "";
-                                    for (var i = 0; i < studies.length; i++) {
-                                        if (studies[i].study_id === s[0]) {
-                                            name = studies[i].study_name;
-                                            break;
-                                        }
-                                    }
-                                    $scope.showSuccess("Study " + s + " - " + name + " has been processed");
-                                    $scope.studyIds = angular.copy(check);
+//								console.log("getCurrentStatusAllStudies() create check OK: (" + 
+//									check.ok.length + "): " + check.ok.sort() +
+//									"; running: " + check.running.length + "): " + check.running.sort() +
+//									"; failed: " + check.failed.length + "): " + check.failed.sort());
+                            } 
+							else if (check.ok.length != $scope.studyIds.ok.length) { // Something has completed
+								var s = arrayDifference(check.ok, $scope.studyIds.ok); // Should only be one - checked above
+								for (var j = 0; j < s.length; j++) {
+									var name = "";
+									var id = "";
+									var study_state = "";
+									for (var i = 0; i < studies.length; i++) {
+										if (studies[i].study_id === s[j]) {
+											name = studies[i].study_name;
+											id = studies[i].study_id;
+											study_state = studies[i].study_state;
+											break;
+										}
+									}
+									if (name == "") {
+										$scope.showErrorNoHide("Unable to deduce study name/id/study_state for study " + j + "/" + s.length + " : " + s[j])
+									}
+									else if (study_state == 'S') { // OK
+//										console.log("getCurrentStatusAllStudies() completed study: " + studies[i].study_id);
+										$scope.showSuccessNoHide("Study " + id + " - " + name + " has been fully processed");
 
-                                    //update study lists in other tabs
-                                    $rootScope.$broadcast('updateStudyDropDown', {study_id: s[0], name: name});
-                                }
+										//update study lists in other tabs
+										$rootScope.$broadcast('updateStudyDropDown', {study_id: s[j], name: name});								
+									}		
+									else {
+										$scope.showErrorNoHide("Study " + id + " - " + name + " is in an unexpected study state: " + study_state)
+									}
+								}
+//								console.log("getCurrentStatusAllStudies() changed check of OK: (" + 
+//									check.ok.length + "): " + check.ok.sort() +
+//									"; running: " + check.running.length + "): " + check.running.sort() +
+//									"; failed: " + check.failed.length + "): " + check.failed.sort());
+								$scope.studyIds = angular.copy(check);
+                            }							
+							else if (check.failed.length != $scope.studyIds.failed.length) { // Something has failed
+								var s = arrayDifference(check.failed, $scope.studyIds.failed); // Should only be one - checked above
+								for (var j = 0; j < s.length; j++) {
+									var name = "";
+									var id = "";
+									var study_state = "";
+									for (var i = 0; i < studies.length; i++) {
+										if (studies[i].study_id === s[j]) {
+											name = studies[i].study_name;
+											id = studies[i].study_id;
+											study_state = studies[i].study_state;
+											break;
+										}
+									}
+									if (name == "") {
+										$scope.showErrorNoHide("Unable to deduce study name/id/study_state for study " + j + "/" + s.length + " : " + s[j])
+									}
+									if (study_state == "G") {
+										// G: Extract failure, extract, results or maps not created
+										$scope.showErrorNoHide("Study " + id + " - " + name + " failed to be extracted");
+									}
+									else if (study_state == "F") {
+										// F: R failure, R has caught one or more exceptions 
+										$scope.showErrorNoHide("Study " + id + " - " + name + " failed to complete statistical processing");
+									}	
+									else {
+										$scope.showErrorNoHide("Study " + id + " - " + name + " is in an unexpected study state: " + study_state)
+									}
+								}
+//								console.log("getCurrentStatusAllStudies() changed check of FAILED: (" + 
+//									check.ok.length + "): " + check.ok.sort() +
+//									"; running: " + check.running.length + "): " + check.running.sort() +
+//									"; failed: " + check.failed.length + "): " + check.failed.sort());
+								$scope.studyIds = angular.copy(check);
                             }
+							else if (check.running.length != $scope.studyIds.running.length) { // Something has started
+//								console.log("getCurrentStatusAllStudies() update check OK: (" + 
+//									check.ok.length + "): " + check.ok.sort() +
+//									"; running: " + check.running.length + "): " + check.running.sort()+
+//									"; failed: " + check.failed.length + "): " + check.failed.sort());
+								$scope.studyIds = angular.copy(check);
+							}				
+							bPoll = true;
+							$scope.bPoll = angular.copy(bPoll);
                         });
                     }
                 }, ms);

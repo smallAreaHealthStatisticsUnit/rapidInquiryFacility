@@ -132,41 +132,18 @@ public abstract class MSSQLAbstractRService {
 	}	
 	
 	protected void setCalculationMethod(final CalculationMethod calculationMethod) {
-		addParameter("r_model", calculationMethod.getName());
+		addParameter("model", calculationMethod.getName());
 	}
 	
-	//Generate param string array
-	protected String[] generateParameterArray() {
+	//Fetch parameters array list
+	protected ArrayList<Parameter> getParameterArray() {
 	
-		String[] parametersArray = new String[13];
-		int i = 0;
-		for (Parameter parameter : parameters) {
-			parametersArray[i] = parameter.getValue();
-			i++;
-		}	
-		parametersArray[10] = odbcDataSourceName;
-		parametersArray[11] = userID;
-		parametersArray[12] = password;
-
-		//same order of args as in the old batch file
-		/*
-		0		"jdbc:postgresql", //db_driver_prefix
-		1		"localhost", //dbHost
-		2		"5432", //dbPort
-		3		"sahsuland_dev", //dbName
-		4		"db_driver_class_name", //org.postgresql.Driver
-		5		"14", //studyID
-		6		"MY_NEW_INVESTIGATION", //investigationName
-		7		"NONE", //covariate_name 
-		8		"9", //investigationId
-		9		"het_r_procedure", //r_model
-		10		"odbcDataSource", //PostgreSQL30
-		11		"dwmorley", //userID
-		12		"*******" //password
-		 */
-		return parametersArray;
+		addParameter("odbcDataSource", odbcDataSourceName);
+		addParameter("userID", userID);
+		addParameter("password", password);
+		
+		return(parameters);
 	}
-
 	
 	// ==========================================
 	// Section Errors and Validation

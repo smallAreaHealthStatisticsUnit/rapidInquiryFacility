@@ -229,13 +229,14 @@ establishTableNames <-function(vstudyID) {
 #
 		rif40_run_R_env=paste(
 					paste0("SET USERID=", userID),
-					paste0("SET DBNAME=", dbName),
-					paste0("SET DBHOST=", dbHost),
-					paste0("SET DBPORT=", dbPort),
+					paste0("SET DB_NAME=", db_name),
+					paste0("SET DB_HOST=", db_host),
+					paste0("SET DB_PORT=", db_port),
 					paste0("SET DB_DRIVER_PREFIX=", db_driver_prefix),
 					paste0("SET DB_DRIVER_CLASS_NAME=", db_driver_class_name),
 					paste0("SET STUDYID=", studyID),
 					paste0("SET INVESTIGATIONNAME=", investigationName),
+					paste0("SET STUDYNAME=", studyName),
 					paste0("SET INVESTIGATIONID=", investigationId),
 					paste0("SET ODBCDATASOURCE=", odbcDataSource),
 					paste0("SET MODEL=", model),
@@ -329,13 +330,13 @@ check.integer <- function(N) {
 	
 	check.integer.Result<-(isNumeric && isInteger && isNotRounded && isIntRegexp)
 	
-	cat(paste0("check.integer: ", str,
-		"; as.numeric(str): ", suppressWarnings(as.numeric(str)),
-		"; isNumeric: ", isNumeric,
-		"; isInteger: ", isInteger,
-		"; isNotRounded: ", isNotRounded,
-		"; isIntRegexp: ", isIntRegexp,
-		"; check.integer.Result: ", check.integer.Result, "\n"), sep="")
+#	cat(paste0("check.integer: ", str,
+#		"; as.numeric(str): ", suppressWarnings(as.numeric(str)),
+#		"; isNumeric: ", isNumeric,
+#		"; isInteger: ", isInteger,
+#		"; isNotRounded: ", isNotRounded,
+#		"; isIntRegexp: ", isIntRegexp,
+#		"; check.integer.Result: ", check.integer.Result, "\n"), sep="")
 	
     return(check.integer.Result)
 }

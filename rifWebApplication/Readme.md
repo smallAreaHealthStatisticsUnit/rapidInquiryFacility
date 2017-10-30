@@ -44,10 +44,13 @@ RIF Web Services
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
    - [5.3 R Issues](#53-r-issues)
+     - [5.3.2 R ERROR: argument is of length zero ; call stack: if scale.model](#532-r-error-argument-is-of-length-zero--call-stack-if-scalemodel)
+     - [5.3.1 Cannot find JRI native library](#531-cannot-find-jri-native-library)
 - [ 6. Patching](#6-patching)
    - [6.1 RIF Web Application](#61-rif-web-application)
    - [6.2 RIF Middleware](#62-rif-middleware)
    - [6.3 Tomcat](#63-tomcat)
+   - [6.4 R](#64-r)
    
 # 1. Installation Prerequistes
 
@@ -2127,6 +2130,8 @@ The service address and port used should match what you setup up in *4.2 Setup N
 
 ## 5.3 R Issues
 
+### 5.3.1 Cannot find JRI native library
+
 The RIF uses Java R integration to access R directly from Java
 
 * Rengine not being shutdown correctly on reload of service:
@@ -2151,6 +2156,58 @@ The RIF uses Java R integration to access R directly from Java
   1. Server reload needs to stop R
   2. R crashes (usually inla) and ideally script errors need to stop R
   
+### 5.3.2 R ERROR: argument is of length zero ; call stack: if scale.model
+
+This is typified by the R error trace:
+
+```
+.handleSimpleError(function (obj)
+{
+    calls = sys.calls()
+    calls = ca <text>#1: INLA::f(area_order, model = "bym", graph = IM, adjust.for.con.com eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo inla.interpret.formula(formula, data.same.len = data.same.len, data = data, performSmoothingActivity.R#609: inla(formula, family = "poisson", E = EXP_U performSmoothingActivity(data, AdjRowset) Adj_Cov_Smooth_JRI.R#361: withVisible(expr) Adj_Cov_Smooth_JRI.R#361: withCallingHandlers(withVisible(expr), error = er withErrorTracing({
+    data = fetchExtractTable()
+    AdjRowset = getAdjace doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names, parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryCatch({
+    withErrorTracing({
+        data = fetchExtractTable()
+       eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) Adj_Cov_Smooth_JRI.R#382: capture.output({
+    tryCatch({
+        withError runRSmoothingFunctions()
+<<< End of stack tracer.
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  if
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  scale.model
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
+    if (constr)
+        rankdef = rankdef + 1
+    if (!empty.extraconstr(extraconstr))
+        rankdef = rankdef + dim(extraconstr$A)[1]
+}
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
+    if (constr)
+        rankdef = rankdef + 1
+    rankdef = rankdef + cc.n1
+    if (!empty.extraconstr(extraconstr))
+        rankdef = rankdef + dim(extraconstr$A)[1]
+}
+callPerformSmoothingActivity exitValue: 1
+```
+
+This occurs under INLA 0.0-1485844051; re-install the latest R-INLA:
+
+```install.packages("INLA", repos="https://inla.r-inla-download.org/R/stable", dep=TRUE)```
+
+After the upgrade you should get INLA_17.06.20 or later:
+
+```
+> library('INLA')
+Loading required package: sp
+Loading required package: Matrix
+This is INLA_17.06.20 built 2017-06-20 03:42:30 UTC.
+See www.r-inla.org/contact-us for how to get help.
+>
+```
+
+This fixesthe error : "R BYM sahsuland fault\R BYM sahsuland fault - no covariates.txt"
+
 # 6. Patching 
 
 ## 6.1 RIF Web Application  
@@ -2186,4 +2243,8 @@ To be added. Files to be saved/restored:
  
 ALWAYS RESTART THE SERVER!
  
+## 6.4 R
+
+To be added.
+
 Peter Hambly, 12th April 2017; revised 4th August 2017
