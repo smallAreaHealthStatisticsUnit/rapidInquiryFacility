@@ -1686,7 +1686,7 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
   Fails: R version 3.4.0 (2017-04-21) -- "You Stupid Darkness"/This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
 * Re-instsall SEER test data, add SQL Server SEER test data
 * Test study completion code
-* Works on 3.4.2; SEER data has brough up an issue with character adjacency column being cast to INTEGER
+* Works on 3.4.2; SEER data has brought up an issue with character adjacency column being cast to INTEGER
   Fix to integer areaIds in adjcency matrix
 * RIF meeting
 * Do not map stuudies with errors (generates errors in the middleware)
@@ -1694,6 +1694,12 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * REXCEPTION test exception. Also refactored R parameter code to use names and not index numbers. Can now add new parameters without 
   consequences. Batch and R scripts need to be made parameter name independent for map code
 
+#### 30th October to 3rd November
+  
+* Postgres tiles display issue in maps. No tiles are being displayed for level 4. SAHSULAND has been 
+  caught by the USA areaid_count upgrade; sacripts and tile-maker fixed
+* Shortlisting Java developer (new Kev)
+  
 In progress:
 
 * CDC update by end of October
