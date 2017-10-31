@@ -1696,8 +1696,8 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 
 #### 30th October to 3rd November
   
-* Postgres tiles display issue in maps. No tiles are being displayed for level 4. SAHSULAND has been 
-  caught by the USA areaid_count upgrade; sacripts and tile-maker fixed
+* Fixed Postgres tiles display issue in maps. No tiles are being displayed for level 4. SAHSULAND has been 
+  caught by the USA areaid_count upgrade; scripts and tile-maker fixed.
 * Shortlisting Java developer (new Kev)
   
 In progress:
