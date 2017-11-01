@@ -130,9 +130,21 @@ public abstract class PGSQLAbstractRService {
 	protected void setODBCDataSourceName(final String odbcDataSourceName) {
 		this.odbcDataSourceName = odbcDataSourceName;
 	}	
+
+	private String getRRoutineModelCode(String proc) {
+		String model = "NONE";
+		if (proc.equals("het_r_procedure")) {
+			model = "HET";
+		} else if (proc.equals("car_r_procedure")) {
+			model = "CAR";
+		} else if (proc.equals("bym_r_procedure")) {
+			model = "BYM";
+		}
+		return model;
+	}
 	
 	protected void setCalculationMethod(final CalculationMethod calculationMethod) {		
-		addParameter("model", calculationMethod.getName());
+		addParameter("model", getRRoutineModelCode(calculationMethod.getName()));
 	}
 	
 	//Fetch parameters array list

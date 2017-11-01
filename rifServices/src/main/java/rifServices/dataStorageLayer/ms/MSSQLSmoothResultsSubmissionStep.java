@@ -453,18 +453,6 @@ password=XXXXXXXX
 		}		
 	}
 
-	private String getRRoutineModelCode(String proc) {
-		String model = "NONE";
-		if (proc.equals("het_r_procedure")) {
-			model = "HET";
-		} else if (proc.equals("car_r_procedure")) {
-			model = "CAR";
-		} else if (proc.equals("bym_r_procedure")) {
-			model = "BYM";
-		}
-		return model;
-	}
-
 	private String getRAdjust(String covar) {
 		String name = covar.toUpperCase();
 		if (!name.equals("NONE")) {

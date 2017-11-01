@@ -694,7 +694,7 @@ performSmoothingActivity <- function(data, AdjRowset) {
     cat("Posterior probability calculated\n")
   }  #end if model == BYM or HET or CAR
   else {       
-    cat("No Bayesian smoothing performed\n") 
+    cat(paste0("No Bayesian smoothing performed, model=", model, "\n")) 
     }
   
   # call the function to convert data to the format the db is expecting
