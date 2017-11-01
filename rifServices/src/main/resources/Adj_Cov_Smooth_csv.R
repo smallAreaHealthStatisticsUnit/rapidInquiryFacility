@@ -251,14 +251,16 @@ check.integer <- function(N) {
 	isIntRegexp<-suppressWarnings(!grepl("[^[:digit:]]", format(N,  digits = 20, scientific = FALSE)))
 	
 	check.integer.Result<-(isNumeric && isInteger && isNotRounded && isIntRegexp)
-	
-	cat(paste0("check.integer: ", str,
-		"; as.numeric(str): ", suppressWarnings(as.numeric(str)),
-		"; isNumeric: ", isNumeric,
-		"; isInteger: ", isInteger,
-		"; isNotRounded: ", isNotRounded,
-		"; isIntRegexp: ", isIntRegexp,
-		"; check.integer.Result: ", check.integer.Result, "\n"), sep="")
+#
+# DO NOT UNCOMMENT THIS - IT WILL SLOW DOWN R SEVERAL 1000 TIMES!
+#	
+#	cat(paste0("check.integer: ", str,
+#		"; as.numeric(str): ", suppressWarnings(as.numeric(str)),
+#		"; isNumeric: ", isNumeric,
+#		"; isInteger: ", isInteger,
+#		"; isNotRounded: ", isNotRounded,
+#		"; isIntRegexp: ", isIntRegexp,
+#		"; check.integer.Result: ", check.integer.Result, "\n"), sep="")
 	
     return(check.integer.Result)
 }
