@@ -32,7 +32,7 @@ CDC Update - November 2017
 * Some work in envsaiged in the smoothing functions and in the database; we are intending to test
   cluster anaysis using:
   * BayesSTDetect using Winbugs called from R 
-  * SatScan [add methods].
+  * SatScan or Scanstatistics; both called from R 
 
 # Maps generation
 
