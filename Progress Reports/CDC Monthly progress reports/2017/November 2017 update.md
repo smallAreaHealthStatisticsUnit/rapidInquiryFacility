@@ -78,15 +78,16 @@ Run times:
 
 ## Example maps
 
-![Loiusiana/Kentucky/Georgia relative risk](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/raw/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/LA_KY_GA_rr.png)
+![Loiusiana/Kentucky/Georgia relative risk](https://raw.githubusercontent.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2017/LA_KY_GA_rr.png)
 
-![Loiusiana/Kentucky/Georgia posterior probability](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/raw/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/LA_KY_GA_posterior_probability.png)
+![Loiusiana/Kentucky/Georgia posterior probability](https://raw.githubusercontent.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2017/LA_KY_GA_posterior_probability.png)
 
-![US 49 relative risk](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/raw/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/US49_rr_rr.png)
+![US 49 relative risk](https://raw.githubusercontent.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2017/US49_rr.png)
 
 ## Example JSON
 
-This is in the expanded format. Normally JSON is all on one line with no spaces.
+This is an example of the configuration files in the expanded format. Normally JSON is all on one line 
+with no spaces (the expanded format will be supported in future).
 
 ```json
 {
