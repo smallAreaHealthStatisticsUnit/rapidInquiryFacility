@@ -84,7 +84,13 @@ angular.module("RIF")
 						notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: rifHide});
 					}	
 				}
+				else { // Thses are caused by bugs in notifications, or by the RIF generating the messages to often
+					console.log("+" + elapsed + ": [DUPLICATE: " + $scope.messageCount + 
+						", msgInterval=" + msgInterval + "] " + 
+						messageLevel + ": " + msg);
+				}
                 $scope.lastMessage = angular.copy(msg);
+				$scope.lastMessageTime = angular.copy(end);
 				var msgList = $scope.messageList;
 				var msgItem = {
 					sequence:	$scope.messageCount,
