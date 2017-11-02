@@ -1702,6 +1702,37 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * CDC update by end of October
 * Integrated new SAHSULAND data extended to 2016; complete with clusters.
 * Minor R script issues caused by tidy last week
+* Testing front end
+* Fixed null mapID for US maps on SQL server only. Something is not initialising correctly in: 
+  rifc-util-mapping.js. Made front end ignore the error!
+```	
+11:59:14.121 +793.6: [DUPLICATE: 119, msgInterval=0] ERROR: Null mapID 1 rifc-util-alert.js:88:6
+```
+
+Front end issues:
+
+* When you change the geography the numerator and denominator do not change and need to be 
+  changed manually;
+* Login initilaisation errors if a) you shoot tomcat whilst logged on [the RIF must be reloaded]
+  and b) spurious complaints caused by the process of logging out
+* The newest study completed when the RIF initialised is displayed, this does not change with even when 
+  the user goes to the tab for the first time;
+* Add save study/comparison bands to file. Upload from file must have fields named ID,Band and can have 
+  other fields (e.g. NAME). Names are restricted and a save to file option would be good. 
+  File: rifd-dsub-maptable.js;
+* "Export Study Tables"/"Download Study Export" does not change to "Download ... " on Microsoft Edge;
+* Map synchronisation issues:
+  * Change in geography causes chaos. The best solution;
+  * Chrome is the worst browser and often does not refresh unless the map setup is reapplied;
+  * Needs caching (i.e. the middleware slowes it down). This is particularily noticeable on 
+    slow systems;
+
+* Null zoomlevel	
+```
+11:58:59.708 XML Parsing Error: no element found
+Location: https://localhost:8080/rifServices/studyResultRetrieval/ms/getTileMakerTiles?userID=peter&geographyName=USA_2014&geoLevelSelectName=CB_2014_US_COUNTY_500K&zoomlevel=null&x=1&y=0
+Line Number 1, Column 1: 1 getTileMakerTiles:1:1
+```  
   
 In progress:
 
