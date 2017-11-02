@@ -1708,6 +1708,7 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 ```	
 11:59:14.121 +793.6: [DUPLICATE: 119, msgInterval=0] ERROR: Null mapID 1 rifc-util-alert.js:88:6
 ```
+* SQL Server and Postgres US SEER data confirmed working!
 
 Front end issues:
 
@@ -1726,8 +1727,10 @@ Front end issues:
   * Chrome is the worst browser and often does not refresh unless the map setup is reapplied;
   * Needs caching (i.e. the middleware slowes it down). This is particularily noticeable on 
     slow systems;
-
-* Null zoomlevel	
+* Firefox crashed using nearly 6G of RAM. I suspect some work is needed on memory leaks (well objects 
+  never going out of scope);
+* Null zoomlevel error, appears when moving between the data viewer and the disease mapper. Made much more
+  likely by changing from one geography to another! 	
 ```
 11:58:59.708 XML Parsing Error: no element found
 Location: https://localhost:8080/rifServices/studyResultRetrieval/ms/getTileMakerTiles?userID=peter&geographyName=USA_2014&geoLevelSelectName=CB_2014_US_COUNTY_500K&zoomlevel=null&x=1&y=0
