@@ -1728,7 +1728,8 @@ Front end issues:
   * Needs caching (i.e. the middleware slowes it down). This is particularily noticeable on 
     slow systems;
 * Firefox crashed using nearly 6G of RAM. I suspect some work is needed on memory leaks (well objects 
-  never going out of scope);
+  never going out of scope). It is leaking doing nothing. Will check postgres port in case the null 
+  mapID is a cause;
 * Null zoomlevel error, appears when moving between the data viewer and the disease mapper. Made much more
   likely by changing from one geography to another! 	
 ```

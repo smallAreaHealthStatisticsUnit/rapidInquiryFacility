@@ -6,18 +6,18 @@ CDC Update - November 2017
 * SQL Server port now has exactly the same functionality as the Postgres port;
 * Data export of data extract and results now works; user can download a ZIP file and re-run
   the R side of the analysis;
-* A SEER test dataset has been created for both ports in preparation for SAHSU internal testing;
-* SAHSU is about to test both the SQL Server and Postgres ports internally;
+* A SEER test dataset has been created for both ports in preparation for SAHSU internal testing. SAHSU 
+  is about to test both the SQL Server and Postgres ports internally so we can start to use it in the 
+  new year;
 * About to start security testing;
-* A new Java developer to replace is being interview for **UPDATE**;
-* David has now left (to work for TomTom in Belgium);
-* Peter is now working on the Front End having taking over from David;
+* A new Java developer to replace is Kev being interviewed 9/11;
+* David has now left (to work for TomTom in Belgium). Peter is now working on the Front End having taking over from David;
 * Logging using Log4j has been implemented by Peter and the middleware now correctly reports errors to
   the front end. Log4j was chosen as the CDC use it. It is now much easier to trace errors (even 
   in R!);
 * The SAHSUland test data has been improved;
 * Documentation has been overhauled (partly in the handovers from Kev and David, partly in preparation for 
-  the new JAva developer)
+  the new Java developer)
   
 # Next tasks
 
@@ -27,14 +27,18 @@ CDC Update - November 2017
 
 # Risk Analysis
 
+THis will be the key work package for the first few months of next year.
+
 * Work needs to be carried out principally in the Middleware. This will be the task of the new Java 
-  developer unless we fail to hire. In this case Peter will start this instad of the maps generation;
+  developer unless we fail to hire. In this case Peter will start this instead of the maps generation;
 * Some work in envsaiged in the smoothing functions and in the database; we are intending to test
   cluster anaysis using:
   * BayesSTDetect using Winbugs called from R 
   * SatScan or Scanstatistics; both called from R 
 
 # Maps generation
+
+Current maps (see examples below) are not suitable for inclusion in Scientific publications.
 
 * It is intended to add a map generator to the export ZIP file to create high quality outputs suitable
   for journals;
@@ -43,7 +47,15 @@ CDC Update - November 2017
 * Results in shapefile form will probably be added;
 * Users will be able to regenerate the maps outside of the RIF.
 
+# TODO List
+
+There is a detailed TODO list which I am updating as I test.
+
+* [To Do List](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/wiki/TODO)
+
 # SEER Test data
+
+A SEER test dataset has been created so the RIF can do some real Science.
 
 | cb_2014_us_state_500k |  areaname   | start | end  |  cases  |
 |-----------------------|-------------|-------|------|---------|
@@ -63,7 +75,7 @@ CDC Update - November 2017
 
 ## Test case 1004 
 
-File: *1004 SEER 2000-13 lung cancer HH income mainland states.json*
+I have created a test case, 1004. File: *1004 SEER 2000-13 lung cancer HH income mainland states.json*
 
 * Exclude Alaska and Hawaii so the maps are focused on the 49 "mainland" states (i.e. they look better)
 * Lung cancer defined: C33,C340,C341,C342,C343,C348,C349
