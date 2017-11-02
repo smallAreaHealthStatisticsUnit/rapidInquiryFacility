@@ -61,10 +61,16 @@ angular.module("RIF")
 				if (angular.isUndefined($scope.lastMessage)) {
                     $scope.messageCount = 0;
 				}
+				if (angular.isUndefined($scope.lastMessageTime)) {
+                    $scope.lastMessageTime = new Date().getTime();
+				}				
 				angular.copy(($scope.messageCount++));
-				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
-					var end=new Date().getTime();
-					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
+				var end=new Date().getTime();
+				var elapsed=(Math.round((end - $scope.messageStart)/100))/10; 
+						// time since application init in S
+				var msgInterval=(Math.round((end - $scope.lastMessageTime)/100))/10; 
+						// time since last message in S	
+				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg || msgInterval > 5 /* Secs */) {
 					console.log("+" + elapsed + ": [" + $scope.messageCount + "] " + messageLevel + ": " + msg);
 					
 					if (messageLevel.toUpperCase() == "ERROR") {	
