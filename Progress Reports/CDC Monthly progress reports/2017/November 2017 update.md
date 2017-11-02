@@ -78,11 +78,11 @@ Run times:
 
 ## Example maps
 
-![Loiusiana/Kentucky/Georgia relative risk](https://raw.githubusercontent.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2017/LA_KY_GA_rr.png)
+![Loiusiana/Kentucky/Georgia smoothed SMR](https://raw.githubusercontent.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2017/LA_KY_GA_smr.png)
 
 ![Loiusiana/Kentucky/Georgia posterior probability](https://raw.githubusercontent.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2017/LA_KY_GA_posterior_probability.png)
 
-![US 49 relative risk](https://raw.githubusercontent.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2017/US49_rr.png)
+![US 49 smoothed SMR](https://raw.githubusercontent.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2017/US49_smr.png)
 
 ## Example JSON
 
