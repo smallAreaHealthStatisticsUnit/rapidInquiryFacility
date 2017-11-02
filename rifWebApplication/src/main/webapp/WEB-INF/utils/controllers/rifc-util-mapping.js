@@ -344,7 +344,15 @@ angular.module("RIF")
                             fillOpacity: $scope.child.transparency[mapID]
                         });
                     } else {
-                        if ($scope.tableData[mapID].length !== 0) {
+						if (mapID === undefined) { // Occurs only on SQL Server!
+//							Do nothing!						
+//							$scope.showError("Null mapID");
+						}
+						else if ($scope.tableData[mapID] === undefined) {
+							$scope.showError("Invalid table data for mapID: " + mapID);
+							clearTheMapOnError(mapID);
+						}
+                        else if ($scope.tableData[mapID].length !== 0) {
                             var thisAttr;
                             for (var i = 0; i < $scope.tableData[mapID].length; i++) {
                                 if ($scope.tableData[mapID][i].area_id === layer.feature.properties.area_id) {
