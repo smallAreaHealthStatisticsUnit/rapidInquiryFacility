@@ -43,7 +43,39 @@ CDC Update - November 2017
 * Results in shapefile form will probably be added;
 * Users will be able to regenerate the maps outside of the RIF.
 
-  
+# SEER Test data
+
+| cb_2014_us_state_500k |  areaname   | start | end  |  cases  |
+|-----------------------|-------------|-------|------|---------|
+| 01785533              | Alaska      |  1992 | 2013 |    8080 |
+| 01779778              | California  |  1973 | 2013 | 3185854 |
+| 01779780              | Connecticut |  1973 | 2013 |  753261 |
+| 01705317              | Georgia     |  1975 | 2013 |  810910 |
+| 01779782              | Hawaii      |  1973 | 2013 |  201078 |
+| 01779785              | Iowa        |  1973 | 2013 |  632565 |
+| 01779786              | Kentucky    |  2000 | 2013 |  366513 |
+| 01629543              | Louisiana   |  2000 | 2013 |  340659 |
+| 01779789              | Michigan    |  1973 | 2013 |  854021 |
+| 01779795              | New Jersey  |  2000 | 2013 |  752599 |
+| 00897535              | New Mexico  |  1973 | 2013 |  267661 |
+| 01455989              | Utah        |  1973 | 2013 |  260674 |
+| 01779804              | Washington  |  1974 | 2013 |  743088 |
+
+## Test case 1004 
+
+File: 
+
+* Exclude Alaska and Hawaii so the maps are focused on the 49 "mainland" states (i.e. they look better)
+* Lung cancer defined: C33,C340,C341,C342,C343,C348,C349
+* Period 2000 to 2013 (i.e. the maximum allowed for the data)
+* Covariate: head of house median income quintile
+
+Run times:
+
+* Postgres (constrained to 50M RAM): 7:43
+* SQL Server:
+* R with BYM model: 30s
+
  
 
   
