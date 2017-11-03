@@ -427,6 +427,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			throw rifServiceExeption;
 		}
 		finally {
+//			throw new  RIFServiceException(RIFServiceError.ZIPFILE_CREATE_FAILED, "TEST ZIP ERROR");
 //			temporaryDirectory.delete();
 		}
 	}

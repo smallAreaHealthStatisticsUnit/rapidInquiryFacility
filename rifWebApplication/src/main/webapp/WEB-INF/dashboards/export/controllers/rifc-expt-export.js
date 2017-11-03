@@ -277,19 +277,32 @@ angular.module("RIF")
 					if ($scope.exportTAG == "Export Study Tables") {
 						$scope.showSuccess("Export started...");
 					}
-                    user.createZipFile(user.currentUser, $scope.studyID["exportmap"].study_id, $scope.exportLevel).then(function (res) {
-                        if (res.data === "OK") {
-                            $scope.showSuccess("Export finished: " + $scope.studyID["exportmap"].name + "; ready to download.");
-							$scope.exportURL = user.getZipFileURL(user.currentUser, $scope.studyID["exportmap"].study_id, 
-								$scope.exportLevel); // Set mapListButtonExport URL
-							$scope.exportTAG="Download Study Export";
-													// Set mapListButtonExport text
-                        } else {
-                            $scope.showError("Error exporting study tables");
+                    user.createZipFile(user.currentUser, $scope.studyID["exportmap"].study_id, $scope.exportLevel).then(
+						function (res) { // Sucesss handler
+							if (res.data === "OK") {
+								$scope.showSuccess("Export finished: " + $scope.studyID["exportmap"].name + "; ready to download.");
+								$scope.exportURL = user.getZipFileURL(user.currentUser, $scope.studyID["exportmap"].study_id, 
+									$scope.exportLevel); // Set mapListButtonExport URL
+								$scope.exportTAG="Download Study Export";
+														// Set mapListButtonExport text
+							} else {
+								$scope.exportTAG="Export Study Tables";
+								$scope.exportURL = undefined;
+								$scope.disableMapListButton=true;
+								$scope.showError("Error exporting study tables");
+							}
+						}
+					).catch(
+						function (err) { // Error handler - will need to test for 408 [timeout error]
 							$scope.exportTAG="Export Study Tables";
 							$scope.exportURL = undefined;
-                        }
-                    });
+							$scope.disableMapListButton=true;
+							$scope.showError("Error exporting study tables: ");
+							if (err !== undefined) {
+								console.log("Export error: " + JSON.stringify(err));
+							}
+						}
+					);
                 };
 
                 //get rows from the database

@@ -428,6 +428,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			throw rifServiceExeption;
 		}
 		finally {
+//			throw new  RIFServiceException(RIFServiceError.ZIPFILE_CREATE_FAILED, "TEST ZIP ERROR");
 //			temporaryDirectory.delete();
 		}
 	}
