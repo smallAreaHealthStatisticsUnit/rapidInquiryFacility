@@ -238,7 +238,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 	 * @param  rifStudySubmission 		RIFStudySubmission object.
 	 * @param  studyID 		Study_id (as text!).
 	 *
-	 * @return 				Textual extract status 
+	 * @return 				Textual extract status as exscaped JSON, e.g. {status: STUDY_NOT_FOUND}
 	 * 
 	 * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
 	 */
@@ -292,7 +292,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 						baseStudyName);
 				zipFileName=submissionZipFile.getAbsolutePath();
 				if (submissionZipFile.isFile()) { // ZIP file exists - no need to recreate
-					result="STUDY_EXTRABLE_ZIPPID";
+					result="STUDY_EXTRACTBLE_ZIPPID";
 				}
 				else { // No zip file 
 					result="STUDY_EXTRACTABLE_NEEDS_ZIPPING";
@@ -315,7 +315,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			throw rifServiceExeption;
 		}
 		
-		return result;
+		return "{\"status\":\"" + result + "\"}";
 
 	}
 

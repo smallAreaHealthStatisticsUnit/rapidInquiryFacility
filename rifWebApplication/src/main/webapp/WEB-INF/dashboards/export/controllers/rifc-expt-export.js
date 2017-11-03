@@ -232,23 +232,23 @@ angular.module("RIF")
 
 				$scope.setupZipButton = function setupZipButton() {
 					$scope.extractStatus=user.getExtractStatus(user.currentUser, $scope.studyID["exportmap"].study_id).then(function (res) {
-						if (res.data === "STUDY_EXTRACTABLE_NEEDS_ZIPPING") {			
+						if (res.data.status === "STUDY_EXTRACTABLE_NEEDS_ZIPPING") {			
 							$scope.exportTAG="Export Study Tables";
 							$scope.exportURL = undefined;
 							$scope.disableMapListButton=false;
 						}
-						else if (res.data === "STUDY_EXTRABLE_ZIPPID") {
+						else if (res.data.status === "STUDY_EXTRACTBLE_ZIPPID") {
 							$scope.exportURL = user.getZipFileURL(user.currentUser, $scope.studyID["exportmap"].study_id, 
 								$scope.exportLevel); // Set mapListButtonExport URL
 							$scope.exportTAG="Download Study Export";
 							$scope.disableMapListButton=false;
 						}
-						else if (res.data === "STUDY_INCOMPLETE_NOT_ZIPPABLE") {
+						else if (res.data.status === "STUDY_INCOMPLETE_NOT_ZIPPABLE") {
 							$scope.exportTAG="Study Incomplete";
 							$scope.exportURL = undefined;
 							$scope.disableMapListButton=true;
 						}
-						else if (res.data === "STUDY_FAILED_NOT_ZIPPABLE") {
+						else if (res.data.status === "STUDY_FAILED_NOT_ZIPPABLE") {
 							$scope.exportTAG="Study Failed";
 							$scope.exportURL = undefined;
 							$scope.disableMapListButton=true;
@@ -278,7 +278,7 @@ angular.module("RIF")
 						$scope.showSuccess("Export started...");
 						user.createZipFile(user.currentUser, $scope.studyID["exportmap"].study_id, $scope.exportLevel).then(
 							function (res) { // Sucesss handler
-								if (res.data === "OK") {
+								if (res.data.status === "OK") {
 									$scope.showSuccess("Export finished: " + $scope.studyID["exportmap"].name + "; ready to download.");
 									$scope.exportURL = user.getZipFileURL(user.currentUser, $scope.studyID["exportmap"].study_id, 
 										$scope.exportLevel); // Set mapListButtonExport URL
@@ -292,13 +292,13 @@ angular.module("RIF")
 								}
 							},
 							function (err) { // Error handler - will need to test for 408 [timeout error]
-								$scope.exportTAG="Export Study Tables";
-								$scope.exportURL = undefined;
-								$scope.disableMapListButton=true;
-								$scope.showError("Error exporting study tables for: " + $scope.studyID["exportmap"].name);
-								if (err !== undefined) {
+//								$scope.exportTAG="Export Study Tables";
+//								$scope.exportURL = undefined;
+//								$scope.disableMapListButton=true;
+								$scope.showError("Study tables export error for: " + $scope.studyID["exportmap"].name);
+//								if (err !== undefined && Object.keys(err).length > 0) {
 									console.log("Export error: " + JSON.stringify(err));
-								}
+//								}
 							}
 						);
 					}

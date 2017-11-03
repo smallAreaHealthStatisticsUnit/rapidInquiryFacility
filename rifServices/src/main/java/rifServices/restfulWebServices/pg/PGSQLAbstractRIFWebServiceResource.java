@@ -900,7 +900,7 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			final String studyID,
 			final String zoomLevel) { 
 
-		String result = "OK";
+		String result = "{\"status\":\"OK\"}";
 
 		try {
 			User user = createUser(servletRequest, userID);

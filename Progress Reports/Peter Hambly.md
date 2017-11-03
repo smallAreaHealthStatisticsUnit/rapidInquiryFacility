@@ -1711,19 +1711,23 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * SQL Server and Postgres US SEER data confirmed working!
 * Export error handler; traps exceptions OK; added handlers for errors not detected by the global get handler. Added 100s timeout.
   Intend to trap 403 timeout error if it occurs
+  string returns instead of JSON;
 
 Front end issues:
 
 * When you change the geography the numerator and denominator do not change and need to be 
   changed manually;
 * Login initilaisation errors if a) you shoot tomcat whilst logged on [the RIF must be reloaded]
-  and b) spurious complaints caused by the process of logging out
+  and b) spurious complaints caused by the process of logging out;e.g.
+```
+ERROR: API method "isLoggedIn" has a null "userID" parameter.
+ERROR: Record "User" field "User ID" cannot be empty.
+```
 * The newest study completed when the RIF initialised is displayed, this does not change with even when 
   the user goes to the tab for the first time;
 * Add save study/comparison bands to file. Upload from file must have fields named ID,Band and can have 
   other fields (e.g. NAME). Names are restricted and a save to file option would be good. 
   File: rifd-dsub-maptable.js;
-* "Export Study Tables"/"Download Study Export" does not change to "Download ... " on Microsoft Edge;
 * Map synchronisation issues:
   * Change in geography causes chaos. The best solution;
   * Chrome is the worst browser and often does not refresh unless the map setup is reapplied;

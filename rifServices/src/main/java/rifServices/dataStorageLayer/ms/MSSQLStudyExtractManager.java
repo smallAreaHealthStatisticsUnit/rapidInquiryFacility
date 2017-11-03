@@ -241,7 +241,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	 * @param  rifStudySubmission 		RIFStudySubmission object.
 	 * @param  studyID 		Study_id (as text!).
 	 *
-	 * @return 				Textual extract status 
+	 * @return 				Textual extract status, e.g. {status: STUDY_NOT_FOUND} 
 	 * 
 	 * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
 	 */
@@ -294,7 +294,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 						baseStudyName);
 				zipFileName=submissionZipFile.getAbsolutePath();
 				if (submissionZipFile.isFile()) { // ZIP file exists - no need to recreate
-					result="STUDY_EXTRABLE_ZIPPID";
+					result="STUDY_EXTRACTBLE_ZIPPID";
 				}
 				else { // No zip file 
 					result="STUDY_EXTRACTABLE_NEEDS_ZIPPING";
@@ -317,7 +317,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			throw rifServiceExeption;
 		}
 
-		return result;
+		return "{\"status\":\"" + result + "\"}";
 	}
 	
 	public void createStudyExtract(
