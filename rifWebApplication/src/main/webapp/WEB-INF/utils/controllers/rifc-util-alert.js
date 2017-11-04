@@ -59,9 +59,9 @@ angular.module("RIF")
 			 * Returns: 	Nothing
 			 * Description:	IE safe console log 
 			 */
-			function $scope.consoleLog(msg) {
+			$scope.consoleLog = function(msg) {
 				var end=new Date().getTime();
-				var elapsed=(Math.round((end - lstart)/100))/10; // in S	
+				var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
 				if (window.console && console && console.log && typeof console.log == "function") { // IE safe
 					if (isIE()) {
 						if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
