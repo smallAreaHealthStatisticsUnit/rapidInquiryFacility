@@ -1711,7 +1711,9 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * SQL Server and Postgres US SEER data confirmed working!
 * Export error handler; traps exceptions OK; added handlers for errors not detected by the global get handler. Added 100s timeout.
   Intend to trap 403 timeout error if it occurs
+* Fixed "Export Study Tables"/"Download Study Export" does not change to "Download ... " on Microsoft Edge/Explor/Chrome. Caused by 
   string returns instead of JSON;
+* Console messages suppressed on Explorer unless the console is enabled
 
 Front end issues:
 
@@ -1743,7 +1745,7 @@ ERROR: Record "User" field "User ID" cannot be empty.
 Location: https://localhost:8080/rifServices/studyResultRetrieval/ms/getTileMakerTiles?userID=peter&geographyName=USA_2014&geoLevelSelectName=CB_2014_US_COUNTY_500K&zoomlevel=null&x=1&y=0
 Line Number 1, Column 1: 1 getTileMakerTiles:1:1
 ```  
-  
+ 
 In progress:
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing type].
