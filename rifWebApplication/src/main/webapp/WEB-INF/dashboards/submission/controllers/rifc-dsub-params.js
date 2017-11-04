@@ -178,7 +178,7 @@ angular.module("RIF")
                 };
 
                 function handleParameterError(res) {
-                    console.log("parameter error");
+                    $scope.consoleLog("parameter error");
                 }
 
                 //handle taxonomy services

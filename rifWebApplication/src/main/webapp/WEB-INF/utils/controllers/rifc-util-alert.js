@@ -43,6 +43,38 @@ angular.module("RIF")
 			$scope.messageStart = new Date().getTime();
 			
 			/*
+			 * Function: 	isIE()
+			 * Parameters: 	None
+			 * Returns: 	Nothing
+			 * Description:	Test for IE nightmare 
+			 */
+			function isIE() {
+				var myNav = navigator.userAgent.toLowerCase();
+				return (myNav.indexOf('msie') != -1) ? parseInt(myNav.split('msie')[1]) : false;
+			}
+			
+			/*
+			 * Function: 	consoleLog()
+			 * Parameters:  Message
+			 * Returns: 	Nothing
+			 * Description:	IE safe console log 
+			 */
+			function $scope.consoleLog(msg) {
+				var end=new Date().getTime();
+				var elapsed=(Math.round((end - lstart)/100))/10; // in S	
+				if (window.console && console && console.log && typeof console.log == "function") { // IE safe
+					if (isIE()) {
+						if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+							console.log("+" + elapsed + ": " + msg); // IE safe
+						}
+					}
+					else {
+						console.log("+" + elapsed + ": " + msg); // IE safe
+					}
+				}  
+			}
+			
+			/*
 			 * Function:	rifMessage()
 			 * Parameters:	Level [ERROR/WARNING/SUCCESS], message, auto hide (after about 5s): true/false, rif Error object [optional] 
 			 * Desription:	Call notifications.show* to display message to user
@@ -71,11 +103,11 @@ angular.module("RIF")
 				var msgInterval=(Math.round((end - $scope.lastMessageTime)/100))/10; 
 						// time since last message in S	
 				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg || msgInterval > 5 /* Secs */) {
-					console.log("+" + elapsed + ": [" + $scope.messageCount + "] " + messageLevel + ": " + msg);
+					$scope.consoleLog("+" + elapsed + ": [" + $scope.messageCount + "] " + messageLevel + ": " + msg);
 					
 					if (messageLevel.toUpperCase() == "ERROR") {	
 						notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: rifHide});	
-						console.log("Stack: " + err.stack);
+						$scope.consoleLog("Stack: " + err.stack);
 					}
 					else if (messageLevel.toUpperCase() == "WARNING") {
 						notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: rifHide});
@@ -85,7 +117,7 @@ angular.module("RIF")
 					}	
 				}
 				else { // Thses are caused by bugs in notifications, or by the RIF generating the messages to often
-					console.log("+" + elapsed + ": [DUPLICATE: " + $scope.messageCount + 
+					$scope.consoleLog("+" + elapsed + ": [DUPLICATE: " + $scope.messageCount + 
 						", msgInterval=" + msgInterval + "] " + 
 						messageLevel + ": " + msg);
 				}

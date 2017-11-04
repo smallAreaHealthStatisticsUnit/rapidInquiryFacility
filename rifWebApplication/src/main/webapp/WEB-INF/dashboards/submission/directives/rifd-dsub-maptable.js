@@ -665,7 +665,7 @@ angular.module("RIF")
                                         for (var j = 0; j < $scope.gridOptions.data.length; j++) {
                                             if ($scope.gridOptions.data[j].area_id === listOfIDs[i].ID) {
                                                 var thisBand = Number(listOfIDs[i].Band);
-//												console.log("[" + i + "," + j + "] MATCH area_id: " + $scope.gridOptions.data[j].area_id + 
+//												$scope.consoleLog("[" + i + "," + j + "] MATCH area_id: " + $scope.gridOptions.data[j].area_id + 
 //													"; ID: " + listOfIDs[i].ID +
 //													"; thisBand: " + thisBand);
                                                 if ($scope.possibleBands.indexOf(thisBand) !== -1) {
@@ -681,7 +681,7 @@ angular.module("RIF")
                                     }
                                     if (!bPushed) {
                                         alertScope.showWarning("No valid 'ID' fields or 'Band' numbers found in your list");
-//										console.log(JSON.stringify(listOfIDs, null, 2));
+//										$scope.consoleLog(JSON.stringify(listOfIDs, null, 2));
                                     } else if (!bInvalid) {
                                         alertScope.showSuccess("List uploaded sucessfully");
                                     } else {

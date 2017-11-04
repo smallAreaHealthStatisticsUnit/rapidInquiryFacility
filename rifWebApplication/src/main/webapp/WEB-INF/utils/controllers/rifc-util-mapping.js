@@ -220,7 +220,7 @@ angular.module("RIF")
                         }
                     }, function (e) {
                         $scope.showError("Unable to retrieve study status");
-						console.log("[rifc-util-mapping.js] Unable to retrieve study status: " + 
+						$scope.consoleLog("[rifc-util-mapping.js] Unable to retrieve study status: " + 
 							JSON.stringify(e));
                     });
                 };
@@ -567,7 +567,7 @@ angular.module("RIF")
                                     $scope.getD3chart(mapID, $scope.attr[mapID]);
 
                                 }, function (e) {
-                                    console.log("Something went wrong when getting the attribute data");
+                                    $scope.consoleLog("Something went wrong when getting the attribute data");
                                     clearTheMapOnError(mapID);
                                 });
                     }

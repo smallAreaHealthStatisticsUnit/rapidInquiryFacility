@@ -220,7 +220,7 @@ angular.module("RIF")
 
                     }, function (e) {
                         $scope.showError("Could not retrieve study status; unable to export or view data");
-						console.log("[rifc-expt-export.js] Could not retrieve study status; unable to export or view data" + 
+						$scope.consoleLog("[rifc-expt-export.js] Could not retrieve study status; unable to export or view data" + 
 							JSON.stringify(e));
                     }).then(function () {
                         //fill initial preview
@@ -297,7 +297,7 @@ angular.module("RIF")
 //								$scope.disableMapListButton=true;
 								$scope.showError("Study tables export error for: " + $scope.studyID["exportmap"].name);
 //								if (err !== undefined && Object.keys(err).length > 0) {
-									console.log("Export error: " + JSON.stringify(err));
+									$scope.consoleLog("Export error: " + JSON.stringify(err));
 //								}
 							}
 						);

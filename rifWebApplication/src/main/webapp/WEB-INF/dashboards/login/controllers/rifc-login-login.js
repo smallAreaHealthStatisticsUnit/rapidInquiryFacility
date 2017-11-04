@@ -114,7 +114,7 @@ angular.module("RIF")
                             //initialise the taxonomy service
                             user.initialiseService().then(handleInitialise, handleInitialiseError);
                             function handleInitialise(res) {
-                                // console.log("taxonomy initialised"); 
+                                // $scope.consoleLog("taxonomy initialised"); 
                             }
                             function handleInitialiseError(e) {
                                 $scope.showError('Could not initialise the taxonomy service');
