@@ -75,6 +75,73 @@ angular.module("RIF")
 			}
 			
 			/*
+			 * Function: 	consoleError()
+			 * Parameters:  Message, rif Error object [optional]
+			 * Returns: 	Nothing
+			 * Description:	IE safe console log for errors
+			 *				Log message to console with relative timestamp; save message in array
+			 */
+			$scope.consoleError = function(msg, rifError) {
+				var err; // Get stack
+				if (rifError) {
+					err=rifError;
+				}
+				else {
+					err=new Error("Dummy");
+				}
+				
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.messageCount = 0;
+				}
+				if (angular.isUndefined($scope.lastMessageTime)) {
+                    $scope.lastMessageTime = new Date().getTime();
+				}				
+				angular.copy(($scope.messageCount++));
+				var end=new Date().getTime();
+				var elapsed=(Math.round((end - $scope.messageStart)/100))/10; 
+						// time since application init in S
+				var msgInterval=(Math.round((end - $scope.lastMessageTime)/100))/10; 
+						// time since last message in S	
+				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg || msgInterval > 5 /* Secs */) {
+					if (window.console && console && console.log && typeof console.log == "function") { // IE safe
+						if (isIE()) {
+							if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+								console.log("+" + elapsed + ": " + msg); // IE safe
+							}
+						}
+						else {
+							console.log("+" + elapsed + ": " + msg); // IE safe
+						}
+					}  					
+				}
+				else { // Thses are caused by bugs in notifications, or by the RIF generating the messages to often
+					if (window.console && console && console.log && typeof console.log == "function") { // IE safe
+						if (isIE()) {
+							if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+								console.log("+" + elapsed + ": " + msg); // IE safe
+							}
+						}
+						else {
+							console.log("+" + elapsed + ": " + msg); // IE safe
+						}
+					}  				
+				}
+                $scope.lastMessage = angular.copy(msg);
+				$scope.lastMessageTime = angular.copy(end);
+				var msgList = $scope.messageList;
+				var msgItem = {
+					sequence:	$scope.messageCount,
+					message: 	msg,
+					time:		end,
+					stack:		err.stack,
+					relative:	elapsed,
+					level:		messageLevel
+				}
+				msgList.push(msg); 
+				$scope.messageList = angular.copy(msgList);			
+			}
+			
+			/*
 			 * Function:	rifMessage()
 			 * Parameters:	Level [ERROR/WARNING/SUCCESS], message, auto hide (after about 5s): true/false, rif Error object [optional] 
 			 * Desription:	Call notifications.show* to display message to user

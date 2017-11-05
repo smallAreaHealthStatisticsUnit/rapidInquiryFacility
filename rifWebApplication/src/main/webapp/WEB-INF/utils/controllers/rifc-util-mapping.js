@@ -346,7 +346,10 @@ angular.module("RIF")
                     } else {
 						if (mapID === undefined) { // Occurs only on SQL Server!
 //							Do nothing!						
-//							$scope.showError("Null mapID");
+							$scope.consoleError("Null mapID; layer options: " + JSON.stringify(layer.options, null, 2));
+							if (layer !== undefined) {
+								layer.remove(); 	// Remove 
+							}
 						}
 						else if ($scope.tableData[mapID] === undefined) {
 							$scope.showError("Invalid table data for mapID: " + mapID);
