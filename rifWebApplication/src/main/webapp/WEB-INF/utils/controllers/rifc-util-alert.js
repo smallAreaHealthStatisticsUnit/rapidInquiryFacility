@@ -118,11 +118,13 @@ angular.module("RIF")
 					if (window.console && console && console.log && typeof console.log == "function") { // IE safe
 						if (isIE()) {
 							if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
-								console.log("+" + elapsed + ": " + msg); // IE safe
+								console.log("+" + elapsed + ": " + msg +
+									"\nStack: " + err.stack); // IE safe
 							}
 						}
 						else {
-							console.log("+" + elapsed + ": " + msg); // IE safe
+							console.log("+" + elapsed + ": " + msg + 
+								"\nStack: " + err.stack); // IE safe
 						}
 					}  				
 				}
@@ -135,7 +137,7 @@ angular.module("RIF")
 					time:		end,
 					stack:		err.stack,
 					relative:	elapsed,
-					level:		messageLevel
+					level:		"CONSOLE"
 				}
 				msgList.push(msg); 
 				$scope.messageList = angular.copy(msgList);			
