@@ -1715,6 +1715,30 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
   string returns instead of JSON;
 * Console messages suppressed on Explorer unless the console is enabled
 
+
+## 6th to 10th November 
+
+* Firefox crashed using nearly 6G of RAM. null mapID in rifc-util-mapping.js 
+  ```$scope.handleLayer = function (layer) {}``` is the direct cause. This was fixed
+  by removing the layer:
+```
+	if (mapID === undefined) { // Occurs only on SQL Server!
+//							Do nothing!						
+		$scope.consoleError("Null mapID; layer options: " + JSON.stringify(layer.options, null, 2));
+		if (layer !== undefined) {
+			layer.remove(); 	// Remove 
+		}
+	}
+```
+  This has dealt with the symptoms, **not the cause**. The direct cause is the layer add 
+  function is being called before the map has initialised properly. Taken with the 
+  *Null zoomlevel error* there is a synchronisation bug in the leaflet code. This issue
+  was experienced with the TileMaker code and the fix - stronger asynchronous control is 
+  the same (i.e do not rely on Leaflet to do it all). This will have the effect of 
+  some countiues not being displayed (say 40/3233).
+* I suspect some work is still needed on memory leaks (objects never going out of scope). 
+  It is leaking doing nothing. 
+
 Front end issues:
 
 * When you change the geography the numerator and denominator do not change and need to be 
@@ -1735,9 +1759,7 @@ ERROR: Record "User" field "User ID" cannot be empty.
   * Chrome is the worst browser and often does not refresh unless the map setup is reapplied;
   * Needs caching (i.e. the middleware slowes it down). This is particularily noticeable on 
     slow systems;
-* Firefox crashed using nearly 6G of RAM. I suspect some work is needed on memory leaks (well objects 
-  never going out of scope). It is leaking doing nothing. Will check postgres port in case the null 
-  mapID is a cause;
+
 * Null zoomlevel error, appears when moving between the data viewer and the disease mapper. Made much more
   likely by changing from one geography to another! 	
 ```
