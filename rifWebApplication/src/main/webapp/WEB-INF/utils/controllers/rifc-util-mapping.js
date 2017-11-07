@@ -427,7 +427,8 @@ angular.module("RIF")
                                                                 return($scope.child.transparency[mapID] - 0.3 > 0 ? $scope.child.transparency[mapID] - 0.3 : 0.1);
                                                             }()
                                                         });
-                                                        $scope.infoBox[mapID].update(layer.feature.properties.area_id);
+                                                        $scope.infoBox[mapID].update(layer.feature.properties.area_id, 
+															layer.feature.properties.name);
                                                     });
                                                     layer.on('mouseout', function (e) {
                                                         $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
@@ -588,23 +589,24 @@ angular.module("RIF")
                     }
                     //The hover box update
                     function closureInfoBoxUpdate(m) {
-                        return function (poly) {
+                        return function (poly, name) {
                             if (poly) {
                                 this._div.style["display"] = "inline";
                                 this._div.innerHTML =
                                         function () {
                                             var feature = ChoroService.getMaps(m).feature;
                                             var tmp;
-                                            var inner = '<h5>ID: ' + poly + '</h5>';
+                                            var inner = '<h5>ID: ' + poly + '</br>Name: ' + name + '</h5>';
                                             if ($scope.attr[m] !== "") {
                                                 for (var i = 0; i < $scope.tableData[m].length; i++) {
                                                     if ($scope.tableData[m][i].area_id === poly) {
                                                         tmp = $scope.tableData[m][i][$scope.attr[m]];
+														$scope.tableData[m][i].name = name;
                                                         break;
                                                     }
                                                 }
                                                 if (feature !== "" && !isNaN(Number(tmp))) {
-                                                    inner = '<h5>ID: ' + poly + '</br>' + feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h5>';
+                                                    inner = '<h5>ID: ' + poly + '</br>Name: ' + name + '</br>' + feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h5>';
                                                 }
                                             }
                                             return inner;
@@ -632,6 +634,7 @@ angular.module("RIF")
                                     this._div.style["display"] = "inline";
                                     this._div.innerHTML =
                                             '<h5>ID: ' + poly + '</br>' +
+                                            'Name: ' + (results.name||'N/A') + '</br>' +
                                             'Population: ' + results.population + '</br>' +
                                             'Observed: ' + results.observed + '</br>' +
                                             'Expected: ' + Number(results.expected).toFixed(2) + '</br>' + '</h5>';
