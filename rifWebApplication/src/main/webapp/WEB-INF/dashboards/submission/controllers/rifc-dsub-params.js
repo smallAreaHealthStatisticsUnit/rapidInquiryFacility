@@ -418,7 +418,8 @@ angular.module("RIF")
                 };
 
                 resetTable = function () {
-                    $scope.thisICDselection.length = 0;
+                    // $scope.thisICDselection.length = 0; // This causes a leak!
+					$scope.thisICDselection.splice(0, $scope.thisICDselection.length); // Fix
                 };
 
                 //submit and save the results

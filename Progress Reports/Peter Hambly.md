@@ -1736,19 +1736,19 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
   was experienced with the TileMaker code and the fix - stronger asynchronous control is 
   the same (i.e do not rely on Leaflet to do it all). This will have the effect of 
   some countiues not being displayed (say 40/3233).
-* I suspect some work is still needed on memory leaks (objects never going out of scope). 
-  It is leaking doing nothing. 
 
 Front end issues:
 
 * When you change the geography the numerator and denominator do not change and need to be 
   changed manually;
-* Login initilaisation errors if a) you shoot tomcat whilst logged on [the RIF must be reloaded]
-  and b) spurious complaints caused by the process of logging out;e.g.
+* Login initialisation errors if a) you shoot tomcat whilst logged on [the RIF must be reloaded]
+  and b) spurious complaints caused by the process of logging out; e.g.
 ```
 ERROR: API method "isLoggedIn" has a null "userID" parameter.
 ERROR: Record "User" field "User ID" cannot be empty.
 ```
+  Normally reloading the RIF allows the user to logon again; although if the user is already logged on 
+  the Middleware will not let the user log on a second time;
 * The newest study completed when the RIF initialised is displayed, this does not change with even when 
   the user goes to the tab for the first time;
 * Add save study/comparison bands to file. Upload from file must have fields named ID,Band and can have 
@@ -1759,7 +1759,6 @@ ERROR: Record "User" field "User ID" cannot be empty.
   * Chrome is the worst browser and often does not refresh unless the map setup is reapplied;
   * Needs caching (i.e. the middleware slowes it down). This is particularily noticeable on 
     slow systems;
-
 * Null zoomlevel error, appears when moving between the data viewer and the disease mapper. Made much more
   likely by changing from one geography to another! 	
 ```
@@ -1767,7 +1766,48 @@ ERROR: Record "User" field "User ID" cannot be empty.
 Location: https://localhost:8080/rifServices/studyResultRetrieval/ms/getTileMakerTiles?userID=peter&geographyName=USA_2014&geoLevelSelectName=CB_2014_US_COUNTY_500K&zoomlevel=null&x=1&y=0
 Line Number 1, Column 1: 1 getTileMakerTiles:1:1
 ```  
- 
+* Layer orphan issues (fixed temporarily by removing the layer):
+```
+	if (mapID === undefined) { // Occurs only on SQL Server!
+//							Do nothing!						
+		$scope.consoleError("Null mapID; layer options: " + JSON.stringify(layer.options, null, 2));
+		if (layer !== undefined) {
+			layer.remove(); 	// Remove 
+		}
+	}
+```
+  This appears to only occur in SQL Server; this is probably because the SQL Server 
+  code is faster.
+  This has dealt with the symptoms, **not the cause**. The direct cause is the layer add 
+  function is being called before the map has initialised properly. Taken with the 
+  *Null zoomlevel error* there is a synchronisation bug in the leaflet code. This issue
+  was experienced with the TileMaker code and the fix - stronger asynchronous control is 
+  the same (i.e do not rely on Leaflet to do it all). This will have the effect of 
+  some counties not being displayed (say 40/3233).
+* Some work is still needed on memory leaks (objects never going out of scope). 
+  Disease mapping is leaking badly (3GB/hour) doing nothing when displaying a large US 
+  study. The data viewer population pyramid also has a one off leak every time you change 
+  the year. Logging off does not release resources so maps are not being destroyed on 
+  logoff (other events will need to be checked). Almost certainly related to the above.
+* Memory leak analysis in Firefox shows the function *link()* in the Angular directive 
+  *rifd-dmap-d3rrzoom.js* (SVG relative risk maps) is responsible for about 7% of the leaks, 
+  the 93% of the leaks have no stack available;
+* Memory leak analysis in Chrome is by object, not by stack but shows that:
+  * Function *resetTable()* in *rifc-dsub-params.js* is leaking
+    ```  
+		resetTable = function () {
+            $scope.thisICDselection.length = 0; // This causes a leak!
+			// $scope.thisICDselection.splice(0, $scope.thisICDselection.length);
+				// A fix
+        };
+    ```
+	This may be a Chrome specific bug; as the original code **should** work. It is 
+	a widespread problem in the code; e.g. *clearTheMapOnError(mapID)* in 
+	*rifc-util-mapping.js*; and more testing is needed to determine if this really causes 
+	a leak! 60 javascript files were found to contain the string ```.length=```.
+  * Lots of *_map()* objects leaking re-inforcing the above observations
+  * SVG related leaks as seen above.
+  
 In progress:
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing type].
