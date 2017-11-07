@@ -596,17 +596,35 @@ angular.module("RIF")
                                         function () {
                                             var feature = ChoroService.getMaps(m).feature;
                                             var tmp;
-                                            var inner = '<h5>ID: ' + poly + '</br>Name: ' + name + '</h5>';
+                                            var inner;
+											if (name !== undefined && name != poly) {
+												inner = '<h5>ID: ' + poly + '</br>Name: ' + name + '</h5>';
+											}
+											else {
+												inner = '<h5>ID: ' + poly + '</h5>';
+											}
                                             if ($scope.attr[m] !== "") {
                                                 for (var i = 0; i < $scope.tableData[m].length; i++) {
                                                     if ($scope.tableData[m][i].area_id === poly) {
                                                         tmp = $scope.tableData[m][i][$scope.attr[m]];
-														$scope.tableData[m][i].name = name;
+														if (poly != name) {
+															$scope.tableData[m][i].name = name;
+														}
+														else {
+															$scope.tableData[m][i].name = 'N/A';
+														}
                                                         break;
                                                     }
                                                 }
                                                 if (feature !== "" && !isNaN(Number(tmp))) {
-                                                    inner = '<h5>ID: ' + poly + '</br>Name: ' + name + '</br>' + feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h5>';
+													if (name !== undefined && name != poly) {
+														inner = '<h5>ID: ' + poly + '</br>Name: ' + name + '</br>' + 
+															feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h5>';
+													}
+													else {
+														inner = '<h5>ID: ' + poly + '</br>' + 
+															feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h5>';
+													}
                                                 }
                                             }
                                             return inner;
