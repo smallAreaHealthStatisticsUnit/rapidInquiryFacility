@@ -432,7 +432,8 @@ angular.module("RIF")
                                                                     },
                                                                     onEachFeature: function (feature, layer) {
                                                                         if (areaIDs.indexOf(layer.feature.properties.area_id) !== -1) {
-                                                                            layer.bindPopup(feature.properties.area_id, {
+                                                                            layer.bindPopup(feature.properties.name || 
+																					feature.properties.area_id, {
                                                                                 closeButton: false,
                                                                                 autoPan: false
                                                                             });
