@@ -1755,7 +1755,9 @@ ERROR: Record "User" field "User ID" cannot be empty.
   other fields (e.g. NAME). Names are restricted and a save to file option would be good. 
   File: rifd-dsub-maptable.js;
 * Map synchronisation issues:
-  * Change in geography causes chaos. The best solution;
+  * A change in geography from one study to another causes chaos in the data viewer and disease 
+    mapping tabs. The best solution is to set both tabs to the same geography then set up the maps
+	and finally zoom to map extent. This will fix the map to the correct location;
   * Chrome is the worst browser and often does not refresh unless the map setup is reapplied;
   * Needs caching (i.e. the middleware slowes it down). This is particularily noticeable on 
     slow systems;
@@ -1807,6 +1809,8 @@ Line Number 1, Column 1: 1 getTileMakerTiles:1:1
 	a leak! 60 javascript files were found to contain the string ```.length=```.
   * Lots of *_map()* objects leaking re-inforcing the above observations
   * SVG related leaks as seen above.
+* Microsoft Edge does **NOT** leak. I beleive this is because the browser is much less 
+  aggressively asynchronous and the Leaflet asynchronous issues do not occur!
   
 In progress:
 
