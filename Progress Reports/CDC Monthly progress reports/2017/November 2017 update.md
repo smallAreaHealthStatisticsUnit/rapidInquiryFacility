@@ -9,7 +9,7 @@ CDC Update - November 2017
 * A SEER test dataset has been created for both ports in preparation for SAHSU internal testing. SAHSU 
   is about to test both the SQL Server and Postgres ports internally so we can start to use it in the 
   new year;
-* About to start security testing;
+* Security testing completed;
 * A new Java developer to replace is Kev being interviewed 9/11;
 * David has now left (to work for TomTom in Belgium). Peter is now working on the Front End having taking over from David;
 * Logging using Log4j has been implemented by Peter and the middleware now correctly reports errors to
@@ -21,9 +21,102 @@ CDC Update - November 2017
   
 # Next tasks
 
-* Complete security testing;
 * Get CDC test system up to date;
+* CDC security testing;
 * Prepare for SAHSU internal testing.
+# Security Testing
+
+205 unique URLs were tested using OWASP ZAP (https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project) Ajax Spider
+
+The report is at: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Testing/owasp_zap_test1.md and the URL list 
+tested is at: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Testing/url_list2.txt. 
+
+One medium and three low medium isses were highlighted for fixing.
+
+## Medium Issues
+
+1. X-Frame-Options Header Not Set
+
+   X-Frame-Options header is not included in the HTTP response to protect against 'ClickJacking' attacks.
+
+### Solution
+
+* Most modern Web browsers support the X-Frame-Options HTTP header. Ensure it's set on all web pages returned by your site (if you expect the 
+  page to be framed only by pages on your server (e.g. it's part of a FRAMESET) then you'll want to use SAMEORIGIN, otherwise if you never expect 
+  the page to be framed, you should use DENY. ALLOW-FROM allows specific websites to frame the web page in supported web browsers).
+  
+### References
+
+* http://blogs.msdn.com/b/ieinternals/archive/2010/03/30/combating-clickjacking-with-x-frame-options.aspx
+
+## Low Medium Issues
+
+1. Incomplete or No Cache-control and Pragma HTTP Header Set
+
+   The cache-control and pragma HTTP header have not been set properly or are missing allowing the browser and proxies to cache content.
+
+### Solution
+
+* Whenever possible ensure the cache-control HTTP header is set with no-cache, no-store, must-revalidate; and that the pragma HTTP header is set 
+  with no-cache.
+  
+### Reference
+
+* https://www.owasp.org/index.php/Session_Management_Cheat_Sheet#Web_Content_Caching
+
+2. X-Content-Type-Options Header Missing
+
+   The Anti-MIME-Sniffing header X-Content-Type-Options was not set to 'nosniff'. This allows older versions of Internet Explorer and Chrome 
+   to perform MIME-sniffing on the response body, potentially causing the response body to be interpreted and displayed as a content type other 
+   than the declared content type. Current (early 2014) and legacy versions of Firefox will use the declared content type (if one is set), 
+   rather than performing MIME-sniffing.
+
+### Solution
+
+* Ensure that the application/web server sets the Content-Type header appropriately, and that it sets the X-Content-Type-Options header to 
+  'nosniff' for all web pages.</p><p>If possible, ensure that the end user uses a standards-compliant and modern web browser that does not 
+  perform MIME-sniffing at all, or that can be directed by the web application/web server to not perform MIME-sniffing.
+  
+### Other information
+
+* This issue still applies to error type pages (401, 403, 500, etc) as those pages are often still affected by injection issues, in which case 
+  there is still concern for browsers sniffing pages away from their actual content type.</p><p>At "High" threshold this scanner will not 
+  alert on client or server error responses.
+  
+### References
+
+* http://msdn.microsoft.com/en-us/library/ie/gg622941%28v=vs.85%29.aspx
+* https://www.owasp.org/index.php/List_of_useful_HTTP_headers
+
+3. Web Browser XSS Protection Not Enabled
+
+   Web Browser XSS Protection is not enabled, or is disabled by the configuration of the 'X-XSS-Protection' HTTP response header 
+   on the web server
+
+### Solution
+
+* Ensure that the web browser's XSS filter is enabled, by setting the X-XSS-Protection HTTP response header to '1'.
+  
+### Other information
+
+* The X-XSS-Protection HTTP response header allows the web server to enable or disable the web browser's XSS protection mechanism. 
+  The following values would attempt to enable it: 
+  
+  * X-XSS-Protection: 1; mode=block
+  * X-XSS-Protection: 1; report=http://www.example.com/xss
+  
+  The following values would disable it:
+  
+  * X-XSS-Protection: 0
+  
+  The X-XSS-Protection HTTP response header is currently supported on Internet Explorer, Chrome and Safari (WebKit). Note that this 
+  alert is only raised if the response body could potentially contain an XSS payload (with a text-based content type, with a 
+  non-zero length).
+  
+### References
+
+* https://www.owasp.org/index.php/XSS_(Cross_Site_Scripting)_Prevention_Cheat_Sheet
+* https://blog.veracode.com/2014/03/guidelines-for-setting-security-headers/
 
 # Risk Analysis
 
@@ -73,15 +166,44 @@ A SEER test dataset has been created so the RIF can do some real Science.
 | 01455989              | Utah        |  1973 | 2013 |  260674 |
 | 01779804              | Washington  |  1974 | 2013 |  743088 |
 
+The SEER cancer data has 9,176,963 rows and requires 800MB for the data and 1.3GB for the indexes.
+
 ## Test case 1004 
 
 I have created a test case, 1004. File: *1004 SEER 2000-13 lung cancer HH income mainland states.json*
+   
+The test study *1004 SEER 2000-13 lung cancer HH income mainland states.json*:
 
-* Exclude Alaska and Hawaii so the maps are focused on the 49 "mainland" states (i.e. they look better)
-* Lung cancer defined: C33,C340,C341,C342,C343,C348,C349
-* Period 2000 to 2013 (i.e. the maximum allowed for the data)
-* Covariate: head of house median income quintile
+* States were chosen so they mapped compactly (Alaska and Hawaii excluded):
 
+  * California
+  * Connecticut
+  * Georgia
+  * Iowa
+  * Kentucky
+  * Louisiana
+  * Michigan
+  * New Jersey
+  * New Mexico
+  * Utah
+  * Washington;
+ 
+* Years: 2000-2013 (the maximum period available accross these states);
+* Covariate: median head of houshold income, quntilised;
+* Both sexes;
+* All ages;
+* Lung cancer: 
+
+  * C33: Malignant neoplasm of trachea
+  * C340: Main bronchus
+  * C342: Middle lobe, bronchus or lung
+  * C341: Upper lobe, bronchus or lung
+  * C343: Lower lobe, bronchus or lung
+  * C348: Overlapping lesion of bronchus and lung
+  * C349: Bronchus or lung, unspecified
+ 
+* Full Bayesian smoothing
+   
 Run times:
 
 * Postgres (constrained to 50M RAM): 7:43 ***I am about to tune this!!!!**
@@ -94,7 +216,7 @@ Run times:
 
 ![Loiusiana/Kentucky/Georgia posterior probability](https://raw.githubusercontent.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2017/LA_KY_GA_posterior_probability.png)
 
-![US 49 smoothed SMR](https://raw.githubusercontent.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/master/Progress%20Reports/CDC%20Monthly%20progress%20reports/2017/US49_smr.png)
+![SEER Lung Cancer Disease Mapping](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/Progress%20Reports/Screenshots/US_SEER_2.PNG)
 
 ## Example JSON
 
