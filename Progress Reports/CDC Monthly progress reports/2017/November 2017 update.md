@@ -39,30 +39,11 @@ One medium and three low medium isses were highlighted for fixing.
 
    X-Frame-Options header is not included in the HTTP response to protect against 'ClickJacking' attacks.
 
-### Solution
-
-* Most modern Web browsers support the X-Frame-Options HTTP header. Ensure it's set on all web pages returned by your site (if you expect the 
-  page to be framed only by pages on your server (e.g. it's part of a FRAMESET) then you'll want to use SAMEORIGIN, otherwise if you never expect 
-  the page to be framed, you should use DENY. ALLOW-FROM allows specific websites to frame the web page in supported web browsers).
-  
-### References
-
-* http://blogs.msdn.com/b/ieinternals/archive/2010/03/30/combating-clickjacking-with-x-frame-options.aspx
-
 ## Low Medium Issues
 
 1. Incomplete or No Cache-control and Pragma HTTP Header Set
 
    The cache-control and pragma HTTP header have not been set properly or are missing allowing the browser and proxies to cache content.
-
-### Solution
-
-* Whenever possible ensure the cache-control HTTP header is set with no-cache, no-store, must-revalidate; and that the pragma HTTP header is set 
-  with no-cache.
-  
-### Reference
-
-* https://www.owasp.org/index.php/Session_Management_Cheat_Sheet#Web_Content_Caching
 
 2. X-Content-Type-Options Header Missing
 
@@ -71,52 +52,10 @@ One medium and three low medium isses were highlighted for fixing.
    than the declared content type. Current (early 2014) and legacy versions of Firefox will use the declared content type (if one is set), 
    rather than performing MIME-sniffing.
 
-### Solution
-
-* Ensure that the application/web server sets the Content-Type header appropriately, and that it sets the X-Content-Type-Options header to 
-  'nosniff' for all web pages.</p><p>If possible, ensure that the end user uses a standards-compliant and modern web browser that does not 
-  perform MIME-sniffing at all, or that can be directed by the web application/web server to not perform MIME-sniffing.
-  
-### Other information
-
-* This issue still applies to error type pages (401, 403, 500, etc) as those pages are often still affected by injection issues, in which case 
-  there is still concern for browsers sniffing pages away from their actual content type.</p><p>At "High" threshold this scanner will not 
-  alert on client or server error responses.
-  
-### References
-
-* http://msdn.microsoft.com/en-us/library/ie/gg622941%28v=vs.85%29.aspx
-* https://www.owasp.org/index.php/List_of_useful_HTTP_headers
-
 3. Web Browser XSS Protection Not Enabled
 
    Web Browser XSS Protection is not enabled, or is disabled by the configuration of the 'X-XSS-Protection' HTTP response header 
    on the web server
-
-### Solution
-
-* Ensure that the web browser's XSS filter is enabled, by setting the X-XSS-Protection HTTP response header to '1'.
-  
-### Other information
-
-* The X-XSS-Protection HTTP response header allows the web server to enable or disable the web browser's XSS protection mechanism. 
-  The following values would attempt to enable it: 
-  
-  * X-XSS-Protection: 1; mode=block
-  * X-XSS-Protection: 1; report=http://www.example.com/xss
-  
-  The following values would disable it:
-  
-  * X-XSS-Protection: 0
-  
-  The X-XSS-Protection HTTP response header is currently supported on Internet Explorer, Chrome and Safari (WebKit). Note that this 
-  alert is only raised if the response body could potentially contain an XSS payload (with a text-based content type, with a 
-  non-zero length).
-  
-### References
-
-* https://www.owasp.org/index.php/XSS_(Cross_Site_Scripting)_Prevention_Cheat_Sheet
-* https://blog.veracode.com/2014/03/guidelines-for-setting-security-headers/
 
 # Risk Analysis
 
