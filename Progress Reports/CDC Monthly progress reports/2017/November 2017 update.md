@@ -21,9 +21,30 @@ CDC Update - November 2017
   
 # Next tasks
 
+## November
+
 * Get CDC test system up to date;
+* Security fixes;
 * CDC security testing;
 * Prepare for SAHSU internal testing.
+
+## December
+
+* Key front end faults related to multi-geography support:
+
+  * Map synchronisation issues. A change in geography from one study to another causes chaos in the data viewer and disease 
+	mapping tabs. The best solution is to set both tabs to the same geography then set up the maps
+	and finally zoom to map extent. This will fix the map to the correct location;
+  * Null zoomlevel error, appears when moving between the data viewer and the disease mapper. 
+  * Memory leaks
+* Fix missing information not stored in the database, re-create JSON strudy configuration file in the middleware
+* Mapping support prototypes
+
+## Q1 2018
+
+* Risk analysis
+* Mapping support
+
 # Security Testing
 
 205 unique URLs were tested using OWASP ZAP (https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project) Ajax Spider
