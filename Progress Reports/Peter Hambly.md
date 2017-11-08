@@ -1735,7 +1735,8 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
   *Null zoomlevel error* there is a synchronisation bug in the leaflet code. This issue
   was experienced with the TileMaker code and the fix - stronger asynchronous control is 
   the same (i.e do not rely on Leaflet to do it all). This will have the effect of 
-  some countiues not being displayed (say 40/3233).
+  some counties not being displayed (say 40/3233).
+* Complete TODO update
 
 In progress:
 
