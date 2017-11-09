@@ -14,7 +14,7 @@ CDC Update - November 2017
 * David has now left (to work for TomTom in Belgium). Peter is now working on the Front End having taking over from David;
 * Logging using Log4j has been implemented by Peter and the middleware now correctly reports errors to
   the front end. Log4j was chosen as the CDC use it. It is now much easier to trace errors (even 
-  in R!). The alert logging in the front end has also been improved and a log list tab will be provided at somne point.
+  in R!). The alert logging in the front end has also been improved and a log list tab will be provided at some point.
   Front end logs for the moment go to the browser console if it is enabled;
 * The SAHSUland test data has been improved;
 * Documentation has been overhauled (partly in the handovers from Kev and David, partly in preparation for 
@@ -38,7 +38,7 @@ CDC Update - November 2017
 	and finally zoom to map extent. This will fix the map to the correct location;
   * Null zoomlevel error, appears when moving between the data viewer and the disease mapper. 
   * Memory leaks
-* Fix missing information not stored in the database, re-create JSON strudy configuration file in the middleware
+* Fix missing information not stored in the database, re-create JSON study configuration file in the middleware
 * Mapping support prototypes
 
 ## Q1 2018
