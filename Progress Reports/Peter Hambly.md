@@ -1715,8 +1715,7 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
   string returns instead of JSON;
 * Console messages suppressed on Explorer unless the console is enabled
 
-
-## 6th to 10th November 
+#### 6th to 10th November 
 
 * Firefox crashed using nearly 6G of RAM. null mapID in rifc-util-mapping.js 
   ```$scope.handleLayer = function (layer) {}``` is the direct cause. This was fixed
@@ -1738,6 +1737,13 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
   some counties not being displayed (say 40/3233).
 * Complete TODO update
 
+#### 13th to 17th November
+
+* Fix for covariate join problem causing wrong expected values in US data;
+* Temporary fix to rif40_execute_insert_statement.sql. Table t_rif40_study_sql needs to have sql_text type 
+  set to Text (i.e. remove 4000 character limit)
+* Performance tune fixzes for Postgres  
+ 
 In progress:
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing type].
