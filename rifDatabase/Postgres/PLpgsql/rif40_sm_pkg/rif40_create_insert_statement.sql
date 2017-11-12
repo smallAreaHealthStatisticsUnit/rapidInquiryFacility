@@ -149,6 +149,8 @@ Description:	Create INSERT SQL statement
 --
 	covariate_table_name	VARCHAR;
 	sql_stmt	VARCHAR;
+	covariate_list VARCHAR;
+--	
 	i		INTEGER:=0;
 	j		INTEGER:=0;
 	k		INTEGER:=0;
@@ -218,13 +220,48 @@ BEGIN
 			study_id::VARCHAR		/* Study ID */);
 	END IF;
 	CLOSE c8insext;
---
+
 --
 -- Loop through distinct numerators
 --
 	i:=0;
 	FOR c4_rec IN c4insext(study_id) LOOP
 		i:=i+1;
+		
+/*
+WITH n1 AS (	-* SEER_CANCER - SEER Cancer data 1973-2013. 9 States in total *-
+	SELECT s.area_id		-* Study or comparision resolution *-,
+	       c.cb_2014_us_county_500k, -* Required as comparison geolevel != study geolevel *-
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		-* Numerators - can overlap *-
+			WHEN ((	-* Investigation 1 ICD filters *-
+				    icdot10v LIKE 'C33%' -* Value filter *- -* Filter 1 *-
+				 OR icdot10v LIKE 'C340%' -* Value filter *- -* Filter 2 *-
+				 OR icdot10v LIKE 'C342%' -* Value filter *- -* Filter 3 *-
+				 OR icdot10v LIKE 'C341%' -* Value filter *- -* Filter 4 *-
+				 OR icdot10v LIKE 'C343%' -* Value filter *- -* Filter 5 *-
+				 OR icdot10v LIKE 'C348%' -* Value filter *- -* Filter 6 *-
+				 OR icdot10v LIKE 'C349%' -* Value filter *- -* Filter 7 *-) -* 7 lines of conditions: study: 18, inv: 18 *-
+			AND (1=1
+			   AND  c.year BETWEEN 2000 AND 2013 	-* Investigation 1 year filter *-
+				        -* No genders filter required for investigation 1 *-
+				        -* No age group filter required for investigation 1 *-)
+			) THEN 1
+			ELSE 0
+	       END) inv_18_lung_cancer	-* Investigation 1 -  *- 
+	  FROM seer_cancer c, 	-* SEER Cancer data 1973-2013. 9 States in total *-
+	       g_rif40_comparison_areas s 	-* Numerator study or comparison area to be extracted *-
+	 WHERE c.cb_2014_us_state_500k = s.area_id 	-* Comparison selection *-
+								-* No genders filter required for numerator (only one gender used) *-
+								-* No age group filter required for numerator *-
+	   AND s.study_id = $1		-* Current study ID *-
+	   AND c.year = $2			-* Numerator (INSERT) year filter *-
+	 GROUP BY c.year, s.area_id, 
+	       c.cb_2014_us_county_500k, -* Required as comparison geolevel != study geolevel *-
+		   c.age_sex_group
+) -* SEER_CANCER - SEER Cancer data 1973-2013. 9 States in total *-
+ */
 --
 -- Open WITH clause (common table expression)
 -- 
@@ -236,16 +273,47 @@ BEGIN
 --
 -- Numerator JOINS
 --
-		inv_join_array[i]:=E'\t'||'LEFT OUTER JOIN n'||i::VARCHAR||' ON ( '||
-			E'\t'||'/* '||c4_rec.numer_tab||' - '||c4_rec.description||' */'||E'\n'||
-			E'\t'||E'\t'||'    d.area_id'||E'\t'||E'\t'||' = n'||i::VARCHAR||'.area_id'||E'\n'||
-			E'\t'||E'\t'||'AND d.year'||E'\t'||E'\t'||' = n'||i::VARCHAR||'.year'||E'\n'||
+
+--
+-- Add study geolevel column if a) study type = 'C' (comparison area and
+--							    b) study geolevel name != comparision geolevel name	
+-- This is so the numerator and denominators can be joined additionally at the study geolevel name
+--	
+		IF study_or_comparison = 'C' AND c1_rec.study_geolevel_name != c1_rec.comparison_geolevel_name THEN		
+			inv_join_array[i]:=E'\t'||'LEFT OUTER JOIN n'||i::VARCHAR||' ON ( '||
+				E'\t'||'/* '||c4_rec.numer_tab||' - '||c4_rec.description||' */'||E'\n'||
+				E'\t'||E'\t'||'    d.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||E'\t'||E'\t'||
+					' = n'||i::VARCHAR||'.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||E'\n'||
+				E'\t'||E'\t'||E'\t'||'/* Join at study geolevel name for covariates */'||E'\n'||
+				E'\t'||E'\t'||'AND d.year'||E'\t'||E'\t'||' = n'||i::VARCHAR||'.year'||E'\n'||
 --
 -- [Add conversion support for differing age/sex/group names; convert to AGE_SEX_GROUP]
 --
-			E'\t'||E'\t'||'AND d.'||LOWER(c8_rec.age_sex_group_field_name)||E'\t'||' = n'||i::VARCHAR||'.n_age_sex_group)';
-				/* List of numerator joins (for use in FROM clause) */
+				E'\t'||E'\t'||'AND d.'||LOWER(c8_rec.age_sex_group_field_name)||E'\t'||' = n'||i::VARCHAR||'.n_age_sex_group)';
+					/* List of numerator joins (for use in FROM clause) */
+		ELSE		
+			inv_join_array[i]:=E'\t'||'LEFT OUTER JOIN n'||i::VARCHAR||' ON ( '||
+				E'\t'||'/* '||c4_rec.numer_tab||' - '||c4_rec.description||' */'||E'\n'||
+				E'\t'||E'\t'||'    d.area_id'||E'\t'||E'\t'||' = n'||i::VARCHAR||'.area_id'||E'\n'||
+				E'\t'||E'\t'||'AND d.year'||E'\t'||E'\t'||' = n'||i::VARCHAR||'.year'||E'\n'||
+--
+-- [Add conversion support for differing age/sex/group names; convert to AGE_SEX_GROUP]
+--
+				E'\t'||E'\t'||'AND d.'||LOWER(c8_rec.age_sex_group_field_name)||E'\t'||' = n'||i::VARCHAR||'.n_age_sex_group)';
+					/* List of numerator joins (for use in FROM clause) */
+		END IF;
 		sql_stmt:=sql_stmt||E'\t'||'SELECT s.area_id'||E'\t'||E'\t'||'/* Study or comparision resolution */,'||E'\n';
+
+--
+-- Add study geolevel column if a) study type = 'C' (comparison area and
+--							    b) study geolevel name != comparision geolevel name	
+-- This is so the numerator and denominators can be joined additionally at the study geolevel name
+--	
+		IF study_or_comparison = 'C' AND c1_rec.study_geolevel_name != c1_rec.comparison_geolevel_name THEN
+			sql_stmt:=sql_stmt||E'\t'||'       c.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||
+				', /* Required as comparison geolevel != study geolevel */'||E'\n';
+		END IF;
+		
 		sql_stmt:=sql_stmt||E'\t'||'       c.year,'||E'\n';
 --
 -- [Add support for differing age/sex/group names; convert to AGE_SEX_GROUP]
@@ -265,10 +333,22 @@ BEGIN
 			END IF;
 --
 			j:=j+1;
-			inv_array[j]:='       COALESCE('||
-				'n'||i::VARCHAR||'.inv_'||c5_rec.inv_id::VARCHAR||'_'||LOWER(c5_rec.inv_name)||
-				', 0) AS inv_'||c5_rec.inv_id::VARCHAR||'_'||LOWER(c5_rec.inv_name); 
-				/* List of investigations (for use in final SELECT) */
+--
+-- Aggregate to comparison geolevel column if a) study type = 'C' (comparison area and
+--				  			                  b) study geolevel name != comparision geolevel name	
+-- This is so the numerator and denominators can be joined additionally at the study geolevel name
+--	
+			IF study_or_comparison = 'C' AND c1_rec.study_geolevel_name != c1_rec.comparison_geolevel_name THEN
+				inv_array[j]:='       SUM(COALESCE('||
+					'n'||i::VARCHAR||'.inv_'||c5_rec.inv_id::VARCHAR||'_'||LOWER(c5_rec.inv_name)||
+					', 0)) AS inv_'||c5_rec.inv_id::VARCHAR||'_'||LOWER(c5_rec.inv_name); 
+					/* List of investigations (for use in final SELECT) */
+			ELSE
+				inv_array[j]:='       COALESCE('||
+					'n'||i::VARCHAR||'.inv_'||c5_rec.inv_id::VARCHAR||'_'||LOWER(c5_rec.inv_name)||
+					', 0) AS inv_'||c5_rec.inv_id::VARCHAR||'_'||LOWER(c5_rec.inv_name); 
+					/* List of investigations (for use in final SELECT) */
+			END IF;
 			IF j > 1 THEN
 				sql_stmt:=sql_stmt||','||E'\n';
 			END IF;
@@ -377,6 +457,7 @@ BEGIN
 --
 -- Processing years filter
 --
+
 		IF year_start = year_stop THEN
 			sql_stmt:=sql_stmt||E'\t'||'   AND c.year = $2'||E'\t'||E'\t'||'/* Numerator (INSERT) year filter */'||E'\n';
 		ELSE
@@ -386,7 +467,18 @@ BEGIN
 -- Group by clause
 -- [Add support for differing age/sex/group names]
 --
-		sql_stmt:=sql_stmt||E'\t'||' GROUP BY c.year, s.area_id, c.'||LOWER(c4_rec.age_sex_group_field_name)||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||' GROUP BY c.year, s.area_id,'||E'\n';
+		
+--
+-- Add study geolevel column if a) study type = 'C' (comparison area and
+--							    b) study geolevel name != comparision geolevel name	
+-- This is so the numerator and denominators can be joined additionally at the study geolevel name
+--	
+		IF study_or_comparison = 'C' AND c1_rec.study_geolevel_name != c1_rec.comparison_geolevel_name THEN
+			sql_stmt:=sql_stmt||E'\t'||           'c.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||
+				', /* Required as comparison geolevel != study geolevel */'||E'\n';
+		END IF;
+		sql_stmt:=sql_stmt||E'\t'||'           c.'||LOWER(c4_rec.age_sex_group_field_name)||E'\n';
 
 --
 -- Close WITH clause (common table expression)
@@ -397,26 +489,38 @@ BEGIN
 --
 -- Denominator CTE with covariates joined at study geolevel
 --
-/* /e.g. 
+/* e.g. 
 , d AS (
-        SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.age_sex_group, 
-	       c.ses, 
-	       SUM(COALESCE(d1.total, 0)) AS total_pop
-          FROM g_rif40_comparison_areas s, sahsuland_pop d1     /- Study or comparison area to be extracted -/
-  	      LEFT OUTER JOIN sahsuland_covariates_level4 c ON (        /- Covariates -/
-     	               d1.level2 = c.level2				/- Join at study geolevel -/
-     	           AND c.year    = $2)
-         WHERE d1.year    = $2          /- Denominator (INSERT) year filter -/
-           AND s.area_id  = d1.level2   /- Comparison geolevel join -/
-           AND s.area_id  IS NOT NULL   /- Exclude NULL geolevel -/
-           AND s.study_id = $1          /- Current study ID -/
-               /- No age group filter required for denominator -/
-         GROUP BY d1.year, s.area_id, d1.age_sex_group, c.ses
-)
+	SELECT d1.year, s.area_id, cb_2014_us_county_500k, -* Required as comparison geolevel != study geolevel *-
+	       NULL::INTEGER AS band_id, d1.age_sex_group,
+	       c.median_hh_income_quin,
+	       SUM(COALESCE(d1.population, 0)) AS total_pop
+	  FROM g_rif40_comparison_areas s, seer_population d1 	-* Denominator study or comparison area to be extracted *-
+		LEFT OUTER JOIN cov_cb_2014_us_county_500k c ON (	-* Covariates *-
+			    d1.cb_2014_us_county_500k = c.cb_2014_us_county_500k		-* Join at study geolevel *-
+			AND c.year = d1.year)
+	 WHERE d1.year = $2		-* Denominator (INSERT) year filter *-
+	   AND s.area_id  = d1.cb_2014_us_state_500k	-* Comparison geolevel join *-
+	   AND s.area_id  IS NOT NULL	-* Exclude NULL geolevel *-
+	   AND s.study_id = $1		-* Current study ID *-
+	       -* No age group filter required for denominator *-
+	 GROUP BY d1.year, s.area_id, cb_2014_us_county_500k, -* Required as comparison geolevel != study geolevel *-
+			  age_sex_group, c.median_hh_income_quin
+) -* End of denominator *-
  */
 	sql_stmt:=sql_stmt||', d AS ('||E'\n';
 	IF study_or_comparison = 'C' THEN
-		sql_stmt:=sql_stmt||E'\t'||'SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.'||
+		sql_stmt:=sql_stmt||E'\t'||'SELECT d1.year, s.area_id,'||E'\n';
+--
+-- Add study geolevel column if a) study type = 'C' (comparison area and
+--							    b) study geolevel name != comparision geolevel name	
+-- This is so the numerator and denominators can be joined additionally at the study geolevel name
+--	
+		IF c1_rec.study_geolevel_name != c1_rec.comparison_geolevel_name THEN
+			sql_stmt:=sql_stmt||E'\t'||       'c.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||
+				', /* Required as comparison geolevel != study geolevel */'||E'\n';
+		END IF;		
+		sql_stmt:=sql_stmt||E'\t'||'       NULL::INTEGER AS band_id, d1.'||
 			quote_ident(LOWER(c8_rec.age_sex_group_field_name))||','||E'\n';
 	ELSE
 		sql_stmt:=sql_stmt||E'\t'||'SELECT d1.year, s.area_id, s.band_id, d1.'||
@@ -450,9 +554,10 @@ BEGIN
 --
 -- This is joining at the study geolevel. For comparison areas this needs to be aggregated to the comparison area
 --
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'    d1.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||
+			'    d1.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||
 			' = c.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||E'\t'||E'\t'||'/* Join at study geolevel */'||E'\n';
-		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'AND c.year = $2)'||E'\n';
+		sql_stmt:=sql_stmt||E'\t'||E'\t'||E'\t'||'AND c.year = d1.year)'||E'\n'; /* Was $2 - may cause a performance problem */
 	END IF;
 	IF year_start = year_stop THEN
 		sql_stmt:=sql_stmt||E'\t'||' WHERE d1.year = $2'||E'\t'||E'\t'||'/* Denominator (INSERT) year filter */'||E'\n';
@@ -495,7 +600,17 @@ BEGIN
 -- Add GROUP BY clause
 --
 	IF study_or_comparison = 'C' THEN
-		sql_stmt:=sql_stmt||E'\t'||' GROUP BY d1.year, s.area_id, '||quote_ident(LOWER(c8_rec.age_sex_group_field_name));
+		sql_stmt:=sql_stmt||E'\t'||' GROUP BY d1.year, s.area_id,'||E'\n';
+--
+-- Add study geolevel column if a) study type = 'C' (comparison area and
+--							    b) study geolevel name != comparision geolevel name	
+-- This is so the numerator and denominators can be joined additionally at the study geolevel name
+--	
+		IF c1_rec.study_geolevel_name != c1_rec.comparison_geolevel_name THEN
+			sql_stmt:=sql_stmt||E'\t'||          'c.'||quote_ident(LOWER(c1_rec.study_geolevel_name))||
+				', /* Required as comparison geolevel != study geolevel */'||E'\n';
+		END IF;	
+		sql_stmt:=sql_stmt||E'\t'||'          '||quote_ident(LOWER(c8_rec.age_sex_group_field_name));
 	ELSE
 		sql_stmt:=sql_stmt||E'\t'||' GROUP BY d1.year, s.area_id, s.band_id, d1.'||quote_ident(LOWER(c8_rec.age_sex_group_field_name));
 	END IF;
@@ -523,26 +638,58 @@ BEGIN
 	k:=0;
 	FOR c7_rec IN c7insext(study_id) LOOP
 		k:=k+1;
---		IF study_or_comparison = 'C' THEN
---			sql_stmt:=sql_stmt||'       NULL::INTEGER AS '||LOWER(c7_rec.covariate_name)||','||E'\n';
---		ELSE
-			sql_stmt:=sql_stmt||'       d.'||LOWER(c7_rec.covariate_name)||','||E'\n';
---		END IF;
+--
+-- Covariates, if present are required at both study and comparison geolevels
+-- So, do NOT remove the covariates or you will treated to an INLA R crash
+--
+		IF covariate_list IS NULL THEN
+			covariate_list:='       d.'||LOWER(c7_rec.covariate_name)||','||E'\n';
+		ELSE
+			covariate_list:=covariate_list||'       d.'||LOWER(c7_rec.covariate_name)||','||E'\n';
+		END IF;
 	END LOOP;
+	IF covariate_list IS NOT NULL THEN
+		sql_stmt:=sql_stmt||covariate_list;
+	END IF;
 --
 -- Add investigations 
---
+--	
 	sql_stmt:=sql_stmt||array_to_string(inv_array, ','||E'\n')||', '||E'\n';
 --
 -- Add denominator
 --
-	sql_stmt:=sql_stmt||'       d.total_pop'||E'\n';
+	IF study_or_comparison = 'C' THEN
+		sql_stmt:=sql_stmt||'       SUM(d.total_pop) AS total_pop /* aggrgate to remove study geolevel column */'||E'\n';
+	ELSE
+		sql_stmt:=sql_stmt||'       d.total_pop'||E'\n';
+	END IF;
 --
 -- FROM clause
 --
 	sql_stmt:=sql_stmt||'  FROM d'||E'\t'||E'\t'||E'\t'||'/* Denominator - '||c8_rec.description||' */'||E'\n';
 	sql_stmt:=sql_stmt||array_to_string(inv_join_array, E'\n')||E'\n';
-
+	
+--
+-- Add GROUP BY to remove study geolevel column if a) study type = 'C' (comparison area and
+--							                       b) study geolevel name != comparision geolevel name	
+-- This is so the numerator and denominators can be joined additionally at the study geolevel name
+--	
+	IF study_or_comparison = 'C' AND c1_rec.study_geolevel_name != c1_rec.comparison_geolevel_name THEN
+		sql_stmt:=sql_stmt||' GROUP BY d.year, /* Add GROUP BY to remove study geolevel column */'||E'\n';
+		sql_stmt:=sql_stmt||'                  /* This is so the numerator and denominators can be joined additionally at the study geolevel name */'||E'\n';
+		sql_stmt:=sql_stmt||'                  /* When a) study type = ''C'' (comparison area and  b) study geolevel name != comparision geolevel name */'||E'\n';
+		sql_stmt:=sql_stmt||'          d.area_id,'||E'\n';
+		sql_stmt:=sql_stmt||'          d.band_id,'||E'\n';
+		IF covariate_list IS NOT NULL THEN
+			sql_stmt:=sql_stmt||'   '||covariate_list;
+		END IF;	
+--
+-- [Add support for differing age/sex/group names]
+--
+		sql_stmt:=sql_stmt||'          TRUNC(d.'||LOWER(c8_rec.age_sex_group_field_name)||'/100),'||E'\n';
+	    sql_stmt:=sql_stmt||'          MOD(d.'||LOWER(c8_rec.age_sex_group_field_name)||', 100)'||E'\n';
+	END IF;
+		
 --
 -- ORDER BY clause
 --
@@ -560,44 +707,57 @@ LANGUAGE 'plpgsql';
 GRANT EXECUTE ON FUNCTION rif40_sm_pkg.rif40_create_insert_statement(INTEGER, VARCHAR, INTEGER, INTEGER) TO rif40;
 COMMENT ON FUNCTION rif40_sm_pkg.rif40_create_insert_statement(INTEGER, VARCHAR, INTEGER, INTEGER) IS 'psql:../psql_scripts/v4_0_sahsuland_examples.sql:239: INFO:  [DEBUG1] rif40_create_insert_statement(): [56005] SQL> 
 INSERT INTO s27_extract (
-        year,study_or_comparison,study_id,area_id,band_id,sex,age_group,ses,inv_1,total_pop) /* 1 numerator(s) */
-WITH n1 AS (    /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
-        SELECT s.area_id                /* Study or comparision resolution */,
-               c.year,
-               c.age_sex_group AS n_age_sex_group,
-               SUM(CASE                 /* Numerators - can overlap */
-                        WHEN (( /* Investigation 1 ICD filters */
-                                    "icd" LIKE ''C34%'' OR "icd" LIKE ''162%'' /* Filter 1 */) /* 1 lines of conditions: study: 27, inv:
- 24 */
-                        AND (1=1
-                                        /* No year filter required for investigation 1 */
-                                        /* No genders filter required for investigation 1 */
-                                        /* No age group filter required for investigation 1 */)
-                        ) THEN total
-                        ELSE 0
-               END) inv_24_inv_1        /* Investigation 1 - Lung cancer */
-          FROM sahsuland_cancer c,      /* Cancer cases in SAHSU land */
-               g_rif40_comparison_areas s       /* Study or comparision area to be extracted */
-         WHERE c.level2 = s.area_id     /* Comparison selection */
-               /* No age group filter required for denominator */
-           AND s.study_id = $1          /* Current study ID */
-           AND c.year = $2              /* Denominator (INSERT) year filter */
-         GROUP BY c.year, s.area_id, c.age_sex_group
-) /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
+	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,median_hh_income_quin,lung_cancer,total_pop) /* 1 numerator(s) */
+WITH n1 AS (	/* SEER_CANCER - SEER Cancer data 1973-2013. 9 States in total */
+	SELECT s.area_id		/* Study or comparision resolution */,
+	       c.cb_2014_us_county_500k, /* Required as comparison geolevel != study geolevel */
+	       c.year,
+	       c.age_sex_group AS n_age_sex_group,
+	       SUM(CASE 		/* Numerators - can overlap */
+			WHEN ((	/* Investigation 1 ICD filters */
+				    icdot10v LIKE ''C33%'' /* Value filter */ /* Filter 1 */
+				 OR icdot10v LIKE ''C340%'' /* Value filter */ /* Filter 2 */
+				 OR icdot10v LIKE ''C342%'' /* Value filter */ /* Filter 3 */
+				 OR icdot10v LIKE ''C341%'' /* Value filter */ /* Filter 4 */
+				 OR icdot10v LIKE ''C343%'' /* Value filter */ /* Filter 5 */
+				 OR icdot10v LIKE ''C348%'' /* Value filter */ /* Filter 6 */
+				 OR icdot10v LIKE ''C349%'' /* Value filter */ /* Filter 7 */) /* 7 lines of conditions: study: 27, inv: 27 */
+			AND (1=1
+			   AND  c.year BETWEEN 2000 AND 2013/* Investigation 1 year filter */
+				        /* No genders filter required for investigation 1 */
+				        /* No age group filter required for investigation 1 */)
+			) THEN 1
+			ELSE 0
+	       END) inv_27_lung_cancer	/* Investigation 1 -  */ 
+	  FROM seer_cancer c, 	/* SEER Cancer data 1973-2013. 9 States in total */
+	       g_rif40_comparison_areas s 	/* Numerator study or comparison area to be extracted */
+	 WHERE c.cb_2014_us_state_500k = s.area_id 	/* Comparison selection */
+				        /* No genders filter required for numerator (only one gender used) */
+	       /* No age group filter required for numerator */
+	   AND s.study_id = $1		/* Current study ID */
+	   AND c.year = $2			/* Numerator (INSERT) year filter */
+	 GROUP BY c.year, s.area_id,
+	c.cb_2014_us_county_500k, 	/* Required as comparison geolevel != study geolevel */
+	           c.age_sex_group
+) /* SEER_CANCER - SEER Cancer data 1973-2013. 9 States in total */
 , d AS (
-        SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.age_sex_group,
-               c.ses,
-               SUM(COALESCE(d1.total, 0)) AS total_pop
-          FROM g_rif40_comparison_areas s, sahsuland_pop d1     /* Study or comparison area to be extracted */
-                LEFT OUTER JOIN sahsuland_covariates_level4 c ON (      /* Covariates */
-                            d1.level4 = c.level4                /* Join at study geolevel */
-                        AND c.year = $2)
-         WHERE d1.year = $2             /* Denominator (INSERT) year filter */
-           AND s.area_id  = d1.level2   /* Comparison geolevel join */
-           AND s.area_id  IS NOT NULL   /* Exclude NULL geolevel */
-           AND s.study_id = $1          /* Current study ID */
-               /* No age group filter required for denominator */
-         GROUP BY d1.year, s.area_id, age_sex_group, c.ses
+	SELECT d1.year, s.area_id,
+	c.cb_2014_us_county_500k, /* Required as comparison geolevel != study geolevel */
+	       NULL::INTEGER AS band_id, d1.age_sex_group,
+	       c.median_hh_income_quin,
+	       SUM(COALESCE(d1.population, 0)) AS total_pop
+	  FROM g_rif40_comparison_areas s, seer_population d1 	/* Denominator study or comparison area to be extracted */
+		LEFT OUTER JOIN cov_cb_2014_us_county_500k c ON (	/* Covariates */
+			    d1.cb_2014_us_county_500k = c.cb_2014_us_county_500k		/* Join at study geolevel */
+			AND c.year = d1.year)
+	 WHERE d1.year = $2								/* Denominator (INSERT) year filter */
+	   AND s.area_id  = d1.cb_2014_us_state_500k	/* Comparison geolevel join */
+	   AND s.area_id  IS NOT NULL					/* Exclude NULL geolevel */
+	   AND s.study_id = $1							/* Current study ID */
+	       /* No age group filter required for denominator */
+	 GROUP BY d1.year, s.area_id,
+			  c.cb_2014_us_county_500k, /* Required as comparison geolevel != study geolevel */
+	          age_sex_group, c.median_hh_income_quin
 ) /* End of denominator */
 SELECT d.year,
        ''C'' AS study_or_comparison,
@@ -606,14 +766,23 @@ SELECT d.year,
        d.band_id,
        TRUNC(d.age_sex_group/100) AS sex,
        MOD(d.age_sex_group, 100) AS age_group,
-       d.ses,
-       COALESCE(n1.inv_24_inv_1, 0) AS inv_24_inv_1,
-       d.total_pop
-  FROM d                        /* Denominator - SAHSU land population */
-        LEFT OUTER JOIN n1 ON (         /* SAHSULAND_CANCER - Cancer cases in SAHSU land */
-                    d.area_id            = n1.area_id
-                AND d.year               = n1.year
-                AND d.age_sex_group      = n1.n_age_sex_group)
+       d.median_hh_income_quin,
+       SUM(COALESCE(n1.inv_27_lung_cancer, 0)) AS inv_27_lung_cancer, 
+       SUM(d.total_pop) AS total_pop /* aggrgate to remove study geolevel column */
+  FROM d			/* Denominator - SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States in total */
+	LEFT OUTER JOIN n1 ON ( 	/* SEER_CANCER - SEER Cancer data 1973-2013. 9 States in total */
+		    d.cb_2014_us_county_500k		 = n1.cb_2014_us_county_500k
+			/* Join at study geolevel name for covariates */
+		AND d.year		 = n1.year
+		AND d.age_sex_group	 = n1.n_age_sex_group)
+ GROUP BY d.year, /* Add GROUP BY to remove study geolevel column */
+                  /* This is so the numerator and denominators can be joined additionally at the study geolevel name */
+                  /* When a) study type = ''C'' (comparison area and  b) study geolevel name != comparision geolevel name */
+          d.area_id,
+          d.band_id,
+          d.median_hh_income_quin,
+          TRUNC(d.age_sex_group/100),
+          MOD(d.age_sex_group, 100)
  ORDER BY 1, 2, 3, 4, 5, 6, 7;
 
 Impact of adding covariates to comparison areas

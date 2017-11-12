@@ -191,7 +191,7 @@ BEGIN
 		USER, study_id,l_statement_type, 
 		t_ddl, l_log_message, l_sqlcode, coalesce(l_rows, 0), stp, elapsed_time);
 	INSERT INTO rif40_study_sql(username, study_id, statement_type, statement_number, sql_text, line_number)
-	VALUES (USER, study_id, l_statement_type, t_ddl, sql_stmt, 1);  
+	VALUES (USER, study_id, l_statement_type, t_ddl, SUBSTRING(sql_stmt FROM 1 FOR 4000), 1);  
 --
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_execute_insert_statement',
 		'[56605] Study %: %',

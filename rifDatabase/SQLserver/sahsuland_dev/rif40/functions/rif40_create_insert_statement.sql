@@ -416,9 +416,9 @@ GO
 -- Processing years filter
 --
 		IF @year_start = @year_stop SET @sql_stmt=@sql_stmt + @tab + '   AND c.year = @yearstart' + @tab + @tab + 
-			'/* Numerator (INSERT) year filter */' + @crlf
+			' /* Numerator (INSERT) year filter */' + @crlf
 		ELSE SET @sql_stmt=@sql_stmt + @tab + '   AND c.year BETWEEN @yearstart AND @yearstop' + @tab + 
-			'/* Numerator (INSERT) year filter */' + @crlf;
+			' /* Numerator (INSERT) year filter */' + @crlf;
 
 --
 -- Group by clause
@@ -509,9 +509,9 @@ GO
 	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: C';	
 	
 	IF @year_start = @year_stop SET @sql_stmt=@sql_stmt + @tab + ' WHERE d1.year = @yearstart' + @tab + @tab + 
-		'/* Denominator (INSERT) year filter */' + @crlf
+		' /* Denominator (INSERT) year filter */' + @crlf
 	ELSE SET @sql_stmt=@sql_stmt + @tab + ' WHERE d1.year BETWEEN @yearstart AND @yearstop' + @tab + 
-		'/* Denominator (INSERT) year filter */' + @crlf;
+		' /* Denominator (INSERT) year filter */' + @crlf;
 			
 	IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + 
 		'   AND s.area_id  = d1.'+ LOWER(@c1_rec_comparison_geolevel_name) + @tab + '/* Comparison geolevel join */' + @crlf
