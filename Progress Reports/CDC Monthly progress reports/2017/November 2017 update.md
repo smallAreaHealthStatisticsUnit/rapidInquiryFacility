@@ -149,8 +149,8 @@ The test study *1004 SEER 2000-13 lung cancer HH income mainland states.json*:
   * Utah
   * Washington;
  
-* Years: 2000-2013 (the maximum period available accross these states);
-* Covariate: median head of houshold income, quntilised;
+* Years: 2000-2013 (the maximum period available across these states);
+* Covariate: median head of household income, quintilised;
 * Both sexes;
 * All ages;
 * Lung cancer: 
