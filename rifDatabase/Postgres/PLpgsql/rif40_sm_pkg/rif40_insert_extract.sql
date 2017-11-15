@@ -127,7 +127,7 @@ BEGIN
 			study_id::VARCHAR		/* Study ID */,
 			i::VARCHAR);
 --
--- Do explain plan at the same time
+-- Do explain plan at the same time (DOES NOT INSERT DATA!)
 --
 		IF i = c1_rec.year_start THEN
 			sql_stmt:=rif40_sm_pkg.rif40_create_insert_statement(study_id, 'S', i, i);
@@ -135,10 +135,10 @@ BEGIN
 				'EXPLAIN (VERBOSE, FORMAT text)'||E'\n'||sql_stmt, 
 				'Study extract insert '||i::VARCHAR||' (EXPLAIN)'::VARCHAR, i, i) = FALSE THEN 
 				RETURN FALSE;
-			ELSIF rif40_sm_pkg.rif40_execute_insert_statement(study_id, 
-				'EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, /* TIMING, (9.2+) */ FORMAT text)'||E'\n'||sql_stmt, 
-				'Study extract '||i::VARCHAR||' insert (EXPLAIN ANALYZE)'::VARCHAR, i, i) = FALSE THEN 
-				RETURN FALSE;
+--			ELSIF rif40_sm_pkg.rif40_execute_insert_statement(study_id, 
+--				'EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, /* TIMING, (9.2+) */ FORMAT text)'||E'\n'||sql_stmt, 
+--				'Study extract '||i::VARCHAR||' insert (EXPLAIN ANALYZE)'::VARCHAR, i, i) = FALSE THEN 
+--				RETURN FALSE;
 			END IF;
 		ELSIF rif40_sm_pkg.rif40_execute_insert_statement(study_id, sql_stmt, 
 			'Study extract insert '||i::VARCHAR, i, i) = FALSE THEN 
@@ -167,7 +167,7 @@ BEGIN
 			study_id::VARCHAR		/* Study ID */,
 			i::VARCHAR);
 --
--- Do explain plan at the same time
+-- Do explain plan at the same time (DOES NOT INSERT DATA!)
 --
 		IF i = c1_rec.year_start THEN
 			sql_stmt:=rif40_sm_pkg.rif40_create_insert_statement(study_id, 'C', i, i);
@@ -175,10 +175,10 @@ BEGIN
 				'EXPLAIN (VERBOSE, FORMAT text)'||E'\n'||sql_stmt, 
 				'Comparison extract insert '||i::VARCHAR||' (EXPLAIN)'::VARCHAR, i, i) = FALSE THEN 
 				RETURN FALSE;
-			ELSIF rif40_sm_pkg.rif40_execute_insert_statement(study_id, 
-				'EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, /* TIMING, (9.2+) */ FORMAT text)'||E'\n'||sql_stmt, 
-				'Comparison extract '||i::VARCHAR||' insert (EXPLAIN ANALYZE)'::VARCHAR, i, i) = FALSE THEN 
-				RETURN FALSE;
+--			ELSIF rif40_sm_pkg.rif40_execute_insert_statement(study_id, 
+--				'EXPLAIN (ANALYZE, VERBOSE, COSTS, BUFFERS, /* TIMING, (9.2+) */ FORMAT text)'||E'\n'||sql_stmt, 
+--				'Comparison extract '||i::VARCHAR||' insert (EXPLAIN ANALYZE)'::VARCHAR, i, i) = FALSE THEN 
+--				RETURN FALSE;
 			END IF;
 		ELSIF rif40_sm_pkg.rif40_execute_insert_statement(study_id, sql_stmt, 
 			'Comparison extract insert '||i::VARCHAR, i, i) = FALSE THEN 
