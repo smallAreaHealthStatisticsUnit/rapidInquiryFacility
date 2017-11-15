@@ -1742,7 +1742,8 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Fix for covariate join problem causing wrong expected values in US data;
 * Temporary fix to rif40_execute_insert_statement.sql. Table t_rif40_study_sql needs to have sql_text type 
   set to Text (i.e. remove 4000 character limit)
-* Performance tune fixzes for Postgres  
+* Performance tune fixes for Postgres. Issues with lack of bind peaking (fully expand INSERT sql), global temporary tables; tune rif40_log()
+* SAHSU 30th  
  
 In progress:
 
