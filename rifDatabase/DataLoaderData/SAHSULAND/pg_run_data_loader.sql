@@ -155,6 +155,13 @@ CREATE INDEX POP_SAHSULAND_POP_SAHSU_GRD_LEVEL4 ON POP_SAHSULAND_POP(SAHSU_GRD_L
 
 CREATE INDEX POP_SAHSULAND_POP_TOTAL ON POP_SAHSULAND_POP(TOTAL);
 
+CREATE INDEX pop_sahsuland_pop_age_group
+  ON rif_data.pop_sahsuland_pop
+  (MOD(age_sex_group, 100));
+CREATE INDEX pop_sahsuland_pop_sex
+  ON rif_data.pop_sahsuland_pop
+  (TRUNC(age_sex_group/100));
+
 INSERT INTO rif40.rif40_tables (
    theme,
    table_name,
@@ -253,7 +260,13 @@ CREATE INDEX NUM_SAHSULAND_CANCER_ICD ON NUM_SAHSULAND_CANCER(ICD);
 
 CREATE INDEX NUM_SAHSULAND_CANCER_TOTAL ON NUM_SAHSULAND_CANCER(TOTAL);
 
-
+CREATE INDEX num_sahsuland_cancer_age_group
+  ON rif_data.num_sahsuland_cancer
+  (MOD(age_sex_group, 100));
+CREATE INDEX num_sahsuland_cancer_sex
+  ON rif_data.num_sahsuland_cancer
+  (TRUNC(age_sex_group/100));
+  
 INSERT INTO rif40.rif40_tables (
    theme,
    table_name,
@@ -488,3 +501,9 @@ FROM
 
 
 COMMIT TRANSACTION;
+
+
+ANALYZE VERBOSE rif_data.pop_sahsuland_pop;
+ANALYZE VERBOSE rif_data.num_sahsuland_cancer;
+ANALYZE VERBOSE rif_data.covar_sahsuland_covariates4;
+ANALYZE VERBOSE rif_data.covar_sahsuland_covariates4;

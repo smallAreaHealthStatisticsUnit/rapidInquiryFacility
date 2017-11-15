@@ -159,13 +159,13 @@ Description:	Create INSERT SQL statement
 	inv_array	VARCHAR[];
 	inv_join_array	VARCHAR[];
 --
-	areas_table	VARCHAR:='g_rif40_study_areas';
+	areas_table	VARCHAR:='rif40_study_areas';
 BEGIN
 --
 -- Use different areas_table for comparison (it has no band_id)
 --	
 	IF study_or_comparison = 'C' THEN
-		areas_table:='g_rif40_comparison_areas';
+		areas_table:='rif40_comparison_areas';
 	END IF;
 	OPEN c1insext(study_id);
 	FETCH c1insext INTO c1_rec;
@@ -662,8 +662,8 @@ WITH n1 AS (	-* SEER_CANCER - SEER Cancer data 1973-2013. 9 States in total *-
 --
 	sql_stmt:=sql_stmt||' ORDER BY 1, 2, 3, 4, 5, 6, 7';
 --
-	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_create_insert_statement', 
-		'[56005] SQL> %;', sql_stmt::VARCHAR);
+--	PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_create_insert_statement', 
+--		'[56005] SQL> %;', sql_stmt::VARCHAR);
 --
 	RETURN sql_stmt;
 --

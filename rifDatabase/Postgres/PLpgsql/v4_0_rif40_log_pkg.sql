@@ -920,7 +920,7 @@ BEGIN
 		RAISE WARNING '% %(): %', ts, function_name, output;
 	ELSIF debug_level = 'INFO' THEN
 		RAISE INFO '% %(): %', ts, function_name, output;
-	ELSE
+	ELSE -- Debug level: DEBUG
 --
 -- Check function name exists
 --
