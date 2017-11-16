@@ -63,6 +63,11 @@ angular.module("RIF")
                     }
                 });
 
+				
+				$scope.layerAdds=0;
+				$scope.layerUpdates=0;
+				$scope.layerRemoves=0;
+				
                 //Leaflet maps
                 $scope.map = ({
                     'diseasemap1': {},
@@ -220,7 +225,7 @@ angular.module("RIF")
                         }
                     }, function (e) {
                         $scope.showError("Unable to retrieve study status");
-						$scope.consoleLog("[rifc-util-mapping.js] Unable to retrieve study status: " + 
+						$scope.consoleError("[rifc-util-mapping.js] Unable to retrieve study status: " + 
 							JSON.stringify(e));
                     });
                 };
@@ -278,6 +283,8 @@ angular.module("RIF")
                  */
                 //change the basemaps 
                 $scope.renderMap = function (mapID) {
+					$scope.consoleDebug("[rifc-util-mapping.js] renderMap for mapID: " + mapID + "; study: " + JSON.stringify($scope.studyID[mapID], null, 2) + 
+								"; sex: " + $scope.sex[mapID]);	
                     $scope.map[mapID].removeLayer($scope.thisLayer[mapID]);
                     //add new baselayer if requested
                     if (!LeafletBaseMapService.getNoBaseMap(mapID)) {
@@ -288,6 +295,12 @@ angular.module("RIF")
 
                 //Draw the map
                 $scope.refresh = function (mapID) {
+					$scope.consoleDebug("[rifc-util-mapping.js] refresh for mapID: " + mapID + 
+						"; layer adds " + $scope.layerAdds + 
+						"; layer updates: " + $scope.layerUpdates + 
+						"; layer removes " + $scope.layerRemoves + 
+						"; study: " + JSON.stringify($scope.studyID[mapID], null, 2) + 
+						"; sex: " + $scope.sex[mapID]);					
                     //get choropleth map renderer
                     $scope.attr[mapID] = ChoroService.getMaps(mapID).feature;
                     thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
@@ -320,8 +333,15 @@ angular.module("RIF")
                 };
 
                 //apply relevent renderer to layer
+                $scope.removeLayer = function (layer) {
+                    var mapID = layer.options.mapID;
+					$scope.layerRemoves++;
+				}
+				
+                //apply relevent renderer to layer
                 $scope.handleLayer = function (layer) {
                     var mapID = layer.options.mapID;
+					$scope.layerUpdates++;
                     if (mapID === "viewermap") {
                         //Join geography and results table
                         var thisAttr;
@@ -346,7 +366,7 @@ angular.module("RIF")
                     } else {
 						if (mapID === undefined) { // Occurs only on SQL Server!
 //							Do nothing!						
-							$scope.consoleError("Null mapID; layer options: " + JSON.stringify(layer.options, null, 2));
+							$scope.consoleError("[rifc-util-mapping.js] Null mapID; layer options: " + JSON.stringify(layer.options, null, 2));
 							if (layer !== undefined) {
 								layer.remove(); 	// Remove 
 							}
@@ -379,6 +399,8 @@ angular.module("RIF")
                         $scope.showError("Invalid study or sex code");
                         clearTheMapOnError(mapID);
                     } else {
+						$scope.consoleDebug("[rifc-util-mapping.js] updateStudy for mapID: " + mapID + "; study: " + JSON.stringify($scope.studyID[mapID], null, 2) + 
+							"; sex: " + $scope.sex[mapID]);
                         //Reset all renderers, but only if not called from state change
                         if (!$scope.myService.getState().initial) {
                             thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
@@ -404,6 +426,11 @@ angular.module("RIF")
                                     $scope.tileInfo[mapID].level = res.data[0][1]; //e.g. LEVEL3
 
                                     var topojsonURL = user.getTileMakerTiles(user.currentUser, $scope.tileInfo[mapID].geography, $scope.tileInfo[mapID].level);
+									
+									$scope.consoleDebug("[rifc-util-mapping.js] create topoJsonGridLayer for mapID: " + mapID + 
+										"; URL: " + topojsonURL +
+										"; study: " + JSON.stringify($scope.studyID[mapID], null, 2) + 
+										"; sex: " + $scope.sex[mapID]);
                                     $scope.geoJSON[mapID] = new L.topoJsonGridLayer(topojsonURL, {
                                         attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
                                         layers: {
@@ -468,10 +495,18 @@ angular.module("RIF")
                                             }
                                         }
                                     });
-
-                                    //force re-render of new tiles
+	
+                                    //force re-render of new tiles								
                                     $scope.geoJSON[mapID].on('load', function (e) {
+										var t=$scope.layerUpdates;
                                         $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+										$scope.layerAdds+=($scope.layerUpdates-t);
+										$scope.consoleDebug("[rifc-util-mapping.js] load event for mapID: " + mapID + 
+											"; layer adds " + $scope.layerAdds + 
+											"; layer updates: " + $scope.layerUpdates + 
+											"; layer removes " + $scope.layerRemoves + 
+											"; study: " + JSON.stringify($scope.studyID[mapID], null, 2) + 
+											"; sex: " + $scope.sex[mapID]);
                                     });
 
                                     user.getGeoLevelSelectValues(user.currentUser, $scope.tileInfo[mapID].geography).then(function (res) {
@@ -496,9 +531,27 @@ angular.module("RIF")
                                     if (mapID !== "viewermap") {
                                         $scope.mapLocking();
                                     }
-                                }
+                                }, function (e) {
+									$scope.consoleError("[rifc-util-mapping.js] Unable to getGeographyAndLevelForStudy(): " + 
+									JSON.stringify(e));
+								}
+								// End of create grid layer
                         ).then(function () {
-                            $scope.map[mapID].addLayer($scope.geoJSON[mapID]);
+							var topoJSONLayer=$scope.geoJSON[mapID];						
+							topoJSONLayer.on('remove', function (e) {
+//								$scope.removeLayer(layer);
+								$scope.layerRemoves++;
+							});
+							$scope.map[mapID].whenReady(function(e) {								
+								$scope.map[mapID].addLayer(topoJSONLayer); // Add layer to map
+								$scope.map[mapID].whenReady(function(e) {	
+								
+									$scope.consoleDebug("[rifc-util-mapping.js] completed topoJsonGridLayer for mapID: " + mapID + 
+										"; study: " + JSON.stringify($scope.studyID[mapID], null, 2) + 
+										"; sex: " + $scope.sex[mapID]);
+								});
+							});
+							
                         }).then(function () {
                             getAttributeTable(mapID);
 
@@ -518,6 +571,7 @@ angular.module("RIF")
 
                     //Sync or unsync map extents
                     $scope.mapLocking = function () {
+						$scope.consoleLog("[rifc-util-mapping.js] mapLocking");
                         if ($scope.$parent.bLockCenters) {
                             $scope.map["diseasemap1"].sync($scope.map["diseasemap2"]);
                             $scope.map["diseasemap2"].sync($scope.map["diseasemap1"]);
@@ -571,7 +625,7 @@ angular.module("RIF")
                                     $scope.getD3chart(mapID, $scope.attr[mapID]);
 
                                 }, function (e) {
-                                    $scope.consoleLog("Something went wrong when getting the attribute data");
+                                    $scope.consoleError("[rifc-util-mapping.js] Something went wrong when getting the attribute data");
                                     clearTheMapOnError(mapID);
                                 });
                     }
@@ -596,35 +650,17 @@ angular.module("RIF")
                                         function () {
                                             var feature = ChoroService.getMaps(m).feature;
                                             var tmp;
-                                            var inner;
-											if (name !== undefined && name != poly) {
-												inner = '<h5>ID: ' + poly + '</br>Name: ' + name + '</h5>';
-											}
-											else {
-												inner = '<h5>ID: ' + poly + '</h5>';
-											}
+                                            var inner = '<h5>ID: ' + poly + '</br>Name: ' + name + '</h5>';
                                             if ($scope.attr[m] !== "") {
                                                 for (var i = 0; i < $scope.tableData[m].length; i++) {
                                                     if ($scope.tableData[m][i].area_id === poly) {
                                                         tmp = $scope.tableData[m][i][$scope.attr[m]];
-														if (poly != name) {
-															$scope.tableData[m][i].name = name;
-														}
-														else {
-															$scope.tableData[m][i].name = 'N/A';
-														}
+														$scope.tableData[m][i].name = name;
                                                         break;
                                                     }
                                                 }
                                                 if (feature !== "" && !isNaN(Number(tmp))) {
-													if (name !== undefined && name != poly) {
-														inner = '<h5>ID: ' + poly + '</br>Name: ' + name + '</br>' + 
-															feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h5>';
-													}
-													else {
-														inner = '<h5>ID: ' + poly + '</br>' + 
-															feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h5>';
-													}
+                                                    inner = '<h5>ID: ' + poly + '</br>Name: ' + name + '</br>' + feature.toUpperCase().replace("_", " ") + ": " + Number(tmp).toFixed(3) + '</h5>';
                                                 }
                                             }
                                             return inner;
