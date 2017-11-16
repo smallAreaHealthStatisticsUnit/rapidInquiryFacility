@@ -102,6 +102,8 @@ Description:	Execute INSERT SQL statement
 	l_statement_type VARCHAR:='INSERT' /* INSERT: Local Postgres statement */;
 	i		INTEGER:=0;
 	n_sql_stmt		VARCHAR;
+--
+	use_bind_variables BOOLEAN:=FALSE; 
 BEGIN
 	IF sql_stmt IS NULL THEN
 		PERFORM rif40_log_pkg.rif40_error(-56600, 'rif40_execute_insert_statement', 
@@ -136,7 +138,17 @@ BEGIN
 		n_sql_stmt:=REPLACE(n_sql_stmt, '$1', study_id::VARCHAR);
 			
 		IF SUBSTR(sql_stmt, 1, 7) = 'EXPLAIN' THEN
-			OPEN c2exinst FOR EXECUTE n_sql_stmt;
+			IF use_bind_variables THEN		
+				IF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start != year_stop THEN
+					OPEN c2exinst FOR EXECUTE sql_stmt USING study_id, year_start, year_stop;
+				ELSIF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start = year_stop THEN
+					OPEN c2exinst FOR EXECUTE sql_stmt USING study_id, year_start;
+				ELSE
+					OPEN c2exinst FOR EXECUTE sql_stmt USING study_id;
+				END IF;
+			ELSE
+				OPEN c2exinst FOR EXECUTE n_sql_stmt;
+			END IF;
 			GET DIAGNOSTICS l_rows = ROW_COUNT;
  			LOOP
 				i:=i+1;
@@ -155,8 +167,18 @@ BEGIN
 				description::VARCHAR				/* Description */,
 				array_to_string(query_plan, E'\n')::VARCHAR	/* Query plan */);
 			l_log_message:=description::VARCHAR||' OK, took: '||age(etp, stp)::VARCHAR;
-		ELSE
-			EXECUTE n_sql_stmt;
+		ELSE	
+			IF use_bind_variables THEN		
+				IF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start != year_stop THEN
+					EXECUTE sql_stmt USING study_id, year_start, year_stop;
+				ELSIF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start = year_stop THEN
+					EXECUTE sql_stmt USING study_id, year_start;
+				ELSE
+					EXECUTE sql_stmt USING study_id;
+				END IF;			
+			ELSE
+				EXECUTE n_sql_stmt;
+			END IF;
 			GET DIAGNOSTICS l_rows = ROW_COUNT;
 			etp:=clock_timestamp();
 			l_log_message:=description::VARCHAR||' OK, inserted '||l_rows::VARCHAR||' rows, took: '||age(etp, stp)::VARCHAR;
