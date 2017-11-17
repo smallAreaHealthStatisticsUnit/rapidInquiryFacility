@@ -283,7 +283,7 @@ angular.module("RIF")
                  */
                 //change the basemaps 
                 $scope.renderMap = function (mapID) {
-					$scope.consoleDebug("[rifc-util-mapping.js] renderMap for mapID: " + mapID + "; study: " + JSON.stringify($scope.studyID[mapID], null, 2) + 
+					$scope.consoleDebug("[rifc-util-mapping.js] renderMap for mapID: " + mapID + "; study: " + $scope.studyID[mapID].study_id + 
 								"; sex: " + $scope.sex[mapID]);	
                     $scope.map[mapID].removeLayer($scope.thisLayer[mapID]);
                     //add new baselayer if requested
@@ -299,7 +299,7 @@ angular.module("RIF")
 						"; layer adds " + $scope.layerAdds + 
 						"; layer updates: " + $scope.layerUpdates + 
 						"; layer removes " + $scope.layerRemoves + 
-						"; study: " + JSON.stringify($scope.studyID[mapID], null, 2) + 
+						"; study: " + $scope.studyID[mapID].study_id + 
 						"; sex: " + $scope.sex[mapID]);					
                     //get choropleth map renderer
                     $scope.attr[mapID] = ChoroService.getMaps(mapID).feature;
@@ -399,7 +399,7 @@ angular.module("RIF")
                         $scope.showError("Invalid study or sex code");
                         clearTheMapOnError(mapID);
                     } else {
-						$scope.consoleDebug("[rifc-util-mapping.js] updateStudy for mapID: " + mapID + "; study: " + JSON.stringify($scope.studyID[mapID], null, 2) + 
+						$scope.consoleDebug("[rifc-util-mapping.js] updateStudy for mapID: " + mapID + "; study: " + $scope.studyID[mapID].study_id + 
 							"; sex: " + $scope.sex[mapID]);
                         //Reset all renderers, but only if not called from state change
                         if (!$scope.myService.getState().initial) {
@@ -429,7 +429,7 @@ angular.module("RIF")
 									
 									$scope.consoleDebug("[rifc-util-mapping.js] create topoJsonGridLayer for mapID: " + mapID + 
 										"; URL: " + topojsonURL +
-										"; study: " + JSON.stringify($scope.studyID[mapID], null, 2) + 
+										"; study: " + $scope.studyID[mapID].study_id + 
 										"; sex: " + $scope.sex[mapID]);
                                     $scope.geoJSON[mapID] = new L.topoJsonGridLayer(topojsonURL, {
                                         attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
@@ -505,8 +505,12 @@ angular.module("RIF")
 											"; layer adds " + $scope.layerAdds + 
 											"; layer updates: " + $scope.layerUpdates + 
 											"; layer removes " + $scope.layerRemoves + 
-											"; study: " + JSON.stringify($scope.studyID[mapID], null, 2) + 
-											"; sex: " + $scope.sex[mapID]);
+											"; study: " + $scope.studyID[mapID].study_id + 
+											"; sex: " + $scope.sex[mapID] +
+											"; tiles: " + Object.keys(e.target._tiles).length +
+											"; zoomlevel: " + e.target._tileZoom +
+//											"; URL: " + e.target._url +
+											"; areas: " + Object.keys(e.target._geojsons.default._layers).length);
                                     });
 
                                     user.getGeoLevelSelectValues(user.currentUser, $scope.tileInfo[mapID].geography).then(function (res) {
@@ -547,7 +551,7 @@ angular.module("RIF")
 								$scope.map[mapID].whenReady(function(e) {	
 								
 									$scope.consoleDebug("[rifc-util-mapping.js] completed topoJsonGridLayer for mapID: " + mapID + 
-										"; study: " + JSON.stringify($scope.studyID[mapID], null, 2) + 
+										"; study: " + $scope.studyID[mapID].study_id + 
 										"; sex: " + $scope.sex[mapID]);
 								});
 							});
@@ -571,7 +575,7 @@ angular.module("RIF")
 
                     //Sync or unsync map extents
                     $scope.mapLocking = function () {
-						$scope.consoleLog("[rifc-util-mapping.js] mapLocking");
+						$scope.consoleDebug("[rifc-util-mapping.js] mapLocking");
                         if ($scope.$parent.bLockCenters) {
                             $scope.map["diseasemap1"].sync($scope.map["diseasemap2"]);
                             $scope.map["diseasemap2"].sync($scope.map["diseasemap1"]);
