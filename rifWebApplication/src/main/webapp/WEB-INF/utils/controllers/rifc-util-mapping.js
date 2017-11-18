@@ -433,6 +433,14 @@ angular.module("RIF")
 										"; sex: " + $scope.sex[mapID]);
                                     $scope.geoJSON[mapID] = new L.topoJsonGridLayer(topojsonURL, {
                                         attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
+										// Options
+										consoleDebug: $scope.consoleDebug,
+										consoleError: $scope.consoleError,
+										name: $scope.tileInfo[mapID].geography + "." + $scope.tileInfo[mapID].level, 
+																	// Should be unique (includes geography and geolevel name)
+//										maxZoom: maxzoomlevel,
+										useCache: true,				// Use PouchDB caching
+										auto_compaction: true,
                                         layers: {
                                             default: {
                                                 mapID: mapID,
@@ -521,7 +529,9 @@ angular.module("RIF")
                                                 //do not get maxbounds for diseasemap2
                                                 if ($scope.myService.getState().center[mapID].lat === 0) {
                                                     $scope.map[mapID].fitBounds($scope.maxbounds);
-                                                    $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+													if ($scope.geoJSON[mapID]._geojsons.default) {
+														$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+													}
                                                 } else {
                                                     var centre = $scope.myService.getState().center[mapID];
                                                     $scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
