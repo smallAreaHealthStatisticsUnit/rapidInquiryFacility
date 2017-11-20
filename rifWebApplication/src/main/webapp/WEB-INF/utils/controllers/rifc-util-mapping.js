@@ -68,6 +68,13 @@ angular.module("RIF")
 				$scope.layerUpdates=0;
 				$scope.layerRemoves=0;
 				
+				$scope.cacheStats={
+					hits: 0,
+					misses: 0,
+					errors: 0,
+					tiles: 0,
+					size: 0
+				};					
                 //Leaflet maps
                 $scope.map = ({
                     'diseasemap1': {},
@@ -300,7 +307,8 @@ angular.module("RIF")
 						"; layer updates: " + $scope.layerUpdates + 
 						"; layer removes " + $scope.layerRemoves + 
 						"; study: " + $scope.studyID[mapID].study_id + 
-						"; sex: " + $scope.sex[mapID]);					
+						"; sex: " + $scope.sex[mapID] +
+						"; cache: " + JSON.stringify($scope.cacheStats, null, 2));					
                     //get choropleth map renderer
                     $scope.attr[mapID] = ChoroService.getMaps(mapID).feature;
                     thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
@@ -524,7 +532,36 @@ angular.module("RIF")
 //											"; URL: " + e.target._url +
 											"; areas: " + Object.keys(e.target._geojsons.default._layers).length);
                                     });
-
+												
+                                    $scope.geoJSON[mapID].on('remove', function (e) {
+										$scope.layerRemoves++;
+									});
+									$scope.geoJSON[mapID].on('tileerror', function(error, tile) {
+										var msg="";
+										if (error && error.message) {
+											msg+=error.message;
+										}
+										if (tile) {
+											$scope.consoleError("[rifc-util-mapping.js] Error: loading topoJSON tile: " + 
+												(JSON.stringify(tile.coords)||"UNK"));		
+										}
+									});
+									$scope.geoJSON[mapID].on('tilecacheerror', function tileCacheErrorHandler(ev) {
+										if ($scope.cacheStats) {
+											$scope.cacheStats.errors++;
+										}
+									});
+									$scope.geoJSON[mapID].on('tilecachemiss', function tileCacheErrorHandler(ev) {
+										if ($scope.cacheStats) {
+											$scope.cacheStats.misses++;
+										}
+									});
+									$scope.geoJSON[mapID].on('tilecachehit', function tileCacheErrorHandler(ev) {
+										if ($scope.cacheStats) {
+											$scope.cacheStats.hits++;
+										}
+									});
+									
 									$scope.map[mapID].whenReady(function(e) {
 										user.getGeoLevelSelectValues(user.currentUser, $scope.tileInfo[mapID].geography).then(function (res) {
 											var lowestLevel = res.data[0].names[0];
@@ -574,14 +611,11 @@ angular.module("RIF")
 										JSON.stringify(e));
 								}
 								// End of create grid layer
+
+		
                         ).then(function () { 
-							var topoJSONLayer=$scope.geoJSON[mapID];						
-							topoJSONLayer.on('remove', function (e) { // DOES NOT WORK!
-//								$scope.removeLayer(layer);
-								$scope.layerRemoves++;
-							});
 							$scope.map[mapID].whenReady(function(e) {								
-								$scope.map[mapID].addLayer(topoJSONLayer); // Add layer to map
+								$scope.map[mapID].addLayer($scope.geoJSON[mapID]); // Add layer to map
 								$scope.map[mapID].whenReady(function(e) {	
 								
 									$scope.consoleDebug("[rifc-util-mapping.js] completed topoJsonGridLayer for mapID: " + mapID + 

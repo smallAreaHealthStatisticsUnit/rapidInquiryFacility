@@ -50,13 +50,22 @@
 					return;
 				}
 				this.PouchDBError = {};
-				this._db = new PouchDB('offline-tiles', {auto_compaction: (options.auto_compaction || false) });
-				if (this._db == undefined) {
+				this._db = undefined;
+				
+				var myNav = navigator.userAgent.toLowerCase();
+				if ((myNav.indexOf('msie') != -1) && parseInt(myNav.split('msie')[1])) {
 					this.options.useCache=false;
-					this.consoleError("[TopoJSONGridLayer.js] Unable to create PouchDB, useCache disabled");
+					this.consoleDebug("[TopoJSONGridLayer.js] IE detectect, unable to create PouchDB, useCache disabled");
 				}
 				else {
-					this.consoleDebug("[TopoJSONGridLayer.js] Created tile cache (PouchDB), auto_compaction: " + options.auto_compaction);
+					this._db = new PouchDB('offline-tiles', {auto_compaction: (options.auto_compaction || false) });
+					if (this._db == undefined) {
+						this.options.useCache=false;
+						this.consoleError("[TopoJSONGridLayer.js] Unable to create PouchDB, useCache disabled");
+					}
+					else {
+						this.consoleDebug("[TopoJSONGridLayer.js] Created tile cache (PouchDB), auto_compaction: " + options.auto_compaction);
+					}
 				}
             },
 
@@ -65,7 +74,7 @@
 					this.options.consoleError(msg);
 				}	
 			},
-			
+		
 			consoleDebug: function (msg) {
 				if (this.options.consoleDebug) {
 					this.options.consoleDebug(msg);
@@ -236,9 +245,32 @@
 										done(err);
 									}
 								}).catch(function (err) {
-									tileLayer.consoleError("[TopoJSONGridLayer.js] _db.put() error: " + JSON.stringify(err, null, 2));
-									tileLayer.fire('tilecacheerror', { tile: tile, error: err });
-									done(err);
+/*
++32.1: [ERROR] [TopoJSONGridLayer.js] _db.put() error: {
+  "description": "Adapter is missing",
+  "code": 404,
+  "stack": "Error: Adapter is missing\n   at Anonymous function (http://localhost:8080/RIF4/libs/pouchdb.js:3133:11)\n   at Anonymous function (http://localhost:8080/RIF4/libs/pouchdb.js:3111:6)\n   at tryToUnwrap (http://localhost:8080/RIF4/libs/pouchdb.js:12003:5)\n   at tryCatch (http://localhost:8080/RIF4/libs/pouchdb.js:12015:5)\n   at safelyResolveThenable (http://localhost:8080/RIF4/libs/pouchdb.js:12006:3)\n   at Promise (http://localhost:8080/RIF4/libs/pouchdb.js:11880:5)\n   at PouchDB (http://localhost:8080/RIF4/libs/pouchdb.js:3099:3)\n   at initialize (http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:53:5)\n   at e (http://localhost:8080/RIF4/libs/standalone/leaflet.js:5:2729)\n   at L.topoJsonGridLayer (http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:347:13)"
+}
+Stack: undefined
+ */									
+									if (err && err.status == 404 && err.description == "Adapter is missing") { 
+										tileLayer.options.useCache=false;	// Disable cache
+										tileLayer.PouchDBError = err;		// Flag error
+										tileLayer.consoleError("[TopoJSONGridLayer.js] TopoJSONGridLayer PouchDB error: " + err.stack + ", useCache disabled");	
+										tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+										tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
+											done(error, tile);
+										});
+									}
+									else {
+										tileLayer.consoleError("[TopoJSONGridLayer.js] _db.put() error: " + JSON.stringify(err, null, 2));
+										tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+										tileLayer.options.useCache=false;	// Disable cache
+										tileLayer.PouchDBError = err;		// Flag error
+										tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
+											done(error, tile);
+										});
+									}
 								});
 						}
 						else {
