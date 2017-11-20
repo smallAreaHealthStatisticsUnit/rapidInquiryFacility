@@ -121,14 +121,14 @@
 							if (Date.now() > doc.timestamp + tileLayer.options.cacheMaxAge) {
 							// Tile is too old, try to refresh it
 								var existingRevision = doc._revs_info[0].rev;
-								this.consoleDebug("[TopoJSONGridLayer.js] _db.get() Tile is too old: " + tileUrl + 
+								tileLayer.consoleDebug("[TopoJSONGridLayer.js] _db.get() Tile is too old: " + tileUrl + 
 									"; rev: " + existingRevision);
 								tileLayer.fetchTile(coords || tile.coords, existingRevision, function (error) {
 									done(error, tile);
 								});
 							}
 							else {
-//								this.consoleDebug("[TopoJSONGridLayer.js] _db.get() " + doc.name + 
+//								tileLayer.consoleDebug("[TopoJSONGridLayer.js] _db.get() " + doc.name + 
 //									"; _id: " + doc._id + 
 //									"; _rev: " + doc._rev + 
 //									"; length: " + doc.urlLength);
@@ -173,14 +173,14 @@
 						 */
 							tileLayer.options.useCache=false;	// Disable cache
 							tileLayer.PouchDBError = err;		// Flag error
-							this.consoleError("[TopoJSONGridLayer.js] TopoJSONGridLayer PouchDB error: " + err.reason + ", useCache disabled");	
+							tileLayer.consoleError("[TopoJSONGridLayer.js] TopoJSONGridLayer PouchDB error: " + err.reason + ", useCache disabled");	
 							tileLayer.fire('tilecacheerror', { tile: tile, error: err });
 							tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
 								done(error, tile);
 							});
 						}
 						else {
-							this.consoleError("[TopoJSONGridLayer.js] _db.get() error: " + JSON.stringify(err, null, 2));
+							tileLayer.consoleError("[TopoJSONGridLayer.js] _db.get() error: " + JSON.stringify(err, null, 2));
 							tileLayer.fire('tilecacheerror', { tile: tile, error: err });
 							tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
 								done(error, tile);
@@ -226,7 +226,7 @@
 							}
 							tileLayer._db.put(doc).then(function (response) {
 									if (response.ok) {
-	//									this.consoleDebug("[TopoJSONGridLayer.js] _db.put(): " + response.id);
+	//									tileLayer.consoleDebug("[TopoJSONGridLayer.js] _db.put(): " + response.id);
 										done(null);								
 									}
 									else {
@@ -236,7 +236,7 @@
 										done(err);
 									}
 								}).catch(function (err) {
-									this.consoleError("[TopoJSONGridLayer.js] _db.put() error: " + JSON.stringify(err, null, 2));
+									tileLayer.consoleError("[TopoJSONGridLayer.js] _db.put() error: " + JSON.stringify(err, null, 2));
 									tileLayer.fire('tilecacheerror', { tile: tile, error: err });
 									done(err);
 								});

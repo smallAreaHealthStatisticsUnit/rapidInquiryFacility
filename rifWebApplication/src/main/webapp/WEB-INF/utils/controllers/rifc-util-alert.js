@@ -66,11 +66,11 @@ angular.module("RIF")
 					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
 					if (isIE()) {
 						if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
-							console.log("+" + elapsed + ": " + msg); // IE safe
+							console.log("+" + elapsed + ": [DEBUG] " + msg); // IE safe
 						}
 					}
 					else {
-						console.log("+" + elapsed + ": " + msg); // IE safe
+						console.log("+" + elapsed + ": [DEBUG] " + msg); // IE safe
 					}
 				}  
 			}
@@ -87,11 +87,11 @@ angular.module("RIF")
 					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
 					if (isIE()) {
 						if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
-							console.log("+" + elapsed + ": [DEBUG] " + msg); // IE safe
+							console.log("+" + elapsed + ": " + msg); // IE safe
 						}
 					}
 					else {
-						console.log("+" + elapsed + ": [DEBUG] " + msg); // IE safe
+						console.log("+" + elapsed + ": " + msg); // IE safe
 					}
 				}  
 			}
@@ -128,11 +128,11 @@ angular.module("RIF")
 					if (window.console && console && console.log && typeof console.log == "function") { // IE safe
 						if (isIE()) {
 							if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
-								console.log("+" + elapsed + ": " + msg); // IE safe
+								console.log("+" + elapsed + ": [ERROR] " + msg); // IE safe
 							}
 						}
 						else {
-							console.log("+" + elapsed + ": " + msg); // IE safe
+							console.log("+" + elapsed + ": [ERROR] " + msg); // IE safe
 						}
 					}  					
 				}
@@ -140,12 +140,12 @@ angular.module("RIF")
 					if (window.console && console && console.log && typeof console.log == "function") { // IE safe
 						if (isIE()) {
 							if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
-								console.log("+" + elapsed + ": " + msg +
+								console.log("+" + elapsed + ": [ERROR]" + msg +
 									"\nStack: " + err.stack); // IE safe
 							}
 						}
 						else {
-							console.log("+" + elapsed + ": " + msg + 
+							console.log("+" + elapsed + ": [ERROR] " + msg + 
 								"\nStack: " + err.stack); // IE safe
 						}
 					}  				

@@ -428,9 +428,12 @@ angular.module("RIF")
                                     var topojsonURL = user.getTileMakerTiles(user.currentUser, $scope.tileInfo[mapID].geography, $scope.tileInfo[mapID].level);
 									
 									$scope.consoleDebug("[rifc-util-mapping.js] create topoJsonGridLayer for mapID: " + mapID + 
+										"; Geography: " + $scope.tileInfo[mapID].geography +
+										"; Geolevel: " + $scope.tileInfo[mapID].level +
 										"; URL: " + topojsonURL +
 										"; study: " + $scope.studyID[mapID].study_id + 
 										"; sex: " + $scope.sex[mapID]);
+										
                                     $scope.geoJSON[mapID] = new L.topoJsonGridLayer(topojsonURL, {
                                         attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
 										// Options
@@ -502,7 +505,8 @@ angular.module("RIF")
                                                 }
                                             }
                                         }
-                                    });
+                                    }); // End of new L.topoJsonGridLayer()
+									
 	
                                     //force re-render of new tiles								
                                     $scope.geoJSON[mapID].on('load', function (e) {
@@ -521,38 +525,58 @@ angular.module("RIF")
 											"; areas: " + Object.keys(e.target._geojsons.default._layers).length);
                                     });
 
-                                    user.getGeoLevelSelectValues(user.currentUser, $scope.tileInfo[mapID].geography).then(function (res) {
-                                        var lowestLevel = res.data[0].names[0];
-                                        user.getTileMakerTilesAttributes(user.currentUser, $scope.tileInfo[mapID].geography, lowestLevel).then(function (res) {
-                                            $scope.maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
-                                            if (mapID !== "diseasemap2") {
-                                                //do not get maxbounds for diseasemap2
-                                                if ($scope.myService.getState().center[mapID].lat === 0) {
-                                                    $scope.map[mapID].fitBounds($scope.maxbounds);
-													if ($scope.geoJSON[mapID]._geojsons.default) {
-														$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+									$scope.map[mapID].whenReady(function(e) {
+										user.getGeoLevelSelectValues(user.currentUser, $scope.tileInfo[mapID].geography).then(function (res) {
+											var lowestLevel = res.data[0].names[0];
+											user.getTileMakerTilesAttributes(user.currentUser, $scope.tileInfo[mapID].geography, lowestLevel).then(function (res) {
+												$scope.maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
+												if (mapID !== "diseasemap2") {
+													
+													//do not get maxbounds for diseasemap2
+													if ($scope.myService.getState().center[mapID].lat === 0) {
+														$scope.consoleDebug("[rifc-util-mapping.js] set fitBounds for mapID: " + mapID + 
+															"; maxbounds: " + JSON.stringify($scope.maxbounds));
+														$scope.map[mapID].fitBounds($scope.maxbounds);
+														if ($scope.geoJSON[mapID]._geojsons.default) {
+															$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+														}
+														else {							
+															$scope.consoleError("[rifc-util-mapping.js] geoJSON not yet set up: $scope.geoJSON[mapID]._geojsons.default is NULL");
+														}
+													} 
+													else {
+														var centre = $scope.myService.getState().center[mapID];
+														$scope.consoleDebug("[rifc-util-mapping.js] set setView for mapID: " + mapID + 
+															"; centre: " + JSON.stringify(centre));
+														$scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
 													}
-                                                } else {
-                                                    var centre = $scope.myService.getState().center[mapID];
-                                                    $scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
-                                                }
-                                            } else {
-                                                var centre = $scope.myService.getState().center[mapID];
-                                                $scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
-                                            }
-                                        });
-                                    });
-                                    if (mapID !== "viewermap") {
-                                        $scope.mapLocking();
-                                    }
-                                }, function (e) {
+												} else { // diseasemap2
+													var centre = $scope.myService.getState().center[mapID];
+													$scope.consoleDebug("[rifc-util-mapping.js] set setView for mapID: " + mapID + 
+														"; centre: " + JSON.stringify(centre));
+													$scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
+												}
+											}, function (e) {
+												$scope.consoleError("[rifc-util-mapping.js] Unable to getTileMakerTilesAttributes(): " + 
+													JSON.stringify(e));
+											});
+										}, function (e) {
+											$scope.consoleError("[rifc-util-mapping.js] Unable to getGeoLevelSelectValues(): " + 
+												JSON.stringify(e));
+										});
+										
+										if (mapID !== "viewermap") {
+											$scope.mapLocking();
+										}
+									});
+                                }, function (e) { //getGeographyAndLevelForStudy error handler
 									$scope.consoleError("[rifc-util-mapping.js] Unable to getGeographyAndLevelForStudy(): " + 
-									JSON.stringify(e));
+										JSON.stringify(e));
 								}
 								// End of create grid layer
-                        ).then(function () {
+                        ).then(function () { 
 							var topoJSONLayer=$scope.geoJSON[mapID];						
-							topoJSONLayer.on('remove', function (e) {
+							topoJSONLayer.on('remove', function (e) { // DOES NOT WORK!
 //								$scope.removeLayer(layer);
 								$scope.layerRemoves++;
 							});
