@@ -1745,6 +1745,12 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Performance tune fixes for Postgres. Issues with lack of bind peaking (fully expand INSERT sql), global temporary tables; tune rif40_log()
 * SAHSU 30th  
  
+## 20th to 24th November
+
+* Added tracing to tileLayer; update to same (caching code) as TileMaker, caching disabled on IE;
+* Add traps for middleware call failure and out of sequence events;
+* Port upgraded extract code to SQL Server
+ 
 In progress:
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing type].

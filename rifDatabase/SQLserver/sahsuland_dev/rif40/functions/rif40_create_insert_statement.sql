@@ -41,6 +41,8 @@
 --
 -- Error codes:  ..\..\error_handling\rif40_custom_error_messages.sql
 -- 
+-- sqlcmd -U rif40 -P rif40 -d sahsuland -b -m-1 -e -r1 -i rif40_create_insert_statement.sql
+--
 IF EXISTS (SELECT *
            FROM   sys.objects
            WHERE  object_id = OBJECT_ID(N'[rif40].[rif40_create_insert_statement]')
@@ -139,6 +141,8 @@ Description:	Create INSERT SQL statement
 	DECLARE @c8_rec_max_age_group				INTEGER;		   
 	
 	DECLARE @covariate_table_name				VARCHAR(30);
+	DECLARE @covariate_list						VARCHAR(2000);
+	DECLARE @covariate_filter					VARCHAR(2000);
 
 	DECLARE @inv_array 		TABLE (inv VARCHAR(MAX));
 	DECLARE @inv_join_array TABLE (outer_join VARCHAR(MAX));
@@ -152,6 +156,7 @@ Description:	Create INSERT SQL statement
 	DECLARE @c10_rec_outer_join		VARCHAR(MAX);
 --	
 	DECLARE @sql_stmt	NVARCHAR(MAX);
+	DECLARE @filter_sql	NVARCHAR(MAX);
 --
 	DECLARE @i			INTEGER=0;
 	DECLARE @j			INTEGER=0;
@@ -195,7 +200,38 @@ GO
 	END;
 	CLOSE c1insext;
 	DEALLOCATE c1insext;
-
+	
+	OPEN c7insext;
+	FETCH NEXT FROM c7insext INTO @c7_rec_covariate_name, @c7_rec_covariate_table_name;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		IF @c7_rec_covariate_table_name IS NULL BEGIN
+			CLOSE c7insext;
+			DEALLOCATE c7insext;
+			SET @err_msg = formatmessage(56006, @study_id); 	-- Study ID %i NULL covariate table
+			THROW 56006, @err_msg, 1;
+			END;
+		ELSE IF @covariate_table_name IS NULL SET @covariate_table_name=@c7_rec_covariate_table_name;
+			/* Only one covariate table is supported */ 
+		ELSE IF @covariate_table_name != @c7_rec_covariate_table_name BEGIN 
+			CLOSE c7insext;
+			DEALLOCATE c7insext;
+			SET @err_msg = formatmessage(56007, @study_id, @covariate_table_name, @c7_rec_covariate_table_name); 
+				-- Study ID %i multiple covariate tables: %s, %s
+			THROW 56007, @err_msg, 1;	
+		END;
+--
+-- Covariates, if present are required at both study and comparison geolevels
+-- So, do NOT remove the covariates or you will treated to an INLA R crash
+ --		
+		SET @k=@k+1;
+		IF @covariate_list IS NULL SET @covariate_list=@tab + '       c.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
+		ELSE SET @covariate_list=@covariate_list + @tab + '       c.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
+--
+		FETCH NEXT FROM c7insext INTO @c7_rec_covariate_name, @c7_rec_covariate_table_name;
+	END; /* Loop k: c7insext */
+	CLOSE c7insext;
+	
 	SET @sql_stmt='';
 --
 -- Start with CTE (WITH)
@@ -226,6 +262,7 @@ GO
 		@c4_rec_year_start, @c4_rec_year_stop, @c4_rec_total_field;
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
+		SET @filter_sql='';
 		SET @i=@i+1;
 		
 --
@@ -248,9 +285,23 @@ GO
 --
 			@tab + @tab + 'AND d.' + LOWER(@c8_rec_age_sex_group_field_name) + @tab + ' = n' + CAST(@i AS VARCHAR) + '.n_age_sex_group)');
 				/* List of numerator joins (for use in FROM clause) */;
-
-		SET @sql_stmt=@sql_stmt + @tab + 'SELECT s.area_id' + @tab + @tab + '/* Study or comparision resolution */,' + @crlf +
-			@tab + '       c.year,' + @crlf;
+			
+		OPEN c7insext;
+		FETCH NEXT FROM c7insext INTO @c7_rec_covariate_name, @c7_rec_covariate_table_name;
+		WHILE @@FETCH_STATUS = 0
+		BEGIN
+			INSERT INTO @inv_join_array(outer_join) VALUES (
+				@tab + @tab + 'AND d.' + LOWER(@c7_rec_covariate_name) +
+					' = n' + CAST(@i AS VARCHAR) + '.' + LOWER(@c7_rec_covariate_name));
+--
+			FETCH NEXT FROM c7insext INTO @c7_rec_covariate_name, @c7_rec_covariate_table_name;
+		END; /* Loop k: c7insext */
+		CLOSE c7insext;
+		DEALLOCATE c7insext;
+	
+		SET @sql_stmt=@sql_stmt + @tab + 'SELECT s.area_id' + @tab + @tab + '/* Study or comparision resolution */,' + @crlf;
+		IF @covariate_list IS NOT NULL SET @sql_stmt=@sql_stmt + @tab + '       ' + @covariate_list;
+		SET @sql_stmt=@sql_stmt + @tab + '       c.year,' + @crlf;
 --
 -- [Add support for differing age/sex/group names; convert to AGE_SEX_GROUP]
 --
@@ -308,15 +359,24 @@ GO
 				 ORDER BY inv_id, line_number;	
 			DECLARE @c6_rec_condition	VARCHAR(2000);
 --	
+			SET @k=0;
 			OPEN c6insext;
 			FETCH NEXT FROM c6insext INTO @c6_rec_condition;
 			WHILE @@FETCH_STATUS = 0
 			BEGIN	
 				SET @k=@k+1;
-				IF @k = 1 SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + '    ' + @c6_rec_condition +
-					' /* Filter ' + CAST(@k AS VARCHAR) + ' */' + @crlf
-				ELSE SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + ' OR ' + @c6_rec_condition +
-					' /* Filter ' + CAST(@k AS VARCHAR) + ' */'  + @crlf;
+				IF @k = 1 BEGIN
+						SET @filter_sql=@filter_sql + @tab + @tab + @tab + '    ' + @c6_rec_condition +
+							' /* Filter ' + CAST(@k AS VARCHAR) + ' */' + @crlf;
+						SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + '    ' + @c6_rec_condition +
+							' /* Filter ' + CAST(@k AS VARCHAR) + ' */' + @crlf;
+					END;
+				ELSE BEGIN	
+						SET @filter_sql=@filter_sql + @tab + @tab + @tab + ' OR ' + @c6_rec_condition +
+							' /* Filter ' + CAST(@k AS VARCHAR) + ' */'  + @crlf;
+						SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + ' OR ' + @c6_rec_condition +
+							' /* Filter ' + CAST(@k AS VARCHAR) + ' */'  + @crlf;
+					END;
 --
 				FETCH NEXT FROM c6insext INTO @c6_rec_condition;
 			END; /* Loop k: c6insext */
@@ -388,12 +448,33 @@ GO
 --
 -- From clause
 --
-		SET @sql_stmt=@sql_stmt + @tab + '  FROM rif_data.' + LOWER(@c4_rec_numer_tab) + ' c, ' + @tab +'/* ' + @c4_rec_description + ' */' + @crlf +
-			@tab + '       ' + @areas_table + ' s ' + @tab + '/* Numerator study or comparison area to be extracted */' + @crlf;
+		SET @sql_stmt=@sql_stmt + @tab + 
+				'  FROM ' + @areas_table + ' s, ' + @tab + 
+					'/* Numerator study or comparison area to be extracted */' + @crlf +
+				@tab + 
+				'       rif_data.' + LOWER(@c4_rec_numer_tab) + ' c' + @tab + 
+					'/* ' + @c4_rec_description + ' */' + @crlf
+		IF @covariate_table_name IS NOT NULL BEGIN
+			SET @sql_stmt=@sql_stmt + @tab + @tab + @tab +
+				'LEFT OUTER JOIN ' + LOWER(@covariate_table_name) + ' c1 ON (' + @tab + '/* Covariates */' + @crlf;
+--
+-- This is joining at the study geolevel. This needs to be aggregated to the comparison area
+--
+			SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab +
+				'    c.' + LOWER(@c1_rec_study_geolevel_name) +
+				' = c1.' + LOWER(@c1_rec_study_geolevel_name) + @tab + @tab + '/* Join at study geolevel */' + @crlf;
+			SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab +
+				'AND c.year = c1.year)' + @crlf; /* Was $2 - may cause a performance problem */
+		END;
+
 		IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + 
 			' WHERE c.' + LOWER(@c1_rec_comparison_geolevel_name) + ' = s.area_id ' + @tab + '/* Comparison selection */' + @crlf
 		ELSE SET @sql_stmt=@sql_stmt + @tab + ' WHERE c.' + LOWER(@c1_rec_study_geolevel_name) + ' = s.area_id ' + 
 			@tab + '/* Study selection */' + @crlf;
+			
+		IF @filter_sql IS NOT NULL SET @sql_stmt=@sql_stmt + @tab + '   AND (' + @crlf + @filter_sql + ')' + @crlf
+		ELSE SET @sql_stmt=@sql_stmt + @tab + '/* No filter */' + @crlf;
+		
 --
 -- Add correct age_sex_group limits
 --
@@ -423,8 +504,11 @@ GO
 --
 -- Group by clause
 -- [Add support for differing age/sex/group names]
---
-		SET @sql_stmt=@sql_stmt + @tab + ' GROUP BY c.year, s.area_id, c.' + LOWER(@c4_rec_age_sex_group_field_name) + @crlf;
+--		
+		IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + ' GROUP BY c.year, s.area_id,' + @crlf
+ 		ELSE SET @sql_stmt=@sql_stmt + @tab + ' GROUP BY c.year, s.area_id, s.band_id,' + @crlf;
+		IF @covariate_list IS NOT NULL SET @sql_stmt=@sql_stmt + @tab + '          ' + @covariate_list;
+		SET @sql_stmt=@sql_stmt + @tab + '          c.' + LOWER(@c4_rec_age_sex_group_field_name) + @crlf;
 
 --
 -- Close WITH clause (common table expression)
@@ -465,45 +549,19 @@ GO
 	ELSE SET @sql_stmt=@sql_stmt + @tab + 'SELECT d1.year, s.area_id, s.band_id, d1.' +
 			LOWER(@c8_rec_age_sex_group_field_name) + ',' + @crlf;
 
-	OPEN c7insext;
-	FETCH NEXT FROM c7insext INTO @c7_rec_covariate_name, @c7_rec_covariate_table_name;
-	WHILE @@FETCH_STATUS = 0
-	BEGIN
-		IF @c7_rec_covariate_table_name IS NULL BEGIN
-			CLOSE c7insext;
-			DEALLOCATE c7insext;
-			SET @err_msg = formatmessage(56006, @study_id); 	-- Study ID %i NULL covariate table
-			THROW 56006, @err_msg, 1;
-			END;
-		ELSE IF @covariate_table_name IS NULL SET @covariate_table_name=@c7_rec_covariate_table_name;
-			/* Only one covariate table is supported */ 
-		ELSE IF @covariate_table_name != @c7_rec_covariate_table_name BEGIN 
-			CLOSE c7insext;
-			DEALLOCATE c7insext;
-			SET @err_msg = formatmessage(56007, @study_id, @covariate_table_name, @c7_rec_covariate_table_name); 
-				-- Study ID %i multiple covariate tables: %s, %s
-			THROW 56007, @err_msg, 1;	
-		END;
-		SET @k=@k+1;
-		SET @sql_stmt=@sql_stmt + @tab + '       c.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
---
-		FETCH NEXT FROM c7insext INTO @c7_rec_covariate_name, @c7_rec_covariate_table_name;
-	END; /* Loop k: c7insext */
-	CLOSE c7insext;
-	DEALLOCATE c7insext;
-
+	IF @covariate_list IS NOT NULL SET @sql_stmt=@sql_stmt + @tab + '          ' + @covariate_list + @crlf;
 	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: B';
 	
 	SET @sql_stmt=@sql_stmt + @tab + '       SUM(COALESCE(d1.'+ coalesce(LOWER(@c8_rec_total_field), 'total') + 
 		', 0)) AS total_pop' + @crlf + @tab + '  FROM ' + @areas_table + ' s, rif_data.' +
 		LOWER(@c1_rec_denom_tab) + ' d1 ' + @tab + '/* Denominator study or comparison area to be extracted */' + @crlf;
 --
--- This is joining at the study geolevel. For comparison areas this needs to be aggregated to the comparison area
+-- This is joining at the study geolevel. This needs to be aggregated to the comparison area
 --			
 	IF @covariate_table_name IS NOT NULL SET @sql_stmt=@sql_stmt + @tab + @tab + 'LEFT OUTER JOIN rif_data.' +
-		LOWER(@covariate_table_name) + ' c ON (' + @tab + '/* Covariates */' + @crlf +
+		LOWER(@covariate_table_name) + ' c1 ON (' + @tab + '/* Covariates */' + @crlf +
 		@tab + @tab + @tab + '    d1.' + LOWER(@c1_rec_study_geolevel_name) +
-		' = c.' + LOWER(@c1_rec_study_geolevel_name) + @tab + @tab + '/* Join at study geolevel */' + @crlf +
+		' = c1.' + LOWER(@c1_rec_study_geolevel_name) + @tab + @tab + '/* Join at study geolevel */' + @crlf +
 		@tab + @tab + @tab + 'AND c.year = @yearstart)' + @crlf;
 
 	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: C';	
@@ -547,17 +605,16 @@ GO
 
 	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: D';
 --
--- Add GROUP BY clause
+-- Add GROUP BY clause 
+-- [Add support for differing age/sex/group names]
 --
-	IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + 
-		' GROUP BY d1.year, s.area_id, ' + LOWER(@c8_rec_age_sex_group_field_name);
-	ELSE SET @sql_stmt=@sql_stmt + @tab + 
-		' GROUP BY d1.year, s.area_id, s.band_id, d1.' + LOWER(@c8_rec_age_sex_group_field_name);
-
+	IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + ' GROUP BY d1.year, s.area_id,' + @crlf;
+	ELSE SET @sql_stmt=@sql_stmt + @tab + ' GROUP BY d1.year, s.area_id, s.band_id,' + @crlf;
+	IF @covariate_list IS NOT NULL SET @sql_stmt=@sql_stmt + @tab + '          ' + @covariate_list;
+	SET @sql_stmt=@sql_stmt + @tab + '          d1.' + LOWER(@c4_rec_age_sex_group_field_name) + @crlf;
+		
 	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: D1';
-	
-	IF @c7_rec_covariate_name IS NOT NULL SET @sql_stmt=@sql_stmt + 
-		', c.' + LOWER(@c7_rec_covariate_name); /* Multiple covariate support will be needed here */
+
 	SET @sql_stmt=@sql_stmt + @crlf + ') /* End of denominator */' + @crlf;
 
 	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: E';		
@@ -634,9 +691,6 @@ GO
 	IF @c7_rec_covariate_name IS NOT NULL SET @sql_stmt=@sql_stmt + 
 		'       d.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
 					/* Multiple covariate support will be needed here */
---		END IF;
-
-
 	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: G';
 --
 -- Add investigations 
@@ -678,12 +732,14 @@ GO
 	SET @sql_stmt=@sql_stmt + ' ORDER BY 1, 2, 3, 4, 5, 6, 7';
 --
 	IF @sql_stmt IS NOT NULL BEGIN
-		INSERT INTO ##g_insert_dml(sql_stmt, name, study_id) VALUES (@sql_stmt, @study_or_comparison + ': 1', @study_id);
---
+
 		SET @msg='56005: Create INSERT statement (' + COALESCE(CAST(LEN(@sql_stmt) AS VARCHAR), 'no') + 
 		' chars)' + @crlf + 'SQL> ';
 		PRINT @msg; -- Split into 2 so missing output is obvious; splitting SQL statement on CRLFs
 		PRINT @sql_stmt;
+--
+		INSERT INTO ##g_insert_dml(sql_stmt, name, study_id) VALUES (@sql_stmt, @study_or_comparison + ': 1', @study_id);
+--		
 		END;
 	ELSE
 		BEGIN
@@ -719,5 +775,21 @@ GO
 END;
 GO
 
+GRANT EXECUTE ON OBJECT::[rif40].[rif40_create_insert_statement] TO rif_user;
+GRANT EXECUTE ON OBJECT::[rif40].[rif40_create_insert_statement] TO rif_manager;
+GO
+
+--
+-- sqlcmd -U peter -P peter -d sahsuland
+
+/*
+IF OBJECT_ID('tempdb..##g_insert_dml') IS NULL CREATE TABLE ##g_insert_dml(study_id INTEGER, name VARCHAR(20), sql_stmt NVARCHAR(MAX));
+GO
+EXECUTE rif40.rif40_create_insert_statement 2, 'C', 2000, 2000;
+GO
+DECLARE @studyid INTEGER=2;
+DECLARE @yearstart INTEGER=2000;
+
+ */
 --
 -- Eof
