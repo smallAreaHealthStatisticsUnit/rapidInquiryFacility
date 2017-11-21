@@ -42,30 +42,33 @@ angular.module("RIF")
             function (ColorBrewerService) {
                 
                 //a default symbology
-                function symbology() {
+                function symbology(defaultMethod, defaultFeature, defaultIntervals) {
                     this.features = [];
                     this.brewerName = "Constant";
-                    this.intervals = 1;
-                    this.feature = "relative_risk";
+                    this.intervals = defaultIntervals;
+                    this.feature = defaultFeature;
                     this.invert = false;
-                    this.method = "quantile";
+                    this.method = defaultMethod;
                     this.renderer = {
                         scale: null,
                         breaks: [],
-                        range: ["#9BCD9B"],
+                        range: [],
                         mn: null,
                         mx: null
                     };
+					
+					if (defaultMethod == "quantile") {
+						this.brewerName = "PuOr";
+						this.invert = true;
+					}
+
                     this.init = false;
                 }
                 var maps = {
-                    'viewermap': new symbology(),
-                    'diseasemap1': new symbology(),
-                    'diseasemap2': new symbology()
+                    'viewermap': new symbology("quantile", "relative_risk", 9),
+                    'diseasemap1': new symbology("quantile", "smothed_smr", 9),
+                    'diseasemap2': new symbology("AtlasProbability", "posterior_probability", 3) //default for 2nd disease map is probability
                 };
-                
-                //default for 2nd disease map is probability
-                maps['diseasemap2'].feature = "posterior_probability";
                 
                 //used in viewer map
                 function renderFeatureMapping(scale, value, selected) {
@@ -125,7 +128,7 @@ angular.module("RIF")
                                     .range(range);
                             var breaks = scale.quantiles();
                             break;
-                        case "quantize":
+                        case "quantize": // Equal Interval
                             scale = d3.scaleQuantize()
                                     .domain([mn, mx])
                                     .range(range);
@@ -175,7 +178,7 @@ angular.module("RIF")
                             scale = d3.scaleThreshold()
                                     .domain(breaks)
                                     .range(range);
-                            break;
+                            break;						
                         case "AtlasRelativeRisk":
                             //RR scale as used in Health Atlas
                             var tmp;
@@ -270,7 +273,7 @@ angular.module("RIF")
                     },
                     //TODO: not used, add reset button
                     resetState: function (map) {
-                        maps[map] = new symbology();
+                        maps[map] = new symbology("RIfRelativeRisk", "smothed_smr", 9);
                     }
                 };
             }]);
