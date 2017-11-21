@@ -1749,7 +1749,8 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 
 * Added tracing to tileLayer; update to same (caching code) as TileMaker, caching disabled on IE;
 * Add traps for middleware call failure and out of sequence events;
-* Port upgraded extract code to SQL Server
+* Port upgraded extract code to SQL Server;
+* Testing of SQL Server code: minor fixes to status list, handle longer SQL statements and in covaraite SQL generation;
  
 In progress:
 
