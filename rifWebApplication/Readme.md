@@ -533,10 +533,73 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
 ```<!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF middleware output on the console -->```**. 
 
 ```xml
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="debug" monitorInterval="30" name="RIF Tomcat Default">
+<!--
+  The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+  that rapidly addresses epidemiological and public health questions using 
+  routinely collected health and population data and generates standardised 
+  rates and relative risks for any given health outcome, for specified age 
+  and year ranges, for any given geographical area.
+  
+  Copyright 2014 Imperial College London, developed by the Small Area
+  Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+  is funded by the Public Health England as part of the MRC-PHE Centre for 
+  Environment and Health. Funding for this project has also been received 
+  from the United States Centers for Disease Control and Prevention.  
+  
+  This file is part of the Rapid Inquiry Facility (RIF) project.
+  RIF is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  RIF is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU Lesser General Public License for more details.
+  
+  You should have received a copy of the GNU Lesser General Public License
+  along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+  to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+  Boston, MA 02110-1301 USA
+  
+  Default log4j2 setup for the RIF middleware. 
+  
+  Sets up two loggers:
+  
+  1. The default logger: rifGenericLibrary.util.RIFLogger used by the middleware: RIF_middleware.log
+  2. "Other" for logger output not from rifGenericLibrary.util.RIFLogger: Other.log
+  
+  Logs go to STDOUT and ${sys:catalina.base}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME/log4j2/<YYYY>-<MM>/
+  Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
+  messages not using rifGenericLibrary.util.RIFLogger
+  
+  Logs are rotated everyday or every 100 MB in the year/month specific directory
+  
+  Typical log entry: 
+  
+	14:29:37.812 [http-nio-8080-exec-5] INFO  rifGenericLibrary.util.RIFLogger: [rifServices.dataStorageLayer.pg.PGSQLRIFContextManager]:
+	PGSQLAbstractSQLManager logSQLQuery >>>
+	QUERY NAME: getGeographies
+	PARAMETERS:
+	PGSQL QUERY TEXT: 
+	SELECT DISTINCT 
+	   geography 
+	FROM 
+	   rif40_geographies 
+	ORDER BY 
+	   geography ASC;
+
+
+	;
+
+
+	<<< End PGSQLAbstractSQLManager logSQLQuery
+
+  Author: Peter Hambly; 12/9/2017
+  -->
   <Properties>
-   <Properties>
     <Property name="logdir">${sys:catalina.base}/log4j2/$${date:yyyy-MM}</Property>
     <Property name="default_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %class %logger{36}: %msg%n</Property>
     <Property name="rif_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %class : %msg%n</Property> 
@@ -553,7 +616,7 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
 	  <Policies>
-		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
     </RollingFile>
@@ -562,7 +625,7 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${other_log_pattern}"/>
 	  <Policies>
-		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
     </RollingFile>	 
@@ -571,7 +634,7 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${other_log_pattern}"/>
       <Policies>
-		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
       </Policies>
     </RollingFile>

@@ -81,7 +81,7 @@
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
 	  <Policies>
-		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
     </RollingFile>
@@ -90,7 +90,7 @@
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${other_log_pattern}"/>
 	  <Policies>
-		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
     </RollingFile>	 
@@ -99,7 +99,7 @@
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${other_log_pattern}"/>
       <Policies>
-		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
       </Policies>
     </RollingFile>
