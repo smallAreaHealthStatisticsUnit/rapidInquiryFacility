@@ -52,7 +52,7 @@ angular.module("RIF")
                     this.renderer = {
                         scale: null,
                         breaks: [],
-                        range: [],
+                        range: ["#9BCD9B"],
                         mn: null,
                         mx: null
                     };
@@ -273,7 +273,7 @@ angular.module("RIF")
                     },
                     //TODO: not used, add reset button
                     resetState: function (map) {
-                        maps[map] = new symbology("RIfRelativeRisk", "smothed_smr", 9);
+                        maps[map] = new symbology("quantile", "smothed_smr", 9);
                     }
                 };
             }]);
