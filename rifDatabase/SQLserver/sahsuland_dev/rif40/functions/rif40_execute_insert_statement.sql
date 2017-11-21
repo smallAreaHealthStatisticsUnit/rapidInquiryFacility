@@ -116,7 +116,7 @@ Description:	Execute INSERT SQL statement
 				SET @statement_number = (SELECT TOP 1 statement_number FROM @statement_number_table);
 				INSERT INTO rif40.rif40_study_sql(
 					study_id, statement_type, sql_text, statement_number, line_number, status)
-				VALUES (@study_id, 'RUN_STUDY', @sql_stmt, @statement_number, 1, 'R');
+				VALUES (@study_id, 'RUN_STUDY', SUBSTRING(@sql_stmt, 1, 4000), @statement_number, 1, 'R');
 				
 				IF @rowcount > 0 
 					PRINT 'SQL[' + USER + '] study_id: ' + CAST(@study_id AS VARCHAR) + 
@@ -125,8 +125,7 @@ Description:	Execute INSERT SQL statement
 						' extract insert OK: ' + COALESCE(@name, 'No name') +
 						'; rows: ' + CAST(@rowcount AS VARCHAR)
 				ELSE BEGIN
-					PRINT '[55820] SQL[' + USER + '] study_id: ' + CAST(@study_id AS VARCHAR) + 
-						'; SQL> ' + COALESCE(@sql_stmt, 'NULL');
+					PRINT '[55820] SQL[' + USER + '] study_id: ' + CAST(@study_id AS VARCHAR);
 					SET @err_msg = formatmessage(55820, @study_id); 
 						-- Study ID %i no rows INSERTED into extract table.
 					THROW 55820, @err_msg, 1;
@@ -144,12 +143,12 @@ Description:	Execute INSERT SQL statement
 				SET @statement_number = (SELECT TOP 1 statement_number FROM @statement_number_table);
 				INSERT INTO rif40.rif40_study_sql(
 					study_id, statement_type, sql_text, statement_number, line_number, status)
-				VALUES (@study_id, 'RUN_STUDY', @sql_stmt, @statement_number, 1, 'R');
+				VALUES (@study_id, 'RUN_STUDY', SUBSTRING(@sql_stmt, 1, 4000), @statement_number, 1, 'R');
 				
 	--	 		[55999] SQL statement had error: %s%sSQL[%s]> %s;	
 				IF LEN(@sql_stmt) > 1900 BEGIN	
 					SET @err_msg = formatmessage(56699, error_message(), @crlf, USER, '[SQL statement too long for error; see SQL above]');
-					PRINT '[56699] SQL> ' + @sql_stmt;
+					PRINT '[56699] SQL> ' + SUBSTRING(@sql_stmt, 1, 1900);
 					END;			
 				ELSE SET @err_msg = formatmessage(56699, error_message(), @crlf, USER, @sql_stmt); 
 				THROW 56699, @err_msg, 1;
