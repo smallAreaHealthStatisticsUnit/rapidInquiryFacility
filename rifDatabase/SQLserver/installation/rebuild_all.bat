@@ -118,7 +118,7 @@ if %errorlevel% neq 0  (
 	ECHO rif40_sahsuland_dev_install.bat exiting with %errorlevel%
 	exit /b 1
 ) else (
-	ECHO if40_sahsuland_dev_install.bat built OK %errorlevel%
+	ECHO rif40_sahsuland_dev_install.bat built OK %errorlevel%
 )
 
 REM

@@ -115,9 +115,9 @@ CREATE TABLE rif_data.pop_sahsuland_pop (
 BULK INSERT rif_data.pop_sahsuland_pop FROM '$(pwd)/pop_sahsuland_pop_extended.csv'
 WITH 
 (
+   FIRSTROW=2,
    FORMATFILE = '$(pwd)/pop_sahsuland_pop.fmt',
-   TABLOCK,
-   FIRSTROW=2
+   TABLOCK
 );
 GO
 ALTER TABLE rif_data.POP_SAHSULAND_POP ADD CONSTRAINT pop_sahsuland_pop_pk PRIMARY KEY CLUSTERED(YEAR,AGE_SEX_GROUP,SAHSU_GRD_LEVEL4);

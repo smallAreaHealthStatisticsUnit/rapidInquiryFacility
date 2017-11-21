@@ -6,7 +6,7 @@
 <FIELD ID="2" xsi:type="CharTerm" TERMINATOR=',' />
 <FIELD ID="3" xsi:type="CharTerm" TERMINATOR=',' />
 <FIELD ID="4" xsi:type="CharTerm" TERMINATOR=',' />
-<FIELD ID="5" xsi:type="CharTerm" TERMINATOR='\r\n' />
+<FIELD ID="5" xsi:type="CharTerm" TERMINATOR='\n' />
 </RECORD>
 <ROW>
 <COLUMN SOURCE="1" NAME="year" xsi:type="SQLVARYCHAR" />

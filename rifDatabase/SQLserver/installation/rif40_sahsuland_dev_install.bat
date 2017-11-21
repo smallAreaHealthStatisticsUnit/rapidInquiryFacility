@@ -102,6 +102,7 @@ sqlcmd -U rif40 -P rif40 -d sahsuland_dev -b -m-1 -e -r1 -i ..\..\GeospatialData
 if %errorlevel% neq 0  (
 	ECHO rif_mssql_SAHSULAND.sql exiting with %errorlevel%
 	sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_password_reset.sql
+	ECHO rif_mssql_SAHSULAND.sql error; see above...
 	exit /b 1
 ) else (
 	ECHO rif_mssql_SAHSULAND.sql built OK %errorlevel%
@@ -111,6 +112,7 @@ sqlcmd -U rif40 -P rif40 -d sahsuland_dev -b -m-1 -e -r1 -i ..\..\DataLoaderData
 if %errorlevel% neq 0  (
 	ECHO ms_run_data_loader.sql exiting with %errorlevel%
 	sqlcmd -d sahsuland_dev -b -m-1 -e -i rif40_password_reset.sql
+	ECHO ms_run_data_loader.sql error; see above...
 	exit /b 1
 ) else (
 	ECHO ms_run_data_loader.sql built OK %errorlevel%

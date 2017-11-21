@@ -65,6 +65,7 @@ IF EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'rif40') BEGIN
 		''', CHECK_POLICY = OFF';
 	PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
 	EXECUTE sp_executesql @sql_stmt;	;	-- Change this password if you want to logon!
+	PRINT 'Done.';
 END;
 GO
 
