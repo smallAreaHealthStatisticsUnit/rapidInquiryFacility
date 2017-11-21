@@ -225,8 +225,8 @@ GO
 -- So, do NOT remove the covariates or you will treated to an INLA R crash
  --		
 		SET @k=@k+1;
-		IF @covariate_list IS NULL SET @covariate_list=@tab + '       c.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
-		ELSE SET @covariate_list=@covariate_list + @tab + '       c.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
+		IF @covariate_list IS NULL SET @covariate_list=@tab + '       c1.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
+		ELSE SET @covariate_list=@covariate_list + @tab + '       c1.' + LOWER(@c7_rec_covariate_name) + ',' + @crlf;
 --
 		FETCH NEXT FROM c7insext INTO @c7_rec_covariate_name, @c7_rec_covariate_table_name;
 	END; /* Loop k: c7insext */
@@ -456,7 +456,7 @@ GO
 					'/* ' + @c4_rec_description + ' */' + @crlf
 		IF @covariate_table_name IS NOT NULL BEGIN
 			SET @sql_stmt=@sql_stmt + @tab + @tab + @tab +
-				'LEFT OUTER JOIN ' + LOWER(@covariate_table_name) + ' c1 ON (' + @tab + '/* Covariates */' + @crlf;
+				'LEFT OUTER JOIN rif_data.' + LOWER(@covariate_table_name) + ' c1 ON (' + @tab + '/* Covariates */' + @crlf;
 --
 -- This is joining at the study geolevel. This needs to be aggregated to the comparison area
 --
@@ -562,7 +562,7 @@ GO
 		LOWER(@covariate_table_name) + ' c1 ON (' + @tab + '/* Covariates */' + @crlf +
 		@tab + @tab + @tab + '    d1.' + LOWER(@c1_rec_study_geolevel_name) +
 		' = c1.' + LOWER(@c1_rec_study_geolevel_name) + @tab + @tab + '/* Join at study geolevel */' + @crlf +
-		@tab + @tab + @tab + 'AND c.year = @yearstart)' + @crlf;
+		@tab + @tab + @tab + 'AND d1.year = @yearstart)' + @crlf;
 
 	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: C';	
 	
@@ -738,7 +738,7 @@ GO
 		PRINT @msg; -- Split into 2 so missing output is obvious; splitting SQL statement on CRLFs
 --		PRINT @sql_stmt;
 -- 		EXPERIMENTAL CODE TO SPLIT SQL INTO LINES WITH SEPARATE PRINT FOR TOMCAT 
-		DECLARE @psql_stmt varchar(4000) = REPLACE(@sql_stmt, @crlf, '|');
+		DECLARE @psql_stmt NVARCHAR(MAX) = REPLACE(@sql_stmt, @crlf, '|');
 		DECLARE @sql_frag varchar(4000) = null
 		WHILE LEN(@psql_stmt) > 0
 		BEGIN
