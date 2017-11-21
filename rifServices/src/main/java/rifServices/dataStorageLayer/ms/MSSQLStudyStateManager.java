@@ -605,7 +605,7 @@ final class MSSQLStudyStateManager
 							}
 						} 
 						data[ithRecord][6] = sb.toString();
-						System.out.println("OK: " + unEscapes);
+//						System.out.println("OK: " + unEscapes);
 						// fix for Angular parse errors
 						// Error: JSON.parse: bad escaped character at line 1 column 2871 of the JSON data
 					}
