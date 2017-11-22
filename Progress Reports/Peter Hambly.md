@@ -1747,10 +1747,13 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
  
 ## 20th to 24th November
 
-* Added tracing to tileLayer; update to same (caching code) as TileMaker, caching disabled on IE;
+* Added tracing to tileLayer; update to same (caching code) as TileMaker, caching disabled on IE. Sub 
+  layers not being removed, too many layers in disease mapping (i.e. 60K instead of 2x1280). Layers being added about 
+  one per minute;
 * Add traps for middleware call failure and out of sequence events;
 * Port upgraded extract code to SQL Server;
 * Testing of SQL Server code: minor fixes to status list, handle longer SQL statements and in covariate SQL generation, LF issues with new SAHSULAND data;
+* Delivered database to CDC;
  
 In progress:
 
