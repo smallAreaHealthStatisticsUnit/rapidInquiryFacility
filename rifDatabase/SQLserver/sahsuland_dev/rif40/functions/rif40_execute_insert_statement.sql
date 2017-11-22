@@ -173,7 +173,7 @@ Description:	Execute INSERT SQL statement
 						PRINT @sql_frag
 					END
 				END; 		
-				SET @err_msg = formatmessage(56699, error_message(), @crlf, USER, "(see above)"); 
+				SET @err_msg = formatmessage(56699, error_message(), @crlf, USER, '(see above)'); 
 				THROW 56699, @err_msg, 1;
 			END CATCH;
 		END;

@@ -149,7 +149,7 @@ Description:	Insert data into extract table
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
 	SET @sql_stmt=NULL;	
-	SET @ddl_stmts=NULL;	
+	DELETE FROM @ddl_stmts; /* Purge */	
 	
 --
 -- For for rows in ##g_rif40_comparison_areas, ##g_rif40_study_areas
