@@ -71,6 +71,7 @@ Description:	Execute INSERT SQL statement
 		  FROM ##g_insert_dml
 		 WHERE study_id = @study_id
 	DECLARE @sql_stmt	NVARCHAR(MAX);
+	DECLARE @msg		NVARCHAR(MAX);
 	DECLARE @name		VARCHAR(20);
 	DECLARE @rowcount	INTEGER;
 --
@@ -145,12 +146,34 @@ Description:	Execute INSERT SQL statement
 					study_id, statement_type, sql_text, statement_number, line_number, status)
 				VALUES (@study_id, 'RUN_STUDY', SUBSTRING(@sql_stmt, 1, 4000), @statement_number, 1, 'R');
 				
-	--	 		[55999] SQL statement had error: %s%sSQL[%s]> %s;	
-				IF LEN(@sql_stmt) > 1900 BEGIN	
-					SET @err_msg = formatmessage(56699, error_message(), @crlf, USER, '[SQL statement too long for error; see SQL above]');
-					PRINT '[56699] SQL> ' + SUBSTRING(@sql_stmt, 1, 1900);
-					END;			
-				ELSE SET @err_msg = formatmessage(56699, error_message(), @crlf, USER, @sql_stmt); 
+--	 			[55999] SQL statement had error: %s%sSQL[%s]> %s;	
+				SET @msg='55999: SQL statement had error (' + COALESCE(CAST(LEN(@sql_stmt) AS VARCHAR), 'no') + 
+				' chars)' + @crlf + 'SQL> ';
+				PRINT @msg; -- Split into 2 so missing output is obvious; splitting SQL statement on CRLFs
+-- 				EXPERIMENTAL CODE TO SPLIT SQL INTO LINES WITH SEPARATE PRINT FOR TOMCAT 
+				DECLARE @psql_stmt NVARCHAR(MAX) = REPLACE(@sql_stmt, @crlf, '|');
+				DECLARE @sql_frag varchar(4000) = null
+				WHILE LEN(@psql_stmt) > 0
+				BEGIN
+					IF PATINDEX('%|%', @psql_stmt) > 0
+					BEGIN
+						SET @sql_frag = SUBSTRING(@psql_stmt,
+													0,
+													PATINDEX('%|%', @psql_stmt))
+						PRINT @sql_frag
+
+						SET @psql_stmt = SUBSTRING(@psql_stmt,
+												  LEN(@sql_frag + '|') + 1,
+												  LEN(@psql_stmt))
+					END
+					ELSE
+					BEGIN
+						SET @sql_frag = @psql_stmt
+						SET @psql_stmt = NULL
+						PRINT @sql_frag
+					END
+				END; 		
+				SET @err_msg = formatmessage(56699, error_message(), @crlf, USER, "(see above)"); 
 				THROW 56699, @err_msg, 1;
 			END CATCH;
 		END;
