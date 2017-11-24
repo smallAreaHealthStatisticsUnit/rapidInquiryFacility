@@ -14,6 +14,7 @@ RIF Web Services
 	 - [1.3.5 Middleware Logging (Log4j2) Setup](#135-middleware-logging-log4j2-setup)
 	 - [1.3.6 Tomcat Logging (Log4j2) Setup](#136-tomcat-logging-log4j2-setup) 
 	 - [1.3.7 Using JConsole with Tomcat](#137-using-jconsole-with-tomcat) 
+	 - [1.3.8 Securing Tomcat](#138-securing-tomcat)
   - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
    - [2.1 Building Using Make](#21-building-using-make)	
@@ -760,6 +761,60 @@ Run Jconsole from *%JAVA_HOME%\bin* e.g. ```"%JAVA_HOME%\bin\Jconsole"```
 
  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Jconsole.png?raw=true "Jconsole")
 
+### 1.3.8 Securing Tomcat
+
+Injecting HTTP Response with the secure header can mitigate most of the web security vulnerabilities. These changes
+implement the necessary HTTP headers to comply with OWASP security standards.
+
+Having a secure header instructs the browser to do or not to do certain things and thence prevent certain security attacks.
+
+Tomcat 8 has added support for following HTTP response headers.
+
+* X-Frame-Options – to prevent clickjacking attack
+* X-XSS-Protection – to avoid cross-site scripting attack
+* X-Content-Type-Options – block content type sniffing
+* HSTS – add strict transport security
+
+As a best practice, take a backup of necessary configuration file before making changes or test in a non-production environment.
+
+In the *%CATALINA_HOME%/conf* folder under path where Tomcat is installed
+Uncomment the following filter (by default it is commented out):
+```xml
+    <filter>
+        <filter-name>httpHeaderSecurity</filter-name>
+        <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
+        <async-supported>true</async-supported>
+    </filter>
+```
+
+By uncommenting above, you instruct Tomcat to support HTTP Header Security filter.
+
+Add the following just after the above filter:
+
+```xml
+<filter-mapping>
+    <filter-name>httpHeaderSecurity</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
+
+By adding above you instruct Tomcat to inject the HTTP Header in all the application URL.
+
+Restart the Tomcat and access the application to verify the headers.
+
+Tomcat secuirity defaults (default values are in square brackets):
+
+* hstsEnabled Should the HTTP Strict Transport Security (HSTS) header be added to the response? See RFC 6797 
+  for more information on HSTS. [true]
+* hstsMaxAgeSeconds The max age value that should be used in the HSTS header. Negative values will be treated
+  as zero. [0]                            
+* hstsIncludeSubDomains Should the includeSubDomains parameter be included in the HSTS header.  
+* antiClickJackingEnabled Should the anti click-jacking header X-Frame-Options be added to every response? [true]                                         -->
+* antiClickJackingOption What value should be used for the header. Must be one of DENY, SAMEORIGIN, ALLOW-FROM 
+  (case-insensitive). [DENY]
+* antiClickJackingUri IF ALLOW-FROM is used, what URI should be allowed? []  
+* blockContentTypeSniffingEnabled Should the header that blocks content type sniffing be added to every response? [true]
+ 
 ## 1.4 R
 Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
 
