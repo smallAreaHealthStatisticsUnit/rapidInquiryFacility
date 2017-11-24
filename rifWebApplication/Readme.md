@@ -802,7 +802,7 @@ By adding above you instruct Tomcat to inject the HTTP Header in all the applica
 
 Restart the Tomcat and access the application to verify the headers.
 
-Tomcat secuirity defaults (default values are in square brackets):
+Tomcat security defaults (default values are in square brackets):
 
 * hstsEnabled Should the HTTP Strict Transport Security (HSTS) header be added to the response? See RFC 6797 
   for more information on HSTS. [true]
@@ -814,7 +814,50 @@ Tomcat secuirity defaults (default values are in square brackets):
   (case-insensitive). [DENY]
 * antiClickJackingUri IF ALLOW-FROM is used, what URI should be allowed? []  
 * blockContentTypeSniffingEnabled Should the header that blocks content type sniffing be added to every response? [true]
- 
+
+#### Adding an expires filter
+
+ExpiresFilter is a Java Servlet API port of Apache mod_expires. This filter controls the setting of the 
+Expires HTTP header and the max-age directive of the Cache-Control HTTP header in server responses. The 
+expiration date can set to be relative to either the time the source file was last modified, or to the 
+time of the client access.
+
+These HTTP headers are an instruction to the client about the document's validity and persistence. If 
+cached, the document may be fetched from the cache rather than from the source until this time has passed. 
+After that, the cache copy is considered "expired" and invalid, and a new copy must be obtained from the
+source.
+
+```xml
+    <filter-mapping>
+        <filter-name>httpHeaderSecurity</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+
+	<filter>
+	 <filter-name>ExpiresFilter</filter-name>
+	 <filter-class>org.apache.catalina.filters.ExpiresFilter</filter-class>
+	 <init-param>
+		<param-name>ExpiresByType image</param-name>
+		<param-value>access plus 10 minutes</param-value>
+	 </init-param>
+	 <init-param>
+		<param-name>ExpiresByType text/css</param-name>
+		<param-value>access plus 10 minutes</param-value>
+	 </init-param>
+	 <init-param>
+		<param-name>ExpiresByType application/javascript</param-name>
+		<param-value>access plus 10 minutes</param-value>
+	 </init-param>
+	</filter>
+
+	<filter-mapping>
+	 <filter-name>ExpiresFilter</filter-name>
+	 <url-pattern>/*</url-pattern>
+	 <dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+```
+	
 ## 1.4 R
 Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
 

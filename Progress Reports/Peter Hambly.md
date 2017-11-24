@@ -1754,6 +1754,7 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Port upgraded extract code to SQL Server;
 * Testing of SQL Server code: minor fixes to status list, handle longer SQL statements and in covariate SQL generation, LF issues with new SAHSULAND data;
 * Delivered database to CDC;
+* Completed security testing, all issues resolved by editing Tomcat config (web.xml) or index.html;
  
 In progress:
 
