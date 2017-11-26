@@ -21,6 +21,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
+import rifGenericLibrary.util.FrontEndLogger;
 
 import rifServices.restfulWebServices.*;
 import rifServices.dataStorageLayer.pg.PGSQLProductionRIFStudyServiceBundle;
@@ -111,6 +112,7 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 	= PGSQLProductionRIFStudyServiceBundle.getRIFServiceBundle();
 	
 	private RIFLogger rifLogger = RIFLogger.getLogger();
+	private FrontEndLogger frontEndLogger = FrontEndLogger.getLogger();
 	
 	private SimpleDateFormat sd;
 	private Date startTime;
@@ -143,6 +145,43 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 		}
 	}
 
+	protected Response rifFrontEndLogger(
+			final HttpServletRequest servletRequest, 
+			final String userID,
+			final String browserType,
+			final String messageType,
+			final String message, 
+			final String errorMessage,
+			final String errorStack,
+			final String actualTime,
+			final String relativeTime) {
+				
+		String result = "";
+		try {			
+			frontEndLogger.frontEndMessage(userID,
+				browserType,
+				messageType,
+				message, 
+				errorMessage,
+				errorStack,
+				actualTime,
+				relativeTime);
+			result = serialiseStringResult("OK");
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "PGSQLAbstractRIFWebServiceResource.rifFrontEndLogger error", exception);
+			//Convert exceptions to support JSON
+			result 
+			= serialiseException(
+					servletRequest,
+					exception);	
+		}
+		
+		return webServiceResponseGenerator.generateWebServiceResponse(
+				servletRequest,
+				result);
+	}
+	
 	protected Response isLoggedIn(
 			final HttpServletRequest servletRequest,
 			final String userID) {

@@ -261,7 +261,28 @@ angular.module("RIF")
                 };         
 				//Get Extract Status - can Zip file be created/fetched
                self.getExtractStatus = function (username, studyID) {
-                    //http://localhost:8080/rifServices/studySubmission/pg/getExtractStatus=dwmorley&studyID=46
+                    //http://localhost:8080/rifServices/studySubmission/pg/getExtractStatus?userID==dwmorley&studyID=46
                     return $http.get(studySubmissionURL + DatabaseService.getDatabase() + 'getExtractStatus?userID=' + username + '&studyID=' + studyID);
+                };      
+				//Middleware logger for front end
+               self.rifFrontEndLogger = function (
+					username,
+					messageType,
+					browserType,
+					message, 
+					errorMessage,
+					errorStack,
+					actualTime,
+					relativeTime) {
+                    //http://localhost:8080/rifServices/studySubmission/pg/rifFrontEndLogger?userID=dwmorley&
+
+                    return $http.get(studySubmissionURL + DatabaseService.getDatabase() + 'getExtractStatus?userID=' + username + 
+						'&messageType=' + messageType + 
+						'&browserType=' + browserType + 
+						'&message=' + message + 
+						'&errorMessage=' + errorMessage + 
+						'&errorStack=' + errorStack + 
+						'&actualTime=' + actualTime + 
+						'&relativeTime=' + relativeTime);
                 };
             }]);

@@ -75,9 +75,17 @@
       <PatternLayout pattern="${default_log_pattern}"/>
     </Console>
 	<!-- File logs are in ${catalina.base}/log4j2 - %CATALINA_HOME%/log4j2 -->
-	
     <RollingFile name="RIF_MIDDLEWARE" 
 				 filePattern="${logdir}/RIF_middleware.%d{yyyy-MM-dd}-%i.log"
+				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
+      <PatternLayout pattern="${rif_log_pattern}"/>
+	  <Policies>
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
+		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+	  </Policies>
+    </RollingFile>	
+    <RollingFile name="FRONTENDLOGGER" 
+				 filePattern="${logdir}/FrontEndLogger.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
 	  <Policies>
@@ -136,6 +144,11 @@
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF middleware output on the console -->
       <AppenderRef ref="RIF_MIDDLEWARE"/>
     </Logger>
-		
+      <!-- RIF FRont End logger: rifGenericLibrary.util.FrontEndLogger -->
+    <Logger name="rifGenericLibrary.util.FrontEndLogger"
+		level="info" additivity="false">
+      <AppenderRef ref="CONSOLE"/> <!-- uncomment to see RIF middleware output on the console -->
+      <AppenderRef ref="FRONTENDLOGGER"/>
+    </Logger>		
   </Loggers>
 </Configuration>
