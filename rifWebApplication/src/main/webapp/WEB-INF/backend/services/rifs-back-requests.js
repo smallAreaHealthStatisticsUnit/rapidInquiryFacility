@@ -274,15 +274,15 @@ angular.module("RIF")
 					errorStack,
 					actualTime,
 					relativeTime) {
-                    //http://localhost:8080/rifServices/studySubmission/pg/rifFrontEndLogger?userID=dwmorley&
+                    //http://localhost:8080/rifServices/studySubmission/pg/rifFrontEndLogger?userID=dwmorley&messageType=INFO&browserType=XXX&message=Hello
 
-                    return $http.get(studySubmissionURL + DatabaseService.getDatabase() + 'getExtractStatus?userID=' + username + 
+                    return $http.get(studySubmissionURL + DatabaseService.getDatabase() + 'rifFrontEndLogger?userID=' + username + 
 						'&messageType=' + messageType + 
 						'&browserType=' + browserType + 
-						'&message=' + message + 
-						'&errorMessage=' + errorMessage + 
-						'&errorStack=' + errorStack + 
-						'&actualTime=' + actualTime + 
-						'&relativeTime=' + relativeTime);
+						'&message=' + encodeURIComponent(message) + 
+						'&errorMessage=' + encodeURIComponent(errorMessage) + 
+						'&errorStack=' + encodeURIComponent(errorStack) + 
+						'&actualTime=' + encodeURIComponent(actualTime) + 
+						'&relativeTime=' + encodeURIComponent(relativeTime));
                 };
             }]);

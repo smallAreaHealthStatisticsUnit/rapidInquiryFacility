@@ -35,7 +35,42 @@
  * SERVICE for URL middleware calls. Localhost can be edited here
  */
 
+/* 
+
+Use hardcode version, e.g. if not using the web protocol of the current page and hostname; and/or port 8080
+ */
 angular.module("RIF")
-        .constant('studySubmissionURL', "http://localhost:8080/rifServices/studySubmission/")
-        .constant('studyResultRetrievalURL', "http://localhost:8080/rifServices/studyResultRetrieval/")
-        .constant('taxonomyServicesURL', "http://localhost:8080/taxonomyServices/taxonomyServices/");
+        .constant('studySubmissionURL', "https://localhost:8080/rifServices/studySubmission/")
+        .constant('studyResultRetrievalURL', "https://localhost:8080/rifServices/studyResultRetrieval/")
+        .constant('taxonomyServicesURL', "https://localhost:8080/taxonomyServices/taxonomyServices/")
+/* 
+
+To remove the need for hard coding		
+ 
+angular.module("RIF")
+        .constant('servicesConfig', (function() {
+			studySubmissionURL: $location.protocol + "//" + $location.hostname + ":8080/rifServices/studySubmission/",
+			studyResultRetrievalURL: $location.protocol + "//" + $location.hostname + ":8080/rifServices/studyResultRetrieval/",
+			taxonomyServicesURL: $location.protocol + "//" + $location.hostname + ":8080/rifServices/taxonomyServices/"
+		}));
+
+Hardcoded version:
+		
+angular.module("RIF")
+        .constant('servicesConfig', {
+			studySubmissionURL: "https://localhost:8080/rifServices/studySubmission/",
+			studyResultRetrievalURL: "https://localhost:8080/rifServices/studyResultRetrieval/",
+			taxonomyServicesURL: "https://localhost:8080/rifServices/taxonomyServices/"
+		}
+
+		And access via servicesConfig.studyResultRetrievalURL etc.
+
+*/		
+        .constant('servicesConfig', (function() {
+			return {
+				studySubmissionURL: $location.protocol + "//" + $location.hostname + ":8080/rifServices/studySubmission/",
+				studyResultRetrievalURL: $location.protocol + "//" + $location.hostname + ":8080/rifServices/studyResultRetrieval/",
+				taxonomyServicesURL: $location.protocol + "//" + $location.hostname + ":8080/rifServices/taxonomyServices/"
+			}
+		}));
+	

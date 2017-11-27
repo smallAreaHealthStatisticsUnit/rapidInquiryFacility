@@ -206,26 +206,27 @@ public final class FrontEndLogger {
 				"): " + messageString.toString());
 		}
 		
+		messageString.append(lineSeparator);
 		if (userID != null) {
-			messageString.append("userID:          " + userID + lineSeparator);
+			messageString.append("userID:       " + userID + lineSeparator);
 		}
 		if (browserType != null) {
-			messageString.append("browserType: " + browserType + lineSeparator);
+			messageString.append("browser type: " + browserType + lineSeparator);
 		}
 		if (message != null) {
-			messageString.append("message:   " + message + lineSeparator);
+			messageString.append("message:      " + message + lineSeparator);
 		}
-		if (errorMessage != null) {
-			messageString.append("errorMessage" + errorMessage + lineSeparator);
+		if (errorMessage != null && !errorMessage.equals("Dummy")) {
+			messageString.append("error message: " + errorMessage + lineSeparator);
 		}
 		if (errorStack != null) {
-			messageString.append("errorStack" + errorStack + lineSeparator);
+			messageString.append("error stack>>>" + lineSeparator + errorStack + lineSeparator + "<<<" + lineSeparator);
 		}
 		if (actualTime != null) {
-			messageString.append("actualTime" + actualTime + lineSeparator);
+			messageString.append("actual time:  " + actualTime + lineSeparator);
 		}
 		if (relativeTime != null) {
-			messageString.append("relativeTime" + relativeTime + lineSeparator);
+			messageString.append("relative:     +" + relativeTime + lineSeparator);
 		}
 			
 		if (log != null) {
