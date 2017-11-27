@@ -14,7 +14,8 @@ RIF Web Services
 	 - [1.3.5 Middleware Logging (Log4j2) Setup](#135-middleware-logging-log4j2-setup)
 	 - [1.3.6 Tomcat Logging (Log4j2) Setup](#136-tomcat-logging-log4j2-setup) 
 	 - [1.3.7 Using JConsole with Tomcat](#137-using-jconsole-with-tomcat) 
-	 - [1.3.8 Securing Tomcat](#138-securing-tomcat)
+	 - [1.3.8 Front End Logging](#138-front-end-logging)
+	 - [1.3.9 Securing Tomcat](#139-securing-tomcat)
   - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
    - [2.1 Building Using Make](#21-building-using-make)	
@@ -592,10 +593,6 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
 	ORDER BY 
 	   geography ASC;
 
-
-	;
-
-
 	<<< End PGSQLAbstractSQLManager logSQLQuery
 
   Author: Peter Hambly; 12/9/2017
@@ -611,9 +608,17 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
       <PatternLayout pattern="${default_log_pattern}"/>
     </Console>
 	<!-- File logs are in ${catalina.base}/log4j2 - %CATALINA_HOME%/log4j2 -->
-	
     <RollingFile name="RIF_MIDDLEWARE" 
 				 filePattern="${logdir}/RIF_middleware.%d{yyyy-MM-dd}-%i.log"
+				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
+      <PatternLayout pattern="${rif_log_pattern}"/>
+	  <Policies>
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
+		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+	  </Policies>
+    </RollingFile>	
+    <RollingFile name="FRONTENDLOGGER" 
+				 filePattern="${logdir}/FrontEndLogger.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
 	  <Policies>
@@ -672,7 +677,12 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF middleware output on the console -->
       <AppenderRef ref="RIF_MIDDLEWARE"/>
     </Logger>
-		
+      <!-- RIF FRont End logger: rifGenericLibrary.util.FrontEndLogger -->
+    <Logger name="rifGenericLibrary.util.FrontEndLogger"
+		level="info" additivity="false"> <!-- Chnage to debug for more output -->
+      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
+      <AppenderRef ref="FRONTENDLOGGER"/>
+    </Logger>		
   </Loggers>
 </Configuration>
 ```
@@ -761,7 +771,35 @@ Run Jconsole from *%JAVA_HOME%\bin* e.g. ```"%JAVA_HOME%\bin\Jconsole"```
 
  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Jconsole.png?raw=true "Jconsole")
 
-### 1.3.8 Securing Tomcat
+### 1.3.8 Front End Logging
+
+To be added.
+
+File name: *FrontEndLogger.2017-11-27-1.log*:
+
+```
+13:06:23.479 [https-jsse-nio-8080-exec-10] ERROR rifGenericLibrary.util.FrontEndLogger : 
+userID:       peter
+browser type: Firefox; v57
+message:      Could not initialise the taxonomy service
+error stack>>>
+rifMessage@https://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:290:10
+$scope.showError@https://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:347:5
+handleInitialiseError@https://localhost:8080/RIF4/dashboards/login/controllers/rifc-login-login.js:120:33
+e/<@https://localhost:8080/RIF4/libs/standalone/angular.min.js:131:20
+$eval@https://localhost:8080/RIF4/libs/standalone/angular.min.js:145:343
+$digest@https://localhost:8080/RIF4/libs/standalone/angular.min.js:142:412
+$apply@https://localhost:8080/RIF4/libs/standalone/angular.min.js:146:111
+l@https://localhost:8080/RIF4/libs/standalone/angular.min.js:97:320
+J@https://localhost:8080/RIF4/libs/standalone/angular.min.js:102:34
+gg/</t.onload@https://localhost:8080/RIF4/libs/standalone/angular.min.js:103:4
+
+<<<
+actual time:  27/11/2017 13:06:23
+relative:     +28.5
+```
+
+### 1.3.9 Securing Tomcat
 
 Injecting HTTP Response with the secure header can mitigate most of the web security vulnerabilities. These changes
 implement the necessary HTTP headers to comply with OWASP security standards.
@@ -1205,21 +1243,40 @@ define the URLs for the services.
 
 ```javascript
 /*
- * SERVICE for URL middleware calls. Localhost can be edited here
+ * SERVICE for URL middleware calls. 
+ *
+ * Rewritten to remove the need for hard coding	HTTPS, hostname etc	
+ * and access via servicesConfig.studyResultRetrievalURL etc.
  */
-
 angular.module("RIF")
-        .constant('studySubmissionURL', "http://localhost:8080/rifServices/studySubmission/")
-        .constant('studyResultRetrievalURL', "http://localhost:8080/rifServices/studyResultRetrieval/")
-        .constant('taxonomyServicesURL', "http://localhost:8080/taxonomyServices/taxonomyServices/");
+        .factory('servicesConfig', [
+            function() {
+				var serviceHost=window.location.protocol + "//" + window.location.hostname + ":" + window.location.port;
+				return {		 
+					studySubmissionURL: serviceHost + "/rifServices/studySubmission/",
+					studyResultRetrievalURL: serviceHost + "/rifServices/studyResultRetrieval/",
+					taxonomyServicesURL: serviceHost + "/taxonomyServices/taxonomyServices/"
+				}
+/* 
+
+Use the hardcoded  version, e.g. if not using the web protocol of the current page and hostname; and/or port 8080
+Localhost can be edited here
+				return {
+					studySubmissionURL: "https://localhost:8080/rifServices/studySubmission/",
+					studyResultRetrievalURL: "https://localhost:8080/rifServices/studyResultRetrieval/",
+					taxonomyServicesURL: "https://localhost:8080/rifServices/taxonomyServices/"
+				}
+ */					
+		}]);
 ```
 
-Edit these to match:
+Usually the script is able to detect protocol, port and hostname; so does not need to be chnaged. If it doesn't or you are installing into an unusual environment, 
+use the hardcoded version and edit:
 
 * The port number in use; e.g. 8080 as in the above example or 8443 if you are in a production environment with TLS enabled;
 * The server for the remote service, e.g. *https://aepw-rif27.sm.med.ic.ac.uk*
 
-**BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
+If you do this, **BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
 
 Running the RIF and logging on is detailed in section 5.
 

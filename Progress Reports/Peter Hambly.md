@@ -1745,7 +1745,7 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Performance tune fixes for Postgres. Issues with lack of bind peaking (fully expand INSERT sql), global temporary tables; tune rif40_log()
 * SAHSU 30th  
  
-## 20th to 24th November
+#### 20th to 24th November
 
 * Added tracing to tileLayer; update to same (caching code) as TileMaker, caching disabled on IE. Sub 
   layers not being removed, too many layers in disease mapping (i.e. 60K instead of 2x1280). Layers being added about 
@@ -1755,6 +1755,12 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Testing of SQL Server code: minor fixes to status list, handle longer SQL statements and in covariate SQL generation, LF issues with new SAHSULAND data;
 * Delivered database to CDC;
 * Completed security testing, all issues resolved by editing Tomcat config (web.xml) or index.html;
+
+#### 27th November to 1st December
+
+* Fixed inability to detect non default URLs (e.g. HTTPS://)
+* Added Front end logging to reduce browser stress when debugging map leaks
+
  
 In progress:
 

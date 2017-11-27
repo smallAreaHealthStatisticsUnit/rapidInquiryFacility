@@ -40,7 +40,7 @@
 angular.module("RIF")
         .factory('servicesConfig', [
             function() {
-				var serviceHost=window.location.protocol + "//" + window.location.hostname + ":8080";
+				var serviceHost=window.location.protocol + "//" + window.location.hostname + ":" + window.location.port;
 				return {		 
 					studySubmissionURL: serviceHost + "/rifServices/studySubmission/",
 					studyResultRetrievalURL: serviceHost + "/rifServices/studyResultRetrieval/",
