@@ -1758,9 +1758,9 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 
 #### 27th November to 1st December
 
-* Fixed inability to detect non default URLs (e.g. HTTPS://)
-* Added Front end logging to reduce browser stress when debugging map leaks
-
+* Fixed inability to detect non default URLs (e.g. HTTPS://);
+* Added Front end logging to reduce browser stress when debugging map leaks;
+* Removed mixed content for background tiles (i.e. download fromn HTTPS:: if needed);
  
 In progress:
 
