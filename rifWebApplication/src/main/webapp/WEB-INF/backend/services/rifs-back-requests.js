@@ -275,14 +275,18 @@ angular.module("RIF")
 					actualTime,
 					relativeTime) {
                     //http://localhost:8080/rifServices/studySubmission/pg/rifFrontEndLogger?userID=dwmorley&messageType=INFO&browserType=XXX&message=Hello
-
-                    return $http.get(studySubmissionURL + DatabaseService.getDatabase() + 'rifFrontEndLogger?userID=' + username + 
+					var uri=studySubmissionURL + DatabaseService.getDatabase() + 'rifFrontEndLogger?userID=' + username + 
 						'&messageType=' + messageType + 
 						'&browserType=' + browserType + 
-						'&message=' + encodeURIComponent(message) + 
-						'&errorMessage=' + encodeURIComponent(errorMessage) + 
-						'&errorStack=' + encodeURIComponent(errorStack) + 
-						'&actualTime=' + encodeURIComponent(actualTime) + 
-						'&relativeTime=' + encodeURIComponent(relativeTime));
+						'&message=' + encodeURIComponent((message || "NO MESSAGE!"));
+					if (errorMessage) {
+						uri+='&errorMessage=' + encodeURIComponent(errorMessage);
+					}
+					if (errorMessage) {
+						uri+='&errorStack=' + encodeURIComponent(errorStack);
+					}
+					uri+='&actualTime=' + encodeURIComponent(actualTime) + 
+						'&relativeTime=' + encodeURIComponent(relativeTime);
+                    return $http.get(uri);
                 };
             }]);

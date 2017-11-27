@@ -220,7 +220,7 @@ public final class FrontEndLogger {
 			messageString.append("error message: " + errorMessage + lineSeparator);
 		}
 		if (errorStack != null) {
-			messageString.append("error stack>>>" + lineSeparator + errorStack + lineSeparator + "<<<" + lineSeparator);
+			messageString.append("error stack>>>" + lineSeparator + errorStack + "<<<" + lineSeparator);
 		}
 		if (actualTime != null) {
 			messageString.append("actual time:  " + actualTime + lineSeparator);

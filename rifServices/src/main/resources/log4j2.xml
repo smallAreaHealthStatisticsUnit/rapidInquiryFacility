@@ -146,8 +146,8 @@
     </Logger>
       <!-- RIF FRont End logger: rifGenericLibrary.util.FrontEndLogger -->
     <Logger name="rifGenericLibrary.util.FrontEndLogger"
-		level="info" additivity="false">
-      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF FRont End console logging on the Tomcat console -->
+		level="info" additivity="false"> <!-- Chnage to debug for more output -->
+      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
       <AppenderRef ref="FRONTENDLOGGER"/>
     </Logger>		
   </Loggers>

@@ -103,7 +103,6 @@ angular.module("RIF")
 			 *				message, 
 			 *				errorMessage,
 			 *				errorStack,
-			 *				actualTime,
 			 *				relativeTime
 			 * Returns: 	Nothing
 			 * Description:	Call rifFrontEndLogger servicw log log to middleware
@@ -113,10 +112,11 @@ angular.module("RIF")
 				message, 
 				errorMessage,
 				errorStack,
-				actualTime,
 				relativeTime) {
 					
 				var browser=get_browser_info();
+				var end = new Date();
+				var actualTime = end.toLocaleDateString() + " " + end.toLocaleTimeString();
 
 				user.rifFrontEndLogger(user.currentUser, 
 					messageType,
@@ -127,15 +127,17 @@ angular.module("RIF")
 					actualTime,
 //					actualTime.toDateString() + "; " + actualTime.toTimeString(),
 					relativeTime).then(function (res) {
-						if (res.data.status != "OK") {
+						if (res.data[0].result != "OK") {
 							if (window.console && console && console.log && typeof console.log == "function") { // IE safe
 								if (isIE()) {
 									if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
-										console.log("+" + relativeTime + ": [rifFrontEndLogger ERROR] " + message); // IE safe
+										console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + JSON.stringify(res.data) + 
+											"\n" + message); // IE safe
 									}
 								}
 								else {
-									console.log("+" + relativeTime + ": [rifFrontEndLogger ERROR] " + message); // IE safe
+									console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + JSON.stringify(res.data) + 
+											"\n" + message); // IE safe
 								}
 							}  	
 						}
@@ -166,7 +168,6 @@ angular.module("RIF")
 					msg, 
 					undefined /* errorMessage */,
 					undefined /* err.stack */,
-					end,
 					elapsed);
 			}
 			
@@ -195,7 +196,6 @@ angular.module("RIF")
 					msg, 
 					undefined /* errorMessage */,
 					undefined /* err.stack */,
-					end,
 					elapsed);
 			}
 			
@@ -272,7 +272,6 @@ angular.module("RIF")
 					msg, 
 					err.message,
 					err.stack,
-					end,
 					elapsed);				
 			}
 
@@ -342,7 +341,6 @@ angular.module("RIF")
 					msg, 
 					err.message,
 					err.stack,
-					end,
 					elapsed);				
 			}
 			
