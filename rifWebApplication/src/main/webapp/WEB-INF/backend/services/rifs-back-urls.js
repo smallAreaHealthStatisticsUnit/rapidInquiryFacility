@@ -32,45 +32,29 @@
  */
 
 /*
- * SERVICE for URL middleware calls. Localhost can be edited here
- */
-
-/* 
-
-Use hardcode version, e.g. if not using the web protocol of the current page and hostname; and/or port 8080
+ * SERVICE for URL middleware calls. 
+ *
+ * Rewritten to remove the need for hard coding	HTTPS, hostname etc	
+ * and access via servicesConfig.studyResultRetrievalURL etc.
  */
 angular.module("RIF")
-        .constant('studySubmissionURL', "https://localhost:8080/rifServices/studySubmission/")
-        .constant('studyResultRetrievalURL', "https://localhost:8080/rifServices/studyResultRetrieval/")
-        .constant('taxonomyServicesURL', "https://localhost:8080/taxonomyServices/taxonomyServices/")
+        .factory('servicesConfig', [
+            function() {
+				var serviceHost=window.location.protocol + "//" + window.location.hostname + ":8080";
+				return {		 
+					studySubmissionURL: serviceHost + "/rifServices/studySubmission/",
+					studyResultRetrievalURL: serviceHost + "/rifServices/studyResultRetrieval/",
+					taxonomyServicesURL: serviceHost + "/taxonomyServices/taxonomyServices/"
+				}
 /* 
 
-To remove the need for hard coding		
- 
-angular.module("RIF")
-        .constant('servicesConfig', (function() {
-			studySubmissionURL: $location.protocol + "//" + $location.hostname + ":8080/rifServices/studySubmission/",
-			studyResultRetrievalURL: $location.protocol + "//" + $location.hostname + ":8080/rifServices/studyResultRetrieval/",
-			taxonomyServicesURL: $location.protocol + "//" + $location.hostname + ":8080/rifServices/taxonomyServices/"
-		}));
-
-Hardcoded version:
+Use the hardcoded  version, e.g. if not using the web protocol of the current page and hostname; and/or port 8080
+Localhost can be edited here
+				return {
+					studySubmissionURL: "https://localhost:8080/rifServices/studySubmission/",
+					studyResultRetrievalURL: "https://localhost:8080/rifServices/studyResultRetrieval/",
+					taxonomyServicesURL: "https://localhost:8080/rifServices/taxonomyServices/"
+				}
+ */					
+		}]);
 		
-angular.module("RIF")
-        .constant('servicesConfig', {
-			studySubmissionURL: "https://localhost:8080/rifServices/studySubmission/",
-			studyResultRetrievalURL: "https://localhost:8080/rifServices/studyResultRetrieval/",
-			taxonomyServicesURL: "https://localhost:8080/rifServices/taxonomyServices/"
-		}
-
-		And access via servicesConfig.studyResultRetrievalURL etc.
-
-*/		
-        .constant('servicesConfig', (function() {
-			return {
-				studySubmissionURL: $location.protocol + "//" + $location.hostname + ":8080/rifServices/studySubmission/",
-				studyResultRetrievalURL: $location.protocol + "//" + $location.hostname + ":8080/rifServices/studyResultRetrieval/",
-				taxonomyServicesURL: $location.protocol + "//" + $location.hostname + ":8080/rifServices/taxonomyServices/"
-			}
-		}));
-	
