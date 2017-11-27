@@ -282,7 +282,7 @@ angular.module("RIF")
 					if (errorMessage) {
 						uri+='&errorMessage=' + encodeURIComponent(errorMessage);
 					}
-					if (errorMessage) {
+					if (errorStack) {
 						uri+='&errorStack=' + encodeURIComponent(errorStack);
 					}
 					uri+='&actualTime=' + encodeURIComponent(actualTime) + 
