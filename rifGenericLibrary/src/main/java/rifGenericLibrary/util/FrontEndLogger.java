@@ -186,6 +186,7 @@ public final class FrontEndLogger {
 	public void frontEndMessage(
 			final String userID,
 			final String browserType,
+			final String ipAddress,
 			final String stringMessageType,
 			final String message, 
 			final String errorMessage,
@@ -212,6 +213,9 @@ public final class FrontEndLogger {
 		}
 		if (browserType != null) {
 			messageString.append("browser type: " + browserType + lineSeparator);
+		}
+		if (ipAddress != null) {
+			messageString.append("iP address:   " + ipAddress + lineSeparator);
 		}
 		if (message != null) {
 			messageString.append("message:      " + message + lineSeparator);

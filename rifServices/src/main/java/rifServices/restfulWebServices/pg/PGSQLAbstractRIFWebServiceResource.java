@@ -155,11 +155,16 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			final String errorStack,
 			final String actualTime,
 			final String relativeTime) {
-				
+			
+		String ipAddress = servletRequest.getHeader("X-FORWARDED-FOR");  
+		if (ipAddress == null) {  
+			ipAddress = servletRequest.getRemoteAddr();  
+		}	
 		String result = "";
 		try {			
 			frontEndLogger.frontEndMessage(userID,
 				browserType,
+				ipAddress,
 				messageType,
 				message, 
 				errorMessage,
