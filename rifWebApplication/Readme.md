@@ -441,6 +441,7 @@ Create a log4j version 2 XML configuation file for tomcat. Two choices are provi
 
    * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/tomcat.log-<N>```: Tomcat/catalina messages (org.apache.catalina.core.ContainerBase.[Catalina].[localhost]*)
    * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>```: RIF messages
+   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```: RIF front end messages
    * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/Other.log-<N>```: Other messages
    
    where ```<YYYY>``` is the  year, ```<MM>``` is the numeric month numeric and ```<N>``` is the log sequence number.
@@ -773,14 +774,45 @@ Run Jconsole from *%JAVA_HOME%\bin* e.g. ```"%JAVA_HOME%\bin\Jconsole"```
 
 ### 1.3.8 Front End Logging
 
-To be added.
+Front end logging is enabled by default to the log file: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```; e.g.
+ *FrontEndLogger.2017-11-27-1.log*.
+ 
+To enable debugging in *%CATALINA_HOME%\webapps\RIF4\utils\controllers\rifc-util-alert.js* set ```$scope.debugEnabled = true;```:
 
-File name: *FrontEndLogger.2017-11-27-1.log*:
+```javascript
+
+/* 
+ * CONTROLLER to handle alert bars and notifications over whole application
+ */
+angular.module("RIF")
+        .controller('AlertCtrl', ['$scope', 'notifications', 'user', function ($scope, notifications, user) {
+            $scope.delay = 0; // mS
+			$scope.lastMessage = undefined;
+			$scope.messageList = [];
+			$scope.messageCount = undefined;
+			$scope.messageStart = new Date().getTime();
+			$scope.debugEnabled = true;
+			
+```
+
+Chnage the log level to debug in the log4j setup for *rifGenericLibrary.util.FrontEndLogger*:
+
+```xml
+    <!-- RIF FRont End logger: rifGenericLibrary.util.FrontEndLogger -->
+    <Logger name="rifGenericLibrary.util.FrontEndLogger"
+		level="debug" additivity="false"> <!-- Chnage to debug for more output -->
+      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
+      <AppenderRef ref="FRONTENDLOGGER"/>
+    </Logger>	
+```
+
+Example from: *FrontEndLogger.2017-11-27-1.log*:
 
 ```
 13:06:23.479 [https-jsse-nio-8080-exec-10] ERROR rifGenericLibrary.util.FrontEndLogger : 
 userID:       peter
 browser type: Firefox; v57
+iP address:   0:0:0:0:0:0:0:1
 message:      Could not initialise the taxonomy service
 error stack>>>
 rifMessage@https://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:290:10
@@ -793,7 +825,6 @@ $apply@https://localhost:8080/RIF4/libs/standalone/angular.min.js:146:111
 l@https://localhost:8080/RIF4/libs/standalone/angular.min.js:97:320
 J@https://localhost:8080/RIF4/libs/standalone/angular.min.js:102:34
 gg/</t.onload@https://localhost:8080/RIF4/libs/standalone/angular.min.js:103:4
-
 <<<
 actual time:  27/11/2017 13:06:23
 relative:     +28.5
@@ -1072,11 +1103,12 @@ If SAHSU has supplied a taxonomyServices.war file skip to step 3.
 1) Get the Taxonomy Service XML file *ClaML.dtd*. This is stored in is stored in ...rifServices\src\main\resources. A complete ICD10 version 
    is available from SAHSU for Organisations compliant with the WHO licence.
    
-   For a full ICD10 listing add the following SAHSU supplied files to: 
-   %CATALINE_HOME%\webapps\taxonomyServices\WEB-INF\classes and restart tomcat
+  For a full ICD10 listing add the following SAHSU supplied files to: 
+  %CATALINA_HOME%\conf and restart tomcat
 
-   * icdClaML2016ens.xml
-   * TaxonomyServicesConfiguration.xml
+  * icdClaML2016ens.xml
+  * TaxonomyServicesConfiguration.xml
+  * ClaML.dtd
 
 2) Build the Taxonomy Service using *maven*.
    Either: 
