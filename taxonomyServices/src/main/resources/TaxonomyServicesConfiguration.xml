@@ -1,25 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <taxonomy_services>
-
-
-<taxonomy_service>
-<identifier>icd10</identifier>
-<name>ICD Taxonomy Service</name>
-<description>ICD 10 is a classification of diseases.</description>
-<version>1.0</version>
-<ontology_service_class_name>
-taxonomyServices.ICDTaxonomyService
-</ontology_service_class_name>
-
-<parameters>
-<parameter>
-<name>icd10_ClaML_file</name>
-<value>
-ExampleClaMLICD10Codes.xml
-</value>
-</parameter>
-</parameters>
-
-</taxonomy_service>
-
+  <taxonomy_service>
+    <identifier>icd10</identifier>
+    <name>ICD Taxonomy Service</name>
+    <description>ICD 10 is a classification of diseases.</description>
+    <version>1.0</version>
+    <ontology_service_class_name>taxonomyServices.ICDTaxonomyService</ontology_service_class_name>
+    <parameters>
+      <parameter>
+        <name>icd10_ClaML_file</name>
+        <value>ExampleClaMLICD10Codes.xml</value>
+		<!-- make sure claML.dtd is in the same directory -->
+      </parameter>
+    </parameters>
+  </taxonomy_service>
 </taxonomy_services>
