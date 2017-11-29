@@ -63,10 +63,15 @@ angular.module("RIF")
                     }
                 });
 
-				
-				$scope.layerAdds=0;
-				$scope.layerUpdates=0;
-				$scope.layerRemoves=0;
+				$scope.layerStats = {
+					layerAdds: 0,
+					subLayerAdds: 0,
+					layerUpdates: 0,
+					subLayerUpdates: 0,
+					layerRemoves: 0,
+					subLayerRemoves: 0,
+					errors: 0
+				};
 				
 				$scope.cacheStats={
 					hits: 0,
@@ -303,9 +308,7 @@ angular.module("RIF")
                 //Draw the map
                 $scope.refresh = function (mapID) {
 					$scope.consoleDebug("[rifc-util-mapping.js] refresh for mapID: " + mapID + 
-						"; layer adds " + $scope.layerAdds + 
-						"; layer updates: " + $scope.layerUpdates + 
-						"; layer removes " + $scope.layerRemoves + 
+						"; layer stats " + JSON.stringify($scope.layerStats, null, 2) + 
 						"; study: " + $scope.studyID[mapID].study_id + 
 						"; sex: " + $scope.sex[mapID] +
 						"; cache: " + JSON.stringify($scope.cacheStats, null, 2));					
@@ -340,16 +343,18 @@ angular.module("RIF")
                     }
                 };
 
-                //apply relevent renderer to layer
-                $scope.removeLayer = function (layer) {
+                //remove rsub layer
+				$scope.removeSubLayer  = function (layer) {
                     var mapID = layer.options.mapID;
-					$scope.layerRemoves++;
+					$scope.layerStats.subLayerRemoves++;
+//					layer.remove(); 	// Remove [should be done by TopoJSONGridLayer.js]
+//					layer=undefined;
 				}
 				
                 //apply relevent renderer to layer
                 $scope.handleLayer = function (layer) {
                     var mapID = layer.options.mapID;
-					$scope.layerUpdates++;
+					$scope.layerStats.subLayerUpdates++;
                     if (mapID === "viewermap") {
                         //Join geography and results table
                         var thisAttr;
@@ -376,7 +381,9 @@ angular.module("RIF")
 //							Do nothing!						
 							$scope.consoleError("[rifc-util-mapping.js] Null mapID; layer options: " + JSON.stringify(layer.options, null, 2));
 							if (layer !== undefined) {
+								$scope.layerStats.subLayerRemoves++;
 								layer.remove(); 	// Remove 
+								layer=undefined;
 							}
 						}
 						else if ($scope.tableData[mapID] === undefined) {
@@ -421,7 +428,9 @@ angular.module("RIF")
 
                         //Remove any existing geography
                         if ($scope.map[mapID].hasLayer($scope.geoJSON[mapID])) {
-                            $scope.map[mapID].removeLayer($scope.geoJSON[mapID]);
+							$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.removeSubLayer);
+							$scope.map[mapID].removeLayer($scope.geoJSON[mapID]);
+							$scope.geoJSON[mapID]=undefined;
                         }
 
                         //save study, sex selection
@@ -435,6 +444,10 @@ angular.module("RIF")
 
                                     var topojsonURL = user.getTileMakerTiles(user.currentUser, $scope.tileInfo[mapID].geography, $scope.tileInfo[mapID].level);
 									
+									if ($scope.geoJSON[mapID]) {
+										$scope.consoleError("[rifc-util-mapping.js] create topoJsonGridLayer for mapID: " + mapID + 
+											"; pre-existing data found");
+									}
 									$scope.consoleDebug("[rifc-util-mapping.js] create topoJsonGridLayer for mapID: " + mapID + 
 										"; Geography: " + $scope.tileInfo[mapID].geography +
 										"; Geolevel: " + $scope.tileInfo[mapID].level +
@@ -518,13 +531,9 @@ angular.module("RIF")
 	
                                     //force re-render of new tiles								
                                     $scope.geoJSON[mapID].on('load', function (e) {
-										var t=$scope.layerUpdates;
                                         $scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
-										$scope.layerAdds+=($scope.layerUpdates-t);
 										$scope.consoleDebug("[rifc-util-mapping.js] load event for mapID: " + mapID + 
-											"; layer adds " + $scope.layerAdds + 
-											"; layer updates: " + $scope.layerUpdates + 
-											"; layer removes " + $scope.layerRemoves + 
+											"; layer stats " + JSON.stringify($scope.layerStats, null, 2) + 
 											"; study: " + $scope.studyID[mapID].study_id + 
 											"; sex: " + $scope.sex[mapID] +
 											"; tiles: " + Object.keys(e.target._tiles).length +
@@ -534,9 +543,18 @@ angular.module("RIF")
                                     });
 												
                                     $scope.geoJSON[mapID].on('remove', function (e) {
-										$scope.layerRemoves++;
+										$scope.layerStats.layerRemoves++;
+									});		
+                                    $scope.geoJSON[mapID].on('add', function (e) {
+										$scope.layerStats.layerAdds++;
+									});	
+                                    $scope.geoJSON[mapID].on('addsublayer', function (e) {
+										$scope.layerStats.subLayerAdds++;
 									});
 									$scope.geoJSON[mapID].on('tileerror', function(error, tile) {
+										if ($scope.cacheStats) {
+											$scope.layerStats.errors++;
+										}
 										var msg="";
 										if (error && error.message) {
 											msg+=error.message;
@@ -572,6 +590,7 @@ angular.module("RIF")
 													//do not get maxbounds for diseasemap2
 													if ($scope.myService.getState().center[mapID].lat === 0) {
 														$scope.consoleDebug("[rifc-util-mapping.js] set fitBounds for mapID: " + mapID + 
+															"; lowestLevel: " + lowestLevel +
 															"; maxbounds: " + JSON.stringify($scope.maxbounds));
 														$scope.map[mapID].fitBounds($scope.maxbounds);
 														if ($scope.geoJSON[mapID]._geojsons.default) {

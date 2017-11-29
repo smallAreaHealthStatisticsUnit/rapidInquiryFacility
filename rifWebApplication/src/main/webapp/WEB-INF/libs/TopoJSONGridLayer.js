@@ -326,6 +326,8 @@ Stack: undefined
                 }
             },
             addSubLayerData: function (sublayer, data) {
+                var tileLayer = this;
+				tileLayer.fire('addsublayer', { sublayer: sublayer });
                 if (!this._geojsons[sublayer]) {
                     this._geojsons[sublayer] = new this.geoJsonClass(null, this.options.layers[sublayer]).addTo(this._map);	
                     this.checkZoomConditions(this._map.getZoom());
