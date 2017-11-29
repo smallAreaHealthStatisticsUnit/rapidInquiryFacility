@@ -35,8 +35,12 @@
  * CONTROLLER to handle tab transitions, logout and alert on new study completion
  */
 angular.module("RIF")
-        .controller('TabCtrl', ['$scope', 'user', '$injector', '$uibModal', '$interval', '$rootScope',
-            function ($scope, user, $injector, $uibModal, $interval, $rootScope) {
+        .controller('TabCtrl', ['$scope', 'user', '$injector', '$uibModal', '$interval', '$rootScope', 
+			'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ExportStateService',
+            'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService',
+            function ($scope, user, $injector, $uibModal, $interval, $rootScope, 
+                    SubmissionStateService, StudyAreaStateService, CompAreaStateService, ExportStateService,
+                    ParameterStateService, StatsStateService, ViewerStateService, MappingStateService) {
 
                 //The user to display
                 $scope.username = user.currentUser;
@@ -244,9 +248,19 @@ angular.module("RIF")
                     $scope.openLogout();
                 };
                 $scope.doLogout = function () {
-                    user.logout(user.currentUser).then(handleLogout, handleLogout);
+                    user.logout(user.currentUser).then(handleLogout, handleLogout /* Error method! */);
                 };
-                function handleLogout(res) {
+                function handleLogout(res) {  
+				//reset all services
+					SubmissionStateService.resetState();
+					StudyAreaStateService.resetState();
+					CompAreaStateService.resetState();
+					ParameterStateService.resetState();
+					StatsStateService.resetState();
+					ViewerStateService.resetState();
+					MappingStateService.resetState();
+					ExportStateService.resetState();
+							
                     $injector.get('$state').transitionTo('state0');
                 }
             }])

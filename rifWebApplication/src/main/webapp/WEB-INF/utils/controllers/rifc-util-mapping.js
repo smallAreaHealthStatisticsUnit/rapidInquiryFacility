@@ -50,6 +50,15 @@ angular.module("RIF")
                 $scope.myService = MappingStateService;
                 if (parentScope.myMaps[0] === "viewermap") {
                     $scope.myService = ViewerStateService;
+					ViewerStateService.setRemoveMap(function() { 
+						$scope.removeMap("viewermap"); 
+					});
+                }
+                else {
+					MappingStateService.setRemoveMap(function() { 
+						$scope.removeMap("diseasemap1");
+						$scope.removeMap("diseasemap2");
+					});
                 }
 
                 //Handle UI-Layout resize events
@@ -147,6 +156,10 @@ angular.module("RIF")
                 };
                 $scope.studyIDs = [];
 
+				$scope.removeMap = function(mapID) {
+					$scope.consoleLog("[rifc-util-mapping.js] remove map: " + mapID);
+				}
+				
                 /*
                  * Tidy up on error
                  */
