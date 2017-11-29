@@ -158,7 +158,13 @@ angular.module("RIF")
 
 				$scope.removeMap = function(mapID) {
 					$scope.consoleLog("[rifc-util-mapping.js] remove map: " + mapID);
+					if ($scope.map[mapID].hasLayer($scope.geoJSON[mapID])) {
+						$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.removeSubLayer);
+						$scope.map[mapID].removeLayer($scope.geoJSON[mapID]);
+						$scope.geoJSON[mapID]={};
+                    }
 				}
+
 				
                 /*
                  * Tidy up on error
@@ -443,7 +449,7 @@ angular.module("RIF")
                         if ($scope.map[mapID].hasLayer($scope.geoJSON[mapID])) {
 							$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.removeSubLayer);
 							$scope.map[mapID].removeLayer($scope.geoJSON[mapID]);
-							$scope.geoJSON[mapID]=undefined;
+							$scope.geoJSON[mapID]={};
                         }
 
                         //save study, sex selection
@@ -457,9 +463,10 @@ angular.module("RIF")
 
                                     var topojsonURL = user.getTileMakerTiles(user.currentUser, $scope.tileInfo[mapID].geography, $scope.tileInfo[mapID].level);
 									
-									if ($scope.geoJSON[mapID]) {
-										$scope.consoleError("[rifc-util-mapping.js] create topoJsonGridLayer for mapID: " + mapID + 
-											"; pre-existing data found");
+									if (!$scope.geoJSON[mapID]) { // Created in: mapping\controllers\rifc-dmap-main.js, viewer\controllers\rifc-view-viewer.js:
+										$scope.consoleError("[rifc-util-mapping.js] Unable to create topoJsonGridLayer for mapID: " + mapID + 
+											"; no map");
+										return;
 									}
 									$scope.consoleDebug("[rifc-util-mapping.js] create topoJsonGridLayer for mapID: " + mapID + 
 										"; Geography: " + $scope.tileInfo[mapID].geography +

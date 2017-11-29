@@ -1761,6 +1761,8 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Fixed inability to detect non default URLs (e.g. HTTPS://);
 * Added Front end logging to reduce browser stress when debugging map leaks;
 * Removed mixed content for background tiles (i.e. download fromn HTTPS:: if needed);
+* Fixed taxonomy service configuration to use Tomcat conf directory (i.e. upgrades do not loose confiruation)
+* Added map layer remove code to logoff; memory is free so the leak is in the GeoJSON gridlayer;
  
 In progress:
 
