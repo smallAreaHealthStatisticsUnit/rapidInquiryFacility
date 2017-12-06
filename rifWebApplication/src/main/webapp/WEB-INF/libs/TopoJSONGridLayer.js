@@ -189,7 +189,8 @@
 							});
 						}
 						else {
-							tileLayer.consoleError("[TopoJSONGridLayer.js] _db.get() error: " + JSON.stringify(err, null, 2));
+							tileLayer.consoleError("[TopoJSONGridLayer.js] _db.get() error: " + JSON.stringify(err, null, 2) +
+								"; tileUrl: " + tileUrl);
 							tileLayer.fire('tilecacheerror', { tile: tile, error: err });
 							tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
 								done(error, tile);

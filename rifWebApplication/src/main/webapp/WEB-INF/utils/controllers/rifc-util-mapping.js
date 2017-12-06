@@ -96,7 +96,12 @@ angular.module("RIF")
                     'diseasemap2': {},
                     'viewermap': {}
                 });
-
+                $scope.loaded = ({
+                    'diseasemap1': false,
+                    'diseasemap2': false,
+                    'viewermap': false
+                });
+				
                 //Polygons
                 $scope.geoJSON = ({
                     'diseasemap1': {},
@@ -559,24 +564,34 @@ angular.module("RIF")
                                     $scope.geoJSON[mapID].on('load', function (e) {
 										if ($scope.geoJSON[mapID]._geojsons.default) {
 											$scope.geoJSON[mapID]._geojsons.default.eachLayer($scope.handleLayer);
+											$scope.loaded[mapID]=true;
 										}
 										else {							
 											$scope.consoleError("[rifc-util-mapping.js] geoJSON not yet set up: $scope.geoJSON[mapID]._geojsons.default is NULL");
 										}	
 										
 										$scope.map[mapID].whenReady(function(e) {			
-											
+											if ($scope.geoJSON[mapID]._tiles) {												
+												$scope.consoleDebug("[rifc-util-mapping.js] load event for mapID: " + mapID + 
+													"; layer stats " + JSON.stringify($scope.layerStats, null, 2) + 
+													"; study: " + $scope.studyID[mapID].study_id + 
+													"; sex: " + $scope.sex[mapID] +
+													"; tiles: " + Object.keys($scope.geoJSON[mapID]._tiles).length +
+													"; zoomlevel: " + $scope.map[mapID].getZoom() +
+													"; areas: " + $scope.geoJSON[mapID]._geojsons.default.getLayers().length);	
+											}
+											else {
+												$scope.consoleDebug("[rifc-util-mapping.js] load event for mapID: " + mapID + 
+													"; layer stats " + JSON.stringify($scope.layerStats, null, 2) + 
+													"; study: " + $scope.studyID[mapID].study_id + 
+													"; sex: " + $scope.sex[mapID] +
+													"; tiles: UNKNOWN" +
+													"; zoomlevel: " + $scope.map[mapID].getZoom() +
+													"; areas: " + $scope.geoJSON[mapID]._geojsons.default.getLayers().length);
+											}
 											if (mapID !== "viewermap") { 
 												$scope.mapLocking();
 											}
-											$scope.consoleDebug("[rifc-util-mapping.js] load event for mapID: " + mapID + 
-												"; layer stats " + JSON.stringify($scope.layerStats, null, 2) + 
-												"; study: " + $scope.studyID[mapID].study_id + 
-												"; sex: " + $scope.sex[mapID] +
-	//											"; tiles: " + Object.keys(e.target._tiles).length +
-												"; zoomlevel: " + e.target._tileZoom +
-	//											"; URL: " + e.target._url +
-												"; areas: " + Object.keys(e.target._geojsons.default._layers).length);
 										});
                                     });
 												
@@ -665,14 +680,16 @@ angular.module("RIF")
                     //Sync or unsync map extents using https://github.com/jieter/Leaflet.Sync ONCE!
                     $scope.mapLocking = function () {
                         if ($scope.$parent.bLockCenters) {
-							if (!$scope.map["diseasemap1"].isSynced($scope.map["diseasemap2"])) {
-								$scope.consoleDebug("[rifc-util-mapping.js] mapLocking: sync diseasemap1 with diseasemap2");
+							if (!$scope.map["diseasemap1"].isSynced($scope.map["diseasemap2"])) { // sync interactions on diseasemap1 with diseasemap2.
+								$scope.consoleDebug("[rifc-util-mapping.js] mapLocking: sync interactions on diseasemap1 with diseasemap2");
 								$scope.map["diseasemap1"].sync($scope.map["diseasemap2"]);
 							}
-							if (!$scope.map["diseasemap2"].isSynced($scope.map["diseasemap1"])) {
-								$scope.consoleDebug("[rifc-util-mapping.js] mapLocking: sync diseasemap2 with diseasemap1");
-								$scope.map["diseasemap2"].sync($scope.map["diseasemap1"]);
-							}
+//							$scope.map["diseasemap1"].whenReady(function(e) {		
+								if (!$scope.map["diseasemap2"].isSynced($scope.map["diseasemap1"])) {
+									$scope.consoleDebug("[rifc-util-mapping.js] mapLocking: sync interactions on diseasemap2 with diseasemap1");
+									$scope.map["diseasemap2"].sync($scope.map["diseasemap1"]);
+								}
+//							});
                         } 
 						else {
 							if ($scope.map["diseasemap1"].isSynced($scope.map["diseasemap2"])) {
