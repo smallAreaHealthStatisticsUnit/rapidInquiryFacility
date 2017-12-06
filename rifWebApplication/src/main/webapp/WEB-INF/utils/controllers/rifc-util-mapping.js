@@ -326,11 +326,7 @@ angular.module("RIF")
 
                 //Draw the map
                 $scope.refresh = function (mapID) {
-					$scope.consoleDebug("[rifc-util-mapping.js] refresh for mapID: " + mapID + 
-						"; layer stats " + JSON.stringify($scope.layerStats, null, 2) + 
-						"; study: " + $scope.studyID[mapID].study_id + 
-						"; sex: " + $scope.sex[mapID] +
-						"; cache: " + JSON.stringify($scope.cacheStats, null, 2));					
+					$scope.consoleDebug("[rifc-util-mapping.js] refresh for mapID: " + mapID);					
                     //get choropleth map renderer
                     $scope.attr[mapID] = ChoroService.getMaps(mapID).feature;
                     thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
@@ -373,7 +369,7 @@ angular.module("RIF")
                 //apply relevent renderer to layer
                 $scope.handleLayer = function (layer) {
                     var mapID = layer.options.mapID;
-					$scope.layerStats.subLayerUpdates++;
+//					$scope.layerStats.subLayerUpdates++;
                     if (mapID === "viewermap") {
                         //Join geography and results table
                         var thisAttr;
@@ -400,7 +396,7 @@ angular.module("RIF")
 //							Do nothing!						
 							$scope.consoleError("[rifc-util-mapping.js] Null mapID; layer options: " + JSON.stringify(layer.options, null, 2));
 							if (layer !== undefined) {
-								$scope.layerStats.subLayerRemoves++;
+								$scope.layerStats.LayerRemoves++;
 								layer.remove(); 	// Remove 
 								layer=undefined;
 							}
@@ -568,8 +564,9 @@ angular.module("RIF")
                                     $scope.geoJSON[mapID].on('add', function (e) {
 										$scope.layerStats.layerAdds++;
 									});	
-                                    $scope.geoJSON[mapID].on('addsublayer', function (e) {
-										$scope.layerStats.subLayerAdds++;
+                                    $scope.geoJSON[mapID].on('addsublayer', function (stats) {
+										$scope.layerStats.subLayerAdds+=stats.subLayerAdds;
+										$scope.layerStats.subLayerUpdates+=stats.subLayerUpdates;
 									});
 									$scope.geoJSON[mapID].on('tileerror', function(error, tile) {
 										if ($scope.cacheStats) {

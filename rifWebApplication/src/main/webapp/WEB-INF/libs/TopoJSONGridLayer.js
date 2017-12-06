@@ -130,7 +130,7 @@
 							if (Date.now() > doc.timestamp + tileLayer.options.cacheMaxAge) {
 							// Tile is too old, try to refresh it
 								var existingRevision = doc._revs_info[0].rev;
-								tileLayer.consoleDebug("[TopoJSONGridLayer.js] _db.get() Tile is too old: " + tileUrl + 
+								tileLayer.consoleDebug("[TopoJSONGridLayer.js] _db.get() Tile is too old, refreshing: " + tileUrl + 
 									"; rev: " + existingRevision);
 								tileLayer.fetchTile(coords || tile.coords, existingRevision, function (error) {
 									done(error, tile);
@@ -327,7 +327,9 @@ Stack: undefined
             },
             addSubLayerData: function (sublayer, data) {
                 var tileLayer = this;
-				tileLayer.fire('addsublayer', { sublayer: sublayer });
+				var subLayerAdds=0;
+				var subLayerUpdates=0;
+				
                 if (!this._geojsons[sublayer]) {
                     this._geojsons[sublayer] = new this.geoJsonClass(null, this.options.layers[sublayer]).addTo(this._map);	
                     this.checkZoomConditions(this._map.getZoom());
@@ -341,6 +343,12 @@ Stack: undefined
                 }
                 toAdd.forEach(function (feature) {
                     var id = feature.id ? feature.id : feature.properties.id;
+					if (this._features[sublayer][id]) {
+						subLayerUpdates++;
+					}
+					else {
+						subLayerAdds++;
+					}
                     this._features[sublayer][id] = feature;
                 }, this);
 
@@ -348,6 +356,9 @@ Stack: undefined
                     type: 'FeatureCollection',
                     features: toAdd
 				});
+				
+				
+				tileLayer.fire('addsublayer', { sublayer: sublayer, subLayerAdds: subLayerAdds, subLayerUpdates: subLayerUpdates });
             },
 
             checkZoomConditions: function (zoom) {
