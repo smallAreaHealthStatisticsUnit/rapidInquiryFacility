@@ -213,7 +213,77 @@
 					tileUrl: tileUrl,
 					coords: coords
 				};
-
+				
+				errorFunction = function(err) {
+/*
++32.1: [ERROR] [TopoJSONGridLayer.js] _db.put() error: {
+"description": "Adapter is missing",
+"code": 404,
+"stack": "Error: Adapter is missing\n   at Anonymous function (http://localhost:8080/RIF4/libs/pouchdb.js:3133:11)\n   at Anonymous function (http://localhost:8080/RIF4/libs/pouchdb.js:3111:6)\n   at tryToUnwrap (http://localhost:8080/RIF4/libs/pouchdb.js:12003:5)\n   at tryCatch (http://localhost:8080/RIF4/libs/pouchdb.js:12015:5)\n   at safelyResolveThenable (http://localhost:8080/RIF4/libs/pouchdb.js:12006:3)\n   at Promise (http://localhost:8080/RIF4/libs/pouchdb.js:11880:5)\n   at PouchDB (http://localhost:8080/RIF4/libs/pouchdb.js:3099:3)\n   at initialize (http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:53:5)\n   at e (http://localhost:8080/RIF4/libs/standalone/leaflet.js:5:2729)\n   at L.topoJsonGridLayer (http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:347:13)"
+}
+Stack: undefined
+*/									
+					if (err && err.status == 404 && err.description == "Adapter is missing") { 
+						tileLayer.options.useCache=false;	// Disable cache
+						tileLayer.PouchDBError = err;		// Flag error
+						tileLayer.consoleError("[TopoJSONGridLayer.js] TopoJSONGridLayer PouchDB error: " + err.stack + ", useCache disabled");	
+						tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+						tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
+							done(error, tile);
+						});
+					}
+/*
++2657.3: [ERROR] [TopoJSONGridLayer.js] _db.put() error: {
+"status": 409,
+"name": "conflict",
+"message": "Document update conflict",
+"error": true
+} 
+*/
+					else if (err && err.status == 409 && err.message == "Document update conflict") { 
+						tileLayer.consoleError("[TopoJSONGridLayer.js] _db.put() update conflict: " + JSON.stringify(err, null, 2) +
+							"; for tile: " + tileUrl);
+						tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+//										tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
+//											done(error, tile);
+//										});
+						tileLayer._db.remove(tileUrl).then(function (response) {
+								if (response.ok) {
+	//									tileLayer.consoleDebug("[TopoJSONGridLayer.js] conflict _db.remove(): " + response.id);
+									done(null);	
+								}
+								else {
+									var err=new Error("[TopoJSONGridLayer.js] _db.put() invalid response: " + 
+										JSON.stringify(response, null, 2));
+									tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+									done(err);
+								}
+							});
+					}
+					else if (err == undefined) {
+						tileLayer.consoleError("[TopoJSONGridLayer.js] _db.put() no error");
+						tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+						tileLayer.options.useCache=false;	// Disable cache
+						tileLayer.PouchDBError = new Error("[TopoJSONGridLayer.js] _db.put() no error" +
+							"; for tile: " + tileUrl);		// Flag error
+//										tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
+//											done(error, tile);
+//										});		
+						done("[TopoJSONGridLayer.js] _db.put() no error");			
+					}
+					else {
+						tileLayer.consoleError("[TopoJSONGridLayer.js] _db.put() error: " + JSON.stringify(err, null, 2) +
+							"; for tile: " + tileUrl);
+						tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+						tileLayer.options.useCache=false;	// Disable cache
+						tileLayer.PouchDBError = err;		// Flag error
+//										tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
+//											done(error, tile);
+//										});
+						done("[TopoJSONGridLayer.js] _db.put() error: " + JSON.stringify(err, null, 2));	
+					}
+				};
+						
                 var request = new XMLHttpRequest();
                 request.open('GET', tileUrl, true);
 
@@ -232,12 +302,21 @@
 								};
 								
 							if (existingRevision) {
-								tileLayer._db.remove(tileUrl, existingRevision);
-							}
-							tileLayer._db.put(doc).then(function (response) {
+								tileLayer._db.remove(tileUrl, existingRevision).then(function (response) {
 									if (response.ok) {
-	//									tileLayer.consoleDebug("[TopoJSONGridLayer.js] _db.put(): " + response.id);
-										done(null);								
+	//									tileLayer.consoleDebug("[TopoJSONGridLayer.js] _db.remove(): " + response.id);
+										tileLayer._db.put(doc).then(function (response) {
+												if (response.ok) {
+				//									tileLayer.consoleDebug("[TopoJSONGridLayer.js] _db.put(): " + response.id);
+													done(null);								
+												}
+												else {
+													var err=new Error("[TopoJSONGridLayer.js] _db.put() invalid response: " + 
+														JSON.stringify(response, null, 2));
+													tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+													done(err);
+												}
+											}).catch(errorFunction);						
 									}
 									else {
 										var err=new Error("[TopoJSONGridLayer.js] _db.put() invalid response: " + 
@@ -245,58 +324,22 @@
 										tileLayer.fire('tilecacheerror', { tile: tile, error: err });
 										done(err);
 									}
-								}).catch(function (err) {
-/*
-+32.1: [ERROR] [TopoJSONGridLayer.js] _db.put() error: {
-  "description": "Adapter is missing",
-  "code": 404,
-  "stack": "Error: Adapter is missing\n   at Anonymous function (http://localhost:8080/RIF4/libs/pouchdb.js:3133:11)\n   at Anonymous function (http://localhost:8080/RIF4/libs/pouchdb.js:3111:6)\n   at tryToUnwrap (http://localhost:8080/RIF4/libs/pouchdb.js:12003:5)\n   at tryCatch (http://localhost:8080/RIF4/libs/pouchdb.js:12015:5)\n   at safelyResolveThenable (http://localhost:8080/RIF4/libs/pouchdb.js:12006:3)\n   at Promise (http://localhost:8080/RIF4/libs/pouchdb.js:11880:5)\n   at PouchDB (http://localhost:8080/RIF4/libs/pouchdb.js:3099:3)\n   at initialize (http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:53:5)\n   at e (http://localhost:8080/RIF4/libs/standalone/leaflet.js:5:2729)\n   at L.topoJsonGridLayer (http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:347:13)"
-}
-Stack: undefined
- */									
-									if (err && err.status == 404 && err.description == "Adapter is missing") { 
-										tileLayer.options.useCache=false;	// Disable cache
-										tileLayer.PouchDBError = err;		// Flag error
-										tileLayer.consoleError("[TopoJSONGridLayer.js] TopoJSONGridLayer PouchDB error: " + err.stack + ", useCache disabled");	
-										tileLayer.fire('tilecacheerror', { tile: tile, error: err });
-										tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
-											done(error, tile);
-										});
-									}
-/*
-+2657.3: [ERROR] [TopoJSONGridLayer.js] _db.put() error: {
-  "status": 409,
-  "name": "conflict",
-  "message": "Document update conflict",
-  "error": true
-} 
-*/
-									else if (err && err.status == 409 && err.message == "Document update conflict") { 
-										tileLayer.consoleError("[TopoJSONGridLayer.js] _db.put() update conflict: " + JSON.stringify(err, null, 2));
-										tileLayer.fire('tilecacheerror', { tile: tile, error: err });
-										tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
-											done(error, tile);
-										});
-									}
-									else if (err == undefined) {
-										tileLayer.consoleError("[TopoJSONGridLayer.js] _db.put() no error");
-										tileLayer.fire('tilecacheerror', { tile: tile, error: err });
-										tileLayer.options.useCache=false;	// Disable cache
-										tileLayer.PouchDBError = new Error("[TopoJSONGridLayer.js] _db.put() no error");		// Flag error
-										tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
-											done(error, tile);
-										});				
-									}
-									else {
-										tileLayer.consoleError("[TopoJSONGridLayer.js] _db.put() error: " + JSON.stringify(err, null, 2));
-										tileLayer.fire('tilecacheerror', { tile: tile, error: err });
-										tileLayer.options.useCache=false;	// Disable cache
-										tileLayer.PouchDBError = err;		// Flag error
-										tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
-											done(error, tile);
-										});
-									}
-								});
+								}).catch(errorFunction);
+							}
+							else {
+								tileLayer._db.put(doc).then(function (response) {
+										if (response.ok) {
+		//									tileLayer.consoleDebug("[TopoJSONGridLayer.js] _db.put(): " + response.id);
+											done(null);								
+										}
+										else {
+											var err=new Error("[TopoJSONGridLayer.js] _db.put() invalid response: " + 
+												JSON.stringify(response, null, 2));
+											tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+											done(err);
+										}
+									}).catch(errorFunction);
+							}
 						}
 						else {
 							done(null);								

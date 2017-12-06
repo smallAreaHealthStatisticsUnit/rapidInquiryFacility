@@ -486,10 +486,10 @@ angular.module("RIF")
 										// Options
 										consoleDebug: $scope.consoleDebug,
 										consoleError: $scope.consoleError,
-										name: $scope.tileInfo[mapID].geography + "." + $scope.tileInfo[mapID].level, 
-																	// Should be unique (includes geography and geolevel name)
+										name: mapID + "." + $scope.tileInfo[mapID].geography + "." + $scope.tileInfo[mapID].level, 
+																	// Should be unique (includes mapID, geography and geolevel name)
 //										maxZoom: maxzoomlevel,
-										useCache: true,				// Use PouchDB caching
+										useCache: false,			// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync
 										auto_compaction: true,
                                         layers: {
                                             default: {

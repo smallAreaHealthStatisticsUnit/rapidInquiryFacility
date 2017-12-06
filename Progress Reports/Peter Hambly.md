@@ -1763,7 +1763,13 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Removed mixed content for background tiles (i.e. download fromn HTTPS:: if needed);
 * Fixed taxonomy service configuration to use Tomcat conf directory (i.e. upgrades do not loose confiruation)
 * Added map layer remove code to logoff; memory is free so the leak is in the GeoJSON gridlayer;
- 
+
+#### 4th to 8th December
+
+* Fixed map bounds and center synchrojnisation issues. Map setup is now occuring in the correct order;
+* Improvements to TopoJSONGridLayer.js error handling;
+* No leaks if pouchDB is enabled, map sync errors; is disabled still leaks!
+
 In progress:
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing type].
