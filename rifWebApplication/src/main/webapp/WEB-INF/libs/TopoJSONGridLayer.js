@@ -263,6 +263,30 @@ Stack: undefined
 											done(error, tile);
 										});
 									}
+/*
++2657.3: [ERROR] [TopoJSONGridLayer.js] _db.put() error: {
+  "status": 409,
+  "name": "conflict",
+  "message": "Document update conflict",
+  "error": true
+} 
+*/
+									else if (err && err.status == 409 && err.message == "Document update conflict") { 
+										tileLayer.consoleError("[TopoJSONGridLayer.js] _db.put() update conflict: " + JSON.stringify(err, null, 2));
+										tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+										tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
+											done(error, tile);
+										});
+									}
+									else if (err == undefined) {
+										tileLayer.consoleError("[TopoJSONGridLayer.js] _db.put() no error");
+										tileLayer.fire('tilecacheerror', { tile: tile, error: err });
+										tileLayer.options.useCache=false;	// Disable cache
+										tileLayer.PouchDBError = new Error("[TopoJSONGridLayer.js] _db.put() no error");		// Flag error
+										tileLayer.fetchTile(coords, undefined /* No pre existing revision */, function (error) {
+											done(error, tile);
+										});				
+									}
 									else {
 										tileLayer.consoleError("[TopoJSONGridLayer.js] _db.put() error: " + JSON.stringify(err, null, 2));
 										tileLayer.fire('tilecacheerror', { tile: tile, error: err });
