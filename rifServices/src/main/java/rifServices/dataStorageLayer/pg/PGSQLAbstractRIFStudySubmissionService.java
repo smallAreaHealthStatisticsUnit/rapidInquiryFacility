@@ -10,6 +10,9 @@ import rifGenericLibrary.util.FieldValidationUtility;
 import java.io.*;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Properties;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -138,6 +141,8 @@ implements RIFStudySubmissionAPI {
 	// Section Constants
 	// ==========================================
 
+		private static String lineSeparator = System.getProperty("line.separator");	
+		
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -1081,6 +1086,85 @@ implements RIFStudySubmissionAPI {
 		return result;
 	}
 
+	
+	public String getFrontEndParameters(
+		final User user) {
+										
+		String result = "{" + lineSeparator +
+					"	parameters: {" + lineSeparator +
+					"		usePouchDBCache: 	false,	// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;" + lineSeparator +
+					"		debugEnabled:		false,	// Disable front end debugging" + lineSeparator +
+					"		mappingDefaults: 	{" + lineSeparator +					
+					"			'diseasemap1': {}," + lineSeparator +
+					"			'diseasemap2': {}," + lineSeparator +
+					"			'viewermap': {}" + lineSeparator +
+					"		}," + lineSeparator +
+					"		defaultLogin: {" + lineSeparator +
+					"			username: 	\"peter\"," + lineSeparator +
+					"			password:	\"peter\"" + lineSeparator +
+					"		}" + lineSeparator +
+					"	}" + lineSeparator +
+					"}";
+		RIFLogger rifLogger = RIFLogger.getLogger();
+		
+		Map<String, String> environmentalVariables = System.getenv();
+		InputStream input = null;
+		String fileName1;
+		String fileName2;
+		String catalinaHome = environmentalVariables.get("CATALINA_HOME");
+		if (catalinaHome != null) {
+			fileName1=catalinaHome + "\\conf\\frontEndParameters.js";
+			fileName2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\frontEndParameters.js";
+		}
+		else {
+			rifLogger.warning(this.getClass(), 
+				"PGSQLAbstractRIFStudySubmissionService.getFrontEndParameters: CATALINA_HOME not set in environment"); 
+			fileName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\frontEndParameters.js";
+			fileName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\frontEndParameters.js";
+		}
+			
+		try {
+			input = new FileInputStream(fileName1);
+				rifLogger.info(this.getClass(), 
+					"PGSQLAbstractRIFStudySubmissionService.getFrontEndParameters: using: " + fileName1);
+			// Read and parse JSON
+			result = new BufferedReader(new InputStreamReader(input)).lines().parallel().collect(Collectors.joining(lineSeparator));
+		} 
+		catch (IOException ioException) {
+			try {
+				input = new FileInputStream(fileName2);
+					rifLogger.info(this.getClass(), 
+						"PGSQLAbstractRIFStudySubmissionService.getFrontEndParameters: using: " + fileName2);
+				// Read and parse JSON
+				result = new BufferedReader(new InputStreamReader(input)).lines().parallel().collect(Collectors.joining(lineSeparator));
+			} 
+			catch (IOException ioException2) {				
+				rifLogger.warning(this.getClass(), 
+					"PGSQLAbstractRIFStudySubmissionService.getFrontEndParameters error for files: " + 
+						fileName1 + " and " + fileName2, 
+					ioException2);
+				return result;
+			}
+		} 
+		finally {
+			if (input != null) {
+				try {
+					input.close();
+				} 
+				catch (IOException ioException) {
+					rifLogger.warning(this.getClass(), 
+						"PGSQLAbstractRIFStudySubmissionService.getFrontEndParameters error for files: " + 
+							fileName1 + " and " + fileName2, 
+						ioException);
+					return result;
+				}
+			}
+			rifLogger.info(getClass(), "get FrontEnd Parameters: " + result);		
+		}	
+		
+		return result;
+	}
+	
 	/**
 	 * Get textual extract status of a study.                          
 	 * <p>   

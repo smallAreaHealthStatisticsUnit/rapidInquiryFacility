@@ -38,20 +38,20 @@
 angular.module("RIF")
         .controller('LoginCtrl', ['$scope', 'user', '$injector', 'DatabaseService',
             'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ExportStateService',
-            'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService',
+            'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService', 'ParametersService',
             function ($scope, user, $injector, DatabaseService,
                     SubmissionStateService, StudyAreaStateService, CompAreaStateService, ExportStateService,
-                    ParameterStateService, StatsStateService, ViewerStateService, MappingStateService) {
+                    ParameterStateService, StatsStateService, ViewerStateService, MappingStateService, ParametersService) {
                 
-                //will be the default placeholder
-            //    $scope.username = "dwmorley"; 
-            //    $scope.password = "dwmorley";
+
+				$scope.parameters=ParametersService.getParameters()||{defaultLogin: {
+							username: 	"peter",
+							password:	"peter"
+						}
+					};
                 
-            //    $scope.username = "";
-            //    $scope.password = "";
-                
-                $scope.username = "peter";
-                $scope.password = "peter";
+                $scope.username = $scope.parameters.defaultLogin.username;
+                $scope.password = $scope.parameters.defaultLogin.password;
 
                 //The angular material button has a progress spinner
                 $scope.showSpinner = false;
@@ -76,7 +76,25 @@ angular.module("RIF")
                            
                             //In development, this bypasses password)                           
                             //user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
-                        }, handleServerError);                  
+                        }, handleServerError);       
+
+                        user.getFrontEndParameters($scope.username).then(function (res) {   
+                            if (res.data) {
+								 var parameters=undefined;
+								 try {
+									 parameters=JSON.parse(res.data);
+									 $scope.consoleLog('getFrontEndParameters: ' + JSON.stringify(parameters, null, 0));
+//                              	 ParametersService.setParameters(parameters);
+								 }
+								 catch(e) {	 
+									 $scope.showWarning('Could not parse front end parameters');
+									 $scope.consoleLog('getFrontEndParameters: ' + JSON.stringify(res.data, null, 0));
+								 }
+                            } else {
+                                $scope.showWarning('Could not get front end parameters');
+								$scope.consoleLog('getFrontEndParameters: ' + JSON.stringify(res, null, 0));
+                            }						
+                        }, handleParameterError);       
                     }
                 };
 
@@ -131,5 +149,10 @@ angular.module("RIF")
                     //Tomcat probably not running, could also be CORS error or we are trying to connect to the wrong localhost (check rifs-back-urls)
                     $scope.showSpinner = false;
                     $scope.showError('Could not establish a connection to Tomcat (is it running?)');
+                }
+                function handleParameterError(res) {
+                    //Tomcat probably not running, could also be CORS error or we are trying to connect to the wrong localhost (check rifs-back-urls)
+                    $scope.showSpinner = false;
+                    $scope.showWarning('Unable to get front end parameters from middleware');
                 }
             }]);

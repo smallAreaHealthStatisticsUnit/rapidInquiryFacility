@@ -93,6 +93,11 @@ angular.module("RIF")
                     //jdbc:sqlserver
                     return $http.get(servicesConfig.studySubmissionURL + 'ms/' + 'getDatabaseType?userID=' + username);
                 };
+                self.getFrontEndParameters = function (username) {
+                    //http://localhost:8080/rifServices/studySubmission/ms/getFrontEndParameters?userID=peter
+                    //JSON
+                    return $http.get(servicesConfig.studySubmissionURL + 'ms/' + 'getFrontEndParameters?userID=' + username);
+                };
                 //Taxonomy services              
                 self.initialiseService = function () {
                     //http://localhost:8080/taxonomyServices/taxonomyServices/initialiseService

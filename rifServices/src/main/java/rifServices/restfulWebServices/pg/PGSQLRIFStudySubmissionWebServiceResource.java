@@ -164,6 +164,17 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 			userID);
 	}
 	
+	@GET
+	@Produces({"application/json"})
+	@Path("/getFrontEndParameters")
+	public Response getFrontEndParameters(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID) {
+		
+			return super.getFrontEndParameters(
+					servletRequest, 
+					userID);	
+	}
 	
 	@GET
 	@Produces({"application/json"})	

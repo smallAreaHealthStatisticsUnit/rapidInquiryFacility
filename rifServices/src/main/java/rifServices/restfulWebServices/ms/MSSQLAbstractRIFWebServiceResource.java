@@ -1030,7 +1030,26 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 				servletRequest,
 				result);		
 	}
+
+	protected Response getFrontEndParameters(
+			final HttpServletRequest servletRequest,
+			final String userID) { 
 			
+		String result = null;
+
+		User user = createUser(servletRequest, userID);
+
+		RIFStudySubmissionAPI studySubmissionService
+		= getRIFStudySubmissionService();
+
+		result=studySubmissionService.getFrontEndParameters(
+				user);
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
+				servletRequest,
+				result);		
+	}
+						
 	protected Response getZipFile(
 			final HttpServletRequest servletRequest,
 			final String userID,

@@ -1762,13 +1762,35 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Added Front end logging to reduce browser stress when debugging map leaks;
 * Removed mixed content for background tiles (i.e. download fromn HTTPS:: if needed);
 * Fixed taxonomy service configuration to use Tomcat conf directory (i.e. upgrades do not loose confiruation)
-* Added map layer remove code to logoff; memory is free so the leak is in the GeoJSON gridlayer;
+* Added map layer remove code to logoff; memory is freed so the leak is in the GeoJSON gridlayer;
 
 #### 4th to 8th December
 
 * Fixed map bounds and center synchrojnisation issues. Map setup is now occuring in the correct order;
 * Improvements to TopoJSONGridLayer.js error handling;
 * No leaks if pouchDB is enabled, map sync errors; is disabled still leaks!
+* Fixed memory leak;
+* Document update conflict issue with PouchDB, requires handlers
+  ```
+	  07:33:43.110 [http-nio-8080-exec-7] ERROR rifGenericLibrary.util.FrontEndLogger : 
+	userID:       peter
+	browser type: Firefox; v57
+	iP address:   0:0:0:0:0:0:0:1
+	message:      [TopoJSONGridLayer.js] _db.put() error: {
+	  "status": 409,
+	  "name": "conflict",
+	  "message": "Document update conflict",
+	  "error": true
+	}
+	error stack>>>
+	$scope.consoleError@http://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:215:10
+	consoleError@http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:74:6
+	fetchTile/request.onload/<@http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:266:11
+	<<<
+	actual time:  12/6/2017 7:33:43 AM
+	relative:     +53.2
+  ```
+* Test memory leak, add frontEndParameters service, SQL install instructions for CDC
 
 In progress:
 
