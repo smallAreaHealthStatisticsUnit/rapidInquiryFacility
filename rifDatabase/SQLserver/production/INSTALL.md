@@ -593,12 +593,14 @@ GO
    RIF data tables to which the user has been granted access permission.
 
 ```SQL
+USE mydatabasename;
+GO
 --
 -- RIF40 num_denom, rif40_num_denom_errors
 --
 -- needs functions:
---	rif40_is_object_resolvable, OK
---	rif40_num_denom_validate, OK
+--	rif40_is_object_resolvable
+--	rif40_num_denom_validate
 --	rif40_auto_indirect_checks
 --
 
@@ -846,6 +848,7 @@ GO
 The best test of a correctly installed database is to logon as a test user and select from rif40_num_denom (numerator/denominator) pair view. The standard row 
 will only appear if you can find and select from both tables:
  
+```SQL
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\sahsuland_dev\rif40\functions>sqlcmd -U peter -P XXXXXXXXXXXXXXXXXXXXXXX -d sahsuland
 1> select * from rif40_num_denom;
 2> go
