@@ -279,11 +279,15 @@ There are no restrictions as to the database name (other than it being valid)
 
 ## 4.1 Creating The Database
 
+These instructions are based on *rif40_production_creation.sql*. This uses *NEWUSER*, *NEWDB* and *import_dir* from the CMD enviornment.
+
 * Change "mydatabasename" to the name of your database, e.g. *sahsuland*;
 * Change "mybackuppath" to the path to the supplied backup file, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production*
 
 1. Validate the database name:
 ```SQL
+USE master;
+GO
 DECLARE @newdb VARCHAR(MAX)='mydatabasename';
 DECLARE @invalid_chars INTEGER;
 DECLARE @first_char VARCHAR(1);
@@ -305,6 +309,8 @@ GO
 
 2. Create the database
 ```SQL
+USE master;
+GO
 IF EXISTS(SELECT * FROM sys.sysdatabases where name='$(NEWDB)')
 	DROP DATABASE mydatabasename;
 GO	
@@ -312,10 +318,10 @@ CREATE DATABASE mydatabasename;
 GO
 ```
 
-3. Import Database from
-
+3. Import Database from supplied backup file
 ```SQL
 USE master;
+GO
 --
 -- Find the actual database file names for the new mydatabasename DB
 --
@@ -391,11 +397,133 @@ EXECUTE sp_executesql @sql_stmt;
 GO
 ```
 
+4. Create the schema owner (rif40)
+
+The RIF schema owner **MUST** be called *rif40* and will require BULK INSERT privilege to load data.
+
+Most users will need to ser the password to be able to load data.
+```SQL
+USE master;
+GO
+--
+-- RIF40: Schema owner
+--
+IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'rif40') BEGIN
+	DECLARE @sql_stmt NVARCHAR(MAX);
+	DECLARE @stp VARCHAR(60)=CAST(GETDATE() AS VARCHAR);
+	SET @sql_stmt =	'CREATE LOGIN [rif40] WITH PASSWORD=''' + CONVERT(VARCHAR(32), HASHBYTES('MD5', @stp), 2) + /* PW changes every minute */
+		''', CHECK_POLICY = OFF';
+	PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
+	EXECUTE sp_executesql @sql_stmt;	;	-- Change this password if you want to logon!
+END;
+GO
+
+5. Create database specific roles
+```SQL
+USE mydatabasename;
+GO
+
+--
+-- Check database is NOT master
+--
+DECLARE @database_name 	VARCHAR(30)=DB_NAME();
+IF (@database_name = 'master')
+	RAISERROR('rif40_database_roles.sql: Database is master: %s', 16, 1, @database_name);
+GO
+
+--
+-- Create database users, roles and schemas for sahsuland/sahsuland_dev
+--
+
+IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'rif40')
+	CREATE USER [rif40] FOR LOGIN [rif40] WITH DEFAULT_SCHEMA=[dbo]
+	ELSE ALTER USER [rif40] WITH LOGIN=[rif40];
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif40')
+EXEC('CREATE SCHEMA [rif40] AUTHORIZATION [rif40]');
+GO
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif_data')
+EXEC('CREATE SCHEMA [rif_data] AUTHORIZATION [rif40]');
+GO
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'rif_studies')
+EXEC('CREATE SCHEMA [rif_studies] AUTHORIZATION [rif40]');
+GO
+
+ALTER USER [rif40] WITH DEFAULT_SCHEMA=[rif40];
+GO
+
+ALTER LOGIN [rif40] WITH DEFAULT_DATABASE = [$(NEWDB)];
+GO
+
+--
+-- Default per databasxe (not server!) roles
+--
+IF DATABASE_PRINCIPAL_ID('rif_manager') IS NULL
+	CREATE ROLE [rif_manager];
+GO
+IF DATABASE_PRINCIPAL_ID('rif_user') IS NULL
+	CREATE ROLE [rif_user];
+GO
+IF DATABASE_PRINCIPAL_ID('rif_student') IS NULL
+	CREATE ROLE [rif_student];
+GO	
+IF DATABASE_PRINCIPAL_ID('rif_no_suppression') IS NULL
+	CREATE ROLE [rif_no_suppression];
+GO
+IF DATABASE_PRINCIPAL_ID('notarifuser') IS NULL
+	CREATE ROLE [notarifuser];
+GO
+
+--
+-- Object privilege grants
+--
+GRANT CREATE FUNCTION TO [rif_manager];
+GO
+GRANT CREATE PROCEDURE TO [rif_manager];
+GO
+GRANT CREATE TABLE TO [rif_manager];
+GO
+GRANT CREATE VIEW TO [rif_manager];
+GO
+GRANT CREATE TABLE TO [rif_user];
+GO
+GRANT CREATE VIEW TO [rif_user];
+GO
+
+GRANT CREATE FUNCTION TO [rif40];
+GO
+GRANT CREATE PROCEDURE TO [rif40];
+GO
+GRANT CREATE TABLE TO [rif40];
+GO
+GRANT CREATE VIEW TO [rif40];
+GO
+GRANT CREATE TYPE TO [rif40];
+GO
+
+
+--
+-- Grant USAGE on the rif_studies schema to RIF40. This implies control
+--
+GRANT ALTER ON SCHEMA :: rif_studies TO [rif40];
+GO
+```
+
+--
+-- Allow rif40 BULK INSERT
+--
+EXEC sp_addsrvrolemember @loginame = N'rif40', @rolename = N'bulkadmin';
+GO
+```
+
 ## 4.2 Creating a New User
 
 
 1. Validate the RIF user
 ```SQL
+USE [master];
+GO
 DECLARE @newuser VARCHAR(MAX)='mydatabaseuser';
 DECLARE @invalid_chars INTEGER;
 DECLARE @first_char VARCHAR(1);
@@ -412,6 +540,24 @@ ELSE IF ISNUMERIC(@first_char) = 1
 	RAISERROR('First character in username: %s is numeric: %s.', 16, 1, @newuser, @first_char);
 ELSE 
 	PRINT 'New username: ' + @newuser + ' OK';	
+GO
+```
+
+2. Create User
+```SQL
+USE [master];
+GO
+IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'mydatabaseuser')
+CREATE LOGIN [mydatabaseuser] WITH PASSWORD='$(NEWPW)', CHECK_POLICY = OFF;
+GO
+
+ALTER LOGIN [mydatabaseuser] WITH DEFAULT_DATABASE = [mydatabasename];
+GO	
+```
+
+3. Grant roles
+```SQL
+USE mydatabasename;
 GO
 ```
 
