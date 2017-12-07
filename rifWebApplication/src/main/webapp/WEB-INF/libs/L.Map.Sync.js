@@ -192,7 +192,8 @@
                             // that reloads all the tiles.
                             // That causes an annoying flicker.
                             viewpreresets = obj._events.viewprereset;
-                            obj._events.viewprereset = [];
+//                            obj._events.viewprereset = [];
+							obj._events.viewprereset.splice(0,obj._events.viewprereset.length); // Leak proof as removes all references
                         }
                         var ret = fn(obj);
                         if (doit) {
