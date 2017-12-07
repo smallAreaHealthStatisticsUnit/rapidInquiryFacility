@@ -71,6 +71,8 @@ angular.module("RIF")
                         $scope.map[parentScope.myMaps[i]].invalidateSize();
                     }
                 });
+				
+				$scope.useCache=false;			// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;	
 
 				$scope.layerStats = {
 					layerAdds: 0,
@@ -480,7 +482,6 @@ angular.module("RIF")
 										"; URL: " + topojsonURL +
 										"; study: " + $scope.studyID[mapID].study_id + 
 										"; sex: " + $scope.sex[mapID]);
-										
                                     $scope.geoJSON[mapID] = new L.topoJsonGridLayer(topojsonURL, {
                                         attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
 										// Options
@@ -489,7 +490,7 @@ angular.module("RIF")
 										name: mapID + "." + $scope.tileInfo[mapID].geography + "." + $scope.tileInfo[mapID].level, 
 																	// Should be unique (includes mapID, geography and geolevel name)
 //										maxZoom: maxzoomlevel,
-										useCache: false,			// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync
+										useCache: $scope.useCache,
 										auto_compaction: true,
                                         layers: {
                                             default: {
