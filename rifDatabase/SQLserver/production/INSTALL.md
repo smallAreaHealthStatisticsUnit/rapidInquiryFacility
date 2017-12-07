@@ -10,6 +10,10 @@ SQL Server Production Database Installation
    - [2.3 SQL Server Restore](#23-sql-server-restore)
    - [2.4 Power User Issues](#24-power-user-issues)
 - [3. Create Additional Users](#3-create-additional-users)
+- [4. Installation By Hand](#4-installation-by-hand)
+   - [4.1 Creating the Database](#41-creating-the-database)
+   - [4.2 Creating a new user](#42-creating-a-new-user)
+   - [4.3 Testing The Database](#43-testing-the-database)
 
 # 1. Install SQL Server 2012 SP2
 
@@ -266,4 +270,170 @@ rif40
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>
 ```
 
+4. Installation By Hand
+
+This assumes that your database team will not run the *rif40_database_install.bat* script as an Administrator, so they will have to run: 
+*rif40_production_creation.sql* as a database administrator or run the commands manually in it, and then do the same for 
+*rif40_production_user.sql* to create a user, also as an administrator. The RIF must have a *rif40* schema account; although the password can be set to gibberish. 
+There are no restrictions as to the database name (other than it being valid)
+
+4.1 Creating the Database
+
+* Change "mydatabasename" to the name of your database, e.g. *sahsuland*;
+* Change "mybackuppath" to the path to the supplied backup file, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production*
+
+1. Validate the database name:
+```SQL
+DECLARE @newdb VARCHAR(MAX)='mydatabasename';
+DECLARE @invalid_chars INTEGER;
+DECLARE @first_char VARCHAR(1);
+SET @invalid_chars=PATINDEX('%[^0-9a-z_]%', @newdb);
+SET @first_char=SUBSTRING(@newdb, 1, 1);
+IF @invalid_chars IS NULL
+	RAISERROR('New database name is null', 16, 1, @newdb);
+ELSE IF @invalid_chars > 0
+	RAISERROR('New database name: %s contains invalid character(s) starting at position: %i.', 16, 1, 
+		@newdb, @invalid_chars);
+ELSE IF (LEN(@newdb) > 30) 
+	RAISERROR('New database name: %s is too long (30 characters max).', 16, 1, @newdb);
+ELSE IF ISNUMERIC(@first_char) = 1
+	RAISERROR('First character in database name: %s is numeric: %s.', 16, 1, @newdb, @first_char);
+ELSE 
+	PRINT 'New database name: ' + @newdb + ' OK';
+GO
+```
+
+2. Create the database
+```SQL
+IF EXISTS(SELECT * FROM sys.sysdatabases where name='$(NEWDB)')
+	DROP DATABASE mydatabasename;
+GO	
+CREATE DATABASE mydatabasename;
+GO
+```
+
+3. Import Database from
+
+```SQL
+USE master;
+--
+-- Find the actual database file names for the new mydatabasename DB
+--
+SELECT DB_NAME(mf1.database_id) AS database_name,
+	   mf1.physical_name AS physical_db_filename,
+	   mf2.physical_name AS physical_log_filename 
+  FROM sys.master_files mf1, sys.master_files mf2
+ WHERE mf1.database_id = mf2.database_id
+   AND mf1.name        = 'mydatabasename'
+   AND mf2.name        = 'mydatabasename_log';
+GO
+
+--
+-- Import database from sahsuland_dev.bak
+-- Grant local users read access to this directory
+--
+DECLARE c1_db CURSOR FOR
+	SELECT DB_NAME(mf1.database_id) AS database_name,
+	       mf1.physical_name AS physical_db_filename,
+	       mf2.physical_name AS physical_log_filename 
+	  FROM sys.master_files mf1, sys.master_files mf2
+	 WHERE mf1.database_id = mf2.database_id
+	   AND mf1.name        = 'mydatabasename'
+	   AND mf2.name        = 'mydatabasename_log';
+DECLARE @database_name 			VARCHAR(30);
+DECLARE @physical_db_filename 	VARCHAR(MAX);
+DECLARE @physical_log_filename 	VARCHAR(MAX);
+DECLARE @crlf  		VARCHAR(2)=CHAR(10)+CHAR(13);
+
+OPEN c1_db;
+FETCH NEXT FROM c1_db INTO @database_name, @physical_db_filename, @physical_log_filename;
+CLOSE c1_db;
+DEALLOCATE c1_db;
+
+/*
+
+E.g.:
+
+SQL[dbo]> RESTORE DATABASE [sahsuland]
+        FROM DISK='C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\production\sahsuland_dev.bak'
+        WITH REPLACE,
+        MOVE 'sahsuland_dev' TO 'F:\SqlServer\sahsuland.mdf',
+        MOVE 'sahsuland_dev_log' TO 'F:\SqlServer\sahsuland_log.ldf';
+Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+Processed 45648 pages for database 'sahsuland', file 'sahsuland_dev' on file 1.
+Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+Processed 14 pages for database 'sahsuland', file 'sahsuland_dev_log' on file 1.
+Msg 3014, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+RESTORE DATABASE successfully processed 45662 pages in 5.130 seconds (69.538 MB/sec).
+SQL[dbo]> ALTER DATABASE [sahsuland] MODIFY FILE ( NAME = sahsuland_dev, NEWNAME = sahsuland);
+Msg 5021, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+The file name 'sahsuland' has been set.
+SQL[dbo]> ALTER DATABASE [sahsuland] MODIFY FILE ( NAME = sahsuland_dev_log, NEWNAME = sahsuland_log);
+Msg 5021, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+The file name 'sahsuland_log' has been set.
+
+ */	
+
+DECLARE @sql_stmt NVARCHAR(MAX);
+SET @sql_stmt =	'RESTORE DATABASE [mydatabasename]' + @crlf + 
+'        FROM DISK=''mybackuppath\sahsuland_dev.bak''' + @crlf +
+'        WITH REPLACE,' + @crlf +
+'        MOVE ''sahsuland_dev'' TO ''' + @physical_db_filename + ''',' + @crlf +
+'        MOVE ''sahsuland_dev_log'' TO ''' + @physical_log_filename + '''';
+PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
+EXECUTE sp_executesql @sql_stmt;
+SET @sql_stmt='ALTER DATABASE [mydatabasename] MODIFY FILE ( NAME = sahsuland_dev, NEWNAME = mydatabasename)';
+PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
+EXECUTE sp_executesql @sql_stmt;
+SET @sql_stmt='ALTER DATABASE [mydatabasename] MODIFY FILE ( NAME = sahsuland_dev_log, NEWNAME = mydatabasename_log)';
+PRINT 'SQL[' + USER + ']> ' + @sql_stmt + ';';
+EXECUTE sp_executesql @sql_stmt;
+GO
+```
+
+4.2 Creating a new user
+
+
+1. Validate the RIF user
+```SQL
+DECLARE @newuser VARCHAR(MAX)='mydatabaseuser';
+DECLARE @invalid_chars INTEGER;
+DECLARE @first_char VARCHAR(1);
+SET @invalid_chars=PATINDEX('%[^0-9a-z_]%', @newuser);
+SET @first_char=SUBSTRING(@newuser, 1, 1);
+IF @invalid_chars IS NULL
+	RAISERROR('New username is null', 16, 1, @newuser);
+ELSE IF @invalid_chars > 0
+	RAISERROR('New username: %s contains invalid character(s) starting at position: %i.', 16, 1, 
+		@newuser, @invalid_chars);
+ELSE IF (LEN(@newuser) > 30) 
+	RAISERROR('New username: %s is too long (30 characters max).', 16, 1, @newuser);
+ELSE IF ISNUMERIC(@first_char) = 1
+	RAISERROR('First character in username: %s is numeric: %s.', 16, 1, @newuser, @first_char);
+ELSE 
+	PRINT 'New username: ' + @newuser + ' OK';	
+GO
+```
+
+4.3 Testing The Database
+
+The best test of a correctly installed database is to logon as a test user and select from rif40_num_denom (numerator/denominator) pair view. The standard row 
+will only appear if you can find and select from both tables:
+ 
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\sahsuland_dev\rif40\functions>sqlcmd -U peter -P XXXXXXXXXXXXXXXXXXXXXXX -d sahsuland
+1> select * from rif40_num_denom;
+2> go
+geography                                          numerator_table                numerator_description                                                                                                                                                                                                                                      theme_description
+                                                                                                                                      denominator_table              denominator_description
+                automatic
+-------------------------------------------------- ------------------------------ ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------- ------------------------------ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--------------- ---------
+SAHSULAND                                          NUM_SAHSULAND_CANCER           cancer numerator                                                                                                                                                                                                                                           covering various types of cancers
+                                                                                                                                      POP_SAHSULAND_POP              population health file
+                        1
+
+(1 rows affected)
+1>
+```
 
