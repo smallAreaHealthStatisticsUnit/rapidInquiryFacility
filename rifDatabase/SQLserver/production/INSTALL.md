@@ -577,10 +577,6 @@ BEGIN
 	GRANT CREATE TABLE TO [mydatabaseuser];
 	GRANT CREATE VIEW TO [mydatabaseuser];
 --
--- Allow SHOWPLAN
---
-	GRANT SHOWPLAN TO [mydatabaseuser];
---
 	IF NOT EXISTS (SELECT name FROM sys.schemas WHERE name = N'mydatabaseuser')
 		EXEC('CREATE SCHEMA [mydatabaseuser] AUTHORIZATION [mydatabasepassword]');
 	ALTER USER [mydatabaseuser] WITH DEFAULT_SCHEMA=[mydatabaseuser];
