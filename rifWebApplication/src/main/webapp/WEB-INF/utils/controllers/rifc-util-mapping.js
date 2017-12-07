@@ -38,9 +38,9 @@
 /* global L */
 angular.module("RIF")
         .controller('leafletLayersCtrl', ['$scope', 'user', 'LeafletBaseMapService', 'ChoroService',
-            'MappingStateService', 'ViewerStateService', 'MappingService',
+            'MappingStateService', 'ViewerStateService', 'MappingService', 'ParametersService',
             function ($scope, user, LeafletBaseMapService, ChoroService,
-                    MappingStateService, ViewerStateService, MappingService) {
+                    MappingStateService, ViewerStateService, MappingService, ParametersService) {
 
                 //Reference the parent scope, viewer or disease mapping
                 var parentScope = $scope.$parent;
@@ -72,7 +72,8 @@ angular.module("RIF")
                     }
                 });
 				
-				$scope.useCache=false;			// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;	
+				$scope.parameters=ParametersService.getParameters()||{usePouchDBCache: false} ;	
+					// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;	
 
 				$scope.layerStats = {
 					layerAdds: 0,
@@ -490,7 +491,7 @@ angular.module("RIF")
 										name: mapID + "." + $scope.tileInfo[mapID].geography + "." + $scope.tileInfo[mapID].level, 
 																	// Should be unique (includes mapID, geography and geolevel name)
 //										maxZoom: maxzoomlevel,
-										useCache: $scope.useCache,
+										useCache: $scope.parameters.usePouchDBCache,
 										auto_compaction: true,
                                         layers: {
                                             default: {

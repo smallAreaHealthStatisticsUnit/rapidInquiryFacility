@@ -35,14 +35,16 @@
  * CONTROLLER to handle alert bars and notifications over whole application
  */
 angular.module("RIF")
-        .controller('AlertCtrl', ['$scope', 'notifications', 'user', function ($scope, notifications, user) {
+        .controller('AlertCtrl', ['$scope', 'notifications', 'user', 'ParametersService',
+			function ($scope, notifications, user, ParametersService) {
             $scope.delay = 0; // mS
 			$scope.lastMessage = undefined;
 			$scope.messageList = [];
 			$scope.messageCount = undefined;
 			$scope.messageStart = new Date().getTime();
-			$scope.debugEnabled = true;
-			
+
+			$scope.parameters=ParametersService.getParameters()||{debugEnabled: false} ;	
+					
 			var level = {
 				error: 		"ERROR",
 				warning: 	"WARNING",
@@ -148,12 +150,12 @@ angular.module("RIF")
 			 * Function: 	consoleDebug()
 			 * Parameters:  Message
 			 * Returns: 	Nothing
-			 * Description:	IE safe console log for debug messages. ?Requires debugEnabled to be enabled
+			 * Description:	IE safe console log for debug messages. Requires debugEnabled to be enabled
 			 */
 			$scope.consoleDebug = function(msg) {
 				var end=new Date().getTime();
 				var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
-				if ($scope.debugEnabled && window.console && console && console.log && typeof console.log == "function") { // IE safe
+				if ($scope.parameters.debugEnabled && window.console && console && console.log && typeof console.log == "function") { // IE safe
 					if (isIE()) {
 						if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
 							console.log("+" + elapsed + ": [DEBUG] " + msg); // IE safe
