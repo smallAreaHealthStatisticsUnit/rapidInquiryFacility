@@ -11,8 +11,8 @@ SQL Server Production Database Installation
    - [2.4 Power User Issues](#24-power-user-issues)
 - [3. Create Additional Users](#3-create-additional-users)
 - [4. Installation By Hand](#4-installation-by-hand)
-   - [4.1 Creating the Database](#41-creating-the-database)
-   - [4.2 Creating a new user](#42-creating-a-new-user)
+   - [4.1 Creating The Database](#41-creating-the-database)
+   - [4.2 Creating a New User](#42-creating-a-new-user)
    - [4.3 Testing The Database](#43-testing-the-database)
 
 # 1. Install SQL Server 2012 SP2
@@ -270,14 +270,14 @@ rif40
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>
 ```
 
-4. Installation By Hand
+# 4. Installation By Hand
 
 This assumes that your database team will not run the *rif40_database_install.bat* script as an Administrator, so they will have to run: 
 *rif40_production_creation.sql* as a database administrator or run the commands manually in it, and then do the same for 
 *rif40_production_user.sql* to create a user, also as an administrator. The RIF must have a *rif40* schema account; although the password can be set to gibberish. 
 There are no restrictions as to the database name (other than it being valid)
 
-4.1 Creating the Database
+## 4.1 Creating The Database
 
 * Change "mydatabasename" to the name of your database, e.g. *sahsuland*;
 * Change "mybackuppath" to the path to the supplied backup file, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production*
@@ -391,7 +391,7 @@ EXECUTE sp_executesql @sql_stmt;
 GO
 ```
 
-4.2 Creating a new user
+## 4.2 Creating a New User
 
 
 1. Validate the RIF user
@@ -415,7 +415,7 @@ ELSE
 GO
 ```
 
-4.3 Testing The Database
+## 4.3 Testing The Database
 
 The best test of a correctly installed database is to logon as a test user and select from rif40_num_denom (numerator/denominator) pair view. The standard row 
 will only appear if you can find and select from both tables:
