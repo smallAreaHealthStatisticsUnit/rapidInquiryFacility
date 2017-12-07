@@ -313,7 +313,7 @@ GO
 ```SQL
 USE master;
 GO
-IF EXISTS(SELECT * FROM sys.sysdatabases where name='$(NEWDB)')
+IF EXISTS(SELECT * FROM sys.sysdatabases where name='mydatabasename')
 	DROP DATABASE mydatabasename;
 GO	
 CREATE DATABASE mydatabasename;
@@ -455,7 +455,7 @@ GO
 ALTER USER [rif40] WITH DEFAULT_SCHEMA=[rif40];
 GO
 
-ALTER LOGIN [rif40] WITH DEFAULT_DATABASE = [$(NEWDB)];
+ALTER LOGIN [rif40] WITH DEFAULT_DATABASE = [mydatabasename];
 GO
 
 --
@@ -555,7 +555,7 @@ GO
 USE [master];
 GO
 IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'mydatabaseuser')
-CREATE LOGIN [mydatabaseuser] WITH PASSWORD='$(NEWPW)', CHECK_POLICY = OFF;
+CREATE LOGIN [mydatabaseuser] WITH PASSWORD='mydatabasepassword', CHECK_POLICY = OFF;
 GO
 
 ALTER LOGIN [mydatabaseuser] WITH DEFAULT_DATABASE = [mydatabasename];
@@ -569,7 +569,7 @@ GO
 BEGIN
 	IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'mydatabaseuser')
 	CREATE USER [mydatabaseuser] FOR LOGIN [mydatabaseuser] WITH DEFAULT_SCHEMA=[dbo]
-	ELSE ALTER USER [mydatabaseuser] WITH LOGIN=[mydatabaseuser];
+	ELSE ALTER USER [mydatabaseuser] WITH LOGIN=[mydatabasepassword];
 	
 --
 -- Object privilege grants
