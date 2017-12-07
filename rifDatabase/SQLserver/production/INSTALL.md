@@ -519,6 +519,12 @@ GO
 ## 4.2 Creating a New User
 
 
+These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER* and *NEWDB* from the CMD enviornment.
+
+* Change "mydatabasename" to the name of your database, e.g. *sahsuland*;
+* Change "mydatabasenuser" to the name of your user, e.g. *peter*;
+* Change "mydatabasepassword" to the name of your users password;
+
 1. Validate the RIF user
 ```SQL
 USE [master];
@@ -542,7 +548,7 @@ ELSE
 GO
 ```
 
-2. Create User
+2. Create Login
 ```SQL
 USE [master];
 GO
@@ -554,9 +560,284 @@ ALTER LOGIN [mydatabaseuser] WITH DEFAULT_DATABASE = [mydatabasename];
 GO	
 ```
 
-3. Grant roles
+3. Creare user and grant roles
 ```SQL
 USE mydatabasename;
+GO
+BEGIN
+	IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'mydatabaseuser')
+	CREATE USER [mydatabaseuser] FOR LOGIN [mydatabaseuser] WITH DEFAULT_SCHEMA=[dbo]
+	ELSE ALTER USER [mydatabaseuser] WITH LOGIN=[mydatabaseuser];
+	
+--
+-- Object privilege grants
+--
+	GRANT CREATE TABLE TO [mydatabaseuser];
+	GRANT CREATE VIEW TO [mydatabaseuser];
+--
+-- Allow SHOWPLAN
+--
+	GRANT SHOWPLAN TO [mydatabaseuser];
+--
+	IF NOT EXISTS (SELECT name FROM sys.schemas WHERE name = N'mydatabaseuser')
+		EXEC('CREATE SCHEMA [mydatabaseuser] AUTHORIZATION [mydatabasepassword]');
+	ALTER USER [mydatabaseuser] WITH DEFAULT_SCHEMA=[mydatabaseuser];
+	ALTER ROLE rif_user ADD MEMBER [mydatabaseuser];
+	ALTER ROLE rif_manager ADD MEMBER [mydatabaseuser];	
+END;
+GO
+```
+* **Change the password**. The password is set to *mydatabasepassword*.
+
+4. Create user pecific object views: *rif40_num_denom*, *rif40_num_denom_errors*. These must be created as the user so they run with the users privileges and therefore only return
+   RIF data tables to which the user has been granted access permission.
+
+```SQL
+--
+-- RIF40 num_denom, rif40_num_denom_errors
+--
+-- needs functions:
+--	rif40_is_object_resolvable, OK
+--	rif40_num_denom_validate, OK
+--	rif40_auto_indirect_checks
+--
+
+IF EXISTS (SELECT * FROM sys.objects 
+WHERE object_id = OBJECT_ID(N'[$(NEWUSER)].[rif40_num_denom]') AND type in (N'V'))
+BEGIN
+	DROP VIEW [$(NEWUSER)].[rif40_num_denom]
+END
+GO
+
+CREATE VIEW [$(NEWUSER)].[rif40_num_denom] AS 
+ WITH n AS (
+         SELECT n1.geography,
+            n1.numerator_table,
+            n1.numerator_description,
+            n1.automatic,
+            n1.theme_description
+           FROM ( SELECT g.geography,
+                    n_1.table_name AS numerator_table,
+                    n_1.description AS numerator_description,
+                    n_1.automatic,
+                    t.description AS theme_description
+                   FROM [rif40].[rif40_geographies] g,
+                        [rif40].[rif40_tables] n_1,
+                        [rif40].[rif40_health_study_themes] t
+                  WHERE n_1.isnumerator = 1 AND n_1.automatic = 1
+  				    AND [rif40].[rif40_is_object_resolvable](n_1.table_name) = 1
+					AND n_1.theme = t.theme) n1
+          WHERE [rif40].[rif40_num_denom_validate](n1.geography, n1.numerator_table) = 1
+        ), d AS (
+         SELECT d1.geography,
+            d1.denominator_table,
+            d1.denominator_description
+           FROM ( SELECT g.geography,
+                    d_1.table_name AS denominator_table,
+                    d_1.description AS denominator_description
+                   FROM [rif40].[rif40_geographies] g,
+                        [rif40].[rif40_tables] d_1
+                  WHERE d_1.isindirectdenominator = 1
+  				    AND d_1.automatic = 1
+					AND [rif40].[rif40_is_object_resolvable](d_1.table_name) = 1) d1
+          WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1 
+		    AND [rif40].[rif40_auto_indirect_checks](d1.denominator_table) IS NULL
+        )
+ SELECT n.geography,
+    n.numerator_table,
+    n.numerator_description,
+    n.theme_description,
+    d.denominator_table,
+    d.denominator_description,
+    n.automatic
+   FROM n,
+    d
+  WHERE n.geography = d.geography
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.' , 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW', @level1name=N'rif40_num_denom'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Geography', 
+	@level0type=N'SCHEMA', @level0name=N'$(NEWUSER)', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'geography'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator table', 
+	@level0type=N'SCHEMA', @level0name=N'$(NEWUSER)', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'numerator_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator table description', 
+	@level0type=N'SCHEMA', @level0name=N'$(NEWUSER)', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'numerator_description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator table health study theme description', 
+	@level0type=N'SCHEMA', @level0name=N'$(NEWUSER)', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'theme_description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Denominator table', 
+	@level0type=N'SCHEMA', @level0name=N'$(NEWUSER)', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'denominator_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Denominator table description', 
+	@level0type=N'SCHEMA', @level0name=N'$(NEWUSER)', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'denominator_description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.' , 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'automatic'
+GO
+
+IF EXISTS (SELECT * FROM sys.objects 
+WHERE object_id = OBJECT_ID(N'[$(NEWUSER)].[rif40_num_denom_errors]') AND type in (N'V'))
+BEGIN
+	DROP VIEW [$(NEWUSER)].[rif40_num_denom_errors]
+END
+GO
+
+CREATE VIEW [$(NEWUSER)].[rif40_num_denom_errors] AS 
+ WITH n AS (
+         SELECT n1.geography,
+            n1.numerator_table,
+            n1.numerator_description,
+            n1.automatic,
+            n1.is_object_resolvable,
+            n1.n_num_denom_validated,
+            n1.numerator_owner
+           FROM ( SELECT g.geography,
+                    n_1.table_name AS numerator_table,
+                    n_1.description AS numerator_description,
+                    n_1.automatic,
+                    [rif40].[rif40_is_object_resolvable](n_1.table_name) AS is_object_resolvable,
+                    [rif40].[rif40_num_denom_validate](g.geography, n_1.table_name) AS n_num_denom_validated,
+                    [rif40].[rif40_object_resolve](n_1.table_name) AS numerator_owner
+                   FROM [rif40].[rif40_geographies] g,
+                    [rif40].[rif40_tables] n_1
+                  WHERE n_1.isnumerator = 1 AND n_1.automatic = 1) n1
+        ), d AS (
+         SELECT d1.geography,
+            d1.denominator_table,
+            d1.denominator_description,
+            d1.is_object_resolvable,
+            d1.d_num_denom_validated,
+            d1.denominator_owner,
+            [rif40].[rif40_auto_indirect_checks](d1.denominator_table) AS auto_indirect_error
+           FROM ( SELECT g.geography,
+                    d_1.table_name AS denominator_table,
+                    d_1.description AS denominator_description,
+                    [rif40].[rif40_is_object_resolvable](d_1.table_name) AS is_object_resolvable,
+                    [rif40].[rif40_num_denom_validate](g.geography, d_1.table_name) AS d_num_denom_validated,
+                    [rif40].[rif40_object_resolve](d_1.table_name) AS denominator_owner
+                   FROM [rif40].[rif40_geographies] g,
+                    [rif40].[rif40_tables] d_1
+                  WHERE d_1.isindirectdenominator = 1 AND d_1.automatic = 1) d1
+        )
+ SELECT n.geography,
+    n.numerator_owner,
+    n.numerator_table,
+    n.is_object_resolvable AS is_numerator_resolvable,
+    n.n_num_denom_validated,
+    n.numerator_description,
+    d.denominator_owner,
+    d.denominator_table,
+    d.is_object_resolvable AS is_denominator_resolvable,
+    d.d_num_denom_validated,
+    d.denominator_description,
+    n.automatic,
+        CASE
+            WHEN d.auto_indirect_error IS NULL THEN 0
+            ELSE 1
+        END AS auto_indirect_error_flag,
+    d.auto_indirect_error /*,
+    f.create_status AS n_fdw_create_status,
+    f.error_message AS n_fdw_error_message,
+    f.date_created AS n_fdw_date_created,
+    f.rowtest_passed AS n_fdw_rowtest_passed */
+   FROM d,
+    n
+  WHERE n.geography = d.geography;
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'All possible numerator and indirect standardisation denominator pairs with error diagnostic fields. As this is a CROSS JOIN the will be a lot of output as tables are not rejected on the basis of user access or containing the correct geography geolevel fields.' , 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Geography', 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'geography'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator table owner' , 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'numerator_owner'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator table' , 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'numerator_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Is the numerator table resolvable and accessible (0/1)' , 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'is_numerator_resolvable'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Is the numerator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.', 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'n_num_denom_validated'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator table description', 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'numerator_description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Denominator table owner', 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'denominator_owner'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Denominator table', 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'denominator_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Is the denominator table resolvable and accessible (0/1)', 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'is_denominator_resolvable'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Is the denominator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.', 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'd_num_denom_validated'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Denominator table description', 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'denominator_description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.', 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'automatic'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Error flag 0/1. Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator.', 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'auto_indirect_error_flag'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator. List of geographies and tables in error.', 
+	@level0type=N'SCHEMA',@level0name=N'$(NEWUSER)', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'auto_indirect_error'
 GO
 ```
 
