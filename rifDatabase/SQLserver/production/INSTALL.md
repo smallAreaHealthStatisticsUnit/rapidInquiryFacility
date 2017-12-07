@@ -508,7 +508,6 @@ GO
 --
 GRANT ALTER ON SCHEMA :: rif_studies TO [rif40];
 GO
-```
 
 --
 -- Allow rif40 BULK INSERT
