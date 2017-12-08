@@ -1790,7 +1790,8 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 	actual time:  12/6/2017 7:33:43 AM
 	relative:     +53.2
   ```
-* Test memory leak, add frontEndParameters service, SQL install instructions for CDC
+* Test memory leak, add frontEndParameters service, SQL install instructions for CDC;
+* getFrontEndParameters service (i.e. remove peter username default, disable front end debugging by default, prove JSON5 parser)
 
 In progress:
 

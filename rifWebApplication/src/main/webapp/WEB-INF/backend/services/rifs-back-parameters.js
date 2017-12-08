@@ -46,9 +46,9 @@ angular.module("RIF")
 							'diseasemap2': {},
 							'viewermap': {}
 						},
-						defaultLogin: {
-							username: 	"peter",
-							password:	"peter"
+						defaultLogin: { // DO NOT SET in a production environment; for use on single user tests system only!
+							username: 	"",
+							password:	""
 						}
 					};               
                     return {
@@ -59,6 +59,12 @@ angular.module("RIF")
 							if (params) {
 								defaultParameters = params;
 							}
+                        },
+                        setLoginParameters: function (params) {
+							if (params.defaultLogin) {
+								defaultParameters.defaultLogin = params.defaultLogin;
+							}
+							defaultParameters.debugEnabled=params.debugEnabled||true;
                         }
                     };
                 });

@@ -14,6 +14,7 @@ import java.util.Properties;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  * Main implementation of the RIF middle ware.  
@@ -1112,31 +1113,37 @@ implements RIFStudySubmissionAPI {
 		String fileName1;
 		String fileName2;
 		String catalinaHome = environmentalVariables.get("CATALINA_HOME");
+		String str;
+		
 		if (catalinaHome != null) {
-			fileName1=catalinaHome + "\\conf\\frontEndParameters.js";
-			fileName2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\frontEndParameters.js";
+			fileName1=catalinaHome + "\\conf\\frontEndParameters.json5";
+			fileName2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\frontEndParameters.json5";
 		}
 		else {
 			rifLogger.warning(this.getClass(), 
 				"PGSQLAbstractRIFStudySubmissionService.getFrontEndParameters: CATALINA_HOME not set in environment"); 
-			fileName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\frontEndParameters.js";
-			fileName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\frontEndParameters.js";
+			fileName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\frontEndParameters.json5";
+			fileName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\frontEndParameters.json5";
 		}
 			
 		try {
 			input = new FileInputStream(fileName1);
 				rifLogger.info(this.getClass(), 
-					"PGSQLAbstractRIFStudySubmissionService.getFrontEndParameters: using: " + fileName1);
-			// Read and parse JSON
-			result = new BufferedReader(new InputStreamReader(input)).lines().parallel().collect(Collectors.joining(lineSeparator));
+					"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters: using: " + fileName1);
+				// Read and string escape JSON
+				str = "{\"file\": \"" + StringEscapeUtils.escapeJavaScript(fileName1) + "\", \"frontEndParameters\": \"" + 
+					StringEscapeUtils.escapeJavaScript(new BufferedReader(new InputStreamReader(input)).lines().parallel().collect(Collectors.joining(lineSeparator))) +
+					"\"}";
 		} 
 		catch (IOException ioException) {
 			try {
 				input = new FileInputStream(fileName2);
 					rifLogger.info(this.getClass(), 
-						"PGSQLAbstractRIFStudySubmissionService.getFrontEndParameters: using: " + fileName2);
-				// Read and parse JSON
-				result = new BufferedReader(new InputStreamReader(input)).lines().parallel().collect(Collectors.joining(lineSeparator));
+						"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters: using: " + fileName2);
+				// Read and string escape JSON
+				str = "{\"file\": \"" + StringEscapeUtils.escapeJavaScript(fileName1) + "\", \"frontEndParameters\": \"" + 
+					StringEscapeUtils.escapeJavaScript(new BufferedReader(new InputStreamReader(input)).lines().parallel().collect(Collectors.joining(lineSeparator))) +
+					"\"}";
 			} 
 			catch (IOException ioException2) {				
 				rifLogger.warning(this.getClass(), 
@@ -1161,6 +1168,27 @@ implements RIFStudySubmissionAPI {
 			}
 			rifLogger.info(getClass(), "get FrontEnd Parameters: " + result);		
 		}	
+				
+		int len=str.length();
+		int unEscapes=0;
+		StringBuilder sb = new StringBuilder(len);
+		for (int i = 0; i < len; i++) {
+			char c0 = str.charAt(i);
+			char c1;
+			if ((i+1) >= len) {
+				c1=0;
+			}
+			else {
+				c1=str.charAt(i+1);
+			}
+			if (c0 == '\\' && c1 == '\'') { // "'" Does need to be escaped as in double quotes
+				unEscapes++;
+			}
+			else {
+				 sb.append(c0);
+			}
+		} 
+		result = sb.toString();
 		
 		return result;
 	}
