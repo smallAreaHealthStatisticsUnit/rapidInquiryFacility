@@ -98,12 +98,8 @@ angular.module("RIF")
 											};
 										
 										if ($scope.parameters.defaultLogin) {
-											$scope.username = $scope.parameters.defaultLogin.username;
-											$scope.password = $scope.parameters.defaultLogin.password;
-										}
-										else  {
-											$scope.username = "";
-											$scope.password = "";
+											$scope.username = $scope.username || $scope.parameters.defaultLogin.username;
+											$scope.password = $scope.username || $scope.parameters.defaultLogin.password;
 										}
 									}
 									else if (getFrontEndParameters && getFrontEndParameters.parameters) {			
@@ -184,6 +180,7 @@ angular.module("RIF")
 					}
 					else {
                         $scope.showWarning('You must enter a username and password');
+                        $scope.showSpinner = false;
 					}
                 }
                 function handleLogin(res) {
