@@ -68,13 +68,23 @@ angular.module("RIF")
                     });
                     
                     modalInstance.result.then(function (modal) {
-                        ChoroService.getMaps(map).brewerName = modal.currOption.name;
-                        ChoroService.getMaps(map).invert = modal.checkboxInvert;
-                        ChoroService.getMaps(map).brewer = ColorBrewerService.getColorbrewer(modal.currOption.name, modal.selectedN);
-                        ChoroService.getMaps(map).intervals = modal.selectedN;
-                        ChoroService.getMaps(map).feature = modal.selectedFeature;
-                        ChoroService.getMaps(map).method = modal.method;
-                        ChoroService.getMaps(map).renderer = modal.thisMap;
+						var mapChoroSettings = {
+							brewerName: modal.currOption.name,
+							invert: modal.checkboxInvert,
+							brewer: ColorBrewerService.getColorbrewer(modal.currOption.name, modal.selectedN),
+							intervals: modal.selectedN,
+							feature: modal.selectedFeature,
+							method: modal.method,
+							renderer: modal.thisMap
+						};
+                        ChoroService.getMaps(map).brewerName = mapChoroSettings.brewerName;
+                        ChoroService.getMaps(map).invert = mapChoroSettings.invert;
+                        ChoroService.getMaps(map).brewer = mapChoroSettings.brewer;
+                        ChoroService.getMaps(map).intervals = mapChoroSettings.intervals;
+                        ChoroService.getMaps(map).feature = mapChoroSettings.feature;
+                        ChoroService.getMaps(map).method = mapChoroSettings.method;
+                        ChoroService.getMaps(map).renderer = mapChoroSettings.renderer;
+						$scope.consoleDebug('rifc-util-choro.js() mapChoroSettings for map: ' + map  + "; " + JSON.stringify(mapChoroSettings, null, 2));
                         $scope.$parent.child.refresh(map);
                     });
                 };

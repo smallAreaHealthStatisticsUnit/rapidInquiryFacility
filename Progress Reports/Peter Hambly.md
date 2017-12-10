@@ -1768,8 +1768,8 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 
 * Fixed map bounds and center synchrojnisation issues. Map setup is now occuring in the correct order;
 * Improvements to TopoJSONGridLayer.js error handling;
-* No leaks if pouchDB is enabled, map sync errors; is disabled still leaks!
-* Fixed memory leak;
+* Leaks if pouchDB is/is not enabled, map sync errors; if disabled still leaks!
+* Probed memory leak: not caused by sync;
 * Document update conflict issue with PouchDB, requires handlers
   ```
 	  07:33:43.110 [http-nio-8080-exec-7] ERROR rifGenericLibrary.util.FrontEndLogger : 
@@ -1790,8 +1790,10 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 	actual time:  12/6/2017 7:33:43 AM
 	relative:     +53.2
   ```
-* Test memory leak, add frontEndParameters service, SQL install instructions for CDC;
+* Test memory leak [FAILED!], add frontEndParameters service, SQL install instructions for CDC;
 * getFrontEndParameters service (i.e. remove peter username default, disable front end debugging by default, prove JSON5 parser)
+
+#### 11th to 15th December
 
 In progress:
 

@@ -72,6 +72,8 @@ Comments:
 	parameters: {
 		usePouchDBCache: 	false,	// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
 		debugEnabled:		false,	// Disable front end debugging
+		disableMapLocking:	false,	// Disable disease map initial sync [for leak testing]
+		mapLockingOptions: {},		// Map locking options (for Leaflet.Sync())
 		mappingDefaults: 	{		// Copy from mapping JSON5 setup files			
 			'diseasemap1': {},
 			'diseasemap2': {},

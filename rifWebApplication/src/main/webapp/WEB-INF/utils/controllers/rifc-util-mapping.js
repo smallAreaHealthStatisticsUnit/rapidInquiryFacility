@@ -72,9 +72,17 @@ angular.module("RIF")
                     }
                 });
 				
-				$scope.parameters=ParametersService.getParameters()||{usePouchDBCache: false} ;	
+				$scope.parameters=ParametersService.getParameters()||{
+						usePouchDBCache: false,		// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
+						disableMapLocking: false,	// Disable front end debugging
+						mapLockingOptions: {		// Map locking options (for Leaflet.Sync())
+							syncCursor: true
+						}
+					} ;	
 					// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;	
 
+				$scope.disableMapLocking=$scope.parameters.disableMapLocking||false;	
+					// Disable disease map initial sync [for leak testing]
 				$scope.layerStats = {
 					layerAdds: 0,
 					subLayerAdds: 0,
@@ -436,6 +444,7 @@ angular.module("RIF")
                         }
                     }
                 };
+				
                 $scope.updateStudy = function (mapID) {
                     //Check inputs are valid
                     if ($scope.studyID[mapID] === null || $scope.sex[mapID] === null) {
@@ -477,6 +486,7 @@ angular.module("RIF")
 											"; no map");
 										return;
 									}
+												
 									$scope.consoleDebug("[rifc-util-mapping.js] create topoJsonGridLayer for mapID: " + mapID + 
 										"; Geography: " + $scope.tileInfo[mapID].geography +
 										"; Geolevel: " + $scope.tileInfo[mapID].level +
@@ -588,7 +598,9 @@ angular.module("RIF")
 													"; areas: " + $scope.geoJSON[mapID]._geojsons.default.getLayers().length);
 											}
 											if (mapID !== "viewermap") { 
-												$scope.mapLocking();
+												if (!$scope.disableMapLocking) {
+													$scope.mapLocking();								
+												}
 											}
 										});
                                     });
@@ -680,11 +692,11 @@ angular.module("RIF")
                         if ($scope.$parent.bLockCenters) {
 							if (!$scope.map["diseasemap1"].isSynced($scope.map["diseasemap2"])) { // sync interactions on diseasemap1 with diseasemap2.
 								$scope.consoleDebug("[rifc-util-mapping.js] mapLocking: sync interactions on diseasemap1 with diseasemap2");
-								$scope.map["diseasemap1"].sync($scope.map["diseasemap2"]);
+								$scope.map["diseasemap1"].sync($scope.map["diseasemap2"], $scope.parameters.mapLockingOptions);
 							}	
 							if (!$scope.map["diseasemap2"].isSynced($scope.map["diseasemap1"])) {
 								$scope.consoleDebug("[rifc-util-mapping.js] mapLocking: sync interactions on diseasemap2 with diseasemap1");
-								$scope.map["diseasemap2"].sync($scope.map["diseasemap1"]);
+								$scope.map["diseasemap2"].sync($scope.map["diseasemap1"], $scope.parameters.mapLockingOptions);
 							}
                         } 
 						else {
