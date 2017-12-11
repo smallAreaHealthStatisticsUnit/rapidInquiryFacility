@@ -70,16 +70,18 @@ Comments:
 */
 {
 	parameters: {
-		usePouchDBCache: 	false,	// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
-		debugEnabled:		false,	// Disable front end debugging
-		disableMapLocking:	false,	// Disable disease map initial sync [for leak testing]
-		mapLockingOptions: {},		// Map locking options (for Leaflet.Sync())
-		mappingDefaults: 	{		// Copy from mapping JSON5 setup files			
+		usePouchDBCache: 	false,			// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
+		debugEnabled:		false,			// Disable front end debugging
+		disableMapLocking:	false,			// Disable disease map initial sync [for leak testing]
+		syncMapping2EventsDisabled: false,	// Disable syncMapping2Events handler [for leak testing]
+		rrDropLineRedrawDisabled: false,	// Disable rrDropLineRedraw handler [for leak testing]
+		mapLockingOptions: {},				// Map locking options (for Leaflet.Sync())
+		mappingDefaults: 	{				// Copy from mapping JSON5 setup files			
 			'diseasemap1': {},
 			'diseasemap2': {},
 			'viewermap': {}
 		},
-		defaultLogin: {				// DO NOT SET in a production environment; for use on single user tests system only!
+		defaultLogin: {						// DO NOT SET in a production environment; for use on single user tests system only!
 			username: 	"",
 			password:	""
 		}

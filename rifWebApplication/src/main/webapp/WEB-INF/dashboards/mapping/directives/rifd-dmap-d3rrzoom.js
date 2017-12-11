@@ -39,7 +39,12 @@
 /* global d3, Infinity */
 
 angular.module("RIF")
-        .directive('rrZoom', function ($rootScope, MappingStateService) { //rr-zoom
+        .directive('rrZoom', function ($rootScope, MappingStateService, ParametersService) { //rr-zoom
+
+			var parameters=ParametersService.getParameters()||{
+				rrDropLineRedrawDisabled: false			// Disable rrDropLineRedraw handler (leak debugging), If set to true stops leak!
+			};
+			var rrDropLineRedrawDisabled=parameters.rrDropLineRedrawDisabled;
             var directiveDefinitionObject = {
                 restrict: 'E',
                 replace: false,
@@ -414,44 +419,47 @@ angular.module("RIF")
 
                         //add dropLine on map select events
                         scope.$on('rrDropLineRedraw', function (event, data, container) {
-                            //get selected from area_id
-                            if (panel === container) {
-                                selected = null;
-                                for (var i = 0; i < dataLength; i++) {
-                                    if (!angular.isUndefined(scope.data[i])) {
-                                        if (scope.data[i].gid === data) {
-                                            selected = scope.data[i];
-                                            scope.clickXPos = scope.data[i].x_order;
-                                            MappingStateService.getState().selected[container] = scope.data[i];
-                                            break;
-                                        }
-                                    }
-                                }
+							if (!rrDropLineRedrawDisabled) {
+								//get selected from area_id
+								if (panel === container) {
+									selected = null;
+									for (var i = 0; i < dataLength; i++) {
+										if (!angular.isUndefined(scope.data[i])) {
+											if (scope.data[i].gid === data) {
+												selected = scope.data[i];
+												scope.clickXPos = scope.data[i].x_order;
+												MappingStateService.getState().selected[container] = scope.data[i];
+												break;
+											}
+										}
+									}
 
-                                if (selected !== null) {
-                                    context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
-                                    if (angular.isNumber(selected.rr)) {
-                                        if (bConfidence) {
-                                            svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) +
-                                                    " (" + selected.cl.toFixed(3) + " - " + selected.ul.toFixed(3) + ")");
-                                        } else {
-                                            svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3));
-                                        }
-                                    } else {
-                                        svg.select("#currentFiguresLineBivariate" + panel).text("Invalid results");
-                                    }
-                                    //is highlighter out of x range?
-                                    if (selected.x_order >= x.domain()[0] && selected.x_order <= x.domain()[1]) {
-                                        focus.select("#bivariateHiglighter1" + panel).attr("transform", "translate(" + x(selected.x_order) + "," + 0 + ")");
-                                        highlighter.style("stroke", "#EEA9B8");
-                                    } else {
-                                        highlighter.style("stroke", "transparent");
-                                    }
-                                } else {
-                                    scope.clickXPos = 0;
-                                    MappingStateService.getState().selected[container] = null;
-                                }
-                            }
+									if (selected !== null) {
+										
+										context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
+										if (angular.isNumber(selected.rr)) {
+											if (bConfidence) {
+												svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) +
+														" (" + selected.cl.toFixed(3) + " - " + selected.ul.toFixed(3) + ")");
+											} else {
+												svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3));
+											}
+										} else {
+											svg.select("#currentFiguresLineBivariate" + panel).text("Invalid results");
+										}
+										//is highlighter out of x range?
+										if (selected.x_order >= x.domain()[0] && selected.x_order <= x.domain()[1]) {
+											focus.select("#bivariateHiglighter1" + panel).attr("transform", "translate(" + x(selected.x_order) + "," + 0 + ")");
+											highlighter.style("stroke", "#EEA9B8");
+										} else {
+											highlighter.style("stroke", "transparent");
+										}
+									} else {
+										scope.clickXPos = 0;
+										MappingStateService.getState().selected[container] = null;
+									}
+								}
+							}
                         });
 
                         //handle left, right key events   

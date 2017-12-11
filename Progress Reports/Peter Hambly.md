@@ -1795,6 +1795,9 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 
 #### 11th to 15th December
 
+* OK, so disase map sync OK; rrDropLineRedraw/syncMapping2Events are not being fired; so it must be the D3 maps that are leaking. This agrees with the 
+  memory map comparisons. 
+
 In progress:
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing type].

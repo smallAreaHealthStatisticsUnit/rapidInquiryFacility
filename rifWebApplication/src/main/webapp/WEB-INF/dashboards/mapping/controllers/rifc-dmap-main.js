@@ -38,8 +38,8 @@
 /* global L, key, topojson, d3 */
 
 angular.module("RIF")
-        .controller('MappingCtrl', ['$scope', '$timeout', 'MappingStateService', 'ChoroService', 'MappingService', 'mapTools',
-            function ($scope, $timeout, MappingStateService, ChoroService, MappingService, mapTools) {
+        .controller('MappingCtrl', ['$scope', '$timeout', 'MappingStateService', 'ChoroService', 'MappingService', 'mapTools', 'ParametersService',
+            function ($scope, $timeout, MappingStateService, ChoroService, MappingService, mapTools, ParametersService) {
 
                 //Reference the child scope (controller is embedded)
                 //child scope will be on either the mapping or viewer dashboards
@@ -53,6 +53,11 @@ angular.module("RIF")
                     $scope.child.map['diseasemap2'].remove();
                 });
 
+				$scope.parameters=ParametersService.getParameters()||{
+					syncMapping2EventsDisabled: false			// Disable syncMapping2Events handler (leak debugging)
+				};
+				$scope.syncMapping2EventsDisabled=$scope.parameters.syncMapping2EventsDisabled;
+				
                 //Transparency change function
                 function closureAddSliderControl(m) {
                     return function (v) {
@@ -70,6 +75,7 @@ angular.module("RIF")
                     for (var i in $scope.child.myMaps) {
                         //initialise map
                         var container = angular.copy($scope.child.myMaps[i]);
+						$scope.consoleDebug("[rifc-dmap-main.js] Create map: " +container);
                         $scope.child.map[container] = L.map(container, {condensedAttributionControl: false}).setView([0, 0], 1);
 
                         //search box
@@ -377,7 +383,8 @@ angular.module("RIF")
                     dropLine(mapID, data, true);
                 };
                 $scope.$on('syncMapping2Events', function (event, data) {
-                    if (data.selected !== null && !angular.isUndefined(data.selected)) {
+                    if (!$scope.syncMapping2EventsDisabled && data.selected !== null && !angular.isUndefined(data.selected)) {
+						$scope.consoleDebug("[rifc-dmap-main.js] on syncMapping2Events, map: " + data.mapID + "; gid: " + data.selected.gid);
                         dropLine(data.mapID, data.selected.gid, data.map);
                         MappingStateService.getState().area_id[data.mapID] = data.selected.gid;
                         //update the other map if selections locked
@@ -407,6 +414,8 @@ angular.module("RIF")
                         }
                     }
                     //update chart
+					
+					$scope.consoleDebug("[rifc-dmap-main.js] broadcast rrDropLineRedraw, map: " + mapID + "; gid: " + gid);
                     $scope.$broadcast('rrDropLineRedraw', gid, mapID);
                 }
             }]);         
