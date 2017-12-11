@@ -42,9 +42,18 @@ angular.module("RIF")
         .directive('rrZoom', function ($rootScope, MappingStateService, ParametersService) { //rr-zoom
 
 			var parameters=ParametersService.getParameters()||{
-				rrDropLineRedrawDisabled: false			// Disable rrDropLineRedraw handler (leak debugging), If set to true stops leak!
+				rrDropLineRedrawDisabled: false,		// Disable rrDropLineRedraw handler (leak debugging), If set to true stops leak!
+				rrchartWatchDisabled: false				// Disable Angular $watch on rrchart<mapID> [for leak testing]
 			};
 			var rrDropLineRedrawDisabled=parameters.rrDropLineRedrawDisabled;
+			var rrchartWatchDisabled=parameters.rrchartWatchDisabled;
+			var watchCall=0;
+			var watchCallDone = ({
+                    'diseasemap1': false,
+                    'diseasemap2': false,
+                    'viewermap': false
+                });
+				
             var directiveDefinitionObject = {
                 restrict: 'E',
                 replace: false,
@@ -65,14 +74,27 @@ angular.module("RIF")
                         }
                     });
 
-                    scope.$watch(function () {
-                        if (angular.isUndefined(scope.data) || scope.data.length === 0) {
-                            d3.select("#rrchart" + scope.opt.panel).remove();
-                            return;
-                        } else {
-                            scope.renderBase();
-                        }
-                    });
+					if (!rrchartWatchDisabled) {
+						scope.$watch(function (scope) { // watchExpression is called on every call to $digest() and should return the value that will be watched
+							watchCall++;
+							if (angular.isUndefined(scope.data) || scope.data.length === 0) {
+								d3.select("#rrchart" + scope.opt.panel).remove();
+								watchCallDone[scope.opt.panel]=false;
+								return watchCallDone[scope.opt.panel];
+							} 
+							else if (!watchCallDone[scope.opt.panel]) {
+								$rootScope.$broadcast('renderBase', {map: scope.opt.panel, watchCall: watchCall}); // To rifc-util-mapping.js		
+								scope.renderBase();
+								watchCallDone[scope.opt.panel]=true;
+								return watchCallDone[scope.opt.panel];
+							}
+							else {
+								return watchCallDone[scope.opt.panel];
+							}
+						}, 
+						undefined /* No listener function */, 
+						undefined /* No check equality */);
+					}
 
                     scope.renderBase = function () {
                         var margin = {top: 30, right: 20, bottom: 30, left: 60};
@@ -483,7 +505,7 @@ angular.module("RIF")
                                 });
                             }
                         }
-                    };
+                    }; // End of  scope.renderBase
                 }
             };
             return directiveDefinitionObject;

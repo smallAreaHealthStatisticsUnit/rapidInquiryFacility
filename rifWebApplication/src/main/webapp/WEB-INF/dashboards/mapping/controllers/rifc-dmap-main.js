@@ -249,6 +249,8 @@ angular.module("RIF")
                  */
                 //draw rr chart from d3 directive 'rrZoom'
                 $scope.getD3chart = function (mapID, attribute) {
+					
+					$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + "; attribute: " + JSON.stringify(attribute, null, 0));
                     //reset brush handles        
                     MappingStateService.getState().brushEndLoc[mapID] = null;
                     MappingStateService.getState().brushStartLoc[mapID] = null;

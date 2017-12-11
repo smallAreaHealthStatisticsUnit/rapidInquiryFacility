@@ -75,6 +75,7 @@ Comments:
 		disableMapLocking:	false,			// Disable disease map initial sync [for leak testing]
 		syncMapping2EventsDisabled: false,	// Disable syncMapping2Events handler [for leak testing]
 		rrDropLineRedrawDisabled: false,	// Disable rrDropLineRedraw handler [for leak testing]
+		rrchartWatchDisabled: false,		// Disable Angular $watch on rrchart<mapID> [for leak testing]
 		mapLockingOptions: {},				// Map locking options (for Leaflet.Sync())
 		mappingDefaults: 	{				// Copy from mapping JSON5 setup files			
 			'diseasemap1': {},

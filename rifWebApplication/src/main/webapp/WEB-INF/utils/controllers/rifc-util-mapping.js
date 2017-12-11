@@ -106,7 +106,7 @@ angular.module("RIF")
                     'diseasemap1': {},
                     'diseasemap2': {},
                     'viewermap': {}
-                });
+                });			
 				
                 //Polygons
                 $scope.geoJSON = ({
@@ -182,6 +182,7 @@ angular.module("RIF")
                  * Tidy up on error
                  */
                 function clearTheMapOnError(mapID) {
+					$scope.consoleLog("[rifc-util-mapping.js] clearTheMapOnError: " + mapID);
                     //on error, remove polygon, legends and D3 charts
                     if (mapID === "viewermap") {
                         //datatable
@@ -215,6 +216,12 @@ angular.module("RIF")
                 $scope.$on('updateStudyDropDown', function (event, thisStudy) {
                     $scope.studyIDs.push(thisStudy);
                 });
+				
+				// $watch in rifd-dmap-d3rrzoom.js calls scope.renderBase() when is setup
+				$scope.$on('renderBase', function (event, data) {
+					$scope.consoleDebug("[rifc-util-mapping.js] renderBase; watchCall: " + data.watchCall + "; map: " + data.map);
+                });
+				
 				 /*
 					C: created, not verified; 
 					V: verified, but no other work done; [NOT USED BY MIDDLEWARE]
@@ -353,8 +360,8 @@ angular.module("RIF")
                     thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
 
                     //draw histogram
-                    $scope.getD3chart(mapID, $scope.attr[mapID]);
-
+					$scope.getD3chart(mapID, $scope.attr[mapID]);
+					
                     //not a choropleth, but single colour
                     if (thisMap[mapID].range.length === 1) {
                         //remove existing legend
@@ -597,6 +604,10 @@ angular.module("RIF")
 													"; zoomlevel: " + $scope.map[mapID].getZoom() +
 													"; areas: " + $scope.geoJSON[mapID]._geojsons.default.getLayers().length);
 											}
+											
+											//draw D3 plots [done by $scope.refresh()]
+//											$scope.getD3chart(mapID, $scope.attr[mapID]);
+									
 											if (mapID !== "viewermap") { 
 												if (!$scope.disableMapLocking) {
 													$scope.mapLocking();								
@@ -803,9 +814,6 @@ angular.module("RIF")
                                         $scope.viewerTableOptions.data = $scope.tableData.viewermap;
                                         $scope.updateTable();
                                     }
-
-                                    //draw D3 plots
-                                    $scope.getD3chart(mapID, $scope.attr[mapID]);
 
                                 }, function (e) {
                                     $scope.consoleError("[rifc-util-mapping.js] Something went wrong when getting the attribute data");
