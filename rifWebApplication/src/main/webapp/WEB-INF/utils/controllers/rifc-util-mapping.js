@@ -75,8 +75,11 @@ angular.module("RIF")
 				$scope.parameters=ParametersService.getParameters()||{
 						usePouchDBCache: false,		// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
 						disableMapLocking: false,	// Disable front end debugging
-						mapLockingOptions: {		// Map locking options (for Leaflet.Sync())
-							syncCursor: true
+						mapLockingOptions: {},		// Map locking options (for Leaflet.Sync())
+						mappingDefaults: 	{					
+							'diseasemap1': {},
+							'diseasemap2': {},
+							'viewermap': {}
 						}
 					} ;	
 					// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;	
@@ -358,7 +361,18 @@ angular.module("RIF")
                     //get choropleth map renderer
                     $scope.attr[mapID] = ChoroService.getMaps(mapID).feature;
                     thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
-
+					if (thisMap[mapID].scale == null) { // Renderer not set, can use default
+						thisMap[mapID] = $scope.parameters.mappingDefaults[mapID].renderer;
+						$scope.consoleDebug('rifc-util-mapping.js() use default mapChoroSettings for map: ' + mapID);
+					}
+						
+					$scope.consoleDebug('rifc-util-mapping.js() mapChoroSettings for map: ' + mapID  + 
+						"; range: " + thisMap[mapID].range.length +
+						"; " + JSON.stringify({
+							feature: $scope.attr[mapID],
+							renderer: thisMap[mapID]
+						}, null, 2));
+					
                     //draw histogram
 					$scope.getD3chart(mapID, $scope.attr[mapID]);
 					
@@ -581,7 +595,7 @@ angular.module("RIF")
 										}
 										else {							
 											$scope.consoleError("[rifc-util-mapping.js] geoJSON not yet set up: $scope.geoJSON[mapID]._geojsons.default is NULL");
-										}	
+										}
 										
 										$scope.map[mapID].whenReady(function(e) {			
 											if ($scope.geoJSON[mapID]._tiles) {												
@@ -607,7 +621,7 @@ angular.module("RIF")
 											
 											//draw D3 plots [done by $scope.refresh()]
 //											$scope.getD3chart(mapID, $scope.attr[mapID]);
-									
+											
 											if (mapID !== "viewermap") { 
 												if (!$scope.disableMapLocking) {
 													$scope.mapLocking();								
@@ -669,8 +683,14 @@ angular.module("RIF")
 									function setMapCentreAndBoundsCallback(msg) {	// setMapCentreAndBoundsCallback
 										$scope.consoleDebug(msg); 
 										
+										$scope.myService.getState().center[mapID].zoom = $scope.map[mapID].getZoom();
+										$scope.myService.getState().center[mapID].lng = $scope.map[mapID].getCenter().lng;
+										$scope.myService.getState().center[mapID].lat = $scope.map[mapID].getCenter().lat;
 										$scope.consoleDebug("[rifc-util-mapping.js] add topoJsonGridLayer for mapID: " + mapID + 
-											"; study: " + $scope.studyID[mapID].study_id);						
+											"; study: " + $scope.studyID[mapID].study_id);		
+										$scope.consoleDebug("[rifc-util-mapping.js] initial setView for mapID: " + mapID + 
+												"; centre: " + JSON.stringify($scope.myService.getState().center[mapID]));		
+												
 										$scope.map[mapID].addLayer($scope.geoJSON[mapID]); // Add layer to map
 										$scope.map[mapID].whenReady(function(e) {		
 											
@@ -687,7 +707,7 @@ angular.module("RIF")
 											$scope.consoleDebug("[rifc-util-mapping.js] completed topoJsonGridLayer for mapID: " + mapID + 
 												"; study: " + $scope.studyID[mapID].study_id);
 											
-											$scope.refresh(mapID);
+											$scope.refresh(mapID);												
 										});
 									}, function setMapCentreAndBoundsError(e) {	// setMapCentreAndBoundsError
 										$scope.consoleError(e); 
@@ -734,9 +754,11 @@ angular.module("RIF")
 										if ($scope.myService.getState().center[mapID].lat === 0) {
 											$scope.map[mapID].fitBounds($scope.maxbounds);
 											$scope.map[mapID].whenReady(function(e) {	
-													resolve("[rifc-util-mapping.js] set fitBounds for mapID: " + mapID + 
-														"; lowestLevel: " + lowestLevel +
-														"; maxbounds: " + JSON.stringify($scope.maxbounds));
+												var centre = $scope.myService.getState().center[mapID];
+												resolve("[rifc-util-mapping.js] set fitBounds for mapID: " + mapID + 
+																"; lowestLevel: " + lowestLevel +
+																"; maxbounds: " + JSON.stringify($scope.maxbounds) +
+																"; centre: " + JSON.stringify(centre));
 											});
 											
 										} 
@@ -745,7 +767,7 @@ angular.module("RIF")
 											$scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
 											$scope.map[mapID].whenReady(function(e) {	
 												resolve("[rifc-util-mapping.js] set setView for mapID: " + mapID + 
-													"; centre: " + JSON.stringify(centre));
+															"; centre: " + JSON.stringify(centre));
 											});
 										}
 									} 
@@ -754,7 +776,7 @@ angular.module("RIF")
 										$scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
 										$scope.map[mapID].whenReady(function(e) {	
 											resolve("[rifc-util-mapping.js] set setView for mapID: " + mapID + 
-												"; centre: " + JSON.stringify(centre));
+														"; centre: " + JSON.stringify(centre));
 										});
 									}
 								}, function (e) {
