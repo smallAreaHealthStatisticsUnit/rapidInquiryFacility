@@ -94,6 +94,7 @@ angular.module("RIF")
 					subLayerRefreshes: 0,
 					layerRemoves: 0,
 					subLayerRemoves: 0,
+					Layerwarnings: 0,
 					errors: 0
 				};
 				
@@ -361,7 +362,7 @@ angular.module("RIF")
                     //get choropleth map renderer
                     $scope.attr[mapID] = ChoroService.getMaps(mapID).feature;
                     thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
-					if (thisMap[mapID].scale == null) { // Renderer not set, can use default
+					if (thisMap[mapID] && thisMap[mapID].scale == null) { // Renderer not set, can use default
 						thisMap[mapID] = $scope.parameters.mappingDefaults[mapID].renderer;
 						$scope.consoleDebug('rifc-util-mapping.js() use default mapChoroSettings for map: ' + mapID);
 					}
@@ -463,6 +464,12 @@ angular.module("RIF")
                                 fillOpacity: $scope.child.transparency[mapID]
                             });
                         }
+						else {
+							$scope.layerStats.Layerwarnings++;
+							if ($scope.layerStats.Layerwarnings < 20) {
+								$scope.showWarning("No table data for mapID: " + mapID + " [20 warnings max.]"); // You will get 1000's of these!!	
+							}
+						}
                     }
                 };
 				
@@ -627,6 +634,8 @@ angular.module("RIF")
 													$scope.mapLocking();								
 												}
 											}
+																					
+//                                          $scope.$parent.$digest(); // Signal $watch in rifd-dmap-d3rrzoom.js
 										});
                                     });
 												
@@ -694,20 +703,27 @@ angular.module("RIF")
 										$scope.map[mapID].addLayer($scope.geoJSON[mapID]); // Add layer to map
 										$scope.map[mapID].whenReady(function(e) {		
 											
-											getAttributeTable(mapID);
-
-											//pan events                            
-											$scope.map[mapID].on('zoomend', function (e) {
-												$scope.myService.getState().center[mapID].zoom = $scope.map[mapID].getZoom();
-											});
-											$scope.map[mapID].on('moveend', function (e) {
-												$scope.myService.getState().center[mapID].lng = $scope.map[mapID].getCenter().lng;
-												$scope.myService.getState().center[mapID].lat = $scope.map[mapID].getCenter().lat;
-											});
-											$scope.consoleDebug("[rifc-util-mapping.js] completed topoJsonGridLayer for mapID: " + mapID + 
-												"; study: " + $scope.studyID[mapID].study_id);
+											getAttributeTable(mapID, 
+												function getAttributeTableCallBack(msg) {
+													$scope.consoleDebug(msg);
+													//pan events                            
+													$scope.map[mapID].on('zoomend', function (e) {
+														$scope.myService.getState().center[mapID].zoom = $scope.map[mapID].getZoom();
+													});
+													$scope.map[mapID].on('moveend', function (e) {
+														$scope.myService.getState().center[mapID].lng = $scope.map[mapID].getCenter().lng;
+														$scope.myService.getState().center[mapID].lat = $scope.map[mapID].getCenter().lat;
+													});
+													$scope.consoleDebug("[rifc-util-mapping.js] completed topoJsonGridLayer for mapID: " + mapID + 
+														"; study: " + $scope.studyID[mapID].study_id);
+													
+													$scope.refresh(mapID);	
+												},
+												function getAttributeTableError(e) {
+													$scope.showError("Error fetching table data for mapID: " + mapID + "; " + e);
+												}
+											);
 											
-											$scope.refresh(mapID);												
 										});
 									}, function setMapCentreAndBoundsError(e) {	// setMapCentreAndBoundsError
 										$scope.consoleError(e); 
@@ -797,7 +813,7 @@ angular.module("RIF")
 
 					}; // End of setMapCentreAndBounds()
 
-                    function getAttributeTable(mapID) {
+                    function getAttributeTable(mapID, getAttributeTableCallBack, getAttributeTableError) {
                         user.getSmoothedResults(user.currentUser, $scope.studyID[mapID].study_id, MappingService.getSexCode($scope.sex[mapID]))
                                 .then(function (res) {
                                     //variables possible to map
@@ -836,10 +852,11 @@ angular.module("RIF")
                                         $scope.viewerTableOptions.data = $scope.tableData.viewermap;
                                         $scope.updateTable();
                                     }
-
+									getAttributeTableCallBack("[rifc-util-mapping.js] " + $scope.tableData[mapID].length + 
+										" rows of attribute data fetched for map: " + mapID);
                                 }, function (e) {
-                                    $scope.consoleError("[rifc-util-mapping.js] Something went wrong when getting the attribute data");
                                     clearTheMapOnError(mapID);
+									getAttributeTableError(e);
                                 });
                     }
 

@@ -1797,6 +1797,8 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 
 * OK, so disase map sync OK; rrDropLineRedraw/syncMapping2Events are not being fired; so it must be the D3 maps that are leaking. This agrees with the 
   memory map comparisons. 
+* Centering fixes (map zoom, lat and long not set on initial map load). Should also fix null zoomlevel errors;
+* Table data being fetched after map; hence display issues;
 
 In progress:
 
