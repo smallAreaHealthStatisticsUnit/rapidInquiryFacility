@@ -80,17 +80,17 @@ angular.module("RIF")
 									if (getFrontEndParameters && getFrontEndParameters.parameters && 
 										getFrontEndParameters.parameters.defaultLogin) {
 										if (username) {		
-											$scope.consoleLog('getFrontEndParameters file: ' + res.data.file +
-												'; parsed: ' + JSON.stringify(getFrontEndParameters.parameters, null, 2));
+//											$scope.consoleLog('getFrontEndParameters file: ' + res.data.file +
+//												'; parsed: ' + JSON.stringify(getFrontEndParameters.parameters, null, 2));
 											ParametersService.setParameters(getFrontEndParameters.parameters);
 										}
 										else {		
-											$scope.consoleLog('getFrontEndParameters file: ' + res.data.file +
-												'; [restricted] parsed: ' + JSON.stringify(getFrontEndParameters.parameters, null, 2));
+//											$scope.consoleLog('getFrontEndParameters file: ' + res.data.file +
+//												'; [restricted] parsed: ' + JSON.stringify(getFrontEndParameters.parameters, null, 2));
 											ParametersService.setLoginParameters(getFrontEndParameters.parameters);
 											
 										}
-										$scope.consoleDebug('INIT setFrontEndParameters: ' + JSON.stringify(ParametersService.getParameters(), null, 0));
+//										$scope.consoleDebug('INIT setFrontEndParameters: ' + JSON.stringify(ParametersService.getParameters(), null, 0));
 										$scope.parameters=ParametersService.getParameters()||{defaultLogin: {
 													username: 	"",
 													password:	""
