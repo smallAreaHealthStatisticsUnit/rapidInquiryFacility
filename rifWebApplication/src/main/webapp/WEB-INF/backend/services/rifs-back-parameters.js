@@ -39,8 +39,13 @@ angular.module("RIF")
                 function () {
                     //this is used for all front end parameters. They originare from the Middleware (when implemented)
                     var defaultParameters = {
-						usePouchDBCache: 	false,	// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
-						debugEnabled:		false,	// Disable front end debugging
+						usePouchDBCache: 			false,	// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
+						debugEnabled:				false,	// Disable front end debugging
+						disableMapLocking:			false,	// Disable disease map initial sync [for leak testing]
+						syncMapping2EventsDisabled: false,	// Disable syncMapping2Events handler [for leak testing]
+						rrDropLineRedrawDisabled: 	false,	// Disable rrDropLineRedraw handler [for leak testing]
+						rrchartWatchDisabled: 		false,	// Disable Angular $watch on rrchart<mapID> [for leak testing]
+						mapLockingOptions: {},				// Map locking options (for Leaflet.Sync())
 						mappingDefaults: 	{					
 							'diseasemap1': {},
 							'diseasemap2': {},
