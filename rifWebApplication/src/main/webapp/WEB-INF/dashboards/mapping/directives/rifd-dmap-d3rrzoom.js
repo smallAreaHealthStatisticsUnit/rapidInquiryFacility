@@ -47,12 +47,16 @@ angular.module("RIF")
 			};
 			var rrDropLineRedrawDisabled=parameters.rrDropLineRedrawDisabled;
 			var rrchartWatchDisabled=parameters.rrchartWatchDisabled;
-			var watchCall=0;
-			var watchCallDone = ({
+			var watchCall = {
+                    'diseasemap1': 0,
+                    'diseasemap2': 0,
+                    'viewermap': 0
+                };
+			var watchCallDone = {
                     'diseasemap1': false,
                     'diseasemap2': false,
                     'viewermap': false
-                });
+                };
 				
             var directiveDefinitionObject = {
                 restrict: 'E',
@@ -75,20 +79,33 @@ angular.module("RIF")
                     });
 
 					if (!rrchartWatchDisabled) {
+						scope.$on('rrZoomReset', function (event, rrZoomReset) { // Allow refresh
+							$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "watchCall reset at: " + watchCall[scope.opt.panel] + 
+								"; map: " + scope.opt.panel + "; watchCallDone[scope.opt.panel]: " + watchCallDone[scope.opt.panel]});
+							watchCallDone[scope.opt.panel]=false;
+							watchCall[scope.opt.panel]=0;
+						});
+						
 						scope.$watch(function (scope) { // watchExpression is called on every call to $digest() and should return the value that will be watched
-							watchCall++;
+							watchCall[scope.opt.panel]++;
+							
+							function runRenderBase(panel, watchCall) {				
+								$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "Call renderBase for map: " + panel + "; watchCall: " + watchCall});	
+								scope.renderBase();	
+							}
+							
 							if (angular.isUndefined(scope.data) || scope.data.length === 0) {
 								d3.select("#rrchart" + scope.opt.panel).remove();
 								watchCallDone[scope.opt.panel]=false;
 								return watchCallDone[scope.opt.panel];
 							} 
-							else if (!watchCallDone[scope.opt.panel]) {
-								$rootScope.$broadcast('renderBase', {map: scope.opt.panel, watchCall: watchCall}); // To rifc-util-mapping.js		
-								scope.renderBase();
+							else if (!watchCallDone[scope.opt.panel] && watchCall[scope.opt.panel] < 10) { // Limit to 10 times to prevent $digest complaining							
 								watchCallDone[scope.opt.panel]=true;
+								setTimeout(runRenderBase, 500, scope.opt.panel, watchCall[scope.opt.panel]);
 								return watchCallDone[scope.opt.panel];
 							}
 							else {
+								watchCallDone[scope.opt.panel]=false;
 								return watchCallDone[scope.opt.panel];
 							}
 						}, 
@@ -153,12 +170,18 @@ angular.module("RIF")
                         if (!angular.isUndefined(domainCheck[0])) {
                             if (domainCheck[0].toFixed(5) === domainCheck[1].toFixed(5)) {
                                 d3.select("#rrchart" + panel).remove();
+								$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "renderBase: Failed for map: " + panel + 
+									"; data max in and values are the same" + domainCheck[0].toFixed(5)});
+								watchCallDone[panel]=false;
                                 return;
                             }
                         } else {
+							$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "renderBase: Failed for map: " + panel + "; no data"});
+							watchCallDone[panel]=false;
                             return;
                         }
 
+						$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "renderBase: for map: " + panel + "; Data OK; watchCallDone[panel]: " + watchCallDone[panel]});
                         var xAxis = d3.axisBottom().scale(x).ticks(0);
                         var xAxis2 = d3.axisBottom().scale(x2);
                         var yAxis = d3.axisLeft().scale(y);
@@ -505,6 +528,9 @@ angular.module("RIF")
                                 });
                             }
                         }
+						
+						watchCallDone[panel]=true;
+						$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "renderBase: for map: " + panel + "; Completed"});
                     }; // End of  scope.renderBase
                 }
             };

@@ -250,7 +250,7 @@ angular.module("RIF")
                 //draw rr chart from d3 directive 'rrZoom'
                 $scope.getD3chart = function (mapID, attribute) {
 					
-					$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + "; attribute: " + JSON.stringify(attribute, null, 0));
+					$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + "; attribute: " + attribute + "; data rows: " + $scope.child.tableData[mapID].length);
                     //reset brush handles        
                     MappingStateService.getState().brushEndLoc[mapID] = null;
                     MappingStateService.getState().brushStartLoc[mapID] = null;
@@ -259,10 +259,15 @@ angular.module("RIF")
 
                     //make array for d3 areas
                     var rs = [];
+					if ($scope.child.tableData[mapID].length == 0) {
+						$scope.showWarning("Unable to create D3 chart for map: " + mapID + "; no table data");
+					}
+					
                     for (var i = 0; i < $scope.child.tableData[mapID].length; i++) {
                         //check for invalid column, therefore no graph possible
                         if ($scope.child.tableData[mapID][i][attribute] === null) {
                             $scope.rrChartData[mapID] = [];
+							$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + "; attribute column is null, no graph possible");
                             return;
                         }                       
                         //Handle inconsistant naming in results table
@@ -299,13 +304,16 @@ angular.module("RIF")
                     rs.sort(function (a, b) {
                         return parseFloat(a.rr) - parseFloat(b.rr);
                     });
+					$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + "; rs[0]: " + JSON.stringify(rs[0], null, 0));
+					
                     for (var i = 0; i < $scope.child.tableData[mapID].length; i++) {
                         rs[i]["x_order"] = i + 1;
                     }
+					
                     //set options for directive
                     $scope.optionsRR[mapID].label_field = attribute;
                     $scope.rrChartData[mapID] = angular.copy(rs);
-                };
+                }; // End of getD3chart()
 
                 //key events to move the dropline
                 $scope.child.mapInFocus = "";
