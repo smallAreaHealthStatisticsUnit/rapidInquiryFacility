@@ -813,7 +813,7 @@ angular.module("RIF")
 								var lowestLevel = res.data[0].names[0];
 								user.getTileMakerTilesAttributes(user.currentUser, $scope.tileInfo[mapID].geography, lowestLevel).then(function (res) {
 									$scope.maxbounds = L.latLngBounds([res.data.bbox[1], res.data.bbox[2]], [res.data.bbox[3], res.data.bbox[0]]);
-									if (mapID !== "diseasemap2") {
+									if (mapID !== "diseasemap2" || $scope.disableMapLocking) {
 										
 										//do not get maxbounds for diseasemap2
 										if ($scope.myService.getState().center[mapID].lat === 0) {

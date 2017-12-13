@@ -54,9 +54,11 @@ angular.module("RIF")
                 });
 
 				$scope.parameters=ParametersService.getParameters()||{
-					syncMapping2EventsDisabled: false			// Disable syncMapping2Events handler (leak debugging)
+					syncMapping2EventsDisabled: false,			// Disable syncMapping2Events handler (leak debugging)
+					disableMapLocking: false					// Disable disease map initial sync [for leak testing]
 				};
-				$scope.syncMapping2EventsDisabled=$scope.parameters.syncMapping2EventsDisabled;
+				$scope.syncMapping2EventsDisabled=$scope.parameters.syncMapping2EventsDisabled||false;
+				$scope.disableMapLocking=$scope.parameters.disableMapLocking||false;		
 				
                 //Transparency change function
                 function closureAddSliderControl(m) {
@@ -331,12 +333,19 @@ angular.module("RIF")
                         }
                     }
                 });
-
+				if ($scope.disableMapLocking) {
+					MappingStateService.getState().selectionLock = false;
+					MappingStateService.getState().extentLock = false;
+				}
                 /*
                  * Specific to handle 2 Leaflet Panels in disease mapping
                  */
                 //sync map extents
                 $scope.bLockCenters = MappingStateService.getState().extentLock;
+                $scope.bLockSelect = MappingStateService.getState().selectionLock;
+				$scope.consoleLog("[rifc-dmap-main.js] Map linking; $scope.bLockSelect: " + $scope.bLockSelect);
+				$scope.consoleLog("[rifc-dmap-main.js] Map linking; $scope.bLockCenters: " + $scope.bLockCenters);
+				
                 $scope.lockExtent = function () {
                     if ($scope.bLockCenters) {
                         $scope.bLockCenters = false;
@@ -349,7 +358,7 @@ angular.module("RIF")
                 };
 
                 //sync map selections
-                $scope.bLockSelect = MappingStateService.getState().selectionLock;
+				
                 $scope.lockSelect = function () {
                     if ($scope.bLockSelect) {
                         $scope.bLockSelect = false;

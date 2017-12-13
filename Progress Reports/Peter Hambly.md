@@ -1799,6 +1799,9 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
   memory map comparisons. 
 * Centering fixes (map zoom, lat and long not set on initial map load). Should also fix null zoomlevel errors;
 * Table data being fetched after map; hence display issues;
+* Fixed $Watch synchronmisation - now correct; warns on no data for D3 graphs. Diseasemap1 not being displayed until refresh
+* disableMapLocking now works correctly
+* RIF meeting
 
 In progress:
 
