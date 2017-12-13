@@ -72,7 +72,8 @@ Comments:
 	parameters: {
 		usePouchDBCache: 	false,			// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
 		debugEnabled:		false,			// Disable front end debugging
-		disableMapLocking:	false,			// Disable disease map initial sync [You can re-enavle it!]
+		disableMapLocking:	false,			// Disable disease map initial sync [You can re-enable it!]
+		disableSelectionLocking: false,		// Disable selection locking [You can re-enable it!]
 		
 		syncMapping2EventsDisabled: false,	// Disable syncMapping2Events handler [for leak testing]
 		rrDropLineRedrawDisabled: false,	// Disable rrDropLineRedraw handler [for leak testing]

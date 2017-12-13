@@ -55,10 +55,13 @@ angular.module("RIF")
 
 				$scope.parameters=ParametersService.getParameters()||{
 					syncMapping2EventsDisabled: false,			// Disable syncMapping2Events handler (leak debugging)
-					disableMapLocking: false					// Disable disease map initial sync [for leak testing]
+					disableMapLocking: false,					// Disable disease map initial sync 
+					disableSelectionLocking: false				// Disable selection locking
 				};
 				$scope.syncMapping2EventsDisabled=$scope.parameters.syncMapping2EventsDisabled||false;
 				$scope.disableMapLocking=$scope.parameters.disableMapLocking||false;		
+				$scope.disableSelectionLocking=$scope.parameters.disableSelectionLocking||false;		
+				
 				
                 //Transparency change function
                 function closureAddSliderControl(m) {
@@ -334,8 +337,16 @@ angular.module("RIF")
                     }
                 });
 				if ($scope.disableMapLocking) {
-					MappingStateService.getState().selectionLock = false;
 					MappingStateService.getState().extentLock = false;
+				}
+				else {
+					MappingStateService.getState().extentLock = true;
+				}
+				if ($scope.disableSelectionLocking) {
+					MappingStateService.getState().selectionLock = false;
+				}
+				else {
+					MappingStateService.getState().selectionLock = true;
 				}
                 /*
                  * Specific to handle 2 Leaflet Panels in disease mapping
@@ -343,7 +354,7 @@ angular.module("RIF")
                 //sync map extents
                 $scope.bLockCenters = MappingStateService.getState().extentLock;
                 $scope.bLockSelect = MappingStateService.getState().selectionLock;
-				$scope.consoleLog("[rifc-dmap-main.js] Map linking; $scope.bLockSelect: " + $scope.bLockSelect);
+				$scope.consoleLog("[rifc-dmap-main.js] Map selection lock; $scope.bLockSelect: " + $scope.bLockSelect);
 				$scope.consoleLog("[rifc-dmap-main.js] Map linking; $scope.bLockCenters: " + $scope.bLockCenters);
 				
                 $scope.lockExtent = function () {
