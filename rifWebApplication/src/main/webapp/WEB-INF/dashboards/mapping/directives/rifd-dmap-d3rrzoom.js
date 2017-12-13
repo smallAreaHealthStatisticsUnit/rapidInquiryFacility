@@ -52,7 +52,7 @@ angular.module("RIF")
                     'diseasemap2': 0,
                     'viewermap': 0
                 };
-			var watchCallDone = {
+			watchCallDone = {
                     'diseasemap1': false,
                     'diseasemap2': false,
                     'viewermap': false
@@ -90,7 +90,8 @@ angular.module("RIF")
 							watchCall[scope.opt.panel]++;
 							
 							function runRenderBase(panel, watchCall) {				
-								$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "Call renderBase for map: " + panel + "; watchCall: " + watchCall});	
+								$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "Call renderBase for map: " + panel + "; watchCall: " + watchCall +
+									"; watchCallDone[" + panel + "]: " + watchCallDone[panel]});	
 								scope.renderBase();	
 							}
 							
@@ -99,13 +100,20 @@ angular.module("RIF")
 								watchCallDone[scope.opt.panel]=false;
 								return watchCallDone[scope.opt.panel];
 							} 
-							else if (!watchCallDone[scope.opt.panel] && watchCall[scope.opt.panel] < 10) { // Limit to 10 times to prevent $digest complaining							
-								watchCallDone[scope.opt.panel]=true;
-								setTimeout(runRenderBase, 500, scope.opt.panel, watchCall[scope.opt.panel]);
+							else if (watchCall[scope.opt.panel] < 3 /* Always the first */ && !watchCallDone[scope.opt.panel]) { // Limit to 10 times to prevent $digest complaining	
+							
+								$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "Pre call renderBase for map: " + scope.opt.panel + 
+									"; watchCall" + scope.opt.panel + ": " + watchCall[scope.opt.panel] +
+									"; watchCallDone[" + scope.opt.panel + "]: " + watchCallDone[scope.opt.panel]});	
+								watchCallDone[scope.opt.panel]=true; // This is to preve nt further calls
+//								setTimeout(runRenderBase, 50, scope.opt.panel, watchCall[scope.opt.panel]);		
+								$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "Call renderBase for map: " + scope.opt.panel + 
+									"; watchCall[" + scope.opt.panel + "]: " + watchCall[scope.opt.panel] +
+									"; watchCallDone[" + scope.opt.panel + "]: " + watchCallDone[scope.opt.panel]});	
+								scope.renderBase();	
 								return watchCallDone[scope.opt.panel];
 							}
 							else {
-								watchCallDone[scope.opt.panel]=false;
 								return watchCallDone[scope.opt.panel];
 							}
 						}, 
@@ -529,10 +537,11 @@ angular.module("RIF")
                             }
                         }
 						
-						watchCallDone[panel]=true;
-						$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "renderBase: for map: " + panel + "; Completed"});
+						$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "renderBase: for map: " + panel + "; Completed; watchCallDone[panel]: " + watchCallDone[panel]});
                     }; // End of  scope.renderBase
-                }
+					
+					$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "INIT complete"});
+                } // End of init()
             };
             return directiveDefinitionObject;
         });
