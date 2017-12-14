@@ -38,17 +38,53 @@
 /* global d3, ss, L, Infinity */
 
 angular.module("RIF")
-        .factory('ChoroService', ['ColorBrewerService',
-            function (ColorBrewerService) {
+        .factory('ChoroService', ['ColorBrewerService', 'ParametersService',
+            function (ColorBrewerService, ParametersService) {
+
+				var defaultChoroScaleMethod = {
+					'viewermap': {
+							'method': 		'quantile', 
+							'feature':		'relative_risk',
+							'intervals': 	9,
+							'invert':		true,
+							'brewerName':	"PuOr",
+							isDefault:		true
+					},
+					'diseasemap1': {
+							'method': 		'quantile', 
+							'feature':		'smothed_smr',
+							'intervals': 	9,
+							'invert':		true,
+							'brewerName':	"PuOr",
+							isDefault:		true
+					},
+					'diseasemap2': {
+							'method': 		'AtlasProbability', 
+							'feature':		'posterior_probability',
+							'intervals': 	3,
+							'invert':		false,
+							'brewerName':	"Constant",
+							isDefault:		true
+					}
+				};
                 
                 //a default symbology
-                function symbology(mapChoroScaleMethod) {
+                function symbology(mapID, choroScaleMethod) {
+					
+					var mapChoroScaleMethod;
+					if (choroScaleMethod) {
+						mapChoroScaleMethod = choroScaleMethod[mapID] || defaultChoroScaleMethod[mapID];
+					}
+					else {
+						mapChoroScaleMethod = defaultChoroScaleMethod[mapID];
+					}
                     this.features = [];
                     this.brewerName = mapChoroScaleMethod.brewerName;
                     this.intervals = mapChoroScaleMethod.intervals;
                     this.feature = mapChoroScaleMethod.feature;
                     this.invert = mapChoroScaleMethod.invert;
                     this.method = mapChoroScaleMethod.method;
+					this.isDefault = mapChoroScaleMethod.isDefault || false; 
                     this.renderer = {
                         scale: null,
                         breaks: [],
@@ -60,34 +96,15 @@ angular.module("RIF")
                     this.init = false;
                 }
 				
-				var defaultChoroScaleMethod = {
-                    'viewermap': {
-							'method': 		'quantile', 
-							'feature':		'relative_risk',
-							'intervals': 	9,
-							'invert':		true,
-							'brewerName':	"PuOr"
-					},
-                    'diseasemap1': {
-							'method': 		'quantile', 
-							'feature':		'smothed_smr',
-							'intervals': 	9,
-							'invert':		true,
-							'brewerName':	"PuOr"
-					},
-                    'diseasemap2': {
-							'method': 		'AtlasProbability', 
-							'feature':		'posterior_probability',
-							'intervals': 	3,
-							'invert':		false,
-							'brewerName':	"Constant"
-					}
-				};
-				
+				var parameters=ParametersService.getParameters();
+				var choroScaleMethod = undefined;
+				if (parameters && parameters.mappingDefaults) {
+					choroScaleMethod = parameters.mappingDefaults;
+				}
                 var maps = {	
-                    'viewermap': new symbology(defaultChoroScaleMethod['viewermap']),					
-                    'diseasemap1': new symbology(defaultChoroScaleMethod['diseasemap1']),
-                    'diseasemap2': new symbology(defaultChoroScaleMethod['diseasemap2']) //default for 2nd disease map is probability */
+                    'viewermap': new symbology('viewermap', choroScaleMethod),					
+                    'diseasemap1': new symbology('diseasemap1', choroScaleMethod),
+                    'diseasemap2': new symbology('diseasemap2', choroScaleMethod) //default for 2nd disease map is probability */
                 };
 				
                 //used in viewer map

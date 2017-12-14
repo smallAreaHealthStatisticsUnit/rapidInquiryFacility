@@ -524,6 +524,7 @@ angular.module("RIF")
                 };
 				
 				$scope.defaultRenderMap = function (mapID) {
+					
 					var choroScope = {
 						input: {},
 						mapID: mapID,
@@ -531,6 +532,7 @@ angular.module("RIF")
 						domain: [],
 						tableData: {}
 					}
+					choroScope.input.isDefault = ChoroService.getMaps(mapID).isDefault;
 					choroScope.input.checkboxInvert = ChoroService.getMaps(mapID).invert;
 					choroScope.input.selectedSchemeName = ChoroService.getMaps(mapID).brewerName;
 					choroScope.input.intervalRange = ColorBrewerService.getSchemeIntervals(choroScope.selectedSchemeName);
@@ -555,10 +557,19 @@ angular.module("RIF")
 					} else {
 						choroScope.input.selectedFeature = ChoroService.getMaps(mapID).feature;
 					}
+				
+					choroScope.brewerName = ChoroService.getMaps(mapID).brewerName;
+					choroScope.invert = ChoroService.getMaps(mapID).invert;
+					choroScope.brewer = ChoroService.getMaps(mapID).brewer;
+					choroScope.intervals = ChoroService.getMaps(mapID).intervals;
+					choroScope.feature = ChoroService.getMaps(mapID).feature;
+					choroScope.method = ChoroService.getMaps(mapID).method;
+					choroScope.renderer = ChoroService.getMaps(mapID).renderer;
+					
 					$scope.consoleDebug("[rifc-util-mapping.js] defaultRenderMap() mapID: " + mapID + "; choroScope: " + JSON.stringify(choroScope, null, 2)); 
 					choroScope.tableData[mapID]=$scope.tableData[mapID];
 										
-					ChoroService.doRenderSwatch(false /* Called on modal open */, true /* Secret field, always true */, choroScope, ColorBrewerService);
+					ChoroService.doRenderSwatch(true /* Called on modal open */, true /* Secret field, always true */, choroScope, ColorBrewerService);
 				}
 				
                 $scope.updateStudy = function (mapID) {
