@@ -255,6 +255,58 @@ angular.module("RIF")
                         return div;
                     });
                 }
+				
+				function renderSwatch(bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, choroScope, ColorBrewerService) {
+                //ensure that the colour scheme allows the selected number of classes
+					var n = angular.copy(choroScope.input.selectedN);
+					choroScope.input.intervalRange = ColorBrewerService.getSchemeIntervals(choroScope.input.currOption.name);
+					if (choroScope.input.selectedN > Math.max.apply(Math, choroScope.input.intervalRange)) {
+						choroScope.input.selectedN = Math.max.apply(Math, choroScope.input.intervalRange);
+					} else if (choroScope.input.selectedN < Math.min.apply(Math, choroScope.input.intervalRange)) {
+						choroScope.input.selectedN = Math.min.apply(Math, choroScope.input.intervalRange);
+					}
+
+					//get the domain 
+					choroScope.domain.length = 0;
+					for (var i = 0; i < choroScope.tableData[choroScope.mapID].length; i++) {
+						choroScope.domain.push(Number(choroScope.tableData[choroScope.mapID][i][choroScope.input.selectedFeature]));
+					}
+
+					//save the selected brewer
+					maps[choroScope.mapID].brewerName = choroScope.input.currOption.name;
+
+					if (bOnOpen) {
+						//if called on modal open
+						if (!maps[choroScope.mapID].init) {
+							//initialise basic renderer
+							maps[choroScope.mapID].init = true;
+							choroScope.input.thisMap = choroScale(choroScope.input.method, choroScope.domain, ColorBrewerService.getColorbrewer(choroScope.input.currOption.name,
+									choroScope.input.selectedN), choroScope.input.checkboxInvert, choroScope.mapID);
+							maps[choroScope.mapID].renderer = choroScope.input.thisMap;
+						} else {
+							//restore previous renderer
+							choroScope.input.thisMap = maps[choroScope.mapID].renderer;
+						}
+					} else {
+						//update current renderer
+						if (!bCalc) {
+							if (n !== choroScope.input.selectedN) {
+								//reset as class number requested not possible
+								choroScope.input.thisMap = choroScale(choroScope.input.method, choroScope.domain, ColorBrewerService.getColorbrewer(choroScope.input.currOption.name,
+										choroScope.input.selectedN), choroScope.input.checkboxInvert, choroScope.mapID);
+							} else {
+								var tempRenderer = choroScale(choroScope.input.method, choroScope.domain, ColorBrewerService.getColorbrewer(choroScope.input.currOption.name,
+										choroScope.input.selectedN), choroScope.input.checkboxInvert, choroScope.mapID);
+								choroScope.input.thisMap.range = tempRenderer.range;
+							}
+						} else {
+							choroScope.input.thisMap = choroScale(choroScope.input.method, choroScope.domain, ColorBrewerService.getColorbrewer(choroScope.input.currOption.name,
+									choroScope.input.selectedN), choroScope.input.checkboxInvert, choroScope.mapID);
+						}
+					}
+									
+				}
+				
                 return {
                     getMaps: function (i) {
                         return maps[i];
@@ -271,6 +323,9 @@ angular.module("RIF")
                     getMakeLegend: function (thisMap, attr) {
                         return makeLegend(thisMap, attr);
                     },
+					doRenderSwatch: function (bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, choroScope, ColorBrewerService) {
+						return renderSwatch(bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, choroScope, ColorBrewerService);
+					},
                     //TODO: not used, add reset button
                     resetState: function (map) {
                         maps[map] = new symbology("quantile", "smothed_smr", 9);
