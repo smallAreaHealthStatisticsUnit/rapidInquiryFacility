@@ -42,13 +42,13 @@ angular.module("RIF")
             function (ColorBrewerService) {
                 
                 //a default symbology
-                function symbology(defaultMethod, defaultFeature, defaultIntervals) {
+                function symbology(mapChoroScaleMethod) {
                     this.features = [];
-                    this.brewerName = "Constant";
-                    this.intervals = defaultIntervals;
-                    this.feature = defaultFeature;
-                    this.invert = false;
-                    this.method = defaultMethod;
+                    this.brewerName = mapChoroScaleMethod.brewerName;
+                    this.intervals = mapChoroScaleMethod.intervals;
+                    this.feature = mapChoroScaleMethod.feature;
+                    this.invert = mapChoroScaleMethod.invert;
+                    this.method = mapChoroScaleMethod.method;
                     this.renderer = {
                         scale: null,
                         breaks: [],
@@ -56,20 +56,40 @@ angular.module("RIF")
                         mn: null,
                         mx: null
                     };
-					
-					if (defaultMethod == "quantile") {
-						this.brewerName = "PuOr";
-						this.invert = true;
-					}
 
                     this.init = false;
                 }
-                var maps = {
-                    'viewermap': new symbology("quantile", "relative_risk", 9),
-                    'diseasemap1': new symbology("quantile", "smothed_smr", 9),
-                    'diseasemap2': new symbology("AtlasProbability", "posterior_probability", 3) //default for 2nd disease map is probability
+				
+				var defaultChoroScaleMethod = {
+                    'viewermap': {
+							'method': 		'quantile', 
+							'feature':		'relative_risk',
+							'intervals': 	9,
+							'invert':		true,
+							'brewerName':	"PuOr"
+					},
+                    'diseasemap1': {
+							'method': 		'quantile', 
+							'feature':		'smothed_smr',
+							'intervals': 	9,
+							'invert':		true,
+							'brewerName':	"PuOr"
+					},
+                    'diseasemap2': {
+							'method': 		'AtlasProbability', 
+							'feature':		'posterior_probability',
+							'intervals': 	3,
+							'invert':		false,
+							'brewerName':	"Constant"
+					}
+				};
+				
+                var maps = {	
+                    'viewermap': new symbology(defaultChoroScaleMethod['viewermap']),					
+                    'diseasemap1': new symbology(defaultChoroScaleMethod['diseasemap1']),
+                    'diseasemap2': new symbology(defaultChoroScaleMethod['diseasemap2']) //default for 2nd disease map is probability */
                 };
-                
+				
                 //used in viewer map
                 function renderFeatureMapping(scale, value, selected) {
                     //returns fill colour
