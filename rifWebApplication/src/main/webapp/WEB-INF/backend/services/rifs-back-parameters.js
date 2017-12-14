@@ -41,15 +41,35 @@ angular.module("RIF")
                     var defaultParameters = {
 						usePouchDBCache: 			false,	// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
 						debugEnabled:				false,	// Disable front end debugging
-						disableMapLocking:			false,	// Disable disease map initial sync [for leak testing]
+						disableMapLocking:			false,	// Disable disease map initial sync [You can re-enable it!]
+						disableSelectionLocking: 	false,	// Disable selection locking [You can re-enable it!]
+		
 						syncMapping2EventsDisabled: false,	// Disable syncMapping2Events handler [for leak testing]
 						rrDropLineRedrawDisabled: 	false,	// Disable rrDropLineRedraw handler [for leak testing]
 						rrchartWatchDisabled: 		false,	// Disable Angular $watch on rrchart<mapID> [for leak testing]
 						mapLockingOptions: {},				// Map locking options (for Leaflet.Sync())
-						mappingDefaults: 	{					
-							'diseasemap1': {},
-							'diseasemap2': {},
-							'viewermap': {}
+						mappingDefaults: {					
+							'diseasemap1': {
+									method: 	'quantile', 
+									feature:	'smothed_smr',
+									intervals: 	9,
+									invert:		true,
+									brewerName:	"PuOr"
+							},
+							'diseasemap2': {
+									method: 	'AtlasProbability', 
+									feature:	'posterior_probability',
+									intervals: 	3,
+									invert:		false,
+									brewerName:	"Constant"
+							},
+							'viewermap': {
+									method: 	'quantile', 
+									feature:	'relative_risk',
+									intervals: 	9,
+									invert:		true,
+									brewerName:	"PuOr"
+							}
 						},
 						defaultLogin: { // DO NOT SET in a production environment; for use on single user tests system only!
 							username: 	"",

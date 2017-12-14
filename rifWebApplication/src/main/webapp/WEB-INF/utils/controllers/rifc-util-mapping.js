@@ -76,10 +76,28 @@ angular.module("RIF")
 						usePouchDBCache: false,		// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
 						disableMapLocking: false,	// Disable front end debugging
 						mapLockingOptions: {},		// Map locking options (for Leaflet.Sync())
-						mappingDefaults: 	{					
-							'diseasemap1': {},
-							'diseasemap2': {},
-							'viewermap': {}
+						mappingDefaults: {					
+							'diseasemap1': {
+									method: 	'quantile', 
+									feature:	'smothed_smr',
+									intervals: 	9,
+									invert:		true,
+									brewerName:	"PuOr"
+							},
+							'diseasemap2': {
+									method: 	'AtlasProbability', 
+									feature:	'posterior_probability',
+									intervals: 	3,
+									invert:		false,
+									brewerName:	"Constant"
+							},
+							'viewermap': {
+									method: 	'quantile', 
+									feature:	'relative_risk',
+									intervals: 	9,
+									invert:		true,
+									brewerName:	"PuOr"
+							}
 						}
 					} ;	
 					// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;	
@@ -384,20 +402,24 @@ angular.module("RIF")
                     //get choropleth map renderer
                     $scope.attr[mapID] = ChoroService.getMaps(mapID).feature;
                     thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
-					if (thisMap[mapID] && thisMap[mapID].scale == null) { // Renderer not set, can use default
-						thisMap[mapID] = $scope.parameters.mappingDefaults[mapID].renderer;
-						$scope.consoleDebug('rifc-util-mapping.js() use default mapChoroSettings for map: ' + mapID);
-					}
+//					if (thisMap[mapID] && thisMap[mapID].scale == null) { // Renderer not set, can use default
+//						thisMap[mapID] = $scope.parameters.mappingDefaults[mapID].renderer;
+//						$scope.consoleDebug('rifc-util-mapping.js() use default mapChoroSettings for map: ' + mapID);
+//					}
+//					else if (thisMap[mapID] == undefined) { 
+//						thisMap[mapID] = $scope.parameters.mappingDefaults[mapID].renderer;
+//						$scope.consoleDebug('rifc-util-mapping.js() use default mapChoroSettings for map: ' + mapID);
+//					}
 						
 					$scope.consoleDebug('rifc-util-mapping.js() mapChoroSettings for map: ' + mapID  + 
-						"; range: " + thisMap[mapID].range.length +
+//						"; range: " + thisMap[mapID].range.length +
 						"; " + JSON.stringify({
 							feature: $scope.attr[mapID],
 							renderer: thisMap[mapID]
 						}, null, 2));
 					
                     //not a choropleth, but single colour
-                    if (thisMap[mapID].range.length === 1) {
+                    if (thisMap[mapID].range && thisMap[mapID].range.length === 1) {
                         //remove existing legend
                         if ($scope.legend[mapID]._map) {
                             $scope.map[mapID].removeControl($scope.legend[mapID]);
@@ -453,7 +475,10 @@ angular.module("RIF")
                         if (angular.isArray($scope.thisPoly) && $scope.thisPoly.indexOf(layer.feature.properties.area_id) !== -1) {
                             selected = true;
                         }
-                        var polyStyle = ChoroService.getRenderFeatureMapping(thisMap["viewermap"].scale, thisAttr, selected);
+                        var polyStyle = ChoroService.getRenderFeatureMapping(undefined, thisAttr, selected);
+						if (thisMap["viewermap"].scale) {
+							polyStyle = ChoroService.getRenderFeatureMapping(thisMap["viewermap"].scale, thisAttr, selected);
+						}
                         layer.setStyle({
                             weight: 1,
                             color: "gray",
@@ -653,7 +678,13 @@ angular.module("RIF")
 											$scope.refresh(mapID);	
 											
 											if (mapID !== "viewermap") { 
-												if (!$scope.disableMapLocking) {
+												if ($scope.disableMapLocking) {
+													$scope.consoleDebug("[rifc-util-mapping.js] map locking disabled for mapID: " + mapID +
+														"; disableMapLocking: " + $scope.disableMapLocking);
+												}
+												else {			
+													$scope.consoleDebug("[rifc-util-mapping.js] map locking enabled for mapID: " + mapID +
+														"; disableMapLocking: " + $scope.disableMapLocking);
 													$scope.mapLocking();								
 												}
 											}
@@ -828,7 +859,8 @@ angular.module("RIF")
 											$scope.map[mapID].fitBounds($scope.maxbounds);
 											$scope.map[mapID].whenReady(function(e) {	
 												var centre = $scope.myService.getState().center[mapID];
-												resolve("[rifc-util-mapping.js] set fitBounds for mapID: " + mapID + 
+												resolve("[rifc-util-mapping.js] set fitBounds (1) for mapID: " + mapID + 
+																"; disableMapLocking: " + $scope.disableMapLocking +
 																"; lowestLevel: " + lowestLevel +
 																"; maxbounds: " + JSON.stringify($scope.maxbounds) +
 																"; centre: " + JSON.stringify(centre));
@@ -839,7 +871,10 @@ angular.module("RIF")
 											var centre = $scope.myService.getState().center[mapID];
 											$scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
 											$scope.map[mapID].whenReady(function(e) {	
-												resolve("[rifc-util-mapping.js] set setView for mapID: " + mapID + 
+												resolve("[rifc-util-mapping.js] set setView (2) for mapID: " + mapID + 
+															"; disableMapLocking: " + $scope.disableMapLocking +
+															"; lowestLevel: " + lowestLevel +
+															"; maxbounds: " + JSON.stringify($scope.maxbounds) +
 															"; centre: " + JSON.stringify(centre));
 											});
 										}
@@ -848,7 +883,10 @@ angular.module("RIF")
 										var centre = $scope.myService.getState().center[mapID];
 										$scope.map[mapID].setView([centre.lat, centre.lng], centre.zoom);
 										$scope.map[mapID].whenReady(function(e) {	
-											resolve("[rifc-util-mapping.js] set setView for mapID: " + mapID + 
+											resolve("[rifc-util-mapping.js] set setView (3) for mapID: " + mapID + 
+														"; disableMapLocking: " + $scope.disableMapLocking +
+														"; lowestLevel: " + lowestLevel +
+														"; maxbounds: " + JSON.stringify($scope.maxbounds) +
 														"; centre: " + JSON.stringify(centre));
 										});
 									}
