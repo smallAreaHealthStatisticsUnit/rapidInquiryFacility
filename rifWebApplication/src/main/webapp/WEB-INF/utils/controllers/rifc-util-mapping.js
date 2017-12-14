@@ -37,9 +37,9 @@
 
 /* global L */
 angular.module("RIF")
-        .controller('leafletLayersCtrl', ['$scope', 'user', 'LeafletBaseMapService', 'ChoroService',
+        .controller('leafletLayersCtrl', ['$scope', 'user', 'LeafletBaseMapService', 'ChoroService', 'ColorBrewerService', 
             'MappingStateService', 'ViewerStateService', 'MappingService', 'ParametersService',
-            function ($scope, user, LeafletBaseMapService, ChoroService,
+            function ($scope, user, LeafletBaseMapService, ChoroService, ColorBrewerService,
                     MappingStateService, ViewerStateService, MappingService, ParametersService) {
 
                 //Reference the parent scope, viewer or disease mapping
@@ -410,7 +410,6 @@ angular.module("RIF")
 //						thisMap[mapID] = $scope.parameters.mappingDefaults[mapID].renderer;
 //						$scope.consoleDebug('rifc-util-mapping.js() use default mapChoroSettings for map: ' + mapID);
 //					}
-						
 					$scope.consoleDebug('rifc-util-mapping.js() mapChoroSettings for map: ' + mapID  + 
 //						"; range: " + thisMap[mapID].range.length +
 						"; " + JSON.stringify({
@@ -518,11 +517,49 @@ angular.module("RIF")
 						else {
 							$scope.layerStats.Layerwarnings++;
 							if ($scope.layerStats.Layerwarnings < 20) {
-								$scope.consoleDebug("No table data for mapID: " + mapID + " [20 warnings max.]"); // You will get 1000's of these!!	
+								$scope.consoleDebug("[rifc-util-mapping.js] No table data for mapID: " + mapID + " [20 warnings max.]"); // You will get 1000's of these!!	
 							}
 						}
                     }
                 };
+				
+				$scope.defaultRenderMap = function (mapID) {
+					var choroScope = {
+						input: {},
+						mapID: mapID,
+						options: [],
+						domain: [],
+						tableData: {}
+					}
+					choroScope.input.checkboxInvert = ChoroService.getMaps(mapID).invert;
+					choroScope.input.selectedSchemeName = ChoroService.getMaps(mapID).brewerName;
+					choroScope.input.intervalRange = ColorBrewerService.getSchemeIntervals(choroScope.selectedSchemeName);
+					choroScope.input.selectedN = ChoroService.getMaps(mapID).intervals;
+					choroScope.input.method = ChoroService.getMaps(mapID).method;
+                    var colorBrewerList = ColorBrewerService.getSchemeList();
+                    for (var j in colorBrewerList) {
+                        choroScope.options.push({name: colorBrewerList[j], image: 'images/colorBrewer/' + colorBrewerList[j] + '.png'});
+                    }
+					//set saved swatch selection
+					var cb = ChoroService.getMaps(mapID).brewerName;
+					for (var i = 0; i < choroScope.options.length; i++) {
+						if (choroScope.options[i].name === cb) {
+							choroScope.input.currOption = choroScope.options[i];
+						}
+					}
+
+					//list of attributes
+					choroScope.input.features = ChoroService.getMaps(mapID).features;
+					if (choroScope.input.features.indexOf(ChoroService.getMaps(mapID).feature) === -1) {
+						choroScope.input.selectedFeature = choroScope.input.features[0];
+					} else {
+						choroScope.input.selectedFeature = ChoroService.getMaps(mapID).feature;
+					}
+					$scope.consoleDebug("[rifc-util-mapping.js] defaultRenderMap() mapID: " + mapID + "; choroScope: " + JSON.stringify(choroScope, null, 2)); 
+					choroScope.tableData[mapID]=$scope.tableData[mapID];
+										
+					ChoroService.doRenderSwatch(false /* Called on modal open */, true /* Secret field, always true */, choroScope, ColorBrewerService);
+				}
 				
                 $scope.updateStudy = function (mapID) {
                     //Check inputs are valid
@@ -675,6 +712,9 @@ angular.module("RIF")
 													"; zoomlevel: " + $scope.map[mapID].getZoom() +
 													"; areas: " + $scope.geoJSON[mapID]._geojsons.default.getLayers().length);
 											}
+											
+											$scope.defaultRenderMap(mapID);
+										
 											$scope.refresh(mapID);	
 											
 											if (mapID !== "viewermap") { 
