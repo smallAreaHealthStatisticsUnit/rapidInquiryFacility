@@ -420,8 +420,11 @@ angular.module("RIF")
 					}
 					
                     //draw histogram [IT MUST BW HERE OR D3 GETS CONFUSED!]
-					$scope.$broadcast('rrZoomReset', {msg: "watchCall reset: " + mapID});
-					$scope.getD3chart(mapID, $scope.attr[mapID]); // Crashes firefox	 
+					callGetD3chart = function(mapID) {
+						$scope.$broadcast('rrZoomReset', {msg: "watchCall reset: " + mapID});
+						$scope.getD3chart(mapID, $scope.attr[mapID]); // Crashes firefox	
+					}
+					setTimeout(callGetD3chart, 500, mapID);		 
                 }; //End of refresh(0)
 
                 //remove rsub layer
@@ -610,7 +613,6 @@ angular.module("RIF")
                                                                 $scope.$parent.updateMapSelection(e.target.feature.properties.area_id, otherMap);
                                                             }
                                                         }
-//                                                        $scope.$parent.$digest();
                                                     });
                                                 }
                                             }
@@ -739,9 +741,15 @@ angular.module("RIF")
 													});
 													$scope.consoleDebug("[rifc-util-mapping.js] completed topoJsonGridLayer for mapID: " + mapID + 
 														"; study: " + $scope.studyID[mapID].study_id);
+														
+													$scope.$parent.$applyAsync(); // Handle any interfacing from non-Angular events (i.e. Leaflet, D3). Will also kick off $watch
+													
 													//draw D3 plots [also done by $scope.refresh()]
-													$scope.$broadcast('rrZoomReset', {msg: "watchCall reset: " + mapID});
-													$scope.getD3chart(mapID, $scope.attr[mapID]);		
+													callGetD3chart = function(mapID) {
+														$scope.$broadcast('rrZoomReset', {msg: "watchCall reset: " + mapID});
+														$scope.getD3chart(mapID, $scope.attr[mapID]); // Crashes firefox	
+													}
+													setTimeout(callGetD3chart, 500, mapID);		
 												});
 											},
 											function getAttributeTableError(e) {
