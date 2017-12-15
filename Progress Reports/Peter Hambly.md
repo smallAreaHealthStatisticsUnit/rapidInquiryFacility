@@ -1795,13 +1795,20 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 
 #### 11th to 15th December
 
-* OK, so disase map sync OK; rrDropLineRedraw/syncMapping2Events are not being fired; so it must be the D3 maps that are leaking. This agrees with the 
-  memory map comparisons. 
+* OK, so disase map sync OK; rrDropLineRedraw/syncMapping2Events are not being fired; so it must be the D3 maps that are leaking. 
+  This agrees with the memory map comparisons. 
 * Centering fixes (map zoom, lat and long not set on initial map load). Should also fix null zoomlevel errors;
 * Table data being fetched after map; hence display issues;
 * Fixed $Watch synchronmisation - now correct; warns on no data for D3 graphs. Diseasemap1 not being displayed until refresh
 * disableMapLocking now works correctly, added disableSelectionLocking parameter;
 * RIF meeting
+* Fixed $watch synchronmisation - now correct; warns on no data for D3 graphs
+* Fix $digest issues, started added default mapping support
+* Refactor map utils to make for efficent, completed default mapping support, fix missing D3 pane
+
+#### 18th to 22nd December
+
+*
 
 In progress:
 
