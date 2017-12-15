@@ -305,11 +305,13 @@ angular.module("RIF")
                         );
                     }
 
+					$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + 
+						"; rs[0]: " + JSON.stringify(rs[0], null, 2) + 
+						"; tableData[0]: " + JSON.stringify($scope.child.tableData[mapID][0], null, 2));
                     //reorder
                     rs.sort(function (a, b) {
                         return parseFloat(a.rr) - parseFloat(b.rr);
                     });
-					$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + "; rs[0]: " + JSON.stringify(rs[0], null, 0));
 					
                     for (var i = 0; i < $scope.child.tableData[mapID].length; i++) {
                         rs[i]["x_order"] = i + 1;
@@ -317,7 +319,10 @@ angular.module("RIF")
 					
                     //set options for directive
                     $scope.optionsRR[mapID].label_field = attribute;
-                    $scope.rrChartData[mapID] = angular.copy(rs);
+                    $scope.rrChartData[mapID] = angular.copy(rs); // Copy data to scoope of D3 chart
+					$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + 
+						"; $scope.rrChartData[mapID][0]: " + JSON.stringify($scope.rrChartData[mapID][0], null, 0) + 
+						"; length: " + $scope.rrChartData[mapID].length);
                 }; // End of getD3chart()
 
                 //key events to move the dropline

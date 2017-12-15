@@ -51,7 +51,7 @@ angular.module("RIF")
 						mappingDefaults: {					
 							'diseasemap1': {
 									method: 	'quantile', 
-									feature:	'smothed_smr',
+									feature:	'smoothed_smr',
 									intervals: 	9,
 									invert:		true,
 									brewerName:	"PuOr"

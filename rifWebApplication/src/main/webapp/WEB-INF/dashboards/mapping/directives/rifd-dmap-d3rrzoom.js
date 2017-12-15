@@ -99,7 +99,7 @@ angular.module("RIF")
 //								$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "Pre call renderBase for map: " + scope.opt.panel + 
 //									"; watchCall" + scope.opt.panel + ": " + watchCall[scope.opt.panel] +
 //									"; watchCallDone[" + scope.opt.panel + "]: " + watchCallDone[scope.opt.panel]});	
-								watchCallDone[scope.opt.panel]=true; // This is to preve nt further calls
+								watchCallDone[scope.opt.panel]=true; // This is to prevent further calls
 //								$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "Call renderBase for map: " + scope.opt.panel + 
 //									"; watchCall[" + scope.opt.panel + "]: " + watchCall[scope.opt.panel] +
 //									"; watchCallDone[" + scope.opt.panel + "]: " + watchCallDone[scope.opt.panel]});	
@@ -127,6 +127,17 @@ angular.module("RIF")
                         var labelField = scope.opt.label_field;
                         var panel = scope.opt.panel;
 
+						if (lineField == undefined) {
+							$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "renderBase: Failed for map: " + panel + 
+								"; risk_field not defined"});
+							return;
+						}
+						if (!scope.data) {
+							$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "renderBase: Failed for map: " + panel + 
+								"; no data in scope"});
+							return;				
+						}
+		
                         //Plot confidence interal areas on the charts?
                         var bConfidence = true;
                         if (labelField === "posterior_probability") {
@@ -172,17 +183,19 @@ angular.module("RIF")
                             if (domainCheck[0].toFixed(5) === domainCheck[1].toFixed(5)) {
                                 d3.select("#rrchart" + panel).remove();
 								$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "renderBase: Failed for map: " + panel + 
-									"; data max in and values are the same" + domainCheck[0].toFixed(5)});
+									"; data max in and values are the same: " + domainCheck[0].toFixed(5)});
 								watchCallDone[panel]=false;
                                 return;
                             }
                         } else {
-							$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "renderBase: Failed for map: " + panel + "; no data"});
+							$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "renderBase: Failed for map: " + panel + 
+								"; no data for risk_field: " + lineField});
 							watchCallDone[panel]=false;
                             return;
                         }
 
-//						$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "renderBase: for map: " + panel + "; Data OK; watchCallDone[panel]: " + watchCallDone[panel]});
+//						$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "renderBase: for map: " + panel + 
+//							"; Data OK; watchCallDone[panel]: " + watchCallDone[panel]});
                         var xAxis = d3.axisBottom().scale(x).ticks(0);
                         var xAxis2 = d3.axisBottom().scale(x2);
                         var yAxis = d3.axisLeft().scale(y);
