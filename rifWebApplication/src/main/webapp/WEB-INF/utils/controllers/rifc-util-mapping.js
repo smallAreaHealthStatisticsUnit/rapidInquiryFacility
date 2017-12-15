@@ -402,20 +402,6 @@ angular.module("RIF")
                     //get choropleth map renderer
                     $scope.attr[mapID] = ChoroService.getMaps(mapID).feature;
                     thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
-//					if (thisMap[mapID] && thisMap[mapID].scale == null) { // Renderer not set, can use default
-//						thisMap[mapID] = $scope.parameters.mappingDefaults[mapID].renderer;
-//						$scope.consoleDebug('rifc-util-mapping.js() use default mapChoroSettings for map: ' + mapID);
-//					}
-//					else if (thisMap[mapID] == undefined) { 
-//						thisMap[mapID] = $scope.parameters.mappingDefaults[mapID].renderer;
-//						$scope.consoleDebug('rifc-util-mapping.js() use default mapChoroSettings for map: ' + mapID);
-//					}
-					$scope.consoleDebug('rifc-util-mapping.js() mapChoroSettings for map: ' + mapID  + 
-//						"; range: " + thisMap[mapID].range.length +
-						"; " + JSON.stringify({
-							feature: $scope.attr[mapID],
-							renderer: thisMap[mapID]
-						}, null, 2));
 					
                     //not a choropleth, but single colour
                     if (thisMap[mapID].range && thisMap[mapID].range.length === 1) {
@@ -567,12 +553,38 @@ angular.module("RIF")
 					choroScope.renderer = ChoroService.getMaps(mapID).renderer;
 					
 //					$scope.consoleDebug("[rifc-util-mapping.js] defaultRenderMap() mapID: " + mapID + "; choroScope: " + JSON.stringify(choroScope, null, 2)); 
-					choroScope.tableData[mapID]=$scope.tableData[mapID];
-										
+					choroScope.tableData[mapID]=$scope.tableData[mapID];	
 					ChoroService.doRenderSwatch(true /* Called on modal open */, true /* Secret field, always true */, choroScope, ColorBrewerService);
 					
 					$scope.input=choroScope.input;
 					$scope.domain=choroScope.domain;
+					
+					var savedMapState = {
+						input: choroScope.input,
+//						domain:	choroScope.domain,  // Contains functions - will cause XML parse errors!
+						maps: {					// Probably not needed apart from the initial state
+							features: [],
+							brewerName: choroScope.brewerName,
+							intervals: choroScope.intervals,
+							feature: choroScope.feature,
+							invert: choroScope.invert,
+							method: choroScope.method,
+							isDefault: false,
+							renderer: { //  May need more here
+								scale: null,
+								breaks: [],
+								range: ["#9BCD9B"],
+								mn: null,
+								mx: null
+							},
+							init: false
+						}
+					};
+					savedMapState.maps=ChoroService.getMaps(mapID);
+					$scope.consoleDebug("[rifc-util-mapping.js] defaultRenderMap() mapID: " + mapID + 
+						"; data rows: " + choroScope.tableData[mapID].length +
+						"; Saved map state: " + JSON.stringify(savedMapState, null, 2));
+					
 				}
 				
                 $scope.updateStudy = function (mapID) {
@@ -727,10 +739,6 @@ angular.module("RIF")
 													"; areas: " + $scope.geoJSON[mapID]._geojsons.default.getLayers().length);
 											}
 											
-											$scope.defaultRenderMap(mapID);
-										
-											$scope.refresh(mapID);	
-											
 											if (mapID !== "viewermap") { 
 												if ($scope.disableMapLocking) {
 													$scope.consoleDebug("[rifc-util-mapping.js] map locking disabled for mapID: " + mapID +
@@ -742,6 +750,19 @@ angular.module("RIF")
 													$scope.mapLocking();								
 												}
 											}
+												
+											
+											if (mapID !== "diseasemap1") { 		
+												$scope.defaultRenderMap(mapID);
+												$scope.refresh(mapID);	
+											}
+											else {
+												callRenderMap = function(mapID) {		
+													$scope.defaultRenderMap(mapID);
+													$scope.refresh(mapID);	
+												}
+												setTimeout(callRenderMap, 50, mapID);	
+											}										
 																				
 										});
                                     });
@@ -807,8 +828,6 @@ angular.module("RIF")
 										$scope.consoleDebug("[rifc-util-mapping.js] initial setView for mapID: " + mapID + 
 												"; centre: " + JSON.stringify($scope.myService.getState().center[mapID]));		
 													
-/* V1: correct order: cause D3 to fail:
- */										
 										getAttributeTable(mapID, 
 											function getAttributeTableCallBack(msg) {
 												$scope.consoleDebug(msg);
@@ -834,39 +853,13 @@ angular.module("RIF")
 														$scope.$broadcast('rrZoomReset', {msg: "watchCall reset: " + mapID});
 														$scope.getD3chart(mapID, $scope.attr[mapID]); // Crashes firefox	
 													}
-													setTimeout(callGetD3chart, 500, mapID);		
+													setTimeout(callGetD3chart, 100, mapID);		
 												});
 											},
 											function getAttributeTableError(e) {
 												$scope.showError("Error fetching table data for mapID: " + mapID + "; " + e);
 											});
  
-/* V2: incorrect order: D3 OK:
- *																	
-											$scope.map[mapID].addLayer($scope.geoJSON[mapID]); // Add layer to map
-														
-											$scope.map[mapID].whenReady(function(e) {	
-												getAttributeTable(mapID, 
-													function getAttributeTableCallBack(msg) {
-														$scope.consoleDebug(msg);
-												},
-												function getAttributeTableError(e) {
-													$scope.showError("Error fetching table data for mapID: " + mapID + "; " + e);
-												});
-												//pan events                            
-												$scope.map[mapID].on('zoomend', function (e) {
-													$scope.myService.getState().center[mapID].zoom = $scope.map[mapID].getZoom();
-												});
-												$scope.map[mapID].on('moveend', function (e) {
-													$scope.myService.getState().center[mapID].lng = $scope.map[mapID].getCenter().lng;
-													$scope.myService.getState().center[mapID].lat = $scope.map[mapID].getCenter().lat;
-												});
-												$scope.consoleDebug("[rifc-util-mapping.js] completed topoJsonGridLayer for mapID: " + mapID + 
-													"; study: " + $scope.studyID[mapID].study_id);
-												
-//													$scope.refresh(mapID);	
-											});
-											 */
 									}, function setMapCentreAndBoundsError(e) {	// setMapCentreAndBoundsError
 										$scope.consoleError(e); 
 									}
