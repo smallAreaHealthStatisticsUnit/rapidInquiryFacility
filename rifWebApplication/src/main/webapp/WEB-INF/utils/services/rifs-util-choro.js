@@ -71,20 +71,13 @@ angular.module("RIF")
                 //a default symbology
                 function symbology(mapID, choroScaleMethod) {
 					
-					var mapChoroScaleMethod;
-					if (choroScaleMethod) {
-						mapChoroScaleMethod = choroScaleMethod[mapID] || defaultChoroScaleMethod[mapID];
-					}
-					else {
-						mapChoroScaleMethod = defaultChoroScaleMethod[mapID];
-					}
                     this.features = [];
-                    this.brewerName = mapChoroScaleMethod.brewerName;
-                    this.intervals = mapChoroScaleMethod.intervals;
-                    this.feature = mapChoroScaleMethod.feature;
-                    this.invert = mapChoroScaleMethod.invert;
-                    this.method = mapChoroScaleMethod.method;
-					this.isDefault = mapChoroScaleMethod.isDefault || false; 
+                    this.brewerName = choroScaleMethod[mapID].brewerName || defaultChoroScaleMethod[mapID].brewerName;
+                    this.intervals = choroScaleMethod[mapID].intervals || defaultChoroScaleMethod[mapID].intervals;
+                    this.feature = choroScaleMethod[mapID].feature || defaultChoroScaleMethod[mapID].feature;
+                    this.invert = choroScaleMethod[mapID].invert || defaultChoroScaleMethod[mapID].invert;
+                    this.method = choroScaleMethod[mapID].method || defaultChoroScaleMethod[mapID].method;
+					this.isDefault = defaultChoroScaleMethod[mapID].isDefault || false; 
                     this.renderer = {
                         scale: null,
                         breaks: [],
