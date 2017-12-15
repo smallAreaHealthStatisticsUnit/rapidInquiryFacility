@@ -566,10 +566,13 @@ angular.module("RIF")
 					choroScope.method = ChoroService.getMaps(mapID).method;
 					choroScope.renderer = ChoroService.getMaps(mapID).renderer;
 					
-					$scope.consoleDebug("[rifc-util-mapping.js] defaultRenderMap() mapID: " + mapID + "; choroScope: " + JSON.stringify(choroScope, null, 2)); 
+//					$scope.consoleDebug("[rifc-util-mapping.js] defaultRenderMap() mapID: " + mapID + "; choroScope: " + JSON.stringify(choroScope, null, 2)); 
 					choroScope.tableData[mapID]=$scope.tableData[mapID];
 										
 					ChoroService.doRenderSwatch(true /* Called on modal open */, true /* Secret field, always true */, choroScope, ColorBrewerService);
+					
+					$scope.input=choroScope.input;
+					$scope.domain=choroScope.domain;
 				}
 				
                 $scope.updateStudy = function (mapID) {
