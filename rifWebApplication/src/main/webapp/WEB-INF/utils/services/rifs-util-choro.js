@@ -335,7 +335,10 @@ angular.module("RIF")
 									choroScope.input.selectedN), choroScope.input.checkboxInvert, choroScope.mapID);
 						}
 					}
-									
+// Redo all scales							
+					choroScope.input.thisMap.scale = d3.scaleThreshold()
+						   .domain(choroScope.input.thisMap.breaks)
+						   .range(choroScope.input.thisMap.range);		
 				}
 				
                 return {
@@ -357,7 +360,6 @@ angular.module("RIF")
 					doRenderSwatch: function (bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, choroScope, ColorBrewerService) {
 						return renderSwatch(bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, choroScope, ColorBrewerService);
 					},
-                    //TODO: not used, add reset button
                     resetState: function (map) {
                         maps[map] = new symbology(map, choroScaleMethod);
                     }

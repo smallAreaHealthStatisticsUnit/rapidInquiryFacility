@@ -305,9 +305,9 @@ angular.module("RIF")
                         );
                     }
 
-					$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + 
-						"; rs[0]: " + JSON.stringify(rs[0], null, 2) + 
-						"; tableData[0]: " + JSON.stringify($scope.child.tableData[mapID][0], null, 2));
+		//			$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + 
+		//				"; rs[0]: " + JSON.stringify(rs[0], null, 2) + 
+		//				"; tableData[0]: " + JSON.stringify($scope.child.tableData[mapID][0], null, 2));
                     //reorder
                     rs.sort(function (a, b) {
                         return parseFloat(a.rr) - parseFloat(b.rr);
