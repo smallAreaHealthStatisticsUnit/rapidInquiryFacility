@@ -270,9 +270,9 @@ angular.module("RIF")
 					
                     for (var i = 0; i < $scope.child.tableData[mapID].length; i++) {
                         //check for invalid column, therefore no graph possible
-                        if ($scope.child.tableData[mapID][i][attribute] === null) {
+                        if ($scope.child.tableData[mapID][i][attribute] === undefined) {
                             $scope.rrChartData[mapID] = [];
-							$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + "; attribute column is null, no graph possible");
+							$scope.showError("Unable to create relative risk chart for map: " + mapID + "; attribute column: " + attribute + " not found");
                             return;
                         }                       
                         //Handle inconsistant naming in results table
