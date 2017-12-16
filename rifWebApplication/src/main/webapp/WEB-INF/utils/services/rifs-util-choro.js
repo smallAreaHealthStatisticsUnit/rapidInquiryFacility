@@ -328,6 +328,7 @@ angular.module("RIF")
 								var tempRenderer = choroScale(choroScope.input.method, choroScope.domain, ColorBrewerService.getColorbrewer(choroScope.input.currOption.name,
 										choroScope.input.selectedN), choroScope.input.checkboxInvert, choroScope.mapID);
 								choroScope.input.thisMap.range = tempRenderer.range;
+								choroScope.input.thisMap.scale = tempRenderer.scale;
 							}
 						} else {
 							choroScope.input.thisMap = choroScale(choroScope.input.method, choroScope.domain, ColorBrewerService.getColorbrewer(choroScope.input.currOption.name,
@@ -335,16 +336,6 @@ angular.module("RIF")
 						}
 					}
 									
-				}
-				
-				function resetChoroScale(map) {
-					maps[map].renderer = {
-                        scale: null,
-                        breaks: [],
-                        range: ["#9BCD9B"],
-                        mn: null,
-                        mx: null
-                    };
 				}
 				
                 return {
@@ -366,9 +357,6 @@ angular.module("RIF")
 					doRenderSwatch: function (bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, choroScope, ColorBrewerService) {
 						return renderSwatch(bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, choroScope, ColorBrewerService);
 					},
-					doResetChoroScale: function (map) {
-                        return resetChoroScale(map);
-                    },
                     //TODO: not used, add reset button
                     resetState: function (map) {
                         maps[map] = new symbology(map, choroScaleMethod);
