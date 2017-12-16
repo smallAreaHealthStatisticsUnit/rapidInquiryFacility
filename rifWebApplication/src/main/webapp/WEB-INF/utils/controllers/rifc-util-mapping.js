@@ -1015,10 +1015,17 @@ angular.module("RIF")
                                         for (var i = 0; i < res.data.smoothed_results.length; i++) {
                                             res.data.smoothed_results[i]._selected = 0;
                                         }
-
+/*
+ * Valid data viewer columns: "area_id", "band_id", "observed", "expected", "population", "adjusted", "inv_id", "posterior_probability",
+ *                            "lower95", "upper95", "relative_risk", "smoothed_smr", "smoothed_smr_lower95", "smoothed_smr_upper95"
+ */
                                         for (var i in res.data.smoothed_results[0]) {
                                             if (ViewerStateService.getValidColumn(i)) {
-                                                if (i !== "area_id" && i !== "_selected") {
+                                                if (i !== "area_id" && // Valid Choropleth map features
+												    i !== "band_id" && 
+												    i !== "inv_id" && 
+												    i !== "adjusted" && 
+												    i !== "_selected") {
                                                     attrs.push(i);
                                                 }
                                                 colDef.push({
