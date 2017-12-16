@@ -826,6 +826,7 @@ angular.module("RIF")
 							"; sex: " + $scope.sex[mapID]);
                         //Reset all renderers, but only if not called from state change
                         if (!$scope.myService.getState().initial) {
+							ChoroService.resetChoroScale(mapID);					// Also reset Choropleth scales
                             thisMap[mapID] = ChoroService.getMaps(mapID).renderer;
                         }
                         $scope.myService.getState().initial = false;

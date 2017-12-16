@@ -337,6 +337,16 @@ angular.module("RIF")
 									
 				}
 				
+				function resetChoroScale(map) {
+					maps[map].renderer = {
+                        scale: null,
+                        breaks: [],
+                        range: ["#9BCD9B"],
+                        mn: null,
+                        mx: null
+                    };
+				}
+				
                 return {
                     getMaps: function (i) {
                         return maps[i];
@@ -356,6 +366,9 @@ angular.module("RIF")
 					doRenderSwatch: function (bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, choroScope, ColorBrewerService) {
 						return renderSwatch(bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, choroScope, ColorBrewerService);
 					},
+					doResetChoroScale: function (map) {
+                        return resetChoroScale(map);
+                    },
                     //TODO: not used, add reset button
                     resetState: function (map) {
                         maps[map] = new symbology(map, choroScaleMethod);
