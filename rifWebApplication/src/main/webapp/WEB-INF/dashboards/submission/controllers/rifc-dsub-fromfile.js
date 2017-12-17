@@ -67,7 +67,7 @@ angular.module("RIF")
                 //checking this is a valid RIF study object
                 function uploadCheckStructure() {
                     try {
-                        rifJob = JSON.parse($scope.$$childHead.$$childTail.content).rif_job_submission;
+                        rifJob = JSON5.parse($scope.$$childHead.$$childTail.content).rif_job_submission;
                     } catch (e) {
                         return "Could not read file";
                     }
