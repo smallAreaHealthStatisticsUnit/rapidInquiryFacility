@@ -131,6 +131,26 @@ angular.module("RIF")
                 //reset to what was there on modal open  
                 ChoroService.getMaps($scope.mapID).renderer = onXRenderRestore.renderer;
                 ChoroService.getMaps($scope.mapID).brewerName = onXRenderRestore.brewerName;
+				
+				ChoroService.getMaps($scope.mapID).invert = onXRenderRestore.invert;
+				ChoroService.getMaps($scope.mapID).intervals = onXRenderRestore.intervals;
+				ChoroService.getMaps($scope.mapID).method = onXRenderRestore.method;
+
+				//set saved swatch selection
+				var cb = ChoroService.getMaps($scope.mapID).brewerName;
+				for (var i = 0; i < $scope.options.length; i++) {
+					if ($scope.options[i].name === cb) {
+						$scope.input.currOption = $scope.options[i];
+					}
+				}
+
+				//list of attributes
+				$scope.input.features = ChoroService.getMaps($scope.mapID).features;
+				if ($scope.input.features.indexOf(ChoroService.getMaps($scope.mapID).feature) === -1) {
+					$scope.input.selectedFeature = $scope.input.features[0];
+				} else {
+					$scope.input.selectedFeature = ChoroService.getMaps($scope.mapID).feature;
+				}				
                 $uibModalInstance.dismiss();
             };
 
