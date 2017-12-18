@@ -1592,9 +1592,9 @@ Todo:
   error support. State machine now handles errors correctly
 * Fixed inability to detect errors correctly in run study, R, CVS extract (TODO: report to user). SQL Server 
   does detect but does not trap the error correctly, i.e. the **tomcat** log has:
+  
   ```
   15-Sep-2017 10:55:04.188 SEVERE [https-jsse-nio-8080-exec-7] com.sun.jersey.spi.container.ContainerResponse.mapMappableContainerException The exception contained within MappableContainerException could not be mapped to a response, re-throwing to the HTTP container
-
   java.lang.NoSuchMethodError
         at java.lang.Thread.destroy(Thread.java:990)
         at rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep.performStep(MSSQLSmoothResultsSubmissionStep.java:290)
@@ -1615,16 +1615,16 @@ Todo:
 	getThrowableCount:   1
 	getRootCauseStackTrace >>>
 	com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_pkg.csv_dump'.
-		at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDatabaseError(SQLServerException.java:232)
-		at com.microsoft.sqlserver.jdbc.SQLServerStatement.getNextResult(SQLServerStatement.java:1672)
-		at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.doExecutePreparedStatement(SQLServerPreparedStatement.java:460)
-		at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement$PrepStmtExecCmd.doExecute(SQLServerPreparedStatement.java:405)
-		at com.microsoft.sqlserver.jdbc.TDSCommand.execute(IOBuffer.java:7535)
-		at com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(SQLServerConnection.java:2438)
-		at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeCommand(SQLServerStatement.java:208)
-		at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(SQLServerStatement.java:183)
-		at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.executeQuery(SQLServerPreparedStatement.java:317)
-		at rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager.dumpDatabaseTableToCSVFile(MSSQLStudyExtractManager.java:537)
+        at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDatabaseError(SQLServerException.java:232)
+        at com.microsoft.sqlserver.jdbc.SQLServerStatement.getNextResult(SQLServerStatement.java:1672)
+        at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.doExecutePreparedStatement(SQLServerPreparedStatement.java:460)
+        at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement$PrepStmtExecCmd.doExecute(SQLServerPreparedStatement.java:405)
+        at com.microsoft.sqlserver.jdbc.TDSCommand.execute(IOBuffer.java:7535)
+        at com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(SQLServerConnection.java:2438)
+        at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeCommand(SQLServerStatement.java:208)
+        at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(SQLServerStatement.java:183)
+        at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.executeQuery(SQLServerPreparedStatement.java:317)
+        at rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager.dumpDatabaseTableToCSVFile(MSSQLStudyExtractManager.java:537)
   ```
 
 #### 25th to 29th September
@@ -1701,9 +1701,9 @@ Todo:
 * Testing front end
 * Fixed null mapID for US maps on SQL server only. Something is not initialising correctly in: 
   rifc-util-mapping.js. Made front end ignore the error!
-```	
-11:59:14.121 +793.6: [DUPLICATE: 119, msgInterval=0] ERROR: Null mapID 1 rifc-util-alert.js:88:6
-```
+  ```	
+  11:59:14.121 +793.6: [DUPLICATE: 119, msgInterval=0] ERROR: Null mapID 1 rifc-util-alert.js:88:6
+  ```
 * SQL Server and Postgres US SEER data confirmed working!
 * Export error handler; traps exceptions OK; added handlers for errors not detected by the global get handler. Added 100s timeout.
   Intend to trap 403 timeout error if it occurs
@@ -1716,15 +1716,15 @@ Todo:
 * Firefox crashed using nearly 6G of RAM. null mapID in rifc-util-mapping.js 
   ```$scope.handleLayer = function (layer) {}``` is the direct cause. This was fixed
   by removing the layer:
-```
-	if (mapID === undefined) { // Occurs only on SQL Server!
-//							Do nothing!						
-		$scope.consoleError("Null mapID; layer options: " + JSON.stringify(layer.options, null, 2));
-		if (layer !== undefined) {
-			layer.remove(); 	// Remove 
-		}
-	}
-```
+  ```
+  	if (mapID === undefined) { // Occurs only on SQL Server!
+  //							Do nothing!						
+  		$scope.consoleError("Null mapID; layer options: " + JSON.stringify(layer.options, null, 2));
+  		if (layer !== undefined) {
+  			layer.remove(); 	// Remove 
+  		}
+  	}
+  ```
   This has dealt with the symptoms, **not the cause**. The direct cause is the layer add 
   function is being called before the map has initialised properly. Taken with the 
   *Null zoomlevel error* there is a synchronisation bug in the leaflet code. This issue
@@ -1768,23 +1768,23 @@ Todo:
 * Probed memory leak: not caused by sync;
 * Document update conflict issue with PouchDB, requires handlers
   ```
-	  07:33:43.110 [http-nio-8080-exec-7] ERROR rifGenericLibrary.util.FrontEndLogger : 
-	userID:       peter
-	browser type: Firefox; v57
-	iP address:   0:0:0:0:0:0:0:1
-	message:      [TopoJSONGridLayer.js] _db.put() error: {
-	  "status": 409,
-	  "name": "conflict",
-	  "message": "Document update conflict",
-	  "error": true
-	}
-	error stack>>>
-	$scope.consoleError@http://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:215:10
-	consoleError@http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:74:6
-	fetchTile/request.onload/<@http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:266:11
-	<<<
-	actual time:  12/6/2017 7:33:43 AM
-	relative:     +53.2
+  	  07:33:43.110 [http-nio-8080-exec-7] ERROR rifGenericLibrary.util.FrontEndLogger : 
+  	userID:       peter
+  	browser type: Firefox; v57
+  	iP address:   0:0:0:0:0:0:0:1
+  	message:      [TopoJSONGridLayer.js] _db.put() error: {
+  	  "status": 409,
+  	  "name": "conflict",
+  	  "message": "Document update conflict",
+  	  "error": true
+  	}
+  	error stack>>>
+  	$scope.consoleError@http://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:215:10
+  	consoleError@http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:74:6
+  	fetchTile/request.onload/<@http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:266:11
+  	<<<
+  	actual time:  12/6/2017 7:33:43 AM
+  	relative:     +53.2
   ```
 * Test memory leak [FAILED!], add frontEndParameters service, SQL install instructions for CDC;
 * getFrontEndParameters service (i.e. remove peter username default, disable front end debugging by default, prove JSON5 parser)
