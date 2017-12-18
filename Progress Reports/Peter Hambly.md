@@ -1593,27 +1593,23 @@ Todo:
 * Fixed inability to detect errors correctly in run study, R, CVS extract (TODO: report to user). SQL Server 
   does detect but does not trap the error correctly, i.e. the **tomcat** log has:
   ```
-	15-Sep-2017 10:55:04.188 SEVERE [https-jsse-nio-8080-exec-7] com.sun.jersey.spi.container.ContainerResponse.mapMappableContainerExce
-	ption The exception contained within MappableContainerException could not be mapped to a response, re-throwing to the HTTP container
+  15-Sep-2017 10:55:04.188 SEVERE [https-jsse-nio-8080-exec-7] com.sun.jersey.spi.container.ContainerResponse.mapMappableContainerException The exception contained within MappableContainerException could not be mapped to a response, re-throwing to the HTTP container
 
-	 java.lang.NoSuchMethodError
-			at java.lang.Thread.destroy(Thread.java:990)
-			at rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep.performStep(MSSQLSmoothResultsSubmissionStep.java:290)
-			at rifServices.dataStorageLayer.ms.MSSQLRunStudyThread.smoothResults(MSSQLRunStudyThread.java:262)
-			at rifServices.dataStorageLayer.ms.MSSQLRunStudyThread.run(MSSQLRunStudyThread.java:181)
-			at java.lang.Thread.run(Thread.java:745)
-			at rifServices.dataStorageLayer.ms.MSSQLAbstractRIFStudySubmissionService.submitStudy(MSSQLAbstractRIFStudySubmissionService
-	.java:1067)
-			at rifServices.restfulWebServices.ms.MSSQLAbstractRIFWebServiceResource.submitStudy(MSSQLAbstractRIFWebServiceResource.java:
-	1000)
-			at rifServices.restfulWebServices.ms.MSSQLRIFStudySubmissionWebServiceResource.submitStudy(MSSQLRIFStudySubmissionWebService
-	Resource.java:1178)
-			at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)  
+  java.lang.NoSuchMethodError
+        at java.lang.Thread.destroy(Thread.java:990)
+        at rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep.performStep(MSSQLSmoothResultsSubmissionStep.java:290)
+        at rifServices.dataStorageLayer.ms.MSSQLRunStudyThread.smoothResults(MSSQLRunStudyThread.java:262)
+        at rifServices.dataStorageLayer.ms.MSSQLRunStudyThread.run(MSSQLRunStudyThread.java:181)
+        at java.lang.Thread.run(Thread.java:745)
+        at rifServices.dataStorageLayer.ms.MSSQLAbstractRIFStudySubmissionService.submitStudy(MSSQLAbstractRIFStudySubmissionService.java:1067)
+        at rifServices.restfulWebServices.ms.MSSQLAbstractRIFWebServiceResource.submitStudy(MSSQLAbstractRIFWebServiceResource.java:1000)
+        at rifServices.restfulWebServices.ms.MSSQLRIFStudySubmissionWebServiceResource.submitStudy(MSSQLRIFStudySubmissionWebServiceResource.java:1178)
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)  
   ```
   and:
   ```
-	10:42:00.274 [https-jsse-nio-8080-exec-10] ERROR: [rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager]:
-	MSSQLStudyExtractManager ERROR
+  10:42:00.274 [https-jsse-nio-8080-exec-10] ERROR: [rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager]:
+  MSSQLStudyExtractManager ERROR
 	getMessage:          SQLServerException: Invalid object name 'rif40_dmp_pkg.csv_dump'.
 	getRootCauseMessage: SQLServerException: Invalid object name 'rif40_dmp_pkg.csv_dump'.
 	getThrowableCount:   1
@@ -1629,7 +1625,7 @@ Todo:
 		at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(SQLServerStatement.java:183)
 		at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.executeQuery(SQLServerPreparedStatement.java:317)
 		at rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager.dumpDatabaseTableToCSVFile(MSSQLStudyExtractManager.java:537)
-```
+  ```
 
 #### 25th to 29th September
 
