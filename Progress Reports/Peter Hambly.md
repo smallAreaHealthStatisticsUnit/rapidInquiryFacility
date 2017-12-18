@@ -1858,11 +1858,15 @@ Todo:
 	
 ## Issues:
 
-### Front End:
+### Middleware:
 
 * Logging not rotating properly at end of day. Thought to be caused by log4j threading issues. A simple fix would be to get the 
   taxonomy service to use a separate logger; it may be necessary to replace log4j with SLF4J;
+
+### Front End:
+
 * Leaflet sync plugin not panning correctly. Was upgraded to current version as part of leak testing. Will regress and re-test.  
+* Choropleth panel: the breaks displayed may not be correct when e.g. changed the number of quantiles will result in zeros!
 
 ### Database:
 

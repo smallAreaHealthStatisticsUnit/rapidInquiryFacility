@@ -81,6 +81,10 @@ Comments:
 		
 		mapLockingOptions: {},				// Map locking options (for Leaflet.Sync())
 		
+		/*
+		 * For the Color Brewer names see: https://github.com/timothyrenner/ColorBrewer.jl
+		 * Derived from: http://colorbrewer2.org/
+		 */
 		mappingDefaults: 	{				
 			'diseasemap1': {
 					method: 	'quantile', 
