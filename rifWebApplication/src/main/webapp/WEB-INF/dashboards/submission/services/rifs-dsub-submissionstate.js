@@ -37,6 +37,7 @@
 angular.module("RIF")
         .factory('SubmissionStateService', 
                 function () {
+					var areamap;
                     var s = {
                         //these are on the main disease submission page
                         studyTree: false,
@@ -52,15 +53,28 @@ angular.module("RIF")
                         projectName: "",
                         projectDescription: "",
                         studyDescription: "",
-                        studyType: "Disease Mapping"
+                        studyType: "Disease Mapping",
+						removeMap: undefined
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
+						setAreaMap(map) {
+							areamap=map;
+						},
+						getAreaMap() {
+							return areamap;
+						},
                         getState: function () {
                             return s;
                         },
                         resetState: function () {
+							if (s.removeMap) { // Remove Map
+								s.removeMap();
+							}
                             s = angular.copy(defaults);
+                        },
+                        setRemoveMap: function (removeMap) {
+                            s.removeMap=removeMap;
                         }
                     };
                 });

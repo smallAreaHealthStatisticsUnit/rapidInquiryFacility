@@ -73,6 +73,11 @@ angular.module("RIF")
                                 $scope.tree = true;
                             }
                         }
+						$scope.areamap=SubmissionStateService.getAreaMap();
+						SubmissionStateService.setRemoveMap(function() { // Setup map remove function
+                            $scope.consoleDebug("[rifc-dsub-comparea.js] remove shared areamap");
+							$scope.areamap.remove(); 
+						});
                         //Store what has been selected
                         CompAreaStateService.getState().polygonIDs = input.selectedPolygon;
                         CompAreaStateService.getState().selectAt = input.selectAt;

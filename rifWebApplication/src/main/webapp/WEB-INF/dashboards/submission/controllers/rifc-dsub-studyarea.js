@@ -76,6 +76,12 @@ angular.module("RIF")
                             $scope.tree = true;
                         }
 
+						$scope.areamap=SubmissionStateService.getAreaMap();
+						SubmissionStateService.setRemoveMap(function() { // Setup map remove function
+                            $scope.consoleDebug("[rifc-dsub-studyarea.js] remove shared areamap");
+							$scope.areamap.remove(); 
+						});
+						
                         //Store what has been selected
                         StudyAreaStateService.getState().geoLevels = input.geoLevels;
                         StudyAreaStateService.getState().polygonIDs = input.selectedPolygon;

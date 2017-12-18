@@ -49,13 +49,19 @@ angular.module("RIF")
                     link: function ($scope) {
 
                         $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);
+
+						SubmissionStateService.setAreaMap($scope.areamap);
+						
                         $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("areamap"));
 
                         //Reference the child scope
                         //will be from the comparison area or study area controller
                         $scope.child = {};
                         var alertScope = $scope.$parent.$$childHead.$parent.$parent.$$childHead;
-
+						$scope.areamap.on('remove', function(e) {
+                            alertScope.consoleDebug("[rifd-dsub-maptable.js] removed shared areamap");
+						});
+						
                         ///Called on DOM render completion to ensure basemap is rendered
                         $timeout(function () {
                             //add baselayer

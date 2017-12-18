@@ -1813,7 +1813,6 @@ Todo:
 
 ## In progress (December 2017):
 
-* Leaks in study area/comparison area maps (not released on logoff)
 * PouchDB conflicts, extend PouchDB to base layer
 * Sort popups in data viewer and diease maps
 
@@ -1831,10 +1830,11 @@ Todo:
   * Angular exception handler
   * Alert messages list popup
   * Scan last 15s for duplicates not just the last message
-  * Limit new/coml,eted messages to within 30s of message time
+  * Limit new/completed messages to within 30s of message time
   * Kev's irritating messages caused by logout not waiting for the tab control status timer to stop:
     * ERROR: API method "isLoggedIn" has a null "userID" parameter.
 	* ERROR: Record "User" field "User ID" cannot be empty.
+	* ERROR: Unable to roll back database transaction.
 
 ### Database TODO list (deferred to January 2018): 
 
@@ -1854,7 +1854,7 @@ Todo:
 ## Next (February/March 2018)
 
 * Risk analysis middleware [Needs new Java developer]
-* SAHSU production system instsall [Needs new SAHSU System Administrator]
+* SAHSU production system install [Needs new SAHSU System Administrator]
 	
 ## Issues:
 

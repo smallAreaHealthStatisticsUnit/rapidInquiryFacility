@@ -48,6 +48,9 @@ angular.module("RIF")
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
                         getState: function () {
+							if (s.removeMap) { // Remove Map
+								s.removeMap();
+							}
                             return s;
                         },
                         resetState: function () {
