@@ -68,13 +68,23 @@ angular.module("RIF")
                     });
                     
                     modalInstance.result.then(function (modal) {
-                        ChoroService.getMaps(map).brewerName = modal.currOption.name;
-                        ChoroService.getMaps(map).invert = modal.checkboxInvert;
-                        ChoroService.getMaps(map).brewer = ColorBrewerService.getColorbrewer(modal.currOption.name, modal.selectedN);
-                        ChoroService.getMaps(map).intervals = modal.selectedN;
-                        ChoroService.getMaps(map).feature = modal.selectedFeature;
-                        ChoroService.getMaps(map).method = modal.method;
-                        ChoroService.getMaps(map).renderer = modal.thisMap;
+						var mapChoroSettings = {
+							brewerName: modal.currOption.name,
+							invert: modal.checkboxInvert,
+							brewer: ColorBrewerService.getColorbrewer(modal.currOption.name, modal.selectedN),
+							intervals: modal.selectedN,
+							feature: modal.selectedFeature,
+							method: modal.method,
+							renderer: modal.thisMap
+						};
+                        ChoroService.getMaps(map).brewerName = mapChoroSettings.brewerName;
+                        ChoroService.getMaps(map).invert = mapChoroSettings.invert;
+                        ChoroService.getMaps(map).brewer = mapChoroSettings.brewer;
+                        ChoroService.getMaps(map).intervals = mapChoroSettings.intervals;
+                        ChoroService.getMaps(map).feature = mapChoroSettings.feature;
+                        ChoroService.getMaps(map).method = mapChoroSettings.method;
+                        ChoroService.getMaps(map).renderer = mapChoroSettings.renderer;
+//						$scope.consoleDebug('rifc-util-choro.js() mapChoroSettings for map: ' + map  + "; " + JSON.stringify(mapChoroSettings, null, 2));
                         $scope.$parent.child.refresh(map);
                     });
                 };
@@ -108,54 +118,10 @@ angular.module("RIF")
 
             $scope.domain = [];
 
-            $scope.renderSwatch = function (bOnOpen, bCalc) {
-                //ensure that the colour scheme allows the selected number of classes
-                var n = angular.copy($scope.input.selectedN);
-                $scope.input.intervalRange = ColorBrewerService.getSchemeIntervals($scope.input.currOption.name);
-                if ($scope.input.selectedN > Math.max.apply(Math, $scope.input.intervalRange)) {
-                    $scope.input.selectedN = Math.max.apply(Math, $scope.input.intervalRange);
-                } else if ($scope.input.selectedN < Math.min.apply(Math, $scope.input.intervalRange)) {
-                    $scope.input.selectedN = Math.min.apply(Math, $scope.input.intervalRange);
-                }
+            $scope.renderSwatch = function (bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */) {
+				ChoroService.doRenderSwatch(bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, $scope, ColorBrewerService);
 
-                //get the domain 
-                $scope.domain.length = 0;
-                for (var i = 0; i < $scope.tableData[$scope.mapID].length; i++) {
-                    $scope.domain.push(Number($scope.tableData[$scope.mapID][i][$scope.input.selectedFeature]));
-                }
-
-                //save the selected brewer
-                ChoroService.getMaps($scope.mapID).brewerName = $scope.input.currOption.name;
-
-                if (bOnOpen) {
-                    //if called on modal open
-                    if (!ChoroService.getMaps($scope.mapID).init) {
-                        //initialise basic renderer
-                        ChoroService.getMaps($scope.mapID).init = true;
-                        $scope.input.thisMap = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.currOption.name,
-                                $scope.input.selectedN), $scope.input.checkboxInvert, $scope.mapID);
-                        ChoroService.getMaps($scope.mapID).renderer = $scope.input.thisMap;
-                    } else {
-                        //restore previous renderer
-                        $scope.input.thisMap = ChoroService.getMaps($scope.mapID).renderer;
-                    }
-                } else {
-                    //update current renderer
-                    if (!bCalc) {
-                        if (n !== $scope.input.selectedN) {
-                            //reset as class number requested not possible
-                            $scope.input.thisMap = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.currOption.name,
-                                    $scope.input.selectedN), $scope.input.checkboxInvert, $scope.mapID);
-                        } else {
-                            var tempRenderer = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.currOption.name,
-                                    $scope.input.selectedN), $scope.input.checkboxInvert, $scope.mapID);
-                            $scope.input.thisMap.range = tempRenderer.range;
-                        }
-                    } else {
-                        $scope.input.thisMap = ChoroService.getChoroScale($scope.input.method, $scope.domain, ColorBrewerService.getColorbrewer($scope.input.currOption.name,
-                                $scope.input.selectedN), $scope.input.checkboxInvert, $scope.mapID);
-                    }
-                }
+//				$scope.consoleDebug("[rifc-util-choro.js] renderSwatch $scope.input.thisMap: " + JSON.stringify($scope.input, null, 2));
             };
             
             //ensure modal fields are filled
@@ -165,9 +131,66 @@ angular.module("RIF")
                 //reset to what was there on modal open  
                 ChoroService.getMaps($scope.mapID).renderer = onXRenderRestore.renderer;
                 ChoroService.getMaps($scope.mapID).brewerName = onXRenderRestore.brewerName;
+				
+				ChoroService.getMaps($scope.mapID).invert = onXRenderRestore.invert;
+				ChoroService.getMaps($scope.mapID).intervals = onXRenderRestore.intervals;
+				ChoroService.getMaps($scope.mapID).method = onXRenderRestore.method;
+
+				//set saved swatch selection
+				var cb = ChoroService.getMaps($scope.mapID).brewerName;
+				for (var i = 0; i < $scope.options.length; i++) {
+					if ($scope.options[i].name === cb) {
+						$scope.input.currOption = $scope.options[i];
+					}
+				}
+
+				//list of attributes
+				$scope.input.features = ChoroService.getMaps($scope.mapID).features;
+				if ($scope.input.features.indexOf(ChoroService.getMaps($scope.mapID).feature) === -1) {
+					$scope.input.selectedFeature = $scope.input.features[0];
+				} else {
+					$scope.input.selectedFeature = ChoroService.getMaps($scope.mapID).feature;
+				}				
                 $uibModalInstance.dismiss();
             };
 
+            $scope.choroReset = function () {
+				var features=ChoroService.getMaps($scope.mapID).features; // Save feature list
+				ChoroService.resetState($scope.mapID);
+				ChoroService.getMaps($scope.mapID).features=features;
+				$scope.input = {};
+				$scope.input.checkboxInvert = ChoroService.getMaps($scope.mapID).invert;
+				$scope.input.selectedSchemeName = ChoroService.getMaps($scope.mapID).brewerName;
+				$scope.input.intervalRange = ColorBrewerService.getSchemeIntervals($scope.input.selectedSchemeName);
+				$scope.input.selectedN = ChoroService.getMaps($scope.mapID).intervals;
+				$scope.input.method = ChoroService.getMaps($scope.mapID).method;	
+				
+				var cb = ChoroService.getMaps($scope.mapID).brewerName;
+				for (var i = 0; i < $scope.options.length; i++) { 
+					if ($scope.options[i].name === cb) {
+						$scope.input.currOption = $scope.options[i];
+					}
+				}
+				var brewer = ColorBrewerService.getColorbrewer($scope.input.currOption.name,	
+					$scope.input.selectedN);	
+				var feature = ChoroService.getMaps($scope.mapID).feature;
+				$scope.input.features = ChoroService.getMaps($scope.mapID).features;
+
+				$scope.domain = [];				
+				for (var i = 0; i < $scope.tableData[$scope.mapID].length; i++) {
+					$scope.domain.push(Number($scope.tableData[$scope.mapID][i][feature]));
+				}			
+
+                $scope.consoleDebug("[rifc-util-choro.js] Reset: " + $scope.mapID);
+					
+				$scope.input.thisMap = ChoroService.getChoroScale($scope.input.method, $scope.domain, 
+					brewer, $scope.input.checkboxInvert, $scope.mapID);
+				
+				$scope.input.renderer = ChoroService.getMaps($scope.mapID).renderer;
+				$scope.input.brewer = ChoroService.getMaps($scope.mapID).brewer;
+				$scope.input.selectedFeature = feature; // Will force a re-render						
+			}
+			
             $scope.apply = function () {
                 //check breaks are numeric               
                 for (var i = 0; i < $scope.input.thisMap.breaks.length; i++) {

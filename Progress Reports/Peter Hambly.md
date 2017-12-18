@@ -1591,45 +1591,41 @@ Todo:
 * Study state machine and transactional control: obsolete study_status, move to rif40_study_status, trace 
   error support. State machine now handles errors correctly
 * Fixed inability to detect errors correctly in run study, R, CVS extract (TODO: report to user). SQL Server 
-  does detect but does not trap the error correctly, i.e. the **tomcat** log has
+  does detect but does not trap the error correctly, i.e. the **tomcat** log has:
+  
   ```
-15-Sep-2017 10:55:04.188 SEVERE [https-jsse-nio-8080-exec-7] com.sun.jersey.spi.container.ContainerResponse.mapMappableContainerExce
-ption The exception contained within MappableContainerException could not be mapped to a response, re-throwing to the HTTP container
-
- java.lang.NoSuchMethodError
+  15-Sep-2017 10:55:04.188 SEVERE [https-jsse-nio-8080-exec-7] com.sun.jersey.spi.container.ContainerResponse.mapMappableContainerException The exception contained within MappableContainerException could not be mapped to a response, re-throwing to the HTTP container
+  java.lang.NoSuchMethodError
         at java.lang.Thread.destroy(Thread.java:990)
         at rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep.performStep(MSSQLSmoothResultsSubmissionStep.java:290)
         at rifServices.dataStorageLayer.ms.MSSQLRunStudyThread.smoothResults(MSSQLRunStudyThread.java:262)
         at rifServices.dataStorageLayer.ms.MSSQLRunStudyThread.run(MSSQLRunStudyThread.java:181)
         at java.lang.Thread.run(Thread.java:745)
-        at rifServices.dataStorageLayer.ms.MSSQLAbstractRIFStudySubmissionService.submitStudy(MSSQLAbstractRIFStudySubmissionService
-.java:1067)
-        at rifServices.restfulWebServices.ms.MSSQLAbstractRIFWebServiceResource.submitStudy(MSSQLAbstractRIFWebServiceResource.java:
-1000)
-        at rifServices.restfulWebServices.ms.MSSQLRIFStudySubmissionWebServiceResource.submitStudy(MSSQLRIFStudySubmissionWebService
-Resource.java:1178)
+        at rifServices.dataStorageLayer.ms.MSSQLAbstractRIFStudySubmissionService.submitStudy(MSSQLAbstractRIFStudySubmissionService.java:1067)
+        at rifServices.restfulWebServices.ms.MSSQLAbstractRIFWebServiceResource.submitStudy(MSSQLAbstractRIFWebServiceResource.java:1000)
+        at rifServices.restfulWebServices.ms.MSSQLRIFStudySubmissionWebServiceResource.submitStudy(MSSQLRIFStudySubmissionWebServiceResource.java:1178)
         at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)  
   ```
-
-```
-10:42:00.274 [https-jsse-nio-8080-exec-10] ERROR: [rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager]:
-MSSQLStudyExtractManager ERROR
-getMessage:          SQLServerException: Invalid object name 'rif40_dmp_pkg.csv_dump'.
-getRootCauseMessage: SQLServerException: Invalid object name 'rif40_dmp_pkg.csv_dump'.
-getThrowableCount:   1
-getRootCauseStackTrace >>>
-com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_pkg.csv_dump'.
-	at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDatabaseError(SQLServerException.java:232)
-	at com.microsoft.sqlserver.jdbc.SQLServerStatement.getNextResult(SQLServerStatement.java:1672)
-	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.doExecutePreparedStatement(SQLServerPreparedStatement.java:460)
-	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement$PrepStmtExecCmd.doExecute(SQLServerPreparedStatement.java:405)
-	at com.microsoft.sqlserver.jdbc.TDSCommand.execute(IOBuffer.java:7535)
-	at com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(SQLServerConnection.java:2438)
-	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeCommand(SQLServerStatement.java:208)
-	at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(SQLServerStatement.java:183)
-	at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.executeQuery(SQLServerPreparedStatement.java:317)
-	at rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager.dumpDatabaseTableToCSVFile(MSSQLStudyExtractManager.java:537)
-```
+  and:
+  ```
+  10:42:00.274 [https-jsse-nio-8080-exec-10] ERROR: [rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager]:
+  MSSQLStudyExtractManager ERROR
+	getMessage:          SQLServerException: Invalid object name 'rif40_dmp_pkg.csv_dump'.
+	getRootCauseMessage: SQLServerException: Invalid object name 'rif40_dmp_pkg.csv_dump'.
+	getThrowableCount:   1
+	getRootCauseStackTrace >>>
+	com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_pkg.csv_dump'.
+        at com.microsoft.sqlserver.jdbc.SQLServerException.makeFromDatabaseError(SQLServerException.java:232)
+        at com.microsoft.sqlserver.jdbc.SQLServerStatement.getNextResult(SQLServerStatement.java:1672)
+        at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.doExecutePreparedStatement(SQLServerPreparedStatement.java:460)
+        at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement$PrepStmtExecCmd.doExecute(SQLServerPreparedStatement.java:405)
+        at com.microsoft.sqlserver.jdbc.TDSCommand.execute(IOBuffer.java:7535)
+        at com.microsoft.sqlserver.jdbc.SQLServerConnection.executeCommand(SQLServerConnection.java:2438)
+        at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeCommand(SQLServerStatement.java:208)
+        at com.microsoft.sqlserver.jdbc.SQLServerStatement.executeStatement(SQLServerStatement.java:183)
+        at com.microsoft.sqlserver.jdbc.SQLServerPreparedStatement.executeQuery(SQLServerPreparedStatement.java:317)
+        at rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager.dumpDatabaseTableToCSVFile(MSSQLStudyExtractManager.java:537)
+  ```
 
 #### 25th to 29th September
 
@@ -1686,7 +1682,7 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
   Fails: R version 3.4.0 (2017-04-21) -- "You Stupid Darkness"/This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
 * Re-instsall SEER test data, add SQL Server SEER test data
 * Test study completion code
-* Works on 3.4.2; SEER data has brough up an issue with character adjacency column being cast to INTEGER
+* Works on 3.4.2; SEER data has brought up an issue with character adjacency column being cast to INTEGER
   Fix to integer areaIds in adjcency matrix
 * RIF meeting
 * Do not map stuudies with errors (generates errors in the middleware)
@@ -1694,19 +1690,160 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * REXCEPTION test exception. Also refactored R parameter code to use names and not index numbers. Can now add new parameters without 
   consequences. Batch and R scripts need to be made parameter name independent for map code
 
-In progress:
-
+#### 30th October to 3rd November
+  
+* Fixed Postgres tiles display issue in maps. No tiles are being displayed for level 4. SAHSULAND has been 
+  caught by the USA areaid_count upgrade; scripts and tile-maker fixed.
+* Shortlisting Java developer (new Kev)
 * CDC update by end of October
-* Export error handler
-* Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing type].
-  This **MUST** be exactly the same information as generated by the front end!
-* Generate GeoJSON for mapping. This will include the result data which will need to be flattened (e.g. relative_risk_males_no_covariates);
-* Add support for runing R scripts pre zip file creation. This is to add maps using the map setup choosen by the user in the mapping dashboard.
-  The intention in to support all the potential map options like the last RIF, and also add the D3 graphics: population pyramids...
-* Angular exception handler
-* Alert messages list popup
+* Integrated new SAHSULAND data extended to 2016; complete with clusters.
+* Minor R script issues caused by tidy last week
+* Testing front end
+* Fixed null mapID for US maps on SQL server only. Something is not initialising correctly in: 
+  rifc-util-mapping.js. Made front end ignore the error!
+  ```	
+  11:59:14.121 +793.6: [DUPLICATE: 119, msgInterval=0] ERROR: Null mapID 1 rifc-util-alert.js:88:6
+  ```
+* SQL Server and Postgres US SEER data confirmed working!
+* Export error handler; traps exceptions OK; added handlers for errors not detected by the global get handler. Added 100s timeout.
+  Intend to trap 403 timeout error if it occurs
+* Fixed "Export Study Tables"/"Download Study Export" does not change to "Download ... " on Microsoft Edge/Explor/Chrome. Caused by 
+  string returns instead of JSON;
+* Console messages suppressed on Explorer unless the console is enabled
 
-#### Database TODO list (deferred to November 2017): SQL Server Port
+#### 6th to 10th November 
+
+* Firefox crashed using nearly 6G of RAM. null mapID in rifc-util-mapping.js 
+  ```$scope.handleLayer = function (layer) {}``` is the direct cause. This was fixed
+  by removing the layer:
+  ```
+  	if (mapID === undefined) { // Occurs only on SQL Server!
+  //							Do nothing!						
+  		$scope.consoleError("Null mapID; layer options: " + JSON.stringify(layer.options, null, 2));
+  		if (layer !== undefined) {
+  			layer.remove(); 	// Remove 
+  		}
+  	}
+  ```
+  This has dealt with the symptoms, **not the cause**. The direct cause is the layer add 
+  function is being called before the map has initialised properly. Taken with the 
+  *Null zoomlevel error* there is a synchronisation bug in the leaflet code. This issue
+  was experienced with the TileMaker code and the fix - stronger asynchronous control is 
+  the same (i.e do not rely on Leaflet to do it all). This will have the effect of 
+  some counties not being displayed (say 40/3233).
+* Complete TODO update
+
+#### 13th to 17th November
+
+* Fix for covariate join problem causing wrong expected values in US data;
+* Temporary fix to rif40_execute_insert_statement.sql. Table t_rif40_study_sql needs to have sql_text type 
+  set to Text (i.e. remove 4000 character limit)
+* Performance tune fixes for Postgres. Issues with lack of bind peaking (fully expand INSERT sql), global temporary tables; tune rif40_log()
+* SAHSU 30th  
+ 
+#### 20th to 24th November
+
+* Added tracing to tileLayer; update to same (caching code) as TileMaker, caching disabled on IE. Sub 
+  layers not being removed, too many layers in disease mapping (i.e. 60K instead of 2x1280). Layers being added about 
+  one per minute;
+* Add traps for middleware call failure and out of sequence events;
+* Port upgraded extract code to SQL Server;
+* Testing of SQL Server code: minor fixes to status list, handle longer SQL statements and in covariate SQL generation, LF issues with new SAHSULAND data;
+* Delivered database to CDC;
+* Completed security testing, all issues resolved by editing Tomcat config (web.xml) or index.html;
+
+#### 27th November to 1st December
+
+* Fixed inability to detect non default URLs (e.g. HTTPS://);
+* Added Front end logging to reduce browser stress when debugging map leaks;
+* Removed mixed content for background tiles (i.e. download fromn HTTPS:: if needed);
+* Fixed taxonomy service configuration to use Tomcat conf directory (i.e. upgrades do not loose confiruation)
+* Added map layer remove code to logoff; memory is freed so the leak is in the GeoJSON gridlayer;
+
+#### 4th to 8th December
+
+* Fixed map bounds and center synchrojnisation issues. Map setup is now occuring in the correct order;
+* Improvements to TopoJSONGridLayer.js error handling;
+* Leaks if pouchDB is/is not enabled, map sync errors; if disabled still leaks!
+* Probed memory leak: not caused by sync;
+* Document update conflict issue with PouchDB, requires handlers
+  ```
+  	  07:33:43.110 [http-nio-8080-exec-7] ERROR rifGenericLibrary.util.FrontEndLogger : 
+  	userID:       peter
+  	browser type: Firefox; v57
+  	iP address:   0:0:0:0:0:0:0:1
+  	message:      [TopoJSONGridLayer.js] _db.put() error: {
+  	  "status": 409,
+  	  "name": "conflict",
+  	  "message": "Document update conflict",
+  	  "error": true
+  	}
+  	error stack>>>
+  	$scope.consoleError@http://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:215:10
+  	consoleError@http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:74:6
+  	fetchTile/request.onload/<@http://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:266:11
+  	<<<
+  	actual time:  12/6/2017 7:33:43 AM
+  	relative:     +53.2
+  ```
+* Test memory leak [FAILED!], add frontEndParameters service, SQL install instructions for CDC;
+* getFrontEndParameters service (i.e. remove peter username default, disable front end debugging by default, prove JSON5 parser)
+
+#### 11th to 15th December
+
+* OK, so disase map sync OK; rrDropLineRedraw/syncMapping2Events are not being fired; so it must be the D3 maps that are leaking. 
+  This agrees with the memory map comparisons. 
+* Centering fixes (map zoom, lat and long not set on initial map load). Should also fix null zoomlevel errors;
+* Table data being fetched after map; hence display issues;
+* Fixed $Watch synchronmisation - now correct; warns on no data for D3 graphs. Diseasemap1 not being displayed until refresh
+* disableMapLocking now works correctly, added disableSelectionLocking parameter;
+* RIF meeting
+* Fixed $watch synchronmisation - now correct; warns on no data for D3 graphs
+* Fix $digest issues, started added default mapping support
+* Refactor map utils to make more efficent, completed default mapping support, fix missing D3 pane
+* Fixed error trap for incorrect mapping column name
+* Improved choropleth feature list for viewer
+* Added reset button to choropleth popup, fixed scales not being recaculated, fixed exit button to restore old state
+* Added JSON5 support to load file, and save
+
+#### 18th to 22nd December
+
+* Add completed study save stub to export (for database generated JSON5)
+* Fixed statistics manual link (to main manual)
+
+## In progress (December 2017):
+
+* Leaks in study area/comparison area maps (not released on logoff)
+* PouchDB conflicts, extend PouchDB to base layer
+* Sort popups in data viewer and diease maps
+
+* Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing 
+  type].
+  This **MUST** be exactly the same information as generated by the front end!
+* Save and restore map state in the database
+* Update study and re-generate ZIP file  
+* Generate GeoJSON for mapping. This will include the result data which will need to be flattened (e.g. relative_risk_males_no_covariates);
+* Add support for running R scripts pre zip file creation. This is to add maps using the map setup choosen by the user in the mapping 
+  dashboard.
+  The intention in to support all the potential map options like the last RIF, and also add the D3 graphics: population pyramids...
+* Alerts:
+  * Create an alert service (for use in directives etc)
+  * Angular exception handler
+  * Alert messages list popup
+  * Scan last 15s for duplicates not just the last message
+  * Limit new/coml,eted messages to within 30s of message time
+  * Kev's irritating messages caused by logout not waiting for the tab control status timer to stop:
+    * ERROR: API method "isLoggedIn" has a null "userID" parameter.
+	* ERROR: Record "User" field "User ID" cannot be empty.
+
+### Database TODO list (deferred to January 2018): 
+
+* Add statistical method to rif40_studies
+* Add population to map table (max, min, average, rate increase/decrease?), remove join from getAttributes
+* Add viewer/diseasemap[12]_mapping, export_date, last_update_date to rif40_studies
+* Add area name to results map table
+* Rename results fields as required
+* Add unique keys to description files on rif tables/projects/health themes to protect against Kev using them as a Key
 
 * More work on SEER data, dataloader
 	* Test covariates in dataloader
@@ -1714,8 +1851,32 @@ In progress:
 	* Run dataloader, check outputs
 	* More dataloader documentation
 
-* Add unique keys to description files on rif tables/projects/health themes to protect against Kev using them as a Key
-* Add area name to results map table
+## Next (February/March 2018)
+
+* Risk analysis middleware [Needs new Java developer]
+* SAHSU production system instsall [Needs new SAHSU System Administrator]
+	
+## Issues:
+
+### Middleware:
+
+* Logging not rotating properly at end of day. Thought to be caused by log4j threading issues. A simple fix would be to get the 
+  taxonomy service to use a separate logger; it may be necessary to replace log4j with SLF4J;
+
+### Front End:
+
+* Leaflet sync plugin not panning correctly. Was upgraded to current version as part of leak testing. Will regress and re-test.  
+* Choropleth panel: the breaks displayed may not be correct when e.g. changed the number of quantiles will result in zeros!
+
+### Database:
+
+* AreaName duplicates to be allowed; key enforcementment to be in the heirarchy table; this allows 
+  for duplicate county names within a state
+* Change CREATE study to run in own schema; create procedure to transfer study/map tables to correct schema 
+  and grant back permissions [i.e. remove security issue with current Postgres code; SQL Server does not have this issue]
+* Add t_rif40_study_areas trigger check (once per INSERT/UPDATE) for correct use of band_id in rif40_study_shares. 
+  Alternatively check in rif40_run_study
+* Rename offset in age_sex_groups (reserved keyword)	
 * USA_2014 integration: 
   * RIF40_GEOGRAPHIES set up wrong: default study and comnparison area names use original field name, no setup field names
     Tomcat error:
@@ -1762,148 +1923,24 @@ UPDATE rif40_geographies
 ```
   So the script was fixed, reload needed DELETE FROM rif40_covariates WHERE geography = 'USA_2014' adding.
   This was fixed from before; I appear to have used an older script!
-  Also STATE was not a comparison are; this is probably a fault in the scripts. All flags should be set in rif40_geolevels* Postgres run study middleware code not stopping on error!
-* The R script does not handle only males in a study:
-```
-C:\rifDemo\scratchSpace>C:\"Program Files"\R\R-3.4.0\bin\x64\RScript C:\\"Program Files"\\"Apache Software Foundation"\\"Tomcat 8.5"\\webapps\\rifServices\\WEB-INF\\classes\Adj_Cov_Smooth.R  --db_driver_prefix=jdbc:postgresql  --db_host=localhost  --db_port=5432  --db_name=sahsuland  --db_driver_class_name=org.postgresql.Driver  --study_id=16  --investigation_name=TEST_1001  --covariate_name=NONE
- --investigation_id=16  --r_model=het_r_procedure  --odbc_data_source=PostgreSQL30  --user_id=peter  --password=XXXXXX
-Loading required package: sp
-Loading required package: methods
-Loading required package: Matrix
-This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
-See www.r-inla.org/contact-us for how to get help.
-Checking rgeos availability: FALSE
-        Note: when rgeos is not available, polygon geometry     computations in maptools depend on gpclib,
-        which has a restricted licence. It is disabled by default;
-        to enable gpclib, type gpclibPermit()
-[1] "13 arguments were supplied"
-[1] "Parsing parameters"
-                   name                 value
-1      db_driver_prefix       jdbc:postgresql
-2               db_host             localhost
-3               db_port                  5432
-4               db_name             sahsuland
-5  db_driver_class_name org.postgresql.Driver
-6              study_id                    16
-7    investigation_name             TEST_1001
-8        covariate_name                  NONE
-9      investigation_id                    16
-10              r_model       het_r_procedure
-11     odbc_data_source          PostgreSQL30
-12              user_id                 peter
-13             password                  <NA>
-[1] "Study ID: 16"
-[1] "Connect to database: PostgreSQL30"
-        DBMS_Name          DBMS_Ver   Driver_ODBC_Ver  Data_Source_Name
-     "PostgreSQL"           "9.3.5"           "03.51"    "PostgreSQL30"
-      Driver_Name        Driver_Ver          ODBC_Ver       Server_Name
-"PSQLODBC35W.DLL"      "09.06.0310"      "03.80.0000"       "localhost"
-[1] "Performing basic stats and smoothing"
-[1] "============EXTRACT TABLE NAME ===================="
-[1] "rif_studies.s16_extract"
-[1] "============EXTRACT TABLE NAME ===================="
-[1] "rif_studies.s16_extract numberOfRows=216656=="
-[1] "rif40_GetAdjacencyMatrix numberOfRows=1229=="
-Error in POP[, 3, ] : subscript out of bounds
-Calls: performSmoothingActivity -> apply
-3: (function ()
-   {
-       traceback(2)
-       if (!is.null(connDB))
-           odbcClose(connDB)
-       quit("no", 1, FALSE)
-   })()
-2: apply(POP[, 3, ] * cRATESNoArea[, 3], MARGIN = 2, FUN = sum,
-       na.rm = TRUE)
-1: performSmoothingActivity()
-```
-* Data loader issues:
-  TOTAL_FIELD should be total
-  No covariate fields in data table
+  Also STATE was not a comparison are; this is probably a fault in the scripts. All flags should be set in *rif40_geolevels* 
+  Postgres run study middleware code not stopping on error!
 * Harden SQL Server port against SQL Injection getting past middleware into meta data
-* Process Utah geography
 * Disable guest logins on SQL Server
+
+### Data loader:
+
+  * TOTAL_FIELD should be total
+  * No covariate fields in data table
+  * Data loader to generate primary keys. PK on pop_sahsuland_pop_pk + cluster (see: v4_0_create_sahsuland.sql)
+  
+### Documentation
+  
 * Add localhost notes to tomcat install doc; add network setup to SQL Server install notes; 
   add notes on cross site scripting errors (caused by URL/webservices name mismatch); firefox example:
   ```
   GET XHR https://peter-pc:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter [HTTP/1.1 200  25ms]
   09:09:31.552 Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://peter-pc:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter. (Reason: CORS header 'Access-Control-Allow-Origin' missing). 1 (unknown)
   ```
-* Data loader to generate primary keys. PK on pop_sahsuland_pop_pk + cluster (see: v4_0_create_sahsuland.sql)
-* SQL load script generator: still todo, all can wait:
-  * Add search path to user schema, check user schema exists, to Postgres version
-  
-#### TileViewer TODO (deferred to November 2017 and beyond):
-
-Moved to main TODO
 
 
-##	General RIF database Todo (parked):
-  
-### Database Bugs (deffered)
-
-* AreaName duplicates to be allowed; key enforcementment to be in the heirarchy table; this allows 
-  for duplicate county names within a state
-* Change CREATE study to run in own schema; create procedure to transfer study/map tables to correct schema 
-  and grant back permissions [i.e. remove security issue with current Postgres code; SQL Server does not have this issue]
-* Add t_rif40_study_areas trigger check (once per INSERT/UPDATE) for correct use of band_id in rif40_study_shares. 
-  Alternatively check in rif40_run_study
-* Rename offset in age_sex_groups (reserved keyword)
-  
-### New features (deffered)
-
-1. Separate test/build in makefile; remove Node dependency
-  
-### Park
-
-1. Documentation [in progress];
-2. JSON injection protection [will be a regexp];
-3. Web front end connection timeout (connect/post connect) limits - as previous;
-4. Integration to build, severeal options:
-   i.   Replace topojson_convert.js;
-   ii.  New node program to replace existing functionality [see 4 early December above];
-   iii. Awaiting data loader.
-
-## 2016/7 Plans: 
-
-1. Build and integrate Node.js middleware server:
-
-  * GeoJSON to TopoJSON conversion; by converting existing Node.js program to using HTTP POST methods to integrate  with the middleware
-  * Test and demonstrate secure logons using session_ids, time stamps and elliptic curve cryptography (public/private keys). Assist with
-    integration into middleware and JavaScript frontends.
-  * Assist with Node.js service integration into middleware, data loader and JavaScript frontends.
-  * Shapefile simplification
-  * Shapefile conversion to WKT (Well known text) format
-
-2. Assist as required in the coding, integration and testing of: 
-
-  * RIF batch: Java code calling a) database procedural code for study data extraction and b) R code [created by the Statistical team] 
-    to calculate statistical results from the study data extraction. Includes work to: 
-    * Extend the study extraction code to use separate age sex group field named; 
-    * Add code to validate RIF setup;
-    * Performance tune study extract code; in particular the triggers; SQL injection detection may need to be changed from a function to domain regular expression check;
-    * Complete harmonisation and documentation of error and trace messages.
-  * Complete webserver integration for SAHSU [Remote access using my old desktop will be required]
-    * Liaise with RIF middleware and JavaScript frontend to fix pernicious mixed content issues (mixtures of HTTP/HTTPS traffic);
-    * Test SAHSU RIF testbed wpea-darwin remotely;  
-    * Set up httpd as a reverse proxy so that Tomcat (running the Java middleware) traffic is forwarded securely to the tomcat server.
-    * Secure wpea-darwin httpd by jailing it; 
-    * Add HTTP caching to enhance web page load performance; 
-    * Preparation for penetration testing by an accredited third party; SQL injection testing.
-  * Provision and tuning of database services to the middleware and data loader. In particular ensure that partitioning is being used.
-
-3. Assist with porting to Microsoft SQL server.
-
-4. Information Governance module: Complete database support as required by the middleware.
-
-5. Build and revision control.
-
-6. Test harness:
-
-  *	Add tests for all triggers. errors and to exercise a range of study choices;
-  *	Per test logging to separate files;
-  *   Remove *rif40_test_runs_.number_test_cases_registered*;
-  *	Add *rif40_test_harness.port_specific_test*; either: P (Postgres only) or: S (SQL Server only);
-  *	Auto registering of error and trace messages.
-
-7. Additional RIF development tasks as required by Dr. Anna Hansell; 

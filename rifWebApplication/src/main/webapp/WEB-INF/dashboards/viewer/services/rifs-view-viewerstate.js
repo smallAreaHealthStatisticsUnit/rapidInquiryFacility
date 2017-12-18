@@ -65,7 +65,8 @@ angular.module("RIF")
                         },
                         vSplit1: 33,
                         hSplit1: 40,
-                        hSplit2: 60
+                        hSplit2: 60,
+						removeMap: undefined
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
@@ -79,7 +80,13 @@ angular.module("RIF")
                         getState: function () {
                             return s;
                         },
+                        setRemoveMap: function (removeMap) {
+                            s.removeMap=removeMap;
+                        },
                         resetState: function () {
+							if (s.removeMap) { // Remove Map
+								s.removeMap();
+							}
                             s = angular.copy(defaults);
                         }
                     };

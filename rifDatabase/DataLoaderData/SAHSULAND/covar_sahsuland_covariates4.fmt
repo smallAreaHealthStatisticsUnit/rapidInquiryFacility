@@ -13,7 +13,7 @@
 <COLUMN SOURCE="2" NAME="sahsu_grd_level4" xsi:type="SQLVARYCHAR" />
 <COLUMN SOURCE="3" NAME="ses" xsi:type="SQLVARYCHAR" />
 <COLUMN SOURCE="4" NAME="areatri1km" xsi:type="SQLVARYCHAR" />
-<COLUMN SOURCE="5" NAME="near_dist" xsi:type="SQLVARYCHAR" />
+<COLUMN SOURCE="5" NAME="near_dist" xsi:type="SQLNUMERIC" />
 </ROW>
 
 </BCPFORMAT>

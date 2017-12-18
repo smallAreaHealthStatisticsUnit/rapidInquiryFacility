@@ -144,6 +144,7 @@ public class ICDTaxonomyService
 			icd10FileName.append(icd10FileParameter.getValue());
 			
 			File icd10File = new File(icd10FileName.toString());
+			
 			icd10TaxonomyParser.readFile(icd10File);
 			setTaxonomyTermManager(icd10TaxonomyParser.getTaxonomyTermManager());
 			setServiceWorking(true);

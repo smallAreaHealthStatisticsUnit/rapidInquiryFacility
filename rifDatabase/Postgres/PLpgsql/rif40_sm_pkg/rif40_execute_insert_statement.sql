@@ -101,6 +101,9 @@ Description:	Execute INSERT SQL statement
 --
 	l_statement_type VARCHAR:='INSERT' /* INSERT: Local Postgres statement */;
 	i		INTEGER:=0;
+	n_sql_stmt		VARCHAR;
+--
+	use_bind_variables BOOLEAN:=FALSE; 
 BEGIN
 	IF sql_stmt IS NULL THEN
 		PERFORM rif40_log_pkg.rif40_error(-56600, 'rif40_execute_insert_statement', 
@@ -122,13 +125,29 @@ BEGIN
 	t_ddl:=COALESCE(c1_rec.max_statement_number, 0)+1;
 --
 	BEGIN
+--
+-- Replace year because Postgres does not have bind variable peeking
+--	
+		IF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start != year_stop THEN
+			n_sql_stmt:=REPLACE(REPLACE(sql_stmt, '$2', year_start::VARCHAR), '$3', year_stop::VARCHAR);
+		ELSIF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start = year_stop THEN
+			n_sql_stmt:=REPLACE(sql_stmt, '$2', year_start::VARCHAR);
+		ELSE 
+			n_sql_stmt:=sql_stmt;
+		END IF;
+		n_sql_stmt:=REPLACE(n_sql_stmt, '$1', study_id::VARCHAR);
+			
 		IF SUBSTR(sql_stmt, 1, 7) = 'EXPLAIN' THEN
-			IF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start != year_stop THEN
-				OPEN c2exinst FOR EXECUTE sql_stmt USING study_id, year_start, year_stop;
-			ELSIF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start = year_stop THEN
-				OPEN c2exinst FOR EXECUTE sql_stmt USING study_id, year_start;
+			IF use_bind_variables THEN		
+				IF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start != year_stop THEN
+					OPEN c2exinst FOR EXECUTE sql_stmt USING study_id, year_start, year_stop;
+				ELSIF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start = year_stop THEN
+					OPEN c2exinst FOR EXECUTE sql_stmt USING study_id, year_start;
+				ELSE
+					OPEN c2exinst FOR EXECUTE sql_stmt USING study_id;
+				END IF;
 			ELSE
-				OPEN c2exinst FOR EXECUTE sql_stmt USING study_id;
+				OPEN c2exinst FOR EXECUTE n_sql_stmt;
 			END IF;
 			GET DIAGNOSTICS l_rows = ROW_COUNT;
  			LOOP
@@ -137,7 +156,10 @@ BEGIN
 				EXIT WHEN NOT FOUND;
 				query_plan[i]:=query_plan_text;
 			END LOOP;
-			etp:=clock_timestamp();
+			etp:=clock_timestamp();		
+--
+		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_execute_insert_statement', 
+				'[56005] SQL> %;', n_sql_stmt::VARCHAR);
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_execute_insert_statement', 
 				'[56602] Study ID %, statement: %'||E'\n'||'Description: %'||E'\n'||' query plan:'||E'\n'||'%'::VARCHAR,
 				study_id::VARCHAR				/* Study ID */,
@@ -145,19 +167,23 @@ BEGIN
 				description::VARCHAR				/* Description */,
 				array_to_string(query_plan, E'\n')::VARCHAR	/* Query plan */);
 			l_log_message:=description::VARCHAR||' OK, took: '||age(etp, stp)::VARCHAR;
-		ELSE
-			IF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start != year_stop THEN
-				EXECUTE sql_stmt USING study_id, year_start, year_stop;
-			ELSIF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start = year_stop THEN
-				EXECUTE sql_stmt USING study_id, year_start;
+		ELSE	
+			IF use_bind_variables THEN		
+				IF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start != year_stop THEN
+					EXECUTE sql_stmt USING study_id, year_start, year_stop;
+				ELSIF year_start IS NOT NULL AND year_stop IS NOT NULL AND year_start = year_stop THEN
+					EXECUTE sql_stmt USING study_id, year_start;
+				ELSE
+					EXECUTE sql_stmt USING study_id;
+				END IF;			
 			ELSE
-				EXECUTE sql_stmt USING study_id;
+				EXECUTE n_sql_stmt;
 			END IF;
 			GET DIAGNOSTICS l_rows = ROW_COUNT;
 			etp:=clock_timestamp();
 			l_log_message:=description::VARCHAR||' OK, inserted '||l_rows::VARCHAR||' rows, took: '||age(etp, stp)::VARCHAR;
 		END IF;
-     	EXCEPTION
+     EXCEPTION
 --
 -- Handle all errors
 --
@@ -191,7 +217,7 @@ BEGIN
 		USER, study_id,l_statement_type, 
 		t_ddl, l_log_message, l_sqlcode, coalesce(l_rows, 0), stp, elapsed_time);
 	INSERT INTO rif40_study_sql(username, study_id, statement_type, statement_number, sql_text, line_number)
-	VALUES (USER, study_id, l_statement_type, t_ddl, sql_stmt, 1);  
+	VALUES (USER, study_id, l_statement_type, t_ddl, SUBSTRING(sql_stmt FROM 1 FOR 4000), 1);  
 --
 	PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_execute_insert_statement',
 		'[56605] Study %: %',

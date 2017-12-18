@@ -14,6 +14,8 @@ RIF Web Services
 	 - [1.3.5 Middleware Logging (Log4j2) Setup](#135-middleware-logging-log4j2-setup)
 	 - [1.3.6 Tomcat Logging (Log4j2) Setup](#136-tomcat-logging-log4j2-setup) 
 	 - [1.3.7 Using JConsole with Tomcat](#137-using-jconsole-with-tomcat) 
+	 - [1.3.8 Front End Logging](#138-front-end-logging)
+	 - [1.3.9 Securing Tomcat](#139-securing-tomcat)
   - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
    - [2.1 Building Using Make](#21-building-using-make)	
@@ -439,6 +441,7 @@ Create a log4j version 2 XML configuation file for tomcat. Two choices are provi
 
    * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/tomcat.log-<N>```: Tomcat/catalina messages (org.apache.catalina.core.ContainerBase.[Catalina].[localhost]*)
    * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>```: RIF messages
+   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```: RIF front end messages
    * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/Other.log-<N>```: Other messages
    
    where ```<YYYY>``` is the  year, ```<MM>``` is the numeric month numeric and ```<N>``` is the log sequence number.
@@ -533,10 +536,69 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
 ```<!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF middleware output on the console -->```**. 
 
 ```xml
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="debug" monitorInterval="30" name="RIF Tomcat Default">
+<!--
+  The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+  that rapidly addresses epidemiological and public health questions using 
+  routinely collected health and population data and generates standardised 
+  rates and relative risks for any given health outcome, for specified age 
+  and year ranges, for any given geographical area.
+  
+  Copyright 2014 Imperial College London, developed by the Small Area
+  Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+  is funded by the Public Health England as part of the MRC-PHE Centre for 
+  Environment and Health. Funding for this project has also been received 
+  from the United States Centers for Disease Control and Prevention.  
+  
+  This file is part of the Rapid Inquiry Facility (RIF) project.
+  RIF is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  RIF is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU Lesser General Public License for more details.
+  
+  You should have received a copy of the GNU Lesser General Public License
+  along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+  to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+  Boston, MA 02110-1301 USA
+  
+  Default log4j2 setup for the RIF middleware. 
+  
+  Sets up two loggers:
+  
+  1. The default logger: rifGenericLibrary.util.RIFLogger used by the middleware: RIF_middleware.log
+  2. "Other" for logger output not from rifGenericLibrary.util.RIFLogger: Other.log
+  
+  Logs go to STDOUT and ${sys:catalina.base}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME/log4j2/<YYYY>-<MM>/
+  Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
+  messages not using rifGenericLibrary.util.RIFLogger
+  
+  Logs are rotated everyday or every 100 MB in the year/month specific directory
+  
+  Typical log entry: 
+  
+	14:29:37.812 [http-nio-8080-exec-5] INFO  rifGenericLibrary.util.RIFLogger: [rifServices.dataStorageLayer.pg.PGSQLRIFContextManager]:
+	PGSQLAbstractSQLManager logSQLQuery >>>
+	QUERY NAME: getGeographies
+	PARAMETERS:
+	PGSQL QUERY TEXT: 
+	SELECT DISTINCT 
+	   geography 
+	FROM 
+	   rif40_geographies 
+	ORDER BY 
+	   geography ASC;
+
+	<<< End PGSQLAbstractSQLManager logSQLQuery
+
+  Author: Peter Hambly; 12/9/2017
+  -->
   <Properties>
-   <Properties>
     <Property name="logdir">${sys:catalina.base}/log4j2/$${date:yyyy-MM}</Property>
     <Property name="default_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %class %logger{36}: %msg%n</Property>
     <Property name="rif_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %class : %msg%n</Property> 
@@ -547,13 +609,21 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
       <PatternLayout pattern="${default_log_pattern}"/>
     </Console>
 	<!-- File logs are in ${catalina.base}/log4j2 - %CATALINA_HOME%/log4j2 -->
-	
     <RollingFile name="RIF_MIDDLEWARE" 
 				 filePattern="${logdir}/RIF_middleware.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
 	  <Policies>
-		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
+		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+	  </Policies>
+    </RollingFile>	
+    <RollingFile name="FRONTENDLOGGER" 
+				 filePattern="${logdir}/FrontEndLogger.%d{yyyy-MM-dd}-%i.log"
+				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
+      <PatternLayout pattern="${rif_log_pattern}"/>
+	  <Policies>
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
     </RollingFile>
@@ -562,7 +632,7 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${other_log_pattern}"/>
 	  <Policies>
-		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
     </RollingFile>	 
@@ -571,7 +641,7 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${other_log_pattern}"/>
       <Policies>
-		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
       </Policies>
     </RollingFile>
@@ -608,7 +678,12 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF middleware output on the console -->
       <AppenderRef ref="RIF_MIDDLEWARE"/>
     </Logger>
-		
+      <!-- RIF FRont End logger: rifGenericLibrary.util.FrontEndLogger -->
+    <Logger name="rifGenericLibrary.util.FrontEndLogger"
+		level="info" additivity="false"> <!-- Chnage to debug for more output -->
+      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
+      <AppenderRef ref="FRONTENDLOGGER"/>
+    </Logger>		
   </Loggers>
 </Configuration>
 ```
@@ -697,6 +772,161 @@ Run Jconsole from *%JAVA_HOME%\bin* e.g. ```"%JAVA_HOME%\bin\Jconsole"```
 
  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Jconsole.png?raw=true "Jconsole")
 
+### 1.3.8 Front End Logging
+
+Front end logging is enabled by default to the log file: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```; e.g.
+ *FrontEndLogger.2017-11-27-1.log*.
+ 
+To enable debugging in *%CATALINA_HOME%\webapps\RIF4\utils\controllers\rifc-util-alert.js* set ```$scope.debugEnabled = true;```:
+
+```javascript
+
+/* 
+ * CONTROLLER to handle alert bars and notifications over whole application
+ */
+angular.module("RIF")
+        .controller('AlertCtrl', ['$scope', 'notifications', 'user', function ($scope, notifications, user) {
+            $scope.delay = 0; // mS
+			$scope.lastMessage = undefined;
+			$scope.messageList = [];
+			$scope.messageCount = undefined;
+			$scope.messageStart = new Date().getTime();
+			$scope.debugEnabled = true;
+			
+```
+
+Chnage the log level to debug in the log4j setup for *rifGenericLibrary.util.FrontEndLogger*:
+
+```xml
+    <!-- RIF FRont End logger: rifGenericLibrary.util.FrontEndLogger -->
+    <Logger name="rifGenericLibrary.util.FrontEndLogger"
+		level="debug" additivity="false"> <!-- Chnage to debug for more output -->
+      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
+      <AppenderRef ref="FRONTENDLOGGER"/>
+    </Logger>	
+```
+
+Example from: *FrontEndLogger.2017-11-27-1.log*:
+
+```
+13:06:23.479 [https-jsse-nio-8080-exec-10] ERROR rifGenericLibrary.util.FrontEndLogger : 
+userID:       peter
+browser type: Firefox; v57
+iP address:   0:0:0:0:0:0:0:1
+message:      Could not initialise the taxonomy service
+error stack>>>
+rifMessage@https://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:290:10
+$scope.showError@https://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:347:5
+handleInitialiseError@https://localhost:8080/RIF4/dashboards/login/controllers/rifc-login-login.js:120:33
+e/<@https://localhost:8080/RIF4/libs/standalone/angular.min.js:131:20
+$eval@https://localhost:8080/RIF4/libs/standalone/angular.min.js:145:343
+$digest@https://localhost:8080/RIF4/libs/standalone/angular.min.js:142:412
+$apply@https://localhost:8080/RIF4/libs/standalone/angular.min.js:146:111
+l@https://localhost:8080/RIF4/libs/standalone/angular.min.js:97:320
+J@https://localhost:8080/RIF4/libs/standalone/angular.min.js:102:34
+gg/</t.onload@https://localhost:8080/RIF4/libs/standalone/angular.min.js:103:4
+<<<
+actual time:  27/11/2017 13:06:23
+relative:     +28.5
+```
+
+### 1.3.9 Securing Tomcat
+
+Injecting HTTP Response with the secure header can mitigate most of the web security vulnerabilities. These changes
+implement the necessary HTTP headers to comply with OWASP security standards.
+
+Having a secure header instructs the browser to do or not to do certain things and thence prevent certain security attacks.
+
+Tomcat 8 has added support for following HTTP response headers.
+
+* X-Frame-Options – to prevent clickjacking attack
+* X-XSS-Protection – to avoid cross-site scripting attack
+* X-Content-Type-Options – block content type sniffing
+* HSTS – add strict transport security
+
+As a best practice, take a backup of necessary configuration file before making changes or test in a non-production environment.
+
+In the *%CATALINA_HOME%/conf* folder under path where Tomcat is installed
+Uncomment the following filter (by default it is commented out):
+```xml
+    <filter>
+        <filter-name>httpHeaderSecurity</filter-name>
+        <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
+        <async-supported>true</async-supported>
+    </filter>
+```
+
+By uncommenting above, you instruct Tomcat to support HTTP Header Security filter.
+
+Add the following just after the above filter:
+
+```xml
+<filter-mapping>
+    <filter-name>httpHeaderSecurity</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
+
+By adding above you instruct Tomcat to inject the HTTP Header in all the application URL.
+
+Restart the Tomcat and access the application to verify the headers.
+
+Tomcat security defaults (default values are in square brackets):
+
+* hstsEnabled Should the HTTP Strict Transport Security (HSTS) header be added to the response? See RFC 6797 
+  for more information on HSTS. [true]
+* hstsMaxAgeSeconds The max age value that should be used in the HSTS header. Negative values will be treated
+  as zero. [0]                            
+* hstsIncludeSubDomains Should the includeSubDomains parameter be included in the HSTS header.  
+* antiClickJackingEnabled Should the anti click-jacking header X-Frame-Options be added to every response? [true]                                         -->
+* antiClickJackingOption What value should be used for the header. Must be one of DENY, SAMEORIGIN, ALLOW-FROM 
+  (case-insensitive). [DENY]
+* antiClickJackingUri IF ALLOW-FROM is used, what URI should be allowed? []  
+* blockContentTypeSniffingEnabled Should the header that blocks content type sniffing be added to every response? [true]
+
+#### Adding an expires filter
+
+ExpiresFilter is a Java Servlet API port of Apache mod_expires. This filter controls the setting of the 
+Expires HTTP header and the max-age directive of the Cache-Control HTTP header in server responses. The 
+expiration date can set to be relative to either the time the source file was last modified, or to the 
+time of the client access.
+
+These HTTP headers are an instruction to the client about the document's validity and persistence. If 
+cached, the document may be fetched from the cache rather than from the source until this time has passed. 
+After that, the cache copy is considered "expired" and invalid, and a new copy must be obtained from the
+source.
+
+```xml
+    <filter-mapping>
+        <filter-name>httpHeaderSecurity</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+
+	<filter>
+	 <filter-name>ExpiresFilter</filter-name>
+	 <filter-class>org.apache.catalina.filters.ExpiresFilter</filter-class>
+	 <init-param>
+		<param-name>ExpiresByType image</param-name>
+		<param-value>access plus 10 minutes</param-value>
+	 </init-param>
+	 <init-param>
+		<param-name>ExpiresByType text/css</param-name>
+		<param-value>access plus 10 minutes</param-value>
+	 </init-param>
+	 <init-param>
+		<param-name>ExpiresByType application/javascript</param-name>
+		<param-value>access plus 10 minutes</param-value>
+	 </init-param>
+	</filter>
+
+	<filter-mapping>
+	 <filter-name>ExpiresFilter</filter-name>
+	 <url-pattern>/*</url-pattern>
+	 <dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+```
+	
 ## 1.4 R
 Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
 
@@ -873,11 +1103,12 @@ If SAHSU has supplied a taxonomyServices.war file skip to step 3.
 1) Get the Taxonomy Service XML file *ClaML.dtd*. This is stored in is stored in ...rifServices\src\main\resources. A complete ICD10 version 
    is available from SAHSU for Organisations compliant with the WHO licence.
    
-   For a full ICD10 listing add the following SAHSU supplied files to: 
-   %CATALINE_HOME%\webapps\taxonomyServices\WEB-INF\classes and restart tomcat
+  For a full ICD10 listing add the following SAHSU supplied files to: 
+  %CATALINA_HOME%\conf and restart tomcat
 
-   * icdClaML2016ens.xml
-   * TaxonomyServicesConfiguration.xml
+  * icdClaML2016ens.xml
+  * TaxonomyServicesConfiguration.xml
+  * ClaML.dtd
 
 2) Build the Taxonomy Service using *maven*.
    Either: 
@@ -1044,21 +1275,40 @@ define the URLs for the services.
 
 ```javascript
 /*
- * SERVICE for URL middleware calls. Localhost can be edited here
+ * SERVICE for URL middleware calls. 
+ *
+ * Rewritten to remove the need for hard coding	HTTPS, hostname etc	
+ * and access via servicesConfig.studyResultRetrievalURL etc.
  */
-
 angular.module("RIF")
-        .constant('studySubmissionURL', "http://localhost:8080/rifServices/studySubmission/")
-        .constant('studyResultRetrievalURL', "http://localhost:8080/rifServices/studyResultRetrieval/")
-        .constant('taxonomyServicesURL', "http://localhost:8080/taxonomyServices/taxonomyServices/");
+        .factory('servicesConfig', [
+            function() {
+				var serviceHost=window.location.protocol + "//" + window.location.hostname + ":" + window.location.port;
+				return {		 
+					studySubmissionURL: serviceHost + "/rifServices/studySubmission/",
+					studyResultRetrievalURL: serviceHost + "/rifServices/studyResultRetrieval/",
+					taxonomyServicesURL: serviceHost + "/taxonomyServices/taxonomyServices/"
+				}
+/* 
+
+Use the hardcoded  version, e.g. if not using the web protocol of the current page and hostname; and/or port 8080
+Localhost can be edited here
+				return {
+					studySubmissionURL: "https://localhost:8080/rifServices/studySubmission/",
+					studyResultRetrievalURL: "https://localhost:8080/rifServices/studyResultRetrieval/",
+					taxonomyServicesURL: "https://localhost:8080/rifServices/taxonomyServices/"
+				}
+ */					
+		}]);
 ```
 
-Edit these to match:
+Usually the script is able to detect protocol, port and hostname; so does not need to be chnaged. If it doesn't or you are installing into an unusual environment, 
+use the hardcoded version and edit:
 
 * The port number in use; e.g. 8080 as in the above example or 8443 if you are in a production environment with TLS enabled;
 * The server for the remote service, e.g. *https://aepw-rif27.sm.med.ic.ac.uk*
 
-**BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
+If you do this, **BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
 
 Running the RIF and logging on is detailed in section 5.
 

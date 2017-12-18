@@ -868,6 +868,7 @@ DECLARE
 	arg_count INTEGER:=0;
 	max_args INTEGER;
 	chr VARCHAR;
+	ts		VARCHAR;
 BEGIN
 --
 -- Check format and args are not NULL
@@ -909,30 +910,38 @@ BEGIN
 	IF arg_count != max_args THEN
 		RAISE WARNING 'rif40_log() [99912]: Message in %(): too many/too few args (got: %; expecting %) for format: %', function_name, max_args, arg_count, format;
 	END IF;
+
+--
+-- Transaction timestamp
+--		
+	ts:='+'||LPAD(ROUND(EXTRACT(EPOCH FROM clock_timestamp()-transaction_timestamp())::NUMERIC, 2)::VARCHAR, 8, '0')||'s ';
+--
+	IF debug_level = 'WARNING' THEN
+		RAISE WARNING '% %(): %', ts, function_name, output;
+	ELSIF debug_level = 'INFO' THEN
+		RAISE INFO '% %(): %', ts, function_name, output;
+	ELSE -- Debug level: DEBUG
 --
 -- Check function name exists
 --
-	OPEN c2log(function_name);
-	FETCH c2log INTO c2log_rec;
-	CLOSE c2log;
-	IF c2log_rec.object_name IS NULL THEN
-		RAISE WARNING 'rif40_log() [99913]: function name %() NOT FOUND/NOT EXECUTABLE by user.', function_name;
- 	END IF;
+--	OPEN c2log(function_name);
+--	FETCH c2log INTO c2log_rec;
+--	CLOSE c2log;
+--	IF c2log_rec.object_name IS NULL THEN
+--		RAISE WARNING 'rif40_log() [99913]: function name %() NOT FOUND/NOT EXECUTABLE by user.', function_name;
+-- 	END IF;
 --
 -- Get logging parameters
 --
-	OPEN c1log;
-	FETCH c1log INTO c1log_rec;
-	CLOSE c1log;
---
-	IF debug_level = 'WARNING' THEN
-		RAISE WARNING '%(): %', function_name, output;
-	ELSIF debug_level = 'INFO' THEN
-		RAISE INFO '%(): %', function_name, output;
-	ELSIF c1log_rec.send_debug_to_info = 'on' AND rif40_log_pkg.rif40_is_debug_enabled(function_name, debug_level) THEN
-		RAISE INFO '[%] %(): %', debug_level, function_name, output;
-	ELSIF rif40_log_pkg.rif40_is_debug_enabled(function_name, debug_level) THEN
-		RAISE DEBUG '%(): %', function_name, output;
+		OPEN c1log;
+		FETCH c1log INTO c1log_rec;
+		CLOSE c1log;
+--	
+		IF c1log_rec.send_debug_to_info = 'on' AND rif40_log_pkg.rif40_is_debug_enabled(function_name, debug_level) THEN
+			RAISE INFO '% [%] %(): %', ts, debug_level, function_name, output;
+		ELSIF rif40_log_pkg.rif40_is_debug_enabled(function_name, debug_level) THEN
+			RAISE DEBUG '% %(): %', ts, function_name, output;
+		END IF;
 	END IF;
 --
 END;
@@ -979,6 +988,7 @@ GRANT EXECUTE ON FUNCTION rif40_log_pkg.rif40_is_debug_enabled(function_name VAR
 --SELECT CURRENT_SETTING('rif40.debug');
 \set VERBOSITY verbose
 \echo Test A: Log setup
+BEGIN;
 SELECT rif40_log_pkg.rif40_log_setup();
 \set
 --SELECT CURRENT_SETTING('rif40.debug');
@@ -1020,6 +1030,7 @@ EXCEPTION
 		PERFORM rif40_log_pkg.rif40_log('INFO', 'rif40_log', 'Caught test exception.');
 END;
 $$;
+END;
 \set VERBOSITY default
 
 --

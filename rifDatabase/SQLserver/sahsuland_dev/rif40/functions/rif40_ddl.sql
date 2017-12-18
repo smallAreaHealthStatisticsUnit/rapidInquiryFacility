@@ -89,6 +89,9 @@ BEGIN
 	DECLARE @statement_number_table TABLE (statement_number INTEGER);
 	DECLARE @etime DATETIME, @stp DATETIME=GETDATE(), @etp DATETIME;
 --
+	DECLARE @psql_stmt NVARCHAR(MAX);
+	DECLARE @sql_frag VARCHAR(4000);
+--
 	OPEN c1_ddl;
 	FETCH NEXT FROM c1_ddl INTO @sql_stmt, @study_id;
 	WHILE @@FETCH_STATUS = 0
@@ -96,7 +99,30 @@ BEGIN
 		BEGIN TRY
 			IF @study_id IS NULL BEGIN
 				EXECUTE sp_executesql @sql_stmt;
-				PRINT 'SQL[' + USER + '] OK> ' + @sql_stmt + ';';
+				PRINT 'SQL[' + USER + '] OK> ';
+				-- 		EXPERIMENTAL CODE TO SPLIT SQL INTO LINES WITH SEPARATE PRINT FOR TOMCAT 
+				SET @psql_stmt = REPLACE(@sql_stmt, @crlf, '|');
+				SET @sql_frag = NULL;
+				WHILE LEN(@psql_stmt) > 0
+				BEGIN
+					IF PATINDEX('%|%', @psql_stmt) > 0
+					BEGIN
+						SET @sql_frag = SUBSTRING(@psql_stmt,
+													0,
+													PATINDEX('%|%', @psql_stmt))
+						PRINT @sql_frag
+
+						SET @psql_stmt = SUBSTRING(@psql_stmt,
+												  LEN(@sql_frag + '|') + 1,
+												  LEN(@psql_stmt))
+					END
+					ELSE
+					BEGIN
+						SET @sql_frag = @psql_stmt
+						SET @psql_stmt = NULL
+						PRINT @sql_frag
+					END
+				END; 
 			END;
 			ELSE BEGIN
 				EXECUTE sp_executesql @sql_stmt,  
@@ -115,8 +141,32 @@ BEGIN
 				VALUES (@study_id, 'RUN_STUDY', @sql_stmt, @statement_number, 1, 'R');
 				PRINT 'SQL[' + USER + '; study_id: ' + CAST(@study_id AS VARCHAR) + '; no: ' + 
 					COALESCE(CAST(@statement_number AS VARCHAR), 'NULL') + 
-					'; time taken ' + CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR) + '] OK> ' + 
-					@sql_stmt + ';';
+					'; time taken ' + CAST(CONVERT(VARCHAR(24), @etime, 14) AS VARCHAR) + '] OK> ';
+					
+-- 		EXPERIMENTAL CODE TO SPLIT SQL INTO LINES WITH SEPARATE PRINT FOR TOMCAT 
+				SET @psql_stmt = REPLACE(@sql_stmt, @crlf, '|');
+				SET @sql_frag = NULL;
+				WHILE LEN(@psql_stmt) > 0
+				BEGIN
+					IF PATINDEX('%|%', @psql_stmt) > 0
+					BEGIN
+						SET @sql_frag = SUBSTRING(@psql_stmt,
+													0,
+													PATINDEX('%|%', @psql_stmt))
+						PRINT @sql_frag
+
+						SET @psql_stmt = SUBSTRING(@psql_stmt,
+												  LEN(@sql_frag + '|') + 1,
+												  LEN(@psql_stmt))
+					END
+					ELSE
+					BEGIN
+						SET @sql_frag = @psql_stmt
+						SET @psql_stmt = NULL
+						PRINT @sql_frag
+					END
+				END; 					
+				
 			END;
 		END TRY
 		BEGIN CATCH		
@@ -144,10 +194,34 @@ BEGIN
 			INSERT INTO rif40.rif40_study_sql(
 				study_id, statement_type, sql_text, statement_number, line_number, status)
 			VALUES (@study_id, 'RUN_STUDY', @sql_stmt, @statement_number, 1, 'R');
+			
 			PRINT 'SQL[' + USER + '; study_id: ' + CAST(@study_id AS VARCHAR) + '; no: ' + 
-				COALESCE(CAST(@statement_number AS VARCHAR), 'NULL') + '] OK> ' + 
-				@sql_stmt + ';';
-					
+				COALESCE(CAST(@statement_number AS VARCHAR), 'NULL') + '] OK> ';
+				
+-- 		EXPERIMENTAL CODE TO SPLIT SQL INTO LINES WITH SEPARATE PRINT FOR TOMCAT 
+			SET @psql_stmt = REPLACE(@sql_stmt, @crlf, '|');
+			SET @sql_frag = NULL;
+			WHILE LEN(@psql_stmt) > 0
+			BEGIN
+				IF PATINDEX('%|%', @psql_stmt) > 0
+				BEGIN
+					SET @sql_frag = SUBSTRING(@psql_stmt,
+												0,
+												PATINDEX('%|%', @psql_stmt))
+					PRINT @sql_frag
+
+					SET @psql_stmt = SUBSTRING(@psql_stmt,
+											  LEN(@sql_frag + '|') + 1,
+											  LEN(@psql_stmt))
+				END
+				ELSE
+				BEGIN
+					SET @sql_frag = @psql_stmt
+					SET @psql_stmt = NULL
+					PRINT @sql_frag
+				END
+			END; 
+						
 			THROW 55999, @err_msg, 1;
 		END CATCH;
 --

@@ -42,7 +42,10 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="description" content="RIF, Software for Environmental Spatial Epidemiology">
         <meta name="keywords" content="Disease mapping, Spatial epidemiology, Environental exposure, Health data, GIS, Biostatistics">
-
+		<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="0" />
+		
         <!-- Angular 1.5.8     -->
         <script src="libs/standalone/angular.min.js"></script>
         <script src="libs/standalone/angular-animate.min.js"></script>
@@ -95,6 +98,7 @@
         <link rel="stylesheet" href="libs/l.geosearch.css" />
         <script src="libs/leaflet-image.js"></script>        
         <script src="libs/TopoJSONGridLayer.js"></script>
+        <script src="libs/pouchdb.js"></script>
         <script src="libs/topoJSON.js"></script>
 
         <!-- save html2canvas -->
@@ -118,6 +122,9 @@
         <!-- ngPatternRestrict -->
         <script src="libs/ng-pattern-restrict.min.js"></script>
 
+        <!-- JSON5 parser -->
+		<script src="libs/json5.js"></script>
+		
         <!-- RIF 4.0 ANGULAR JS-->
         <script src = "modules/rifm-app.js"></script> 
         <script src="dashboards/login/controllers/rifc-login-login.js"></script>
@@ -154,6 +161,7 @@
         <script src="dashboards/export/controllers/rifc-expt-export.js"></script>
         <script src="dashboards/export/services/rifs-expt-exportstate.js"></script>
         <script src="dashboards/export/directives/rifd-expt-numeric.js"></script>
+        <script src="dashboards/export/controllers/rifc-expt-save.js"></script>
         <script src="utils/controllers/rifc-util-basemap.js"></script>
         <script src="utils/controllers/rifc-util-choro.js"></script>
         <script src="utils/controllers/rifc-util-alert.js"></script>
@@ -177,6 +185,7 @@
         <script src="backend/services/rifs-back-requests.js"></script>
         <script src="backend/services/rifs-back-interceptor.js"></script>
         <script src="backend/services/rifs-back-database.js"></script>
+        <script src="backend/services/rifs-back-parameters.js"></script>
         <script src="backend/services/rifs-back-urls.js"></script>
 
         <!-- RIF 4.0 CSS -->   

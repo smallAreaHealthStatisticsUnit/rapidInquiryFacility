@@ -35,8 +35,12 @@
  * CONTROLLER to handle tab transitions, logout and alert on new study completion
  */
 angular.module("RIF")
-        .controller('TabCtrl', ['$scope', 'user', '$injector', '$uibModal', '$interval', '$rootScope',
-            function ($scope, user, $injector, $uibModal, $interval, $rootScope) {
+        .controller('TabCtrl', ['$scope', 'user', '$injector', '$uibModal', '$interval', '$rootScope', 
+			'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ExportStateService',
+            'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService',
+            function ($scope, user, $injector, $uibModal, $interval, $rootScope, 
+                    SubmissionStateService, StudyAreaStateService, CompAreaStateService, ExportStateService,
+                    ParameterStateService, StatsStateService, ViewerStateService, MappingStateService) {
 
                 //The user to display
                 $scope.username = user.currentUser;
@@ -105,7 +109,7 @@ angular.module("RIF")
 											}
 										}
 										if (name == "") { // New study
-//											console.log("getCurrentStatusAllStudies() Added new running study: " + studies[i].study_id +
+//											$scope.consoleLog("getCurrentStatusAllStudies() Added new running study: " + studies[i].study_id +
 //												"; state: " + studies[i].study_state + 
 //												"; running: (" + check.running.length + "): " + check.running.sort());
 											$scope.showSuccess("Study " + studies[i].study_id + " - " + studies[i].study_name + " is now running");
@@ -116,7 +120,7 @@ angular.module("RIF")
 							
                             if (angular.isUndefined($scope.studyIds)) {
                                 $scope.studyIds = angular.copy(check);
-//								console.log("getCurrentStatusAllStudies() create check OK: (" + 
+//								$scope.consoleLog("getCurrentStatusAllStudies() create check OK: (" + 
 //									check.ok.length + "): " + check.ok.sort() +
 //									"; running: " + check.running.length + "): " + check.running.sort() +
 //									"; failed: " + check.failed.length + "): " + check.failed.sort());
@@ -139,7 +143,7 @@ angular.module("RIF")
 										$scope.showErrorNoHide("Unable to deduce study name/id/study_state for study " + j + "/" + s.length + " : " + s[j])
 									}
 									else if (study_state == 'S') { // OK
-//										console.log("getCurrentStatusAllStudies() completed study: " + studies[i].study_id);
+//										$scope.consoleLog("getCurrentStatusAllStudies() completed study: " + studies[i].study_id);
 										$scope.showSuccessNoHide("Study " + id + " - " + name + " has been fully processed");
 
 										//update study lists in other tabs
@@ -149,7 +153,7 @@ angular.module("RIF")
 										$scope.showErrorNoHide("Study " + id + " - " + name + " is in an unexpected study state: " + study_state)
 									}
 								}
-//								console.log("getCurrentStatusAllStudies() changed check of OK: (" + 
+//								$scope.consoleLog("getCurrentStatusAllStudies() changed check of OK: (" + 
 //									check.ok.length + "): " + check.ok.sort() +
 //									"; running: " + check.running.length + "): " + check.running.sort() +
 //									"; failed: " + check.failed.length + "): " + check.failed.sort());
@@ -184,14 +188,14 @@ angular.module("RIF")
 										$scope.showErrorNoHide("Study " + id + " - " + name + " is in an unexpected study state: " + study_state)
 									}
 								}
-//								console.log("getCurrentStatusAllStudies() changed check of FAILED: (" + 
+//								$scope.consoleLog("getCurrentStatusAllStudies() changed check of FAILED: (" + 
 //									check.ok.length + "): " + check.ok.sort() +
 //									"; running: " + check.running.length + "): " + check.running.sort() +
 //									"; failed: " + check.failed.length + "): " + check.failed.sort());
 								$scope.studyIds = angular.copy(check);
                             }
 							else if (check.running.length != $scope.studyIds.running.length) { // Something has started
-//								console.log("getCurrentStatusAllStudies() update check OK: (" + 
+//								$scope.consoleLog("getCurrentStatusAllStudies() update check OK: (" + 
 //									check.ok.length + "): " + check.ok.sort() +
 //									"; running: " + check.running.length + "): " + check.running.sort()+
 //									"; failed: " + check.failed.length + "): " + check.failed.sort());
@@ -244,9 +248,19 @@ angular.module("RIF")
                     $scope.openLogout();
                 };
                 $scope.doLogout = function () {
-                    user.logout(user.currentUser).then(handleLogout, handleLogout);
+                    user.logout(user.currentUser).then(handleLogout, handleLogout /* Error method! */);
                 };
-                function handleLogout(res) {
+                function handleLogout(res) {  
+				//reset all services
+					SubmissionStateService.resetState();
+					StudyAreaStateService.resetState();
+					CompAreaStateService.resetState();
+					ParameterStateService.resetState();
+					StatsStateService.resetState();
+					ViewerStateService.resetState();
+					MappingStateService.resetState();
+					ExportStateService.resetState();
+							
                     $injector.get('$state').transitionTo('state0');
                 }
             }])

@@ -639,6 +639,11 @@ select {
     margin-right: 10px;
 }
 
+#exportSave {
+    float: right;
+    margin-right: 10px;
+}
+
 input[type="text"].dropdownInput {
     padding: 0px;
     width: 100%;

@@ -125,7 +125,6 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-
 	
 	@GET
 	@Produces({"application/json"})	
@@ -165,6 +164,17 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 			userID);
 	}
 	
+	@GET
+	@Produces({"application/json"})
+	@Path("/getFrontEndParameters")
+	public Response getFrontEndParameters(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID) {
+		
+			return super.getFrontEndParameters(
+					servletRequest, 
+					userID);	
+	}
 	
 	@GET
 	@Produces({"application/json"})	
@@ -1234,6 +1244,31 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 			zoomLevel);
 	}	
 
+	@GET
+	@Produces({"application/json"})	
+	@Path("/rifFrontEndLogger")
+	public Response rifFrontEndLogger(
+		@Context HttpServletRequest servletRequest,
+		@QueryParam("userID") String userID,
+		@QueryParam("browserType") String browserType,
+		@QueryParam("messageType") String messageType,
+		@QueryParam("message") String message,
+		@QueryParam("errorMessage") String errorMessage,
+		@QueryParam("errorStack") String errorStack,
+		@QueryParam("actualTime") String actualTime,
+		@QueryParam("relativeTime") String relativeTime) {
+
+		return super.rifFrontEndLogger(
+			servletRequest, 
+			userID,
+			browserType,
+			messageType,
+			message, 
+			errorMessage,
+			errorStack,
+			actualTime,
+			relativeTime);
+	}
 	
 	// ==========================================
 	// Section Errors and Validation

@@ -10,7 +10,11 @@ import rifGenericLibrary.util.FieldValidationUtility;
 import java.io.*;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Properties;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  * Main implementation of the RIF middle ware.  
@@ -138,6 +142,8 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 	// Section Constants
 	// ==========================================
 
+		private static String lineSeparator = System.getProperty("line.separator");	
+		
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -1082,7 +1088,112 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 
 		return result;
 	}	
-	
+
+	public String getFrontEndParameters(
+		final User user) {
+					
+		String result = "{" + lineSeparator +
+					"	parameters: {" + lineSeparator +
+					"		usePouchDBCache: 	false,	// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;" + lineSeparator +
+					"		debugEnabled:		false,	// Disable front end debugging" + lineSeparator +
+					"		mappingDefaults: 	{" + lineSeparator +					
+					"			'diseasemap1': {}," + lineSeparator +
+					"			'diseasemap2': {}," + lineSeparator +
+					"			'viewermap': {}" + lineSeparator +
+					"		}," + lineSeparator +
+					"		defaultLogin: {" + lineSeparator +
+					"			username: 	\"peter\"," + lineSeparator +
+					"			password:	\"peter\"" + lineSeparator +
+					"		}" + lineSeparator +
+					"	}" + lineSeparator +
+					"}";
+		RIFLogger rifLogger = RIFLogger.getLogger();
+		
+		Map<String, String> environmentalVariables = System.getenv();
+		InputStream input = null;
+		String fileName1;
+		String fileName2;
+		String catalinaHome = environmentalVariables.get("CATALINA_HOME");
+		String str;
+		
+		if (catalinaHome != null) {
+			fileName1=catalinaHome + "\\conf\\frontEndParameters.json5";
+			fileName2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\frontEndParameters.json5";
+		}
+		else {
+			rifLogger.warning(this.getClass(), 
+				"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters: CATALINA_HOME not set in environment"); 
+			fileName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\frontEndParameters.json5";
+			fileName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\frontEndParameters.json5";
+		}
+			
+		try {
+			input = new FileInputStream(fileName1);
+				rifLogger.info(this.getClass(), 
+					"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters: using: " + fileName1);
+				// Read and string escape JSON
+				str = "{\"file\": \"" + StringEscapeUtils.escapeJavaScript(fileName1) + "\", \"frontEndParameters\": \"" + 
+					StringEscapeUtils.escapeJavaScript(new BufferedReader(new InputStreamReader(input)).lines().parallel().collect(Collectors.joining(lineSeparator))) +
+					"\"}";
+		} 
+		catch (IOException ioException) {
+			try {
+				input = new FileInputStream(fileName2);
+					rifLogger.info(this.getClass(), 
+						"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters: using: " + fileName2);
+				// Read and string escape JSON
+				str = "{\"file\": \"" + StringEscapeUtils.escapeJavaScript(fileName1) + "\", \"frontEndParameters\": \"" + 
+					StringEscapeUtils.escapeJavaScript(new BufferedReader(new InputStreamReader(input)).lines().parallel().collect(Collectors.joining(lineSeparator))) +
+					"\"}";
+			} 
+			catch (IOException ioException2) {				
+				rifLogger.warning(this.getClass(), 
+					"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters error for files: " + 
+						fileName1 + " and " + fileName2, 
+					ioException2);
+				return result;
+			}
+		} 
+		finally {
+			if (input != null) {
+				try {
+					input.close();
+				} 
+				catch (IOException ioException) {
+					rifLogger.warning(this.getClass(), 
+						"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters error for files: " + 
+							fileName1 + " and " + fileName2, 
+						ioException);
+					return result;
+				}
+			}
+			rifLogger.info(getClass(), "get FrontEnd Parameters: " + result);		
+		}	
+						
+		int len=str.length();
+		int unEscapes=0;
+		StringBuilder sb = new StringBuilder(len);
+		for (int i = 0; i < len; i++) {
+			char c0 = str.charAt(i);
+			char c1;
+			if ((i+1) >= len) {
+				c1=0;
+			}
+			else {
+				c1=str.charAt(i+1);
+			}
+			if (c0 == '\\' && c1 == '\'') { // "'" Does need to be escaped as in double quotes
+				unEscapes++;
+			}
+			else {
+				 sb.append(c0);
+			}
+		} 
+		result = sb.toString();		
+		
+		return result;
+	}
+		
 	/**
 	 * Get textual extract status of a study.                          
 	 * <p>   

@@ -112,12 +112,12 @@ CREATE TABLE rif_data.pop_sahsuland_pop (
 
 
 
-BULK INSERT rif_data.pop_sahsuland_pop FROM '$(pwd)/pop_sahsuland_pop.csv'
+BULK INSERT rif_data.pop_sahsuland_pop FROM '$(pwd)/pop_sahsuland_pop_extended.csv'
 WITH 
 (
+   FIRSTROW=2,
    FORMATFILE = '$(pwd)/pop_sahsuland_pop.fmt',
-   TABLOCK,
-   FIRSTROW=2
+   TABLOCK
 );
 GO
 ALTER TABLE rif_data.POP_SAHSULAND_POP ADD CONSTRAINT pop_sahsuland_pop_pk PRIMARY KEY CLUSTERED(YEAR,AGE_SEX_GROUP,SAHSU_GRD_LEVEL4);
@@ -270,7 +270,7 @@ CREATE TABLE rif_data.num_sahsuland_cancer (
    total INTEGER NOT NULL);
 GO
 
-BULK INSERT rif_data.num_sahsuland_cancer FROM '$(pwd)/num_sahsuland_cancer.csv'
+BULK INSERT rif_data.num_sahsuland_cancer FROM '$(pwd)/num_sahsuland_cancer_extended.csv'
 WITH 
 (
    FORMATFILE = '$(pwd)/num_sahsuland_cancer.fmt',
@@ -464,7 +464,7 @@ CREATE TABLE rif_data.covar_sahsuland_covariates3 (
    ethnicity INTEGER);
 GO
 
-BULK INSERT rif_data.covar_sahsuland_covariates3 FROM '$(pwd)/covar_sahsuland_covariates3.csv'
+BULK INSERT rif_data.covar_sahsuland_covariates3 FROM '$(pwd)/covar_sahsuland_covariates3_extended.csv'
 WITH 
 (
    FORMATFILE = '$(pwd)/covar_sahsuland_covariates3.fmt',
@@ -576,7 +576,7 @@ CREATE TABLE rif_data.covar_sahsuland_covariates4 (
    near_dist DOUBLE PRECISION);
 GO
 
-BULK INSERT rif_data.covar_sahsuland_covariates4 FROM '$(pwd)/covar_sahsuland_covariates4.csv'
+BULK INSERT rif_data.covar_sahsuland_covariates4 FROM '$(pwd)/covar_sahsuland_covariates4_extended.csv'
 WITH 
 (
    FORMATFILE = '$(pwd)/covar_sahsuland_covariates4.fmt',

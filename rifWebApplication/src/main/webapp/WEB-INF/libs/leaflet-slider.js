@@ -28,7 +28,7 @@ L.Control.Slider = L.Control.extend({
             this.update = f;
         } else {
             this.update = function (value) {
-                console.log(value);
+                $scope.consoleLog(value);
             };
         }
         if (typeof this.options.getValue != "function") {
@@ -134,12 +134,12 @@ L.Control.Slider = L.Control.extend({
         L.DomUtil.removeClass(this._container, 'leaflet-control-slider-expanded');
     },
     _increment: function () {
-        console.log(this.slider.value-this.slider.step + " " + this.slider.value+this.slider.step);
+        $scope.consoleLog(this.slider.value-this.slider.step + " " + this.slider.value+this.slider.step);
         this.slider.value = this.slider.value*1+this.slider.step*1;
         this._updateValue();
     },
     _decrement: function () {
-        console.log(this.slider.value-this.slider.step + " " + this.slider.value+this.slider.step);
+        $scope.consoleLog(this.slider.value-this.slider.step + " " + this.slider.value+this.slider.step);
         this.slider.value = this.slider.value*1-this.slider.step*1;
         this._updateValue();
     }

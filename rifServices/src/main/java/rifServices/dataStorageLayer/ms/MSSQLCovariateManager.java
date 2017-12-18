@@ -399,7 +399,7 @@ final class MSSQLCovariateManager
 			PGSQLRecordExistsQueryFormatter queryFormatter
 				= new PGSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);		
-			queryFormatter.setFromTable("rif40_covariates");
+			queryFormatter.setFromTable("rif40.rif40_covariates");
 			queryFormatter.setLookupKeyFieldName("covariate_name");
 			queryFormatter.addWhereParameter("geography");
 			queryFormatter.addWhereParameter("geolevel_name");

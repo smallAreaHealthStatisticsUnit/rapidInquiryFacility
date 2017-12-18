@@ -1,6 +1,7 @@
 
 package rifGenericLibrary.taxonomyServices;
 
+import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
@@ -14,6 +15,7 @@ import javax.xml.parsers.SAXParserFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.io.*;
+import java.util.Map;
 
 
 /**
@@ -95,6 +97,7 @@ public final class TaxonomyServiceConfigurationXMLReader {
 	
 	private ArrayList<TaxonomyServiceAPI> taxonomyServices;
 	
+	private RIFLogger rifLogger = RIFLogger.getLogger();
 	
 // ==========================================
 // Section Construction
@@ -122,13 +125,52 @@ public final class TaxonomyServiceConfigurationXMLReader {
 		final String defaultResourceDirectoryPath) 
 		throws RIFServiceException {
 
-		
+		File taxonomyServiceConfigurationFile = null;
 		StringBuilder filePath = new StringBuilder();
-		filePath.append(defaultResourceDirectoryPath);
+		StringBuilder filePath2 = new StringBuilder();
+		String resourceDirectoryPath = defaultResourceDirectoryPath;
+		
+		Map<String, String> environmentalVariables = System.getenv();
+		
+		String catalinaHome = environmentalVariables.get("CATALINA_HOME");
+		if (catalinaHome == null) {
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					"taxonomyServices.error.initialisationFailure",  
+					"CATALINA_HOME not set in the environment");
+			rifLogger.error(this.getClass(), "TaxonomyServiceConfigurationXMLReader error", rifServiceException);
+			throw rifServiceException;
+		}
+		filePath.append(catalinaHome);
+		filePath.append(File.separator);
+		filePath.append("conf");
 		filePath.append(File.separator);
 		filePath.append("TaxonomyServicesConfiguration.xml");
-		File taxonomyServiceConfigurationFile
+		taxonomyServiceConfigurationFile
 			= new File(filePath.toString());
+		if (taxonomyServiceConfigurationFile.exists()) {
+			resourceDirectoryPath = catalinaHome + File.separator + "conf";
+			rifLogger.info(this.getClass(), "TaxonomyService configuration file: " + filePath.toString());
+		}
+		else {
+			filePath2.append(defaultResourceDirectoryPath);
+			filePath2.append(File.separator);
+			filePath2.append("TaxonomyServicesConfiguration.xml");
+			taxonomyServiceConfigurationFile
+				= new File(filePath2.toString());
+			if (taxonomyServiceConfigurationFile.exists()) {
+				rifLogger.info(this.getClass(), "TaxonomyService configuration file: " + filePath2.toString());
+			}
+			else {
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						"taxonomyServices.error.initialisationFailure", 
+						"Cannot find TaxonomyService configuration file: TaxonomyServicesConfiguration.xml");
+				rifLogger.error(this.getClass(), "TaxonomyServiceConfigurationXMLReader error", rifServiceException);
+				throw rifServiceException;
+			}
+		}
+		
 		try {			
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
@@ -153,7 +195,7 @@ public final class TaxonomyServiceConfigurationXMLReader {
 						= (TaxonomyServiceAPI) taxonomyServiceClass.getConstructor().newInstance();
 
 					taxonomyService.initialiseService(
-						defaultResourceDirectoryPath, 
+						resourceDirectoryPath, 
 						currentServiceConfiguration);
 					
 					taxonomyServices.add(taxonomyService);

@@ -220,7 +220,7 @@ angular.module("RIF")
                             }
                         }
                     }, function () {
-                        console.log("year error");
+                        $scope.consoleLog("year error");
                     }).then(function () {
                         $scope.child.yearPop = $scope.yearsPop[0];
                         $scope.updatePyramidForYear();
@@ -233,7 +233,7 @@ angular.module("RIF")
                                 .then(function (res) {
                                     $scope.populationData["viewermap"] = res.data.smoothed_results;
                                 }, function () {
-                                    console.log("pyramid data error");
+                                    $scope.consoleLog("pyramid data error");
                                 });
                     }
                 };

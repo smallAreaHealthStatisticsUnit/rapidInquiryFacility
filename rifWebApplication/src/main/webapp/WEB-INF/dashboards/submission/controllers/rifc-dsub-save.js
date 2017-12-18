@@ -45,7 +45,7 @@ angular.module("RIF")
                 //get the study object
                 $scope.getBlobJob = function () {
                     var data = ModelService.get_rif_job_submission_JSON();
-                    var json = JSON.stringify(data);
+                    var json = JSON.stringify(data, null, 2); // JSON5
                     var blob = new Blob([json], {type: 'text/json'});
                     var filename = "RIFstudy.json";
                     

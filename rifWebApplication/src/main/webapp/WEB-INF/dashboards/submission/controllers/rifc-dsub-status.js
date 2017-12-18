@@ -139,7 +139,7 @@ angular.module("RIF")
 
                 function handleStudyError(e) {
                     $scope.showError("Could not retrieve status of studies");
-                    console.log("[rifc-dsub-status.js] Could not retrieve status of studies: " + 
+                    $scope.consoleLog("[rifc-dsub-status.js] Could not retrieve status of studies: " + 
 						JSON.stringify(e));
                 }
 

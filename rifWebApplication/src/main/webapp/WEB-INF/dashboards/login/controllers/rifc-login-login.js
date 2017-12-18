@@ -38,20 +38,101 @@
 angular.module("RIF")
         .controller('LoginCtrl', ['$scope', 'user', '$injector', 'DatabaseService',
             'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ExportStateService',
-            'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService',
+            'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService', 'ParametersService',
             function ($scope, user, $injector, DatabaseService,
                     SubmissionStateService, StudyAreaStateService, CompAreaStateService, ExportStateService,
-                    ParameterStateService, StatsStateService, ViewerStateService, MappingStateService) {
-                
-                //will be the default placeholder
-            //    $scope.username = "dwmorley"; 
-            //    $scope.password = "dwmorley";
-                
-            //    $scope.username = "";
-            //    $scope.password = "";
-                
-                $scope.username = "peter";
-                $scope.password = "peter";
+                    ParameterStateService, StatsStateService, ViewerStateService, MappingStateService, ParametersService) {
+						
+				setFrontEndParameters = function(username) {
+					var getFrontEndParameters=undefined;
+					user.getFrontEndParameters(username|| "no user").then(function (res) {   
+						if (res.data) {
+							 try {
+/*
+									 {
+  "parameters": {
+    "usePouchDBCache": false,
+    "debugEnabled": false,
+    "mappingDefaults": {
+      "diseasemap1": {},
+      "diseasemap2": {},
+      "viewermap": {}
+    },
+    "defaultLogin": {
+      "username": "peter",
+      "password": "peter"
+    }
+  }
+}
+ */	
+								if (res.data.file == undefined) {
+									$scope.showWarning('Parameter file name not returned by getFrontEndParameters');
+									$scope.consoleLog('getFrontEndParameters: ' + JSON.stringify(res.data, null, 0));
+								}
+								else if (res.data.frontEndParameters) {
+									try {
+										getFrontEndParameters=JSON5.parse(res.data.frontEndParameters);	
+									}
+									catch(e) {	 
+										 $scope.showWarning('Could not parse front end parameters file: ' + res.data.file + '; parse error: ' + e.message);
+										 $scope.consoleLog('getFrontEndParameters: ' + JSON.stringify(res.data, null, 0));
+									}
+									if (getFrontEndParameters && getFrontEndParameters.parameters && 
+										getFrontEndParameters.parameters.defaultLogin) {
+										if (username) {		
+//											$scope.consoleLog('getFrontEndParameters file: ' + res.data.file +
+//												'; parsed: ' + JSON.stringify(getFrontEndParameters.parameters, null, 2));
+											ParametersService.setParameters(getFrontEndParameters.parameters);
+										}
+										else {		
+//											$scope.consoleLog('getFrontEndParameters file: ' + res.data.file +
+//												'; [restricted] parsed: ' + JSON.stringify(getFrontEndParameters.parameters, null, 2));
+											ParametersService.setLoginParameters(getFrontEndParameters.parameters);
+											
+										}
+//										$scope.consoleDebug('INIT setFrontEndParameters: ' + JSON.stringify(ParametersService.getParameters(), null, 0));
+										$scope.parameters=ParametersService.getParameters()||{defaultLogin: {
+													username: 	"",
+													password:	""
+												}
+											};
+										
+										if ($scope.parameters.defaultLogin) {
+											$scope.username = $scope.username || $scope.parameters.defaultLogin.username;
+											$scope.password = $scope.username || $scope.parameters.defaultLogin.password;
+										}
+									}
+									else if (getFrontEndParameters && getFrontEndParameters.parameters) {			
+										$scope.showWarning('Missing front end parameters in file: ' + res.data.file);
+										$scope.consoleLog('getFrontEndParameters; parsed: ' + JSON.stringify(getFrontEndParameters.parameters, null, 2));
+									}
+									else if (getFrontEndParameters && getFrontEndParameters.parameters == undefined) {			
+										$scope.showWarning('Null parameters in front end parameters file: ' + res.data.file);
+										$scope.consoleLog('getFrontEndParameters; parsed: ' + JSON.stringify(getFrontEndParameters, null, 2));
+									}
+									else {			
+										$scope.showWarning('No front end parameters in file: ' + res.data.file);
+										$scope.consoleLog('getFrontEndParameters; parsed: ' + JSON.stringify(res.data.frontEndParameters, null, 2));
+									}	
+								}
+								else {
+									$scope.showWarning('Parameter file: ' + res.data.file + ' has no frontEndParameters');
+									$scope.consoleLog('getFrontEndParameters: ' + JSON.stringify(res.data, null, 0));									
+								}
+							 }
+							 catch(e) {	 
+								 $scope.showWarning('Could not load and parse front end parameters file: ' +  e.message);
+								 $scope.consoleLog('getFrontEndParameters: ' + JSON.stringify(res.data, null, 0));
+							 }
+						} else {
+							$scope.showWarning('Could not get front end parameters');
+							$scope.consoleLog('getFrontEndParameters: ' + JSON.stringify(res, null, 0));
+						}	
+
+					}, handleParameterError); 				
+				}
+					
+				setFrontEndParameters(undefined);
 
                 //The angular material button has a progress spinner
                 $scope.showSpinner = false;
@@ -76,7 +157,9 @@ angular.module("RIF")
                            
                             //In development, this bypasses password)                           
                             //user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
-                        }, handleServerError);                  
+                        }, handleServerError);       
+
+						setFrontEndParameters($scope.username);
                     }
                 };
 
@@ -88,12 +171,17 @@ angular.module("RIF")
                         callLogin();
                     }
                 }
-                function callLogin() {                    
-                    //Encode password
-                    var encodedPassword = encodeURIComponent($scope.password);
-
-                    //log the user in
-                    user.login($scope.username, encodedPassword).then(handleLogin, handleLogin);
+                function callLogin() {   
+					if ($scope.username && $scope.username != "" && $scope.password && $scope.password != "") {                 
+						//Encode password
+						var encodedPassword = encodeURIComponent($scope.password);
+						//log the user in
+						user.login($scope.username, encodedPassword).then(handleLogin, handleLogin);		
+					}
+					else {
+                        $scope.showWarning('You must enter a username and password');
+                        $scope.showSpinner = false;
+					}
                 }
                 function handleLogin(res) {
                     try {
@@ -114,7 +202,7 @@ angular.module("RIF")
                             //initialise the taxonomy service
                             user.initialiseService().then(handleInitialise, handleInitialiseError);
                             function handleInitialise(res) {
-                                // console.log("taxonomy initialised"); 
+                                // $scope.consoleLog("taxonomy initialised"); 
                             }
                             function handleInitialiseError(e) {
                                 $scope.showError('Could not initialise the taxonomy service');
@@ -131,5 +219,10 @@ angular.module("RIF")
                     //Tomcat probably not running, could also be CORS error or we are trying to connect to the wrong localhost (check rifs-back-urls)
                     $scope.showSpinner = false;
                     $scope.showError('Could not establish a connection to Tomcat (is it running?)');
+                }
+                function handleParameterError(res) {
+                    //Tomcat probably not running, could also be CORS error or we are trying to connect to the wrong localhost (check rifs-back-urls)
+                    $scope.showSpinner = false;
+                    $scope.showWarning('Unable to get front end parameters from middleware');
                 }
             }]);

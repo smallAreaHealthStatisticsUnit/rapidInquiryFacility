@@ -1,0 +1,245 @@
+/**
+ *
+ *
+ * <hr>
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * <p>
+ * Copyright 2017 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ * </p>
+ *
+ * <pre> 
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+ * </pre>
+ *
+ * <hr>
+ * Peter Hambly
+ * @author phambly
+ * @version
+ */
+
+// THIS FILE MUST BE VALID JSON5; can contain comments and line feeds!
+// http://json5.org/ or https://github.com/json5/json5
+
+/*
+The following is the exact list of additions to JSON’s syntax introduced by JSON5. All of these are optional, and all of these come from ES5.
+
+Objects:
+* Object keys can be unquoted if they’re valid identifiers. Yes, even reserved keywords (like default) are valid unquoted keys in ES5 [§11.1.5, §7.6]. (More info)
+  (TODO: Unicode characters and escape sequences aren’t yet supported in this implementation.)
+* Object keys can also be single-quoted.
+* Objects can have trailing commas.
+
+Arrays:
+* Arrays can have trailing commas.
+
+Strings:
+* Strings can be single-quoted.
+* Strings can be split across multiple lines; just prefix each newline with a backslash. [ES5 §7.8.4]
+
+Numbers:
+* Numbers can be hexadecimal (base 16).
+* Numbers can begin or end with a (leading or trailing) decimal point.
+* Numbers can include Infinity, -Infinity, NaN, and -NaN.
+* Numbers can begin with an explicit plus sign.
+
+Comments:
+* Both inline (single-line) and block (multi-line) comments are allowed.
+*/
+{
+	"rif_job_submission": {
+		"submitted_by": "peter",
+		"job_submission_date": "24/08/2017 11:21:19",
+		"project": {
+			"name": "TEST",
+			"description": "Test Project. Will be disabled when in production."
+		},
+		"calculation_methods": {
+			"calculation_method": {
+				"name": "bym_r_procedure",
+				"code_routine_name": "bym_r_procedure",
+				"description": "Besag, York and Mollie (BYM) model type",
+				"parameters": {
+					"parameter": []
+				}
+			}
+		},
+		"rif_output_options": {
+			"rif_output_option": ["Data", "Maps", "Ratios and Rates"]
+		},
+		"disease_mapping_study": {
+			"name": "MY FRIST REAL STUDY",
+			"description": "",
+			"geography": {
+				"name": "USA_2014",
+				"description": "USA_2014"
+			},
+			"investigations": {
+				"investigation": [{
+						"title": "Lung CANCER",
+						"health_theme": {
+							"name": "cancers",
+							"description": "covering various types of cancers"
+						},
+						"numerator_denominator_pair": {
+							"numerator_table_name": "SEER_CANCER",
+							"numerator_table_description": "SEER Cancer data 1973-2013. 9 States in total",
+							"denominator_table_name": "SEER_POPULATION",
+							"denominator_table_description": "SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States in total"
+						},
+						"age_band": {
+							"lower_age_group": {
+								"id": 0,
+								"name": "0",
+								"lower_limit": "0",
+								"upper_limit": "0"
+							},
+							"upper_age_group": {
+								"id": 0,
+								"name": "85PLUS",
+								"lower_limit": "85",
+								"upper_limit": "255"
+							}
+						},
+						"health_codes": {
+							"health_code": [{
+									"code": "C33",
+									"name_space": "icd10",
+									"description": "Malignant neoplasm of trachea",
+									"is_top_level_term": "no"
+								}, {
+									"code": "C34",
+									"name_space": "icd10",
+									"description": "Malignant neoplasm of bronchus and lung",
+									"is_top_level_term": "no"
+								}
+							]
+						},
+						"year_range": {
+							"lower_bound": 2001,
+							"upper_bound": 2013
+						},
+						"year_intervals": {
+							"year_interval": [{
+									"start_year": "2001",
+									"end_year": "2001"
+								}, {
+									"start_year": "2002",
+									"end_year": "2002"
+								}, {
+									"start_year": "2003",
+									"end_year": "2003"
+								}, {
+									"start_year": "2004",
+									"end_year": "2004"
+								}, {
+									"start_year": "2005",
+									"end_year": "2005"
+								}, {
+									"start_year": "2006",
+									"end_year": "2006"
+								}, {
+									"start_year": "2007",
+									"end_year": "2007"
+								}, {
+									"start_year": "2008",
+									"end_year": "2008"
+								}, {
+									"start_year": "2009",
+									"end_year": "2009"
+								}, {
+									"start_year": "2010",
+									"end_year": "2010"
+								}, {
+									"start_year": "2011",
+									"end_year": "2011"
+								}, {
+									"start_year": "2012",
+									"end_year": "2012"
+								}, {
+									"start_year": "2013",
+									"end_year": "2013"
+								}
+							]
+						},
+						"years_per_interval": 1,
+						"sex": "Both",
+						"covariates": []
+					}
+				]
+			},
+			"disease_mapping_study_area": {
+				"geo_levels": {
+					"geolevel_select": {
+						"name": "CB_2014_US_STATE_500K"
+					},
+					"geolevel_area": {
+						"name": ""
+					},
+					"geolevel_view": {
+						"name": "CB_2014_US_COUNTY_500K"
+					},
+					"geolevel_to_map": {
+						"name": "CB_2014_US_COUNTY_500K"
+					}
+				},
+				"map_areas": {
+					"map_area": [{
+							"id": "01705317",
+							"gid": "01705317",
+							"label": "Georgia",
+							"band": 1
+						}
+					]
+				}
+			},
+			"comparison_area": {
+				"geo_levels": {
+					"geolevel_select": {
+						"name": "CB_2014_US_STATE_500K"
+					},
+					"geolevel_area": {
+						"name": ""
+					},
+					"geolevel_view": {
+						"name": "CB_2014_US_STATE_500K"
+					},
+					"geolevel_to_map": {
+						"name": "CB_2014_US_STATE_500K"
+					}
+				},
+				"map_areas": {
+					"map_area": [{
+							"id": "01705317",
+							"gid": "01705317",
+							"label": "Georgia",
+							"band": 1
+						}
+					]
+				}
+			}
+		}
+	}
+}

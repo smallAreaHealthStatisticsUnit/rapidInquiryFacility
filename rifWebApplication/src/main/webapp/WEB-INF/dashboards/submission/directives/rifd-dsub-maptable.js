@@ -618,6 +618,42 @@ angular.module("RIF")
                                 $scope.content = $fileContent.toString();
                             };
                             $scope.uploadFile = function () {
+								/* Upload CSV file. Required fields: ID,Band. Name is 
+								   included to make the file more understandable. Ideally
+								   this function should be made capitalisation insensitive
+								   and more flexible in the names, i.e. ID/areaId/area_id
+								   and Band/bandId/band_id
+								
+								e.g.
+								ID,NAME,Band
+								01779778,California,1
+								01779780,Connecticut,1
+								01705317,Georgia,1
+								01779785,Iowa,1
+								01779786,Kentucky,1
+								01629543,Louisiana,1
+								01779789,Michigan,1
+								01779795,New Jersey,1
+								00897535,New Mexico,1
+								01455989,Utah,1
+								01779804,Washington,1
+								
+								Structure of parsed JSON:
+								
+								listOfIDs=[
+								  {
+									"ID": "01785533",
+									"NAME": "Alaska",
+									"Band": "1"
+								  },
+								  ...
+								  {
+									"ID": "01779804",
+									"NAME": "Washington",
+									"Band": "1"
+								  }
+								]; 
+								 */
                                 try {
                                     //parse the csv file
                                     var listOfIDs = JSON.parse(JSONService.getCSV2JSON($scope.content));
@@ -629,6 +665,9 @@ angular.module("RIF")
                                         for (var j = 0; j < $scope.gridOptions.data.length; j++) {
                                             if ($scope.gridOptions.data[j].area_id === listOfIDs[i].ID) {
                                                 var thisBand = Number(listOfIDs[i].Band);
+//												$scope.consoleLog("[" + i + "," + j + "] MATCH area_id: " + $scope.gridOptions.data[j].area_id + 
+//													"; ID: " + listOfIDs[i].ID +
+//													"; thisBand: " + thisBand);
                                                 if ($scope.possibleBands.indexOf(thisBand) !== -1) {
                                                     bPushed = true;
                                                     $scope.selectedPolygon.push({id: $scope.gridOptions.data[j].area_id, gid: $scope.gridOptions.data[j].area_id,
@@ -641,11 +680,12 @@ angular.module("RIF")
                                         }
                                     }
                                     if (!bPushed) {
-                                        alertScope.showWarning("No valid districts found in your list");
+                                        alertScope.showWarning("No valid 'ID' fields or 'Band' numbers found in your list");
+//										$scope.consoleLog(JSON.stringify(listOfIDs, null, 2));
                                     } else if (!bInvalid) {
                                         alertScope.showSuccess("List uploaded sucessfully");
                                     } else {
-                                        alertScope.showSuccess("List uploaded sucessfully, but some enteries were not valid");
+                                        alertScope.showSuccess("List uploaded sucessfully, but some 'ID' fields or 'Band' numbers were not valid");
                                     }
                                 } catch (e) {
                                     alertScope.showError("Could not read or process the file: Please check formatting");

@@ -137,7 +137,7 @@ establishTableNames <-function(vstudyID) {
 	  	},
 		warning=function(w) {
 			cat(paste("UNABLE to create scratchSpace: ", scratchSpace, w, "\n"), sep="")
-			exitValue <<- 1
+#			exitValue <<- 1
 		},
 		error=function(e) {
 			cat(paste("ERROR creating scratchSpace: ", scratchSpace, e, "\n"), sep="")

@@ -35,13 +35,248 @@
  * CONTROLLER to handle alert bars and notifications over whole application
  */
 angular.module("RIF")
-        .controller('AlertCtrl', function ($scope, notifications) {
+        .controller('AlertCtrl', ['$scope', 'notifications', 'user', 'ParametersService',
+			function ($scope, notifications, user, ParametersService) {
             $scope.delay = 0; // mS
 			$scope.lastMessage = undefined;
 			$scope.messageList = [];
 			$scope.messageCount = undefined;
 			$scope.messageStart = new Date().getTime();
+
+			$scope.parameters=ParametersService.getParameters()||{debugEnabled: false} ;	
+					
+			var level = {
+				error: 		"ERROR",
+				warning: 	"WARNING",
+				success:	"SUCCESS",	// For compatibility with ngNotificationsBar; mapped to INFO in middleware
+				info:		"INFO",
+				debug: 		"DEBUG"
+			};
+								
+			/*
+			 * Function: 	isIE()
+			 * Parameters: 	None
+			 * Returns: 	Nothing
+			 * Description:	Test for IE nightmare 
+			 */
+			function isIE() {
+				var myNav = navigator.userAgent.toLowerCase();
+				return (myNav.indexOf('msie') != -1) ? parseInt(myNav.split('msie')[1]) : false;
+			}
+
+			/*
+			 * Function: 	get_browser_info()
+			 * Parameters: 	None
+			 * Object: { Returns: 	name, version }
+			 * Description:	Modified from: https://www.gregoryvarghese.com/how-to-get-browser-name-and-version-via-javascript/
+			 */
+			function get_browser_info() {
+				var ua=navigator.userAgent,tem,M=ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || []; 
+				if (/trident/i.test(M[1])){
+					tem=/\brv[ :]+(\d+)/g.exec(ua) || []; 
+					return {
+						name: 'IE ',
+						version: (tem[1]||'')
+					};
+				}   
+				if (M[1]==='Chrome'){
+					tem=ua.match(/\bOPR\/(\d+)/)
+					if(tem!=null) {
+						return {
+							name:'Opera', 
+							version:tem[1]
+						};
+					}
+				}   
+				M=M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
+				if ((tem=ua.match(/version\/(\d+)/i))!=null) {
+					M.splice(1,1,tem[1]);
+				}
+				return {
+				  name: (M[0] || "UNK"),
+				  version: (M[1] || "UNK")
+				};
+			}
+ 
+			/*
+			 * Function: 	callRifFrontEndLogger()
+			 * Parameters: 	username,
+			 *				messageType,
+			 *				message, 
+			 *				errorMessage,
+			 *				errorStack,
+			 *				relativeTime
+			 * Returns: 	Nothing
+			 * Description:	Call rifFrontEndLogger servicw log log to middleware
+			 */
+			function callRifFrontEndLogger(
+				messageType,
+				message, 
+				errorMessage,
+				errorStack,
+				relativeTime) {
+					
+				var browser=get_browser_info();
+				var end = new Date();
+				var actualTime = end.toLocaleDateString() + " " + end.toLocaleTimeString();
+
+				user.rifFrontEndLogger(user.currentUser, 
+					messageType,
+					browser.name + "; v" + browser.version,
+					message, 
+					errorMessage,
+					errorStack,
+					actualTime,
+//					actualTime.toDateString() + "; " + actualTime.toTimeString(),
+					relativeTime).then(function (res) {
+						if (res.data[0].result != "OK") {
+							if (window.console && console && console.log && typeof console.log == "function") { // IE safe
+								if (isIE()) {
+									if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+										console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + JSON.stringify(res.data) + 
+											"\n" + message); // IE safe
+									}
+								}
+								else {
+									console.log("+" + relativeTime + ": [rifFrontEndLogger had ERROR] " + JSON.stringify(res.data) + 
+											"\n" + message); // IE safe
+								}
+							}  	
+						}
+					});
+			}
 			
+			/*
+			 * Function: 	consoleDebug()
+			 * Parameters:  Message
+			 * Returns: 	Nothing
+			 * Description:	IE safe console log for debug messages. Requires debugEnabled to be enabled
+			 */
+			$scope.consoleDebug = function(msg) {
+				var end=new Date().getTime();
+				var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
+				if ($scope.parameters.debugEnabled && window.console && console && console.log && typeof console.log == "function") { // IE safe
+					if (isIE()) {
+						if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+							console.log("+" + elapsed + ": [DEBUG] " + msg); // IE safe
+						}
+					}
+					else {
+						console.log("+" + elapsed + ": [DEBUG] " + msg); // IE safe
+					}
+				}  			
+				callRifFrontEndLogger(
+					level.debug,
+					msg, 
+					undefined /* errorMessage */,
+					undefined /* err.stack */,
+					elapsed);
+			}
+			
+			/*
+			 * Function: 	consoleLog()
+			 * Parameters:  Message
+			 * Returns: 	Nothing
+			 * Description:	IE safe console log 
+			 */
+			$scope.consoleLog = function(msg) {
+				var end=new Date().getTime();
+				var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
+				if (window.console && console && console.log && typeof console.log == "function") { // IE safe
+					if (isIE()) {
+						if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+							console.log("+" + elapsed + ": " + msg); // IE safe
+						}
+					}
+					else {
+						console.log("+" + elapsed + ": " + msg); // IE safe
+					}
+				}  
+				
+				callRifFrontEndLogger(
+					level.info,
+					msg, 
+					undefined /* errorMessage */,
+					undefined /* err.stack */,
+					elapsed);
+			}
+			
+			/*
+			 * Function: 	consoleError()
+			 * Parameters:  Message, rif Error object [optional]
+			 * Returns: 	Nothing
+			 * Description:	IE safe console log for errors
+			 *				Log message to console with relative timestamp; save message in array
+			 */
+			$scope.consoleError = function(msg, rifError) {
+				var err; // Get stack
+				if (rifError) {
+					err=rifError;
+				}
+				else {
+					err=new Error("Dummy");
+				}
+				
+				if (angular.isUndefined($scope.lastMessage)) {
+                    $scope.messageCount = 0;
+				}
+				if (angular.isUndefined($scope.lastMessageTime)) {
+                    $scope.lastMessageTime = new Date().getTime();
+				}				
+				angular.copy(($scope.messageCount++));
+				var end=new Date().getTime();
+				var elapsed=(Math.round((end - $scope.messageStart)/100))/10; 
+						// time since application init in S
+				var msgInterval=(Math.round((end - $scope.lastMessageTime)/100))/10; 
+						// time since last message in S	
+				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg || msgInterval > 5 /* Secs */) {
+					if (window.console && console && console.log && typeof console.log == "function") { // IE safe
+						if (isIE()) {
+							if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+								console.log("+" + elapsed + ": [ERROR] " + msg); // IE safe
+							}
+						}
+						else {
+							console.log("+" + elapsed + ": [ERROR] " + msg); // IE safe
+						}
+					}  					
+				}
+				else { // Thses are caused by bugs in notifications, or by the RIF generating the messages to often
+					if (window.console && console && console.log && typeof console.log == "function") { // IE safe
+						if (isIE()) {
+							if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+								console.log("+" + elapsed + ": [ERROR]" + msg +
+									"\nStack: " + err.stack); // IE safe
+							}
+						}
+						else {
+							console.log("+" + elapsed + ": [ERROR] " + msg + 
+								"\nStack: " + err.stack); // IE safe
+						}
+					}  
+				}
+                $scope.lastMessage = angular.copy(msg);
+				$scope.lastMessageTime = angular.copy(end);
+				var msgList = $scope.messageList;
+				var msgItem = {
+					sequence:	$scope.messageCount,
+					message: 	msg,
+					time:		end,
+					stack:		err.stack,
+					relative:	elapsed,
+					level:		level.error
+				}
+				msgList.push(msg); 
+				$scope.messageList = angular.copy(msgList);	
+				
+				callRifFrontEndLogger(
+					level.error,
+					msg, 
+					err.message,
+					err.stack,
+					elapsed);				
+			}
+
 			/*
 			 * Function:	rifMessage()
 			 * Parameters:	Level [ERROR/WARNING/SUCCESS], message, auto hide (after about 5s): true/false, rif Error object [optional] 
@@ -61,15 +296,21 @@ angular.module("RIF")
 				if (angular.isUndefined($scope.lastMessage)) {
                     $scope.messageCount = 0;
 				}
+				if (angular.isUndefined($scope.lastMessageTime)) {
+                    $scope.lastMessageTime = new Date().getTime();
+				}				
 				angular.copy(($scope.messageCount++));
-				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg) {
-					var end=new Date().getTime();
-					var elapsed=(Math.round((end - $scope.messageStart)/100))/10; // in S	
-					console.log("+" + elapsed + ": [" + $scope.messageCount + "] " + messageLevel + ": " + msg);
+				var end=new Date().getTime();
+				var elapsed=(Math.round((end - $scope.messageStart)/100))/10; 
+						// time since application init in S
+				var msgInterval=(Math.round((end - $scope.lastMessageTime)/100))/10; 
+						// time since last message in S	
+				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg || msgInterval > 5 /* Secs */) {
+					$scope.consoleLog("+" + elapsed + ": [" + $scope.messageCount + "] " + messageLevel + ": " + msg);
 					
 					if (messageLevel.toUpperCase() == "ERROR") {	
 						notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: rifHide});	
-						console.log("Stack: " + err.stack);
+						$scope.consoleLog("Stack: " + err.stack);
 					}
 					else if (messageLevel.toUpperCase() == "WARNING") {
 						notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: rifHide});
@@ -78,7 +319,13 @@ angular.module("RIF")
 						notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: rifHide});
 					}	
 				}
+				else { // Thses are caused by bugs in notifications, or by the RIF generating the messages to often
+					$scope.consoleLog("+" + elapsed + ": [DUPLICATE: " + $scope.messageCount + 
+						", msgInterval=" + msgInterval + "] " + 
+						messageLevel + ": " + msg);
+				}
                 $scope.lastMessage = angular.copy(msg);
+				$scope.lastMessageTime = angular.copy(end);
 				var msgList = $scope.messageList;
 				var msgItem = {
 					sequence:	$scope.messageCount,
@@ -89,7 +336,14 @@ angular.module("RIF")
 					level:		messageLevel
 				}
 				msgList.push(msg); 
-				$scope.messageList = angular.copy(msgList);			
+				$scope.messageList = angular.copy(msgList);	
+
+				callRifFrontEndLogger(
+					messageLevel,
+					msg, 
+					err.message,
+					err.stack,
+					elapsed);				
 			}
 			
             $scope.showError = function (msg) {
@@ -110,4 +364,4 @@ angular.module("RIF")
             $scope.showSuccessNoHide = function (msg) {
 				rifMessage("SUCCESS", msg, false);
             };
-        });
+        }]);

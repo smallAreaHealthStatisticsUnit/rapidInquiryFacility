@@ -579,11 +579,36 @@ final class PGSQLStudyStateManager
 				data[ithRecord][4] = resultSet.getString(5); //creation_date formatted as DD MON YYYY HH24:MI:SS
 			
 				data[ithRecord][5] = resultSet.getString(6); //message
-				data[ithRecord][6] = StringEscapeUtils.escapeJavaScript(resultSet.getString(7)); //trace
+				data[ithRecord][6]=StringEscapeUtils.escapeJavaScript(resultSet.getString(7)); //trace 
 				if (data[ithRecord][6] == null || data[ithRecord][6].equals("null")) {
 					data[ithRecord][6]="";
 				}
-					
+				else {
+					String str=data[ithRecord][6];
+					int len=str.length();
+					int unEscapes=0;
+					StringBuilder sb = new StringBuilder(len);
+					for (int i = 0; i < len; i++) {
+						char c0 = str.charAt(i);
+						char c1;
+						if ((i+1) >= len) {
+							c1=0;
+						}
+						else {
+							c1=str.charAt(i+1);
+						}
+						if (c0 == '\\' && c1 == '\'') { // "'" Does need to be escaped as in double quotes
+							unEscapes++;
+						}
+						else {
+							 sb.append(c0);
+						}
+					} 
+					data[ithRecord][6] = sb.toString();
+//					System.out.println("OK: " + unEscapes);
+					// fix for Angular parse errors
+					// Error: JSON.parse: bad escaped character at line 1 column 2871 of the JSON data
+				}					
 				ithRecord++;
 			}
 			

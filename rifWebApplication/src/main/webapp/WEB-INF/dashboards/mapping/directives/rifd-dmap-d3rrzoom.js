@@ -39,7 +39,25 @@
 /* global d3, Infinity */
 
 angular.module("RIF")
-        .directive('rrZoom', function ($rootScope, MappingStateService) { //rr-zoom
+        .directive('rrZoom', function ($rootScope, MappingStateService, ParametersService) { //rr-zoom
+
+			var parameters=ParametersService.getParameters()||{
+				rrDropLineRedrawDisabled: false,		// Disable rrDropLineRedraw handler (leak debugging), If set to true stops leak!
+				rrchartWatchDisabled: false				// Disable Angular $watch on rrchart<mapID> [for leak testing]
+			};
+			var rrDropLineRedrawDisabled=parameters.rrDropLineRedrawDisabled;
+			var rrchartWatchDisabled=parameters.rrchartWatchDisabled;
+			var watchCall = {
+                    'diseasemap1': 0,
+                    'diseasemap2': 0,
+                    'viewermap': 0
+                };
+			watchCallDone = {
+                    'diseasemap1': false,
+                    'diseasemap2': false,
+                    'viewermap': false
+                };
+				
             var directiveDefinitionObject = {
                 restrict: 'E',
                 replace: false,
@@ -60,14 +78,41 @@ angular.module("RIF")
                         }
                     });
 
-                    scope.$watch(function () {
-                        if (angular.isUndefined(scope.data) || scope.data.length === 0) {
-                            d3.select("#rrchart" + scope.opt.panel).remove();
-                            return;
-                        } else {
-                            scope.renderBase();
-                        }
-                    });
+					if (!rrchartWatchDisabled) {
+						scope.$on('rrZoomReset', function (event, rrZoomReset) { // Allow refresh
+							$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "watchCall reset at: " + watchCall[scope.opt.panel] + 
+								"; map: " + scope.opt.panel + "; watchCallDone[scope.opt.panel]: " + watchCallDone[scope.opt.panel]});
+							watchCallDone[scope.opt.panel]=false;
+							watchCall[scope.opt.panel]=0;
+						});
+						
+						scope.$watch(function (scope) { // watchExpression is called on every call to $digest() and should return the value that will be watched
+							watchCall[scope.opt.panel]++;
+							
+							if (angular.isUndefined(scope.data) || scope.data.length === 0) {
+								d3.select("#rrchart" + scope.opt.panel).remove();
+								watchCallDone[scope.opt.panel]=false;
+								return watchCallDone[scope.opt.panel];
+							} 
+							else if (watchCall[scope.opt.panel] < 3 /* Always the first */ && !watchCallDone[scope.opt.panel]) { // Limit to 10 times to prevent $digest complaining	
+							
+//								$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "Pre call renderBase for map: " + scope.opt.panel + 
+//									"; watchCall" + scope.opt.panel + ": " + watchCall[scope.opt.panel] +
+//									"; watchCallDone[" + scope.opt.panel + "]: " + watchCallDone[scope.opt.panel]});	
+								watchCallDone[scope.opt.panel]=true; // This is to prevent further calls
+//								$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "Call renderBase for map: " + scope.opt.panel + 
+//									"; watchCall[" + scope.opt.panel + "]: " + watchCall[scope.opt.panel] +
+//									"; watchCallDone[" + scope.opt.panel + "]: " + watchCallDone[scope.opt.panel]});	
+								scope.renderBase();	
+								return watchCallDone[scope.opt.panel];
+							}
+							else {
+								return watchCallDone[scope.opt.panel];
+							}
+						}, 
+						undefined /* No listener function */, 
+						undefined /* No check equality */);
+					}
 
                     scope.renderBase = function () {
                         var margin = {top: 30, right: 20, bottom: 30, left: 60};
@@ -82,6 +127,17 @@ angular.module("RIF")
                         var labelField = scope.opt.label_field;
                         var panel = scope.opt.panel;
 
+						if (lineField == undefined) {
+							$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "renderBase: Failed for map: " + panel + 
+								"; risk_field not defined"});
+							return;
+						}
+						if (!scope.data) {
+							$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "renderBase: Failed for map: " + panel + 
+								"; no data in scope"});
+							return;				
+						}
+		
                         //Plot confidence interal areas on the charts?
                         var bConfidence = true;
                         if (labelField === "posterior_probability") {
@@ -126,12 +182,20 @@ angular.module("RIF")
                         if (!angular.isUndefined(domainCheck[0])) {
                             if (domainCheck[0].toFixed(5) === domainCheck[1].toFixed(5)) {
                                 d3.select("#rrchart" + panel).remove();
+								$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "renderBase: Failed for map: " + panel + 
+									"; data max in and values are the same: " + domainCheck[0].toFixed(5)});
+								watchCallDone[panel]=false;
                                 return;
                             }
                         } else {
+							$rootScope.$broadcast('rrZoomStatus', {level: "WARNING", msg: "renderBase: Failed for map: " + panel + 
+								"; no data for risk_field: " + lineField});
+							watchCallDone[panel]=false;
                             return;
                         }
 
+//						$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "renderBase: for map: " + panel + 
+//							"; Data OK; watchCallDone[panel]: " + watchCallDone[panel]});
                         var xAxis = d3.axisBottom().scale(x).ticks(0);
                         var xAxis2 = d3.axisBottom().scale(x2);
                         var yAxis = d3.axisLeft().scale(y);
@@ -414,44 +478,47 @@ angular.module("RIF")
 
                         //add dropLine on map select events
                         scope.$on('rrDropLineRedraw', function (event, data, container) {
-                            //get selected from area_id
-                            if (panel === container) {
-                                selected = null;
-                                for (var i = 0; i < dataLength; i++) {
-                                    if (!angular.isUndefined(scope.data[i])) {
-                                        if (scope.data[i].gid === data) {
-                                            selected = scope.data[i];
-                                            scope.clickXPos = scope.data[i].x_order;
-                                            MappingStateService.getState().selected[container] = scope.data[i];
-                                            break;
-                                        }
-                                    }
-                                }
+							if (!rrDropLineRedrawDisabled) {
+								//get selected from area_id
+								if (panel === container) {
+									selected = null;
+									for (var i = 0; i < dataLength; i++) {
+										if (!angular.isUndefined(scope.data[i])) {
+											if (scope.data[i].gid === data) {
+												selected = scope.data[i];
+												scope.clickXPos = scope.data[i].x_order;
+												MappingStateService.getState().selected[container] = scope.data[i];
+												break;
+											}
+										}
+									}
 
-                                if (selected !== null) {
-                                    context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
-                                    if (angular.isNumber(selected.rr)) {
-                                        if (bConfidence) {
-                                            svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) +
-                                                    " (" + selected.cl.toFixed(3) + " - " + selected.ul.toFixed(3) + ")");
-                                        } else {
-                                            svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3));
-                                        }
-                                    } else {
-                                        svg.select("#currentFiguresLineBivariate" + panel).text("Invalid results");
-                                    }
-                                    //is highlighter out of x range?
-                                    if (selected.x_order >= x.domain()[0] && selected.x_order <= x.domain()[1]) {
-                                        focus.select("#bivariateHiglighter1" + panel).attr("transform", "translate(" + x(selected.x_order) + "," + 0 + ")");
-                                        highlighter.style("stroke", "#EEA9B8");
-                                    } else {
-                                        highlighter.style("stroke", "transparent");
-                                    }
-                                } else {
-                                    scope.clickXPos = 0;
-                                    MappingStateService.getState().selected[container] = null;
-                                }
-                            }
+									if (selected !== null) {
+										
+										context.select("#bivariateHiglighter2" + panel).attr("transform", "translate(" + x2(selected.x_order) + "," + 0 + ")");
+										if (angular.isNumber(selected.rr)) {
+											if (bConfidence) {
+												svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3) +
+														" (" + selected.cl.toFixed(3) + " - " + selected.ul.toFixed(3) + ")");
+											} else {
+												svg.select("#currentFiguresLineBivariate" + panel).text(selected.rr.toFixed(3));
+											}
+										} else {
+											svg.select("#currentFiguresLineBivariate" + panel).text("Invalid results");
+										}
+										//is highlighter out of x range?
+										if (selected.x_order >= x.domain()[0] && selected.x_order <= x.domain()[1]) {
+											focus.select("#bivariateHiglighter1" + panel).attr("transform", "translate(" + x(selected.x_order) + "," + 0 + ")");
+											highlighter.style("stroke", "#EEA9B8");
+										} else {
+											highlighter.style("stroke", "transparent");
+										}
+									} else {
+										scope.clickXPos = 0;
+										MappingStateService.getState().selected[container] = null;
+									}
+								}
+							}
                         });
 
                         //handle left, right key events   
@@ -475,8 +542,12 @@ angular.module("RIF")
                                 });
                             }
                         }
-                    };
-                }
+						
+						$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "renderBase: for map: " + panel + "; Completed; watchCallDone[panel]: " + watchCallDone[panel]});
+                    }; // End of  scope.renderBase
+					
+					$rootScope.$broadcast('rrZoomStatus', {level: "DEBUG", msg: "INIT complete for map: " + scope.opt.panel});
+                } // End of init()
             };
             return directiveDefinitionObject;
         });

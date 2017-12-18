@@ -178,7 +178,7 @@ angular.module("RIF")
                 };
 
                 function handleParameterError(res) {
-                    console.log("parameter error");
+                    $scope.consoleLog("parameter error");
                 }
 
                 //handle taxonomy services
@@ -418,7 +418,8 @@ angular.module("RIF")
                 };
 
                 resetTable = function () {
-                    $scope.thisICDselection.length = 0;
+                    // $scope.thisICDselection.length = 0; // This causes a leak!
+					$scope.thisICDselection.splice(0, $scope.thisICDselection.length); // Fix
                 };
 
                 //submit and save the results

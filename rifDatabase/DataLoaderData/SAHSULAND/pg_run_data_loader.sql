@@ -118,7 +118,7 @@ CREATE TABLE rif_data.POP_SAHSULAND_POP (
 
 
 
-\copy POP_SAHSULAND_POP(   YEAR,   AGE_SEX_GROUP,   SAHSU_GRD_LEVEL1,   SAHSU_GRD_LEVEL2,   SAHSU_GRD_LEVEL3,   SAHSU_GRD_LEVEL4,   TOTAL) FROM 'pop_sahsuland_pop.csv' DELIMITER ',' CSV HEADER;
+\copy POP_SAHSULAND_POP(   YEAR,   AGE_SEX_GROUP,   SAHSU_GRD_LEVEL1,   SAHSU_GRD_LEVEL2,   SAHSU_GRD_LEVEL3,   SAHSU_GRD_LEVEL4,   TOTAL) FROM 'pop_sahsuland_pop_extended.csv' DELIMITER ',' CSV HEADER;
 
 ALTER TABLE rif_data.pop_sahsuland_pop ADD CONSTRAINT pop_sahsuland_pop_pk PRIMARY KEY(YEAR,AGE_SEX_GROUP,SAHSU_GRD_LEVEL4);
 CLUSTER pop_sahsuland_pop USING pop_sahsuland_pop_pk;
@@ -154,6 +154,13 @@ CREATE INDEX POP_SAHSULAND_POP_SAHSU_GRD_LEVEL3 ON POP_SAHSULAND_POP(SAHSU_GRD_L
 CREATE INDEX POP_SAHSULAND_POP_SAHSU_GRD_LEVEL4 ON POP_SAHSULAND_POP(SAHSU_GRD_LEVEL4);
 
 CREATE INDEX POP_SAHSULAND_POP_TOTAL ON POP_SAHSULAND_POP(TOTAL);
+
+CREATE INDEX pop_sahsuland_pop_age_group
+  ON rif_data.pop_sahsuland_pop
+  (MOD(age_sex_group, 100));
+CREATE INDEX pop_sahsuland_pop_sex
+  ON rif_data.pop_sahsuland_pop
+  (TRUNC(age_sex_group/100));
 
 INSERT INTO rif40.rif40_tables (
    theme,
@@ -212,7 +219,7 @@ CREATE TABLE rif_data.num_sahsuland_cancer (
    total INTEGER NOT NULL);
 
 
-\copy num_sahsuland_cancer(   year,   age_sex_group,   SAHSU_GRD_LEVEL1,   SAHSU_GRD_LEVEL2,   SAHSU_GRD_LEVEL3,   SAHSU_GRD_LEVEL4,   icd,   total) FROM 'num_sahsuland_cancer.csv' DELIMITER ',' CSV HEADER;
+\copy num_sahsuland_cancer(   year,   age_sex_group,   SAHSU_GRD_LEVEL1,   SAHSU_GRD_LEVEL2,   SAHSU_GRD_LEVEL3,   SAHSU_GRD_LEVEL4,   icd,   total) FROM 'num_sahsuland_cancer_extended.csv' DELIMITER ',' CSV HEADER;
 
 ALTER TABLE rif_data.num_sahsuland_cancer ADD CONSTRAINT num_sahsuland_cancer_pk PRIMARY KEY(YEAR,AGE_SEX_GROUP,SAHSU_GRD_LEVEL4,ICD);
 CLUSTER num_sahsuland_cancer USING num_sahsuland_cancer_pk;
@@ -253,7 +260,13 @@ CREATE INDEX NUM_SAHSULAND_CANCER_ICD ON NUM_SAHSULAND_CANCER(ICD);
 
 CREATE INDEX NUM_SAHSULAND_CANCER_TOTAL ON NUM_SAHSULAND_CANCER(TOTAL);
 
-
+CREATE INDEX num_sahsuland_cancer_age_group
+  ON rif_data.num_sahsuland_cancer
+  (MOD(age_sex_group, 100));
+CREATE INDEX num_sahsuland_cancer_sex
+  ON rif_data.num_sahsuland_cancer
+  (TRUNC(age_sex_group/100));
+  
 INSERT INTO rif40.rif40_tables (
    theme,
    table_name,
@@ -332,7 +345,7 @@ CREATE TABLE rif_data.COVAR_SAHSULAND_COVARIATES3 (
    ethnicity INTEGER);
 
 
-\copy COVAR_SAHSULAND_COVARIATES3(   year,   SAHSU_GRD_LEVEL3,   ses,   ethnicity) FROM 'covar_sahsuland_covariates3.csv' DELIMITER ',' CSV HEADER;
+\copy COVAR_SAHSULAND_COVARIATES3(   year,   SAHSU_GRD_LEVEL3,   ses,   ethnicity) FROM 'covar_sahsuland_covariates3_extended.csv' DELIMITER ',' CSV HEADER;
 
 ALTER TABLE rif_data.covar_sahsuland_covariates3 ADD CONSTRAINT covar_sahsuland_covariates3_pk PRIMARY KEY(YEAR,SAHSU_GRD_LEVEL3);
 CLUSTER covar_sahsuland_covariates3 USING covar_sahsuland_covariates3_pk;
@@ -405,7 +418,7 @@ CREATE TABLE rif_data.COVAR_SAHSULAND_COVARIATES4 (
    near_dist DOUBLE PRECISION);
 
 
-\copy COVAR_SAHSULAND_COVARIATES4(   year,   SAHSU_GRD_LEVEL4,   ses,   areatri1km,   near_dist) FROM 'covar_sahsuland_covariates4.csv' DELIMITER ',' CSV HEADER;
+\copy COVAR_SAHSULAND_COVARIATES4(   year,   SAHSU_GRD_LEVEL4,   ses,   areatri1km,   near_dist) FROM 'covar_sahsuland_covariates4_extended.csv' DELIMITER ',' CSV HEADER;
 
 ALTER TABLE rif_data.covar_sahsuland_covariates4 ADD CONSTRAINT covar_sahsuland_covariates4_pk PRIMARY KEY(YEAR,SAHSU_GRD_LEVEL4);
 CLUSTER covar_sahsuland_covariates4 USING covar_sahsuland_covariates4_pk;
@@ -488,3 +501,9 @@ FROM
 
 
 COMMIT TRANSACTION;
+
+
+ANALYZE VERBOSE rif_data.pop_sahsuland_pop;
+ANALYZE VERBOSE rif_data.num_sahsuland_cancer;
+ANALYZE VERBOSE rif_data.covar_sahsuland_covariates4;
+ANALYZE VERBOSE rif_data.covar_sahsuland_covariates4;

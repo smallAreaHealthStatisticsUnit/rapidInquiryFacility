@@ -38,8 +38,8 @@
 /* global L, key, topojson, d3 */
 
 angular.module("RIF")
-        .controller('MappingCtrl', ['$scope', '$timeout', 'MappingStateService', 'ChoroService', 'MappingService', 'mapTools',
-            function ($scope, $timeout, MappingStateService, ChoroService, MappingService, mapTools) {
+        .controller('MappingCtrl', ['$scope', '$timeout', 'MappingStateService', 'ChoroService', 'MappingService', 'mapTools', 'ParametersService',
+            function ($scope, $timeout, MappingStateService, ChoroService, MappingService, mapTools, ParametersService) {
 
                 //Reference the child scope (controller is embedded)
                 //child scope will be on either the mapping or viewer dashboards
@@ -53,6 +53,16 @@ angular.module("RIF")
                     $scope.child.map['diseasemap2'].remove();
                 });
 
+				$scope.parameters=ParametersService.getParameters()||{
+					syncMapping2EventsDisabled: false,			// Disable syncMapping2Events handler (leak debugging)
+					disableMapLocking: false,					// Disable disease map initial sync 
+					disableSelectionLocking: false				// Disable selection locking
+				};
+				$scope.syncMapping2EventsDisabled=$scope.parameters.syncMapping2EventsDisabled||false;
+				$scope.disableMapLocking=$scope.parameters.disableMapLocking||false;		
+				$scope.disableSelectionLocking=$scope.parameters.disableSelectionLocking||false;		
+				
+				
                 //Transparency change function
                 function closureAddSliderControl(m) {
                     return function (v) {
@@ -70,6 +80,7 @@ angular.module("RIF")
                     for (var i in $scope.child.myMaps) {
                         //initialise map
                         var container = angular.copy($scope.child.myMaps[i]);
+						$scope.consoleDebug("[rifc-dmap-main.js] Create map: " +container);
                         $scope.child.map[container] = L.map(container, {condensedAttributionControl: false}).setView([0, 0], 1);
 
                         //search box
@@ -243,6 +254,8 @@ angular.module("RIF")
                  */
                 //draw rr chart from d3 directive 'rrZoom'
                 $scope.getD3chart = function (mapID, attribute) {
+					
+					$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + "; attribute: " + attribute + "; data rows: " + $scope.child.tableData[mapID].length);
                     //reset brush handles        
                     MappingStateService.getState().brushEndLoc[mapID] = null;
                     MappingStateService.getState().brushStartLoc[mapID] = null;
@@ -251,10 +264,15 @@ angular.module("RIF")
 
                     //make array for d3 areas
                     var rs = [];
+					if ($scope.child.tableData[mapID].length == 0) {
+						$scope.showWarning("Unable to create D3 chart for map: " + mapID + "; no table data");
+					}
+					
                     for (var i = 0; i < $scope.child.tableData[mapID].length; i++) {
                         //check for invalid column, therefore no graph possible
-                        if ($scope.child.tableData[mapID][i][attribute] === null) {
+                        if ($scope.child.tableData[mapID][i][attribute] === undefined) {
                             $scope.rrChartData[mapID] = [];
+							$scope.showError("Unable to create relative risk chart for map: " + mapID + "; attribute column: " + attribute + " not found");
                             return;
                         }                       
                         //Handle inconsistant naming in results table
@@ -287,17 +305,25 @@ angular.module("RIF")
                         );
                     }
 
+		//			$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + 
+		//				"; rs[0]: " + JSON.stringify(rs[0], null, 2) + 
+		//				"; tableData[0]: " + JSON.stringify($scope.child.tableData[mapID][0], null, 2));
                     //reorder
                     rs.sort(function (a, b) {
                         return parseFloat(a.rr) - parseFloat(b.rr);
                     });
+					
                     for (var i = 0; i < $scope.child.tableData[mapID].length; i++) {
                         rs[i]["x_order"] = i + 1;
                     }
+					
                     //set options for directive
                     $scope.optionsRR[mapID].label_field = attribute;
-                    $scope.rrChartData[mapID] = angular.copy(rs);
-                };
+                    $scope.rrChartData[mapID] = angular.copy(rs); // Copy data to scoope of D3 chart
+					$scope.consoleDebug("[rifc-dmap-main.js] getD3chart, map: " + mapID + 
+						"; $scope.rrChartData[mapID][0]: " + JSON.stringify($scope.rrChartData[mapID][0], null, 0) + 
+						"; length: " + $scope.rrChartData[mapID].length);
+                }; // End of getD3chart()
 
                 //key events to move the dropline
                 $scope.child.mapInFocus = "";
@@ -315,12 +341,27 @@ angular.module("RIF")
                         }
                     }
                 });
-
+				if ($scope.disableMapLocking) {
+					MappingStateService.getState().extentLock = false;
+				}
+				else {
+					MappingStateService.getState().extentLock = true;
+				}
+				if ($scope.disableSelectionLocking) {
+					MappingStateService.getState().selectionLock = false;
+				}
+				else {
+					MappingStateService.getState().selectionLock = true;
+				}
                 /*
                  * Specific to handle 2 Leaflet Panels in disease mapping
                  */
                 //sync map extents
                 $scope.bLockCenters = MappingStateService.getState().extentLock;
+                $scope.bLockSelect = MappingStateService.getState().selectionLock;
+				$scope.consoleLog("[rifc-dmap-main.js] Map selection lock; $scope.bLockSelect: " + $scope.bLockSelect);
+				$scope.consoleLog("[rifc-dmap-main.js] Map linking; $scope.bLockCenters: " + $scope.bLockCenters);
+				
                 $scope.lockExtent = function () {
                     if ($scope.bLockCenters) {
                         $scope.bLockCenters = false;
@@ -333,7 +374,7 @@ angular.module("RIF")
                 };
 
                 //sync map selections
-                $scope.bLockSelect = MappingStateService.getState().selectionLock;
+				
                 $scope.lockSelect = function () {
                     if ($scope.bLockSelect) {
                         $scope.bLockSelect = false;
@@ -377,7 +418,8 @@ angular.module("RIF")
                     dropLine(mapID, data, true);
                 };
                 $scope.$on('syncMapping2Events', function (event, data) {
-                    if (data.selected !== null && !angular.isUndefined(data.selected)) {
+                    if (!$scope.syncMapping2EventsDisabled && data.selected !== null && !angular.isUndefined(data.selected)) {
+						$scope.consoleDebug("[rifc-dmap-main.js] on syncMapping2Events, map: " + data.mapID + "; gid: " + data.selected.gid);
                         dropLine(data.mapID, data.selected.gid, data.map);
                         MappingStateService.getState().area_id[data.mapID] = data.selected.gid;
                         //update the other map if selections locked
@@ -407,6 +449,8 @@ angular.module("RIF")
                         }
                     }
                     //update chart
+					
+					$scope.consoleDebug("[rifc-dmap-main.js] broadcast rrDropLineRedraw, map: " + mapID + "; gid: " + gid);
                     $scope.$broadcast('rrDropLineRedraw', gid, mapID);
                 }
             }]);         

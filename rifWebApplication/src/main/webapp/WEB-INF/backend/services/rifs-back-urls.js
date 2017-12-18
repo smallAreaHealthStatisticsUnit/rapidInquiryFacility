@@ -32,10 +32,29 @@
  */
 
 /*
- * SERVICE for URL middleware calls. Localhost can be edited here
+ * SERVICE for URL middleware calls. 
+ *
+ * Rewritten to remove the need for hard coding	HTTPS, hostname etc	
+ * and access via servicesConfig.studyResultRetrievalURL etc.
  */
-
 angular.module("RIF")
-        .constant('studySubmissionURL', "http://localhost:8080/rifServices/studySubmission/")
-        .constant('studyResultRetrievalURL', "http://localhost:8080/rifServices/studyResultRetrieval/")
-        .constant('taxonomyServicesURL', "http://localhost:8080/taxonomyServices/taxonomyServices/");
+        .factory('servicesConfig', [
+            function() {
+				var serviceHost=window.location.protocol + "//" + window.location.hostname + ":" + window.location.port;
+				return {		 
+					studySubmissionURL: serviceHost + "/rifServices/studySubmission/",
+					studyResultRetrievalURL: serviceHost + "/rifServices/studyResultRetrieval/",
+					taxonomyServicesURL: serviceHost + "/taxonomyServices/taxonomyServices/"
+				}
+/* 
+
+Use the hardcoded  version, e.g. if not using the web protocol of the current page and hostname; and/or port 8080
+Localhost can be edited here
+				return {
+					studySubmissionURL: "https://localhost:8080/rifServices/studySubmission/",
+					studyResultRetrievalURL: "https://localhost:8080/rifServices/studyResultRetrieval/",
+					taxonomyServicesURL: "https://localhost:8080/rifServices/taxonomyServices/"
+				}
+ */					
+		}]);
+		

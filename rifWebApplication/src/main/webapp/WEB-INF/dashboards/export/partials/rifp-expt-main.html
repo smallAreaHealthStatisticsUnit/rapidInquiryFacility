@@ -58,6 +58,7 @@ HTML partial export functionality
         <div id="studyInfo" get-study-info mapid="exportmap"></div>
     </div>
     <a class="mapListButton" id="mapListButtonExport" ng-disabled=disableMapListButton ng-click="exportAllTables()" ng-href="{{ exportURL }}">{{exportTAG}}</a>
+    <a class="mapListButton" ng-controller="ExportSaveCtrl" id='exportSave' ng-click="getBlobJob()" ng-model='studyID["exportmap"]'>Save Completed Study</a>
 </div>
 <div ui-layout="{flow : 'column'}">
     <div ui-layout-container class="leaflet-box" ui-layout-loaded id="vSplit1" max-size="100%" size="{{vSplit1}}%"> 

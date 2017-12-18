@@ -109,7 +109,7 @@ Description:	Insert data into extract table
 			'DROP TABLE ##g_rif40_study_areas';
 	SET @t_ddl=@t_ddl+1;	
 	INSERT INTO @ddl_stmts(sql_stmt, study_id) VALUES (@sql_stmt, @study_id);
-
+--
 	SET @sql_stmt='SELECT study_id, area_id, band_id' + @crlf +
 		'  INTO ##g_rif40_study_areas' + @crlf + 
 		'  FROM rif40.rif40_study_areas' + @crlf +
@@ -149,6 +149,7 @@ Description:	Insert data into extract table
 			@ddl_stmts	/* SQL table */,
 			@debug		/* enable debug: 0/1) */;
 	SET @sql_stmt=NULL;	
+	DELETE FROM @ddl_stmts; /* Purge */	
 	
 --
 -- For for rows in ##g_rif40_comparison_areas, ##g_rif40_study_areas

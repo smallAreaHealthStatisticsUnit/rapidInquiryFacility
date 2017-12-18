@@ -1,6 +1,7 @@
 
 package rifGenericLibrary.taxonomyServices;
 
+import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
@@ -9,6 +10,7 @@ import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
 import java.io.File;
 import java.util.ArrayList;
 
+import java.util.Map;
 
 
 /**
@@ -88,6 +90,7 @@ final class DefaultXMLTaxonomyService
 // Section Properties
 // ==========================================
 	
+	private RIFLogger rifLogger = RIFLogger.getLogger();
 	
 // ==========================================
 // Section Construction
@@ -157,6 +160,17 @@ final class DefaultXMLTaxonomyService
 
 		setTaxonomyServiceConfiguration(taxonomyServiceConfiguration);
 
+		Map<String, String> environmentalVariables = System.getenv();		
+		String catalinaHome = environmentalVariables.get("CATALINA_HOME");
+		if (catalinaHome == null) {
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					"taxonomyServices.error.initialisationFailure",  
+					"CATALINA_HOME not set in the environment");
+			rifLogger.error(this.getClass(), "DefaultXMLTaxonomyService error", rifServiceException);
+			throw rifServiceException;
+		}
+		
 		String fileName = "";
 		RIFServiceExceptionFactory exceptionFactory
 			= new RIFServiceExceptionFactory();
@@ -172,11 +186,23 @@ final class DefaultXMLTaxonomyService
 					
 			String filePath
 				= getFilePath(
-					defaultResourceDirectoryPath,
+					catalinaHome + File.separator + "conf",
 					termFileParameter.getValue());
 			File termFile = new File(filePath);
-			if (termFile.exists() == false) {
-				throw exceptionFactory.createNonExistentFile(fileName);
+			if (termFile.exists() == false) {			
+				String filePath2
+					= getFilePath(
+						defaultResourceDirectoryPath,
+						termFileParameter.getValue());
+				if (termFile.exists() == false) {	
+					throw exceptionFactory.createNonExistentFile(fileName);
+				}
+				else {
+					rifLogger.info(this.getClass(), "TaxonomyService term file: " + filePath.toString());
+				}
+			}
+			else {
+				rifLogger.info(this.getClass(), "TaxonomyService term file: " + filePath.toString());
 			}
 	
 			DefaultXMLTaxonomyTermReader taxonomyTermReader

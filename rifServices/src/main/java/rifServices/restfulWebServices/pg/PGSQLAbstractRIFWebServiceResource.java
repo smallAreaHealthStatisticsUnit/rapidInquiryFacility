@@ -21,6 +21,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
+import rifGenericLibrary.util.FrontEndLogger;
 
 import rifServices.restfulWebServices.*;
 import rifServices.dataStorageLayer.pg.PGSQLProductionRIFStudyServiceBundle;
@@ -111,6 +112,7 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 	= PGSQLProductionRIFStudyServiceBundle.getRIFServiceBundle();
 	
 	private RIFLogger rifLogger = RIFLogger.getLogger();
+	private FrontEndLogger frontEndLogger = FrontEndLogger.getLogger();
 	
 	private SimpleDateFormat sd;
 	private Date startTime;
@@ -143,6 +145,48 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 		}
 	}
 
+	protected Response rifFrontEndLogger(
+			final HttpServletRequest servletRequest, 
+			final String userID,
+			final String browserType,
+			final String messageType,
+			final String message, 
+			final String errorMessage,
+			final String errorStack,
+			final String actualTime,
+			final String relativeTime) {
+			
+		String ipAddress = servletRequest.getHeader("X-FORWARDED-FOR");  
+		if (ipAddress == null) {  
+			ipAddress = servletRequest.getRemoteAddr();  
+		}	
+		String result = "";
+		try {			
+			frontEndLogger.frontEndMessage(userID,
+				browserType,
+				ipAddress,
+				messageType,
+				message, 
+				errorMessage,
+				errorStack,
+				actualTime,
+				relativeTime);
+			result = serialiseStringResult("OK");
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "PGSQLAbstractRIFWebServiceResource.rifFrontEndLogger error", exception);
+			//Convert exceptions to support JSON
+			result 
+			= serialiseException(
+					servletRequest,
+					exception);	
+		}
+		
+		return webServiceResponseGenerator.generateWebServiceResponse(
+				servletRequest,
+				result);
+	}
+	
 	protected Response isLoggedIn(
 			final HttpServletRequest servletRequest,
 			final String userID) {
@@ -900,7 +944,7 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			final String studyID,
 			final String zoomLevel) { 
 
-		String result = "OK";
+		String result = "{\"status\":\"OK\"}";
 
 		try {
 			User user = createUser(servletRequest, userID);
@@ -957,7 +1001,26 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 				servletRequest,
 				result);		
 	}
-	
+
+	protected Response getFrontEndParameters(
+			final HttpServletRequest servletRequest,
+			final String userID) { 
+			
+		String result = null;
+
+		User user = createUser(servletRequest, userID);
+
+		RIFStudySubmissionAPI studySubmissionService
+		= getRIFStudySubmissionService();
+
+		result=studySubmissionService.getFrontEndParameters(
+				user);
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
+				servletRequest,
+				result);		
+	}
+								
 	protected Response getZipFile(
 			final HttpServletRequest servletRequest,
 			final String userID,

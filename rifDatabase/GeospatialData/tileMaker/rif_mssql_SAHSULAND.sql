@@ -3782,7 +3782,8 @@ WITH b AS (
 UPDATE a
    SET areaid_count = b.areaid_count
   FROM t_rif40_geolevels a
-  JOIN b ON a.geolevel_id = b.geolevel_id;
+  JOIN b ON a.geolevel_id = b.geolevel_id
+ WHERE geography = 'SAHSULAND';
 GO
 
 -- SQL statement 138: Check areaid_count column in geolevels table using geometry table >>>

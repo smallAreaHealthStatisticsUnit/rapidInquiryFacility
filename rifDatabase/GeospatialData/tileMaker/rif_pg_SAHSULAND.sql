@@ -2106,8 +2106,9 @@ UPDATE t_rif40_geolevels a
    SET areaid_count = (
 			SELECT COUNT(DISTINCT(areaid)) AS areaid_count
 			  FROM geometry_sahsuland b
-			 WHERE a.geolevel_id = b.geolevel_id);
-
+			 WHERE a.geolevel_id = b.geolevel_id)
+ WHERE geography = 'SAHSULAND';
+			 
 -- SQL statement 127: Check areaid_count column in geolevels table using geometry table >>>
 /*
  * SQL statement name: 	geolevels_areaid_check.sql
