@@ -66,7 +66,7 @@ angular.module("RIF")
                 }
 
                 $scope.openStatsManual = function () {
-                    var baseUrl = "https://www.amazon.co.uk/d/Books/Statistics-Dummies-2E-PhD-Deborah-J-Rumsey/0470911085";
+                    var baseUrl = "https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/raw/master/Documentation/RIF%20v4%200%20Manual.pdf";
                     $window.open(baseUrl);
                 };
 
