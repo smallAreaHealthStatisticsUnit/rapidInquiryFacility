@@ -1808,11 +1808,11 @@ com.microsoft.sqlserver.jdbc.SQLServerException: Invalid object name 'rif40_dmp_
 * Fixed error trap for incorrect mapping column name
 * Improved choropleth feature list for viewer
 * Added resert button to choropleth popup, fixed scales not being recaculated, fixed exit button to restore old state
-* Added JSON5 support to load file
+* Added JSON5 support to load file, and save
 
 #### 18th to 22nd December
 
-*
+* Add completed study save stub to export (for database generated JSON5)
 
 In progress (December 2017):
 
@@ -1831,7 +1831,7 @@ In progress (December 2017):
 
 * Add statistical method to rif40_studies
 * Add population to map table (max, min, average, rate increase/decrease?), remove join from getAttributes
-* Add viewer/diseasemap[12]_mapping to rif40_studies
+* Add viewer/diseasemap[12]_mapping, export_date, last_update_date to rif40_studies
 * Add area name to results map table
 * Rename results fields as required
 
