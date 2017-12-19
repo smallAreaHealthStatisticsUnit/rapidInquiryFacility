@@ -222,13 +222,13 @@
 				
 				conflictResolver = function(error, tile, existingRevision) { // Upsert
 					if (error) {
-						tileLayer.consoleDebug("[TopoJSONGridLayer.js] conflictResolver: " + tile.conflicts + "; error: " + 
+						tileLayer.consoleDebug("[TopoJSONGridLayer.js] conflictResolver: @" + tile.conflicts + "; error: " + 
 							JSON.stringify(error, null, 2) +
 							"; for tile: " + tileUrl);
 						done(error, tile);
 					}
 					else {
-						tileLayer.consoleDebug("[TopoJSONGridLayer.js] conflictResolver: " + tile.conflicts +
+						tileLayer.consoleDebug("[TopoJSONGridLayer.js] conflictResolver: @" + tile.conflicts +
 							"; for tile: " + tileUrl); 
 						tileLayer._db.remove(tileUrl).then(function (response) { // Remove conflict; force reload
 								if (response.ok) {	
@@ -289,18 +289,23 @@ Stack: undefined
 */
 					else if (err && err.status == 409 && err.message == "Document update conflict") { 
 						tile.conflicts++;
+						var randomNumberBetween0and19 = Math.floor(Math.random() * 20);
 						if (tile.conflicts < 3) { // Limit recursion
-							tileLayer.consoleDebug("[TopoJSONGridLayer.js] _db.put() update conflict: " + tile.conflicts + 
-								"; " + JSON.stringify(err, null, 2) +
-								"; for tile: " + tileUrl);
 							tileLayer.fire('tilecacheerror', { tile: tile, error: err });
 /*
  * Conflict resolution: upsert: re-get tile, remove, put
  */
-							tileLayer.getTile(tile, tileUrl, tileLayer, coords, conflictResolver, tile.existingRevision);
+							var resolver=function() {
+								tileLayer.consoleDebug("[TopoJSONGridLayer.js] _db.put() update conflict: @" + tile.conflicts + 
+									"; " + JSON.stringify(err, null, 2) +
+									"; random offset: " + randomNumberBetween0and19 + 
+									"; for tile: " + tileUrl);
+								tileLayer.getTile(tile, tileUrl, tileLayer, coords, conflictResolver, tile.existingRevision);
+							}
+							setTimeout(resolver, randomNumberBetween0and19);
 						}
 						else {
-							setTimeout(done, 10*tile.conflicts, null); // Ignore conflict, conflictResolver will fix
+							setTimeout(done, randomNumberBetween0and19, null); // Ignore conflict, conflictResolver will fix
 						}
 					}
 					else if (err == undefined || err.status == undefined) {
