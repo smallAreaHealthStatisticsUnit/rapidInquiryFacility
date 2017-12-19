@@ -1813,7 +1813,7 @@ Todo:
 * Removed leak in study area/comparison area maps (was not released on logoff)
 * Added PouchDB conflict resolution code
 
-## In progress (December 2017):
+## In progress (December 2017/January 2018):
 
 * PouchDB conflicts, extend PouchDB to base layer
 * Sort popups in data viewer and diease maps
