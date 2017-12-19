@@ -1811,6 +1811,7 @@ Todo:
 * Add completed study save stub to export (for database generated JSON5)
 * Fixed statistics manual link (to main manual)
 * Removed leak in study area/comparison area maps (was not released on logoff)
+* Added PouchDB conflict resolution code
 
 ## In progress (December 2017):
 
