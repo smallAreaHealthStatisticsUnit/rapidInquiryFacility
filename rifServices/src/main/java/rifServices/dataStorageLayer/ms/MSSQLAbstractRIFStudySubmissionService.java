@@ -1416,6 +1416,9 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			// Effectively return NULL
 		}
 		finally {
+			if (result == null) {
+				result="{}";
+			}
 			rifLogger.info(getClass(), "get JSON file for study: " + studyID + ": " + result);
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(

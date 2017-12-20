@@ -1812,10 +1812,11 @@ Todo:
 * Fixed statistics manual link (to main manual)
 * Removed leak in study area/comparison area maps (was not released on logoff)
 * Added PouchDB conflict resolution code
+* Added getJsonFile middleware call
 
 ## In progress (December 2017/January 2018):
 
-* PouchDB conflicts, extend PouchDB to base layer
+* Extend PouchDB to base layer
 * Sort popups in data viewer and diease maps
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing 

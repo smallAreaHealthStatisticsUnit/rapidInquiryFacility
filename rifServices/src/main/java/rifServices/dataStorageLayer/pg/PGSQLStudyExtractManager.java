@@ -23,6 +23,7 @@ import java.util.zip.ZipOutputStream;
 import java.util.Date;
 
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 /**
  *
@@ -510,13 +511,14 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			final RIFStudySubmission rifStudySubmission,
 			final String studyID)
 					throws RIFServiceException {
-		JSONObject json = new JSONObject();
-		JSONObject rif_job_submission = new JSONObject();
-		rif_job_submission.put("created_by", user.getUserID());
-		json.put("rif_job_submission", rif_job_submission);
-		String result=json.toString();
+		String result="{}";
 
 		try {
+			JSONObject json = new JSONObject();
+			JSONObject rif_job_submission=addRifStudiesJson(connection, studyID);
+			rif_job_submission.put("created_by", user.getUserID());
+			json.put("rif_job_submission", rif_job_submission);
+			result=json.toString();
 		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), "PGSQLStudyExtractManager ERROR", exception);
@@ -532,9 +534,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 					errorMessage);
 			throw rifServiceExeption;
 		}
-		
 		return result;
-
 	}
 	
 	public void createStudyExtract(
@@ -1087,7 +1087,111 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 		}
 	}
 
+	private JSONObject addRifStudiesJson(Connection connection, String studyID) 
+					throws Exception {
+		SQLGeneralQueryFormatter rifStudiesQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		JSONObject rif_job_submission = new JSONObject();
+		
+		rifStudiesQueryFormatter.addQueryLine(0, "SELECT username, study_id, extract_table, study_name, summary, description, other_notes,");
+        rifStudiesQueryFormatter.addQueryLine(0, "       study_date, geography, study_type, study_state, comparison_geolevel_name,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       denom_tab, direct_stand_tab, year_start, year_stop, max_age_group, min_age_group,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       study_geolevel_name,  map_table, suppression_value, extract_permitted,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       transfer_permitted, authorised_by, authorised_on, authorised_notes, audsid,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       partition_parallelisation, covariate_table, project, project_description, stats_method");
+		rifStudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");	
+		rifStudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");	
+		PreparedStatement statement = createPreparedStatement(connection, rifStudiesQueryFormatter);
+		
+		try {		
+			statement.setInt(1, Integer.parseInt(studyID));	
+			resultSet = statement.executeQuery();
+			resultSet.next();
+			ResultSetMetaData rsmd = resultSet.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+			JSONObject rif_project = new JSONObject();
 
+			// The column count starts from 1
+			for (int i = 1; i <= columnCount; i++ ) {
+				String name = rsmd.getColumnName(i);
+				String value = resultSet.getString(i);
+				if (value == null) {
+					value="";
+				}
+
+				/* 
+				"project": {
+				  "name": "",
+				  "description": ""
+				}, */
+				
+				if (name.equals("project") ) {
+					rif_project.put("name", value);	
+				}
+				else if (name.equals("project_description") ) {
+					rif_project.put("description", value);	
+				}
+				
+				/* NONE/HET/BYM/CAR
+				"calculation_methods": {
+				  "calculation_method": {
+					"name": "bym_r_procedure",
+					"code_routine_name": "bym_r_procedure",
+					"description": "Besag, York and Mollie (BYM) model type",
+					"parameters": {
+					  "parameter": []
+					}
+				  }
+				}, */
+				else if (name.equals("stats_method") ) {
+					if (value == null) {
+						value="NONE";
+					}
+					JSONObject calculation_method = new JSONObject();
+					JSONObject calculation_methods = new JSONObject();
+					JSONObject parameters = new JSONObject();
+					JSONArray parameter = new JSONArray();
+					if (resultSet.getString(i).equals("NONE")) {
+						calculation_method.put("name", value);
+						calculation_method.put("code_routine_name", value);
+						calculation_method.put("description", value);
+					}
+					else {
+						calculation_method.put("name", value + "_r_procedure");
+						calculation_method.put("code_routine_name", value + "_r_procedure");
+						if (value.equals("BYM")) {
+							calculation_method.put("description", "Besag, York and Mollie (BYM) model type");
+						}
+						else if (value.equals("HET")) {
+							calculation_method.put("description", "Heterogenous (HET) model type");
+						}
+						else if (value.equals("CAR")) {
+							calculation_method.put("description", "Conditional Auto Regression (CAR) model type");
+						}
+					}
+					parameters.put("parameter", parameter);
+					calculation_method.put("parameters", parameters);
+					calculation_methods.put("calculation_method", calculation_method);	
+					rif_job_submission.put("calculation_methods", calculation_methods);
+				}
+				else { 
+					rif_job_submission.put(name, value);	
+				}
+			}
+			rif_job_submission.put("project", rif_project);	
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifStudiesQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}
+
+		return rif_job_submission;
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================

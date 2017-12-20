@@ -45,11 +45,12 @@ angular.module("RIF")
                 //get the study object
                 $scope.getBlobJob = function () {
 						$scope.extractStatus=user.getJsonFile(user.currentUser, $scope.studyID["exportmap"].study_id).then(function (res) {
-						if (res.data && res.data.rif_job_submission) {			
+						if (res && res.data && res.data.rif_job_submission) {			
 												
 							var json = JSON.stringify(res.data, null, 2); // JSON5
 							var blob = new Blob([json], {type: 'text/json'});
 							var filename = "RIFstudy_" + $scope.studyID["exportmap"].study_id + ".json";
+							$scope.consoleDebug("Created JSON file: " + filename);
 							
 							if (window.navigator && window.navigator.msSaveOrOpenBlob) {
 								window.navigator.msSaveOrOpenBlob(blob, filename);
@@ -67,8 +68,10 @@ angular.module("RIF")
 						}
 
 						else {			
-							$scope.showError("Could not retrieve study JSON; unable to create JSON file");
+							$scope.showError("Retrieved no study JSON; unable to create JSON file");
 						}
+					}, function (error) {
+						$scope.showError("Could not retrieve study JSON; unable to create JSON file"); 
 					});	
                 };
             }]);
