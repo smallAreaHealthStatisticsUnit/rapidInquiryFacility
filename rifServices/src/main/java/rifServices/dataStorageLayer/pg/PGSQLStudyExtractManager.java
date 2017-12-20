@@ -517,6 +517,9 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			JSONObject json = new JSONObject();
 			JSONObject rif_job_submission=addRifStudiesJson(connection, studyID);
 			rif_job_submission.put("created_by", user.getUserID());
+			JSONObject rif_output_options = new JSONObject();
+			rif_output_options.put("rif_output_option", new String[] { "Data", "Maps", "Ratios and Rates" });
+			rif_job_submission.put("rif_output_options", rif_output_options);
 			json.put("rif_job_submission", rif_job_submission);
 			result=json.toString();
 		}
@@ -1093,11 +1096,11 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		JSONObject rif_job_submission = new JSONObject();
 		
-		rifStudiesQueryFormatter.addQueryLine(0, "SELECT username, study_id, extract_table, study_name, summary, description, other_notes,");
-        rifStudiesQueryFormatter.addQueryLine(0, "       study_date, geography, study_type, study_state, comparison_geolevel_name,");
+		rifStudiesQueryFormatter.addQueryLine(0, "SELECT username AS extracted_by, study_id, extract_table, study_name, summary, description, other_notes,");
+        rifStudiesQueryFormatter.addQueryLine(0, "       TO_CHAR(study_date, 'DD/MM/YY HH24:MI:SS') AS job_submission_date, geography, study_type, study_state, comparison_geolevel_name,");
 		rifStudiesQueryFormatter.addQueryLine(0, "       denom_tab, direct_stand_tab, year_start, year_stop, max_age_group, min_age_group,");
 		rifStudiesQueryFormatter.addQueryLine(0, "       study_geolevel_name,  map_table, suppression_value, extract_permitted,");
-		rifStudiesQueryFormatter.addQueryLine(0, "       transfer_permitted, authorised_by, authorised_on, authorised_notes, audsid,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       transfer_permitted, authorised_by, TO_CHAR(authorised_on, 'DD/MM/YY HH24:MI:SS') AS authorised_on, authorised_notes, audsid,");
 		rifStudiesQueryFormatter.addQueryLine(0, "       partition_parallelisation, covariate_table, project, project_description, stats_method");
 		rifStudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");	
 		rifStudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");	
@@ -1110,6 +1113,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			ResultSetMetaData rsmd = resultSet.getMetaData();
 			int columnCount = rsmd.getColumnCount();
 			JSONObject rif_project = new JSONObject();
+			JSONObject study_type = new JSONObject();
 
 			// The column count starts from 1
 			for (int i = 1; i <= columnCount; i++ ) {
@@ -1131,7 +1135,41 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				else if (name.equals("project_description") ) {
 					rif_project.put("description", value);	
 				}
-				
+
+				else if (name.equals("study_name") ) {
+					study_type.put("name", value);	
+				}
+				else if (name.equals("description") ) {
+					study_type.put(name, value);	
+				}
+				else if (name.equals("geography") ) {
+					JSONObject geography = new JSONObject();
+					geography.put("name", value);	
+					geography.put("description", value);	// Need to get from rif40_geographies
+					study_type.put(name, geography);	
+				}
+				else if (name.equals("study_type") ) {
+					switch(Integer.parseInt(value)) {
+						case 1: // disease mapping
+							study_type.put("study_type", "Disease Mapping");	
+							break;
+						case 11: 
+							study_type.put("study_type", "Risk Analysis (many areas, one band)");
+							break;
+						case 12: 
+							study_type.put("study_type", "Risk Analysis (point sources)");
+							break;
+						case 13: 
+							study_type.put("study_type", "Risk Analysis (exposure covariates)");
+							break;
+						case 14: 
+							study_type.put("study_type", "Risk Analysis (coverage shapefile)");
+							break;
+						case 15: 
+							study_type.put("study_type", "Risk Analysis (exposure shapefile)");
+							break;
+					}
+				}
 				/* NONE/HET/BYM/CAR
 				"calculation_methods": {
 				  "calculation_method": {
@@ -1179,6 +1217,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				}
 			}
 			rif_job_submission.put("project", rif_project);	
+			rif_job_submission.put("disease_mapping_study", study_type);
 		}
 		catch (Exception exception) {
 			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifStudiesQueryFormatter.generateQuery(),
