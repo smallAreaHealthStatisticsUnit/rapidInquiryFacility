@@ -22,6 +22,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.util.Date;
 
+import org.json.JSONObject;
 
 /**
  *
@@ -319,6 +320,222 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 
 	}
 
+	/**
+	 * Get the JSON setup file for a run study.                          
+	 * <p>   
+	 * This function returns the JSON setup file for a run study, including the print setup 
+	 * </p>
+	 * 
+	 * @param  connection	Database specfic Connection object assigned from pool
+	 * @param  user 		Database username of logged on user.
+	 * @param  rifStudySubmission 		RIFStudySubmission object.
+	 * @param  studyID 		Study_id (as text!).
+	 *
+	 * @return 				Textual extract status as exscaped JSON, e.g. {status: STUDY_NOT_FOUND}
+	 *
+	 * e.g.
+{
+	"rif_job_submission": {
+		"submitted_by": "peter",
+		"job_submission_date": "24/08/2017 16:18:38",
+		"project": {
+			"name": "TEST",
+			"description": "Test project"
+		},
+		"disease_mapping_study": {
+			"name": "1002 LUNG CANCER",
+			"description": "",
+			"geography": {
+				"name": "SAHSULAND",
+				"description": "SAHSULAND"
+			},
+			"disease_mapping_study_area": {
+				"geo_levels": {
+					"geolevel_select": {
+						"name": "SAHSU_GRD_LEVEL1"
+					},
+					"geolevel_area": {
+						"name": ""
+					},
+					"geolevel_view": {
+						"name": "SAHSU_GRD_LEVEL4"
+					},
+					"geolevel_to_map": {
+						"name": "SAHSU_GRD_LEVEL4"
+					}
+				},
+				"map_areas": {
+					"map_area": [{
+							"id": "01",
+							"gid": "01",
+							"label": "01",
+							"band": 1
+						}
+					]
+				}
+			},
+			"comparison_area": {
+				"geo_levels": {
+					"geolevel_select": {
+						"name": "SAHSU_GRD_LEVEL1"
+					},
+					"geolevel_area": {
+						"name": ""
+					},
+					"geolevel_view": {
+						"name": "SAHSU_GRD_LEVEL1"
+					},
+					"geolevel_to_map": {
+						"name": "SAHSU_GRD_LEVEL1"
+					}
+				},
+				"map_areas": {
+					"map_area": [{
+							"id": "01",
+							"gid": "01",
+							"label": "01",
+							"band": 1
+						}
+					]
+				}
+			},
+			"investigations": {
+				"investigation": [{
+						"title": "TEST 1002",
+						"health_theme": {
+							"name": "cancers",
+							"description": "covering various types of cancers"
+						},
+						"numerator_denominator_pair": {
+							"numerator_table_name": "NUM_SAHSULAND_CANCER",
+							"numerator_table_description": "cancer numerator",
+							"denominator_table_name": "POP_SAHSULAND_POP",
+							"denominator_table_description": "population health file"
+						},
+						"age_band": {
+							"lower_age_group": {
+								"id": 0,
+								"name": "0",
+								"lower_limit": "0",
+								"upper_limit": "0"
+							},
+							"upper_age_group": {
+								"id": 0,
+								"name": "85PLUS",
+								"lower_limit": "85",
+								"upper_limit": "255"
+							}
+						},
+						"health_codes": {
+							"health_code": [{
+									"code": "C33",
+									"name_space": "icd10",
+									"description": "Malignant neoplasm of trachea",
+									"is_top_level_term": "no"
+								}, {
+									"code": "C340",
+									"name_space": "icd10",
+									"description": "Main bronchus",
+									"is_top_level_term": "no"
+								}, {
+									"code": "C341",
+									"name_space": "icd10",
+									"description": "Upper lobe, bronchus or lung",
+									"is_top_level_term": "no"
+								}, {
+									"code": "C342",
+									"name_space": "icd10",
+									"description": "Middle lobe, bronchus or lung",
+									"is_top_level_term": "no"
+								}, {
+									"code": "C343",
+									"name_space": "icd10",
+									"description": "Lower lobe, bronchus or lung",
+									"is_top_level_term": "no"
+								}, {
+									"code": "C348",
+									"name_space": "icd10",
+									"description": "Overlapping lesion of bronchus and lung",
+									"is_top_level_term": "no"
+								}, {
+									"code": "C349",
+									"name_space": "icd10",
+									"description": "Bronchus or lung, unspecified",
+									"is_top_level_term": "no"
+								}
+							]
+						},
+						"year_range": {
+							"lower_bound": 1995,
+							"upper_bound": 1996
+						},
+						"year_intervals": {
+							"year_interval": [{
+									"start_year": "1995",
+									"end_year": "1995"
+								}, {
+									"start_year": "1996",
+									"end_year": "1996"
+								}
+							]
+						},
+						"years_per_interval": 1,
+						"sex": "Both",
+						"covariates": []
+					}
+				]
+			}
+		},
+		"calculation_methods": {
+			"calculation_method": {
+				"name": "het_r_procedure",
+				"code_routine_name": "het_r_procedure",
+				"description": "Heterogenous (HET) model type",
+				"parameters": {
+					"parameter": []
+				}
+			}
+		},
+		"rif_output_options": {
+			"rif_output_option": ["Data", "Maps", "Ratios and Rates"]
+		}
+	}
+}
+	 * 
+	 * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
+	 */
+	 public String getJsonFile(
+			final Connection connection,
+			final User user,
+			final RIFStudySubmission rifStudySubmission,
+			final String studyID)
+					throws RIFServiceException {
+		JSONObject json = new JSONObject();
+		JSONObject rif_job_submission = new JSONObject();
+		rif_job_submission.put("created_by", user.getUserID());
+		json.put("rif_job_submission", rif_job_submission);
+		String result=json.toString();
+
+		try {
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "PGSQLStudyExtractManager ERROR", exception);
+				
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"sqlStudyStateManager.error.getJsonFile",
+					user.getUserID(),
+					studyID);
+			RIFServiceException rifServiceExeption
+				= new RIFServiceException(
+					RIFServiceError.JSONFILE_CREATE_FAILED, 
+					errorMessage);
+			throw rifServiceExeption;
+		}
+		
+		return result;
+
+	}
 	
 	public void createStudyExtract(
 			final Connection connection,

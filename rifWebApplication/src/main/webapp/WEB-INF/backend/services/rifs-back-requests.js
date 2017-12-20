@@ -268,9 +268,15 @@ angular.module("RIF")
                 };         
 				//Get Extract Status - can Zip file be created/fetched
                self.getExtractStatus = function (username, studyID) {
-                    //http://localhost:8080/rifServices/studySubmission/pg/getExtractStatus?userID==dwmorley&studyID=46
+                    //http://localhost:8080/rifServices/studySubmission/pg/getExtractStatus?userID=dwmorley&studyID=46
                     return $http.get(servicesConfig.studySubmissionURL + DatabaseService.getDatabase() + 'getExtractStatus?userID=' + username + '&studyID=' + studyID);
-                };      
+                };
+				// Get JSON study setup file
+				self.getJsonFile = function (username, studyID) {
+                    //http://localhost:8080/rifServices/studySubmission/pg/getJsonFile?userID=dwmorley&studyID=46
+                    return $http.get(servicesConfig.studySubmissionURL + DatabaseService.getDatabase() + 'getJsonFile?userID=' + username + '&studyID=' + studyID);
+                };     
+				
 				//Middleware logger for front end
                self.rifFrontEndLogger = function (
 					username,

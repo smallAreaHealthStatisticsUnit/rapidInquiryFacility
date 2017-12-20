@@ -27,8 +27,8 @@
  * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
  * Boston, MA 02110-1301 USA
 
- * David Morley
- * @author dmorley
+ * Peter Hambly
+ * @author phambly
  */
 
 /* 
@@ -39,27 +39,36 @@
 /* global URL */
 
 angular.module("RIF")
-        .controller('ExportSaveCtrl', ['$scope', 'ModelService',
-            function ($scope, ModelService) {
+        .controller('ExportSaveCtrl', ['$scope', 'ModelService', 'user', 
+            function ($scope, ModelService, user) {
  // http://bgrins.github.io/devtools-snippets/#console-save
                 //get the study object
                 $scope.getBlobJob = function () {
-                    var data = ModelService.get_rif_job_submission_JSON(); // Replace with middleware call
-                    var json = JSON.stringify(data, null, 2); // JSON5
-                    var blob = new Blob([json], {type: 'text/json'});
-                    var filename = "RIFstudy.json";
-                    
-                    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-                        window.navigator.msSaveOrOpenBlob(blob, filename);
-                    } else {
-                        var e = document.createEvent('MouseEvents'),
-                                a = document.createElement('a');
-                        a.download = filename;
-                        a.href = window.URL.createObjectURL(blob);
-                        a.dataset.downloadurl = ['text/json', a.download, a.href].join(':');
-                        e.initEvent('click', true, false, window,
-                                0, 0, 0, 0, 0, false, false, false, false, 0, null);
-                        a.dispatchEvent(e);
-                    }
+						$scope.extractStatus=user.getJsonFile(user.currentUser, $scope.studyID["exportmap"].study_id).then(function (res) {
+						if (res.data && res.data.rif_job_submission) {			
+												
+							var json = JSON.stringify(res.data, null, 2); // JSON5
+							var blob = new Blob([json], {type: 'text/json'});
+							var filename = "RIFstudy_" + $scope.studyID["exportmap"].study_id + ".json";
+							
+							if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+								window.navigator.msSaveOrOpenBlob(blob, filename);
+							} 
+							else {
+								var e = document.createEvent('MouseEvents'),
+										a = document.createElement('a');
+								a.download = filename;
+								a.href = window.URL.createObjectURL(blob);
+								a.dataset.downloadurl = ['text/json', a.download, a.href].join(':');
+								e.initEvent('click', true, false, window,
+										0, 0, 0, 0, 0, false, false, false, false, 0, null);
+								a.dispatchEvent(e);
+							}
+						}
+
+						else {			
+							$scope.showError("Could not retrieve study JSON; unable to create JSON file");
+						}
+					});	
                 };
             }]);

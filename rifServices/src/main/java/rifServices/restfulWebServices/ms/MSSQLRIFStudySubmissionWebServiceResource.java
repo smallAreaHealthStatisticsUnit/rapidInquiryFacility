@@ -1260,6 +1260,20 @@ public class MSSQLRIFStudySubmissionWebServiceResource
 			userID, 
 			studyID,
 			zoomLevel);
+	}		
+	
+	@GET
+	@Produces({"application/json"})	
+	@Path("/getJsonFile")
+	public Response getJsonFile(
+		@Context HttpServletRequest servletRequest,
+		@QueryParam("userID") String userID,
+		@QueryParam("studyID") String studyID) {
+	
+		return super.getJsonFile(
+			servletRequest, 
+			userID, 
+			studyID);
 	}	
 
 	@GET

@@ -1322,8 +1322,110 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 		}	
 		
 		return result;
-	}						
+	}	
 	
+	/**
+	 * Get the JSON setup file for a run study.                          
+	 * <p>   
+	 * This function returns the JSON setup file for a run study, including the print setup 
+	 * </p>
+	 * <p>
+	 * Returns the following textual strings:	
+	 * @param  _user 		Database username of logged on user.
+	 * @param  studyID 		Integer study identifier (database study_id field).
+	 *
+	 * @return 				Textual JSON 
+	 *						NULL on exception or permission denied by sqlConnectionManager
+	 */	
+	public String getJsonFile(
+			final User _user,
+			final String studyID) 
+					throws RIFServiceException {
+										
+		String result = null;
+		RIFLogger rifLogger = RIFLogger.getLogger();
+		
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		MSSQLConnectionManager sqlConnectionManager
+		= rifServiceResources.getSqlConnectionManager();			
+		
+		if (sqlConnectionManager.isUserBlocked(user) == true) {
+			return null;
+		}
+
+		Connection connection = null;
+		try {
+
+			//Part II: Check for empty parameter values
+			FieldValidationUtility fieldValidationUtility
+			= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+					"getJsonFile",
+					"user",
+					user);
+			fieldValidationUtility.checkNullMethodParameter(
+					"getJsonFile",
+					"studyID",
+					studyID);	
+
+			//Check for security violations
+			validateUser(user);
+			fieldValidationUtility.checkMaliciousMethodParameter(
+					"getJsonFile", 
+					"studyID", 
+					studyID);
+
+			//Audit attempt to do operation
+			String auditTrailMessage
+			= RIFServiceMessages.getMessage("logging.getJsonFile",
+					user.getUserID(),
+					user.getIPAddress(),
+					studyID);
+			rifLogger.info(
+					getClass(),
+					auditTrailMessage);
+
+			//Assign pooled connection
+			connection
+			= sqlConnectionManager.assignPooledWriteConnection(user);
+
+			MSSQLRIFSubmissionManager sqlRIFSubmissionManager
+			= rifServiceResources.getRIFSubmissionManager();
+			RIFStudySubmission rifStudySubmission
+			= sqlRIFSubmissionManager.getRIFStudySubmission(
+					connection, 
+					user, 
+					studyID);
+
+			MSSQLStudyExtractManager studyExtractManager
+			= rifServiceResources.getSQLStudyExtractManager();
+			result=studyExtractManager.getJsonFile(
+					connection, 
+					user, 
+					rifStudySubmission,
+					studyID);
+
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+					user,
+					"getJsonFile",
+					rifServiceException);	
+			// Effectively return NULL
+		}
+		finally {
+			rifLogger.info(getClass(), "get JSON file for study: " + studyID + ": " + result);
+			//Reclaim pooled connection
+			sqlConnectionManager.reclaimPooledWriteConnection(
+					user, 
+					connection);			
+		}	
+		
+		return result;
+	}						
+		
 	public void createStudyExtract(
 			final User _user,
 			final String studyID,

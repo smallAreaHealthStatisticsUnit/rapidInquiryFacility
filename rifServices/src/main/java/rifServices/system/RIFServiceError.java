@@ -297,6 +297,7 @@ public enum RIFServiceError {
 	
 	ZIPFILE_CREATE_FAILED,/* Unable to create Zipfile */
 	ZIPFILE_GET_STATUS_FAILED,/* Unable to get Zipfile status*/
+	JSONFILE_CREATE_FAILED, /* Unable to create JSON setup file for a run study, including the print setup */
 	
 	NO_ND_PAIR_FOR_NUMERATOR_TABLE_NAME,
 	NO_HEALTH_TAXONOMY_FOR_NAMESPACE,	

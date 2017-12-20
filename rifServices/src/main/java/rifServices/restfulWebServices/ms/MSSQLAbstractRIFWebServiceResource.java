@@ -1030,6 +1030,37 @@ abstract class MSSQLAbstractRIFWebServiceResource {
 				servletRequest,
 				result);		
 	}
+	
+	protected Response getJsonFile(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String studyID) { 
+			
+		String result = null;
+
+		try {
+			User user = createUser(servletRequest, userID);
+
+			RIFStudySubmissionAPI studySubmissionService
+			= getRIFStudySubmissionService();
+
+			result=studySubmissionService.getJsonFile(
+					user, 
+					studyID);
+		}
+		catch(RIFServiceException rifServiceException) {
+			rifLogger.error(this.getClass(), 
+				"MSSQLAbstractRIFWebServiceResource.getJsonFile error", rifServiceException);
+			result 
+			= serialiseException(
+					servletRequest,
+					rifServiceException);			
+		}
+
+		return webServiceResponseGenerator.generateWebServiceResponse(
+				servletRequest,
+				result);		
+	}	
 
 	protected Response getFrontEndParameters(
 			final HttpServletRequest servletRequest,
