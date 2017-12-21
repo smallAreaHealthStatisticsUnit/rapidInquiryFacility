@@ -1143,7 +1143,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
         rifStudiesQueryFormatter.addQueryLine(0, "       CONVERT(DATETIME, study_date, 3) + CONVERT(DATETIME, study_date, 8) AS job_submission_date, geography, study_type, study_state, comparison_geolevel_name,");
 		rifStudiesQueryFormatter.addQueryLine(0, "       denom_tab, direct_stand_tab, year_start, year_stop, max_age_group, min_age_group,");
 		rifStudiesQueryFormatter.addQueryLine(0, "       study_geolevel_name,  map_table, suppression_value, extract_permitted,");
-		rifStudiesQueryFormatter.addQueryLine(0, "       transfer_permitted, authorised_by, CONVERT(DATETIME, authorised_on, 3) + CONVERT(DATETIME, authorised_on, 8) AS  AS authorised_on, authorised_notes, audsid,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       transfer_permitted, authorised_by, CONVERT(DATETIME, authorised_on, 3) + CONVERT(DATETIME, authorised_on, 8) AS authorised_on, authorised_notes, audsid,");
 		rifStudiesQueryFormatter.addQueryLine(0, "       partition_parallelisation, covariate_table, project, project_description, stats_method");
 		rifStudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");	
 		rifStudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");	
@@ -1346,6 +1346,14 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 
 				do {
 					JSONObject investigationObject = new JSONObject();
+					JSONObject age_band = new JSONObject();
+					JSONObject health_codes = new JSONObject();
+					JSONObject year_range = new JSONObject();
+					JSONObject year_intervals = new JSONObject();
+					JSONArray year_interval = new JSONArray();
+					int yearStart=0;
+					int yearStop=0;
+
 					// The column count starts from 1
 					for (int i = 1; i <= columnCount; i++ ) {
 						String name = rsmd.getColumnName(i);
@@ -1367,10 +1375,39 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 							investigationObject.put("health_theme", health_theme);
 							investigationObject.put("numerator_denominator_pair", numerator_denominator_pair);
 						}
+						else if (name.equals("min_age_group") ) {
+							JSONObject lower_age_group = new JSONObject();
+							lower_age_group.put("id", value);
+							age_band.put("lower_age_group", lower_age_group);
+						}
+						else if (name.equals("max_age_group") ) {
+							JSONObject upper_age_group = new JSONObject();
+							upper_age_group.put("id", value);
+							age_band.put("upper_age_group", upper_age_group);
+						}
+						else if (name.equals("year_start") ) {
+							yearStart=Integer.parseInt(value);
+							year_range.put("lower_bound", yearStart);
+						}
+						else if (name.equals("year_stop") ) {
+							yearStop=Integer.parseInt(value);
+							year_range.put("upper_bound", yearStop);
+						}
 						else {
 							investigationObject.put(name, value);
 						}
 					}
+					investigationObject.put("age_band", age_band);
+					investigationObject.put("health_codes", health_codes);
+					investigationObject.put("year_range", year_range);
+					for (int j=yearStart;j<=yearStop;j++) {
+						JSONObject yearInterval = new JSONObject();
+						yearInterval.put("start_year", j);
+						yearInterval.put("stop_year", j);
+						year_interval.put(yearInterval);
+					}
+					year_intervals.put("year_interval", year_interval);
+					investigationObject.put("year_intervals", year_intervals);
 					investigation.put(investigationObject);	
 				} while (resultSet.next());
 			}

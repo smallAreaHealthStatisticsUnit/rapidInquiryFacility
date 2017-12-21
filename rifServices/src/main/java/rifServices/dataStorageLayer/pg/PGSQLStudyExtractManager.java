@@ -1302,6 +1302,14 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 
 				do {
 					JSONObject investigationObject = new JSONObject();
+					JSONObject age_band = new JSONObject();
+					JSONObject health_codes = new JSONObject();
+					JSONObject year_range = new JSONObject();
+					JSONObject year_intervals = new JSONObject();
+					JSONArray year_interval = new JSONArray();
+					int yearStart=0;
+					int yearStop=0;
+
 					// The column count starts from 1
 					for (int i = 1; i <= columnCount; i++ ) {
 						String name = rsmd.getColumnName(i);
@@ -1323,10 +1331,39 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 							investigationObject.put("health_theme", health_theme);
 							investigationObject.put("numerator_denominator_pair", numerator_denominator_pair);
 						}
+						else if (name.equals("min_age_group") ) {
+							JSONObject lower_age_group = new JSONObject();
+							lower_age_group.put("id", value);
+							age_band.put("lower_age_group", lower_age_group);
+						}
+						else if (name.equals("max_age_group") ) {
+							JSONObject upper_age_group = new JSONObject();
+							upper_age_group.put("id", value);
+							age_band.put("upper_age_group", upper_age_group);
+						}
+						else if (name.equals("year_start") ) {
+							yearStart=Integer.parseInt(value);
+							year_range.put("lower_bound", yearStart);
+						}
+						else if (name.equals("year_stop") ) {
+							yearStop=Integer.parseInt(value);
+							year_range.put("upper_bound", yearStop);
+						}
 						else {
 							investigationObject.put(name, value);
 						}
 					}
+					investigationObject.put("age_band", age_band);
+					investigationObject.put("health_codes", health_codes);
+					investigationObject.put("year_range", year_range);
+					for (int j=yearStart;j<=yearStop;j++) {
+						JSONObject yearInterval = new JSONObject();
+						yearInterval.put("start_year", j);
+						yearInterval.put("stop_year", j);
+						year_interval.put(yearInterval);
+					}
+					year_intervals.put("year_interval", year_interval);
+					investigationObject.put("year_intervals", year_intervals);
 					investigation.put(investigationObject);	
 				} while (resultSet.next());
 			}
