@@ -517,9 +517,6 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			JSONObject json = new JSONObject();
 			JSONObject rif_job_submission=addRifStudiesJson(connection, studyID);
 			rif_job_submission.put("created_by", user.getUserID());
-			JSONObject rif_output_options = new JSONObject();
-			rif_output_options.put("rif_output_option", new String[] { "Data", "Maps", "Ratios and Rates" });
-			rif_job_submission.put("rif_output_options", rif_output_options);
 			json.put("rif_job_submission", rif_job_submission);
 			result=json.toString();
 		}
@@ -1094,6 +1091,8 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 					throws Exception {
 		SQLGeneralQueryFormatter rifStudiesQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
+		ResultSetMetaData rsmd = null;
+		int columnCount = 0;
 		JSONObject rif_job_submission = new JSONObject();
 		
 		rifStudiesQueryFormatter.addQueryLine(0, "SELECT username AS extracted_by, study_id, extract_table, study_name, summary, description, other_notes,");
@@ -1109,11 +1108,20 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 		try {		
 			statement.setInt(1, Integer.parseInt(studyID));	
 			resultSet = statement.executeQuery();
-			resultSet.next();
-			ResultSetMetaData rsmd = resultSet.getMetaData();
-			int columnCount = rsmd.getColumnCount();
+			if (resultSet.next()) {
+				rsmd = resultSet.getMetaData();
+				columnCount = rsmd.getColumnCount();
+			}
+			else {
+				throw new Exception("addRifStudiesJson(): expected 1 row, got none");
+			}
 			JSONObject rif_project = new JSONObject();
 			JSONObject study_type = new JSONObject();
+			JSONObject rif_output_options = new JSONObject();
+			JSONObject investigations = new JSONObject();
+			JSONArray investigation = new JSONArray();
+			String geographyName=null;
+			rif_output_options.put("rif_output_option", new String[] { "Data", "Maps", "Ratios and Rates" });
 
 			// The column count starts from 1
 			for (int i = 1; i <= columnCount; i++ ) {
@@ -1144,9 +1152,13 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				}
 				else if (name.equals("geography") ) {
 					JSONObject geography = new JSONObject();
-					geography.put("name", value);	
-					geography.put("description", value);	// Need to get from rif40_geographies
+					geographyName = value;
+					geography.put("name", geographyName);	
+					geography.put("description", getGeographyDescription(connection, geographyName));	// Need to get from rif40_geographies
 					study_type.put(name, geography);	
+				}
+				else if (name.equals("viewer_mapping") || name.equals("diseasemap1_mapping") || name.equals("diseasemap2_mapping") ) {
+					rif_output_options.put(name, new JSONObject(value)); // Parse value
 				}
 				else if (name.equals("study_type") ) {
 					switch(Integer.parseInt(value)) {
@@ -1217,7 +1229,15 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				}
 			}
 			rif_job_submission.put("project", rif_project);	
+			addInvestigations(connection, investigation, studyID, geographyName);
+			investigations.put("investigation", investigation);
+			study_type.put("investigations", investigations);
 			rif_job_submission.put("disease_mapping_study", study_type);
+			rif_job_submission.put("rif_output_options", rif_output_options);
+
+			if (resultSet.next()) {
+				throw new Exception("addRifStudiesJson(): expected 1 row, got >1");
+			}
 		}
 		catch (Exception exception) {
 			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifStudiesQueryFormatter.generateQuery(),
@@ -1230,7 +1250,161 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 
 		return rif_job_submission;
 	}
+
+	private String getGeographyDescription(Connection connection, String geographyName)
+					throws Exception {
+		SQLGeneralQueryFormatter rifGeographyQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		
+		rifGeographyQueryFormatter.addQueryLine(0, "SELECT description FROM rif40.rif40_geographies WHERE geography = ?");
+		PreparedStatement statement = createPreparedStatement(connection, rifGeographyQueryFormatter);
+		String geographyDescription=null;
+		try {			
+			statement.setString(1, geographyName);	
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				geographyDescription=resultSet.getString(1);
+				if (resultSet.next()) {
+					throw new Exception("getGeographyDescription(): expected 1 row, got >1");
+				}
+			}
+			else {
+				throw new Exception("getGeographyDescription(): expected 1 row, got none");
+			}
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifGeographyQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}
+
+		return geographyDescription;
+	}
 	
+	private void addInvestigations(Connection connection, JSONArray investigation, String studyID, String geographyName)
+					throws Exception {
+		SQLGeneralQueryFormatter rifInvestigationsQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		
+		rifInvestigationsQueryFormatter.addQueryLine(0, "SELECT * FROM rif40.rif40_investigations WHERE study_id = ?");
+		PreparedStatement statement = createPreparedStatement(connection, rifInvestigationsQueryFormatter);
+
+		try {		
+			statement.setInt(1, Integer.parseInt(studyID));	
+			resultSet = statement.executeQuery();
+			
+			if (resultSet.next()) {
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+
+				do {
+					JSONObject investigationObject = new JSONObject();
+					// The column count starts from 1
+					for (int i = 1; i <= columnCount; i++ ) {
+						String name = rsmd.getColumnName(i);
+						String value = resultSet.getString(i);
+						if (value == null) {
+							value="";
+						}
+
+						if (name.equals("inv_name") ) {
+							investigationObject.put("title", value);
+						}
+						else if (name.equals("numer_tab") ) {
+							String numeratorTable=value;
+							JSONObject numerator_denominator_pair = new JSONObject();
+							JSONObject health_theme = new JSONObject();
+							addNumeratorDenominatorPair(connection, numeratorTable, 
+								numerator_denominator_pair, health_theme, geographyName);
+
+							investigationObject.put("health_theme", health_theme);
+							investigationObject.put("numerator_denominator_pair", numerator_denominator_pair);
+						}
+						else {
+							investigationObject.put(name, value);
+						}
+					}
+					investigation.put(investigationObject);	
+				} while (resultSet.next());
+			}
+			else {
+				throw new Exception("addInvestigations(): expected 1+ rows, got none");
+			}			
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifInvestigationsQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}
+	}
+
+	public void addNumeratorDenominatorPair(Connection connection, String numeratorTable, 
+						JSONObject numerator_denominator_pair, JSONObject health_theme, String geographyName)
+					throws Exception {
+		SQLGeneralQueryFormatter rifNumDenomQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		
+		rifNumDenomQueryFormatter.addQueryLine(0, "SELECT a.geography, a.numerator_table, a.numerator_description,");
+		rifNumDenomQueryFormatter.addQueryLine(0, "       a.theme_description, a.denominator_table, a.denominator_description, b.theme");
+		rifNumDenomQueryFormatter.addQueryLine(0, "  FROM rif40_num_denom a");
+		rifNumDenomQueryFormatter.addQueryLine(0, "       LEFT OUTER JOIN rif40.rif40_health_study_themes b ON (a.theme_description = b.description)");
+		rifNumDenomQueryFormatter.addQueryLine(0, " WHERE a.geography = ? AND a.numerator_table = ?");
+		PreparedStatement statement = createPreparedStatement(connection, rifNumDenomQueryFormatter);
+
+		try {		
+			statement.setString(1, geographyName);	
+			statement.setString(2, numeratorTable);	
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+				for (int i = 1; i <= columnCount; i++ ) {
+					String name = rsmd.getColumnName(i);
+					String value = resultSet.getString(i);
+					if (value == null) {
+						value="";
+					}
+
+					if (name.equals("numerator_table") ) {
+						numerator_denominator_pair.put("numerator_table_name", value);
+					}
+					else if (name.equals("numerator_description") ) {
+						numerator_denominator_pair.put("numerator_table_description", value);
+					}
+					else if (name.equals("denominator_table") ) {
+						numerator_denominator_pair.put("denominator_table_name", value);
+					}
+					else if (name.equals("denominator_description") ) {
+						numerator_denominator_pair.put("denominator_description", value);
+					}
+					else if (name.equals("theme_description") ) {
+						health_theme.put("theme_description", value);
+					}
+					else if (name.equals("theme") ) {
+						health_theme.put("name", value);
+					}
+				}
+			}
+			else {
+				throw new Exception("addNumeratorDenominatorPair(): expected 1 row, got none");
+			}	
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifNumDenomQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}
+	}
+
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
