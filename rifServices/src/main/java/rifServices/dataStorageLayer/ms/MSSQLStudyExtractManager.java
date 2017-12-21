@@ -1351,8 +1351,12 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 					JSONObject year_range = new JSONObject();
 					JSONObject year_intervals = new JSONObject();
 					JSONArray year_interval = new JSONArray();
+					JSONArray covariates = new JSONArray();
 					int yearStart=0;
 					int yearStop=0;
+					int minAgeGroup=0;
+					int maxAgeGroup=0;
+					String numeratorTable=null;
 
 					// The column count starts from 1
 					for (int i = 1; i <= columnCount; i++ ) {
@@ -1366,7 +1370,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 							investigationObject.put("title", value);
 						}
 						else if (name.equals("numer_tab") ) {
-							String numeratorTable=value;
+							numeratorTable=value;
 							JSONObject numerator_denominator_pair = new JSONObject();
 							JSONObject health_theme = new JSONObject();
 							addNumeratorDenominatorPair(connection, numeratorTable, 
@@ -1376,14 +1380,10 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 							investigationObject.put("numerator_denominator_pair", numerator_denominator_pair);
 						}
 						else if (name.equals("min_age_group") ) {
-							JSONObject lower_age_group = new JSONObject();
-							lower_age_group.put("id", value);
-							age_band.put("lower_age_group", lower_age_group);
+							minAgeGroup=Integer.parseInt(value);
 						}
 						else if (name.equals("max_age_group") ) {
-							JSONObject upper_age_group = new JSONObject();
-							upper_age_group.put("id", value);
-							age_band.put("upper_age_group", upper_age_group);
+							maxAgeGroup=Integer.parseInt(value);
 						}
 						else if (name.equals("year_start") ) {
 							yearStart=Integer.parseInt(value);
@@ -1393,10 +1393,27 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 							yearStop=Integer.parseInt(value);
 							year_range.put("upper_bound", yearStop);
 						}
+						else if (name.equals("genders") ) {
+								switch (Integer.parseInt(value)) {
+									case 1:	
+										investigationObject.put("sex", "Males");
+										break;
+									case 2:	
+										investigationObject.put("sex", "Females");
+										break;
+									case 3:	
+										investigationObject.put("sex", "Both");
+										break;
+								}
+						}
 						else {
 							investigationObject.put(name, value);
 						}
 					}
+					JSONObject lower_age_group=addAgeSexGroup(connection, minAgeGroup /* Offset */, numeratorTable);
+					age_band.put("lower_age_group", lower_age_group);
+					JSONObject upper_age_group=addAgeSexGroup(connection, maxAgeGroup /* Offset */, numeratorTable);
+					age_band.put("upper_age_group", upper_age_group);
 					investigationObject.put("age_band", age_band);
 					investigationObject.put("health_codes", health_codes);
 					investigationObject.put("year_range", year_range);
@@ -1408,6 +1425,8 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 					}
 					year_intervals.put("year_interval", year_interval);
 					investigationObject.put("year_intervals", year_intervals);
+					investigationObject.put("years_per_interval", 1);
+					investigationObject.put("covariates", covariates); // Got to here
 					investigation.put(investigationObject);	
 				} while (resultSet.next());
 			}
@@ -1425,7 +1444,56 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 		}
 	}
 
-	public void addNumeratorDenominatorPair(Connection connection, String numeratorTable, 
+	private JSONObject addAgeSexGroup(Connection connection, int offset, String tableName) 
+					throws Exception {
+		SQLGeneralQueryFormatter ageSexGroupQueryFormatter = new SQLGeneralQueryFormatter();		
+		ageSexGroupQueryFormatter.addQueryLine(0, "SELECT a.offset AS id, a.low_age AS lower_limit, a.high_age AS upper_limit, a.fieldname AS name");
+		ageSexGroupQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_age_groups a, rif40.rif40_tables b");
+		ageSexGroupQueryFormatter.addQueryLine(0, " WHERE a.offset       = ?");
+		ageSexGroupQueryFormatter.addQueryLine(0, "   AND a.age_group_id = b.age_group_id");
+		ageSexGroupQueryFormatter.addQueryLine(0, "   AND b.table_name   = ?");
+		
+		ResultSet resultSet = null;
+		PreparedStatement statement = createPreparedStatement(connection, ageSexGroupQueryFormatter);
+		JSONObject age_group = new JSONObject();
+
+		try {		
+			statement.setInt(1, offset);
+			statement.setString(2, tableName);	
+			resultSet = statement.executeQuery();
+			ResultSetMetaData rsmd = resultSet.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+			if (resultSet.next()) {
+				for (int i = 1; i <= columnCount; i++ ) {
+					String name = rsmd.getColumnName(i);
+					String value = resultSet.getString(i);
+					if (value == null) {
+						value="";
+					}
+					age_group.put(name, value);	
+				}
+				
+				if (resultSet.next()) {
+					throw new Exception("addAgeSexGroup(): expected 1 row, got >1");
+				}
+			}
+			else {
+				throw new Exception("addAgeSexGroup(): expected 1 row, got none");
+			}		
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + ageSexGroupQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}
+		
+		return age_group;
+	}
+	
+	private void addNumeratorDenominatorPair(Connection connection, String numeratorTable, 
 						JSONObject numerator_denominator_pair, JSONObject health_theme, String geographyName)
 					throws Exception {
 		SQLGeneralQueryFormatter rifNumDenomQueryFormatter = new SQLGeneralQueryFormatter();		
@@ -1470,6 +1538,10 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 					else if (name.equals("theme") ) {
 						health_theme.put("name", value);
 					}
+				}				
+				
+				if (resultSet.next()) {
+					throw new Exception("addNumeratorDenominatorPair(): expected 1 row, got >1");
 				}
 			}
 			else {
