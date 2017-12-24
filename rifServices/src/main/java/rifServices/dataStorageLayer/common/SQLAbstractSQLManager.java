@@ -60,6 +60,8 @@ import java.sql.*;
  * Kevin Garwood
  * @author kgarwood
  * @version
+ *
+ * Made in common class by Peter Hambly
  */
 /*
  * Code Road Map:
