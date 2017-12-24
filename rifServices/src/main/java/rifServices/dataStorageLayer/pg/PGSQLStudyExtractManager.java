@@ -21,6 +21,7 @@ import java.sql.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.util.Date;
+import java.util.Calendar;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -1095,12 +1096,7 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 		int columnCount = 0;
 		JSONObject rif_job_submission = new JSONObject();
 		
-		rifStudiesQueryFormatter.addQueryLine(0, "SELECT username AS extracted_by, study_id, extract_table, study_name, summary, description, other_notes,");
-        rifStudiesQueryFormatter.addQueryLine(0, "       TO_CHAR(study_date, 'DD/MM/YY HH24:MI:SS') AS job_submission_date, geography, study_type, study_state, comparison_geolevel_name,");
-		rifStudiesQueryFormatter.addQueryLine(0, "       denom_tab, direct_stand_tab, year_start, year_stop, max_age_group, min_age_group,");
-		rifStudiesQueryFormatter.addQueryLine(0, "       study_geolevel_name,  map_table, suppression_value, extract_permitted,");
-		rifStudiesQueryFormatter.addQueryLine(0, "       transfer_permitted, authorised_by, TO_CHAR(authorised_on, 'DD/MM/YY HH24:MI:SS') AS authorised_on, authorised_notes, audsid,");
-		rifStudiesQueryFormatter.addQueryLine(0, "       partition_parallelisation, covariate_table, project, project_description, stats_method");
+		rifStudiesQueryFormatter.addQueryLine(0, "SELECT *");
 		rifStudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");	
 		rifStudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");	
 		PreparedStatement statement = createPreparedStatement(connection, rifStudiesQueryFormatter);
@@ -1121,12 +1117,14 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			JSONObject investigations = new JSONObject();
 			JSONArray investigation = new JSONArray();
 			String geographyName=null;
+			Calendar calendar = Calendar.getInstance();
 			rif_output_options.put("rif_output_option", new String[] { "Data", "Maps", "Ratios and Rates" });
 
 			// The column count starts from 1
 			for (int i = 1; i <= columnCount; i++ ) {
 				String name = rsmd.getColumnName(i);
 				String value = resultSet.getString(i);
+				Date dateValue=null;
 				if (value == null) {
 					value="";
 				}
@@ -1142,6 +1140,17 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 				}
 				else if (name.equals("project_description") ) {
 					rif_project.put("description", value);	
+				}
+				else if (name.equals("username") ) {
+					rif_project.put("extracted_by", value);	
+				}
+				else if (name.equals("study_date") ) {
+					dateValue=resultSet.getDate(i, calendar);
+					rif_project.put("job_submission_date", dateValue);	
+				}
+				else if (name.equals("authorised_on") ) {
+					dateValue=resultSet.getDate(i, calendar);
+					rif_project.put(name, dateValue);	// DD/MM/YY HH24:MI:SS
 				}
 
 				else if (name.equals("study_name") ) {
@@ -1324,6 +1333,9 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 
 						if (name.equals("inv_name") ) {
 							investigationObject.put("title", value);
+						}
+						else if (name.equals("username") ) {
+							investigationObject.put("extracted_by", value);	
 						}
 						else if (name.equals("numer_tab") ) {
 							numeratorTable=value;
