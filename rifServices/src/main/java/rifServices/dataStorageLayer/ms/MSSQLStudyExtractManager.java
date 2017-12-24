@@ -7,8 +7,8 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.fileFormats.RIFStudySubmissionContentHandler;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+//import rifGenericLibrary.dataStorageLayer.common.SQLFunctionCallerQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifServices.dataStorageLayer.common.GetStudyJSON;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.system.RIFServiceException;
@@ -1131,9 +1131,9 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			connection.commit();
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(countStatement);
-			PGSQLQueryUtility.close(geolevelStatement);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(countStatement);
+			SQLQueryUtility.close(geolevelStatement);
 		}
 	}
 		

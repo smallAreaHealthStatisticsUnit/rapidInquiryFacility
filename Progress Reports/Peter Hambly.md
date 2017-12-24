@@ -1813,6 +1813,7 @@ Todo:
 * Removed leak in study area/comparison area maps (was not released on logoff)
 * Added PouchDB conflict resolution code
 * Added getJsonFile middleware call
+* Common GetStudyJSON object for getJsonFile middleware call
 
 ## In progress (December 2017/January 2018):
 

@@ -3,7 +3,6 @@ package rifServices.dataStorageLayer.common;
 import rifServices.system.RIFServiceStartupOptions;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 
 import java.sql.*;
@@ -48,7 +47,7 @@ import java.util.Calendar;
  *
  * <hr>
  * Peter Hambly
- * @author phamly
+ * @author phambly
  */
 
 /*
