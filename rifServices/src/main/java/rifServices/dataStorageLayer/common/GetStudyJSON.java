@@ -9,6 +9,8 @@ import java.sql.*;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 
@@ -126,13 +128,14 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			JSONArray investigation = new JSONArray();
 			String geographyName=null;
 			Calendar calendar = Calendar.getInstance();
+			DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); // DD/MM/YY HH24:MI:SS
 			rif_output_options.put("rif_output_option", new String[] { "Data", "Maps", "Ratios and Rates" });
 
 			// The column count starts from 1
 			for (int i = 1; i <= columnCount; i++ ) {
 				String name = rsmd.getColumnName(i);
 				String value = resultSet.getString(i);
-				Date dateValue=null;
+				Timestamp dateTimeValue=null;
 				if (value == null) {
 					value="";
 				}
@@ -153,12 +156,12 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 					rif_project.put("extracted_by", value);	
 				}
 				else if (name.equals("study_date") ) {
-					dateValue=resultSet.getDate(i, calendar);
-					rif_job_submission.put("job_submission_date", dateValue);	
+					dateTimeValue=resultSet.getTimestamp(i, calendar);
+					rif_job_submission.put("job_submission_date", df.format(dateTimeValue));	
 				}
 				else if (name.equals("authorised_on") ) {
-					dateValue=resultSet.getDate(i, calendar);
-					rif_job_submission.put(name, dateValue);	// DD/MM/YY HH24:MI:SS
+					dateTimeValue=resultSet.getTimestamp(i, calendar);
+					rif_job_submission.put(name, df.format(dateTimeValue));	// DD/MM/YY HH24:MI:SS
 				}
 
 				else if (name.equals("study_name") ) {
