@@ -1815,6 +1815,10 @@ Todo:
 * Added getJsonFile middleware call
 * Common GetStudyJSON object for getJsonFile middleware call
 
+#### 2nd to 5th January 2018
+
+* Locale support, added health codes to getJsonFile
+
 ## In progress (December 2017/January 2018):
 
 * Extend PouchDB to base layer
