@@ -319,13 +319,136 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 
 		return geographyDescription;
 	}
+
+	private String getHealthCodeDesription(String code) 
+					throws Exception { // Will get from taxonomy service
+		return "Not available";
+	}
+
+	private String getOutcomeType(String outcome_group_name) 
+					throws Exception {
+		SQLGeneralQueryFormatter rifOutcomeGroupsQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		
+		rifOutcomeGroupsQueryFormatter.addQueryLine(0, 
+			"SELECT a.outcome_type, b.current_version FROM rif40.rif40_outcome_groups a, rif40.rif40_outcomes b WHERE a.outcome_group_name = ? AND a.outcome_type = b.outcome_type");
+		PreparedStatement statement = createPreparedStatement(connection, rifOutcomeGroupsQueryFormatter);
+		String outcomeGroup=null;
+		try {			
+			statement.setString(1, outcome_group_name);	
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				outcomeGroup=resultSet.getString(1) + resultSet.getString(2);
+				if (resultSet.next()) {
+					throw new Exception("getOutcomeType(): expected 1 row, got >1");
+				}
+			}
+			else {
+				throw new Exception("getOutcomeType(): expected 1 row, got none");
+			}
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifOutcomeGroupsQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}
+
+		return outcomeGroup.toLowerCase();
+	}					
+					
+	private void addHealthCodes(JSONObject healthCodes, String studyID, int invID)
+					throws Exception {
+		SQLGeneralQueryFormatter rifInvConditionsQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		rifInvConditionsQueryFormatter.addQueryLine(0, "SELECT * FROM rif40.rif40_inv_conditions WHERE study_id = ? AND inv_id = ? ORDER BY line_number");
+		PreparedStatement statement = createPreparedStatement(connection, rifInvConditionsQueryFormatter);
+		
+		JSONArray healthCodeArray=new JSONArray();
+		try {		
+			statement.setInt(1, Integer.parseInt(studyID));	
+			statement.setInt(2, invID);	
+			resultSet = statement.executeQuery();
+			
+			if (resultSet.next()) {
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+
+				do {			
+					JSONObject healthCode=new JSONObject();
+					String minCondition = null;
+					String maxCondition = null;
+					
+					// The column count starts from 1
+					for (int i = 1; i <= columnCount; i++ ) {
+						String name = rsmd.getColumnName(i);
+						String value = resultSet.getString(i);
+						if (value == null) {
+							value="";
+						}
+
+						if (name.equals("min_condition") ) {
+							minCondition = value;
+						}
+						else if (name.equals("max_condition") ) {
+							maxCondition = value;
+						}
+						else if (name.equals("outcome_group_name") ) {
+							healthCode.put("name_space", getOutcomeType(value));
+						}
+						else {
+							healthCode.put(name, value);
+						}
+					}
+					
+					if (minCondition.length() > 0 && maxCondition.length() > 0) { // BETWEEN
+						JSONObject code = new JSONObject();
+						code.put("min_condition", minCondition);
+						code.put("min_description", getHealthCodeDesription(minCondition));
+						code.put("max_condition", maxCondition);
+						code.put("max_description", getHealthCodeDesription(maxCondition));
+						healthCode.put("code", code);
+					}
+					else if (minCondition.length() > 0 && maxCondition.length() == 0) { // LIKE
+						healthCode.put("code", minCondition);
+						healthCode.put("description", getHealthCodeDesription(minCondition));
+					}
+					else {
+						throw new Exception("addHealthCodes(): minCondition: " + minCondition +
+							"; maxCondition: " + maxCondition);
+					}
+					healthCodeArray.put(healthCode);
+				} while (resultSet.next());
+				
+				healthCodes.put("health_code", healthCodeArray);
+			}
+			else {
+				throw new Exception("addHealthCodes(): expected 1+ rows, got none");
+			}			
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifInvConditionsQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}					
+	}
+	
+	private void addCovariates(JSONArray covariates, String studyID)
+					throws Exception {
+						
+	}
 	
 	private void addInvestigations(JSONArray investigation, String geographyName)
 					throws Exception {
 		SQLGeneralQueryFormatter rifInvestigationsQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
 		
-		rifInvestigationsQueryFormatter.addQueryLine(0, "SELECT * FROM rif40.rif40_investigations WHERE study_id = ?");
+		rifInvestigationsQueryFormatter.addQueryLine(0, "SELECT * FROM rif40.rif40_investigations WHERE study_id = ? ORDER BY inv_id");
 		PreparedStatement statement = createPreparedStatement(connection, rifInvestigationsQueryFormatter);
 
 		try {		
@@ -343,11 +466,12 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 					JSONObject year_range = new JSONObject();
 					JSONObject year_intervals = new JSONObject();
 					JSONArray year_interval = new JSONArray();
-					JSONArray covariates = new JSONArray();
+					JSONArray covariates = new JSONArray(); 
 					int yearStart=0;
 					int yearStop=0;
 					int minAgeGroup=0;
 					int maxAgeGroup=0;
+					int invId=0;
 					String numeratorTable=null;
 
 					// The column count starts from 1
@@ -388,6 +512,10 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 							yearStop=Integer.parseInt(value);
 							year_range.put("upper_bound", yearStop);
 						}
+						else if (name.equals("inv_id") ) {
+							invId=Integer.parseInt(value);
+							year_range.put(name, invId);
+						}
 						else if (name.equals("genders") ) {
 								switch (Integer.parseInt(value)) {
 									case 1:	
@@ -410,6 +538,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 					JSONObject upper_age_group=addAgeSexGroup(maxAgeGroup /* Offset */, numeratorTable);
 					age_band.put("upper_age_group", upper_age_group);
 					investigationObject.put("age_band", age_band);
+					addHealthCodes(health_codes, studyID, invId);
 					investigationObject.put("health_codes", health_codes);
 					investigationObject.put("year_range", year_range);
 					for (int j=yearStart;j<=yearStop;j++) {
@@ -421,6 +550,8 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 					year_intervals.put("year_interval", year_interval);
 					investigationObject.put("year_intervals", year_intervals);
 					investigationObject.put("years_per_interval", 1);
+					
+					addCovariates(covariates, studyID);
 					investigationObject.put("covariates", covariates); // Got to here
 					investigation.put(investigationObject);	
 				} while (resultSet.next());
