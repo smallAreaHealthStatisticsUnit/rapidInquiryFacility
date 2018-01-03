@@ -58,10 +58,10 @@ angular.module("RIF")
                     };
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
                     return {
-						setAreaMap(map) {
+						setAreaMap: function (map) {
 							areamap=map;
 						},
-						getAreaMap() {
+						getAreaMap: function () {
 							return areamap;
 						},
                         getState: function () {
