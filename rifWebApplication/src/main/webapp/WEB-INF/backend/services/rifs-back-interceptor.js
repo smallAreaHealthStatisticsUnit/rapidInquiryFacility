@@ -77,6 +77,17 @@ angular.module("RIF")
                     }
                 };
             }])
-        .config(function ($httpProvider) {
+        .config(["$httpProvider", function ($httpProvider) {
             $httpProvider.interceptors.push('authInterceptor');
-        });
+			
+			// https://stackoverflow.com/questions/1043339/javascript-for-detecting-browser-language-preference
+			var getFirstBrowserLanguage = function () {
+				var language = navigator.languages && navigator.languages[0] || // Chrome / Firefox
+					navigator.language ||   // All browsers
+					navigator.userLanguage; // IE <= 10
+			   
+				return language;
+			 };
+			 
+			$httpProvider.defaults.headers.common["Accept-Language"] = getFirstBrowserLanguage() || "en-US";
+        }]);

@@ -5,6 +5,7 @@ import rifGenericLibrary.system.RIFServiceException;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.io.*;
 
 
@@ -328,7 +329,8 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 		throws RIFServiceException;
 	public String getJsonFile(
 		final User user,
-		final String studyID)
+		final String studyID,
+		final Locale locale)
 		throws RIFServiceException;
 	public String getFrontEndParameters(
 		final User user);

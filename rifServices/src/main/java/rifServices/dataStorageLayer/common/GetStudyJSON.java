@@ -12,6 +12,7 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 
 /**
@@ -95,7 +96,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		super(rifServiceStartupOptions.getRIFDatabaseProperties());
 	}
 	
-	public JSONObject addRifStudiesJson(Connection connection, String studyID) 
+	public JSONObject addRifStudiesJson(Connection connection, String studyID, Locale locale) 
 					throws Exception {
 		this.connection=connection;
 		this.studyID=studyID;
@@ -127,8 +128,23 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			JSONObject investigations = new JSONObject();
 			JSONArray investigation = new JSONArray();
 			String geographyName=null;
-			Calendar calendar = Calendar.getInstance();
-			DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); // DD/MM/YY HH24:MI:SS
+			Calendar calendar = null;
+			DateFormat df = null;
+			if (locale != null) {
+				df=DateFormat.getDateTimeInstance(
+					DateFormat.DEFAULT /* Date style */, 
+					DateFormat.DEFAULT /* Time style */, 
+					locale);
+				calendar = df.getCalendar();
+				rif_job_submission.put("locale", locale);
+			}
+			else { // assume US
+				df=new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"); // MM/DD/YY HH24:MI:SS
+				rif_job_submission.put("date_format", "MM/dd/yyyy HH:mm:ss");
+				calendar = Calendar.getInstance();
+			}
+			
+			rif_job_submission.put("calendar", calendar.toString());
 			rif_output_options.put("rif_output_option", new String[] { "Data", "Maps", "Ratios and Rates" });
 
 			// The column count starts from 1

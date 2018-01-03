@@ -4,6 +4,7 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
 import javax.servlet.http.*;
 import javax.ws.rs.core.Response;
@@ -1010,6 +1011,7 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 		String result = null;
 
 		try {
+			Locale locale = servletRequest.getLocale();
 			User user = createUser(servletRequest, userID);
 
 			RIFStudySubmissionAPI studySubmissionService
@@ -1017,7 +1019,8 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 
 			result=studySubmissionService.getJsonFile(
 					user, 
-					studyID);
+					studyID,
+					locale);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifLogger.error(this.getClass(), 

@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Map;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -1338,7 +1339,8 @@ implements RIFStudySubmissionAPI {
 	 */	
 	public String getJsonFile(
 			final User _user,
-			final String studyID) 
+			final String studyID,
+			final Locale locale) 
 					throws RIFServiceException {
 										
 		String result = null;
@@ -1403,7 +1405,8 @@ implements RIFStudySubmissionAPI {
 					connection, 
 					user, 
 					rifStudySubmission,
-					studyID);
+					studyID,
+					locale);
 
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -1418,7 +1421,7 @@ implements RIFStudySubmissionAPI {
 			if (result == null) {
 				result="{}";
 			}
-			rifLogger.info(getClass(), "get JSON file for study: " + studyID + ": " + result);
+			rifLogger.info(getClass(), "get JSON file for study: " + studyID + "; locale: " + locale.toLanguageTag() + "; JSON: " + result);
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(
 					user, 

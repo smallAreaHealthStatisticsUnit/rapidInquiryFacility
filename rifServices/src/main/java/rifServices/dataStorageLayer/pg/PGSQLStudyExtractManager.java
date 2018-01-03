@@ -22,6 +22,7 @@ import java.sql.*;
 import org.json.JSONObject;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.util.Locale;
 
 
 /**
@@ -509,14 +510,15 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			final Connection connection,
 			final User user,
 			final RIFStudySubmission rifStudySubmission,
-			final String studyID)
+			final String studyID,
+			final Locale locale)
 					throws RIFServiceException {
 		String result="{}";
 
 		try {
 			JSONObject json = new JSONObject();
 			GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
-			JSONObject rif_job_submission=getStudyJSON.addRifStudiesJson(connection, studyID);
+			JSONObject rif_job_submission=getStudyJSON.addRifStudiesJson(connection, studyID, locale);
 			rif_job_submission.put("created_by", user.getUserID());
 			json.put("rif_job_submission", rif_job_submission);
 			result=json.toString();
