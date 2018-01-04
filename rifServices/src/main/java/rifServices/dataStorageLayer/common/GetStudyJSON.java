@@ -107,7 +107,14 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		int columnCount = 0;
 		JSONObject rif_job_submission = new JSONObject();
 		
-		rifStudiesQueryFormatter.addQueryLine(0, "SELECT *");
+		rifStudiesQueryFormatter.addQueryLine(0, "SELECT username,study_id,extract_table,study_name,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       summary,description,other_notes,study_date,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       geography,study_type,study_state,comparison_geolevel_name,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       denom_tab,direct_stand_tab,year_start,year_stop,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       max_age_group,min_age_group,study_geolevel_name,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       map_table,suppression_value,extract_permitted,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       transfer_permitted,authorised_by,authorised_on,authorised_notes,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       covariate_table,project,project_description,stats_method");
 		rifStudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");	
 		rifStudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");	
 		PreparedStatement statement = createPreparedStatement(connection, rifStudiesQueryFormatter);
@@ -363,7 +370,11 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 					throws Exception {
 		SQLGeneralQueryFormatter rifInvConditionsQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
-		rifInvConditionsQueryFormatter.addQueryLine(0, "SELECT * FROM rif40.rif40_inv_conditions WHERE study_id = ? AND inv_id = ? ORDER BY line_number");
+		rifInvConditionsQueryFormatter.addQueryLine(0, "SELECT min_condition,max_condition,predefined_group_name,");
+		rifInvConditionsQueryFormatter.addQueryLine(0, "       outcome_group_name,numer_tab,");
+		rifInvConditionsQueryFormatter.addQueryLine(0, "       field_name,condition,column_comment");
+		rifInvConditionsQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_inv_conditions");	
+		rifInvConditionsQueryFormatter.addQueryLine(0, " WHERE study_id = ? AND inv_id = ? ORDER BY line_number");
 		PreparedStatement statement = createPreparedStatement(connection, rifInvConditionsQueryFormatter);
 		
 		JSONArray healthCodeArray=new JSONArray();
@@ -438,9 +449,63 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		}					
 	}
 	
-	private void addCovariates(JSONArray covariates, String studyID)
+	private void addCovariates(JSONArray covariateArray, String studyID, int invID)
 					throws Exception {
+		SQLGeneralQueryFormatter rifInvCovariatesQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		rifInvCovariatesQueryFormatter.addQueryLine(0, "SELECT covariate_name,min,max,geography,study_geolevel_name");
+		rifInvCovariatesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_inv_covariates");
+		rifInvCovariatesQueryFormatter.addQueryLine(0, " WHERE study_id = ? AND inv_id = ?");
+		PreparedStatement statement = createPreparedStatement(connection, rifInvCovariatesQueryFormatter);
+		
+		try {		
+			statement.setInt(1, Integer.parseInt(studyID));	
+			statement.setInt(2, invID);	
+			resultSet = statement.executeQuery();
+			
+			if (resultSet.next()) {
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+
+				do {			
+					JSONObject covariate=new JSONObject();
+					JSONObject adjustableCovariate=new JSONObject();
+					
+					// The column count starts from 1
+					for (int i = 1; i <= columnCount; i++ ) {
+						String name = rsmd.getColumnName(i);
+						String value = resultSet.getString(i);
+						if (value == null) {
+							value="";
+						}			
 						
+						if (name.equals("covariate_name") ) {
+							covariate.put("name", value);	
+						}
+						else if (name.equals("min") ) {
+							covariate.put("minimum_value", value);
+						}
+						else if (name.equals("max") ) {
+							covariate.put("maximum_value", value);
+						}
+						else {
+							covariate.put(name, value);	
+						}
+					}		
+					covariate.put("covariate_type", "adjustable");
+					adjustableCovariate.put("adjustable_covariate", covariate);					
+					covariateArray.put(adjustableCovariate);
+				} while (resultSet.next());
+			}			
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifInvCovariatesQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}				
 	}
 	
 	private void addInvestigations(JSONArray investigation, String geographyName)
@@ -448,7 +513,11 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		SQLGeneralQueryFormatter rifInvestigationsQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
 		
-		rifInvestigationsQueryFormatter.addQueryLine(0, "SELECT * FROM rif40.rif40_investigations WHERE study_id = ? ORDER BY inv_id");
+		rifInvestigationsQueryFormatter.addQueryLine(0, "SELECT inv_id,inv_name,year_start,year_stop,");
+		rifInvestigationsQueryFormatter.addQueryLine(0, "       max_age_group,min_age_group,genders,numer_tab,");
+		rifInvestigationsQueryFormatter.addQueryLine(0, "       mh_test_type,inv_description,classifier,classifier_bands,investigation_state");
+		rifInvestigationsQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_investigations");
+		rifInvestigationsQueryFormatter.addQueryLine(0, " WHERE study_id = ? ORDER BY inv_id");
 		PreparedStatement statement = createPreparedStatement(connection, rifInvestigationsQueryFormatter);
 
 		try {		
@@ -466,7 +535,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 					JSONObject year_range = new JSONObject();
 					JSONObject year_intervals = new JSONObject();
 					JSONArray year_interval = new JSONArray();
-					JSONArray covariates = new JSONArray(); 
+					JSONArray covariateArray = new JSONArray();
 					int yearStart=0;
 					int yearStop=0;
 					int minAgeGroup=0;
@@ -551,8 +620,8 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 					investigationObject.put("year_intervals", year_intervals);
 					investigationObject.put("years_per_interval", 1);
 					
-					addCovariates(covariates, studyID);
-					investigationObject.put("covariates", covariates); // Got to here
+					addCovariates(covariateArray, studyID, invId);
+					investigationObject.put("covariates", covariateArray); // Got to here
 					investigation.put(investigationObject);	
 				} while (resultSet.next());
 			}
