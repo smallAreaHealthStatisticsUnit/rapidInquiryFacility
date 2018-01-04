@@ -372,7 +372,13 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		rifInvConditionsQueryFormatter.addQueryLine(0, "SELECT min_condition,max_condition,predefined_group_name,");
 		rifInvConditionsQueryFormatter.addQueryLine(0, "       outcome_group_name,numer_tab,");
-		rifInvConditionsQueryFormatter.addQueryLine(0, "       field_name,condition");
+//		if () {
+//			rifInvConditionsQueryFormatter.addQueryLine(0, "       field_name,condition,column_comment");
+//		}
+//		else {
+		rifInvConditionsQueryFormatter.addQueryLine(0, "       field_name,condition,CAST(column_comment AS VARCHAR(2000)) AS column_comment");
+//		}
+		
 		rifInvConditionsQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_inv_conditions");	
 		rifInvConditionsQueryFormatter.addQueryLine(0, " WHERE study_id = ? AND inv_id = ? ORDER BY line_number");
 		PreparedStatement statement = createPreparedStatement(connection, rifInvConditionsQueryFormatter);
