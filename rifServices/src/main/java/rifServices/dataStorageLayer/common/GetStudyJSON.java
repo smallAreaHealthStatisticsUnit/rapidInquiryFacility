@@ -104,6 +104,8 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 	/** 
      * get JSON description for RIF study. In same format as front in save; but with more information
 	 *
+	 * View for data: RIF40_STUDIES
+	 *
      * @param Connection connection (required)
      * @param String studyID (required)
      * @param Locale locale (required)
@@ -119,6 +121,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		ResultSetMetaData rsmd = null;
 		int columnCount = 0;
 		JSONObject rif_job_submission = new JSONObject();
+		JSONObject additionalData = new JSONObject();
 		
 		rifStudiesQueryFormatter.addQueryLine(0, "SELECT username,study_id,extract_table,study_name,");
 		rifStudiesQueryFormatter.addQueryLine(0, "       summary,description,other_notes,study_date,");
@@ -167,7 +170,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 				calendar = Calendar.getInstance();
 			}
 			
-			rif_job_submission.put("calendar", calendar.toString());
+			additionalData.put("calendar", calendar.toString());
 			rif_output_options.put("rif_output_option", new String[] { "Data", "Maps", "Ratios and Rates" });
 
 			// The column count starts from 1
@@ -192,15 +195,15 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 					rif_project.put("description", value);	
 				}
 				else if (name.equals("username") ) {
-					rif_job_submission.put("extracted_by", value);	
+					additionalData.put("extracted_by", value);	
 				}
 				else if (name.equals("study_date") ) {
 					dateTimeValue=resultSet.getTimestamp(i, calendar);
-					rif_job_submission.put("job_submission_date", df.format(dateTimeValue));	
+					additionalData.put("job_submission_date", df.format(dateTimeValue));	
 				}
 				else if (name.equals("authorised_on") ) {
 					dateTimeValue=resultSet.getTimestamp(i, calendar);
-					rif_job_submission.put(name, df.format(dateTimeValue));	// DD/MM/YY HH24:MI:SS
+					additionalData.put(name, df.format(dateTimeValue));	// DD/MM/YY HH24:MI:SS
 				}
 
 				else if (name.equals("study_name") ) {
@@ -284,17 +287,20 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 					rif_job_submission.put("calculation_methods", calculation_methods);
 				}
 				else { 
-					rif_job_submission.put(name, value);	
+					additionalData.put(name, value);	
 				}
 			}
 			rif_job_submission.put("project", rif_project);	
 			addInvestigations(investigation, geographyName);
 			investigations.put("investigation", investigation);
 			study_type.put("investigations", investigations);
+			addStudyAreas(disease_mapping_study_areas);
 			study_type.put("disease_mapping_study_areas", disease_mapping_study_areas);
+			addComparisonAreas(comparison_areas);
 			study_type.put("comparison_areas", comparison_areas);
 			rif_job_submission.put("disease_mapping_study", study_type);
 			rif_job_submission.put("rif_output_options", rif_output_options);
+			rif_job_submission.put("additional_data", additionalData);
 
 			if (resultSet.next()) {
 				throw new Exception("addRifStudiesJson(): expected 1 row, got >1");
@@ -312,6 +318,12 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		return rif_job_submission;
 	}
 
+	/**
+	 * Get geography description
+	 *
+     * @param String geographyName (required)
+	 * @return geography description string
+     */	
 	private String getGeographyDescription(String geographyName)
 					throws Exception {
 		SQLGeneralQueryFormatter rifGeographyQueryFormatter = new SQLGeneralQueryFormatter();		
@@ -345,11 +357,24 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		return geographyDescription;
 	}
 
+	/**
+	 * Get health code description from taxonomy service
+	 *
+     * @param String code (required)
+	 * @return health code description string
+     */	
 	private String getHealthCodeDesription(String code) 
 					throws Exception { // Will get from taxonomy service
 		return "Not available";
 	}
-
+	
+	/**
+	 * Get outcome type. Will return the current ontology version e.g. icd10 even if icd9 codes 
+	 * are actually being used
+	 *
+     * @param String outcome_group_name (required)
+	 * @return outcome type string
+     */	
 	private String getOutcomeType(String outcome_group_name) 
 					throws Exception {
 		SQLGeneralQueryFormatter rifOutcomeGroupsQueryFormatter = new SQLGeneralQueryFormatter();		
@@ -382,8 +407,39 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		}
 
 		return outcomeGroup.toLowerCase();
-	}					
-					
+	}							
+
+	/**
+	 * Add study areas to a study
+	 *	
+	 * View for data: RIF40_STUDY_AREAS
+	 *
+     * @param JSONObject disease_mapping_study_areas (required)
+     */		
+	private void addStudyAreas(JSONObject disease_mapping_study_areas)
+					throws Exception {
+	}
+
+	/**
+	 * Add comparison areas to a study
+	 *	
+	 * View for data: RIF40_COMPARISON_AREAS
+	 *
+     * @param JSONObject comparison_areas (required)
+     */		
+	private void addComparisonAreas(JSONObject comparison_areas)
+					throws Exception {
+	}
+	
+	/**
+	 * Add health codes to an investigation
+	 *	
+	 * View for data: RIF40_INV_CONDITIONS
+	 *
+     * @param JSONObject healthCodes (required)
+     * @param String studyID (required)
+     * @param int invID (required)
+     */						
 	private void addHealthCodes(JSONObject healthCodes, String studyID, int invID)
 					throws Exception {
 		SQLGeneralQueryFormatter rifInvConditionsQueryFormatter = new SQLGeneralQueryFormatter();		
@@ -468,7 +524,16 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			PGSQLQueryUtility.close(statement);
 		}					
 	}
-	
+
+	/**
+	 * Add covariates to an investigation
+	 *	
+	 * View for data: RIF40_INV_COVARIATES
+	 *
+     * @param JSONArray covariateArray (required)
+     * @param String studyID (required)
+     * @param int invID (required)
+     */			
 	private void addCovariates(JSONArray covariateArray, String studyID, int invID)
 					throws Exception {
 		SQLGeneralQueryFormatter rifInvCovariatesQueryFormatter = new SQLGeneralQueryFormatter();		
@@ -528,6 +593,14 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		}				
 	}
 	
+	/**
+	 * Add investigation to a study
+	 *	
+	 * View for data: RIF40_INVESTIGATIONS
+	 *
+     * @param JSONArray investigation (required)
+     * @param String geographyName (required)
+     */		
 	private void addInvestigations(JSONArray investigation, String geographyName)
 					throws Exception {
 		SQLGeneralQueryFormatter rifInvestigationsQueryFormatter = new SQLGeneralQueryFormatter();		
@@ -550,6 +623,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 
 				do {
 					JSONObject investigationObject = new JSONObject();
+					JSONObject additionalData = new JSONObject();
 					JSONObject age_band = new JSONObject();
 					JSONObject health_codes = new JSONObject();
 					JSONObject year_range = new JSONObject();
@@ -575,7 +649,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 							investigationObject.put("title", value);
 						}
 						else if (name.equals("username") ) {
-							investigationObject.put("extracted_by", value);	
+							additionalData.put("extracted_by", value);	
 						}
 						else if (name.equals("numer_tab") ) {
 							numeratorTable=value;
@@ -603,7 +677,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 						}
 						else if (name.equals("inv_id") ) {
 							invId=Integer.parseInt(value);
-							investigationObject.put(name, invId);
+							additionalData.put(name, invId);
 						}
 						else if (name.equals("genders") ) {
 								switch (Integer.parseInt(value)) {
@@ -619,7 +693,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 								}
 						}
 						else {
-							investigationObject.put(name, value);
+							additionalData.put(name, value);
 						}
 					}
 					JSONObject lower_age_group=addAgeSexGroup(minAgeGroup /* Offset */, numeratorTable);
@@ -641,7 +715,8 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 					investigationObject.put("years_per_interval", 1);
 					
 					addCovariates(covariateArray, studyID, invId);
-					investigationObject.put("covariates", covariateArray); // Got to here
+					investigationObject.put("covariates", covariateArray); 
+					investigationObject.put("additional_data", additionalData);
 					investigation.put(investigationObject);	
 				} while (resultSet.next());
 			}
@@ -659,6 +734,27 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		}
 	}
 
+	/** 
+     * Add upper or lower age group to an investigation as part of an age band:
+	 *	"age_band": {
+     *         "upper_age_group": {
+     *           "lower_limit": "85",
+     *           "name": "85PLUS",
+     *           "upper_limit": "255",
+     *           "id": "21"
+     *         },
+     *         "lower_age_group": {
+     *           "lower_limit": "0",
+     *           "name": "0",
+     *           "upper_limit": "0",
+     *           "id": "0"
+     *         }
+     *       },
+	 *
+     * @param int offset (required)
+     * @param String tableName (required)
+	 * @return JSONObject
+     */	
 	private JSONObject addAgeSexGroup(int offset, String tableName) 
 					throws Exception {
 		SQLGeneralQueryFormatter ageSexGroupQueryFormatter = new SQLGeneralQueryFormatter();		
@@ -708,8 +804,30 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		return age_group;
 	}
 	
+	/** 
+     * Add numerator and denominator pair and health theme to an investigation:
+	 * 
+	 *	"numerator_denominator_pair": {
+     *         "denominator_table_name": "POP_SAHSULAND_POP",
+     *         "numerator_table_description": "cancer numerator",
+     *         "denominator_description": "population health file",
+     *         "numerator_table_name": "NUM_SAHSULAND_CANCER"
+     *       },
+	 *	"health_theme": {
+     *         "name": "cancers",
+     *         "theme_description": "covering various types of cancers"
+     *       }
+	 *	
+	 * View for data: RIF40_NUM_DENOM
+	 *
+     * @param String numeratorTable (required)
+     * @param JSONObject numerator_denominator_pair (required)
+     * @param JSONObject health_theme (required)
+     * @param String geographyName (required)
+     */	
 	private void addNumeratorDenominatorPair(String numeratorTable, 
-						JSONObject numerator_denominator_pair, JSONObject health_theme, String geographyName)
+						JSONObject numerator_denominator_pair, JSONObject health_theme, 
+						String geographyName)
 					throws Exception {
 		SQLGeneralQueryFormatter rifNumDenomQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
