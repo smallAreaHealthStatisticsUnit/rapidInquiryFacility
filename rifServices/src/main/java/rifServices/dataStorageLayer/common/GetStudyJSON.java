@@ -154,6 +154,8 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			JSONObject comparison_areas = new JSONObject();
 			
 			String geographyName=null;
+			String comparisonGeolevelName = null;
+			String studyGeolevelName = null;
 			Calendar calendar = null;
 			DateFormat df = null;
 			if (locale != null) {
@@ -190,6 +192,14 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 				
 				if (name.equals("project") ) {
 					rif_project.put("name", value);	
+				}
+				else if (name.equals("comparison_geolevel_name") ) {
+					additionalData.put(name, value);	
+					comparisonGeolevelName=value;		
+				}
+				else if (name.equals("study_geolevel_name") ) {
+					additionalData.put(name, value);
+					studyGeolevelName=value;					
 				}
 				else if (name.equals("project_description") ) {
 					rif_project.put("description", value);	
@@ -294,9 +304,9 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			addInvestigations(investigation, geographyName);
 			investigations.put("investigation", investigation);
 			study_type.put("investigations", investigations);
-			addStudyAreas(disease_mapping_study_areas);
+			addStudyAreas(disease_mapping_study_areas, studyGeolevelName, comparisonGeolevelName);
 			study_type.put("disease_mapping_study_areas", disease_mapping_study_areas);
-			addComparisonAreas(comparison_areas);
+			addComparisonAreas(comparison_areas, studyGeolevelName, comparisonGeolevelName);
 			study_type.put("comparison_areas", comparison_areas);
 			rif_job_submission.put("disease_mapping_study", study_type);
 			rif_job_submission.put("rif_output_options", rif_output_options);
@@ -415,9 +425,77 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 	 * View for data: RIF40_STUDY_AREAS
 	 *
      * @param JSONObject disease_mapping_study_areas (required)
+     * @param JSONObject String studyGeolevelName (required)
+     * @param JSONObject String comparisonGeolevelName (required)
      */		
-	private void addStudyAreas(JSONObject disease_mapping_study_areas)
+	private void addStudyAreas(JSONObject disease_mapping_study_areas, 
+		String studyGeolevelName, String comparisonGeolevelName)
 					throws Exception {
+		SQLGeneralQueryFormatter rifStudyAreasQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		rifStudyAreasQueryFormatter.addQueryLine(0, "SELECT a.area_id, a.band_id");		
+		rifStudyAreasQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_study_areas a");	
+		rifStudyAreasQueryFormatter.addQueryLine(0, " WHERE a.study_id = ? ORDER BY band_id");
+		PreparedStatement statement = createPreparedStatement(connection, rifStudyAreasQueryFormatter);
+		
+		JSONArray mapAreaArray=new JSONArray();
+		try {		
+			statement.setInt(1, Integer.parseInt(studyID));	
+			resultSet = statement.executeQuery();
+			
+			if (resultSet.next()) {
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+
+				do {			
+					JSONObject mapArea=new JSONObject();
+					
+					// The column count starts from 1
+					for (int i = 1; i <= columnCount; i++ ) {
+						String name = rsmd.getColumnName(i);
+						String value = resultSet.getString(i);
+						if (value == null) {
+							value="";
+						}		
+						
+						if (name.equals("area_id") ) {
+							mapArea.put("id", value);
+						}
+						else {
+							mapArea.put(name, value);
+						}
+					}
+					mapArea.put("gid", "");
+					mapArea.put("label", "");
+					mapAreaArray.put(mapArea);
+				} while (resultSet.next());
+				
+				JSONObject mapArea2=new JSONObject();
+				JSONObject compName=new JSONObject();
+				compName.put("name", comparisonGeolevelName);
+				JSONObject studyName=new JSONObject();
+				studyName.put("name", studyGeolevelName);
+				JSONObject geo_levels=new JSONObject();
+				geo_levels.put("geolevel_to_view", studyName);
+				geo_levels.put("geolevel_to_map", studyName);
+				geo_levels.put("geolevel_area", "");
+				geo_levels.put("geolevel_select", studyName);
+				mapArea2.put("map_area", mapAreaArray);
+				disease_mapping_study_areas.put("geo_levels", geo_levels);
+				disease_mapping_study_areas.put("map_areas", mapArea2);
+			}
+			else {
+				throw new Exception("addStudyAreas(): expected 1+ rows, got none");
+			}			
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifStudyAreasQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}									
 	}
 
 	/**
@@ -426,9 +504,77 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 	 * View for data: RIF40_COMPARISON_AREAS
 	 *
      * @param JSONObject comparison_areas (required)
+     * @param JSONObject String studyGeolevelName (required)
+     * @param JSONObject String comparisonGeolevelName (required)
      */		
-	private void addComparisonAreas(JSONObject comparison_areas)
+	private void addComparisonAreas(JSONObject comparison_areas, 
+		String studyGeolevelName, String comparisonGeolevelName)
 					throws Exception {
+		SQLGeneralQueryFormatter rifComparisonAreasQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		rifComparisonAreasQueryFormatter.addQueryLine(0, "SELECT a.area_id");		
+		rifComparisonAreasQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_comparison_areas a");	
+		rifComparisonAreasQueryFormatter.addQueryLine(0, " WHERE a.study_id = ? ORDER BY area_id");
+		PreparedStatement statement = createPreparedStatement(connection, rifComparisonAreasQueryFormatter);
+		
+		JSONArray mapAreaArray=new JSONArray();
+		try {		
+			statement.setInt(1, Integer.parseInt(studyID));	
+			resultSet = statement.executeQuery();
+			
+			if (resultSet.next()) {
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+
+				do {			
+					JSONObject mapArea=new JSONObject();
+					
+					// The column count starts from 1
+					for (int i = 1; i <= columnCount; i++ ) {
+						String name = rsmd.getColumnName(i);
+						String value = resultSet.getString(i);
+						if (value == null) {
+							value="";
+						}					
+						
+						if (name.equals("area_id") ) {
+							mapArea.put("id", value);
+						}
+						else {
+							mapArea.put(name, value);
+						}
+					}
+					mapArea.put("gid", "");
+					mapArea.put("label", "");
+					mapAreaArray.put(mapArea);
+				} while (resultSet.next());
+				
+				JSONObject mapArea2=new JSONObject();
+				JSONObject compName=new JSONObject();
+				compName.put("name", comparisonGeolevelName);
+				JSONObject studyName=new JSONObject();
+				studyName.put("name", studyGeolevelName);
+				JSONObject geo_levels=new JSONObject();
+				geo_levels.put("geolevel_to_view", compName);
+				geo_levels.put("geolevel_to_map", compName);
+				geo_levels.put("geolevel_area", "");
+				geo_levels.put("geolevel_select", compName);
+				mapArea2.put("map_area", mapAreaArray);
+				comparison_areas.put("geo_levels", geo_levels);
+				comparison_areas.put("map_areas", mapArea2);
+			}
+			else {
+				throw new Exception("addComparisonAreas(): expected 1+ rows, got none");
+			}			
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifComparisonAreasQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}								
 	}
 	
 	/**
