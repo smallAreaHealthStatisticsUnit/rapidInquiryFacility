@@ -91,11 +91,24 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 	// ==========================================
 	// Section Construction
 	// ==========================================
+	/**
+     * Constructor.
+     * 
+     * @param RIFServiceStartupOptions rifServiceStartupOptions (required)
+     */
 	public GetStudyJSON(
 			final RIFServiceStartupOptions rifServiceStartupOptions) {
 		super(rifServiceStartupOptions.getRIFDatabaseProperties());
 	}
 	
+	/** 
+     * get JSON description for RIF study. In same format as front in save; but with more information
+	 *
+     * @param Connection connection (required)
+     * @param String studyID (required)
+     * @param Locale locale (required)
+     * @return JSONObject [front end saves as JSON5 file]
+     */
 	public JSONObject addRifStudiesJson(Connection connection, String studyID, Locale locale) 
 					throws Exception {
 		this.connection=connection;
@@ -134,6 +147,9 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			JSONObject rif_output_options = new JSONObject();
 			JSONObject investigations = new JSONObject();
 			JSONArray investigation = new JSONArray();
+			JSONObject disease_mapping_study_areas = new JSONObject();
+			JSONObject comparison_areas = new JSONObject();
+			
 			String geographyName=null;
 			Calendar calendar = null;
 			DateFormat df = null;
@@ -176,7 +192,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 					rif_project.put("description", value);	
 				}
 				else if (name.equals("username") ) {
-					rif_project.put("extracted_by", value);	
+					rif_job_submission.put("extracted_by", value);	
 				}
 				else if (name.equals("study_date") ) {
 					dateTimeValue=resultSet.getTimestamp(i, calendar);
@@ -275,6 +291,8 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			addInvestigations(investigation, geographyName);
 			investigations.put("investigation", investigation);
 			study_type.put("investigations", investigations);
+			study_type.put("disease_mapping_study_areas", disease_mapping_study_areas);
+			study_type.put("comparison_areas", comparison_areas);
 			rif_job_submission.put("disease_mapping_study", study_type);
 			rif_job_submission.put("rif_output_options", rif_output_options);
 
@@ -372,13 +390,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		rifInvConditionsQueryFormatter.addQueryLine(0, "SELECT min_condition,max_condition,predefined_group_name,");
 		rifInvConditionsQueryFormatter.addQueryLine(0, "       outcome_group_name,numer_tab,");
-//		if () {
-//			rifInvConditionsQueryFormatter.addQueryLine(0, "       field_name,condition,column_comment");
-//		}
-//		else {
-		rifInvConditionsQueryFormatter.addQueryLine(0, "       field_name,condition,CAST(column_comment AS VARCHAR(2000)) AS column_comment");
-//		}
-		
+		rifInvConditionsQueryFormatter.addQueryLine(0, "       field_name,condition,CAST(column_comment AS VARCHAR(2000)) AS column_comment");		
 		rifInvConditionsQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_inv_conditions");	
 		rifInvConditionsQueryFormatter.addQueryLine(0, " WHERE study_id = ? AND inv_id = ? ORDER BY line_number");
 		PreparedStatement statement = createPreparedStatement(connection, rifInvConditionsQueryFormatter);
@@ -436,6 +448,8 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 						throw new Exception("addHealthCodes(): minCondition: " + minCondition +
 							"; maxCondition: " + maxCondition);
 					}
+					
+					healthCode.put("is_top_level_term", "no");
 					healthCodeArray.put(healthCode);
 				} while (resultSet.next());
 				
@@ -589,7 +603,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 						}
 						else if (name.equals("inv_id") ) {
 							invId=Integer.parseInt(value);
-							year_range.put(name, invId);
+							investigationObject.put(name, invId);
 						}
 						else if (name.equals("genders") ) {
 								switch (Integer.parseInt(value)) {
@@ -619,7 +633,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 					for (int j=yearStart;j<=yearStop;j++) {
 						JSONObject yearInterval = new JSONObject();
 						yearInterval.put("start_year", j);
-						yearInterval.put("stop_year", j);
+						yearInterval.put("end_year", j);
 						year_interval.put(yearInterval);
 					}
 					year_intervals.put("year_interval", year_interval);
