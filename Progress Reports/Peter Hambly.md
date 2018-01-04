@@ -1818,6 +1818,9 @@ Todo:
 #### 2nd to 5th January 2018
 
 * Locale support, added health codes to getJsonFile
+* Added covariates, study and comparison geoelvels; commented; re-order information
+  Database does not store geolevel select so the result is the same but the selection method different
+  and the file larger!
 
 ## In progress (December 2017/January 2018):
 

@@ -304,9 +304,9 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			addInvestigations(investigation, geographyName);
 			investigations.put("investigation", investigation);
 			study_type.put("investigations", investigations);
-			addStudyAreas(disease_mapping_study_areas, studyGeolevelName, comparisonGeolevelName);
+			addStudyAreas(disease_mapping_study_areas, studyGeolevelName, comparisonGeolevelName, geographyName);
 			study_type.put("disease_mapping_study_areas", disease_mapping_study_areas);
-			addComparisonAreas(comparison_areas, studyGeolevelName, comparisonGeolevelName);
+			addComparisonAreas(comparison_areas, studyGeolevelName, comparisonGeolevelName, geographyName);
 			study_type.put("comparison_areas", comparison_areas);
 			rif_job_submission.put("disease_mapping_study", study_type);
 			rif_job_submission.put("rif_output_options", rif_output_options);
@@ -420,6 +420,61 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 	}							
 
 	/**
+	 * Get geolevelLookup table name
+     *
+     * @param JSONObject String geolevelName (required)
+     * @param JSONObject String geographyName (required)
+	 * @return JSONObject
+     */	
+	private JSONObject getLookupTableName(String geolevelName, String geographyName)
+					throws Exception {
+		SQLGeneralQueryFormatter rifGeographyQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		
+		rifGeographyQueryFormatter.addQueryLine(0, "SELECT description,lookup_table,lookup_desc_column");
+		rifGeographyQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_geolevels");
+		rifGeographyQueryFormatter.addQueryLine(0, " WHERE geography = ? AND geolevel_name = ?");
+		PreparedStatement statement = createPreparedStatement(connection, rifGeographyQueryFormatter);
+		String lookupTableName=null;
+		JSONObject geolevelData = new JSONObject();
+		try {			
+			statement.setString(1, geographyName);	
+			statement.setString(2, geolevelName);	
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {	
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+				// The column count starts from 1
+				for (int i = 1; i <= columnCount; i++ ) {
+					String name = rsmd.getColumnName(i);
+					String value = resultSet.getString(i);
+					if (value == null) {
+						value="";
+					}		
+					
+					geolevelData.put(name, value);
+				}
+				if (resultSet.next()) {
+					throw new Exception("getLookupTableName(): expected 1 row, got >1");
+				}
+			}
+			else {
+				throw new Exception("getLookupTableName(): expected 1 row, got none");
+			}
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifGeographyQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}
+
+		return geolevelData;
+	}
+
+	/**
 	 * Add study areas to a study
 	 *	
 	 * View for data: RIF40_STUDY_AREAS
@@ -427,14 +482,21 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
      * @param JSONObject disease_mapping_study_areas (required)
      * @param JSONObject String studyGeolevelName (required)
      * @param JSONObject String comparisonGeolevelName (required)
+     * @param JSONObject String geographyName (required)
      */		
 	private void addStudyAreas(JSONObject disease_mapping_study_areas, 
-		String studyGeolevelName, String comparisonGeolevelName)
+		String studyGeolevelName, String comparisonGeolevelName, String geographyName)
 					throws Exception {
+		JSONObject studyGeolevel = getLookupTableName(studyGeolevelName, geographyName);
+		
 		SQLGeneralQueryFormatter rifStudyAreasQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
-		rifStudyAreasQueryFormatter.addQueryLine(0, "SELECT a.area_id, a.band_id");		
-		rifStudyAreasQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_study_areas a");	
+		rifStudyAreasQueryFormatter.addQueryLine(0, "SELECT a.area_id, a.band_id, b." + 
+			studyGeolevel.getString("lookup_desc_column").toLowerCase() + " AS label, b.gid");		
+		rifStudyAreasQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_study_areas a ");
+		rifStudyAreasQueryFormatter.addQueryLine(0, " 			LEFT OUTER JOIN rif_data." +			
+			studyGeolevel.getString("lookup_table").toLowerCase() + 
+			" b ON (a.area_id = b." + studyGeolevelName.toLowerCase() + ")");	
 		rifStudyAreasQueryFormatter.addQueryLine(0, " WHERE a.study_id = ? ORDER BY band_id");
 		PreparedStatement statement = createPreparedStatement(connection, rifStudyAreasQueryFormatter);
 		
@@ -465,8 +527,6 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 							mapArea.put(name, value);
 						}
 					}
-					mapArea.put("gid", "");
-					mapArea.put("label", "");
 					mapAreaArray.put(mapArea);
 				} while (resultSet.next());
 				
@@ -482,6 +542,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 				geo_levels.put("geolevel_select", studyName);
 				mapArea2.put("map_area", mapAreaArray);
 				disease_mapping_study_areas.put("geo_levels", geo_levels);
+				disease_mapping_study_areas.put("study_geolevel", studyGeolevel);
 				disease_mapping_study_areas.put("map_areas", mapArea2);
 			}
 			else {
@@ -506,14 +567,21 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
      * @param JSONObject comparison_areas (required)
      * @param JSONObject String studyGeolevelName (required)
      * @param JSONObject String comparisonGeolevelName (required)
+     * @param JSONObject String geographyName (required)
      */		
 	private void addComparisonAreas(JSONObject comparison_areas, 
-		String studyGeolevelName, String comparisonGeolevelName)
+		String studyGeolevelName, String comparisonGeolevelName, String geographyName)
 					throws Exception {
+		JSONObject comparisonGeolevel = getLookupTableName(comparisonGeolevelName, geographyName);
+		
 		SQLGeneralQueryFormatter rifComparisonAreasQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
-		rifComparisonAreasQueryFormatter.addQueryLine(0, "SELECT a.area_id");		
-		rifComparisonAreasQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_comparison_areas a");	
+		rifComparisonAreasQueryFormatter.addQueryLine(0, "SELECT a.area_id, b." + 
+			comparisonGeolevel.getString("lookup_desc_column").toLowerCase() + " AS label, b.gid");			
+		rifComparisonAreasQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_comparison_areas a");
+		rifComparisonAreasQueryFormatter.addQueryLine(0, " 			LEFT OUTER JOIN rif_data." +
+			comparisonGeolevel.getString("lookup_table").toLowerCase() + " b ON (a.area_id = b." + 
+			comparisonGeolevelName.toLowerCase() + ")");		
 		rifComparisonAreasQueryFormatter.addQueryLine(0, " WHERE a.study_id = ? ORDER BY area_id");
 		PreparedStatement statement = createPreparedStatement(connection, rifComparisonAreasQueryFormatter);
 		
@@ -544,8 +612,6 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 							mapArea.put(name, value);
 						}
 					}
-					mapArea.put("gid", "");
-					mapArea.put("label", "");
 					mapAreaArray.put(mapArea);
 				} while (resultSet.next());
 				
@@ -561,6 +627,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 				geo_levels.put("geolevel_select", compName);
 				mapArea2.put("map_area", mapAreaArray);
 				comparison_areas.put("geo_levels", geo_levels);
+				comparison_areas.put("comparison_geolevel", comparisonGeolevel);
 				comparison_areas.put("map_areas", mapArea2);
 			}
 			else {
