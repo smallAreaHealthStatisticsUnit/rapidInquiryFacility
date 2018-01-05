@@ -305,7 +305,10 @@ angular.module("RIF")
                 }
 
                 function uploadProjects() {
-					try {
+					try {	
+						if (rifJob.project == undefined) {
+							return "No rif_job_submission.project defined, unable to check project";
+						}	
 						tmpProjects = rifJob.project;
 						var projectErr = user.getProjects(user.currentUser).then(uploadHandleProjects, fromFileError);
 
@@ -332,6 +335,12 @@ angular.module("RIF")
                 //will need adjusting when rif can handle multiple investigations
                 function uploadInvestigations() {
 					try {
+						if (rifJob[studyType].investigations == undefined) {
+							return "No rif_job_submission[studyType].investigations defined, unable to check investigations";
+						}	
+						if (rifJob[studyType].investigations.investigation == undefined) {
+							return "No rif_job_submission[studyType].investigations.investigation defined, unable to check investigations";
+						}	
 						//terms
 						var inv = rifJob[studyType].investigations.investigation;
 						for (var j = 0; j < inv[0].health_codes.health_code.length; j++) {

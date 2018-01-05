@@ -1822,7 +1822,15 @@ Todo:
   Database does not store geolevel select so the result is the same but the selection method different
   and the file larger!
 * Add statistical method to rif40_studies[already done; added middleware support]
-
+* Loaded and ran study using database generagted getJsonFile.
+  getJsonFile is incomplete, requires:
+  * comparison_geolevel_select, study_geolevel_select in rif40_studies
+  * t_rif40_study_select/rif40_study_select, t_rif40_comparison_select/rif40_comparison_select
+    for storing areas/bands actually seleted by user
+    i.e. currently uses study/comparisioin areas IDs (mapping level), not as user selected (select level)
+  * ICD 10 descriptions from taxonomy
+  * SQL/SQL log/status data
+  
 ## In progress (December 2017/January 2018):
 
 * Extend PouchDB to base layer [probably will defer as nolt needed yet]
