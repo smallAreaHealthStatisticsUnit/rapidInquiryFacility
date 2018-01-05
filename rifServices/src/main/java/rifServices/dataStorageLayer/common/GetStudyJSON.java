@@ -310,6 +310,8 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			study_type.put("investigations", investigations);
 			rif_job_submission.put("disease_mapping_study", study_type);
 			rif_job_submission.put("rif_output_options", rif_output_options);
+			addAdditionalTables(additionalData, "rif40_study_status");
+			addSqlLog(additionalData);
 			rif_job_submission.put("additional_data", additionalData);
 
 			if (resultSet.next()) {
@@ -368,6 +370,253 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 	}
 
 	/**
+	 * Add SQL statement log
+	 *
+     * @param JSONObject additionalData (required)
+     */	
+	private void addSqlLog(JSONObject additionalData) 
+					throws Exception {
+		JSONArray tableData = new JSONArray();
+		SQLGeneralQueryFormatter addSqlLogQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		
+		addSqlLogQueryFormatter.addQueryLine(0, "SELECT statement_number, COUNT(line_number) AS lines"); 
+		addSqlLogQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_study_sql"); 
+		addSqlLogQueryFormatter.addQueryLine(0, " WHERE study_id = ?"); 
+		addSqlLogQueryFormatter.addQueryLine(0, " GROUP BY statement_number"); 
+		addSqlLogQueryFormatter.addQueryLine(0, " ORDER BY statement_number");
+		PreparedStatement statement = createPreparedStatement(connection, addSqlLogQueryFormatter);
+		String geographyDescription=null;
+		try {			
+			statement.setInt(1, Integer.parseInt(studyID));		
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+				int rowCount = 0;
+
+				do {	
+					JSONObject tableRow = new JSONObject();
+					String statementNumber=null;
+					rowCount++;
+					// The column count starts from 1
+					for (int i = 1; i <= columnCount; i++ ) {
+						String name = rsmd.getColumnName(i);
+						String value = resultSet.getString(i);
+						if (value == null) {
+							value="";
+						}		
+						
+						if (name.equals("statement_number")) {
+							statementNumber=value;
+							tableRow.put(name, value);
+						}
+						else {
+							tableRow.put(name, value);
+						}
+					}
+					addSQLLogLines(tableRow, statementNumber);
+					addSQLLogSql(tableRow, statementNumber);
+					tableData.put(tableRow);
+					
+				} while (resultSet.next());
+			}	
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + addSqlLogQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}
+		
+		additionalData.put("rif40_study_sql", tableData);	
+	}
+
+	/**
+	 * Add SQL Log lines
+	 *
+     * @param JSONObject additionalData (required)
+     * @param String statementNumber (required)
+     */	
+	private void addSQLLogLines(JSONObject additionalData, String statementNumber) 
+					throws Exception {
+		JSONArray tableData = new JSONArray();
+		SQLGeneralQueryFormatter addAdditionalTablesQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		
+		addAdditionalTablesQueryFormatter.addQueryLine(0, "SELECT * FROM rif40.rif40_study_sql_log"); 
+		addAdditionalTablesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+		addAdditionalTablesQueryFormatter.addQueryLine(0, "   AND statement_number = ?");
+		PreparedStatement statement = createPreparedStatement(connection, addAdditionalTablesQueryFormatter);
+		String geographyDescription=null;
+		try {			
+			statement.setInt(1, Integer.parseInt(studyID));	
+			statement.setInt(2, Integer.parseInt(statementNumber));		
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+				int rowCount = 0;
+
+				do {	
+					JSONObject tableRow = new JSONObject();
+					rowCount++;
+					// The column count starts from 1
+					for (int i = 1; i <= columnCount; i++ ) {
+						String name = rsmd.getColumnName(i);
+						String value = resultSet.getString(i);
+						if (value == null) {
+							value="";
+						}		
+						
+						if (name.equals("study_id") || name.equals("username") || 
+						    name.equals("statement_number") || name.equals("audsid") || 
+							name.equals("statement_type")) {
+						}
+						else {
+							tableRow.put(name, value);
+						}
+					}
+					tableData.put(tableRow);
+					
+				} while (resultSet.next());
+			}	
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + addAdditionalTablesQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}
+		
+		additionalData.put("rif40_study_sql_log", tableData);	
+	}
+	
+	/**
+	 * Add SQL Log SQL
+	 *
+     * @param JSONObject additionalData (required)
+     * @param String statementNumber (required)
+     */	
+	private void addSQLLogSql(JSONObject additionalData, String statementNumber) 
+					throws Exception {
+		JSONArray tableData = new JSONArray();
+		SQLGeneralQueryFormatter addAdditionalTablesQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		
+		addAdditionalTablesQueryFormatter.addQueryLine(0, "SELECT * FROM rif40.rif40_study_sql"); 
+		addAdditionalTablesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+		addAdditionalTablesQueryFormatter.addQueryLine(0, "   AND statement_number = ?");
+		addAdditionalTablesQueryFormatter.addQueryLine(0, " ORDER BY line_number");
+		PreparedStatement statement = createPreparedStatement(connection, addAdditionalTablesQueryFormatter);
+		String geographyDescription=null;
+		try {			
+			statement.setInt(1, Integer.parseInt(studyID));	
+			statement.setInt(2, Integer.parseInt(statementNumber));		
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+				int rowCount = 0;
+
+				do {	
+					JSONObject tableRow = new JSONObject();
+					rowCount++;
+					// The column count starts from 1
+					for (int i = 1; i <= columnCount; i++ ) {
+						String name = rsmd.getColumnName(i);
+						String value = resultSet.getString(i);
+						if (value == null) {
+							value="";
+						}		
+						
+						if (name.equals("study_id") || name.equals("username") || name.equals("status") || 
+						    name.equals("statement_number") || name.equals("statement_type")) {
+						}
+						else {
+							tableRow.put(name, value);
+						}
+					}
+					tableData.put(tableRow);
+					
+				} while (resultSet.next());
+			}	
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + addAdditionalTablesQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}
+		
+		additionalData.put("sql", tableData);	
+	}
+		
+	/**
+	 * Add additional tables
+	 *
+     * @param JSONObject additionalData (required)
+     * @param String tableName (required)
+     */	
+	private void addAdditionalTables(JSONObject additionalData, String tableName) 
+					throws Exception {
+		JSONArray tableData = new JSONArray();
+		SQLGeneralQueryFormatter addAdditionalTablesQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		
+		addAdditionalTablesQueryFormatter.addQueryLine(0, "SELECT * FROM rif40." + tableName.toLowerCase()); 
+		addAdditionalTablesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+		PreparedStatement statement = createPreparedStatement(connection, addAdditionalTablesQueryFormatter);
+		String geographyDescription=null;
+		try {			
+			statement.setInt(1, Integer.parseInt(studyID));		
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+				int rowCount = 0;
+
+				do {	
+					JSONObject tableRow = new JSONObject();
+					rowCount++;
+					// The column count starts from 1
+					for (int i = 1; i <= columnCount; i++ ) {
+						String name = rsmd.getColumnName(i);
+						String value = resultSet.getString(i);
+						if (value == null) {
+							value="";
+						}		
+						
+						if (name.equals("study_id") || name.equals("username")) {
+						}
+						else {
+							tableRow.put(name, value);
+						}
+					}
+					tableData.put(tableRow);
+					
+				} while (resultSet.next());
+			}	
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + addAdditionalTablesQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}
+		
+		additionalData.put(tableName.toLowerCase(), tableData);	
+	}
+	
+	/**
 	 * Get health code description from taxonomy service
 	 *
      * @param String code (required)
@@ -375,6 +624,20 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
      */	
 	private String getHealthCodeDesription(String code) 
 					throws Exception { // Will get from taxonomy service
+					
+/* Call to taxonomy service: 
+
+http://localhost:8080/taxonomyServices/taxonomyServices/getMatchingTerms?taxonomy_id=icd10&search_text=c33&is_case_sensitive=false
+
+[{
+		"identifier": "C33-icd10",
+		"label": "C33",
+		"description": "Malignant neoplasm of trachea",
+		"isTopLevelTerm": null
+	}
+]
+ */
+ 
 		return "Not available";
 	}
 	

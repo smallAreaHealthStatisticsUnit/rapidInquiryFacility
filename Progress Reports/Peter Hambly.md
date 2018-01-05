@@ -1829,7 +1829,7 @@ Todo:
     for storing areas/bands actually seleted by user
     i.e. currently uses study/comparisioin areas IDs (mapping level), not as user selected (select level)
   * ICD 10 descriptions from taxonomy
-  * SQL/SQL log/status data
+* Added SQL/SQL log/status data
   
 ## In progress (December 2017/January 2018):
 
