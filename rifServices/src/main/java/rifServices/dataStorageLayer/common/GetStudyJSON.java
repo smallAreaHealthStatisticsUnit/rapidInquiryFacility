@@ -150,8 +150,8 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			JSONObject rif_output_options = new JSONObject();
 			JSONObject investigations = new JSONObject();
 			JSONArray investigation = new JSONArray();
-			JSONObject disease_mapping_study_areas = new JSONObject();
-			JSONObject comparison_areas = new JSONObject();
+			JSONObject disease_mapping_study_area = new JSONObject();
+			JSONObject comparison_area = new JSONObject();
 			
 			String geographyName=null;
 			String comparisonGeolevelName = null;
@@ -279,8 +279,8 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 						calculation_method.put("description", value);
 					}
 					else {
-						calculation_method.put("name", value + "_r_procedure");
-						calculation_method.put("code_routine_name", value + "_r_procedure");
+						calculation_method.put("name", value.toLowerCase());
+						calculation_method.put("code_routine_name", value.toLowerCase() + "_r_procedure");
 						if (value.equals("BYM")) {
 							calculation_method.put("description", "Besag, York and Mollie (BYM) model type");
 						}
@@ -301,13 +301,13 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 				}
 			}
 			rif_job_submission.put("project", rif_project);	
+			addStudyAreas(disease_mapping_study_area, studyGeolevelName, comparisonGeolevelName, geographyName);
+			study_type.put("disease_mapping_study_area", disease_mapping_study_area);
+			addComparisonAreas(comparison_area, studyGeolevelName, comparisonGeolevelName, geographyName);
+			study_type.put("comparison_area", comparison_area);
 			addInvestigations(investigation, geographyName);
 			investigations.put("investigation", investigation);
 			study_type.put("investigations", investigations);
-			addStudyAreas(disease_mapping_study_areas, studyGeolevelName, comparisonGeolevelName, geographyName);
-			study_type.put("disease_mapping_study_areas", disease_mapping_study_areas);
-			addComparisonAreas(comparison_areas, studyGeolevelName, comparisonGeolevelName, geographyName);
-			study_type.put("comparison_areas", comparison_areas);
 			rif_job_submission.put("disease_mapping_study", study_type);
 			rif_job_submission.put("rif_output_options", rif_output_options);
 			rif_job_submission.put("additional_data", additionalData);
@@ -1028,7 +1028,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
      *       },
 	 *	"health_theme": {
      *         "name": "cancers",
-     *         "theme_description": "covering various types of cancers"
+     *         "description": "covering various types of cancers"
      *       }
 	 *	
 	 * View for data: RIF40_NUM_DENOM
@@ -1079,7 +1079,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 						numerator_denominator_pair.put("denominator_description", value);
 					}
 					else if (name.equals("theme_description") ) {
-						health_theme.put("theme_description", value);
+						health_theme.put("description", value);
 					}
 					else if (name.equals("theme") ) {
 						health_theme.put("name", value);

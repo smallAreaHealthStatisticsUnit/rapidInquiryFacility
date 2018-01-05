@@ -106,7 +106,9 @@ angular.module("RIF")
 						return "No " + studyType + " object found";
 					}
 					else if (rifJob[studyType][studyAreaType] == undefined) {
-						return "No " + studyType + "." + studyAreaType + " object found";
+						var keys=Object.keys(rifJob[studyType]);
+						return "No " + studyType + "." + studyAreaType + " object found; keys: " +
+							JSON.stringify(keys, null, 0);
 					}
 					
                     $scope.consoleDebug("[rifc-dsub-fromfile.js] Parsed study: " + studyType + 
@@ -118,11 +120,32 @@ angular.module("RIF")
                 //checking if the Health theme exists and matches geography
                 function uploadHealthThemes() {
 					try {
-						tmpHealthThemeName = rifJob[studyType].investigations.investigation[0].health_theme.name;
-						tmpHealthThemeDescription = rifJob[studyType].investigations.investigation[0].health_theme.description;
-						if (rifJob[studyType].geography.name == undefined) {
-							"No geography defined, unable to determine health theme";
+						if (rifJob[studyType].geography == undefined) {
+							return "No rif_job_submission[studyType].geography defined, unable to determine health theme";
 						}
+						else if (rifJob[studyType].geography.name == undefined) {
+							return "No rif_job_submission[studyType].geography.name defined, unable to determine health theme";
+						}						
+						else if (rifJob[studyType].investigations == undefined) {
+							return "No rif_job_submission[studyType].investigations defined, unable to determine health theme";
+						}							
+						else if (rifJob[studyType].investigations.investigation[0] == undefined) {
+							return "No rif_job_submission[studyType].investigations.investigation[0] defined, unable to determine health theme";
+						}						
+						else if (rifJob[studyType].investigations.investigation[0].health_theme == undefined) {
+							return "No rif_job_submission[studyType].investigations.investigation[0].health_theme defined, unable to determine health theme";
+						}
+						else if (rifJob[studyType].investigations.investigation[0].health_theme.name == undefined) {
+							return "No rif_job_submission[studyType].investigations.investigation[0].health_theme.name defined, unable to determine health theme";
+						}
+						else {
+							tmpHealthThemeName = rifJob[studyType].investigations.investigation[0].health_theme.name;
+							if (rifJob[studyType].investigations.investigation[0].health_theme.description == undefined) {
+								return "No rif_job_submission[studyType].investigations.investigation[0].health_theme.description defined, unable to determine health theme";
+							}
+						}
+						tmpHealthThemeDescription = rifJob[studyType].investigations.investigation[0].health_theme.description;
+						
 						$scope.consoleDebug("[rifc-dsub-fromfile.js] Check health theme: " + tmpHealthThemeName + " (" + 
 							tmpHealthThemeDescription + ") using geography: " + rifJob[studyType].geography.name);
 						var themeErr = user.getHealthThemes(user.currentUser, rifJob[studyType].geography.name).then(uploadHandleHealthThemes, fromFileError);
@@ -138,6 +161,8 @@ angular.module("RIF")
 							if (!bFound) {
 								return "Health Theme '" + tmpHealthThemeName + "' not found in database";
 							} else {
+								$scope.consoleDebug("[rifc-dsub-fromfile.js] health theme OK: " + 
+									tmpHealthThemeName);
 								return true;
 							}
 						}
@@ -150,6 +175,21 @@ angular.module("RIF")
                 //Checking if the geography exists in the user database
                 function uploadCheckGeography() {
 					try {
+						if (rifJob[studyType].geography == undefined) {
+							return "No rif_job_submission[studyType].geography defined, unable to check geography";
+						}
+						else if (rifJob[studyType].geography.name == undefined) {
+							return "No rif_job_submission[studyType].geography.name defined, unable to check geography";
+						}
+						else if (rifJob[studyType][studyAreaType].geo_levels == undefined) {
+							return "No rif_job_submission[studyType][studyAreaType].geo_levels defined, unable to check geography";
+						}
+						else if (rifJob[studyType][studyAreaType].geo_levels.geolevel_select == undefined) {
+							return "No rif_job_submission[studyType][studyAreaType].geo_levels.geolevel_select defined, unable to check geography";
+						}
+						else if (rifJob[studyType][studyAreaType].geo_levels.geolevel_select.name == undefined) {
+							return "No rif_job_submission[studyType][studyAreaType].geo_levels.geolevel_select.name defined, unable to check geography";
+						}
 						tmpGeography = rifJob[studyType].geography.name;
 						tmpGeoLevel = rifJob[studyType][studyAreaType].geo_levels.geolevel_select.name;
 						var bFound = false;
@@ -162,7 +202,7 @@ angular.module("RIF")
 						if (!bFound) {
 							return "Geography '" + tmpGeography + "' not found in database";
 						} else {
-							$scope.consoleDebug("[rifc-dsub-fromfile.js] Check geography: " + tmpGeography +
+							$scope.consoleDebug("[rifc-dsub-fromfile.js] Check geography OK: " + tmpGeography +
 								" and geolevel: " + tmpGeoLevel);
 							return true;
 						}
@@ -172,9 +212,24 @@ angular.module("RIF")
                 }
 
                 function uploadFractions() {
-					try {
-						tmpNumeratorName = rifJob.disease_mapping_study.investigations.investigation[0].numerator_denominator_pair.numerator_table_name;
-						tmpDenominatorName = rifJob.disease_mapping_study.investigations.investigation[0].numerator_denominator_pair.denominator_table_name;
+					try {	
+						if (rifJob[studyType].investigations == undefined) {
+							return "No rif_job_submission[studyType].disease_mapping_study.investigations defined, unable to check numerator/denominator pair";
+						}
+						else if (rifJob[studyType].investigations.investigation[0] == undefined) {
+							return "No rif_job_submission[studyType].disease_mapping_study.investigations.investigation[0] defined, unable to check numerator/denominator pair";
+						}
+						else if (rifJob[studyType].investigations.investigation[0].numerator_denominator_pair == undefined) {
+							return "No rif_job_submission[studyType].disease_mapping_study.investigations.investigation[0].numerator_denominator_pair defined, unable to check numerator/denominator pair";
+						}
+						else if (rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.numerator_table_name == undefined) {
+							return "No rif_job_submission[studyType].disease_mapping_study.investigations.investigation[0].numerator_denominator_pair.numerator_table_name defined, unable to check numerator/denominator pair";
+						}
+						else if (rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.denominator_table_name == undefined) {
+							return "No rif_job_submission[studyType].disease_mapping_study.investigations.investigation[0].numerator_denominator_pair.denominator_table_name defined, unable to check numerator/denominator pair";
+						}
+						tmpNumeratorName = rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.numerator_table_name;
+						tmpDenominatorName = rifJob[studyType].investigations.investigation[0].numerator_denominator_pair.denominator_table_name;
 						var fractionErr = user.getNumerator(user.currentUser, tmpGeography, tmpHealthThemeDescription).then(uploadHandleFractions, fromFileError);
 
 						function uploadHandleFractions(res) {
@@ -198,7 +253,13 @@ angular.module("RIF")
                 }
 
                 function uploadStats() {
-					try {
+					try {	
+						if (rifJob.calculation_methods == undefined) {
+							return "No rif_job_submission.calculation_methods defined, unable to check calculation method";
+						}	
+						else if (rifJob.calculation_methods.calculation_method == undefined) {
+							return "No rif_job_submission.calculation_methods.calculation_method defined, unable to check calculation method";
+						}
 						tmpMethod = rifJob.calculation_methods.calculation_method;
 						if (angular.isUndefined(tmpMethod.code_routine_name)) {
 							//method not yet selected by the user
@@ -230,6 +291,8 @@ angular.module("RIF")
 								}
 							}
 							if (!bFound) {
+								$scope.consoleDebug("[rifc-dsub-fromfile.js] Statistical Method not found error: " + 
+									JSON.stringify(tmpMethod) + "; valid methods: " + JSON.stringify(res.data, null, 2));
 								return "Statistical Method '" + tmpMethod.description + "' not found in database, or has incomplete description";
 							} else {
 								return true;
@@ -413,7 +476,7 @@ angular.module("RIF")
                 function fromFileError() {
 					fromFileErrorCount++;
 					if (fromFileErrorCount < 2) {
-						$scope.showError("Could not upload the file");
+						$scope.showError("Could not upload saved study file");
 					}
                 }
 
@@ -504,11 +567,12 @@ angular.module("RIF")
 								                        //resolve all the promises
 								$q.all([p2, p3, p4, p5, p6, p7, p8, p9]).then(function (result) {
 									var bPass = true;
+									var errorCount=0;
 									for (var i = 0; i < result.length; i++) {
 										if (result[i] !== true) {
 											bPass = false;
 											$scope.showWarningNoHide(result[i]);
-											break;
+											errorCount++;
 										}
 									}
 									if (bPass) {
@@ -516,6 +580,10 @@ angular.module("RIF")
 										confirmStateChanges();
 										$scope.showSuccess("RIF study opened from file");
 										$scope.$parent.resetState();
+									}
+									else {
+										$scope.showError("RIF study opened from file failed with " +
+											errorCount + " error(s)");
 									}
 								});
 							} // uploadCheckStructure() OK
@@ -534,7 +602,6 @@ angular.module("RIF")
 							}
 							if (bPass) {
 								//All tests passed
-								confirmStateChanges();
 								$scope.consoleDebug("[rifc-dsub-fromfile.js] RIF study parsed from file");
 								$scope.$parent.resetState();
 							}
