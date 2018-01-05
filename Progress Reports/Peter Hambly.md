@@ -1821,11 +1821,12 @@ Todo:
 * Added covariates, study and comparison geoelvels; commented; re-order information
   Database does not store geolevel select so the result is the same but the selection method different
   and the file larger!
+* Add statistical method to rif40_studies[already done; added middleware support]
 
 ## In progress (December 2017/January 2018):
 
-* Extend PouchDB to base layer
-* Sort popups in data viewer and diease maps
+* Extend PouchDB to base layer [probably will defer as nolt needed yet]
+* Sort popups in data viewer and diease maps [need to discuss]
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing 
   type].
@@ -1849,12 +1850,15 @@ Todo:
 
 ### Database TODO list (deferred to January 2018): 
 
-* Add statistical method to rif40_studies
 * Add population to map table (max, min, average, rate increase/decrease?), remove join from getAttributes
-* Add viewer/diseasemap[12]_mapping, export_date, last_update_date to rif40_studies
+* Add viewer/diseasemap[12]_mapping, export_date, last_update_date, comparison_geolevel_select, 
+  study_geolevel_select to rif40_studies
+* Create t_rif40_study_select/rif40_study_select, t_rif40_comparison_select/rif40_comparison_select
+  for areas/bands actually seleted by user
 * Add area name to results map table
 * Rename results fields as required
-* Add unique keys to description files on rif tables/projects/health themes to protect against Kev using them as a Key
+* Add unique keys to description files on rif tables/projects/health themes to protect against 
+  Kev using them as a Key
 
 * More work on SEER data, dataloader
 	* Test covariates in dataloader

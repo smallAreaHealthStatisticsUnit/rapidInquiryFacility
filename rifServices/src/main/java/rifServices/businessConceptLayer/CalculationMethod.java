@@ -297,6 +297,26 @@ private String name;
 	}
 
 	/**
+	 * Gets the stats_method (in database form).
+	 *
+	 * @return the description
+	 */
+	public String getStatsMethod() {
+		String statsMethod = "NONE";
+		
+		if (codeRoutineName.equals("het_r_procedure")) {
+			statsMethod = "HET";
+		}
+		else if (codeRoutineName.equals("bym_r_procedure")) {
+			statsMethod = "BYM";
+		}
+		else if (codeRoutineName.equals("car_r_procedure")) {
+			statsMethod = "CAR";
+		}
+		return statsMethod;
+	}
+	
+	/**
 	 * Sets the description.
 	 *
 	 * @param description the new description

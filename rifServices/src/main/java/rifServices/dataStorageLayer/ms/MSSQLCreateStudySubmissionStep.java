@@ -150,7 +150,8 @@ final class MSSQLCreateStudySubmissionStep
 				connection,
 				user,
 				project,
-				diseaseMappingStudy);
+				diseaseMappingStudy,
+				studySubmission);
 
 			addComparisonAreaToStudy(
 				connection, 
@@ -232,7 +233,8 @@ final class MSSQLCreateStudySubmissionStep
 		final Connection connection,
 		final User user,
 		final Project project,
-		final DiseaseMappingStudy diseaseMappingStudy) 
+		final DiseaseMappingStudy diseaseMappingStudy,
+		final RIFStudySubmission studySubmission) 
 		throws SQLException,
 		RIFServiceException {
 	
@@ -259,6 +261,7 @@ final class MSSQLCreateStudySubmissionStep
 			studyQueryFormatter.addInsertField("suppression_value");
 			studyQueryFormatter.addInsertField("extract_permitted");
 			studyQueryFormatter.addInsertField("transfer_permitted");
+			studyQueryFormatter.addInsertField("stats_method");
 
 			logSQLQuery(
 				"addGeneralInformationToStudy", 
@@ -358,8 +361,21 @@ final class MSSQLCreateStudySubmissionStep
 			//setting transfer permitted
 			addStudyStatement.setInt(
 				ithQueryParameter++, 
-				0);			
-			
+				0);		
+				
+			//setting stats method
+			CalculationMethod calculationMethod
+				= studySubmission.getCalculationMethods().get(0); 
+				// For some reason this is an array of one
+			rifLogger.info(this.getClass(), "CalculationMethod name: " +
+				calculationMethod.getName() + "; description: " +
+				calculationMethod.getDescription() + "; stats method: " +
+				calculationMethod.getStatsMethod() + "; code routine name: " +
+				calculationMethod.getCodeRoutineName());				
+			addStudyStatement.setString(
+				ithQueryParameter++,	
+				calculationMethod.getStatsMethod());	
+				
 			addStudyStatement.executeUpdate();			
 			
 			//add information about who can share the study
