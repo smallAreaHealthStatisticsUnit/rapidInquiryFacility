@@ -1827,13 +1827,14 @@ Todo:
   * comparison_geolevel_select, study_geolevel_select in rif40_studies
   * t_rif40_study_select/rif40_study_select, t_rif40_comparison_select/rif40_comparison_select
     for storing areas/bands actually seleted by user
-    i.e. currently uses study/comparisioin areas IDs (mapping level), not as user selected (select level)
+    i.e. currently uses study/comparision areas IDs (mapping level), not as user selected (select level)
   * ICD 10 descriptions from taxonomy service
 * Added SQL/SQL log/status data
 
 #### 8th to 12th January 2018
 
 * Get ICD 10 descriptions from taxonomy service
+* Fix for https://localhost:8080 to disable TLS security checking [just this address!]. This is to reduce configuration.
 
 ## In progress (December 2017/January 2018):
 

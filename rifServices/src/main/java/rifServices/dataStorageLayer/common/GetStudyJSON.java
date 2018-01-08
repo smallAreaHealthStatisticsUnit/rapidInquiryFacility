@@ -6,6 +6,7 @@ import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 
 import java.net.URI;
+import javax.net.ssl.*;
 
 // Requires v2 Jersey/Javax-ws
 //import javax.ws.rs.client.Client;
@@ -14,11 +15,18 @@ import java.net.URI;
 //import javax.ws.rs.core.MediaType;
 //import javax.ws.rs.core.Response;
 //import javax.ws.rs.core.UriBuilder;
-import com.sun.jersey.api.client.*;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.client.urlconnection.HTTPSProperties; 
+import java.security.cert.X509Certificate; 
+import java.security.SecureRandom; 
 
 import java.sql.*;
 import org.json.*;
 import java.util.Date;
+import java.util.Map;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -631,7 +639,71 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		
 		additionalData.put(tableName.toLowerCase(), tableData);	
 	}
-	
+
+	/**
+	 * TLS client for localhost ONLY. https://dzone.com/articles/jersey-ignoring-ssl
+	 *
+	 * DO NOT USE IT FOR ANYTHING ELSE!!!!!!
+	 *
+	 * To cope with:
+	 * 
+	 * Error in rest get https://localhost:8080/taxonomyServices/taxonomyServices/getMatchingTerms?taxonomy_id=icd10&search_text=C33&is_case_sensitive=false; for code: C33
+	 * getMessage:          ClientHandlerException: javax.net.ssl.SSLHandshakeException: java.security.cert.CertificateException: No name matching localhost found
+	 * getRootCauseMessage: CertificateException: No name matching localhost found
+	 * getThrowableCount:   3
+	 * getRootCauseStackTrace >>>
+	 * java.security.cert.CertificateException: No name matching localhost found
+	 * 	at sun.security.util.HostnameChecker.matchDNS(HostnameChecker.java:221)
+	 * 	at sun.security.util.HostnameChecker.match(HostnameChecker.java:95)
+	 * 	at sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:455)
+	 * 	at sun.security.ssl.X509TrustManagerImpl.checkIdentity(X509TrustManagerImpl.java:436)
+	 * 	at sun.security.ssl.X509TrustManagerImpl.checkTrusted(X509TrustManagerImpl.java:200)
+	 * 	at sun.security.ssl.X509TrustManagerImpl.checkServerTrusted(X509TrustManagerImpl.java:124)
+	 * 	at sun.security.ssl.ClientHandshaker.serverCertificate(ClientHandshaker.java:1496)
+	 *
+	 * If you are running networked you will have to set up Java correctly
+	 *
+	 * @return Jersey Client
+     */
+	private Client hostIgnoringClient() 
+			throws Exception { 
+			
+		Client client = null;
+		try {
+			// Create a trust manager that does not validate certificate chains
+			TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager(){
+				public X509Certificate[] getAcceptedIssuers(){return null;}
+				public void checkClientTrusted(X509Certificate[] certs, String authType){}
+				public void checkServerTrusted(X509Certificate[] certs, String authType){}
+			}};
+
+			rifLogger.info(this.getClass(), "Using TLS localhost ignoring client");	
+			SSLContext sslcontext = SSLContext.getInstance( "TLS" );
+			sslcontext.init( null, trustAllCerts, new SecureRandom() );
+			DefaultClientConfig config = new DefaultClientConfig();
+			Map<String, Object> properties = config.getProperties();
+			HTTPSProperties httpsProperties = new HTTPSProperties(
+					new HostnameVerifier()
+					{
+						@Override
+						public boolean verify( String s, SSLSession sslSession )
+						{
+							return true;
+						}
+					}, sslcontext
+			);
+			properties.put( HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties );
+			config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
+			client = Client.create( config );
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error https://localhost workaround",
+				exception);
+		}
+		
+		return client;
+	}
+
 	/**
 	 * Get health code description from taxonomy service
 	 *
@@ -708,9 +780,16 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 		}	
 */		
 
-		Client client = Client.create();
+		Client client = null;
+		
 		WebResource webResource=null;
 		try {		
+			if (tomcatServer.equals("https://localhost:8080")) {
+				client=hostIgnoringClient();
+			}
+			else {	
+				client=Client.create();
+			}
 			String URI=tomcatServer + "/taxonomyServices/taxonomyServices/getMatchingTerms";
 			webResource = client.resource(URI);
 			if (webResource == null) {
