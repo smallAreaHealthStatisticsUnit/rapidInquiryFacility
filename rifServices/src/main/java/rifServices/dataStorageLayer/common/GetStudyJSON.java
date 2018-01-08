@@ -714,7 +714,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			String URI=tomcatServer + "/taxonomyServices/taxonomyServices/getMatchingTerms";
 			webResource = client.resource(URI);
 			if (webResource == null) {
-				throw new Exception("Null WebResource returned by rest client");
+				throw new Exception("Null WebResource returned by rest client, URI: " + URI);
 			}
 			webResource = webResource.queryParam("taxonomy_id", "icd10");
 			webResource = webResource.queryParam("search_text", code);

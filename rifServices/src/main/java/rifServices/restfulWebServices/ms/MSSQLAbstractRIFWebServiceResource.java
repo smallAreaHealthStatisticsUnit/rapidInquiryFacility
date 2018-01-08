@@ -1061,8 +1061,12 @@ getServletPath()        yes     /test?
 getParameterNames()     yes     [p 2, p 1]
 getParameter("p 1")     yes     c d
  */			
+			String tomcatHost=servletRequest.getLocalName();
+			if (tomcatHost.equals("0:0:0:0:0:0:1")) { // Windows 7 stupidity
+				tomcatHost="localhost";
+			}
 			String tomcatServer = servletRequest.getScheme() + "://" + 
-				servletRequest.getLocalName() + ":" + 
+				tomcatHost + ":" + 
 				servletRequest.getLocalPort();
 
 			RIFStudySubmissionAPI studySubmissionService
