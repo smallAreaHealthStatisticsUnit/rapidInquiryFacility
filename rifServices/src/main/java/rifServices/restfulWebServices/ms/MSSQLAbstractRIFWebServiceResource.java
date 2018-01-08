@@ -1061,8 +1061,16 @@ getServletPath()        yes     /test?
 getParameterNames()     yes     [p 2, p 1]
 getParameter("p 1")     yes     c d
  */			
+			rifLogger.debug(this.getClass(), 
+				"getJsonFile() getLocalName: " + servletRequest.getLocalName() +
+				"; getScheme: " + servletRequest.getScheme() +
+				"; getLocalAddr: " + servletRequest.getLocalAddr() +
+				"; getLocalPort: " + servletRequest.getLocalPort() +
+				"; getServerName: " + servletRequest.getServerName() +
+				"; getServerPort: " + servletRequest.getServerPort());
+				
 			String tomcatHost=servletRequest.getLocalName();
-			if (tomcatHost.equals("0:0:0:0:0:0:1")) { // Windows 7 stupidity
+			if (tomcatHost.equals("0:0:0:0:0:0:0:1")) { // Windows 7 stupidity
 				tomcatHost="localhost";
 			}
 			String tomcatServer = servletRequest.getScheme() + "://" + 
