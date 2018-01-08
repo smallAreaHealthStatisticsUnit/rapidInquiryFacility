@@ -5,9 +5,19 @@ import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 
+import java.net.URI;
+
+// Requires v2 Jersey/Javax-ws
+//import javax.ws.rs.client.Client;
+//import javax.ws.rs.client.ClientBuilder;
+//import javax.ws.rs.client.WebTarget;
+//import javax.ws.rs.core.MediaType;
+//import javax.ws.rs.core.Response;
+//import javax.ws.rs.core.UriBuilder;
+import com.sun.jersey.api.client.*;
+
 import java.sql.*;
-import org.json.JSONObject;
-import org.json.JSONArray;
+import org.json.*;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -83,6 +93,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 	private static String lineSeparator = System.getProperty("line.separator");
 	private Connection connection;
 	private String studyID;
+	private String tomcatServer;
 	
 	// ==========================================
 	// Section Properties
@@ -111,10 +122,15 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
      * @param Locale locale (required)
      * @return JSONObject [front end saves as JSON5 file]
      */
-	public JSONObject addRifStudiesJson(Connection connection, String studyID, Locale locale) 
+	public JSONObject addRifStudiesJson(
+			final Connection connection, 
+			final String studyID, 
+			final Locale locale,
+			final String tomcatServer) 
 					throws Exception {
 		this.connection=connection;
 		this.studyID=studyID;
+		this.tomcatServer=tomcatServer;
 		
 		SQLGeneralQueryFormatter rifStudiesQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
@@ -622,9 +638,18 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
      * @param String code (required)
 	 * @return health code description string
      */	
-	private String getHealthCodeDesription(String code) 
+	private JSONObject getHealthCodeDesription(String code) 
 					throws Exception { // Will get from taxonomy service
-					
+		
+		// Set up return value;
+		JSONObject rval=new JSONObject();
+		rval.put("description", "Not available");
+		rval.put("identifier", "Unknown");
+		rval.put("label", code);
+		rval.put("isTopLevelTerm", "no");
+		boolean rvalFound=false;
+		boolean taxonomyInitialiseError=false;
+	
 /* Call to taxonomy service: 
 
 http://localhost:8080/taxonomyServices/taxonomyServices/getMatchingTerms?taxonomy_id=icd10&search_text=c33&is_case_sensitive=false
@@ -638,7 +663,150 @@ http://localhost:8080/taxonomyServices/taxonomyServices/getMatchingTerms?taxonom
 ]
  */
  
-		return "Not available";
+/* This code requires javax.ws.rs 2.1 which in turn forces a Jersey 2.1/2.2 upgrade
+
+A mismatch causes a tomcat failure
+
+10:24:53.622 [http-nio-8080-exec-2] ERROR org.apache.juli.logging.DirectJDKLog org.apache.catalina.core.ContainerBase.[Catalina].[lo
+calhost].[/rifServices].[rifServices.restfulWebServices.ms.MSSQLRIFStudySubmissionWebServiceApplication]: Servlet.service() for serv
+let [rifServices.restfulWebServices.ms.MSSQLRIFStudySubmissionWebServiceApplication] in context with path [/rifServices] threw excep
+tion [Servlet execution threw an exception] with root cause
+java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String;)Ljavax/ws/rs/core/UriBuilder;
+        at javax.ws.rs.core.UriBuilder.fromUri(UriBuilder.java:120) ~[javax.ws.rs-api-2.1.jar:2.1]
+        at com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:669) ~[jersey-servlet-1.19.jar:1.19]
+        at javax.servlet.http.HttpServlet.service(HttpServlet.java:742) ~[servlet-api.jar:?]
+		
+		Client client=null;
+		WebTarget target=null;
+		try {			
+
+			client = ClientBuilder.newClient();
+
+			String URI="http://localhost:8080/taxonomyServices/taxonomyServices/getMatchingTerms";
+			target = client.target(URI).
+				queryParam("taxonomy_id", "icd10").
+				queryParam("search_text", code).
+				queryParam("is_case_sensitive", "false");
+			
+			String response = target.path("rest").
+	 //                           path("hello").
+								request().
+								accept(MediaType.TEXT_PLAIN).
+								get(Response.class)
+								.toString();
+
+			String plainAnswer =
+					target.path("rest").
+	//				path("hello").
+					request().accept(MediaType.TEXT_PLAIN).get(String.class);
+			rifLogger.info(this.getClass(), code + ": " + plainAnswer);	
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in rest get " + target.toString(),
+				exception);
+			throw exception;
+		}	
+*/		
+
+		Client client = Client.create();
+		WebResource webResource=null;
+		try {		
+			String URI=tomcatServer + "/taxonomyServices/taxonomyServices/getMatchingTerms";
+			webResource = client.resource(URI);
+			if (webResource == null) {
+				throw new Exception("Null WebResource returned by rest client");
+			}
+			webResource = webResource.queryParam("taxonomy_id", "icd10");
+			webResource = webResource.queryParam("search_text", code);
+			webResource = webResource.queryParam("is_case_sensitive", "false");
+			ClientResponse response = webResource.accept("application/json")
+                .get(ClientResponse.class);
+
+			if (response.getStatus() != 200) {
+			   throw new Exception("Failed : HTTP error code : "
+					+ response.getStatus());
+			}
+/*
+  Usual response - an array of ICD10 identifiers:
+
+  [{
+		"identifier": "C33-icd10",
+		"label": "C33",
+		"description": "Malignant neoplasm of trachea",
+		"isTopLevelTerm": null
+   }
+  ]
+  
+  Cope with:
+
+  [{
+		"errorMessages": ["The system for supporting taxonomy services has not yet been initialised."]
+   }
+  ]
+ */
+			String output = response.getEntity(String.class);
+			JSONTokener tokener = new JSONTokener(output);
+			JSONArray array = new JSONArray(tokener);
+			int arrayLen=array.length();
+			for (int i = 0; i < arrayLen; i++) {
+				JSONObject jsonObject = array.getJSONObject(i);
+				if (jsonObject == null) {
+					throw new Exception("Expected JSONObject, got null for code: " + code);
+				}
+				else {	
+					if (jsonObject.has("errorMessages")) {	
+						JSONArray errorArray = jsonObject.getJSONArray("errorMessages");
+						int errorArrayLen=errorArray.length();
+						StringBuilder sb = new StringBuilder();
+						if (errorArray.getString(0). // Handle init (i.e. suppress error)
+							equals("The system for supporting taxonomy services has not yet been initialised.")) {
+							taxonomyInitialiseError=true;
+							rval.put("description", errorArray.getString(0) + 
+								"; please run again in 5 minutes");
+						}
+						for (int k = 0; k < errorArrayLen; k++) {
+							sb.append(k + ": " + errorArray.getString(k) + lineSeparator);
+						}
+						throw new Exception("taxonomyServices error: " + sb.toString() + 
+							"; for code: " + code);						
+					}
+					else {
+						if (jsonObject.has("label") &&
+							jsonObject.getString("label").toUpperCase().equals(code.toUpperCase())) {
+							if (rvalFound) { // >1 match
+								throw new Exception(">1 match for code: " + code);
+							}
+							else {
+								rvalFound=true;
+								rval=jsonObject;
+								if (rval.isNull("is_top_level_term")) {
+									rval.put("is_top_level_term", "no");
+								}
+							}
+						}
+						else { // No match
+						}						
+					}
+				}
+			}
+			rifLogger.info(this.getClass(), code + ": " + output + "; rval: " + rval.toString());	
+
+		}
+		catch (Exception exception) {
+			if (webResource == null) {
+				rifLogger.error(this.getClass(), "Error in rest get for code: " + code,
+					exception);
+			}
+			else {
+				rifLogger.error(this.getClass(), "Error in rest get " + webResource.toString() 
+					+ "; for code: " + code, exception);
+			}
+			if (!taxonomyInitialiseError) {
+				throw exception;
+			}
+		}	
+			
+		return rval;
 	}
 	
 	/**
@@ -966,22 +1134,25 @@ http://localhost:8080/taxonomyServices/taxonomyServices/getMatchingTerms?taxonom
 					
 					if (minCondition.length() > 0 && maxCondition.length() > 0) { // BETWEEN
 						JSONObject code = new JSONObject();
+						JSONObject taxonomyObject = getHealthCodeDesription(minCondition);
 						code.put("min_condition", minCondition);
-						code.put("min_description", getHealthCodeDesription(minCondition));
+						code.put("min_description", taxonomyObject.getString("description"));
 						code.put("max_condition", maxCondition);
-						code.put("max_description", getHealthCodeDesription(maxCondition));
+						code.put("max_description", getHealthCodeDesription(maxCondition).getString("description"));
+						healthCode.put("is_top_level_term", taxonomyObject.getString("is_top_level_term"));
 						healthCode.put("code", code);
 					}
 					else if (minCondition.length() > 0 && maxCondition.length() == 0) { // LIKE
 						healthCode.put("code", minCondition);
-						healthCode.put("description", getHealthCodeDesription(minCondition));
+						JSONObject taxonomyObject = getHealthCodeDesription(minCondition);
+						healthCode.put("description", taxonomyObject.getString("description"));
+						healthCode.put("is_top_level_term", taxonomyObject.getString("is_top_level_term"));
 					}
 					else {
 						throw new Exception("addHealthCodes(): minCondition: " + minCondition +
 							"; maxCondition: " + maxCondition);
 					}
 					
-					healthCode.put("is_top_level_term", "no");
 					healthCodeArray.put(healthCode);
 				} while (resultSet.next());
 				

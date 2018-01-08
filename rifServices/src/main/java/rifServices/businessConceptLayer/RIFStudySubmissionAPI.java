@@ -330,7 +330,8 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	public String getJsonFile(
 		final User user,
 		final String studyID,
-		final Locale locale)
+		final Locale locale,
+		final String tomcatServer)
 		throws RIFServiceException;
 	public String getFrontEndParameters(
 		final User user);

@@ -503,6 +503,8 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 		}
 	}
 }
+	 * @param  locale 		locale
+	 * @param  tomcatServer e.g. http://localhost:8080.
 	 * 
 	 * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
 	 */
@@ -511,14 +513,16 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			final User user,
 			final RIFStudySubmission rifStudySubmission,
 			final String studyID,
-			final Locale locale)
+			final Locale locale,
+			final String tomcatServer)
 					throws RIFServiceException {
 		String result="{}";
 
 		try {
 			JSONObject json = new JSONObject();
 			GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
-			JSONObject rif_job_submission=getStudyJSON.addRifStudiesJson(connection, studyID, locale);
+			JSONObject rif_job_submission=getStudyJSON.addRifStudiesJson(connection, 
+				studyID, locale, tomcatServer);
 			rif_job_submission.put("created_by", user.getUserID());
 			json.put("rif_job_submission", rif_job_submission);
 			result=json.toString();

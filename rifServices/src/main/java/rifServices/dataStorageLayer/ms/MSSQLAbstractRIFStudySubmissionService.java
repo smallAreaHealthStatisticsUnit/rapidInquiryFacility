@@ -1334,6 +1334,8 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 	 * Returns the following textual strings:	
 	 * @param  _user 		Database username of logged on user.
 	 * @param  studyID 		Integer study identifier (database study_id field).
+	 * @param  locale 		locale
+	 * @param  tomcatServer e.g. http://localhost:8080.
 	 *
 	 * @return 				Textual JSON 
 	 *						NULL on exception or permission denied by sqlConnectionManager
@@ -1341,7 +1343,8 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 	public String getJsonFile(
 			final User _user,
 			final String studyID,
-			final Locale locale) 
+			final Locale locale,
+			final String tomcatServer) 
 					throws RIFServiceException {
 										
 		String result = null;
@@ -1407,7 +1410,8 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 					user, 
 					rifStudySubmission,
 					studyID,
-					locale);
+					locale,
+					tomcatServer);
 
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -1422,7 +1426,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			if (result == null) {
 				result="{}";
 			}
-			rifLogger.info(getClass(), "get JSON file for study: " + studyID + "; locale: " + locale.toLanguageTag() + "; JSON: " + result);
+			rifLogger.info(getClass(), "get JSON file for study: " + studyID + "; locale: " + locale.toLanguageTag());
 			//Reclaim pooled connection
 			sqlConnectionManager.reclaimPooledWriteConnection(
 					user, 

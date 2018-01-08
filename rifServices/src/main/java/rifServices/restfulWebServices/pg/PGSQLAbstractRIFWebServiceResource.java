@@ -1013,14 +1013,37 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 		try {
 			Locale locale = servletRequest.getLocale();
 			User user = createUser(servletRequest, userID);
-
+/*
+getContextPath()        no      /app
+getLocalAddr()                  127.0.0.1
+getLocalName()                  30thh.loc
+getLocalPort()                  8480
+getMethod()                     GET
+getPathInfo()           yes     /a?+b
+getProtocol()                   HTTP/1.1
+getQueryString()        no      p+1=c+d&p+2=e+f
+getRequestedSessionId() no      S%3F+ID
+getRequestURI()         no      /app/test%3F/a%3F+b;jsessionid=S+ID
+getRequestURL()         no      http://30thh.loc:8480/app/test%3F/a%3F+b;jsessionid=S+ID
+getScheme()                     http
+getServerName()                 30thh.loc
+getServerPort()                 8480
+getServletPath()        yes     /test?
+getParameterNames()     yes     [p 2, p 1]
+getParameter("p 1")     yes     c d
+ */				
+			String tomcatServer = servletRequest.getScheme() + "://" + 
+				servletRequest.getLocalName() + ":" + 
+				servletRequest.getLocalPort();
+				
 			RIFStudySubmissionAPI studySubmissionService
 			= getRIFStudySubmissionService();
 
 			result=studySubmissionService.getJsonFile(
 					user, 
 					studyID,
-					locale);
+					locale,
+					tomcatServer);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifLogger.error(this.getClass(), 
