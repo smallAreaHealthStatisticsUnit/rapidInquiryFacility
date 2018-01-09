@@ -1107,15 +1107,16 @@ You do NOT need to do anything if you are running without TLS (i.e. on a laptop)
 If *taxonomyServicesServer* is set to: *https://localhost:8080* as suggested then host validation is disabled;  
 otherwise you must set up JAVA TLS host verification with fully signed certificates; typical errors include:
 
-```java.security.cert.CertificateException: No name matching a.b.com found```
-**This means you need create a correctly signed certificate and add to the keystore**
-
-```
-javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building 
-failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification 
-path to requested target
-```
-**This means there is a certificate but it is not correctly signed**
+* *No name matching a.b.com found*
+  ```java.security.cert.CertificateException: No name matching a.b.com found```
+  **This means you need create a correctly signed certificate and add to the keystore**
+* *Unable to find valid certification path to requested target*
+  ```
+  javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building 
+  failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification 
+  path to requested target
+  ```
+  **This means there is a certificate but it is not correctly signed**
 
 You can also typically get meessages that Java cannot find the keystore and/or TLS is not setup 
 correctly.
