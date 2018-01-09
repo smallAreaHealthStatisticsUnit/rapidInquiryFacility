@@ -1096,6 +1096,38 @@ This method  does not build the *taxonomyServices* or the web application 7zip f
 * Copy *rifServices.war* from: *rapidInquiryFacility\rifServices\target*, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifServices\target*
   to: *%CATALINA_HOME%\webapps*, e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps*
 
+  The *RIFServiceStartupProperties.properties* file contains the commented out parameter *taxonomyServicesServer*.
+  This is the network location of the taxonomy services server, and is to be used when:
+  
+  * The taxonomy services is not running on the same server as rifServices
+  * HTTPS is used
+ 
+  You do NOT need to do anything if you are running without TLS (i.e. on a laptop)
+
+  If *taxonomyServicesServer* is set to: *https://localhost:8080* as suggested then host validation is disabled;  
+  otherwise you must set up JAVA TLS host verification; typical errors include:
+
+  ```java.security.cert.CertificateException: No name matching a.b.com found```
+  **This means you need create a correctly signed certificate and add to the keystore**
+ 
+  ```
+  javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building 
+  failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification 
+  path to requested target
+  ```
+  **This means there is a certificate but it is not correctly signed
+ 
+  You can also typically get meessages that Java cannot find the keystore and/or TLS is not setup 
+  correctly.
+
+  See: http://java.globinch.com/enterprise-java/security/pkix-path-building-failed-validation-sun-security-validatorexception/
+  For most purposes; localhost will do fine; as long as Tomcat is setup to run on localhost
+
+  RIF services uses Taxonomy services directly a) when creating study JSON from the database using 
+  "Save completed study" and b) when creating the same file for the export ZIP file.
+
+  This is code in `...rapidInquiryFacility\rifServices\src\main\java\rifServices\dataStorageLayer\common\GetStudyJSON.java`
+
 ### 3.1.2 Taxonomy Service
 
 If SAHSU has supplied a taxonomyServices.war file skip to step 3.
