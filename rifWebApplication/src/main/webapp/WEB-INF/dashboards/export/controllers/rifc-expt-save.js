@@ -71,6 +71,14 @@ angular.module("RIF")
 							    res.data.rif_job_submission.taxonomy_initialise_error == true) {
 								$scope.showWarning("taxonomy services has not yet been initialised; please save again in 5 minutes");
 							}
+							if (res.data.rif_job_submission && 
+							    res.data.rif_job_submission.other_taxonomy_error) {
+								$scope.showWarning("RIF services to taxonomy services link had error; please see logs");
+								$scope.consoleLog("Taxonomy services error message: " + 
+									res.data.rif_job_submission.other_taxonomy_error.message);
+								$scope.consoleLog("Taxonomy services error stack: " + 
+									res.data.rif_job_submission.other_taxonomy_error.stack_trace_text);
+							}
 						}
 
 						else {			

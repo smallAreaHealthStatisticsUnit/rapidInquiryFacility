@@ -1834,7 +1834,9 @@ Todo:
 #### 8th to 12th January 2018
 
 * Get ICD 10 descriptions from taxonomy service
-* Fix for https://localhost:8080 to disable TLS security checking [just this address!]. This is to reduce configuration.
+* Fix for https://localhost:8080 to disable TLS security checking [just this address!]. This is to 
+  reduce configuration.
+* Detect network issues (mainly HTTPS issues) and the taxonomy service initialising
 
 ## In progress (December 2017/January 2018):
 

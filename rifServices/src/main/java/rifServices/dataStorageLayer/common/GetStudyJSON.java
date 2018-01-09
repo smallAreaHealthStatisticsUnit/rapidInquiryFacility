@@ -25,6 +25,8 @@ import java.security.SecureRandom;
 
 import java.sql.*;
 import org.json.*;
+import java.lang.*;
+
 import java.util.Date;
 import java.util.Map;
 import java.text.DateFormat;
@@ -103,6 +105,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 	private String studyID;
 	private String tomcatServer;
 	private boolean taxonomyInitialiseError=false;
+	private Exception otherTaxonomyError=null;
 	
 	// ==========================================
 	// Section Properties
@@ -355,6 +358,26 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			}
 			if (taxonomyInitialiseError) { // Add flag for Taxonomy initialise error for front end if set
 				rif_job_submission.put("taxonomy_initialise_error", true);
+			}
+			if (otherTaxonomyError != null) {
+				JSONObject otherTaxonomyErrorObject = new JSONObject();
+				StackTraceElement[] stackTrace = otherTaxonomyError.getStackTrace();
+				int index = 0;
+				JSONArray stackTraceArray = new JSONArray();
+				for (StackTraceElement element : stackTrace) {
+					index++;
+					JSONObject stackTraceItem = new JSONObject();
+					stackTraceItem.put("index", index);
+					stackTraceItem.put("method_name", element.getMethodName());
+					stackTraceItem.put("class", element.getClassName());
+					stackTraceItem.put("line_number", element.getLineNumber());
+					stackTraceItem.put("file_name", element.getFileName());
+					stackTraceArray.put(stackTraceItem);
+				}
+				otherTaxonomyErrorObject.put("stack_trace", stackTraceArray);
+				otherTaxonomyErrorObject.put("message", otherTaxonomyError.getMessage());
+				otherTaxonomyErrorObject.put("stack_trace_text", otherTaxonomyError.getStackTrace());
+				rif_job_submission.put("other_taxonomy_error", otherTaxonomyErrorObject);
 			}
 		}
 		catch (Exception exception) {
@@ -735,6 +758,11 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		rval.put("label", code);
 		rval.put("isTopLevelTerm", "no");
 		boolean rvalFound=false;
+		
+		if (otherTaxonomyError != null) { // These is an error in the taxonomyServices link
+										  // This will require a tomcat restart to fix
+			return rval;
+		}
 	
 /* Call to taxonomy service: 
 
@@ -896,7 +924,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			else {
 				rifLogger.error(this.getClass(), "Error in rest get: " + webResource.toString() 
 					+ "; for code: " + code, exception);
-				throw exception;
+				otherTaxonomyError=exception;
 			}
 		}	
 			
