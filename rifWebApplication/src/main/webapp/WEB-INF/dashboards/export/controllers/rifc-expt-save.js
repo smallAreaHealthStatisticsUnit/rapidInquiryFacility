@@ -65,6 +65,12 @@ angular.module("RIF")
 										0, 0, 0, 0, 0, false, false, false, false, 0, null);
 								a.dispatchEvent(e);
 							}
+							
+							if (res.data.rif_job_submission && 
+							    res.data.rif_job_submission.taxonomy_initialise_error && 
+							    res.data.rif_job_submission.taxonomy_initialise_error == true) {
+								$scope.showWarning("taxonomy services has not yet been initialised; please save again in 5 minutes");
+							}
 						}
 
 						else {			

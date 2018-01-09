@@ -854,8 +854,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 						if (errorArray.getString(0). // Handle init (i.e. suppress error)
 							equals("The system for supporting taxonomy services has not yet been initialised.")) {
 							taxonomyInitialiseError=true;
-							rval.put("description", errorArray.getString(0) + 
-								"; please run again in 5 minutes");
+							rval.put("description", "Not yet available; please run again in 5 minutes");
 						}
 						for (int k = 0; k < errorArrayLen; k++) {
 							sb.append(k + ": " + errorArray.getString(k) + lineSeparator);
@@ -890,11 +889,13 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 				rifLogger.error(this.getClass(), "Error in rest get for code: " + code,
 					exception);
 			}
-			else {
-				rifLogger.error(this.getClass(), "Error in rest get " + webResource.toString() 
-					+ "; for code: " + code, exception);
+			else if (taxonomyInitialiseError) {
+				rifLogger.warning(this.getClass(), "taxonomyInitialiseError in rest get: " + webResource.toString() 
+					+ "; for code: " + code + "; please run again in 5 minutes");
 			}
-			if (!taxonomyInitialiseError) {
+			else {
+				rifLogger.error(this.getClass(), "Error in rest get: " + webResource.toString() 
+					+ "; for code: " + code, exception);
 				throw exception;
 			}
 		}	
