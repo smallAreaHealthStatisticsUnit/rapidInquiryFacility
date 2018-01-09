@@ -135,6 +135,8 @@ public final class RIFServiceStartupOptions {
 	
 	private String extractDirectory;
 	
+	private String taxonomyServicesServer;
+	
 	private String extraExtractFilesDirectoryPath;
 	
 	private boolean useStrictValidationPolicy;
@@ -178,6 +180,9 @@ public final class RIFServiceStartupOptions {
 		
 		extractDirectory
 			= RIFServiceStartupProperties.getExtractDirectoryName();
+			
+		taxonomyServicesServer
+			= RIFServiceStartupProperties.getTaxonomyServicesServer();
 		
 		maximumMapAreasAllowedForSingleDisplay
 			= RIFServiceStartupProperties.getMaximumMapAreasAllowedForSingleDisplay();
@@ -289,7 +294,11 @@ public final class RIFServiceStartupOptions {
 	
 	public String getExtractDirectory() {
 		return extractDirectory;
-		
+	
+	}	
+	
+	public String getTaxonomyServicesServer() {
+		return taxonomyServicesServer;		
 	}
 	
 	/**

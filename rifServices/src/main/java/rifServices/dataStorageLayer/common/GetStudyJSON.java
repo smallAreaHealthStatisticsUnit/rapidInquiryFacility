@@ -102,6 +102,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 	private Connection connection;
 	private String studyID;
 	private String tomcatServer;
+	private boolean taxonomyInitialiseError=false;
 	
 	// ==========================================
 	// Section Properties
@@ -128,17 +129,28 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
      * @param Connection connection (required)
      * @param String studyID (required)
      * @param Locale locale (required)
+     * @param String tomcatServer [deduced from calling URL] (required)
+     * @param String taxonomyServicesServer [from RIFServiceStartupProperties.java parameter] (required; may be NULL)
      * @return JSONObject [front end saves as JSON5 file]
      */
 	public JSONObject addRifStudiesJson(
 			final Connection connection, 
 			final String studyID, 
 			final Locale locale,
-			final String tomcatServer) 
+			final String tomcatServer,
+			final String taxonomyServicesServer) 
 					throws Exception {
 		this.connection=connection;
 		this.studyID=studyID;
-		this.tomcatServer=tomcatServer;
+		if (taxonomyServicesServer != null && !taxonomyServicesServer.equals("")) {
+			this.tomcatServer=taxonomyServicesServer;
+		}
+		else if (tomcatServer != null && !tomcatServer.equals("")) {
+			this.tomcatServer=tomcatServer;
+		}
+		else {
+			throw new Exception("addRifStudiesJson(): cannot deduce tomcat server from RIF services request or RIFServiceStartup.properties");
+		}
 		
 		SQLGeneralQueryFormatter rifStudiesQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
@@ -340,6 +352,9 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 
 			if (resultSet.next()) {
 				throw new Exception("addRifStudiesJson(): expected 1 row, got >1");
+			}
+			if (taxonomyInitialiseError) { // Add flag for Taxonomy initialise error for front end if set
+				rif_job_submission.put("taxonomy_initialise_error", true);
 			}
 		}
 		catch (Exception exception) {
@@ -720,7 +735,6 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 		rval.put("label", code);
 		rval.put("isTopLevelTerm", "no");
 		boolean rvalFound=false;
-		boolean taxonomyInitialiseError=false;
 	
 /* Call to taxonomy service: 
 
@@ -1218,14 +1232,22 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 						code.put("min_description", taxonomyObject.getString("description"));
 						code.put("max_condition", maxCondition);
 						code.put("max_description", getHealthCodeDesription(maxCondition).getString("description"));
-						healthCode.put("is_top_level_term", taxonomyObject.getString("is_top_level_term"));
+						String is_top_level_term=null;
+						if (!taxonomyObject.isNull("is_top_level_term")) {
+							is_top_level_term=taxonomyObject.getString("is_top_level_term");
+						}
+						healthCode.put("is_top_level_term", is_top_level_term);
 						healthCode.put("code", code);
 					}
 					else if (minCondition.length() > 0 && maxCondition.length() == 0) { // LIKE
 						healthCode.put("code", minCondition);
 						JSONObject taxonomyObject = getHealthCodeDesription(minCondition);
 						healthCode.put("description", taxonomyObject.getString("description"));
-						healthCode.put("is_top_level_term", taxonomyObject.getString("is_top_level_term"));
+						String is_top_level_term=null;
+						if (!taxonomyObject.isNull("is_top_level_term")) {
+							is_top_level_term=taxonomyObject.getString("is_top_level_term");
+						}
+						healthCode.put("is_top_level_term", is_top_level_term);
 					}
 					else {
 						throw new Exception("addHealthCodes(): minCondition: " + minCondition +

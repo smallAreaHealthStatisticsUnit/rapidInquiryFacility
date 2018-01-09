@@ -94,6 +94,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	// Section Constants
 	// ==========================================
 	private static String EXTRACT_DIRECTORY;
+	private static String TAXONOMY_SERVICES_SERVER;
 	private static final String STUDY_QUERY_SUBDIRECTORY = "study_query";
 	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
 	private static final String RATES_AND_RISKS_SUBDIRECTORY = "rates_and_risks";
@@ -124,7 +125,8 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
-		EXTRACT_DIRECTORY = rifServiceStartupOptions.getExtractDirectory();
+		EXTRACT_DIRECTORY = this.rifServiceStartupOptions.getExtractDirectory();
+		TAXONOMY_SERVICES_SERVER = this.rifServiceStartupOptions.getTaxonomyServicesServer();
 		
 	}
 
@@ -527,7 +529,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			JSONObject json = new JSONObject();
 			GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
 			JSONObject rif_job_submission=getStudyJSON.addRifStudiesJson(connection, 
-				studyID, locale, tomcatServer);
+				studyID, locale, tomcatServer, TAXONOMY_SERVICES_SERVER);
 			rif_job_submission.put("created_by", user.getUserID());
 			json.put("rif_job_submission", rif_job_submission);
 			result=json.toString();

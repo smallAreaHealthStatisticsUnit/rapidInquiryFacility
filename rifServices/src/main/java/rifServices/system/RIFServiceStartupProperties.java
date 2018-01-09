@@ -225,48 +225,82 @@ public final class RIFServiceStartupProperties {
 
     public static boolean isSSLSupported() {
     	String property
-    		= getProperty("database.isSSLSupported");
+    		= getManadatoryRIfServiceProperty("database.isSSLSupported");
     	return Boolean.valueOf(property);    	
     }
     
     public static String getDatabaseDriverClassName() {
-    	return getProperty("database.driverClassName");
+    	return getManadatoryRIfServiceProperty("database.driverClassName");
     }
    
     public static String getDatabaseDriverPrefix() {
-    	return getProperty("database.jdbcDriverPrefix");
+    	return getManadatoryRIfServiceProperty("database.jdbcDriverPrefix");
     }
     
     public static String getHost() {
-    	return getProperty("database.host");
+    	return getManadatoryRIfServiceProperty("database.host");
     }
     
     public static String getPort() {
-    	return getProperty("database.port");    	
+    	return getManadatoryRIfServiceProperty("database.port");    	
     }
 
     public static String getDatabaseName() {
-    	return getProperty("database.databaseName");    	
+    	return getManadatoryRIfServiceProperty("database.databaseName");    	
     }
 	
     public static String getServerSideCacheDirectory() {
-    	return getProperty("cache");    	
+    	return getManadatoryRIfServiceProperty("cache");    	
     }
 
     public static String getWebApplicationDirectory() {
-    	return getProperty("webApplicationDirectory");    	
+    	return getManadatoryRIfServiceProperty("webApplicationDirectory");    	
     }
     
     public static String getRScriptDirectory() {
-    	return getProperty("rScriptDirectory");    	
+    	return getManadatoryRIfServiceProperty("rScriptDirectory");    	
     }
     
     public static String getExtractDirectoryName() {
-    	return getProperty("extractDirectory");    	
+    	return getManadatoryRIfServiceProperty("extractDirectory");    	
     }
-    
+
+	private static String getManadatoryRIfServiceProperty(String propertyName)
+//					throws Exception {
+		{
+		String propertyValue=null;
+		try {
+			propertyValue=getProperty(propertyName);
+		}
+		catch(Exception exception) {
+			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+				"Error fetching mandatory property: " + propertyName, exception);
+//			throw exception;
+		}
+
+		return propertyValue;		
+	}
+	
+	private static String getOptionalRIfServiceProperty(String propertyName) {
+		String propertyValue=null;
+		try {
+			propertyValue=getProperty(propertyName);
+		}
+		catch(Exception exception) {
+			rifLogger.debug("rifServices.system.RIFServiceStartupProperties", 
+				"Unable to fetch optional property: " + propertyName);
+		}
+
+		return propertyValue;		
+	}
+	
+    public static String getTaxonomyServicesServer() {
+
+    	return getOptionalRIfServiceProperty("taxonomyServicesServer");    	
+    }
+	
     public static String getExtraDirectoryForExtractFiles() {
-    	return getProperty("extraDirectoryForExtractFiles");    	
+    	return getManadatoryRIfServiceProperty("extraDirectoryForExtractFiles");    	
     }
     
     public static DatabaseType getDatabaseType() {
@@ -275,7 +309,7 @@ public final class RIFServiceStartupProperties {
     		= DatabaseType.UNKNOWN;
     	
     	String property
-    		= getProperty("database.databaseType").toUpperCase();
+    		= getManadatoryRIfServiceProperty("database.databaseType").toUpperCase();
     	if (property != null) {
     		property = property.toUpperCase();
     		
@@ -297,7 +331,7 @@ public final class RIFServiceStartupProperties {
     
     public static boolean isDatabaseCaseSensitive() {
     	String property
-    		= getProperty("database.isCaseSensitive");
+    		= getManadatoryRIfServiceProperty("database.isCaseSensitive");
     	Boolean result
     		= Boolean.valueOf(property);
     	return result;
@@ -305,7 +339,7 @@ public final class RIFServiceStartupProperties {
     
     public static int getMaximumMapAreasAllowedForSingleDisplay() {
     	String property
-    		= getProperty("maximumMapAreasAllowedForSingleDisplay");
+    		= getManadatoryRIfServiceProperty("maximumMapAreasAllowedForSingleDisplay");
     	Integer maximumValue = 0;
     	try {
     		maximumValue = Integer.valueOf(property);
@@ -319,7 +353,7 @@ public final class RIFServiceStartupProperties {
 
     public static boolean useSSLDebug() {
     	String property
-    		= getProperty("database.useSSLDebug");
+    		= getManadatoryRIfServiceProperty("database.useSSLDebug");
     	Boolean result
 			= Boolean.valueOf(property);
     	return result; 	
@@ -327,18 +361,18 @@ public final class RIFServiceStartupProperties {
     
     public static String getTrustStore() {
     	String property
-			= getProperty("database.sslTrustStore");
+			= getManadatoryRIfServiceProperty("database.sslTrustStore");
     	return property; 	
     }
     
     public static String getTrustStorePassword() {
     	String property
-    		= getProperty("database.sslTrustStorePassword");
+    		= getManadatoryRIfServiceProperty("database.sslTrustStorePassword");
     	return property; 	    }
     
     public static String getODBCDataSourceName() {
     	String property
-			= getProperty("odbcDataSourceName");
+			= getManadatoryRIfServiceProperty("odbcDataSourceName");
     	return property;    	
     }
     
