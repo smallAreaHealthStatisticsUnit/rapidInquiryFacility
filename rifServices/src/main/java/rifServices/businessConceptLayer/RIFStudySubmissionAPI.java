@@ -312,7 +312,9 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	public void createStudyExtract(
 		final User user,
 		final String studyID,
-		final String zoomLevel)
+		final String zoomLevel,
+		final Locale locale,
+		final String tomcatServer)
 		throws RIFServiceException;	
 	public FileInputStream getStudyExtract(
 		final User user,

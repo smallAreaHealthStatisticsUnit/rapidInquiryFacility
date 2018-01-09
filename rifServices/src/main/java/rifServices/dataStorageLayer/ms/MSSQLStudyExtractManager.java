@@ -556,7 +556,9 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			final User user,
 			final RIFStudySubmission rifStudySubmission,
 			final String zoomLevel,
-			final String studyID)
+			final String studyID,
+			final Locale locale,
+			final String tomcatServer)
 					throws RIFServiceException {
 
 		//Validate parameters
@@ -604,7 +606,14 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 				ZipOutputStream submissionZipOutputStream 
 				= new ZipOutputStream(new FileOutputStream(submissionZipFile));
 
-
+				String jsonFileText=getJsonFile(
+					connection,
+					user,
+					rifStudySubmission,
+					studyID,
+					locale, 
+					tomcatServer);
+				
 				//write the study the user made when they first submitted their query
 				writeQueryFile(
 						submissionZipOutputStream,

@@ -948,7 +948,16 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 		String result = "{\"status\":\"OK\"}";
 
 		try {
+			Locale locale = servletRequest.getLocale();
 			User user = createUser(servletRequest, userID);
+			
+			String tomcatHost=servletRequest.getLocalName();
+			if (tomcatHost.equals("0:0:0:0:0:0:0:1")) { // Windows 7 stupidity
+				tomcatHost="localhost";
+			}
+			String tomcatServer = servletRequest.getScheme() + "://" + 
+				tomcatHost + ":" + 
+				servletRequest.getLocalPort();
 
 			RIFStudySubmissionAPI studySubmissionService
 			= getRIFStudySubmissionService();
@@ -956,7 +965,9 @@ abstract class PGSQLAbstractRIFWebServiceResource {
 			studySubmissionService.createStudyExtract(
 					user, 
 					studyID,
-					zoomLevel);
+					zoomLevel,
+					locale,
+					tomcatServer);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifLogger.error(this.getClass(), 

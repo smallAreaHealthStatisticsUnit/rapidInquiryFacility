@@ -1439,7 +1439,9 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 	public void createStudyExtract(
 			final User _user,
 			final String studyID,
-			final String zoomLevel) 
+			final String zoomLevel,
+			final Locale locale,
+			final String tomcatServer) 
 					throws RIFServiceException {
 
 
@@ -1510,7 +1512,9 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 					user, 
 					rifStudySubmission,
 					zoomLevel,
-					studyID);
+					studyID,
+					locale,
+					tomcatServer);
 
 		}
 		catch(RIFServiceException rifServiceException) {
