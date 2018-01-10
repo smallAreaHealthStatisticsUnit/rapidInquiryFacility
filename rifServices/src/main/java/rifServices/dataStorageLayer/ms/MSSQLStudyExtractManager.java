@@ -10,6 +10,7 @@ import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 //import rifGenericLibrary.dataStorageLayer.common.SQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifServices.dataStorageLayer.common.GetStudyJSON;
+import rifServices.dataStorageLayer.common.RifZipFile;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
@@ -133,6 +134,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
+	
 	public String getStudyExtractFIleName(
 			final User user,
 			final String studyID)
@@ -145,8 +147,21 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 		fileName.append(".zip");
 		
 		return fileName.toString();	
-		}
-		
+	} 
+
+	/**
+	 * Get study extract
+	 *
+	 * @param  connection	Database specfic Connection object assigned from pool
+	 * @param  user 		Database username of logged on user.
+	 * @param  rifStudySubmission 		RIFStudySubmission object.
+	 * @param  String 		zoomLevel (as text!).
+	 * @param  studyID 		Study_id (as text!).
+	 *
+	 * @return 				FileInputStream 
+	 * 
+	 * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
+	 */	
 	public FileInputStream getStudyExtract(
 			final Connection connection,
 			final User user,
@@ -154,63 +169,15 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			final String zoomLevel,
 			final String studyID)
 					throws RIFServiceException {
-		//Validate parameters
-		String temporaryDirectoryPath = null;
-		File temporaryDirectory = null;
-		File submissionZipFile = null;
-		FileInputStream fileInputStream = null;
-		
-		try {
-			//Establish the phrase that will be used to help name the main zip
-			//file and data files within its directories
-			String baseStudyName 
-			= createBaseStudyFileName(rifStudySubmission, studyID);
-
-			temporaryDirectoryPath = 
-					createTemporaryDirectoryPath(
-							user, 
-							studyID);
-			temporaryDirectory = new File(temporaryDirectoryPath);
-			if (temporaryDirectory.exists()) {
-				rifLogger.info(this.getClass(), "Found R temporary directory: "  + 
-					temporaryDirectory.getAbsolutePath());
-			}
-			else {
-				throw new Exception("R temporary directory: "  + 
-					temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
-			}
-			
-			submissionZipFile 
-			= createSubmissionZipFile(
-					user,
-					baseStudyName);
-					
-			if (submissionZipFile.isFile()) { // No file (i.e. NULL) handled in MSSQLAbstractRIFWebServiceResource.java
-				fileInputStream = new FileInputStream(submissionZipFile);	
-				rifLogger.info(this.getClass(), "Fetched ZIP file: " + 
-					submissionZipFile.getAbsolutePath());
-			}
-			else {
-				rifLogger.info(this.getClass(), "Unable to fetch ZIP file: " + 
-					submissionZipFile.getAbsolutePath() + "; file does not exist");
-			}
-		}
-		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "MSSQLStudyExtractManager ERROR", exception);
-				
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlStudyStateManager.error.unableToGetStudyExtract",
-					user.getUserID(),
-					submissionZipFile.getAbsolutePath());
-			RIFServiceException rifServiceExeption
-				= new RIFServiceException(
-				RIFServiceError.ZIPFILE_CREATE_FAILED, 
-					errorMessage);
-			throw rifServiceExeption;
-		}	
-
-		return fileInputStream;
+						
+		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions);
+		FileInputStream zipStream=rifZipFile.getStudyExtract(
+			connection,
+			user,
+			rifStudySubmission,
+			zoomLevel,
+			studyID);
+		return zipStream;
 	}
 	
 	/**
@@ -261,72 +228,13 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			final String studyID
 			)
 					throws RIFServiceException {
-		String result=null;
-		File submissionZipFile = null;
-		String zipFileName="UNKNOWN";
-		
-		try {
-			//Establish the phrase that will be used to help name the main zip
-			//file and data files within its directories
-			
-			String studyStatus=getRif40StudyState(connection, studyID);
-			if (studyStatus == null) { 	// Study ID does not exist. You will not get this
-										// [this is raised as an exception in the calling function: RIFStudySubmission.getRIFStudySubmission()]
-				throw new Exception("STUDY_NOT_FOUND: " + studyID);
-			}
-			if (result != null && studyStatus != null) { 
-				switch (studyStatus.charAt(0)) {
-					case 'C':
-					case 'V':
-					case 'E':
-					case 'R':
-					case 'W':
-						result="STUDY_INCOMPLETE_NOT_ZIPPABLE";
-						break;
-					case 'G':
-					case 'F':
-						result="STUDY_FAILED_NOT_ZIPPABLE";
-						break;
-					case 'S':	/* R success */
-						break;
-					default:
-						throw new Exception("Invalid rif40_studies.study_state: " + studyStatus);
-				}
-			}
-			
-			if (result == null) {
-				String baseStudyName 
-				= createBaseStudyFileName(rifStudySubmission, studyID);
-				
-				submissionZipFile = createSubmissionZipFile(
-						user,
-						baseStudyName);
-				zipFileName=submissionZipFile.getAbsolutePath();
-				if (submissionZipFile.isFile()) { // ZIP file exists - no need to recreate
-					result="STUDY_EXTRACTBLE_ZIPPID";
-				}
-				else { // No zip file 
-					result="STUDY_EXTRACTABLE_NEEDS_ZIPPING";
-				}
-			}
-		}
-		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "MSSQLStudyExtractManager ERROR", exception);
-				
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlStudyStateManager.error.unableToGetExtractStatus",
-					user.getUserID(),
-					studyID,
-					zipFileName);
-			RIFServiceException rifServiceExeption
-				= new RIFServiceException(
-					RIFServiceError.ZIPFILE_GET_STATUS_FAILED, 
-					errorMessage);
-			throw rifServiceExeption;
-		}
-
-		return "{\"status\":\"" + result + "\"}";
+		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions);
+		String extractStatus=rifZipFile.getExtractStatus(
+			connection,
+			user,
+			rifStudySubmission,
+			studyID);
+		return extractStatus;
 	}
 	
 	/**
@@ -551,6 +459,18 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 		return result;
 	}
 		
+	/** 
+     * Create study extract. 
+	 *
+     * @param Connection connection (required)
+     * @param User user (required)
+     * @param RIFStudySubmission rifStudySubmission (required)
+     * @param String zoomLevel (required)
+     * @param String studyID (required)
+     * @param Locale locale (required)
+     * @param String tomcatServer [deduced from calling URL] (required)
+     * @return JSONObject [front end saves as JSON5 file]
+     */		
 	public void createStudyExtract(
 			final Connection connection,
 			final User user,
@@ -560,328 +480,17 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			final Locale locale,
 			final String tomcatServer)
 					throws RIFServiceException {
-
-		//Validate parameters
-		String temporaryDirectoryPath = null;
-		File temporaryDirectory = null;
-		File submissionZipFile = null;
-		
-		try {
-			//Establish the phrase that will be used to help name the main zip
-			//file and data files within its directories
-			String baseStudyName 
-			= createBaseStudyFileName(rifStudySubmission, studyID);
-
-			temporaryDirectoryPath = 
-					createTemporaryDirectoryPath(
-							user, 
-							studyID);
-			temporaryDirectory = new File(temporaryDirectoryPath);
-			if (temporaryDirectory.exists()) {
-				rifLogger.info(this.getClass(), "Found R temporary directory: "  + 
-					temporaryDirectory.getAbsolutePath());
-			}
-			else {
-				throw new Exception("R temporary directory: "  + 
-					temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
-			}
-			
-			File submissionZipSavFile = createSubmissionZipFile(
-					user,
-					baseStudyName + ".sav");
-			submissionZipFile = createSubmissionZipFile(
-					user,
-					baseStudyName);
-			if (submissionZipFile.isFile()) { // ZIP file exists - no need to recreate
-				Thread.sleep(500); // Sleep to allow JS promises time to work
-				rifLogger.info(this.getClass(), "No need to create ZIP file: " + 
-					submissionZipFile.getAbsolutePath() + "; already exists");
-			}
-			else if (submissionZipSavFile.isFile()) { // Sav file exists - being created
-				Thread.sleep(500); // Sleep to allow JS promises time to work
-				rifLogger.info(this.getClass(), "No need to create ZIP file: " + 
-					submissionZipSavFile.getAbsolutePath() + "; being created");
-			}
-			else { // No zip file - can be created
-				ZipOutputStream submissionZipOutputStream 
-				= new ZipOutputStream(new FileOutputStream(submissionZipFile));
-
-				String jsonFileText=getJsonFile(
-					connection,
-					user,
-					rifStudySubmission,
-					studyID,
-					locale, 
-					tomcatServer);
-				
-				//write the study the user made when they first submitted their query
-				writeQueryFile(
-						submissionZipOutputStream,
-						user,
-						baseStudyName,
-						rifStudySubmission);
-
-				addRFiles(
-					temporaryDirectory,
-					submissionZipOutputStream,
-					null);
-
-				writeGeographyFiles(
-						connection,
-						temporaryDirectoryPath,
-						submissionZipOutputStream,
-						baseStudyName,
-						zoomLevel,
-						rifStudySubmission);
-
-				/*
-				writeStatisticalPostProcessingFiles(
-					connection,
-					temporaryDirectoryPath,
-					submissionZipOutputStream,				
-					baseStudyName,
-					rifStudySubmission);
-
-				writeTermsAndConditionsFiles(
-					submissionZipOutputStream);	
-				 */	
-				submissionZipOutputStream.flush();
-				submissionZipOutputStream.close();
-				submissionZipSavFile.renameTo(submissionZipFile);
-				rifLogger.info(this.getClass(), "Created ZIP file: " + 
-					submissionZipFile.getAbsolutePath());
-			}
-		}
-		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "MSSQLStudyExtractManager ERROR", exception);
-//			temporaryDirectory.delete();
-				
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlStudyStateManager.error.unableToCreateStudyExtract",
-					user.getUserID(),
-					submissionZipFile.getAbsolutePath());
-			RIFServiceException rifServiceExeption
-				= new RIFServiceException(
-					RIFServiceError.ZIPFILE_CREATE_FAILED, 
-					errorMessage);
-			throw rifServiceExeption;
-		}
-		finally {
-//			throw new  RIFServiceException(RIFServiceError.ZIPFILE_CREATE_FAILED, "TEST ZIP ERROR");
-//			temporaryDirectory.delete();
-		}
-	}
-
-	private File createSubmissionZipFile(
-		final User user,
-		final String baseStudyName) {
-
-		StringBuilder fileName = new StringBuilder();
-		fileName.append(EXTRACT_DIRECTORY);
-		fileName.append(File.separator);
-		fileName.append(user.getUserID());		
-		fileName.append("_");
-		fileName.append(baseStudyName);
-		fileName.append(".zip");
-		
-		return new File(fileName.toString());		
-	}
-
-	
-	/*
-	 * Produces the base name for result files.
-	 */
-	private String createBaseStudyFileName(
-		final RIFStudySubmission rifStudySubmission,
-		final String studyID) {
-		
-		AbstractStudy study = rifStudySubmission.getStudy();
-//		String name = study.getName().toLowerCase();
-		String name = "s" + studyID + "_" + study.getName().toLowerCase();
-		//concatenate study name length.  We need to be mindful about
-		//the length of file names we produce so that they are not too
-		//long for some operating systems to handle.
-		
-		if (name.length() > BASE_FILE_STUDY_NAME_LENGTH) {
-			name = name.substring(0, BASE_FILE_STUDY_NAME_LENGTH);
-		}
-		
-		
-		//replace any spaces with underscores
-		name = name.replaceAll(" ", "_");
-		
-		return name;
-	}
-	
-	private String createTemporaryDirectoryPath(
-		final User user,
-		final String studyID) {
-		
-		StringBuilder fileName = new StringBuilder();
-		fileName.append(EXTRACT_DIRECTORY);
-		
-		// Numbered directory support (1-100 etc) to reduce the number of files/directories per directory to 100. This is to improve filesystem 
-		// performance on Windows Tomcat servers 	
-		Integer centile=Integer.parseInt(studyID) / 100; // 1273 = 12
-		// Number directory: d1201-1300
-		String numberDir = "d" + ((centile*100)+1) + "-" + (centile+1)*100;
-		fileName.append(File.separator);
-		fileName.append(numberDir);
-		
-		fileName.append(File.separator);
-		fileName.append("s" + studyID);
-	
-		return fileName.toString();
-	}
-	
-	
-	
-	
-	private void writeQueryFile(
-		final ZipOutputStream submissionZipOutputStream,
-		final User user,
-		final String baseStudyName,
-		final RIFStudySubmission rifStudySubmission)
-		throws Exception {
-		
-		XMLCommentInjector commentInjector = new XMLCommentInjector();
-		RIFStudySubmissionContentHandler rifStudySubmissionContentHandler
-			= new RIFStudySubmissionContentHandler();
-		rifStudySubmissionContentHandler.initialise(
-			submissionZipOutputStream, 
-			commentInjector);
-	
-		//KLG @TODO.  Right now we have only 
-		
-		//write the query file to a special directory.
-		//this folder should only contain one file
-		StringBuilder queryFileName = new StringBuilder();
-		queryFileName.append(STUDY_QUERY_SUBDIRECTORY);
-		queryFileName.append(File.separator);
-		queryFileName.append(baseStudyName);
-		queryFileName.append("_query.xml");
-		
-		ZipEntry rifQueryFileNameZipEntry = new ZipEntry(queryFileName.toString());
-		submissionZipOutputStream.putNextEntry(rifQueryFileNameZipEntry);
-		rifStudySubmissionContentHandler.writeXML(
-			user, 
-			rifStudySubmission);
-		submissionZipOutputStream.closeEntry();
-
-		rifLogger.info(this.getClass(), "Add to ZIP file: " + queryFileName);		
-	}
-	
-	
-	private void addRFiles(
-			final File temporaryDirectory,
-			final ZipOutputStream submissionZipOutputStream,
-			final String relativePath)
-					throws Exception {
 						
-		File[] listOfFiles = temporaryDirectory.listFiles();
+		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions);
+		rifZipFile.createStudyExtract(connection,
+			user,
+			rifStudySubmission,
+			zoomLevel,
+			studyID,
+			locale,
+			tomcatServer);
 
-		for (int i = 0; i < listOfFiles.length; i++) {	
-		
-			if (listOfFiles[i].isFile()) {
-				rifLogger.info(this.getClass(), "Adding R file: " + temporaryDirectory.getAbsolutePath() + File.separator + 
-					listOfFiles[i].getName() + " to ZIP file");
-				
-				File file=new File(temporaryDirectory.getAbsolutePath() + File.separator + listOfFiles[i].getName());
-				ZipEntry zipEntry = null;
-				if (relativePath != null) {
-					zipEntry = new ZipEntry(relativePath + File.separator + listOfFiles[i].getName());
-				}
-				else {
-					zipEntry = new ZipEntry(listOfFiles[i].getName());
-				}
-				submissionZipOutputStream.putNextEntry(zipEntry);
-
-				FileInputStream fileInputStream  = new FileInputStream(file);
-				byte[] buffer = new byte[4092];
-				int byteCount = 0;
-				while ((byteCount = fileInputStream.read(buffer)) != -1) {
-					submissionZipOutputStream.write(buffer, 0, byteCount);
-				}
-
-				fileInputStream.close();
-				submissionZipOutputStream.closeEntry();
-			}
-			else if (listOfFiles[i].isDirectory()) {
-				rifLogger.info(this.getClass(), "Adding R directory: " + temporaryDirectory.getAbsolutePath() + File.separator + 
-					listOfFiles[i].getName() + File.separator + " to ZIP file");
-				if (relativePath != null) {
-					submissionZipOutputStream.putNextEntry(
-						new ZipEntry(listOfFiles[i].getName() + File.separator));
-				}
-				else {
-					submissionZipOutputStream.putNextEntry(
-						new ZipEntry(listOfFiles[i].getName() + File.separator));
-				}					
-				addRFiles(listOfFiles[i], submissionZipOutputStream, listOfFiles[i].getName()); // Recurse!!!
-			}
-			else {
-				rifLogger.info(this.getClass(), "Ignoring R file: " + temporaryDirectory.getAbsolutePath() + File.separator + 
-					listOfFiles[i].getName());
-			}
-    	}
 	}
-	
-	private void writeGeographyFiles(
-			final Connection connection,
-			final String temporaryDirectoryPath,
-			final ZipOutputStream submissionZipOutputStream,
-			final String baseStudyName,
-			final String zoomLevel,
-			final RIFStudySubmission rifStudySubmission)
-					throws Exception {
-		
-		String studyID = rifStudySubmission.getStudyID();
-	
-		//Add geographies to zip file
-		StringBuilder tileTableName = new StringBuilder();	
-		tileTableName.append("rif_data.geometry_");
-		String geog = rifStudySubmission.getStudy().getGeography().getName();			
-		tileTableName.append(geog);
-						
-		StringBuilder tileFilePath = new StringBuilder();
-		tileFilePath.append(GEOGRAPHY_SUBDIRECTORY);
-		tileFilePath.append(File.separator);
-		tileFilePath.append(baseStudyName);
-		
-		//Write study area
-		StringBuilder tileFileName = null;
-		tileFileName = new StringBuilder();
-		tileFileName.append(tileFilePath.toString());
-		tileFileName.append("_studyArea");
-		tileFileName.append(".txt");
-		
-		writeMapQueryTogeoJSONFile(
-				connection,
-				submissionZipOutputStream,
-				"rif40_study_areas",
-				tileTableName.toString(),
-				tileFileName.toString(),
-				zoomLevel,
-				studyID);
-		
-		//Write comparison area
-		tileFileName = new StringBuilder();
-		tileFileName.append(tileFilePath.toString());
-		tileFileName.append("_comparisonArea");
-		tileFileName.append(".txt");
-		
-		writeMapQueryTogeoJSONFile(
-				connection,
-				submissionZipOutputStream,
-				"rif40_comparison_areas",
-				tileTableName.toString(),
-				tileFileName.toString(),
-				zoomLevel,
-				studyID);
-		rifLogger.info(this.getClass(), "Add to ZIP file: " + tileFileName);
-	}	
-
 	
 	/*
 	private void writeStatisticalPostProcessingFiles(
@@ -1006,152 +615,12 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			final Connection connection,
 			final String studyID)
 					throws Exception {
-						
-		//get study_state
-		SQLGeneralQueryFormatter studyStatusQueryFormatter = new SQLGeneralQueryFormatter();	
-		studyStatusQueryFormatter.addQueryLine(0, "SELECT a.study_state");
-		studyStatusQueryFormatter.addQueryLine(0, "FROM rif40.rif40_studies a");
-		studyStatusQueryFormatter.addQueryLine(0, "WHERE a.study_id = ?");
-					
-		ResultSet studyStatusResultSet = null;
-		String studyStatus = null;
+		String studyState;
+		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions);
+		studyState=rifZipFile.getRif40StudyState(connection,
+			studyID);
 		
-		try {
-			logSQLQuery("getRif40StudyState", studyStatusQueryFormatter, studyID);
-			PreparedStatement studyStatusStatement = createPreparedStatement(connection, studyStatusQueryFormatter);
-			studyStatusStatement.setInt(1, Integer.parseInt(studyID));	
-			studyStatusResultSet = studyStatusStatement.executeQuery();
-			studyStatusResultSet.next();
-			studyStatus = studyStatusResultSet.getString(1);
-		}
-		catch (Exception exception) {
-			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + studyStatusQueryFormatter.generateQuery(),
-				exception);
-			throw exception;
-		}
-		return studyStatus;
-
-	}
-					
-	public void writeMapQueryTogeoJSONFile(
-			final Connection connection,
-			final ZipOutputStream submissionZipOutputStream,	
-			final String areaTableName,
-			final String tableName,
-			final String outputFilePath,
-			final String zoomLevel,
-			final String studyID)
-					throws Exception {
-		
-		//Type of area
-		String type = "S";
-		
-		//get geolevel
-		SQLGeneralQueryFormatter geolevelQueryFormatter = new SQLGeneralQueryFormatter();	
-		geolevelQueryFormatter.addQueryLine(0, "SELECT b.geolevel_id");
-		geolevelQueryFormatter.addQueryLine(0, "FROM rif40.rif40_studies a, rif40.rif40_geolevels b");
-		geolevelQueryFormatter.addQueryLine(0, "WHERE study_id = ?");
-		if (areaTableName.equals("rif40_comparison_areas")) {
-			geolevelQueryFormatter.addQueryLine(0, "AND a.comparison_geolevel_name = b.geolevel_name");
-			type = "C";
-		} else {
-			geolevelQueryFormatter.addQueryLine(0, "AND a.study_geolevel_name = b.geolevel_name");
-		}
-	
-		//count areas
-		SQLGeneralQueryFormatter countQueryFormatter = new SQLGeneralQueryFormatter();
-		countQueryFormatter.addQueryLine(0, "SELECT count(area_id) from rif40." + areaTableName + " where study_id = ?");
-		
-		//TODO: possible issues with Multi-polygon and point arrays
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryLine(0, "SELECT b.areaid, b.zoomlevel, b.wkt from (select area_id from rif40." + areaTableName + " where study_id = ?) a");
-		queryFormatter.addQueryLine(0, "left join " + tableName + " b ");
-		queryFormatter.addQueryLine(0, "on a.area_id = b.areaid");
-		queryFormatter.addQueryLine(0, "WHERE geolevel_id = ? AND zoomlevel = ?");
-		
-		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(submissionZipOutputStream);
-		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-		
-		PreparedStatement geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);		
-		ResultSet geolevelResultSet = null;
-		PreparedStatement countStatement = createPreparedStatement(connection, countQueryFormatter);		
-		ResultSet countResultSet = null;
-		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
-		ResultSet resultSet = null;
-		
-		try {
-			geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);
-			geolevelStatement.setInt(1, Integer.parseInt(studyID));	
-			geolevelResultSet = geolevelStatement.executeQuery();
-			geolevelResultSet.next();
-			Integer geolevel = geolevelResultSet.getInt(1);
-			
-			
-			countStatement = createPreparedStatement(connection, countQueryFormatter);
-			countStatement.setInt(1, Integer.parseInt(studyID));	
-			countResultSet = countStatement.executeQuery();
-			countResultSet.next();
-			int rows = countResultSet.getInt(1);
-
-			statement = createPreparedStatement(connection, queryFormatter);
-			statement.setInt(1, Integer.parseInt(studyID));	
-			statement.setInt(2, geolevel);
-			statement.setInt(3, Integer.parseInt(zoomLevel));
-						
-			resultSet = statement.executeQuery();
-
-			ZipEntry zipEntry = new ZipEntry(outputFilePath);
-			submissionZipOutputStream.putNextEntry(zipEntry);
-			
-			//Write WKT to geoJSON
-			int i = 0;
-			bufferedWriter.write("{ \"type\": \"FeatureCollection\", \"features\": [\r\n");	
-			while (resultSet.next()) {
-				bufferedWriter.write("{ \"type\": \"Feature\",\r\n");
-				bufferedWriter.write("\"geometry\": {\r\n\"type\": \"Polygon\",\r\n\"coordinates\": [");
-				bufferedWriter.write("[\r\n");
-				//Full wkt string
-				String polygon = resultSet.getString(3);				
-				//trim head and tail
-				polygon = polygon.replaceAll("MULTIPOLYGON", "");
-				polygon = polygon.replaceAll("[()]", "");				
-				//get coordinate pairs
-				String[] coords = polygon.split(",");
-				for (Integer j = 0; j < coords.length; j++) {
-					String node = coords[j].replaceFirst(" ", ",");
-					bufferedWriter.write("[" + node + "]");		
-					if (j != coords.length - 1) {
-						bufferedWriter.write(",");	
-					}
-				}				
-				//get properties
-				bufferedWriter.write("]\r\n");					
-				bufferedWriter.write("]},\r\n\"properties\": {\r\n");
-				bufferedWriter.write("\"area_id\": \"" + resultSet.getString(1) + "\",\r\n");
-				bufferedWriter.write("\"zoomLevel\": \"" + resultSet.getString(2) + "\",\r\n");
-				bufferedWriter.write("\"areatype\": \"" + type + "\"\r\n");
-				bufferedWriter.write("}\r\n");
-				bufferedWriter.write("}");
-				if (i != rows) {
-					bufferedWriter.write(","); 
-				}
-				bufferedWriter.write("\r\n");
-				i++;
-			}
-			
-			bufferedWriter.write("]\r\n");
-			bufferedWriter.write("}");
-
-			bufferedWriter.flush();
-			submissionZipOutputStream.closeEntry();
-
-			connection.commit();
-		}
-		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(countStatement);
-			SQLQueryUtility.close(geolevelStatement);
-		}
+		return studyState;
 	}
 		
 	// ==========================================
