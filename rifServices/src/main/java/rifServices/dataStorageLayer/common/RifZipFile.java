@@ -107,6 +107,9 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	private static final String GEOGRAPHY_SUBDIRECTORY = "geography";
 	private static final int BASE_FILE_STUDY_NAME_LENGTH = 100;
 	
+	private static Map<String, String> environmentalVariables = System.getenv();
+	private static String catalinaHome = environmentalVariables.get("CATALINA_HOME");
+	
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	
 	// ==========================================
@@ -472,7 +475,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			studyID, locale, tomcatServer, null);
 		rif_job_submission.put("created_by", user.getUserID());
 		json.put("rif_job_submission", rif_job_submission);
-		String jsonFileText=json.toString();
+		
+		String jsonFileText=readFile("RIFStudyHeader.json") + json.toString(2);
 		String JSONFileName="RIFstudy_" + studyID + ".json";
 		
 		rifLogger.info(this.getClass(), "Adding JSONfile: " + temporaryDirectory.getAbsolutePath() + File.separator + 
@@ -487,7 +491,56 @@ public class RifZipFile extends SQLAbstractSQLManager {
 
 		submissionZipOutputStream.closeEntry();		
 	}
-			
+
+	private String readFile(String file) throws IOException {
+		String line = null;
+		StringBuilder stringBuilder = new StringBuilder();
+		String file1;
+		String file2;
+		FileReader input = null;
+		
+		if (catalinaHome != null) {
+			file1=catalinaHome + "\\conf\\" + file;
+			file2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\" + file;
+		}
+		else {
+			rifLogger.warning(this.getClass(), 
+				"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters: CATALINA_HOME not set in environment"); 
+			file1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\" + file;
+			file2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\" + file;
+		}
+		
+		try {
+			input=new FileReader(file1);
+			rifLogger.info(this.getClass(), 
+				"RifZipFile.readFile: using: " + file1);
+		} 
+		catch (IOException ioException) {
+			try {
+				input=new FileReader(file2);
+				rifLogger.info(this.getClass(), 
+					"RifZipFile.readFile: using: " + file2);
+			}
+			catch (IOException ioException2) {				
+				rifLogger.warning(this.getClass(), 
+					"RifZipFile.readFile error for files: " + 
+						file1 + " and " + file2, 
+					ioException2);
+				return "/* No header file found */";
+			}
+		}	
+				
+		BufferedReader reader = new BufferedReader(input);
+		while((line = reader.readLine()) != null) {
+			stringBuilder.append(line);
+			stringBuilder.append(lineSeparator);
+		}
+
+		reader.close();
+		return stringBuilder.toString();
+
+	}
+	
 	private File createSubmissionZipFile(
 		final User user,
 		final String baseStudyName) {

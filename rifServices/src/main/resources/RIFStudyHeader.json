@@ -1,0 +1,71 @@
+/**
+ * HEADER FOR RIF STUDY JSON FILES. USER EDITIABLE - COPY TO %CATALINA_HOME%/conf
+ * [or you will loose it in an upgrade!]
+ *
+ * <hr>
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * <p>
+ * Copyright 2017 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ * </p>
+ *
+ * <pre> 
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+ * </pre>
+ *
+ * <hr>
+ * Peter Hambly
+ * @author phambly
+ * @version
+ */
+
+// THIS FILE MUST BE VALID JSON5; can contain comments and line feeds!
+// http://json5.org/ or https://github.com/json5/json5
+
+/*
+The following is the exact list of additions to JSON’s syntax introduced by JSON5. All of these are optional, and all of these come from ES5.
+
+Objects:
+* Object keys can be unquoted if they’re valid identifiers. Yes, even reserved keywords (like default) are valid unquoted keys in ES5 [§11.1.5, §7.6]. (More info)
+  (TODO: Unicode characters and escape sequences aren’t yet supported in this implementation.)
+* Object keys can also be single-quoted.
+* Objects can have trailing commas.
+
+Arrays:
+* Arrays can have trailing commas.
+
+Strings:
+* Strings can be single-quoted.
+* Strings can be split across multiple lines; just prefix each newline with a backslash. [ES5 §7.8.4]
+
+Numbers:
+* Numbers can be hexadecimal (base 16).
+* Numbers can begin or end with a (leading or trailing) decimal point.
+* Numbers can include Infinity, -Infinity, NaN, and -NaN.
+* Numbers can begin with an explicit plus sign.
+
+Comments:
+* Both inline (single-line) and block (multi-line) comments are allowed.
+*/
