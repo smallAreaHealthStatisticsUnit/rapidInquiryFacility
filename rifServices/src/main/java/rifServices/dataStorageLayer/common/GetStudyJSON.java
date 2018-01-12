@@ -975,11 +975,12 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	/**
 	 * Get geolevelLookup table name
      *
-     * @param JSONObject String geolevelName (required)
-     * @param JSONObject String geographyName (required)
+     * @param Connection connection (required)
+     * @param String geolevelName (required)
+     * @param String geographyName (required)
 	 * @return JSONObject
      */	
-	private JSONObject getLookupTableName(String geolevelName, String geographyName)
+	public JSONObject getLookupTableName(Connection connection, String geolevelName, String geographyName)
 					throws Exception {
 		SQLGeneralQueryFormatter rifGeographyQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
@@ -1040,7 +1041,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	private void addStudyAreas(JSONObject disease_mapping_study_areas, 
 		String studyGeolevelName, String comparisonGeolevelName, String geographyName)
 					throws Exception {
-		JSONObject studyGeolevel = getLookupTableName(studyGeolevelName, geographyName);
+		JSONObject studyGeolevel = getLookupTableName(connection, studyGeolevelName, geographyName);
 		
 		SQLGeneralQueryFormatter rifStudyAreasQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
@@ -1125,7 +1126,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	private void addComparisonAreas(JSONObject comparison_areas, 
 		String studyGeolevelName, String comparisonGeolevelName, String geographyName)
 					throws Exception {
-		JSONObject comparisonGeolevel = getLookupTableName(comparisonGeolevelName, geographyName);
+		JSONObject comparisonGeolevel = getLookupTableName(connection, comparisonGeolevelName, geographyName);
 		
 		SQLGeneralQueryFormatter rifComparisonAreasQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;

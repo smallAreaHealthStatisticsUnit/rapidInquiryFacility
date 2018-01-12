@@ -473,12 +473,14 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final Locale locale,
 			final String tomcatServer) 
 			throws Exception {
+				
+		GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
 
 		StringBuilder htmlFileText=new StringBuilder();
 		htmlFileText.append(readFile("RIFStudyHeader.html"));
 		htmlFileText.append("<body>");
 		
-		addTableToHtmlReport(htmlFileText, connection, user, studyID,
+		addTableToHtmlReport(htmlFileText, connection, studyID,
 			"rif40.rif40_studies", // Table 
 			"username,study_id,extract_table,study_name," + lineSeparator +
 			"summary,description,other_notes,study_date," + lineSeparator +
@@ -487,38 +489,42 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"max_age_group,min_age_group,study_geolevel_name," + lineSeparator +
 			"map_table,suppression_value,extract_permitted," + lineSeparator +
 			"transfer_permitted,authorised_by,authorised_on,authorised_notes," + lineSeparator +
-			"covariate_table,project,project_description,stats_method", // Column list
-			null,  // ORDER BY
+			"covariate_table,project,project_description," + lineSeparator +
+			"CASE WHEN stats_method = 'HET' THEN 'Heterogenous'" + lineSeparator +
+			"     WHEN stats_method = 'BYM' THEN 'Besag, York and Mollie'" + lineSeparator +
+			"     WHEN stats_method = 'CAR' THEN 'Conditional Auto Regression'" + lineSeparator +
+			"     ELSE 'NONE' END AS stats_method", // Column list
+			null  	/* ORDER BY */,
+			"1"		/* Expected rows */,
 			true	/* Rotate */, locale, tomcatServer); 
 
-		addTableToHtmlReport(htmlFileText, connection, user, studyID,
+		addTableToHtmlReport(htmlFileText, connection, studyID,
 			"rif40.rif40_investigations", // Table 	
 			"inv_id,inv_name,year_start,year_stop," + lineSeparator +
 			"max_age_group,min_age_group,genders,numer_tab," + lineSeparator +
 			"mh_test_type,inv_description,classifier,classifier_bands,investigation_state", // Column list
-			"inv_id",  // ORDER BY
-			true	/* Rotate */, locale, tomcatServer); 
+			"inv_id"  	/* ORDER BY */,
+			"1+"		/* Expected rows 1+ */,
+			true		/* Rotate */, locale, tomcatServer); 
 			
-		addTableToHtmlReport(htmlFileText, connection, user, studyID,
+		addTableToHtmlReport(htmlFileText, connection, studyID,
 			"rif40.rif40_inv_covariates", // Table 	
 			"inv_id,covariate_name,min,max,geography,study_geolevel_name", // Column list
-			"inv_id,covariate_name",  // ORDER BY
-			false	/* Rotate */, locale, tomcatServer); 
+			"inv_id,covariate_name"    	/* ORDER BY */,
+			"0+"		/* Expected rows 0+ */,
+			false		/* Rotate */, locale, tomcatServer); 
 			
-		addTableToHtmlReport(htmlFileText, connection, user, studyID,
+		addTableToHtmlReport(htmlFileText, connection, studyID,
 			"rif40.rif40_inv_conditions", // Table 	
-			"min_condition,max_condition,predefined_group_name," + lineSeparator +
-			"outcome_group_name,numer_tab," + lineSeparator +
-			"field_name,condition,CAST(column_comment AS VARCHAR(2000)) AS column_comment", // Column list
-			"inv_id,line_number",  // ORDER BY
-			false	/* Rotate */, locale, tomcatServer); 
-
-		addTableToHtmlReport(htmlFileText, connection, user, studyID,
-			"rif40.rif40_inv_covariates", // Table 	
-			"inv_id,covariate_name,min,max,geography,study_geolevel_name", // Column list
-			"inv_id,covariate_name",  // ORDER BY
-			false	/* Rotate */, locale, tomcatServer); 
-			
+			"inv_id,line_number,outcome_group_name,numer_tab," + lineSeparator +
+			"condition", // Column list
+			"inv_id,line_number"	  	/* ORDER BY */,
+			"1+"		/* Expected rows */,
+			false	/* Rotate */, locale, tomcatServer);
+	
+		addStudyAndComparisonAreas(htmlFileText, connection, studyID,
+			getStudyJSON, locale, tomcatServer);
+		
 		htmlFileText.append("</body>");
 		String htmlFileName="RIFstudy_" + studyID + ".html";
 		rifLogger.info(this.getClass(), "Adding HTML report file: " + temporaryDirectory.getAbsolutePath() + File.separator + 
@@ -534,14 +540,81 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		submissionZipOutputStream.closeEntry();					
 	}
 	
+	private void addStudyAndComparisonAreas(
+			final StringBuilder htmlFileText,
+			final Connection connection,
+			final String studyID,
+			final GetStudyJSON getStudyJSON,
+			final Locale locale,
+			final String tomcatServer)
+			throws Exception {
+		SQLGeneralQueryFormatter studyAndComparisonReportQueryFormatter = new SQLGeneralQueryFormatter();		
+		
+		ResultSet resultSet = null;
+		
+		studyAndComparisonReportQueryFormatter.addQueryLine(0, "SELECT study_geolevel_name, comparison_geolevel_name, geography");
+		studyAndComparisonReportQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");
+		studyAndComparisonReportQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+
+		PreparedStatement statement = createPreparedStatement(connection, studyAndComparisonReportQueryFormatter);
+		try {
+			statement.setInt(1, Integer.parseInt(studyID));		
+			resultSet = statement.executeQuery();
+			String studyGeolevelName=null;
+			String comparisonGeolevelName=null;
+			String geographyName=null;
+			
+			if (resultSet.next()) {
+				studyGeolevelName=resultSet.getString(1);
+				comparisonGeolevelName=resultSet.getString(2);
+				geographyName=resultSet.getString(3);	
+				JSONObject studyGeolevel=getStudyJSON.getLookupTableName(
+					connection, studyGeolevelName, geographyName);
+				JSONObject comparisonGeolevel=getStudyJSON.getLookupTableName(
+					connection, comparisonGeolevelName, geographyName);
+		
+				addTableToHtmlReport(htmlFileText, connection, studyID,
+					"rif40.rif40_study_areas a LEFT OUTER JOIN rif_data." +			
+						studyGeolevel.getString("lookup_table").toLowerCase() + 
+						" b ON (a.area_id = b." + studyGeolevelName.toLowerCase() + ")", // Table 	
+					"a.area_id, a.band_id, b." + 
+						studyGeolevel.getString("lookup_desc_column").toLowerCase() + 
+						" AS label, b.gid", // Column list
+					"2, 1"    	/* ORDER BY */,
+					"1+"		/* Expected rows 0+ */,
+					false		/* Rotate */, locale, tomcatServer); 
+	
+				addTableToHtmlReport(htmlFileText, connection, studyID,
+					"rif40.rif40_comparison_areas a LEFT OUTER JOIN rif_data." +			
+						comparisonGeolevel.getString("lookup_table").toLowerCase() + 
+						" b ON (a.area_id = b." + comparisonGeolevelName.toLowerCase() + ")", // Table 	
+					"a.area_id, b." + 
+						comparisonGeolevel.getString("lookup_desc_column").toLowerCase() + 
+						" AS label, b.gid", // Column list
+					"1"    	/* ORDER BY */,
+					"1+"		/* Expected rows 0+ */,
+					false		/* Rotate */, locale, tomcatServer); 
+			}		
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + studyAndComparisonReportQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}	
+	}
+			
 	private void addTableToHtmlReport(
 			final StringBuilder htmlFileText,
 			final Connection connection,
-			final User user,
 			final String studyID,
 			final String tableName,
 			final String columnList,
 			final String orderBy,
+			final String expectedRows,
 			final boolean rotate,
 			final Locale locale,
 			final String tomcatServer)
@@ -572,12 +645,13 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}
 		PreparedStatement statement = createPreparedStatement(connection, htmlReportQueryFormatter);
 		try {			
+			int rowCount = 0;
+				
 			statement.setInt(1, Integer.parseInt(studyID));		
 			resultSet = statement.executeQuery();
 			if (resultSet.next()) {
 				ResultSetMetaData rsmd = resultSet.getMetaData();
 				int columnCount = rsmd.getColumnCount();
-				int rowCount = 0;
 				StringBuffer headerText = new StringBuffer();
 				htmlFileText.append("<TABLE border=\"1\" summary=\"" + tableName + "\">" +  lineSeparator);
 				htmlFileText.append("  <CAPTION><EM>" + tableName + "</EM></CAPTION>" + 
@@ -665,6 +739,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			}
 			else {
 				htmlFileText.append("<p>No data found</p>");
+			}	
+			
+			if (expectedRows.equals("1") && rowCount == 1) { // OK
+			}		
+			else if (expectedRows.equals("1+") && rowCount > 0) { // OK
+			}			
+			else if (expectedRows.equals("0+")) { // No need to check
+			}
+			else {
+				throw new Exception("Expecting: " + expectedRows + "; got: " + rowCount);
 			}			
 		}
 		catch (Exception exception) {
