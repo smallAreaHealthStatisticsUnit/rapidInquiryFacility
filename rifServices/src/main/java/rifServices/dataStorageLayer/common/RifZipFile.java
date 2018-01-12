@@ -100,6 +100,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	private Connection connection;
 	private String studyID;
 	private static String EXTRACT_DIRECTORY;
+	private Calendar calendar = null;
 	
 	private static final String STUDY_QUERY_SUBDIRECTORY = "study_query";
 	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
@@ -354,6 +355,17 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		String temporaryDirectoryPath = null;
 		File temporaryDirectory = null;
 		File submissionZipFile = null;
+
+		if (locale != null) {
+			DateFormat df=DateFormat.getDateTimeInstance(
+				DateFormat.DEFAULT /* Date style */, 
+				DateFormat.DEFAULT /* Time style */, 
+				locale);
+			this.calendar = df.getCalendar();
+		}
+		else { // assume US
+			this.calendar = Calendar.getInstance();
+		}
 		
 		try {
 			//Establish the phrase that will be used to help name the main zip
@@ -399,7 +411,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						temporaryDirectory,
 						submissionZipOutputStream,
 						connection, user, studyID, locale, tomcatServer);
-								
+
+				addHtmlFile(
+						temporaryDirectory,
+						submissionZipOutputStream,
+						connection, user, studyID, tomcatServer);
+						
 				//write the study the user made when they first submitted their query
 				writeQueryFile(
 						submissionZipOutputStream,
@@ -459,6 +476,202 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}
 	}
 			
+	private void addHtmlFile(
+			final File temporaryDirectory,
+			final ZipOutputStream submissionZipOutputStream,
+			final Connection connection,
+			final User user,
+			final String studyID,
+			final String tomcatServer) 
+			throws Exception {
+
+		StringBuilder htmlFileText=new StringBuilder();
+		htmlFileText.append(readFile("RIFStudyHeader.html"));
+		htmlFileText.append("<body>");
+		
+		addTableToHtmlReport(htmlFileText, connection, user, studyID,
+			"rif40.rif40_studies", // Table 
+			"username,study_id,extract_table,study_name," + lineSeparator +
+			"summary,description,other_notes,study_date," + lineSeparator +
+			"geography,study_type,study_state,comparison_geolevel_name," + lineSeparator +
+			"denom_tab,direct_stand_tab,year_start,year_stop," + lineSeparator +
+			"max_age_group,min_age_group,study_geolevel_name," + lineSeparator +
+			"map_table,suppression_value,extract_permitted," + lineSeparator +
+			"transfer_permitted,authorised_by,authorised_on,authorised_notes," + lineSeparator +
+			"covariate_table,project,project_description,stats_method", // Column list
+			null,  // ORDER BY
+			true	/* Rotate */, tomcatServer); 
+
+		addTableToHtmlReport(htmlFileText, connection, user, studyID,
+			"rif40.rif40_investigations", // Table 	
+			"inv_id,inv_name,year_start,year_stop," + lineSeparator +
+			"max_age_group,min_age_group,genders,numer_tab," + lineSeparator +
+			"mh_test_type,inv_description,classifier,classifier_bands,investigation_state", // Column list
+			"inv_id",  // ORDER BY
+			true	/* Rotate */, tomcatServer); 
+			
+		addTableToHtmlReport(htmlFileText, connection, user, studyID,
+			"rif40.rif40_inv_covariates", // Table 	
+			"inv_id,covariate_name,min,max,geography,study_geolevel_name", // Column list
+			"inv_id,covariate_name",  // ORDER BY
+			false	/* Rotate */, tomcatServer); 
+			
+		addTableToHtmlReport(htmlFileText, connection, user, studyID,
+			"rif40.rif40_inv_conditions", // Table 	
+			"min_condition,max_condition,predefined_group_name," + lineSeparator +
+			"outcome_group_name,numer_tab," + lineSeparator +
+			"field_name,condition,CAST(column_comment AS VARCHAR(2000)) AS column_comment", // Column list
+			"inv_id,line_number",  // ORDER BY
+			false	/* Rotate */, tomcatServer); 
+
+		addTableToHtmlReport(htmlFileText, connection, user, studyID,
+			"rif40.rif40_inv_covariates", // Table 	
+			"inv_id,covariate_name,min,max,geography,study_geolevel_name", // Column list
+			"inv_id,covariate_name",  // ORDER BY
+			false	/* Rotate */, tomcatServer); 
+			
+		htmlFileText.append("</body>");
+		String htmlFileName="RIFstudy_" + studyID + ".html";
+		rifLogger.info(this.getClass(), "Adding HTML report file: " + temporaryDirectory.getAbsolutePath() + File.separator + 
+			htmlFileName + " to ZIP file");
+		
+		File file=new File(temporaryDirectory.getAbsolutePath() + File.separator + htmlFileName);
+		ZipEntry zipEntry = new ZipEntry(htmlFileName);
+
+		submissionZipOutputStream.putNextEntry(zipEntry);
+		byte[] b=htmlFileText.toString().getBytes();
+		submissionZipOutputStream.write(b, 0, b.length);
+
+		submissionZipOutputStream.closeEntry();					
+	}
+	
+	private void addTableToHtmlReport(
+			final StringBuilder htmlFileText,
+			final Connection connection,
+			final User user,
+			final String studyID,
+			final String tableName,
+			final String columnList,
+			final String orderBy,
+			final boolean rotate,
+			final String tomcatServer)
+			throws Exception {
+		
+		htmlFileText.append("<h1>" + tableName + "</h1>" + lineSeparator);
+		SQLGeneralQueryFormatter htmlReportQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		htmlReportQueryFormatter.addQueryLine(0, "SELECT " + columnList);
+		htmlReportQueryFormatter.addQueryLine(0, "  FROM " + tableName);
+		htmlReportQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+		if (orderBy != null) {
+			htmlReportQueryFormatter.addQueryLine(0, " ORDER BY " + orderBy);
+		}
+		PreparedStatement statement = createPreparedStatement(connection, htmlReportQueryFormatter);
+		try {			
+			statement.setInt(1, Integer.parseInt(studyID));		
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+				int rowCount = 0;
+				StringBuffer headerText = new StringBuffer();
+				htmlFileText.append("<TABLE border=\"1\" summary=\"" + tableName + "\">" +  lineSeparator);
+				htmlFileText.append("  <CAPTION><EM>" + tableName + "</EM></CAPTION>" + 
+					lineSeparator);
+
+				if (rotate) {
+					headerText.append("  <tr>" + lineSeparator +
+						"    <th>Attribute</th>" + lineSeparator);	
+				}
+				else {
+					headerText.append("  </tr>" + lineSeparator);
+				}
+				do {	
+					rowCount++;
+					
+					String statementNumber=null;
+					StringBuffer bodyText = new StringBuffer();
+					String[] rotatedRowsArray = new String[columnCount];
+					
+					if (!rotate) {
+						bodyText.append("  <tr>" + lineSeparator);
+					}
+					else {
+						headerText.append("    <th>Value: " + rowCount + "</th>" + lineSeparator);
+					}
+					// The column count starts from 1
+					for (int i = 1; i <= columnCount; i++ ) {
+						String name = rsmd.getColumnName(i);
+						String value = resultSet.getString(i);	
+						String columnType = rsmd.getColumnTypeName(i);
+						if (columnType.equals("timestamp") /* Postgres */) {
+							value=resultSet.getTimestamp(i, calendar).toString();
+						}
+						else if (value == null) {
+							value="&nbsp;";
+						}
+						
+						if (rowCount == 1) {
+							if (rotate) {
+								rotatedRowsArray[i-1]="      <td>" + name + 
+									"<!-- " + columnType + " -->" +
+									"</td>" +
+									lineSeparator; //Initialise
+							}
+							else {
+								headerText.append("    <th>" + name + 
+									"<!-- " + columnType + " -->" + "</th>" + lineSeparator);
+							}
+						}
+						
+						if (rotate) {
+							rotatedRowsArray[i-1]+="      <td>" + value + "</td><!-- Column: " + i +
+								"; row: " + rowCount +
+								" -->" + lineSeparator;
+						}
+						else {
+							bodyText.append("      <td>" + value + 
+								"</td><!-- Column: " + i +
+								"; row: " + rowCount +
+								" -->" + lineSeparator);
+						}
+					}
+					
+					if (rowCount == 1) {
+						headerText.append("  </tr>" + lineSeparator);
+						htmlFileText.append(headerText.toString());
+					}
+					
+					if (!rotate) {
+						bodyText.append("  </tr>" + lineSeparator);
+					}
+					else {
+						for (int j = 0; j < rotatedRowsArray.length; j++) {
+							bodyText.append("  <tr>" + lineSeparator);
+							bodyText.append(rotatedRowsArray[j]);
+							bodyText.append("  <tr>" + lineSeparator);
+						}
+					}
+					htmlFileText.append(bodyText.toString());
+				} while (resultSet.next());
+				
+				htmlFileText.append("</TABLE>" + lineSeparator + lineSeparator);
+			}
+			else {
+				htmlFileText.append("<p>No data found</p>");
+			}			
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + htmlReportQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+		}					
+	}
+	
 	private void addJsonFile(
 			final File temporaryDirectory,
 			final ZipOutputStream submissionZipOutputStream,
