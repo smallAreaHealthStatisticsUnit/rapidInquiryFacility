@@ -100,7 +100,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	private Connection connection;
 	private String studyID;
 	private static String EXTRACT_DIRECTORY;
-	private Calendar calendar = null;
 	
 	private static final String STUDY_QUERY_SUBDIRECTORY = "study_query";
 	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
@@ -355,17 +354,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		String temporaryDirectoryPath = null;
 		File temporaryDirectory = null;
 		File submissionZipFile = null;
-
-		if (locale != null) {
-			DateFormat df=DateFormat.getDateTimeInstance(
-				DateFormat.DEFAULT /* Date style */, 
-				DateFormat.DEFAULT /* Time style */, 
-				locale);
-			this.calendar = df.getCalendar();
-		}
-		else { // assume US
-			this.calendar = Calendar.getInstance();
-		}
 		
 		try {
 			//Establish the phrase that will be used to help name the main zip
@@ -415,7 +403,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				addHtmlFile(
 						temporaryDirectory,
 						submissionZipOutputStream,
-						connection, user, studyID, tomcatServer);
+						connection, user, studyID, locale, tomcatServer);
 						
 				//write the study the user made when they first submitted their query
 				writeQueryFile(
@@ -482,6 +470,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final Connection connection,
 			final User user,
 			final String studyID,
+			final Locale locale,
 			final String tomcatServer) 
 			throws Exception {
 
@@ -500,7 +489,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"transfer_permitted,authorised_by,authorised_on,authorised_notes," + lineSeparator +
 			"covariate_table,project,project_description,stats_method", // Column list
 			null,  // ORDER BY
-			true	/* Rotate */, tomcatServer); 
+			true	/* Rotate */, locale, tomcatServer); 
 
 		addTableToHtmlReport(htmlFileText, connection, user, studyID,
 			"rif40.rif40_investigations", // Table 	
@@ -508,13 +497,13 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"max_age_group,min_age_group,genders,numer_tab," + lineSeparator +
 			"mh_test_type,inv_description,classifier,classifier_bands,investigation_state", // Column list
 			"inv_id",  // ORDER BY
-			true	/* Rotate */, tomcatServer); 
+			true	/* Rotate */, locale, tomcatServer); 
 			
 		addTableToHtmlReport(htmlFileText, connection, user, studyID,
 			"rif40.rif40_inv_covariates", // Table 	
 			"inv_id,covariate_name,min,max,geography,study_geolevel_name", // Column list
 			"inv_id,covariate_name",  // ORDER BY
-			false	/* Rotate */, tomcatServer); 
+			false	/* Rotate */, locale, tomcatServer); 
 			
 		addTableToHtmlReport(htmlFileText, connection, user, studyID,
 			"rif40.rif40_inv_conditions", // Table 	
@@ -522,13 +511,13 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"outcome_group_name,numer_tab," + lineSeparator +
 			"field_name,condition,CAST(column_comment AS VARCHAR(2000)) AS column_comment", // Column list
 			"inv_id,line_number",  // ORDER BY
-			false	/* Rotate */, tomcatServer); 
+			false	/* Rotate */, locale, tomcatServer); 
 
 		addTableToHtmlReport(htmlFileText, connection, user, studyID,
 			"rif40.rif40_inv_covariates", // Table 	
 			"inv_id,covariate_name,min,max,geography,study_geolevel_name", // Column list
 			"inv_id,covariate_name",  // ORDER BY
-			false	/* Rotate */, tomcatServer); 
+			false	/* Rotate */, locale, tomcatServer); 
 			
 		htmlFileText.append("</body>");
 		String htmlFileName="RIFstudy_" + studyID + ".html";
@@ -554,8 +543,23 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String columnList,
 			final String orderBy,
 			final boolean rotate,
+			final Locale locale,
 			final String tomcatServer)
 			throws Exception {
+	
+		Calendar calendar = null;
+		DateFormat df = null;
+		if (locale != null) {
+			df=DateFormat.getDateTimeInstance(
+				DateFormat.DEFAULT /* Date style */, 
+				DateFormat.DEFAULT /* Time style */, 
+				locale);
+			calendar = df.getCalendar();
+		}
+		else { // assume US
+			df=new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"); // MM/DD/YY HH24:MI:SS
+			calendar = Calendar.getInstance();
+		}
 		
 		htmlFileText.append("<h1>" + tableName + "</h1>" + lineSeparator);
 		SQLGeneralQueryFormatter htmlReportQueryFormatter = new SQLGeneralQueryFormatter();		
@@ -604,8 +608,10 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						String name = rsmd.getColumnName(i);
 						String value = resultSet.getString(i);	
 						String columnType = rsmd.getColumnTypeName(i);
+						
 						if (columnType.equals("timestamp") /* Postgres */) {
-							value=resultSet.getTimestamp(i, calendar).toString();
+							Timestamp dateTimeValue=resultSet.getTimestamp(i, calendar);
+							value=df.format(dateTimeValue) + "<!-- DATE -->";
 						}
 						else if (value == null) {
 							value="&nbsp;";
