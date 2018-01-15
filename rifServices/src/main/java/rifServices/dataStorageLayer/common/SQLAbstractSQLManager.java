@@ -4,7 +4,7 @@ package rifServices.dataStorageLayer.common;
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
@@ -163,10 +163,9 @@ public abstract class SQLAbstractSQLManager {
 		final AbstractSQLQueryFormatter queryFormatter) 
 		throws SQLException {
 				
-		return PGSQLQueryUtility.createPreparedStatement(
+		return SQLQueryUtility.createPreparedStatement(
 			connection,
 			queryFormatter);
-
 	}
 	
 	protected void enableDatabaseDebugMessages(
@@ -212,8 +211,8 @@ public abstract class SQLAbstractSQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(setupLogStatement);
-			PGSQLQueryUtility.close(sendDebugToInfoStatement);	
+			SQLQueryUtility.close(setupLogStatement);
+			SQLQueryUtility.close(sendDebugToInfoStatement);	
 		}		
 	}
 	

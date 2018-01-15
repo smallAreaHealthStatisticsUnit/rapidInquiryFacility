@@ -312,14 +312,11 @@ public final class RIFServiceStartupProperties {
     		= getManadatoryRIfServiceProperty("database.databaseType").toUpperCase();
     	if (property != null) {
     		property = property.toUpperCase();
-    		
-    		Collator collator
-    			= RIFGenericLibraryMessages.getCollator();
-    		if (collator.equals(property, "postgresql")) {
+    		if (property.equals("POSTGRESQL")) {
     			databaseType
     				= DatabaseType.POSTGRESQL;
     		}
-    		else if (collator.equals(property, "sqlServer")) {
+    		else if (property.equals("SQLSERVER")) {
     			databaseType
     				= DatabaseType.SQL_SERVER;  			
     		}   		

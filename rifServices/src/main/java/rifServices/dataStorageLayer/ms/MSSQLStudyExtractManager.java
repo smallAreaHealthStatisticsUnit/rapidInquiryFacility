@@ -9,6 +9,7 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 //import rifGenericLibrary.dataStorageLayer.common.SQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifServices.dataStorageLayer.common.GetStudyJSON;
 import rifServices.dataStorageLayer.common.RifZipFile;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
@@ -107,6 +108,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	private static final int BASE_FILE_STUDY_NAME_LENGTH = 100;
 	private static String lineSeparator = System.getProperty("line.separator");
 	private RIFServiceStartupOptions rifServiceStartupOptions;
+	private static DatabaseType databaseType;
 	
 	// ==========================================
 	// Section Properties
@@ -128,7 +130,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 		
 		EXTRACT_DIRECTORY = this.rifServiceStartupOptions.getExtractDirectory();
 		TAXONOMY_SERVICES_SERVER = this.rifServiceStartupOptions.getTaxonomyServicesServer();
-		
+		databaseType=this.rifServiceStartupOptions.getRifDatabaseType();
 	}
 
 	// ==========================================

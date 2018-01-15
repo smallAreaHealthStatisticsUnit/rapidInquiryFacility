@@ -219,7 +219,7 @@ public class SQLQueryUtility {
 	}
 	
 	/**
-	 * printWarnings. Print warning messages
+	 * printWarnings. Print info and warning messages
 	 *
 	 * @param warning SQLWarning
 	 * @throws nothing

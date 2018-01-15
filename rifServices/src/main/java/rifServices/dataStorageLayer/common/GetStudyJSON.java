@@ -3,7 +3,7 @@ package rifServices.dataStorageLayer.common;
 import rifServices.system.RIFServiceStartupOptions;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 
 import java.net.URI;
 import javax.net.ssl.*;
@@ -386,7 +386,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 
 		return rif_job_submission;
@@ -425,7 +425,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 
 		return geographyDescription;
@@ -490,7 +490,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 		additionalData.put("rif40_study_sql", tableData);	
@@ -552,7 +552,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 		additionalData.put("rif40_study_sql_log", tableData);	
@@ -614,7 +614,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 		additionalData.put("sql", tableData);	
@@ -672,7 +672,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 		additionalData.put(tableName.toLowerCase(), tableData);	
@@ -966,7 +966,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 
 		return outcomeGroup.toLowerCase();
@@ -1022,7 +1022,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 
 		return geolevelData;
@@ -1109,7 +1109,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}									
 	}
 
@@ -1194,7 +1194,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}								
 	}
 	
@@ -1299,7 +1299,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}					
 	}
 
@@ -1367,7 +1367,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}				
 	}
 	
@@ -1508,7 +1508,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 	}
 
@@ -1576,7 +1576,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 		return age_group;
@@ -1665,7 +1665,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 	}
 	

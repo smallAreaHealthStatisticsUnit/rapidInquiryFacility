@@ -177,7 +177,8 @@ public final class RIFServiceStartupOptions {
 		
 		odbcDataSourceName
 			= RIFServiceStartupProperties.getODBCDataSourceName();
-		
+		databaseType = 
+			RIFServiceStartupProperties.getDatabaseType();
 		extractDirectory
 			= RIFServiceStartupProperties.getExtractDirectoryName();
 			
@@ -233,7 +234,12 @@ public final class RIFServiceStartupOptions {
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	
+
+    public DatabaseType getRifDatabaseType() { // To avoid confusion with
+													  // PG/MSSQLAbstractRIFWebServiceResource() etc
+		return databaseType;
+	}
+    		
 	
 	public String getExtraExtractFilesDirectoryPath() {
 		return extraExtractFilesDirectoryPath;

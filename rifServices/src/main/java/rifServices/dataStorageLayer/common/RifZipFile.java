@@ -4,12 +4,12 @@ import rifServices.system.RIFServiceStartupOptions;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.fileFormats.RIFStudySubmissionContentHandler;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
-import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
@@ -111,6 +111,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	private static String catalinaHome = environmentalVariables.get("CATALINA_HOME");
 	
 	private RIFServiceStartupOptions rifServiceStartupOptions;
+	private static DatabaseType databaseType;
 	
 	// ==========================================
 	// Section Properties
@@ -131,6 +132,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		EXTRACT_DIRECTORY = this.rifServiceStartupOptions.getExtractDirectory();
+		databaseType=this.rifServiceStartupOptions.getRifDatabaseType();
 	}
 
 	/**
@@ -481,7 +483,10 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("<body>");
 		
 		addTableToHtmlReport(htmlFileText, connection, studyID,
-			"rif40.rif40_studies", // Table 
+			"rif40", // Owner
+			"rif40", // Schema
+			"rif40_studies", // Table 
+			null, // Joined table
 			"username,study_id,extract_table,study_name," + lineSeparator +
 			"summary,description,other_notes,study_date," + lineSeparator +
 			"geography,study_type,study_state,comparison_geolevel_name," + lineSeparator +
@@ -499,7 +504,10 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			true	/* Rotate */, locale, tomcatServer); 
 
 		addTableToHtmlReport(htmlFileText, connection, studyID,
-			"rif40.rif40_investigations", // Table 	
+			"rif40", // Owner
+			"rif40", // Schema
+			"rif40_investigations", // Table 	
+			null, // Joined table
 			"inv_id,inv_name,year_start,year_stop," + lineSeparator +
 			"max_age_group,min_age_group,genders,numer_tab," + lineSeparator +
 			"mh_test_type,inv_description,classifier,classifier_bands,investigation_state", // Column list
@@ -508,14 +516,20 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			true		/* Rotate */, locale, tomcatServer); 
 			
 		addTableToHtmlReport(htmlFileText, connection, studyID,
-			"rif40.rif40_inv_covariates", // Table 	
+			"rif40", // Owner
+			"rif40", // Schema
+			"rif40_inv_covariates", // Table 	
+			null, // Joined table
 			"inv_id,covariate_name,min,max,geography,study_geolevel_name", // Column list
 			"inv_id,covariate_name"    	/* ORDER BY */,
 			"0+"		/* Expected rows 0+ */,
 			false		/* Rotate */, locale, tomcatServer); 
 			
 		addTableToHtmlReport(htmlFileText, connection, studyID,
-			"rif40.rif40_inv_conditions", // Table 	
+			"rif40", // Owner
+			"rif40", // Schema
+			"rif40_inv_conditions", // Table 	
+			null, // Joined table
 			"inv_id,line_number,outcome_group_name,numer_tab," + lineSeparator +
 			"condition", // Column list
 			"inv_id,line_number"	  	/* ORDER BY */,
@@ -523,6 +537,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			false	/* Rotate */, locale, tomcatServer);
 	
 		addStudyAndComparisonAreas(htmlFileText, connection, studyID,
+			"rif40", // Owner
+			"rif40", // Schema
 			getStudyJSON, locale, tomcatServer);
 		
 		htmlFileText.append("</body>");
@@ -544,6 +560,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final StringBuilder htmlFileText,
 			final Connection connection,
 			final String studyID,
+			final String ownerName,
+			final String schemaName,
 			final GetStudyJSON getStudyJSON,
 			final Locale locale,
 			final String tomcatServer)
@@ -553,7 +571,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		
 		studyAndComparisonReportQueryFormatter.addQueryLine(0, "SELECT study_geolevel_name, comparison_geolevel_name, geography");
-		studyAndComparisonReportQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");
+		studyAndComparisonReportQueryFormatter.addQueryLine(0, "  FROM " + schemaName + ".rif40_studies");
 		studyAndComparisonReportQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 
 		PreparedStatement statement = createPreparedStatement(connection, studyAndComparisonReportQueryFormatter);
@@ -574,9 +592,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					connection, comparisonGeolevelName, geographyName);
 		
 				addTableToHtmlReport(htmlFileText, connection, studyID,
-					"rif40.rif40_study_areas a LEFT OUTER JOIN rif_data." +			
+					ownerName,	// Owner
+					schemaName,	// Schema
+					"rif40_study_areas", // Table
+					"a LEFT OUTER JOIN rif_data." +			
 						studyGeolevel.getString("lookup_table").toLowerCase() + 
-						" b ON (a.area_id = b." + studyGeolevelName.toLowerCase() + ")", // Table 	
+						" b ON (a.area_id = b." + studyGeolevelName.toLowerCase() + ")", // Joined table 	
 					"a.area_id, a.band_id, b." + 
 						studyGeolevel.getString("lookup_desc_column").toLowerCase() + 
 						" AS label, b.gid", // Column list
@@ -585,9 +606,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					false		/* Rotate */, locale, tomcatServer); 
 	
 				addTableToHtmlReport(htmlFileText, connection, studyID,
-					"rif40.rif40_comparison_areas a LEFT OUTER JOIN rif_data." +			
+					ownerName,
+					schemaName,
+					"rif40_comparison_areas", // Table
+					"a LEFT OUTER JOIN rif_data." +			
 						comparisonGeolevel.getString("lookup_table").toLowerCase() + 
-						" b ON (a.area_id = b." + comparisonGeolevelName.toLowerCase() + ")", // Table 	
+						" b ON (a.area_id = b." + comparisonGeolevelName.toLowerCase() + ")", // Joined table 	
 					"a.area_id, b." + 
 						comparisonGeolevel.getString("lookup_desc_column").toLowerCase() + 
 						" AS label, b.gid", // Column list
@@ -603,15 +627,135 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}	
+	}
+	
+	private String getColumnComment(Connection connection, 
+		String schemaName, String tableName, String columnName)
+			throws Exception {
+		SQLGeneralQueryFormatter columnCommentQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		if (databaseType == DatabaseType.POSTGRESQL) {
+			columnCommentQueryFormatter.addQueryLine(0, // Postgres
+				"SELECT pg_catalog.col_description(c.oid, cols.ordinal_position::int) AS column_comment");
+			columnCommentQueryFormatter.addQueryLine(0, "  FROM pg_catalog.pg_class c, information_schema.columns cols");
+			columnCommentQueryFormatter.addQueryLine(0, " WHERE cols.table_catalog = current_database()");
+			columnCommentQueryFormatter.addQueryLine(0, "   AND cols.table_schema  = ?");
+			columnCommentQueryFormatter.addQueryLine(0, "   AND cols.table_name    = ?");
+			columnCommentQueryFormatter.addQueryLine(0, "   AND cols.table_name    = c.relname");
+			columnCommentQueryFormatter.addQueryLine(0, "   AND cols.column_name   = ?");
+		}
+		else if (databaseType == DatabaseType.SQL_SERVER) {
+			columnCommentQueryFormatter.addQueryLine(0, "SELECT value AS column_comment"); // SQL Server
+			columnCommentQueryFormatter.addQueryLine(0, "FROM fn_listextendedproperty (NULL, 'schema', ?, 'table', ?, 'column', ?)");
+			columnCommentQueryFormatter.addQueryLine(0, "UNION");
+			columnCommentQueryFormatter.addQueryLine(0, "SELECT value AS column_comment");
+			columnCommentQueryFormatter.addQueryLine(0, "FROM fn_listextendedproperty (NULL, 'schema', ?, 'view', ?, 'column', ?)");
+		}
+		else {
+			throw new Exception("getColumnComment(): invalid databaseType: " + 
+				databaseType);
+		}
+		PreparedStatement statement = createPreparedStatement(connection, columnCommentQueryFormatter);
+		
+		String columnComment=columnName;
+		try {			
+		
+			statement.setString(1, schemaName);	
+			statement.setString(2, tableName);	
+			statement.setString(3, columnName);	
+			if (databaseType == DatabaseType.SQL_SERVER) {
+				statement.setString(4, schemaName);	
+				statement.setString(5, tableName);
+				statement.setString(6, columnName);		
+			}			
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {		
+				columnComment=resultSet.getString(1);
+				if (resultSet.next()) {		
+					throw new Exception("getColumnComment(): expected 1 row, got >1");
+				}
+			}
+			else {
+				rifLogger.warning(this.getClass(), "getColumnComment(): expected 1 row, got none");
+			}
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + columnCommentQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		
+		return columnComment;
+	}
+	
+	private String getTableComment(Connection connection, String schemaName, String tableName)
+			throws Exception {
+		SQLGeneralQueryFormatter tableCommentQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		if (databaseType == DatabaseType.POSTGRESQL) {
+			tableCommentQueryFormatter.addQueryLine(0, // Postgres
+				"SELECT obj_description('" + schemaName + "." + tableName + "'::regclass) AS table_comment");
+		}
+		else if (databaseType == DatabaseType.SQL_SERVER) {
+			tableCommentQueryFormatter.addQueryLine(0, "SELECT value AS table_comment"); // SQL Server
+			tableCommentQueryFormatter.addQueryLine(0, "FROM fn_listextendedproperty (NULL, 'schema', ?, 'table', ?, NULL, NULL)");
+			tableCommentQueryFormatter.addQueryLine(0, "UNION");
+			tableCommentQueryFormatter.addQueryLine(0, "SELECT value AS table_comment");
+			tableCommentQueryFormatter.addQueryLine(0, "FROM fn_listextendedproperty (NULL, 'schema', ?, 'view', ?, NULL, NULL)");
+		}
+		else {
+			throw new Exception("getTableComment(): invalid databaseType: " + 
+				databaseType);
+		}
+		PreparedStatement statement = createPreparedStatement(connection, tableCommentQueryFormatter);
+		
+		String tableComment=tableName;
+		try {			
+			
+			if (databaseType == DatabaseType.SQL_SERVER) {
+				statement.setString(1, schemaName);	
+				statement.setString(2, tableName);
+				statement.setString(3, schemaName);	
+				statement.setString(4, tableName);	
+			}			
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {		
+				tableComment=resultSet.getString(1);
+				if (resultSet.next()) {		
+					throw new Exception("getTableComment(): expected 1 row, got >1");
+				}
+			}
+			else {
+				rifLogger.warning(this.getClass(), "getTableComment(): expected 1 row, got none");
+			}
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + tableCommentQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		
+		return tableComment;
 	}
 			
 	private void addTableToHtmlReport(
 			final StringBuilder htmlFileText,
 			final Connection connection,
 			final String studyID,
+			final String ownerName,
+			final String schemaName,
 			final String tableName,
+			final String joinedTable,
 			final String columnList,
 			final String orderBy,
 			final String expectedRows,
@@ -634,11 +778,17 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			calendar = Calendar.getInstance();
 		}
 		
-		htmlFileText.append("<h1>" + tableName + "</h1>" + lineSeparator);
+		String tableComment=getTableComment(connection, schemaName, tableName);
+		htmlFileText.append("<h1 id=\"" + tableName + "\">" + 
+			tableName.substring(0, 1).toUpperCase() + tableName.substring(1).replace("_", " ") + 
+			"</h1>" + lineSeparator);
 		SQLGeneralQueryFormatter htmlReportQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
 		htmlReportQueryFormatter.addQueryLine(0, "SELECT " + columnList);
-		htmlReportQueryFormatter.addQueryLine(0, "  FROM " + tableName);
+		htmlReportQueryFormatter.addQueryLine(0, "  FROM " + schemaName + "." + tableName);
+		if (joinedTable != null) {
+			htmlReportQueryFormatter.addQueryLine(0, joinedTable);
+		}
 		htmlReportQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 		if (orderBy != null) {
 			htmlReportQueryFormatter.addQueryLine(0, " ORDER BY " + orderBy);
@@ -653,8 +803,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				ResultSetMetaData rsmd = resultSet.getMetaData();
 				int columnCount = rsmd.getColumnCount();
 				StringBuffer headerText = new StringBuffer();
-				htmlFileText.append("<TABLE border=\"1\" summary=\"" + tableName + "\">" +  lineSeparator);
-				htmlFileText.append("  <CAPTION><EM>" + tableName + "</EM></CAPTION>" + 
+				
+				String[] commentArray = new String[columnCount];
+					
+				htmlFileText.append("<p>");
+				htmlFileText.append("<TABLE id=\"" + tableName + "_table\" border=\"1\" summary=\"" + tableName + "\">" +  lineSeparator);
+				htmlFileText.append("  <CAPTION><EM>" + tableComment + "</EM></CAPTION>" + 
 					lineSeparator);
 
 				if (rotate) {
@@ -692,16 +846,23 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						}
 						
 						if (rowCount == 1) {
+							
+							String columnComment=getColumnComment(connection, 
+								schemaName, tableName, name /* Column name */);
 							if (rotate) {
-								rotatedRowsArray[i-1]="      <td>" + name + 
+								rotatedRowsArray[i-1]="      <td title=\"" + columnComment + "\">" + 
+									name.substring(0, 1).toUpperCase() + name.substring(1).replace("_", " ") + 
 									"<!-- " + columnType + " -->" +
 									"</td>" +
 									lineSeparator; //Initialise
 							}
 							else {
-								headerText.append("    <th>" + name + 
+								headerText.append("    <th title=\"" + columnComment + "\">" + 
+									name.substring(0, 1).toUpperCase() + name.substring(1).replace("_", " ") + 
 									"<!-- " + columnType + " -->" + "</th>" + lineSeparator);
 							}
+							commentArray[i-1]="    <li><p><em>" + name.substring(0, 1).toUpperCase() + name.substring(1).replace("_", " ") +
+								"</em>: " + columnComment + "</p></li>" + lineSeparator;
 						}
 						
 						if (rotate) {
@@ -729,13 +890,23 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						for (int j = 0; j < rotatedRowsArray.length; j++) {
 							bodyText.append("  <tr>" + lineSeparator);
 							bodyText.append(rotatedRowsArray[j]);
-							bodyText.append("  <tr>" + lineSeparator);
+							bodyText.append("  </tr>" + lineSeparator);
 						}
 					}
 					htmlFileText.append(bodyText.toString());
 				} while (resultSet.next());
 				
 				htmlFileText.append("</TABLE>" + lineSeparator + lineSeparator);
+				
+				htmlFileText.append("</p>");
+				htmlFileText.append("<p>");
+				for (int j = 0; j < commentArray.length; j++) {
+					htmlFileText.append("  <il>" + lineSeparator);
+					htmlFileText.append(commentArray[j]);
+					htmlFileText.append("  </il>" + lineSeparator);
+				}
+				htmlFileText.append("</p>");
+					
 			}
 			else {
 				htmlFileText.append("<p>No data found</p>");
@@ -758,7 +929,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			throw exception;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}					
 	}
 	
