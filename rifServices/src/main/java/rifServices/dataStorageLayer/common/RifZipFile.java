@@ -533,18 +533,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"inv_id,covariate_name"    	/* ORDER BY */,
 			"0+"		/* Expected rows 0+ */,
 			false		/* Rotate */, locale, tomcatServer); 
-			
-		addTableToHtmlReport(htmlFileText, connection, studyID,
+	
+		addInvConditions(htmlFileText, connection, studyID,
 			"rif40", // Owner
 			"rif40", // Schema
-			"rif40_inv_conditions", // Table 	
-			null, // Joined table
-			"inv_id,line_number,outcome_group_name,numer_tab," + lineSeparator +
-			"condition", // Column list
-			"inv_id,line_number"	  	/* ORDER BY */,
-			"1+"		/* Expected rows */,
-			false	/* Rotate */, locale, tomcatServer);
-	
+			getStudyJSON, locale, tomcatServer);
+			
 		addStudyAndComparisonAreas(htmlFileText, connection, studyID,
 			"rif40", // Owner
 			"rif40", // Schema
@@ -757,7 +751,204 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		
 		return tableComment;
 	}
+
+	private void addInvConditions(
+			final StringBuilder htmlFileText,
+			final Connection connection,
+			final String studyID,
+			final String ownerName,
+			final String schemaName,
+			final GetStudyJSON getStudyJSON,
+			final Locale locale,
+			final String tomcatServer)
+			throws Exception {
 			
+		String tableName="rif40_inv_conditions";	
+		String tableComment=getTableComment(connection, "rif40", tableName);
+		
+		SQLGeneralQueryFormatter invConditionsQueryFormatter = new SQLGeneralQueryFormatter();		
+				
+		invConditionsQueryFormatter.addQueryLine(0, "SELECT inv_id,numer_tab,min_condition,max_condition,");
+		invConditionsQueryFormatter.addQueryLine(0, "       outcome_group_name,condition");
+		invConditionsQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_inv_conditions");
+		invConditionsQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+		invConditionsQueryFormatter.addQueryLine(0, " ORDER BY inv_id,line_number");
+		PreparedStatement statement = createPreparedStatement(connection, invConditionsQueryFormatter);	
+		ResultSet resultSet = null;
+		htmlFileText.append("    <h1 id=\"" + tableName + "\">Conditions</h1>" + lineSeparator);
+			
+		try {
+			int rowCount = 0;
+				
+			statement.setInt(1, Integer.parseInt(studyID));		
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+				StringBuffer headerText = new StringBuffer();
+				String minCondition;
+				String maxCondition;
+				String outComeType;
+				
+				String[] commentArray = new String[columnCount+1];
+				int commentArrayLength=0;
+					
+				htmlFileText.append("    <p>" + lineSeparator);
+				htmlFileText.append("      <table id=\"" + tableName + "_table\" border=\"1\" summary=\"" + tableName + "\">" +  lineSeparator);
+				htmlFileText.append("        <caption><em>" + tableComment + "</em></caption>" + 
+					lineSeparator);
+
+				headerText.append("        </tr>" + lineSeparator);
+				do {	
+					rowCount++;
+					
+					String statementNumber=null;
+					StringBuffer bodyText = new StringBuffer();
+					minCondition="";
+					maxCondition=null;
+					outComeType="";
+					
+					bodyText.append("        <tr>" + lineSeparator);
+
+					// The column count starts from 1
+					for (int i = 1; i <= columnCount; i++ ) {
+						String name = rsmd.getColumnName(i);
+						String value = resultSet.getString(i);	
+						String columnType = rsmd.getColumnTypeName(i);
+						
+						if (value == null) {
+							value="&nbsp;";
+						}
+						
+						if (name.equals("min_condition")) {
+							if (!value.equals("&nbsp;")) {
+								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(tomcatServer, null /* taxonomyServicesServer */, value);
+								minCondition=taxonomyObject.getString("description");
+							}
+						}
+						else if (name.equals("max_condition")) {
+							if (!value.equals("&nbsp;")) {
+								// Add: please run again in 5 minutes support
+								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(tomcatServer, null /* taxonomyServicesServer */, value);
+								maxCondition=taxonomyObject.getString("description");
+							}
+						}						
+						else if (name.equals("outcome_group_name")) {
+							if (!value.equals("&nbsp;")) {
+//								outComeType=getOutcomeType(value);
+							}
+						}
+						else {
+							if (rowCount == 1) {
+								
+								String columnComment=getColumnComment(connection, 
+									schemaName, tableName, name /* Column name */);
+								if (name.equals("numer_tab")) {
+									name="numerator_table";
+								}
+								headerText.append("          <th title=\"" + columnComment + "\">" + 
+									name.substring(0, 1).toUpperCase() + name.substring(1).replace("_", " ") + 
+									"<!-- " + columnType + " -->" + "</th>" + lineSeparator);
+						
+								commentArray[commentArrayLength]="        <li class=\"dictionary\"><em>" + name.substring(0, 1).toUpperCase() + name.substring(1).replace("_", " ") +
+									"</em>: " + columnComment + "</li>" + lineSeparator;
+								commentArrayLength++;
+							}
+							
+							bodyText.append("          <td>" + value + 
+								"       </td><!-- Column: " + i +
+								"; row: " + rowCount +
+								" -->" + lineSeparator);
+						}
+				
+					}
+					
+					if (rowCount == 1) {
+						headerText.append("          <th title=\"Taxonomy description\">Description</th>" + lineSeparator);
+						headerText.append("        </tr>" + lineSeparator);
+						htmlFileText.append(headerText.toString());
+					}
+					
+					bodyText.append("          <td>" + minCondition);
+					if (maxCondition != null) {
+						bodyText.append(" - " + maxCondition);
+					}
+					bodyText.append("</td>" + lineSeparator);
+					bodyText.append("        </tr>" + lineSeparator);
+					htmlFileText.append(bodyText.toString());
+				} while (resultSet.next());
+				
+				htmlFileText.append("      </table>" + lineSeparator);
+				
+				htmlFileText.append("    </p>" + lineSeparator);
+				htmlFileText.append("    <p>" + lineSeparator);
+				
+				commentArray[commentArrayLength]="        <li class=\"dictionary\"><em>Description</em>: Taxonmomy description</li>" + lineSeparator;
+				commentArrayLength++;
+				for (int j = 0; j < commentArrayLength; j++) {
+					htmlFileText.append("      <ul class=\"dictionary\">" + lineSeparator);
+					htmlFileText.append(commentArray[j]);
+					htmlFileText.append("      </ul>" + lineSeparator);
+				}
+				htmlFileText.append("    </p>" + lineSeparator);
+					
+			}
+			else {
+				htmlFileText.append("    <p>No data found</p>" + lineSeparator);
+			}			
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + invConditionsQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}	
+	}	
+	
+	/**
+	 * Get outcome type. Will return the current ontology version e.g. icd10 even if icd9 codes 
+	 * are actually being used
+	 *
+     * @param String outcome_group_name (required)
+	 * @return outcome type string
+     */	
+	private String getOutcomeType(String outcome_group_name) 
+					throws Exception {
+		SQLGeneralQueryFormatter rifOutcomeGroupsQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		
+		rifOutcomeGroupsQueryFormatter.addQueryLine(0, 
+			"SELECT a.outcome_type, b.current_version FROM rif40.rif40_outcome_groups a, rif40.rif40_outcomes b WHERE a.outcome_group_name = ? AND a.outcome_type = b.outcome_type");
+		PreparedStatement statement = createPreparedStatement(connection, rifOutcomeGroupsQueryFormatter);
+		String outcomeGroup=null;
+		try {			
+			statement.setString(1, outcome_group_name);	
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				outcomeGroup=resultSet.getString(1) + resultSet.getString(2);
+				if (resultSet.next()) {
+					throw new Exception("getOutcomeType(): expected 1 row, got >1");
+				}
+			}
+			else {
+				throw new Exception("getOutcomeType(): expected 1 row, got none");
+			}
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifOutcomeGroupsQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		
+		return outcomeGroup;
+	}	
+	
 	private void addTableToHtmlReport(
 			final StringBuilder htmlFileText,
 			final Connection connection,

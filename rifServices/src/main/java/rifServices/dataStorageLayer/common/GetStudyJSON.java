@@ -743,6 +743,31 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
 	}
 
 	/**
+	 * Get health code description from taxonomy service [public version]
+	 *
+     * @param String tomcatServer (required)
+     * @param String taxonomyServicesServer (required)
+     * @param String code (required)
+	 * @return health code description string
+     */	
+	public JSONObject getHealthCodeDesription(
+			final String tomcatServer,
+			final String taxonomyServicesServer,
+			final String code) 
+					throws Exception { // Will get from taxonomy service
+		if (taxonomyServicesServer != null && !taxonomyServicesServer.equals("")) {
+			this.tomcatServer=taxonomyServicesServer;
+		}
+		else if (tomcatServer != null && !tomcatServer.equals("")) {
+			this.tomcatServer=tomcatServer;
+		}
+		else {
+			throw new Exception("getHealthCodeDesription(): cannot deduce tomcat server from RIF services request or RIFServiceStartup.properties");
+		}
+		return getHealthCodeDesription(code);
+	}
+	
+	/**
 	 * Get health code description from taxonomy service
 	 *
      * @param String code (required)
