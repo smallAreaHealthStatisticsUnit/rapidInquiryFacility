@@ -707,10 +707,10 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				"SELECT obj_description('" + schemaName + "." + tableName + "'::regclass) AS table_comment");
 		}
 		else if (databaseType == DatabaseType.SQL_SERVER) {
-			tableCommentQueryFormatter.addQueryLine(0, "SELECT value AS table_comment"); // SQL Server
+			tableCommentQueryFormatter.addQueryLine(0, "SELECT CAST(value AS VARCHAR(2000)) AS table_comment"); // SQL Server
 			tableCommentQueryFormatter.addQueryLine(0, "FROM fn_listextendedproperty (NULL, 'schema', ?, 'table', ?, NULL, NULL)");
 			tableCommentQueryFormatter.addQueryLine(0, "UNION");
-			tableCommentQueryFormatter.addQueryLine(0, "SELECT value AS table_comment");
+			tableCommentQueryFormatter.addQueryLine(0, "SELECT CAST(value AS VARCHAR(2000)) AS table_comment");
 			tableCommentQueryFormatter.addQueryLine(0, "FROM fn_listextendedproperty (NULL, 'schema', ?, 'view', ?, NULL, NULL)");
 		}
 		else {
