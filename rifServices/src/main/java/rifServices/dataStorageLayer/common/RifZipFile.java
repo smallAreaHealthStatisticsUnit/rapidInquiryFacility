@@ -479,9 +479,18 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
 
 		StringBuilder htmlFileText=new StringBuilder();
-		htmlFileText.append(readFile("RIFStudyHeader.html"));
-		htmlFileText.append("<body>");
-		
+		htmlFileText.append(readFile("RIFStudyHeader.html") + lineSeparator);
+		htmlFileText.append("<body>" + lineSeparator);
+		htmlFileText.append("  <ul class=\"nav\">" + lineSeparator);
+		htmlFileText.append("    <li class=\"nav\"><a class=\"active\" href=\"#rif40_studies\">Studies</a></li>" + lineSeparator);
+		htmlFileText.append("    <li class=\"nav\"><a href=\"#rif40_investigations\">Investigations</a></li>" + lineSeparator);
+		htmlFileText.append("    <li class=\"nav\"><a href=\"#rif40_inv_covariates\">Covariates</a></li>" + lineSeparator);
+		htmlFileText.append("    <li class=\"nav\"><a href=\"#rif40_inv_conditions\">Conditions</a></li>" + lineSeparator);
+		htmlFileText.append("    <li class=\"nav\"><a href=\"#rif40_study_areas\">Study area</a></li>" + lineSeparator);
+		htmlFileText.append("    <li class=\"nav\"><a href=\"#rif40_comparison_areas\">Comparison area</a></li>" + lineSeparator);
+		htmlFileText.append("  </ul>" + lineSeparator);
+		htmlFileText.append("  <div style=\"margin-left:25%;padding:1px 16px;height:1000px;\">" + lineSeparator);
+
 		addTableToHtmlReport(htmlFileText, connection, studyID,
 			"rif40", // Owner
 			"rif40", // Schema
@@ -541,7 +550,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"rif40", // Schema
 			getStudyJSON, locale, tomcatServer);
 		
-		htmlFileText.append("</body>");
+		htmlFileText.append("  </div>" + lineSeparator);
+		htmlFileText.append("</body>" + lineSeparator);
 		String htmlFileName="RIFstudy_" + studyID + ".html";
 		rifLogger.info(this.getClass(), "Adding HTML report file: " + temporaryDirectory.getAbsolutePath() + File.separator + 
 			htmlFileName + " to ZIP file");
@@ -600,7 +610,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						" b ON (a.area_id = b." + studyGeolevelName.toLowerCase() + ")", // Joined table 	
 					"a.area_id, a.band_id, b." + 
 						studyGeolevel.getString("lookup_desc_column").toLowerCase() + 
-						" AS label, b.gid", // Column list
+						" AS label", // Column list
 					"2, 1"    	/* ORDER BY */,
 					"1+"		/* Expected rows 0+ */,
 					false		/* Rotate */, locale, tomcatServer); 
@@ -614,7 +624,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						" b ON (a.area_id = b." + comparisonGeolevelName.toLowerCase() + ")", // Joined table 	
 					"a.area_id, b." + 
 						comparisonGeolevel.getString("lookup_desc_column").toLowerCase() + 
-						" AS label, b.gid", // Column list
+						" AS label", // Column list
 					"1"    	/* ORDER BY */,
 					"1+"		/* Expected rows 0+ */,
 					false		/* Rotate */, locale, tomcatServer); 
@@ -779,15 +789,33 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}
 		
 		String tableComment=getTableComment(connection, schemaName, tableName);
-		htmlFileText.append("<h1 id=\"" + tableName + "\">" + 
-			tableName.substring(0, 1).toUpperCase() + tableName.substring(1).replace("_", " ") + 
+		String tableHeader=tableName.replace("rif40_", "");
+		if (tableHeader.substring(0, 4).equals("inv_")) {
+			tableHeader=tableName.replace("rif40_inv_", "");
+		}
+		htmlFileText.append("    <h1 id=\"" + tableName + "\">" + 
+			tableHeader.substring(0, 1).toUpperCase() + tableHeader.substring(1).replace("_", " ") + 
 			"</h1>" + lineSeparator);
+		String valueLavel="Value";
+		if (tableHeader.length() > 2 && 
+		    tableHeader.substring(tableHeader.length()-1, tableHeader.length()).
+				equals("s")) {
+			valueLavel=tableHeader.substring(0, 1).toUpperCase() + 
+				tableHeader.substring(1, tableHeader.length()-1).
+					replace("_", " ");
+		}
+		else if (tableHeader.equals("Studies")) {
+			valueLavel="Study";
+		}
 		SQLGeneralQueryFormatter htmlReportQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
 		htmlReportQueryFormatter.addQueryLine(0, "SELECT " + columnList);
 		htmlReportQueryFormatter.addQueryLine(0, "  FROM " + schemaName + "." + tableName);
 		if (joinedTable != null) {
 			htmlReportQueryFormatter.addQueryLine(0, joinedTable);
+		}
+		else {
+			htmlReportQueryFormatter.addQueryLine(0, "/* No joined table */");
 		}
 		htmlReportQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 		if (orderBy != null) {
@@ -806,17 +834,17 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				
 				String[] commentArray = new String[columnCount];
 					
-				htmlFileText.append("<p>");
-				htmlFileText.append("<TABLE id=\"" + tableName + "_table\" border=\"1\" summary=\"" + tableName + "\">" +  lineSeparator);
-				htmlFileText.append("  <CAPTION><EM>" + tableComment + "</EM></CAPTION>" + 
+				htmlFileText.append("    <p>" + lineSeparator);
+				htmlFileText.append("      <table id=\"" + tableName + "_table\" border=\"1\" summary=\"" + tableName + "\">" +  lineSeparator);
+				htmlFileText.append("        <caption><em>" + tableComment + "</em></caption>" + 
 					lineSeparator);
 
 				if (rotate) {
-					headerText.append("  <tr>" + lineSeparator +
-						"    <th>Attribute</th>" + lineSeparator);	
+					headerText.append("        <tr>" + lineSeparator +
+						"          <th>Attribute</th>" + lineSeparator);	
 				}
 				else {
-					headerText.append("  </tr>" + lineSeparator);
+					headerText.append("        </tr>" + lineSeparator);
 				}
 				do {	
 					rowCount++;
@@ -826,10 +854,10 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					String[] rotatedRowsArray = new String[columnCount];
 					
 					if (!rotate) {
-						bodyText.append("  <tr>" + lineSeparator);
+						bodyText.append("        <tr>" + lineSeparator);
 					}
 					else {
-						headerText.append("    <th>Value: " + rowCount + "</th>" + lineSeparator);
+						headerText.append("          <th>" + valueLavel + ": " + rowCount + "</th>" + lineSeparator);
 					}
 					// The column count starts from 1
 					for (int i = 1; i <= columnCount; i++ ) {
@@ -850,66 +878,66 @@ public class RifZipFile extends SQLAbstractSQLManager {
 							String columnComment=getColumnComment(connection, 
 								schemaName, tableName, name /* Column name */);
 							if (rotate) {
-								rotatedRowsArray[i-1]="      <td title=\"" + columnComment + "\">" + 
+								rotatedRowsArray[i-1]="          <td title=\"" + columnComment + "\">" + 
 									name.substring(0, 1).toUpperCase() + name.substring(1).replace("_", " ") + 
 									"<!-- " + columnType + " -->" +
-									"</td>" +
+									"          </td>" +
 									lineSeparator; //Initialise
 							}
 							else {
-								headerText.append("    <th title=\"" + columnComment + "\">" + 
+								headerText.append("          <th title=\"" + columnComment + "\">" + 
 									name.substring(0, 1).toUpperCase() + name.substring(1).replace("_", " ") + 
 									"<!-- " + columnType + " -->" + "</th>" + lineSeparator);
 							}
-							commentArray[i-1]="    <li><p><em>" + name.substring(0, 1).toUpperCase() + name.substring(1).replace("_", " ") +
-								"</em>: " + columnComment + "</p></li>" + lineSeparator;
+							commentArray[i-1]="        <li class=\"dictionary\"><em>" + name.substring(0, 1).toUpperCase() + name.substring(1).replace("_", " ") +
+								"</em>: " + columnComment + "</li>" + lineSeparator;
 						}
 						
 						if (rotate) {
-							rotatedRowsArray[i-1]+="      <td>" + value + "</td><!-- Column: " + i +
+							rotatedRowsArray[i-1]+="          <td>" + value + "</td><!-- Column: " + i +
 								"; row: " + rowCount +
 								" -->" + lineSeparator;
 						}
 						else {
-							bodyText.append("      <td>" + value + 
-								"</td><!-- Column: " + i +
+							bodyText.append("          <td>" + value + 
+								"       </td><!-- Column: " + i +
 								"; row: " + rowCount +
 								" -->" + lineSeparator);
 						}
 					}
 					
 					if (rowCount == 1) {
-						headerText.append("  </tr>" + lineSeparator);
+						headerText.append("        </tr>" + lineSeparator);
 						htmlFileText.append(headerText.toString());
 					}
 					
 					if (!rotate) {
-						bodyText.append("  </tr>" + lineSeparator);
+						bodyText.append("        </tr>" + lineSeparator);
 					}
 					else {
 						for (int j = 0; j < rotatedRowsArray.length; j++) {
-							bodyText.append("  <tr>" + lineSeparator);
+							bodyText.append("        <tr>" + lineSeparator);
 							bodyText.append(rotatedRowsArray[j]);
-							bodyText.append("  </tr>" + lineSeparator);
+							bodyText.append("        </tr>" + lineSeparator);
 						}
 					}
 					htmlFileText.append(bodyText.toString());
 				} while (resultSet.next());
 				
-				htmlFileText.append("</TABLE>" + lineSeparator + lineSeparator);
+				htmlFileText.append("      </table>" + lineSeparator);
 				
-				htmlFileText.append("</p>");
-				htmlFileText.append("<p>");
+				htmlFileText.append("    </p>" + lineSeparator);
+				htmlFileText.append("    <p>" + lineSeparator);
 				for (int j = 0; j < commentArray.length; j++) {
-					htmlFileText.append("  <il>" + lineSeparator);
+					htmlFileText.append("      <ul class=\"dictionary\">" + lineSeparator);
 					htmlFileText.append(commentArray[j]);
-					htmlFileText.append("  </il>" + lineSeparator);
+					htmlFileText.append("      </ul>" + lineSeparator);
 				}
-				htmlFileText.append("</p>");
+				htmlFileText.append("    </p>" + lineSeparator);
 					
 			}
 			else {
-				htmlFileText.append("<p>No data found</p>");
+				htmlFileText.append("    <p>No data found</p>" + lineSeparator);
 			}	
 			
 			if (expectedRows.equals("1") && rowCount == 1) { // OK
