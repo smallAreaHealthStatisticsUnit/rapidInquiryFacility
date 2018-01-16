@@ -27,6 +27,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.ArrayList;
 
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -456,7 +457,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), "createStudyExtract() ERROR", exception);
 			String errorMessage = null;
-			if (exception.getMessage().
+			if (exception.getMessage() != null &&
+			    exception.getMessage().
 				equals("Taxonomy service still initialising; please run again in 5 minutes")) {
 				errorMessage
 					= RIFServiceMessages.getMessage(
@@ -601,8 +603,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			")", // Common table expression
 			" LEFT OUTER JOIN study_num_denom d ON (d.study_id = t.study_id)", // Joined table
 			"t.inv_id,t.inv_name,t.inv_description,t.year_start,t.year_stop," + lineSeparator +
-			"CASE WHEN t.genders = 1 THEN 'Males' WHEN t.genders = 2 THEN 'Females' WHEN t.genders = 3 THEN 'Males and Females' ELSE 'Unknown' END AS genders," + lineSeparator +
-			"t.max_age_group,t.min_age_group," + lineSeparator +
+			"CASE"+ lineSeparator +
+			"	WHEN t.genders = 1 THEN 'Males'" + lineSeparator +
+			"	WHEN t.genders = 2 THEN 'Females'" + lineSeparator +
+			"	WHEN t.genders = 3 THEN 'Males and Females'" + lineSeparator +
+			"	ELSE 'Unknown'" + lineSeparator +
+			"END AS genders," + lineSeparator +
 			"d.theme_description,d.numerator_table, d.numerator_description," + lineSeparator + 
 			"d.denominator_table, d.denominator_description," + lineSeparator +
 			"d.min_age_group, d.max_age_group," + lineSeparator +
@@ -632,6 +638,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"rif40", // Schema
 			getStudyJSON, locale, tomcatServer);
 		
+		addDenominator(htmlFileText, connection, studyID);
+		
 		htmlFileText.append("  </div>" + lineSeparator);
 		htmlFileText.append("</body>" + lineSeparator);
 		String htmlFileName="RIFstudy_" + studyID + ".html";
@@ -654,6 +662,19 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}		
 	}
 	
+	private void addDenominator(
+			final StringBuilder htmlFileText,
+			final Connection connection,
+			final String studyID)
+			
+			throws Exception {
+		htmlFileText.append("<pyramid chart-data=\"populationData['viewermap']\"");
+		htmlFileText.append("         width=\"pyramidCurrentWidth\"");
+		htmlFileText.append("         height=\"pyramidCurrentHeight\"");
+		htmlFileText.append("         class=\"ng-isolate-scope\">");
+		htmlFileText.append("</pyramid>" + lineSeparator);	
+	}
+			
 	private void addStudyAndComparisonAreas(
 			final StringBuilder htmlFileText,
 			final Connection connection,
@@ -887,6 +908,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				String minCondition;
 				String maxCondition;
 				String outComeType;
+						
+				Boolean endSpan=false;
+				String invId="";
+				String numerTab="";
+				int spanCount=0;
 				
 				String[] commentArray = new String[columnCount+1];
 				int commentArrayLength=0;
@@ -896,7 +922,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				htmlFileText.append("        <caption><em>" + tableComment + "</em></caption>" + 
 					lineSeparator);
 
-				headerText.append("        </tr>" + lineSeparator);
+				headerText.append("        <tr>" + lineSeparator);
 				do {	
 					rowCount++;
 					
@@ -907,7 +933,10 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					outComeType="";
 					
 					bodyText.append("        <tr>" + lineSeparator);
-
+					ArrayList<String> conditionList = new ArrayList<String>();
+					ArrayList<String> descriptionList = new ArrayList<String>();
+					ArrayList<String> outcomeTypeList = new ArrayList<String>();
+					
 					// The column count starts from 1
 					for (int i = 1; i <= columnCount; i++ ) {
 						String name = rsmd.getColumnName(i);
@@ -933,7 +962,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						}						
 						else if (name.equals("outcome_group_name")) {
 							if (!value.equals("&nbsp;")) {
-//								outComeType=getOutcomeType(value);
+								outComeType=getOutcomeType(connection, value);
 							}
 						}
 						else {
@@ -957,22 +986,63 @@ public class RifZipFile extends SQLAbstractSQLManager {
 								"       </td><!-- Column: " + i +
 								"; row: " + rowCount +
 								" -->" + lineSeparator);
+							if (name.equals("inv_id") && !invId.equals(value)) {
+								endSpan=true;
+								invId=value;
+							}	
+							else if (name.equals("numer_tab") && !numerTab.equals(value)) {
+								endSpan=true;
+								numerTab=value;
+							}	
+							else if (name.equals("condition")) {
+								conditionList.add(value);
+							}
 						}
 				
 					}
 					
 					if (rowCount == 1) {
+						headerText.append("          <th title=\"Taxonomy outcome type\">Outcome type</th>" + lineSeparator);
 						headerText.append("          <th title=\"Taxonomy description\">Description</th>" + lineSeparator);
 						headerText.append("        </tr>" + lineSeparator);
 						htmlFileText.append(headerText.toString());
 					}
+
+					bodyText.append("          <td>");
+					
+					if (outComeType != null) {
+						bodyText.append(outComeType);
+					}
+					else {
+						bodyText.append("&nbsp;");
+					}
+					bodyText.append("</td>" + lineSeparator);
+					outcomeTypeList.add(outComeType);
 					
 					bodyText.append("          <td>" + minCondition);
 					if (maxCondition != null) {
 						bodyText.append(" - " + maxCondition);
+						descriptionList.add(minCondition + " - " + maxCondition);
+					}
+					else {
+						descriptionList.add(minCondition);
 					}
 					bodyText.append("</td>" + lineSeparator);
+					
 					bodyText.append("        </tr>" + lineSeparator);
+					
+					if (endSpan) {
+						bodyText.append("        <!-- endSpan: " + spanCount + 
+							"; outcomeTypeList: " + outcomeTypeList.size() + 
+							"; conditionList: " + conditionList.size() + 
+							"; descriptionList: " + descriptionList.size() + 
+							" -->");
+						endSpan=false;
+						spanCount=0;
+					}
+					else {
+						spanCount++;
+					}
 					htmlFileText.append(bodyText.toString());
 				} while (resultSet.next());
 				
@@ -981,6 +1051,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				htmlFileText.append("    </p>" + lineSeparator);
 				htmlFileText.append("    <p>" + lineSeparator);
 				
+				commentArray[commentArrayLength]="        <li class=\"dictionary\"><em>Outcome type</em>: Taxonmomy Outcome type</li>" + lineSeparator;
 				commentArray[commentArrayLength]="        <li class=\"dictionary\"><em>Description</em>: Taxonmomy description</li>" + lineSeparator;
 				commentArrayLength++;
 				for (int j = 0; j < commentArrayLength; j++) {
@@ -1013,14 +1084,23 @@ public class RifZipFile extends SQLAbstractSQLManager {
      * @param String outcome_group_name (required)
 	 * @return outcome type string
      */	
-	private String getOutcomeType(String outcome_group_name) 
+	private String getOutcomeType(Connection connection, String outcome_group_name) 
 					throws Exception {
 		SQLGeneralQueryFormatter rifOutcomeGroupsQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
 		
+		if (outcome_group_name == null) {
+			throw new Exception("Null outcome_group_name");
+		}
+		
+ 		rifOutcomeGroupsQueryFormatter.addQueryLine(0, 
+			"SELECT a.outcome_type, b.current_version"); 
 		rifOutcomeGroupsQueryFormatter.addQueryLine(0, 
-			"SELECT a.outcome_type, b.current_version FROM rif40.rif40_outcome_groups a, rif40.rif40_outcomes b WHERE a.outcome_group_name = ? AND a.outcome_type = b.outcome_type");
-		PreparedStatement statement = createPreparedStatement(connection, rifOutcomeGroupsQueryFormatter);
+			"  FROM rif40.rif40_outcome_groups a, rif40.rif40_outcomes b"); 
+		rifOutcomeGroupsQueryFormatter.addQueryLine(0, 
+			" WHERE a.outcome_group_name = ? AND a.outcome_type = b.outcome_type");
+		PreparedStatement statement = createPreparedStatement(connection, 
+			rifOutcomeGroupsQueryFormatter);
 		String outcomeGroup=null;
 		try {			
 			statement.setString(1, outcome_group_name);	

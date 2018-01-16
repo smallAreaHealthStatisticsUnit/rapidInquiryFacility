@@ -1838,6 +1838,11 @@ Todo:
   reduce configuration.
 * Detect network issues (mainly HTTPS issues) and the taxonomy service initialising
 * Restructure ZIP file code as common code; add JSON dump to ZIP file
+* Create HTML Report
+
+#### 15th to 19th January 2018
+
+* Added table and column comments, navigation, taxonomy data to HTML Report
 
 ## In progress (December 2017/January 2018):
 
