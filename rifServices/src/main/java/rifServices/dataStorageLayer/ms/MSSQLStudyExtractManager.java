@@ -490,7 +490,8 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			zoomLevel,
 			studyID,
 			locale,
-			tomcatServer);
+			tomcatServer,
+			TAXONOMY_SERVICES_SERVER);
 
 	}
 	

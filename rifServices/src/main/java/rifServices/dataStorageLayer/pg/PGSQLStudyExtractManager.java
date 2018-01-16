@@ -482,7 +482,8 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 			zoomLevel,
 			studyID,
 			locale,
-			tomcatServer);
+			tomcatServer,
+			TAXONOMY_SERVICES_SERVER);
 
 	}
 

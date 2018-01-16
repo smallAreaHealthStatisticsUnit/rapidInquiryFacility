@@ -955,6 +955,15 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			
 		return rval;
 	}
+
+	/**
+	 * Return taxonomyInitialiseError
+	 *
+	 * @return Boolean
+     */		
+	public boolean getTaxonomyInitialiseError() {
+		return taxonomyInitialiseError;
+	}
 	
 	/**
 	 * Get outcome type. Will return the current ontology version e.g. icd10 even if icd9 codes 

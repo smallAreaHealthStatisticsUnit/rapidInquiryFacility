@@ -340,6 +340,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
      * @param String studyID (required)
      * @param Locale locale (required)
      * @param String tomcatServer [deduced from calling URL] (required)
+     * @param String taxonomyServicesServer [parameter] (required)
      * @return JSONObject [front end saves as JSON5 file]
      */
 	public void createStudyExtract(
@@ -349,13 +350,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String zoomLevel,
 			final String studyID,
 			final Locale locale,
-			final String tomcatServer)
+			final String tomcatServer,
+			final String taxonomyServicesServer)
 					throws RIFServiceException {
 
 		//Validate parameters
 		String temporaryDirectoryPath = null;
 		File temporaryDirectory = null;
 		File submissionZipFile = null;
+		ZipOutputStream submissionZipOutputStream = null;
+		File submissionZipSavFile = null;
 		
 		try {
 			//Establish the phrase that will be used to help name the main zip
@@ -377,7 +381,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
 			}
 
-			File submissionZipSavFile = createSubmissionZipFile(
+			submissionZipSavFile = createSubmissionZipFile(
 					user,
 					baseStudyName + ".sav");
 			submissionZipFile = createSubmissionZipFile(
@@ -393,9 +397,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				rifLogger.info(this.getClass(), "No need to create ZIP file: " + 
 					submissionZipSavFile.getAbsolutePath() + "; being created");
 			}
-			else { // No zip file - can be created
-				ZipOutputStream submissionZipOutputStream 
-				= new ZipOutputStream(new FileOutputStream(submissionZipSavFile));
+			else { // No zip file - can be created 
+				submissionZipOutputStream = new ZipOutputStream(new FileOutputStream(submissionZipSavFile));
 
 				addJsonFile(
 						temporaryDirectory,
@@ -405,7 +408,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				addHtmlFile(
 						temporaryDirectory,
 						submissionZipOutputStream,
-						connection, user, studyID, locale, tomcatServer);
+						connection, user, studyID, locale, tomcatServer, taxonomyServicesServer);
 						
 				//write the study the user made when they first submitted their query
 				writeQueryFile(
@@ -446,14 +449,34 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			}
 		}
 		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "PGSQLStudyExtractManager ERROR", exception);
+			rifLogger.error(this.getClass(), "createStudyExtract() ERROR", exception);
+			String errorMessage = null;
+			if (exception.getMessage().
+				equals("Taxonomy service still initialising; please run again in 5 minutes")) {
+				errorMessage
+					= RIFServiceMessages.getMessage(
+						"sqlStudyStateManager.error.taxonomyInitialiseError",
+						user.getUserID(),
+						submissionZipFile.getAbsolutePath());	
+			}
+			else {		
+				errorMessage
+					= RIFServiceMessages.getMessage(
+						"sqlStudyStateManager.error.unableToCreateStudyExtract",
+						user.getUserID(),
+						submissionZipFile.getAbsolutePath());
+			}
 //			temporaryDirectory.delete();
 				
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlStudyStateManager.error.unableToCreateStudyExtract",
-					user.getUserID(),
-					submissionZipFile.getAbsolutePath());
+			try {
+				submissionZipOutputStream.flush();
+				submissionZipOutputStream.close();
+				submissionZipSavFile.delete();
+			}
+			catch(Exception err) {
+				rifLogger.warning(this.getClass(), 
+					"createStudyExtract() close ZIP stream ERROR: " + err.getMessage());
+			}
 			RIFServiceException rifServiceExeption
 				= new RIFServiceException(
 					RIFServiceError.ZIPFILE_CREATE_FAILED, 
@@ -473,7 +496,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final User user,
 			final String studyID,
 			final Locale locale,
-			final String tomcatServer) 
+			final String tomcatServer,
+			final String taxonomyServicesServer) 
 			throws Exception {
 				
 		GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
@@ -537,7 +561,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		addInvConditions(htmlFileText, connection, studyID,
 			"rif40", // Owner
 			"rif40", // Schema
-			getStudyJSON, locale, tomcatServer);
+			getStudyJSON, locale, tomcatServer, taxonomyServicesServer);
 			
 		addStudyAndComparisonAreas(htmlFileText, connection, studyID,
 			"rif40", // Owner
@@ -557,7 +581,13 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		byte[] b=htmlFileText.toString().getBytes();
 		submissionZipOutputStream.write(b, 0, b.length);
 
-		submissionZipOutputStream.closeEntry();					
+		submissionZipOutputStream.closeEntry();	
+
+		if (getStudyJSON.getTaxonomyInitialiseError()) {	
+			rifLogger.error(this.getClass(), 
+				"Taxonomy service still initialising; please run again in 5 minutes");
+			throw new Exception("Taxonomy service still initialising; please run again in 5 minutes");
+		}		
 	}
 	
 	private void addStudyAndComparisonAreas(
@@ -760,7 +790,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String schemaName,
 			final GetStudyJSON getStudyJSON,
 			final Locale locale,
-			final String tomcatServer)
+			final String tomcatServer,
+			final String taxonomyServicesServer)
 			throws Exception {
 			
 		String tableName="rif40_inv_conditions";	
@@ -822,14 +853,14 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						
 						if (name.equals("min_condition")) {
 							if (!value.equals("&nbsp;")) {
-								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(tomcatServer, null /* taxonomyServicesServer */, value);
+								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(tomcatServer, taxonomyServicesServer, value);
 								minCondition=taxonomyObject.getString("description");
 							}
 						}
 						else if (name.equals("max_condition")) {
 							if (!value.equals("&nbsp;")) {
 								// Add: please run again in 5 minutes support
-								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(tomcatServer, null /* taxonomyServicesServer */, value);
+								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(tomcatServer, taxonomyServicesServer, value);
 								maxCondition=taxonomyObject.getString("description");
 							}
 						}						
