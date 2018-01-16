@@ -1,5 +1,5 @@
-<!--
- * HEADER FOR RIF STUDY HTML FILES. USER EDITIABLE - COPY TO %CATALINA_HOME%/conf
+/*
+ * CACADING STYLE SHEET FOR RIF STUDY HTML FILES. USER EDITIABLE - COPY TO %CATALINA_HOME%/conf
  * [or you will loose it in an upgrade!]
  *
  * <hr>
@@ -39,17 +39,8 @@
  * Peter Hambly
  * @author phambly
  * @version
--->
+ */
 
-<!DOCTYPE html>
-<html lang="en-gb">
-<head>
-  <title>RIF Study Report</title>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width" />
-  <meta name="description" content="RIF Study Report" />
-  <!-- Default style -->
-  <style>
 body {
     margin: 0;
 }
@@ -81,7 +72,3 @@ li.nav a:hover:not(.active) {
     background-color: #555;
     color: white;
 }
-  </style>
-  <!-- User style override -->
-  <link rel="stylesheet" type="text/css" href="RIFStudyHeader.css">
-</head>
