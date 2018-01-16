@@ -81,6 +81,78 @@ li.nav a:hover:not(.active) {
     background-color: #555;
     color: white;
 }
+
+/*POP PYRAMID*/
+.maleBar {
+    height : 70;
+    fill : #c97f82;
+    stroke: black;
+    stroke-width : 0;
+}
+
+.totalPopulationBar {
+    height : 70;
+    fill : none;
+    stroke: lightgray;
+    stroke-width : 1;
+}
+
+.xAxisDashedLines {
+    stroke: gray;
+    stroke-width : 1;
+    stroke-dasharray : 5, 5;    		
+}
+
+.femaleBar {
+    height : 70;
+    fill : #7f82c9;
+    stroke: black;
+    stroke-width : 0;
+}
+
+g.context g.brush rect.background {
+    fill: rgba(0,0,0,.1);
+}
+
+g.context g.axis path {
+    stroke-opacity: 0;
+}
+
+g.context g.axis line {
+    stroke-opacity: .1;
+}
+
+g path.areaChart1 {
+    fill: #7f82c9;
+}
+
+g path.areaChart2 {
+    fill: #c97f82;
+}
+
+g path.areaChart3 {
+    fill: #82c97f;
+}
+
+g path.areaChart4 {
+    fill: #c9c67f;
+}
+
+svg.areaCharts .axis path, .axis line {
+    fill: none;
+    stroke: #aaa;
+    shape-rendering: crispEdges;
+}
+
+svg.areaCharts .brush .extent {
+    stroke: #f09f8c;
+    fill-opacity: .125;
+    shape-rendering: crispEdges;
+}
+
+svg.areaCharts g.context rect.background{
+    visibility: visible !important;
+}
   </style>
   <!-- User style override -->
   <link rel="stylesheet" type="text/css" href="RIFStudyHeader.css">

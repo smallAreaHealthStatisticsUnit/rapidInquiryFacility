@@ -517,6 +517,378 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		submissionZipOutputStream.closeEntry();	
 	}
 	
+	private String getSvgText(
+			final String studyID,
+			final int year) 
+			throws Exception {
+		String svgText="<svg width=\"598\" height=\"430.70001220703125\" id=\"poppyramid\">" + lineSeparator +
+"	<g transform=\"translate(80,60)\">" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"275\" width=\"35.94974490491911\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"262\" width=\"35.94974490491911\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"249\" width=\"35.94974490491911\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"236\" width=\"35.94974490491911\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"223\" width=\"35.94974490491911\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"210\" width=\"192.48965854215083\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"197\" width=\"184.7389994121776\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"184\" width=\"177.24052353397835\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"171\" width=\"193.91188120530876\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"158\" width=\"228.36329408730032\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"145\" width=\"234.03514533102833\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"132\" width=\"209.98685956501143\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"119\" width=\"189.8292388319944\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"106\" width=\"212.98806745324086\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"93\" width=\"183.20204472906843\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"80\" width=\"151.33380623687012\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"67\" width=\"142.44605055272666\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"54\" width=\"138.29979438617204\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"41\" width=\"124.97043278114404\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"28\" width=\"90.5917213771414\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"15\" width=\"59.419826728805525\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"maleBar\" x=\"0\" y=\"2\" width=\"37.81840008135264\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"35.94974490491911\" y=\"275\" width=\"34.200365590811124\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"35.94974490491911\" y=\"262\" width=\"34.200365590811124\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"35.94974490491911\" y=\"249\" width=\"34.200365590811124\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"35.94974490491911\" y=\"236\" width=\"34.200365590811124\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"35.94974490491911\" y=\"223\" width=\"34.200365590811124\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"192.48965854215083\" y=\"210\" width=\"183.12025556633094\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"184.7389994121776\" y=\"197\" width=\"173.2362624416208\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"177.24052353397835\" y=\"184\" width=\"166.64541907768927\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"193.91188120530876\" y=\"171\" width=\"178.89334619763235\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"228.36329408730032\" y=\"158\" width=\"208.48398369970957\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"234.03514533102833\" y=\"145\" width=\"223.96485466897164\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"209.98685956501143\" y=\"132\" width=\"205.95306349722088\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"189.8292388319944\" y=\"119\" width=\"192.31699253192718\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"212.98806745324086\" y=\"106\" width=\"214.17287435234127\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"183.20204472906843\" y=\"93\" width=\"183.77116098645033\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"151.33380623687012\" y=\"80\" width=\"155.0415816143042\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"142.44605055272666\" y=\"67\" width=\"150.7715057430497\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"138.29979438617204\" y=\"54\" width=\"156.47516388339787\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"124.97043278114404\" y=\"41\" width=\"157.35098950104543\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"90.5917213771414\" y=\"28\" width=\"131.2341194941255\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"59.419826728805525\" y=\"15\" width=\"104.775325348539\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"femaleBar\" x=\"37.81840008135264\" y=\"2\" width=\"103.85860514952267\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"275\" width=\"70.15011049573022\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"262\" width=\"70.15011049573022\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"249\" width=\"70.15011049573022\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"236\" width=\"70.15011049573022\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"223\" width=\"70.15011049573022\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"210\" width=\"375.6099141084818\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"197\" width=\"357.97526185379843\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"184\" width=\"343.88594261166764\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"171\" width=\"372.8052274029411\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"158\" width=\"436.8472777870099\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"145\" width=\"458\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"132\" width=\"415.9399230622323\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"119\" width=\"382.14623136392163\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"106\" width=\"427.1609418055821\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"93\" width=\"366.97320571551876\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"80\" width=\"306.37538785117425\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"67\" width=\"293.2175562957764\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"54\" width=\"294.7749582695699\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"41\" width=\"282.3214222821895\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"28\" width=\"221.8258408712669\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"15\" width=\"164.19515207734452\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<rect class=\"totalPopulationBar\" x=\"0\" y=\"2\" width=\"141.67700523087532\" height=\"13\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g transform=\"translate(0,290.70001220703125)\" fill=\"none\" font-size=\"10\" font-family=\"sans-serif\" text-anchor=\"middle\">" + lineSeparator +
+"			<path class=\"domain\" stroke=\"#000\" d=\"M0.5,6V0.5H458.5V6\"/>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,0)\">" + lineSeparator +
+"				<line stroke=\"#000\" y2=\"6\" x1=\"0.5\" x2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" y=\"9\" x=\"0.5\" dy=\"0.71em\" style=\"\">0</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(141.99507419707678,0)\">" + lineSeparator +
+"				<line stroke=\"#000\" y2=\"6\" x1=\"0.5\" x2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" y=\"9\" x=\"0.5\" dy=\"0.71em\" style=\"\">500K</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(283.99014839415355,0)\">" + lineSeparator +
+"				<line stroke=\"#000\" y2=\"6\" x1=\"0.5\" x2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" y=\"9\" x=\"0.5\" dy=\"0.71em\" style=\"\">1M</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(425.9852225912303,0)\">" + lineSeparator +
+"				<line stroke=\"#000\" y2=\"6\" x1=\"0.5\" x2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" y=\"9\" x=\"0.5\" dy=\"0.71em\" style=\"\">1.5M</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g fill=\"none\" font-size=\"10\" font-family=\"sans-serif\" text-anchor=\"end\">" + lineSeparator +
+"			<path class=\"domain\" stroke=\"#000\" d=\"M-6,291.20001220703125H0.5V0.5H-6\"/>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,282)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">0</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,269)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">1</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,256)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">2</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,243)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">3</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,230)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">4</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,217)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">5_9</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,204)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">10_14</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,191)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">15_19</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,178)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">20_24</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,165)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">25_29</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,152)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">30_34</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,139)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">35_39</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,126)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">40_44</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,113)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">45_49</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,100)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">50_54</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,87)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">55_59</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,74)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">60_64</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,61)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">65_69</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,48)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">70_74</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,35)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">75_79</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,22)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">80_84</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,9)\">" + lineSeparator +
+"				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
+"				<text fill=\"#000\" x=\"-9\" y=\"0.5\" dy=\"0.32em\" style=\"\">85PLUS</text>" + lineSeparator +
+"			</g>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<line class=\"xAxisDashedLines\" x1=\"56.7980296788307\" y1=\"0\" x2=\"56.7980296788307\" y2=\"290.70001220703125\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<line class=\"xAxisDashedLines\" x1=\"113.5960593576614\" y1=\"0\" x2=\"113.5960593576614\" y2=\"290.70001220703125\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<line class=\"xAxisDashedLines\" x1=\"170.39408903649212\" y1=\"0\" x2=\"170.39408903649212\" y2=\"290.70001220703125\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<line class=\"xAxisDashedLines\" x1=\"227.1921187153228\" y1=\"0\" x2=\"227.1921187153228\" y2=\"290.70001220703125\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<line class=\"xAxisDashedLines\" x1=\"283.99014839415355\" y1=\"0\" x2=\"283.99014839415355\" y2=\"290.70001220703125\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<line class=\"xAxisDashedLines\" x1=\"340.78817807298424\" y1=\"0\" x2=\"340.78817807298424\" y2=\"290.70001220703125\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<line class=\"xAxisDashedLines\" x1=\"397.5862077518149\" y1=\"0\" x2=\"397.5862077518149\" y2=\"290.70001220703125\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<g>" + lineSeparator +
+"			<line class=\"xAxisDashedLines\" x1=\"454.3842374306456\" y1=\"0\" x2=\"454.3842374306456\" y2=\"290.70001220703125\"/>" + lineSeparator +
+"		</g>" + lineSeparator +
+"		<rect width=\"13\" height=\"13\" style=\"fill: rgb(201, 127, 130);\" transform=\"translate(0, -23)\"/>" + lineSeparator +
+"		<text style=\"text-anchor: start;\" transform=\"translate(15,-16.5)\">Male</text>" + lineSeparator +
+"		<rect width=\"13\" height=\"13\" style=\"fill: rgb(127, 130, 201);\" transform=\"translate(80, -23)\"/>" + lineSeparator +
+"		<text style=\"text-anchor: start;\" transform=\"translate(95,-16.5)\">Female</text>" + lineSeparator +
+"		<text style=\"text-anchor: middle;\" transform=\"translate(229,325.70001220703125)\">TOTAL POPULATION</text>" + lineSeparator +
+"		<text style=\"\" text-anchor=\"middle\" transform=\"rotate(-90)\" y=\"-45\" x=\"-145.35000610351562\">AGE GROUP</text>" + lineSeparator +
+"	</g>" + lineSeparator +
+"</svg>";
+		return svgText;
+	}
+			
+	private void addSvgFile(
+			final File temporaryDirectory,
+			final ZipOutputStream submissionZipOutputStream,
+			final String studyID,
+			final int year,
+			final String svgText) 
+			throws Exception {
+			
+		String svgFileName="RIFstudy_" + studyID + "_" + year + ".svg";
+		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + "svg\"";
+		rifLogger.info(this.getClass(), "Adding SVG for report file: " + svgDirName + 
+			File.separator + svgFileName + " to ZIP file");
+		
+		File file=new File(svgDirName + File.separator + svgFileName);
+		ZipEntry zipEntry = new ZipEntry(svgFileName);
+
+		submissionZipOutputStream.putNextEntry(zipEntry);
+		byte[] b=svgText.toString().getBytes();
+		submissionZipOutputStream.write(b, 0, b.length);
+
+		submissionZipOutputStream.closeEntry();	
+	}
+	
 	private void addHtmlFile(
 			final File temporaryDirectory,
 			final ZipOutputStream submissionZipOutputStream,
@@ -638,7 +1010,10 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"rif40", // Schema
 			getStudyJSON, locale, tomcatServer);
 		
-		addDenominator(htmlFileText, connection, studyID);
+		addDenominator(htmlFileText, connection, 
+			temporaryDirectory,
+			submissionZipOutputStream,
+			studyID);
 		
 		htmlFileText.append("  </div>" + lineSeparator);
 		htmlFileText.append("</body>" + lineSeparator);
@@ -665,14 +1040,29 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	private void addDenominator(
 			final StringBuilder htmlFileText,
 			final Connection connection,
+			final File temporaryDirectory,
+			final ZipOutputStream submissionZipOutputStream,
 			final String studyID)
-			
 			throws Exception {
-		htmlFileText.append("<pyramid chart-data=\"populationData['viewermap']\"");
-		htmlFileText.append("         width=\"pyramidCurrentWidth\"");
-		htmlFileText.append("         height=\"pyramidCurrentHeight\"");
-		htmlFileText.append("         class=\"ng-isolate-scope\">");
-		htmlFileText.append("</pyramid>" + lineSeparator);	
+				
+		String svgText=getSvgText(studyID, 2000);
+		addSvgFile(
+			temporaryDirectory,
+			submissionZipOutputStream,
+			studyID,
+			2000,
+			svgText);
+			
+		htmlFileText.append("<h1 id=\"denominator\">Denominator</h1>");
+		htmlFileText.append("<p>");
+		htmlFileText.append("  <pyramid>");
+//		htmlFileText.append("           width=\"100%\"");
+//		htmlFileText.append("           height=\"pyramidCurrentHeight\">");
+//		htmlFileText.append("       	chart-data=\"populationData['viewermap']\"");
+//		htmlFileText.append("           class=\"ng-isolate-scope\"");
+		htmlFileText.append(svgText);
+		htmlFileText.append("  </pyramid>");
+		htmlFileText.append("</p>" + lineSeparator);	
 	}
 			
 	private void addStudyAndComparisonAreas(
@@ -986,11 +1376,23 @@ public class RifZipFile extends SQLAbstractSQLManager {
 								"       </td><!-- Column: " + i +
 								"; row: " + rowCount +
 								" -->" + lineSeparator);
-							if (name.equals("inv_id") && !invId.equals(value)) {
+							if (name.equals("inv_id") && invId.equals("")) {
+								invId=value;
+							}
+							else if (name.equals("numer_tab") && numerTab.equals("")) {
+								numerTab=value;
+							}
+							else if (name.equals("inv_id") && !invId.equals(value)) {
+								bodyText.append("          <!-- Detect end span, name: " + name +
+									"; old value: " + invId + "; new value: " + value + " -->" + 
+									lineSeparator);
 								endSpan=true;
 								invId=value;
 							}	
 							else if (name.equals("numer_tab") && !numerTab.equals(value)) {
+								bodyText.append("          <!-- Detect end span, name: " + name +
+									"; old value: " + numerTab + "; new value: " + value + " -->" + 
+									lineSeparator);
 								endSpan=true;
 								numerTab=value;
 							}	
@@ -1036,8 +1438,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 							"; outcomeTypeList: " + outcomeTypeList.size() + 
 							"; conditionList: " + conditionList.size() + 
 							"; descriptionList: " + descriptionList.size() + 
-							" -->");
+							" -->" + lineSeparator);
 						endSpan=false;
+						outcomeTypeList.clear();
+						conditionList.clear();
+						descriptionList.clear();
 						spanCount=0;
 					}
 					else {
