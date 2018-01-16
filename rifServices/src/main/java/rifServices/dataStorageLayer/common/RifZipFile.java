@@ -405,6 +405,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						submissionZipOutputStream,
 						connection, user, studyID, locale, tomcatServer);
 
+				addCssFile(
+						temporaryDirectory,
+						submissionZipOutputStream,
+						studyID);
+						
 				addHtmlFile(
 						temporaryDirectory,
 						submissionZipOutputStream,
@@ -488,7 +493,28 @@ public class RifZipFile extends SQLAbstractSQLManager {
 //			temporaryDirectory.delete();
 		}
 	}
+
+	private void addCssFile(
+			final File temporaryDirectory,
+			final ZipOutputStream submissionZipOutputStream,
+			final String studyID) 
+			throws Exception {
 			
+		String cssFileText=readFile("RIFStudyHeader.css");
+		String cssFileName="RIFStudyHeader.css";
+		rifLogger.info(this.getClass(), "Adding CSS for report file: " + temporaryDirectory.getAbsolutePath() + File.separator + 
+			cssFileName + " to ZIP file");
+		
+		File file=new File(temporaryDirectory.getAbsolutePath() + File.separator + cssFileName);
+		ZipEntry zipEntry = new ZipEntry(cssFileName);
+
+		submissionZipOutputStream.putNextEntry(zipEntry);
+		byte[] b=cssFileText.toString().getBytes();
+		submissionZipOutputStream.write(b, 0, b.length);
+
+		submissionZipOutputStream.closeEntry();	
+	}
+	
 	private void addHtmlFile(
 			final File temporaryDirectory,
 			final ZipOutputStream submissionZipOutputStream,
@@ -507,11 +533,15 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("<body>" + lineSeparator);
 		htmlFileText.append("  <ul class=\"nav\">" + lineSeparator);
 		htmlFileText.append("    <li class=\"nav\"><a class=\"active\" href=\"#rif40_studies\">Studies</a></li>" + lineSeparator);
+		htmlFileText.append("    <li class=\"nav\"><a href=\"#rif40_study_status\">Status</a></li>" + lineSeparator);
 		htmlFileText.append("    <li class=\"nav\"><a href=\"#rif40_investigations\">Investigations</a></li>" + lineSeparator);
 		htmlFileText.append("    <li class=\"nav\"><a href=\"#rif40_inv_covariates\">Covariates</a></li>" + lineSeparator);
 		htmlFileText.append("    <li class=\"nav\"><a href=\"#rif40_inv_conditions\">Conditions</a></li>" + lineSeparator);
 		htmlFileText.append("    <li class=\"nav\"><a href=\"#rif40_study_areas\">Study area</a></li>" + lineSeparator);
 		htmlFileText.append("    <li class=\"nav\"><a href=\"#rif40_comparison_areas\">Comparison area</a></li>" + lineSeparator);
+		htmlFileText.append("    <li class=\"nav\"><a href=\"#denominator\">Denominator</a></li>" + lineSeparator);
+		htmlFileText.append("    <li class=\"nav\"><a href=\"#numerator\">Numerator</a></li>" + lineSeparator);
+		htmlFileText.append("    <li class=\"nav\"><a href=\"#maps\">Maps</a></li>" + lineSeparator);
 		htmlFileText.append("  </ul>" + lineSeparator);
 		htmlFileText.append("  <div style=\"margin-left:25%;padding:1px 16px;height:1000px;\">" + lineSeparator);
 
@@ -519,15 +549,18 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"rif40", // Owner
 			"rif40", // Schema
 			"rif40_studies", // Table 
+			null, // Common table expression
 			null, // Joined table
-			"username,study_id,extract_table,study_name," + lineSeparator +
+			"username,study_id,study_name," + lineSeparator +
 			"summary,description,other_notes,study_date," + lineSeparator +
-			"geography,study_type,study_state,comparison_geolevel_name," + lineSeparator +
-			"denom_tab,direct_stand_tab,year_start,year_stop," + lineSeparator +
-			"max_age_group,min_age_group,study_geolevel_name," + lineSeparator +
-			"map_table,suppression_value,extract_permitted," + lineSeparator +
-			"transfer_permitted,authorised_by,authorised_on,authorised_notes," + lineSeparator +
-			"covariate_table,project,project_description," + lineSeparator +
+			"geography,study_type," + lineSeparator +
+//			"denom_tab,direct_stand_tab,covariate_table," + lineSeparator +
+//			"year_start,year_stop," + lineSeparator +
+//			"max_age_group,min_age_group," + lineSeparator +
+			"study_geolevel_name,comparison_geolevel_name," + lineSeparator +
+//			"map_table,extract_table," + lineSeparator +
+//			"suppression_value,extract_permitted,transfer_permitted,authorised_by,authorised_on,authorised_notes," + lineSeparator +
+			"project,project_description," + lineSeparator +
 			"CASE WHEN stats_method = 'HET' THEN 'Heterogenous'" + lineSeparator +
 			"     WHEN stats_method = 'BYM' THEN 'Besag, York and Mollie'" + lineSeparator +
 			"     WHEN stats_method = 'CAR' THEN 'Conditional Auto Regression'" + lineSeparator +
@@ -539,19 +572,50 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		addTableToHtmlReport(htmlFileText, connection, studyID,
 			"rif40", // Owner
 			"rif40", // Schema
-			"rif40_investigations", // Table 	
+			"rif40_study_status", // Table 	
+			null, // Common table expression
 			null, // Joined table
-			"inv_id,inv_name,year_start,year_stop," + lineSeparator +
-			"max_age_group,min_age_group,genders,numer_tab," + lineSeparator +
-			"mh_test_type,inv_description,classifier,classifier_bands,investigation_state", // Column list
-			"inv_id"  	/* ORDER BY */,
+			"study_state,creation_date,message", // Column list
+			"ith_update"    	/* ORDER BY */,
+			"1+"		/* Expected rows 0+ */,
+			false		/* Rotate */, locale, tomcatServer); 
+			
+		addTableToHtmlReport(htmlFileText, connection, studyID,
+			"rif40", // Owner
+			"rif40", // Schema
+			"rif40_investigations", // Table 	
+			"WITH study_num_denom AS (" + lineSeparator +
+			"	SELECT a.study_id, b.geography, b.theme_description," + lineSeparator +
+			"		   b.numerator_table, b.numerator_description," + lineSeparator +
+			"		   b.denominator_table, b.denominator_description," + lineSeparator +
+			"		   dmin.fieldname min_age_group, dmax.fieldname max_age_group" + lineSeparator +
+			"	  FROM rif40.rif40_studies a, rif40_num_denom b, rif40.rif40_tables c," + lineSeparator +
+			"		   rif40.rif40_age_groups dmin, rif40.rif40_age_groups dmax" + lineSeparator +
+			"	 WHERE a.geography       = b.geography" + lineSeparator +
+			"	   AND a.denom_tab       = b.denominator_table" + lineSeparator +
+			"	   AND b.numerator_table = c.table_name" + lineSeparator +
+			"	   AND c.age_group_id    = dmin.age_group_id" + lineSeparator +
+			"	   AND c.age_group_id    = dmax.age_group_id" + lineSeparator +
+			"	   AND a.min_age_group   = dmin.offset" + lineSeparator +
+			"	   AND a.max_age_group   = dmax.offset" + lineSeparator +
+			")", // Common table expression
+			" LEFT OUTER JOIN study_num_denom d ON (d.study_id = t.study_id)", // Joined table
+			"t.inv_id,t.inv_name,t.inv_description,t.year_start,t.year_stop," + lineSeparator +
+			"CASE WHEN t.genders = 1 THEN 'Males' WHEN t.genders = 2 THEN 'Females' WHEN t.genders = 3 THEN 'Males and Females' ELSE 'Unknown' END AS genders," + lineSeparator +
+			"t.max_age_group,t.min_age_group," + lineSeparator +
+			"d.theme_description,d.numerator_table, d.numerator_description," + lineSeparator + 
+			"d.denominator_table, d.denominator_description," + lineSeparator +
+			"d.min_age_group, d.max_age_group," + lineSeparator +
+			"t.mh_test_type,t.classifier,t.classifier_bands", // Column list
+			"t.inv_id"  	/* ORDER BY */,
 			"1+"		/* Expected rows 1+ */,
 			true		/* Rotate */, locale, tomcatServer); 
 			
 		addTableToHtmlReport(htmlFileText, connection, studyID,
 			"rif40", // Owner
 			"rif40", // Schema
-			"rif40_inv_covariates", // Table 	
+			"rif40_inv_covariates", // Table 
+			null, // Common table expression	
 			null, // Joined table
 			"inv_id,covariate_name,min,max,geography,study_geolevel_name", // Column list
 			"inv_id,covariate_name"    	/* ORDER BY */,
@@ -629,10 +693,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					ownerName,	// Owner
 					schemaName,	// Schema
 					"rif40_study_areas", // Table
-					"a LEFT OUTER JOIN rif_data." +			
+					null, // Common table expression
+					"LEFT OUTER JOIN rif_data." +			
 						studyGeolevel.getString("lookup_table").toLowerCase() + 
-						" b ON (a.area_id = b." + studyGeolevelName.toLowerCase() + ")", // Joined table 	
-					"a.area_id, a.band_id, b." + 
+						" b ON (t.area_id = b." + studyGeolevelName.toLowerCase() + ")", // Joined table 	
+					"t.area_id, t.band_id, b." + 
 						studyGeolevel.getString("lookup_desc_column").toLowerCase() + 
 						" AS label", // Column list
 					"2, 1"    	/* ORDER BY */,
@@ -643,10 +708,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					ownerName,
 					schemaName,
 					"rif40_comparison_areas", // Table
-					"a LEFT OUTER JOIN rif_data." +			
+					null, // Common table expression
+					"LEFT OUTER JOIN rif_data." +			
 						comparisonGeolevel.getString("lookup_table").toLowerCase() + 
-						" b ON (a.area_id = b." + comparisonGeolevelName.toLowerCase() + ")", // Joined table 	
-					"a.area_id, b." + 
+						" b ON (t.area_id = b." + comparisonGeolevelName.toLowerCase() + ")", // Joined table 	
+					"t.area_id, b." + 
 						comparisonGeolevel.getString("lookup_desc_column").toLowerCase() + 
 						" AS label", // Column list
 					"1"    	/* ORDER BY */,
@@ -693,7 +759,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}
 		PreparedStatement statement = createPreparedStatement(connection, columnCommentQueryFormatter);
 		
-		String columnComment=columnName;
+		String columnComment=columnName.substring(0, 1).toUpperCase() + 
+			columnName.substring(1).replace("_", " "); // Default if not found [initcap, remove underscores]
 		try {			
 		
 			statement.setString(1, schemaName);	
@@ -987,6 +1054,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String ownerName,
 			final String schemaName,
 			final String tableName,
+			final String commonTableExpression,
 			final String joinedTable,
 			final String columnList,
 			final String orderBy,
@@ -1031,15 +1099,19 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}
 		SQLGeneralQueryFormatter htmlReportQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
+		if (commonTableExpression != null) {
+			htmlReportQueryFormatter.addQueryLine(0, commonTableExpression);
+		}
 		htmlReportQueryFormatter.addQueryLine(0, "SELECT " + columnList);
-		htmlReportQueryFormatter.addQueryLine(0, "  FROM " + schemaName + "." + tableName);
+		htmlReportQueryFormatter.addQueryLine(0, "  FROM " + schemaName + "." + tableName + " t ");
+			// Note the alias is always t!
 		if (joinedTable != null) {
 			htmlReportQueryFormatter.addQueryLine(0, joinedTable);
 		}
 		else {
 			htmlReportQueryFormatter.addQueryLine(0, "/* No joined table */");
 		}
-		htmlReportQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+		htmlReportQueryFormatter.addQueryLine(0, " WHERE t.study_id = ?");
 		if (orderBy != null) {
 			htmlReportQueryFormatter.addQueryLine(0, " ORDER BY " + orderBy);
 		}
