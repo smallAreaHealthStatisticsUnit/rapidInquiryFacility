@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
  * HEADER FOR RIF STUDY HTML FILES. USER EDITIABLE - COPY TO %CATALINA_HOME%/conf
  * [or you will loose it in an upgrade!]
@@ -41,7 +42,6 @@
  * @version
 -->
 
-<!DOCTYPE html>
 <html lang="en-gb">
 <head>
   <title>RIF Study Report</title>
@@ -156,4 +156,44 @@ svg.areaCharts g.context rect.background{
   </style>
   <!-- User style override -->
   <link rel="stylesheet" type="text/css" href="RIFStudyHeader.css">
+  
+<!-- Javascript -->  
+  <script>
+/* 
+ * setPopulationPyramid() change population pyramid
+ */
+function setPopulationPyramid(event) {
+    var pyramid = document.getElementById("populationPyramid");
+	var reader = new FileReader();
+	var fileName = this.value;
+	
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function(){
+		if (xmlhttp.status == 200 && xmlhttp.readyState != 4) {
+		}
+		else if (xmlhttp.status == 200 && xmlhttp.readyState == 4) {
+//			console.log("Loading: " + fileName);
+			var data = xmlhttp.responseText;
+//			console.log("data: " + data);
+			pyramid.innerHTML = data;
+		}
+		else if (xmlhttp.status === 404) {
+			alert("Unable to fetch SVG file: " + fileName);
+		}
+		else if (xmlhttp.status > 0) {
+			alert("Unexpected status: " + xmlhttp.status + "; readyState: " + xmlhttp.readyState +
+				"; fetching SVG file: " + fileName);
+		}
+	};
+	
+	xmlhttp.open("GET", fileName, true);
+	xmlhttp.send();
+
+	return false;
+}
+
+window.onload = function(){
+	document.getElementById("populationPyramidList").onchange = setPopulationPyramid;
+};
+  </script>
 </head>

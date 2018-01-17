@@ -521,7 +521,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String studyID,
 			final int year) 
 			throws Exception {
-		String svgText="<svg width=\"598\" height=\"430.70001220703125\" id=\"poppyramid\">" + lineSeparator +
+		String svgText=
+"	<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + lineSeparator +
+"	<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"" + lineSeparator +
+"	         \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">" + lineSeparator +
+"	<svg width=\"598\" height=\"430.70001220703125\" id=\"poppyramid\">" + lineSeparator +
 "	<g transform=\"translate(80,60)\">" + lineSeparator +
 "		<g>" + lineSeparator +
 "			<rect class=\"maleBar\" x=\"0\" y=\"275\" width=\"35.94974490491911\" height=\"13\"/>" + lineSeparator +
@@ -859,13 +863,28 @@ public class RifZipFile extends SQLAbstractSQLManager {
 "		<text style=\"text-anchor: start;\" transform=\"translate(15,-16.5)\">Male</text>" + lineSeparator +
 "		<rect width=\"13\" height=\"13\" style=\"fill: rgb(127, 130, 201);\" transform=\"translate(80, -23)\"/>" + lineSeparator +
 "		<text style=\"text-anchor: start;\" transform=\"translate(95,-16.5)\">Female</text>" + lineSeparator +
-"		<text style=\"text-anchor: middle;\" transform=\"translate(229,325.70001220703125)\">TOTAL POPULATION</text>" + lineSeparator +
+"		<text style=\"text-anchor: middle;\" transform=\"translate(229,325.70001220703125)\">TOTAL POPULATION: " + year + "</text>" + lineSeparator +
 "		<text style=\"\" text-anchor=\"middle\" transform=\"rotate(-90)\" y=\"-45\" x=\"-145.35000610351562\">AGE GROUP</text>" + lineSeparator +
 "	</g>" + lineSeparator +
 "</svg>";
 		return svgText;
 	}
+	
+	private void addZipDir(
+			final File temporaryDirectory,
+			final ZipOutputStream submissionZipOutputStream,
+			final String dirName) 
+			throws Exception {
 			
+		String zipDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName + File.separator;
+		rifLogger.info(this.getClass(), "Adding " + dirName + " directory: " + zipDirName + 
+			" to ZIP file");
+		
+		ZipEntry zipEntry = new ZipEntry(zipDirName);
+		submissionZipOutputStream.putNextEntry(zipEntry);
+		submissionZipOutputStream.closeEntry();	
+	}
+	
 	private void addSvgFile(
 			final File temporaryDirectory,
 			final ZipOutputStream submissionZipOutputStream,
@@ -875,12 +894,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			throws Exception {
 			
 		String svgFileName="RIFstudy_" + studyID + "_" + year + ".svg";
-		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + "svg\"";
+		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + "svg";
 		rifLogger.info(this.getClass(), "Adding SVG for report file: " + svgDirName + 
 			File.separator + svgFileName + " to ZIP file");
 		
-		File file=new File(svgDirName + File.separator + svgFileName);
-		ZipEntry zipEntry = new ZipEntry(svgFileName);
+		ZipEntry zipEntry = new ZipEntry("svg" + File.separator + svgFileName);
 
 		submissionZipOutputStream.putNextEntry(zipEntry);
 		byte[] b=svgText.toString().getBytes();
@@ -1017,6 +1035,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		
 		htmlFileText.append("  </div>" + lineSeparator);
 		htmlFileText.append("</body>" + lineSeparator);
+		htmlFileText.append("</html>" + lineSeparator);
 		String htmlFileName="RIFstudy_" + studyID + ".html";
 		rifLogger.info(this.getClass(), "Adding HTML report file: " + temporaryDirectory.getAbsolutePath() + File.separator + 
 			htmlFileName + " to ZIP file");
@@ -1044,25 +1063,39 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final ZipOutputStream submissionZipOutputStream,
 			final String studyID)
 			throws Exception {
-				
-		String svgText=getSvgText(studyID, 2000);
-		addSvgFile(
+
+		GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
+		JSONObject studyData=getStudyJSON.getStudyData(
+			connection, studyID);
+		int yearStart=studyData.getInt("year_start");
+		int yearStop=studyData.getInt("year_stop");
+		String svgText=getSvgText(studyID, yearStart);
+
+		htmlFileText.append("    <h1 id=\"denominator\">Denominator</h1>" + lineSeparator);
+		htmlFileText.append("    <p>" + lineSeparator);
+		htmlFileText.append("      <pyramid  id=\"populationPyramid\">" + lineSeparator);
+		htmlFileText.append(svgText + lineSeparator);
+		htmlFileText.append("      </pyramid>" + lineSeparator);
+		htmlFileText.append("      <select id=\"populationPyramidList\">" + lineSeparator);
+		addZipDir(
 			temporaryDirectory,
 			submissionZipOutputStream,
-			studyID,
-			2000,
-			svgText);
+			"svg");	
 			
-		htmlFileText.append("<h1 id=\"denominator\">Denominator</h1>");
-		htmlFileText.append("<p>");
-		htmlFileText.append("  <pyramid>");
-//		htmlFileText.append("           width=\"100%\"");
-//		htmlFileText.append("           height=\"pyramidCurrentHeight\">");
-//		htmlFileText.append("       	chart-data=\"populationData['viewermap']\"");
-//		htmlFileText.append("           class=\"ng-isolate-scope\"");
-		htmlFileText.append(svgText);
-		htmlFileText.append("  </pyramid>");
-		htmlFileText.append("</p>" + lineSeparator);	
+		for (int i=yearStart; i<=yearStop; i++) {
+			htmlFileText.append("        <option value=\"svg\\RIFstudy_" + 
+				studyID + "_" + i + ".svg\" />" + i + "</option>" + lineSeparator);
+
+			svgText=getSvgText(studyID, i);
+			addSvgFile(
+				temporaryDirectory,
+				submissionZipOutputStream,
+				studyID,
+				i,
+				svgText);
+		}
+		htmlFileText.append("      </select>" + lineSeparator);
+		htmlFileText.append("    </p>" + lineSeparator);	
 	}
 			
 	private void addStudyAndComparisonAreas(

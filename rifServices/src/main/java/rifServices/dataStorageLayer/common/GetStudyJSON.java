@@ -1007,6 +1007,66 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	}							
 
 	/**
+	 * Get rif40_studies data table name
+     *
+     * @param Connection connection (required)
+     * @param String studyID (required)
+	 * @return JSONObject
+     */	
+	public JSONObject getStudyData(Connection connection, String studyID)
+					throws Exception {
+		SQLGeneralQueryFormatter rifStudiesQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		
+		rifStudiesQueryFormatter.addQueryLine(0, "SELECT username,extract_table,study_name,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       summary,description,other_notes,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       study_date,geography,study_type,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       comparison_geolevel_name,denom_tab,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       direct_stand_tab,year_start,year_stop,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       max_age_group,min_age_group,study_geolevel_name,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       map_table,covariate_table,project,");
+		rifStudiesQueryFormatter.addQueryLine(0, "       project_description,stats_method");
+		rifStudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");
+		rifStudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+		PreparedStatement statement = createPreparedStatement(connection, rifStudiesQueryFormatter);
+		JSONObject studiesData = new JSONObject();
+		try {			
+			statement.setInt(1, Integer.parseInt(studyID));	
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {	
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+				// The column count starts from 1
+				for (int i = 1; i <= columnCount; i++ ) {
+					String name = rsmd.getColumnName(i);
+					String value = resultSet.getString(i);
+					if (value == null) {
+						value="";
+					}		
+					
+					studiesData.put(name, value);
+				}
+				if (resultSet.next()) {
+					throw new Exception("getStudyData(): expected 1 row, got >1");
+				}
+			}
+			else {
+				throw new Exception("getStudyData(): expected 1 row, got none");
+			}
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + lineSeparator + rifStudiesQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+
+		return studiesData;
+	}
+	
+	/**
 	 * Get geolevelLookup table name
      *
      * @param Connection connection (required)
@@ -1023,7 +1083,6 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 		rifGeographyQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_geolevels");
 		rifGeographyQueryFormatter.addQueryLine(0, " WHERE geography = ? AND geolevel_name = ?");
 		PreparedStatement statement = createPreparedStatement(connection, rifGeographyQueryFormatter);
-		String lookupTableName=null;
 		JSONObject geolevelData = new JSONObject();
 		try {			
 			statement.setString(1, geographyName);	
