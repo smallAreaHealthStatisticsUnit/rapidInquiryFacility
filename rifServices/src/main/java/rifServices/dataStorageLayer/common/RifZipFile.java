@@ -1074,6 +1074,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("    <h1 id=\"denominator\">Denominator</h1>" + lineSeparator);
 		htmlFileText.append("    <p>" + lineSeparator);
 		htmlFileText.append("      <pyramid  id=\"populationPyramid\">" + lineSeparator);
+/*
+ * See also: http://edutechwiki.unige.ch/en/Using_SVG_with_HTML5_tutorial#Embeding_SVG_in_HTML_5_with_the_img_tag
+ * This does not work in chrome:
+ *
+ * RIFstudy_367.html:197 Failed to load file:///C:/rifDemo/scratchSpace/svg/RIFstudy_367_1996.svg: 
+ * Cross origin requests are only supported for protocol schemes: http, data, chrome, chrome-extension, 
+ * https.
+ * 
+ * Therefore will try to load an image!
+ */
 		htmlFileText.append(svgText + lineSeparator);
 		htmlFileText.append("      </pyramid>" + lineSeparator);
 		htmlFileText.append("      <select id=\"populationPyramidList\">" + lineSeparator);
@@ -1083,8 +1093,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"svg");	
 			
 		for (int i=yearStart; i<=yearStop; i++) {
-			htmlFileText.append("        <option value=\"svg\\RIFstudy_" + 
-				studyID + "_" + i + ".svg\" />" + i + "</option>" + lineSeparator);
+			if (i == yearStart) { // Selected
+				htmlFileText.append("        <option value=\"svg\\RIFstudy_" + 
+					studyID + "_" + i + ".svg\" selected />" + i + "</option>" + lineSeparator);
+
+			}
+			else {
+				htmlFileText.append("        <option value=\"svg\\RIFstudy_" + 
+					studyID + "_" + i + ".svg\" />" + i + "</option>" + lineSeparator);
+
+			}
 
 			svgText=getSvgText(studyID, i);
 			addSvgFile(
@@ -1492,13 +1510,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				commentArray[commentArrayLength]="        <li class=\"dictionary\"><em>Outcome type</em>: Taxonmomy Outcome type</li>" + lineSeparator;
 				commentArray[commentArrayLength]="        <li class=\"dictionary\"><em>Description</em>: Taxonmomy description</li>" + lineSeparator;
 				commentArrayLength++;
+				htmlFileText.append("      <ul class=\"dictionary\">" + lineSeparator);
 				for (int j = 0; j < commentArrayLength; j++) {
-					htmlFileText.append("      <ul class=\"dictionary\">" + lineSeparator);
 					htmlFileText.append(commentArray[j]);
-					htmlFileText.append("      </ul>" + lineSeparator);
 				}
-				htmlFileText.append("    </p>" + lineSeparator);
-					
+				htmlFileText.append("      </ul>" + lineSeparator);	
+				htmlFileText.append("    </p>" + lineSeparator);		
 			}
 			else {
 				htmlFileText.append("    <p>No data found</p>" + lineSeparator);
@@ -1656,7 +1673,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						"          <th>Attribute</th>" + lineSeparator);	
 				}
 				else {
-					headerText.append("        </tr>" + lineSeparator);
+					headerText.append("        <tr>" + lineSeparator);
 				}
 				do {	
 					rowCount++;
@@ -1740,11 +1757,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				
 				htmlFileText.append("    </p>" + lineSeparator);
 				htmlFileText.append("    <p>" + lineSeparator);
-				for (int j = 0; j < commentArray.length; j++) {
 					htmlFileText.append("      <ul class=\"dictionary\">" + lineSeparator);
+				for (int j = 0; j < commentArray.length; j++) {
 					htmlFileText.append(commentArray[j]);
-					htmlFileText.append("      </ul>" + lineSeparator);
 				}
+				htmlFileText.append("      </ul>" + lineSeparator);
 				htmlFileText.append("    </p>" + lineSeparator);
 					
 			}

@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!doctype html>
+<!-- saved from url=(0016)http://localhost -->
 <!--
+ * Note: the saved from url=(0016)http://localhost is secret Microsoft code to allow 
+ * Javascript to run from local files in Internet Explorer: 
+ * https://msdn.microsoft.com/en-us/library/ms537628(v=vs.85).aspx
+ *
  * HEADER FOR RIF STUDY HTML FILES. USER EDITIABLE - COPY TO %CATALINA_HOME%/conf
  * [or you will loose it in an upgrade!]
  *
@@ -174,7 +180,6 @@ function setPopulationPyramid(event) {
 		else if (xmlhttp.status == 200 && xmlhttp.readyState == 4) {
 //			console.log("Loading: " + fileName);
 			var data = xmlhttp.responseText;
-//			console.log("data: " + data);
 			pyramid.innerHTML = data;
 		}
 		else if (xmlhttp.status === 404) {
@@ -186,8 +191,13 @@ function setPopulationPyramid(event) {
 		}
 	};
 	
-	xmlhttp.open("GET", fileName, true);
-	xmlhttp.send();
+	try {
+		xmlhttp.open("GET", fileName, true);
+		xmlhttp.send();
+	}
+	catch (e) {
+		alert("Error fetching SVG file: " + fileName + "; " + e.message);
+	}
 
 	return false;
 }
