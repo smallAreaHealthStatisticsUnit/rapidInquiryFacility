@@ -1851,10 +1851,12 @@ Error number: 56699; severity: 16; state: 1
 Procedure: rif40_execute_insert_statement;  line: 128
 Error message: Function: [rif40].[rif40_execute_insert_statement],  SQL statement had error: Cannot insert the value NULL into column 'median_hh_income_quin', table 'sahsuland.rif_studies.s10_extract'; column does not allow nulls. INSERT fails.
 ```
-
+  This is caused by Cibola county in New Mexico only having median_hh_income_quin from 1973 to 1996. A
+  database change is required to make the covariate columns NULL able. SQL Server only bug.
+  
 ## In progress (December 2017/January 2018):
 
-* Extend PouchDB to base layer [probably will defer as nolt needed yet]
+* Extend PouchDB to base layer [probably will defer as not needed yet]
 * Sort popups in data viewer and diease maps [need to discuss]
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing 

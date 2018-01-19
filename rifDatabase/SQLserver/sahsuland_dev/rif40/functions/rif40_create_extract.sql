@@ -308,7 +308,7 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	FETCH NEXT FROM c2_creex INTO @c2_rec_covariate_name;
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		SET @sql_stmt=@sql_stmt + @tab + LEFT(LOWER(@c2_rec_covariate_name) + REPLICATE(' ',30), 30) + ' VARCHAR(30)	 NOT NULL DEFAULT ''No data'',' + @crlf; 
+		SET @sql_stmt=@sql_stmt + @tab + LEFT(LOWER(@c2_rec_covariate_name) + REPLICATE(' ',30), 30) + ' VARCHAR(30)	 NULL DEFAULT ''No data'',' + @crlf; 
 		INSERT INTO @table_columns(column_name, column_comment) VALUES (@c2_rec_covariate_name, @c2_rec_covariate_name);
 		INSERT INTO @pk_index_columns(column_name) VALUES (@c2_rec_covariate_name);
 --
