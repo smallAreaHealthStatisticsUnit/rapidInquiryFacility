@@ -483,9 +483,11 @@ rif40_dll() is run as definer (RIF40) so extract tables are owner by the RIF and
 	IF @c1_rec_study_type != '1' SET @sql_frag=@sql_frag + ',band_id'; /* Risk analysis only */
 	SET @sql_stmt='ALTER TABLE rif_studies.' + LOWER(@c1_rec_extract_table) + 
 		' ADD CONSTRAINT ' + LOWER(@c1_rec_extract_table) + '_pk PRIMARY KEY (' + @sql_frag + ')';
-		
-	SET @t_ddl=@t_ddl+1;	
-	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);	
+	
+--
+--  Peter H: 19/1/2018 - disable PK as covariate values may be NULL and NULL is not an allowed PK value!	
+--	SET @t_ddl=@t_ddl+1;	
+--	INSERT INTO @ddl_stmts(sql_stmt) VALUES (@sql_stmt);	
 
 --
 -- Vacuum analyze - raises 25001 "VACUUM cannot run inside a transaction block"

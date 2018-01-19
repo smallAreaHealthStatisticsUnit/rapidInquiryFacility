@@ -378,8 +378,9 @@ BEGIN
 	END IF;
 	sql_stmt:='ALTER TABLE rif_studies.'||LOWER(c1_rec.extract_table)||
 		' ADD CONSTRAINT '||LOWER(c1_rec.extract_table)||'_pk PRIMARY KEY ('||sql_frag||')';
-	t_ddl:=t_ddl+1;	
-	ddl_stmts[t_ddl]:=sql_stmt;
+--  Peter H: 19/1/2018 - disable PK as covariate values may be NULL and NULL is not an allowed PK value!	
+--	t_ddl:=t_ddl+1;	
+--	ddl_stmts[t_ddl]:=sql_stmt;
 --
 -- Vacuum analyze - raises 25001 "VACUUM cannot run inside a transaction block"
 --

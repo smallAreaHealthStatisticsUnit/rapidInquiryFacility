@@ -1844,16 +1844,53 @@ Todo:
 
 * Added table and column comments, navigation, taxonomy data to HTML Report
 * Fix for multi geographies bug. 
-* Null covariate issue:
-```
-Caught error in rif40.rif40_run_study2(10)
-Error number: 56699; severity: 16; state: 1
-Procedure: rif40_execute_insert_statement;  line: 128
-Error message: Function: [rif40].[rif40_execute_insert_statement],  SQL statement had error: Cannot insert the value NULL into column 'median_hh_income_quin', table 'sahsuland.rif_studies.s10_extract'; column does not allow nulls. INSERT fails.
-```
+* Fix for null covariate issue:
+  ```
+  Caught error in rif40.rif40_run_study2(10)
+  Error number: 56699; severity: 16; state: 1
+  Procedure: rif40_execute_insert_statement;  line: 128
+  Error message: Function: [rif40].[rif40_execute_insert_statement],  SQL statement had error: Cannot insert the value NULL into column 'median_hh_income_quin', table 'sahsuland.rif_studies.s10_extract'; column does not allow nulls. INSERT fails.
+  ```
   This is caused by Cibola county in New Mexico only having median_hh_income_quin from 1973 to 1996. A
-  database change is required to make the covariate columns NULL able. SQL Server only bug.
-  
+  database change is required to make the covariate columns NULL able. SQL Server and Postgres affected. Run:
+  ```
+  C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\production>
+  sqlcmd -U rif40 -P rif40 -d sahsuland -b -m-1 -e -r1 -i  ..\sahsuland\rif40\functions\rif40_create_extract.sql
+  ```
+  Test SQL: 
+  ```
+  SELECT s.area_id, a1.areaname AS county, a2.cb_2014_us_state_500k, MIN(c1.year) AS min_year, MAX(c1.year) AS max_year
+    FROM rif_data.cov_cb_2014_us_county_500k c1, rif40.rif40_study_areas s
+		LEFT OUTER JOIN rif_data.lookup_cb_2014_us_county_500k a1 ON (s.area_id = a1.cb_2014_us_county_500k)
+		LEFT OUTER JOIN rif_data.hierarchy_usa_2014 a2 ON (s.area_id = a2.cb_2014_us_county_500k)
+  WHERE s.study_id = 10 AND c1.cb_2014_us_county_500k = s.area_id AND median_hh_income_quin IS NULL
+  GROUP BY s.area_id, a1.areaname, a2.cb_2014_us_state_500k;
+  ```
+  This fixes the extract this then causes and R issue (replicates on both systems):
+  ```
+  Covariates: MEDIAN_HH_INCOME_QUIN
+Stack tracer >>>
+
+ performSmoothingActivity.R#710: .handleSimpleError(function (obj) 
+{
+    ca FUN(X[[i]], ...) lapply(X = X, FUN = FUN, ...) performSmoothingActivity.R#709: sapply(x, FUN = function(y) {
+    ans = y
+  performSmoothingActivity.R#106: findNULL(data[, i.d.adj[i]]) performSmoothingActivity(data, AdjRowset) Adj_Cov_Smooth_JRI.R#369: withVisible(expr) Adj_Cov_Smooth_JRI.R#369: withCallingHandlers(withVisible(expr), error = er withErrorTracing({
+    data = fetchExtractTable()
+    AdjRowset = getAdjace doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names, parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryCatch({
+    withErrorTracing({
+        data = fetchExtractTable()
+       eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) Adj_Cov_Smooth_JRI.R#390: capture.output({
+    tryCatch({
+        withError runRSmoothingFunctions() 
+<<< End of stack tracer.
+callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  if 
+callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  y == "NULL" 
+callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  {
+    ans = 0
+} 
+callPerformSmoothingActivity exitValue: 1
+  ```
 ## In progress (December 2017/January 2018):
 
 * Extend PouchDB to base layer [probably will defer as not needed yet]
