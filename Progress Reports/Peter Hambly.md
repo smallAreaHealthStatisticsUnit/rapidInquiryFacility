@@ -1843,6 +1843,14 @@ Todo:
 #### 15th to 19th January 2018
 
 * Added table and column comments, navigation, taxonomy data to HTML Report
+* Fix for multi geographies bug. 
+* Null covariate issue:
+```
+Caught error in rif40.rif40_run_study2(10)
+Error number: 56699; severity: 16; state: 1
+Procedure: rif40_execute_insert_statement;  line: 128
+Error message: Function: [rif40].[rif40_execute_insert_statement],  SQL statement had error: Cannot insert the value NULL into column 'median_hh_income_quin', table 'sahsuland.rif_studies.s10_extract'; column does not allow nulls. INSERT fails.
+```
 
 ## In progress (December 2017/January 2018):
 
