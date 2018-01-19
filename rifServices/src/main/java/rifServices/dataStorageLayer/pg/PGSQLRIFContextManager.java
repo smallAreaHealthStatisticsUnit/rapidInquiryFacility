@@ -435,6 +435,7 @@ final class PGSQLRIFContextManager
 			queryFormatter.addSelectField("denominator_description");		
 			queryFormatter.addFromTable("rif40_num_denom");
 			queryFormatter.addWhereParameter("theme_description");
+			queryFormatter.addWhereParameter("geography");
 		
 			logSQLQuery(
 			"getNumeratorDenominatorPairs",
@@ -446,7 +447,8 @@ final class PGSQLRIFContextManager
 				= createPreparedStatement(
 					connection,
 					queryFormatter);			
-			statement.setString(1, healthTheme.getDescription());			
+			statement.setString(1, healthTheme.getDescription());	
+			statement.setString(2, geography.getDisplayName());			
 			
 			dbResultSet = statement.executeQuery();
 			connection.commit();

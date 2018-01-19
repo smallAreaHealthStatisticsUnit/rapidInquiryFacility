@@ -102,6 +102,7 @@ angular.module("RIF")
                     for (var i = 0; i < res.data.length; i++) {
                         $scope.fractions.push(res.data[i]);
                     }
+					$scope.consoleDebug("[rifc-dsub-main.js] handleFractions(): " + JSON.stringify($scope.fractions, null, 2));
                     if (angular.isDefined(SubmissionStateService.getState().numerator.length) && SubmissionStateService.getState().numerator.length !== 0) {
                         for (var i = 0; i < $scope.fractions.length; i++) {
                             var thisNum = SubmissionStateService.getState().numerator;
@@ -125,14 +126,23 @@ angular.module("RIF")
                     } else {
                         $scope.denominator = "";
                     }
-                    SubmissionStateService.getState().numerator = $scope.numerator;
-                    SubmissionStateService.getState().denominator = $scope.numerator;
-                    //This will have an impact on investigations year range, so reset investigation parameters
-                    ParameterStateService.resetState();
+					
+					if (SubmissionStateService.getState().numerator != $scope.numerator &&
+					    SubmissionStateService.getState().denominator != $scope.numerator) {
+					
+						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), reset investigation parameters: " + JSON.stringify($scope.numerator, null, 2));
+						SubmissionStateService.getState().numerator = $scope.numerator;
+						SubmissionStateService.getState().denominator = $scope.numerator;
+						//This will have an impact on investigations year range, so reset investigation parameters
+						ParameterStateService.resetState();
+					}
+					else {		
+						$scope.consoleDebug("[rifc-dsub-main.js] numeratorChange(), no change: " + JSON.stringify($scope.numerator, null, 2));
+					}	
                 };
 
                 function handleError(e) {
-                    $scope.showError("Could not retreive your project information from the database");
+                    $scope.showError("Could not retrieve your project information from the database");
                 }
 
                 /*
