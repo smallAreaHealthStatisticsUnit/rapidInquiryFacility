@@ -546,36 +546,40 @@ public class RifZipFile extends SQLAbstractSQLManager {
 "  <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"598\" height=\"430.70001220703125\" id=\"poppyramid\">" + lineSeparator +
 "    <style>" + lineSeparator +
 "/*POP PYRAMID*/" + lineSeparator +
+":root {" + lineSeparator +
+"	--male-color: #c97f82;" + lineSeparator +
+"	--female-color: #7f82c9;" + lineSeparator +
+"}" + lineSeparator +
 "text {" + lineSeparator +
 "	font-family: Arial;" + lineSeparator +
 "	font-size: 12px;" + lineSeparator +
 "	fill: black;" + lineSeparator +
 "}" + lineSeparator +
 ".maleBar {" + lineSeparator +
-"    height : 70;" + lineSeparator +
-"    fill : #c97f82;" + lineSeparator +
+"    height: 70;" + lineSeparator +
+"    fill: #c97f82;" + lineSeparator +
 "    stroke: black;" + lineSeparator +
-"    stroke-width : 0;" + lineSeparator +
+"    stroke-width: 0;" + lineSeparator +
 "}" + lineSeparator +
 ".maleRect {" + lineSeparator +
 "    fill:  #c97f82;" + lineSeparator +
 "}" + lineSeparator +
 ".totalPopulationBar {" + lineSeparator +
-"    height : 70;" + lineSeparator +
-"    fill : none;" + lineSeparator +
+"    height: 70;" + lineSeparator +
+"    fill: none;" + lineSeparator +
 "    stroke: lightgray;" + lineSeparator +
-"    stroke-width : 1;" + lineSeparator +
+"    stroke-width: 1;" + lineSeparator +
 "}" + lineSeparator +
 ".xAxisDashedLines {" + lineSeparator +
 "    stroke: gray;" + lineSeparator +
-"    stroke-width : 1;" + lineSeparator +
-"    stroke-dasharray : 5, 5; " + lineSeparator +   		
+"    stroke-width: 1;" + lineSeparator +
+"    stroke-dasharray: 5, 5; " + lineSeparator +   		
 "}" + lineSeparator +
 ".femaleBar {" + lineSeparator +
-"    height : 70;" + lineSeparator +
-"    fill : #7f82c9;" + lineSeparator +
+"    height: 70;" + lineSeparator +
+"    fill: #7f82c9;" + lineSeparator +
 "    stroke: black;" + lineSeparator +
-"    stroke-width : 0;" + lineSeparator +
+"    stroke-width: 0;" + lineSeparator +
 "}" + lineSeparator +
 ".femaleRect {" + lineSeparator +
 "    fill:  #7f82c9;" + lineSeparator +
