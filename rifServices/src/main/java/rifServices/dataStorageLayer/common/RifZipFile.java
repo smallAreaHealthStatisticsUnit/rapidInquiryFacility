@@ -1356,7 +1356,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("    <h1 id=\"denominator\">Denominator</h1>" + lineSeparator);
 		htmlFileText.append("    <p>" + lineSeparator);
 		htmlFileText.append("      <img src=\"reports\\denominator\\RIFdenominator_pyramid_" + 
-					studyID + "_" + yearStart + ".jpg\" id=\"denominator_pyramid\" width=\"50%\" />" + lineSeparator);
+					studyID + "_" + yearStart + ".png\" id=\"denominator_pyramid\" width=\"80%\" />" + lineSeparator);
 		htmlFileText.append("      <select id=\"populationPyramidList\">" + lineSeparator);
 
 		String denominatorDirName=addDirToTemporaryDirectoryPath(user, studyID, 
@@ -1365,12 +1365,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		for (int i=yearStart; i<=yearStop; i++) {
 			if (i == yearStart) { // Selected
 				htmlFileText.append("        <option value=\"reports\\denominator\\RIFdenominator_pyramid_" + 
-					studyID + "_" + i + ".svg\" selected />" + i + "</option>" + lineSeparator);
+					studyID + "_" + i + ".png\" selected />" + i + "</option>" + lineSeparator);
 
 			}
 			else {
 				htmlFileText.append("        <option value=\"reports\\denominator\\RIFdenominator_pyramid_" + 
-					studyID + "_" + i + ".svg\" />" + i + "</option>" + lineSeparator);
+					studyID + "_" + i + ".png\" />" + i + "</option>" + lineSeparator);
 
 			}
 
