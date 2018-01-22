@@ -1891,6 +1891,13 @@ callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; c
 } 
 callPerformSmoothingActivity exitValue: 1
   ```
+
+#### 22nd to 26th January 2018
+  
+* Added JPEG/PNG Batik support at correct resolution
+* TIFF is not available due to a bug: https://mail-archives.apache.org/mod_mbox/xmlgraphics-batik-users/201708.mbox/%3CCY4PR04MB039071041456B1E485DCB893DDB40@CY4PR04MB0390.namprd04.prod.outlook.com%3E
+* Will add EPS
+
 ## In progress (December 2017/January 2018):
 
 * Extend PouchDB to base layer [probably will defer as not needed yet]

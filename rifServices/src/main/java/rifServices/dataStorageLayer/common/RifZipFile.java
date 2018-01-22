@@ -21,6 +21,12 @@ import java.io.*;
 import org.json.*;
 import java.lang.*;
 
+import org.apache.batik.transcoder.image.JPEGTranscoder;
+import org.apache.batik.transcoder.image.PNGTranscoder;
+import org.apache.batik.transcoder.image.TIFFTranscoder;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+
 import java.util.Date;
 import java.util.Map;
 import java.text.DateFormat;
@@ -101,6 +107,9 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	private Connection connection;
 	private String studyID;
 	private static String EXTRACT_DIRECTORY;
+	private static int denominatorPyramidWidthPixels;
+	private static float printingPixelPermm;
+	private static float jpegQuality=new Float(.8);
 	
 	private static final String STUDY_QUERY_SUBDIRECTORY = "study_query";
 	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
@@ -134,6 +143,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		
 		EXTRACT_DIRECTORY = this.rifServiceStartupOptions.getExtractDirectory();
 		databaseType=this.rifServiceStartupOptions.getRifDatabaseType();
+		denominatorPyramidWidthPixels=this.rifServiceStartupOptions.getDenominatorPyramidWidthPixels();
+		printingPixelPermm=this.rifServiceStartupOptions.getPrintingPixelPermm();
 	}
 
 	/**
@@ -382,6 +393,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
 			}
 
+			String denominatorHTML=addDenominator(
+				user,
+				connection, 
+				temporaryDirectory,
+				studyID);
+			
 			submissionZipSavFile = createSubmissionZipFile(
 					user,
 					baseStudyName + ".sav");
@@ -414,7 +431,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				addHtmlFile(
 						temporaryDirectory,
 						submissionZipOutputStream,
-						connection, user, studyID, locale, tomcatServer, taxonomyServicesServer);
+						connection, user, studyID, locale, tomcatServer, taxonomyServicesServer, 
+						denominatorHTML);
 						
 				//write the study the user made when they first submitted their query
 				writeQueryFile(
@@ -522,10 +540,73 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final int year) 
 			throws Exception {
 		String svgText=
-"	<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + lineSeparator +
-"	<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"" + lineSeparator +
-"	         \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">" + lineSeparator +
-"	<svg width=\"598\" height=\"430.70001220703125\" id=\"poppyramid\">" + lineSeparator +
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + lineSeparator +
+"<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"" + 
+" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd\">" + lineSeparator +
+"  <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"598\" height=\"430.70001220703125\" id=\"poppyramid\">" + lineSeparator +
+"    <style>" + lineSeparator +
+"/*POP PYRAMID*/" + lineSeparator +
+".maleBar {" + lineSeparator +
+"    height : 70;" + lineSeparator +
+"    fill : #c97f82;" + lineSeparator +
+"    stroke: black;" + lineSeparator +
+"    stroke-width : 0;" + lineSeparator +
+"}" + lineSeparator +
+".totalPopulationBar {" + lineSeparator +
+"    height : 70;" + lineSeparator +
+"    fill : none;" + lineSeparator +
+"    stroke: lightgray;" + lineSeparator +
+"    stroke-width : 1;" + lineSeparator +
+"}" + lineSeparator +
+".xAxisDashedLines {" + lineSeparator +
+"    stroke: gray;" + lineSeparator +
+"    stroke-width : 1;" + lineSeparator +
+"    stroke-dasharray : 5, 5; " + lineSeparator +   		
+"}" + lineSeparator +
+".femaleBar {" + lineSeparator +
+"    height : 70;" + lineSeparator +
+"    fill : #7f82c9;" + lineSeparator +
+"    stroke: black;" + lineSeparator +
+"    stroke-width : 0;" + lineSeparator +
+"}" + lineSeparator +
+"g.context g.brush rect.background {" + lineSeparator +
+"    fill: #000000;" + lineSeparator +
+"    opacity: 0.1;" + lineSeparator +
+"}" + lineSeparator +
+"g.context g.axis path {" + lineSeparator +
+"    stroke-opacity: 0;" + lineSeparator +
+"}" + lineSeparator +
+"g.context g.axis line {" + lineSeparator +
+"    stroke-opacity: .1;" + lineSeparator +
+"}" + lineSeparator +
+"g path.areaChart1 {" + lineSeparator +
+"    fill: #7f82c9;" + lineSeparator +
+"}" + lineSeparator +
+"g path.areaChart2 {" + lineSeparator +
+"    fill: #c97f82;" + lineSeparator +
+"}" + lineSeparator +
+"g path.areaChart3 {" + lineSeparator +
+"    fill: #82c97f;" + lineSeparator +
+"}" + lineSeparator +
+"" + lineSeparator +
+"g path.areaChart4 {" + lineSeparator +
+"    fill: #c9c67f;" + lineSeparator +
+"}" + lineSeparator +
+"" + lineSeparator +
+"svg.areaCharts .axis path, .axis line {" + lineSeparator +
+"    fill: none;" + lineSeparator +
+"    stroke: #aaa;" + lineSeparator +
+"    shape-rendering: crispEdges;" + lineSeparator +
+"}" + lineSeparator +
+"svg.areaCharts .brush .extent {" + lineSeparator +
+"    stroke: #f09f8c;" + lineSeparator +
+"    fill-opacity: .125;" + lineSeparator +
+"    shape-rendering: crispEdges;" + lineSeparator +
+"}" + lineSeparator +
+"svg.areaCharts g.context rect.background{" + lineSeparator +
+"    visibility: visible !important;" + lineSeparator +
+"}" + lineSeparator +
+"    </style>" + lineSeparator +
 "	<g transform=\"translate(80,60)\">" + lineSeparator +
 "		<g>" + lineSeparator +
 "			<rect class=\"maleBar\" x=\"0\" y=\"275\" width=\"35.94974490491911\" height=\"13\"/>" + lineSeparator +
@@ -885,26 +966,213 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		submissionZipOutputStream.closeEntry();	
 	}
 	
-	private void addSvgFile(
+	private void addJPEGFile(
 			final File temporaryDirectory,
-			final ZipOutputStream submissionZipOutputStream,
+			final String dirName,
 			final String studyID,
 			final int year,
 			final String svgText) 
 			throws Exception {
 			
-		String svgFileName="RIFstudy_" + studyID + "_" + year + ".svg";
-		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + "svg";
-		rifLogger.info(this.getClass(), "Adding SVG for report file: " + svgDirName + 
-			File.separator + svgFileName + " to ZIP file");
+		String jpgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".jpg";
+		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
+		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
+		String jpgFile=svgDirName + File.separator + jpgFileName;
+		String svgFile=svgDirName + File.separator + svgFileName;
+		rifLogger.info(this.getClass(), "Adding JPEG for report file: " + jpgFile +
+			"; pixel width: " + denominatorPyramidWidthPixels + 
+			"; pixels/mm: " + printingPixelPermm);
 		
-		ZipEntry zipEntry = new ZipEntry("svg" + File.separator + svgFileName);
+		        // Create a JPEG transcoder
+        JPEGTranscoder transCoder = new JPEGTranscoder();
 
-		submissionZipOutputStream.putNextEntry(zipEntry);
-		byte[] b=svgText.toString().getBytes();
-		submissionZipOutputStream.write(b, 0, b.length);
+        // Set the transcoding hints.
+        transCoder.addTranscodingHint(JPEGTranscoder.KEY_QUALITY, jpegQuality);
+        transCoder.addTranscodingHint(JPEGTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
+				// Default 3543: Single column 90 mm (255 pt)
+		transCoder.addTranscodingHint(JPEGTranscoder.KEY_MEDIA, "print");
+		transCoder.addTranscodingHint(JPEGTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
+//		transCoder.addTranscodingHint(JPEGTranscoder.KEY_USER_STYLESHEET_URI, 
+//			"http://localhost:8080/RIF4/css/rifx-css-d3.css");
 
-		submissionZipOutputStream.closeEntry();	
+        // Create the transcoder input.
+		File file = new File(svgFile);
+		if (!file.exists()) {
+			throw new Exception("SVG file: " + svgFile + " does not exist");
+		}
+        String svgURI = file.toURL().toString();
+        TranscoderInput input = new TranscoderInput(svgURI);		
+		
+        // Use ZIP stream as the transcoder output.
+		file = new File(jpgFile);
+		if (!file.exists()) {
+			file.delete();
+		}
+		OutputStream ostream = new FileOutputStream(jpgFile);
+        TranscoderOutput output = new TranscoderOutput(ostream);
+		try {
+			transCoder.transcode(input, output);	// Convert the image.
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "Error in addJPEGFile: " + svgURI + lineSeparator + "; JPEG: " + jpgFile,
+				exception);
+			throw exception;
+		}
+		finally {
+			ostream.flush();	
+			ostream.close();	
+		}
+
+	}
+	
+	private void addPNGFile(
+			final File temporaryDirectory,
+			final String dirName,
+			final String studyID,
+			final int year,
+			final String svgText) 
+			throws Exception {
+			
+		String pngFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".png";
+		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
+		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
+		String pngFile=svgDirName + File.separator + pngFileName;
+		String svgFile=svgDirName + File.separator + svgFileName;
+		rifLogger.info(this.getClass(), "Adding PNG for report file: " + pngFile +
+			"; pixel width: " + denominatorPyramidWidthPixels + 
+			"; pixels/mm: " + printingPixelPermm);
+		
+		        // Create a JPEG transcoder
+        PNGTranscoder transCoder = new PNGTranscoder();
+
+        // Set the transcoding hints.
+        transCoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
+				// Default 3543: Single column 90 mm (255 pt)
+		transCoder.addTranscodingHint(PNGTranscoder.KEY_MEDIA, "print");
+		transCoder.addTranscodingHint(PNGTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
+//		transCoder.addTranscodingHint(PNGTranscoder.KEY_USER_STYLESHEET_URI, 
+//			"http://localhost:8080/RIF4/css/rifx-css-d3.css");
+
+        // Create the transcoder input.
+		File file = new File(svgFile);
+		if (!file.exists()) {
+			throw new Exception("SVGfile: " + svgFile + " does not exist");
+		}
+        String svgURI = file.toURL().toString();
+        TranscoderInput input = new TranscoderInput(svgURI);		
+		
+        // Use ZIP stream as the transcoder output.
+		file = new File(pngFile);
+		if (!file.exists()) {
+			file.delete();
+		}
+		OutputStream ostream = new FileOutputStream(pngFile);
+        TranscoderOutput output = new TranscoderOutput(ostream);
+		try {
+			transCoder.transcode(input, output);	// Convert the image.
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "Error in addPNGFile: " + svgURI + lineSeparator + "; PNG: " + pngFile,
+				exception);
+			throw exception;
+		}
+		finally {
+			ostream.flush();	
+			ostream.close();	
+		}
+
+	}
+		
+	private void addTIFFFile(
+			final File temporaryDirectory,
+			final String dirName,
+			final String studyID,
+			final int year,
+			final String svgText) 
+			throws Exception {
+			
+		String tiffFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".tif";
+		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
+		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
+		String tiffFile=svgDirName + File.separator + tiffFileName;
+		String svgFile=svgDirName + File.separator + svgFileName;
+		rifLogger.info(this.getClass(), "Adding TIFF for report file: " + tiffFile +
+			"; pixel width: " + denominatorPyramidWidthPixels + 
+			"; pixels/mm: " + printingPixelPermm);
+		
+		        // Create a JPEG transcoder
+        TIFFTranscoder transCoder = new TIFFTranscoder();
+
+        // Set the transcoding hints.
+        transCoder.addTranscodingHint(TIFFTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
+				// Default 3543: Single column 90 mm (255 pt)
+		transCoder.addTranscodingHint(TIFFTranscoder.KEY_MEDIA, "print");
+		transCoder.addTranscodingHint(TIFFTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
+//		transCoder.addTranscodingHint(TIFFTranscoder.KEY_USER_STYLESHEET_URI, 
+//			"http://localhost:8080/RIF4/css/rifx-css-d3.css");
+
+        // Create the transcoder input.
+		File file = new File(svgFile);
+		if (!file.exists()) {
+			throw new Exception("SVGfile: " + svgFile + " does not exist");
+		}
+        String svgURI = file.toURL().toString();
+        TranscoderInput input = new TranscoderInput(svgURI);		
+		
+        // Use ZIP stream as the transcoder output.
+		file = new File(tiffFile);
+		if (!file.exists()) {
+			file.delete();
+		}
+		OutputStream ostream = new FileOutputStream(tiffFile);
+        TranscoderOutput output = new TranscoderOutput(ostream);
+		try {
+			transCoder.transcode(input, output);	// Convert the image.
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "Error in addTIFFFile: " + svgURI + lineSeparator + "; TIFF: " + tiffFile,
+				exception);
+			throw exception;
+		}
+		finally {
+			ostream.flush();	
+			ostream.close();	
+		}
+
+	}
+				
+	private void addSvgFile(
+			final File temporaryDirectory,
+			final String dirName,
+			final String studyID,
+			final int year,
+			final String svgText) 
+			throws Exception {
+			
+		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
+		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
+		String svgFile=svgDirName + File.separator + svgFileName;
+		rifLogger.info(this.getClass(), "Adding SVG for report file: " + svgFile);
+		OutputStream output = null;
+		
+		try {	
+			File file = new File(svgFile);
+			if (!file.exists()) {
+				file.delete();
+			}
+			byte[] b=svgText.toString().getBytes();
+			output = new FileOutputStream(svgFile);
+			output.write(b, 0, b.length);
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "Error in addSvgFile: " + svgFile,
+				exception);
+			throw exception;
+		}
+		finally {		
+			output.flush();	
+			output.close();	
+		}	
 	}
 	
 	private void addHtmlFile(
@@ -915,7 +1183,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String studyID,
 			final Locale locale,
 			final String tomcatServer,
-			final String taxonomyServicesServer) 
+			final String taxonomyServicesServer,
+			final String denominatorHTML) 
 			throws Exception {
 				
 		GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
@@ -923,6 +1192,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		StringBuilder htmlFileText=new StringBuilder();
 		htmlFileText.append(readFile("RIFStudyHeader.html") + lineSeparator);
 		htmlFileText.append("<body>" + lineSeparator);
+		htmlFileText.append("<div>" + lineSeparator);
+		htmlFileText.append("  <div>" + lineSeparator);
 		htmlFileText.append("  <ul class=\"nav\">" + lineSeparator);
 		htmlFileText.append("    <li class=\"nav\"><a class=\"active\" href=\"#rif40_studies\">Studies</a></li>" + lineSeparator);
 		htmlFileText.append("    <li class=\"nav\"><a href=\"#rif40_study_status\">Status</a></li>" + lineSeparator);
@@ -935,6 +1206,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("    <li class=\"nav\"><a href=\"#numerator\">Numerator</a></li>" + lineSeparator);
 		htmlFileText.append("    <li class=\"nav\"><a href=\"#maps\">Maps</a></li>" + lineSeparator);
 		htmlFileText.append("  </ul>" + lineSeparator);
+		htmlFileText.append("  </div>" + lineSeparator);
 		htmlFileText.append("  <div style=\"margin-left:25%;padding:1px 16px;height:1000px;\">" + lineSeparator);
 
 		addTableToHtmlReport(htmlFileText, connection, studyID,
@@ -1028,12 +1300,10 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"rif40", // Schema
 			getStudyJSON, locale, tomcatServer);
 		
-		addDenominator(htmlFileText, connection, 
-			temporaryDirectory,
-			submissionZipOutputStream,
-			studyID);
+		htmlFileText.append(denominatorHTML);
 		
 		htmlFileText.append("  </div>" + lineSeparator);
+		htmlFileText.append("</div>" + lineSeparator);
 		htmlFileText.append("</body>" + lineSeparator);
 		htmlFileText.append("</html>" + lineSeparator);
 		String htmlFileName="RIFstudy_" + studyID + ".html";
@@ -1056,14 +1326,15 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}		
 	}
 	
-	private void addDenominator(
-			final StringBuilder htmlFileText,
+	private String addDenominator(
+			final User user,
 			final Connection connection,
 			final File temporaryDirectory,
-			final ZipOutputStream submissionZipOutputStream,
 			final String studyID)
 			throws Exception {
 
+		StringBuilder htmlFileText=new StringBuilder();
+		
 		GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
 		JSONObject studyData=getStudyJSON.getStudyData(
 			connection, studyID);
@@ -1073,33 +1344,21 @@ public class RifZipFile extends SQLAbstractSQLManager {
 
 		htmlFileText.append("    <h1 id=\"denominator\">Denominator</h1>" + lineSeparator);
 		htmlFileText.append("    <p>" + lineSeparator);
-		htmlFileText.append("      <pyramid  id=\"populationPyramid\">" + lineSeparator);
-/*
- * See also: http://edutechwiki.unige.ch/en/Using_SVG_with_HTML5_tutorial#Embeding_SVG_in_HTML_5_with_the_img_tag
- * This does not work in chrome:
- *
- * RIFstudy_367.html:197 Failed to load file:///C:/rifDemo/scratchSpace/svg/RIFstudy_367_1996.svg: 
- * Cross origin requests are only supported for protocol schemes: http, data, chrome, chrome-extension, 
- * https.
- * 
- * Therefore will try to load an image!
- */
-		htmlFileText.append(svgText + lineSeparator);
-		htmlFileText.append("      </pyramid>" + lineSeparator);
+		htmlFileText.append("      <img src=\"reports\\denominator\\RIFdenominator_pyramid_" + 
+					studyID + "_" + yearStart + ".jpg\" id=\"denominator_pyramid\"/>" + lineSeparator);
 		htmlFileText.append("      <select id=\"populationPyramidList\">" + lineSeparator);
-		addZipDir(
-			temporaryDirectory,
-			submissionZipOutputStream,
-			"svg");	
+
+		String denominatorDirName=addDirToTemporaryDirectoryPath(user, studyID, 
+			"reports" + File.separator + "denominator");
 			
 		for (int i=yearStart; i<=yearStop; i++) {
 			if (i == yearStart) { // Selected
-				htmlFileText.append("        <option value=\"svg\\RIFstudy_" + 
+				htmlFileText.append("        <option value=\"reports\\denominator\\RIFdenominator_pyramid_" + 
 					studyID + "_" + i + ".svg\" selected />" + i + "</option>" + lineSeparator);
 
 			}
 			else {
-				htmlFileText.append("        <option value=\"svg\\RIFstudy_" + 
+				htmlFileText.append("        <option value=\"reports\\denominator\\RIFdenominator_pyramid_" + 
 					studyID + "_" + i + ".svg\" />" + i + "</option>" + lineSeparator);
 
 			}
@@ -1107,13 +1366,57 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			svgText=getSvgText(studyID, i);
 			addSvgFile(
 				temporaryDirectory,
-				submissionZipOutputStream,
+				"reports" + File.separator + "denominator",
+				studyID,
+				i,
+				svgText); 
+		}
+		htmlFileText.append("      </select>" + lineSeparator);
+		htmlFileText.append("    </p>" + lineSeparator);
+		
+		for (int i=yearStart; i<=yearStop; i++) {
+			addJPEGFile(
+				temporaryDirectory,
+				"reports" + File.separator + "denominator",
 				studyID,
 				i,
 				svgText);
-		}
-		htmlFileText.append("      </select>" + lineSeparator);
-		htmlFileText.append("    </p>" + lineSeparator);	
+			addPNGFile(
+				temporaryDirectory,
+				"reports" + File.separator + "denominator",
+				studyID,
+				i,
+				svgText);
+				/* Disabled, see: https://mail-archives.apache.org/mod_mbox/xmlgraphics-batik-users/201708.mbox/%3CCY4PR04MB039071041456B1E485DCB893DDB40@CY4PR04MB0390.namprd04.prod.outlook.com%3E
+				
+				11:06:21.946 [http-nio-8080-exec-192] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.RifZipFile]:
+createStudyExtract() ERROR
+getMessage:          TranscoderException: null
+Enclosed Exception:
+Could not write TIFF file because no WriteAdapter is availble
+getRootCauseMessage: TranscoderException: Could not write TIFF file because no WriteAdapter is availble
+getThrowableCount:   2
+getRootCauseStackTrace >>>
+org.apache.batik.transcoder.TranscoderException: Could not write TIFF file because no WriteAdapter is availble
+	at org.apache.batik.transcoder.image.TIFFTranscoder.writeImage(TIFFTranscoder.java:110)
+	at org.apache.batik.transcoder.image.ImageTranscoder.transcode(ImageTranscoder.java:130)
+ [wrapped] org.apache.batik.transcoder.TranscoderException: null
+Enclosed Exception:
+Could not write TIFF file because no WriteAdapter is availble
+	at org.apache.batik.transcoder.image.ImageTranscoder.transcode(ImageTranscoder.java:132)
+	at org.apache.batik.transcoder.XMLAbstractTranscoder.transcode(XMLAbstractTranscoder.java:142)
+	at org.apache.batik.transcoder.SVGAbstractTranscoder.transcode(SVGAbstractTranscoder.java:156)
+	at rifServices.dataStorageLayer.common.RifZipFile.addTIFFFile(RifZipFile.java:1130)
+			addTIFFFile(
+				temporaryDirectory,
+				"reports" + File.separator + "denominator",
+				studyID,
+				i,
+				svgText);
+				*/
+		}	
+		
+		return htmlFileText.toString();
 	}
 			
 	private void addStudyAndComparisonAreas(
@@ -1872,6 +2175,38 @@ public class RifZipFile extends SQLAbstractSQLManager {
 
 	}
 	
+	private String addDirToTemporaryDirectoryPath(
+		final User user,
+		final String studyID,
+		final String dirName) throws Exception {
+		
+		String temporaryDirectoryPath = 
+				createTemporaryDirectoryPath(
+						user, 
+						studyID);
+		File temporaryDirectory = new File(temporaryDirectoryPath);
+		File newDirectory = null;
+		
+		if (temporaryDirectory.exists()) {
+			newDirectory = new File(temporaryDirectoryPath + File.separator + dirName);
+			if (newDirectory.exists()) {
+				rifLogger.info(this.getClass(), 
+					"Found directory: " + newDirectory.getAbsolutePath());
+			}
+			else {
+				newDirectory.mkdirs();
+				rifLogger.info(this.getClass(), 
+					"Created directory: " + newDirectory.getAbsolutePath());
+			}
+		}
+		else {
+			throw new Exception("R temporary directory: "  + 
+				temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
+		}
+		
+		return newDirectory.getAbsolutePath();
+	}
+			
 	private File createSubmissionZipFile(
 		final User user,
 		final String baseStudyName) {
@@ -1967,20 +2302,22 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	}
 	
 	private void addRFiles(
-			final File temporaryDirectory,
+			final File startDirectory,
 			final ZipOutputStream submissionZipOutputStream,
 			final String relativePath)
 					throws Exception {
 						
-		File[] listOfFiles = temporaryDirectory.listFiles();
+		rifLogger.info(this.getClass(), "Adding R files start directory: " + startDirectory.getAbsolutePath() + lineSeparator + 
+			"; relativePath: " + relativePath);
+		File[] listOfFiles = startDirectory.listFiles();
 
 		for (int i = 0; i < listOfFiles.length; i++) {	
 		
 			if (listOfFiles[i].isFile()) {
-				rifLogger.info(this.getClass(), "Adding R file: " + temporaryDirectory.getAbsolutePath() + File.separator + 
-					listOfFiles[i].getName() + " to ZIP file");
+				rifLogger.info(this.getClass(), "Adding R file: " + startDirectory.getAbsolutePath() + File.separator + 
+					listOfFiles[i].getName() + " to ZIP file" + lineSeparator + "; relativePath: " + relativePath);
 				
-				File file=new File(temporaryDirectory.getAbsolutePath() + File.separator + listOfFiles[i].getName());
+				File file=new File(startDirectory.getAbsolutePath() + File.separator + listOfFiles[i].getName());
 				ZipEntry zipEntry = null;
 				if (relativePath != null) {
 					zipEntry = new ZipEntry(relativePath + File.separator + listOfFiles[i].getName());
@@ -2001,8 +2338,9 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				submissionZipOutputStream.closeEntry();
 			}
 			else if (listOfFiles[i].isDirectory()) {
-				rifLogger.info(this.getClass(), "Adding R directory: " + temporaryDirectory.getAbsolutePath() + File.separator + 
-					listOfFiles[i].getName() + File.separator + " to ZIP file");
+				rifLogger.info(this.getClass(), "Adding R directory: " + startDirectory.getAbsolutePath() + File.separator + 
+					listOfFiles[i].getName() + File.separator + " to ZIP file" + 
+					lineSeparator + "; relativePath: " + relativePath);
 				if (relativePath != null) {
 					submissionZipOutputStream.putNextEntry(
 						new ZipEntry(listOfFiles[i].getName() + File.separator));
@@ -2011,10 +2349,17 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					submissionZipOutputStream.putNextEntry(
 						new ZipEntry(listOfFiles[i].getName() + File.separator));
 				}					
-				addRFiles(listOfFiles[i], submissionZipOutputStream, listOfFiles[i].getName()); // Recurse!!!
+				if (relativePath == null) {
+					addRFiles(listOfFiles[i], submissionZipOutputStream, 
+						listOfFiles[i].getName()); // Recurse!!
+				}
+				else {
+					addRFiles(listOfFiles[i], submissionZipOutputStream, 
+						relativePath + File.separator + listOfFiles[i].getName()); // Recurse!!
+				}
 			}
 			else {
-				rifLogger.info(this.getClass(), "Ignoring R file: " + temporaryDirectory.getAbsolutePath() + File.separator + 
+				rifLogger.info(this.getClass(), "Ignoring R file: " + startDirectory.getAbsolutePath() + File.separator + 
 					listOfFiles[i].getName());
 			}
     	}

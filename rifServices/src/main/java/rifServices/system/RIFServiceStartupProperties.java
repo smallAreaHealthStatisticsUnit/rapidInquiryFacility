@@ -263,6 +263,56 @@ public final class RIFServiceStartupProperties {
     
     public static String getExtractDirectoryName() {
     	return getManadatoryRIfServiceProperty("extractDirectory");    	
+    } 
+
+	public static int getDenominatorPyramidWidthPixels() {
+    	int denominatorPyramidWidthPixels=-1;
+		try {
+			String value=getOptionalRIfServiceProperty("denominatorPyramidWidthPixels");
+			if (value != null) {		
+				denominatorPyramidWidthPixels=Integer.parseInt(value); 
+			} 	
+			else {
+				denominatorPyramidWidthPixels=3543; // 90mm width at 1000 dpi
+			}
+		}
+		catch(Exception exception) {
+			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+				"Error converting optional property: denominatorPyramidWidthPixels", exception);
+//			throw exception;
+		}
+		finally {
+			if (denominatorPyramidWidthPixels == -1) {
+				denominatorPyramidWidthPixels=3543; // 90mm width at 1000 dpi
+			}
+		}
+		
+		return denominatorPyramidWidthPixels;		
+    }
+
+	public static float getPrintingPixelPermm() {
+		float printingPixelPermm=-1;
+		try {
+			String value=getOptionalRIfServiceProperty("printingPixelPermm");
+			if (value != null) {
+				printingPixelPermm=Float.parseFloat(value);   
+			}		
+			else {
+				printingPixelPermm=new Float(39.370079); // 1000 dpi
+			}			
+		}
+		catch(Exception exception) {
+			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+				"Error converting optional property: printingPixelPermm", exception);
+//			throw exception;
+		}
+		finally {
+			if (printingPixelPermm == -1) {
+				printingPixelPermm=new Float(39.370079); // 1000 dpi
+			}
+		}
+		
+		return printingPixelPermm;
     }
 
 	private static String getManadatoryRIfServiceProperty(String propertyName)

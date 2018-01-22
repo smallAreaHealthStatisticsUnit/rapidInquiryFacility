@@ -117,7 +117,8 @@ li.nav a:hover:not(.active) {
 }
 
 g.context g.brush rect.background {
-    fill: rgba(0,0,0,.1);
+    fill: #000000;
+    opacity: 0.1;
 }
 
 g.context g.axis path {
@@ -169,36 +170,9 @@ svg.areaCharts g.context rect.background{
  * setPopulationPyramid() change population pyramid
  */
 function setPopulationPyramid(event) {
-    var pyramid = document.getElementById("populationPyramid");
-	var reader = new FileReader();
 	var fileName = this.value;
 	
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.onreadystatechange = function(){
-		if (xmlhttp.status == 200 && xmlhttp.readyState != 4) {
-		}
-		else if (xmlhttp.status == 200 && xmlhttp.readyState == 4) {
-//			console.log("Loading: " + fileName);
-			var data = xmlhttp.responseText;
-			pyramid.innerHTML = data;
-		}
-		else if (xmlhttp.status === 404) {
-			alert("Unable to fetch SVG file: " + fileName);
-		}
-		else if (xmlhttp.status > 0) {
-			alert("Unexpected status: " + xmlhttp.status + "; readyState: " + xmlhttp.readyState +
-				"; fetching SVG file: " + fileName);
-		}
-	};
-	
-	try {
-		xmlhttp.open("GET", fileName, true);
-		xmlhttp.send();
-	}
-	catch (e) {
-		alert("Error fetching SVG file: " + fileName + "; " + e.message);
-	}
-
+	document.getElementById("denominator_pyramid").src = fileName;
 	return false;
 }
 
