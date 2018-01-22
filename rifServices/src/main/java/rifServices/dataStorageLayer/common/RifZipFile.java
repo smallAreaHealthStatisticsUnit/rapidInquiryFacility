@@ -1345,7 +1345,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("    <h1 id=\"denominator\">Denominator</h1>" + lineSeparator);
 		htmlFileText.append("    <p>" + lineSeparator);
 		htmlFileText.append("      <img src=\"reports\\denominator\\RIFdenominator_pyramid_" + 
-					studyID + "_" + yearStart + ".jpg\" id=\"denominator_pyramid\"/>" + lineSeparator);
+					studyID + "_" + yearStart + ".jpg\" id=\"denominator_pyramid\" width=\"50%\" />" + lineSeparator);
 		htmlFileText.append("      <select id=\"populationPyramidList\">" + lineSeparator);
 
 		String denominatorDirName=addDirToTemporaryDirectoryPath(user, studyID, 
@@ -2348,7 +2348,8 @@ Could not write TIFF file because no WriteAdapter is availble
 				else {
 					submissionZipOutputStream.putNextEntry(
 						new ZipEntry(listOfFiles[i].getName() + File.separator));
-				}					
+				}			
+				
 				if (relativePath == null) {
 					addRFiles(listOfFiles[i], submissionZipOutputStream, 
 						listOfFiles[i].getName()); // Recurse!!
