@@ -1897,7 +1897,7 @@ callPerformSmoothingActivity exitValue: 1
 * Added JPEG/PNG Batik support at correct resolution
 * TIFF is not available due to a bug: https://mail-archives.apache.org/mod_mbox/xmlgraphics-batik-users/201708.mbox/%3CCY4PR04MB039071041456B1E485DCB893DDB40@CY4PR04MB0390.namprd04.prod.outlook.com%3E
 * EPS needs FOP; never shifted to XML graphics (as promised in 2009)
-* Issues with IE image change; ZIP structure (suspect need to escape file separator for ZipFile); 
+* Issues with IE image change;
   missing text on scaled images
 
 ## In progress (December 2017/January 2018):
