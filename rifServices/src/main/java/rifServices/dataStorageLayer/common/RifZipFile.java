@@ -557,6 +557,9 @@ public class RifZipFile extends SQLAbstractSQLManager {
 "    stroke: black;" + lineSeparator +
 "    stroke-width : 0;" + lineSeparator +
 "}" + lineSeparator +
+".maleRect {" + lineSeparator +
+"    fill:  #c97f82;" + lineSeparator +
+"}" + lineSeparator +
 ".totalPopulationBar {" + lineSeparator +
 "    height : 70;" + lineSeparator +
 "    fill : none;" + lineSeparator +
@@ -573,6 +576,9 @@ public class RifZipFile extends SQLAbstractSQLManager {
 "    fill : #7f82c9;" + lineSeparator +
 "    stroke: black;" + lineSeparator +
 "    stroke-width : 0;" + lineSeparator +
+"}" + lineSeparator +
+".femaleRect {" + lineSeparator +
+"    fill:  #7f82c9;" + lineSeparator +
 "}" + lineSeparator +
 "g.context g.brush rect.background {" + lineSeparator +
 "    fill: #000000;" + lineSeparator +
@@ -811,7 +817,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 "		<g>" + lineSeparator +
 "			<rect class=\"totalPopulationBar\" x=\"0\" y=\"2\" width=\"141.67700523087532\" height=\"13\"/>" + lineSeparator +
 "		</g>" + lineSeparator +
-"		<g transform=\"translate(0,290.70001220703125)\" fill=\"none\" font-size=\"10\" font-family=\"Arial\" text-anchor=\"middle\">" + lineSeparator +
+"		<g transform=\"translate(0,290.70001220703125)\" fill=\"none\" text-anchor=\"middle\">" + lineSeparator +
 "			<path class=\"domain\" stroke=\"#000\" d=\"M0.5,6V0.5H458.5V6\"/>" + lineSeparator +
 "			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,0)\">" + lineSeparator +
 "				<line stroke=\"#000\" y2=\"6\" x1=\"0.5\" x2=\"0.5\"/>" + lineSeparator +
@@ -830,7 +836,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 "				<text fill=\"#000\" y=\"9\" x=\"0.5\" dy=\"0.71em\" style=\"\">1.5M</text>" + lineSeparator +
 "			</g>" + lineSeparator +
 "		</g>" + lineSeparator +
-"		<g fill=\"none\" font-size=\"10\" font-family=\"Arial\" text-anchor=\"end\">" + lineSeparator +
+"		<g fill=\"none\" text-anchor=\"end\">" + lineSeparator +
 "			<path class=\"domain\" stroke=\"#000\" d=\"M-6,291.20001220703125H0.5V0.5H-6\"/>" + lineSeparator +
 "			<g class=\"tick\" opacity=\"1\" transform=\"translate(0,282)\">" + lineSeparator +
 "				<line stroke=\"#000\" x2=\"-6\" y1=\"0.5\" y2=\"0.5\"/>" + lineSeparator +
@@ -945,9 +951,9 @@ public class RifZipFile extends SQLAbstractSQLManager {
 "		<g>" + lineSeparator +
 "			<line class=\"xAxisDashedLines\" x1=\"454.3842374306456\" y1=\"0\" x2=\"454.3842374306456\" y2=\"290.70001220703125\"/>" + lineSeparator +
 "		</g>" + lineSeparator +
-"		<rect width=\"13\" height=\"13\" style=\"fill: #cd7f82;\" transform=\"translate(0, -23)\"/>" + lineSeparator +
+"		<rect width=\"13\" height=\"13\" class=\"maleRect\" transform=\"translate(0, -23)\"/>" + lineSeparator +
 "		<text style=\"text-anchor: start;\" transform=\"translate(15,-16.5)\">Male</text>" + lineSeparator +
-"		<rect width=\"13\" height=\"13\" style=\"fill: #7f7fc9;\" transform=\"translate(80, -23)\"/>" + lineSeparator +
+"		<rect width=\"13\" height=\"13\" class=\"femaleRect\" transform=\"translate(80, -23)\"/>" + lineSeparator +
 "		<text style=\"text-anchor: start;\" transform=\"translate(95,-16.5)\">Female</text>" + lineSeparator +
 "		<text style=\"text-anchor: middle;\" transform=\"translate(229,325.70001220703125)\">TOTAL POPULATION: " + year + "</text>" + lineSeparator +
 "		<text style=\"text-anchor: middle;\" transform=\"rotate(-90)\" y=\"-45\" x=\"-145.35000610351562\">AGE GROUP</text>" + lineSeparator +

@@ -1898,7 +1898,7 @@ callPerformSmoothingActivity exitValue: 1
 * TIFF is not available due to a bug: https://mail-archives.apache.org/mod_mbox/xmlgraphics-batik-users/201708.mbox/%3CCY4PR04MB039071041456B1E485DCB893DDB40@CY4PR04MB0390.namprd04.prod.outlook.com%3E
 * EPS needs FOP; never shifted to XML graphics (as promised in 2009)
 * Issues with IE image change;
-  missing text on scaled images
+* Fixed missing text on scaled images, completely styled by CSS
 
 ## In progress (December 2017/January 2018):
 
