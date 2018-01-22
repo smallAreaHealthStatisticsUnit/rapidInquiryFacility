@@ -941,11 +941,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 "			<line class=\"xAxisDashedLines\" x1=\"454.3842374306456\" y1=\"0\" x2=\"454.3842374306456\" y2=\"290.70001220703125\"/>" + lineSeparator +
 "		</g>" + lineSeparator +
 "		<rect width=\"13\" height=\"13\" style=\"fill: rgb(201, 127, 130);\" transform=\"translate(0, -23)\"/>" + lineSeparator +
-"		<text style=\"text-anchor: start;\" font-size="10" font-family=\"Arial\" transform=\"translate(15,-16.5)\">Male</text>" + lineSeparator +
+"		<text style=\"text-anchor: start; font-size=10; font-family=Arial;\" transform=\"translate(15,-16.5)\">Male</text>" + lineSeparator +
 "		<rect width=\"13\" height=\"13\" style=\"fill: rgb(127, 130, 201);\" transform=\"translate(80, -23)\"/>" + lineSeparator +
-"		<text style=\"text-anchor: start;\"  font-size="10" font-family=\"Arial\"transform=\"translate(95,-16.5)\">Female</text>" + lineSeparator +
-"		<text style=\"text-anchor: middle;\" font-size="10" font-family=\"Arial\" transform=\"translate(229,325.70001220703125)\">TOTAL POPULATION: " + year + "</text>" + lineSeparator +
-"		<text style=\"\" text-anchor=\"middle\" font-size="10" font-family=\"Arial\" transform=\"rotate(-90)\" y=\"-45\" x=\"-145.35000610351562\">AGE GROUP</text>" + lineSeparator +
+"		<text style=\"text-anchor: start; font-size=10; font-family=Arial;\" transform=\"translate(95,-16.5)\">Female</text>" + lineSeparator +
+"		<text style=\"text-anchor: middle; font-size=10; font-family=Arial;\" transform=\"translate(229,325.70001220703125)\">TOTAL POPULATION: " + year + "</text>" + lineSeparator +
+"		<text style=\"text-anchor: middle; font-size=10; font-family=Arial;\" transform=\"rotate(-90)\" y=\"-45\" x=\"-145.35000610351562\">AGE GROUP</text>" + lineSeparator +
 "	</g>" + lineSeparator +
 "</svg>";
 		return svgText;
