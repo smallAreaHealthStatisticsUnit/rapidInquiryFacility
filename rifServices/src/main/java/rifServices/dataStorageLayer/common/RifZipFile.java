@@ -1292,13 +1292,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 
 		htmlFileText.append("    <h1 id=\"denominator\">Denominator</h1>" + lineSeparator);
 		htmlFileText.append("    <p>" + lineSeparator);
-		htmlFileText.append("      <img src=\"reports\\denominator\\RIFdenominator_pyramid_" + 
-					studyID + "_" + yearStart + ".png\" id=\"denominator_pyramid\" width=\"80%\" />" + lineSeparator);
-		htmlFileText.append("      <select id=\"populationPyramidList\">" + lineSeparator);
+		htmlFileText.append("      <div>" + lineSeparator);
+		htmlFileText.append("        Year: <select id=\"populationPyramidList\">" + lineSeparator);
 
 		String denominatorDirName=addDirToTemporaryDirectoryPath(user, studyID, 
 			"reports" + File.separator + "denominator");
-			
+		
 		for (int i=yearStart; i<=yearStop; i++) {
 			if (i == yearStart) { // Selected
 				htmlFileText.append("        <option value=\"reports\\denominator\\RIFdenominator_pyramid_" + 
@@ -1319,7 +1318,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				i,
 				svgText); 
 		}
-		htmlFileText.append("      </select>" + lineSeparator);
+		htmlFileText.append("        </select>" + lineSeparator);
+		htmlFileText.append("          Graphics Format: <select id=\"populationPyramidFileType\">" + lineSeparator);
+		htmlFileText.append("          <option value=\"png\" title=\"Portable Network Graphics\" selected />PNG</option>" + lineSeparator);
+		htmlFileText.append("          <option value=\"jpg\" tile=\"Joint Photographic Experts Group\" />JPEG</option>" + lineSeparator);
+		htmlFileText.append("          <option value=\"tif\" disabled title=\"Tagged Image File Format\" />TIFF</option>" + lineSeparator);
+		htmlFileText.append("          <option value=\"svg\" title=\"Scalable vector graphics\" />SVG</option>" + lineSeparator);
+		htmlFileText.append("        </select>" + lineSeparator);
+		htmlFileText.append("      </div>" + lineSeparator);
+		htmlFileText.append("      <img src=\"reports\\denominator\\RIFdenominator_pyramid_" + 
+					studyID + "_" + yearStart + ".png\" id=\"denominator_pyramid\" width=\"80%\" />" + lineSeparator);
 		htmlFileText.append("    </p>" + lineSeparator);
 		
 		for (int i=yearStart; i<=yearStop; i++) {

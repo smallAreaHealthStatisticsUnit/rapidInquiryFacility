@@ -104,9 +104,22 @@ function setPopulationPyramid(event) {
 	document.getElementById("denominator_pyramid").src = fileName;
 	return false;
 }
+/* 
+ * setPopulationPyramidFileType() change population pyramid file type
+ */
+function setPopulationPyramidFileType(event) {
+	var fileExt = this.value;
+	
+	document.getElementById("denominator_pyramid").src = 
+		document.getElementById("denominator_pyramid").src.substring(0, 
+			document.getElementById("denominator_pyramid").src.length-3) + fileExt;
+	return false;
+}
 
 window.onload = function(){
 	document.getElementById("populationPyramidList").onchange = setPopulationPyramid;
+	document.getElementById("populationPyramidFileType").onchange = setPopulationPyramidFileType;
+	
 };
   </script>
 </head>
