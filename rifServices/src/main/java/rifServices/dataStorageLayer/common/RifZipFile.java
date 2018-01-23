@@ -426,8 +426,14 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				addCssFile(
 						temporaryDirectory,
 						submissionZipOutputStream,
-						studyID);
-						
+						studyID,
+						"RIFStudyHeader.css");
+				addCssFile(
+						temporaryDirectory,
+						submissionZipOutputStream,
+						studyID,
+						"RIFPopulationPyramid.css");
+			
 				addHtmlFile(
 						temporaryDirectory,
 						submissionZipOutputStream,
@@ -517,11 +523,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	private void addCssFile(
 			final File temporaryDirectory,
 			final ZipOutputStream submissionZipOutputStream,
-			final String studyID) 
+			final String studyID,
+			final String cssFileName) 
 			throws Exception {
 			
-		String cssFileText=readFile("RIFStudyHeader.css");
-		String cssFileName="RIFStudyHeader.css";
+		String cssFileText=readFile(cssFileName);
 		rifLogger.info(this.getClass(), "Adding CSS for report file: " + temporaryDirectory.getAbsolutePath() + File.separator + 
 			cssFileName + " to ZIP file");
 		
@@ -539,88 +545,15 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String studyID,
 			final int year) 
 			throws Exception {
+		String svgCss=readFile("RIFPopulationPyramid.css");
+		
 		String svgText=
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + lineSeparator +
 "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"" + 
 " \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat.dtd\">" + lineSeparator +
 "  <svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" width=\"598\" height=\"430.70001220703125\" id=\"poppyramid\">" + lineSeparator +
 "    <style>" + lineSeparator +
-"/*POP PYRAMID*/" + lineSeparator +
-":root {" + lineSeparator +
-"	--male-color: #c97f82;" + lineSeparator +
-"	--female-color: #7f82c9;" + lineSeparator +
-"}" + lineSeparator +
-"text {" + lineSeparator +
-"	font-family: Arial;" + lineSeparator +
-"	font-size: 12px;" + lineSeparator +
-"	fill: black;" + lineSeparator +
-"}" + lineSeparator +
-".maleBar {" + lineSeparator +
-"    height: 70;" + lineSeparator +
-"    fill: #c97f82;" + lineSeparator +
-"    stroke: black;" + lineSeparator +
-"    stroke-width: 0;" + lineSeparator +
-"}" + lineSeparator +
-".maleRect {" + lineSeparator +
-"    fill:  #c97f82;" + lineSeparator +
-"}" + lineSeparator +
-".totalPopulationBar {" + lineSeparator +
-"    height: 70;" + lineSeparator +
-"    fill: none;" + lineSeparator +
-"    stroke: lightgray;" + lineSeparator +
-"    stroke-width: 1;" + lineSeparator +
-"}" + lineSeparator +
-".xAxisDashedLines {" + lineSeparator +
-"    stroke: gray;" + lineSeparator +
-"    stroke-width: 1;" + lineSeparator +
-"    stroke-dasharray: 5, 5; " + lineSeparator +   		
-"}" + lineSeparator +
-".femaleBar {" + lineSeparator +
-"    height: 70;" + lineSeparator +
-"    fill: #7f82c9;" + lineSeparator +
-"    stroke: black;" + lineSeparator +
-"    stroke-width: 0;" + lineSeparator +
-"}" + lineSeparator +
-".femaleRect {" + lineSeparator +
-"    fill:  #7f82c9;" + lineSeparator +
-"}" + lineSeparator +
-"g.context g.brush rect.background {" + lineSeparator +
-"    fill: #000000;" + lineSeparator +
-"    opacity: 0.1;" + lineSeparator +
-"}" + lineSeparator +
-"g.context g.axis path {" + lineSeparator +
-"    stroke-opacity: 0;" + lineSeparator +
-"}" + lineSeparator +
-"g.context g.axis line {" + lineSeparator +
-"    stroke-opacity: .1;" + lineSeparator +
-"}" + lineSeparator +
-"g path.areaChart1 {" + lineSeparator +
-"    fill: #7f82c9;" + lineSeparator +
-"}" + lineSeparator +
-"g path.areaChart2 {" + lineSeparator +
-"    fill: #c97f82;" + lineSeparator +
-"}" + lineSeparator +
-"g path.areaChart3 {" + lineSeparator +
-"    fill: #82c97f;" + lineSeparator +
-"}" + lineSeparator +
-"" + lineSeparator +
-"g path.areaChart4 {" + lineSeparator +
-"    fill: #c9c67f;" + lineSeparator +
-"}" + lineSeparator +
-"" + lineSeparator +
-"svg.areaCharts .axis path, .axis line {" + lineSeparator +
-"    fill: none;" + lineSeparator +
-"    stroke: #aaa;" + lineSeparator +
-"    shape-rendering: crispEdges;" + lineSeparator +
-"}" + lineSeparator +
-"svg.areaCharts .brush .extent {" + lineSeparator +
-"    stroke: #f09f8c;" + lineSeparator +
-"    fill-opacity: .125;" + lineSeparator +
-"    shape-rendering: crispEdges;" + lineSeparator +
-"}" + lineSeparator +
-"svg.areaCharts g.context rect.background{" + lineSeparator +
-"    visibility: visible !important;" + lineSeparator +
-"}" + lineSeparator +
+			svgCss +
 "    </style>" + lineSeparator +
 "	<g transform=\"translate(80,60)\">" + lineSeparator +
 "		<g>" + lineSeparator +
