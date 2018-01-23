@@ -95,31 +95,52 @@ li.nav a:hover:not(.active) {
   
 <!-- Javascript -->  
   <script>
+var fileExt = "png"; // Default  
 /* 
  * setPopulationPyramid() change population pyramid
  */
 function setPopulationPyramid(event) {
 	var fileName = this.value;
-	
-	document.getElementById("denominator_pyramid").src = fileName;
+		
+	if (fileName) {
+		document.getElementById("denominator_pyramid").src = 
+			fileName.substring(0, fileName.length-3) + fileExt;
+	}
 	return false;
 }
 /* 
  * setPopulationPyramidFileType() change population pyramid file type
  */
 function setPopulationPyramidFileType(event) {
-	var fileExt = this.value;
+	fileExt = this.value;
 	
 	document.getElementById("denominator_pyramid").src = 
 		document.getElementById("denominator_pyramid").src.substring(0, 
 			document.getElementById("denominator_pyramid").src.length-3) + fileExt;
+	document.getElementById("downloadForm").action=document.getElementById("denominator_pyramid").src;
+	document.getElementById("downloadButton").innerText = "Download " + fileExt.toUpperCase();
+	
 	return false;
+}
+
+/*
+ * Function: 	isIE()
+ * Parameters: 	None
+ * Returns: 	Nothing
+ * Description:	Test for IE nightmare 
+ */
+function isIE() {
+	var myNav = navigator.userAgent.toLowerCase();
+	return (myNav.indexOf('msie') != -1) ? parseInt(myNav.split('msie')[1]) : false;
 }
 
 window.onload = function(){
 	document.getElementById("populationPyramidList").onchange = setPopulationPyramid;
 	document.getElementById("populationPyramidFileType").onchange = setPopulationPyramidFileType;
-	
+		
+	if (isIE()) {
+		document.getElementById("svgSelect").disabled = true;  	
+	}
 };
   </script>
 </head>

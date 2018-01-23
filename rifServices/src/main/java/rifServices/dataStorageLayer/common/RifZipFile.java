@@ -27,6 +27,11 @@ import org.apache.batik.transcoder.image.TIFFTranscoder;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 
+import org.apache.fop.svg.AbstractFOPTranscoder; 
+import org.apache.fop.svg.PDFTranscoder; 
+import org.apache.fop.render.ps.PSTranscoder; 
+import org.apache.fop.render.ps.EPSTranscoder; 
+
 import java.util.Date;
 import java.util.Map;
 import java.text.DateFormat;
@@ -1037,7 +1042,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String studyID,
 			final int year,
 			final String svgText) 
-			throws Exception {
+			throws Exception {		
 			
 		String tiffFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".tif";
 		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
@@ -1079,6 +1084,122 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), "Error in addTIFFFile: " + svgURI + lineSeparator + "; TIFF: " + tiffFile,
+				exception);
+			throw exception;
+		}
+		finally {
+			ostream.flush();	
+			ostream.close();	
+		}
+
+	}
+
+	private void addPSFile(
+			final File temporaryDirectory,
+			final String dirName,
+			final String studyID,
+			final int year,
+			final String svgText) 
+			throws Exception {
+			
+		String epsFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".ps";
+		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
+		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
+		String epsFile=svgDirName + File.separator + epsFileName;
+		String svgFile=svgDirName + File.separator + svgFileName;
+		rifLogger.info(this.getClass(), "Adding EPS for report file: " + epsFile +
+			"; pixel width: " + denominatorPyramidWidthPixels + 
+			"; pixels/mm: " + printingPixelPermm);
+		
+		        // Create a JPEG transcoder
+        PSTranscoder transCoder = new PSTranscoder();
+
+        // Set the transcoding hints.
+        transCoder.addTranscodingHint(PSTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
+				// Default 3543: Single column 90 mm (255 pt)
+		transCoder.addTranscodingHint(PSTranscoder.KEY_MEDIA, "print");
+		transCoder.addTranscodingHint(PSTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
+//		transCoder.addTranscodingHint(PSTranscoder.KEY_USER_STYLESHEET_URI, 
+//			"http://localhost:8080/RIF4/css/rifx-css-d3.css");
+
+        // Create the transcoder input.
+		File file = new File(svgFile);
+		if (!file.exists()) {
+			throw new Exception("SVGfile: " + svgFile + " does not exist");
+		}
+        String svgURI = file.toURL().toString();
+        TranscoderInput input = new TranscoderInput(svgURI);		
+		
+        // Use ZIP stream as the transcoder output.
+		file = new File(epsFile);
+		if (!file.exists()) {
+			file.delete();
+		}
+		OutputStream ostream = new FileOutputStream(epsFile);
+        TranscoderOutput output = new TranscoderOutput(ostream);
+		try {
+			transCoder.transcode(input, output);	// Convert the image.
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "Error in addEPSFile: " + svgURI + lineSeparator + "; EPS: " + epsFile,
+				exception);
+			throw exception;
+		}
+		finally {
+			ostream.flush();	
+			ostream.close();	
+		}
+
+	}
+	
+	private void addEPSFile(
+			final File temporaryDirectory,
+			final String dirName,
+			final String studyID,
+			final int year,
+			final String svgText) 
+			throws Exception {
+			
+		String epsFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".eps";
+		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
+		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
+		String epsFile=svgDirName + File.separator + epsFileName;
+		String svgFile=svgDirName + File.separator + svgFileName;
+		rifLogger.info(this.getClass(), "Adding EPS for report file: " + epsFile +
+			"; pixel width: " + denominatorPyramidWidthPixels + 
+			"; pixels/mm: " + printingPixelPermm);
+		
+		        // Create a JPEG transcoder
+        EPSTranscoder transCoder = new EPSTranscoder();
+
+        // Set the transcoding hints.
+        transCoder.addTranscodingHint(EPSTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
+				// Default 3543: Single column 90 mm (255 pt)
+		transCoder.addTranscodingHint(EPSTranscoder.KEY_MEDIA, "print");
+		transCoder.addTranscodingHint(EPSTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
+//		transCoder.addTranscodingHint(EPSTranscoder.KEY_USER_STYLESHEET_URI, 
+//			"http://localhost:8080/RIF4/css/rifx-css-d3.css");
+
+        // Create the transcoder input.
+		File file = new File(svgFile);
+		if (!file.exists()) {
+			throw new Exception("SVGfile: " + svgFile + " does not exist");
+		}
+        String svgURI = file.toURL().toString();
+        TranscoderInput input = new TranscoderInput(svgURI);		
+		
+        // Use ZIP stream as the transcoder output.
+		file = new File(epsFile);
+		if (!file.exists()) {
+			file.delete();
+		}
+		OutputStream ostream = new FileOutputStream(epsFile);
+        TranscoderOutput output = new TranscoderOutput(ostream);
+		try {
+			transCoder.transcode(input, output);	// Convert the image.
+		}
+		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "Error in addEPSFile: " + svgURI + lineSeparator + "; EPS: " + epsFile,
 				exception);
 			throw exception;
 		}
@@ -1323,8 +1444,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("          <option value=\"png\" title=\"Portable Network Graphics\" selected />PNG</option>" + lineSeparator);
 		htmlFileText.append("          <option value=\"jpg\" tile=\"Joint Photographic Experts Group\" />JPEG</option>" + lineSeparator);
 		htmlFileText.append("          <option value=\"tif\" disabled title=\"Tagged Image File Format\" />TIFF</option>" + lineSeparator);
-		htmlFileText.append("          <option value=\"svg\" title=\"Scalable vector graphics\" />SVG</option>" + lineSeparator);
+		htmlFileText.append("          <option id=\"svgSelect\" value=\"svg\" title=\"Scalable vector graphics\" />SVG</option>" + lineSeparator);
 		htmlFileText.append("        </select>" + lineSeparator);
+		htmlFileText.append("        <form id=\"downloadForm\" method=\"get\" action=\"reports\\denominator\\RIFdenominator_pyramid_" + 
+					studyID + "_" + yearStart + ".png\">" + lineSeparator);
+		htmlFileText.append("          <button id=\"downloadButton\" type=\"submit\">Download PNG</button>" + lineSeparator);
+		htmlFileText.append("        </form>" + lineSeparator);
 		htmlFileText.append("      </div>" + lineSeparator);
 		htmlFileText.append("      <img src=\"reports\\denominator\\RIFdenominator_pyramid_" + 
 					studyID + "_" + yearStart + ".png\" id=\"denominator_pyramid\" width=\"80%\" />" + lineSeparator);
@@ -1362,14 +1487,25 @@ Could not write TIFF file because no WriteAdapter is availble
 	at org.apache.batik.transcoder.image.ImageTranscoder.transcode(ImageTranscoder.java:132)
 	at org.apache.batik.transcoder.XMLAbstractTranscoder.transcode(XMLAbstractTranscoder.java:142)
 	at org.apache.batik.transcoder.SVGAbstractTranscoder.transcode(SVGAbstractTranscoder.java:156)
-	at rifServices.dataStorageLayer.common.RifZipFile.addTIFFFile(RifZipFile.java:1130)
+	at rifServices.dataStorageLayer.common.RifZipFile.addTIFFFile(RifZipFile.java:1130) 
 			addTIFFFile(
 				temporaryDirectory,
 				"reports" + File.separator + "denominator",
 				studyID,
 				i,
+				svgText); */
+			addEPSFile(
+				temporaryDirectory,
+				"reports" + File.separator + "denominator",
+				studyID,
+				i,
 				svgText);
-				*/
+			addPSFile(
+				temporaryDirectory,
+				"reports" + File.separator + "denominator",
+				studyID,
+				i,
+				svgText);				
 		}	
 		
 		return htmlFileText.toString();
