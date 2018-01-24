@@ -1894,11 +1894,15 @@ callPerformSmoothingActivity exitValue: 1
 
 #### 22nd to 26th January 2018
   
-* Added JPEG/PNG Batik support at correct resolution
+* Added JPEG/PNG Batik support at correct resolution;
 * TIFF is not available due to a bug: https://mail-archives.apache.org/mod_mbox/xmlgraphics-batik-users/201708.mbox/%3CCY4PR04MB039071041456B1E485DCB893DDB40@CY4PR04MB0390.namprd04.prod.outlook.com%3E
-* EPS needs FOP; never shifted to XML graphics (as promised in 2009)
+* EPS needs FOP; never shifted to XML graphics (as promised in 2009);
 * Issues with IE image change;
-* Fixed missing text on scaled images, completely styled by CSS
+* Fixed missing text on scaled images, completely styled by CSS;
+* Restructured print output code;
+* Possible fix for TIFF issues; Batik 1.7 is OK, 1.8 is unusable (too many dependencies);
+* Changed print setup from pixel/mm to DPI;
+* Added EPS/PS; issue with output (it is blank!);
 
 ## In progress (December 2017/January 2018):
 
