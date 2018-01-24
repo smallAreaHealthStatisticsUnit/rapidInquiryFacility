@@ -766,56 +766,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("    </p>" + lineSeparator);
 		
 		for (int i=yearStart; i<=yearStop; i++) {
-			rifGraphics.addJPEGFile(
-				temporaryDirectory,
-				"reports" + File.separator + "denominator",
-				studyID,
-				i,
-				svgText);
-			rifGraphics.addPNGFile(
-				temporaryDirectory,
-				"reports" + File.separator + "denominator",
-				studyID,
-				i,
-				svgText);
-				/* Disabled, see: https://mail-archives.apache.org/mod_mbox/xmlgraphics-batik-users/201708.mbox/%3CCY4PR04MB039071041456B1E485DCB893DDB40@CY4PR04MB0390.namprd04.prod.outlook.com%3E
-				
-				11:06:21.946 [http-nio-8080-exec-192] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.RifZipFile]:
-createStudyExtract() ERROR
-getMessage:          TranscoderException: null
-Enclosed Exception:
-Could not write TIFF file because no WriteAdapter is availble
-getRootCauseMessage: TranscoderException: Could not write TIFF file because no WriteAdapter is availble
-getThrowableCount:   2
-getRootCauseStackTrace >>>
-org.apache.batik.transcoder.TranscoderException: Could not write TIFF file because no WriteAdapter is availble
-	at org.apache.batik.transcoder.image.TIFFTranscoder.writeImage(TIFFTranscoder.java:110)
-	at org.apache.batik.transcoder.image.ImageTranscoder.transcode(ImageTranscoder.java:130)
- [wrapped] org.apache.batik.transcoder.TranscoderException: null
-Enclosed Exception:
-Could not write TIFF file because no WriteAdapter is availble
-	at org.apache.batik.transcoder.image.ImageTranscoder.transcode(ImageTranscoder.java:132)
-	at org.apache.batik.transcoder.XMLAbstractTranscoder.transcode(XMLAbstractTranscoder.java:142)
-	at org.apache.batik.transcoder.SVGAbstractTranscoder.transcode(SVGAbstractTranscoder.java:156)
-	at rifServices.dataStorageLayer.common.RifZipFile.addTIFFFile(RifZipFile.java:1130) 
-			rifGraphics.addTIFFFile(
-				temporaryDirectory,
-				"reports" + File.separator + "denominator",
-				studyID,
-				i,
-				svgText); */
-			rifGraphics.addEPSFile(
-				temporaryDirectory,
-				"reports" + File.separator + "denominator",
-				studyID,
-				i,
-				svgText);
-			rifGraphics.addPSFile(
-				temporaryDirectory,
-				"reports" + File.separator + "denominator",
-				studyID,
-				i,
-				svgText);				
+			RIFGraphicsOutputType allOutputTypes[] = RIFGraphicsOutputType.values();
+			for (RIFGraphicsOutputType outputType : allOutputTypes) {
+				rifGraphics.addGraphicsFile(
+					temporaryDirectory,
+					"reports" + File.separator + "denominator",
+					studyID,
+					i,
+					outputType,
+					svgText);
+			}				
 		}	
 		
 		return htmlFileText.toString();

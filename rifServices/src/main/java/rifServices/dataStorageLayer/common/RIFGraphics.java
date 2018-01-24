@@ -8,6 +8,7 @@ import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import org.apache.batik.transcoder.image.JPEGTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.batik.transcoder.image.TIFFTranscoder;
+import org.apache.batik.transcoder.image.ImageTranscoder;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 
@@ -79,7 +80,7 @@ import java.lang.*;
  * (4)            Section Override
  *
  */
-
+	
 public class RIFGraphics {
 	// ==========================================
 	// Section Constants
@@ -96,7 +97,7 @@ public class RIFGraphics {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-
+	
 	// ==========================================
 	// Section Construction
 	// ==========================================
@@ -107,7 +108,6 @@ public class RIFGraphics {
      */
 	public RIFGraphics(
 			final RIFServiceStartupOptions rifServiceStartupOptions) {
-//		super(rifServiceStartupOptions.getRIFDatabaseProperties());
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
@@ -115,34 +115,124 @@ public class RIFGraphics {
 		printingPixelPermm=this.rifServiceStartupOptions.getPrintingPixelPermm();
 	}
 
-		public void addJPEGFile(
-			final File temporaryDirectory,
-			final String dirName,
-			final String studyID,
-			final int year,
-			final String svgText) 
+	private void PSTranscode(
+			final TranscoderInput input,
+			final TranscoderOutput output) 
 			throws Exception {
 			
-		String jpgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".jpg";
+		PSTranscoder transCoder=new PSTranscoder();
+				// Set the transcoding hints.
+		transCoder.addTranscodingHint(PSTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
+				// Default 3543: Single column 90 mm (255 pt)
+		transCoder.addTranscodingHint(PSTranscoder.KEY_MEDIA, "print");
+		transCoder.addTranscodingHint(PSTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
+//		transCoder.addTranscodingHint(PSTranscoder.KEY_USER_STYLESHEET_URI, 
+//			"http://localhost:8080/RIF4/css/rifx-css-d3.css");	
+
+		transCoder.transcode(input, output);	// Convert the image.		
+	}
+	
+	private void EPSTranscode(
+			final TranscoderInput input,
+			final TranscoderOutput output) 
+			throws Exception {
+			
+		EPSTranscoder transCoder=new EPSTranscoder();
+				// Set the transcoding hints.
+		transCoder.addTranscodingHint(EPSTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
+				// Default 3543: Single column 90 mm (255 pt)
+		transCoder.addTranscodingHint(EPSTranscoder.KEY_MEDIA, "print");
+		transCoder.addTranscodingHint(EPSTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
+//		transCoder.addTranscodingHint(EPSTranscoder.KEY_USER_STYLESHEET_URI, 
+//			"http://localhost:8080/RIF4/css/rifx-css-d3.css");	
+
+		transCoder.transcode(input, output);	// Convert the image.		
+	}
+			
+	private void graphicsTranscode(
+			final RIFGraphicsOutputType outputType,
+			final TranscoderInput input,
+			final TranscoderOutput output) 
+			throws Exception {
+			
+		ImageTranscoder transCoder=null;
+		switch (outputType) {
+			case RIFGRAPHICS_JPEG:
+		        // Create a JPEG transcoder
+				transCoder = new JPEGTranscoder();						
+				transCoder.addTranscodingHint(JPEGTranscoder.KEY_QUALITY, jpegQuality);
+				break;
+			case RIFGRAPHICS_PNG:
+		        // Create a PNG transcoder
+				transCoder = new PNGTranscoder();
+				break;
+			case RIFGRAPHICS_TIFF:
+		        // Create a TIFF  transcoder
+				transCoder = new TIFFTranscoder();
+				break;
+			default:
+				throw new Exception("graphicsTranscode(): Unsupported output type: " + outputType.toString());
+		}	
+		// Set the transcoding hints.
+		transCoder.addTranscodingHint(ImageTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
+				// Default 3543: Single column 90 mm (255 pt)
+		transCoder.addTranscodingHint(ImageTranscoder.KEY_MEDIA, "print");
+		transCoder.addTranscodingHint(ImageTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
+//		transCoder.addTranscodingHint(ImageTranscoder.KEY_USER_STYLESHEET_URI, 
+//			"http://localhost:8080/RIF4/css/rifx-css-d3.css");	
+
+		transCoder.transcode(input, output);	// Convert the image.		
+	}
+	
+	private String getGraphicsExtentsion(
+		final RIFGraphicsOutputType outputType) 
+			throws Exception  {
+			
+		String extension="unk";
+		
+		switch (outputType) {
+			case RIFGRAPHICS_JPEG:
+		        extension="jpg";
+				break;
+			case RIFGRAPHICS_PNG:
+		        extension="png";
+				break;
+			case RIFGRAPHICS_TIFF:
+		        extension="tif";
+				break;
+			case RIFGRAPHICS_EPS:
+		        extension="eps";
+				break;
+			case RIFGRAPHICS_PS:
+		        extension="ps";
+				break;
+			default:
+				throw new Exception("getGraphicsExtentsion(): Unsupported output type: " + outputType.toString());
+		}			
+		
+		return extension;
+	}
+	
+	public void addGraphicsFile(
+		final File temporaryDirectory,
+		final String dirName,
+		final String studyID,
+		final int year,
+		final RIFGraphicsOutputType outputType,
+		final String svgText) 
+			throws Exception {
+			
+		String graphicFileName="RIFdenominator_pyramid_" + studyID + "_" + year + 
+			"." + getGraphicsExtentsion(outputType);
 		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
 		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
-		String jpgFile=svgDirName + File.separator + jpgFileName;
+		String graphicFile=svgDirName + File.separator + graphicFileName;
 		String svgFile=svgDirName + File.separator + svgFileName;
-		rifLogger.info(this.getClass(), "Adding JPEG for report file: " + jpgFile +
+		rifLogger.info(this.getClass(), "Adding " + outputType.toString() + " for report file: " + 
+			graphicFile +
 			"; pixel width: " + denominatorPyramidWidthPixels + 
 			"; pixels/mm: " + printingPixelPermm);
-		
-		        // Create a JPEG transcoder
-        JPEGTranscoder transCoder = new JPEGTranscoder();
 
-        // Set the transcoding hints.
-        transCoder.addTranscodingHint(JPEGTranscoder.KEY_QUALITY, jpegQuality);
-        transCoder.addTranscodingHint(JPEGTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
-				// Default 3543: Single column 90 mm (255 pt)
-		transCoder.addTranscodingHint(JPEGTranscoder.KEY_MEDIA, "print");
-		transCoder.addTranscodingHint(JPEGTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
-//		transCoder.addTranscodingHint(JPEGTranscoder.KEY_USER_STYLESHEET_URI, 
-//			"http://localhost:8080/RIF4/css/rifx-css-d3.css");
 
         // Create the transcoder input.
 		File file = new File(svgFile);
@@ -153,17 +243,53 @@ public class RIFGraphics {
         TranscoderInput input = new TranscoderInput(svgURI);		
 		
         // Use ZIP stream as the transcoder output.
-		file = new File(jpgFile);
+		file = new File(graphicFile);
 		if (!file.exists()) {
 			file.delete();
 		}
-		OutputStream ostream = new FileOutputStream(jpgFile);
+		OutputStream ostream = new FileOutputStream(graphicFile);
         TranscoderOutput output = new TranscoderOutput(ostream);
 		try {
-			transCoder.transcode(input, output);	// Convert the image.
+			switch (outputType) {
+				case RIFGRAPHICS_TIFF: /* Disabled, see: https://mail-archives.apache.org/mod_mbox/xmlgraphics-batik-users/201708.mbox/%3CCY4PR04MB039071041456B1E485DCB893DDB40@CY4PR04MB0390.namprd04.prod.outlook.com%3E
+				11:06:21.946 [http-nio-8080-exec-192] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.RifZipFile]:
+createStudyExtract() ERROR
+getMessage:          TranscoderException: null
+Enclosed Exception:
+Could not write TIFF file because no WriteAdapter is availble
+getRootCauseMessage: TranscoderException: Could not write TIFF file because no WriteAdapter is availble
+getThrowableCount:   2
+getRootCauseStackTrace >>>
+org.apache.batik.transcoder.TranscoderException: Could not write TIFF file because no WriteAdapter is availble
+	at org.apache.batik.transcoder.image.TIFFTranscoder.writeImage(TIFFTranscoder.java:110)
+	at org.apache.batik.transcoder.image.ImageTranscoder.transcode(ImageTranscoder.java:130)
+ [wrapped] org.apache.batik.transcoder.TranscoderException: null
+Enclosed Exception:
+Could not write TIFF file because no WriteAdapter is availble
+	at org.apache.batik.transcoder.image.ImageTranscoder.transcode(ImageTranscoder.java:132)
+	at org.apache.batik.transcoder.XMLAbstractTranscoder.transcode(XMLAbstractTranscoder.java:142)
+	at org.apache.batik.transcoder.SVGAbstractTranscoder.transcode(SVGAbstractTranscoder.java:156)
+	at rifServices.dataStorageLayer.common.RifZipFile.addTIFFFile(RifZipFile.java:1130) 
+				svgText); */
+					break;
+				case RIFGRAPHICS_JPEG:
+				case RIFGRAPHICS_PNG:
+					graphicsTranscode(outputType, input, output);
+					break;
+				case RIFGRAPHICS_EPS:
+					EPSTranscode(input, output);
+					break;
+				case RIFGRAPHICS_PS:
+					PSTranscode(input, output);
+					break;
+				default:
+					throw new Exception("addGraphicsFile(): Unsupported output type: " + 
+						outputType.toString());
+			}
 		}
 		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "Error in addJPEGFile: " + svgURI + lineSeparator + "; JPEG: " + jpgFile,
+			rifLogger.error(this.getClass(), "Error in addGraphicsFile: " + svgURI + lineSeparator + 
+				"; " + outputType.toString() + ": " + graphicFile,
 				exception);
 			throw exception;
 		}
@@ -171,7 +297,6 @@ public class RIFGraphics {
 			ostream.flush();	
 			ostream.close();	
 		}
-
 	}
 	
 	public void addPNGFile(
