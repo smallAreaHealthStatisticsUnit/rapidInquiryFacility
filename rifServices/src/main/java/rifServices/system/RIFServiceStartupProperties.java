@@ -290,29 +290,29 @@ public final class RIFServiceStartupProperties {
 		return denominatorPyramidWidthPixels;		
     }
 
-	public static float getPrintingPixelPermm() {
-		float printingPixelPermm=-1;
+	public static int getPrintingDPI() {
+		int printingDPI=-1;
 		try {
-			String value=getOptionalRIfServiceProperty("printingPixelPermm");
+			String value=getOptionalRIfServiceProperty("printingDPI");
 			if (value != null) {
-				printingPixelPermm=Float.parseFloat(value);   
+				printingDPI=Integer.parseInt(value);   
 			}		
 			else {
-				printingPixelPermm=new Float(39.370079); // 1000 dpi
+				printingDPI=1000; // 1000 dpi
 			}			
 		}
 		catch(Exception exception) {
 			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-				"Error converting optional property: printingPixelPermm", exception);
+				"Error converting optional property: printingDPI", exception);
 //			throw exception;
 		}
 		finally {
-			if (printingPixelPermm == -1) {
-				printingPixelPermm=new Float(39.370079); // 1000 dpi
+			if (printingDPI == -1) {
+				printingDPI=1000; // 1000 dpi
 			}
 		}
 		
-		return printingPixelPermm;
+		return printingDPI;
     }
 
 	private static String getManadatoryRIfServiceProperty(String propertyName)

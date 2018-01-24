@@ -103,7 +103,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	private String studyID;
 	private static String EXTRACT_DIRECTORY;
 	private static int denominatorPyramidWidthPixels;
-	private static float printingPixelPermm;
+	private static int printingDPI;
 	private static float jpegQuality=new Float(.8);
 	
 	private static final String STUDY_QUERY_SUBDIRECTORY = "study_query";
@@ -139,7 +139,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		EXTRACT_DIRECTORY = this.rifServiceStartupOptions.getExtractDirectory();
 		databaseType=this.rifServiceStartupOptions.getRifDatabaseType();
 		denominatorPyramidWidthPixels=this.rifServiceStartupOptions.getDenominatorPyramidWidthPixels();
-		printingPixelPermm=this.rifServiceStartupOptions.getPrintingPixelPermm();
+		printingDPI=this.rifServiceStartupOptions.getPrintingDPI();
 	}
 
 	/**
@@ -757,7 +757,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("          <option id=\"svgSelect\" value=\"svg\" title=\"Scalable vector graphics\" />SVG</option>" + lineSeparator);
 		htmlFileText.append("        </select>" + lineSeparator);
 		htmlFileText.append("        <form id=\"downloadForm\" method=\"get\" action=\"reports\\denominator\\RIFdenominator_pyramid_" + 
-					studyID + "_" + yearStart + ".png\">" + lineSeparator);
+					studyID + "_" + printingDPI + "dpi_" + yearStart + ".png\">" + lineSeparator);
 		htmlFileText.append("          <button id=\"downloadButton\" type=\"submit\">Download PNG</button>" + lineSeparator);
 		htmlFileText.append("        </form>" + lineSeparator);
 		htmlFileText.append("      </div>" + lineSeparator);
@@ -765,14 +765,15 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					studyID + "_" + yearStart + ".png\" id=\"denominator_pyramid\" width=\"80%\" />" + lineSeparator);
 		htmlFileText.append("    </p>" + lineSeparator);
 		
-		for (int i=yearStart; i<=yearStop; i++) {
+		for (int year=yearStart; year<=yearStop; year++) {
 			RIFGraphicsOutputType allOutputTypes[] = RIFGraphicsOutputType.values();
 			for (RIFGraphicsOutputType outputType : allOutputTypes) {
 				rifGraphics.addGraphicsFile(
-					temporaryDirectory,
-					"reports" + File.separator + "denominator",
+					temporaryDirectory,							/* Study scratch space diretory */
+					"reports" + File.separator + "denominator", /* directory */
+					"RIFdenominator_pyramid_", 					/* File prefix */
 					studyID,
-					i,
+					year,
 					outputType,
 					svgText);
 			}				

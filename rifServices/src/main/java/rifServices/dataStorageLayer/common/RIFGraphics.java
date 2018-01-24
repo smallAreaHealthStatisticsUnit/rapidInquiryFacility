@@ -88,7 +88,7 @@ public class RIFGraphics {
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static int denominatorPyramidWidthPixels;
-	private static float printingPixelPermm;
+	private static int printingDPI;
 	private static float jpegQuality=new Float(.8);
 		
 	private RIFServiceStartupOptions rifServiceStartupOptions;
@@ -112,7 +112,7 @@ public class RIFGraphics {
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		denominatorPyramidWidthPixels=this.rifServiceStartupOptions.getDenominatorPyramidWidthPixels();
-		printingPixelPermm=this.rifServiceStartupOptions.getPrintingPixelPermm();
+		printingDPI=this.rifServiceStartupOptions.getPrintingDPI();
 	}
 
 	private void PSTranscode(
@@ -125,7 +125,7 @@ public class RIFGraphics {
 		transCoder.addTranscodingHint(PSTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
 				// Default 3543: Single column 90 mm (255 pt)
 		transCoder.addTranscodingHint(PSTranscoder.KEY_MEDIA, "print");
-		transCoder.addTranscodingHint(PSTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
+		transCoder.addTranscodingHint(PSTranscoder.KEY_PIXEL_TO_MM, (float)(printingDPI/25.4)); // Default 1000dpi
 //		transCoder.addTranscodingHint(PSTranscoder.KEY_USER_STYLESHEET_URI, 
 //			"http://localhost:8080/RIF4/css/rifx-css-d3.css");	
 
@@ -142,7 +142,7 @@ public class RIFGraphics {
 		transCoder.addTranscodingHint(EPSTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
 				// Default 3543: Single column 90 mm (255 pt)
 		transCoder.addTranscodingHint(EPSTranscoder.KEY_MEDIA, "print");
-		transCoder.addTranscodingHint(EPSTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
+		transCoder.addTranscodingHint(EPSTranscoder.KEY_PIXEL_TO_MM, (float)(printingDPI/25.4)); // Default 1000dpi
 //		transCoder.addTranscodingHint(EPSTranscoder.KEY_USER_STYLESHEET_URI, 
 //			"http://localhost:8080/RIF4/css/rifx-css-d3.css");	
 
@@ -177,7 +177,7 @@ public class RIFGraphics {
 		transCoder.addTranscodingHint(ImageTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
 				// Default 3543: Single column 90 mm (255 pt)
 		transCoder.addTranscodingHint(ImageTranscoder.KEY_MEDIA, "print");
-		transCoder.addTranscodingHint(ImageTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
+		transCoder.addTranscodingHint(ImageTranscoder.KEY_PIXEL_TO_MM, (float)(printingDPI/25.4)); // Default 1000dpi
 //		transCoder.addTranscodingHint(ImageTranscoder.KEY_USER_STYLESHEET_URI, 
 //			"http://localhost:8080/RIF4/css/rifx-css-d3.css");	
 
@@ -216,15 +216,17 @@ public class RIFGraphics {
 	public void addGraphicsFile(
 		final File temporaryDirectory,
 		final String dirName,
+		final String filePrefix,
 		final String studyID,
 		final int year,
 		final RIFGraphicsOutputType outputType,
 		final String svgText) 
 			throws Exception {
-			
-		String graphicFileName="RIFdenominator_pyramid_" + studyID + "_" + year + 
-			"." + getGraphicsExtentsion(outputType);
-		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
+		Float printingPixelPermm=(float)(printingDPI/25.4);
+		
+		String graphicFileName=filePrefix + studyID + "_" + printingDPI +
+			"dpi_" + year + "." + getGraphicsExtentsion(outputType);
+		String svgFileName=filePrefix + studyID + "_" + year + ".svg";
 		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		String graphicFile=svgDirName + File.separator + graphicFileName;
 		String svgFile=svgDirName + File.separator + svgFileName;
@@ -298,239 +300,7 @@ Could not write TIFF file because no WriteAdapter is availble
 			ostream.close();	
 		}
 	}
-	
-	public void addPNGFile(
-			final File temporaryDirectory,
-			final String dirName,
-			final String studyID,
-			final int year,
-			final String svgText) 
-			throws Exception {
-			
-		String pngFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".png";
-		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
-		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
-		String pngFile=svgDirName + File.separator + pngFileName;
-		String svgFile=svgDirName + File.separator + svgFileName;
-		rifLogger.info(this.getClass(), "Adding PNG for report file: " + pngFile +
-			"; pixel width: " + denominatorPyramidWidthPixels + 
-			"; pixels/mm: " + printingPixelPermm);
 		
-		        // Create a JPEG transcoder
-        PNGTranscoder transCoder = new PNGTranscoder();
-
-        // Set the transcoding hints.
-        transCoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
-				// Default 3543: Single column 90 mm (255 pt)
-		transCoder.addTranscodingHint(PNGTranscoder.KEY_MEDIA, "print");
-		transCoder.addTranscodingHint(PNGTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
-//		transCoder.addTranscodingHint(PNGTranscoder.KEY_USER_STYLESHEET_URI, 
-//			"http://localhost:8080/RIF4/css/rifx-css-d3.css");
-
-        // Create the transcoder input.
-		File file = new File(svgFile);
-		if (!file.exists()) {
-			throw new Exception("SVGfile: " + svgFile + " does not exist");
-		}
-        String svgURI = file.toURL().toString();
-        TranscoderInput input = new TranscoderInput(svgURI);		
-		
-        // Use ZIP stream as the transcoder output.
-		file = new File(pngFile);
-		if (!file.exists()) {
-			file.delete();
-		}
-		OutputStream ostream = new FileOutputStream(pngFile);
-        TranscoderOutput output = new TranscoderOutput(ostream);
-		try {
-			transCoder.transcode(input, output);	// Convert the image.
-		}
-		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "Error in addPNGFile: " + svgURI + lineSeparator + "; PNG: " + pngFile,
-				exception);
-			throw exception;
-		}
-		finally {
-			ostream.flush();	
-			ostream.close();	
-		}
-
-	}
-		
-	public void addTIFFFile(
-			final File temporaryDirectory,
-			final String dirName,
-			final String studyID,
-			final int year,
-			final String svgText) 
-			throws Exception {		
-			
-		String tiffFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".tif";
-		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
-		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
-		String tiffFile=svgDirName + File.separator + tiffFileName;
-		String svgFile=svgDirName + File.separator + svgFileName;
-		rifLogger.info(this.getClass(), "Adding TIFF for report file: " + tiffFile +
-			"; pixel width: " + denominatorPyramidWidthPixels + 
-			"; pixels/mm: " + printingPixelPermm);
-		
-		        // Create a JPEG transcoder
-        TIFFTranscoder transCoder = new TIFFTranscoder();
-
-        // Set the transcoding hints.
-        transCoder.addTranscodingHint(TIFFTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
-				// Default 3543: Single column 90 mm (255 pt)
-		transCoder.addTranscodingHint(TIFFTranscoder.KEY_MEDIA, "print");
-		transCoder.addTranscodingHint(TIFFTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
-//		transCoder.addTranscodingHint(TIFFTranscoder.KEY_USER_STYLESHEET_URI, 
-//			"http://localhost:8080/RIF4/css/rifx-css-d3.css");
-
-        // Create the transcoder input.
-		File file = new File(svgFile);
-		if (!file.exists()) {
-			throw new Exception("SVGfile: " + svgFile + " does not exist");
-		}
-        String svgURI = file.toURL().toString();
-        TranscoderInput input = new TranscoderInput(svgURI);		
-		
-        // Use ZIP stream as the transcoder output.
-		file = new File(tiffFile);
-		if (!file.exists()) {
-			file.delete();
-		}
-		OutputStream ostream = new FileOutputStream(tiffFile);
-        TranscoderOutput output = new TranscoderOutput(ostream);
-		try {
-			transCoder.transcode(input, output);	// Convert the image.
-		}
-		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "Error in addTIFFFile: " + svgURI + lineSeparator + "; TIFF: " + tiffFile,
-				exception);
-			throw exception;
-		}
-		finally {
-			ostream.flush();	
-			ostream.close();	
-		}
-
-	}
-
-	public void addPSFile(
-			final File temporaryDirectory,
-			final String dirName,
-			final String studyID,
-			final int year,
-			final String svgText) 
-			throws Exception {
-			
-		String epsFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".ps";
-		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
-		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
-		String epsFile=svgDirName + File.separator + epsFileName;
-		String svgFile=svgDirName + File.separator + svgFileName;
-		rifLogger.info(this.getClass(), "Adding EPS for report file: " + epsFile +
-			"; pixel width: " + denominatorPyramidWidthPixels + 
-			"; pixels/mm: " + printingPixelPermm);
-		
-		        // Create a JPEG transcoder
-        PSTranscoder transCoder = new PSTranscoder();
-
-        // Set the transcoding hints.
-        transCoder.addTranscodingHint(PSTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
-				// Default 3543: Single column 90 mm (255 pt)
-		transCoder.addTranscodingHint(PSTranscoder.KEY_MEDIA, "print");
-		transCoder.addTranscodingHint(PSTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
-//		transCoder.addTranscodingHint(PSTranscoder.KEY_USER_STYLESHEET_URI, 
-//			"http://localhost:8080/RIF4/css/rifx-css-d3.css");
-
-        // Create the transcoder input.
-		File file = new File(svgFile);
-		if (!file.exists()) {
-			throw new Exception("SVGfile: " + svgFile + " does not exist");
-		}
-        String svgURI = file.toURL().toString();
-        TranscoderInput input = new TranscoderInput(svgURI);		
-		
-        // Use ZIP stream as the transcoder output.
-		file = new File(epsFile);
-		if (!file.exists()) {
-			file.delete();
-		}
-		OutputStream ostream = new FileOutputStream(epsFile);
-        TranscoderOutput output = new TranscoderOutput(ostream);
-		try {
-			transCoder.transcode(input, output);	// Convert the image.
-		}
-		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "Error in addEPSFile: " + svgURI + lineSeparator + "; EPS: " + epsFile,
-				exception);
-			throw exception;
-		}
-		finally {
-			ostream.flush();	
-			ostream.close();	
-		}
-
-	}
-	
-	public void addEPSFile(
-			final File temporaryDirectory,
-			final String dirName,
-			final String studyID,
-			final int year,
-			final String svgText) 
-			throws Exception {
-			
-		String epsFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".eps";
-		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
-		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
-		String epsFile=svgDirName + File.separator + epsFileName;
-		String svgFile=svgDirName + File.separator + svgFileName;
-		rifLogger.info(this.getClass(), "Adding EPS for report file: " + epsFile +
-			"; pixel width: " + denominatorPyramidWidthPixels + 
-			"; pixels/mm: " + printingPixelPermm);
-		
-		        // Create a JPEG transcoder
-        EPSTranscoder transCoder = new EPSTranscoder();
-
-        // Set the transcoding hints.
-        transCoder.addTranscodingHint(EPSTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
-				// Default 3543: Single column 90 mm (255 pt)
-		transCoder.addTranscodingHint(EPSTranscoder.KEY_MEDIA, "print");
-		transCoder.addTranscodingHint(EPSTranscoder.KEY_PIXEL_TO_MM, printingPixelPermm); // Default 1000dpi
-//		transCoder.addTranscodingHint(EPSTranscoder.KEY_USER_STYLESHEET_URI, 
-//			"http://localhost:8080/RIF4/css/rifx-css-d3.css");
-
-        // Create the transcoder input.
-		File file = new File(svgFile);
-		if (!file.exists()) {
-			throw new Exception("SVGfile: " + svgFile + " does not exist");
-		}
-        String svgURI = file.toURL().toString();
-        TranscoderInput input = new TranscoderInput(svgURI);		
-		
-        // Use ZIP stream as the transcoder output.
-		file = new File(epsFile);
-		if (!file.exists()) {
-			file.delete();
-		}
-		OutputStream ostream = new FileOutputStream(epsFile);
-        TranscoderOutput output = new TranscoderOutput(ostream);
-		try {
-			transCoder.transcode(input, output);	// Convert the image.
-		}
-		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "Error in addEPSFile: " + svgURI + lineSeparator + "; EPS: " + epsFile,
-				exception);
-			throw exception;
-		}
-		finally {
-			ostream.flush();	
-			ostream.close();	
-		}
-
-	}
-				
 	public void addSvgFile(
 			final File temporaryDirectory,
 			final String dirName,

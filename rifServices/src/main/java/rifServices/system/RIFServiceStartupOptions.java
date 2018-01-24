@@ -114,7 +114,7 @@ public final class RIFServiceStartupOptions {
 	private String databaseName;
 	
 	private int denominatorPyramidWidthPixels;
-	private float printingPixelPermm;
+	private int printingDPI;
 	
 	private DatabaseType databaseType;
 	private boolean isDatabaseCaseSensitive;
@@ -177,8 +177,8 @@ public final class RIFServiceStartupOptions {
 			= RIFServiceStartupProperties.getRScriptDirectory();
 		denominatorPyramidWidthPixels 
 			= RIFServiceStartupProperties.getDenominatorPyramidWidthPixels();
-		printingPixelPermm 
-			= RIFServiceStartupProperties.getPrintingPixelPermm();
+		printingDPI 
+			= RIFServiceStartupProperties.getPrintingDPI();
 		
 		odbcDataSourceName
 			= RIFServiceStartupProperties.getODBCDataSourceName();
@@ -409,8 +409,8 @@ public final class RIFServiceStartupOptions {
 	public int getDenominatorPyramidWidthPixels() {
 		return denominatorPyramidWidthPixels;
 	}
-	public float getPrintingPixelPermm() {
-		return printingPixelPermm;
+	public int getPrintingDPI() {
+		return printingDPI;
 	}
 	
 	/**
