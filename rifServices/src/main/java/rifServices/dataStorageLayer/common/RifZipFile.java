@@ -17,6 +17,7 @@ import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
+import com.sun.rowset.CachedRowSetImpl;
 import java.sql.*;
 import java.io.*;
 import org.json.*;
@@ -392,7 +393,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				user,
 				connection, 
 				temporaryDirectory,
-				studyID);
+				studyID,
+				1 /* Header level */);
 			
 			submissionZipSavFile = createSubmissionZipFile(
 					user,
@@ -607,7 +609,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"     ELSE 'NONE' END AS stats_method", // Column list
 			null  	/* ORDER BY */,
 			"1"		/* Expected rows */,
-			true	/* Rotate */, locale, tomcatServer); 
+			true	/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
 
 		addTableToHtmlReport(htmlFileText, connection, studyID,
 			"rif40", // Owner
@@ -618,7 +620,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"study_state,creation_date,message", // Column list
 			"ith_update"    	/* ORDER BY */,
 			"1+"		/* Expected rows 0+ */,
-			false		/* Rotate */, locale, tomcatServer); 
+			false		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
 			
 		addTableToHtmlReport(htmlFileText, connection, studyID,
 			"rif40", // Owner
@@ -653,7 +655,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"t.mh_test_type,t.classifier,t.classifier_bands", // Column list
 			"t.inv_id"  	/* ORDER BY */,
 			"1+"		/* Expected rows 1+ */,
-			true		/* Rotate */, locale, tomcatServer); 
+			true		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
 			
 		addTableToHtmlReport(htmlFileText, connection, studyID,
 			"rif40", // Owner
@@ -664,12 +666,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"inv_id,covariate_name,min,max,geography,study_geolevel_name", // Column list
 			"inv_id,covariate_name"    	/* ORDER BY */,
 			"0+"		/* Expected rows 0+ */,
-			false		/* Rotate */, locale, tomcatServer); 
+			false		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
 	
 		addInvConditions(htmlFileText, connection, studyID,
 			"rif40", // Owner
 			"rif40", // Schema
-			getStudyJSON, locale, tomcatServer, taxonomyServicesServer);
+			getStudyJSON, locale, 1 /* headerLevel */, tomcatServer, taxonomyServicesServer);
 			
 		addStudyAndComparisonAreas(htmlFileText, connection, studyID,
 			"rif40", // Owner
@@ -706,7 +708,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final User user,
 			final Connection connection,
 			final File temporaryDirectory,
-			final String studyID)
+			final String studyID,
+			final int headerLevel)
 			throws Exception {
 
 		StringBuilder htmlFileText=new StringBuilder();
@@ -721,14 +724,29 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		String svgCss=readFile("RIFPopulationPyramid.css");
 		String svgText=rifGraphics.getSvgPopulationPyramid(studyID, yearStart, svgCss);
 
-		htmlFileText.append("    <h1 id=\"denominator\">Denominator</h1>" + lineSeparator);
-		htmlFileText.append("    <p>" + lineSeparator);
+		htmlFileText.append("    <h" + headerLevel + " id=\"denominator\">Denominator</h1>" + lineSeparator);
+		htmlFileText.append("      <h" + (headerLevel+1) + ">Denominator by year</h1>" + lineSeparator);
+		htmlFileText.append("      <p>" + lineSeparator);
+		htmlFileText.append("      <p>" + lineSeparator);		
+		htmlFileText.append("      <h" + (headerLevel+1) + ">Population Pyramids</h1>" + lineSeparator);
+		htmlFileText.append("      <p>" + lineSeparator);		
 		htmlFileText.append("      <div>" + lineSeparator);
 		htmlFileText.append("        Year: <select id=\"populationPyramidList\">" + lineSeparator);
 
 		String denominatorDirName=addDirToTemporaryDirectoryPath(user, studyID, 
 			"reports" + File.separator + "denominator");
+		CachedRowSetImpl rif40Studies=getRif40Studies(connection, studyID);
+		String extractTable=getColumnFromResultSet(rif40Studies, "extract_table");
 		
+		String newSvgText=rifGraphics.getPopulationPyramid(connection, extractTable, studyID, yearStart+1);	
+//		rifLogger.info(this.getClass(), "newSvgText: " + newSvgText);
+		rifGraphics.addSvgFile(
+				temporaryDirectory,
+				"reports" + File.separator + "denominator",
+				"JFCdenominator_pyramid_",
+				studyID,
+				yearStart,
+				newSvgText); 
 		for (int i=yearStart; i<=yearStop; i++) {
 			if (i == yearStart) { // Selected
 				htmlFileText.append("        <option value=\"reports\\denominator\\RIFdenominator_pyramid_" + 
@@ -745,6 +763,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			rifGraphics.addSvgFile(
 				temporaryDirectory,
 				"reports" + File.separator + "denominator",
+				"RIFdenominator_pyramid_",
 				studyID,
 				i,
 				svgText); 
@@ -781,7 +800,79 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		
 		return htmlFileText.toString();
 	}
+		
+	private String getColumnFromResultSet(
+			final CachedRowSetImpl cachedRowSet,
+			final String columnName)
+			throws Exception {
 			
+		String columnValue=null;
+		boolean columnFound=false;
+		if (cachedRowSet.next()) {			
+			ResultSetMetaData rsmd = cachedRowSet.getMetaData();
+			int columnCount = rsmd.getColumnCount();
+
+			// The column count starts from 1
+			for (int i = 1; i <= columnCount; i++ ) {
+				String name = rsmd.getColumnName(i);
+				String value = cachedRowSet.getString(i);	
+				
+				if (name.toUpperCase().equals(columnName.toUpperCase())) {
+					columnValue=value;
+					columnFound=true;
+				} 
+			}
+			if (cachedRowSet.next()) {
+				throw new Exception("getColumnFromResultSet(): expected 1 row, got >1");
+			}
+			if (!columnFound) {
+				throw new Exception("getColumnFromResultSet(): column not found: " + columnName);
+			}
+			if (columnValue == null) {
+				throw new Exception("getColumnFromResultSet(): got null for column: " + columnName);
+			}
+		}
+		else {
+			throw new Exception("getColumnFromResultSet(): expected 1 row, got none");
+		}
+		
+		return columnValue;
+	}
+	
+	private CachedRowSetImpl getRif40Studies(
+			final Connection connection,
+			final String studyID)
+			throws Exception {
+		SQLGeneralQueryFormatter rif40StudiesQueryFormatter = new SQLGeneralQueryFormatter();		
+		
+		ResultSet resultSet = null;
+		CachedRowSetImpl cachedRowSet = null;
+		
+		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT extract_table, map_table");
+		rif40StudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");
+		rif40StudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+
+		PreparedStatement statement = createPreparedStatement(connection, rif40StudiesQueryFormatter);
+		try {
+			statement.setInt(1, Integer.parseInt(studyID));		
+			resultSet = statement.executeQuery();
+			 // create CachedRowSet and populate
+			cachedRowSet = new CachedRowSetImpl();
+			cachedRowSet.populate(resultSet);
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + rif40StudiesQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		
+		return cachedRowSet;
+	}
+	
 	private void addStudyAndComparisonAreas(
 			final StringBuilder htmlFileText,
 			final Connection connection,
@@ -830,7 +921,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						" AS label", // Column list
 					"2, 1"    	/* ORDER BY */,
 					"1+"		/* Expected rows 0+ */,
-					false		/* Rotate */, locale, tomcatServer); 
+					false		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
 	
 				addTableToHtmlReport(htmlFileText, connection, studyID,
 					ownerName,
@@ -845,7 +936,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						" AS label", // Column list
 					"1"    	/* ORDER BY */,
 					"1+"		/* Expected rows 0+ */,
-					false		/* Rotate */, locale, tomcatServer); 
+					false		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
 			}		
 		}
 		catch (Exception exception) {
@@ -985,6 +1076,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String schemaName,
 			final GetStudyJSON getStudyJSON,
 			final Locale locale,
+			final int headerLevel,
 			final String tomcatServer,
 			final String taxonomyServicesServer)
 			throws Exception {
@@ -1001,7 +1093,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		invConditionsQueryFormatter.addQueryLine(0, " ORDER BY inv_id,line_number");
 		PreparedStatement statement = createPreparedStatement(connection, invConditionsQueryFormatter);	
 		ResultSet resultSet = null;
-		htmlFileText.append("    <h1 id=\"" + tableName + "\">Conditions</h1>" + lineSeparator);
+		htmlFileText.append("    <h" + headerLevel + " id=\"" + tableName + "\">Conditions</h1>" + lineSeparator);
 			
 		try {
 			int rowCount = 0;
@@ -1261,6 +1353,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String orderBy,
 			final String expectedRows,
 			final boolean rotate,
+			final int headerLevel,
 			final Locale locale,
 			final String tomcatServer)
 			throws Exception {
@@ -1284,7 +1377,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		if (tableHeader.substring(0, 4).equals("inv_")) {
 			tableHeader=tableName.replace("rif40_inv_", "");
 		}
-		htmlFileText.append("    <h1 id=\"" + tableName + "\">" + 
+		htmlFileText.append("    <h" + headerLevel + " id=\"" + tableName + "\">" + 
 			tableHeader.substring(0, 1).toUpperCase() + tableHeader.substring(1).replace("_", " ") + 
 			"</h1>" + lineSeparator);
 		String valueLavel="Value";

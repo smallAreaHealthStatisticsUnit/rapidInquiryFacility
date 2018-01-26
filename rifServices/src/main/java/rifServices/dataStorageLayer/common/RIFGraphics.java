@@ -5,21 +5,40 @@ import rifServices.businessConceptLayer.AbstractStudy;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
+
 import org.apache.batik.transcoder.image.JPEGTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.batik.transcoder.image.TIFFTranscoder;
 import org.apache.batik.transcoder.image.ImageTranscoder;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.svggen.SVGGraphics2D;
+import org.apache.batik.dom.GenericDOMImplementation;
 
 import org.apache.fop.svg.AbstractFOPTranscoder; 
 import org.apache.fop.svg.PDFTranscoder; 
 import org.apache.fop.render.ps.PSTranscoder; 
 import org.apache.fop.render.ps.EPSTranscoder; 
 
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.data.general.DefaultKeyedValues2DDataset;
+import org.jfree.data.general.KeyedValues2DDataset;
+import org.jfree.chart.plot.PlotOrientation;
+
+import org.w3c.dom.DOMImplementation; 
+import org.w3c.dom.Document; 
+import org.w3c.dom.Element; 
+
 import java.io.*;
+import java.sql.*;
 import org.json.*;
 import java.lang.*;
+import java.awt.Rectangle;
 
 /**
  *
@@ -81,7 +100,7 @@ import java.lang.*;
  *
  */
 	
-public class RIFGraphics {
+public class RIFGraphics extends SQLAbstractSQLManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
@@ -108,6 +127,7 @@ public class RIFGraphics {
      */
 	public RIFGraphics(
 			final RIFServiceStartupOptions rifServiceStartupOptions) {
+		super(rifServiceStartupOptions.getRIFDatabaseProperties());
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
@@ -304,12 +324,13 @@ Could not write TIFF file because no WriteAdapter is availble
 	public void addSvgFile(
 			final File temporaryDirectory,
 			final String dirName,
+			final String tablePrefix,
 			final String studyID,
 			final int year,
 			final String svgText) 
 			throws Exception {
 			
-		String svgFileName="RIFdenominator_pyramid_" + studyID + "_" + year + ".svg";
+		String svgFileName=tablePrefix + studyID + "_" + year + ".svg";
 		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		String svgFile=svgDirName + File.separator + svgFileName;
 		rifLogger.info(this.getClass(), "Adding SVG for report file: " + svgFile);
@@ -335,6 +356,131 @@ Could not write TIFF file because no WriteAdapter is availble
 		}	
 	}
 
+	// Example from https://source.usc.edu/svn/opensha/tags/b2_0_0/org/jfree/chart/demo/PopulationChartDemo.java
+	
+	public String getPopulationPyramid(Connection connection, String extractTable, 
+		String studyID, int year)
+			throws Exception {
+
+        KeyedValues2DDataset dataset = createDataset(connection, extractTable, year);
+
+        // create the chart... was createStackedHorizontalBarChart
+
+        JFreeChart chart = ChartFactory.createStackedAreaChart(
+                                                  "Population Pyramid",
+                                                  "Age Group",     // domain axis label
+                                                  "Total Population (millions) " + year, // range axis label
+                                                  dataset,         // data
+												  PlotOrientation.HORIZONTAL,
+                                                  true,            // include legend
+                                                  true,            // tooltips
+                                                  false            // urls
+                                              );
+
+        CategoryPlot plot = chart.getCategoryPlot();
+
+        // add the chart to a panel...
+  //      ChartPanel chartPanel = new ChartPanel(chart);
+//        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
+ //       setContentPane(chartPanel);
+        // Get a DOMImplementation and create an XML document
+        DOMImplementation domImpl =
+            GenericDOMImplementation.getDOMImplementation();
+        Document document = domImpl.createDocument(null, "svg", null);
+
+        // Create an instance of the SVG Generator
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+        // draw the chart in the SVG generator
+		Rectangle bounds=new Rectangle(500, 270);
+        chart.draw(svgGenerator, bounds);
+		
+		StringWriter writer = new StringWriter();
+		svgGenerator.stream(writer);
+		
+		return writer.toString();
+    }
+
+    /**
+	 * 
+	 */
+	private KeyedValues2DDataset createDataset(Connection connection, String extractTable, 
+		int year) 
+			throws Exception {
+				
+		SQLGeneralQueryFormatter extractTableQueryFormatter = new SQLGeneralQueryFormatter();		
+		
+		ResultSet resultSet = null;
+		// Convert age_group to textual age group strings 
+		extractTableQueryFormatter.addQueryLine(0, "SELECT sex, age_group, SUM(total_pop)/1000000 AS total_pop");
+		extractTableQueryFormatter.addQueryLine(0, "  FROM rif_studies." + extractTable.toLowerCase());
+		extractTableQueryFormatter.addQueryLine(0, " WHERE year = ?");
+		extractTableQueryFormatter.addQueryLine(0, "   AND study_or_comparison = 'S'");
+		extractTableQueryFormatter.addQueryLine(0, " GROUP BY sex, age_group");
+		extractTableQueryFormatter.addQueryLine(0, " ORDER BY sex, age_group");
+
+		PreparedStatement statement = createPreparedStatement(connection, extractTableQueryFormatter);
+		DefaultKeyedValues2DDataset data = null;
+		try {	
+			statement.setInt(1, year);	
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				int rowCount=0;
+				data = new DefaultKeyedValues2DDataset();
+				do {	
+					rowCount++;
+					String sex=null;
+					String ageGroup=resultSet.getString(2);
+					float totalPop=resultSet.getFloat(3);
+					switch (resultSet.getInt(1)) {
+						case 1: // Male
+							sex="Male";
+							totalPop=-totalPop; // Ugly
+							break;
+						case 2: // female
+							sex="Remale";
+							break;
+						default:
+							throw new Exception("createDataset() invalid sex code: " + 
+								resultSet.getInt(1));
+					}
+					data.addValue( totalPop, sex, ageGroup);
+		/*
+		data.addValue( -6.0, "Male", "70+");
+		data.addValue( -8.0, "Male", "60-69");
+		data.addValue(-11.0, "Male", "50-59");
+		data.addValue(-13.0, "Male", "40-49");
+		data.addValue(-14.0, "Male", "30-39");
+		data.addValue(-15.0, "Male", "20-29");
+		data.addValue(-19.0, "Male", "10-19");
+		data.addValue(-21.0, "Male", "0-9");
+		data.addValue(10.0, "Female", "70+");
+		data.addValue(12.0, "Female", "60-69");
+		data.addValue(13.0, "Female", "50-59");
+		data.addValue(14.0, "Female", "40-49");
+		data.addValue(15.0, "Female", "30-39");
+		data.addValue(17.0, "Female", "20-29");
+		data.addValue(19.0, "Female", "10-19");
+		data.addValue(20.0, "Female", "0-9"); */
+		
+				} while (resultSet.next());
+			}
+			else {
+				throw new Exception("No data found for " + extractTable + " year: " + year);
+			}			
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + extractTableQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		return data;
+		
+	}
+	
 /*
  * JS D3 code for the population pyramid: rifd-view-d3pyramid.js
  
