@@ -10,7 +10,6 @@ import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 
 import org.apache.batik.transcoder.image.JPEGTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
-import org.apache.batik.transcoder.image.TIFFTranscoder;
 import org.apache.batik.transcoder.image.ImageTranscoder;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
@@ -188,7 +187,7 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 				break;
 			case RIFGRAPHICS_TIFF:
 		        // Create a TIFF  transcoder
-				transCoder = new TIFFTranscoder();
+				transCoder = new RifTIFFTranscoder();
 				break;
 			default:
 				throw new Exception("graphicsTranscode(): Unsupported output type: " + outputType.toString());
