@@ -1901,6 +1901,9 @@ callPerformSmoothingActivity exitValue: 1
 * Fixed missing text on scaled images, completely styled by CSS;
 * Restructured print output code;
 * Possible fix for TIFF issues; Batik 1.7 is OK, 1.8 is unusable (too many dependencies);
+  RifTIFFTranscoder.java created to try to fix error but failed due to interface dependencies, 
+  i.e you need a local org.apache.batik.ext.awt.image.codec.imageio.TIFFTranscoderImageIOWriteAdapter
+  and then a local ImageWriter. Needs next release or build from source. 1.9.1 release is July 2017
 * Changed print setup from pixel/mm to DPI;
 * Added EPS/PS; issue with output (it is blank!);
 

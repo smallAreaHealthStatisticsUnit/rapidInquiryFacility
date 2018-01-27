@@ -10,6 +10,7 @@ import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 
 import org.apache.batik.transcoder.image.JPEGTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
+import org.apache.batik.transcoder.image.TIFFTranscoder;
 import org.apache.batik.transcoder.image.ImageTranscoder;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
@@ -187,7 +188,7 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 				break;
 			case RIFGRAPHICS_TIFF:
 		        // Create a TIFF  transcoder
-				transCoder = new RifTIFFTranscoder();
+				transCoder = new TIFFTranscoder();
 				break;
 			default:
 				throw new Exception("graphicsTranscode(): Unsupported output type: " + outputType.toString());
@@ -274,6 +275,8 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 			switch (outputType) {
 				case RIFGRAPHICS_TIFF:  /* Fixed in Batik source: 21/8/2017, disabled, 
 				   RifTIFFTranscoder.java created to try to fix error but failed due to interface dependencies, 
+			i.e you need a local org.apache.batik.ext.awt.image.codec.imageio.TIFFTranscoderImageIOWriteAdapter
+			and then a local ImageWriter...
 				   needs next release or build from source. 1.9.1 release is July 2017
 				   see: https://mail-archives.apache.org/mod_mbox/xmlgraphics-batik-users/201708.mbox/%3CCY4PR04MB039071041456B1E485DCB893DDB40@CY4PR04MB0390.namprd04.prod.outlook.com%3E
 				11:06:21.946 [http-nio-8080-exec-192] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.RifZipFile]:
