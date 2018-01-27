@@ -272,7 +272,10 @@ public class RIFGraphics extends SQLAbstractSQLManager {
         TranscoderOutput output = new TranscoderOutput(ostream);
 		try {
 			switch (outputType) {
-				case RIFGRAPHICS_TIFF: /* Disabled, see: https://mail-archives.apache.org/mod_mbox/xmlgraphics-batik-users/201708.mbox/%3CCY4PR04MB039071041456B1E485DCB893DDB40@CY4PR04MB0390.namprd04.prod.outlook.com%3E
+				case RIFGRAPHICS_TIFF:  /* Fixed in Batik source: 21/8/2017, disabled, 
+				   RifTIFFTranscoder.java created to try to fix error but failed due to interface dependencies, 
+				   needs next release or build from source. 1.9.1 release is July 2017
+				   see: https://mail-archives.apache.org/mod_mbox/xmlgraphics-batik-users/201708.mbox/%3CCY4PR04MB039071041456B1E485DCB893DDB40@CY4PR04MB0390.namprd04.prod.outlook.com%3E
 				11:06:21.946 [http-nio-8080-exec-192] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.RifZipFile]:
 createStudyExtract() ERROR
 getMessage:          TranscoderException: null

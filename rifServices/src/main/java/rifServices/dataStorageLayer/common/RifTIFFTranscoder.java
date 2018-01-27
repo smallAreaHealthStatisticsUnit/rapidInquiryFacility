@@ -24,6 +24,7 @@ package rifServices.dataStorageLayer.common;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.SinglePixelPackedSampleModel;
+import java.lang.reflect.InvocationTargetException;
 
 import org.apache.batik.bridge.UserAgent;
 import org.apache.batik.transcoder.TranscoderException;
@@ -69,13 +70,34 @@ public class RifTIFFTranscoder extends ImageTranscoder {
         WriteAdapter adapter;
         try {
             Class clazz = Class.forName(className);
-            adapter = (WriteAdapter)clazz.newInstance();
+            adapter = (WriteAdapter)clazz.getDeclaredConstructor().newInstance();
+			/* Cast fails with:
+			createStudyExtract() ERROR
+getMessage:          TranscoderException: null
+Enclosed Exception:
+org.apache.batik.ext.awt.image.codec.imageio.TIFFTranscoderImageIOWriteAdapter cannot be cast to rifServices.dataStorageLayer.common.RifTIFFTranscoder$WriteAdapter
+getRootCauseMessage: ClassCastException: org.apache.batik.ext.awt.image.codec.imageio.TIFFTranscoderImageIOWriteAdapter cannot be cast to rifServices.dataStorageLayer.common.RifTIFFTranscoder$WriteAdapter
+getThrowableCount:   2
+getRootCauseStackTrace >>>
+java.lang.ClassCastException: org.apache.batik.ext.awt.image.codec.imageio.TIFFTranscoderImageIOWriteAdapter cannot be cast to rifServices.dataStorageLayer.common.RifTIFFTranscoder$WriteAdapter
+	at rifServices.dataStorageLayer.common.RifTIFFTranscoder.getWriteAdapter(RifTIFFTranscoder.java:73)
+	at rifServices.dataStorageLayer.common.RifTIFFTranscoder.writeImage(RifTIFFTranscoder.java:122)
+	at org.apache.batik.transcoder.image.ImageTranscoder.transcode(ImageTranscoder.java:130)
+ [wrapped] org.apache.batik.transcoder.TranscoderException: null
+ 
+			i.e you need a local org.apache.batik.ext.awt.image.codec.imageio.TIFFTranscoderImageIOWriteAdapter
+			and then a local ImageWriter...
+			*/
             return adapter;
         } catch (ClassNotFoundException e) {
             return null;
         } catch (InstantiationException e) {
             return null;
         } catch (IllegalAccessException e) {
+            return null;
+        } catch (NoSuchMethodException e) {
+            return null;
+        } catch (InvocationTargetException e) {
             return null;
         }
     }
@@ -113,9 +135,9 @@ public class RifTIFFTranscoder extends ImageTranscoder {
             adapter = getWriteAdapter(
                 "org.apache.batik.transcoder.image.TIFFTranscoderImageIOWriteAdapter");
         }
-        if (adapter == null) { // Added to fix error
-            adapter = getWriteAdapter(
-                "org.apache.batik.ext.awt.image.codec.imageio.TIFFTranscoderInternalCodecWriteAdapter");
+        if (adapter == null) { // Added to fix error from 21/8/2017 change
+			adapter = getWriteAdapter(
+                "org.apache.batik.ext.awt.image.codec.imageio.TIFFTranscoderImageIOWriteAdapter");
         }
         if (adapter == null) {
             throw new TranscoderException(
