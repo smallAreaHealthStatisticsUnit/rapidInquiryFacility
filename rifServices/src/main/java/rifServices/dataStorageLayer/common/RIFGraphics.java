@@ -379,7 +379,7 @@ Could not write TIFF file because no WriteAdapter is availble
         KeyedValues2DDataset dataset = createDataset(connection, extractTable, year);
 
         // create the chart... was createStackedHorizontalBarChart
-
+// Replace with full code; use category axis to remove margins
         JFreeChart chart = ChartFactory.createStackedBarChart(
                                                   "Population Pyramid",
                                                   "Age Group",     // domain axis label
@@ -405,7 +405,7 @@ Could not write TIFF file because no WriteAdapter is availble
 		chart.setBackgroundPaint(Color.white);
 		
 		ChartRenderingInfo chartInfo= new ChartRenderingInfo();
-		int width=denominatorPyramidWidthPixels/2;
+		int width=denominatorPyramidWidthPixels/4;
 		BufferedImage image = chart.createBufferedImage(width, 	// Width
 								(int)(width*0.712),		 		// Height
 								chartInfo);	 			 		// Force jfreechart to plot so can get size!	
@@ -436,7 +436,7 @@ Could not write TIFF file because no WriteAdapter is availble
 		extractTableQueryFormatter.addQueryLine(0, " WHERE year = ?");
 		extractTableQueryFormatter.addQueryLine(0, "   AND study_or_comparison = 'S'");
 		extractTableQueryFormatter.addQueryLine(0, " GROUP BY sex, age_group");
-		extractTableQueryFormatter.addQueryLine(0, " ORDER BY sex, age_group");
+		extractTableQueryFormatter.addQueryLine(0, " ORDER BY sex, age_group DESC");
 
 		PreparedStatement statement = createPreparedStatement(connection, extractTableQueryFormatter);
 		DefaultKeyedValues2DDataset data = null;
