@@ -29,6 +29,9 @@ import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.data.general.DefaultKeyedValues2DDataset;
 import org.jfree.data.general.KeyedValues2DDataset;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.PlotRenderingInfo;
+import org.jfree.chart.ChartRenderingInfo;
+import org.jfree.chart.renderer.category.StackedBarRenderer;
 
 import org.w3c.dom.DOMImplementation; 
 import org.w3c.dom.Document; 
@@ -38,7 +41,9 @@ import java.io.*;
 import java.sql.*;
 import org.json.*;
 import java.lang.*;
-import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
 
 /**
  *
@@ -145,6 +150,8 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 		transCoder.addTranscodingHint(PSTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
 				// Default 3543: Single column 90 mm (255 pt)
 		transCoder.addTranscodingHint(PSTranscoder.KEY_MEDIA, "print");
+//		transCoder.addTranscodingHint(PSTranscoder.KEY_PAGE_ORIENTATION, "landscape");
+//		transCoder.addTranscodingHint(PSTranscoder.KEY_SCALE_TO_PAGE, true);
 		transCoder.addTranscodingHint(PSTranscoder.KEY_PIXEL_TO_MM, (float)(printingDPI/25.4)); // Default 1000dpi
 //		transCoder.addTranscodingHint(PSTranscoder.KEY_USER_STYLESHEET_URI, 
 //			"http://localhost:8080/RIF4/css/rifx-css-d3.css");	
@@ -162,6 +169,8 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 		transCoder.addTranscodingHint(EPSTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
 				// Default 3543: Single column 90 mm (255 pt)
 		transCoder.addTranscodingHint(EPSTranscoder.KEY_MEDIA, "print");
+//		transCoder.addTranscodingHint(EPSTranscoder.KEY_PAGE_ORIENTATION, "landscape");
+//		transCoder.addTranscodingHint(EPSTranscoder.KEY_SCALE_TO_PAGE, true);
 		transCoder.addTranscodingHint(EPSTranscoder.KEY_PIXEL_TO_MM, (float)(printingDPI/25.4)); // Default 1000dpi
 //		transCoder.addTranscodingHint(EPSTranscoder.KEY_USER_STYLESHEET_URI, 
 //			"http://localhost:8080/RIF4/css/rifx-css-d3.css");	
@@ -371,7 +380,7 @@ Could not write TIFF file because no WriteAdapter is availble
 
         // create the chart... was createStackedHorizontalBarChart
 
-        JFreeChart chart = ChartFactory.createStackedAreaChart(
+        JFreeChart chart = ChartFactory.createStackedBarChart(
                                                   "Population Pyramid",
                                                   "Age Group",     // domain axis label
                                                   "Total Population (millions) " + year, // range axis label
@@ -383,21 +392,27 @@ Could not write TIFF file because no WriteAdapter is availble
                                               );
 
         CategoryPlot plot = chart.getCategoryPlot();
+		StackedBarRenderer renderer = (StackedBarRenderer)plot.getRenderer();
+		renderer.setItemMargin(0.0);
 
-        // add the chart to a panel...
-  //      ChartPanel chartPanel = new ChartPanel(chart);
-//        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
- //       setContentPane(chartPanel);
-        // Get a DOMImplementation and create an XML document
         DOMImplementation domImpl =
             GenericDOMImplementation.getDOMImplementation();
         Document document = domImpl.createDocument(null, "svg", null);
 
         // Create an instance of the SVG Generator
         SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+		
+		chart.setBackgroundPaint(Color.white);
+		
+		ChartRenderingInfo chartInfo= new ChartRenderingInfo();
+		int width=denominatorPyramidWidthPixels/2;
+		BufferedImage image = chart.createBufferedImage(width, 	// Width
+								(int)(width*0.712),		 		// Height
+								chartInfo);	 			 		// Force jfreechart to plot so can get size!	
+		PlotRenderingInfo plotInfo = chartInfo.getPlotInfo();
+		Rectangle2D bounds= plotInfo.getPlotArea();
         // draw the chart in the SVG generator
-		Rectangle bounds=new Rectangle(500, 270);
-        chart.draw(svgGenerator, bounds);
+		chart.draw(svgGenerator, bounds);
 		
 		StringWriter writer = new StringWriter();
 		svgGenerator.stream(writer);
