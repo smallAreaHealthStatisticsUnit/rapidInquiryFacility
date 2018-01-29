@@ -32,6 +32,10 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 
 import org.w3c.dom.DOMImplementation; 
 import org.w3c.dom.Document; 
@@ -371,6 +375,60 @@ Could not write TIFF file because no WriteAdapter is availble
 	}
 
 	// Example from https://source.usc.edu/svn/opensha/tags/b2_0_0/org/jfree/chart/demo/PopulationChartDemo.java
+
+     /**
+      * Creates a stacked bar chart with default settings.  The chart object 
+      * returned by this method uses a {@link CategoryPlot} instance as the
+      * plot, with a {@link CategoryAxis} for the domain axis, a 
+      * {@link NumberAxis} as the range axis, and a {@link StackedBarRenderer} 
+      * as the renderer.
+      *
+      * @param title  the chart title (<code>null</code> permitted).
+      * @param domainAxisLabel  the label for the category axis 
+      *                         (<code>null</code> permitted).
+      * @param rangeAxisLabel  the label for the value axis 
+      *                        (<code>null</code> permitted).
+      * @param dataset  the dataset for the chart (<code>null</code> permitted).
+      * @param orientation  the orientation of the chart (horizontal or 
+      *                     vertical) (<code>null</code> not permitted).
+      * @param legend  a flag specifying whether or not a legend is required.
+      * @param tooltips  configure chart to generate tool tips?
+      *
+      * @return A stacked bar chart.
+      */
+    public static JFreeChart rifCreateStackedBarChart(String title,
+                                                   String domainAxisLabel,
+                                                   String rangeAxisLabel,
+                                                   KeyedValues2DDataset dataset,
+                                                   PlotOrientation orientation,
+                                                   boolean legend,
+                                                   boolean tooltips) {
+
+        if (orientation == null) {
+            throw new IllegalArgumentException("Null 'orientation' argument.");
+        }
+ 
+        CategoryAxis categoryAxis = new CategoryAxis(domainAxisLabel);
+		categoryAxis.setLowerMargin(0.0);
+		categoryAxis.setUpperMargin(0.0);
+		categoryAxis.setCategoryMargin(0.0);
+        ValueAxis valueAxis = new NumberAxis(rangeAxisLabel);
+ 
+        StackedBarRenderer renderer = new StackedBarRenderer();
+//       if (tooltips) { 
+//          renderer.setBaseToolTipGenerator(
+//                     new StandardCategoryToolTipGenerator());
+//        }
+
+        CategoryPlot plot = new CategoryPlot(dataset, categoryAxis, valueAxis, 
+                renderer);
+        plot.setOrientation(orientation);
+        JFreeChart chart = new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT,
+                plot, legend);
+
+         return chart;
+
+    }
 	
 	public String getPopulationPyramid(Connection connection, String extractTable, 
 		String studyID, int year)
@@ -380,18 +438,20 @@ Could not write TIFF file because no WriteAdapter is availble
 
         // create the chart... was createStackedHorizontalBarChart
 // Replace with full code; use category axis to remove margins
-        JFreeChart chart = ChartFactory.createStackedBarChart(
+        JFreeChart chart = rifCreateStackedBarChart(		// Was: ChartFactory.createStackedBarChart
                                                   "Population Pyramid",
                                                   "Age Group",     // domain axis label
                                                   "Total Population (millions) " + year, // range axis label
                                                   dataset,         // data
 												  PlotOrientation.HORIZONTAL,
                                                   true,            // include legend
-                                                  true,            // tooltips
-                                                  false            // urls
+                                                  true             // tooltips
                                               );
 
         CategoryPlot plot = chart.getCategoryPlot();
+		// crop extra space around the graph
+        // plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
+	
 		StackedBarRenderer renderer = (StackedBarRenderer)plot.getRenderer();
 		renderer.setItemMargin(0.0);
 
