@@ -1913,6 +1913,7 @@ callPerformSmoothingActivity exitValue: 1
   * Sizing and aspect ratio
   * SVG needs to be stylable
   * Title centering
+* SAHSULAND start year issue (probably missing data)
   
 ## In progress (December 2017/January 2018):
 
@@ -1941,6 +1942,7 @@ callPerformSmoothingActivity exitValue: 1
 
 ### Database TODO list (deferred to January 2018): 
 
+* Add generate_series() to SQL Server port
 * Add population to map table (max, min, average, rate increase/decrease?), remove join from getAttributes
 * Add viewer/diseasemap[12]_mapping, export_date, last_update_date, comparison_geolevel_select, 
   study_geolevel_select to rif40_studies

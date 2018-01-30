@@ -607,6 +607,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"     WHEN stats_method = 'BYM' THEN 'Besag, York and Mollie'" + lineSeparator +
 			"     WHEN stats_method = 'CAR' THEN 'Conditional Auto Regression'" + lineSeparator +
 			"     ELSE 'NONE' END AS stats_method", // Column list
+			null  	/* GROUP BY */,
 			null  	/* ORDER BY */,
 			"1"		/* Expected rows */,
 			true	/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
@@ -618,6 +619,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			null, // Common table expression
 			null, // Joined table
 			"study_state,creation_date,message", // Column list
+			null  	/* GROUP BY */,
 			"ith_update"    	/* ORDER BY */,
 			"1+"		/* Expected rows 0+ */,
 			false		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
@@ -653,6 +655,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"d.denominator_table, d.denominator_description," + lineSeparator +
 			"d.min_age_group, d.max_age_group," + lineSeparator +
 			"t.mh_test_type,t.classifier,t.classifier_bands", // Column list
+			null  	/* GROUP BY */,
 			"t.inv_id"  	/* ORDER BY */,
 			"1+"		/* Expected rows 1+ */,
 			true		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
@@ -664,6 +667,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			null, // Common table expression	
 			null, // Joined table
 			"inv_id,covariate_name,min,max,geography,study_geolevel_name", // Column list
+			null  	/* GROUP BY */,
 			"inv_id,covariate_name"    	/* ORDER BY */,
 			"0+"		/* Expected rows 0+ */,
 			false		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
@@ -709,9 +713,10 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final Connection connection,
 			final File temporaryDirectory,
 			final String studyID,
-			final int headerLevel)
+			final int headerLevel
+			)
 			throws Exception {
-
+					
 		StringBuilder htmlFileText=new StringBuilder();
 		
 		GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
@@ -727,11 +732,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("    <h" + headerLevel + " id=\"denominator\">Denominator</h1>" + lineSeparator);
 		htmlFileText.append("      <h" + (headerLevel+1) + ">Denominator by year</h1>" + lineSeparator);
 		htmlFileText.append("      <p>" + lineSeparator);
-		htmlFileText.append("      <p>" + lineSeparator);		
-		htmlFileText.append("      <h" + (headerLevel+1) + ">Population Pyramids</h1>" + lineSeparator);
-		htmlFileText.append("      <p>" + lineSeparator);		
-		htmlFileText.append("      <div>" + lineSeparator);
-		htmlFileText.append("        Year: <select id=\"populationPyramidList\">" + lineSeparator);
+		htmlFileText.append("      </p>" + lineSeparator);		
 
 		String denominatorDirName=addDirToTemporaryDirectoryPath(user, studyID, 
 			"reports" + File.separator + "denominator");
@@ -740,6 +741,25 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		CachedRowSetImpl rif40ExtraxctMaxMinYear=getStudyStartEndYear(connection, extractTable);
 		int minYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_year"));
 		int maxYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_year"));
+		
+		addTableToHtmlReport(htmlFileText, connection, null /* studyID */,
+			"rif40",		// Owner
+			"rif_studies",	// Schema
+			extractTable, // Table
+			null, // Common table expression
+			" WHERE study_or_comparison = 'S'", // Joined table 	
+			"t.year," + lineSeparator +
+			"       CASE WHEN t.sex = 1 THEN 'Males' WHEN t.sex = 2 THEN 'Females' ELSE 'Other' END AS sex," + lineSeparator +
+			"SUM(t.total_pop) AS total_pop", // Column list
+			"t.year, t.sex"  	/* GROUP BY */,
+			"1, 2"   	/* ORDER BY */,
+			"1+"		/* Expected rows 0+ */,
+			false		/* Rotate */, (headerLevel+1) /* headerLevel */, null /* locale */, null /* tomcatServer */); 
+
+		htmlFileText.append("      <h" + (headerLevel+1) + ">Population Pyramids</h1>" + lineSeparator);
+		htmlFileText.append("      <p>" + lineSeparator);		
+		htmlFileText.append("      <div>" + lineSeparator);
+		htmlFileText.append("        Year: <select id=\"populationPyramidList\">" + lineSeparator);					
 /*		
 		String newSvgText=rifGraphics.getPopulationPyramid(connection, extractTable, studyID, yearStart+1,
 			true -* treeForm: true - classic tree form; false: stack to right *-);	
@@ -982,6 +1002,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					"t.area_id, t.band_id, b." + 
 						studyGeolevel.getString("lookup_desc_column").toLowerCase() + 
 						" AS label", // Column list
+					null  	/* GROUP BY */,
 					"2, 1"    	/* ORDER BY */,
 					"1+"		/* Expected rows 0+ */,
 					false		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
@@ -997,6 +1018,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					"t.area_id, b." + 
 						comparisonGeolevel.getString("lookup_desc_column").toLowerCase() + 
 						" AS label", // Column list
+					null  	/* GROUP BY */,
 					"1"    	/* ORDER BY */,
 					"1+"		/* Expected rows 0+ */,
 					false		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
@@ -1413,6 +1435,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String commonTableExpression,
 			final String joinedTable,
 			final String columnList,
+			final String groupBy,
 			final String orderBy,
 			final String expectedRows,
 			final boolean rotate,
@@ -1468,7 +1491,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		else {
 			htmlReportQueryFormatter.addQueryLine(0, "/* No joined table */");
 		}
-		htmlReportQueryFormatter.addQueryLine(0, " WHERE t.study_id = ?");
+		if (studyID != null) {
+			htmlReportQueryFormatter.addQueryLine(0, " WHERE t.study_id = ?");
+		}
+		if (groupBy != null) {
+			htmlReportQueryFormatter.addQueryLine(0, " GROUP BY " + groupBy);
+		}
 		if (orderBy != null) {
 			htmlReportQueryFormatter.addQueryLine(0, " ORDER BY " + orderBy);
 		}
@@ -1476,7 +1504,9 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		try {			
 			int rowCount = 0;
 				
-			statement.setInt(1, Integer.parseInt(studyID));		
+			if (studyID != null) {
+				statement.setInt(1, Integer.parseInt(studyID));	
+			}	
 			resultSet = statement.executeQuery();
 			if (resultSet.next()) {
 				ResultSetMetaData rsmd = resultSet.getMetaData();
