@@ -28,6 +28,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.data.general.DefaultKeyedValues2DDataset;
 import org.jfree.data.general.KeyedValues2DDataset;
+import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.ChartRenderingInfo;
@@ -36,6 +37,8 @@ import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
+import org.jfree.chart.ui.RectangleInsets;
+import org.jfree.chart.title.LegendTitle;
 
 import org.w3c.dom.DOMImplementation; 
 import org.w3c.dom.Document; 
@@ -46,6 +49,7 @@ import java.sql.*;
 import org.json.*;
 import java.lang.*;
 import java.awt.geom.Rectangle2D;
+import java.awt.Rectangle;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 
@@ -117,7 +121,8 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static int denominatorPyramidWidthPixels;
 	private static int printingDPI;
-	private static float jpegQuality=new Float(.8);
+	private static float jpegQuality = new Float(.8);
+	private static float InvAspactRatio = new Float(0.7);
 		
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	private static DatabaseType databaseType;
@@ -279,7 +284,7 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 		
         // Use ZIP stream as the transcoder output.
 		file = new File(graphicFile);
-		if (!file.exists()) {
+		if (file.exists()) {
 			file.delete();
 		}
 		OutputStream ostream = new FileOutputStream(graphicFile);
@@ -336,6 +341,9 @@ Could not write TIFF file because no WriteAdapter is availble
 		finally {
 			ostream.flush();	
 			ostream.close();	
+//			if ((outputType == RIFGRAPHICS_TIFF) && file.exists()) { // Remove zero sized TIFF file
+//				file.delete();
+//			}
 		}
 	}
 		
@@ -415,10 +423,10 @@ Could not write TIFF file because no WriteAdapter is availble
         ValueAxis valueAxis = new NumberAxis(rangeAxisLabel);
  
         StackedBarRenderer renderer = new StackedBarRenderer();
-//       if (tooltips) { 
-//          renderer.setBaseToolTipGenerator(
-//                     new StandardCategoryToolTipGenerator());
-//        }
+        if (tooltips) { 
+			renderer.setDefaultToolTipGenerator(
+                     new StandardCategoryToolTipGenerator());
+        }
 
         CategoryPlot plot = new CategoryPlot(dataset, categoryAxis, valueAxis, 
                 renderer);
@@ -431,15 +439,15 @@ Could not write TIFF file because no WriteAdapter is availble
     }
 	
 	public String getPopulationPyramid(Connection connection, String extractTable, 
-		String studyID, int year)
+		String studyID, int year, boolean treeForm)
 			throws Exception {
 
-        KeyedValues2DDataset dataset = createDataset(connection, extractTable, year);
+        KeyedValues2DDataset dataset = createDataset(connection, extractTable, year, treeForm);
 
         // create the chart... was createStackedHorizontalBarChart
 // Replace with full code; use category axis to remove margins
         JFreeChart chart = rifCreateStackedBarChart(		// Was: ChartFactory.createStackedBarChart
-                                                  "Population Pyramid",
+                                                  "Population Pyramid for study: " + studyID,
                                                   "Age Group",     // domain axis label
                                                   "Total Population (millions) " + year, // range axis label
                                                   dataset,         // data
@@ -447,10 +455,17 @@ Could not write TIFF file because no WriteAdapter is availble
                                                   true,            // include legend
                                                   true             // tooltips
                                               );
+//		LegendTitle legendTitle = chart.getLegend(0);
+//		chart.removeLegend();
+		
+///		legendTitle.setPosition(RectangleEdge.RIGHT);
+//		legendTitle.setMargin(0, 0, 0, 10);
+//		legendTitle.setItemFont(new Font("Sans-serif", Font.PLAIN, 18));
+//		chart.addSubtitle(legendTitle);
 
         CategoryPlot plot = chart.getCategoryPlot();
 		// crop extra space around the graph
-        // plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
+        plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
 	
 		StackedBarRenderer renderer = (StackedBarRenderer)plot.getRenderer();
 		renderer.setItemMargin(0.0);
@@ -463,19 +478,25 @@ Could not write TIFF file because no WriteAdapter is availble
         SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
 		
 		chart.setBackgroundPaint(Color.white);
-		
 		ChartRenderingInfo chartInfo= new ChartRenderingInfo();
-		int width=denominatorPyramidWidthPixels/4;
+		int width=886; // denominatorPyramidWidthPixels/4; fixed!
 		BufferedImage image = chart.createBufferedImage(width, 	// Width
-								(int)(width*0.712),		 		// Height
+								(int)(width*InvAspactRatio),	// Height. THIS A GUESS - MORE AGE SEX GROUPS
+																// WILL CAUSE TROUBLE
 								chartInfo);	 			 		// Force jfreechart to plot so can get size!	
 		PlotRenderingInfo plotInfo = chartInfo.getPlotInfo();
-		Rectangle2D bounds= plotInfo.getPlotArea();
+		Rectangle2D plotBounds = plotInfo.getPlotArea();
+		Rectangle2D chartBounds = chartInfo.getChartArea();
+		Rectangle bounds = new Rectangle(width, (int)(width*InvAspactRatio) /* Height */);
         // draw the chart in the SVG generator
+		rifLogger.info(this.getClass(), "Bounds - SVG: " + bounds.toString() + 
+			"; plot: " + plotBounds.toString() + 
+			"; chart: " + chartBounds.toString());
+									// SVG bounds: java.awt.geom.Rectangle2D$Double[x=0.0,y=26.0,w=881.0,h=570.0]
 		chart.draw(svgGenerator, bounds);
 		
 		StringWriter writer = new StringWriter();
-		svgGenerator.stream(writer);
+		svgGenerator.stream(writer, true /* use css */);
 		
 		return writer.toString();
     }
@@ -484,7 +505,7 @@ Could not write TIFF file because no WriteAdapter is availble
 	 * 
 	 */
 	private KeyedValues2DDataset createDataset(Connection connection, String extractTable, 
-		int year) 
+		int year, boolean treeForm) 
 			throws Exception {
 				
 		SQLGeneralQueryFormatter extractTableQueryFormatter = new SQLGeneralQueryFormatter();		
@@ -514,7 +535,9 @@ Could not write TIFF file because no WriteAdapter is availble
 					switch (resultSet.getInt(1)) {
 						case 1: // Male
 							sex="Male";
-							totalPop=-totalPop; // Ugly
+							if (treeForm) { // Otherwise stack to right
+								totalPop=-totalPop; // Ugly
+							}
 							break;
 						case 2: // female
 							sex="Remale";

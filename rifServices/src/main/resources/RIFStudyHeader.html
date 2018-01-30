@@ -96,6 +96,7 @@ li.nav a:hover:not(.active) {
 <!-- Javascript -->  
   <script>
 var fileExt = "png"; // Default  
+var fileType = 'RIFdenominator_pyramid_';
 /* 
  * setPopulationPyramid() change population pyramid
  */
@@ -104,10 +105,35 @@ function setPopulationPyramid(event) {
 		
 	if (fileName) {
 		document.getElementById("denominator_pyramid").src = 
-			fileName.substring(0, fileName.length-3) + fileExt;
+			fileName.substring(0, fileName.length-3).
+				replace('RIFdenominator_pyramid_', fileType) + fileExt;
 	}
 	return false;
 }
+/* 
+ * setPopulationPyramidType() change population pyramid  type
+ */
+function setPopulationPyramidType(event) {
+	
+	fileExt = this.value;
+	
+	if (fiuleType == 'tree') {
+		fileType = 'RIFdenominator_treepyramid_';
+	} 
+	else {
+		fileType = 'RIFdenominator_pyramid_';
+	}
+	
+	document.getElementById("denominator_pyramid").src = 
+		document.getElementById("denominator_pyramid").src.substring(0, 
+			document.getElementById("denominator_pyramid").src.length-3).
+				replace('RIFdenominator_pyramid_', fileType) + fileExt;
+	document.getElementById("downloadForm").action=document.getElementById("denominator_pyramid").src;
+	
+	return false;
+	
+}
+
 /* 
  * setPopulationPyramidFileType() change population pyramid file type
  */
@@ -116,7 +142,8 @@ function setPopulationPyramidFileType(event) {
 	
 	document.getElementById("denominator_pyramid").src = 
 		document.getElementById("denominator_pyramid").src.substring(0, 
-			document.getElementById("denominator_pyramid").src.length-3) + fileExt;
+			document.getElementById("denominator_pyramid").src.length-3).
+				replace('RIFdenominator_pyramid_', fileType) + fileExt;
 	document.getElementById("downloadForm").action=document.getElementById("denominator_pyramid").src;
 	document.getElementById("downloadButton").innerText = "Download " + fileExt.toUpperCase();
 	
@@ -137,6 +164,7 @@ function isIE() {
 window.onload = function(){
 	document.getElementById("populationPyramidList").onchange = setPopulationPyramid;
 	document.getElementById("populationPyramidFileType").onchange = setPopulationPyramidFileType;
+	document.getElementById("populationPyramidType").onchange = setPopulationPyramidType;
 		
 	if (isIE()) {
 		document.getElementById("svgSelect").disabled = true;  	

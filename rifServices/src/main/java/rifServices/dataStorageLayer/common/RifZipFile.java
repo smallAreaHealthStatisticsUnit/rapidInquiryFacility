@@ -737,8 +737,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"reports" + File.separator + "denominator");
 		CachedRowSetImpl rif40Studies=getRif40Studies(connection, studyID);
 		String extractTable=getColumnFromResultSet(rif40Studies, "extract_table");
-		
-		String newSvgText=rifGraphics.getPopulationPyramid(connection, extractTable, studyID, yearStart+1);	
+		CachedRowSetImpl rif40ExtraxctMaxMinYear=getStudyStartEndYear(connection, extractTable);
+		int minYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_year"));
+		int maxYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_year"));
+/*		
+		String newSvgText=rifGraphics.getPopulationPyramid(connection, extractTable, studyID, yearStart+1,
+			true -* treeForm: true - classic tree form; false: stack to right *-);	
 //		rifLogger.info(this.getClass(), "newSvgText: " + newSvgText);
 		rifGraphics.addSvgFile(
 				temporaryDirectory,
@@ -746,20 +750,32 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				"JFCdenominator_pyramid_",
 				studyID,
 				yearStart,
-				newSvgText); 
-		for (int i=yearStart; i<=yearStop; i++) {
+				newSvgText); */
+		for (int i=minYear; i<=maxYear; i++) {
 			if (i == yearStart) { // Selected
 				htmlFileText.append("        <option value=\"reports\\denominator\\RIFdenominator_pyramid_" + 
-					studyID + "_" + i + ".png\" selected />" + i + "</option>" + lineSeparator);
+					studyID + "_" + printingDPI + "dpi_" + i + ".png\" selected />" + i + "</option>" + 
+					lineSeparator);
 
 			}
 			else {
 				htmlFileText.append("        <option value=\"reports\\denominator\\RIFdenominator_pyramid_" + 
-					studyID + "_" + i + ".png\" />" + i + "</option>" + lineSeparator);
+					studyID + "_" + printingDPI + "dpi_" + i + ".png\" />" + i + "</option>" + lineSeparator);
 
 			}
 
-			svgText=rifGraphics.getSvgPopulationPyramid(studyID, i, svgCss);
+//			svgText=rifGraphics.getSvgPopulationPyramid(studyID, i, svgCss);
+			svgText=rifGraphics.getPopulationPyramid(connection, extractTable, studyID, i,
+				true /* treeForm: true - classic tree form; false: stack to right */);	
+			rifGraphics.addSvgFile(
+				temporaryDirectory,
+				"reports" + File.separator + "denominator",
+				"RIFdenominator_treepyramid_",
+				studyID,
+				i,
+				svgText); 
+			svgText=rifGraphics.getPopulationPyramid(connection, extractTable, studyID, i,
+				false /* treeForm: true - classic tree form; false: stack to right */);	
 			rifGraphics.addSvgFile(
 				temporaryDirectory,
 				"reports" + File.separator + "denominator",
@@ -775,18 +791,32 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("          <option value=\"tif\" disabled title=\"Tagged Image File Format\" />TIFF</option>" + lineSeparator);
 		htmlFileText.append("          <option id=\"svgSelect\" value=\"svg\" title=\"Scalable vector graphics\" />SVG</option>" + lineSeparator);
 		htmlFileText.append("        </select>" + lineSeparator);
+		htmlFileText.append("        </select>" + lineSeparator);
+		htmlFileText.append("          Pyramid type: <select id=\"populationPyramidType\">" + lineSeparator);
+		htmlFileText.append("          <option value=\"tree\" title=\"Tree\" />Tree</option>" + lineSeparator);
+		htmlFileText.append("          <option value=\"stackedRight\" tile=\"Stacked to the right\" selected />Stacked to the right</option>" + lineSeparator);
+		htmlFileText.append("        </select>" + lineSeparator);
 		htmlFileText.append("        <form id=\"downloadForm\" method=\"get\" action=\"reports\\denominator\\RIFdenominator_pyramid_" + 
-					studyID + "_" + printingDPI + "dpi_" + yearStart + ".png\">" + lineSeparator);
+					studyID + "_" + printingDPI + "dpi_" + minYear + ".png\">" + lineSeparator);
 		htmlFileText.append("          <button id=\"downloadButton\" type=\"submit\">Download PNG</button>" + lineSeparator);
 		htmlFileText.append("        </form>" + lineSeparator);
 		htmlFileText.append("      </div>" + lineSeparator);
 		htmlFileText.append("      <img src=\"reports\\denominator\\RIFdenominator_pyramid_" + 
-					studyID + "_" + yearStart + ".png\" id=\"denominator_pyramid\" width=\"80%\" />" + lineSeparator);
+			studyID + "_" + printingDPI +	"dpi_" + minYear + 
+			".png\" id=\"denominator_pyramid\" width=\"80%\" />" + lineSeparator);
 		htmlFileText.append("    </p>" + lineSeparator);
 		
-		for (int year=yearStart; year<=yearStop; year++) {
+		for (int year=minYear; year<=maxYear; year++) {
 			RIFGraphicsOutputType allOutputTypes[] = RIFGraphicsOutputType.values();
 			for (RIFGraphicsOutputType outputType : allOutputTypes) {
+				rifGraphics.addGraphicsFile(
+					temporaryDirectory,							/* Study scratch space diretory */
+					"reports" + File.separator + "denominator", /* directory */
+					"RIFdenominator_treepyramid_", 					/* File prefix */
+					studyID,
+					year,
+					outputType,
+					svgText);
 				rifGraphics.addGraphicsFile(
 					temporaryDirectory,							/* Study scratch space diretory */
 					"reports" + File.separator + "denominator", /* directory */
@@ -808,7 +838,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			
 		String columnValue=null;
 		boolean columnFound=false;
-		if (cachedRowSet.next()) {			
+		if (cachedRowSet.first()) {			
 			ResultSetMetaData rsmd = cachedRowSet.getMetaData();
 			int columnCount = rsmd.getColumnCount();
 
@@ -837,6 +867,39 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}
 		
 		return columnValue;
+	}
+	
+	private CachedRowSetImpl getStudyStartEndYear(
+			final Connection connection,
+			final String extractTable)
+			throws Exception {
+		SQLGeneralQueryFormatter extractTableQueryFormatter = new SQLGeneralQueryFormatter();		
+		
+		ResultSet resultSet = null;
+		CachedRowSetImpl cachedRowSet = null;
+		
+		extractTableQueryFormatter.addQueryLine(0, "SELECT MIN(year) AS min_year, MAX(year) AS max_year");
+		extractTableQueryFormatter.addQueryLine(0, "  FROM rif_studies." + extractTable.toLowerCase());
+		extractTableQueryFormatter.addQueryLine(0, " WHERE study_or_comparison = 'S'");
+
+		PreparedStatement statement = createPreparedStatement(connection, extractTableQueryFormatter);
+		try {	
+			resultSet = statement.executeQuery();
+			 // create CachedRowSet and populate
+			cachedRowSet = new CachedRowSetImpl();
+			cachedRowSet.populate(resultSet);
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + extractTableQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		
+		return cachedRowSet;
 	}
 	
 	private CachedRowSetImpl getRif40Studies(
@@ -1763,14 +1826,14 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String relativePath)
 					throws Exception {
 						
-		rifLogger.info(this.getClass(), "Adding R files start directory: " + startDirectory.getAbsolutePath() + lineSeparator + 
+		rifLogger.debug(this.getClass(), "Adding R files start directory: " + startDirectory.getAbsolutePath() + lineSeparator + 
 			"; relativePath: " + relativePath);
 		File[] listOfFiles = startDirectory.listFiles();
 
 		for (int i = 0; i < listOfFiles.length; i++) {	
 		
 			if (listOfFiles[i].isFile()) {
-				rifLogger.info(this.getClass(), "Adding R file: " + startDirectory.getAbsolutePath() + File.separator + 
+				rifLogger.debug(this.getClass(), "Adding R file: " + startDirectory.getAbsolutePath() + File.separator + 
 					listOfFiles[i].getName() + " to ZIP file" + lineSeparator + "; relativePath: " + relativePath);
 				
 				File file=new File(startDirectory.getAbsolutePath() + File.separator + listOfFiles[i].getName());
@@ -1794,7 +1857,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				submissionZipOutputStream.closeEntry();
 			}
 			else if (listOfFiles[i].isDirectory()) {
-				rifLogger.info(this.getClass(), "Adding R directory: " + startDirectory.getAbsolutePath() + File.separator + 
+				rifLogger.debug(this.getClass(), "Adding R directory: " + startDirectory.getAbsolutePath() + File.separator + 
 					listOfFiles[i].getName() + File.separator + " to ZIP file" + 
 					lineSeparator + "; relativePath: " + relativePath);
 					/*
@@ -1817,7 +1880,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				}
 			}
 			else {
-				rifLogger.info(this.getClass(), "Ignoring R file: " + startDirectory.getAbsolutePath() + File.separator + 
+				rifLogger.debug(this.getClass(), "Ignoring R file: " + startDirectory.getAbsolutePath() + File.separator + 
 					listOfFiles[i].getName());
 			}
     	}
