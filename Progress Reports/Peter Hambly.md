@@ -1907,6 +1907,13 @@ callPerformSmoothingActivity exitValue: 1
 * Changed print setup from pixel/mm to DPI;
 * Added EPS/PS; issue with output (it is blank!);
 
+#### 29th January to 2nd February
+
+* Added jfreechart charts; issues with:
+  * Sizing and aspect ratio
+  * SVG needs to be stylable
+  * Title centering
+  
 ## In progress (December 2017/January 2018):
 
 * Extend PouchDB to base layer [probably will defer as not needed yet]
