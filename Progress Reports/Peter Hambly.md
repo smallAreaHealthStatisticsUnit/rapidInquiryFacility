@@ -1905,7 +1905,8 @@ callPerformSmoothingActivity exitValue: 1
   i.e you need a local org.apache.batik.ext.awt.image.codec.imageio.TIFFTranscoderImageIOWriteAdapter
   and then a local ImageWriter. Needs next release or build from source. 1.9.1 release is July 2017
 * Changed print setup from pixel/mm to DPI;
-* Added EPS/PS; issue with output (it is blank!);
+* Added EPS/PS; issue with output (it appears blank in Ghostscript but the data is present!). Cannot set page size in FOP
+  transcoder;
 
 #### 29th January to 2nd February
 
@@ -1940,9 +1941,11 @@ callPerformSmoothingActivity exitValue: 1
 	* ERROR: Record "User" field "User ID" cannot be empty.
 	* ERROR: Unable to roll back database transaction.
 
-### Database TODO list (deferred to January 2018): 
+### Database TODO list (deferred to February 2018): 
 
 * Add generate_series() to SQL Server port
+* Add t_rif40_warnings/rif40_warnings to contain warning messages on na study basis. Can be created 
+  by extract or R scripts.
 * Add population to map table (max, min, average, rate increase/decrease?), remove join from getAttributes
 * Add viewer/diseasemap[12]_mapping, export_date, last_update_date, comparison_geolevel_select, 
   study_geolevel_select to rif40_studies

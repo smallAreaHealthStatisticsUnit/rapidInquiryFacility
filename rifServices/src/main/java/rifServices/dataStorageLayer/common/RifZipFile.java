@@ -761,17 +761,19 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("      <h" + (headerLevel+1) + ">Population Pyramids</h1>" + lineSeparator);
 		htmlFileText.append("      <p>" + lineSeparator);		
 		htmlFileText.append("      <div>" + lineSeparator);
+		htmlFileText.append("        <form id=\"downloadForm\" method=\"get\" action=\"reports\\denominator\\RIFdenominator_pyramid_" + 
+			studyID + "_" + printingDPI + "dpi_" + minYear + ".png\">" + lineSeparator);
 		htmlFileText.append("        Year: <select id=\"populationPyramidList\">" + lineSeparator);					
 
 		for (int i=minYear; i<=maxYear; i++) {
 			if (i == yearStart) { // Selected
-				htmlFileText.append("        <option value=\"reports\\denominator\\RIFdenominator_pyramid_" + 
+				htmlFileText.append("          <option value=\"reports\\denominator\\RIFdenominator_pyramid_" + 
 					studyID + "_" + printingDPI + "dpi_" + i + ".png\" selected />" + i + "</option>" + 
 					lineSeparator);
 
 			}
 			else {
-				htmlFileText.append("        <option value=\"reports\\denominator\\RIFdenominator_pyramid_" + 
+				htmlFileText.append("          <option value=\"reports\\denominator\\RIFdenominator_pyramid_" + 
 					studyID + "_" + printingDPI + "dpi_" + i + ".png\" />" + i + "</option>" + lineSeparator);
 
 			}
@@ -796,7 +798,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				svgText); 
 		}
 		htmlFileText.append("        </select>" + lineSeparator);
-		htmlFileText.append("          Graphics Format: <select id=\"populationPyramidFileType\">" + lineSeparator);
+		
+		htmlFileText.append("        Graphics Format: <select id=\"populationPyramidFileType\">" + lineSeparator);
 		Set<RIFGraphicsOutputType> htmlOutputTypes = EnumSet.of( // Can be viewed in browser
 			RIFGraphicsOutputType.RIFGRAPHICS_PNG,
 			RIFGraphicsOutputType.RIFGRAPHICS_JPEG,
@@ -820,17 +823,18 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				"\" " + disabled + " " +
 				"id=\"" + outputType.getRIFGraphicsOutputTypeShortName().toLowerCase() + "Select\" " + 
 				"title=\"" + outputType.getRIFGraphicsOutputTypeDescription() + "\" " + 
-				selected + " />" + outputType.getRIFGraphicsOutputTypeShortName() +
-				"</option>" + lineSeparator);
+				selected + " />" + outputType.getRIFGraphicsOutputTypeShortName() + " (" + 
+					outputType.getRIFGraphicsOutputTypeDescription() +
+				")</option>" + lineSeparator);
 		}
 		htmlFileText.append("        </select>" + lineSeparator);
-		htmlFileText.append("        <select>" + lineSeparator);
-		htmlFileText.append("          Pyramid type: <select id=\"populationPyramidType\">" + lineSeparator);
+		
+		htmlFileText.append("        Pyramid type: <select id=\"populationPyramidType\">" + lineSeparator);
 		htmlFileText.append("          <option value=\"tree\" title=\"Tree\" />Tree</option>" + lineSeparator);
 		htmlFileText.append("          <option value=\"stackedRight\" tile=\"Stacked to the right\" selected />Stacked to the right</option>" + lineSeparator);
 		htmlFileText.append("        </select>" + lineSeparator);
-		htmlFileText.append("        <form id=\"downloadForm\" method=\"get\" action=\"reports\\denominator\\RIFdenominator_pyramid_" + 
-					studyID + "_" + printingDPI + "dpi_" + minYear + ".png\">" + lineSeparator);
+		
+
 		htmlFileText.append("          <button id=\"downloadButton\" type=\"submit\">Download PNG</button>" + lineSeparator);
 		htmlFileText.append("        </form>" + lineSeparator);
 		htmlFileText.append("      </div>" + lineSeparator);
