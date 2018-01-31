@@ -25,6 +25,9 @@ import java.lang.*;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
+import java.util.EnumSet;
+import java.util.Iterator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -727,7 +730,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		int yearStart=studyData.getInt("year_start");
 		int yearStop=studyData.getInt("year_stop");
 		String svgCss=readFile("RIFPopulationPyramid.css");
-		String svgText=rifGraphics.getSvgPopulationPyramid(studyID, yearStart, svgCss);
 
 		htmlFileText.append("    <h" + headerLevel + " id=\"denominator\">Denominator</h1>" + lineSeparator);
 		htmlFileText.append("      <h" + (headerLevel+1) + ">Denominator by year</h1>" + lineSeparator);
@@ -760,17 +762,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("      <p>" + lineSeparator);		
 		htmlFileText.append("      <div>" + lineSeparator);
 		htmlFileText.append("        Year: <select id=\"populationPyramidList\">" + lineSeparator);					
-/*		
-		String newSvgText=rifGraphics.getPopulationPyramid(connection, extractTable, studyID, yearStart+1,
-			true -* treeForm: true - classic tree form; false: stack to right *-);	
-//		rifLogger.info(this.getClass(), "newSvgText: " + newSvgText);
-		rifGraphics.addSvgFile(
-				temporaryDirectory,
-				"reports" + File.separator + "denominator",
-				"JFCdenominator_pyramid_",
-				studyID,
-				yearStart,
-				newSvgText); */
+
 		for (int i=minYear; i<=maxYear; i++) {
 			if (i == yearStart) { // Selected
 				htmlFileText.append("        <option value=\"reports\\denominator\\RIFdenominator_pyramid_" + 
@@ -784,8 +776,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 
 			}
 
-//			svgText=rifGraphics.getSvgPopulationPyramid(studyID, i, svgCss);
-			svgText=rifGraphics.getPopulationPyramid(connection, extractTable, studyID, i,
+			String svgText=rifGraphics.getPopulationPyramid(connection, extractTable, studyID, i,
 				true /* treeForm: true - classic tree form; false: stack to right */);	
 			rifGraphics.addSvgFile(
 				temporaryDirectory,
@@ -806,12 +797,34 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}
 		htmlFileText.append("        </select>" + lineSeparator);
 		htmlFileText.append("          Graphics Format: <select id=\"populationPyramidFileType\">" + lineSeparator);
-		htmlFileText.append("          <option value=\"png\" title=\"Portable Network Graphics\" selected />PNG</option>" + lineSeparator);
-		htmlFileText.append("          <option value=\"jpg\" tile=\"Joint Photographic Experts Group\" />JPEG</option>" + lineSeparator);
-		htmlFileText.append("          <option value=\"tif\" disabled title=\"Tagged Image File Format\" />TIFF</option>" + lineSeparator);
-		htmlFileText.append("          <option id=\"svgSelect\" value=\"svg\" title=\"Scalable vector graphics\" />SVG</option>" + lineSeparator);
+		Set<RIFGraphicsOutputType> htmlOutputTypes = EnumSet.of( // Can be viewed in browser
+			RIFGraphicsOutputType.RIFGRAPHICS_PNG,
+			RIFGraphicsOutputType.RIFGRAPHICS_JPEG,
+			RIFGraphicsOutputType.RIFGRAPHICS_TIFF,  
+			RIFGraphicsOutputType.RIFGRAPHICS_SVG);
+		Iterator <RIFGraphicsOutputType> htmlOutputTypeIter = htmlOutputTypes.iterator();
+		int j=0;
+		while (htmlOutputTypeIter.hasNext()) {
+			String selected="";
+			String disabled="";
+			RIFGraphicsOutputType outputType=htmlOutputTypeIter.next();
+			j++;
+			if (j==0) {
+				selected="selected";
+			}
+			if (!outputType.isRIFGraphicsOutputTypeEnabled()) {
+				disabled="disabled";
+			}
+			htmlFileText.append("          <option value=\"" + 
+				outputType.getRIFGraphicsOutputTypeShortName().toLowerCase() +
+				"\" " + disabled + " " +
+				"id=\"" + outputType.getRIFGraphicsOutputTypeShortName().toLowerCase() + "Select\" " + 
+				"title=\"" + outputType.getRIFGraphicsOutputTypeDescription() + "\" " + 
+				selected + " />" + outputType.getRIFGraphicsOutputTypeShortName() +
+				"</option>" + lineSeparator);
+		}
 		htmlFileText.append("        </select>" + lineSeparator);
-		htmlFileText.append("        </select>" + lineSeparator);
+		htmlFileText.append("        <select>" + lineSeparator);
 		htmlFileText.append("          Pyramid type: <select id=\"populationPyramidType\">" + lineSeparator);
 		htmlFileText.append("          <option value=\"tree\" title=\"Tree\" />Tree</option>" + lineSeparator);
 		htmlFileText.append("          <option value=\"stackedRight\" tile=\"Stacked to the right\" selected />Stacked to the right</option>" + lineSeparator);
@@ -827,24 +840,31 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("    </p>" + lineSeparator);
 		
 		for (int year=minYear; year<=maxYear; year++) {
-			RIFGraphicsOutputType allOutputTypes[] = RIFGraphicsOutputType.values();
-			for (RIFGraphicsOutputType outputType : allOutputTypes) {
-				rifGraphics.addGraphicsFile(
-					temporaryDirectory,							/* Study scratch space diretory */
-					"reports" + File.separator + "denominator", /* directory */
-					"RIFdenominator_treepyramid_", 					/* File prefix */
-					studyID,
-					year,
-					outputType,
-					svgText);
-				rifGraphics.addGraphicsFile(
-					temporaryDirectory,							/* Study scratch space diretory */
-					"reports" + File.separator + "denominator", /* directory */
-					"RIFdenominator_pyramid_", 					/* File prefix */
-					studyID,
-					year,
-					outputType,
-					svgText);
+			Set<RIFGraphicsOutputType> allOutputTypes = EnumSet.of(
+				RIFGraphicsOutputType.RIFGRAPHICS_JPEG,
+				RIFGraphicsOutputType.RIFGRAPHICS_PNG,
+				RIFGraphicsOutputType.RIFGRAPHICS_TIFF,    // Requires 1.9.2 or higher Batik
+				RIFGraphicsOutputType.RIFGRAPHICS_EPS,
+				RIFGraphicsOutputType.RIFGRAPHICS_PS);
+			Iterator <RIFGraphicsOutputType> allOutputTypeIter = allOutputTypes.iterator();
+			while (allOutputTypeIter.hasNext()) {
+				RIFGraphicsOutputType outputType=allOutputTypeIter.next();
+				if (outputType.isRIFGraphicsOutputTypeEnabled()) {					
+					rifGraphics.addGraphicsFile(
+						temporaryDirectory,							/* Study scratch space diretory */
+						"reports" + File.separator + "denominator", /* directory */
+						"RIFdenominator_treepyramid_", 				/* File prefix */
+						studyID,
+						year,
+						outputType);
+					rifGraphics.addGraphicsFile(
+						temporaryDirectory,							/* Study scratch space diretory */
+						"reports" + File.separator + "denominator", /* directory */
+						"RIFdenominator_pyramid_", 					/* File prefix */
+						studyID,
+						year,
+						outputType);
+				}
 			}				
 		}	
 		

@@ -60,9 +60,55 @@ package rifServices.dataStorageLayer.common;
  */
 
 public enum RIFGraphicsOutputType {
-		RIFGRAPHICS_JPEG,
-		RIFGRAPHICS_PNG,
-		RIFGRAPHICS_TIFF,
-		RIFGRAPHICS_EPS,
-		RIFGRAPHICS_PS
+	RIFGRAPHICS_JPEG(1, true) {
+		public String getRIFGraphicsOutputTypeDescription() {
+			return "Joint Photographic Experts Group";
+		}
+	},
+	RIFGRAPHICS_PNG(2, true) {
+		public String getRIFGraphicsOutputTypeDescription() {
+			return "Portable Network Graphics";
+		}
+	},
+	RIFGRAPHICS_TIFF(3, false) {
+		public String getRIFGraphicsOutputTypeDescription() {
+			return "Tagged Image File Format";
+		}
+	},
+	RIFGRAPHICS_SVG(4, true) {
+		public String getRIFGraphicsOutputTypeDescription() {
+			return "Scalable Vector Graphics";
+		}
+	},
+	RIFGRAPHICS_EPS(5, true) {
+		public String getRIFGraphicsOutputTypeDescription() {
+			return "Encapsulated Postscript";
+		}
+	},
+	RIFGRAPHICS_PS(6, true) {
+		public String getRIFGraphicsOutputTypeDescription() {
+			return "Postscript";
+		}
+	};
+	
+	private final int outputType;
+	private final boolean enabled;
+	
+	RIFGraphicsOutputType(int outputType, boolean enabled) { // Constructor
+		this.outputType=outputType;
+		this.enabled=enabled;
+	}
+	
+	int getRIFGraphicsOutputType() { // Get method
+		return outputType;
+	}	
+	
+	boolean isRIFGraphicsOutputTypeEnabled() { // Get method
+		return enabled;
+	}
+	
+	public abstract String getRIFGraphicsOutputTypeDescription(); // ToString replacement
+	public String getRIFGraphicsOutputTypeShortName() {
+		return name().replace("RIFGRAPHICS_", "");
+	}
 }
