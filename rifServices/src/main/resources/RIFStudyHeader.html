@@ -97,8 +97,32 @@ li.nav a:hover:not(.active) {
   <script>
 var fileExt = "png"; // Default  
 var fileType = 'RIFdenominator_pyramid_';
-/* 
- * setPopulationPyramid() change population pyramid
+var otherFileType = 'RIFdenominator_treepyramid_';
+
+/*
+ * Function: 	consoleLog()
+ * Parameters:  Message
+ * Returns: 	Nothing
+ * Description:	IE safe console log 
+ */
+function consoleLog(msg) {
+	if (window.console && console && console.log && typeof console.log == "function") {
+		if (isIE()) {
+			if (window.__IE_DEVTOOLBAR_CONSOLE_COMMAND_LINE) {
+				console.log(msg);
+			}
+		}
+		else {
+			console.log(msg);
+		}
+	}  
+}
+
+/*
+ * Function: 	setPopulationPyramid()
+ * Parameters:  Event
+ * Returns: 	false
+ * Description:	change population pyramid 
  */
 function setPopulationPyramid(event) {
 	var fileName = this.value;
@@ -106,36 +130,51 @@ function setPopulationPyramid(event) {
 	if (fileName) {
 		document.getElementById("denominator_pyramid").src = 
 			fileName.substring(0, fileName.length-3).
-				replace('RIFdenominator_pyramid_', fileType) + fileExt;
+				replace(otherFileType, fileType) + fileExt;
+		consoleLog("setPopulationPyramid(" + fileName + "): denominator_pyramid=" + 
+			document.getElementById("denominator_pyramid").src);
 	}
 	return false;
 }
-/* 
- * setPopulationPyramidType() change population pyramid  type
+
+/*
+ * Function: 	setPopulationPyramidType()
+ * Parameters:  Event
+ * Returns: 	false
+ * Description:	change population pyramid type
  */
 function setPopulationPyramidType(event) {
 	
-	fileExt = this.value;
+	filePyramidType = this.value;
 	
-	if (fiuleType == 'tree') {
+	if (filePyramidType == 'tree') {
 		fileType = 'RIFdenominator_treepyramid_';
+		otherFileType = 'RIFdenominator_pyramid_';
 	} 
 	else {
 		fileType = 'RIFdenominator_pyramid_';
+		otherFileType = 'RIFdenominator_treepyramid_';
 	}
 	
 	document.getElementById("denominator_pyramid").src = 
 		document.getElementById("denominator_pyramid").src.substring(0, 
 			document.getElementById("denominator_pyramid").src.length-3).
-				replace('RIFdenominator_pyramid_', fileType) + fileExt;
+				replace(otherFileType, fileType) + fileExt;
 	document.getElementById("downloadForm").action=document.getElementById("denominator_pyramid").src;
-	
+
+	consoleLog("setPopulationPyramidType(" + filePyramidType + "): denominator_pyramid=" + 
+		document.getElementById("denominator_pyramid").src);
+	consoleLog("setPopulationPyramidType(" + filePyramidType + "): fileType=" + 		
+		fileType);
 	return false;
 	
 }
 
-/* 
- * setPopulationPyramidFileType() change population pyramid file type
+/*
+ * Function: 	setPopulationPyramidFileType()
+ * Parameters:  Event
+ * Returns: 	false
+ * Description:	change population pyramid file name and download box action
  */
 function setPopulationPyramidFileType(event) {
 	fileExt = this.value;
@@ -143,10 +182,17 @@ function setPopulationPyramidFileType(event) {
 	document.getElementById("denominator_pyramid").src = 
 		document.getElementById("denominator_pyramid").src.substring(0, 
 			document.getElementById("denominator_pyramid").src.length-3).
-				replace('RIFdenominator_pyramid_', fileType) + fileExt;
+				replace(otherFileType, fileType) + fileExt;
+
+	consoleLog("setPopulationPyramidFileType(" + fileExt + "): denominator_pyramid=" + 
+		document.getElementById("denominator_pyramid").src);	
+		
 	document.getElementById("downloadForm").action=document.getElementById("denominator_pyramid").src;
 	document.getElementById("downloadButton").innerText = "Download " + fileExt.toUpperCase();
-	
+
+	consoleLog("setPopulationPyramidFileType(" + fileExt + "): fileType=" + 		
+		document.getElementById("downloadForm").fileType);
+		
 	return false;
 }
 
