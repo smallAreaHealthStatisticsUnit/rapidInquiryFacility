@@ -1906,7 +1906,8 @@ callPerformSmoothingActivity exitValue: 1
   and then a local ImageWriter. Needs next release or build from source. 1.9.1 release is July 2017
 * Changed print setup from pixel/mm to DPI;
 * Added EPS/PS; issue with output (it appears blank in Ghostscript but the data is present!). Cannot set page size in FOP
-  transcoder;
+  transcoder; PS bars are in black and white (Google drive and Dropbox can visualise ps, EPS will probably work in Open 
+  Office - has been disabled in Office);
 
 #### 29th January to 2nd February
 
@@ -1919,7 +1920,7 @@ callPerformSmoothingActivity exitValue: 1
 ## In progress (December 2017/January 2018):
 
 * Extend PouchDB to base layer [probably will defer as not needed yet]
-* Sort popups in data viewer and diease maps [need to discuss]
+* Sort popups in data viewer and disease maps [need to discuss]
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing 
   type].

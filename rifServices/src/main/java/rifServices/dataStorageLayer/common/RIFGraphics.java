@@ -15,6 +15,7 @@ import org.apache.batik.transcoder.image.ImageTranscoder;
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.svggen.SVGGraphics2D;
+//import org.jfree.graphics2d.svg.SVGGraphics2D; // Needs jfreesvg
 import org.apache.batik.dom.GenericDOMImplementation;
 
 import org.apache.fop.svg.AbstractFOPTranscoder; 
