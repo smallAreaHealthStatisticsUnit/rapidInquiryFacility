@@ -51,6 +51,7 @@ import java.lang.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.Rectangle;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 
 /**
@@ -467,19 +468,29 @@ Could not write TIFF file because no WriteAdapter is availble
 		// crop extra space around the graph
         plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
 	
+        // customise the renderer...
 		StackedBarRenderer renderer = (StackedBarRenderer)plot.getRenderer();
 		renderer.setItemMargin(0.0);
+//      renderer.setDrawBarOutline(false);
+//      renderer.setErrorIndicatorPaint(Color.black);
+//      renderer.setIncludeBaseInRange(false);
+        plot.setRenderer(renderer);
 
         DOMImplementation domImpl =
             GenericDOMImplementation.getDOMImplementation();
         Document document = domImpl.createDocument(null, "svg", null);
 
+		int width=886; // denominatorPyramidWidthPixels/4; fixed!
+		
         // Create an instance of the SVG Generator
         SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+		svgGenerator.setSVGCanvasSize(new Dimension(width, 	// Width
+								(int)(width*InvAspactRatio)	// Height. THIS A GUESS - MORE AGE SEX GROUPS
+															// WILL CAUSE TROUBLE
+									));
 		
 		chart.setBackgroundPaint(Color.white);
 		ChartRenderingInfo chartInfo= new ChartRenderingInfo();
-		int width=886; // denominatorPyramidWidthPixels/4; fixed!
 		BufferedImage image = chart.createBufferedImage(width, 	// Width
 								(int)(width*InvAspactRatio),	// Height. THIS A GUESS - MORE AGE SEX GROUPS
 																// WILL CAUSE TROUBLE
