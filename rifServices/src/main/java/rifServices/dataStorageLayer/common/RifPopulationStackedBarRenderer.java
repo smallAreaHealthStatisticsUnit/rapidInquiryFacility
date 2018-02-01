@@ -1,3 +1,4 @@
+package rifServices.dataStorageLayer.common;
  
 import org.jfree.chart.renderer.category.StackedBarRenderer;
 import java.awt.Color;

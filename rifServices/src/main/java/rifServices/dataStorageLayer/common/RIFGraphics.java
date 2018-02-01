@@ -124,8 +124,13 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static int denominatorPyramidWidthPixels;
 	private static int printingDPI;
-	private static float jpegQuality = new Float(.8);
-	private static float InvAspactRatio = new Float(0.7);
+	
+	// These need to become parameters. A generic method will be created
+	private static float jpegQuality = new Float(0.8);
+	private static float populationPyramidAspactRatio = new Float(1.43); 
+										// ratio of the width to the height of an image or screen. 
+										// r=w/h, h=w/r
+	private static boolean useGradient = false;
 		
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	private static DatabaseType databaseType;
@@ -409,7 +414,8 @@ Could not write TIFF file because no WriteAdapter is availble
                                                    KeyedValues2DDataset dataset,
                                                    PlotOrientation orientation,
                                                    boolean legend,
-                                                   boolean tooltips) {
+                                                   boolean tooltips,
+												   boolean useGradient) {
 
         if (orientation == null) {
             throw new IllegalArgumentException("Null 'orientation' argument.");
@@ -421,7 +427,31 @@ Could not write TIFF file because no WriteAdapter is availble
 		categoryAxis.setCategoryMargin(0.0);
         ValueAxis valueAxis = new NumberAxis(rangeAxisLabel);
  
-        StackedBarRenderer renderer = new StackedBarRenderer();
+		RifPopulationStackedBarRenderer renderer = null;
+		// From "Color Gradients/Tints and Shades" at http://encycolorpedia.com/7f82c9
+		if (useGradient) {
+			Color maleColors[] = {
+				Color.decode("#b27073"),	// Slightly blacker
+				Color.decode("#c97f82"),	// Pinkish red: rgb(201, 127, 130)
+				Color.decode("#cf8d8f")		// Slightly whiter
+			}; 		
+			Color femaleColors[] = { 
+				Color.decode("#7073b2"),	// Slightly blacker
+				Color.decode("#7f82c9"),	// Blue: rgb(127,130,201)
+				Color.decode("#8d8fcf")		// Slightly whiter
+			}; 	
+			renderer = new RifPopulationStackedBarRenderer(maleColors, femaleColors);
+		}
+		else {
+			Color maleColors[] = {
+				Color.decode("#c97f82")		// Pinkish red: rgb(201, 127, 130)
+			}; 		
+			Color femaleColors[] = { 
+				Color.decode("#7f82c9")		// Blue: rgb(127,130,201)		
+			};
+			renderer = new RifPopulationStackedBarRenderer(maleColors, femaleColors);
+		}
+		
         if (tooltips) { 
 			renderer.setDefaultToolTipGenerator(
                      new StandardCategoryToolTipGenerator());
@@ -444,15 +474,16 @@ Could not write TIFF file because no WriteAdapter is availble
         KeyedValues2DDataset dataset = createDataset(connection, extractTable, year, treeForm);
 
         // create the chart... was createStackedHorizontalBarChart
-// Replace with full code; use category axis to remove margins
+		// Replaced with full code; use category axis to remove margins
         JFreeChart chart = rifCreateStackedBarChart(		// Was: ChartFactory.createStackedBarChart
                                                   "Population Pyramid for study: " + studyID,
-                                                  "Age Group",     // domain axis label
+                                                  "Age Group",     	// domain axis label
                                                   "Total Population (millions) " + year, // range axis label
-                                                  dataset,         // data
+                                                  dataset,         	// data
 												  PlotOrientation.HORIZONTAL,
-                                                  true,            // include legend
-                                                  true             // tooltips
+                                                  true,            	// include legend
+                                                  true,            	// tooltips
+												  useGradient		// useGradient
                                               );
 //		LegendTitle legendTitle = chart.getLegend(0);
 //		chart.removeLegend();
@@ -471,10 +502,10 @@ Could not write TIFF file because no WriteAdapter is availble
 		StackedBarRenderer renderer = (StackedBarRenderer)plot.getRenderer();
 		renderer.setItemMargin(0.0);
 		
-		Color maleColor = Color.decode("#c97f82"); 		// Pinkish red
-		Color femaleColor = Color.decode("#7f82c9"); 	// Blue
-		renderer.setSeriesPaint(0, maleColor);
-		renderer.setSeriesPaint(1, femaleColor);
+//		Color maleColor = Color.decode("#c97f82"); 		// Pinkish red: rgb(201, 127, 130)
+//		Color femaleColor = Color.decode("#7f82c9"); 	// Blue: rgb(127,130,201)
+//		renderer.setSeriesPaint(0, maleColor);
+//		renderer.setSeriesPaint(1, femaleColor);
 		
 //      renderer.setDrawBarOutline(false);
 //      renderer.setErrorIndicatorPaint(Color.black);
@@ -490,20 +521,20 @@ Could not write TIFF file because no WriteAdapter is availble
         // Create an instance of the SVG Generator
         SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
 		svgGenerator.setSVGCanvasSize(new Dimension(width, 	// Width
-								(int)(width*InvAspactRatio)	// Height. THIS A GUESS - MORE AGE SEX GROUPS
+								(int)(width/populationPyramidAspactRatio)	// Height. THIS A GUESS - MORE AGE SEX GROUPS
 															// WILL CAUSE TROUBLE
 									));
 		
 		chart.setBackgroundPaint(Color.white);
 		ChartRenderingInfo chartInfo= new ChartRenderingInfo();
 		BufferedImage image = chart.createBufferedImage(width, 	// Width
-								(int)(width*InvAspactRatio),	// Height. THIS A GUESS - MORE AGE SEX GROUPS
+								(int)(width/populationPyramidAspactRatio),	// Height. THIS A GUESS - MORE AGE SEX GROUPS
 																// WILL CAUSE TROUBLE
 								chartInfo);	 			 		// Force jfreechart to plot so can get size!	
 		PlotRenderingInfo plotInfo = chartInfo.getPlotInfo();
 		Rectangle2D plotBounds = plotInfo.getPlotArea();
 		Rectangle2D chartBounds = chartInfo.getChartArea();
-		Rectangle bounds = new Rectangle(width, (int)(width*InvAspactRatio) /* Height */);
+		Rectangle bounds = new Rectangle(width, (int)(width/populationPyramidAspactRatio) /* Height */);
         // draw the chart in the SVG generator
 		rifLogger.info(this.getClass(), "Bounds - SVG: " + bounds.toString() + 
 			"; plot: " + plotBounds.toString() + 
@@ -556,7 +587,7 @@ Could not write TIFF file because no WriteAdapter is availble
 							}
 							break;
 						case 2: // female
-							sex="Remale";
+							sex="Female";
 							break;
 						default:
 							throw new Exception("createDataset() invalid sex code: " + 
