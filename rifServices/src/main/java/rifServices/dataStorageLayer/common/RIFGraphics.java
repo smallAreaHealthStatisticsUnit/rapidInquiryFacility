@@ -562,7 +562,8 @@ Could not write TIFF file because no WriteAdapter is availble
 		ResultSet resultSet = null;
 		// Convert age_group to textual age group strings
 		extractTableQueryFormatter.addQueryLine(0, "WITH a AS (");		
-		extractTableQueryFormatter.addQueryLine(0, "	SELECT a.offset AS id, a.low_age AS lower_limit, a.high_age AS upper_limit, a.fieldname");
+		extractTableQueryFormatter.addQueryLine(0, "	SELECT a.offset AS id, a.low_age AS lower_limit, a.high_age AS upper_limit,");
+		extractTableQueryFormatter.addQueryLine(0, "	       REPLACE(REPLACE(a.fieldname, '_', ' to '), 'PLUS', ' plus') AS fieldname");
 		extractTableQueryFormatter.addQueryLine(0, "	  FROM rif40.rif40_age_groups a, rif40.rif40_tables b");
 		extractTableQueryFormatter.addQueryLine(0, "	 WHERE a.age_group_id = b.age_group_id");
 		extractTableQueryFormatter.addQueryLine(0, "	   AND b.table_name   = ?");
