@@ -52,6 +52,7 @@ import java.lang.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.Rectangle;
 import java.awt.Color;
+import java.awt.Paint;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 
@@ -292,7 +293,7 @@ public class RIFGraphics extends SQLAbstractSQLManager {
         TranscoderOutput output = new TranscoderOutput(ostream);
 		try {
 			switch (outputType) {
-				case RIFGRAPHICS_TIFF:  /* Fixed in Batik source: 21/8/2017, disabled, 
+				case RIFGRAPHICS_TIFF:  /* Fixed in Batik source: 21/8/2017, disabled using RIFGraphicsOutputType, 
 				   RifTIFFTranscoder.java created to try to fix error but failed due to interface dependencies, 
 			i.e you need a local org.apache.batik.ext.awt.image.codec.imageio.TIFFTranscoderImageIOWriteAdapter
 			and then a local ImageWriter...
@@ -460,6 +461,7 @@ Could not write TIFF file because no WriteAdapter is availble
 //		legendTitle.setMargin(0, 0, 0, 10);
 //		legendTitle.setItemFont(new Font("Sans-serif", Font.PLAIN, 18));
 //		chart.addSubtitle(legendTitle);
+//		String hexColor = String.format("#%06X", (0xFFFFFF & intColor));
 
         CategoryPlot plot = chart.getCategoryPlot();
 		// crop extra space around the graph
@@ -468,6 +470,12 @@ Could not write TIFF file because no WriteAdapter is availble
         // customise the renderer...
 		StackedBarRenderer renderer = (StackedBarRenderer)plot.getRenderer();
 		renderer.setItemMargin(0.0);
+		
+		Color maleColor = Color.decode("#c97f82"); 		// Pinkish red
+		Color femaleColor = Color.decode("#7f82c9"); 	// Blue
+		renderer.setSeriesPaint(0, maleColor);
+		renderer.setSeriesPaint(1, femaleColor);
+		
 //      renderer.setDrawBarOutline(false);
 //      renderer.setErrorIndicatorPaint(Color.black);
 //      renderer.setIncludeBaseInRange(false);
