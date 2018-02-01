@@ -467,11 +467,12 @@ Could not write TIFF file because no WriteAdapter is availble
 
     }
 	
-	public String getPopulationPyramid(Connection connection, String extractTable, 
+	public String getPopulationPyramid(Connection connection, String extractTable, String denominatorTable,
 		String studyID, int year, boolean treeForm)
 			throws Exception {
 
-        KeyedValues2DDataset dataset = createDataset(connection, extractTable, year, treeForm);
+        KeyedValues2DDataset dataset = createDataset(connection, extractTable, denominatorTable, 
+			year, treeForm);
 
         // create the chart... was createStackedHorizontalBarChart
 		// Replaced with full code; use category axis to remove margins
@@ -551,25 +552,34 @@ Could not write TIFF file because no WriteAdapter is availble
     /**
 	 * 
 	 */
-	private KeyedValues2DDataset createDataset(Connection connection, String extractTable, 
+	private KeyedValues2DDataset createDataset(Connection connection, 
+		String extractTable, String denominatorTable,
 		int year, boolean treeForm) 
 			throws Exception {
 				
 		SQLGeneralQueryFormatter extractTableQueryFormatter = new SQLGeneralQueryFormatter();		
 		
 		ResultSet resultSet = null;
-		// Convert age_group to textual age group strings 
-		extractTableQueryFormatter.addQueryLine(0, "SELECT sex, age_group, SUM(total_pop)/1000000 AS total_pop");
-		extractTableQueryFormatter.addQueryLine(0, "  FROM rif_studies." + extractTable.toLowerCase());
-		extractTableQueryFormatter.addQueryLine(0, " WHERE year = ?");
-		extractTableQueryFormatter.addQueryLine(0, "   AND study_or_comparison = 'S'");
-		extractTableQueryFormatter.addQueryLine(0, " GROUP BY sex, age_group");
-		extractTableQueryFormatter.addQueryLine(0, " ORDER BY sex, age_group DESC");
+		// Convert age_group to textual age group strings
+		extractTableQueryFormatter.addQueryLine(0, "WITH a AS (");		
+		extractTableQueryFormatter.addQueryLine(0, "	SELECT a.offset AS id, a.low_age AS lower_limit, a.high_age AS upper_limit, a.fieldname");
+		extractTableQueryFormatter.addQueryLine(0, "	  FROM rif40.rif40_age_groups a, rif40.rif40_tables b");
+		extractTableQueryFormatter.addQueryLine(0, "	 WHERE a.age_group_id = b.age_group_id");
+		extractTableQueryFormatter.addQueryLine(0, "	   AND b.table_name   = ?");
+		extractTableQueryFormatter.addQueryLine(0, ")");				
+		extractTableQueryFormatter.addQueryLine(0, "SELECT b.sex, b.age_group, a.fieldname, SUM(b.total_pop)/1000000 AS total_pop");
+		extractTableQueryFormatter.addQueryLine(0, "  FROM rif_studies." + extractTable.toLowerCase() + " b");
+		extractTableQueryFormatter.addQueryLine(0, "		LEFT OUTER JOIN a ON (a.id = b.age_group)");				
+		extractTableQueryFormatter.addQueryLine(0, " WHERE b.year = ?");
+		extractTableQueryFormatter.addQueryLine(0, "   AND b.study_or_comparison = 'S'");
+		extractTableQueryFormatter.addQueryLine(0, " GROUP BY b.sex, b.age_group, a.fieldname");
+		extractTableQueryFormatter.addQueryLine(0, " ORDER BY b.sex, b.age_group DESC");
 
 		PreparedStatement statement = createPreparedStatement(connection, extractTableQueryFormatter);
 		DefaultKeyedValues2DDataset data = null;
 		try {	
-			statement.setInt(1, year);	
+			statement.setString(1, denominatorTable);
+			statement.setInt(2, year);	
 			resultSet = statement.executeQuery();
 			if (resultSet.next()) {
 				int rowCount=0;
@@ -577,8 +587,11 @@ Could not write TIFF file because no WriteAdapter is availble
 				do {	
 					rowCount++;
 					String sex=null;
-					String ageGroup=resultSet.getString(2);
-					float totalPop=resultSet.getFloat(3);
+					String ageGroup=resultSet.getString(3);
+					if (ageGroup == null) {
+						resultSet.getString(2);
+					}
+					float totalPop=resultSet.getFloat(4);
 					switch (resultSet.getInt(1)) {
 						case 1: // Male
 							sex="Male";

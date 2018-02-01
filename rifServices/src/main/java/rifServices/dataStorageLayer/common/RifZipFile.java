@@ -740,6 +740,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"reports" + File.separator + "denominator");
 		CachedRowSetImpl rif40Studies=getRif40Studies(connection, studyID);
 		String extractTable=getColumnFromResultSet(rif40Studies, "extract_table");
+		String denominatorTable=getColumnFromResultSet(rif40Studies, "denom_tab");
 		CachedRowSetImpl rif40ExtraxctMaxMinYear=getStudyStartEndYear(connection, extractTable);
 		int minYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_year"));
 		int maxYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_year"));
@@ -778,7 +779,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 
 			}
 
-			String svgText=rifGraphics.getPopulationPyramid(connection, extractTable, studyID, i,
+			String svgText=rifGraphics.getPopulationPyramid(connection, extractTable, denominatorTable, 
+				studyID, i,
 				true /* treeForm: true - classic tree form; false: stack to right */);	
 			rifGraphics.addSvgFile(
 				temporaryDirectory,
@@ -787,7 +789,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				studyID,
 				i,
 				svgText); 
-			svgText=rifGraphics.getPopulationPyramid(connection, extractTable, studyID, i,
+			svgText=rifGraphics.getPopulationPyramid(connection, extractTable, denominatorTable, 
+				studyID, i,
 				false /* treeForm: true - classic tree form; false: stack to right */);	
 			rifGraphics.addSvgFile(
 				temporaryDirectory,
@@ -955,7 +958,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		CachedRowSetImpl cachedRowSet = null;
 		
-		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT extract_table, map_table");
+		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT extract_table, map_table, denom_tab");
 		rif40StudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");
 		rif40StudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 
