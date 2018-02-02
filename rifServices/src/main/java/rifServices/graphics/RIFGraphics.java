@@ -40,6 +40,7 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.chart.title.LegendTitle;
+import org.jfree.chart.renderer.category.StandardBarPainter;
 
 import org.w3c.dom.DOMImplementation; 
 import org.w3c.dom.Document; 
@@ -130,7 +131,7 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 	private static float populationPyramidAspactRatio = new Float(1.43); 
 										// ratio of the width to the height of an image or screen. 
 										// r=w/h, h=w/r
-	private static boolean useGradient = false;
+	private static boolean enablePostscript = false; // Setting to true also disables the gradients
 		
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	private static DatabaseType databaseType;
@@ -415,7 +416,8 @@ Could not write TIFF file because no WriteAdapter is availble
                                                    PlotOrientation orientation,
                                                    boolean legend,
                                                    boolean tooltips,
-												   boolean useGradient) {
+												   boolean enablePostscript,
+												   RifPopulationStackedBarRenderer renderer) {
 
         if (orientation == null) {
             throw new IllegalArgumentException("Null 'orientation' argument.");
@@ -426,10 +428,39 @@ Could not write TIFF file because no WriteAdapter is availble
 		categoryAxis.setUpperMargin(0.0);
 		categoryAxis.setCategoryMargin(0.0);
         ValueAxis valueAxis = new NumberAxis(rangeAxisLabel);
- 
+	
+        if (tooltips) { 
+			renderer.setDefaultToolTipGenerator(
+                     new StandardCategoryToolTipGenerator());
+        }
+
+		renderer.setItemMargin(0.0);
+		if (enablePostscript) { // Disable color gradients - they break EPSTranscoder and PSTranscoder
+			renderer.setBarPainter(new StandardBarPainter());
+		}
+		// Uses GradientBarPainter() by default
+		
+//      renderer.setDrawBarOutline(false);
+//      renderer.setErrorIndicatorPaint(Color.black);
+//      renderer.setIncludeBaseInRange(false);
+
+        CategoryPlot plot = new CategoryPlot(dataset, categoryAxis, valueAxis, 
+                renderer);
+				
+		// crop extra space around the graph
+        plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
+		
+        plot.setOrientation(orientation);
+        JFreeChart chart = new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT,
+                plot, legend);
+
+        return chart;
+    }
+	
+	private RifPopulationStackedBarRenderer getRifPopulationStackedBarRenderer() {
 		RifPopulationStackedBarRenderer renderer = null;
 		// From "Color Gradients/Tints and Shades" at http://encycolorpedia.com/7f82c9
-		if (useGradient) {
+		if (enablePostscript) {
 			Color maleColors[] = {
 				Color.decode("#b27073"),	// Slightly blacker
 				Color.decode("#c97f82"),	// Pinkish red: rgb(201, 127, 130)
@@ -442,7 +473,7 @@ Could not write TIFF file because no WriteAdapter is availble
 			}; 	
 			renderer = new RifPopulationStackedBarRenderer(maleColors, femaleColors);
 		}
-		else {
+		else { // Use gradients (does not work with EPSTranscoder/PSTranscoder)
 			Color maleColors[] = {
 				Color.decode("#c97f82")		// Pinkish red: rgb(201, 127, 130)
 			}; 		
@@ -451,41 +482,35 @@ Could not write TIFF file because no WriteAdapter is availble
 			};
 			renderer = new RifPopulationStackedBarRenderer(maleColors, femaleColors);
 		}
-		
-        if (tooltips) { 
-			renderer.setDefaultToolTipGenerator(
-                     new StandardCategoryToolTipGenerator());
-        }
 
-        CategoryPlot plot = new CategoryPlot(dataset, categoryAxis, valueAxis, 
-                renderer);
-        plot.setOrientation(orientation);
-        JFreeChart chart = new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT,
-                plot, legend);
-
-         return chart;
-
-    }
+		return renderer;
+	}
 	
-	public String getPopulationPyramid(Connection connection, String extractTable, String denominatorTable,
+	public String getPopulationPyramid(Connection connection, String extractTable, 
+		String denominatorTable, String studyDescription,
 		String studyID, int year, boolean treeForm)
 			throws Exception {
 
         KeyedValues2DDataset dataset = createDataset(connection, extractTable, denominatorTable, 
 			year, treeForm);
 
+		RifPopulationStackedBarRenderer renderer = getRifPopulationStackedBarRenderer();
+		
         // create the chart... was createStackedHorizontalBarChart
 		// Replaced with full code; use category axis to remove margins
         JFreeChart chart = rifCreateStackedBarChart(		// Was: ChartFactory.createStackedBarChart
-                                                  "Population Pyramid for study: " + studyID,
+                                                  "Denominator Population Pyramid for study " + 
+														studyID + ": " + studyDescription,
                                                   "Age Group",     	// domain axis label
                                                   "Total Population (millions) " + year, // range axis label
                                                   dataset,         	// data
 												  PlotOrientation.HORIZONTAL,
                                                   true,            	// include legend
                                                   true,            	// tooltips
-												  useGradient		// useGradient
+												  enablePostscript,	// Setting to true also disables the gradients
+												  renderer
                                               );
+											  
 //		LegendTitle legendTitle = chart.getLegend(0);
 //		chart.removeLegend();
 		
@@ -493,25 +518,6 @@ Could not write TIFF file because no WriteAdapter is availble
 //		legendTitle.setMargin(0, 0, 0, 10);
 //		legendTitle.setItemFont(new Font("Sans-serif", Font.PLAIN, 18));
 //		chart.addSubtitle(legendTitle);
-//		String hexColor = String.format("#%06X", (0xFFFFFF & intColor));
-
-        CategoryPlot plot = chart.getCategoryPlot();
-		// crop extra space around the graph
-        plot.setInsets(new RectangleInsets(0, 0, 0, 5.0));
-	
-        // customise the renderer...
-		StackedBarRenderer renderer = (StackedBarRenderer)plot.getRenderer();
-		renderer.setItemMargin(0.0);
-		
-//		Color maleColor = Color.decode("#c97f82"); 		// Pinkish red: rgb(201, 127, 130)
-//		Color femaleColor = Color.decode("#7f82c9"); 	// Blue: rgb(127,130,201)
-//		renderer.setSeriesPaint(0, maleColor);
-//		renderer.setSeriesPaint(1, femaleColor);
-		
-//      renderer.setDrawBarOutline(false);
-//      renderer.setErrorIndicatorPaint(Color.black);
-//      renderer.setIncludeBaseInRange(false);
-        plot.setRenderer(renderer);
 
         DOMImplementation domImpl =
             GenericDOMImplementation.getDOMImplementation();
@@ -544,13 +550,14 @@ Could not write TIFF file because no WriteAdapter is availble
 		chart.draw(svgGenerator, bounds);
 		
 		StringWriter writer = new StringWriter();
-		svgGenerator.stream(writer, true /* use css */);
-		
-		return writer.toString();
+		svgGenerator.stream(writer, true /* use css */);	// Stream to a string
+		String result=renderer.convertRGBtoHex(writer.toString());
+
+		return result;
     }
 
     /**
-	 * 
+	 * NEEDS TO BE MOVED TO THE dataStorageLayer!!!!!
 	 */
 	private KeyedValues2DDataset createDataset(Connection connection, 
 		String extractTable, String denominatorTable,

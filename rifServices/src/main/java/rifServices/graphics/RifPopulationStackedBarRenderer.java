@@ -1,5 +1,7 @@
 package rifServices.dataStorageLayer.common;
  
+import rifGenericLibrary.util.RIFLogger;
+
 import org.jfree.chart.renderer.category.StackedBarRenderer;
 import java.awt.Color;
 import java.awt.Paint;
@@ -50,9 +52,15 @@ import java.awt.Paint;
  */
 class RifPopulationStackedBarRenderer extends StackedBarRenderer {
 
+	// ==========================================
+	// Section Constants
+	// ==========================================
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
+	
     /** The colors. */
-    private Paint[] maleColors;
-    private Paint[] femaleColors;
+    private Color[] maleColors;
+    private Color[] femaleColors;
 
     /**
      * Creates a new renderer.
@@ -60,11 +68,40 @@ class RifPopulationStackedBarRenderer extends StackedBarRenderer {
      * @param maleColors  the colors.
      * @param femaleColors  the colors.
      */
-    public RifPopulationStackedBarRenderer(final Paint[] maleColors, final Paint[] femaleColors) {
+    public RifPopulationStackedBarRenderer(final Color[] maleColors, final Color[] femaleColors) {
         this.maleColors = maleColors;
         this.femaleColors = femaleColors;
     }
 
+	public final String convertRGBtoHex(final String xmlString) {
+		String result=xmlString;
+		
+		for (int i = 0; i < maleColors.length; i++) {
+			int rgb=maleColors[i].getRGB();		
+			String hexColor = String.format("#%06X", (0xFFFFFF & rgb)).toLowerCase();
+			String rgbColor = "rgb(" + 
+				maleColors[i].getRed() + "," + 
+				maleColors[i].getGreen() + "," + 
+				maleColors[i].getBlue() + ")";
+			rifLogger.info(this.getClass(), 
+				"Replace male color[" + i + "] " + rgbColor + " with " + hexColor);
+			result=result.replace(rgbColor, hexColor);
+		}
+		for (int i = 0; i < femaleColors.length; i++) {
+			int rgb=femaleColors[i].getRGB();		
+			String hexColor = String.format("#%06X", (0xFFFFFF & rgb)).toLowerCase();
+			String rgbColor = "rgb(" + 
+				femaleColors[i].getRed() + "," + 
+				femaleColors[i].getGreen() + "," + 
+				femaleColors[i].getBlue() + ")";
+			rifLogger.info(this.getClass(), 
+				"Replace female color[" + i + "] " + rgbColor + " with " + hexColor);
+			result=result.replace(rgbColor, hexColor);
+		}
+			
+		return result;
+	}
+	
     /**
      * Returns the paint for an item.  Overrides the default behaviour inherited from
      * AbstractSeriesRenderer.

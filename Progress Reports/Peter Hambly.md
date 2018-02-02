@@ -1912,10 +1912,15 @@ callPerformSmoothingActivity exitValue: 1
 #### 29th January to 2nd February
 
 * Added jfreechart charts; issues with:
-  * Sizing and aspect ratio
+  * Sizing and aspect ratio [Fixed]
   * SVG needs to be stylable
   * Title centering
+  * PS bar in black and white
+  * EPS could not be tested (needs Linux)
 * SAHSULAND start year issue (probably missing data)
+* SEER data extract population mal join (at least 20x expected); data OK
+* RIF Java developer interview; hired!
+* 
   
 ## In progress (December 2017/January 2018):
 

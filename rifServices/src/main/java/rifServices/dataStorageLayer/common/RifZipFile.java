@@ -603,7 +603,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 //			"year_start,year_stop," + lineSeparator +
 //			"max_age_group,min_age_group," + lineSeparator +
 			"study_geolevel_name,comparison_geolevel_name," + lineSeparator +
-//			"map_table,extract_table," + lineSeparator +
+//			"map_table,extract_table,description" + lineSeparator +
 //			"suppression_value,extract_permitted,transfer_permitted,authorised_by,authorised_on,authorised_notes," + lineSeparator +
 			"project,project_description," + lineSeparator +
 			"CASE WHEN stats_method = 'HET' THEN 'Heterogenous'" + lineSeparator +
@@ -741,6 +741,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		CachedRowSetImpl rif40Studies=getRif40Studies(connection, studyID);
 		String extractTable=getColumnFromResultSet(rif40Studies, "extract_table");
 		String denominatorTable=getColumnFromResultSet(rif40Studies, "denom_tab");
+		String studyDescription=getColumnFromResultSet(rif40Studies, "description", 
+			true /* allowNulls */, false /* allowNoRows */);
+		if (studyDescription == null) {
+			studyDescription="No description";
+		}
 		CachedRowSetImpl rif40ExtraxctMaxMinYear=getStudyStartEndYear(connection, extractTable);
 		int minYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_year"));
 		int maxYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_year"));
@@ -780,7 +785,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			}
 
 			String svgText=rifGraphics.getPopulationPyramid(connection, extractTable, denominatorTable, 
-				studyID, i,
+				studyDescription, studyID, i,
 				true /* treeForm: true - classic tree form; false: stack to right */);	
 			rifGraphics.addSvgFile(
 				temporaryDirectory,
@@ -790,7 +795,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				i,
 				svgText); 
 			svgText=rifGraphics.getPopulationPyramid(connection, extractTable, denominatorTable, 
-				studyID, i,
+				studyDescription, studyID, i,
 				false /* treeForm: true - classic tree form; false: stack to right */);	
 			rifGraphics.addSvgFile(
 				temporaryDirectory,
@@ -882,6 +887,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final CachedRowSetImpl cachedRowSet,
 			final String columnName)
 			throws Exception {
+		return getColumnFromResultSet(cachedRowSet, columnName, 
+			false /* allowNulls */, false /* allowNoRows */);
+	}
+			
+	private String getColumnFromResultSet(
+			final CachedRowSetImpl cachedRowSet,
+			final String columnName,
+			final boolean allowNulls,
+			final boolean allowNoRows)
+			throws Exception {
 			
 		String columnValue=null;
 		boolean columnFound=false;
@@ -905,11 +920,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			if (!columnFound) {
 				throw new Exception("getColumnFromResultSet(): column not found: " + columnName);
 			}
-			if (columnValue == null) {
+			if (columnValue == null && !allowNulls) {
 				throw new Exception("getColumnFromResultSet(): got null for column: " + columnName);
 			}
 		}
-		else {
+		else if (!allowNoRows) {
 			throw new Exception("getColumnFromResultSet(): expected 1 row, got none");
 		}
 		
@@ -958,7 +973,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		CachedRowSetImpl cachedRowSet = null;
 		
-		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT extract_table, map_table, denom_tab");
+		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT extract_table, map_table, denom_tab, description");
 		rif40StudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");
 		rif40StudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 
