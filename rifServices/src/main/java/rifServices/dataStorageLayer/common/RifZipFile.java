@@ -786,7 +786,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 
 			String svgText=rifGraphics.getPopulationPyramid(connection, extractTable, denominatorTable, 
 				studyDescription, studyID, i,
-				true /* treeForm: true - classic tree form; false: stack to right */);	
+				true /* treeForm: true - classic tree form; false: stack to right */,
+				false /* enablePostscript: setting to true also disables the gradients */);	
 			rifGraphics.addSvgFile(
 				temporaryDirectory,
 				"reports" + File.separator + "denominator",
@@ -796,11 +797,34 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				svgText); 
 			svgText=rifGraphics.getPopulationPyramid(connection, extractTable, denominatorTable, 
 				studyDescription, studyID, i,
-				false /* treeForm: true - classic tree form; false: stack to right */);	
+				false /* treeForm: true - classic tree form; false: stack to right */,
+				false /* enablePostscript: setting to true also disables the gradients */);	
 			rifGraphics.addSvgFile(
 				temporaryDirectory,
 				"reports" + File.separator + "denominator",
 				"RIFdenominator_pyramid_",
+				studyID,
+				i,
+				svgText); 	
+			svgText=rifGraphics.getPopulationPyramid(connection, extractTable, denominatorTable, 
+				studyDescription, studyID, i,
+				true /* treeForm: true - classic tree form; false: stack to right */,
+				true /* enablePostscript: setting to true also disables the gradients */);	
+			rifGraphics.addSvgFile(
+				temporaryDirectory,
+				"reports" + File.separator + "denominator",
+				"FOPdenominator_treepyramid_",
+				studyID,
+				i,
+				svgText); 
+			svgText=rifGraphics.getPopulationPyramid(connection, extractTable, denominatorTable, 
+				studyDescription, studyID, i,
+				false /* treeForm: true - classic tree form; false: stack to right */,
+				true /* enablePostscript: setting to true also disables the gradients */);	
+			rifGraphics.addSvgFile(
+				temporaryDirectory,
+				"reports" + File.separator + "denominator",
+				"FOPdenominator_pyramid_",
 				studyID,
 				i,
 				svgText); 
@@ -861,21 +885,39 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			Iterator <RIFGraphicsOutputType> allOutputTypeIter = allOutputTypes.iterator();
 			while (allOutputTypeIter.hasNext()) {
 				RIFGraphicsOutputType outputType=allOutputTypeIter.next();
-				if (outputType.isRIFGraphicsOutputTypeEnabled()) {					
-					rifGraphics.addGraphicsFile(
-						temporaryDirectory,							/* Study scratch space diretory */
-						"reports" + File.separator + "denominator", /* directory */
-						"RIFdenominator_treepyramid_", 				/* File prefix */
-						studyID,
-						year,
-						outputType);
-					rifGraphics.addGraphicsFile(
-						temporaryDirectory,							/* Study scratch space diretory */
-						"reports" + File.separator + "denominator", /* directory */
-						"RIFdenominator_pyramid_", 					/* File prefix */
-						studyID,
-						year,
-						outputType);
+				if (outputType.isRIFGraphicsOutputTypeEnabled()) {	
+					if (outputType.doesRIFGraphicsOutputTypeUseFop()) {	
+						rifGraphics.addGraphicsFile(
+							temporaryDirectory,							/* Study scratch space diretory */
+							"reports" + File.separator + "denominator", /* directory */
+							"FOPdenominator_treepyramid_", 				/* File prefix */
+							studyID,
+							year,
+							outputType);
+						rifGraphics.addGraphicsFile(
+							temporaryDirectory,							/* Study scratch space diretory */
+							"reports" + File.separator + "denominator", /* directory */
+							"FOPdenominator_pyramid_", 					/* File prefix */
+							studyID,
+							year,
+							outputType);
+					}
+					else {
+						rifGraphics.addGraphicsFile(
+							temporaryDirectory,							/* Study scratch space diretory */
+							"reports" + File.separator + "denominator", /* directory */
+							"RIFdenominator_treepyramid_", 				/* File prefix */
+							studyID,
+							year,
+							outputType);
+						rifGraphics.addGraphicsFile(
+							temporaryDirectory,							/* Study scratch space diretory */
+							"reports" + File.separator + "denominator", /* directory */
+							"RIFdenominator_pyramid_", 					/* File prefix */
+							studyID,
+							year,
+							outputType);
+					}
 				}
 			}				
 		}	

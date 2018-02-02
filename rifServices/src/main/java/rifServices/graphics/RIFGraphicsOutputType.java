@@ -60,43 +60,63 @@ package rifServices.graphics;
  */
 
 public enum RIFGraphicsOutputType {
-	RIFGRAPHICS_JPEG(1, true) {
+	RIFGRAPHICS_JPEG(1, true, false) {
 		public String getRIFGraphicsOutputTypeDescription() {
 			return "Joint Photographic Experts Group";
 		}
+		public String getGraphicsExtentsion() {
+			return "jpg";
+		}
 	},
-	RIFGRAPHICS_PNG(2, true) {
+	RIFGRAPHICS_PNG(2, true, false) {
 		public String getRIFGraphicsOutputTypeDescription() {
 			return "Portable Network Graphics";
 		}
+		public String getGraphicsExtentsion() {
+			return "png";
+		}
 	},
-	RIFGRAPHICS_TIFF(3, false) {
+	RIFGRAPHICS_TIFF(3, false, false) {
 		public String getRIFGraphicsOutputTypeDescription() {
 			return "Tagged Image File Format";
 		}
+		public String getGraphicsExtentsion() {
+			return "tif";
+		}
 	},
-	RIFGRAPHICS_SVG(4, true) {
+	RIFGRAPHICS_SVG(4, true, false) {
 		public String getRIFGraphicsOutputTypeDescription() {
 			return "Scalable Vector Graphics";
 		}
+		public String getGraphicsExtentsion() {
+			return "svg";
+		}
 	},
-	RIFGRAPHICS_EPS(5, true) {
+	RIFGRAPHICS_EPS(5, true, true) {
 		public String getRIFGraphicsOutputTypeDescription() {
 			return "Encapsulated Postscript";
 		}
+		public String getGraphicsExtentsion() {
+			return "eps";
+		}
 	},
-	RIFGRAPHICS_PS(6, true) {
+	RIFGRAPHICS_PS(6, true, true) {
 		public String getRIFGraphicsOutputTypeDescription() {
 			return "Postscript";
+		}
+		public String getGraphicsExtentsion() {
+			return "ps";
 		}
 	};
 	
 	private final int outputType;
 	private final boolean enabled;
+	private final boolean usesFop;
 	
-	RIFGraphicsOutputType(int outputType, boolean enabled) { // Constructor
+	RIFGraphicsOutputType(int outputType, boolean enabled, boolean usesFop) { // Constructor
 		this.outputType=outputType;
 		this.enabled=enabled;
+		this.usesFop=usesFop;
 	}
 	
 	public int getRIFGraphicsOutputType() { // Get method
@@ -105,10 +125,17 @@ public enum RIFGraphicsOutputType {
 	
 	public boolean isRIFGraphicsOutputTypeEnabled() { // Get method
 		return enabled;
+	}	
+	
+	public boolean doesRIFGraphicsOutputTypeUseFop() { // Get method
+		return usesFop;
 	}
 	
-	public abstract String getRIFGraphicsOutputTypeDescription(); // ToString replacement
 	public String getRIFGraphicsOutputTypeShortName() {
 		return name().replace("RIFGRAPHICS_", "");
 	}
+	
+	public abstract String getGraphicsExtentsion();	
+	public abstract String getRIFGraphicsOutputTypeDescription(); // ToString replacement
+
 }

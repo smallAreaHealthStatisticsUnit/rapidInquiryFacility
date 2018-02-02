@@ -132,7 +132,6 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 	private static float populationPyramidAspactRatio = new Float(1.43); 
 										// ratio of the width to the height of an image or screen. 
 										// r=w/h, h=w/r
-	private static boolean enablePostscript = false; // Setting to true also disables the gradients
 		
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	private static DatabaseType databaseType;
@@ -232,35 +231,6 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 		transCoder.transcode(input, output);	// Convert the image.		
 	}
 	
-	private String getGraphicsExtentsion(
-		final RIFGraphicsOutputType outputType) 
-			throws Exception  {
-			
-		String extension="unk";
-		
-		switch (outputType) {
-			case RIFGRAPHICS_JPEG:
-		        extension="jpg";
-				break;
-			case RIFGRAPHICS_PNG:
-		        extension="png";
-				break;
-			case RIFGRAPHICS_TIFF:
-		        extension="tif";
-				break;
-			case RIFGRAPHICS_EPS:
-		        extension="eps";
-				break;
-			case RIFGRAPHICS_PS:
-		        extension="ps";
-				break;
-			default:
-				throw new Exception("getGraphicsExtentsion(): Unsupported output type: " + outputType.toString());
-		}			
-		
-		return extension;
-	}
-	
 	public void addGraphicsFile(
 		final File temporaryDirectory,
 		final String dirName,
@@ -272,7 +242,7 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 		Float printingPixelPermm=(float)(printingDPI/25.4);
 		
 		String graphicFileName=filePrefix + studyID + "_" + printingDPI +
-			"dpi_" + year + "." + getGraphicsExtentsion(outputType);
+			"dpi_" + year + "." + outputType.getGraphicsExtentsion();
 		String svgFileName=filePrefix + studyID + "_" + year + ".svg";
 		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		String graphicFile=svgDirName + File.separator + graphicFileName;
@@ -407,6 +377,8 @@ Could not write TIFF file because no WriteAdapter is availble
       *                     vertical) (<code>null</code> not permitted).
       * @param legend  a flag specifying whether or not a legend is required.
       * @param tooltips  configure chart to generate tool tips?
+	  * @param enablePostscript boolean: setting to true also disables the gradients
+	  * @param renderer RifPopulationStackedBarRenderer
       *
       * @return A stacked bar chart.
       */
@@ -458,7 +430,7 @@ Could not write TIFF file because no WriteAdapter is availble
         return chart;
     }
 	
-	private RifPopulationStackedBarRenderer getRifPopulationStackedBarRenderer() {
+	private RifPopulationStackedBarRenderer getRifPopulationStackedBarRenderer(boolean enablePostscript) {
 		RifPopulationStackedBarRenderer renderer = null;
 		// From "Color Gradients/Tints and Shades" at http://encycolorpedia.com/7f82c9
 		if (enablePostscript) {
@@ -489,13 +461,13 @@ Could not write TIFF file because no WriteAdapter is availble
 	
 	public String getPopulationPyramid(Connection connection, String extractTable, 
 		String denominatorTable, String studyDescription,
-		String studyID, int year, boolean treeForm)
+		String studyID, int year, boolean treeForm, boolean enablePostscript)
 			throws Exception {
 
         KeyedValues2DDataset dataset = createDataset(connection, extractTable, denominatorTable, 
 			year, treeForm);
 
-		RifPopulationStackedBarRenderer renderer = getRifPopulationStackedBarRenderer();
+		RifPopulationStackedBarRenderer renderer = getRifPopulationStackedBarRenderer(enablePostscript);
 		
         // create the chart... was createStackedHorizontalBarChart
 		// Replaced with full code; use category axis to remove margins
