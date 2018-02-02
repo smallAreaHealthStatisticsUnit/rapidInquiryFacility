@@ -1,6 +1,9 @@
 package rifGenericLibrary.dataStorageLayer;
 
+import rifGenericLibrary.util.RIFLogger;
 
+import java.io.*;
+import java.util.Map;
 
 /**
  *
@@ -72,6 +75,12 @@ public abstract class AbstractSQLQueryFormatter {
 	// Section Constants
 	// ==========================================
 
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
+
+	private static Map<String, String> environmentalVariables = System.getenv();
+	private static String catalinaHome = environmentalVariables.get("CATALINA_HOME");
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -176,12 +185,11 @@ public abstract class AbstractSQLQueryFormatter {
 		final String queryPhrase) {
 		
 		query.append(queryPhrase);
-		query.append(" ");
-		query.append("\n");		
+		query.append(" " + lineSeparator);		
 	}
 	
 	public void addBlankLine() {
-		query.append("\n\n");
+		query.append(lineSeparator + lineSeparator);
 	}
 
 	public void addPaddedQueryLine(
@@ -190,8 +198,7 @@ public abstract class AbstractSQLQueryFormatter {
 			
 		addIndentation(indentationLevel);	
 		query.append(queryPhrase);
-		query.append(" ");
-		query.append("\n");		
+		query.append(" " + lineSeparator);		
 	}
 
 	public void addQueryPhrase(
@@ -207,6 +214,87 @@ public abstract class AbstractSQLQueryFormatter {
 		
 		query.append(queryPhrase);
 	}
+
+	/**
+	 * Create query from file
+	 *
+	 * @param  fileName		Name of file containing query
+	 * @param  args 		Argument list.
+	 *						Replaces %1 with args[1] etc
+	 *						NO SUPPORT FOR ESCAPING!
+	 */	
+	public void createQueryFromFile(final String fileName, final String[] args)  
+			throws Exception {
+		FileReader file = getQueryFileReader(fileName);
+		BufferedReader bufferedReader=null;
+		
+		try {
+			// wrap a BufferedReader around FileReader
+			bufferedReader = new BufferedReader(file);
+			String line=null;
+			
+			// use the readLine method of the BufferedReader to read one line at a time.
+			// the readLine method returns null when there is nothing else to read.
+			while ((line = bufferedReader.readLine()) != null) { // CR/CRLF independent
+				query.append(line + lineSeparator);
+			}
+		} 
+		catch (IOException exception) {
+			throw exception;
+		} 
+		finally {
+			bufferedReader.close();
+			for (int i = 0; i < args.length; i++) {
+				queryReplaceAll("%" + i, args[i]); // replace %1 with args[1] etc
+			}
+		}		
+	}
+
+	public void queryReplaceAll(String from, String to) {
+		int index = query.indexOf(from);
+		while (index != -1)
+		{
+			query.replace(index, index + from.length(), to);
+			index += to.length(); // Move to the end of the replacement
+			index = query.indexOf(from, index);
+		}
+	}
+	
+	private FileReader getQueryFileReader(String fileName)  
+			throws Exception {
+
+		FileReader file = null;		
+		
+		String fileName1 = null;
+		String fileName2 = null;
+		
+		if (catalinaHome != null) {
+			fileName1=catalinaHome + File.separator + "webapps" + File.separator + "dataStorageLayrerSQL" + 
+				File.separator + "common" + File.separator + file;
+			fileName1=catalinaHome + File.separator + "webapps" + File.separator + "dataStorageLayrerSQL" + 
+				File.separator + databaseType.getShortName() + File.separator + file;
+		}
+		else {
+			throw new Exception("getQueryFileReader: CATALINA_HOME not set in environment"); 
+		}
+		
+		try {
+			file=new FileReader(fileName1);
+		} 
+		catch (IOException ioException) {
+			try {
+				file=new FileReader(fileName2);
+			}
+			catch (IOException ioException2) {				
+				rifLogger.error(this.getClass(), 
+					"getQueryFileReader error for files: " + 
+						fileName1 + " and " + fileName2, 
+					ioException2);
+				throw ioException2;
+			}
+		}			
+		return file;
+	}
 	
 	public void addQueryLine(
 		final int indentationLevel,
@@ -214,7 +302,7 @@ public abstract class AbstractSQLQueryFormatter {
 		
 		addIndentation(indentationLevel);		
 		query.append(queryPhrase);
-		query.append("\n");
+		query.append(lineSeparator);
 	
 	}
 
@@ -224,7 +312,7 @@ public abstract class AbstractSQLQueryFormatter {
 		for (int i = 0; i < 60; i++) {
 			query.append("=");
 		}
-		query.append("\n");
+		query.append(lineSeparator);
 	}
 	
 	public void addComment(
@@ -239,7 +327,7 @@ public abstract class AbstractSQLQueryFormatter {
 			
 		query.append(" -- ");
 		query.append(lineComment);
-		query.append("\n");
+		query.append(lineSeparator);
 	}	
 	
 	private void addIndentation(
@@ -255,17 +343,15 @@ public abstract class AbstractSQLQueryFormatter {
 	public void finishLine(
 		final String queryPhrase) {
 		
-		query.append(queryPhrase);
-		query.append("\n");
+		query.append(queryPhrase + lineSeparator);
 	}
 	
 	public void finishLine() {
-		query.append("\n");
+		query.append(lineSeparator);
 	}
 	
 	public void padAndFinishLine() {
-		query.append(" ");
-		query.append("\n");
+		query.append(" " + lineSeparator);
 	}
 	
 	protected void resetAccumulatedQueryExpression() {
@@ -280,7 +366,7 @@ public abstract class AbstractSQLQueryFormatter {
 		if (endWithSemiColon) {
 			result.append(";");
 		}
-		result.append("\n");
+		result.append(lineSeparator);
 		return result.toString();
 	}
 	

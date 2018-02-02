@@ -35,6 +35,12 @@
  * Peter Hambly
  * @author phambly
  *
- * Denominator SQL report
+ * SQL statement name: 	denominatorReport..sql
+ * Type:				Common SQL
+ * Parameters:
+ *						1: Extract table name; e.g. s367_extract
+ *
+ * Description:			Denominator SQL report
+ * Note:				NO SUPPORT FOR ESCAPING!
  */
  

@@ -53,18 +53,24 @@ import java.text.Collator;
  */
 
 public enum DatabaseType {
-	POSTGRESQL("postgresql"),
-	SQL_SERVER("sqlServer"),
-	UNKNOWN("unknown");
+	POSTGRESQL("postgresql", "pg"),
+	SQL_SERVER("sqlServer", "ms"),
+	UNKNOWN("unknown", "unk");
 		
 	private String name;
+	private String shortName;
 	
-	DatabaseType(final String name) {
+	DatabaseType(final String name, final String shortName) {
 		this.name = name;
+		this.shortName = shortName;
 	}
 	
 	public String getName() {
 		return name;
+	}	
+	
+	public String getShortName() {
+		return shortName;
 	}
 	
 	public boolean isName(
