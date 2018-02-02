@@ -5,17 +5,19 @@ import rifServices.businessConceptLayer.AbstractStudy;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifServices.dataStorageLayer.common.RIFGraphics;
+import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.fileFormats.RIFStudySubmissionContentHandler;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
-
+import rifServices.graphics.RIFGraphicsOutputType;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+
+import rifServices.graphics.RIFGraphics;
 
 import com.sun.rowset.CachedRowSetImpl;
 import java.sql.*;
@@ -106,7 +108,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	private Connection connection;
 	private String studyID;
 	private static String EXTRACT_DIRECTORY;
-	private static int denominatorPyramidWidthPixels;
 	private static int printingDPI;
 	private static float jpegQuality=new Float(.8);
 	
@@ -142,7 +143,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		
 		EXTRACT_DIRECTORY = this.rifServiceStartupOptions.getExtractDirectory();
 		databaseType=this.rifServiceStartupOptions.getRifDatabaseType();
-		denominatorPyramidWidthPixels=this.rifServiceStartupOptions.getDenominatorPyramidWidthPixels();
 		printingDPI=this.rifServiceStartupOptions.getPrintingDPI();
 	}
 
@@ -883,54 +883,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		return htmlFileText.toString();
 	}
 		
-	private String getColumnFromResultSet(
-			final CachedRowSetImpl cachedRowSet,
-			final String columnName)
-			throws Exception {
-		return getColumnFromResultSet(cachedRowSet, columnName, 
-			false /* allowNulls */, false /* allowNoRows */);
-	}
-			
-	private String getColumnFromResultSet(
-			final CachedRowSetImpl cachedRowSet,
-			final String columnName,
-			final boolean allowNulls,
-			final boolean allowNoRows)
-			throws Exception {
-			
-		String columnValue=null;
-		boolean columnFound=false;
-		if (cachedRowSet.first()) {			
-			ResultSetMetaData rsmd = cachedRowSet.getMetaData();
-			int columnCount = rsmd.getColumnCount();
-
-			// The column count starts from 1
-			for (int i = 1; i <= columnCount; i++ ) {
-				String name = rsmd.getColumnName(i);
-				String value = cachedRowSet.getString(i);	
-				
-				if (name.toUpperCase().equals(columnName.toUpperCase())) {
-					columnValue=value;
-					columnFound=true;
-				} 
-			}
-			if (cachedRowSet.next()) {
-				throw new Exception("getColumnFromResultSet(): expected 1 row, got >1");
-			}
-			if (!columnFound) {
-				throw new Exception("getColumnFromResultSet(): column not found: " + columnName);
-			}
-			if (columnValue == null && !allowNulls) {
-				throw new Exception("getColumnFromResultSet(): got null for column: " + columnName);
-			}
-		}
-		else if (!allowNoRows) {
-			throw new Exception("getColumnFromResultSet(): expected 1 row, got none");
-		}
-		
-		return columnValue;
-	}
-	
 	private CachedRowSetImpl getStudyStartEndYear(
 			final Connection connection,
 			final String extractTable)
@@ -1075,70 +1027,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		finally {
 			SQLQueryUtility.close(statement);
 		}	
-	}
-	
-	private String getColumnComment(Connection connection, 
-		String schemaName, String tableName, String columnName)
-			throws Exception {
-		SQLGeneralQueryFormatter columnCommentQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
-		if (databaseType == DatabaseType.POSTGRESQL) {
-			columnCommentQueryFormatter.addQueryLine(0, // Postgres
-				"SELECT pg_catalog.col_description(c.oid, cols.ordinal_position::int) AS column_comment");
-			columnCommentQueryFormatter.addQueryLine(0, "  FROM pg_catalog.pg_class c, information_schema.columns cols");
-			columnCommentQueryFormatter.addQueryLine(0, " WHERE cols.table_catalog = current_database()");
-			columnCommentQueryFormatter.addQueryLine(0, "   AND cols.table_schema  = ?");
-			columnCommentQueryFormatter.addQueryLine(0, "   AND cols.table_name    = ?");
-			columnCommentQueryFormatter.addQueryLine(0, "   AND cols.table_name    = c.relname");
-			columnCommentQueryFormatter.addQueryLine(0, "   AND cols.column_name   = ?");
-		}
-		else if (databaseType == DatabaseType.SQL_SERVER) {
-			columnCommentQueryFormatter.addQueryLine(0, "SELECT CAST(value AS VARCHAR(2000)) AS column_comment"); // SQL Server
-			columnCommentQueryFormatter.addQueryLine(0, "FROM fn_listextendedproperty (NULL, 'schema', ?, 'table', ?, 'column', ?)");
-			columnCommentQueryFormatter.addQueryLine(0, "UNION");
-			columnCommentQueryFormatter.addQueryLine(0, "SELECT CAST(value AS VARCHAR(2000)) AS column_comment");
-			columnCommentQueryFormatter.addQueryLine(0, "FROM fn_listextendedproperty (NULL, 'schema', ?, 'view', ?, 'column', ?)");
-		}
-		else {
-			throw new Exception("getColumnComment(): invalid databaseType: " + 
-				databaseType);
-		}
-		PreparedStatement statement = createPreparedStatement(connection, columnCommentQueryFormatter);
-		
-		String columnComment=columnName.substring(0, 1).toUpperCase() + 
-			columnName.substring(1).replace("_", " "); // Default if not found [initcap, remove underscores]
-		try {			
-		
-			statement.setString(1, schemaName);	
-			statement.setString(2, tableName);	
-			statement.setString(3, columnName);	
-			if (databaseType == DatabaseType.SQL_SERVER) {
-				statement.setString(4, schemaName);	
-				statement.setString(5, tableName);
-				statement.setString(6, columnName);		
-			}			
-			resultSet = statement.executeQuery();
-			if (resultSet.next()) {		
-				columnComment=resultSet.getString(1);
-				if (resultSet.next()) {		
-					throw new Exception("getColumnComment(): expected 1 row, got >1");
-				}
-			}
-			else {
-				rifLogger.warning(this.getClass(), "getColumnComment(): expected 1 row, got none");
-			}
-		}
-		catch (Exception exception) {
-			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
-				lineSeparator + columnCommentQueryFormatter.generateQuery(),
-				exception);
-			throw exception;
-		}
-		finally {
-			SQLQueryUtility.close(statement);
-		}
-		
-		return columnComment;
 	}
 	
 	private String getTableComment(Connection connection, String schemaName, String tableName)

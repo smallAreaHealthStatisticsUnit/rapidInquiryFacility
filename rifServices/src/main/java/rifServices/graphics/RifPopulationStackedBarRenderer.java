@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer.common;
+package rifServices.graphics;
  
 import rifGenericLibrary.util.RIFLogger;
 

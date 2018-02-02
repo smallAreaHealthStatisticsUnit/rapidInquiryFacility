@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer.common;
+package rifServices.graphics;
 /**
  *
  * <hr>
@@ -99,11 +99,11 @@ public enum RIFGraphicsOutputType {
 		this.enabled=enabled;
 	}
 	
-	int getRIFGraphicsOutputType() { // Get method
+	public int getRIFGraphicsOutputType() { // Get method
 		return outputType;
 	}	
 	
-	boolean isRIFGraphicsOutputTypeEnabled() { // Get method
+	public boolean isRIFGraphicsOutputTypeEnabled() { // Get method
 		return enabled;
 	}
 	

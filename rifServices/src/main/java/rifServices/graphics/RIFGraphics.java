@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer.common;
+package rifServices.graphics;
 
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.businessConceptLayer.AbstractStudy;
@@ -7,6 +7,7 @@ import rifGenericLibrary.dataStorageLayer.DatabaseType;
 
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
+import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
 
 import org.apache.batik.transcoder.image.JPEGTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
