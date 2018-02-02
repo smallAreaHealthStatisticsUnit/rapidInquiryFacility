@@ -127,9 +127,8 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 	private static int denominatorPyramidWidthPixels;
 	private static int printingDPI;
 	
-	// These need to become parameters. A generic method will be created
-	private static float jpegQuality = new Float(0.8);
-	private static float populationPyramidAspactRatio = new Float(1.43); 
+	private static float jpegQuality;
+	private static float populationPyramidAspactRatio; 
 										// ratio of the width to the height of an image or screen. 
 										// r=w/h, h=w/r
 		
@@ -154,8 +153,23 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
-		denominatorPyramidWidthPixels=this.rifServiceStartupOptions.getDenominatorPyramidWidthPixels();
-		printingDPI=this.rifServiceStartupOptions.getPrintingDPI();
+		try {
+			denominatorPyramidWidthPixels=this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
+					"denominatorPyramidWidthPixels", 3543);
+			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);
+			
+			jpegQuality = this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
+					"jpegQuality", new Float(0.8));
+			populationPyramidAspactRatio = this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
+					"populationPyramidAspactRatio", new Float(1.43)); 
+											// ratio of the width to the height of an image or screen. 
+											// r=w/h, h=w/r	
+		}
+		catch(Exception exception) {
+			rifLogger.warning(this.getClass(), 
+				"Error in RifZipFile() constructor");
+			throw new NullPointerException();
+		}
 	}
 
 	private void PSTranscode(

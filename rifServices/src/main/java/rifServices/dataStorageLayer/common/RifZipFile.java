@@ -141,9 +141,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
-		EXTRACT_DIRECTORY = this.rifServiceStartupOptions.getExtractDirectory();
-		databaseType=this.rifServiceStartupOptions.getRifDatabaseType();
-		printingDPI=this.rifServiceStartupOptions.getPrintingDPI();
+		try {
+			EXTRACT_DIRECTORY = this.rifServiceStartupOptions.getExtractDirectory();
+			databaseType=this.rifServiceStartupOptions.getRifDatabaseType();
+			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);
+		}
+		catch(Exception exception) {
+			rifLogger.warning(this.getClass(), 
+				"Error in RifZipFile() constructor");
+			throw new NullPointerException();
+		}
 	}
 
 	/**

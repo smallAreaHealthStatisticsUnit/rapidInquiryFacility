@@ -1920,12 +1920,15 @@ callPerformSmoothingActivity exitValue: 1
 * SAHSULAND start year issue (probably missing data)
 * SEER data extract population mal join (at least 20x expected); data OK
 * RIF Java developer interview; hired!
-* 
+* Fixed PS bar in black and white
+* Code restructure - improved common SQL code, separate graphics directory, generic parameter code
   
 ## In progress (December 2017/January 2018):
 
 * Extend PouchDB to base layer [probably will defer as not needed yet]
 * Sort popups in data viewer and disease maps [need to discuss]
+* Add support for css <style> tags in fjrechart SVG generator. Also support for rgb to hex 
+  conversion for end color when graphic bar renderer used. 
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing 
   type].

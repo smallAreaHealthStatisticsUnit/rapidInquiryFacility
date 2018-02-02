@@ -13,6 +13,8 @@ import java.util.PropertyResourceBundle;
 import java.util.Map;
 
 import java.io.*;
+import java.util.MissingResourceException;
+import java.util.Hashtable;
 
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
@@ -96,7 +98,11 @@ public final class RIFServiceStartupProperties {
     private static Collator collator = Collator.getInstance(Locale.getDefault());
 	
 	protected static RIFLogger rifLogger = RIFLogger.getLogger();
-	
+ 
+	// Creating a Hashtable for controlling warnings about optional parameters
+	private static Hashtable<String, Integer> parameterWarnings = 
+              new Hashtable<String, Integer>();
+			  
     // ==========================================
     // Section Properties
     // ==========================================
@@ -223,101 +229,60 @@ public final class RIFServiceStartupProperties {
 	  return result;
     }
 
-    public static boolean isSSLSupported() {
+    public static boolean isSSLSupported() 
+					throws Exception {
     	String property
     		= getManadatoryRIfServiceProperty("database.isSSLSupported");
     	return Boolean.valueOf(property);    	
     }
     
-    public static String getDatabaseDriverClassName() {
+    public static String getDatabaseDriverClassName() 
+					throws Exception {
     	return getManadatoryRIfServiceProperty("database.driverClassName");
     }
    
-    public static String getDatabaseDriverPrefix() {
+    public static String getDatabaseDriverPrefix() 
+					throws Exception {
     	return getManadatoryRIfServiceProperty("database.jdbcDriverPrefix");
     }
     
-    public static String getHost() {
+    public static String getHost() 
+					throws Exception {
     	return getManadatoryRIfServiceProperty("database.host");
     }
     
-    public static String getPort() {
+    public static String getPort() 
+					throws Exception {
     	return getManadatoryRIfServiceProperty("database.port");    	
     }
 
-    public static String getDatabaseName() {
+    public static String getDatabaseName() 
+					throws Exception {
     	return getManadatoryRIfServiceProperty("database.databaseName");    	
     }
 	
-    public static String getServerSideCacheDirectory() {
+    public static String getServerSideCacheDirectory() 
+					throws Exception {
     	return getManadatoryRIfServiceProperty("cache");    	
     }
 
-    public static String getWebApplicationDirectory() {
+    public static String getWebApplicationDirectory() 
+					throws Exception {
     	return getManadatoryRIfServiceProperty("webApplicationDirectory");    	
     }
     
-    public static String getRScriptDirectory() {
+    public static String getRScriptDirectory() 
+					throws Exception {
     	return getManadatoryRIfServiceProperty("rScriptDirectory");    	
     }
     
-    public static String getExtractDirectoryName() {
+    public static String getExtractDirectoryName() 
+					throws Exception {
     	return getManadatoryRIfServiceProperty("extractDirectory");    	
     } 
 
-	public static int getDenominatorPyramidWidthPixels() {
-    	int denominatorPyramidWidthPixels=-1;
-		try {
-			String value=getOptionalRIfServiceProperty("denominatorPyramidWidthPixels");
-			if (value != null) {		
-				denominatorPyramidWidthPixels=Integer.parseInt(value); 
-			} 	
-			else {
-				denominatorPyramidWidthPixels=3543; // 90mm width at 1000 dpi
-			}
-		}
-		catch(Exception exception) {
-			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-				"Error converting optional property: denominatorPyramidWidthPixels", exception);
-//			throw exception;
-		}
-		finally {
-			if (denominatorPyramidWidthPixels == -1) {
-				denominatorPyramidWidthPixels=3543; // 90mm width at 1000 dpi
-			}
-		}
-		
-		return denominatorPyramidWidthPixels;		
-    }
-
-	public static int getPrintingDPI() {
-		int printingDPI=-1;
-		try {
-			String value=getOptionalRIfServiceProperty("printingDPI");
-			if (value != null) {
-				printingDPI=Integer.parseInt(value);   
-			}		
-			else {
-				printingDPI=1000; // 1000 dpi
-			}			
-		}
-		catch(Exception exception) {
-			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-				"Error converting optional property: printingDPI", exception);
-//			throw exception;
-		}
-		finally {
-			if (printingDPI == -1) {
-				printingDPI=1000; // 1000 dpi
-			}
-		}
-		
-		return printingDPI;
-    }
-
 	private static String getManadatoryRIfServiceProperty(String propertyName)
-//					throws Exception {
-		{
+					throws Exception {
 		String propertyValue=null;
 		try {
 			propertyValue=getProperty(propertyName);
@@ -325,35 +290,109 @@ public final class RIFServiceStartupProperties {
 		catch(Exception exception) {
 			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
 				"Error fetching mandatory property: " + propertyName, exception);
-//			throw exception;
+			throw exception;
 		}
 
 		return propertyValue;		
 	}
 	
-	private static String getOptionalRIfServiceProperty(String propertyName) {
+	private static void updateParameterWarnings(String propertyName) {
+		if (parameterWarnings.containsKey(propertyName)) {
+			parameterWarnings.put(propertyName, parameterWarnings.get(propertyName)+1);
+		}
+		else {
+			parameterWarnings.put(propertyName, new Integer(1));
+			rifLogger.warning("rifServices.system.RIFServiceStartupProperties", 
+				"Unable to fetch optional property: " + propertyName);
+		}
+	}
+	
+	
+	public static String getOptionalRIfServiceProperty(String propertyName)
+					throws Exception {
 		String propertyValue=null;
 		try {
 			propertyValue=getProperty(propertyName);
 		}
+		catch(MissingResourceException exception) { 
+			updateParameterWarnings(propertyName);
+		}
 		catch(Exception exception) {
-			rifLogger.debug("rifServices.system.RIFServiceStartupProperties", 
-				"Unable to fetch optional property: " + propertyName);
+			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+				"Unable to fetch optional property: " + propertyName, exception);
+			throw exception;
+		}
+
+		return propertyValue;		
+	}
+
+	public static String getOptionalRIfServiceProperty(String propertyName, String defaultValue) 
+					throws Exception {
+		String propertyValue=defaultValue;
+		try {
+			propertyValue=getProperty(propertyName);
+		}
+		catch(MissingResourceException exception) { 
+			updateParameterWarnings(propertyName);
+		}
+		catch(Exception exception) {
+			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+				"Unable to fetch optional property: " + propertyName, exception);
+			throw exception;
+		}
+
+		return propertyValue;		
+	}
+
+	public static int getOptionalRIfServiceProperty(String propertyName, int defaultValue) 
+					throws Exception {
+		int propertyValue=defaultValue;
+		try {
+			propertyValue=Integer.parseInt(getProperty(propertyName));
+		}
+		catch(MissingResourceException exception) { 
+			updateParameterWarnings(propertyName);
+		}
+		catch(Exception exception) { // java.util.MissingResourceException
+			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+				"Unable to fetch optional property: " + propertyName, exception);
+			throw exception;
 		}
 
 		return propertyValue;		
 	}
 	
-    public static String getTaxonomyServicesServer() {
+	public static Float getOptionalRIfServiceProperty(String propertyName, Float defaultValue) 
+					throws Exception {
+		Float propertyValue=defaultValue;
+		try {
+			propertyValue=Float.parseFloat(getProperty(propertyName));
+		}
+		catch(MissingResourceException exception) { 
+			updateParameterWarnings(propertyName);
+		}
+		catch(Exception exception) {
+			rifLogger.debug("rifServices.system.RIFServiceStartupProperties", 
+				"Unable to fetch optional property: " + propertyName);
+			throw exception;
+		}
+
+		return propertyValue;		
+	}
+	
+    public static String getTaxonomyServicesServer() 
+					throws Exception {
 
     	return getOptionalRIfServiceProperty("taxonomyServicesServer");    	
     }
 	
-    public static String getExtraDirectoryForExtractFiles() {
+    public static String getExtraDirectoryForExtractFiles() 
+					throws Exception {
     	return getManadatoryRIfServiceProperty("extraDirectoryForExtractFiles");    	
     }
     
-    public static DatabaseType getDatabaseType() {
+    public static DatabaseType getDatabaseType() 
+					throws Exception {
     	
     	DatabaseType databaseType
     		= DatabaseType.UNKNOWN;
@@ -376,7 +415,8 @@ public final class RIFServiceStartupProperties {
 
     }
     
-    public static boolean isDatabaseCaseSensitive() {
+    public static boolean isDatabaseCaseSensitive() 
+					throws Exception {
     	String property
     		= getManadatoryRIfServiceProperty("database.isCaseSensitive");
     	Boolean result
@@ -384,7 +424,8 @@ public final class RIFServiceStartupProperties {
     	return result;
     }
     
-    public static int getMaximumMapAreasAllowedForSingleDisplay() {
+    public static int getMaximumMapAreasAllowedForSingleDisplay() 
+					throws Exception {
     	String property
     		= getManadatoryRIfServiceProperty("maximumMapAreasAllowedForSingleDisplay");
     	Integer maximumValue = 0;
@@ -398,7 +439,8 @@ public final class RIFServiceStartupProperties {
     	return maximumValue;
     }
 
-    public static boolean useSSLDebug() {
+    public static boolean useSSLDebug() 
+					throws Exception {
     	String property
     		= getManadatoryRIfServiceProperty("database.useSSLDebug");
     	Boolean result
@@ -406,18 +448,22 @@ public final class RIFServiceStartupProperties {
     	return result; 	
     }
     
-    public static String getTrustStore() {
+    public static String getTrustStore() 
+					throws Exception {
     	String property
 			= getManadatoryRIfServiceProperty("database.sslTrustStore");
     	return property; 	
     }
     
-    public static String getTrustStorePassword() {
+    public static String getTrustStorePassword() 
+					throws Exception {
     	String property
     		= getManadatoryRIfServiceProperty("database.sslTrustStorePassword");
-    	return property; 	    }
+    	return property; 	    
+	}
     
-    public static String getODBCDataSourceName() {
+    public static String getODBCDataSourceName() 
+					throws Exception {
     	String property
 			= getManadatoryRIfServiceProperty("odbcDataSourceName");
     	return property;    	
