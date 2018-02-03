@@ -53,26 +53,41 @@
  * %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\dataStorageLayerSQL
  */
 WITH a AS (
+	SELECT study_or_comparison,
+	       year, 
+	       sex,
+		   SUM(total_pop) AS total_pop
+	  FROM %1
+	 GROUP BY study_or_comparison, year, sex
+), c AS (
+	SELECT year, 
+	       sex,
+		   SUM(total_pop) AS total_pop
+	  FROM a
+	 WHERE study_or_comparison = 'C'
+	 GROUP BY year, sex
+), s AS (
+	SELECT year, 
+	       sex,
+		   SUM(total_pop) AS total_pop
+	  FROM a
+	 WHERE study_or_comparison = 'S'
+	 GROUP BY year, sex
+), t AS (
 	SELECT c.year, 
-	       c.sex,
-		   SUM(c.total_pop) AS c_total_pop,
-		   SUM(s.total_pop) AS s_total_pop
-	  FROM %1 c
-				FULL OUTER JOIN %1 s ON (
-					c.sex = s.sex AND c.year = s.year AND s.study_or_comparison = 'S')
-	 WHERE c.study_or_comparison = 'C'   
-	 GROUP BY c.year, c.sex
-) 
-SELECT a.year, 
-       a.c_total_pop comparison_males, 
-       b.c_total_pop comparison_females, 
-	   a.c_total_pop + b.c_total_pop AS comparison_both,
-	   a.s_total_pop AS study_males, 
-	   b.s_total_pop AS study_females,
-	   a.s_total_pop + b.s_total_pop AS study_both
-  FROM a a
-			FULL OUTER JOIN a b ON (
-				a.year = b.year AND b.sex = 2 /* Females */) 
- WHERE a.sex = 1 /* Males */
- ORDER BY year;
- 
+		   SUM(c.total_pop) AS comparison_both,
+		   SUM(s.total_pop) AS study_both
+	  FROM c, s
+	 WHERE c.year = s.year
+	 GROUP BY c.year
+ )
+ SELECT t.year,
+        SUM(c1.total_pop) AS comparison_males, SUM(c2.total_pop) AS comparison_females, t.comparison_both,
+        SUM(c1.total_pop) AS study_males, SUM(c2.total_pop) AS study_females, t.study_both
+  FROM t
+		LEFT OUTER JOIN c c1 ON (t.year = c1.year AND c1.sex = 1 /* Males */)
+		LEFT OUTER JOIN c c2 ON (t.year = c2.year AND c2.sex = 2 /* Females */)
+		LEFT OUTER JOIN s s1 ON (t.year = s1.year AND s1.sex = 1 /* Males */)
+		LEFT OUTER JOIN s s2 ON (t.year = s2.year AND s2.sex = 2 /* Females */)
+ GROUP BY t.year, t.comparison_both, t.study_both
+ ORDER BY t.year;
