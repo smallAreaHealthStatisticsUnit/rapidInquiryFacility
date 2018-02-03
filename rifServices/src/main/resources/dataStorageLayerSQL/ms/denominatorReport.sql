@@ -83,7 +83,7 @@ WITH a AS (
  )
  SELECT t.year,
         SUM(c1.total_pop) AS comparison_males, SUM(c2.total_pop) AS comparison_females, t.comparison_both,
-        SUM(c1.total_pop) AS study_males, SUM(c2.total_pop) AS study_females, t.study_both
+        SUM(s1.total_pop) AS study_males, SUM(s2.total_pop) AS study_females, t.study_both
   FROM t
 		LEFT OUTER JOIN c c1 ON (t.year = c1.year AND c1.sex = 1 /* Males */)
 		LEFT OUTER JOIN c c2 ON (t.year = c2.year AND c2.sex = 2 /* Females */)
