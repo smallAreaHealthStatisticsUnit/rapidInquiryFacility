@@ -398,7 +398,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				throw new Exception("R temporary directory: "  + 
 					temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
 			}
-
+			rifLogger.info(this.getClass(), 
+				"Create study extract for: " + studyID + "; databaseType: " + databaseType);
 			String denominatorHTML=addDenominator(
 				user,
 				connection, 
@@ -756,18 +757,20 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		CachedRowSetImpl rif40ExtraxctMaxMinYear=getStudyStartEndYear(connection, extractTable);
 		int minYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_year"));
 		int maxYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_year"));
-		
+		int minSex=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_sex"));
+		int maxSex=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_sex"));
+		String[] queryArgs = new String[5];
+		queryArgs[0]="rif_studies." + extractTable; // 1: Extract table name; e.g. s367_extract
+		queryArgs[1]=Integer.toString(yearStart);	// 2: Min year
+		queryArgs[2]=Integer.toString(yearStop);	// 3: Max year
+		queryArgs[3]=Integer.toString(minSex);		// 4: Min sex
+		queryArgs[4]=Integer.toString(maxSex);		// 5: Max sex 		
 		addTableToHtmlReport(htmlFileText, connection, null /* studyID */,
 			"rif40",		// Owner
 			"rif_studies",	// Schema
 			extractTable, // Table
-			null, // Common table expression
-			" WHERE study_or_comparison = 'S'", // Joined table 	
-			"t.year," + lineSeparator +
-			"       CASE WHEN t.sex = 1 THEN 'Males' WHEN t.sex = 2 THEN 'Females' ELSE 'Other' END AS sex," + lineSeparator +
-			"SUM(t.total_pop) AS total_pop", // Column list
-			"t.year, t.sex"  	/* GROUP BY */,
-			"1, 2"   	/* ORDER BY */,
+			"denominatorReport.sql", // queryFileName
+			queryArgs,
 			"1+"		/* Expected rows 0+ */,
 			false		/* Rotate */, (headerLevel+1) /* headerLevel */, null /* locale */, null /* tomcatServer */); 
 
@@ -941,7 +944,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		CachedRowSetImpl cachedRowSet = null;
 		
-		extractTableQueryFormatter.addQueryLine(0, "SELECT MIN(year) AS min_year, MAX(year) AS max_year");
+		extractTableQueryFormatter.addQueryLine(0, "SELECT MIN(year) AS min_year, MAX(year) AS max_year,");
+		extractTableQueryFormatter.addQueryLine(0, "       MIN(sex) AS min_sex, MAX(sex) AS max_sex");
 		extractTableQueryFormatter.addQueryLine(0, "  FROM rif_studies." + extractTable.toLowerCase());
 		extractTableQueryFormatter.addQueryLine(0, " WHERE study_or_comparison = 'S'");
 
@@ -1422,22 +1426,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final Locale locale,
 			final String tomcatServer)
 			throws Exception {
-	
-		Calendar calendar = null;
-		DateFormat df = null;
-		if (locale != null) {
-			df=DateFormat.getDateTimeInstance(
-				DateFormat.DEFAULT /* Date style */, 
-				DateFormat.DEFAULT /* Time style */, 
-				locale);
-			calendar = df.getCalendar();
-		}
-		else { // assume US
-			df=new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"); // MM/DD/YY HH24:MI:SS
-			calendar = Calendar.getInstance();
-		}
 		
-		String tableComment=getTableComment(connection, schemaName, tableName);
 		String tableHeader=tableName.replace("rif40_", "");
 		if (tableHeader.substring(0, 4).equals("inv_")) {
 			tableHeader=tableName.replace("rif40_inv_", "");
@@ -1456,8 +1445,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		else if (tableHeader.equals("Studies")) {
 			valueLavel="Study";
 		}
-		SQLGeneralQueryFormatter htmlReportQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+		SQLGeneralQueryFormatter htmlReportQueryFormatter = new SQLGeneralQueryFormatter();	
 		if (commonTableExpression != null) {
 			htmlReportQueryFormatter.addQueryLine(0, commonTableExpression);
 		}
@@ -1479,6 +1467,83 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		if (orderBy != null) {
 			htmlReportQueryFormatter.addQueryLine(0, " ORDER BY " + orderBy);
 		}
+		
+		executeHTmlReport(htmlFileText, connection, htmlReportQueryFormatter, expectedRows,
+			rotate, studyID, schemaName, tableName, valueLavel, locale, tomcatServer);
+	}
+
+	private void addTableToHtmlReport(
+			final StringBuilder htmlFileText,
+			final Connection connection,
+			final String studyID,
+			final String ownerName,
+			final String schemaName,
+			final String tableName,
+			final String queryFileName,
+			final String[] queryArgs,
+			final String expectedRows,
+			final boolean rotate,
+			final int headerLevel,
+			final Locale locale,
+			final String tomcatServer)
+			throws Exception {
+		
+		String tableHeader=tableName.replace("rif40_", "");
+		if (tableHeader.substring(0, 4).equals("inv_")) {
+			tableHeader=tableName.replace("rif40_inv_", "");
+		}
+		htmlFileText.append("    <h" + headerLevel + " id=\"" + tableName + "\">" + 
+			tableHeader.substring(0, 1).toUpperCase() + tableHeader.substring(1).replace("_", " ") + 
+			"</h1>" + lineSeparator);
+		String valueLavel="Value";
+		if (tableHeader.length() > 2 && 
+		    tableHeader.substring(tableHeader.length()-1, tableHeader.length()).
+				equals("s")) {
+			valueLavel=tableHeader.substring(0, 1).toUpperCase() + 
+				tableHeader.substring(1, tableHeader.length()-1).
+					replace("_", " ");
+		}
+		else if (tableHeader.equals("Studies")) {
+			valueLavel="Study";
+		}
+		SQLGeneralQueryFormatter htmlReportQueryFormatter = new SQLGeneralQueryFormatter();	
+		htmlReportQueryFormatter.createQueryFromFile(queryFileName, queryArgs, databaseType);
+		
+		executeHTmlReport(htmlFileText, connection, htmlReportQueryFormatter, expectedRows,
+			rotate, studyID, schemaName, tableName, valueLavel, locale, tomcatServer);
+	}
+		
+	private void executeHTmlReport(
+			final StringBuilder htmlFileText,
+			Connection connection, 
+			SQLGeneralQueryFormatter htmlReportQueryFormatter,
+			final String expectedRows,
+			final boolean rotate,
+			String studyID,
+			final String schemaName,
+			final String tableName,
+			final String valueLavel,
+			final Locale locale,
+			final String tomcatServer) 
+				throws Exception {	
+	
+		Calendar calendar = null;
+		DateFormat df = null;
+		if (locale != null) {
+			df=DateFormat.getDateTimeInstance(
+				DateFormat.DEFAULT /* Date style */, 
+				DateFormat.DEFAULT /* Time style */, 
+				locale);
+			calendar = df.getCalendar();
+		}
+		else { // assume US
+			df=new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"); // MM/DD/YY HH24:MI:SS
+			calendar = Calendar.getInstance();
+		}
+		
+		String tableComment=getTableComment(connection, schemaName, tableName);
+		
+		ResultSet resultSet = null;
 		PreparedStatement statement = createPreparedStatement(connection, htmlReportQueryFormatter);
 		try {			
 			int rowCount = 0;

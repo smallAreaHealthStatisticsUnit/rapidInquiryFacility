@@ -220,11 +220,13 @@ public abstract class AbstractSQLQueryFormatter {
 	 *
 	 * @param  fileName		Name of file containing query
 	 * @param  args 		Argument list.
+	 * @param  databaseType DatabaseType
 	 *						Replaces %1 with args[1] etc
 	 *						NO SUPPORT FOR ESCAPING!
 	 */	
-	public void createQueryFromFile(final String fileName, final String[] args)  
+	public void createQueryFromFile(final String fileName, final String[] args, final DatabaseType databaseType)  
 			throws Exception {
+		setDatabaseType(databaseType);
 		FileReader file = getQueryFileReader(fileName);
 		BufferedReader bufferedReader=null;
 		
@@ -245,11 +247,20 @@ public abstract class AbstractSQLQueryFormatter {
 		finally {
 			bufferedReader.close();
 			for (int i = 0; i < args.length; i++) {
-				queryReplaceAll("%" + i, args[i]); // replace %1 with args[1] etc
+				queryReplaceAll("%" + (i+1), args[i]); // replace %1 with args[1] etc
 			}
 		}		
 	}
 
+	/**
+	 * Create query from file
+	 *
+	 * @param  fileName		Name of file containing query
+	 * @param  args 		Argument list.
+	 * @param  databaseType DatabaseType
+	 *						Replaces %1 with args[1] etc
+	 *						NO SUPPORT FOR ESCAPING!
+	 */	
 	public void queryReplaceAll(String from, String to) {
 		int index = query.indexOf(from);
 		while (index != -1)
@@ -259,7 +270,19 @@ public abstract class AbstractSQLQueryFormatter {
 			index = query.indexOf(from, index);
 		}
 	}
-	
+
+	/**
+	 * Get query file handle from file name
+	 *
+	 * Looks in:
+	 * %CATALINA_HOME%\conf\dataStorageLayerSQL\common
+	 * %CATALINA_HOME%\conf\dataStorageLayerSQL\<database type: ms or pg>
+	 * %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\dataStorageLayerSQL\common
+	 * %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\dataStorageLayerSQL\<database type: ms or pg>
+	 *
+	 * @param  fileName		Name of file containing query
+	 * @return FileReader	Handle
+	 */		
 	private FileReader getQueryFileReader(String fileName)  
 			throws Exception {
 
@@ -267,16 +290,37 @@ public abstract class AbstractSQLQueryFormatter {
 		
 		String fileName1 = null;
 		String fileName2 = null;
+		String fileName3 = null;
+		String fileName4 = null;
 		
+		if (fileName == null) {
+			throw new Exception("getQueryFileReader: fileName not set"); 
+		}
+		if (databaseType == null) {
+			throw new Exception("getQueryFileReader: databaseType not set"); 
+		}
+		if (databaseType.getShortName() == null) {
+			throw new Exception("getQueryFileReader: databaseType.getShortName() returns null"); 
+		}
+		String basePath1=null;
+		String basePath2=null;
 		if (catalinaHome != null) {
-			fileName1=catalinaHome + File.separator + "webapps" + File.separator + "dataStorageLayrerSQL" + 
-				File.separator + "common" + File.separator + file;
-			fileName1=catalinaHome + File.separator + "webapps" + File.separator + "dataStorageLayrerSQL" + 
-				File.separator + databaseType.getShortName() + File.separator + file;
+// e.g. %CATALINA_HOME%\conf\dataStorageLayerSQL
+			basePath1=catalinaHome + File.separator + "conf" + File.separator + "dataStorageLayerSQL"; 
+// e.g. %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\dataStorageLayerSQL
+			basePath2=catalinaHome + File.separator + "webapps" + File.separator + 
+				"rifServices" + File.separator + "WEB-INF" + File.separator + "classes" + 
+				File.separator + "dataStorageLayerSQL"; 
 		}
 		else {
 			throw new Exception("getQueryFileReader: CATALINA_HOME not set in environment"); 
 		}
+		fileName1=basePath1 + File.separator + "common" + File.separator + fileName;
+		fileName2=basePath1 + File.separator + 
+			databaseType.getShortName() + File.separator + fileName;
+		fileName3=basePath2 + File.separator + "common" + File.separator + fileName;
+		fileName4=basePath2+ File.separator + 
+			databaseType.getShortName() + File.separator + fileName;
 		
 		try {
 			file=new FileReader(fileName1);
@@ -285,12 +329,22 @@ public abstract class AbstractSQLQueryFormatter {
 			try {
 				file=new FileReader(fileName2);
 			}
-			catch (IOException ioException2) {				
-				rifLogger.error(this.getClass(), 
-					"getQueryFileReader error for files: " + 
-						fileName1 + " and " + fileName2, 
-					ioException2);
-				throw ioException2;
+			catch (IOException ioException2) {
+				try {
+					file=new FileReader(fileName3);
+				}				
+				catch (IOException ioException3) {
+					try {
+						file=new FileReader(fileName4);
+					}
+					catch (IOException ioException4) {				
+						rifLogger.error(this.getClass(), 
+							"getQueryFileReader error for files: " + 
+								fileName1 + ", " + fileName2 + ", " + fileName3 + " and " + fileName3, 
+							ioException4);
+						throw ioException4;
+					}
+				}
 			}
 		}			
 		return file;

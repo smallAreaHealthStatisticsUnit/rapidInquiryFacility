@@ -1922,6 +1922,7 @@ callPerformSmoothingActivity exitValue: 1
 * RIF Java developer interview; hired!
 * Fixed PS bar in black and white
 * Code restructure - improved common SQL code, separate graphics directory, generic parameter code
+* Implement user configurable table SQL for HTML reports
   
 ## In progress (December 2017/January 2018):
 
@@ -1953,8 +1954,12 @@ callPerformSmoothingActivity exitValue: 1
 ### Database TODO list (deferred to February 2018): 
 
 * Add generate_series() to SQL Server port
-* Add t_rif40_warnings/rif40_warnings to contain warning messages on na study basis. Can be created 
-  by extract or R scripts.
+* Add t_rif40_warnings/rif40_warnings to contain warning messages on a study basis. Can be created 
+  by extract or R scripts. Add traps for:
+  * Out of range or null covariates by year;
+  * Missing years of numerator or denominator data;
+  * Males/females not present when requested in numerator or denominator; 
+  * ICD codes not present when requested in numerator.
 * Add population to map table (max, min, average, rate increase/decrease?), remove join from getAttributes
 * Add viewer/diseasemap[12]_mapping, export_date, last_update_date, comparison_geolevel_select, 
   study_geolevel_select to rif40_studies
