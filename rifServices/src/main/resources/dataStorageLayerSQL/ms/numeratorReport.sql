@@ -35,12 +35,14 @@
  * Peter Hambly
  * @author phambly
  *
- * SQL statement name: 	denominatorReport.sql
+ * SQL statement name: 	numeratorReport.sql
  * Type:				Microsoft SQL Server SQL
  * Parameters (preceded by %):
  *						1: Extract table name; e.g. s367_extract
+ *						2: Investigation field name; e.g. test_1002
  *
- * Description:			Denominator SQL report. Handles gendes: males, females or both
+ * Description:			Numerator SQL report. Handles gendes: males, females or both
+ *						Called once per investigation
  * Note:				NO SUPPORT FOR ESCAPING!
  *						Requires rif40.generate_series() to be created to have the same functionality
  *						as Postgres version
@@ -56,35 +58,35 @@ WITH a AS (
 	SELECT study_or_comparison,
 	       year, 
 	       sex,
-		   SUM(total_pop) AS total_pop
+		   SUM(%2) AS %2
 	  FROM %1
 	 GROUP BY study_or_comparison, year, sex
 ), c AS (
 	SELECT year, 
 	       sex,
-		   SUM(total_pop) AS total_pop
+		   SUM(%2) AS %2
 	  FROM a
 	 WHERE study_or_comparison = 'C'
 	 GROUP BY year, sex
 ), s AS (
 	SELECT year, 
 	       sex,
-		   SUM(total_pop) AS total_pop
+		   SUM(%2) AS %2
 	  FROM a
 	 WHERE study_or_comparison = 'S'
 	 GROUP BY year, sex
 ), t AS (
 	SELECT c.year, 
-		   SUM(c.total_pop) AS comparison_both,
-		   SUM(s.total_pop) AS study_both
+		   SUM(c.%2) AS comparison_both,
+		   SUM(s.%2) AS study_both
 	  FROM c, s
 	 WHERE c.year = s.year
 	   AND c.sex  = s.sex
 	 GROUP BY c.year
  )
  SELECT t.year,
-        SUM(c1.total_pop) AS comparison_males, SUM(c2.total_pop) AS comparison_females, t.comparison_both,
-        SUM(s1.total_pop) AS study_males, SUM(s2.total_pop) AS study_females, t.study_both
+        SUM(c1.%2) AS comparison_males, SUM(c2.%2) AS comparison_females, t.comparison_both,
+        SUM(s1.%2) AS study_males, SUM(s2.%2) AS study_females, t.study_both
   FROM t
 		LEFT OUTER JOIN c c1 ON (t.year = c1.year AND c1.sex = 1 /* Males */)
 		LEFT OUTER JOIN c c2 ON (t.year = c2.year AND c2.sex = 2 /* Females */)

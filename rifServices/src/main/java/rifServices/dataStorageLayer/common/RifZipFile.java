@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -405,8 +406,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				connection, 
 				temporaryDirectory,
 				studyID,
-				1 /* Header level */);
-			
+				1 /* Header level */,
+				locale);
+			String numeratorHTML=addNumerator(
+				user,
+				connection, 
+				temporaryDirectory,
+				studyID,
+				1 /* Header level */,
+				locale);	
+				
 			submissionZipSavFile = createSubmissionZipFile(
 					user,
 					baseStudyName + ".sav");
@@ -446,7 +455,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						temporaryDirectory,
 						submissionZipOutputStream,
 						connection, user, studyID, locale, tomcatServer, taxonomyServicesServer, 
-						denominatorHTML);
+						denominatorHTML, numeratorHTML);
 						
 				//write the study the user made when they first submitted their query
 				writeQueryFile(
@@ -573,7 +582,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final Locale locale,
 			final String tomcatServer,
 			final String taxonomyServicesServer,
-			final String denominatorHTML) 
+			final String denominatorHTML,
+			final String numeratorHTML) 
 			throws Exception {
 				
 		GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
@@ -694,6 +704,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			getStudyJSON, locale, tomcatServer);
 		
 		htmlFileText.append(denominatorHTML);
+		htmlFileText.append(numeratorHTML);
 		
 		htmlFileText.append("  </div>" + lineSeparator);
 		htmlFileText.append("</div>" + lineSeparator);
@@ -719,12 +730,106 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}		
 	}
 	
+	private String addNumerator(
+			final User user,
+			final Connection connection,
+			final File temporaryDirectory,
+			final String studyID,
+			final int headerLevel,
+			final Locale locale
+			)
+			throws Exception {
+				
+		StringBuilder htmlFileText=new StringBuilder();
+		
+		htmlFileText.append("    <h" + headerLevel + " id=\"numerator\">Numerator</h" + headerLevel + ">" + lineSeparator);
+		htmlFileText.append("    <p>" + lineSeparator);				
+
+		CachedRowSetImpl rif40Studies=getRif40Studies(connection, studyID);
+		String extractTable=getColumnFromResultSet(rif40Studies, "extract_table");
+		int yearStart=Integer.parseInt(getColumnFromResultSet(rif40Studies, "year_start"));
+		int yearStop=Integer.parseInt(getColumnFromResultSet(rif40Studies, "year_stop"));
+		
+		CachedRowSetImpl rif40ExtraxctMaxMinYear=getStudyStartEndYear(connection, extractTable);
+		int minYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_year"));
+		int maxYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_year"));
+		int minSex=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_sex"));
+		int maxSex=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_sex"));
+				
+		SQLGeneralQueryFormatter investigationsQueryFormatter = new SQLGeneralQueryFormatter();		
+		ResultSet resultSet = null;
+		
+		investigationsQueryFormatter.addQueryLine(0, "SELECT inv_id, inv_name, inv_description");
+		investigationsQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_investigations");
+		investigationsQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+		investigationsQueryFormatter.addQueryLine(0, " ORDER BY inv_id");
+	
+		PreparedStatement statement = createPreparedStatement(connection, investigationsQueryFormatter);
+		try {	
+			statement.setInt(1, Integer.parseInt(studyID));	
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				int rowCount=0;
+				do {	
+					rowCount++;
+					String invId=resultSet.getString(1);
+					String invName=resultSet.getString(2);
+					String invDescription=resultSet.getString(3);
+					if (invDescription == null) {
+						invDescription="(No description)";
+					}
+					
+					htmlFileText.append("      <h" + (headerLevel+1) + 
+						">Numerator by year for investigation " + rowCount + " id: " + invId + "</h" + 
+						(headerLevel+1) + ">" + lineSeparator);
+					htmlFileText.append("      <p>" + invDescription + lineSeparator);
+					
+					String[] queryArgs = new String[6];
+					queryArgs[0]="rif_studies." + extractTable; // 1: Extract table name; e.g. s367_extract
+					queryArgs[1]=invName;						// 2: Investigation field name; e.g. test_1002
+					queryArgs[2]=Integer.toString(yearStart);	// 3: Min year
+					queryArgs[3]=Integer.toString(yearStop);	// 4: Max year
+					queryArgs[4]=Integer.toString(minSex);		// 5: Min sex
+					queryArgs[5]=Integer.toString(maxSex);		// 6: Max sex 		
+					addTableToHtmlReport(htmlFileText, connection, null /* studyID */,
+						"rif40",		// Owner
+						"rif_studies",	// Schema
+						extractTable, 	// Table
+						"numeratorReport.sql", // queryFileName
+						queryArgs,
+						"Numerator by year report for study: " + studyID + "; investigation: " + invDescription, // Title
+						"1+"		/* Expected rows 0+ */,
+						false		/* Rotate */, (headerLevel+1) /* headerLevel */, locale /* locale */, null /* tomcatServer */); 
+
+					htmlFileText.append("      </p>" + lineSeparator);		
+				} while (resultSet.next());
+			}
+			else {
+				throw new Exception("No investigations found for study: " + studyID);
+			}			
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + investigationsQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		
+		htmlFileText.append("    </p>" + lineSeparator);
+		
+		return htmlFileText.toString();		
+	}
+						
 	private String addDenominator(
 			final User user,
 			final Connection connection,
 			final File temporaryDirectory,
 			final String studyID,
-			final int headerLevel
+			final int headerLevel,
+			final Locale locale
 			)
 			throws Exception {
 					
@@ -739,8 +844,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		int yearStop=studyData.getInt("year_stop");
 		String svgCss=readFile("RIFPopulationPyramid.css");
 
-		htmlFileText.append("    <h" + headerLevel + " id=\"denominator\">Denominator</h1>" + lineSeparator);
-		htmlFileText.append("      <h" + (headerLevel+1) + ">Denominator by year</h1>" + lineSeparator);
+		htmlFileText.append("    <h" + headerLevel + " id=\"denominator\">Denominator</h" + headerLevel + ">" + lineSeparator);
+		htmlFileText.append("      <h" + (headerLevel+1) + ">Denominator by year</h" + (headerLevel+1) + ">" + lineSeparator);
 		htmlFileText.append("      <p>" + lineSeparator);
 		htmlFileText.append("      </p>" + lineSeparator);		
 
@@ -771,10 +876,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			extractTable, // Table
 			"denominatorReport.sql", // queryFileName
 			queryArgs,
+			"Denominator by year report for study: " + studyID, // Title
 			"1+"		/* Expected rows 0+ */,
-			false		/* Rotate */, (headerLevel+1) /* headerLevel */, null /* locale */, null /* tomcatServer */); 
+			false		/* Rotate */, (headerLevel+1) /* headerLevel */, locale /* locale */, null /* tomcatServer */); 
 
-		htmlFileText.append("      <h" + (headerLevel+1) + ">Population Pyramids</h1>" + lineSeparator);
+		htmlFileText.append("      <h" + (headerLevel+1) + ">Population Pyramids</h" + (headerLevel+1) + ">" + lineSeparator);
 		htmlFileText.append("      <p>" + lineSeparator);		
 		htmlFileText.append("      <div>" + lineSeparator);
 		htmlFileText.append("        <form id=\"downloadForm\" method=\"get\" action=\"reports\\denominator\\RIFdenominator_pyramid_" + 
@@ -978,7 +1084,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		CachedRowSetImpl cachedRowSet = null;
 		
-		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT extract_table, map_table, denom_tab, description");
+		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT extract_table, map_table, denom_tab, description, year_start, year_stop");
 		rif40StudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");
 		rif40StudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 
@@ -1082,7 +1188,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}	
 	}
 	
-	private String getTableComment(Connection connection, String schemaName, String tableName)
+	private String getTableComment(Connection connection, String schemaName, String tableName,
+		String defaultComment)
 			throws Exception {
 		SQLGeneralQueryFormatter tableCommentQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
@@ -1115,6 +1222,9 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			resultSet = statement.executeQuery();
 			if (resultSet.next()) {		
 				tableComment=resultSet.getString(1);
+				if (tableComment == null) {
+					tableComment=defaultComment;
+				}
 				if (resultSet.next()) {		
 					throw new Exception("getTableComment(): expected 1 row, got >1");
 				}
@@ -1150,7 +1260,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			throws Exception {
 			
 		String tableName="rif40_inv_conditions";	
-		String tableComment=getTableComment(connection, "rif40", tableName);
+		String tableComment=getTableComment(connection, "rif40", tableName, null);
 		
 		SQLGeneralQueryFormatter invConditionsQueryFormatter = new SQLGeneralQueryFormatter();		
 				
@@ -1161,7 +1271,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		invConditionsQueryFormatter.addQueryLine(0, " ORDER BY inv_id,line_number");
 		PreparedStatement statement = createPreparedStatement(connection, invConditionsQueryFormatter);	
 		ResultSet resultSet = null;
-		htmlFileText.append("    <h" + headerLevel + " id=\"" + tableName + "\">Conditions</h1>" + lineSeparator);
+		htmlFileText.append("    <h" + headerLevel + " id=\"" + tableName + "\">Conditions</h" + headerLevel + ">" + lineSeparator);
 			
 		try {
 			int rowCount = 0;
@@ -1433,7 +1543,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}
 		htmlFileText.append("    <h" + headerLevel + " id=\"" + tableName + "\">" + 
 			tableHeader.substring(0, 1).toUpperCase() + tableHeader.substring(1).replace("_", " ") + 
-			"</h1>" + lineSeparator);
+			"</h" + headerLevel + ">" + lineSeparator);
 		String valueLavel="Value";
 		if (tableHeader.length() > 2 && 
 		    tableHeader.substring(tableHeader.length()-1, tableHeader.length()).
@@ -1467,9 +1577,10 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		if (orderBy != null) {
 			htmlReportQueryFormatter.addQueryLine(0, " ORDER BY " + orderBy);
 		}
+		String defaultTitle="Report: " + tableName + " for study: " + studyID;
 		
 		executeHTmlReport(htmlFileText, connection, htmlReportQueryFormatter, expectedRows,
-			rotate, studyID, schemaName, tableName, valueLavel, locale, tomcatServer);
+			rotate, studyID, schemaName, tableName, valueLavel, defaultTitle, locale, tomcatServer);
 	}
 
 	private void addTableToHtmlReport(
@@ -1481,6 +1592,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String tableName,
 			final String queryFileName,
 			final String[] queryArgs,
+			final String title,
 			final String expectedRows,
 			final boolean rotate,
 			final int headerLevel,
@@ -1494,7 +1606,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}
 		htmlFileText.append("    <h" + headerLevel + " id=\"" + tableName + "\">" + 
 			tableHeader.substring(0, 1).toUpperCase() + tableHeader.substring(1).replace("_", " ") + 
-			"</h1>" + lineSeparator);
+			"</h" + headerLevel + ">" + lineSeparator);
 		String valueLavel="Value";
 		if (tableHeader.length() > 2 && 
 		    tableHeader.substring(tableHeader.length()-1, tableHeader.length()).
@@ -1510,7 +1622,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlReportQueryFormatter.createQueryFromFile(queryFileName, queryArgs, databaseType);
 		
 		executeHTmlReport(htmlFileText, connection, htmlReportQueryFormatter, expectedRows,
-			rotate, studyID, schemaName, tableName, valueLavel, locale, tomcatServer);
+			rotate, studyID, schemaName, tableName, valueLavel, title, locale, tomcatServer);
 	}
 		
 	private void executeHTmlReport(
@@ -1523,6 +1635,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String schemaName,
 			final String tableName,
 			final String valueLavel,
+			final String defaultTitle,
 			final Locale locale,
 			final String tomcatServer) 
 				throws Exception {	
@@ -1541,7 +1654,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			calendar = Calendar.getInstance();
 		}
 		
-		String tableComment=getTableComment(connection, schemaName, tableName);
+		String tableComment=getTableComment(connection, schemaName, tableName, defaultTitle);
 		
 		ResultSet resultSet = null;
 		PreparedStatement statement = createPreparedStatement(connection, htmlReportQueryFormatter);
@@ -1593,6 +1706,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						if (columnType.equals("timestamp") /* Postgres */) {
 							Timestamp dateTimeValue=resultSet.getTimestamp(i, calendar);
 							value=df.format(dateTimeValue) + "<!-- DATE -->";
+						}
+						else if (columnType.equals("integer")) {
+							if (locale == null) {
+								throw new Exception("locale is null");
+							}
+							value=NumberFormat.getNumberInstance(locale).format(Integer.parseInt(value));
 						}
 						else if (value == null) {
 							value="&nbsp;";
