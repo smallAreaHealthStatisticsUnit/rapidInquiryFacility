@@ -35,6 +35,37 @@
  * Peter Hambly
  * @author phambly
  *
- * Denominator SQL report
+ * SQL statement name: 	denominatorReport.sql
+ * Type:				Microsoft SQL Server SQL
+ * Parameters (preceded by %):
+ *						1: Extract table name; e.g. s367_extract
+ *
+ * Description:			Denominator SQL report. Handles gendes: males, females or both
+ * Note:				NO SUPPORT FOR ESCAPING!
+ *						Requires rif40.generate_series() to be created to have the same functionality
+ *						as Postgres version
  */
+WITH a AS (
+	SELECT c.year, 
+	       c.sex,
+		   SUM(c.total_pop) AS c_total_pop,
+		   SUM(s.total_pop) AS s_total_pop
+	  FROM %1 c
+				FULL OUTER JOIN %1 s ON (
+					c.sex = s.sex AND c.year = s.year AND s.study_or_comparison = 'S')
+	 WHERE c.study_or_comparison = 'C'   
+	 GROUP BY c.year, c.sex
+) 
+SELECT a.year, 
+       a.c_total_pop comparison_males, 
+       b.c_total_pop comparison_females, 
+	   a.c_total_pop + b.c_total_pop AS comparison_both,
+	   a.s_total_pop AS study_males, 
+	   b.s_total_pop AS study_females,
+	   a.s_total_pop + b.s_total_pop AS study_both
+  FROM a a
+			FULL OUTER JOIN a b ON (
+				a.year = b.year AND b.sex = 2 /* Females */) 
+ WHERE a.sex = 1 /* Males */
+ ORDER BY year;
  

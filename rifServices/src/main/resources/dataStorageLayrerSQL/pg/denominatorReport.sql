@@ -35,12 +35,46 @@
  * Peter Hambly
  * @author phambly
  *
- * SQL statement name: 	denominatorReport..sql
- * Type:				Common SQL
- * Parameters:
+ * SQL statement name: 	denominatorReport.sql
+ * Type:				Postgres SQL
+ * Parameters (preceded by %):
  *						1: Extract table name; e.g. s367_extract
+ *						2: Min year
+ *						3: Max year
+ *						4: Min gender
+ *						5: Max gender
  *
- * Description:			Denominator SQL report
+ * Description:			Denominator SQL report. Handles gendes: males, females or both
+ *						Missing years of data appear as blanks
  * Note:				NO SUPPORT FOR ESCAPING!
+ *						Dependency is generate_series()
  */
+WITH x AS (
+	SELECT generate_series(%2, %3) AS year
+), y AS (
+	SELECT generate_series(%4, %5) AS sex
+), a AS (
+	SELECT x.year, 
+	       y.sex,
+		   SUM(c.total_pop) AS c_total_pop,
+		   SUM(s.total_pop) AS s_total_pop
+	  FROM x CROSS JOIN y
+				FULL OUTER JOIN %1 c ON (
+					c.sex = y.sex AND c.year = x.year AND c.study_or_comparison = 'C')
+				FULL OUTER JOIN %1 s ON (
+					y.sex = s.sex AND x.year = s.year AND s.study_or_comparison = 'S')
+	 GROUP BY x.year, y.sex
+) 
+SELECT a.year, 
+       a.c_total_pop comparison_males, 
+       b.c_total_pop comparison_females, 
+	   a.c_total_pop + b.c_total_pop AS comparison_both,
+	   a.s_total_pop AS study_males, 
+	   b.s_total_pop AS study_females,
+	   a.s_total_pop + b.s_total_pop AS study_both
+  FROM a a
+			FULL OUTER JOIN a b ON (
+				a.year = b.year AND b.sex = 2 /* Females */) 
+ WHERE a.sex = 1 /* Males */
+ ORDER BY year;
  
