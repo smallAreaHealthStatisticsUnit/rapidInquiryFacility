@@ -1930,6 +1930,7 @@ callPerformSmoothingActivity exitValue: 1
 * Sort popups in data viewer and disease maps [need to discuss]
 * Add support for css <style> tags in fjrechart SVG generator. Also support for rgb to hex 
   conversion for end color when graphic bar renderer used. 
+* Export study tables button to be disabled during export. Complete message to be permanent
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing 
   type].
