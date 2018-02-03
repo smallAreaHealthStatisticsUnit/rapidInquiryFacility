@@ -1703,16 +1703,52 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						String value = resultSet.getString(i);	
 						String columnType = rsmd.getColumnTypeName(i);
 						
-						if (columnType.equals("timestamp") /* Postgres */) {
+						if (columnType.equals("timestamp") ||
+						    columnType.equals("timestamptz") ||
+						    columnType.equals("datetime")) {
 							Timestamp dateTimeValue=resultSet.getTimestamp(i, calendar);
 							value=df.format(dateTimeValue) + "<!-- DATE -->";
 						}
-						else if (columnType.equals("integer")) {
+						else if (value != null && (
+								 columnType.equals("integer") || 
+							     columnType.equals("bigint") || 
+								 columnType.equals("int") ||
+								 columnType.equals("smallint"))) {
 							if (locale == null) {
 								throw new Exception("locale is null");
 							}
-							value=NumberFormat.getNumberInstance(locale).format(Integer.parseInt(value));
+							try {
+								Long longVal=Long.parseLong(value);
+								value=NumberFormat.getNumberInstance(locale).format(longVal) + 
+									" <!-- LONG -->";
+							}
+							catch (Exception exception) {
+								rifLogger.error(this.getClass(), "Unable to parseLong(" + 
+									columnType + "): " + value,
+									exception);
+								throw exception;
+							}
 						}
+						else if (value != null && (
+								 columnType.equals("float") || 
+							     columnType.equals("float8") || 
+							     columnType.equals("double precision") ||
+							     columnType.equals("numeric"))) {
+							if (locale == null) {
+								throw new Exception("locale is null");
+							}
+							try {
+								Float floatVal=Float.parseFloat(value);
+								value=NumberFormat.getNumberInstance(locale).format(floatVal) + 
+									" <!-- FLOAT -->";
+							}
+							catch (Exception exception) {
+								rifLogger.error(this.getClass(), "Unable to parseFloat(" + 
+									columnType + "): " + value,
+									exception);
+								throw exception;
+							}
+						}						
 						else if (value == null) {
 							value="&nbsp;";
 						}

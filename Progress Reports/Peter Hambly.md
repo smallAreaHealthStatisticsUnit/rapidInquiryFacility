@@ -1923,6 +1923,7 @@ callPerformSmoothingActivity exitValue: 1
 * Fixed PS bar in black and white
 * Code restructure - improved common SQL code, separate graphics directory, generic parameter code
 * Implement user configurable table SQL for HTML reports
+* Added numerator report
   
 ## In progress (December 2017/January 2018):
 
