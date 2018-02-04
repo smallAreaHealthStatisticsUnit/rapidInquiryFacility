@@ -399,6 +399,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				throw new Exception("R temporary directory: "  + 
 					temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
 			}
+			
+			CachedRowSetImpl rif40Studies=getRif40Studies(connection, studyID);	
 			rifLogger.info(this.getClass(), 
 				"Create study extract for: " + studyID + "; databaseType: " + databaseType);
 			String denominatorHTML=addDenominator(
@@ -407,14 +409,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				temporaryDirectory,
 				studyID,
 				1 /* Header level */,
-				locale);
+				locale,
+				rif40Studies);
 			String numeratorHTML=addNumerator(
 				user,
 				connection, 
 				temporaryDirectory,
 				studyID,
 				1 /* Header level */,
-				locale);	
+				locale,
+				rif40Studies);	
 				
 			submissionZipSavFile = createSubmissionZipFile(
 					user,
@@ -736,7 +740,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final File temporaryDirectory,
 			final String studyID,
 			final int headerLevel,
-			final Locale locale
+			final Locale locale,
+			CachedRowSetImpl rif40Studies
 			)
 			throws Exception {
 				
@@ -745,7 +750,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("    <h" + headerLevel + " id=\"numerator\">Numerator</h" + headerLevel + ">" + lineSeparator);
 		htmlFileText.append("    <p>" + lineSeparator);				
 
-		CachedRowSetImpl rif40Studies=getRif40Studies(connection, studyID);
 		String extractTable=getColumnFromResultSet(rif40Studies, "extract_table");
 		int yearStart=Integer.parseInt(getColumnFromResultSet(rif40Studies, "year_start"));
 		int yearStop=Integer.parseInt(getColumnFromResultSet(rif40Studies, "year_stop"));
@@ -822,14 +826,15 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		
 		return htmlFileText.toString();		
 	}
-						
+					
 	private String addDenominator(
 			final User user,
 			final Connection connection,
 			final File temporaryDirectory,
 			final String studyID,
 			final int headerLevel,
-			final Locale locale
+			final Locale locale,
+			CachedRowSetImpl rif40Studies
 			)
 			throws Exception {
 					
@@ -851,7 +856,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 
 		String denominatorDirName=addDirToTemporaryDirectoryPath(user, studyID, 
 			"reports" + File.separator + "denominator");
-		CachedRowSetImpl rif40Studies=getRif40Studies(connection, studyID);
 		String extractTable=getColumnFromResultSet(rif40Studies, "extract_table");
 		String denominatorTable=getColumnFromResultSet(rif40Studies, "denom_tab");
 		String studyDescription=getColumnFromResultSet(rif40Studies, "description", 
@@ -1639,7 +1643,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final Locale locale,
 			final String tomcatServer) 
 				throws Exception {	
-	
+
+		if (locale == null) {
+			throw new Exception("locale is null");
+		}
+							
 		Calendar calendar = null;
 		DateFormat df = null;
 		if (locale != null) {
@@ -1709,14 +1717,14 @@ public class RifZipFile extends SQLAbstractSQLManager {
 							Timestamp dateTimeValue=resultSet.getTimestamp(i, calendar);
 							value=df.format(dateTimeValue) + "<!-- DATE -->";
 						}
+						else if (name == "year_start" || name == "year_stop" || name == "year") {
+							// Do not process value
+						}
 						else if (value != null && (
 								 columnType.equals("integer") || 
 							     columnType.equals("bigint") || 
 								 columnType.equals("int") ||
 								 columnType.equals("smallint"))) {
-							if (locale == null) {
-								throw new Exception("locale is null");
-							}
 							try {
 								Long longVal=Long.parseLong(value);
 								value=NumberFormat.getNumberInstance(locale).format(longVal) + 
@@ -1734,9 +1742,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 							     columnType.equals("float8") || 
 							     columnType.equals("double precision") ||
 							     columnType.equals("numeric"))) {
-							if (locale == null) {
-								throw new Exception("locale is null");
-							}
 							try {
 								Float floatVal=Float.parseFloat(value);
 								value=NumberFormat.getNumberInstance(locale).format(floatVal) + 
