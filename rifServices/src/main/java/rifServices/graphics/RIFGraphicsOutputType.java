@@ -60,6 +60,8 @@ package rifServices.graphics;
  */
 
 public enum RIFGraphicsOutputType {
+	
+	/* Abstract initialisation */
 	RIFGRAPHICS_JPEG(1, true, false) {
 		public String getRIFGraphicsOutputTypeDescription() {
 			return "Joint Photographic Experts Group";
@@ -113,29 +115,63 @@ public enum RIFGraphicsOutputType {
 	private final boolean enabled;
 	private final boolean usesFop;
 	
+	/**
+	 * Constructor
+	 *
+	 * @param  outputType	Name of graphics output
+	 * @param  enabled 		Boolean: is this outputType enabled?
+	 * 						TIFF is currently not available due to a bug: 
+	 *						https://mail-archives.apache.org/mod_mbox/xmlgraphics-batik-users/201708.mbox/%3CCY4PR04MB039071041456B1E485DCB893DDB40@CY4PR04MB0390.namprd04.prod.outlook.com%3E
+	 *						Has been fixed in the source, requires 1.9.2 or higher Batik
+	 * @param  usesFop		Boolean: graphics outputType uses the Apache FOP processor
+	 *						[i.e. cannot use color gradients]
+	 */		
 	RIFGraphicsOutputType(int outputType, boolean enabled, boolean usesFop) { // Constructor
 		this.outputType=outputType;
 		this.enabled=enabled;
 		this.usesFop=usesFop;
 	}
-	
-	public int getRIFGraphicsOutputType() { // Get method
+
+	/**
+	 * Get method: outputType
+	 */		
+	public int getRIFGraphicsOutputType() { 
 		return outputType;
 	}	
-	
-	public boolean isRIFGraphicsOutputTypeEnabled() { // Get method
+
+	/**
+	 * Get method: enabled
+	 */	
+	public boolean isRIFGraphicsOutputTypeEnabled() {
 		return enabled;
 	}	
-	
-	public boolean doesRIFGraphicsOutputTypeUseFop() { // Get method
+
+	/**
+	 * Get method: usesFop
+	 */		
+	public boolean doesRIFGraphicsOutputTypeUseFop() { 
 		return usesFop;
 	}
-	
+
+	/**
+	 * Get method: enabled
+	 */		
 	public String getRIFGraphicsOutputTypeShortName() {
 		return name().replace("RIFGRAPHICS_", "");
 	}
 	
+	/**
+	 * Abstract method implemented by constructor initialisors: get graphics extension
+	 * 
+	 * @return: 	String extension
+	 */	 
 	public abstract String getGraphicsExtentsion();	
+	
+	/**
+	 * Abstract method implemented by constructor initialisors: get outputType description
+	 * 
+	 * @return: 	String description
+	 */		
 	public abstract String getRIFGraphicsOutputTypeDescription(); // ToString replacement
 
 }

@@ -221,7 +221,7 @@ public abstract class AbstractSQLQueryFormatter {
 	 * @param  fileName		Name of file containing query
 	 * @param  args 		Argument list.
 	 * @param  databaseType DatabaseType
-	 *						Replaces %1 with args[1] etc
+	 *						Replaces %1 with args[0] etc
 	 *						NO SUPPORT FOR ESCAPING!
 	 */	
 	public void createQueryFromFile(final String fileName, final String[] args, final DatabaseType databaseType)  
