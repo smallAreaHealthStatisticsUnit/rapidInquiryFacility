@@ -276,7 +276,7 @@ angular.module("RIF")
                 $scope.exportAllTables = function (e) {
 					if ($scope.exportTAG == "Export Study Tables") {
 						$scope.showSuccess("Export started...");
-						$scope.exportTAG="Please wait...";
+						$scope.exportTAG="Exporting...";
 						$scope.exportURL = undefined;
 						$scope.disableMapListButton=true;
 						user.createZipFile(user.currentUser, $scope.studyID["exportmap"].study_id, $scope.exportLevel).then(
@@ -299,6 +299,7 @@ angular.module("RIF")
 //								$scope.exportTAG="Export Study Tables";
 //								$scope.exportURL = undefined;
 //								$scope.disableMapListButton=true;
+								$scope.exportTAG="Download had error";
 								$scope.showError("Study tables export error for: " + $scope.studyID["exportmap"].name);
 //								if (err !== undefined && Object.keys(err).length > 0) {
 									$scope.consoleLog("Export error: " + JSON.stringify(err));

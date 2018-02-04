@@ -468,18 +468,18 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						baseStudyName,
 						rifStudySubmission);
 
-				addRFiles(
-					temporaryDirectory,
-					submissionZipOutputStream,
-					null);
-
 				writeGeographyFiles(
 						connection,
-						temporaryDirectoryPath,
+						temporaryDirectory,
 						submissionZipOutputStream,
 						baseStudyName,
 						zoomLevel,
 						rifStudySubmission);
+						
+				addAllFilesToZip(
+					temporaryDirectory,
+					submissionZipOutputStream,
+					null);
 
 				/*
 				writeStatisticalPostProcessingFiles(
@@ -2057,7 +2057,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		rifLogger.info(this.getClass(), "Add to ZIP file: " + queryFileName);		
 	}
 	
-	private void addRFiles(
+	private void addAllFilesToZip(
 			final File startDirectory,
 			final ZipOutputStream submissionZipOutputStream,
 			final String relativePath)
@@ -2108,11 +2108,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				} */
 				
 				if (relativePath == null) {
-					addRFiles(listOfFiles[i], submissionZipOutputStream, 
+					addAllFilesToZip(listOfFiles[i], submissionZipOutputStream, 
 						listOfFiles[i].getName()); // Recurse!!
 				}
 				else {
-					addRFiles(listOfFiles[i], submissionZipOutputStream, 
+					addAllFilesToZip(listOfFiles[i], submissionZipOutputStream, 
 						relativePath + File.separator + listOfFiles[i].getName()); // Recurse!!
 				}
 			}
@@ -2125,7 +2125,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	
 	private void writeGeographyFiles(
 			final Connection connection,
-			final String temporaryDirectoryPath,
+			final File temporaryDirectory,
 			final ZipOutputStream submissionZipOutputStream,
 			final String baseStudyName,
 			final String zoomLevel,
@@ -2139,53 +2139,48 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		tileTableName.append("rif_data.geometry_");
 		String geog = rifStudySubmission.getStudy().getGeography().getName();			
 		tileTableName.append(geog);
-						
-		StringBuilder tileFilePath = new StringBuilder();
-		tileFilePath.append(GEOGRAPHY_SUBDIRECTORY);
-		tileFilePath.append(File.separator);
-		tileFilePath.append(baseStudyName);
 		
 		//Write study area
 		StringBuilder tileFileName = null;
 		tileFileName = new StringBuilder();
-		tileFileName.append(tileFilePath.toString());
+		tileFileName.append(baseStudyName);
 		tileFileName.append("_studyArea");
 		tileFileName.append(".json");
 		
 		writeMapQueryTogeoJSONFile(
 				connection,
-				submissionZipOutputStream,
 				"rif40_study_areas",
+				temporaryDirectory,
+				GEOGRAPHY_SUBDIRECTORY,
 				tileTableName.toString(),
 				tileFileName.toString(),
 				zoomLevel,
 				studyID);
-		rifLogger.info(this.getClass(), "Add JSON to ZIP file: " + tileFileName);
 		
 		//Write comparison area
 		tileFileName = new StringBuilder();
-		tileFileName.append(tileFilePath.toString());
+		tileFileName.append(baseStudyName);
 		tileFileName.append("_comparisonArea");
 		tileFileName.append(".json");
 		
 		writeMapQueryTogeoJSONFile(
 				connection,
-				submissionZipOutputStream,
 				"rif40_comparison_areas",
+				temporaryDirectory,
+				GEOGRAPHY_SUBDIRECTORY,
 				tileTableName.toString(),
 				tileFileName.toString(),
 				zoomLevel,
 				studyID);
-		rifLogger.info(this.getClass(), "Add JSON to ZIP file: " + tileFileName);
 	}		
-	
 						
 	private void writeMapQueryTogeoJSONFile(
 			final Connection connection,
-			final ZipOutputStream submissionZipOutputStream,	
 			final String areaTableName,
+			final File temporaryDirectory,
+			final String dirName,
 			final String tableName,
-			final String outputFilePath,
+			final String outputFileName,
 			final String zoomLevel,
 			final String studyID)
 					throws Exception {
@@ -2215,8 +2210,27 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		queryFormatter.addQueryLine(0, "left join " + tableName + " b ");
 		queryFormatter.addQueryLine(0, "on a.area_id = b.areaid");
 		queryFormatter.addQueryLine(0, "WHERE geolevel_id = ? AND zoomlevel = ?");
-		
-		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(submissionZipOutputStream);
+	
+		String geojsonDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
+		File geojsonDirectory = new File(geojsonDirName);
+		File newDirectory = new File(geojsonDirName);
+		if (newDirectory.exists()) {
+			rifLogger.info(this.getClass(), 
+				"Found directory: " + newDirectory.getAbsolutePath());
+		}
+		else {
+			newDirectory.mkdirs();
+			rifLogger.info(this.getClass(), 
+				"Created directory: " + newDirectory.getAbsolutePath());
+		}
+		String geojsonFile=geojsonDirName + File.separator + outputFileName;
+		rifLogger.info(this.getClass(), "Add JSON to ZIP file: " + geojsonFile);
+		File file = new File(geojsonFile);
+		if (file.exists()) {
+			file.delete();
+		}
+		OutputStream ostream = new FileOutputStream(geojsonFile);
+		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(ostream);
 		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
 		
 		PreparedStatement geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);		
@@ -2227,28 +2241,31 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		ResultSet resultSet = null;
 		
 		try {
+			logSQLQuery("writeMapQueryTogeoJSONFile", geolevelQueryFormatter, studyID);
 			geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);
 			geolevelStatement.setInt(1, Integer.parseInt(studyID));	
 			geolevelResultSet = geolevelStatement.executeQuery();
 			geolevelResultSet.next();
 			Integer geolevel = geolevelResultSet.getInt(1);
 			
-			
+			logSQLQuery("writeMapQueryTogeoJSONFile", countQueryFormatter, studyID);
 			countStatement = createPreparedStatement(connection, countQueryFormatter);
 			countStatement.setInt(1, Integer.parseInt(studyID));	
 			countResultSet = countStatement.executeQuery();
 			countResultSet.next();
 			int rows = countResultSet.getInt(1);
 
+			String[] queryArgs = new String[3];
+			queryArgs[0]=studyID;
+			queryArgs[1]=geolevel.toString();
+			queryArgs[2]=zoomLevel;
+			logSQLQuery("writeMapQueryTogeoJSONFile", queryFormatter, queryArgs);
 			statement = createPreparedStatement(connection, queryFormatter);
 			statement.setInt(1, Integer.parseInt(studyID));	
 			statement.setInt(2, geolevel);
 			statement.setInt(3, Integer.parseInt(zoomLevel));
 						
 			resultSet = statement.executeQuery();
-
-			ZipEntry zipEntry = new ZipEntry(outputFilePath);
-			submissionZipOutputStream.putNextEntry(zipEntry);
 			
 			//Write WKT to geoJSON
 			int i = 0;
@@ -2289,7 +2306,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			bufferedWriter.write("}");
 
 			bufferedWriter.flush();
-			submissionZipOutputStream.closeEntry();
+			bufferedWriter.close();			
 
 			connection.commit();
 		}
