@@ -1715,10 +1715,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						    columnType.equals("timestamptz") ||
 						    columnType.equals("datetime")) {
 							Timestamp dateTimeValue=resultSet.getTimestamp(i, calendar);
-							value=df.format(dateTimeValue) + "<!-- DATE -->";
+							value=df.format(dateTimeValue) + "<!-- DATE: " + name + " -->";
 						}
-						else if (name == "year_start" || name == "year_stop" || name == "year") {
-							value = value + " <!-- YEAR -->";	// Do not process value
+						else if (name.equals("year_start") || 
+								 name.equals("year_stop") || 
+								 name.equals("year")) {
+							value = value + " <!-- YEAR: " + name + " -->";	// Do not process value
 						}
 						else if (value != null && (
 								 columnType.equals("integer") || 
@@ -1729,7 +1731,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 							try {
 								Long longVal=Long.parseLong(value);
 								value=NumberFormat.getNumberInstance(locale).format(longVal) + 
-									" <!-- LONG -->";
+									" <!-- LONG: " + name + " -->";
 							}
 							catch (Exception exception) {
 								rifLogger.error(this.getClass(), "Unable to parseLong(" + 
@@ -1746,7 +1748,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 							try {
 								Float floatVal=Float.parseFloat(value);
 								value=NumberFormat.getNumberInstance(locale).format(floatVal) + 
-									" <!-- FLOAT -->";
+									" <!-- FLOAT: " + name + " -->";
 							}
 							catch (Exception exception) {
 								rifLogger.error(this.getClass(), "Unable to parseFloat(" + 
@@ -2148,7 +2150,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		tileFileName = new StringBuilder();
 		tileFileName.append(tileFilePath.toString());
 		tileFileName.append("_studyArea");
-		tileFileName.append(".txt");
+		tileFileName.append(".json");
 		
 		writeMapQueryTogeoJSONFile(
 				connection,
@@ -2158,12 +2160,13 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				tileFileName.toString(),
 				zoomLevel,
 				studyID);
+		rifLogger.info(this.getClass(), "Add JSON to ZIP file: " + tileFileName);
 		
 		//Write comparison area
 		tileFileName = new StringBuilder();
 		tileFileName.append(tileFilePath.toString());
 		tileFileName.append("_comparisonArea");
-		tileFileName.append(".txt");
+		tileFileName.append(".json");
 		
 		writeMapQueryTogeoJSONFile(
 				connection,
@@ -2173,7 +2176,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				tileFileName.toString(),
 				zoomLevel,
 				studyID);
-		rifLogger.info(this.getClass(), "Add to ZIP file: " + tileFileName);
+		rifLogger.info(this.getClass(), "Add JSON to ZIP file: " + tileFileName);
 	}		
 	
 						
@@ -2249,11 +2252,15 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			
 			//Write WKT to geoJSON
 			int i = 0;
-			bufferedWriter.write("{ \"type\": \"FeatureCollection\", \"features\": [\r\n");	
+			bufferedWriter.write("{\"type\":\"FeatureCollection\",\"features\":[");	
 			while (resultSet.next()) {
-				bufferedWriter.write("{ \"type\": \"Feature\",\r\n");
-				bufferedWriter.write("\"geometry\": {\r\n\"type\": \"Polygon\",\r\n\"coordinates\": [");
-				bufferedWriter.write("[\r\n");
+				i++;
+				if (i > 1) {
+					bufferedWriter.write(","); 
+				}
+				bufferedWriter.write("{\"type\":\"Feature\",");
+				bufferedWriter.write("\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[");
+				bufferedWriter.write("[");
 				//Full wkt string
 				String polygon = resultSet.getString(3);				
 				//trim head and tail
@@ -2269,21 +2276,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					}
 				}				
 				//get properties
-				bufferedWriter.write("]\r\n");					
-				bufferedWriter.write("]},\r\n\"properties\": {\r\n");
-				bufferedWriter.write("\"area_id\": \"" + resultSet.getString(1) + "\",\r\n");
-				bufferedWriter.write("\"zoomLevel\": \"" + resultSet.getString(2) + "\",\r\n");
-				bufferedWriter.write("\"areatype\": \"" + type + "\"\r\n");
-				bufferedWriter.write("}\r\n");
+				bufferedWriter.write("]");					
+				bufferedWriter.write("]},\"properties\":{");
+				bufferedWriter.write("\"area_id\":\"" + resultSet.getString(1) + "\",");
+				bufferedWriter.write("\"zoomLevel\":\"" + resultSet.getString(2) + "\",");
+				bufferedWriter.write("\"areatype\":\"" + type + "\"");
 				bufferedWriter.write("}");
-				if (i != rows) {
-					bufferedWriter.write(","); 
-				}
-				bufferedWriter.write("\r\n");
-				i++;
+				bufferedWriter.write("}");
 			}
 			
-			bufferedWriter.write("]\r\n");
+			bufferedWriter.write("]");
 			bufferedWriter.write("}");
 
 			bufferedWriter.flush();
