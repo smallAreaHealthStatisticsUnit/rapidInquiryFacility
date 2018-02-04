@@ -276,10 +276,12 @@ angular.module("RIF")
                 $scope.exportAllTables = function (e) {
 					if ($scope.exportTAG == "Export Study Tables") {
 						$scope.showSuccess("Export started...");
+						$scope.disableMapListButton=true;
 						user.createZipFile(user.currentUser, $scope.studyID["exportmap"].study_id, $scope.exportLevel).then(
 							function (res) { // Sucesss handler
 								if (res.data.status === "OK") {
-									$scope.showSuccess("Export finished: " + $scope.studyID["exportmap"].name + "; ready to download.");
+									$scope.disableMapListButton=false;
+									$scope.showSuccessNoHide("Export finished: " + $scope.studyID["exportmap"].name + "; ready to download.");
 									$scope.exportURL = user.getZipFileURL(user.currentUser, $scope.studyID["exportmap"].study_id, 
 										$scope.exportLevel); // Set mapListButtonExport URL
 									$scope.exportTAG="Download Study Export";

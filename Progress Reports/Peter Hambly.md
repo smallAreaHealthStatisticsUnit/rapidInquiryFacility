@@ -1924,14 +1924,15 @@ callPerformSmoothingActivity exitValue: 1
 * Code restructure - improved common SQL code, separate graphics directory, generic parameter code
 * Implement user configurable table SQL for HTML reports
 * Added numerator report
-  
+* Formatted dates and numbers correctly
+* Export study tables button disabled during export. Complete message made permanent
+
 ## In progress (December 2017/January 2018):
 
 * Extend PouchDB to base layer [probably will defer as not needed yet]
 * Sort popups in data viewer and disease maps [need to discuss]
 * Add support for css <style> tags in fjrechart SVG generator. Also support for rgb to hex 
   conversion for end color when graphic bar renderer used. 
-* Export study tables button to be disabled during export. Complete message to be permanent
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing 
   type].
