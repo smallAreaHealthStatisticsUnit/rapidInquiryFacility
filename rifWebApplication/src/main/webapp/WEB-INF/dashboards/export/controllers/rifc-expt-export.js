@@ -276,6 +276,8 @@ angular.module("RIF")
                 $scope.exportAllTables = function (e) {
 					if ($scope.exportTAG == "Export Study Tables") {
 						$scope.showSuccess("Export started...");
+						$scope.exportTAG="Please wait...";
+						$scope.exportURL = undefined;
 						$scope.disableMapListButton=true;
 						user.createZipFile(user.currentUser, $scope.studyID["exportmap"].study_id, $scope.exportLevel).then(
 							function (res) { // Sucesss handler
