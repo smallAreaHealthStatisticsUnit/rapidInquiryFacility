@@ -40,6 +40,13 @@ import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.geotools.geojson.geom.GeometryJSON;
+import org.geotools.geometry.jts.JTSFactoryFinder;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.WKTReader;
+
 /**
  *
  * <hr>
@@ -2206,10 +2213,17 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		
 		//TODO: possible issues with Multi-polygon and point arrays
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		queryFormatter.addQueryLine(0, "SELECT b.areaid, b.zoomlevel, b.wkt from (select area_id from rif40." + areaTableName + " where study_id = ?) a");
-		queryFormatter.addQueryLine(0, "left join " + tableName + " b ");
-		queryFormatter.addQueryLine(0, "on a.area_id = b.areaid");
-		queryFormatter.addQueryLine(0, "WHERE geolevel_id = ? AND zoomlevel = ?");
+		if (databaseType == DatabaseType.POSTGRESQL) {
+			queryFormatter.addQueryLine(0, "SELECT b.areaid, b.zoomlevel, ST_AsText(ST_ForceRHR(b.geom)) AS wkt");			}
+		else if (databaseType == DatabaseType.SQL_SERVER) {
+			queryFormatter.addQueryLine(0, "SELECT b.areaid, b.zoomlevel, b.wkt");	
+		}					
+		queryFormatter.addQueryLine(0, "  FROM (SELECT area_id");
+		queryFormatter.addQueryLine(0, "          FROM rif40." + areaTableName);
+		queryFormatter.addQueryLine(0, "         WHERE study_id = ?) a");
+		queryFormatter.addQueryLine(0, "        LEFT JOIN " + tableName.toLowerCase() + 
+															" b ON (a.area_id = b.areaid)");
+		queryFormatter.addQueryLine(0, " WHERE geolevel_id = ? AND zoomlevel = ?");
 	
 		String geojsonDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		File geojsonDirectory = new File(geojsonDirName);
@@ -2270,31 +2284,28 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			//Write WKT to geoJSON
 			int i = 0;
 			bufferedWriter.write("{\"type\":\"FeatureCollection\",\"features\":[");	
+			// Add bbox after FeatureCollection
+			// SRID/CRS? geometry is in WGS84
 			while (resultSet.next()) {
 				i++;
 				if (i > 1) {
 					bufferedWriter.write(","); 
 				}
-				bufferedWriter.write("{\"type\":\"Feature\",");
-				bufferedWriter.write("\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[");
-				bufferedWriter.write("[");
-				//Full wkt string
-				String polygon = resultSet.getString(3);				
-				//trim head and tail
-				polygon = polygon.replaceAll("MULTIPOLYGON", "");
-				polygon = polygon.replaceAll("[()]", "");				
-				//get coordinate pairs
-				String[] coords = polygon.split(",");
-				for (Integer j = 0; j < coords.length; j++) {
-					String node = coords[j].replaceFirst(" ", ",");
-					bufferedWriter.write("[" + node + "]");		
-					if (j != coords.length - 1) {
-						bufferedWriter.write(",");	
-					}
-				}				
-				//get properties
-				bufferedWriter.write("]");					
-				bufferedWriter.write("]},\"properties\":{");
+				bufferedWriter.write("{\"type\":\"Feature\",\"geometry\":");
+
+				String polygon = resultSet.getString(3);	
+								 
+				GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+
+				WKTReader reader = new WKTReader(geometryFactory);
+				Geometry geometry = reader.read(polygon); // Geotools JTS	
+				GeometryJSON writer = new GeometryJSON();
+				String strGeoJSON = writer.toString(geometry);
+				
+				rifLogger.info(this.getClass(), "Wkt: " + polygon.substring(0, 30));
+				rifLogger.info(this.getClass(), "Geojson: " + strGeoJSON.substring(0, 30));
+				bufferedWriter.write(strGeoJSON);
+				bufferedWriter.write(",\"properties\":{");
 				bufferedWriter.write("\"area_id\":\"" + resultSet.getString(1) + "\",");
 				bufferedWriter.write("\"zoomLevel\":\"" + resultSet.getString(2) + "\",");
 				bufferedWriter.write("\"areatype\":\"" + type + "\"");

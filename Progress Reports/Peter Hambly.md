@@ -1926,6 +1926,8 @@ callPerformSmoothingActivity exitValue: 1
 * Added numerator report
 * Formatted dates and numbers correctly
 * Export study tables button disabled during export. Complete message made permanent
+* Fixed JSON study and comparison area dumps, added geotools to build
+  Used http://geojson.io/#map=2/20.0/0.0
 
 ## In progress (December 2017/January 2018):
 
