@@ -154,7 +154,7 @@ public enum RIFGraphicsOutputType {
 	}
 
 	/**
-	 * Get method: enabled
+	 * Get method: short_name (i.e. not the RIFGRAPHICS_ bit)
 	 */		
 	public String getRIFGraphicsOutputTypeShortName() {
 		return name().replace("RIFGRAPHICS_", "");

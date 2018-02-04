@@ -971,7 +971,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				disabled="disabled";
 			}
 			htmlFileText.append("          <option value=\"" + 
-				outputType.getRIFGraphicsOutputTypeShortName().toLowerCase() +
+				outputType.getGraphicsExtentsion() +
 				"\" " + disabled + " " +
 				"id=\"" + outputType.getRIFGraphicsOutputTypeShortName().toLowerCase() + "Select\" " + 
 				"title=\"" + outputType.getRIFGraphicsOutputTypeDescription() + "\" " + 
@@ -1718,11 +1718,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 							value=df.format(dateTimeValue) + "<!-- DATE -->";
 						}
 						else if (name == "year_start" || name == "year_stop" || name == "year") {
-							// Do not process value
+							value = value + " <!-- YEAR -->";	// Do not process value
 						}
 						else if (value != null && (
 								 columnType.equals("integer") || 
 							     columnType.equals("bigint") || 
+								 columnType.equals("int4") ||
 								 columnType.equals("int") ||
 								 columnType.equals("smallint"))) {
 							try {
