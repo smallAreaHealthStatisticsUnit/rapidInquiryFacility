@@ -1928,7 +1928,19 @@ callPerformSmoothingActivity exitValue: 1
 * Export study tables button disabled during export. Complete message made permanent
 * Fixed JSON study and comparison area dumps, added geotools to build
   Used http://geojson.io/#map=2/20.0/0.0
+  
+#### 5th to 9th February
 
+* Added maps.
+* Checked results - MSSQLSmoothedResultManager.java population_per_area CTE needs:
+  ```WHERE study_or_comparison = 'S'``` adding or you will get the wrong results if study and 
+  comparison areas have the same geolevel. Added.
+* Examination show that adjusted=1 rows are filled when covariates are used, adjusted=0 when
+  not, so non need for extra filters on map tables 
+* When testing with volume there is a timeout issue in the export, pushing the export button before
+  the screen has finished startup porocessing causing it to forget it is running. Pushing it against
+  can result is a corrupt export.
+  
 ## In progress (December 2017/January 2018):
 
 * Extend PouchDB to base layer [probably will defer as not needed yet]

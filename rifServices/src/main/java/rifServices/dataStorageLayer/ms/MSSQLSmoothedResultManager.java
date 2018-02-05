@@ -723,11 +723,12 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 			queryFormatter.addQueryLine(2, "SUM(total_pop) AS population");
 			queryFormatter.addQueryLine(1, "FROM");		
 			queryFormatter.addQueryLine(2, extractTableName);
+			queryFormatter.addQueryLine(2, " WHERE study_or_comparison = 'S'");
 			if (sex == Sex.MALES) {
-				queryFormatter.addQueryLine(2, "WHERE sex = 1 ");			
+				queryFormatter.addQueryLine(2, "  AND sex = 1 ");			
 			}
 			else if (sex == Sex.FEMALES) {
-				queryFormatter.addQueryLine(2, "WHERE sex = 2 ");			
+				queryFormatter.addQueryLine(2, "  AND sex = 2 ");			
 			}		
 			//otherwise, if it's both, don't filter by any sex value
 			queryFormatter.addQueryLine(1, "GROUP BY");
