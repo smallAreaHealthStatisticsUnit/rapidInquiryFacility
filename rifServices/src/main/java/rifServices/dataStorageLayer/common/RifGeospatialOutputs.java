@@ -165,7 +165,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				zoomLevel,
 				studyID,
 				"S", 									/* areaType */
-				", a.area_id, a.band_id, b.zoomlevel",	/* extraColumns */
+				", a.area_id, a.band_id, b.zoomlevel, c.areaname",	/* extraColumns */
 				null 									/* additionalJoin */);
 		
 		//Write comparison area
@@ -184,7 +184,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				zoomLevel,
 				studyID,
 				"C", 									/* areaType */
-				", a.area_id, b.zoomlevel", 			/* extraColumns */
+				", a.area_id, b.zoomlevel, c.areaname",	/* extraColumns */
 				null 									/* additionalJoin */);	
 		
 		//Write results
@@ -224,10 +224,32 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			final String extraColumns,
 			final String additionalJoin)
 					throws Exception {
-		
+			
+		String geojsonDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
+		File geojsonDirectory = new File(geojsonDirName);
+		File newDirectory = new File(geojsonDirName);
+		if (newDirectory.exists()) {
+			rifLogger.info(this.getClass(), 
+				"Found directory: " + newDirectory.getAbsolutePath());
+		}
+		else {
+			newDirectory.mkdirs();
+			rifLogger.info(this.getClass(), 
+				"Created directory: " + newDirectory.getAbsolutePath());
+		}
+		String geojsonFile=geojsonDirName + File.separator + outputFileName + ".json";
+		rifLogger.info(this.getClass(), "Add JSON to ZIP file: " + geojsonFile);
+		File file = new File(geojsonFile);
+		if (file.exists()) {
+			file.delete();
+		}
+		OutputStream ostream = new FileOutputStream(geojsonFile);
+		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(ostream);
+		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
+
 		//get geolevel
 		SQLGeneralQueryFormatter geolevelQueryFormatter = new SQLGeneralQueryFormatter();	
-		geolevelQueryFormatter.addQueryLine(0, "SELECT b.geolevel_id");
+		geolevelQueryFormatter.addQueryLine(0, "SELECT b.geolevel_id, b.geolevel_name");
 		geolevelQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies a, rif40.rif40_geolevels b");
 		geolevelQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 		if (areaTableName.equals("rif40_comparison_areas")) {
@@ -238,13 +260,29 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		} 
 		else { // Map tables - same as study areas
 			geolevelQueryFormatter.addQueryLine(0, "  AND a.study_geolevel_name = b.geolevel_name");
+		}		
+		Integer geolevel;
+		String geolevelName = null;
+		PreparedStatement geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);		
+		try {
+			ResultSet geolevelResultSet = null;			
+			logSQLQuery("writeMapQueryTogeoJSONFile", geolevelQueryFormatter, studyID);
+			geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);
+			geolevelStatement.setInt(1, Integer.parseInt(studyID));	
+			geolevelResultSet = geolevelStatement.executeQuery();
+			geolevelResultSet.next();
+			geolevel = geolevelResultSet.getInt(1);
+			geolevelName = geolevelResultSet.getString(2);
 		}
-	
-		//count areas
-		SQLGeneralQueryFormatter countQueryFormatter = new SQLGeneralQueryFormatter();
-		countQueryFormatter.addQueryLine(0, "SELECT COUNT(area_id)");
-		countQueryFormatter.addQueryLine(0, "  FROM rif40." + areaTableName);
-		countQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + geolevelQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {	
+			SQLQueryUtility.close(geolevelStatement);
+		}
 		
 /*
 
@@ -255,9 +293,10 @@ WITH a AS (
 	  FROM rif40.rif40_comparison_areas
 	 WHERE study_id = ?
 )
-SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, a.area_id, b.zoomlevel
+SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, a.area_id, b.zoomlevel, c.areaname
   FROM a
-        LEFT OUTER JOIN rif_data.geometry_sahsuland b ON (a.area_id = b.areaid);
+        LEFT OUTER JOIN rif_data.geometry_sahsuland b ON (a.area_id = b.areaid)
+		LEFT OUTER JOIN rif_data.lookup_sahsu_grd_level1 c ON (a.area_id = c.sahsu_grd_level1)
  WHERE b.geolevel_id = ? AND b.zoomlevel = ?;	
 
 Form 2: areaType: S; extraColumns: a.area_id, a.band_id, b.zoomlevel; no additionalJoin
@@ -267,12 +306,14 @@ WITH a AS (
 	  FROM rif40.rif40_study_areas
 	 WHERE study_id = ?
 )
-SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, a.area_id, a.band_id, b.zoomlevel
+SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, a.area_id, a.band_id, b.zoomlevel, c.areaname
   FROM a
-        LEFT OUTER JOIN rif_data.geometry_sahsuland b ON (a.area_id = b.areaid);
+        LEFT OUTER JOIN rif_data.geometry_sahsuland b ON (a.area_id = b.areaid)
+		LEFT OUTER JOIN rif_data.lookup_sahsu_grd_level4 c ON (a.area_id = c.sahsu_grd_level4)
  WHERE b.geolevel_id = ? AND b.zoomlevel = ?;	
 
-Form 3: areaType IS NULL; extraColumns: b.zoomlevel, c.*; joinCondition: a.area_id = b.area_id
+Form 3: areaType IS NULL; extraColumns: b.zoomlevel, c.*; additionalJoin: 
+		LEFT OUTER JOIN rif_studies.s367_map c ON (a.area_id = c.area_id)
 
 WITH a AS (
 	SELECT *
@@ -305,52 +346,15 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 		if (additionalJoin != null) {
 			queryFormatter.addQueryLine(0, additionalJoin);
 		}
+		else {
+			queryFormatter.addQueryLine(0, "LEFT OUTER JOIN rif_data.lookup_" + geolevelName + 
+				" c ON (a.area_id = c." + geolevelName + ")");
+		}
 		queryFormatter.addQueryLine(0, " WHERE b.geolevel_id = ? AND b.zoomlevel = ?");		
 		
-		String geojsonDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
-		File geojsonDirectory = new File(geojsonDirName);
-		File newDirectory = new File(geojsonDirName);
-		if (newDirectory.exists()) {
-			rifLogger.info(this.getClass(), 
-				"Found directory: " + newDirectory.getAbsolutePath());
-		}
-		else {
-			newDirectory.mkdirs();
-			rifLogger.info(this.getClass(), 
-				"Created directory: " + newDirectory.getAbsolutePath());
-		}
-		String geojsonFile=geojsonDirName + File.separator + outputFileName + ".json";
-		rifLogger.info(this.getClass(), "Add JSON to ZIP file: " + geojsonFile);
-		File file = new File(geojsonFile);
-		if (file.exists()) {
-			file.delete();
-		}
-		OutputStream ostream = new FileOutputStream(geojsonFile);
-		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(ostream);
-		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-		
-		PreparedStatement geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);		
-		ResultSet geolevelResultSet = null;
-		PreparedStatement countStatement = createPreparedStatement(connection, countQueryFormatter);		
-		ResultSet countResultSet = null;
 		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
-		ResultSet resultSet = null;
-		
-		try {
-			logSQLQuery("writeMapQueryTogeoJSONFile", geolevelQueryFormatter, studyID);
-			geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);
-			geolevelStatement.setInt(1, Integer.parseInt(studyID));	
-			geolevelResultSet = geolevelStatement.executeQuery();
-			geolevelResultSet.next();
-			Integer geolevel = geolevelResultSet.getInt(1);
-			
-			logSQLQuery("writeMapQueryTogeoJSONFile", countQueryFormatter, studyID);
-			countStatement = createPreparedStatement(connection, countQueryFormatter);
-			countStatement.setInt(1, Integer.parseInt(studyID));	
-			countResultSet = countStatement.executeQuery();
-			countResultSet.next();
-			int rows = countResultSet.getInt(1);
-
+		try {	
+			ResultSet resultSet = null;
 			String[] queryArgs = new String[3];
 			queryArgs[0]=studyID;
 			queryArgs[1]=geolevel.toString();
@@ -397,7 +401,7 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 					bufferedWriter.write("\"areatype\":\"" + areaType + "\"");
 				}
 				else {
-					bufferedWriter.write("\"maptype\":\"X\"");
+					bufferedWriter.write("\"maptype\":\"Results\"");
 				}
 				if (extraColumns != null) {
 					
@@ -422,10 +426,14 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 
 			connection.commit();
 		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + queryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
 		finally {
 			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(countStatement);
-			SQLQueryUtility.close(geolevelStatement);
 		}
 	}
 }	
