@@ -1933,7 +1933,7 @@ callPerformSmoothingActivity exitValue: 1
 
 * Extend PouchDB to base layer [probably will defer as not needed yet]
 * Sort popups in data viewer and disease maps [need to discuss]
-* Add support for css <style> tags in fjrechart SVG generator. Also support for rgb to hex 
+* Add support for css <style> tags in fjreechart SVG generator. Also support for rgb to hex 
   conversion for end color when graphic bar renderer used. 
 
 * Generate the study setup JSON used by the web browser [this will need the missing database fields to be added, principally smoothing 

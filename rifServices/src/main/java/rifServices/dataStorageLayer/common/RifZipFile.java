@@ -117,7 +117,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	private String studyID;
 	private static String EXTRACT_DIRECTORY;
 	private static int printingDPI;
-	private static float jpegQuality=new Float(.8);
 	
 	private static final String STUDY_QUERY_SUBDIRECTORY = "study_query";
 	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
@@ -474,11 +473,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						user,
 						baseStudyName,
 						rifStudySubmission);
-
-				writeGeographyFiles(
+						
+				RifGeospatialOutputs rifGeospatialOutputs = 
+					new RifGeospatialOutputs(rifServiceStartupOptions);
+				rifGeospatialOutputs.writeGeographyFiles(
 						connection,
 						temporaryDirectory,
-						submissionZipOutputStream,
 						baseStudyName,
 						zoomLevel,
 						rifStudySubmission);
@@ -2128,204 +2128,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					listOfFiles[i].getName());
 			}
     	}
-	}
-	
-	private void writeGeographyFiles(
-			final Connection connection,
-			final File temporaryDirectory,
-			final ZipOutputStream submissionZipOutputStream,
-			final String baseStudyName,
-			final String zoomLevel,
-			final RIFStudySubmission rifStudySubmission)
-					throws Exception {
-		
-		String studyID = rifStudySubmission.getStudyID();
-	
-		//Add geographies to zip file
-		StringBuilder tileTableName = new StringBuilder();	
-		tileTableName.append("rif_data.geometry_");
-		String geog = rifStudySubmission.getStudy().getGeography().getName();			
-		tileTableName.append(geog);
-		
-		//Write study area
-		StringBuilder tileFileName = null;
-		tileFileName = new StringBuilder();
-		tileFileName.append(baseStudyName);
-		tileFileName.append("_studyArea");
-		tileFileName.append(".json");
-		
-		writeMapQueryTogeoJSONFile(
-				connection,
-				"rif40_study_areas",
-				temporaryDirectory,
-				GEOGRAPHY_SUBDIRECTORY,
-				tileTableName.toString(),
-				tileFileName.toString(),
-				zoomLevel,
-				studyID);
-		
-		//Write comparison area
-		tileFileName = new StringBuilder();
-		tileFileName.append(baseStudyName);
-		tileFileName.append("_comparisonArea");
-		tileFileName.append(".json");
-		
-		writeMapQueryTogeoJSONFile(
-				connection,
-				"rif40_comparison_areas",
-				temporaryDirectory,
-				GEOGRAPHY_SUBDIRECTORY,
-				tileTableName.toString(),
-				tileFileName.toString(),
-				zoomLevel,
-				studyID);
-	}		
-						
-	private void writeMapQueryTogeoJSONFile(
-			final Connection connection,
-			final String areaTableName,
-			final File temporaryDirectory,
-			final String dirName,
-			final String tableName,
-			final String outputFileName,
-			final String zoomLevel,
-			final String studyID)
-					throws Exception {
-		
-		//Type of area
-		String type = "S";
-		
-		//get geolevel
-		SQLGeneralQueryFormatter geolevelQueryFormatter = new SQLGeneralQueryFormatter();	
-		geolevelQueryFormatter.addQueryLine(0, "SELECT b.geolevel_id");
-		geolevelQueryFormatter.addQueryLine(0, "FROM rif40.rif40_studies a, rif40.rif40_geolevels b");
-		geolevelQueryFormatter.addQueryLine(0, "WHERE study_id = ?");
-		if (areaTableName.equals("rif40_comparison_areas")) {
-			geolevelQueryFormatter.addQueryLine(0, "AND a.comparison_geolevel_name = b.geolevel_name");
-			type = "C";
-		} else {
-			geolevelQueryFormatter.addQueryLine(0, "AND a.study_geolevel_name = b.geolevel_name");
-		}
-	
-		//count areas
-		SQLGeneralQueryFormatter countQueryFormatter = new SQLGeneralQueryFormatter();
-		countQueryFormatter.addQueryLine(0, "SELECT count(area_id) from rif40." + areaTableName + " where study_id = ?");
-		
-		//TODO: possible issues with Multi-polygon and point arrays
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		if (databaseType == DatabaseType.POSTGRESQL) {
-			queryFormatter.addQueryLine(0, "SELECT b.areaid, b.zoomlevel, ST_AsText(ST_ForceRHR(b.geom)) AS wkt");			}
-		else if (databaseType == DatabaseType.SQL_SERVER) {
-			queryFormatter.addQueryLine(0, "SELECT b.areaid, b.zoomlevel, b.wkt");	
-		}					
-		queryFormatter.addQueryLine(0, "  FROM (SELECT area_id");
-		queryFormatter.addQueryLine(0, "          FROM rif40." + areaTableName);
-		queryFormatter.addQueryLine(0, "         WHERE study_id = ?) a");
-		queryFormatter.addQueryLine(0, "        LEFT JOIN " + tableName.toLowerCase() + 
-															" b ON (a.area_id = b.areaid)");
-		queryFormatter.addQueryLine(0, " WHERE geolevel_id = ? AND zoomlevel = ?");
-	
-		String geojsonDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
-		File geojsonDirectory = new File(geojsonDirName);
-		File newDirectory = new File(geojsonDirName);
-		if (newDirectory.exists()) {
-			rifLogger.info(this.getClass(), 
-				"Found directory: " + newDirectory.getAbsolutePath());
-		}
-		else {
-			newDirectory.mkdirs();
-			rifLogger.info(this.getClass(), 
-				"Created directory: " + newDirectory.getAbsolutePath());
-		}
-		String geojsonFile=geojsonDirName + File.separator + outputFileName;
-		rifLogger.info(this.getClass(), "Add JSON to ZIP file: " + geojsonFile);
-		File file = new File(geojsonFile);
-		if (file.exists()) {
-			file.delete();
-		}
-		OutputStream ostream = new FileOutputStream(geojsonFile);
-		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(ostream);
-		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-		
-		PreparedStatement geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);		
-		ResultSet geolevelResultSet = null;
-		PreparedStatement countStatement = createPreparedStatement(connection, countQueryFormatter);		
-		ResultSet countResultSet = null;
-		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
-		ResultSet resultSet = null;
-		
-		try {
-			logSQLQuery("writeMapQueryTogeoJSONFile", geolevelQueryFormatter, studyID);
-			geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);
-			geolevelStatement.setInt(1, Integer.parseInt(studyID));	
-			geolevelResultSet = geolevelStatement.executeQuery();
-			geolevelResultSet.next();
-			Integer geolevel = geolevelResultSet.getInt(1);
-			
-			logSQLQuery("writeMapQueryTogeoJSONFile", countQueryFormatter, studyID);
-			countStatement = createPreparedStatement(connection, countQueryFormatter);
-			countStatement.setInt(1, Integer.parseInt(studyID));	
-			countResultSet = countStatement.executeQuery();
-			countResultSet.next();
-			int rows = countResultSet.getInt(1);
-
-			String[] queryArgs = new String[3];
-			queryArgs[0]=studyID;
-			queryArgs[1]=geolevel.toString();
-			queryArgs[2]=zoomLevel;
-			logSQLQuery("writeMapQueryTogeoJSONFile", queryFormatter, queryArgs);
-			statement = createPreparedStatement(connection, queryFormatter);
-			statement.setInt(1, Integer.parseInt(studyID));	
-			statement.setInt(2, geolevel);
-			statement.setInt(3, Integer.parseInt(zoomLevel));
-						
-			resultSet = statement.executeQuery();
-			
-			//Write WKT to geoJSON
-			int i = 0;
-			bufferedWriter.write("{\"type\":\"FeatureCollection\",\"features\":[");	
-			// Add bbox after FeatureCollection
-			// SRID/CRS? geometry is in WGS84
-			while (resultSet.next()) {
-				i++;
-				if (i > 1) {
-					bufferedWriter.write(","); 
-				}
-				bufferedWriter.write("{\"type\":\"Feature\",\"geometry\":");
-
-				String polygon = resultSet.getString(3);	
-								 
-				GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
-
-				WKTReader reader = new WKTReader(geometryFactory);
-				Geometry geometry = reader.read(polygon); // Geotools JTS	
-				GeometryJSON writer = new GeometryJSON();
-				String strGeoJSON = writer.toString(geometry);
-				
-				rifLogger.info(this.getClass(), "Wkt: " + polygon.substring(0, 30));
-				rifLogger.info(this.getClass(), "Geojson: " + strGeoJSON.substring(0, 30));
-				bufferedWriter.write(strGeoJSON);
-				bufferedWriter.write(",\"properties\":{");
-				bufferedWriter.write("\"area_id\":\"" + resultSet.getString(1) + "\",");
-				bufferedWriter.write("\"zoomLevel\":\"" + resultSet.getString(2) + "\",");
-				bufferedWriter.write("\"areatype\":\"" + type + "\"");
-				bufferedWriter.write("}");
-				bufferedWriter.write("}");
-			}
-			
-			bufferedWriter.write("]");
-			bufferedWriter.write("}");
-
-			bufferedWriter.flush();
-			bufferedWriter.close();			
-
-			connection.commit();
-		}
-		finally {
-			SQLQueryUtility.close(statement);
-			SQLQueryUtility.close(countStatement);
-			SQLQueryUtility.close(geolevelStatement);
-		}
 	}
 	
 	public String getRif40StudyState(
