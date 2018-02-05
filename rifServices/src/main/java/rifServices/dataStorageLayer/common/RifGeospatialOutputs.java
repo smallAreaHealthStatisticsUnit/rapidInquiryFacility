@@ -9,6 +9,7 @@ import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 
+import com.sun.rowset.CachedRowSetImpl;
 import java.sql.*;
 import java.io.*;
 import java.lang.*;
@@ -96,6 +97,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
 	private static final String RATES_AND_RISKS_SUBDIRECTORY = "rates_and_risks";
 	private static final String GEOGRAPHY_SUBDIRECTORY = "geography";
+	private static final String DATA_SUBDIRECTORY = "data";
 	private static final int BASE_FILE_STUDY_NAME_LENGTH = 100;
 	
 	private RIFServiceStartupOptions rifServiceStartupOptions;
@@ -134,20 +136,21 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			final File temporaryDirectory,
 			final String baseStudyName,
 			final String zoomLevel,
-			final RIFStudySubmission rifStudySubmission)
+			final RIFStudySubmission rifStudySubmission,
+			final CachedRowSetImpl rif40Studies)
 					throws Exception {
 		
 		String studyID = rifStudySubmission.getStudyID();
-	
+		String mapTable=getColumnFromResultSet(rif40Studies, "map_table");
+		
 		//Add geographies to zip file
 		StringBuilder tileTableName = new StringBuilder();	
-		tileTableName.append("rif_data.geometry_");
+		tileTableName.append("geometry_");
 		String geog = rifStudySubmission.getStudy().getGeography().getName();			
 		tileTableName.append(geog);
 		
 		//Write study area
-		StringBuilder tileFileName = null;
-		tileFileName = new StringBuilder();
+		StringBuilder tileFileName = new StringBuilder();
 		tileFileName.append(baseStudyName);
 		tileFileName.append("_studyArea");
 		
@@ -156,12 +159,14 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				"rif40_study_areas",
 				temporaryDirectory,
 				GEOGRAPHY_SUBDIRECTORY,
+				"rif_data",								/* Schema */
 				tileTableName.toString(),
 				tileFileName.toString(),
 				zoomLevel,
 				studyID,
-				"S", /* areaType */
-				", a.band_id");
+				"S", 									/* areaType */
+				", a.area_id, a.band_id, b.zoomlevel",	/* extraColumns */
+				null 									/* additionalJoin */);
 		
 		//Write comparison area
 		tileFileName = new StringBuilder();
@@ -173,12 +178,36 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				"rif40_comparison_areas",
 				temporaryDirectory,
 				GEOGRAPHY_SUBDIRECTORY,
+				"rif_data",								/* Schema */
 				tileTableName.toString(),
 				tileFileName.toString(),
 				zoomLevel,
 				studyID,
-				"C", /* areaType */
-				null /* extraColumns */);
+				"C", 									/* areaType */
+				", a.area_id, b.zoomlevel", 			/* extraColumns */
+				null 									/* additionalJoin */);	
+		
+		//Write results
+		tileFileName = new StringBuilder();
+		tileFileName.append(baseStudyName);
+		tileFileName.append("_map");
+		
+		writeMapQueryTogeoJSONFile(
+				connection,
+				"rif40_study_areas",
+				temporaryDirectory,
+				DATA_SUBDIRECTORY,
+				"rif_data",				/* Schema */
+				tileTableName.toString(),
+				tileFileName.toString(),
+				zoomLevel,
+				studyID,
+				null, 									/* areaType */
+				", b.zoomlevel, c.*",					/* extraColumns */
+				"LEFT OUTER JOIN rif_studies." + mapTable.toLowerCase() + 
+					" c ON (a.area_id = c.area_id)"
+														/* additionalJoin */);
+				
 	}		
 						
 	private void writeMapQueryTogeoJSONFile(
@@ -186,47 +215,98 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			final String areaTableName,
 			final File temporaryDirectory,
 			final String dirName,
+			final String schemaName,
 			final String tableName,
 			final String outputFileName,
 			final String zoomLevel,
 			final String studyID,
 			final String areaType,
-			final String extraColumns)
+			final String extraColumns,
+			final String additionalJoin)
 					throws Exception {
 		
 		//get geolevel
 		SQLGeneralQueryFormatter geolevelQueryFormatter = new SQLGeneralQueryFormatter();	
 		geolevelQueryFormatter.addQueryLine(0, "SELECT b.geolevel_id");
-		geolevelQueryFormatter.addQueryLine(0, "FROM rif40.rif40_studies a, rif40.rif40_geolevels b");
-		geolevelQueryFormatter.addQueryLine(0, "WHERE study_id = ?");
+		geolevelQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies a, rif40.rif40_geolevels b");
+		geolevelQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 		if (areaTableName.equals("rif40_comparison_areas")) {
-			geolevelQueryFormatter.addQueryLine(0, "AND a.comparison_geolevel_name = b.geolevel_name");
-		} else {
-			geolevelQueryFormatter.addQueryLine(0, "AND a.study_geolevel_name = b.geolevel_name");
+			geolevelQueryFormatter.addQueryLine(0, "  AND a.comparison_geolevel_name = b.geolevel_name");
+		} 
+		else if (areaTableName.equals("rif40_study_areas")) {
+			geolevelQueryFormatter.addQueryLine(0, "  AND a.study_geolevel_name = b.geolevel_name");
+		} 
+		else { // Map tables - same as study areas
+			geolevelQueryFormatter.addQueryLine(0, "  AND a.study_geolevel_name = b.geolevel_name");
 		}
 	
 		//count areas
 		SQLGeneralQueryFormatter countQueryFormatter = new SQLGeneralQueryFormatter();
-		countQueryFormatter.addQueryLine(0, "SELECT count(area_id) from rif40." + areaTableName + " where study_id = ?");
+		countQueryFormatter.addQueryLine(0, "SELECT COUNT(area_id)");
+		countQueryFormatter.addQueryLine(0, "  FROM rif40." + areaTableName);
+		countQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 		
-		//TODO: possible issues with Multi-polygon and point arrays
+/*
+
+Form 1: areaType: C; extraColumns: a.area_id, b.zoomlevel; no additionalJoin
+
+WITH a AS (
+	SELECT *
+	  FROM rif40.rif40_comparison_areas
+	 WHERE study_id = ?
+)
+SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, a.area_id, b.zoomlevel
+  FROM a
+        LEFT OUTER JOIN rif_data.geometry_sahsuland b ON (a.area_id = b.areaid);
+ WHERE b.geolevel_id = ? AND b.zoomlevel = ?;	
+
+Form 2: areaType: S; extraColumns: a.area_id, a.band_id, b.zoomlevel; no additionalJoin
+
+WITH a AS (
+	SELECT *
+	  FROM rif40.rif40_study_areas
+	 WHERE study_id = ?
+)
+SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, a.area_id, a.band_id, b.zoomlevel
+  FROM a
+        LEFT OUTER JOIN rif_data.geometry_sahsuland b ON (a.area_id = b.areaid);
+ WHERE b.geolevel_id = ? AND b.zoomlevel = ?;	
+
+Form 3: areaType IS NULL; extraColumns: b.zoomlevel, c.*; joinCondition: a.area_id = b.area_id
+
+WITH a AS (
+	SELECT *
+	  FROM rif40.rif40_study_areas
+	 WHERE study_id = ?
+)
+SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
+  FROM a
+        LEFT OUTER JOIN rif_data.geometry_sahsuland b ON (a.area_id = b.areaid)
+        LEFT OUTER JOIN rif_studies.s367_map c ON (a.area_id = c.area_id);
+ */		
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
-		if (databaseType == DatabaseType.POSTGRESQL) {
-			queryFormatter.addQueryLine(0, "SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.areaid, b.zoomlevel");			
+		queryFormatter.addQueryLine(0, "WITH a AS (");
+		queryFormatter.addQueryLine(0, "	SELECT *");
+		queryFormatter.addQueryLine(0, "	  FROM rif40." + areaTableName);
+		queryFormatter.addQueryLine(0, "	 WHERE study_id = ?");
+		queryFormatter.addQueryLine(0, ")");
+		if (databaseType == DatabaseType.POSTGRESQL) { // Force RHR (not needed)
+			queryFormatter.addQueryLine(0, "SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt");			
 		}
 		else if (databaseType == DatabaseType.SQL_SERVER) {
-			queryFormatter.addQueryLine(0, "SELECT b.wkt, b.areaid, b.zoomlevel");	
+			queryFormatter.addQueryLine(0, "SELECT b.wkt");	
 		}					
 		if (extraColumns != null) {
 			queryFormatter.addQueryLine(0, "      " + extraColumns);
 		}
-		queryFormatter.addQueryLine(0, "  FROM (SELECT *");
-		queryFormatter.addQueryLine(0, "          FROM rif40." + areaTableName);
-		queryFormatter.addQueryLine(0, "         WHERE study_id = ?) a");
-		queryFormatter.addQueryLine(0, "        LEFT OUTER JOIN " + tableName.toLowerCase() + 
-															" b ON (a.area_id = b.areaid)");
-		queryFormatter.addQueryLine(0, " WHERE geolevel_id = ? AND zoomlevel = ?");
-	
+		queryFormatter.addQueryLine(0, "  FROM a");
+		queryFormatter.addQueryLine(0, "        LEFT OUTER JOIN "  + schemaName + "." + tableName.toLowerCase() + 
+															" b ON (a.area_id = b.areaid)");												
+		if (additionalJoin != null) {
+			queryFormatter.addQueryLine(0, additionalJoin);
+		}
+		queryFormatter.addQueryLine(0, " WHERE b.geolevel_id = ? AND b.zoomlevel = ?");		
+		
 		String geojsonDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		File geojsonDirectory = new File(geojsonDirName);
 		File newDirectory = new File(geojsonDirName);
@@ -279,8 +359,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			statement = createPreparedStatement(connection, queryFormatter);
 			statement.setInt(1, Integer.parseInt(studyID));	
 			statement.setInt(2, geolevel);
-			statement.setInt(3, Integer.parseInt(zoomLevel));
-						
+			statement.setInt(3, Integer.parseInt(zoomLevel));				
 			resultSet = statement.executeQuery();
 			
 			//Write WKT to geoJSON
@@ -298,27 +377,32 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				bufferedWriter.write("{\"type\":\"Feature\",\"geometry\":");
 
 				String polygon = resultSet.getString(1);	
-								 
-				GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+				if (polygon != null) {
+					GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 
-				WKTReader reader = new WKTReader(geometryFactory);
-				Geometry geometry = reader.read(polygon); // Geotools JTS	
-				GeometryJSON writer = new GeometryJSON();
-				String strGeoJSON = writer.toString(geometry);
-				
-				rifLogger.info(this.getClass(), "Wkt: " + polygon.substring(0, 30));
-				rifLogger.info(this.getClass(), "Geojson: " + strGeoJSON.substring(0, 30));
-				bufferedWriter.write(strGeoJSON);
+					WKTReader reader = new WKTReader(geometryFactory);
+					Geometry geometry = reader.read(polygon); // Geotools JTS	
+					GeometryJSON writer = new GeometryJSON();
+					String strGeoJSON = writer.toString(geometry);
+					
+	//				rifLogger.info(this.getClass(), "Wkt: " + polygon.substring(0, 30));
+	//				rifLogger.info(this.getClass(), "Geojson: " + strGeoJSON.substring(0, 30));
+					bufferedWriter.write(strGeoJSON);
+				}			
+				else {
+					throw new Exception("Null polygon for record: " + 1);
+				}
 				bufferedWriter.write(",\"properties\":{");
-				bufferedWriter.write("\"area_id\":\"" + resultSet.getString(2) + "\",");
-				bufferedWriter.write("\"zoomLevel\":\"" + resultSet.getString(3) + "\",");
 				if (areaType != null) {
 					bufferedWriter.write("\"areatype\":\"" + areaType + "\"");
 				}
+				else {
+					bufferedWriter.write("\"maptype\":\"X\"");
+				}
 				if (extraColumns != null) {
 					
-					// The column count starts from 4
-					for (int j = 4; j <= columnCount; j++ ) {
+					// The column count starts from 2
+					for (int j = 2; j <= columnCount; j++ ) {
 						String name = rsmd.getColumnName(j);
 						String value = resultSet.getString(j);	
 //						String columnType = rsmd.getColumnTypeName(j);
