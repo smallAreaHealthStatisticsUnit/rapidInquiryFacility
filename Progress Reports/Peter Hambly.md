@@ -1940,6 +1940,7 @@ callPerformSmoothingActivity exitValue: 1
 * When testing with volume there is a timeout issue in the export, pushing the export button before
   the screen has finished startup porocessing causing it to forget it is running. Pushing it against
   can result is a corrupt export.
+* Added shapefile support, columns needed to be renamed to 10 characters.
   
 ## In progress (December 2017/January 2018):
 

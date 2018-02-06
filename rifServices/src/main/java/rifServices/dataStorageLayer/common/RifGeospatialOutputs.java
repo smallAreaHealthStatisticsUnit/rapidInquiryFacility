@@ -14,10 +14,20 @@ import java.sql.*;
 import java.io.*;
 import java.lang.*;
 
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.type.AttributeDescriptor; 
+import org.opengis.feature.type.GeometryDescriptor; 
+
 import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geometry.jts.JTSFactoryFinder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.data.shapefile.ShapefileDataStore; 
+import org.geotools.data.FeatureWriter; 
+import org.geotools.data.Transaction; 
 
-import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -203,7 +213,15 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				zoomLevel,
 				studyID,
 				null, 									/* areaType */
-				", b.zoomlevel, c.*",					/* extraColumns */
+				", b.zoomlevel, c.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
+				"/*, c.direct_standardisation */, c.adjusted, c.observed, c.expected" +
+				", c.lower95, c.upper95, c.relative_risk AS rr, c.smoothed_relative_risk AS sm_rr" +
+				", c.posterior_probability AS post_prob" +
+				"/*, c.posterior_probability_upper95, c.posterior_probability_lower95" +
+				", c.residual_relative_risk, c.residual_rr_lower95, c.residual_rr_upper95 */" +
+				", c.smoothed_smr AS sm_smr, c.smoothed_smr_lower95 AS sm_smr_l95" +
+				", c.smoothed_smr_upper95 AS sm_smr_u95",	
+														/* extraColumns: reduced to 10 characters */
 				"LEFT OUTER JOIN rif_studies." + mapTable.toLowerCase() + 
 					" c ON (a.area_id = c.area_id)"
 														/* additionalJoin */);
@@ -226,6 +244,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 					throws Exception {
 			
 		String geojsonDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
+		String shapefileDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName +
+			File.separator + outputFileName;
 		File geojsonDirectory = new File(geojsonDirName);
 		File newDirectory = new File(geojsonDirName);
 		if (newDirectory.exists()) {
@@ -237,7 +257,19 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			rifLogger.info(this.getClass(), 
 				"Created directory: " + newDirectory.getAbsolutePath());
 		}
+		File shapefileDirectory = new File(geojsonDirName);
+		newDirectory = new File(shapefileDirName);
+		if (newDirectory.exists()) {
+			rifLogger.info(this.getClass(), 
+				"Found directory: " + newDirectory.getAbsolutePath());
+		}
+		else {
+			newDirectory.mkdirs();
+			rifLogger.info(this.getClass(), 
+				"Created directory: " + newDirectory.getAbsolutePath());
+		}		
 		String geojsonFile=geojsonDirName + File.separator + outputFileName + ".json";
+		String shapefileName=shapefileDirName + File.separator + outputFileName + ".shp";
 		rifLogger.info(this.getClass(), "Add JSON to ZIP file: " + geojsonFile);
 		File file = new File(geojsonFile);
 		if (file.exists()) {
@@ -246,6 +278,12 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		OutputStream ostream = new FileOutputStream(geojsonFile);
 		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(ostream);
 		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
+		
+		File shapefile=new File(shapefileName);
+		ShapefileDataStore shapeDataStore = new ShapefileDataStore(
+			shapefile.toURI().toURL());			
+		FeatureWriter<SimpleFeatureType, SimpleFeature> shapefileWriter = null; 
+			// Created once feature types are defined
 
 		//get geolevel
 		SQLGeneralQueryFormatter geolevelQueryFormatter = new SQLGeneralQueryFormatter();	
@@ -353,6 +391,7 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 		queryFormatter.addQueryLine(0, " WHERE b.geolevel_id = ? AND b.zoomlevel = ?");		
 		
 		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
+		
 		try {	
 			ResultSet resultSet = null;
 			String[] queryArgs = new String[3];
@@ -369,62 +408,85 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 			//Write WKT to geoJSON
 			int i = 0;
 			bufferedWriter.write("{\"type\":\"FeatureCollection\",\"features\":[");	
-			// Add bbox after FeatureCollection
-			// SRID/CRS? geometry is in WGS84
+			// Add bbox after FeatureCollection	
+		
 			while (resultSet.next()) {
+				StringBuffer stringFeature = new StringBuffer();
+				
 				ResultSetMetaData rsmd = resultSet.getMetaData();
 				int columnCount = rsmd.getColumnCount();
 				i++;
-				if (i > 1) {
-					bufferedWriter.write(","); 
+				if (i == 1) {
+					setupShapefile(rsmd, columnCount, shapeDataStore, areaType, outputFileName);
+					
+					shapefileWriter = shapeDataStore.getFeatureWriter(shapeDataStore.getTypeNames()[0],
+							Transaction.AUTO_COMMIT);
 				}
-				bufferedWriter.write("{\"type\":\"Feature\",\"geometry\":");
-
+				SimpleFeature feature = (SimpleFeature) shapefileWriter.next(); 
+				
+				stringFeature.append("{\"type\":\"Feature\",\"MultiPolygon\":");
+		
+				if (i == 1) {	
+					printShapefileColumns(feature, rsmd, outputFileName);
+				}
+			
 				String polygon = resultSet.getString(1);	
+				MultiPolygon geometry = null;
 				if (polygon != null) {
 					GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 
 					WKTReader reader = new WKTReader(geometryFactory);
-					Geometry geometry = reader.read(polygon); // Geotools JTS	
-					GeometryJSON writer = new GeometryJSON();
-					String strGeoJSON = writer.toString(geometry);
-					
+					geometry = (MultiPolygon)reader.read(polygon); // Geotools JTS	
+					GeometryJSON geoJSONWriter = new GeometryJSON();
+					String strGeoJSON = geoJSONWriter.toString(geometry);
 	//				rifLogger.info(this.getClass(), "Wkt: " + polygon.substring(0, 30));
 	//				rifLogger.info(this.getClass(), "Geojson: " + strGeoJSON.substring(0, 30));
-					bufferedWriter.write(strGeoJSON);
+					stringFeature.append(strGeoJSON);
 				}			
 				else {
 					throw new Exception("Null polygon for record: " + 1);
 				}
-				bufferedWriter.write(",\"properties\":{");
+				AttributeDescriptor ad = feature.getType().getDescriptor(0); 
+				if (ad instanceof GeometryDescriptor) { 
+					feature.setAttribute(0, geometry); 
+				} 
+				else { 
+					throw new Exception("First attribute is not MultiPolygon: " + 
+						ad.getName().toString());
+				}
+				
+				stringFeature.append(",\"properties\":{");
 				if (areaType != null) {
-					bufferedWriter.write("\"areatype\":\"" + areaType + "\"");
+					stringFeature.append("\"areatype\":\"" + areaType + "\"");
+					feature.setAttribute(1, areaType); 
 				}
 				else {
-					bufferedWriter.write("\"maptype\":\"Results\"");
+					stringFeature.append("\"maptype\":\"Results\"");
+					feature.setAttribute(1, "results"); 
 				}
+				
 				if (extraColumns != null) {
 					
 					// The column count starts from 2
-					for (int j = 2; j <= columnCount; j++ ) {
+					for (int j = 2; j <= columnCount; j++ ) {		
 						String name = rsmd.getColumnName(j);
 						String value = resultSet.getString(j);	
-//						String columnType = rsmd.getColumnTypeName(j);
-						
-						bufferedWriter.write(",\"" + name + "\":\"" + value + "\"");
+						String columnType = rsmd.getColumnTypeName(j);
+						addDatumToShapefile(feature, stringFeature, name, value, columnType, j, i);
 					}
+				}				
+		
+				stringFeature.append("}");
+				stringFeature.append("}");
+				
+				if (i > 1) {
+					bufferedWriter.write(","); 	// Array separator between features
 				}
-				bufferedWriter.write("}");
-				bufferedWriter.write("}");
-			}
+				bufferedWriter.write(stringFeature.toString());	
+				shapefileWriter.write();
+			} // End of while loop
 			
-			bufferedWriter.write("]");
-			bufferedWriter.write("}");
-
-			bufferedWriter.flush();
-			bufferedWriter.close();			
-
-			connection.commit();
+			bufferedWriter.write("]}"); // End FeatureCollection
 		}
 		catch (Exception exception) {
 			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
@@ -434,7 +496,137 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 		}
 		finally {
 			SQLQueryUtility.close(statement);
+
+			bufferedWriter.flush();
+			bufferedWriter.close();	
+			if (shapefileWriter != null) {
+				shapefileWriter.close();	
+			}	
+			connection.commit();
+		}
+	}
+	
+	// https://www.programcreek.com/java-api-examples/index.php?source_dir=geotools-old-master/modules/library/render/src/test/java/org/geotools/renderer/lite/LabelObstacleTest.java
+	private void setupShapefile(ResultSetMetaData rsmd, int columnCount, ShapefileDataStore dataStore, 
+		String areaType, String featureSetName)
+			throws Exception {
+		
+		SimpleFeatureTypeBuilder featureBuilder = new SimpleFeatureTypeBuilder();
+		featureBuilder.setCRS(DefaultGeographicCRS.WGS84); // <- Coordinate reference system
+        featureBuilder.setName(featureSetName);  
+
+		featureBuilder.add("geometry", MultiPolygon.class);
+		featureBuilder.length(7).add("areatype", String.class);
+		
+		// The column count starts from 2
+		for (int k = 2; k <= columnCount; k++ ) {
+			String name = rsmd.getColumnName(k);
+			String columnType = rsmd.getColumnTypeName(k);
+			featureBuilder.add(name, String.class);
+		}								
+		
+		// build the type
+		final SimpleFeatureType featureType = featureBuilder.buildFeatureType();
+		
+		dataStore.createSchema(featureType);
+	}
+	
+	private void addDatumToShapefile(SimpleFeature feature, StringBuffer stringFeature, 
+		String name, String value, String columnType, int index, int rowCount)
+			throws Exception {
+			
+		if (rowCount < 2) {
+			AttributeDescriptor ad = feature.getType().getDescriptor(index); 
+			String featureName = ad.getName().toString();	
+			String featureType = ad.getType().toString();
+
+			if (ad instanceof GeometryDescriptor) { 
+				throw new Exception("Shapefile attribute is Geometry when expecting non geospatial type for column: " + 
+					name + ", index: " + index + "; type: " + featureType);
+			}
+			
+			if (name.equals(featureName)) {
+				stringFeature.append(",\"" + name + "\":\"" + value + "\"");
+				try {
+					feature.setAttribute(index, value);
+				}
+				catch (Exception exception) {
+					rifLogger.error(this.getClass(), "Error in addDatumToShapefile() row: " + rowCount +
+						"; column: " + name + ", index: " + index + "; type: " + featureType,
+						exception);
+					throw exception;
+				}				
+			}
+			else {
+				throw new Exception("Shapefile attribute name: " + featureName + 
+					" does not match [truncated] column name: " + name + ", index: " + index + "; type: " + featureType);
+			}
+		}
+	} 
+	
+	/**
+	 * Print shapefile and database cilumn names and types
+	 *	
+     * @param SimpleFeature feature (required)
+     * @param ResultSetMetaData rsmd (required)
+     * @param String outputFileName (required)
+	 *
+	 * E.g.
+11:32:25.396 [http-nio-8080-exec-105] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.RifGeospatialOutputs]:
+Database: POSTGRESQL
+Column[1]: wkt; DBF name: WKT; truncated: false; type: text
+Column[2]: area_id; DBF name: AREA_ID; truncated: false; type: varchar
+Column[3]: band_id; DBF name: BAND_ID; truncated: false; type: int4
+Column[4]: zoomlevel; DBF name: ZOOMLEVEL; truncated: false; type: int4
+Column[5]: areaname; DBF name: AREANAME; truncated: false; type: varchar
+Shapefile: s367_1002_lung_cancer_studyArea
+Feature[0]: the_geom; type: GeometryTypeImpl MultiPolygon<MultiPolygon>
+Feature[1]: areatype; type: AttributeTypeImpl areatype<String>
+restrictions=[ length([.]) <= 7 ]
+Feature[2]: area_id; type: AttributeTypeImpl area_id<String>
+restrictions=[ length([.]) <= 254 ]
+Feature[3]: band_id; type: AttributeTypeImpl band_id<String>
+restrictions=[ length([.]) <= 254 ]
+Feature[4]: zoomlevel; type: AttributeTypeImpl zoomlevel<String>
+restrictions=[ length([.]) <= 254 ]
+Feature[5]: areaname; type: AttributeTypeImpl areaname<String>
+restrictions=[ length([.]) <= 254 ]
+	
+	 */
+	private void printShapefileColumns(SimpleFeature feature, ResultSetMetaData rsmd,
+		String outputFileName)
+		throws Exception {
+							
+		StringBuilder sb = new StringBuilder();
+		
+		int truncatedCount=0;
+		sb.append("Database: " + databaseType + lineSeparator);
+		for (int j = 1; j <= rsmd.getColumnCount(); j++) { 
+			String name = rsmd.getColumnName(j);
+			String dbfName = name.substring(0, Math.min(name.length(), 9)).toUpperCase(); // Trim to 10 chars
+			boolean isTruncated=false;
+			if (name.length() > 10) {
+				isTruncated=true;
+				truncatedCount++;
+			}
+			String columnType = rsmd.getColumnTypeName(j);
+			sb.append("Column[" + j + "]: " + name +
+				"; DBF name: " + dbfName +
+				"; truncated: " + isTruncated +
+				"; type: " + columnType + lineSeparator);
+		}
+		sb.append("Shapefile: " + outputFileName + lineSeparator);
+		for (int k = 0; k < feature.getAttributeCount(); k++) { 			
+			AttributeDescriptor ad = feature.getType().getDescriptor(k); 
+			String featureName = ad.getName().toString();	
+			String featureType = ad.getType().toString();
+			sb.append("Feature[" + k + "]: " + featureName +
+				"; type: " + featureType + lineSeparator);	
+		}
+		rifLogger.info(this.getClass(), sb.toString());
+		if (truncatedCount > 0) {
+			throw new Exception("Shapefile: " + outputFileName + 
+				truncatedCount + " columns will be truncated; names will be unpredictable");
 		}
 	}
 }	
-
