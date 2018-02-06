@@ -1932,15 +1932,17 @@ callPerformSmoothingActivity exitValue: 1
 #### 5th to 9th February
 
 * Added maps.
-* Checked results - MSSQLSmoothedResultManager.java population_per_area CTE needs:
+* Checked results - PG/MSSQLSmoothedResultManager.java population_per_area CTE needs:
   ```WHERE study_or_comparison = 'S'``` adding or you will get the wrong results if study and 
   comparison areas have the same geolevel. Added.
 * Examination show that adjusted=1 rows are filled when covariates are used, adjusted=0 when
   not, so non need for extra filters on map tables 
 * When testing with volume there is a timeout issue in the export, pushing the export button before
-  the screen has finished startup porocessing causing it to forget it is running. Pushing it against
-  can result is a corrupt export.
-* Added shapefile support, columns needed to be renamed to 10 characters.
+  the screen has finished startup porocessing causing it to forget it is running. Pushing it again
+  can result is a corrupt export. May create and detect .sav ZIP file early in the export processing.
+* Added shapefile support, columns needed to be renamed to 10 characters. Tested OK on both ports,
+  added multipolygon/polygon support for SQL Server. Current in WGS84; can support original projection
+  as the SRID is stored in RIF40_GEOGRAPHIES.
   
 ## In progress (December 2017/January 2018):
 
