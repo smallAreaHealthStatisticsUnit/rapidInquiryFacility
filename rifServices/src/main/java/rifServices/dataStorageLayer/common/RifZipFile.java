@@ -482,7 +482,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						baseStudyName,
 						zoomLevel,
 						rifStudySubmission,
-						rif40Studies);
+						rif40Studies,
+						locale);
 						
 				addAllFilesToZip(
 					temporaryDirectory,

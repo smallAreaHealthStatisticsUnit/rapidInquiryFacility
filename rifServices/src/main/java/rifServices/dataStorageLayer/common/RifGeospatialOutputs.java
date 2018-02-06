@@ -13,6 +13,11 @@ import com.sun.rowset.CachedRowSetImpl;
 import java.sql.*;
 import java.io.*;
 import java.lang.*;
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.simple.SimpleFeature;
@@ -147,7 +152,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			final String baseStudyName,
 			final String zoomLevel,
 			final RIFStudySubmission rifStudySubmission,
-			final CachedRowSetImpl rif40Studies)
+			final CachedRowSetImpl rif40Studies,
+			final Locale locale)
 					throws Exception {
 		
 		String studyID = rifStudySubmission.getStudyID();
@@ -176,7 +182,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				studyID,
 				"S", 									/* areaType */
 				", a.area_id, a.band_id, b.zoomlevel, c.areaname",	/* extraColumns */
-				null 									/* additionalJoin */);
+				null 									/* additionalJoin */,
+				locale);
 		
 		//Write comparison area
 		tileFileName = new StringBuilder();
@@ -195,7 +202,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				studyID,
 				"C", 									/* areaType */
 				", a.area_id, b.zoomlevel, c.areaname",	/* extraColumns */
-				null 									/* additionalJoin */);	
+				null 									/* additionalJoin */,
+				locale);	
 		
 		//Write results
 		tileFileName = new StringBuilder();
@@ -224,7 +232,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 														/* extraColumns: reduced to 10 characters */
 				"LEFT OUTER JOIN rif_studies." + mapTable.toLowerCase() + 
 					" c ON (a.area_id = c.area_id)"
-														/* additionalJoin */);
+														/* additionalJoin */,
+				locale);
 				
 	}		
 						
@@ -240,9 +249,24 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			final String studyID,
 			final String areaType,
 			final String extraColumns,
-			final String additionalJoin)
+			final String additionalJoin,
+			final Locale locale)
 					throws Exception {
-			
+						
+		Calendar calendar = null;
+		DateFormat df = null;
+		if (locale != null) {
+			df=DateFormat.getDateTimeInstance(
+				DateFormat.DEFAULT /* Date style */, 
+				DateFormat.DEFAULT /* Time style */, 
+				locale);
+			calendar = df.getCalendar();
+		}
+		else { // assume US
+			df=new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"); // MM/DD/YY HH24:MI:SS
+			calendar = Calendar.getInstance();
+		}
+		
 		String geojsonDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		String shapefileDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName +
 			File.separator + outputFileName;
@@ -472,7 +496,14 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 						String name = rsmd.getColumnName(j);
 						String value = resultSet.getString(j);	
 						String columnType = rsmd.getColumnTypeName(j);
-						addDatumToShapefile(feature, stringFeature, name, value, columnType, j, i);
+						if (columnType.equals("timestamp") ||
+							columnType.equals("timestamptz") ||
+							columnType.equals("datetime")) {
+							Timestamp dateTimeValue=resultSet.getTimestamp(i, calendar);
+							value=df.format(dateTimeValue);
+						}
+						addDatumToShapefile(feature, stringFeature, name, value, columnType, j, i,
+							locale);
 					}
 				}				
 		
@@ -532,35 +563,72 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 	}
 	
 	private void addDatumToShapefile(SimpleFeature feature, StringBuffer stringFeature, 
-		String name, String value, String columnType, int index, int rowCount)
+		String name, String value, String columnType, int index, int rowCount, Locale locale)
 			throws Exception {
-			
+	
+		AttributeDescriptor ad = feature.getType().getDescriptor(index); 
+		String featureName = ad.getName().toString();	
+		String featureType = ad.getType().toString();
 		if (rowCount < 2) {
-			AttributeDescriptor ad = feature.getType().getDescriptor(index); 
-			String featureName = ad.getName().toString();	
-			String featureType = ad.getType().toString();
-
 			if (ad instanceof GeometryDescriptor) { 
 				throw new Exception("Shapefile attribute is Geometry when expecting non geospatial type for column: " + 
 					name + ", index: " + index + "; type: " + featureType);
 			}
 			
-			if (name.equals(featureName)) {
-				stringFeature.append(",\"" + name + "\":\"" + value + "\"");
-				try {
-					feature.setAttribute(index, value);
-				}
-				catch (Exception exception) {
-					rifLogger.error(this.getClass(), "Error in addDatumToShapefile() row: " + rowCount +
-						"; column: " + name + ", index: " + index + "; type: " + featureType,
-						exception);
-					throw exception;
-				}				
-			}
-			else {
+			if (!name.equals(featureName)) {
 				throw new Exception("Shapefile attribute name: " + featureName + 
 					" does not match [truncated] column name: " + name + ", index: " + index + "; type: " + featureType);
 			}
+		}
+
+		String newValue=value;
+		Long longVal;
+		Float floatVal;
+		if (value != null && (
+			columnType.equals("integer") || 
+			columnType.equals("bigint") || 
+			columnType.equals("int4") ||
+			columnType.equals("int") ||
+			columnType.equals("smallint"))) {
+			try {
+				longVal=Long.parseLong(value);
+				newValue=NumberFormat.getNumberInstance(locale).format(longVal);
+			}
+			catch (Exception exception) {
+				rifLogger.error(this.getClass(), "Unable to parseLong(" + 
+					columnType + "): " + value,
+					exception);
+				throw exception;
+			}
+		}
+		else if (value != null && (
+				 columnType.equals("float") || 
+				 columnType.equals("float8") || 
+				 columnType.equals("double precision") ||
+				 columnType.equals("numeric"))) {
+			try {
+				floatVal=Float.parseFloat(value);
+				newValue=NumberFormat.getNumberInstance(locale).format(floatVal);
+			}
+			catch (Exception exception) {
+				rifLogger.error(this.getClass(), "Unable to parseFloat(" + 
+					columnType + "): " + value,
+					exception);
+				throw exception;
+			}
+		}		
+		
+		stringFeature.append(",\"" + name + "\":\"" + newValue + "\"");
+		try {
+//			if (ad instanceof StringDescriptor) { 
+				feature.setAttribute(index, newValue);
+//			}
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in addDatumToShapefile() row: " + rowCount +
+				"; column: " + name + ", index: " + index + "; type: " + featureType,
+				exception);
+			throw exception;
 		}
 	} 
 	
