@@ -22,6 +22,8 @@ import java.util.Locale;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.AttributeDescriptor; 
+import org.opengis.feature.type.AttributeType;
+import org.opengis.feature.type.PropertyType;
 import org.opengis.feature.type.GeometryDescriptor; 
 
 import org.geotools.geojson.geom.GeometryJSON;
@@ -553,7 +555,22 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 		for (int k = 2; k <= columnCount; k++ ) {
 			String name = rsmd.getColumnName(k);
 			String columnType = rsmd.getColumnTypeName(k);
-			featureBuilder.add(name, String.class);
+			if (columnType.equals("integer") || 
+				columnType.equals("bigint") || 
+				columnType.equals("int4") ||
+				columnType.equals("int") ||
+				columnType.equals("smallint")) {	
+				featureBuilder.add(name, Long.class);
+			}				
+			else if (columnType.equals("float") || 
+					 columnType.equals("float8") || 
+					 columnType.equals("double precision") ||
+					 columnType.equals("numeric")) {
+				featureBuilder.add(name, Double.class); // geotools uses double instead of float
+			}
+			else {
+				featureBuilder.add(name, String.class);	
+			}
 		}								
 		
 		// build the type
@@ -582,8 +599,8 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 		}
 
 		String newValue=value;
-		Long longVal;
-		Float floatVal;
+		Long longVal=new Long(-1);
+		Double doubleVal=new Double(-1);
 		if (value != null && (
 			columnType.equals("integer") || 
 			columnType.equals("bigint") || 
@@ -607,11 +624,11 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 				 columnType.equals("double precision") ||
 				 columnType.equals("numeric"))) {
 			try {
-				floatVal=Float.parseFloat(value);
-				newValue=NumberFormat.getNumberInstance(locale).format(floatVal);
+				doubleVal=Double.parseDouble(value);
+				newValue=NumberFormat.getNumberInstance(locale).format(doubleVal);
 			}
 			catch (Exception exception) {
-				rifLogger.error(this.getClass(), "Unable to parseFloat(" + 
+				rifLogger.error(this.getClass(), "Unable to parseDouble(" + 
 					columnType + "): " + value,
 					exception);
 				throw exception;
@@ -620,9 +637,18 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 		
 		stringFeature.append(",\"" + name + "\":\"" + newValue + "\"");
 		try {
-//			if (ad instanceof StringDescriptor) { 
+			if (ad.getType().getBinding() == Double.class) {
+				feature.setAttribute(index, doubleVal);
+			}
+			else if (ad.getType().getBinding() == Long.class) {
+				feature.setAttribute(index, longVal);
+			}
+			else if (ad.getType().getBinding() == String.class) {
 				feature.setAttribute(index, newValue);
-//			}
+			}
+			else {
+				throw new Exception("Unsupported attribute type: " + ad.getType().getBinding());
+			}
 		}
 		catch (Exception exception) {
 			rifLogger.error(this.getClass(), "Error in addDatumToShapefile() row: " + rowCount +

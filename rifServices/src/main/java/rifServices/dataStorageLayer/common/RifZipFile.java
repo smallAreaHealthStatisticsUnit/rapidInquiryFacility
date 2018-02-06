@@ -1755,12 +1755,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 							     columnType.equals("double precision") ||
 							     columnType.equals("numeric"))) {
 							try {
-								Float floatVal=Float.parseFloat(value);
-								value=NumberFormat.getNumberInstance(locale).format(floatVal) + 
-									" <!-- FLOAT: " + name + " -->";
+								Double doubleVal=Double.parseDouble(value);
+								value=NumberFormat.getNumberInstance(locale).format(doubleVal) + 
+									" <!-- Double: " + name + " -->";
 							}
 							catch (Exception exception) {
-								rifLogger.error(this.getClass(), "Unable to parseFloat(" + 
+								rifLogger.error(this.getClass(), "Unable to parseDouble(" + 
 									columnType + "): " + value,
 									exception);
 								throw exception;
