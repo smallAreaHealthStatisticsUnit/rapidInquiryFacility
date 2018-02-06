@@ -28,6 +28,7 @@ import org.opengis.feature.type.GeometryDescriptor;
 
 import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geometry.jts.JTSFactoryFinder;
+import org.geotools.geometry.jts.Geometries;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.data.shapefile.ShapefileDataStore; 
@@ -35,6 +36,8 @@ import org.geotools.data.FeatureWriter;
 import org.geotools.data.Transaction; 
 
 import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.WKTReader;
 
@@ -396,7 +399,7 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 		queryFormatter.addQueryLine(0, "	 WHERE study_id = ?");
 		queryFormatter.addQueryLine(0, ")");
 		if (databaseType == DatabaseType.POSTGRESQL) { // Force RHR (not needed)
-			queryFormatter.addQueryLine(0, "SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt");			
+			queryFormatter.addQueryLine(0, "SELECT ST_AsText(ST_Multi(ST_ForceRHR(b.geom))) AS wkt");			
 		}
 		else if (databaseType == DatabaseType.SQL_SERVER) {
 			queryFormatter.addQueryLine(0, "SELECT b.wkt");	
@@ -442,36 +445,37 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 				ResultSetMetaData rsmd = resultSet.getMetaData();
 				int columnCount = rsmd.getColumnCount();
 				i++;
+				
+				stringFeature.append("{\"type\":\"Feature\",\"MultiPolygon\":");
+			
+				String wkt = resultSet.getString(1);	
+				Geometry geometry = null;
+				if (wkt != null) {
+					GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+
+					WKTReader reader = new WKTReader(geometryFactory);
+					geometry = reader.read(wkt); // Geotools JTS
+					GeometryJSON geoJSONWriter = new GeometryJSON();
+					String strGeoJSON = geoJSONWriter.toString(geometry);
+	//				rifLogger.info(this.getClass(), "Wkt: " + wkt.substring(0, 30));
+	//				rifLogger.info(this.getClass(), "Geojson: " + strGeoJSON.substring(0, 30));
+					stringFeature.append(strGeoJSON);
+				}			
+				else {
+					throw new Exception("Null wkt for record: " + 1);
+				}
+
 				if (i == 1) {
-					setupShapefile(rsmd, columnCount, shapeDataStore, areaType, outputFileName);
+					setupShapefile(rsmd, columnCount, shapeDataStore, areaType, outputFileName, geometry);
 					
 					shapefileWriter = shapeDataStore.getFeatureWriter(shapeDataStore.getTypeNames()[0],
 							Transaction.AUTO_COMMIT);
 				}
 				SimpleFeature feature = (SimpleFeature) shapefileWriter.next(); 
-				
-				stringFeature.append("{\"type\":\"Feature\",\"MultiPolygon\":");
-		
 				if (i == 1) {	
 					printShapefileColumns(feature, rsmd, outputFileName);
-				}
-			
-				String polygon = resultSet.getString(1);	
-				MultiPolygon geometry = null;
-				if (polygon != null) {
-					GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
-
-					WKTReader reader = new WKTReader(geometryFactory);
-					geometry = (MultiPolygon)reader.read(polygon); // Geotools JTS	
-					GeometryJSON geoJSONWriter = new GeometryJSON();
-					String strGeoJSON = geoJSONWriter.toString(geometry);
-	//				rifLogger.info(this.getClass(), "Wkt: " + polygon.substring(0, 30));
-	//				rifLogger.info(this.getClass(), "Geojson: " + strGeoJSON.substring(0, 30));
-					stringFeature.append(strGeoJSON);
-				}			
-				else {
-					throw new Exception("Null polygon for record: " + 1);
-				}
+				}	
+				
 				AttributeDescriptor ad = feature.getType().getDescriptor(0); 
 				if (ad instanceof GeometryDescriptor) { 
 					feature.setAttribute(0, geometry); 
@@ -541,14 +545,23 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 	
 	// https://www.programcreek.com/java-api-examples/index.php?source_dir=geotools-old-master/modules/library/render/src/test/java/org/geotools/renderer/lite/LabelObstacleTest.java
 	private void setupShapefile(ResultSetMetaData rsmd, int columnCount, ShapefileDataStore dataStore, 
-		String areaType, String featureSetName)
+		String areaType, String featureSetName, Geometry geometry)
 			throws Exception {
 		
 		SimpleFeatureTypeBuilder featureBuilder = new SimpleFeatureTypeBuilder();
 		featureBuilder.setCRS(DefaultGeographicCRS.WGS84); // <- Coordinate reference system
         featureBuilder.setName(featureSetName);  
-
-		featureBuilder.add("geometry", MultiPolygon.class);
+		Geometries geomType = Geometries.get(geometry);
+		switch (geomType) {
+			case POLYGON:
+				featureBuilder.add("geometry", Polygon.class);
+				break;
+			case MULTIPOLYGON:
+				featureBuilder.add("geometry", MultiPolygon.class);
+				break;
+			default:
+				throw new Exception("Unsupported Geometry:" + geomType.toString());
+		}
 		featureBuilder.length(7).add("areatype", String.class);
 		
 		// The column count starts from 2
@@ -579,22 +592,34 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 		dataStore.createSchema(featureType);
 	}
 	
+	/**
+	 * Add datum point to shapefile
+	 *	
+     * @param SimpleFeature feature (required)
+     * @param StringBuffer stringFeature (required)
+     * @param String name (required)
+     * @param String value (required)
+     * @param String columnType (required)
+     * @param int columnIndex (required)
+     * @param int rowCount (required)
+     * @param int Locale locale (required)
+	 */	
 	private void addDatumToShapefile(SimpleFeature feature, StringBuffer stringFeature, 
-		String name, String value, String columnType, int index, int rowCount, Locale locale)
+		String name, String value, String columnType, int columnIndex, int rowCount, Locale locale)
 			throws Exception {
 	
-		AttributeDescriptor ad = feature.getType().getDescriptor(index); 
+		AttributeDescriptor ad = feature.getType().getDescriptor(columnIndex); 
 		String featureName = ad.getName().toString();	
-		String featureType = ad.getType().toString();
 		if (rowCount < 2) {
 			if (ad instanceof GeometryDescriptor) { 
 				throw new Exception("Shapefile attribute is Geometry when expecting non geospatial type for column: " + 
-					name + ", index: " + index + "; type: " + featureType);
+					name + ", columnIndex: " + columnIndex + "; type: " + ad.getType().getBinding());
 			}
 			
 			if (!name.equals(featureName)) {
 				throw new Exception("Shapefile attribute name: " + featureName + 
-					" does not match [truncated] column name: " + name + ", index: " + index + "; type: " + featureType);
+					" does not match [truncated] column name: " + name + ", columnIndex: " + columnIndex + 
+					"; type: " + ad.getType().getBinding());
 			}
 		}
 
@@ -613,7 +638,9 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 			}
 			catch (Exception exception) {
 				rifLogger.error(this.getClass(), "Unable to parseLong(" + 
-					columnType + "): " + value,
+					columnType + "): " + value +
+					"; row: " + rowCount +
+					"; column: " + name + ", columnIndex: " + columnIndex,
 					exception);
 				throw exception;
 			}
@@ -629,7 +656,9 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 			}
 			catch (Exception exception) {
 				rifLogger.error(this.getClass(), "Unable to parseDouble(" + 
-					columnType + "): " + value,
+					columnType + "): " + value +
+					"; row: " + rowCount +
+					"; column: " + name + ", columnIndex: " + columnIndex,
 					exception);
 				throw exception;
 			}
@@ -638,13 +667,13 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 		stringFeature.append(",\"" + name + "\":\"" + newValue + "\"");
 		try {
 			if (ad.getType().getBinding() == Double.class) {
-				feature.setAttribute(index, doubleVal);
+				feature.setAttribute(columnIndex, doubleVal);
 			}
 			else if (ad.getType().getBinding() == Long.class) {
-				feature.setAttribute(index, longVal);
+				feature.setAttribute(columnIndex, longVal);
 			}
 			else if (ad.getType().getBinding() == String.class) {
-				feature.setAttribute(index, newValue);
+				feature.setAttribute(columnIndex, newValue);
 			}
 			else {
 				throw new Exception("Unsupported attribute type: " + ad.getType().getBinding());
@@ -652,7 +681,8 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 		}
 		catch (Exception exception) {
 			rifLogger.error(this.getClass(), "Error in addDatumToShapefile() row: " + rowCount +
-				"; column: " + name + ", index: " + index + "; type: " + featureType,
+				"; column: " + name + ", columnIndex: " + columnIndex + 
+				"; type: " + ad.getType().getBinding(),
 				exception);
 			throw exception;
 		}
@@ -666,26 +696,26 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
      * @param String outputFileName (required)
 	 *
 	 * E.g.
-11:32:25.396 [http-nio-8080-exec-105] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.RifGeospatialOutputs]:
-Database: POSTGRESQL
-Column[1]: wkt; DBF name: WKT; truncated: false; type: text
-Column[2]: area_id; DBF name: AREA_ID; truncated: false; type: varchar
-Column[3]: band_id; DBF name: BAND_ID; truncated: false; type: int4
-Column[4]: zoomlevel; DBF name: ZOOMLEVEL; truncated: false; type: int4
-Column[5]: areaname; DBF name: AREANAME; truncated: false; type: varchar
-Shapefile: s367_1002_lung_cancer_studyArea
-Feature[0]: the_geom; type: GeometryTypeImpl MultiPolygon<MultiPolygon>
-Feature[1]: areatype; type: AttributeTypeImpl areatype<String>
-restrictions=[ length([.]) <= 7 ]
-Feature[2]: area_id; type: AttributeTypeImpl area_id<String>
-restrictions=[ length([.]) <= 254 ]
-Feature[3]: band_id; type: AttributeTypeImpl band_id<String>
-restrictions=[ length([.]) <= 254 ]
-Feature[4]: zoomlevel; type: AttributeTypeImpl zoomlevel<String>
-restrictions=[ length([.]) <= 254 ]
-Feature[5]: areaname; type: AttributeTypeImpl areaname<String>
-restrictions=[ length([.]) <= 254 ]
-	
+	 * 11:32:25.396 [http-nio-8080-exec-105] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.RifGeospatialOutputs]:
+	 * Database: POSTGRESQL
+	 * Column[1]: wkt; DBF name: WKT; truncated: false; type: text
+	 * Column[2]: area_id; DBF name: AREA_ID; truncated: false; type: varchar
+	 * Column[3]: band_id; DBF name: BAND_ID; truncated: false; type: int4
+	 * Column[4]: zoomlevel; DBF name: ZOOMLEVEL; truncated: false; type: int4
+	 * Column[5]: areaname; DBF name: AREANAME; truncated: false; type: varchar
+	 * Shapefile: s367_1002_lung_cancer_studyArea
+	 * Feature[0]: the_geom; type: GeometryTypeImpl MultiPolygon<MultiPolygon>
+	 * Feature[1]: areatype; type: AttributeTypeImpl areatype<String>
+	 * restrictions=[ length([.]) <= 7 ]
+	 * Feature[2]: area_id; type: AttributeTypeImpl area_id<String>
+	 * restrictions=[ length([.]) <= 254 ]
+	 * Feature[3]: band_id; type: AttributeTypeImpl band_id<String>
+	 * restrictions=[ length([.]) <= 254 ]
+	 * Feature[4]: zoomlevel; type: AttributeTypeImpl zoomlevel<String>
+	 * restrictions=[ length([.]) <= 254 ]
+	 * Feature[5]: areaname; type: AttributeTypeImpl areaname<String>
+	 * restrictions=[ length([.]) <= 254 ]
+	 * 	
 	 */
 	private void printShapefileColumns(SimpleFeature feature, ResultSetMetaData rsmd,
 		String outputFileName)
