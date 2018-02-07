@@ -615,7 +615,7 @@ org.opengis.referencing.NoSuchAuthorityCodeException: No code "EPSG:27700" from 
 				i++;
 				
 				Geometry geometry = createGeometryFromWkt(resultSet.getString(1));
-				stringFeature.append("{\"type\":\"Feature\",\"MultiPolygon\":"); // GeoJSON feature header 	
+				stringFeature.append("{\"type\":\"Feature\",\"geometry\":"); // GeoJSON feature header 	
 				stringFeature.append(geoJSONWriter.toString(geometry));
 
 				if (i == 1) {
