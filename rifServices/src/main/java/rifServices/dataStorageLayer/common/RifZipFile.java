@@ -476,7 +476,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						
 				RifGeospatialOutputs rifGeospatialOutputs = 
 					new RifGeospatialOutputs(rifServiceStartupOptions);
-				rifGeospatialOutputs.writeGeographyFiles(
+				rifGeospatialOutputs.writeGeospatialFiles(
 						connection,
 						temporaryDirectory,
 						baseStudyName,

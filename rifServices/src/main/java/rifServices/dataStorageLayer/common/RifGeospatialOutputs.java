@@ -124,6 +124,9 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	private static DatabaseType databaseType;
 	
+	private static GeometryFactory geometryFactory = null;
+	private static GeometryJSON geoJSONWriter = null;
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -140,6 +143,9 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			final RIFServiceStartupOptions rifServiceStartupOptions) {
 		super(rifServiceStartupOptions.getRIFDatabaseProperties());
 		
+		geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+		geoJSONWriter = new GeometryJSON();
+		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		try {
@@ -151,8 +157,23 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			throw new NullPointerException();
 		}
 	}	
-	
-	public void writeGeographyFiles(
+
+	/** 
+	 * Write geospatial files in both geoJSON and shapefile format.
+	 * a) rif study area to GEOGRAPHY_SUBDIRECTORY
+	 * b) Comparison area to GEOGRAPHY_SUBDIRECTORY
+	 * c) Map (results) table to DATA_SUBDIRECTORY
+	 *    The column list for the map tsble is hard coded and reduced to 10 characters for DBF support
+     * 
+	 * @param Connection connection, 
+	 * @param File temporaryDirectory,
+	 * @param String baseStudyName,
+	 * @param String zoomLevel,
+	 * @param RIFStudySubmission rifStudySubmission,
+	 * @param CachedRowSetImpl rif40Studies,
+	 * @param Locale locale
+	 */		
+	public void writeGeospatialFiles(
 			final Connection connection,
 			final File temporaryDirectory,
 			final String baseStudyName,
@@ -278,81 +299,72 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		
 		return cachedRowSet;
 	}
-
+	
 	/** 
-	 * 
-     */	 
-	private void writeMapQueryTogeoJSONFile(
-			final Connection connection,
-			final String areaTableName,
-			final File temporaryDirectory,
-			final String dirName,
-			final String schemaName,
-			final String tableName,
-			final String outputFileName,
-			final String zoomLevel,
-			final String studyID,
-			final String areaType,
-			final String extraColumns,
-			final String additionalJoin,
-			final Locale locale)
-					throws Exception {
+	 * Create shapefile data store. Does not currently support <filename.shp.xml>: fgdc metadata
+	 * (Needs the MetadataLinkTypeBinding class)
+	 *
+	 * @param File temporaryDirectory,
+	 * @param String dirName, 
+	 * @param String outputFileName,
+	 * @param boolean enableIndexes
+	 *
+	 * @returns ShapefileDataStore
+     */	
+	private ShapefileDataStore createShapefileDataStore(
+		final File temporaryDirectory,
+		final String dirName, 
+		final String outputFileName,
+		final boolean enableIndexes) 
+			throws Exception {
 			
-		RifLocale rifLocale = new RifLocale(locale);			
-		Calendar calendar = rifLocale.getCalendar();			
-		DateFormat df = rifLocale.getDateFormat();
-		
-		String geojsonDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		String shapefileDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName +
 			File.separator + outputFileName;
-		File geojsonDirectory = new File(geojsonDirName);
-		File newDirectory = new File(geojsonDirName);
-		if (newDirectory.exists()) {
+		File shapefileDirectory = new File(shapefileDirName);
+		if (shapefileDirectory.exists()) {
 			rifLogger.info(this.getClass(), 
-				"Found directory: " + newDirectory.getAbsolutePath());
+				"Found directory: " + shapefileDirectory.getAbsolutePath());
 		}
 		else {
-			newDirectory.mkdirs();
+			shapefileDirectory.mkdirs();
 			rifLogger.info(this.getClass(), 
-				"Created directory: " + newDirectory.getAbsolutePath());
-		}
-		File shapefileDirectory = new File(geojsonDirName);
-		newDirectory = new File(shapefileDirName);
-		if (newDirectory.exists()) {
-			rifLogger.info(this.getClass(), 
-				"Found directory: " + newDirectory.getAbsolutePath());
-		}
-		else {
-			newDirectory.mkdirs();
-			rifLogger.info(this.getClass(), 
-				"Created directory: " + newDirectory.getAbsolutePath());
-		}		
-		String geojsonFile=geojsonDirName + File.separator + outputFileName + ".json";
+				"Created directory: " + shapefileDirectory.getAbsolutePath());
+		}			
 		String shapefileName=shapefileDirName + File.separator + outputFileName + ".shp";
-		rifLogger.info(this.getClass(), "Add JSON to ZIP file: " + geojsonFile +
-			"; add shapefile to ZIP file: " + shapefileName);
-		File file = new File(geojsonFile);
-		if (file.exists()) {
-			file.delete();
-		}
-		OutputStream ostream = new FileOutputStream(geojsonFile);
-		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(ostream);
-		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-		
-		File shapefile=new File(shapefileName);
+		File shapefile=new File(shapefileName);			
 		ShapefileDataStore shapeDataStore = new ShapefileDataStore(
-			shapefile.toURI().toURL());			
-		FeatureWriter<SimpleFeatureType, SimpleFeature> shapefileWriter = null; 
-			// Created once feature types are defined
-
-		CachedRowSetImpl rif40Geolevels=getRif40Geolevels(connection, studyID, areaTableName);	
-			//get geolevel
-		String geolevel=getColumnFromResultSet(rif40Geolevels, "geolevel_id");
-		String geolevelName = getColumnFromResultSet(rif40Geolevels, "geolevel_name");
+			shapefile.toURI().toURL());
+		shapeDataStore.setFidIndexed(enableIndexes);		// Enable indexes (DBF and SHAPEFILE)
+		shapeDataStore.setIndexCreationEnabled(enableIndexes);
+		
+		rifLogger.info(this.getClass(), "Add shapefile to ZIP file: " + shapefileName);
+		
+		return shapeDataStore;
+	}
+		
+	/** 
+	 * Get CoordinateReferenceSystem using SRID [EXPERIMENTAL DOES NOT WORK: see Exception comment below]
+	 *
+	 * Error: NoSuchAuthorityCodeException: No code "EPSG:27700" from authority "EPSG" found for object of type "EngineeringCRS"
+	 *
+	 * a) Could use SRID from database
+	 * b) Probably needs to access an [external?] geotools datbase
+	 * c) Some defaults may be hard codable
+	 *
+	 * No support at present for anything other than WGS85 in the shapefile code 
+	 * (i.e. re-projection required)
+	 *
+	 * @param CachedRowSetImpl rif40Geolevels
+	 *
+	 * @returns CoordinateReferenceSystem
+     */	
+	private CoordinateReferenceSystem getCRS(CachedRowSetImpl rif40Geolevels) 
+			throws Exception {
+		
+		CoordinateReferenceSystem crs=null;
+		
 		String geographyName = getColumnFromResultSet(rif40Geolevels, "geography");
 		int srid=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "srid"));
-		int max_geojson_digits=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "max_geojson_digits"));
-		CoordinateReferenceSystem crs = null;
 		try {
 			crs = CRS.decode("EPSG:" + srid);	
 		}
@@ -386,49 +398,168 @@ org.opengis.referencing.NoSuchAuthorityCodeException: No code "EPSG:27700" from 
 		}
 		String crsWkt = crs.toWKT();
 		rifLogger.info(this.getClass(), "Geography: " + geographyName + "; SRID: " + srid + 
-			"; CRS wkt: " + crsWkt);
+			"; CRS wkt: " + crsWkt);	
+				
+		return crs;
+	}
+
+	/** 
+	 * Create GeoJSON writer 
+	 *
+	 * @param File temporaryDirectory,
+	 * @param String dirName, 
+	 * @param String outputFileName
+	 *
+	 * @returns BufferedWriter
+     */	
+	private BufferedWriter createGeoJSonWriter(
+		final File temporaryDirectory,
+		final String dirName, 
+		final String outputFileName) 
+			throws Exception {
+		String geojsonDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
+		File geojsonDirectory = new File(geojsonDirName);
+		File newDirectory = new File(geojsonDirName);
+		if (newDirectory.exists()) {
+			rifLogger.info(this.getClass(), 
+				"Found directory: " + newDirectory.getAbsolutePath());
+		}
+		else {
+			newDirectory.mkdirs();
+			rifLogger.info(this.getClass(), 
+				"Created directory: " + newDirectory.getAbsolutePath());
+		}
+		
+		String geojsonFile=geojsonDirName + File.separator + outputFileName + ".json";
+		rifLogger.info(this.getClass(), "Add JSON to ZIP file: " + geojsonFile); 
+		File file = new File(geojsonFile);
+		if (file.exists()) {
+			file.delete();
+		}
+		OutputStream ostream = new FileOutputStream(geojsonFile);
+		OutputStreamWriter outputStreamWriter = new OutputStreamWriter(ostream);
+		BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
+		
+		return bufferedWriter;
+	}
+	
+	/** 
+	 * Create geometry from Well known text.
+	 *
+	 * Would need to ST_Transform to shapefile SRID is not WGS84
+	 *
+	 * @param String wkt
+     *
+	 * @returns Geometry
+     */	
+	private Geometry createGeometryFromWkt(final String wkt)
+			throws Exception {
+		Geometry geometry = null;
+		if (wkt != null) {
+
+			WKTReader reader = new WKTReader(geometryFactory);
+			geometry = reader.read(wkt); // Geotools JTS
+		}			
+		else {
+			throw new Exception("Null wkt for record: " + 1);
+		}		
+		
+		return geometry;
+	}
+	
+	/** 
+     * Write results map query to geoJSON file and shapefile
+     * 
+	 * Query types:
+	 *
+     * Type 1: areaType: C; extraColumns: a.area_id, b.zoomlevel; no additionalJoin
+     * 
+     * WITH a AS (
+     * 	SELECT *
+     * 	  FROM rif40.rif40_comparison_areas
+     * 	 WHERE study_id = ?
+     * )
+     * SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, a.area_id, b.zoomlevel, c.areaname
+     *   FROM a
+     *         LEFT OUTER JOIN rif_data.geometry_sahsuland b ON (a.area_id = b.areaid)
+     * 		LEFT OUTER JOIN rif_data.lookup_sahsu_grd_level1 c ON (a.area_id = c.sahsu_grd_level1)
+     *  WHERE b.geolevel_id = ? AND b.zoomlevel = ?;	
+     * 
+     * Type 2: areaType: S; extraColumns: a.area_id, a.band_id, b.zoomlevel; no additionalJoin
+     * 
+     * WITH a AS (
+     * 	SELECT *
+     * 	  FROM rif40.rif40_study_areas
+     * 	 WHERE study_id = ?
+     * )
+     * SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, a.area_id, a.band_id, b.zoomlevel, c.areaname
+     *   FROM a
+     *         	LEFT OUTER JOIN rif_data.geometry_sahsuland b ON (a.area_id = b.areaid)
+     * 			LEFT OUTER JOIN rif_data.lookup_sahsu_grd_level4 c ON (a.area_id = c.sahsu_grd_level4)
+     *  WHERE b.geolevel_id = ? AND b.zoomlevel = ?;	
+     * 
+     * Type 3: areaType IS NULL; extraColumns: b.zoomlevel, c.*; additionalJoin: 
+     * 			LEFT OUTER JOIN rif_studies.s367_map c ON (a.area_id = c.area_id)
+     *
+     * WITH a AS (
+     * 	SELECT *
+     *	  FROM rif40.rif40_study_areas
+     *	 WHERE study_id = ?
+     * )
+     * SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
+     *   FROM a
+     *        	LEFT OUTER JOIN rif_data.geometry_sahsuland b ON (a.area_id = b.areaid)
+     *        	LEFT OUTER JOIN rif_studies.s367_map c ON (a.area_id = c.area_id);
+     *
+	 * @param Connection connection,
+	 * String areaTableName,
+	 * File temporaryDirectory,
+	 * String dirName,
+	 * String schemaName,
+	 * String tableName,
+	 * String outputFileName,
+	 * String zoomLevel,
+	 * String studyID,
+	 * String areaType,
+	 * String extraColumns,
+	 * String additionalJoin,
+	 * Locale locale	 
+     */	 
+	private void writeMapQueryTogeoJSONFile(
+			final Connection connection,
+			final String areaTableName,
+			final File temporaryDirectory,
+			final String dirName,
+			final String schemaName,
+			final String tableName,
+			final String outputFileName,
+			final String zoomLevel,
+			final String studyID,
+			final String areaType,
+			final String extraColumns,
+			final String additionalJoin,
+			final Locale locale)
+					throws Exception {
 			
-/*
+		RifLocale rifLocale = new RifLocale(locale);			
+		Calendar calendar = rifLocale.getCalendar();			
+		DateFormat df = rifLocale.getDateFormat();
 
-Form 1: areaType: C; extraColumns: a.area_id, b.zoomlevel; no additionalJoin
+		BufferedWriter bufferedWriter = createGeoJSonWriter(temporaryDirectory,
+			dirName, outputFileName);
 
-WITH a AS (
-	SELECT *
-	  FROM rif40.rif40_comparison_areas
-	 WHERE study_id = ?
-)
-SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, a.area_id, b.zoomlevel, c.areaname
-  FROM a
-        LEFT OUTER JOIN rif_data.geometry_sahsuland b ON (a.area_id = b.areaid)
-		LEFT OUTER JOIN rif_data.lookup_sahsu_grd_level1 c ON (a.area_id = c.sahsu_grd_level1)
- WHERE b.geolevel_id = ? AND b.zoomlevel = ?;	
-
-Form 2: areaType: S; extraColumns: a.area_id, a.band_id, b.zoomlevel; no additionalJoin
-
-WITH a AS (
-	SELECT *
-	  FROM rif40.rif40_study_areas
-	 WHERE study_id = ?
-)
-SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, a.area_id, a.band_id, b.zoomlevel, c.areaname
-  FROM a
-        LEFT OUTER JOIN rif_data.geometry_sahsuland b ON (a.area_id = b.areaid)
-		LEFT OUTER JOIN rif_data.lookup_sahsu_grd_level4 c ON (a.area_id = c.sahsu_grd_level4)
- WHERE b.geolevel_id = ? AND b.zoomlevel = ?;	
-
-Form 3: areaType IS NULL; extraColumns: b.zoomlevel, c.*; additionalJoin: 
-		LEFT OUTER JOIN rif_studies.s367_map c ON (a.area_id = c.area_id)
-
-WITH a AS (
-	SELECT *
-	  FROM rif40.rif40_study_areas
-	 WHERE study_id = ?
-)
-SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
-  FROM a
-        LEFT OUTER JOIN rif_data.geometry_sahsuland b ON (a.area_id = b.areaid)
-        LEFT OUTER JOIN rif_studies.s367_map c ON (a.area_id = c.area_id);
- */		
+		ShapefileDataStore shapeDataStore = createShapefileDataStore(temporaryDirectory,
+			dirName, outputFileName, true /* enableIndexes */);	
+		FeatureWriter<SimpleFeatureType, SimpleFeature> shapefileWriter = null; 
+			// Created once feature types are defined
+		
+		CachedRowSetImpl rif40Geolevels=getRif40Geolevels(connection, studyID, areaTableName);	
+			//get geolevel
+		String geolevel=getColumnFromResultSet(rif40Geolevels, "geolevel_id");
+		String geolevelName = getColumnFromResultSet(rif40Geolevels, "geolevel_name");
+		int max_geojson_digits=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "max_geojson_digits"));
+		CoordinateReferenceSystem crs = getCRS(rif40Geolevels);
+			
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "WITH a AS (");
 		queryFormatter.addQueryLine(0, "	SELECT *");
@@ -483,24 +614,9 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 				int columnCount = rsmd.getColumnCount();
 				i++;
 				
-				stringFeature.append("{\"type\":\"Feature\",\"MultiPolygon\":");
-			
-				String wkt = resultSet.getString(1);	
-				Geometry geometry = null;
-				if (wkt != null) {
-					GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
-
-					WKTReader reader = new WKTReader(geometryFactory);
-					geometry = reader.read(wkt); // Geotools JTS
-					GeometryJSON geoJSONWriter = new GeometryJSON();
-					String strGeoJSON = geoJSONWriter.toString(geometry);
-	//				rifLogger.info(this.getClass(), "Wkt: " + wkt.substring(0, 30));
-	//				rifLogger.info(this.getClass(), "Geojson: " + strGeoJSON.substring(0, 30));
-					stringFeature.append(strGeoJSON);
-				}			
-				else {
-					throw new Exception("Null wkt for record: " + 1);
-				}
+				Geometry geometry = createGeometryFromWkt(resultSet.getString(1));
+				stringFeature.append("{\"type\":\"Feature\",\"MultiPolygon\":"); // GeoJSON feature header 	
+				stringFeature.append(geoJSONWriter.toString(geometry));
 
 				if (i == 1) {
 					setupShapefile(rsmd, columnCount, shapeDataStore, areaType, outputFileName, geometry);
@@ -513,7 +629,8 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 					printShapefileColumns(feature, rsmd, outputFileName);
 				}	
 				
-				AttributeDescriptor ad = feature.getType().getDescriptor(0); 
+				AttributeDescriptor ad = feature.getType().getDescriptor(0); // Create shapefile feature
+					// Add first hsapefile feature attribute
 				if (ad instanceof GeometryDescriptor) { 
 					feature.setAttribute(0, geometry); 
 				} 
@@ -522,7 +639,7 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 						ad.getName().toString());
 				}
 				
-				stringFeature.append(",\"properties\":{");
+				stringFeature.append(",\"properties\":{"); // Add DBF properties
 				if (areaType != null) {
 					stringFeature.append("\"areatype\":\"" + areaType + "\"");
 					feature.setAttribute(1, areaType); 
