@@ -15,7 +15,6 @@ import java.io.*;
 import java.lang.*;
 import java.text.DateFormat;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -25,12 +24,14 @@ import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
 import org.opengis.feature.type.PropertyType;
 import org.opengis.feature.type.GeometryDescriptor; 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.geometry.jts.Geometries;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.referencing.CRS;
 import org.geotools.data.shapefile.ShapefileDataStore; 
 import org.geotools.data.FeatureWriter; 
 import org.geotools.data.Transaction; 
@@ -241,7 +242,46 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				locale);
 				
 	}		
-						
+
+	/** 
+	 * Query geolevel_id, geolevel_name, geography, srid, max_geojson_digits from rif40_studies, 
+	 * rif40_geographies
+     * 
+	 * @param Connection connection, 
+	 * @param String studyID, 
+	 * @param String areaTableName
+	 */	
+	private CachedRowSetImpl getRif40Geolevels(
+			final Connection connection,
+			final String studyID,
+			final String areaTableName)
+			throws Exception {
+		SQLGeneralQueryFormatter geolevelQueryFormatter = new SQLGeneralQueryFormatter();	
+		geolevelQueryFormatter.addQueryLine(0, "SELECT b.geolevel_id, b.geolevel_name, c.geography, c.srid, c.max_geojson_digits");
+		geolevelQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies a, rif40.rif40_geolevels b, rif40.rif40_geographies c");
+		geolevelQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+		if (areaTableName.equals("rif40_comparison_areas")) {
+			geolevelQueryFormatter.addQueryLine(0, "   AND a.comparison_geolevel_name = b.geolevel_name");
+		} 
+		else if (areaTableName.equals("rif40_study_areas")) {
+			geolevelQueryFormatter.addQueryLine(0, "   AND a.study_geolevel_name = b.geolevel_name");
+		} 
+		else { // Map tables - same as study areas
+			geolevelQueryFormatter.addQueryLine(0, "   AND a.study_geolevel_name = b.geolevel_name");
+		}	
+		geolevelQueryFormatter.addQueryLine(0, "   AND c.geography = b.geography");
+		
+		int[] params = new int[1];
+		params[0]=Integer.parseInt(studyID);
+		CachedRowSetImpl cachedRowSet=createCachedRowSet(connection, geolevelQueryFormatter,
+			"writeMapQueryTogeoJSONFile", params);	
+		
+		return cachedRowSet;
+	}
+
+	/** 
+	 * 
+     */	 
 	private void writeMapQueryTogeoJSONFile(
 			final Connection connection,
 			final String areaTableName,
@@ -257,20 +297,10 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			final String additionalJoin,
 			final Locale locale)
 					throws Exception {
-						
-		Calendar calendar = null;
-		DateFormat df = null;
-		if (locale != null) {
-			df=DateFormat.getDateTimeInstance(
-				DateFormat.DEFAULT /* Date style */, 
-				DateFormat.DEFAULT /* Time style */, 
-				locale);
-			calendar = df.getCalendar();
-		}
-		else { // assume US
-			df=new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"); // MM/DD/YY HH24:MI:SS
-			calendar = Calendar.getInstance();
-		}
+			
+		RifLocale rifLocale = new RifLocale(locale);			
+		Calendar calendar = rifLocale.getCalendar();			
+		DateFormat df = rifLocale.getDateFormat();
 		
 		String geojsonDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		String shapefileDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName +
@@ -299,7 +329,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		}		
 		String geojsonFile=geojsonDirName + File.separator + outputFileName + ".json";
 		String shapefileName=shapefileDirName + File.separator + outputFileName + ".shp";
-		rifLogger.info(this.getClass(), "Add JSON to ZIP file: " + geojsonFile);
+		rifLogger.info(this.getClass(), "Add JSON to ZIP file: " + geojsonFile +
+			"; add shapefile to ZIP file: " + shapefileName);
 		File file = new File(geojsonFile);
 		if (file.exists()) {
 			file.delete();
@@ -314,43 +345,49 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		FeatureWriter<SimpleFeatureType, SimpleFeature> shapefileWriter = null; 
 			// Created once feature types are defined
 
-		//get geolevel
-		SQLGeneralQueryFormatter geolevelQueryFormatter = new SQLGeneralQueryFormatter();	
-		geolevelQueryFormatter.addQueryLine(0, "SELECT b.geolevel_id, b.geolevel_name");
-		geolevelQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies a, rif40.rif40_geolevels b");
-		geolevelQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
-		if (areaTableName.equals("rif40_comparison_areas")) {
-			geolevelQueryFormatter.addQueryLine(0, "  AND a.comparison_geolevel_name = b.geolevel_name");
-		} 
-		else if (areaTableName.equals("rif40_study_areas")) {
-			geolevelQueryFormatter.addQueryLine(0, "  AND a.study_geolevel_name = b.geolevel_name");
-		} 
-		else { // Map tables - same as study areas
-			geolevelQueryFormatter.addQueryLine(0, "  AND a.study_geolevel_name = b.geolevel_name");
-		}		
-		Integer geolevel;
-		String geolevelName = null;
-		PreparedStatement geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);		
+		CachedRowSetImpl rif40Geolevels=getRif40Geolevels(connection, studyID, areaTableName);	
+			//get geolevel
+		String geolevel=getColumnFromResultSet(rif40Geolevels, "geolevel_id");
+		String geolevelName = getColumnFromResultSet(rif40Geolevels, "geolevel_name");
+		String geographyName = getColumnFromResultSet(rif40Geolevels, "geography");
+		int srid=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "srid"));
+		int max_geojson_digits=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "max_geojson_digits"));
+		CoordinateReferenceSystem crs = null;
 		try {
-			ResultSet geolevelResultSet = null;			
-			logSQLQuery("writeMapQueryTogeoJSONFile", geolevelQueryFormatter, studyID);
-			geolevelStatement = createPreparedStatement(connection, geolevelQueryFormatter);
-			geolevelStatement.setInt(1, Integer.parseInt(studyID));	
-			geolevelResultSet = geolevelStatement.executeQuery();
-			geolevelResultSet.next();
-			geolevel = geolevelResultSet.getInt(1);
-			geolevelName = geolevelResultSet.getString(2);
+			crs = CRS.decode("EPSG:" + srid);	
 		}
 		catch (Exception exception) {
-			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
-				lineSeparator + geolevelQueryFormatter.generateQuery(),
-				exception);
-			throw exception;
-		}
-		finally {	
-			SQLQueryUtility.close(geolevelStatement);
-		}
+/*
 		
+Needs to be fixed: 
+		
+09:32:09.668 [http-nio-8080-exec-31] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.RifZipFile]:
+createStudyExtract() ERROR
+getMessage:          NoSuchAuthorityCodeException: No code "EPSG:27700" from authority "EPSG" found for object of type "EngineeringCRS".
+getRootCauseMessage: NoSuchAuthorityCodeException: No code "EPSG:27700" from authority "EPSG" found for object of type "EngineeringCRS".
+getThrowableCount:   1
+getRootCauseStackTrace >>>
+org.opengis.referencing.NoSuchAuthorityCodeException: No code "EPSG:27700" from authority "EPSG" found for object of type "EngineeringCRS".
+	at org.geotools.referencing.factory.epsg.CartesianAuthorityFactory.noSuchAuthorityException(CartesianAuthorityFactory.java:136)
+	at org.geotools.referencing.factory.epsg.CartesianAuthorityFactory.createEngineeringCRS(CartesianAuthorityFactory.java:130)
+	at org.geotools.referencing.factory.epsg.CartesianAuthorityFactory.createCoordinateReferenceSystem(CartesianAuthorityFactory.java:121)
+	at org.geotools.referencing.factory.AuthorityFactoryAdapter.createCoordinateReferenceSystem(AuthorityFactoryAdapter.java:802)
+	at org.geotools.referencing.factory.ThreadedAuthorityFactory.createCoordinateReferenceSystem(ThreadedAuthorityFactory.java:731)
+	at org.geotools.referencing.DefaultAuthorityFactory.createCoordinateReferenceSystem(DefaultAuthorityFactory.java:179)
+	at org.geotools.referencing.CRS.decode(CRS.java:525)
+	at org.geotools.referencing.CRS.decode(CRS.java:453)
+	at rifServices.dataStorageLayer.common.RifGeospatialOutputs.writeMapQueryTogeoJSONFile(RifGeospatialOutputs.java:366)
+
+ */
+			rifLogger.warning(this.getClass(), 
+				"Unable to deduce Coordinate Reference System for SRID: " + srid + "; using WGS84" +
+					lineSeparator + exception.getMessage());
+			crs = DefaultGeographicCRS.WGS84;
+		}
+		String crsWkt = crs.toWKT();
+		rifLogger.info(this.getClass(), "Geography: " + geographyName + "; SRID: " + srid + 
+			"; CRS wkt: " + crsWkt);
+			
 /*
 
 Form 1: areaType: C; extraColumns: a.area_id, b.zoomlevel; no additionalJoin
@@ -425,12 +462,12 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 			ResultSet resultSet = null;
 			String[] queryArgs = new String[3];
 			queryArgs[0]=studyID;
-			queryArgs[1]=geolevel.toString();
+			queryArgs[1]=geolevel;
 			queryArgs[2]=zoomLevel;
 			logSQLQuery("writeMapQueryTogeoJSONFile", queryFormatter, queryArgs);
 			statement = createPreparedStatement(connection, queryFormatter);
 			statement.setInt(1, Integer.parseInt(studyID));	
-			statement.setInt(2, geolevel);
+			statement.setInt(2, Integer.parseInt(geolevel));
 			statement.setInt(3, Integer.parseInt(zoomLevel));				
 			resultSet = statement.executeQuery();
 			
@@ -543,8 +580,21 @@ SELECT ST_AsText(ST_ForceRHR(b.geom)) AS wkt, b.zoomlevel, c.*
 		}
 	}
 	
-	// https://www.programcreek.com/java-api-examples/index.php?source_dir=geotools-old-master/modules/library/render/src/test/java/org/geotools/renderer/lite/LabelObstacleTest.java
-	private void setupShapefile(ResultSetMetaData rsmd, int columnCount, ShapefileDataStore dataStore, 
+	/** 
+	 * Setup shapefile using feature builder. Defines field meta data and the coordinate reference 
+	 * system, currently WGS84. Could use the SRID from rif40_geographies to use the original SRID.
+	 * Supports POLYGONs, MULTIPOLYGONs, Double and Long. Everything else stays as String
+	 *
+	 * @param ResultSetMetaData rsmd, 
+	 * @param int columnCount, 
+	 * @param ShapefileDataStore dataStore, 
+	 * @param String areaType, 
+	 * @param String featureSetName, 
+	 * @param Geometry geometry
+	 *
+	 * https://www.programcreek.com/java-api-examples/index.php?source_dir=geotools-old-master/modules/library/render/src/test/java/org/geotools/renderer/lite/LabelObstacleTest.java
+     */
+	  private void setupShapefile(ResultSetMetaData rsmd, int columnCount, ShapefileDataStore dataStore, 
 		String areaType, String featureSetName, Geometry geometry)
 			throws Exception {
 		

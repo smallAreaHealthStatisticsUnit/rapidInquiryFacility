@@ -63,7 +63,7 @@ import com.sun.rowset.CachedRowSetImpl;
  * @author kgarwood
  * @version
  *
- * Made in common class by Peter Hambly
+ * Made in common class by Peter Hambly; extensively modified
  */
 /*
  * Code Road Map:
@@ -172,7 +172,143 @@ public abstract class SQLAbstractSQLManager {
 			connection,
 			queryFormatter);
 	}
+
+	/** 
+	 * Create cached row set from AbstractSQLQueryFormatter.
+	 * No checks 0,1 or 1+ rows returned
+	 * 
+	 * @param Connection connection, 
+	 * @param AbstractSQLQueryFormatter queryFormatter, 
+	 * @param String queryName, 
+	 * @param String[] params
+	 *
+	 * @return CachedRowSetImpl cached row set
+	 */		
+	protected CachedRowSetImpl createCachedRowSet(
+			final Connection connection,
+			AbstractSQLQueryFormatter queryFormatter,
+			final String queryName,
+			final String[] params)
+				throws Exception {
+			
+		CachedRowSetImpl cachedRowSet=null;	
+		ResultSet resultSet=null;
+		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
+		try {
+			for (int i=0; i < params.length; i++) {
+				statement.setString((i+1), params[i]);	
+			}
+			logSQLQuery(queryName, queryFormatter, params);	
+			resultSet = statement.executeQuery();
+			 // create CachedRowSet and populate
+			cachedRowSet = new CachedRowSetImpl();
+			cachedRowSet.populate(resultSet);
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + queryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		
+		return cachedRowSet;			
+	}
+
+	/** 
+	 * Create cached row set from AbstractSQLQueryFormatter.
+	 * No checks 0,1 or 1+ rows returned
+	 * 
+	 * @param Connection connection, 
+	 * @param AbstractSQLQueryFormatter queryFormatter, 
+	 * @param String queryName
+	 *
+	 * @return CachedRowSetImpl cached row set
+	 */	
+	protected CachedRowSetImpl createCachedRowSet(
+			final Connection connection,
+			AbstractSQLQueryFormatter queryFormatter,
+			final String queryName)
+				throws Exception {
+			
+		CachedRowSetImpl cachedRowSet=null;	
+		ResultSet resultSet=null;
+		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
+		try {
+			logSQLQuery(queryName, queryFormatter);	
+			resultSet = statement.executeQuery();
+			 // create CachedRowSet and populate
+			cachedRowSet = new CachedRowSetImpl();
+			cachedRowSet.populate(resultSet);
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + queryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		
+		return cachedRowSet;			
+	}
 	
+	/** 
+	 * Create cached row set from AbstractSQLQueryFormatter.
+	 * No checks 0,1 or 1+ rows returned
+	 * 
+	 * @param Connection connection, 
+	 * @param AbstractSQLQueryFormatter queryFormatter, 
+	 * @param String queryName, 
+	 * @param int[] params
+	 *
+	 * @return CachedRowSetImpl cached row set
+	 */	
+	protected CachedRowSetImpl createCachedRowSet(
+			final Connection connection,
+			AbstractSQLQueryFormatter queryFormatter,
+			final String queryName,
+			final int[] params)
+				throws Exception {
+			
+		CachedRowSetImpl cachedRowSet=null;	
+		ResultSet resultSet=null;
+		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
+		try {
+			for (int i=0; i < params.length; i++) {
+				statement.setInt((i+1), params[i]);	
+			}
+			logSQLQuery(queryName, queryFormatter, params);	
+			resultSet = statement.executeQuery();
+			 // create CachedRowSet and populate
+			cachedRowSet = new CachedRowSetImpl();
+			cachedRowSet.populate(resultSet);
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + queryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		
+		return cachedRowSet;			
+	}
+
+	/** 
+	 * Get row from cached row set
+	 * Row set must contain one row, and the value must not be null
+	 * 
+	 * @param CachedRowSetImpl cachedRowSet, 
+	 * @param String columnName
+	 *
+	 * @return String column comment
+	 */		
 	protected String getColumnFromResultSet(
 			final CachedRowSetImpl cachedRowSet,
 			final String columnName)
@@ -180,7 +316,19 @@ public abstract class SQLAbstractSQLManager {
 		return getColumnFromResultSet(cachedRowSet, columnName, 
 			false /* allowNulls */, false /* allowNoRows */);
 	}
-			
+
+	/** 
+	 * Get row from cached row set
+	 * Checks 0,1 or 1+ rows; assumed multiple rows not permitted
+	 * Flag controls 0/1 null/not null checks
+	 * 
+	 * @param achedRowSetImpl cachedRowSet, 
+	 * @param String columnName, 
+	 * @param boolean allowNulls, 
+	 * @param boolean allowNoRows
+	 *
+	 * @return String column comment
+	 */		
 	protected String getColumnFromResultSet(
 			final CachedRowSetImpl cachedRowSet,
 			final String columnName,
@@ -221,6 +369,14 @@ public abstract class SQLAbstractSQLManager {
 		return columnValue;
 	}
 
+	/** 
+	 * Get column comment from data dictionary
+	 * 
+	 * @param Connection connection, 
+	 * @param String schemaName, 
+	 * @param String tableName, 
+	 * @param String columnName
+	 */	
 	protected String getColumnComment(Connection connection, 
 		String schemaName, String tableName, String columnName)
 			throws Exception {
@@ -386,6 +542,54 @@ public abstract class SQLAbstractSQLManager {
 
 	}
 	
+	protected void logSQLQuery(
+		final String queryName,
+		final AbstractSQLQueryFormatter queryFormatter,
+		final int[] parameters) {
+		
+		if (enableLogging == false || checkIfQueryLoggingEnabled(queryName) == false) {
+			return;
+		}
+
+		StringBuilder queryLog = new StringBuilder();
+		queryLog.append("QUERY NAME: " + queryName + lineSeparator);
+		queryLog.append("PARAMETERS:" + lineSeparator);
+		for (int i = 0; i < parameters.length; i++) {
+			queryLog.append("\t");
+			queryLog.append(i + 1);
+			queryLog.append(":\"");
+			queryLog.append(parameters[i]);
+			queryLog.append("\"" + lineSeparator);			
+		}
+		queryLog.append("PGSQL QUERY TEXT: " + lineSeparator);
+		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
+		queryLog.append("<<< End SQLAbstractSQLManager logSQLQuery" + lineSeparator);
+	
+		rifLogger.info(this.getClass(), "SQLAbstractSQLManager logSQLQuery >>>" + 
+			lineSeparator + queryLog.toString());	
+
+	}
+	
+	protected void logSQLQuery(
+		final String queryName,
+		final AbstractSQLQueryFormatter queryFormatter) {
+		
+		if (enableLogging == false || checkIfQueryLoggingEnabled(queryName) == false) {
+			return;
+		}
+
+		StringBuilder queryLog = new StringBuilder();
+		queryLog.append("QUERY NAME: " + queryName + lineSeparator);
+		queryLog.append("NO PARAMETERS." + lineSeparator);
+		queryLog.append("PGSQL QUERY TEXT: " + lineSeparator);
+		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
+		queryLog.append("<<< End SQLAbstractSQLManager logSQLQuery" + lineSeparator);
+	
+		rifLogger.info(this.getClass(), "SQLAbstractSQLManager logSQLQuery >>>" + 
+			lineSeparator + queryLog.toString());	
+
+	}
+		
 	protected void logSQLException(final SQLException sqlException) {
 		rifLogger.error(this.getClass(), "SQLAbstractSQLManager.logSQLException error", sqlException);
 	}

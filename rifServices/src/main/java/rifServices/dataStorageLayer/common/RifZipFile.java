@@ -1060,30 +1060,13 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			throws Exception {
 		SQLGeneralQueryFormatter extractTableQueryFormatter = new SQLGeneralQueryFormatter();		
 		
-		ResultSet resultSet = null;
-		CachedRowSetImpl cachedRowSet = null;
-		
 		extractTableQueryFormatter.addQueryLine(0, "SELECT MIN(year) AS min_year, MAX(year) AS max_year,");
 		extractTableQueryFormatter.addQueryLine(0, "       MIN(sex) AS min_sex, MAX(sex) AS max_sex");
 		extractTableQueryFormatter.addQueryLine(0, "  FROM rif_studies." + extractTable.toLowerCase());
 		extractTableQueryFormatter.addQueryLine(0, " WHERE study_or_comparison = 'S'");
 
-		PreparedStatement statement = createPreparedStatement(connection, extractTableQueryFormatter);
-		try {	
-			resultSet = statement.executeQuery();
-			 // create CachedRowSet and populate
-			cachedRowSet = new CachedRowSetImpl();
-			cachedRowSet.populate(resultSet);
-		}
-		catch (Exception exception) {
-			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
-				lineSeparator + extractTableQueryFormatter.generateQuery(),
-				exception);
-			throw exception;
-		}
-		finally {
-			SQLQueryUtility.close(statement);
-		}
+		CachedRowSetImpl cachedRowSet=createCachedRowSet(connection, extractTableQueryFormatter,
+			"getStudyStartEndYear");	
 		
 		return cachedRowSet;
 	}
@@ -1094,30 +1077,14 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			throws Exception {
 		SQLGeneralQueryFormatter rif40StudiesQueryFormatter = new SQLGeneralQueryFormatter();		
 		
-		ResultSet resultSet = null;
-		CachedRowSetImpl cachedRowSet = null;
-		
 		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT extract_table, map_table, denom_tab, description, year_start, year_stop");
 		rif40StudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");
 		rif40StudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 
-		PreparedStatement statement = createPreparedStatement(connection, rif40StudiesQueryFormatter);
-		try {
-			statement.setInt(1, Integer.parseInt(studyID));		
-			resultSet = statement.executeQuery();
-			 // create CachedRowSet and populate
-			cachedRowSet = new CachedRowSetImpl();
-			cachedRowSet.populate(resultSet);
-		}
-		catch (Exception exception) {
-			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
-				lineSeparator + rif40StudiesQueryFormatter.generateQuery(),
-				exception);
-			throw exception;
-		}
-		finally {
-			SQLQueryUtility.close(statement);
-		}
+		int[] params = new int[1];
+		params[0]=Integer.parseInt(studyID);
+		CachedRowSetImpl cachedRowSet=createCachedRowSet(connection, rif40StudiesQueryFormatter,
+			"getRif40Studies", params);	
 		
 		return cachedRowSet;
 	}
@@ -1656,20 +1623,10 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		if (locale == null) {
 			throw new Exception("locale is null");
 		}
-							
-		Calendar calendar = null;
-		DateFormat df = null;
-		if (locale != null) {
-			df=DateFormat.getDateTimeInstance(
-				DateFormat.DEFAULT /* Date style */, 
-				DateFormat.DEFAULT /* Time style */, 
-				locale);
-			calendar = df.getCalendar();
-		}
-		else { // assume US
-			df=new SimpleDateFormat("MM/dd/yyyy HH:mm:ss"); // MM/DD/YY HH24:MI:SS
-			calendar = Calendar.getInstance();
-		}
+		
+		RifLocale rifLocale = new RifLocale(locale);			
+		Calendar calendar = rifLocale.getCalendar();			
+		DateFormat df = rifLocale.getDateFormat();
 		
 		String tableComment=getTableComment(connection, schemaName, tableName, defaultTitle);
 		
