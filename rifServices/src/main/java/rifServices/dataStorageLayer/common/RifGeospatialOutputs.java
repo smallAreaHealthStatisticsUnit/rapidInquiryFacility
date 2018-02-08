@@ -27,6 +27,7 @@ import org.opengis.feature.type.AttributeType;
 import org.opengis.feature.type.PropertyType;
 import org.opengis.feature.type.GeometryDescriptor; 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 import org.geotools.referencing.ReferencingFactoryFinder;
 import org.geotools.referencing.factory.PropertyAuthorityFactory;
@@ -37,6 +38,7 @@ import org.geotools.metadata.iso.citation.Citations;
 import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.geometry.jts.Geometries;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.CRS;
@@ -643,6 +645,11 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		String geolevelName = getColumnFromResultSet(rif40Geolevels, "geolevel_name");
 		int max_geojson_digits=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "max_geojson_digits"));
 		CoordinateReferenceSystem crs = getCRS(rifStudySubmission, rif40Geolevels);
+		MathTransform transform = null; // For re-projection
+		if (!CRS.toSRS(crs).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
+			transform = CRS.findMathTransform(DefaultGeographicCRS.WGS84, crs,
+							true /* Be lenient with errors between datums */);
+		}
 			
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "WITH a AS (");
@@ -720,7 +727,17 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 					// Add first hsapefile feature attribute
 				if (ad instanceof GeometryDescriptor) { 
 					// Need to handle CoordinateReferenceSystem
-					feature.setAttribute(0, geometry); 
+					if (CRS.toSRS(crs).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
+						feature.setAttribute(0, geometry); 
+					} 
+					else if (transform == null) {
+						throw new Exception("Null transform from: " + CRS.toSRS(crs) + " to: " +
+							CRS.toSRS(DefaultGeographicCRS.WGS84));
+					}
+					else { // Transform from WGS84 to SRID CRS
+						Geometry newGeometry = JTS.transform(geometry, transform); // Re-project
+						feature.setAttribute(0, newGeometry); 
+					}
 				} 
 				else { 
 					throw new Exception("First attribute is not MultiPolygon: " + 
@@ -811,7 +828,16 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			throws Exception {
 		
 		SimpleFeatureTypeBuilder featureBuilder = new SimpleFeatureTypeBuilder();
-		featureBuilder.setCRS(DefaultGeographicCRS.WGS84); // <- Coordinate reference system
+		
+		if (crs == null) {
+			featureBuilder.setCRS(DefaultGeographicCRS.WGS84); // <- Default coordinate reference system
+		}
+		else if (CRS.toSRS(crs).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
+			featureBuilder.setCRS(DefaultGeographicCRS.WGS84); // <- Default coordinate reference system
+		}
+		else {
+			featureBuilder.setCRS(crs); // <- Geography SRID coordinate reference system
+		}
         featureBuilder.setName(featureSetName);  
 		Geometries geomType = Geometries.get(geometry);
 		switch (geomType) {

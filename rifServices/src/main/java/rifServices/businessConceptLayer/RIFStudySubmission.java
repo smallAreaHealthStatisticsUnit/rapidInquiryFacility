@@ -354,7 +354,13 @@ public final class RIFStudySubmission
 		
 		// Add to rif40_warning_messages when available
 		
-		rifLogger.warning(callingClass, warningMessage);
+		if (study == null) {	
+			rifLogger.warning(callingClass, warningMessage); 
+		}
+		else {	
+			rifLogger.warning(callingClass, "Study ID: " + study.getIdentifier() + lineSeparator +
+				warningMessage);
+		}
 	}
 	
 	public void identifyDifferences(
