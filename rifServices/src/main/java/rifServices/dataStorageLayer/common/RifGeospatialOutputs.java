@@ -29,12 +29,6 @@ import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
-import org.geotools.referencing.ReferencingFactoryFinder;
-import org.geotools.referencing.factory.PropertyAuthorityFactory;
-import org.geotools.referencing.factory.ReferencingFactoryContainer;
-import org.geotools.factory.Hints;
-import org.geotools.metadata.iso.citation.Citations;
-
 import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.geometry.jts.Geometries;
@@ -121,8 +115,6 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	private Connection connection;
 	private String studyID;
 	private static String EXTRACT_DIRECTORY;
-	private static int printingDPI;
-	private static float jpegQuality=new Float(.8);
 	
 	private static final String STUDY_QUERY_SUBDIRECTORY = "study_query";
 	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
@@ -139,6 +131,10 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 
 	private static Map<String, String> environmentalVariables = System.getenv();
 	private static String catalinaHome = environmentalVariables.get("CATALINA_HOME");
+	
+	private static RifCoordinateReferenceSystem rifCoordinateReferenceSystem = 
+		new RifCoordinateReferenceSystem();
+		
 	
 	// ==========================================
 	// Section Properties
@@ -168,15 +164,6 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			rifLogger.warning(this.getClass(), 
 				"Error in RifGeospatialOutputs() constructor");
 			throw new NullPointerException();
-		}
-		
-		// Setup CoordinateReferenceSystem lookup
-		try {
-			setupReferencingFactory();
-		}
-		catch(Exception exception) { // If it fails, will use default (WGS84)
-			rifLogger.warning(this.getClass(), 
-				"Error in RifGeospatialOutputs() constructor: setupReferencingFactory(): ", exception);
 		}
 	}	
 
@@ -394,7 +381,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		String geographyName = getColumnFromResultSet(rif40Geolevels, "geography");
 		int srid=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "srid"));
 		try {
-			crs = CRS.decode("EPSG:" + srid);	
+			crs = rifCoordinateReferenceSystem.getCRS(srid);	
 		}
 		catch (Exception exception) {
 			rifStudySubmission.addStudyWarning(this.getClass(), 
@@ -406,87 +393,6 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		return crs;
 	}
 		
-	/** 
-	 * Setup CoordinateReferenceSystem referencing factory. Use predictable RIF locations for 
-	 * epsg.properties
-	 */
-	private void setupReferencingFactory() 
-		throws Exception {
-
-		String file="epsg.properties";
-		String file1 = null;
-		String file2 = null;
-		File input = null;
-		URL epsg = null;
-		
-		try {
-			
-			if (catalinaHome != null) {
-				file1=catalinaHome + "\\conf\\" + file;
-				file2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\" + file;
-			}
-			else {
-				rifLogger.warning(this.getClass(), 
-					"setupReferencingFactory: CATALINA_HOME not set in environment"); 
-				file1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\" + file;
-				file2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\" + file;
-			}
-			
-			input=new File(file1);
-			if (input.exists()) {
-				rifLogger.info(this.getClass(), 
-						"setupReferencingFactory: using: " + file1);
-			} 
-			else {
-				input=new File(file2);	
-				if (input.exists()) {
-					rifLogger.info(this.getClass(), 
-						"setupReferencingFactory: using: " + file2);
-				}
-				else {				
-					rifLogger.warning(this.getClass(), 
-						"setupReferencingFactory error: unable to find files: " + 
-							file1 + " and " + file2);
-					input=null;
-				}
-			}			
-				
-			if (input != null) {
-				epsg = input.toURI().toURL();
-
-				if (epsg != null) {
-					Hints hints = new Hints(Hints.CRS_AUTHORITY_FACTORY, PropertyAuthorityFactory.class);
-					ReferencingFactoryContainer referencingFactoryContainer =
-							   ReferencingFactoryContainer.instance(hints);
-
-					PropertyAuthorityFactory propertyAuthorityFactory = new PropertyAuthorityFactory(
-						referencingFactoryContainer, 	// ReferencingFactoryContainer
-						Citations.fromName("EPSG"), 	// Citation[]
-						epsg);							// URL
-						
-					ReferencingFactoryFinder.addAuthorityFactory(propertyAuthorityFactory);
-					ReferencingFactoryFinder.scanForPlugins(); // hook everything up
-					rifLogger.info(this.getClass(), 
-						"setupReferencingFactory(): Setup CoordinateReferenceSystem lookup OK");	
-				}			
-			}
-			else {
-				throw new Exception("Null URL");
-			}
-		}
-		catch(Exception exception) { // If it fails, will use default (WGS84)
-		
-			if (epsg != null) {
-				rifLogger.warning(this.getClass(), 
-					"URL: " + epsg.getFile() + " had error: ", exception);
-			}
-			else {
-				rifLogger.warning(this.getClass(), 
-					"URL: <NULL> had error: ", exception);
-			}
-		}
-	}
-	
 	/** 
 	 * Create GeoJSON writer 
 	 *
@@ -647,8 +553,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		CoordinateReferenceSystem crs = getCRS(rifStudySubmission, rif40Geolevels);
 		MathTransform transform = null; // For re-projection
 		if (!CRS.toSRS(crs).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
-			transform = CRS.findMathTransform(DefaultGeographicCRS.WGS84, crs,
-							true /* Be lenient with errors between datums */);
+			transform = rifCoordinateReferenceSystem.getMathTransform(crs);
 		}
 			
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
