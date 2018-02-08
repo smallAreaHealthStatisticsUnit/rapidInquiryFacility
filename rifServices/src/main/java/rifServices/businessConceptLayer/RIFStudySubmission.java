@@ -7,6 +7,7 @@ import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.businessConceptLayer.RIFOutputOption;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
+import rifGenericLibrary.util.RIFLogger;
 
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
@@ -87,6 +88,9 @@ public final class RIFStudySubmission
 // Section Constants
 // ==========================================
 
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -344,6 +348,13 @@ public final class RIFStudySubmission
 		else {
 			return study.getIdentifier();
 		}		
+	}
+	
+	public void addStudyWarning(Class callingClass, String warningMessage) {
+		
+		// Add to rif40_warning_messages when available
+		
+		rifLogger.warning(callingClass, warningMessage);
 	}
 	
 	public void identifyDifferences(

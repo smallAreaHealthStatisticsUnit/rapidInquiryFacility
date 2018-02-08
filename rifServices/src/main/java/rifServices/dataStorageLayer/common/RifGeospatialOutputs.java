@@ -15,8 +15,10 @@ import java.io.*;
 import java.lang.*;
 import java.text.DateFormat;
 import java.text.NumberFormat;
+import java.util.Map;
 import java.util.Calendar;
 import java.util.Locale;
+import java.net.URL;
 
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.simple.SimpleFeature;
@@ -25,6 +27,12 @@ import org.opengis.feature.type.AttributeType;
 import org.opengis.feature.type.PropertyType;
 import org.opengis.feature.type.GeometryDescriptor; 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import org.geotools.referencing.ReferencingFactoryFinder;
+import org.geotools.referencing.factory.PropertyAuthorityFactory;
+import org.geotools.referencing.factory.ReferencingFactoryContainer;
+import org.geotools.factory.Hints;
+import org.geotools.metadata.iso.citation.Citations;
 
 import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geometry.jts.JTSFactoryFinder;
@@ -126,6 +134,9 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	
 	private static GeometryFactory geometryFactory = null;
 	private static GeometryJSON geoJSONWriter = null;
+
+	private static Map<String, String> environmentalVariables = System.getenv();
+	private static String catalinaHome = environmentalVariables.get("CATALINA_HOME");
 	
 	// ==========================================
 	// Section Properties
@@ -155,6 +166,15 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			rifLogger.warning(this.getClass(), 
 				"Error in RifGeospatialOutputs() constructor");
 			throw new NullPointerException();
+		}
+		
+		// Setup CoordinateReferenceSystem lookup
+		try {
+			setupReferencingFactory();
+		}
+		catch(Exception exception) { // If it fails, will use default (WGS84)
+			rifLogger.warning(this.getClass(), 
+				"Error in RifGeospatialOutputs() constructor: setupReferencingFactory(): ", exception);
 		}
 	}	
 
@@ -199,6 +219,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		
 		writeMapQueryTogeoJSONFile(
 				connection,
+				rifStudySubmission,
 				"rif40_study_areas",
 				temporaryDirectory,
 				GEOGRAPHY_SUBDIRECTORY,
@@ -219,6 +240,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		
 		writeMapQueryTogeoJSONFile(
 				connection,
+				rifStudySubmission,
 				"rif40_comparison_areas",
 				temporaryDirectory,
 				GEOGRAPHY_SUBDIRECTORY,
@@ -239,6 +261,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		
 		writeMapQueryTogeoJSONFile(
 				connection,
+				rifStudySubmission,
 				"rif40_study_areas",
 				temporaryDirectory,
 				DATA_SUBDIRECTORY,
@@ -322,7 +345,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			File.separator + outputFileName;
 		File shapefileDirectory = new File(shapefileDirName);
 		if (shapefileDirectory.exists()) {
-			rifLogger.info(this.getClass(), 
+			rifLogger.debug(this.getClass(), 
 				"Found directory: " + shapefileDirectory.getAbsolutePath());
 		}
 		else {
@@ -354,12 +377,15 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 * No support at present for anything other than WGS85 in the shapefile code 
 	 * (i.e. re-projection required)
 	 *
+	 * @param RIFStudySubmission rifStudySubmission
 	 * @param CachedRowSetImpl rif40Geolevels
 	 *
 	 * @returns CoordinateReferenceSystem
      */	
-	private CoordinateReferenceSystem getCRS(CachedRowSetImpl rif40Geolevels) 
-			throws Exception {
+	private CoordinateReferenceSystem getCRS(
+			final RIFStudySubmission rifStudySubmission, 
+			final CachedRowSetImpl rif40Geolevels) 
+				throws Exception {
 		
 		CoordinateReferenceSystem crs=null;
 		
@@ -369,40 +395,96 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			crs = CRS.decode("EPSG:" + srid);	
 		}
 		catch (Exception exception) {
-/*
-		
-Needs to be fixed: 
-		
-09:32:09.668 [http-nio-8080-exec-31] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.RifZipFile]:
-createStudyExtract() ERROR
-getMessage:          NoSuchAuthorityCodeException: No code "EPSG:27700" from authority "EPSG" found for object of type "EngineeringCRS".
-getRootCauseMessage: NoSuchAuthorityCodeException: No code "EPSG:27700" from authority "EPSG" found for object of type "EngineeringCRS".
-getThrowableCount:   1
-getRootCauseStackTrace >>>
-org.opengis.referencing.NoSuchAuthorityCodeException: No code "EPSG:27700" from authority "EPSG" found for object of type "EngineeringCRS".
-	at org.geotools.referencing.factory.epsg.CartesianAuthorityFactory.noSuchAuthorityException(CartesianAuthorityFactory.java:136)
-	at org.geotools.referencing.factory.epsg.CartesianAuthorityFactory.createEngineeringCRS(CartesianAuthorityFactory.java:130)
-	at org.geotools.referencing.factory.epsg.CartesianAuthorityFactory.createCoordinateReferenceSystem(CartesianAuthorityFactory.java:121)
-	at org.geotools.referencing.factory.AuthorityFactoryAdapter.createCoordinateReferenceSystem(AuthorityFactoryAdapter.java:802)
-	at org.geotools.referencing.factory.ThreadedAuthorityFactory.createCoordinateReferenceSystem(ThreadedAuthorityFactory.java:731)
-	at org.geotools.referencing.DefaultAuthorityFactory.createCoordinateReferenceSystem(DefaultAuthorityFactory.java:179)
-	at org.geotools.referencing.CRS.decode(CRS.java:525)
-	at org.geotools.referencing.CRS.decode(CRS.java:453)
-	at rifServices.dataStorageLayer.common.RifGeospatialOutputs.writeMapQueryTogeoJSONFile(RifGeospatialOutputs.java:366)
-
- */
-			rifLogger.warning(this.getClass(), 
+			rifStudySubmission.addStudyWarning(this.getClass(), 
 				"Unable to deduce Coordinate Reference System for SRID: " + srid + "; using WGS84" +
 					lineSeparator + exception.getMessage());
 			crs = DefaultGeographicCRS.WGS84;
-		}
-		String crsWkt = crs.toWKT();
-		rifLogger.info(this.getClass(), "Geography: " + geographyName + "; SRID: " + srid + 
-			"; CRS wkt: " + crsWkt);	
+		}	
 				
 		return crs;
 	}
+		
+	/** 
+	 * Setup CoordinateReferenceSystem referencing factory. Use predictable RIF locations for 
+	 * epsg.properties
+	 */
+	private void setupReferencingFactory() 
+		throws Exception {
 
+		String file="epsg.properties";
+		String file1 = null;
+		String file2 = null;
+		File input = null;
+		URL epsg = null;
+		
+		try {
+			
+			if (catalinaHome != null) {
+				file1=catalinaHome + "\\conf\\" + file;
+				file2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\" + file;
+			}
+			else {
+				rifLogger.warning(this.getClass(), 
+					"setupReferencingFactory: CATALINA_HOME not set in environment"); 
+				file1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\" + file;
+				file2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\" + file;
+			}
+			
+			input=new File(file1);
+			if (input.exists()) {
+				rifLogger.info(this.getClass(), 
+						"setupReferencingFactory: using: " + file1);
+			} 
+			else {
+				input=new File(file2);	
+				if (input.exists()) {
+					rifLogger.info(this.getClass(), 
+						"setupReferencingFactory: using: " + file2);
+				}
+				else {				
+					rifLogger.warning(this.getClass(), 
+						"setupReferencingFactory error: unable to find files: " + 
+							file1 + " and " + file2);
+					input=null;
+				}
+			}			
+				
+			if (input != null) {
+				epsg = input.toURI().toURL();
+
+				if (epsg != null) {
+					Hints hints = new Hints(Hints.CRS_AUTHORITY_FACTORY, PropertyAuthorityFactory.class);
+					ReferencingFactoryContainer referencingFactoryContainer =
+							   ReferencingFactoryContainer.instance(hints);
+
+					PropertyAuthorityFactory propertyAuthorityFactory = new PropertyAuthorityFactory(
+						referencingFactoryContainer, 	// ReferencingFactoryContainer
+						Citations.fromName("EPSG"), 	// Citation[]
+						epsg);							// URL
+						
+					ReferencingFactoryFinder.addAuthorityFactory(propertyAuthorityFactory);
+					ReferencingFactoryFinder.scanForPlugins(); // hook everything up
+					rifLogger.info(this.getClass(), 
+						"setupReferencingFactory(): Setup CoordinateReferenceSystem lookup OK");	
+				}			
+			}
+			else {
+				throw new Exception("Null URL");
+			}
+		}
+		catch(Exception exception) { // If it fails, will use default (WGS84)
+		
+			if (epsg != null) {
+				rifLogger.warning(this.getClass(), 
+					"URL: " + epsg.getFile() + " had error: ", exception);
+			}
+			else {
+				rifLogger.warning(this.getClass(), 
+					"URL: <NULL> had error: ", exception);
+			}
+		}
+	}
+	
 	/** 
 	 * Create GeoJSON writer 
 	 *
@@ -421,7 +503,7 @@ org.opengis.referencing.NoSuchAuthorityCodeException: No code "EPSG:27700" from 
 		File geojsonDirectory = new File(geojsonDirName);
 		File newDirectory = new File(geojsonDirName);
 		if (newDirectory.exists()) {
-			rifLogger.info(this.getClass(), 
+			rifLogger.debug(this.getClass(), 
 				"Found directory: " + newDirectory.getAbsolutePath());
 		}
 		else {
@@ -512,21 +594,23 @@ org.opengis.referencing.NoSuchAuthorityCodeException: No code "EPSG:27700" from 
      *        	LEFT OUTER JOIN rif_studies.s367_map c ON (a.area_id = c.area_id);
      *
 	 * @param Connection connection,
-	 * String areaTableName,
-	 * File temporaryDirectory,
-	 * String dirName,
-	 * String schemaName,
-	 * String tableName,
-	 * String outputFileName,
-	 * String zoomLevel,
-	 * String studyID,
-	 * String areaType,
-	 * String extraColumns,
-	 * String additionalJoin,
-	 * Locale locale	 
+	 * @param RIFStudySubmission rifStudySubmission
+	 * @param String areaTableName,
+	 * @param File temporaryDirectory,
+	 * @param String dirName,
+	 * @param String schemaName,
+	 * @param String tableName,
+	 * @param String outputFileName,
+	 * @param String zoomLevel,
+	 * @param String studyID,
+	 * @param String areaType,
+	 * @param String extraColumns,
+	 * @param String additionalJoin,
+	 * @param Locale locale	 
      */	 
 	private void writeMapQueryTogeoJSONFile(
 			final Connection connection,
+			final RIFStudySubmission rifStudySubmission,
 			final String areaTableName,
 			final File temporaryDirectory,
 			final String dirName,
@@ -558,7 +642,7 @@ org.opengis.referencing.NoSuchAuthorityCodeException: No code "EPSG:27700" from 
 		String geolevel=getColumnFromResultSet(rif40Geolevels, "geolevel_id");
 		String geolevelName = getColumnFromResultSet(rif40Geolevels, "geolevel_name");
 		int max_geojson_digits=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "max_geojson_digits"));
-		CoordinateReferenceSystem crs = getCRS(rif40Geolevels);
+		CoordinateReferenceSystem crs = getCRS(rifStudySubmission, rif40Geolevels);
 			
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "WITH a AS (");
@@ -619,19 +703,23 @@ org.opengis.referencing.NoSuchAuthorityCodeException: No code "EPSG:27700" from 
 				stringFeature.append(geoJSONWriter.toString(geometry));
 
 				if (i == 1) {
-					setupShapefile(rsmd, columnCount, shapeDataStore, areaType, outputFileName, geometry);
+					setupShapefile(rsmd, columnCount, shapeDataStore, areaType, outputFileName, 
+						geometry, crs);
 					
 					shapefileWriter = shapeDataStore.getFeatureWriter(shapeDataStore.getTypeNames()[0],
 							Transaction.AUTO_COMMIT);
 				}
 				SimpleFeature feature = (SimpleFeature) shapefileWriter.next(); 
-				if (i == 1) {	
-					printShapefileColumns(feature, rsmd, outputFileName);
+				if (i == 1) {		
+					String geographyName = getColumnFromResultSet(rif40Geolevels, "geography");
+					int srid=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "srid"));
+					printShapefileColumns(feature, rsmd, outputFileName, crs, geographyName, srid);
 				}	
 				
 				AttributeDescriptor ad = feature.getType().getDescriptor(0); // Create shapefile feature
 					// Add first hsapefile feature attribute
 				if (ad instanceof GeometryDescriptor) { 
+					// Need to handle CoordinateReferenceSystem
 					feature.setAttribute(0, geometry); 
 				} 
 				else { 
@@ -707,12 +795,19 @@ org.opengis.referencing.NoSuchAuthorityCodeException: No code "EPSG:27700" from 
 	 * @param ShapefileDataStore dataStore, 
 	 * @param String areaType, 
 	 * @param String featureSetName, 
-	 * @param Geometry geometry
+	 * @param Geometry geometry,
+	 * @param CoordinateReferenceSystem crs
 	 *
 	 * https://www.programcreek.com/java-api-examples/index.php?source_dir=geotools-old-master/modules/library/render/src/test/java/org/geotools/renderer/lite/LabelObstacleTest.java
      */
-	  private void setupShapefile(ResultSetMetaData rsmd, int columnCount, ShapefileDataStore dataStore, 
-		String areaType, String featureSetName, Geometry geometry)
+	  private void setupShapefile(
+			final ResultSetMetaData rsmd, 
+			final int columnCount, 
+			final ShapefileDataStore dataStore, 
+			final String areaType, 
+			final String featureSetName, 
+			final Geometry geometry,
+			final CoordinateReferenceSystem crs)
 			throws Exception {
 		
 		SimpleFeatureTypeBuilder featureBuilder = new SimpleFeatureTypeBuilder();
@@ -858,9 +953,12 @@ org.opengis.referencing.NoSuchAuthorityCodeException: No code "EPSG:27700" from 
 	/**
 	 * Print shapefile and database cilumn names and types
 	 *	
-     * @param SimpleFeature feature (required)
-     * @param ResultSetMetaData rsmd (required)
-     * @param String outputFileName (required)
+     * @param SimpleFeature feature (required),
+     * @param ResultSetMetaData rsmd (required),
+     * @param String outputFileName (required),
+	 * @param CoordinateReferenceSystem crs,
+	 * @param String geographyName,
+	 * @param int srid
 	 *
 	 * E.g.
 	 * 11:32:25.396 [http-nio-8080-exec-105] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.RifGeospatialOutputs]:
@@ -884,13 +982,21 @@ org.opengis.referencing.NoSuchAuthorityCodeException: No code "EPSG:27700" from 
 	 * restrictions=[ length([.]) <= 254 ]
 	 * 	
 	 */
-	private void printShapefileColumns(SimpleFeature feature, ResultSetMetaData rsmd,
-		String outputFileName)
-		throws Exception {
+	private void printShapefileColumns(
+		final SimpleFeature feature, 
+		final ResultSetMetaData rsmd,
+		final String outputFileName,
+		final CoordinateReferenceSystem crs,
+		final String geographyName,
+		final int srid)
+			throws Exception {
 							
 		StringBuilder sb = new StringBuilder();
 		
 		int truncatedCount=0;
+		
+		String crsWkt = crs.toWKT();
+		sb.append("Geography: " + geographyName + "; SRID: " + srid + "; CRS wkt: " + crsWkt);
 		sb.append("Database: " + databaseType + lineSeparator);
 		for (int j = 1; j <= rsmd.getColumnCount(); j++) { 
 			String name = rsmd.getColumnName(j);

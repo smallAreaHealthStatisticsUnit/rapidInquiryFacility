@@ -1861,7 +1861,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}
 		else {
 			rifLogger.warning(this.getClass(), 
-				"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters: CATALINA_HOME not set in environment"); 
+				"RifZipFile.readFile: CATALINA_HOME not set in environment"); 
 			file1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\" + file;
 			file2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\" + file;
 		}

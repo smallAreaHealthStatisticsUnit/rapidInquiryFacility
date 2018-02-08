@@ -1951,6 +1951,7 @@ callPerformSmoothingActivity exitValue: 1
   c) Some defaults may be hard codable
 
   No support at present for anything other than WGS85 in the shapefile code (i.e. re-projection required)
+* Added CRS support
 
 ## In progress (February/March 2018):
 

@@ -278,6 +278,26 @@
 		<version>18.2</version>
 	</dependency>
 
+	<!-- Use local file in predictable RIF locations
+	<dependency>
+		<groupId>org.geotools</groupId>
+		<artifactId>gt-referencing</artifactId>
+		<version>18.2</version>
+	</dependency>
+	<dependency>
+		<groupId>org.geotools</groupId>
+		<artifactId>gt-epsg-wkt</artifactId>
+		<version>18.2</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.geotools</groupId>
+		<artifactId>gt-epsg-extension</artifactId>
+		<version>18.2</version>
+		<scope>test</scope>
+	</dependency>
+	-->
+
   </dependencies>
   <dependencyManagement>
   	<dependencies>

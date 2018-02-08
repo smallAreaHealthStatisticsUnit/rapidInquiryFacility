@@ -530,7 +530,7 @@ Could not write TIFF file because no WriteAdapter is availble
 		Rectangle2D chartBounds = chartInfo.getChartArea();
 		Rectangle bounds = new Rectangle(width, (int)(width/populationPyramidAspactRatio) /* Height */);
         // draw the chart in the SVG generator
-		rifLogger.info(this.getClass(), "Bounds - SVG: " + bounds.toString() + 
+		rifLogger.debug(this.getClass(), "Bounds - SVG: " + bounds.toString() + 
 			"; plot: " + plotBounds.toString() + 
 			"; chart: " + chartBounds.toString());
 									// SVG bounds: java.awt.geom.Rectangle2D$Double[x=0.0,y=26.0,w=881.0,h=570.0]

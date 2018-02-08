@@ -83,7 +83,7 @@ class RifPopulationStackedBarRenderer extends StackedBarRenderer {
 				maleColors[i].getRed() + "," + 
 				maleColors[i].getGreen() + "," + 
 				maleColors[i].getBlue() + ")";
-			rifLogger.info(this.getClass(), 
+			rifLogger.debug(this.getClass(), 
 				"Replace male color[" + i + "] " + rgbColor + " with " + hexColor);
 			result=result.replace(rgbColor, hexColor);
 		}
@@ -94,7 +94,7 @@ class RifPopulationStackedBarRenderer extends StackedBarRenderer {
 				femaleColors[i].getRed() + "," + 
 				femaleColors[i].getGreen() + "," + 
 				femaleColors[i].getBlue() + ")";
-			rifLogger.info(this.getClass(), 
+			rifLogger.debug(this.getClass(), 
 				"Replace female color[" + i + "] " + rgbColor + " with " + hexColor);
 			result=result.replace(rgbColor, hexColor);
 		}
