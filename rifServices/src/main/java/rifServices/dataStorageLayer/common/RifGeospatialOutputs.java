@@ -475,7 +475,9 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	/** 
 	 * Get referenced envelope for map, using the map study area extent
 	 * the default is the defined extent of data Coordinate Reference System
-	 * (i.e. the projection bounding box as a ReferencedEnvelope). Postgres SQL>
+	 * (i.e. the projection bounding box as a ReferencedEnvelope). 
+	 * 
+	 * Postgres SQL>
 	 *
 	 * WITH c AS (
 	 * 		SELECT SST_Envelope(ST_Union(ST_Envelope(b.geom))) AS envelope
@@ -488,6 +490,21 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 *        ST_Xmax(c.envelope) AS xmax,
 	 *        ST_Ymin(c.envelope) AS ymin,
 	 *        ST_Ymax(c.envelope) AS ymax
+	 *   FROM c;
+	 *   
+	 * SQL Server SQL>
+	 *
+	 * WITH c AS (
+	 *    SELECT geometry::EnvelopeAggregate(b.geom) AS envelope
+	 *      FROM rif40.rif40_study_areas a, rif_data.geometry_usa_2014 b
+	 *     WHERE a.study_id    = ?
+	 * 		 AND b.geolevel_id = ? AND b.zoomlevel = ?
+	 *       AND a.area_id     = b.areaid
+	 * )
+	 * SELECT CAST(c.envelope.STPointN(1).STX AS numeric(8,5)) AS Xmin,
+	 *        CAST(c.envelope.STPointN(3).STX AS numeric(8,5)) AS Xmax,
+	 *        CAST(c.envelope.STPointN(1).STY AS numeric(8,5)) AS Ymin,
+	 *        CAST(c.envelope.STPointN(3).STY AS numeric(8,5)) AS Ymax
 	 *   FROM c;
 	 *   
 	 * @param Connection connection,
@@ -520,7 +537,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			queryFormatter.addQueryLine(1, "SELECT ST_Envelope(ST_Union(ST_Envelope(b.geom))) AS envelope");			
 		}
 		else if (databaseType == DatabaseType.SQL_SERVER) {
-			queryFormatter.addQueryLine(1, "SELECT b.geom.STEnvelope().STUnion().STEnvelope() AS envelope");	
+			queryFormatter.addQueryLine(1, "SELECT geometry::EnvelopeAggregate(b.geom) AS envelope");	
 		}
 		queryFormatter.addQueryLine(1, "  FROM rif40." + areaTableName + " a, "  + 
 											schemaName + "." + tileTableName.toLowerCase() + " b");
