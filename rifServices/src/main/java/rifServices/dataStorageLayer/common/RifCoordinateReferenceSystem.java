@@ -10,12 +10,17 @@ import java.net.URL;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 
 import org.geotools.referencing.ReferencingFactoryFinder;
 import org.geotools.referencing.factory.PropertyAuthorityFactory;
 import org.geotools.referencing.factory.ReferencingFactoryContainer;
 import org.geotools.factory.Hints;
 import org.geotools.metadata.iso.citation.Citations;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.map.MapViewport;
 
 import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geometry.jts.JTSFactoryFinder;
@@ -130,7 +135,8 @@ public class RifCoordinateReferenceSystem {
 	 * @param	CoordinateReferenceSystem crs
 	 * @returns MathTransform
 	 */
-	public MathTransform getMathTransform(CoordinateReferenceSystem crs)
+	public MathTransform getMathTransform(
+		final CoordinateReferenceSystem crs)
 			throws Exception {
 		MathTransform transform = null; 	// For re-projection
 		String crsText = CRS.toSRS(crs);	//  Spatial Reference System identifier
@@ -163,7 +169,8 @@ public class RifCoordinateReferenceSystem {
 	 * @param	int srid
 	 * @returns CoordinateReferenceSystem
 	 */
-	public CoordinateReferenceSystem getCRS(int srid) 
+	public CoordinateReferenceSystem getCRS(
+		final int srid) 
 			throws Exception {
 		
 		CoordinateReferenceSystem crs=null;
@@ -263,5 +270,60 @@ public class RifCoordinateReferenceSystem {
 					"URL: <NULL> had error: ", exception);
 			}
 		}
-	}		
+	}	
+	
+	/** 
+	 * Get default referenced envelope for map, using the defined extent of data Coordinate Reference System
+	 * (i.e. the projection bounding box as a ReferencedEnvelope)
+	 *
+	 * @param MapViewport vp
+	 * @param CoordinateReferenceSystem crs
+	 *
+	 * @returns ReferencedEnvelope in map CRS (NOT data CRS!) unless MapViewport is null
+	 */
+	public ReferencedEnvelope getDefaultReferencedEnvelope(
+		final MapViewport vp, 
+		final CoordinateReferenceSystem crs) 
+			throws Exception {
+
+		CoordinateReferenceSystem targetCRS=null;
+		if (vp != null) {
+			targetCRS=vp.getCoordinateReferenceSystem();
+		}
+		if (targetCRS == null) {
+			targetCRS=crs;
+		}
+		ReferencedEnvelope envelope = null;
+	    Extent crsExtent = crs.getDomainOfValidity();
+		if (crsExtent != null) {
+			for (GeographicExtent element : crsExtent.getGeographicElements()) {
+				if (element instanceof GeographicBoundingBox) {
+					GeographicBoundingBox bounds = (GeographicBoundingBox) element;
+					ReferencedEnvelope bbox = new ReferencedEnvelope(
+						bounds.getSouthBoundLatitude(),
+						bounds.getNorthBoundLatitude(),
+						bounds.getWestBoundLongitude(),
+						bounds.getEastBoundLongitude(),
+						targetCRS
+					);
+					if (targetCRS == null) {
+						envelope=bbox;
+					}
+					else {
+						envelope = bbox.transform(crs, true /* Be lenient with errors between datums */);
+					}
+				}
+			}
+		}
+		else {	
+			envelope=ReferencedEnvelope.EVERYTHING;
+		}
+		
+		if (envelope.getMaxX() == envelope.getMinX() &&
+			envelope.getMaxY() == envelope.getMinY()) {
+			throw new Exception("BBOX is zero sized: " + envelope.toString());
+		}
+		
+		return envelope;
+	}
 }

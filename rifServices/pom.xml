@@ -278,6 +278,19 @@
 		<version>18.2</version>
 	</dependency>
 
+	<!-- https://mvnrepository.com/artifact/org.geotools/gt-render -->
+	<dependency>
+		<groupId>org.geotools</groupId>
+		<artifactId>gt-render</artifactId>
+		<version>18.2</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.geotools/gt-wms -->
+	<dependency>
+		<groupId>org.geotools</groupId>
+		<artifactId>gt-wms</artifactId>
+		<version>18.2</version>
+	</dependency>
+
 	<!-- Use local file in predictable RIF locations
 	<dependency>
 		<groupId>org.geotools</groupId>

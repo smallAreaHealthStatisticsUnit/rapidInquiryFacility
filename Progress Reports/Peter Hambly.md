@@ -1952,6 +1952,7 @@ callPerformSmoothingActivity exitValue: 1
 
   No support at present for anything other than WGS85 in the shapefile code (i.e. re-projection required)
 * Added CRS support, shapefile now in rif40_geographies SRID projection
+* Added bounding box
 
 ## In progress (February/March 2018):
 

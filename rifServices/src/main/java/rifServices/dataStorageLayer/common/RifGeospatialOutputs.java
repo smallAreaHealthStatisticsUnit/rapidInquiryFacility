@@ -28,6 +28,7 @@ import org.opengis.feature.type.PropertyType;
 import org.opengis.feature.type.GeometryDescriptor; 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.geometry.BoundingBox;
 
 import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geometry.jts.JTSFactoryFinder;
@@ -40,11 +41,25 @@ import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.FeatureWriter; 
 import org.geotools.data.Transaction; 
 
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.map.FeatureLayer;
+import org.geotools.map.Layer;
+import org.geotools.map.MapContent;
+import org.geotools.map.MapViewport;
+
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.WKTReader;
+
+import java.awt.Color;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.awt.Graphics2D;
+import org.geotools.renderer.GTRenderer;
+import org.geotools.renderer.lite.StreamingRenderer;
 
 /**
  *
@@ -458,6 +473,124 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	}
 	
 	/** 
+	 * Get referenced envelope for map, using the map study area extent
+	 * the default is the defined extent of data Coordinate Reference System
+	 * (i.e. the projection bounding box as a ReferencedEnvelope). Postgres SQL>
+	 *
+	 * WITH c AS (
+	 * 		SELECT SST_Envelope(ST_Union(ST_Envelope(b.geom))) AS envelope
+	 * 		  FROM rif40.rif40_study_areas a, rif_data.geometry_sahsuland b
+	 *     WHERE a.study_id    = ?
+	 * 		 AND b.geolevel_id = ? AND b.zoomlevel = ?
+	 *		 AND a.area_id     = b.areaid
+	 * )
+	 * SELECT ST_Xmin(c.envelope) AS xmin,
+	 *        ST_Xmax(c.envelope) AS xmax,
+	 *        ST_Ymin(c.envelope) AS ymin,
+	 *        ST_Ymax(c.envelope) AS ymax
+	 *   FROM c;
+	 *   
+	 * @param Connection connection,
+	 * @param String schemaName,
+	 * @param String areaTableName,
+	 * @param String tileTableName,
+	 * @param String geolevel,
+	 * @param String zoomLevel,
+	 * @param String studyID,
+	 * @param MapViewport vp
+	 * @param CoordinateReferenceSystem crs
+	 *
+	 * @returns ReferencedEnvelope in map CRS (NOT data CRS!)
+	 */
+	private ReferencedEnvelope getMapReferencedEnvelope(
+		final Connection connection,
+		final String schemaName,
+		final String areaTableName,
+		final String tileTableName,
+		final String geolevel,
+		final String zoomLevel,
+		final String studyID,
+		final MapViewport vp, 
+		final CoordinateReferenceSystem crs)  
+			throws Exception {
+		ReferencedEnvelope envelope = rifCoordinateReferenceSystem.getDefaultReferencedEnvelope(vp, crs); // To extend of projection
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		queryFormatter.addQueryLine(0, "WITH c AS (");
+		if (databaseType == DatabaseType.POSTGRESQL) { 
+			queryFormatter.addQueryLine(1, "SELECT ST_Envelope(ST_Union(ST_Envelope(b.geom))) AS envelope");			
+		}
+		else if (databaseType == DatabaseType.SQL_SERVER) {
+			queryFormatter.addQueryLine(1, "SELECT b.geom.STEnvelope().STUnion().STEnvelope() AS envelope");	
+		}
+		queryFormatter.addQueryLine(1, "  FROM rif40." + areaTableName + " a, "  + 
+											schemaName + "." + tileTableName.toLowerCase() + " b");
+		queryFormatter.addQueryLine(1, " WHERE a.study_id    = ?");	
+		queryFormatter.addQueryLine(1, "   AND b.geolevel_id = ? AND b.zoomlevel = ?");
+		queryFormatter.addQueryLine(1, "   AND a.area_id     = b.areaid");
+		queryFormatter.addQueryLine(0, ")");
+		if (databaseType == DatabaseType.POSTGRESQL) { 
+			queryFormatter.addQueryLine(0, "SELECT ST_Xmin(c.envelope) AS xmin,");	
+			queryFormatter.addQueryLine(0, "       ST_Xmax(c.envelope) AS xmax,");	
+			queryFormatter.addQueryLine(0, "       ST_Ymin(c.envelope) AS ymin,");	
+			queryFormatter.addQueryLine(0, "       ST_Ymax(c.envelope) AS ymax");	
+		}
+		else if (databaseType == DatabaseType.SQL_SERVER) {
+			queryFormatter.addQueryLine(0, "SELECT CAST(c.envelope.STPointN(1).STX AS numeric(8,5)) AS Xmin,");
+			queryFormatter.addQueryLine(0, "       CAST(c.envelope.STPointN(3).STX AS numeric(8,5)) AS Xmax,");
+			queryFormatter.addQueryLine(0, "       CAST(c.envelope.STPointN(1).STY AS numeric(8,5)) AS Ymin,");
+			queryFormatter.addQueryLine(0, "       CAST(c.envelope.STPointN(3).STY AS numeric(8,5)) AS Ymax");	
+		}
+		queryFormatter.addQueryLine(0, "  FROM c");
+		
+		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);	
+		ResultSet resultSet = null;
+		try {	
+			String[] queryArgs = new String[3];
+			queryArgs[0]=studyID;
+			queryArgs[1]=geolevel;
+			queryArgs[2]=zoomLevel;
+			logSQLQuery("getMapReferencedEnvelope", queryFormatter, queryArgs);
+			statement.setInt(1, Integer.parseInt(studyID));	
+			statement.setInt(2, Integer.parseInt(geolevel));
+			statement.setInt(3, Integer.parseInt(zoomLevel));				
+			resultSet = statement.executeQuery();
+			
+			if (resultSet.next()) {
+				Float xMin=resultSet.getFloat(1);
+				Float xMax=resultSet.getFloat(2);
+				Float yMin=resultSet.getFloat(3);
+				Float yMax=resultSet.getFloat(4);
+				
+				envelope = new ReferencedEnvelope(
+					yMin /* bounds.getSouthBoundLatitude() */,
+					yMax /* bounds.getNorthBoundLatitude() */,
+					xMin /* bounds.getWestBoundLongitude() */,
+					xMax /* bounds.getEastBoundLongitude() */,
+					crs
+				);
+				
+				if (resultSet.next()) {
+					throw new Exception("getMapReferencedEnvelope(): expected 1 row, got many");
+				}
+			}
+			else {
+				throw new Exception("getMapReferencedEnvelope(): expected 1 row, got none");
+			}
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + queryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+		
+		return envelope;
+	}
+	
+	/** 
      * Write results map query to geoJSON file and shapefile
      * 
 	 * Query types:
@@ -523,7 +656,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			final File temporaryDirectory,
 			final String dirName,
 			final String schemaName,
-			final String tableName,
+			final String tileTableName,
 			final String outputFileName,
 			final String zoomLevel,
 			final String studyID,
@@ -555,6 +688,9 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		if (!CRS.toSRS(crs).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
 			transform = rifCoordinateReferenceSystem.getMathTransform(crs);
 		}
+		
+		ReferencedEnvelope envelope=getMapReferencedEnvelope(connection, schemaName, areaTableName,tileTableName, 
+			geolevel, zoomLevel, studyID, null /* MapViewport */, crs);
 			
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "WITH a AS (");
@@ -563,7 +699,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		queryFormatter.addQueryLine(0, "	 WHERE study_id = ?");
 		queryFormatter.addQueryLine(0, ")");
 		if (databaseType == DatabaseType.POSTGRESQL) { // Force RHR (not needed)
-			queryFormatter.addQueryLine(0, "SELECT ST_AsText(ST_Multi(ST_ForceRHR(b.geom))) AS wkt");			
+//			queryFormatter.addQueryLine(0, "SELECT ST_AsText(ST_Multi(ST_ForceRHR(b.geom))) AS wkt");	
+			queryFormatter.addQueryLine(0, "SELECT b.wkt");			
 		}
 		else if (databaseType == DatabaseType.SQL_SERVER) {
 			queryFormatter.addQueryLine(0, "SELECT b.wkt");	
@@ -572,7 +709,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			queryFormatter.addQueryLine(0, "      " + extraColumns);
 		}
 		queryFormatter.addQueryLine(0, "  FROM a");
-		queryFormatter.addQueryLine(0, "        LEFT OUTER JOIN "  + schemaName + "." + tableName.toLowerCase() + 
+		queryFormatter.addQueryLine(0, "        LEFT OUTER JOIN "  + 
+															schemaName + "." + tileTableName.toLowerCase() + 
 															" b ON (a.area_id = b.areaid)");												
 		if (additionalJoin != null) {
 			queryFormatter.addQueryLine(0, additionalJoin);
@@ -600,8 +738,12 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			
 			//Write WKT to geoJSON
 			int i = 0;
-			bufferedWriter.write("{\"type\":\"FeatureCollection\",\"features\":[");	
-			// Add bbox after FeatureCollection	
+			
+			rifLogger.debug(this.getClass(), "Bounding box: " + geoJSONWriter.toString((BoundingBox)envelope));
+			bufferedWriter.write("{\"type\":\"FeatureCollection\",");
+			bufferedWriter.write("\"bbox\":" + geoJSONWriter.toString((BoundingBox)envelope) + ","); 
+				// e.g. "bbox": [52.6876106262207,-7.588294982910156,55.52680969238281,-4.886538028717041],
+			bufferedWriter.write("\"features\":[");	
 		
 			while (resultSet.next()) {
 				StringBuffer stringFeature = new StringBuffer();
@@ -613,7 +755,6 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				Geometry geometry = createGeometryFromWkt(resultSet.getString(1));
 				stringFeature.append("{\"type\":\"Feature\",\"geometry\":"); // GeoJSON feature header 	
 				stringFeature.append(geoJSONWriter.toString(geometry));
-
 				if (i == 1) {
 					setupShapefile(rsmd, columnCount, shapeDataStore, areaType, outputFileName, 
 						geometry, crs);
@@ -957,4 +1098,64 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				truncatedCount + " columns will be truncated; names will be unpredictable");
 		}
 	}
+	
+	private void addMap(CoordinateReferenceSystem crs)   
+			throws Exception {
+		MapContent map = new MapContent();
+		map.setTitle("World");
+
+		//Step 2: Set projection
+		MapViewport vp = map.getViewport();
+		vp.setCoordinateReferenceSystem(crs);
+//		ReferencedEnvelope envelope = getMapReferencedEnvelope(vp, crs); // To extend of map
+//		vp.setBounds(envelope);	
+		
+		//Step 3: Add layers to map
+		CoordinateReferenceSystem mapCRS = map.getCoordinateReferenceSystem();
+//		map.addLayer(getPoliticalBoundaries());
+
+		//Step 4: Save image
+		saveMapJPEGImage(map, "C:\\rifDemo\\scratchSpace\\test.jpg", 800);
+	}
+	
+//	private Layer getPoliticalBoundaries(Layer layer) {
+//	}
+	
+	// See: http://docs.geotools.org/latest/userguide/library/render/gtrenderer.html#image
+	// Also SVG example
+	public void saveMapJPEGImage(final MapContent map, final String file, final int imageWidth)   
+			throws Exception {
+
+		GTRenderer renderer = new StreamingRenderer();
+		renderer.setMapContent(map);
+
+		Rectangle imageBounds = null;
+		ReferencedEnvelope mapBounds = null;
+		try {
+			mapBounds = map.getViewport().getBounds();
+			double heightToWidth = mapBounds.getSpan(1) / mapBounds.getSpan(0);
+			imageBounds = new Rectangle(
+					0, 0, imageWidth, (int) Math.round(imageWidth * heightToWidth));
+
+		} catch (Exception e) {
+			// failed to access map layers
+			throw new RuntimeException(e);
+		}
+
+		BufferedImage image = new BufferedImage(imageBounds.width, imageBounds.height, BufferedImage.TYPE_INT_RGB);
+
+		Graphics2D gr = image.createGraphics();
+		gr.setPaint(Color.WHITE);
+		gr.fill(imageBounds);
+
+		try {
+			renderer.paint(gr, imageBounds, mapBounds);
+			File fileToSave = new File(file);
+			ImageIO.write(image, "jpeg", fileToSave);
+
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 }	
