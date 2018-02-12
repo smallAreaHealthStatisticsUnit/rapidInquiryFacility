@@ -217,7 +217,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		tileFileName.append(baseStudyName);
 		tileFileName.append("_studyArea");
 		
-		DefaultFeatureCollection studyFeatureCollection=writeMapQueryTogeoJSONFile(
+		RifFeatureCollection studyFeatureCollection=writeMapQueryTogeoJSONFile(
 				connection,
 				rifStudySubmission,
 				"rif40_study_areas",
@@ -238,7 +238,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		tileFileName.append(baseStudyName);
 		tileFileName.append("_comparisonArea");
 		
-		DefaultFeatureCollection comparisonFeatureCollection=writeMapQueryTogeoJSONFile(
+		RifFeatureCollection comparisonFeatureCollection=writeMapQueryTogeoJSONFile(
 				connection,
 				rifStudySubmission,
 				"rif40_comparison_areas",
@@ -259,7 +259,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		tileFileName.append(baseStudyName);
 		tileFileName.append("_map");
 		
-		DefaultFeatureCollection mapFeatureCollection=writeMapQueryTogeoJSONFile(
+		RifFeatureCollection mapFeatureCollection=writeMapQueryTogeoJSONFile(
 				connection,
 				rifStudySubmission,
 				"rif40_study_areas",
@@ -304,7 +304,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 * @param String studyID, 
 	 * @param String areaTableName
 	 */	
-	public CachedRowSetImpl getRif40Geolevels(
+	private CachedRowSetImpl getRif40Geolevels(
 			final Connection connection,
 			final String studyID,
 			final String areaTableName)
@@ -391,7 +391,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 *
 	 * @returns CoordinateReferenceSystem
      */	
-	public CoordinateReferenceSystem getCRS(
+	private CoordinateReferenceSystem getCRS(
 			final RIFStudySubmission rifStudySubmission, 
 			final CachedRowSetImpl rif40Geolevels) 
 				throws Exception {
@@ -524,7 +524,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 *
 	 * @returns ReferencedEnvelope in map CRS (NOT data CRS!)
 	 */
-	public ReferencedEnvelope getMapReferencedEnvelope(
+	private ReferencedEnvelope getMapReferencedEnvelope(
 		final Connection connection,
 		final String schemaName,
 		final String areaTableName,
@@ -679,9 +679,9 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 * @param String additionalJoin,
 	 * @param Locale locale	 
 	 *
-	 * @param DefaultFeatureCollection
+	 * @returns RifFeatureCollection
      */	 
-	private DefaultFeatureCollection writeMapQueryTogeoJSONFile(
+	private RifFeatureCollection writeMapQueryTogeoJSONFile(
 			final Connection connection,
 			final RIFStudySubmission rifStudySubmission,
 			final String areaTableName,
@@ -890,7 +890,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			connection.commit();
 		}
 		
-		return featureCollection;
+		RifFeatureCollection rifFeatureCollection=new RifFeatureCollection(featureCollection, crs, envelope);
+		return rifFeatureCollection;
 	}
 	
 	/** 

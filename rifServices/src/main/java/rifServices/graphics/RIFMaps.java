@@ -10,7 +10,7 @@ import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
 
-import rifServices.dataStorageLayer.common.RifGeospatialOutputs;
+import rifServices.dataStorageLayer.common.RifFeatureCollection;
 import rifServices.dataStorageLayer.common.RifCoordinateReferenceSystem;
 import rifServices.dataStorageLayer.common.RifLocale;
 
@@ -158,7 +158,6 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	private static DatabaseType databaseType;
-	private RifGeospatialOutputs rifGeospatialOutputs = null;
 	private static RifCoordinateReferenceSystem rifCoordinateReferenceSystem = 
 		new RifCoordinateReferenceSystem();
 
@@ -183,9 +182,6 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		try {
-			
-			rifGeospatialOutputs = 
-				new RifGeospatialOutputs(rifServiceStartupOptions);
 //			denominatorPyramidWidthPixels=this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
 //					"denominatorPyramidWidthPixels", 3543);
 		}
@@ -214,7 +210,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param Locale locale
 	 */		
 	public void writeResultsMaps(
-			final DefaultFeatureCollection featureCollection,
+			final RifFeatureCollection featureCollection,
 			final Connection connection,
 			final File temporaryDirectory,
 			final String baseStudyName,
@@ -238,71 +234,64 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		String geog = rifStudySubmission.getStudy().getGeography().getName();			
 		tileTableName.append(geog);
 
-		CachedRowSetImpl rif40Geolevels=rifGeospatialOutputs.getRif40Geolevels(connection, studyID, 
-			"rif40_study_areas" 	/* areaTableName */);	
-			//get geolevel
-		String geolevel=getColumnFromResultSet(rif40Geolevels, "geolevel_id");
-		String geolevelName = getColumnFromResultSet(rif40Geolevels, "geolevel_name");
-		int max_geojson_digits=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "max_geojson_digits"));
-		CoordinateReferenceSystem crs = rifGeospatialOutputs.getCRS(rifStudySubmission, rif40Geolevels);
-	
 		writeMap(
-			featureCollection,
-			connection,
+			featureCollection.getFeatureCollection(),
 			temporaryDirectory,
 			"Smoothed SMR map"		/* mapTitle */, 
-			"smoothed_smr"			/* mapColumn */,
+			"smoothed_smr"			/* resultsColumn */,
+			createRifStyle(
+				"quantile"		/* Classifier function name */, 
+				"sm_smr"		/* Column */, 
+				"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+				9				/* numberOfBreaks */, 
+				true			/* invert */,
+				featureCollection.getFeatureCollection()),
 			baseStudyName,
-			"rif40_study_areas" 	/* areaTableName */,
-			tileTableName.toString(),
-			geolevel,
-			geolevelName,
-			"rif_data"				/* schemaName */,
-			studyID,
-			zoomLevel,
-			crs						/* CoordinateReferenceSystem */);
+			featureCollection.getCoordinateReferenceSystem()
+									/* CoordinateReferenceSystem */,
+			featureCollection.getReferencedEnvelope());
+
+		writeMap(
+			featureCollection.getFeatureCollection(),
+			temporaryDirectory,
+			"Poster Probability map"		/* mapTitle */, 
+			"posterior_probability"			/* resultsColumn */,
+			createRifStyle(
+				"AtlasProbability"	/* Classifier function name */, 
+				"post_prob"			/* Column */, 
+				null				/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+				0					/* numberOfBreaks */, 
+				false				/* invert */,
+				featureCollection.getFeatureCollection()),
+			baseStudyName,
+			featureCollection.getCoordinateReferenceSystem()
+									/* CoordinateReferenceSystem */,
+			featureCollection.getReferencedEnvelope());			
 
 	}
 	
 	private void writeMap(
 		final DefaultFeatureCollection featureCollection,
-		final Connection connection,
 		final File temporaryDirectory,
 		final String mapTitle,
-		final String mapColumn,
+		final String resultsColumn,
+		final Style style,
 		final String baseStudyName,
-		final String areaTableName,
-		final String tileTableName,
-		final String geolevel,
-		final String geolevelName,
-		final String schemaName,
-		final String studyID,
-		final String zoomLevel,
-		final CoordinateReferenceSystem crs) 
+		final CoordinateReferenceSystem crs,
+		final ReferencedEnvelope envelope) 
 			throws Exception {
 				
 		//Create map
 		StringBuilder mapFileName = new StringBuilder();
 		mapFileName.append(baseStudyName);
-		mapFileName.append("_" + mapColumn + "_map");
+		mapFileName.append("_" + resultsColumn);
 		MapContent map = new MapContent();
 		map.setTitle(mapTitle);
 
 		// Set projection
 		MapViewport vp = map.getViewport();
 		vp.setCoordinateReferenceSystem(crs);
-		ReferencedEnvelope envelope=rifGeospatialOutputs.getMapReferencedEnvelope(
-			connection, schemaName, areaTableName, tileTableName, 
-			geolevel, zoomLevel, studyID, vp /* MapViewport */, crs);
 		vp.setBounds(envelope);	
-
-		Style style=createRifStyle(
-			"quantile"		/* Classifier function name */, 
-			"sm_smr"		/* Column */, 
-			"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-			9				/* numberOfBreaks */, 
-			true			/* invert */,
-			featureCollection);
 			
 		// Add layers to map			
         FeatureLayer layer = new FeatureLayer(featureCollection, style);						
@@ -312,8 +301,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 //		map.addLayer(gridLayer);			
 		
 		// Save image
-		saveMapJPEGImage(map, temporaryDirectory, mapFileName.toString(), featureCollection.size(), 800);
-		exportSVG(map, temporaryDirectory, mapFileName.toString(), featureCollection.size(), 800);	
+		saveMapJPEGImage(map, temporaryDirectory, mapFileName.toString(), featureCollection.size(), 800, crs);
+		exportSVG(map, temporaryDirectory, mapFileName.toString(), featureCollection.size(), 800, crs);	
 
 		map.dispose();
 	}
@@ -503,7 +492,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final File temporaryDirectory,
 		final String outputFileName, 
 		final int numberOfAreas,
-		final int imageWidth) throws Exception {
+		final int imageWidth,
+		final CoordinateReferenceSystem crs) throws Exception {
 			
 		String mapDirName=temporaryDirectory.getAbsolutePath() + File.separator + MAPS_SUBDIRECTORY;
 		File mapDirectory = new File(mapDirName);
@@ -573,7 +563,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
     }
     
 	rifLogger.info(this.getClass(), "Create map " + imageWidth + "x" + imageHeight + 
-			"; areas: " + numberOfAreas + "; file: " + mapFile);
+			"; areas: " + numberOfAreas + "; file: " + mapFile + "; CRS: " + CRS.toSRS(crs));
 }
 
 	// See: http://docs.geotools.org/latest/userguide/library/render/gtrenderer.html#image
@@ -583,7 +573,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final File temporaryDirectory,
 		final String outputFileName, 
 		final int numberOfAreas,
-		final int imageWidth)   
+		final int imageWidth,
+		final CoordinateReferenceSystem crs)   
 			throws Exception {
 
 		String mapDirName=temporaryDirectory.getAbsolutePath() + File.separator + MAPS_SUBDIRECTORY;
@@ -640,7 +631,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		}
 		
 		rifLogger.info(this.getClass(), "Create map " + imageWidth + "x" + imageHeight + 
-			"; areas: " + numberOfAreas + "; file: " + mapFile);
+			"; areas: " + numberOfAreas + "; file: " + mapFile + "; CRS: " + CRS.toSRS(crs));
 	}
 
 	// https://github.com/ianturton/geotools-cookbook/blob/master/modules/output/src/main/java/org/ianturton/cookbook/output/MapWithGrid.java
