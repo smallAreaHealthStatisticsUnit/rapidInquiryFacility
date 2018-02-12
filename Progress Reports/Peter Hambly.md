@@ -1954,7 +1954,14 @@ callPerformSmoothingActivity exitValue: 1
 * Added CRS support, shapefile now in rif40_geographies SRID projection
 * Added bounding box
 
+#### 12th to 16th February
+
+* Creation of test SVG map; 8 quantiles, PuOr colorbrewer pallette
+
 ## In progress (February/March 2018):
+
+* RIF results field renaming specification;
+* SAHSU RIF server specification;
 
 * Extend PouchDB to base layer [probably will defer as not needed yet]
 * Sort popups in data viewer and disease maps [need to discuss]

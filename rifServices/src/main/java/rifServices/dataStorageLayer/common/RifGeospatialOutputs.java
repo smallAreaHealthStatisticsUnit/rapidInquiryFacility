@@ -8,6 +8,7 @@ import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.graphics.RIFMaps;
 
 import com.sun.rowset.CachedRowSetImpl;
 import java.sql.*;
@@ -34,17 +35,16 @@ import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.geometry.jts.Geometries;
 import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.CRS;
 import org.geotools.data.shapefile.ShapefileDataStore; 
 import org.geotools.data.FeatureWriter; 
 import org.geotools.data.Transaction; 
-
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.map.FeatureLayer;
-import org.geotools.map.Layer;
-import org.geotools.map.MapContent;
 import org.geotools.map.MapViewport;
 
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -52,14 +52,6 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.WKTReader;
-
-import java.awt.Color;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
-import java.awt.Graphics2D;
-import org.geotools.renderer.GTRenderer;
-import org.geotools.renderer.lite.StreamingRenderer;
 
 /**
  *
@@ -149,7 +141,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	
 	private static RifCoordinateReferenceSystem rifCoordinateReferenceSystem = 
 		new RifCoordinateReferenceSystem();
-		
+	private static RIFMaps rifMaps = null;
 	
 	// ==========================================
 	// Section Properties
@@ -179,7 +171,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			rifLogger.warning(this.getClass(), 
 				"Error in RifGeospatialOutputs() constructor");
 			throw new NullPointerException();
-		}
+		}		
 	}	
 
 	/** 
@@ -206,6 +198,10 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			final CachedRowSetImpl rif40Studies,
 			final Locale locale)
 					throws Exception {
+
+		if (rifMaps == null) {
+			rifMaps = new RIFMaps(rifServiceStartupOptions);
+		}						
 		
 		String studyID = rifStudySubmission.getStudyID();
 		String mapTable=getColumnFromResultSet(rif40Studies, "map_table");
@@ -221,7 +217,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		tileFileName.append(baseStudyName);
 		tileFileName.append("_studyArea");
 		
-		writeMapQueryTogeoJSONFile(
+		DefaultFeatureCollection studyFeatureCollection=writeMapQueryTogeoJSONFile(
 				connection,
 				rifStudySubmission,
 				"rif40_study_areas",
@@ -242,7 +238,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		tileFileName.append(baseStudyName);
 		tileFileName.append("_comparisonArea");
 		
-		writeMapQueryTogeoJSONFile(
+		DefaultFeatureCollection comparisonFeatureCollection=writeMapQueryTogeoJSONFile(
 				connection,
 				rifStudySubmission,
 				"rif40_comparison_areas",
@@ -263,7 +259,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		tileFileName.append(baseStudyName);
 		tileFileName.append("_map");
 		
-		writeMapQueryTogeoJSONFile(
+		DefaultFeatureCollection mapFeatureCollection=writeMapQueryTogeoJSONFile(
 				connection,
 				rifStudySubmission,
 				"rif40_study_areas",
@@ -289,6 +285,15 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 														/* additionalJoin */,
 				locale);
 				
+		rifMaps.writeResultsMaps(
+				mapFeatureCollection,
+				connection,
+				temporaryDirectory,
+				baseStudyName,
+				zoomLevel,
+				rifStudySubmission,
+				rif40Studies,
+				locale);
 	}		
 
 	/** 
@@ -299,7 +304,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 * @param String studyID, 
 	 * @param String areaTableName
 	 */	
-	private CachedRowSetImpl getRif40Geolevels(
+	public CachedRowSetImpl getRif40Geolevels(
 			final Connection connection,
 			final String studyID,
 			final String areaTableName)
@@ -386,7 +391,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 *
 	 * @returns CoordinateReferenceSystem
      */	
-	private CoordinateReferenceSystem getCRS(
+	public CoordinateReferenceSystem getCRS(
 			final RIFStudySubmission rifStudySubmission, 
 			final CachedRowSetImpl rif40Geolevels) 
 				throws Exception {
@@ -519,7 +524,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 *
 	 * @returns ReferencedEnvelope in map CRS (NOT data CRS!)
 	 */
-	private ReferencedEnvelope getMapReferencedEnvelope(
+	public ReferencedEnvelope getMapReferencedEnvelope(
 		final Connection connection,
 		final String schemaName,
 		final String areaTableName,
@@ -530,7 +535,15 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		final MapViewport vp, 
 		final CoordinateReferenceSystem crs)  
 			throws Exception {
-		ReferencedEnvelope envelope = rifCoordinateReferenceSystem.getDefaultReferencedEnvelope(vp, crs); // To extend of projection
+		ReferencedEnvelope envelope = null;
+		if (vp == null) {
+			envelope=rifCoordinateReferenceSystem.getDefaultReferencedEnvelope(
+				crs /* Spuirce */, null /* Target */);
+		}
+		else {
+			envelope=rifCoordinateReferenceSystem.getDefaultReferencedEnvelope(
+				crs /* Spuirce */, vp.getCoordinateReferenceSystem() /* Target */);
+		}
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "WITH c AS (");
 		if (databaseType == DatabaseType.POSTGRESQL) { 
@@ -665,8 +678,10 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 * @param String extraColumns,
 	 * @param String additionalJoin,
 	 * @param Locale locale	 
+	 *
+	 * @param DefaultFeatureCollection
      */	 
-	private void writeMapQueryTogeoJSONFile(
+	private DefaultFeatureCollection writeMapQueryTogeoJSONFile(
 			final Connection connection,
 			final RIFStudySubmission rifStudySubmission,
 			final String areaTableName,
@@ -715,13 +730,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		queryFormatter.addQueryLine(0, "	  FROM rif40." + areaTableName);
 		queryFormatter.addQueryLine(0, "	 WHERE study_id = ?");
 		queryFormatter.addQueryLine(0, ")");
-		if (databaseType == DatabaseType.POSTGRESQL) { // Force RHR (not needed)
-//			queryFormatter.addQueryLine(0, "SELECT ST_AsText(ST_Multi(ST_ForceRHR(b.geom))) AS wkt");	
-			queryFormatter.addQueryLine(0, "SELECT b.wkt");			
-		}
-		else if (databaseType == DatabaseType.SQL_SERVER) {
-			queryFormatter.addQueryLine(0, "SELECT b.wkt");	
-		}					
+		queryFormatter.addQueryLine(0, "SELECT b.wkt");					
 		if (extraColumns != null) {
 			queryFormatter.addQueryLine(0, "      " + extraColumns);
 		}
@@ -738,7 +747,10 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		}
 		queryFormatter.addQueryLine(0, " WHERE b.geolevel_id = ? AND b.zoomlevel = ?");		
 		
-		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
+		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);	
+		
+		DefaultFeatureCollection featureCollection = null;
+		SimpleFeatureType simpleFeatureType=null;
 		
 		try {	
 			ResultSet resultSet = null;
@@ -773,25 +785,34 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				stringFeature.append("{\"type\":\"Feature\",\"geometry\":"); // GeoJSON feature header 	
 				stringFeature.append(geoJSONWriter.toString(geometry));
 				if (i == 1) {
-					setupShapefile(rsmd, columnCount, shapeDataStore, areaType, outputFileName, 
+					simpleFeatureType=setupShapefile(rsmd, columnCount, shapeDataStore, areaType, outputFileName, 
 						geometry, crs);
 					
 					shapefileWriter = shapeDataStore.getFeatureWriter(shapeDataStore.getTypeNames()[0],
-							Transaction.AUTO_COMMIT);
+							Transaction.AUTO_COMMIT);				
+							
+					if (areaType != null) {	
+						featureCollection = new DefaultFeatureCollection(areaType, simpleFeatureType);
+					}
+					else {
+						featureCollection = new DefaultFeatureCollection("Results", simpleFeatureType);
+					}
 				}
-				SimpleFeature feature = (SimpleFeature) shapefileWriter.next(); 
+				SimpleFeature shapefileFeature = (SimpleFeature) shapefileWriter.next(); 
+				SimpleFeatureBuilder builder = new SimpleFeatureBuilder(simpleFeatureType);
 				if (i == 1) {		
 					String geographyName = getColumnFromResultSet(rif40Geolevels, "geography");
 					int srid=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "srid"));
-					printShapefileColumns(feature, rsmd, outputFileName, crs, geographyName, srid);
+					printShapefileColumns(shapefileFeature, rsmd, outputFileName, crs, geographyName, srid);
 				}	
 				
-				AttributeDescriptor ad = feature.getType().getDescriptor(0); // Create shapefile feature
+				AttributeDescriptor ad = shapefileFeature.getType().getDescriptor(0); // Create shapefile feature
 					// Add first hsapefile feature attribute
 				if (ad instanceof GeometryDescriptor) { 
 					// Need to handle CoordinateReferenceSystem
 					if (CRS.toSRS(crs).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
-						feature.setAttribute(0, geometry); 
+						shapefileFeature.setAttribute(0, geometry); 
+						builder.set(0, geometry); 
 					} 
 					else if (transform == null) {
 						throw new Exception("Null transform from: " + CRS.toSRS(crs) + " to: " +
@@ -799,7 +820,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 					}
 					else { // Transform from WGS84 to SRID CRS
 						Geometry newGeometry = JTS.transform(geometry, transform); // Re-project
-						feature.setAttribute(0, newGeometry); 
+						shapefileFeature.setAttribute(0, newGeometry); 
+						builder.set(0, newGeometry); 
 					}
 				} 
 				else { 
@@ -810,11 +832,13 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				stringFeature.append(",\"properties\":{"); // Add DBF properties
 				if (areaType != null) {
 					stringFeature.append("\"areatype\":\"" + areaType + "\"");
-					feature.setAttribute(1, areaType); 
+					shapefileFeature.setAttribute(1, areaType); 
+					builder.set(1, areaType); 
 				}
 				else {
 					stringFeature.append("\"maptype\":\"Results\"");
-					feature.setAttribute(1, "results"); 
+					shapefileFeature.setAttribute(1, "results"); 
+					builder.set(1, "results"); 
 				}
 				
 				if (extraColumns != null) {
@@ -830,11 +854,13 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 							Timestamp dateTimeValue=resultSet.getTimestamp(i, calendar);
 							value=df.format(dateTimeValue);
 						}
-						addDatumToShapefile(feature, stringFeature, name, value, columnType, j, i,
+						addDatumToShapefile(shapefileFeature, builder,
+							stringFeature, name, value, columnType, j, i,
 							locale);
 					}
 				}				
-		
+				
+				featureCollection.add(builder.buildFeature("id" + i));		
 				stringFeature.append("}");
 				stringFeature.append("}");
 				
@@ -863,6 +889,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			}	
 			connection.commit();
 		}
+		
+		return featureCollection;
 	}
 	
 	/** 
@@ -878,9 +906,11 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 * @param Geometry geometry,
 	 * @param CoordinateReferenceSystem crs
 	 *
+	 * @returns SimpleFeatureType
+	 *
 	 * https://www.programcreek.com/java-api-examples/index.php?source_dir=geotools-old-master/modules/library/render/src/test/java/org/geotools/renderer/lite/LabelObstacleTest.java
      */
-	  private void setupShapefile(
+	  private SimpleFeatureType setupShapefile(
 			final ResultSetMetaData rsmd, 
 			final int columnCount, 
 			final ShapefileDataStore dataStore, 
@@ -938,15 +968,18 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		}								
 		
 		// build the type
-		final SimpleFeatureType featureType = featureBuilder.buildFeatureType();
+		SimpleFeatureType featureType = featureBuilder.buildFeatureType();
 		
 		dataStore.createSchema(featureType);
+		
+		return featureType;
 	}
 	
 	/**
 	 * Add datum point to shapefile
 	 *	
-     * @param SimpleFeature feature (required)
+     * @param SimpleFeature shapefileFeature (required)
+     * @param SimpleFeatureBuilder builder (required)
      * @param StringBuffer stringFeature (required)
      * @param String name (required)
      * @param String value (required)
@@ -955,11 +988,19 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
      * @param int rowCount (required)
      * @param int Locale locale (required)
 	 */	
-	private void addDatumToShapefile(SimpleFeature feature, StringBuffer stringFeature, 
-		String name, String value, String columnType, int columnIndex, int rowCount, Locale locale)
+	private void addDatumToShapefile(
+		final SimpleFeature shapefileFeature, 
+		final SimpleFeatureBuilder builder, 
+		final StringBuffer stringFeature, 
+		final String name, 
+		final String value, 
+		final String columnType, 
+		final int columnIndex, 
+		final int rowCount, 
+		final Locale locale)
 			throws Exception {
 	
-		AttributeDescriptor ad = feature.getType().getDescriptor(columnIndex); 
+		AttributeDescriptor ad = shapefileFeature.getType().getDescriptor(columnIndex); 
 		String featureName = ad.getName().toString();	
 		if (rowCount < 2) {
 			if (ad instanceof GeometryDescriptor) { 
@@ -1018,13 +1059,16 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		stringFeature.append(",\"" + name + "\":\"" + newValue + "\"");
 		try {
 			if (ad.getType().getBinding() == Double.class) {
-				feature.setAttribute(columnIndex, doubleVal);
+				shapefileFeature.setAttribute(columnIndex, doubleVal);
+				builder.set(columnIndex, doubleVal);
 			}
 			else if (ad.getType().getBinding() == Long.class) {
-				feature.setAttribute(columnIndex, longVal);
+				shapefileFeature.setAttribute(columnIndex, longVal);
+				builder.set(columnIndex, longVal);
 			}
 			else if (ad.getType().getBinding() == String.class) {
-				feature.setAttribute(columnIndex, newValue);
+				shapefileFeature.setAttribute(columnIndex, newValue);
+				builder.set(columnIndex, newValue);
 			}
 			else {
 				throw new Exception("Unsupported attribute type: " + ad.getType().getBinding());
@@ -1113,65 +1157,6 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		if (truncatedCount > 0) {
 			throw new Exception("Shapefile: " + outputFileName + 
 				truncatedCount + " columns will be truncated; names will be unpredictable");
-		}
-	}
-	
-	private void addMap(CoordinateReferenceSystem crs)   
-			throws Exception {
-		MapContent map = new MapContent();
-		map.setTitle("World");
-
-		//Step 2: Set projection
-		MapViewport vp = map.getViewport();
-		vp.setCoordinateReferenceSystem(crs);
-//		ReferencedEnvelope envelope = getMapReferencedEnvelope(vp, crs); // To extend of map
-//		vp.setBounds(envelope);	
-		
-		//Step 3: Add layers to map
-		CoordinateReferenceSystem mapCRS = map.getCoordinateReferenceSystem();
-//		map.addLayer(getPoliticalBoundaries());
-
-		//Step 4: Save image
-		saveMapJPEGImage(map, "C:\\rifDemo\\scratchSpace\\test.jpg", 800);
-	}
-	
-//	private Layer getPoliticalBoundaries(Layer layer) {
-//	}
-	
-	// See: http://docs.geotools.org/latest/userguide/library/render/gtrenderer.html#image
-	// Also SVG example
-	public void saveMapJPEGImage(final MapContent map, final String file, final int imageWidth)   
-			throws Exception {
-
-		GTRenderer renderer = new StreamingRenderer();
-		renderer.setMapContent(map);
-
-		Rectangle imageBounds = null;
-		ReferencedEnvelope mapBounds = null;
-		try {
-			mapBounds = map.getViewport().getBounds();
-			double heightToWidth = mapBounds.getSpan(1) / mapBounds.getSpan(0);
-			imageBounds = new Rectangle(
-					0, 0, imageWidth, (int) Math.round(imageWidth * heightToWidth));
-
-		} catch (Exception e) {
-			// failed to access map layers
-			throw new RuntimeException(e);
-		}
-
-		BufferedImage image = new BufferedImage(imageBounds.width, imageBounds.height, BufferedImage.TYPE_INT_RGB);
-
-		Graphics2D gr = image.createGraphics();
-		gr.setPaint(Color.WHITE);
-		gr.fill(imageBounds);
-
-		try {
-			renderer.paint(gr, imageBounds, mapBounds);
-			File fileToSave = new File(file);
-			ImageIO.write(image, "jpeg", fileToSave);
-
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 

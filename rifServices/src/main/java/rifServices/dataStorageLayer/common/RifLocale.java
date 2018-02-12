@@ -88,7 +88,7 @@ public class RifLocale {
 	 *
      * @param Locale locale
      */
-	RifLocale(Locale locale) {
+	public RifLocale(Locale locale) {
 		if (locale != null) {
 			dateFormat=DateFormat.getDateTimeInstance(
 				DateFormat.DEFAULT /* Date style */, 

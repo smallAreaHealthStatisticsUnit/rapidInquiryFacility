@@ -20,7 +20,6 @@ import org.geotools.referencing.factory.ReferencingFactoryContainer;
 import org.geotools.factory.Hints;
 import org.geotools.metadata.iso.citation.Citations;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.map.MapViewport;
 
 import org.geotools.geojson.geom.GeometryJSON;
 import org.geotools.geometry.jts.JTSFactoryFinder;
@@ -276,25 +275,21 @@ public class RifCoordinateReferenceSystem {
 	 * Get default referenced envelope for map, using the defined extent of data Coordinate Reference System
 	 * (i.e. the projection bounding box as a ReferencedEnvelope)
 	 *
-	 * @param MapViewport vp
-	 * @param CoordinateReferenceSystem crs
+	 * @param CoordinateReferenceSystem sourceCRS
+	 * @param CoordinateReferenceSystem targetCRS [Usually MapViewport.getCoordinateReferenceSystem();]
 	 *
 	 * @returns ReferencedEnvelope in map CRS (NOT data CRS!) unless MapViewport is null
 	 */
 	public ReferencedEnvelope getDefaultReferencedEnvelope(
-		final MapViewport vp, 
-		final CoordinateReferenceSystem crs) 
+		final CoordinateReferenceSystem sourceCRS, 
+		final CoordinateReferenceSystem targetCRS) 
 			throws Exception {
 
-		CoordinateReferenceSystem targetCRS=null;
-		if (vp != null) {
-			targetCRS=vp.getCoordinateReferenceSystem();
-		}
-		if (targetCRS == null) {
-			targetCRS=crs;
+		if (sourceCRS == null) {
+			throw new Exception("Null source Coordinate Reference System");
 		}
 		ReferencedEnvelope envelope = null;
-	    Extent crsExtent = crs.getDomainOfValidity();
+	    Extent crsExtent = sourceCRS.getDomainOfValidity();
 		if (crsExtent != null) {
 			for (GeographicExtent element : crsExtent.getGeographicElements()) {
 				if (element instanceof GeographicBoundingBox) {
@@ -304,13 +299,13 @@ public class RifCoordinateReferenceSystem {
 						bounds.getNorthBoundLatitude(),
 						bounds.getWestBoundLongitude(),
 						bounds.getEastBoundLongitude(),
-						targetCRS
+						sourceCRS
 					);
 					if (targetCRS == null) {
 						envelope=bbox;
 					}
 					else {
-						envelope = bbox.transform(crs, true /* Be lenient with errors between datums */);
+						envelope = bbox.transform(targetCRS, true /* Be lenient with errors between datums */);
 					}
 				}
 			}

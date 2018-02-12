@@ -290,6 +290,24 @@
 		<artifactId>gt-wms</artifactId>
 		<version>18.2</version>
 	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.geotools/gt-grid -->
+	<dependency>
+		<groupId>org.geotools</groupId>
+		<artifactId>gt-grid</artifactId>
+		<version>18.2</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.geotools/gt-brewer -->
+	<dependency>
+		<groupId>org.geotools</groupId>
+		<artifactId>gt-brewer</artifactId>
+		<version>18.2</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.geotools/gt-svg -->
+	<dependency>
+		<groupId>org.geotools</groupId>
+		<artifactId>gt-svg</artifactId>
+		<version>18.2</version>
+	</dependency>
 
 	<!-- Use local file in predictable RIF locations
 	<dependency>
