@@ -69,6 +69,7 @@ import org.geotools.styling.PolygonSymbolizer;
 import org.geotools.styling.StyleBuilder;
 
 import org.geotools.filter.function.Classifier;
+import org.geotools.filter.function.RangedClassifier;
 
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -296,10 +297,11 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		vp.setBounds(envelope);	
 
 		Style style=createRifStyle(
-			"Quantile"		/* Classifier function name */, 
+			"quantile"		/* Classifier function name */, 
 			"sm_smr"		/* Column */, 
 			"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-			8				/* numberOfBreaks */, 
+			9				/* numberOfBreaks */, 
+			true			/* invert */,
 			featureCollection);
 			
 		// Add layers to map			
@@ -316,42 +318,130 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		map.dispose();
 	}
 
+	/**
+	 * Invert color array
+	 *
+	 * @param Color[] colors
+	 *
+	 * @returns Color[]
+	 */
+	private Color[] invertColor(Color[] colors) {
+		for(int i=0; i<colors.length/2; i++){
+			Color temp = colors[i];
+			colors[i] = colors[colors.length -i -1];
+			colors[colors.length -i -1] = temp;
+		}
 
-	/* The following “classifier” functions are available:
+		return colors;		
+	}
 
-		EqualInterval - classifier where each group represents the same sized range
-		Jenks - generate the Jenks’ Natural Breaks classification
-		Quantile - classifier with an even number of items in each group
-		StandardDeviation - generated using the standard deviation method
-		UniqueInterval - variation of EqualInterval that takes into account unique values
- */
+	/** Create style for RIF choropleth maps. Uses same colorbrewer and classification schemes as the front end
+	  *
+	  * See:
+	  *
+	  * http://docs.geotools.org/latest/userguide/extension/brewer/colorbrewer.html
+	  * http://docs.geotools.org/latest/userguide/extension/brewer/classifier.html
+	  *
+	  * The following “classifier” functions are available [Front end names in brackets]:
+	  * 
+	  * -	EqualInterval - classifier where each group represents the same sized range [quantize]
+	  * -	Jenks - generate the Jenks’ Natural Breaks classification [jenks]
+	  * -	Quantile - classifier with an even number of items in each group [quantile]
+  	  * -	StandardDeviation - generated using the standard deviation method [standardDeviation]
+  	  * 		
+	  * The RIF does NOT use:
+	  * -	UniqueInterval - variation of EqualInterval that takes into account unique values	 
+	  *	  
+	  * Two other scales are provided: 
+	  * - AtlasRelativeRisk: fixed scale at: [0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51] between +/-infinity; PuOr
+	  * - AtlasProbability: fixed scale at: [0.20, 0.81] between 0 and 1; RdYlGn
+	  *
+	  * See: rifs-util-choro.js
+	  *
+	  * @param String classifyFunctionName,
+	  * @param String columnName,
+	  * @param String paletteName,
+	  * @param int numberOfBreaks,
+	  * @param boolean invert,
+	  * @param DefaultFeatureCollection featureCollection
+	  *
+	  * @return Style 
+	  */													
 	private Style createRifStyle(
-			final String classifyFunctionName,
+			final String rifMethod,
 			final String columnName,
-			final String paletteName,
-			final int numberOfBreaks,
-			final DefaultFeatureCollection featureCollection) {
-				
+			final String lpaletteName,
+			final int lnumberOfBreaks,
+			final boolean linvert,
+			final DefaultFeatureCollection featureCollection) 
+				throws Exception {
+		Classifier groups=null;
+		
+		String paletteName=lpaletteName;
+		int numberOfBreaks=lnumberOfBreaks;
+		boolean invert=linvert;
+		String classifyFunctionName=null;	
+		if (rifMethod.equals("quantize")) {
+			classifyFunctionName="EqualInterval";
+		}
+		else if (rifMethod.equals("jenks")) {
+			classifyFunctionName="Jenks";
+		}
+		else if (rifMethod.equals("quantile")) {
+			classifyFunctionName="Quantile";
+		}
+		else if (rifMethod.equals("standardDeviation")) {
+			classifyFunctionName="standardDeviation";
+		}
+		else if (rifMethod.equals("AtlasRelativeRisk")) { // fixed scale at: [0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51] between +/-infinity
+			paletteName="PuOr";
+			numberOfBreaks=8;
+			Comparable min[] = new Comparable[]{Double.NEGATIVE_INFINITY, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35};
+			Comparable max[] = new Comparable[]{0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, Double.POSITIVE_INFINITY};
+			groups = new RangedClassifier(min, max);
+			invert=true;
+		}
+		else if (rifMethod.equals("AtlasProbability")) { // fixed scale at: [0.20, 0.81] between 0 and 1
+			paletteName="RdYlGn";
+			numberOfBreaks=3;
+			Comparable min[] = new Comparable[]{0.0, 0.20, 0.81};
+			Comparable max[] = new Comparable[]{0.20, 0.81, 1.0};
+			groups = new RangedClassifier(min, max);
+		}		
+		else {
+			throw new Exception("Invalid RIF mapping method: " + rifMethod);
+		}
+
+		if (classifyFunctionName != null && !(classifyFunctionName.equals("EqualInterval") || 
+		      classifyFunctionName.equals("Jenks") ||
+			  classifyFunctionName.equals("Quantile") || 
+			  classifyFunctionName.equals("standardDeviation"))) {
+			throw new Exception("Unsupport classify Function Name: " + classifyFunctionName);
+		}
 		StyleBuilder builder = new StyleBuilder();
 		
 		ColorBrewer brewer = ColorBrewer.instance();
 		Color[] colors = brewer.getPalette(paletteName).getColors(numberOfBreaks);
-	
+		if (invert) {
+			colors=invertColor(colors);
+		}
 		FilterFactory2 filterFactory = CommonFactoryFinder.getFilterFactory2();
 		PropertyName propteryExpression = filterFactory.property(columnName);
-		Function classify = filterFactory.function("Quantile", 
-			propteryExpression, filterFactory.literal(numberOfBreaks));
-		Classifier groups = (Classifier) classify.evaluate(featureCollection);    
+		if (groups == null) {
+			Function classify = filterFactory.function(classifyFunctionName, 
+				propteryExpression, filterFactory.literal(numberOfBreaks));
+			groups = (Classifier) classify.evaluate(featureCollection);  // Classify data 
+		} 
 
 		FeatureTypeStyle featureTypeStyle = StyleGenerator.createFeatureTypeStyle(
             groups,
             propteryExpression,
             colors,
-            "Generated FeatureTypeStyle for GreeBlue",
-            featureCollection.getSchema().getGeometryDescriptor(),
+            "Generated FeatureTypeStyle for " + paletteName		  /* Type ID */,
+            featureCollection.getSchema().getGeometryDescriptor() /* GeometryDescriptor  */,
             StyleGenerator.ELSEMODE_IGNORE,
-            0.95,
-            null);
+            0.95	/* opacity */,
+            null 	/* defaultStroke */);
         Style style = builder.createStyle();
         style.featureTypeStyles().add(featureTypeStyle);
 
