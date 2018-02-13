@@ -129,6 +129,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	private static DatabaseType databaseType;
+	private static int denominatorPyramidWidthPixels;
 	
 	// ==========================================
 	// Section Properties
@@ -152,6 +153,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			EXTRACT_DIRECTORY = this.rifServiceStartupOptions.getExtractDirectory();
 			databaseType=this.rifServiceStartupOptions.getRifDatabaseType();
 			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);
+			denominatorPyramidWidthPixels=this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
+						"denominatorPyramidWidthPixels", 3543);
 		}
 		catch(Exception exception) {
 			rifLogger.warning(this.getClass(), 
@@ -1022,14 +1025,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 							"FOPdenominator_treepyramid_", 				/* File prefix */
 							studyID,
 							year,
-							outputType);
+							outputType,
+							denominatorPyramidWidthPixels);
 						rifGraphics.addGraphicsFile(
 							temporaryDirectory,							/* Study scratch space diretory */
 							"reports" + File.separator + "denominator", /* directory */
 							"FOPdenominator_pyramid_", 					/* File prefix */
 							studyID,
 							year,
-							outputType);
+							outputType,
+							denominatorPyramidWidthPixels);
 					}
 					else {
 						rifGraphics.addGraphicsFile(
@@ -1038,14 +1043,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 							"RIFdenominator_treepyramid_", 				/* File prefix */
 							studyID,
 							year,
-							outputType);
+							outputType,
+							denominatorPyramidWidthPixels);
 						rifGraphics.addGraphicsFile(
 							temporaryDirectory,							/* Study scratch space diretory */
 							"reports" + File.separator + "denominator", /* directory */
 							"RIFdenominator_pyramid_", 					/* File prefix */
 							studyID,
 							year,
-							outputType);
+							outputType,
+							denominatorPyramidWidthPixels);
 					}
 				}
 			}				

@@ -245,25 +245,83 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 		transCoder.transcode(input, output);	// Convert the image.		
 	}
 	
+	/**
+	  * Build Graphics file from SVG source
+	  *
+	  * Graphics file name: <filePrefix><studyID>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
+      *
+	  * SVG file name:  <filePrefix><studyID>.svg	  
+	  *
+	  * @param: File temporaryDirectory,
+	  * @param: String dirName,
+	  * @param: String filePrefix,
+	  * @param: String studyID,
+	  * @param: RIFGraphicsOutputType outputType,
+	  * @param: int pixelWdith (e.g. denominatorPyramidWidthPixels). For information; not used
+	  */
+	public void addGraphicsFile(
+		final File temporaryDirectory,
+		final String dirName,
+		final String filePrefix,
+		final String studyID,
+		final RIFGraphicsOutputType outputType,
+		final int pixelWdith) 
+			throws Exception {	
+		addGraphicsFile(temporaryDirectory, dirName, filePrefix, studyID, -1 /* Year */, 
+			outputType, pixelWdith);
+	}
+
+	/**
+	  * Build Graphics file from SVG source
+	  *
+	  * Graphics file name: <filePrefix><studyID>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
+	  * or (year == -1): <filePrefix><studyID>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
+      *
+	  * SVG file name: <filePrefix><studyID>_<year>.svg
+	  * or (year == -1):  <filePrefix><studyID>.svg
+	  *
+	  * @param: File temporaryDirectory,
+	  * @param: String dirName,
+	  * @param: String filePrefix,
+	  * @param: String studyID,
+	  * @param: int year,
+	  * @param: RIFGraphicsOutputType outputType,
+	  * @param: int pixelWdith (e.g. denominatorPyramidWidthPixels). For information; not used
+	  */	
 	public void addGraphicsFile(
 		final File temporaryDirectory,
 		final String dirName,
 		final String filePrefix,
 		final String studyID,
 		final int year,
-		final RIFGraphicsOutputType outputType) 
+		final RIFGraphicsOutputType outputType,
+		final int pixelWdith) 
 			throws Exception {
 		Float printingPixelPermm=(float)(printingDPI/25.4);
 		
-		String graphicFileName=filePrefix + studyID + "_" + printingDPI +
-			"dpi_" + year + "." + outputType.getGraphicsExtentsion();
-		String svgFileName=filePrefix + studyID + "_" + year + ".svg";
+		String graphicFileName=null;
+		if (year == -1) {
+			graphicFileName=filePrefix + studyID + "_" + printingDPI +
+				"dpi." + outputType.getGraphicsExtentsion();
+		}
+		else {		
+			graphicFileName=filePrefix + studyID + "_" + printingDPI +
+				"dpi_" + year + "." + outputType.getGraphicsExtentsion();		
+		}
+		String svgFileName=null;
+		
+		if (year == -1) {
+			svgFileName=filePrefix + studyID + ".svg";
+		}
+		else {	
+			svgFileName=filePrefix + studyID + "_" + year + ".svg";
+		}
 		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		String graphicFile=svgDirName + File.separator + graphicFileName;
 		String svgFile=svgDirName + File.separator + svgFileName;
 		rifLogger.info(this.getClass(), "Adding " + outputType.toString() + " for report file: " + 
 			graphicFile +
-			"; pixel width: " + denominatorPyramidWidthPixels + 
+			"; pixel width: " + pixelWdith + 
 			"; pixels/mm: " + printingPixelPermm);
 
 

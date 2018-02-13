@@ -275,23 +275,22 @@ public class RifCoordinateReferenceSystem {
 	 * Get default referenced envelope for map, using the defined extent of data Coordinate Reference System
 	 * (i.e. the projection bounding box as a ReferencedEnvelope)
 	 *
-	 * @param CoordinateReferenceSystem sourceCRS
-	 * @param CoordinateReferenceSystem targetCRS [Usually MapViewport.getCoordinateReferenceSystem();]
+	 * @param CoordinateReferenceSystem rif40GeographiesCRS [Usually derived from the rif40_geographies SRID]
 	 *
-	 * @returns ReferencedEnvelope in map CRS (NOT data CRS!) unless MapViewport is null
+	 * @returns ReferencedEnvelope in databaseCRS CRS for the geographical extent of rif40GeographiesCRS
 	 */
 	public ReferencedEnvelope getDefaultReferencedEnvelope(
-		final CoordinateReferenceSystem sourceCRS, 
-		final CoordinateReferenceSystem targetCRS) 
+		final CoordinateReferenceSystem rif40GeographiesCRS) 
 			throws Exception {
-
-		if (sourceCRS == null) {
+		
+		CoordinateReferenceSystem databaseCRS=DefaultGeographicCRS.WGS84; // 4326
+		if (rif40GeographiesCRS == null) {
 			throw new Exception("Null source Coordinate Reference System");
 		}
 		ReferencedEnvelope envelope = null;
-	    Extent crsExtent = sourceCRS.getDomainOfValidity();
-		if (crsExtent != null) {
-			for (GeographicExtent element : crsExtent.getGeographicElements()) {
+	    Extent rif40GeographiesExtent = rif40GeographiesCRS.getDomainOfValidity();
+		if (rif40GeographiesExtent != null) {
+			for (GeographicExtent element : rif40GeographiesExtent.getGeographicElements()) {
 				if (element instanceof GeographicBoundingBox) {
 					GeographicBoundingBox bounds = (GeographicBoundingBox) element;
 					ReferencedEnvelope bbox = new ReferencedEnvelope(
@@ -299,19 +298,22 @@ public class RifCoordinateReferenceSystem {
 						bounds.getNorthBoundLatitude(),
 						bounds.getWestBoundLongitude(),
 						bounds.getEastBoundLongitude(),
-						sourceCRS
+						rif40GeographiesCRS
 					);
-					if (targetCRS == null) {
-						envelope=bbox;
+					
+					if (!CRS.toSRS(rif40GeographiesCRS).equals(CRS.toSRS(databaseCRS))) {
+						envelope = bbox.transform(databaseCRS, true /* Be lenient with errors between datums */);
 					}
 					else {
-						envelope = bbox.transform(targetCRS, true /* Be lenient with errors between datums */);
+						envelope=bbox;
 					}
 				}
 			}
 		}
 		else {	
 			envelope=ReferencedEnvelope.EVERYTHING;
+			rifLogger.info(this.getClass(), "Unable to get Domain Of Validity for: " + CRS.toSRS(rif40GeographiesCRS) +
+				"; using ReferencedEnvelope.EVERYTHING: " + envelope.toString());
 		}
 		
 		if (envelope.getMaxX() == envelope.getMinX() &&

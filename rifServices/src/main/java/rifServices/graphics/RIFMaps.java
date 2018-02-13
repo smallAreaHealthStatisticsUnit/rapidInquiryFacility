@@ -6,6 +6,9 @@ import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 
+import rifServices.graphics.RIFGraphics;
+import rifServices.graphics.RIFGraphicsOutputType;
+
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
@@ -22,6 +25,9 @@ import java.lang.*;
 import java.util.Calendar;
 import java.text.DateFormat;
 import java.util.Locale;
+import java.util.Set;
+import java.util.EnumSet;
+import java.util.Iterator;
 
 import org.w3c.dom.Document; 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -163,6 +169,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 
 	private static final String MAPS_SUBDIRECTORY = "maps";
 	
+	private int mapWidthPixels=0;
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -182,8 +190,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		try {
-//			denominatorPyramidWidthPixels=this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
-//					"denominatorPyramidWidthPixels", 3543);
+			mapWidthPixels=this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
+					"mapWidthPixels", 7480);
 		}
 		catch(Exception exception) {
 			rifLogger.warning(this.getClass(), 
@@ -237,6 +245,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		writeMap(
 			featureCollection.getFeatureCollection(),
 			temporaryDirectory,
+			studyID,
 			"Smoothed SMR map"		/* mapTitle */, 
 			"smoothed_smr"			/* resultsColumn */,
 			createRifStyle(
@@ -254,6 +263,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		writeMap(
 			featureCollection.getFeatureCollection(),
 			temporaryDirectory,
+			studyID,
 			"Poster Probability map"		/* mapTitle */, 
 			"posterior_probability"			/* resultsColumn */,
 			createRifStyle(
@@ -273,6 +283,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	private void writeMap(
 		final DefaultFeatureCollection featureCollection,
 		final File temporaryDirectory,
+		final String studyID,
 		final String mapTitle,
 		final String resultsColumn,
 		final Style style,
@@ -282,29 +293,182 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			throws Exception {
 				
 		//Create map
-		StringBuilder mapFileName = new StringBuilder();
-		mapFileName.append(baseStudyName);
-		mapFileName.append("_" + resultsColumn);
+		String filePrefix=resultsColumn + "_";
+		String dirName=MAPS_SUBDIRECTORY;
 		MapContent map = new MapContent();
 		map.setTitle(mapTitle);
 
+		ReferencedEnvelope envelope2=featureCollection.getBounds();
+		rifLogger.info(this.getClass(), "database bounds: " + envelope.toString() +
+			"; featureCollection bounds: " + envelope2.toString());
 		// Set projection
 		MapViewport vp = map.getViewport();
 		vp.setCoordinateReferenceSystem(crs);
-		vp.setBounds(envelope);	
+		vp.setBounds(envelope2);	// Use featureCollection until fixed
 			
 		// Add layers to map			
         FeatureLayer layer = new FeatureLayer(featureCollection, style);						
 		map.addLayer(layer);
 		
-//		Layer gridLayer = createGridLayer(style, envelope);
+//		Layer gridLayer = createGridLayer(style, envelope2);
 //		map.addLayer(gridLayer);			
 		
 		// Save image
-		saveMapJPEGImage(map, temporaryDirectory, mapFileName.toString(), featureCollection.size(), 800, crs);
-		exportSVG(map, temporaryDirectory, mapFileName.toString(), featureCollection.size(), 800, crs);	
-
+		exportSVG(map, temporaryDirectory, dirName, filePrefix, studyID, featureCollection.size(), mapWidthPixels);	
+		createGraphicsMaps(temporaryDirectory, dirName, filePrefix, studyID);
+		
 		map.dispose();
+	}
+
+	/**
+	 * Generate an SVG document from the map. 
+	 * 
+	 * SVG file name:  <filePrefix><studyID>.svg	  
+	 *
+	 * @param MapContent map - Contains the layers (features + styles) to be rendered,
+	 * @param File temporaryDirectory,
+	 * @param String dirName, 
+	 * @param String filePrefix, 
+	 * @param String studyID, 
+	 * @param int numberOfAreas,
+	 * @param int imageWidth
+	 */
+	public void exportSVG(
+		final MapContent map, 
+		final File temporaryDirectory,
+		final String dirName, 
+		final String filePrefix, 
+		final String studyID,
+		final int numberOfAreas,
+		final int imageWidth) throws Exception {
+			
+		CoordinateReferenceSystem crs=map.getCoordinateReferenceSystem();
+		String mapDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
+		File mapDirectory = new File(mapDirName);
+		File newDirectory = new File(mapDirName);
+		if (newDirectory.exists()) {
+			rifLogger.debug(this.getClass(), 
+				"Found directory: " + newDirectory.getAbsolutePath());
+		}
+		else {
+			newDirectory.mkdirs();
+			rifLogger.info(this.getClass(), 
+				"Created directory: " + newDirectory.getAbsolutePath());
+		}
+		
+		String svgFile=mapDirName + File.separator + filePrefix + studyID + ".svg";
+		File file = new File(svgFile);
+		if (file.exists()) {
+			file.delete();
+		}
+
+		Rectangle imageBounds = null;
+		ReferencedEnvelope mapBounds = null;
+		int imageHeight=0;
+
+		mapBounds = map.getViewport().getBounds();
+		double heightToWidth = mapBounds.getSpan(1) / mapBounds.getSpan(0);
+		imageHeight=(int) Math.round(imageWidth * heightToWidth);
+		imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
+	
+		MapViewport vp = map.getViewport();
+		ReferencedEnvelope envelope=vp.getBounds();	
+		rifLogger.info(this.getClass(), "Create map " + imageWidth + "x" + imageHeight + 
+			"; areas: " + numberOfAreas + "; file: " + svgFile + lineSeparator +
+			"bounding box: " + envelope.toString() + "; CRS: " + CRS.toSRS(crs));	
+			
+		Dimension canvasSize = new Dimension(imageWidth, imageHeight);
+		Document document = null;
+		
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		
+		// Create an instance of org.w3c.dom.Document
+		document = db.getDOMImplementation().createDocument(null, "svg", null);
+		
+		// Set up the map
+		SVGGeneratorContext ctx = SVGGeneratorContext.createDefault(document);
+		ctx.setComment("Generated by GeoTools2 with Batik SVG Generator");
+		
+		SVGGraphics2D g2d = new SVGGraphics2D(ctx, true);
+		
+		g2d.setSVGCanvasSize(canvasSize);
+		
+		StreamingRenderer renderer = new StreamingRenderer();
+		renderer.setMapContent(map);
+		
+		Rectangle outputArea = new Rectangle(g2d.getSVGCanvasSize());
+		ReferencedEnvelope dataArea = map.getMaxBounds();
+		
+		renderer.paint(g2d, outputArea, dataArea);
+		OutputStream outputStream = new FileOutputStream(svgFile);
+		OutputStreamWriter osw = null;
+		try {
+			osw = new OutputStreamWriter(outputStream, "UTF-8");
+			g2d.stream(osw);
+		} 
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "IOException writing file: " + svgFile, exception);
+			throw exception;
+		}
+		finally {
+			if (osw != null) {
+				osw.close();
+			}
+		}			
+	}
+
+	/** Build Graphics file from SVG source
+	  *
+	  * Graphics file name: <filePrefix><studyID>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
+      *
+	  * SVG file name:  <filePrefix><studyID>.svg	  
+	  *
+	  * @param: File temporaryDirectory,
+	  * @param: String dirName,
+	  * @param: String filePrefix,
+	  * @param: String studyID,
+	  * @param: RIFGraphicsOutputType outputType
+	  */
+	private void createGraphicsMaps(
+		final File temporaryDirectory,
+		final String dirName,
+		final String filePrefix,
+		final String studyID) 
+			throws Exception {
+						
+		RIFGraphics rifGraphics = new RIFGraphics(rifServiceStartupOptions);
+		
+		Set<RIFGraphicsOutputType> allOutputTypes = EnumSet.of(
+			RIFGraphicsOutputType.RIFGRAPHICS_JPEG,
+			RIFGraphicsOutputType.RIFGRAPHICS_PNG,
+			RIFGraphicsOutputType.RIFGRAPHICS_TIFF,    // Requires 1.9.2 or higher Batik
+			RIFGraphicsOutputType.RIFGRAPHICS_EPS,
+			RIFGraphicsOutputType.RIFGRAPHICS_PS);
+		Iterator <RIFGraphicsOutputType> allOutputTypeIter = allOutputTypes.iterator();
+		while (allOutputTypeIter.hasNext()) {
+			RIFGraphicsOutputType outputType=allOutputTypeIter.next();
+			if (outputType.isRIFGraphicsOutputTypeEnabled()) {	
+				if (outputType.doesRIFGraphicsOutputTypeUseFop()) {	
+					rifGraphics.addGraphicsFile(
+						temporaryDirectory,							/* Study scratch space diretory */
+						dirName, 									/* directory */
+						filePrefix, 								/* File prefix */
+						studyID,
+						outputType,
+						mapWidthPixels);
+				}
+				else {
+					rifGraphics.addGraphicsFile(
+						temporaryDirectory,							/* Study scratch space diretory */
+						dirName, 									/* directory */
+						filePrefix, 								/* File prefix */
+						studyID,
+						outputType,
+						mapWidthPixels);
+				}
+			}
+		}		
 	}
 
 	/**
@@ -469,170 +633,6 @@ public class RIFMaps extends SQLAbstractSQLManager {
 
         return style;
     }
-
-	/**
- * Generate an SVG document from the supplied information. Note, use cavasSize first if you want
- * to change the default output size.
- * 
- * @param map
- *            Contains the layers (features + styles) to be rendered
- * @param env
- *            The portion of the map to generate an SVG from
- * @param out
- *            Stream to write the resulting SVG out to (probable should be a new file)
- * @param canvasSize
- *            optional canvas size, will default to 300x300
- * @throws IOException
- *             Should anything go wrong whilst writing to 'out'
- * @throws ParserConfigurationException
- *             If critical XML tools are missing from the classpath
- */
-	public void exportSVG(
-		final MapContent map, 
-		final File temporaryDirectory,
-		final String outputFileName, 
-		final int numberOfAreas,
-		final int imageWidth,
-		final CoordinateReferenceSystem crs) throws Exception {
-			
-		String mapDirName=temporaryDirectory.getAbsolutePath() + File.separator + MAPS_SUBDIRECTORY;
-		File mapDirectory = new File(mapDirName);
-		File newDirectory = new File(mapDirName);
-		if (newDirectory.exists()) {
-			rifLogger.debug(this.getClass(), 
-				"Found directory: " + newDirectory.getAbsolutePath());
-		}
-		else {
-			newDirectory.mkdirs();
-			rifLogger.info(this.getClass(), 
-				"Created directory: " + newDirectory.getAbsolutePath());
-		}
-		
-		String mapFile=mapDirName + File.separator + outputFileName + ".svg";
-		File file = new File(mapFile);
-		if (file.exists()) {
-			file.delete();
-		}
-
-		Rectangle imageBounds = null;
-		ReferencedEnvelope mapBounds = null;
-		int imageHeight=0;
-		try {
-			mapBounds = map.getViewport().getBounds();
-			double heightToWidth = mapBounds.getSpan(1) / mapBounds.getSpan(0);
-			imageHeight=(int) Math.round(imageWidth * heightToWidth);
-			imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
-
-		} catch (Exception e) {
-			// failed to access map layers
-			throw new RuntimeException(e);
-		}
-		
-    Dimension canvasSize = new Dimension(imageWidth, imageHeight);
-    Document document = null;
-    
-    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-    DocumentBuilder db = dbf.newDocumentBuilder();
-    
-    // Create an instance of org.w3c.dom.Document
-    document = db.getDOMImplementation().createDocument(null, "svg", null);
-    
-    // Set up the map
-    SVGGeneratorContext ctx = SVGGeneratorContext.createDefault(document);
-    ctx.setComment("Generated by GeoTools2 with Batik SVG Generator");
-    
-    SVGGraphics2D g2d = new SVGGraphics2D(ctx, true);
-    
-    g2d.setSVGCanvasSize(canvasSize);
-    
-    StreamingRenderer renderer = new StreamingRenderer();
-    renderer.setMapContent(map);
-    
-    Rectangle outputArea = new Rectangle(g2d.getSVGCanvasSize());
-    ReferencedEnvelope dataArea = map.getMaxBounds();
-    
-    renderer.paint(g2d, outputArea, dataArea);
-	OutputStream outputStream = new FileOutputStream(mapFile);
-    OutputStreamWriter osw = null;
-    try {
-        osw = new OutputStreamWriter(outputStream, "UTF-8");
-        g2d.stream(osw);
-    } finally {
-        if (osw != null)
-            osw.close();
-    }
-    
-	rifLogger.info(this.getClass(), "Create map " + imageWidth + "x" + imageHeight + 
-			"; areas: " + numberOfAreas + "; file: " + mapFile + "; CRS: " + CRS.toSRS(crs));
-}
-
-	// See: http://docs.geotools.org/latest/userguide/library/render/gtrenderer.html#image
-	// Also SVG example
-	public void saveMapJPEGImage(
-		final MapContent map, 
-		final File temporaryDirectory,
-		final String outputFileName, 
-		final int numberOfAreas,
-		final int imageWidth,
-		final CoordinateReferenceSystem crs)   
-			throws Exception {
-
-		String mapDirName=temporaryDirectory.getAbsolutePath() + File.separator + MAPS_SUBDIRECTORY;
-		File mapDirectory = new File(mapDirName);
-		File newDirectory = new File(mapDirName);
-		if (newDirectory.exists()) {
-			rifLogger.debug(this.getClass(), 
-				"Found directory: " + newDirectory.getAbsolutePath());
-		}
-		else {
-			newDirectory.mkdirs();
-			rifLogger.info(this.getClass(), 
-				"Created directory: " + newDirectory.getAbsolutePath());
-		}
-		
-		String mapFile=mapDirName + File.separator + outputFileName + ".jpg";
-		File file = new File(mapFile);
-		if (file.exists()) {
-			file.delete();
-		}
-		
-		GTRenderer renderer = new StreamingRenderer();
-		renderer.setMapContent(map);
-
-		Rectangle imageBounds = null;
-		ReferencedEnvelope mapBounds = null;
-		int imageHeight=0;
-		try {
-			mapBounds = map.getViewport().getBounds();
-			double heightToWidth = mapBounds.getSpan(1) / mapBounds.getSpan(0);
-			imageHeight=(int) Math.round(imageWidth * heightToWidth);
-			imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
-
-		} catch (Exception e) {
-			// failed to access map layers
-			throw new RuntimeException(e);
-		}
-
-		BufferedImage image = new BufferedImage(imageBounds.width, imageBounds.height, 
-			BufferedImage.TYPE_INT_RGB);
-
-		Graphics2D gr = image.createGraphics();
-		gr.setPaint(Color.WHITE);
-		gr.fill(imageBounds);
-
-		try {
-			renderer.paint(gr, imageBounds, mapBounds);
-			File fileToSave = new File(mapFile);
-			ImageIO.write(image, "jpeg", fileToSave);
-
-		} 
-		catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-		
-		rifLogger.info(this.getClass(), "Create map " + imageWidth + "x" + imageHeight + 
-			"; areas: " + numberOfAreas + "; file: " + mapFile + "; CRS: " + CRS.toSRS(crs));
-	}
 
 	// https://github.com/ianturton/geotools-cookbook/blob/master/modules/output/src/main/java/org/ianturton/cookbook/output/MapWithGrid.java
 	private Layer createGridLayer(Style style, ReferencedEnvelope gridBounds)

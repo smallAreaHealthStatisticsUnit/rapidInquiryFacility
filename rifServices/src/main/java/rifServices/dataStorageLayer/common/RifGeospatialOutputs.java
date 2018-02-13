@@ -520,9 +520,9 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 * @param String zoomLevel,
 	 * @param String studyID,
 	 * @param MapViewport vp
-	 * @param CoordinateReferenceSystem crs
+	 * @param CoordinateReferenceSystem rif40GeographiesCRS
 	 *
-	 * @returns ReferencedEnvelope in map CRS (NOT data CRS!)
+	 * @returns ReferencedEnvelope in database CRS (4326)
 	 */
 	private ReferencedEnvelope getMapReferencedEnvelope(
 		final Connection connection,
@@ -532,18 +532,12 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		final String geolevel,
 		final String zoomLevel,
 		final String studyID,
-		final MapViewport vp, 
-		final CoordinateReferenceSystem crs)  
+		final CoordinateReferenceSystem rif40GeographiesCRS)  
 			throws Exception {
-		ReferencedEnvelope envelope = null;
-		if (vp == null) {
-			envelope=rifCoordinateReferenceSystem.getDefaultReferencedEnvelope(
-				crs /* Spuirce */, null /* Target */);
-		}
-		else {
-			envelope=rifCoordinateReferenceSystem.getDefaultReferencedEnvelope(
-				crs /* Spuirce */, vp.getCoordinateReferenceSystem() /* Target */);
-		}
+				
+		CoordinateReferenceSystem databaseCRS=DefaultGeographicCRS.WGS84; // 4326
+		ReferencedEnvelope envelope = rifCoordinateReferenceSystem.getDefaultReferencedEnvelope(
+			rif40GeographiesCRS); // Default is the geographical extent of rif40GeographiesCRS
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "WITH c AS (");
 		if (databaseType == DatabaseType.POSTGRESQL) { 
@@ -589,14 +583,14 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				Float xMin=resultSet.getFloat(1);
 				Float xMax=resultSet.getFloat(2);
 				Float yMin=resultSet.getFloat(3);
-				Float yMax=resultSet.getFloat(4);
+				Float yMax=resultSet.getFloat(4); // In 4326
 				
 				envelope = new ReferencedEnvelope(
 					yMin /* bounds.getSouthBoundLatitude() */,
 					yMax /* bounds.getNorthBoundLatitude() */,
 					xMin /* bounds.getWestBoundLongitude() */,
 					xMax /* bounds.getEastBoundLongitude() */,
-					crs
+					databaseCRS
 				);
 				
 				if (resultSet.next()) {
@@ -715,14 +709,14 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		String geolevel=getColumnFromResultSet(rif40Geolevels, "geolevel_id");
 		String geolevelName = getColumnFromResultSet(rif40Geolevels, "geolevel_name");
 		int max_geojson_digits=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "max_geojson_digits"));
-		CoordinateReferenceSystem crs = getCRS(rifStudySubmission, rif40Geolevels);
+		CoordinateReferenceSystem rif40GeographiesCRS = getCRS(rifStudySubmission, rif40Geolevels);
 		MathTransform transform = null; // For re-projection
-		if (!CRS.toSRS(crs).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
-			transform = rifCoordinateReferenceSystem.getMathTransform(crs);
+		if (!CRS.toSRS(rif40GeographiesCRS).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
+			transform = rifCoordinateReferenceSystem.getMathTransform(rif40GeographiesCRS);
 		}
 		
 		ReferencedEnvelope envelope=getMapReferencedEnvelope(connection, schemaName, areaTableName,tileTableName, 
-			geolevel, zoomLevel, studyID, null /* MapViewport */, crs);
+			geolevel, zoomLevel, studyID, rif40GeographiesCRS);
 			
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "WITH a AS (");
@@ -769,6 +763,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			int i = 0;
 			
 			rifLogger.debug(this.getClass(), "Bounding box: " + geoJSONWriter.toString((BoundingBox)envelope));
+				// In 4236
 			bufferedWriter.write("{\"type\":\"FeatureCollection\",");
 			bufferedWriter.write("\"bbox\":" + geoJSONWriter.toString((BoundingBox)envelope) + ","); 
 				// e.g. "bbox": [52.6876106262207,-7.588294982910156,55.52680969238281,-4.886538028717041],
@@ -786,7 +781,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				stringFeature.append(geoJSONWriter.toString(geometry));
 				if (i == 1) {
 					simpleFeatureType=setupShapefile(rsmd, columnCount, shapeDataStore, areaType, outputFileName, 
-						geometry, crs);
+						geometry, rif40GeographiesCRS);
 					
 					shapefileWriter = shapeDataStore.getFeatureWriter(shapeDataStore.getTypeNames()[0],
 							Transaction.AUTO_COMMIT);				
@@ -803,19 +798,19 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				if (i == 1) {		
 					String geographyName = getColumnFromResultSet(rif40Geolevels, "geography");
 					int srid=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "srid"));
-					printShapefileColumns(shapefileFeature, rsmd, outputFileName, crs, geographyName, srid);
+					printShapefileColumns(shapefileFeature, rsmd, outputFileName, rif40GeographiesCRS, geographyName, srid);
 				}	
 				
 				AttributeDescriptor ad = shapefileFeature.getType().getDescriptor(0); // Create shapefile feature
 					// Add first hsapefile feature attribute
 				if (ad instanceof GeometryDescriptor) { 
 					// Need to handle CoordinateReferenceSystem
-					if (CRS.toSRS(crs).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
+					if (CRS.toSRS(rif40GeographiesCRS).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
 						shapefileFeature.setAttribute(0, geometry); 
 						builder.set(0, geometry); 
 					} 
 					else if (transform == null) {
-						throw new Exception("Null transform from: " + CRS.toSRS(crs) + " to: " +
+						throw new Exception("Null transform from: " + CRS.toSRS(rif40GeographiesCRS) + " to: " +
 							CRS.toSRS(DefaultGeographicCRS.WGS84));
 					}
 					else { // Transform from WGS84 to SRID CRS
@@ -890,7 +885,10 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			connection.commit();
 		}
 		
-		RifFeatureCollection rifFeatureCollection=new RifFeatureCollection(featureCollection, crs, envelope);
+		RifFeatureCollection rifFeatureCollection=new RifFeatureCollection(
+			featureCollection, 
+			rif40GeographiesCRS, 
+			envelope.transform(rif40GeographiesCRS, true /* Be lenient */)); // Transformed to rif40GeographiesCRS
 		return rifFeatureCollection;
 	}
 	
