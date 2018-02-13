@@ -8,6 +8,7 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 
 import rifServices.graphics.RIFGraphics;
 import rifServices.graphics.RIFGraphicsOutputType;
+import rifServices.graphics.LegendLayer;
 
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
@@ -28,6 +29,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.w3c.dom.Document; 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -41,9 +44,6 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
 import java.awt.Dimension;
-
-import org.geotools.brewer.color.ColorBrewer;
-import org.geotools.brewer.color.StyleGenerator;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.JTSFactoryFinder;
@@ -66,16 +66,6 @@ import org.geotools.map.MapContent;
 import org.geotools.map.MapViewport;
 
 import org.geotools.styling.Style;
-import org.geotools.styling.StyleFactory;
-import org.geotools.styling.Stroke;
-import org.geotools.styling.FeatureTypeStyle;
-import org.geotools.styling.Rule;
-import org.geotools.styling.Fill;
-import org.geotools.styling.PolygonSymbolizer;
-import org.geotools.styling.StyleBuilder;
-
-import org.geotools.filter.function.Classifier;
-import org.geotools.filter.function.RangedClassifier;
 
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -83,10 +73,6 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 
 import org.geotools.factory.CommonFactoryFinder;
 
-import org.opengis.filter.FilterFactory;
-import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.expression.PropertyName;
-import org.opengis.filter.expression.Function;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -242,37 +228,39 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		String geog = rifStudySubmission.getStudy().getGeography().getName();			
 		tileTableName.append(geog);
 
+		RIFStyle rifSyle=new RIFStyle(
+				"quantile"		/* Classifier function name */, 
+				"sm_smr"		/* Column */, 
+				"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+				9				/* numberOfBreaks */, 
+				true			/* invert */,
+				featureCollection.getFeatureCollection());
 		writeMap(
 			featureCollection.getFeatureCollection(),
 			temporaryDirectory,
 			studyID,
 			"Smoothed SMR map"		/* mapTitle */, 
 			"smoothed_smr"			/* resultsColumn */,
-			createRifStyle(
-				"quantile"		/* Classifier function name */, 
-				"sm_smr"		/* Column */, 
-				"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-				9				/* numberOfBreaks */, 
-				true			/* invert */,
-				featureCollection.getFeatureCollection()),
+			rifSyle,
 			baseStudyName,
 			featureCollection.getCoordinateReferenceSystem()
 									/* CoordinateReferenceSystem */,
 			featureCollection.getReferencedEnvelope());
 
+		rifSyle=new RIFStyle(
+				"AtlasProbability"	/* Classifier function name */, 
+				"post_prob"			/* Column */, 
+				null				/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+				0					/* numberOfBreaks */, 
+				false				/* invert */,
+				featureCollection.getFeatureCollection());
 		writeMap(
 			featureCollection.getFeatureCollection(),
 			temporaryDirectory,
 			studyID,
 			"Poster Probability map"		/* mapTitle */, 
 			"posterior_probability"			/* resultsColumn */,
-			createRifStyle(
-				"AtlasProbability"	/* Classifier function name */, 
-				"post_prob"			/* Column */, 
-				null				/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-				0					/* numberOfBreaks */, 
-				false				/* invert */,
-				featureCollection.getFeatureCollection()),
+			rifSyle,
 			baseStudyName,
 			featureCollection.getCoordinateReferenceSystem()
 									/* CoordinateReferenceSystem */,
@@ -286,12 +274,14 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final String studyID,
 		final String mapTitle,
 		final String resultsColumn,
-		final Style style,
+		final RIFStyle rifSyle,
 		final String baseStudyName,
 		final CoordinateReferenceSystem crs,
 		final ReferencedEnvelope envelope) 
 			throws Exception {
 				
+		Style style=rifSyle.getStyle();
+		
 		//Create map
 		String filePrefix=resultsColumn + "_";
 		String dirName=MAPS_SUBDIRECTORY;
@@ -310,8 +300,11 @@ public class RIFMaps extends SQLAbstractSQLManager {
         FeatureLayer layer = new FeatureLayer(featureCollection, style);						
 		map.addLayer(layer);
 		
-//		Layer gridLayer = createGridLayer(style, envelope2);
+//		Layer gridLayer = createGridLayer(style, envelope2); // Use featureCollection until fixed
 //		map.addLayer(gridLayer);			
+		
+		LegendLayer legendLayer = createLegendLayer(rifSyle, envelope2); // Use featureCollection until fixed		
+		map.addLayer(legendLayer);
 		
 		// Save image
 		exportSVG(map, temporaryDirectory, dirName, filePrefix, studyID, featureCollection.size(), mapWidthPixels);	
@@ -320,6 +313,27 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		map.dispose();
 	}
 
+	private LegendLayer createLegendLayer(
+		final RIFStyle rifSyle, 
+		final ReferencedEnvelope envelope2)
+				throws Exception {
+			
+		ArrayList<LegendLayer.LegendItem> legendItems = new ArrayList<LegendLayer.LegendItem>();
+		ArrayList<RIFStyle.RIFStyleBand> rifStyleBands = rifSyle.getRifStyleBands();
+		for (RIFStyle.RIFStyleBand rifStyleBand : rifStyleBands) {
+			String title=rifStyleBand.getTitle();
+			LegendLayer.LegendItem legendItem = new LegendLayer.LegendItem(
+				title, 
+				rifStyleBand.getColor(),
+				Geometries.MULTIPOLYGON);
+			legendItems.add(legendItem);
+		}
+		
+		LegendLayer legendLayer = new LegendLayer("Legend", Color.LIGHT_GRAY, legendItems);
+		
+		return legendLayer;
+	} 
+	
 	/**
 	 * Generate an SVG document from the map. 
 	 * 
@@ -470,169 +484,6 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			}
 		}		
 	}
-
-	/**
-	 * Invert color array
-	 *
-	 * @param Color[] colors
-	 *
-	 * @returns Color[]
-	 */
-	private Color[] invertColor(Color[] colors) {
-		for(int i=0; i<colors.length/2; i++){
-			Color temp = colors[i];
-			colors[i] = colors[colors.length -i -1];
-			colors[colors.length -i -1] = temp;
-		}
-
-		return colors;		
-	}
-
-	/** Create style for RIF choropleth maps. Uses same colorbrewer and classification schemes as the front end
-	  *
-	  * See:
-	  *
-	  * http://docs.geotools.org/latest/userguide/extension/brewer/colorbrewer.html
-	  * http://docs.geotools.org/latest/userguide/extension/brewer/classifier.html
-	  *
-	  * The following “classifier” functions are available [Front end names in brackets]:
-	  * 
-	  * -	EqualInterval - classifier where each group represents the same sized range [quantize]
-	  * -	Jenks - generate the Jenks’ Natural Breaks classification [jenks]
-	  * -	Quantile - classifier with an even number of items in each group [quantile]
-  	  * -	StandardDeviation - generated using the standard deviation method [standardDeviation]
-  	  * 		
-	  * The RIF does NOT use:
-	  * -	UniqueInterval - variation of EqualInterval that takes into account unique values	 
-	  *	  
-	  * Two other scales are provided: 
-	  * - AtlasRelativeRisk: fixed scale at: [0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51] between +/-infinity; PuOr
-	  * - AtlasProbability: fixed scale at: [0.20, 0.81] between 0 and 1; RdYlGn
-	  *
-	  * See: rifs-util-choro.js
-	  *
-	  * @param String classifyFunctionName,
-	  * @param String columnName,
-	  * @param String paletteName,
-	  * @param int numberOfBreaks,
-	  * @param boolean invert,
-	  * @param DefaultFeatureCollection featureCollection
-	  *
-	  * @return Style 
-	  */													
-	private Style createRifStyle(
-			final String rifMethod,
-			final String columnName,
-			final String lpaletteName,
-			final int lnumberOfBreaks,
-			final boolean linvert,
-			final DefaultFeatureCollection featureCollection) 
-				throws Exception {
-		Classifier groups=null;
-		
-		String paletteName=lpaletteName;
-		int numberOfBreaks=lnumberOfBreaks;
-		boolean invert=linvert;
-		String classifyFunctionName=null;	
-		if (rifMethod.equals("quantize")) {
-			classifyFunctionName="EqualInterval";
-		}
-		else if (rifMethod.equals("jenks")) {
-			classifyFunctionName="Jenks";
-		}
-		else if (rifMethod.equals("quantile")) {
-			classifyFunctionName="Quantile";
-		}
-		else if (rifMethod.equals("standardDeviation")) {
-			classifyFunctionName="standardDeviation";
-		}
-		else if (rifMethod.equals("AtlasRelativeRisk")) { // fixed scale at: [0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51] between +/-infinity
-			paletteName="PuOr";
-			numberOfBreaks=8;
-			Comparable min[] = new Comparable[]{Double.NEGATIVE_INFINITY, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35};
-			Comparable max[] = new Comparable[]{0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, Double.POSITIVE_INFINITY};
-			groups = new RangedClassifier(min, max);
-			invert=true;
-		}
-		else if (rifMethod.equals("AtlasProbability")) { // fixed scale at: [0.20, 0.81] between 0 and 1
-			paletteName="RdYlGn";
-			numberOfBreaks=3;
-			Comparable min[] = new Comparable[]{0.0, 0.20, 0.81};
-			Comparable max[] = new Comparable[]{0.20, 0.81, 1.0};
-			groups = new RangedClassifier(min, max);
-		}		
-		else {
-			throw new Exception("Invalid RIF mapping method: " + rifMethod);
-		}
-
-		if (classifyFunctionName != null && !(classifyFunctionName.equals("EqualInterval") || 
-		      classifyFunctionName.equals("Jenks") ||
-			  classifyFunctionName.equals("Quantile") || 
-			  classifyFunctionName.equals("standardDeviation"))) {
-			throw new Exception("Unsupport classify Function Name: " + classifyFunctionName);
-		}
-		StyleBuilder builder = new StyleBuilder();
-		
-		ColorBrewer brewer = ColorBrewer.instance();
-		Color[] colors = brewer.getPalette(paletteName).getColors(numberOfBreaks);
-		if (invert) {
-			colors=invertColor(colors);
-		}
-		FilterFactory2 filterFactory = CommonFactoryFinder.getFilterFactory2();
-		PropertyName propteryExpression = filterFactory.property(columnName);
-		if (groups == null) {
-			Function classify = filterFactory.function(classifyFunctionName, 
-				propteryExpression, filterFactory.literal(numberOfBreaks));
-			groups = (Classifier) classify.evaluate(featureCollection);  // Classify data 
-		} 
-
-		FeatureTypeStyle featureTypeStyle = StyleGenerator.createFeatureTypeStyle(
-            groups,
-            propteryExpression,
-            colors,
-            "Generated FeatureTypeStyle for " + paletteName		  /* Type ID */,
-            featureCollection.getSchema().getGeometryDescriptor() /* GeometryDescriptor  */,
-            StyleGenerator.ELSEMODE_IGNORE,
-            0.95	/* opacity */,
-            null 	/* defaultStroke */);
-        Style style = builder.createStyle();
-        style.featureTypeStyles().add(featureTypeStyle);
-
-        return style;		
-	}
-		
-    /**
-     * Create a Style to draw polygon features with a thin blue outline and
-     * a cyan fill
-     */
-    private Style createSimplePolygonStyle() {
-		StyleBuilder builder = new StyleBuilder();
-		FilterFactory filterFactory = builder.getFilterFactory();
-		
-        // create a partially opaque outline stroke
-        Stroke stroke = builder.createStroke(
-                filterFactory.literal(Color.BLUE),
-                filterFactory.literal(1),
-                filterFactory.literal(0.5));
-
-        // create a partial opaque fill
-        Fill fill = builder.createFill(
-                filterFactory.literal(Color.CYAN),
-                filterFactory.literal(0.5));
-
-        /*
-         * Setting the geometryPropertyName arg to null signals that we want to
-         * draw the default geomettry of features
-         */
-        PolygonSymbolizer sym = builder.createPolygonSymbolizer(stroke, fill, null);
-
-        Rule rule = builder.createRule(sym);
-        FeatureTypeStyle fts = builder.createFeatureTypeStyle("rifstyle1", rule);
-        Style style = builder.createStyle();
-        style.featureTypeStyles().add(fts);
-
-        return style;
-    }
 
 	// https://github.com/ianturton/geotools-cookbook/blob/master/modules/output/src/main/java/org/ianturton/cookbook/output/MapWithGrid.java
 	private Layer createGridLayer(Style style, ReferencedEnvelope gridBounds)
