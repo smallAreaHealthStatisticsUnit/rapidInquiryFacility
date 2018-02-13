@@ -64,8 +64,7 @@ endif
 
 all: rifservice RIF4 taxonomyservice
 
-rifservice: rifServices.war
-rifServices.war:
+rifservice: 
 	$(MAVEN) --version
 	cd rifGenericLibrary; $(MAVEN) -Dmaven.test.skip=true install
 	cd rapidInquiryFacility ; $(MAVEN) -Dmaven.test.skip=true install
@@ -78,8 +77,8 @@ RIF4.7z:
 	cd rifWebApplication/src/main/webapp/WEB-INF; $(7ZIP) a -r ../../../../../RIF4.7z *
 	$(7ZIP) l RIF4.7z
 	
-taxonomyservice: taxonomyServices.war
-taxonomyServices.war:	
+taxonomyservice:	
+	cd rifGenericLibrary; $(MAVEN) -Dmaven.test.skip=true install
 	cd taxonomyServices ; $(MAVEN) -Dmaven.test.skip=true install
 	$(COPY) taxonomyServices/target/taxonomyServices.war .
 	
