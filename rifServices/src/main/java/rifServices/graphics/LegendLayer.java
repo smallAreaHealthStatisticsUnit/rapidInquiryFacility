@@ -7,12 +7,14 @@
  *    This file is hereby placed into the Public Domain. This means anyone is
  *    free to do whatever they wish with this file. Use it well and enjoy!
  * 
- * Authoer: Hal Mirsky (I think!)
+ * Author: Hal Mirsky (I think!)
  */
 
 /* Map Legend Version 1 */
 
 package rifServices.graphics;
+
+import rifGenericLibrary.util.RIFLogger;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -38,6 +40,9 @@ import org.geotools.map.MapViewport;
  */
 public class LegendLayer extends DirectLayer {
 
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
+	
 	private static String DEFAULT_TITLE   = "Legend";
 	
 	/* 
@@ -117,7 +122,14 @@ public class LegendLayer extends DirectLayer {
 		th = (int) titleLabelRect.getHeight();
 		ih = (int) itemLabelRect.getHeight();  // height of site label.  Also used as icon size	
 		
-		boundsw   = ((int) itemLabelRect.getWidth())+2*HOR_MARGIN+HOR_SPACE+ih;
+		int iw=((int) titleLabelRect.getWidth());
+		int tw=((int) itemLabelRect.getWidth());
+		if (iw> tw) {
+			boundsw   = iw+2*HOR_MARGIN+HOR_SPACE+ih;
+		}
+		else {
+			boundsw   = tw+2*HOR_MARGIN+HOR_SPACE+ih;
+		}
 		boundsh   = VERT_MARGIN+th+LINESPACE+ih+LINESPACE+((LINESPACE+(int) itemLabelRect.getHeight()))*legendItems.size()+VERT_MARGIN;
 	}
 	
@@ -133,7 +145,9 @@ public class LegendLayer extends DirectLayer {
 			
 			// Draw the bounds rectangle and title
 	    	Shape shape = new Rectangle(LEFTX_OFFSET,ulcy,boundsw,boundsh);
-		
+			rifLogger.info(this.getClass(), legendTitle + " scrRect: " + scrRect.toString() +
+				"; shape: " + shape.toString());
+				
 			drawShape(graphics, shape, backgroundColor);
 	    	graphics.setFont(titlef);
 	    	graphics.setColor(Color.BLACK);
