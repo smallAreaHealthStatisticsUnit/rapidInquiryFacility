@@ -46,6 +46,7 @@ import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.FeatureWriter; 
 import org.geotools.data.Transaction; 
 import org.geotools.map.MapViewport;
+import org.geotools.grid.Envelopes;
 
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
@@ -519,8 +520,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 * @param String geolevel,
 	 * @param String zoomLevel,
 	 * @param String studyID,
-	 * @param MapViewport vp
-	 * @param CoordinateReferenceSystem rif40GeographiesCRS
+	 * @param CoordinateReferenceSystem rif40GeographiesCRS,
+	 * @param int srid
 	 *
 	 * @returns ReferencedEnvelope in database CRS (4326)
 	 */
@@ -532,11 +533,12 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		final String geolevel,
 		final String zoomLevel,
 		final String studyID,
-		final CoordinateReferenceSystem rif40GeographiesCRS)  
+		final CoordinateReferenceSystem rif40GeographiesCRS,
+		final int srid)  
 			throws Exception {
 				
 		CoordinateReferenceSystem databaseCRS=DefaultGeographicCRS.WGS84; // 4326
-		ReferencedEnvelope envelope = rifCoordinateReferenceSystem.getDefaultReferencedEnvelope(
+		ReferencedEnvelope finalEnvelope = rifCoordinateReferenceSystem.getDefaultReferencedEnvelope(
 			rif40GeographiesCRS); // Default is the geographical extent of rif40GeographiesCRS
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "WITH c AS (");
@@ -553,13 +555,15 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		queryFormatter.addQueryLine(1, "   AND a.area_id     = b.areaid");
 		queryFormatter.addQueryLine(0, ")");
 		if (databaseType == DatabaseType.POSTGRESQL) { 
-			queryFormatter.addQueryLine(0, "SELECT ST_Xmin(c.envelope) AS xmin,");	
+			queryFormatter.addQueryLine(0, "SELECT ST_AsText(ST_Transform(c.envelope, " + srid + ")) AS envelope_" + srid + ",");	
+			queryFormatter.addQueryLine(0, "       ST_Xmin(c.envelope) AS xmin,");	
 			queryFormatter.addQueryLine(0, "       ST_Xmax(c.envelope) AS xmax,");	
 			queryFormatter.addQueryLine(0, "       ST_Ymin(c.envelope) AS ymin,");	
 			queryFormatter.addQueryLine(0, "       ST_Ymax(c.envelope) AS ymax");	
 		}
 		else if (databaseType == DatabaseType.SQL_SERVER) {
-			queryFormatter.addQueryLine(0, "SELECT CAST(c.envelope.STPointN(1).STX AS numeric(8,5)) AS Xmin,");
+			queryFormatter.addQueryLine(0, "SELECT c.envelope.STAsText() AS envelope_4326,"); // SQL Server cannot transform!!!
+			queryFormatter.addQueryLine(0, "       CAST(c.envelope.STPointN(1).STX AS numeric(8,5)) AS Xmin,");
 			queryFormatter.addQueryLine(0, "       CAST(c.envelope.STPointN(3).STX AS numeric(8,5)) AS Xmax,");
 			queryFormatter.addQueryLine(0, "       CAST(c.envelope.STPointN(1).STY AS numeric(8,5)) AS Ymin,");
 			queryFormatter.addQueryLine(0, "       CAST(c.envelope.STPointN(3).STY AS numeric(8,5)) AS Ymax");	
@@ -580,18 +584,86 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			resultSet = statement.executeQuery();
 			
 			if (resultSet.next()) {
-				Float xMin=resultSet.getFloat(1);
-				Float xMax=resultSet.getFloat(2);
-				Float yMin=resultSet.getFloat(3);
-				Float yMax=resultSet.getFloat(4); // In 4326
+				String envelopeText=resultSet.getString(1);
+				Float xMin=resultSet.getFloat(2);
+				Float xMax=resultSet.getFloat(3);
+				Float yMin=resultSet.getFloat(4);
+				Float yMax=resultSet.getFloat(5); // In 4326
 				
-				envelope = new ReferencedEnvelope(
-					yMin /* bounds.getSouthBoundLatitude() */,
-					yMax /* bounds.getNorthBoundLatitude() */,
+				ReferencedEnvelope initialEnvelope = new ReferencedEnvelope(
 					xMin /* bounds.getWestBoundLongitude() */,
 					xMax /* bounds.getEastBoundLongitude() */,
+					yMin /* bounds.getSouthBoundLatitude() */,
+					yMax /* bounds.getNorthBoundLatitude() */,
 					databaseCRS
 				);
+				
+				// Enpand Xmmin 10% for Legend; all others by 5% for margin
+				if (xMin > -180/1.1) {
+					xMin=new Float((float)xMin*1.1);
+				}
+				else {
+					xMin=new Float((float)-180.0);
+				}
+				if (xMax < 180/1.05) {
+					xMax=new Float((float)xMax*1.05);
+				}
+				else {
+					xMax=new Float((float)180.0);
+				}
+				if (yMin > -90/1.05) {
+					yMin=new Float((float)yMin*1.05);
+				}
+				else {
+					yMin=new Float((float)-90.0);
+				}
+				if (yMax < 90/1.05) {
+					yMax=new Float((float)yMax*1.05);
+				}
+				else {
+					yMax=new Float((float)90.0);
+				}
+				// WGS84 Bounds: -180.0000, -90.0000, 180.0000, 90.0000
+				ReferencedEnvelope expandedEnvelope = new ReferencedEnvelope(
+					xMin /* bounds.getWestBoundLongitude() */,
+					xMax /* bounds.getEastBoundLongitude() */,
+					yMin /* bounds.getSouthBoundLatitude() */,
+					yMax /* bounds.getNorthBoundLatitude() */,
+					databaseCRS
+				);				
+				
+				// Round envelope
+				double gridSize=0.0;
+				if (xMax-xMin > 5 /* Degrees of longitude */) {
+					gridSize=1.0;
+				}
+				else if (xMax-xMin > 0.5 /* Degrees of longitude */) {
+					gridSize=0.1;
+				}
+				else if (xMax-xMin > 0.05 /* Degrees of longitude */) {
+					gridSize=0.01;
+				}
+				else if (xMax-xMin > 0.005 /* Degrees of longitude */) {
+					gridSize=0.001;
+				}
+				finalEnvelope=Envelopes.expandToInclude(expandedEnvelope, gridSize); // Round envelope up a bit!
+						
+				if (databaseType == DatabaseType.POSTGRESQL) { 
+					rifLogger.info(this.getClass(), 
+						"bbox: [" + xMin + "," + yMin + " " + xMax + "," + yMax + "]" + lineSeparator +
+						"initialEnvelope: " + initialEnvelope.toString() + lineSeparator +
+						"expandedEnvelope: " + expandedEnvelope.toString() + lineSeparator +
+						"finalEnvelope: " + finalEnvelope.toString() + lineSeparator +
+						"gridSize: " + gridSize + "; db(in " + srid + "): "+ envelopeText);
+				}
+				else { 
+					rifLogger.info(this.getClass(), 
+						"bbox: [" + xMin + "," + yMin + " " + xMax + "," + yMax + "]" + lineSeparator +
+						"initialEnvelope: " + initialEnvelope.toString() + lineSeparator +
+						"expandedEnvelope: " + expandedEnvelope.toString() + lineSeparator +
+						"finalEnvelope: " + finalEnvelope.toString() + lineSeparator +
+						"gridSize: " + gridSize + "; db(in 4326): "+ envelopeText);
+				}
 				
 				if (resultSet.next()) {
 					throw new Exception("getMapReferencedEnvelope(): expected 1 row, got many");
@@ -611,7 +683,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			SQLQueryUtility.close(statement);
 		}
 		
-		return envelope;
+		return finalEnvelope;
 	}
 	
 	/** 
@@ -709,6 +781,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		String geolevel=getColumnFromResultSet(rif40Geolevels, "geolevel_id");
 		String geolevelName = getColumnFromResultSet(rif40Geolevels, "geolevel_name");
 		int max_geojson_digits=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "max_geojson_digits"));
+		int srid=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "srid"));
 		CoordinateReferenceSystem rif40GeographiesCRS = getCRS(rifStudySubmission, rif40Geolevels);
 		MathTransform transform = null; // For re-projection
 		if (!CRS.toSRS(rif40GeographiesCRS).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
@@ -716,7 +789,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		}
 		
 		ReferencedEnvelope envelope=getMapReferencedEnvelope(connection, schemaName, areaTableName,tileTableName, 
-			geolevel, zoomLevel, studyID, rif40GeographiesCRS);
+			geolevel, zoomLevel, studyID, rif40GeographiesCRS, srid);
 			
 		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "WITH a AS (");
@@ -797,7 +870,6 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				SimpleFeatureBuilder builder = new SimpleFeatureBuilder(simpleFeatureType);
 				if (i == 1) {		
 					String geographyName = getColumnFromResultSet(rif40Geolevels, "geography");
-					int srid=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "srid"));
 					printShapefileColumns(shapefileFeature, rsmd, outputFileName, rif40GeographiesCRS, geographyName, srid);
 				}	
 				
