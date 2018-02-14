@@ -58,6 +58,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.CRS;
 
 import org.geotools.renderer.GTRenderer;
+import org.geotools.renderer.RenderListener;
 import org.geotools.renderer.lite.StreamingRenderer;
 
 import org.geotools.map.FeatureLayer;
@@ -156,6 +157,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	private static final String MAPS_SUBDIRECTORY = "maps";
 	
 	private int mapWidthPixels=0;
+	protected int errors=0;
+	protected int features=0;
 	
 	// ==========================================
 	// Section Properties
@@ -239,7 +242,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			featureCollection.getFeatureCollection(),
 			temporaryDirectory,
 			studyID,
-			"Smoothed SMR map"		/* mapTitle */, 
+			"Smoothed SMR"		/* mapTitle */, 
 			"smoothed_smr"			/* resultsColumn */,
 			rifSyle,
 			baseStudyName,
@@ -258,8 +261,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			featureCollection.getFeatureCollection(),
 			temporaryDirectory,
 			studyID,
-			"Poster Probability map"		/* mapTitle */, 
-			"posterior_probability"			/* resultsColumn */,
+			"Posterior Probability"		/* mapTitle */, 
+			"posterior_probability"		/* resultsColumn */,
 			rifSyle,
 			baseStudyName,
 			featureCollection.getCoordinateReferenceSystem()
@@ -288,26 +291,34 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		MapContent map = new MapContent();
 		map.setTitle(mapTitle);
 
-		ReferencedEnvelope envelope2=featureCollection.getBounds();
-		rifLogger.info(this.getClass(), "database bounds: " + envelope.toString() +
-			"; featureCollection bounds: " + envelope2.toString());
+//		ReferencedEnvelope envelope2=featureCollection.getBounds();
+//		rifLogger.info(this.getClass(), mapTitle + "; database bounds: " + envelope.toString() + lineSeparator + 
+//			"featureCollection bounds: " + envelope2.toString());
 		// Set projection
 		MapViewport vp = map.getViewport();
 		vp.setCoordinateReferenceSystem(crs);
-		vp.setBounds(envelope2);	// Use featureCollection until fixed
+		vp.setBounds(envelope);	// Use featureCollection until fixed
 			
 		// Add layers to map			
-        FeatureLayer layer = new FeatureLayer(featureCollection, style);						
-		map.addLayer(layer);
+        FeatureLayer layer = new FeatureLayer(featureCollection, style);	
+		layer.setTitle(mapTitle);		
+		if (!map.addLayer(layer)) {
+			throw new Exception("Failed to add FeatureLayer to map: " + mapTitle);
+		}
 		
-//		Layer gridLayer = createGridLayer(style, envelope2); // Use featureCollection until fixed
-//		map.addLayer(gridLayer);			
+//		Layer gridLayer = createGridLayer(style, envelope); 		
+//		if (!map.addLayer(gridLayer)) {
+//			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
+//		}
 		
-		LegendLayer legendLayer = createLegendLayer(rifSyle, envelope2); // Use featureCollection until fixed		
-		map.addLayer(legendLayer);
+		LegendLayer legendLayer = createLegendLayer(rifSyle, envelope, mapTitle); 
+		if (!map.addLayer(legendLayer)) {
+			throw new Exception("Failed to add legendLayer to map: " + mapTitle);
+		}
 		
 		// Save image
-		exportSVG(map, temporaryDirectory, dirName, filePrefix, studyID, featureCollection.size(), mapWidthPixels);	
+		exportSVG(map, temporaryDirectory, dirName, filePrefix, studyID, featureCollection.size(), 
+			(int)(mapWidthPixels/8));	
 		createGraphicsMaps(temporaryDirectory, dirName, filePrefix, studyID);
 		
 		map.dispose();
@@ -315,21 +326,28 @@ public class RIFMaps extends SQLAbstractSQLManager {
 
 	private LegendLayer createLegendLayer(
 		final RIFStyle rifSyle, 
-		final ReferencedEnvelope envelope2)
+		final ReferencedEnvelope envelope2,
+		final String mapTitle)
 				throws Exception {
 			
 		ArrayList<LegendLayer.LegendItem> legendItems = new ArrayList<LegendLayer.LegendItem>();
 		ArrayList<RIFStyle.RIFStyleBand> rifStyleBands = rifSyle.getRifStyleBands();
+		StringBuffer sb = new StringBuffer();
+		int i=0;
 		for (RIFStyle.RIFStyleBand rifStyleBand : rifStyleBands) {
+			i++;
 			String title=rifStyleBand.getTitle();
+			sb.append("Legend item [" + i + "] " + title + "; " + rifStyleBand.getColor() + lineSeparator);
 			LegendLayer.LegendItem legendItem = new LegendLayer.LegendItem(
 				title, 
 				rifStyleBand.getColor(),
 				Geometries.MULTIPOLYGON);
 			legendItems.add(legendItem);
 		}
+		rifLogger.info(this.getClass(), sb.toString());
 		
-		LegendLayer legendLayer = new LegendLayer("Legend", Color.LIGHT_GRAY, legendItems);
+		LegendLayer legendLayer = new LegendLayer(mapTitle, Color.LIGHT_GRAY, legendItems);
+		legendLayer.setTitle("Legend");
 		
 		return legendLayer;
 	} 
@@ -376,20 +394,41 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			file.delete();
 		}
 
-		Rectangle imageBounds = null;
-		ReferencedEnvelope mapBounds = null;
 		int imageHeight=0;
-
-		mapBounds = map.getViewport().getBounds();
+		ReferencedEnvelope mapBounds = map.getViewport().getBounds();
 		double heightToWidth = mapBounds.getSpan(1) / mapBounds.getSpan(0);
 		imageHeight=(int) Math.round(imageWidth * heightToWidth);
-		imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
-	
+		Rectangle imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
+		int screenWidth=(int)(imageWidth*1.2);
+		Rectangle screenBounds = new Rectangle(0, 0, screenWidth, imageHeight);
+		
+		List<Layer>	mapLayers = map.layers();
+		StringBuffer sb = new StringBuffer();
+		int i=0;
+		for (Layer mapLayer : mapLayers) {
+			i++;
+			ReferencedEnvelope envel=mapLayer.getBounds();
+			if (envel != null) {
+				sb.append("Layer[" + i + "]: " + mapLayer.getTitle() + 
+					"; bounds: " + envel.toString() + lineSeparator);
+			}
+			else  {
+				sb.append("Layer[" + i + "]: " + mapLayer.getTitle() + 
+					"; bounds: NONE" + lineSeparator);
+			}
+		}
+		
 		MapViewport vp = map.getViewport();
+		vp.setScreenArea(screenBounds);
+		map.setViewport(vp);
 		ReferencedEnvelope envelope=vp.getBounds();	
+		Rectangle screenArea=vp.getScreenArea();	
 		rifLogger.info(this.getClass(), "Create map " + imageWidth + "x" + imageHeight + 
 			"; areas: " + numberOfAreas + "; file: " + svgFile + lineSeparator +
-			"bounding box: " + envelope.toString() + "; CRS: " + CRS.toSRS(crs));	
+			"bounding box: " + envelope.toString() + "; CRS: " + CRS.toSRS(crs) + lineSeparator +
+			"image bounds: " + imageBounds.toString() + lineSeparator +
+			"screenArea: " + screenArea.toString() + lineSeparator +
+			sb.toString());	
 			
 		Dimension canvasSize = new Dimension(imageWidth, imageHeight);
 		Document document = null;
@@ -409,6 +448,15 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		g2d.setSVGCanvasSize(canvasSize);
 		
 		StreamingRenderer renderer = new StreamingRenderer();
+		renderer.addRenderListener(new RenderListener() {
+			public void featureRenderer(SimpleFeature feature) {
+				features++;
+			}
+			public void errorOccurred(Exception exception) {			
+				rifLogger.warning(this.getClass(), "Renderer error: " + exception.getMessage());
+				errors++;
+			}
+		});
 		renderer.setMapContent(map);
 		
 		Rectangle outputArea = new Rectangle(g2d.getSVGCanvasSize());
@@ -429,6 +477,14 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			if (osw != null) {
 				osw.close();
 			}
+			if (errors > 0) {
+				rifLogger.warning(this.getClass(), errors + " occurred rendering " + features + " features");
+			}
+			else {
+				rifLogger.warning(this.getClass(),  "No errors occurred rendering " + features + " features");
+			}
+			errors=0;
+			features=0;
 		}			
 	}
 
