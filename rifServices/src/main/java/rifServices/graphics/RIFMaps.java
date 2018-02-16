@@ -280,7 +280,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final RIFStyle rifSyle,
 		final String baseStudyName,
 		final CoordinateReferenceSystem crs,
-		final ReferencedEnvelope envelope) 
+		final ReferencedEnvelope envelope2) 
 			throws Exception {
 				
 		Style style=rifSyle.getStyle();
@@ -291,13 +291,25 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		MapContent map = new MapContent();
 		map.setTitle(mapTitle);
 
-//		ReferencedEnvelope envelope2=featureCollection.getBounds();
+		ReferencedEnvelope envelope=featureCollection.getBounds();
 //		rifLogger.info(this.getClass(), mapTitle + "; database bounds: " + envelope.toString() + lineSeparator + 
 //			"featureCollection bounds: " + envelope2.toString());
 		// Set projection
 		MapViewport vp = map.getViewport();
 		vp.setCoordinateReferenceSystem(crs);
-		vp.setBounds(envelope);	// Use featureCollection until fixed
+		
+		double xMin=envelope.getMinimum(0);
+		double xMax=envelope.getMaximum(0); 
+		xMin=(double)(xMax-((xMax-xMin)*1.3)); // Expand map min Xbound by 30% to allow for legend at right
+		double yMin=envelope.getMinimum(1);
+		double yMax=envelope.getMaximum(1);	
+		ReferencedEnvelope mapBounds = new ReferencedEnvelope(
+					xMin /* bounds.getWestBoundLongitude() */,
+					xMax /* bounds.getEastBoundLongitude() */,
+					yMin /* bounds.getSouthBoundLatitude() */,
+					yMax /* bounds.getNorthBoundLatitude() */,
+					crs);
+		vp.setBounds(mapBounds);	
 			
 		// Add layers to map			
         FeatureLayer layer = new FeatureLayer(featureCollection, style);	
@@ -306,12 +318,12 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			throw new Exception("Failed to add FeatureLayer to map: " + mapTitle);
 		}
 		
-//		Layer gridLayer = createGridLayer(style, envelope); 		
-//		if (!map.addLayer(gridLayer)) {
-//			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
-//		}
+		Layer gridLayer = createGridLayer(style, mapBounds); 		
+		if (!map.addLayer(gridLayer)) {
+			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
+		}
 		
-		LegendLayer legendLayer = createLegendLayer(rifSyle, envelope, mapTitle); 
+		LegendLayer legendLayer = createLegendLayer(rifSyle, mapBounds, mapTitle); 
 		if (!map.addLayer(legendLayer)) {
 			throw new Exception("Failed to add legendLayer to map: " + mapTitle);
 		}
@@ -363,7 +375,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param String filePrefix, 
 	 * @param String studyID, 
 	 * @param int numberOfAreas,
-	 * @param int imageWidth
+	 * @param int imageWidth. This sets the overall scale factor for the map, and is adjusted dependent on the 
+	 *						  size of the map
 	 */
 	public void exportSVG(
 		final MapContent map, 
@@ -394,13 +407,14 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			file.delete();
 		}
 
+		MapViewport vp = map.getViewport();
+		ReferencedEnvelope mapBounds = vp.getBounds();
+		
+		// Deduce aspect ration
 		int imageHeight=0;
-		ReferencedEnvelope mapBounds = map.getViewport().getBounds();
 		double heightToWidth = mapBounds.getSpan(1) / mapBounds.getSpan(0);
 		imageHeight=(int) Math.round(imageWidth * heightToWidth);
-		Rectangle imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
-		int screenWidth=(int)(imageWidth*1.2);
-		Rectangle screenBounds = new Rectangle(0, 0, screenWidth, imageHeight);
+		Rectangle screenBounds = new Rectangle(0, 0, imageWidth, imageHeight);
 		
 		List<Layer>	mapLayers = map.layers();
 		StringBuffer sb = new StringBuffer();
@@ -418,15 +432,14 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			}
 		}
 		
-		MapViewport vp = map.getViewport();
+		// Set new right enlarged screen area and map bounds
 		vp.setScreenArea(screenBounds);
 		map.setViewport(vp);
 		ReferencedEnvelope envelope=vp.getBounds();	
 		Rectangle screenArea=vp.getScreenArea();	
 		rifLogger.info(this.getClass(), "Create map " + imageWidth + "x" + imageHeight + 
 			"; areas: " + numberOfAreas + "; file: " + svgFile + lineSeparator +
-			"bounding box: " + envelope.toString() + "; CRS: " + CRS.toSRS(crs) + lineSeparator +
-			"image bounds: " + imageBounds.toString() + lineSeparator +
+			"bounding box: " + mapBounds.toString() + "; CRS: " + CRS.toSRS(crs) + lineSeparator +
 			"screenArea: " + screenArea.toString() + lineSeparator +
 			sb.toString());	
 			
@@ -553,9 +566,10 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				squareWidth *= 10;
 			}
 		}
-
+		
 		// max distance between vertices
 		double vertexSpacing = squareWidth / 20;
+		/*
 		// grow to cover the whole map (and a bit).
 		double left = gridBounds.getMinX();
 		double bottom = gridBounds.getMinY();
@@ -595,10 +609,15 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			}
 		}
 
-		gridBounds.expandToInclude(right, top);
+		gridBounds.expandToInclude(right, top); 
+		*/
+		rifLogger.info(this.getClass(), "Add grid " + 
+			"; squareWidth: " + squareWidth + "; vertexSpacing: " + vertexSpacing + lineSeparator +
+			"gridBounds: " + gridBounds.toString());	
 		SimpleFeatureSource grid = Grids.createSquareGrid(gridBounds, squareWidth,
 				vertexSpacing);
 		Layer gridLayer = new FeatureLayer(grid.getFeatures(), style);
+		gridLayer.setTitle("Grid");		
 		return gridLayer;
 	}
 }

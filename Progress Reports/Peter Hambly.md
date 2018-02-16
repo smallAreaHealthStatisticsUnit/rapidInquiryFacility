@@ -1958,7 +1958,10 @@ callPerformSmoothingActivity exitValue: 1
 
 * Creation of test SVG map; 8 quantiles, PuOr colorbrewer pallette
 * Added support for the usual output types; fixed issue with bounding box (database code is quick but wrong!)
-* Add map legend
+* Add map legend [code running, not displaying]
+* Maps now projected OK, but there are issues with resolution at high latititudes; possibly either a SQL Server
+  issue or a bounds issue. Shapefile data is fine.
+* Bounding box issue with database calulated BBOX.
 * Makefile fixed
 
 ## In progress (February/March 2018):

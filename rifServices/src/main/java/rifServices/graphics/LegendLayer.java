@@ -55,6 +55,8 @@ public class LegendLayer extends DirectLayer {
 	private static int LINESPACE    =  5;  // vertical space between lines of text
 	private static int LEFTX_OFFSET = 20;  // X coord val of left edge of bounds rectangle
 	private static int LEFTY_OFFSET = 20;  // Y coord val of bottom edge of bounds rectangle
+	private static int RIGHTX_OFFSET = 20;  // X coord val of right edge of bounds rectangle
+	private static int RIGHTY_OFFSET = 20;  // Y coord val of bottom edge of bounds rectangle
 	
 	private static int FONT_SIZE_TITLE  = 12;
 	private static int FONT_SIZE_ITEM   = 10;
@@ -142,11 +144,18 @@ public class LegendLayer extends DirectLayer {
 
 			// y coord of upper left corner of bounds rectangle is offset from edge
 			int ulcy  = (int)scrRect.getHeight()-(LEFTY_OFFSET+boundsh);
+//			int lrcy  = (int)scrRect.getWidth()-(RIGHTY_OFFSET+boundsh);
 			
+			int iconRightBase = LEFTX_OFFSET+boundsw-HOR_MARGIN;
+			//int iconRightBase = (int)scrRect.getWidth()+boundsw-HOR_MARGIN;
+		
 			// Draw the bounds rectangle and title
-	    	Shape shape = new Rectangle(LEFTX_OFFSET,ulcy,boundsw,boundsh);
+			// Rectangle(int x, int y, int width, int height)
+	    	Shape shape = new Rectangle(LEFTX_OFFSET,ulcy,boundsw,boundsh); 	// Bottom left
+	    	// Shape shape = new Rectangle(lrcy,ulcy,boundsw,boundsh); 			// BOttom right
 			rifLogger.info(this.getClass(), legendTitle + " scrRect: " + scrRect.toString() +
-				"; shape: " + shape.toString());
+				"; shape: " + shape.toString() +
+				"; boundsw: " + boundsw);
 				
 			drawShape(graphics, shape, backgroundColor);
 	    	graphics.setFont(titlef);
@@ -157,7 +166,7 @@ public class LegendLayer extends DirectLayer {
 	    	graphics.setFont(itemf);
 	    	for (int rnum = 0; rnum < legendItems.size(); rnum++)
 	    	{
-	    		drawLegendItem(graphics, legendItems.get(rnum), rnum, ulcy);
+	    		drawLegendItem(graphics, legendItems.get(rnum), rnum, ulcy, iconRightBase);
 		    }
 		}
 		catch (Exception e) {
@@ -165,14 +174,14 @@ public class LegendLayer extends DirectLayer {
 		}
 	}
 	
-	private void drawLegendItem(Graphics2D graphics, LegendItem item, int legendRow, int ulcy)
+	private void drawLegendItem(Graphics2D graphics, LegendItem item, int legendRow, int ulcy, int iconRightBase)
 	{
-		Shape shape;
+		Shape shape=null;
 		
 		// top of area containing legend icons 
 		int iconTopBase = ulcy+VERT_MARGIN+th+VERT_MARGIN;
 		// right side of area containing icons
-		int iconRightBase = LEFTX_OFFSET+boundsw-HOR_MARGIN;
+		// int iconRightBase = LEFTX_OFFSET+boundsw-HOR_MARGIN;
 		
 		// Line geometries are shown on the legend with a vertical line. We'll draw a 
 		// rectangle with width 20% of height.  The rectangle is centered vertically 
@@ -190,6 +199,7 @@ public class LegendLayer extends DirectLayer {
 
 		graphics.setColor(Color.BLACK);
 		graphics.drawString(item.label, LEFTX_OFFSET+HOR_MARGIN, iconTopBase+(legendRow+1)*(LINESPACE+ih)+ih);
+//		graphics.drawString(item.label, iconRightBase-boundsw, iconTopBase+(legendRow+1)*(LINESPACE+ih)+ih);
 		
 		switch (item.shape)
 		{
@@ -213,6 +223,10 @@ public class LegendLayer extends DirectLayer {
 	    	
 		default:
 			break;
+		}
+		
+		if (shape != null) {
+			rifLogger.info(this.getClass(), item.label + "; shape: " + shape.toString());
 		}
 	}
 
