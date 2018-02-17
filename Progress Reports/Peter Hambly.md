@@ -1963,6 +1963,12 @@ callPerformSmoothingActivity exitValue: 1
   issue or a bounds issue. Shapefile data is fine.
 * Bounding box issue with database calulated BBOX.
 * Makefile fixed
+* Fixed grid and legend, solved resizing issue
+
+#### 19th to 23rd February
+
+TODO: Fix timeouts in front end export, add maps to report, move shapefile create to front of web service,
+      setup map scaling and grid size correctly
 
 ## In progress (February/March 2018):
 

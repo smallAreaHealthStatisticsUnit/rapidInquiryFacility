@@ -297,7 +297,6 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		CoordinateReferenceSystem crs=rifFeatureCollection.getCoordinateReferenceSystem();
 		ReferencedEnvelope expandedEnvelope=rifFeatureCollection.getExpandedEnvelope();
 		ReferencedEnvelope initialEnvelope=rifFeatureCollection.getInitialEnvelope();
-		ReferencedEnvelope wgs84Envelope=rifFeatureCollection.getWgs84Envelope();	
 		double gridSquareWidth=rifFeatureCollection.getGridSquareWidth();
 		double gridVertexSpacing=rifFeatureCollection.getGridVertexSpacing();
 		
@@ -313,19 +312,6 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		MapViewport vp = map.getViewport();
 		vp.setCoordinateReferenceSystem(crs);
 		
-//		ReferencedEnvelope envelope=featureCollection.getBounds();
-/*		double xMin=initialEnvelope.getMinimum(0);
-		double xMax=initialEnvelope.getMaximum(0); 
-		xMin=(double)(xMax-((xMax-xMin)*1.3)); // Expand map min Xbound by 30% to allow for legend at right
-		double yMin=initialEnvelope.getMinimum(1);
-		double yMax=initialEnvelope.getMaximum(1);	
-		ReferencedEnvelope mapBounds = new ReferencedEnvelope(
-					xMin,
-					xMax,
-					yMin,
-					yMax,
-					crs);
-		vp.setBounds(mapBounds);	*/
 		vp.setBounds(expandedEnvelope);	
 		map.setViewport(vp);
 			
@@ -336,8 +322,12 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			throw new Exception("Failed to add FeatureLayer to map: " + mapTitle);
 		}		
 		
-//		Layer gridLayer = createGridLayer(style, wgs84Envelope); 
-		Layer gridLayer = createGridLayer(SLD.createLineStyle(Color.BLACK, 1), expandedEnvelope); 		
+		rifLogger.info(this.getClass(), "Add grid; gridSquareWidth: " + gridSquareWidth + 
+			"; gridVertexSpacing: " + gridVertexSpacing);	
+		SimpleFeatureSource grid = Grids.createSquareGrid(expandedEnvelope, gridSquareWidth,
+			gridVertexSpacing);				
+		Layer gridLayer = new FeatureLayer(grid.getFeatures(), SLD.createLineStyle(Color.BLACK, 1));
+		gridLayer.setTitle("Grid");			
 		if (!map.addLayer(gridLayer)) {
 			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
 		}
@@ -367,7 +357,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		int i=0;
 		for (RIFStyle.RIFStyleBand rifStyleBand : rifStyleBands) {
 			i++;
-			String title=rifStyleBand.getTitle();
+			String title=rifStyleBand.getTitle().replace("..", " to ");
 			sb.append("Legend item [" + i + "] " + title + "; " + rifStyleBand.getColor() + lineSeparator);
 			LegendLayer.LegendItem legendItem = new LegendLayer.LegendItem(
 				title, 
@@ -571,72 +561,5 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				}
 			}
 		}		
-	}
-
-	// https://github.com/ianturton/geotools-cookbook/blob/master/modules/output/src/main/java/org/ianturton/cookbook/output/MapWithGrid.java
-	private Layer createGridLayer(Style style, ReferencedEnvelope gridBounds)
-			throws IOException {
-		double squareWidth = 20.0;
-		double extent = gridBounds.maxExtent();
-		double ll = Math.log10(extent);
-		if (ll > 0) {
-			// there are ll 10's across the map
-			while (ll-- > 4) {
-				squareWidth *= 10;
-			}
-		}
-		
-		// max distance between vertices
-		double vertexSpacing = squareWidth / 20;
-		/*
-		// grow to cover the whole map (and a bit).
-		double left = gridBounds.getMinX();
-		double bottom = gridBounds.getMinY();
-
-		if (left % squareWidth != 0) {
-			if (left > 0.0) { // east
-				left -= Math.abs(left % squareWidth);
-			} else { // west
-				left += Math.abs(left % squareWidth);
-			}
-		}
-
-		if (bottom % squareWidth != 0) {
-			if (bottom > 0.0) {
-				bottom -= Math.abs(bottom % squareWidth);
-			} else {
-				bottom += Math.abs(bottom % squareWidth);
-			}
-		}
-
-		gridBounds.expandToInclude(left, bottom);
-		double right = gridBounds.getMaxX();
-		double top = gridBounds.getMaxY();
-		if (right % squareWidth != 0) {
-			if (right > 0.0) { // east
-				right += Math.abs(right % squareWidth) + squareWidth;
-			} else { // west
-				right -= Math.abs(right % squareWidth) - squareWidth;
-			}
-		}
-
-		if (top % squareWidth != 0) {
-			if (top > 0.0) { // North
-				top += Math.abs(top % squareWidth) + squareWidth;
-			} else { // South
-				top -= Math.abs(top % squareWidth) - squareWidth;
-			}
-		}
-
-		gridBounds.expandToInclude(right, top); 
-		*/
-		rifLogger.info(this.getClass(), "Add grid " + 
-			"; squareWidth: " + squareWidth + "; vertexSpacing: " + vertexSpacing + lineSeparator +
-			"gridBounds: " + gridBounds.toString());	
-		SimpleFeatureSource grid = Grids.createSquareGrid(gridBounds, squareWidth,
-				vertexSpacing);
-		Layer gridLayer = new FeatureLayer(grid.getFeatures(), style);
-		gridLayer.setTitle("Grid");		
-		return gridLayer;
 	}
 }

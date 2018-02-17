@@ -259,6 +259,33 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		tileFileName.append(baseStudyName);
 		tileFileName.append("_map");
 		
+		String extraColumns=null;
+		
+		
+		if (databaseType == DatabaseType.POSTGRESQL) { 
+			extraColumns=", b.zoomlevel, c.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
+//				"/*, c.direct_standardisation */" +
+				", ROUND(c.adjusted::NUMERIC, 2) As adjusted, c.observed, ROUND(c.expected::NUMERIC, 2) AS expected" +
+				", ROUND(c.lower95::NUMERIC, 2) AS lower95, ROUND(c.upper95::NUMERIC, 2) AS upper95" +
+				", ROUND(c.relative_risk::NUMERIC, 2) AS rr, ROUND(c.smoothed_relative_risk::NUMERIC, 2) AS sm_rr" +
+				", ROUND(c.posterior_probability::NUMERIC, 2) AS post_prob" +
+//				"/*, c.posterior_probability_upper95, c.posterior_probability_lower95" +
+//				", c.residual_relative_risk, c.residual_rr_lower95, c.residual_rr_upper95 */" +
+				", ROUND(c.smoothed_smr::NUMERIC, 2) AS sm_smr, ROUND(c.smoothed_smr_lower95::NUMERIC, 2) AS sm_smr_l95" +
+				", ROUND(c.smoothed_smr_upper95::NUMERIC, 2) AS sm_smr_u95";
+		}
+		else {
+			extraColumns=", b.zoomlevel, c.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
+//				"/*, c.direct_standardisation */" +
+				", ROUND(c.adjusted, 2) As adjusted, c.observed, ROUND(c.expected, 2) AS expected" +
+				", ROUND(c.lower95, 2) AS lower95, ROUND(c.upper95, 2) AS upper95" +
+				", ROUND(c.relative_risk, 2) AS rr, ROUND(c.smoothed_relative_risk, 2) AS sm_rr" +
+				", ROUND(c.posterior_probability, 2) AS post_prob" +
+//				"/*, c.posterior_probability_upper95, c.posterior_probability_lower95" +
+//				", c.residual_relative_risk, c.residual_rr_lower95, c.residual_rr_upper95 */" +
+				", ROUND(c.smoothed_smr, 2) AS sm_smr, ROUND(c.smoothed_smr_lower95, 2) AS sm_smr_l95" +
+				", ROUND(c.smoothed_smr_upper95, 2) AS sm_smr_u95";
+		}
 		RifFeatureCollection mapFeatureCollection=writeMapQueryTogeoJSONFile(
 				connection,
 				rifStudySubmission,
@@ -270,16 +297,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				tileFileName.toString(),
 				zoomLevel,
 				studyID,
-				null, 									/* areaType */
-				", b.zoomlevel, c.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
-				"/*, c.direct_standardisation */, c.adjusted, c.observed, c.expected" +
-				", c.lower95, c.upper95, c.relative_risk AS rr, c.smoothed_relative_risk AS sm_rr" +
-				", c.posterior_probability AS post_prob" +
-				"/*, c.posterior_probability_upper95, c.posterior_probability_lower95" +
-				", c.residual_relative_risk, c.residual_rr_lower95, c.residual_rr_upper95 */" +
-				", c.smoothed_smr AS sm_smr, c.smoothed_smr_lower95 AS sm_smr_l95" +
-				", c.smoothed_smr_upper95 AS sm_smr_u95",	
-														/* extraColumns: reduced to 10 characters */
+				null, 					/* areaType */
+				extraColumns,			/* extraColumns: reduced to 10 characters */
 				"LEFT OUTER JOIN rif_studies." + mapTable.toLowerCase() + 
 					" c ON (a.area_id = c.area_id)"
 														/* additionalJoin */,

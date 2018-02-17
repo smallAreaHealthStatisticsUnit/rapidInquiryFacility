@@ -342,12 +342,12 @@ public class RifCoordinateReferenceSystem {
 		if (initialEnvelope == null) {
 			throw new Exception("initialEnvelope is null");
 		}		
-/*		if (!CRS.toSRS(initialEnvelope.getCoordinateReferenceSystem()).
+		else if (!CRS.toSRS(initialEnvelope.getCoordinateReferenceSystem()).
 				equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
 			throw new Exception("Unable to expand bounds: initialEnvelope is not in WGS84: " + 
 				CRS.toSRS(initialEnvelope.getCoordinateReferenceSystem()) +
 				"; expecting: " + CRS.toSRS(DefaultGeographicCRS.WGS84));
-		} */
+		} 
 				
 		// WGS84 Bounds: -180.0000, -90.0000, 180.0000, 90.0000	
 		double xMin=initialEnvelope.getMinimum(0);
@@ -355,6 +355,7 @@ public class RifCoordinateReferenceSystem {
 		xMin=(double)(xMax-((xMax-xMin)*1.3)); // Expand map min Xbound by 30% to allow for legend at right
 //		xMin=(double)(xMax-((xMax-xMin)*xMinExpansion)); // Expand map min Xbound by <xMinExpansion>% to allow for legend at left
 //		if (xMin < -180) {
+//			rifLogger.warning(this.getClass(), "Expand map bounds: xMin: " + Xmin + " set to -180");
 //			xMin=-180;
 //		}
 //		xMax=(double)(xMin+((xMax-xMin)*otherExpansion)); // Expand map max Xbound by <otherExpansion>% for border
@@ -376,42 +377,8 @@ public class RifCoordinateReferenceSystem {
 					xMax /* bounds.getEastBoundLongitude() */,
 					yMin /* bounds.getSouthBoundLatitude() */,
 					yMax /* bounds.getNorthBoundLatitude() */,
-					initialEnvelope.getCoordinateReferenceSystem());	
-//					DefaultGeographicCRS.WGS84);	
-		
-		// Round envelope
-		double gridSize=0.0;
-		if (xMax-xMin > 30 /* Degrees of longitude */) {
-			gridSize=5.0;
-		}
-		if (xMax-xMin > 10 /* Degrees of longitude */) {
-			gridSize=1.0;
-		}		
-		else if (xMax-xMin > 1 /* Degrees of longitude */) {
-			gridSize=0.1;
-		}
-		else if (xMax-xMin > 0.1 /* Degrees of longitude */) {
-			gridSize=0.01;
-		}
-		else if (xMax-xMin > 0.01 /* Degrees of longitude */) {
-			gridSize=0.001;
-		}
-/*
-Expand map bounds bbox: [-8.862089573194751,52.66337037331786 -4.83726118921235,55.56628681071138]
-initialEnvelope: ReferencedEnvelope[-7.933283023044967 : -4.83726118921235, 52.66337037331786 : 55.56628681071138]
-expandedEnvelope: ReferencedEnvelope[-8.862089573194751 : -4.83726118921235, 52.66337037331786 : 55.56628681071138]
-finalEnvelope: ReferencedEnvelope[-8.9 : -4.800000000000001, 52.6 : 55.6]
-gridSize: 0.1 
-*/
-//		ReferencedEnvelope finalEnvelope=Envelopes.expandToInclude(expandedEnvelope, gridSize); // Round envelope up a bit!
-/* Will not work: called from static constructor
-		rifLogger.info(this.getClass(), 
-			"Expand map bounds bbox: [" + xMin + "," + yMin + " " + xMax + "," + yMax + "]" + lineSeparator +
-			"initialEnvelope: " + initialEnvelope.toString() + lineSeparator +
-			"expandedEnvelope: " + expandedEnvelope.toString() + lineSeparator +
-			"finalEnvelope: " + finalEnvelope.toString() + lineSeparator +
-			"gridSize: " + gridSize);
- */
+					initialEnvelope.getCoordinateReferenceSystem());
+
 		return expandedEnvelope;
 	}
 }
