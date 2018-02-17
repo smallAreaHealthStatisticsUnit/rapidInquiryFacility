@@ -61,6 +61,8 @@ import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.RenderListener;
 import org.geotools.renderer.lite.StreamingRenderer;
 
+import org.geotools.styling.SLD;
+
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
@@ -151,8 +153,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	private static DatabaseType databaseType;
-	private static RifCoordinateReferenceSystem rifCoordinateReferenceSystem = 
-		new RifCoordinateReferenceSystem();
+	private static RifCoordinateReferenceSystem rifCoordinateReferenceSystem = null;
 
 	private static final String MAPS_SUBDIRECTORY = "maps";
 	
@@ -176,6 +177,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			final RIFServiceStartupOptions rifServiceStartupOptions) {
 		super(rifServiceStartupOptions.getRIFDatabaseProperties());
 		
+		this.rifCoordinateReferenceSystem = new RifCoordinateReferenceSystem();
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		try {
@@ -231,7 +233,23 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		String geog = rifStudySubmission.getStudy().getGeography().getName();			
 		tileTableName.append(geog);
 
-		RIFStyle rifSyle=new RIFStyle(
+		RIFStyle rifSyle1=new RIFStyle(
+				"quantile"		/* Classifier function name */, 
+				"rr"			/* Column */, 
+				"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+				9				/* numberOfBreaks */, 
+				true			/* invert */,
+				featureCollection.getFeatureCollection());
+		writeMap(
+			featureCollection,
+			temporaryDirectory,
+			studyID,
+			"Relative Risk"		/* mapTitle */, 
+			"relative_risk"		/* resultsColumn */,
+			rifSyle1,
+			baseStudyName);
+			
+		RIFStyle rifSyle2=new RIFStyle(
 				"quantile"		/* Classifier function name */, 
 				"sm_smr"		/* Column */, 
 				"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
@@ -239,18 +257,15 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				true			/* invert */,
 				featureCollection.getFeatureCollection());
 		writeMap(
-			featureCollection.getFeatureCollection(),
+			featureCollection,
 			temporaryDirectory,
 			studyID,
 			"Smoothed SMR"		/* mapTitle */, 
-			"smoothed_smr"			/* resultsColumn */,
-			rifSyle,
-			baseStudyName,
-			featureCollection.getCoordinateReferenceSystem()
-									/* CoordinateReferenceSystem */,
-			featureCollection.getReferencedEnvelope());
+			"smoothed_smr"		/* resultsColumn */,
+			rifSyle2,
+			baseStudyName);
 
-		rifSyle=new RIFStyle(
+		RIFStyle rifSyle3=new RIFStyle(
 				"AtlasProbability"	/* Classifier function name */, 
 				"post_prob"			/* Column */, 
 				null				/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
@@ -258,31 +273,34 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				false				/* invert */,
 				featureCollection.getFeatureCollection());
 		writeMap(
-			featureCollection.getFeatureCollection(),
+			featureCollection,
 			temporaryDirectory,
 			studyID,
 			"Posterior Probability"		/* mapTitle */, 
 			"posterior_probability"		/* resultsColumn */,
-			rifSyle,
-			baseStudyName,
-			featureCollection.getCoordinateReferenceSystem()
-									/* CoordinateReferenceSystem */,
-			featureCollection.getReferencedEnvelope());			
+			rifSyle3,
+			baseStudyName);			
 
 	}
 	
 	private void writeMap(
-		final DefaultFeatureCollection featureCollection,
+		final RifFeatureCollection rifFeatureCollection,
 		final File temporaryDirectory,
 		final String studyID,
 		final String mapTitle,
 		final String resultsColumn,
 		final RIFStyle rifSyle,
-		final String baseStudyName,
-		final CoordinateReferenceSystem crs,
-		final ReferencedEnvelope envelope2) 
+		final String baseStudyName) 
 			throws Exception {
-				
+	
+		DefaultFeatureCollection featureCollection=rifFeatureCollection.getFeatureCollection();
+		CoordinateReferenceSystem crs=rifFeatureCollection.getCoordinateReferenceSystem();
+		ReferencedEnvelope expandedEnvelope=rifFeatureCollection.getExpandedEnvelope();
+		ReferencedEnvelope initialEnvelope=rifFeatureCollection.getInitialEnvelope();
+		ReferencedEnvelope wgs84Envelope=rifFeatureCollection.getWgs84Envelope();	
+		double gridSquareWidth=rifFeatureCollection.getGridSquareWidth();
+		double gridVertexSpacing=rifFeatureCollection.getGridVertexSpacing();
+		
 		Style style=rifSyle.getStyle();
 		
 		//Create map
@@ -291,39 +309,40 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		MapContent map = new MapContent();
 		map.setTitle(mapTitle);
 
-		ReferencedEnvelope envelope=featureCollection.getBounds();
-//		rifLogger.info(this.getClass(), mapTitle + "; database bounds: " + envelope.toString() + lineSeparator + 
-//			"featureCollection bounds: " + envelope2.toString());
 		// Set projection
 		MapViewport vp = map.getViewport();
 		vp.setCoordinateReferenceSystem(crs);
 		
-		double xMin=envelope.getMinimum(0);
-		double xMax=envelope.getMaximum(0); 
+//		ReferencedEnvelope envelope=featureCollection.getBounds();
+/*		double xMin=initialEnvelope.getMinimum(0);
+		double xMax=initialEnvelope.getMaximum(0); 
 		xMin=(double)(xMax-((xMax-xMin)*1.3)); // Expand map min Xbound by 30% to allow for legend at right
-		double yMin=envelope.getMinimum(1);
-		double yMax=envelope.getMaximum(1);	
+		double yMin=initialEnvelope.getMinimum(1);
+		double yMax=initialEnvelope.getMaximum(1);	
 		ReferencedEnvelope mapBounds = new ReferencedEnvelope(
-					xMin /* bounds.getWestBoundLongitude() */,
-					xMax /* bounds.getEastBoundLongitude() */,
-					yMin /* bounds.getSouthBoundLatitude() */,
-					yMax /* bounds.getNorthBoundLatitude() */,
+					xMin,
+					xMax,
+					yMin,
+					yMax,
 					crs);
-		vp.setBounds(mapBounds);	
+		vp.setBounds(mapBounds);	*/
+		vp.setBounds(expandedEnvelope);	
+		map.setViewport(vp);
 			
 		// Add layers to map			
         FeatureLayer layer = new FeatureLayer(featureCollection, style);	
 		layer.setTitle(mapTitle);		
 		if (!map.addLayer(layer)) {
 			throw new Exception("Failed to add FeatureLayer to map: " + mapTitle);
-		}
+		}		
 		
-		Layer gridLayer = createGridLayer(style, mapBounds); 		
+//		Layer gridLayer = createGridLayer(style, wgs84Envelope); 
+		Layer gridLayer = createGridLayer(SLD.createLineStyle(Color.BLACK, 1), expandedEnvelope); 		
 		if (!map.addLayer(gridLayer)) {
 			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
 		}
 		
-		LegendLayer legendLayer = createLegendLayer(rifSyle, mapBounds, mapTitle); 
+		LegendLayer legendLayer = createLegendLayer(rifSyle, expandedEnvelope, mapTitle); 
 		if (!map.addLayer(legendLayer)) {
 			throw new Exception("Failed to add legendLayer to map: " + mapTitle);
 		}
@@ -494,7 +513,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				rifLogger.warning(this.getClass(), errors + " occurred rendering " + features + " features");
 			}
 			else {
-				rifLogger.warning(this.getClass(),  "No errors occurred rendering " + features + " features");
+				rifLogger.info(this.getClass(),  "No errors occurred rendering " + features + " features");
 			}
 			errors=0;
 			features=0;
