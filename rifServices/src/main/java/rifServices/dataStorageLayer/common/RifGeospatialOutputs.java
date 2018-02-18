@@ -36,6 +36,7 @@ import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.geometry.jts.Geometries;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.geometry.jts.GeometryBuilder;
 
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -841,8 +842,23 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				if (ad instanceof GeometryDescriptor) { 
 					// Need to handle CoordinateReferenceSystem
 					if (CRS.toSRS(rif40GeographiesCRS).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
-						shapefileFeature.setAttribute(0, geometry); 
-						builder.set(0, geometry); 
+						Geometries geomType = Geometries.get(geometry);
+						switch (geomType) {
+							case POLYGON: // Convert POLYGON to MULTIPOLYGON
+								GeometryBuilder geometryBuilder = new GeometryBuilder(geometryFactory);
+								Polygon polygons[] = new Polygon[1];
+								polygons[0]=(Polygon)geometry;
+								MultiPolygon multipolygon=geometryBuilder.multiPolygon(polygons);
+								shapefileFeature.setAttribute(0, multipolygon); 
+								builder.set(0, multipolygon); 
+								break;
+							case MULTIPOLYGON:
+								shapefileFeature.setAttribute(0, geometry); 
+								builder.set(0, geometry); 
+								break;
+							default:
+								throw new Exception("Unsupported Geometry:" + geomType.toString());
+						}
 					} 
 					else if (transform == null) {
 						throw new Exception("Null transform from: " + CRS.toSRS(rif40GeographiesCRS) + " to: " +
@@ -968,8 +984,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
         featureBuilder.setName(featureSetName);  
 		Geometries geomType = Geometries.get(geometry);
 		switch (geomType) {
-			case POLYGON:
-				featureBuilder.add("geometry", Polygon.class);
+			case POLYGON: // Force to multipolygon
+				featureBuilder.add("geometry", MultiPolygon.class);
 				break;
 			case MULTIPOLYGON:
 				featureBuilder.add("geometry", MultiPolygon.class);

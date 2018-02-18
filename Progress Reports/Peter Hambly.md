@@ -1964,13 +1964,19 @@ callPerformSmoothingActivity exitValue: 1
 * Bounding box issue with database calulated BBOX.
 * Makefile fixed
 * Fixed grid and legend, solved resizing issue
+* Fixed SQL Server mixed Polygon Mutlipolygon data issues (SQL SErver STasText() simplifies single polygon Multipolygon data to Polygon); 
 
 #### 19th to 23rd February
 
-TODO: Test margin expansion and limits; add maps to report, move shapefile create to front of web service;
-      setup map scaling and grid size correctly; expand map to rounded grid size, grey gridlines, add: projection,
-	  origin and square sizes to legend; add next higher geolevel to complete boundaries; handle R error values (-1);
-	  fix timeouts in front end export.
+TODO: 
+
+* Test margin expansion and limits; 
+* Add maps to report;
+* move shapefile creation to front of web service (so .shp.sav file is created as soon as possible);
+* Setup map scaling and grid size correctly; 
+* Expand map to rounded grid size, grey gridlines, add: projection, origin and square sizes to legend; 
+* Add next higher geolevel to complete boundaries; handle R error values (-1);
+* Fix timeouts in front end export.
 
 ## In progress (February/March 2018):
 
