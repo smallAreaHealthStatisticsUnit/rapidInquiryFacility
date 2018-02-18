@@ -1976,7 +1976,15 @@ TODO:
 * Setup map scaling and grid size correctly; 
 * Expand map to rounded grid size, grey gridlines, add: projection, origin and square sizes to legend; 
 * Add next higher geolevel to complete boundaries; handle R error values (-1);
-* Fix timeouts in front end export.
+* Fix timeouts in front end export;
+* Add projection and vector grid scale to legend;
+* Add parameter to "disable" vector grid;
+* Create SLD for each map so styles can be used in GIS tools
+
+If feasible:
+
+* Investigate vector grid styling (I don;t think it is possible)
+* Get SVG to support layers
 
 ## In progress (February/March 2018):
 
@@ -2022,6 +2030,7 @@ TODO:
 * Create t_rif40_study_select/rif40_study_select, t_rif40_comparison_select/rif40_comparison_select
   for areas/bands actually seleted by user
 * Add area name to results map table
+* Add default background layer support for geography (so sahsuland has no background)
 * Rename results fields as required
 * Add unique keys to description files on rif tables/projects/health themes to protect against 
   Kev using them as a Key
