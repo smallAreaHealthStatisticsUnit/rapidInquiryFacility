@@ -353,25 +353,28 @@ public class RifCoordinateReferenceSystem {
 		double xMin=initialEnvelope.getMinimum(0);
 		double xMax=initialEnvelope.getMaximum(0); 	
 		xMin=(double)(xMax-((xMax-xMin)*1.3)); // Expand map min Xbound by 30% to allow for legend at right
-//		xMin=(double)(xMax-((xMax-xMin)*xMinExpansion)); // Expand map min Xbound by <xMinExpansion>% to allow for legend at left
-//		if (xMin < -180) {
-//			rifLogger.warning(this.getClass(), "Expand map bounds: xMin: " + Xmin + " set to -180");
-//			xMin=-180;
-//		}
-//		xMax=(double)(xMin+((xMax-xMin)*otherExpansion)); // Expand map max Xbound by <otherExpansion>% for border
-//		if (xMax > 180) {
-//			xMax=180;
-//		}		
+		xMin=(double)(xMax-((xMax-xMin)*xMinExpansion)); // Expand map min Xbound by <xMinExpansion>% to allow for legend at left
+		if (xMin < -180) {
+			rifLogger.warning(this.getClass(), "Expand map bounds: xMin: " + xMin + " set to -180");
+			xMin=-180;
+		}
+		xMax=(double)(xMin+((xMax-xMin)*otherExpansion)); // Expand map max Xbound by <otherExpansion>% for border
+		if (xMax > 180) {
+			rifLogger.warning(this.getClass(), "Expand map bounds: xMin: " + xMax + " set to 180");
+			xMax=180;
+		}		
 		double yMin=initialEnvelope.getMinimum(1);
 		double yMax=initialEnvelope.getMaximum(1);	
-//		yMin=(double)(yMax-((yMax-yMin)*otherExpansion)); // Expand map min Ybound by <otherExpansion>% for border
-//		if (yMin < -90) {
-//			yMin=-90;
-//		}	
-//		yMax=(double)(yMin+((yMax-yMin)*otherExpansion)); // Expand map max Xbound by <otherExpansion>% for border
-//		if (yMax > 90) {
-//			yMax=90;
-//		}		
+		yMin=(double)(yMax-((yMax-yMin)*otherExpansion)); // Expand map min Ybound by <otherExpansion>% for border
+		if (yMin < -90) {
+			rifLogger.warning(this.getClass(), "Expand map bounds: xMin: " + yMin + " set to -90");
+			yMin=-90;
+		}	
+		yMax=(double)(yMin+((yMax-yMin)*otherExpansion)); // Expand map max Xbound by <otherExpansion>% for border
+		if (yMax > 90) {
+			rifLogger.warning(this.getClass(), "Expand map bounds: xMin: " + yMax + " set to 90");
+			yMax=90;
+		}		
 		ReferencedEnvelope expandedEnvelope = new ReferencedEnvelope(
 					xMin /* bounds.getWestBoundLongitude() */,
 					xMax /* bounds.getEastBoundLongitude() */,

@@ -120,8 +120,8 @@ public class RifFeatureCollection {
 		this.initialEnvelope=featureCollection.getBounds(); // In rif40GeographiesCRS
 		ReferencedEnvelope nexpandedEnvelope=rifCoordinateReferenceSystem.expandMapBounds(
 				this.initialEnvelope.transform(DefaultGeographicCRS.WGS84, true /* Be lenient */),
-				1.3 /* xMinExpansion */,
-				0.0 /* otherExpansion */);
+				1.3 	/* xMinExpansion */,
+				1.03 	/* otherExpansion */);
 		if (nexpandedEnvelope != null) {
 			this.expandedEnvelope=nexpandedEnvelope.transform(this.crs, true /* Be lenient */); 
 		}
@@ -132,31 +132,31 @@ public class RifFeatureCollection {
 		double xLength=initialEnvelope.getMaximum(0) - initialEnvelope.getMinimum(0); 
 		double yLength=initialEnvelope.getMaximum(1) - initialEnvelope.getMinimum(1);
 		
-		if (xLength > 500000.0) {
+		if (xLength > 500000.0 || yLength > 500000.0) {
 			this.gridVertexSpacing=100000.0; 	// In WGS84 degrees
 			this.gridSquareWidth=100000.0;		// In WGS84 degrees
 		}
-		else if (xLength > 50000.0) {
+		else if (xLength > 50000.0 || yLength > 50000.0) {
 			this.gridVertexSpacing=10000.0; 	// In WGS84 degrees
 			this.gridSquareWidth=10000.0;		// In WGS84 degrees
 		}
-		else if (xLength > 5000.0) {
+		else if (xLength > 5000.0 || yLength > 5000.0) {
 			this.gridVertexSpacing=1000.0; 		// In WGS84 degrees
 			this.gridSquareWidth=1000.0;		// In WGS84 degrees
 		}
-		else if (xLength > 500.0) {
+		else if (xLength > 500.0 || yLength > 500.0) {
 			this.gridVertexSpacing=100.0; 	// In WGS84 degrees
 			this.gridSquareWidth=100.0;		// In WGS84 degrees
 		}
-		else if (xLength > 50.0) {
+		else if (xLength > 50.0 || yLength > 50.0) {
 			this.gridVertexSpacing=10.0; 	// In WGS84 degrees
 			this.gridSquareWidth=10.0;		// In WGS84 degrees
 		}	
-		else if (xLength > 5.0) {
+		else if (xLength > 5.0 || yLength > 5.0) {
 			this.gridVertexSpacing=1.0; 	// In WGS84 degrees
 			this.gridSquareWidth=1.0;		// In WGS84 degrees
 		}	
-		else if (xLength > 0.50) {
+		else if (xLength > 0.50 || yLength > 0.50) {
 			this.gridVertexSpacing=0.1; 	// In WGS84 degrees
 			this.gridSquareWidth=0.1;		// In WGS84 degrees			
 		}	
@@ -164,7 +164,13 @@ public class RifFeatureCollection {
 			this.gridVertexSpacing=0.01; 	// In WGS84 degrees
 			this.gridSquareWidth=0.01;		// In WGS84 degrees					
 		}
-				
+//		ReferencedEnvelope gridEnvelope = new ReferencedEnvelope(
+//					xMin /* bounds.getWestBoundLongitude() */,
+//					xMax /* bounds.getEastBoundLongitude() */,
+//					yMin /* bounds.getSouthBoundLatitude() */,
+//					yMax /* bounds.getNorthBoundLatitude() */,
+//					initialEnvelope.getCoordinateReferenceSystem());
+//		expandedEnvelope				
 		rifLogger.error(this.getClass(), 
 			"Setup RifFeatureCollection initialEnvelope: " + initialEnvelope.toString() + lineSeparator +
 			"nexpandedEnvelope: " + nexpandedEnvelope.toString() + lineSeparator +
