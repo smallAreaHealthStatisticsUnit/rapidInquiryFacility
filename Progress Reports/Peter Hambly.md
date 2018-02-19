@@ -1968,11 +1968,12 @@ callPerformSmoothingActivity exitValue: 1
 
 #### 19th to 23rd February
 
+* move shapefile creation to front of web service (so .shp.sav file is created as soon as possible);
+
 TODO: 
 
 * Test margin expansion and limits; 
 * Add maps to report;
-* move shapefile creation to front of web service (so .shp.sav file is created as soon as possible);
 * Setup map scaling and grid size correctly; 
 * Expand map to rounded grid size, grey gridlines, add: projection, origin and square sizes to legend; 
 * Add next higher geolevel to complete boundaries; handle R error values (-1);

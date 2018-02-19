@@ -408,26 +408,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				throw new Exception("R temporary directory: "  + 
 					temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
 			}
-			
-			CachedRowSetImpl rif40Studies=getRif40Studies(connection, studyID);	
-			rifLogger.info(this.getClass(), 
-				"Create study extract for: " + studyID + "; databaseType: " + databaseType);
-			String denominatorHTML=addDenominator(
-				user,
-				connection, 
-				temporaryDirectory,
-				studyID,
-				1 /* Header level */,
-				locale,
-				rif40Studies);
-			String numeratorHTML=addNumerator(
-				user,
-				connection, 
-				temporaryDirectory,
-				studyID,
-				1 /* Header level */,
-				locale,
-				rif40Studies);	
 				
 			submissionZipSavFile = createSubmissionZipFile(
 					user,
@@ -447,7 +427,27 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			}
 			else { // No zip file - can be created 
 				submissionZipOutputStream = new ZipOutputStream(new FileOutputStream(submissionZipSavFile));
-
+							
+				CachedRowSetImpl rif40Studies=getRif40Studies(connection, studyID);	
+				rifLogger.info(this.getClass(), 
+					"Create study extract for: " + studyID + "; databaseType: " + databaseType);
+				String denominatorHTML=addDenominator(
+					user,
+					connection, 
+					temporaryDirectory,
+					studyID,
+					1 /* Header level */,
+					locale,
+					rif40Studies);
+				String numeratorHTML=addNumerator(
+					user,
+					connection, 
+					temporaryDirectory,
+					studyID,
+					1 /* Header level */,
+					locale,
+					rif40Studies);	
+					
 				addJsonFile(
 						temporaryDirectory,
 						submissionZipOutputStream,
