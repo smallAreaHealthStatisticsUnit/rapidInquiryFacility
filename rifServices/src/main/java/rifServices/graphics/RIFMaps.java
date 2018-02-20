@@ -322,7 +322,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			"; gridVertexSpacing: " + gridVertexSpacing);	
 		SimpleFeatureSource grid = Grids.createSquareGrid(expandedEnvelope, gridSquareWidth,
 			gridVertexSpacing);				
-		Layer gridLayer = new FeatureLayer(grid.getFeatures(), SLD.createLineStyle(Color.BLACK, 1));
+		Layer gridLayer = new FeatureLayer(grid.getFeatures(), SLD.createLineStyle(Color.LIGHT_GRAY, 1));
 		gridLayer.setTitle("Grid");			
 		if (!map.addLayer(gridLayer)) {
 			throw new Exception("Failed to add gridLayer to map: " + mapTitle);

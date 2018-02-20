@@ -174,12 +174,13 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 
 	private void PSTranscode(
 			final TranscoderInput input,
-			final TranscoderOutput output) 
+			final TranscoderOutput output,
+			final int pixelWdith) 
 			throws Exception {
 			
 		PSTranscoder transCoder=new PSTranscoder();
 				// Set the transcoding hints.
-		transCoder.addTranscodingHint(PSTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
+		transCoder.addTranscodingHint(PSTranscoder.KEY_WIDTH, (float)pixelWdith); // Pixels
 				// Default 3543: Single column 90 mm (255 pt)
 		transCoder.addTranscodingHint(PSTranscoder.KEY_MEDIA, "print");
 //		transCoder.addTranscodingHint(PSTranscoder.KEY_PAGE_ORIENTATION, "landscape");
@@ -193,12 +194,13 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 	
 	private void EPSTranscode(
 			final TranscoderInput input,
-			final TranscoderOutput output) 
+			final TranscoderOutput output,
+			final int pixelWdith) 
 			throws Exception {
 			
 		EPSTranscoder transCoder=new EPSTranscoder();
 				// Set the transcoding hints.
-		transCoder.addTranscodingHint(EPSTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
+		transCoder.addTranscodingHint(EPSTranscoder.KEY_WIDTH, (float)pixelWdith); // Pixels
 				// Default 3543: Single column 90 mm (255 pt)
 		transCoder.addTranscodingHint(EPSTranscoder.KEY_MEDIA, "print");
 //		transCoder.addTranscodingHint(EPSTranscoder.KEY_PAGE_ORIENTATION, "landscape");
@@ -213,7 +215,8 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 	private void graphicsTranscode(
 			final RIFGraphicsOutputType outputType,
 			final TranscoderInput input,
-			final TranscoderOutput output) 
+			final TranscoderOutput output,
+			final int pixelWdith) 
 			throws Exception {
 			
 		ImageTranscoder transCoder=null;
@@ -235,7 +238,7 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 				throw new Exception("graphicsTranscode(): Unsupported output type: " + outputType.toString());
 		}	
 		// Set the transcoding hints.
-		transCoder.addTranscodingHint(ImageTranscoder.KEY_WIDTH, (float)denominatorPyramidWidthPixels); // Pixels
+		transCoder.addTranscodingHint(ImageTranscoder.KEY_WIDTH, (float)pixelWdith); // Pixels
 				// Default 3543: Single column 90 mm (255 pt)
 		transCoder.addTranscodingHint(ImageTranscoder.KEY_MEDIA, "print");
 		transCoder.addTranscodingHint(ImageTranscoder.KEY_PIXEL_TO_MM, (float)(printingDPI/25.4)); // Default 1000dpi
@@ -370,13 +373,13 @@ Could not write TIFF file because no WriteAdapter is availble
 					break;
 				case RIFGRAPHICS_JPEG:
 				case RIFGRAPHICS_PNG:
-					graphicsTranscode(outputType, input, output);
+					graphicsTranscode(outputType, input, output, pixelWdith);
 					break;
 				case RIFGRAPHICS_EPS:
-					EPSTranscode(input, output);
+					EPSTranscode(input, output, pixelWdith);
 					break;
 				case RIFGRAPHICS_PS:
-					PSTranscode(input, output);
+					PSTranscode(input, output, pixelWdith);
 					break;
 				default:
 					throw new Exception("addGraphicsFile(): Unsupported output type: " + 
