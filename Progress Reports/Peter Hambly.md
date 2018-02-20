@@ -1973,13 +1973,13 @@ callPerformSmoothingActivity exitValue: 1
 * Test margin expansion and limits; 
 * Setup grid size correctly; 
 * Create SLD for each map so styles can be used in GIS tools;
+* Handle null data/R error values (-1);
 
 TODO: 
 
 * Add maps to report;
 * Setup map scaling and pixel size correctly; 
 * Add next higher geolevel to complete boundaries for the extent of the map; 
-* Handle null data/R error values (-1);
 * Fix timeouts in front end export;
 * Add parameter to "disable" vector grid;
 

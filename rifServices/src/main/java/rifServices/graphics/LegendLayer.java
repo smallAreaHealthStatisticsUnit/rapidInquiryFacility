@@ -63,7 +63,8 @@ public class LegendLayer extends DirectLayer {
 	
 	private Font titlef           = new Font("Ariel", Font.BOLD, FONT_SIZE_TITLE);
 	private Font itemf            = new Font("Ariel", Font.BOLD, FONT_SIZE_ITEM);
-	private Color backgroundColor = Color.LIGHT_GRAY;
+//	private Color backgroundColor = Color.LIGHT_GRAY;
+	private Color backgroundColor = Color.decode("#fafafa"); // Gray98 [very light gray!!!]
 
 	private List<LegendItem> legendItems;
 	

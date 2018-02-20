@@ -1066,8 +1066,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		}
 
 		String newValue=value;
-		Long longVal=new Long(-1);
-		Double doubleVal=new Double(-1);
+		Long longVal=null;
+		Double doubleVal=null;
 		if (value != null && (
 			columnType.equals("integer") || 
 			columnType.equals("bigint") || 

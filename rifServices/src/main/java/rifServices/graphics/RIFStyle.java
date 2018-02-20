@@ -265,11 +265,11 @@ public class RIFStyle {
 			colors=invertColor(colors);
 		}
 		FilterFactory2 filterFactory = CommonFactoryFinder.getFilterFactory2();
-		PropertyName propteryExpression = filterFactory.property(columnName);
+		PropertyName propertyExpression = filterFactory.property(columnName);
 		// Add support for -1 data
 		if (groups == null) {
 			Function classify = filterFactory.function(classifyFunctionName, 
-				propteryExpression, filterFactory.literal(numberOfBreaks));
+				propertyExpression, filterFactory.literal(numberOfBreaks));
 			groups = (Classifier) classify.evaluate(featureCollection);  // Classify data 
 		}
 
@@ -292,7 +292,7 @@ public class RIFStyle {
 			
 		FeatureTypeStyle featureTypeStyle = StyleGenerator.createFeatureTypeStyle(
             groups												/* Classifier */,
-            propteryExpression,
+            propertyExpression,
             colors,
             "Generated FeatureTypeStyle for " + paletteName		  /* Type ID */,
             featureCollection.getSchema().getGeometryDescriptor() /* GeometryDescriptor  */,

@@ -390,7 +390,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		legendItems.add(spacerLegendItem);
 		LegendLayer.LegendItem noDataLegendItem = new LegendLayer.LegendItem(
 			"No data", 
-			Color.BLACK,
+			Color.decode("#808080"), // default fill is 50% gray
 			Geometries.MULTIPOLYGON);
 		legendItems.add(noDataLegendItem);
 		LegendLayer.LegendItem gridNameLegendItem = new LegendLayer.LegendItem(
