@@ -36,6 +36,7 @@ import org.geotools.styling.SLDTransformer;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.styling.StyleFactory;
 import org.geotools.styling.UserLayer;
+import org.geotools.styling.NamedLayer;
 
 /**
  *
@@ -327,10 +328,13 @@ public class RIFStyle {
 		sld.setName(mapTitle);
 		sld.setTitle(mapTitle);
 		sld.setAbstract(mapTitle);
-		UserLayer layer = styleFactory.createUserLayer();
+		
+		// Use NamedLayer instead of UserLayer as more standard (e.g. QGis likes it)
+//		UserLayer layer = styleFactory.createUserLayer();
+		NamedLayer layer = styleFactory.createNamedLayer();
 		layer.setName(resultsColumn);
-
-		layer.userStyles().add(style);		
+//		layer.userStyles().add(style);	
+		layer.addStyle(style);		
 		sld.layers().add(layer);
 		SLDTransformer styleTransform = new SLDTransformer();
 		String sldXml = styleTransform.transform(sld);
