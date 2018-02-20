@@ -232,9 +232,11 @@ public class LegendLayer extends DirectLayer {
 
 	private void drawShape(Graphics2D graphics, Shape shape, Color color)
 	{
-    	graphics.draw(shape);
-    	graphics.setColor(color);
-    	graphics.fill(shape);
+		if (color != null) {
+			graphics.draw(shape);
+			graphics.setColor(color);
+			graphics.fill(shape);
+		}
 	}
 	
 	@Override

@@ -9,6 +9,9 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.CoordinateSystem;	 
+	
 import java.lang.*;
 
 /**
@@ -87,6 +90,8 @@ public class RifFeatureCollection {
 	
 	private double gridSquareWidth=-1;
 	private double gridVertexSpacing=-1;
+	private String gridScale=null;
+	private String gridUnits=null;
 	
 	// ==========================================
 	// Section Properties
@@ -113,10 +118,24 @@ public class RifFeatureCollection {
 	/**
 	 * Setup Rif Feature Collection
 	 *
+	 * Set: gridUnits, gridScale, initialEnvelope [from featureCollection], gridVertexSpacing, gridSquareWidth, 
+	 *      expanded (map + legend extent) envelope to enlarged, rounded up gridSquareWidth grid
      */
-	public void SetupRifFeatureCollection()
+	 public void SetupRifFeatureCollection()
 			throws Exception {
 			
+		CoordinateSystem coordinateSystem=crs.getCoordinateSystem();
+		if (coordinateSystem == null) {
+			throw new Exception("Unable to get coordinateSystem for CRS: " + CRS.toSRS(crs));
+		}
+		CoordinateSystemAxis coordinateSystemAxis=coordinateSystem.getAxis(1);
+		if (coordinateSystemAxis == null) {
+			throw new Exception("Unable to get coordinateSystemAxis for CRS: " + CRS.toSRS(crs) +
+				"; WKT: " + coordinateSystem.toWKT());
+		}
+		this.gridUnits=coordinateSystemAxis.getUnit().toString();
+		
+		// Set initialEnvelope from featureCollection
 		this.initialEnvelope=featureCollection.getBounds(); // In rif40GeographiesCRS
 		ReferencedEnvelope nexpandedEnvelope=rifCoordinateReferenceSystem.expandMapBounds(
 				this.initialEnvelope.transform(DefaultGeographicCRS.WGS84, true /* Be lenient */),
@@ -124,59 +143,166 @@ public class RifFeatureCollection {
 				1.03 	/* otherExpansion */);
 		if (nexpandedEnvelope != null) {
 			this.expandedEnvelope=nexpandedEnvelope.transform(this.crs, true /* Be lenient */); 
+				// Transform back to rif40GeographiesCRS
 		}
 		else {
 			throw new Exception("rifCoordinateReferenceSystem.expandMapBounds return NULL ReferencedEnvelope");
 		}
 		
+		if (this.gridUnits == null) {
+			this.gridUnits="km";
+		}
+		else if (this.gridUnits.equals("m")) { // Shift Metres to KM if possible
+			this.gridUnits="km";
+		}
+		
+		// Set grid X/Y spacing from intial (map extent) envelope
 		double xLength=initialEnvelope.getMaximum(0) - initialEnvelope.getMinimum(0); 
 		double yLength=initialEnvelope.getMaximum(1) - initialEnvelope.getMinimum(1);
-		
-		if (xLength > 500000.0 || yLength > 500000.0) {
-			this.gridVertexSpacing=100000.0; 	// In WGS84 degrees
-			this.gridSquareWidth=100000.0;		// In WGS84 degrees
+		// Scale appropriately
+		if (xLength > 200000.0 || yLength > 200000.0) {
+			this.gridVertexSpacing=100000.0; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=100000.0;		
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="100" + this.gridUnits;		
+			}
+			else {
+				this.gridScale="100000" + this.gridUnits;
+			}
 		}
-		else if (xLength > 50000.0 || yLength > 50000.0) {
-			this.gridVertexSpacing=10000.0; 	// In WGS84 degrees
-			this.gridSquareWidth=10000.0;		// In WGS84 degrees
+		else if (xLength > 20000.0 || yLength > 20000.0) {
+			this.gridVertexSpacing=10000.0; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=10000.0;	
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="10" + this.gridUnits;		
+			}
+			else {
+				this.gridScale="10000" + this.gridUnits;
+			}	
 		}
-		else if (xLength > 5000.0 || yLength > 5000.0) {
-			this.gridVertexSpacing=1000.0; 		// In WGS84 degrees
-			this.gridSquareWidth=1000.0;		// In WGS84 degrees
+		else if (xLength > 2000.0 || yLength > 2000.0) {
+			this.gridVertexSpacing=1000.0; 		// In rif40GeographiesCRS units
+			this.gridSquareWidth=1000.0;		
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="1" + this.gridUnits;		
+			}
+			else {
+				this.gridScale="1000" + this.gridUnits;
+			}
 		}
-		else if (xLength > 500.0 || yLength > 500.0) {
-			this.gridVertexSpacing=100.0; 	// In WGS84 degrees
-			this.gridSquareWidth=100.0;		// In WGS84 degrees
+		else if (xLength > 200.0 || yLength > 200.0) {
+			this.gridVertexSpacing=100.0; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=100.0;		
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="0.1" + this.gridUnits;		
+			}
+			else {
+				this.gridScale="100" + this.gridUnits;
+			}	
 		}
-		else if (xLength > 50.0 || yLength > 50.0) {
-			this.gridVertexSpacing=10.0; 	// In WGS84 degrees
-			this.gridSquareWidth=10.0;		// In WGS84 degrees
+		else if (xLength > 20.0 || yLength > 20.0) {
+			this.gridVertexSpacing=10.0; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=10.0;		
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="10m";	
+				this.gridUnits=	"m";			
+			}
+			else {
+				this.gridScale="10" + this.gridUnits;
+			}		
 		}	
-		else if (xLength > 5.0 || yLength > 5.0) {
-			this.gridVertexSpacing=1.0; 	// In WGS84 degrees
-			this.gridSquareWidth=1.0;		// In WGS84 degrees
+		else if (xLength > 2.0 || yLength > 2.0) {
+			this.gridVertexSpacing=1.0; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=1.0;	
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="1m";			
+				this.gridUnits=	"m";
+			}
+			else {
+				this.gridScale="1" + this.gridUnits;
+			}				
 		}	
-		else if (xLength > 0.50 || yLength > 0.50) {
-			this.gridVertexSpacing=0.1; 	// In WGS84 degrees
-			this.gridSquareWidth=0.1;		// In WGS84 degrees			
+		else if (xLength > 0.20 || yLength > 0.20) {
+			this.gridVertexSpacing=0.1; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=0.1;		
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="0.1m";		
+				this.gridUnits=	"m";	
+			}
+			else {
+				this.gridScale="0.1" + this.gridUnits;
+			}					
 		}	
 		else {
-			this.gridVertexSpacing=0.01; 	// In WGS84 degrees
-			this.gridSquareWidth=0.01;		// In WGS84 degrees					
+			this.gridVertexSpacing=0.01; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=0.01;		
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="0.01m";		
+				this.gridUnits=	"m";	
+			}
+			else {
+				this.gridScale="0.01" + this.gridUnits;
+			}							
 		}
-//		ReferencedEnvelope gridEnvelope = new ReferencedEnvelope(
-//					xMin /* bounds.getWestBoundLongitude() */,
-//					xMax /* bounds.getEastBoundLongitude() */,
-//					yMin /* bounds.getSouthBoundLatitude() */,
-//					yMax /* bounds.getNorthBoundLatitude() */,
-//					initialEnvelope.getCoordinateReferenceSystem());
-//		expandedEnvelope				
-		rifLogger.error(this.getClass(), 
-			"Setup RifFeatureCollection initialEnvelope: " + initialEnvelope.toString() + lineSeparator +
-			"nexpandedEnvelope: " + nexpandedEnvelope.toString() + lineSeparator +
-			"expandedEnvelope: " + expandedEnvelope.toString() + lineSeparator +
-			"gridVertexSpacing: " + gridVertexSpacing + "; gridSquareWidth: " + gridSquareWidth);
+		
+		// Set grid squares size to integer grid squares from expanded (map + legend extent) envelope
+		// In rif40GeographiesCRS units
+		double xMin=(double)((int)(this.expandedEnvelope.getMinimum(0)/gridSquareWidth))*gridSquareWidth;
+		double xMax=(double)((int)(this.expandedEnvelope.getMaximum(0)/gridSquareWidth))*gridSquareWidth; 
+		double yMin=(double)((int)(this.expandedEnvelope.getMinimum(1)/gridVertexSpacing))*gridVertexSpacing;
+		double yMax=(double)((int)(this.expandedEnvelope.getMaximum(1)/gridVertexSpacing))*gridVertexSpacing; 		
+		ReferencedEnvelope gridEnvelope = new ReferencedEnvelope(
+					xMin /* bounds.getWestBoundLongitude() */,
+					xMax /* bounds.getEastBoundLongitude() */,
+					yMin /* bounds.getSouthBoundLatitude() */,
+					yMax /* bounds.getNorthBoundLatitude() */,
+					this.expandedEnvelope.getCoordinateReferenceSystem());
+					
+		double xMinRemainder=this.expandedEnvelope.getMinimum(0)%gridSquareWidth;	
+		double xMaxRemainder=this.expandedEnvelope.getMaximum(0)%gridSquareWidth;	
+		double yMinRemainder=this.expandedEnvelope.getMinimum(1)%gridVertexSpacing;	
+		double yMaxRemainder=this.expandedEnvelope.getMaximum(1)%gridVertexSpacing;		
+		if (xMinRemainder != 0.0) { // Has been rounded down
+			xMin-=gridSquareWidth;
+		}	
+		if (xMaxRemainder != 0.0) { // Has been rounded down
+			xMax+=gridSquareWidth;
+		}	
+		if (yMinRemainder != 0.0) { // Has been rounded down
+			yMin-=gridVertexSpacing;
+		}	
+		if (yMaxRemainder != 0.0) { // Has been rounded down
+			yMax+=gridVertexSpacing;
+		}	
+		ReferencedEnvelope finalGridEnvelope = new ReferencedEnvelope( // After rounding
+					xMin /* bounds.getWestBoundLongitude() */,
+					xMax /* bounds.getEastBoundLongitude() */,
+					yMin /* bounds.getSouthBoundLatitude() */,
+					yMax /* bounds.getNorthBoundLatitude() */,
+					this.expandedEnvelope.getCoordinateReferenceSystem());
 
+		rifLogger.error(this.getClass(), 
+			"Setup RifFeatureCollection units: " + gridUnits + "; scale: " + gridScale + lineSeparator +
+			"initialEnvelope(SRID): " + initialEnvelope.toString() + lineSeparator +
+			"nexpandedEnvelope(WGS84): " + nexpandedEnvelope.toString() + lineSeparator +
+			"expandedEnvelope(SRID): " + expandedEnvelope.toString() + lineSeparator +
+			"gridEnvelope(SRID): " + gridEnvelope.toString() + lineSeparator +
+			"xMinRemainder: " + xMinRemainder +
+			"; xMaxRemainder: " + xMaxRemainder +
+			"; yMinRemainder: " + yMinRemainder +
+			"; yMaxRemainder: " + yMaxRemainder + lineSeparator +
+			"finalGridEnvelope(SRID): " + finalGridEnvelope.toString() + lineSeparator +
+			"gridVertexSpacing(SRID): " + gridVertexSpacing + "; gridSquareWidth: " + gridSquareWidth);
+			
+		// Set expanded (map + legend extent) envelope to enlarged, rounded up gridSquareWidth grid
+		if (finalGridEnvelope != null) {
+			this.expandedEnvelope=finalGridEnvelope.transform(this.crs, true /* Be lenient */); 
+				// Transform back to rif40GeographiesCRS
+		}
+		else {
+			throw new Exception("gridEnvelope create return NULL ReferencedEnvelope");
+		}
+				
 	}
 
 	/**
@@ -250,5 +376,22 @@ public class RifFeatureCollection {
 	public double getGridVertexSpacing() {
 		return gridVertexSpacing;
 	}
-
+	
+	/**
+     * Get grid units: e.g. km
+	 *
+	 * @returns String
+	 */
+	public String getGridUnits() {
+		return gridUnits;
+	}
+	
+	/**
+     * Get grid scale: e.g. 10km
+	 *
+	 * @returns String
+	 */
+	public String getGridScale() {
+		return gridScale;
+	}
 }

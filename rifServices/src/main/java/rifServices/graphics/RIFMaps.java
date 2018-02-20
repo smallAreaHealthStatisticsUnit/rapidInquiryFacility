@@ -299,6 +299,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		ReferencedEnvelope initialEnvelope=rifFeatureCollection.getInitialEnvelope();
 		double gridSquareWidth=rifFeatureCollection.getGridSquareWidth();
 		double gridVertexSpacing=rifFeatureCollection.getGridVertexSpacing();
+		String gridScale=rifFeatureCollection.getGridScale();
 		
 		Style style=rifSyle.getStyle();
 		
@@ -315,12 +316,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		vp.setBounds(expandedEnvelope);	
 		map.setViewport(vp);
 			
-		// Add layers to map			
-        FeatureLayer layer = new FeatureLayer(featureCollection, style);	
-		layer.setTitle(mapTitle);		
-		if (!map.addLayer(layer)) {
-			throw new Exception("Failed to add FeatureLayer to map: " + mapTitle);
-		}		
+		// Add layers to map
 		
 		rifLogger.info(this.getClass(), "Add grid; gridSquareWidth: " + gridSquareWidth + 
 			"; gridVertexSpacing: " + gridVertexSpacing);	
@@ -331,8 +327,14 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		if (!map.addLayer(gridLayer)) {
 			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
 		}
+					
+        FeatureLayer layer = new FeatureLayer(featureCollection, style);	
+		layer.setTitle(mapTitle);		
+		if (!map.addLayer(layer)) {
+			throw new Exception("Failed to add FeatureLayer to map: " + mapTitle);
+		}		
 		
-		LegendLayer legendLayer = createLegendLayer(rifSyle, expandedEnvelope, mapTitle); 
+		LegendLayer legendLayer = createLegendLayer(rifSyle, expandedEnvelope, mapTitle, gridScale); 
 		if (!map.addLayer(legendLayer)) {
 			throw new Exception("Failed to add legendLayer to map: " + mapTitle);
 		}
@@ -347,8 +349,9 @@ public class RIFMaps extends SQLAbstractSQLManager {
 
 	private LegendLayer createLegendLayer(
 		final RIFStyle rifSyle, 
-		final ReferencedEnvelope envelope2,
-		final String mapTitle)
+		final ReferencedEnvelope envelope,
+		final String mapTitle,
+		final String gridScale)
 				throws Exception {
 			
 		ArrayList<LegendLayer.LegendItem> legendItems = new ArrayList<LegendLayer.LegendItem>();
@@ -367,6 +370,27 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		}
 		rifLogger.info(this.getClass(), sb.toString());
 		
+		LegendLayer.LegendItem spacerLegendItem = new LegendLayer.LegendItem( // spacer
+			"", 
+			null,
+			Geometries.MULTIPOLYGON);
+		legendItems.add(spacerLegendItem);
+		LegendLayer.LegendItem noDataLegendItem = new LegendLayer.LegendItem(
+			"No data", 
+			Color.BLACK,
+			Geometries.MULTIPOLYGON);
+		legendItems.add(noDataLegendItem);
+		LegendLayer.LegendItem gridNameLegendItem = new LegendLayer.LegendItem(
+			"" + envelope.getCoordinateReferenceSystem().getName(), 
+			null,
+			Geometries.MULTIPOLYGON);
+		legendItems.add(gridNameLegendItem);
+		LegendLayer.LegendItem gridScaleLegendItem = new LegendLayer.LegendItem(
+			"Grids: " + gridScale, 
+			null,
+			Geometries.MULTIPOLYGON);
+		legendItems.add(gridScaleLegendItem);	
+			
 		LegendLayer legendLayer = new LegendLayer(mapTitle, Color.LIGHT_GRAY, legendItems);
 		legendLayer.setTitle("Legend");
 		

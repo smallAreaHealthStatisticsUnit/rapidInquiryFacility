@@ -1969,16 +1969,16 @@ callPerformSmoothingActivity exitValue: 1
 #### 19th to 23rd February
 
 * move shapefile creation to front of web service (so .shp.sav file is created as soon as possible);
+* Expand map to rounded grid size, grey gridlines, add: projection and square sizes to legend; 
+* Test margin expansion and limits; 
+* Setup grid size correctly; 
 
 TODO: 
 
-* Test margin expansion and limits; 
 * Add maps to report;
-* Setup map scaling and grid size correctly; 
-* Expand map to rounded grid size, grey gridlines, add: projection, origin and square sizes to legend; 
+* Setup map scaling and pixel size correctly; 
 * Add next higher geolevel to complete boundaries; handle R error values (-1);
 * Fix timeouts in front end export;
-* Add projection and vector grid scale to legend;
 * Add parameter to "disable" vector grid;
 * Create SLD for each map so styles can be used in GIS tools
 
