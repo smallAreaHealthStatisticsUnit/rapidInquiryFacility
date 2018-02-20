@@ -2,6 +2,7 @@ package rifServices.graphics;
 
 import rifGenericLibrary.util.RIFLogger;
 
+import java.io.*;
 import java.awt.Color;
 import java.util.ArrayList;
 
@@ -30,6 +31,11 @@ import org.geotools.filter.function.Classifier;
 import org.geotools.filter.function.RangedClassifier;
 
 import org.geotools.factory.CommonFactoryFinder;
+
+import org.geotools.styling.SLDTransformer;
+import org.geotools.styling.StyledLayerDescriptor;
+import org.geotools.styling.StyleFactory;
+import org.geotools.styling.UserLayer;
 
 /**
  *
@@ -259,6 +265,7 @@ public class RIFStyle {
 		}
 		FilterFactory2 filterFactory = CommonFactoryFinder.getFilterFactory2();
 		PropertyName propteryExpression = filterFactory.property(columnName);
+		// Add support for -1 data
 		if (groups == null) {
 			Function classify = filterFactory.function(classifyFunctionName, 
 				propteryExpression, filterFactory.literal(numberOfBreaks));
@@ -293,8 +300,67 @@ public class RIFStyle {
             null 	/* defaultStroke */);
         Style style = builder.createStyle();
         style.featureTypeStyles().add(featureTypeStyle);
+			
+		style.getDescription().setTitle("RIFStyle: " + columnName);
+		style.getDescription().setAbstract(rifMethod + ": " + numberOfBreaks);
 
         return style;		
+	}
+
+	/** Write style SLD file
+	  *
+	  * @param String resultsColumn, 
+	  * @param String studyID, 
+	  * @param File temporaryDirectory, 
+	  * @param String dirName, 
+	  * @param String mapTitle
+	  */
+	public void writeSldFile(
+			final String resultsColumn, 
+			final String studyID, 
+			final File temporaryDirectory,
+			final String dirName,
+			final String mapTitle) 
+				throws Exception {
+		StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory();
+		StyledLayerDescriptor sld = styleFactory.createStyledLayerDescriptor();
+		sld.setName(mapTitle);
+		sld.setTitle(mapTitle);
+		sld.setAbstract(mapTitle);
+		UserLayer layer = styleFactory.createUserLayer();
+		layer.setName(resultsColumn);
+
+		layer.userStyles().add(style);		
+		sld.layers().add(layer);
+		SLDTransformer styleTransform = new SLDTransformer();
+		String sldXml = styleTransform.transform(sld);
+		BufferedWriter sldWriter = null;
+		String mapDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
+		File newDirectory = new File(mapDirName);
+		if (newDirectory.exists()) {
+			rifLogger.debug(this.getClass(), 
+				"Found directory: " + newDirectory.getAbsolutePath());
+		}
+		else {
+			newDirectory.mkdirs();
+			rifLogger.info(this.getClass(), 
+				"Created directory: " + newDirectory.getAbsolutePath());
+		}
+		
+		String sldFileName=mapDirName + File.separator + resultsColumn + "_" + studyID + ".sld";
+		File file = new File(sldFileName);
+		if (file.exists()) {
+			file.delete();
+		}
+		try {
+			sldWriter = new BufferedWriter(new FileWriter(sldFileName));
+			sldWriter.write(sldXml);
+		}
+		finally {
+			if (sldWriter != null) {
+				sldWriter.close();
+			}
+		}				
 	}
 	
 	/**

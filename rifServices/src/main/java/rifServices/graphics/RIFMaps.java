@@ -289,7 +289,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final String studyID,
 		final String mapTitle,
 		final String resultsColumn,
-		final RIFStyle rifSyle,
+		final RIFStyle rifStyle,
 		final String baseStudyName) 
 			throws Exception {
 	
@@ -300,12 +300,15 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		double gridSquareWidth=rifFeatureCollection.getGridSquareWidth();
 		double gridVertexSpacing=rifFeatureCollection.getGridVertexSpacing();
 		String gridScale=rifFeatureCollection.getGridScale();
-		
-		Style style=rifSyle.getStyle();
-		
-		//Create map
+
 		String filePrefix=resultsColumn + "_";
 		String dirName=MAPS_SUBDIRECTORY;
+		
+		// Create SLD styling file for GIS tools
+		Style style=rifStyle.getStyle();
+		rifStyle.writeSldFile(resultsColumn, studyID, temporaryDirectory, dirName, mapTitle);
+
+		//Create map		
 		MapContent map = new MapContent();
 		map.setTitle(mapTitle);
 
@@ -334,7 +337,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			throw new Exception("Failed to add FeatureLayer to map: " + mapTitle);
 		}		
 		
-		LegendLayer legendLayer = createLegendLayer(rifSyle, expandedEnvelope, mapTitle, gridScale); 
+		LegendLayer legendLayer = createLegendLayer(rifStyle, expandedEnvelope, mapTitle, gridScale); 
 		if (!map.addLayer(legendLayer)) {
 			throw new Exception("Failed to add legendLayer to map: " + mapTitle);
 		}
@@ -347,6 +350,16 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		map.dispose();
 	}
 
+	/**
+	 * Create map legend [layer]
+	 *
+	 * @param RIFStyle rifSyle, 
+	 * @param ReferencedEnvelope envelope,
+	 * @param String mapTitle,
+	 * @param String gridScale
+	 *
+	 * @returns LegendLayer
+	 */
 	private LegendLayer createLegendLayer(
 		final RIFStyle rifSyle, 
 		final ReferencedEnvelope envelope,

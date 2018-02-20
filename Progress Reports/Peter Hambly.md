@@ -1972,15 +1972,16 @@ callPerformSmoothingActivity exitValue: 1
 * Expand map to rounded grid size, grey gridlines, add: projection and square sizes to legend; 
 * Test margin expansion and limits; 
 * Setup grid size correctly; 
+* Create SLD for each map so styles can be used in GIS tools;
 
 TODO: 
 
 * Add maps to report;
 * Setup map scaling and pixel size correctly; 
-* Add next higher geolevel to complete boundaries; handle R error values (-1);
+* Add next higher geolevel to complete boundaries for the extent of the map; 
+* Handle null data/R error values (-1);
 * Fix timeouts in front end export;
 * Add parameter to "disable" vector grid;
-* Create SLD for each map so styles can be used in GIS tools
 
 If feasible:
 
