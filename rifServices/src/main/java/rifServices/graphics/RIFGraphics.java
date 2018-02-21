@@ -253,7 +253,7 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 	  *
 	  * Graphics file name: <filePrefix><studyID>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
       *
-	  * SVG file name:  <filePrefix><studyID>.svg	  
+	  * SVG file name:  <filePrefix><studyID>_<printingDPI>dpi.svg	  
 	  *
 	  * @param: File temporaryDirectory,
 	  * @param: String dirName,
@@ -280,8 +280,8 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 	  * Graphics file name: <filePrefix><studyID>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
 	  * or (year == -1): <filePrefix><studyID>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
       *
-	  * SVG file name: <filePrefix><studyID>_<year>.svg
-	  * or (year == -1):  <filePrefix><studyID>.svg
+	  * SVG file name: <filePrefix><studyID>_<printingDPI>dpi_<year>.svg
+	  * or (year == -1):  <filePrefix><studyID>_<printingDPI>dpi.svg
 	  *
 	  * @param: File temporaryDirectory,
 	  * @param: String dirName,
@@ -314,10 +314,10 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 		String svgFileName=null;
 		
 		if (year == -1) {
-			svgFileName=filePrefix + studyID + ".svg";
+			svgFileName=filePrefix + studyID + "_" + printingDPI + "dpi.svg";
 		}
 		else {	
-			svgFileName=filePrefix + studyID + "_" + year + ".svg";
+			svgFileName=filePrefix + studyID + "_" + printingDPI + "dpi_" + year + ".svg";
 		}
 		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		String graphicFile=svgDirName + File.separator + graphicFileName;
@@ -407,7 +407,7 @@ Could not write TIFF file because no WriteAdapter is availble
 			final String svgText) 
 			throws Exception {
 			
-		String svgFileName=tablePrefix + studyID + "_" + year + ".svg";
+		String svgFileName=tablePrefix + studyID + "_" + printingDPI + "dpi_" + year + ".svg";
 		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		String svgFile=svgDirName + File.separator + svgFileName;
 		rifLogger.info(this.getClass(), "Adding SVG for report file: " + svgFile);

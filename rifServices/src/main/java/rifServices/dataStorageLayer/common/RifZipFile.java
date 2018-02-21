@@ -22,6 +22,7 @@ import rifServices.graphics.RIFGraphics;
 import com.sun.rowset.CachedRowSetImpl;
 import java.sql.*;
 import java.io.*;
+import java.io.*;
 import org.json.*;
 import java.lang.*;
 
@@ -463,23 +464,10 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						submissionZipOutputStream,
 						studyID,
 						"RIFPopulationPyramid.css");
-			
-				addHtmlFile(
-						temporaryDirectory,
-						submissionZipOutputStream,
-						connection, user, studyID, locale, tomcatServer, taxonomyServicesServer, 
-						denominatorHTML, numeratorHTML);
-						
-				//write the study the user made when they first submitted their query
-				writeQueryFile(
-						submissionZipOutputStream,
-						user,
-						baseStudyName,
-						rifStudySubmission);
 						
 				RifGeospatialOutputs rifGeospatialOutputs = 
 					new RifGeospatialOutputs(rifServiceStartupOptions);
-				rifGeospatialOutputs.writeGeospatialFiles(
+				String mapHTML=rifGeospatialOutputs.writeGeospatialFiles(
 						connection,
 						temporaryDirectory,
 						baseStudyName,
@@ -487,6 +475,19 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						rifStudySubmission,
 						rif40Studies,
 						locale);
+						
+				addHtmlFile(
+						temporaryDirectory,
+						submissionZipOutputStream,
+						connection, user, studyID, locale, tomcatServer, taxonomyServicesServer, 
+						denominatorHTML, numeratorHTML, mapHTML);
+						
+				//write the study the user made when they first submitted their query
+				writeQueryFile(
+						submissionZipOutputStream,
+						user,
+						baseStudyName,
+						rifStudySubmission);
 						
 				addAllFilesToZip(
 					temporaryDirectory,
@@ -599,7 +600,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String tomcatServer,
 			final String taxonomyServicesServer,
 			final String denominatorHTML,
-			final String numeratorHTML) 
+			final String numeratorHTML,
+			final String mapHTML) 
 			throws Exception {
 				
 		GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
@@ -721,6 +723,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		
 		htmlFileText.append(denominatorHTML);
 		htmlFileText.append(numeratorHTML);
+		htmlFileText.append(mapHTML);
 		
 		htmlFileText.append("  </div>" + lineSeparator);
 		htmlFileText.append("</div>" + lineSeparator);
@@ -976,7 +979,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			String disabled="";
 			RIFGraphicsOutputType outputType=htmlOutputTypeIter.next();
 			j++;
-			if (j==0) {
+			if (outputType.getGraphicsExtentsion().equals("png")) {
 				selected="selected";
 			}
 			if (!outputType.isRIFGraphicsOutputTypeEnabled()) {

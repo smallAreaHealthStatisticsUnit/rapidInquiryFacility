@@ -1974,18 +1974,19 @@ callPerformSmoothingActivity exitValue: 1
 * Setup grid size correctly; 
 * Create SLD for each map so styles can be used in GIS tools;
 * Handle null data/R error values (-1);
+* Add maps to report;
 
 TODO: 
 
-* Add maps to report;
-* Setup map scaling and pixel size correctly; 
 * Add next higher geolevel to complete boundaries for the extent of the map; 
-* Fix timeouts in front end export;
+* Setup map scaling and pixel size correctly - use aspect ratio to decide % left expansion; 
+* Report timeouts in front end export, add <export>.err file so failed exports can be detected;
 * Add parameter to "disable" vector grid;
+* Create RifDefaultMaps object with default derived from frontEndParameters.json5;
 
 If feasible:
 
-* Investigate vector grid styling (I don;t think it is possible)
+* Investigate vector grid styling (I don't think it is possible)
 * Get SVG to support layers
 
 ## In progress (February/March 2018):

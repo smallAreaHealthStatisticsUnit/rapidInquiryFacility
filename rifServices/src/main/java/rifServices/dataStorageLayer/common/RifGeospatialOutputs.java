@@ -9,6 +9,7 @@ import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.graphics.RIFMaps;
+import rifServices.graphics.RIFGraphicsOutputType;
 
 import com.sun.rowset.CachedRowSetImpl;
 import java.sql.*;
@@ -20,6 +21,9 @@ import java.util.Map;
 import java.util.Calendar;
 import java.util.Locale;
 import java.net.URL;
+import java.util.Set;
+import java.util.EnumSet;
+import java.util.Iterator;
 
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.simple.SimpleFeature;
@@ -123,6 +127,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	private Connection connection;
 	private String studyID;
 	private static String EXTRACT_DIRECTORY;
+	private static int printingDPI;
 	
 	private static final String STUDY_QUERY_SUBDIRECTORY = "study_query";
 	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
@@ -167,6 +172,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		
 		try {
 			databaseType=this.rifServiceStartupOptions.getRifDatabaseType();
+			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);
 		}
 		catch(Exception exception) {
 			rifLogger.warning(this.getClass(), 
@@ -189,8 +195,10 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 * @param RIFStudySubmission rifStudySubmission,
 	 * @param CachedRowSetImpl rif40Studies,
 	 * @param Locale locale
+	 *
+	 * @returns String
 	 */		
-	public void writeGeospatialFiles(
+	public String writeGeospatialFiles(
 			final Connection connection,
 			final File temporaryDirectory,
 			final String baseStudyName,
@@ -199,8 +207,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			final CachedRowSetImpl rif40Studies,
 			final Locale locale)
 					throws Exception {
-
-		if (rifMaps == null) {
+						
+	if (rifMaps == null) {
 			rifMaps = new RIFMaps(rifServiceStartupOptions);
 		}						
 		
@@ -314,7 +322,70 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				rifStudySubmission,
 				rif40Studies,
 				locale);
+				
+		return createMapsHTML(studyID);
 	}		
+
+	private String createMapsHTML(
+		final String studyID) {
+			
+		StringBuffer mapHTML=new StringBuffer();
+		
+		mapHTML.append("    <h1 id=\"maps\">Maps</h1>" + lineSeparator);
+		mapHTML.append("      <p>" + lineSeparator);	
+		mapHTML.append("      <div>" + lineSeparator);
+		mapHTML.append("        <form id=\"downloadForm2\" method=\"get\" action=\"maps\\smoothed_smr_" + 
+			studyID + "_" + printingDPI + "dpi.png\">" + lineSeparator);
+		mapHTML.append("        Year: <select id=\"rifMapsList\">" + lineSeparator);					
+		mapHTML.append("          <option value=\"maps\\relative_risk_" + 
+			studyID + "_" + printingDPI + "dpi.png\" />Relative Risk</option>" + 
+			lineSeparator);		
+		mapHTML.append("          <option value=\"maps\\posterior_probability_" + 
+			studyID + "_" + printingDPI + "dpi.png\" />Posterior Probability_</option>" + 
+			lineSeparator);		
+		mapHTML.append("          <option value=\"maps\\smoothed_smr_" + 
+			studyID + "_" + printingDPI + "dpi.png\" selected />Smoothed SMR</option>" + 
+			lineSeparator);
+		mapHTML.append("        </select>" + lineSeparator);
+		
+		mapHTML.append("        Graphics Format: <select id=\"rifMapsFileType\">" + lineSeparator);
+		Set<RIFGraphicsOutputType> htmlOutputTypes = EnumSet.of( // Can be viewed in browser
+			RIFGraphicsOutputType.RIFGRAPHICS_PNG,
+			RIFGraphicsOutputType.RIFGRAPHICS_JPEG,
+			RIFGraphicsOutputType.RIFGRAPHICS_TIFF,  
+			RIFGraphicsOutputType.RIFGRAPHICS_SVG);
+		Iterator <RIFGraphicsOutputType> htmlOutputTypeIter = htmlOutputTypes.iterator();
+		int j=0;
+		while (htmlOutputTypeIter.hasNext()) {
+			String selected="";
+			String disabled="";
+			RIFGraphicsOutputType outputType=htmlOutputTypeIter.next();
+			j++;
+			if (outputType.getGraphicsExtentsion().equals("png")) {
+				selected="selected";
+			}
+			if (!outputType.isRIFGraphicsOutputTypeEnabled()) {
+				disabled="disabled";
+			}
+			mapHTML.append("          <option value=\"" + 
+				outputType.getGraphicsExtentsion() +
+				"\" " + disabled + " " +
+				"id=\"" + outputType.getRIFGraphicsOutputTypeShortName().toLowerCase() + "Select\" " + 
+				"title=\"" + outputType.getRIFGraphicsOutputTypeDescription() + "\" " + 
+				selected + " />" + outputType.getRIFGraphicsOutputTypeShortName() + " (" + 
+					outputType.getRIFGraphicsOutputTypeDescription() +
+				")</option>" + lineSeparator);
+		}
+		mapHTML.append("        </select>" + lineSeparator);	
+		mapHTML.append("        <button id=\"downloadButton2\" type=\"submit\">Download PNG</button>" + lineSeparator);
+		mapHTML.append("        </form>" + lineSeparator);	
+		mapHTML.append("      </div>" + lineSeparator);
+		mapHTML.append("      <img src=\"maps\\smoothed_smr_" + 
+			studyID + "_" + printingDPI + "dpi.png\" id=\"rifMaps\" width=\"80%\" />");
+		mapHTML.append("      </p>" + lineSeparator);	
+		
+		return mapHTML.toString();
+	}
 
 	/** 
 	 * Query geolevel_id, geolevel_name, geography, srid, max_geojson_digits from rif40_studies, 

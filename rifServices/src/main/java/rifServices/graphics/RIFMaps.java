@@ -158,6 +158,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	private static final String MAPS_SUBDIRECTORY = "maps";
 	
 	private int mapWidthPixels=0;
+	private int printingDPI=0;
+	
 	protected int errors=0;
 	protected int features=0;
 	
@@ -182,7 +184,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		
 		try {
 			mapWidthPixels=this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
-					"mapWidthPixels", 7480);
+					"mapWidthPixels", 7480);		
+			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);		
 		}
 		catch(Exception exception) {
 			rifLogger.warning(this.getClass(), 
@@ -383,18 +386,19 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		}
 		rifLogger.info(this.getClass(), sb.toString());
 		
-		LegendLayer.LegendItem spacerLegendItem = new LegendLayer.LegendItem( // spacer
+/*		LegendLayer.LegendItem spacerLegendItem = new LegendLayer.LegendItem( // spacer
 			"", 
 			null,
 			Geometries.MULTIPOLYGON);
 		legendItems.add(spacerLegendItem);
 		LegendLayer.LegendItem noDataLegendItem = new LegendLayer.LegendItem(
 			"No data", 
-			Color.decode("#808080"), // default fill is 50% gray
-			Geometries.MULTIPOLYGON);
-		legendItems.add(noDataLegendItem);
+			Color.decode("#808080"), // default fill is *probably* 50% gray
+			Geometries.MULTIPOLYGON); 
+		legendItems.add(noDataLegendItem); */
+		String crsName=""+envelope.getCoordinateReferenceSystem().getName();
 		LegendLayer.LegendItem gridNameLegendItem = new LegendLayer.LegendItem(
-			"" + envelope.getCoordinateReferenceSystem().getName(), 
+			crsName.replace("EPSG:", ""), 
 			null,
 			Geometries.MULTIPOLYGON);
 		legendItems.add(gridNameLegendItem);
@@ -413,7 +417,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	/**
 	 * Generate an SVG document from the map. 
 	 * 
-	 * SVG file name:  <filePrefix><studyID>.svg	  
+	 * SVG file name:  <filePrefix><studyID>_<printingDPI>dpi.svg	  
 	 *
 	 * @param MapContent map - Contains the layers (features + styles) to be rendered,
 	 * @param File temporaryDirectory,
@@ -447,7 +451,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				"Created directory: " + newDirectory.getAbsolutePath());
 		}
 		
-		String svgFile=mapDirName + File.separator + filePrefix + studyID + ".svg";
+		String svgFile=mapDirName + File.separator + filePrefix + studyID + "_" + printingDPI + "dpi.svg";
 		File file = new File(svgFile);
 		if (file.exists()) {
 			file.delete();

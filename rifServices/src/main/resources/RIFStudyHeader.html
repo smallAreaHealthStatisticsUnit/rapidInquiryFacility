@@ -96,6 +96,7 @@ li.nav a:hover:not(.active) {
 <!-- Javascript -->  
   <script>
 var fileExt = "png"; // Default  
+var fileExt2 = "png"; // Default  
 var fileType = 'RIFdenominator_pyramid_';
 var otherFileType = 'RIFdenominator_treepyramid_';
 
@@ -197,6 +198,50 @@ function setPopulationPyramidFileType(event) {
 }
 
 /*
+ * Function: 	setRifMapsFileType()
+ * Parameters:  Event
+ * Returns: 	false
+ * Description:	change RIF maps download box action
+ */
+function setRifMapsFileType(event) {
+	fileExt2 = this.value;
+	
+	document.getElementById("rifMaps").src = 
+		document.getElementById("rifMaps").src.substring(0, 
+			document.getElementById("rifMaps").src.length-3) + fileExt2;
+
+	consoleLog("setRifMapsFileType(" + fileExt2 + "): rifMaps=" + 
+		document.getElementById("rifMaps").src);	
+		
+	document.getElementById("downloadForm2").action=document.getElementById("rifMaps").src;
+	document.getElementById("downloadButton2").innerText = "Download " + fileExt.toUpperCase();
+
+	consoleLog("setRifMapsFileType(" + fileExt + "): fileType=" + 		
+		document.getElementById("downloadForm2").fileType);
+		
+	return false;
+}
+
+/*
+ * Function: 	setRifMaps()
+ * Parameters:  Event
+ * Returns: 	false
+ * Description:	change RIF maps image
+ */
+function setRifMaps() {
+	var fileName = this.value;
+		
+	if (fileName) {
+		document.getElementById("rifMaps").src = 
+			fileName.substring(0, fileName.length-3) + fileExt2;
+		consoleLog("setRifMaps(" + fileName + "): rifMaps=" + 
+			document.getElementById("rifMaps").src);
+	}
+	
+	return false;
+}
+
+/*
  * Function: 	isIE()
  * Parameters: 	None
  * Returns: 	Nothing
@@ -211,7 +256,10 @@ window.onload = function(){
 	document.getElementById("populationPyramidList").onchange = setPopulationPyramid;
 	document.getElementById("populationPyramidFileType").onchange = setPopulationPyramidFileType;
 	document.getElementById("populationPyramidType").onchange = setPopulationPyramidType;
-		
+	
+	document.getElementById("rifMapsList").onchange = setRifMaps;
+	document.getElementById("rifMapsFileType").onchange = setRifMapsFileType;	
+	
 	if (isIE()) {
 		document.getElementById("svgSelect").disabled = true;  	
 	}
