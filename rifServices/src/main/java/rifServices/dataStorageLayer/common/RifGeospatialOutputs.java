@@ -429,7 +429,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		geolevelQueryFormatter.addQueryLine(0, ")");
 		geolevelQueryFormatter.addQueryLine(0, "SELECT a.*, b1.geolevel_name AS bg_geolevel_name");
 		geolevelQueryFormatter.addQueryLine(0, "   FROM a");
-		geolevelQueryFormatter.addQueryLine(0, "		LEFT OUTER JOIN rif40.rif40_geolevels b1 ON (a.bg_geolevel_id = b1.geolevel_id)");
+		geolevelQueryFormatter.addQueryLine(0, "		LEFT OUTER JOIN rif40.rif40_geolevels b1 ON (a.bg_geolevel_id = b1.geolevel_id");
+		geolevelQueryFormatter.addQueryLine(0, "		 										 AND a.geography = b1.geography)");
 		
 		int[] params = new int[1];
 		params[0]=Integer.parseInt(studyID);
