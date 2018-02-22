@@ -115,6 +115,7 @@ public class RifFeatureCollection {
 		this.rifCoordinateReferenceSystem = new RifCoordinateReferenceSystem();
 		
 		this.featureCollection=featureCollection;
+		this.backgroundAreasFeatureCollection=backgroundAreasFeatureCollection;
 		this.crs=crs;		
 	}
 	

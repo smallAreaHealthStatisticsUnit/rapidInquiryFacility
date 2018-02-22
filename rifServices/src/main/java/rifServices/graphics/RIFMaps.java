@@ -297,6 +297,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			throws Exception {
 	
 		DefaultFeatureCollection featureCollection=rifFeatureCollection.getFeatureCollection();
+		DefaultFeatureCollection backgroundAreasFeatureCollection=
+			rifFeatureCollection.getBackgroundAreasFeatureCollection();
 		CoordinateReferenceSystem crs=rifFeatureCollection.getCoordinateReferenceSystem();
 		ReferencedEnvelope expandedEnvelope=rifFeatureCollection.getExpandedEnvelope();
 		ReferencedEnvelope initialEnvelope=rifFeatureCollection.getInitialEnvelope();
@@ -333,7 +335,21 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		if (!map.addLayer(gridLayer)) {
 			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
 		}
-					
+	
+		if (backgroundAreasFeatureCollection != null) {
+			Layer backgroundAreasLayer = new FeatureLayer(backgroundAreasFeatureCollection, 
+				SLD.createPolygonStyle(
+					Color.LIGHT_GRAY /* outlineColor */,
+					Color.decode("#ececec") /* fillColor */,
+					1	/* opacity */,
+					null /* labelField */,
+					null /* labelFont */));
+			backgroundAreasLayer.setTitle("Background areas");			
+			if (!map.addLayer(backgroundAreasLayer)) {
+				throw new Exception("Failed to add backgroundAreasLayer to map: " + mapTitle);
+			}
+		}
+		
         FeatureLayer layer = new FeatureLayer(featureCollection, style);	
 		layer.setTitle(mapTitle);		
 		if (!map.addLayer(layer)) {

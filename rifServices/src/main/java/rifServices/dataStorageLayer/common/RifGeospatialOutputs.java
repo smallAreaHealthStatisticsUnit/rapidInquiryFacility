@@ -45,6 +45,7 @@ import org.geotools.geometry.jts.GeometryBuilder;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.FeatureIterator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.CRS;
 import org.geotools.data.shapefile.ShapefileDataStore; 
@@ -866,6 +867,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 					else { // Transform from WGS84 to SRID CRS
 						Geometry newGeometry = JTS.transform(geometry, transform); // Re-project
 						shapefileFeature.setAttribute(0, newGeometry); 
+						builder.set(0, newGeometry); 
 					}
 				} 
 				else { 
@@ -874,7 +876,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				}
 
 				shapefileFeature.setAttribute(1, geolevelName); 
-						
+				builder.set(1, geolevelName); 
+				
 				// The column count starts from 2
 				for (int j = 2; j <= columnCount; j++ ) {		
 					String name = rsmd.getColumnName(j);
@@ -889,6 +892,24 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				backgroundAreasFeatureCollection.add(builder.buildFeature("id" + i));
 				shapefileWriter.write();
 			} // End of while loop
+			
+/*			rifLogger.info(this.getClass(), "Create backgroundAreas feature set, size: " + 
+				backgroundAreasFeatureCollection.size());
+			FeatureIterator<SimpleFeature> iterator = backgroundAreasFeatureCollection.features();
+			try {
+				int k=0;
+				while (iterator.hasNext()) {
+					k++;
+					SimpleFeature feature = iterator.next();
+					Geometry geometry = (Geometry) feature.getAttribute(0);
+					if (geometry == null) {
+						rifLogger.error(this.getClass(), "No geometry for feature: " + k);
+					}
+				}
+			}
+			finally {
+				 iterator.close();
+			} */
 			
 		}
 		catch (Exception exception) {
@@ -1396,6 +1417,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		if (stringFeature != null) {			
 			stringFeature.append(",\"" + name + "\":\"" + newValue + "\"");
 		}
+		
 		try {
 			if (ad.getType().getBinding() == Double.class) {
 				shapefileFeature.setAttribute(columnIndex, doubleVal);
