@@ -326,6 +326,13 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		return createMapsHTML(studyID);
 	}		
 
+	/** 
+	 * Create HTML to view maps in ZIP html app
+     *  
+	 * @param String studyID
+	 *
+	 * @returns HTML as string
+	 */	
 	private String createMapsHTML(
 		final String studyID) {
 			
@@ -389,7 +396,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 
 	/** 
 	 * Query geolevel_id, geolevel_name, geography, srid, max_geojson_digits from rif40_studies, 
-	 * rif40_geographies
+	 * rif40_geographies,
+	 * bg_geolevel_id, bg_geolevel_name: for geolevel 2 if geolevel_id>2
      * 
 	 * @param Connection connection, 
 	 * @param String studyID, 
@@ -401,19 +409,26 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			final String areaTableName)
 			throws Exception {
 		SQLGeneralQueryFormatter geolevelQueryFormatter = new SQLGeneralQueryFormatter();	
-		geolevelQueryFormatter.addQueryLine(0, "SELECT b.geolevel_id, b.geolevel_name, c.geography, c.srid, c.max_geojson_digits");
-		geolevelQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies a, rif40.rif40_geolevels b, rif40.rif40_geographies c");
-		geolevelQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+		geolevelQueryFormatter.addQueryLine(0, "WITH a AS (");
+		geolevelQueryFormatter.addQueryLine(1, "SELECT b.geolevel_id,");
+		geolevelQueryFormatter.addQueryLine(1, "       CASE WHEN b.geolevel_id > 2 THEN 2 ELSE null END AS bg_geolevel_id,");
+		geolevelQueryFormatter.addQueryLine(1, "       b.geolevel_name, c.geography, c.srid, c.max_geojson_digits");
+		geolevelQueryFormatter.addQueryLine(1, "  FROM rif40.rif40_studies a, rif40.rif40_geolevels b, rif40.rif40_geographies c");
+		geolevelQueryFormatter.addQueryLine(1, " WHERE study_id = ?");
 		if (areaTableName.equals("rif40_comparison_areas")) {
-			geolevelQueryFormatter.addQueryLine(0, "   AND a.comparison_geolevel_name = b.geolevel_name");
+			geolevelQueryFormatter.addQueryLine(1, "   AND a.comparison_geolevel_name = b.geolevel_name");
 		} 
 		else if (areaTableName.equals("rif40_study_areas")) {
-			geolevelQueryFormatter.addQueryLine(0, "   AND a.study_geolevel_name = b.geolevel_name");
+			geolevelQueryFormatter.addQueryLine(1, "   AND a.study_geolevel_name = b.geolevel_name");
 		} 
 		else { // Map tables - same as study areas
-			geolevelQueryFormatter.addQueryLine(0, "   AND a.study_geolevel_name = b.geolevel_name");
+			geolevelQueryFormatter.addQueryLine(1, "   AND a.study_geolevel_name = b.geolevel_name");
 		}	
-		geolevelQueryFormatter.addQueryLine(0, "   AND c.geography = b.geography");
+		geolevelQueryFormatter.addQueryLine(1, "   AND c.geography = b.geography");
+		geolevelQueryFormatter.addQueryLine(0, ")");
+		geolevelQueryFormatter.addQueryLine(0, "SELECT a.*, b1.geolevel_name AS bg_geolevel_name");
+		geolevelQueryFormatter.addQueryLine(0, "   FROM a");
+		geolevelQueryFormatter.addQueryLine(0, "		LEFT OUTER JOIN rif40.rif40_geolevels b1 ON (a.bg_geolevel_id = b1.geolevel_id)");
 		
 		int[] params = new int[1];
 		params[0]=Integer.parseInt(studyID);
@@ -721,6 +736,178 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		return dbEnvelope;
 	}
 	
+	/**
+	 * Get background areas (as geolevel 2) so that partial mapping of a geography can have the rest of the 
+	 * administrative boundaries added.
+	 *
+	 * SELECT b.wkt, b.areaid AS area_id, b.zoomlevel, c.areaname
+     *   FROM rif_data.geometry_sahsuland b
+     * 		LEFT OUTER JOIN rif_data.lookup_sahsu_grd_level1 c ON (b.areaid = c.sahsu_grd_level1)
+     *  WHERE b.geolevel_id = ? AND b.zoomlevel = ?;	
+	 *
+	 * @param Connection connection,
+	 * @param RIFStudySubmission rifStudySubmission
+	 * @param String areaTableName,
+	 * @param File temporaryDirectory,
+	 * @param String dirName,
+	 * @param String schemaName,
+	 * @param String tileTableName,
+	 * @param String geolevelName,
+	 * @param String outputFileName,
+	 * @param String zoomLevel,
+	 * @param String geolevel, 
+	 * @param CoordinateReferenceSystem rif40GeographiesCRS,
+	 * @param Locale locale,
+	 * @param MathTransform transform,
+	 * @param int srid,
+	 * @param String geographyName
+	 *
+	 * @returns DefaultFeatureCollection
+     */	 
+	private DefaultFeatureCollection getBackgroundAreas(
+			final Connection connection,
+			final RIFStudySubmission rifStudySubmission,
+			final String areaTableName,
+			final File temporaryDirectory,
+			final String dirName,
+			final String schemaName,
+			final String tileTableName,
+			final String geolevelName,
+			final String outputFileName,
+			final String zoomLevel,
+			final String geolevel,
+			final CoordinateReferenceSystem rif40GeographiesCRS,
+			final Locale locale,
+			final MathTransform transform,
+			final int srid,
+			final String geographyName)
+					throws Exception {
+			
+		ShapefileDataStore shapeDataStore = createShapefileDataStore(temporaryDirectory,
+			dirName, outputFileName, true /* enableIndexes */);	
+		FeatureWriter<SimpleFeatureType, SimpleFeature> shapefileWriter = null; 
+			// Created once feature types are defined
+
+		DefaultFeatureCollection backgroundAreasFeatureCollection=null;
+	
+		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();	
+		queryFormatter.addQueryLine(0, "SELECT b.wkt, b.areaid AS area_id, b.zoomlevel, c.areaname");	
+		queryFormatter.addQueryLine(0, "  FROM "  + schemaName + "." + tileTableName.toLowerCase() + " b");												
+		queryFormatter.addQueryLine(2, "LEFT OUTER JOIN rif_data.lookup_" + geolevelName.toLowerCase() + 
+			" c ON (b.areaid = c." + geolevelName.toLowerCase() + ")");
+		queryFormatter.addQueryLine(0, " WHERE b.geolevel_id = ? AND b.zoomlevel = ?");		
+		
+		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);	
+		
+		SimpleFeatureType simpleFeatureType=null;
+		
+		try {	
+			ResultSet resultSet = null;
+			String[] queryArgs = new String[2];
+			queryArgs[0]=geolevel;
+			queryArgs[1]=zoomLevel;
+			logSQLQuery("getBackgroundAreas", queryFormatter, queryArgs);
+			statement = createPreparedStatement(connection, queryFormatter);
+			statement.setInt(1, Integer.parseInt(geolevel));
+			statement.setInt(2, Integer.parseInt(zoomLevel));				
+			resultSet = statement.executeQuery();
+			
+			int i = 0;
+		
+			while (resultSet.next()) {
+				
+				ResultSetMetaData rsmd = resultSet.getMetaData();
+				int columnCount = rsmd.getColumnCount();
+				i++;
+				
+				Geometry geometry = createGeometryFromWkt(resultSet.getString(1));
+				if (i == 1) {
+					simpleFeatureType=setupShapefile(rsmd, columnCount, shapeDataStore, null /* areaType */, 
+						outputFileName, geometry, rif40GeographiesCRS);
+					
+					shapefileWriter = shapeDataStore.getFeatureWriter(shapeDataStore.getTypeNames()[0],
+							Transaction.AUTO_COMMIT);				
+					backgroundAreasFeatureCollection = new DefaultFeatureCollection(geolevelName, 
+						simpleFeatureType);
+				}
+				SimpleFeature shapefileFeature = (SimpleFeature) shapefileWriter.next(); 
+				SimpleFeatureBuilder builder = new SimpleFeatureBuilder(simpleFeatureType);
+				if (i == 1) {		
+					printShapefileColumns(shapefileFeature, rsmd, outputFileName, rif40GeographiesCRS, geographyName, srid);
+				}	
+				
+				AttributeDescriptor ad = shapefileFeature.getType().getDescriptor(0); // Create shapefile feature
+					// Add first hsapefile feature attribute
+				if (ad instanceof GeometryDescriptor) { 
+					// Need to handle CoordinateReferenceSystem
+					if (CRS.toSRS(rif40GeographiesCRS).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
+						Geometries geomType = Geometries.get(geometry);
+						switch (geomType) {
+							case POLYGON: // Convert POLYGON to MULTIPOLYGON
+								GeometryBuilder geometryBuilder = new GeometryBuilder(geometryFactory);
+								Polygon polygons[] = new Polygon[1];
+								polygons[0]=(Polygon)geometry;
+								MultiPolygon multipolygon=geometryBuilder.multiPolygon(polygons);
+								shapefileFeature.setAttribute(0, multipolygon); 
+								builder.set(0, multipolygon); 
+								break;
+							case MULTIPOLYGON:
+								shapefileFeature.setAttribute(0, geometry); 
+								builder.set(0, geometry); 
+								break;
+							default:
+								throw new Exception("Unsupported Geometry:" + geomType.toString());
+						}
+					} 
+					else if (transform == null) {
+						throw new Exception("Null transform from: " + CRS.toSRS(rif40GeographiesCRS) + " to: " +
+							CRS.toSRS(DefaultGeographicCRS.WGS84));
+					}
+					else { // Transform from WGS84 to SRID CRS
+						Geometry newGeometry = JTS.transform(geometry, transform); // Re-project
+						shapefileFeature.setAttribute(0, newGeometry); 
+					}
+				} 
+				else { 
+					throw new Exception("First attribute is not MultiPolygon: " + 
+						ad.getName().toString());
+				}
+
+				shapefileFeature.setAttribute(1, geolevelName); 
+						
+				// The column count starts from 2
+				for (int j = 2; j <= columnCount; j++ ) {		
+					String name = rsmd.getColumnName(j);
+					String value = resultSet.getString(j);	
+					String columnType = rsmd.getColumnTypeName(j);
+					
+					addDatumToShapefile(shapefileFeature, builder,
+						null, name, value, columnType, j, i,
+						locale);
+				}
+					
+				backgroundAreasFeatureCollection.add(builder.buildFeature("id" + i));
+				shapefileWriter.write();
+			} // End of while loop
+			
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
+				lineSeparator + queryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+			if (shapefileWriter != null) {
+				shapefileWriter.close();	
+			}	
+			connection.commit();
+		}
+		
+		return backgroundAreasFeatureCollection;
+	}
+	
 	/** 
      * Write results map query to geoJSON file and shapefile
      * 
@@ -771,7 +958,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 * @param File temporaryDirectory,
 	 * @param String dirName,
 	 * @param String schemaName,
-	 * @param String tableName,
+	 * @param String tileTableName,
 	 * @param String outputFileName,
 	 * @param String zoomLevel,
 	 * @param String studyID,
@@ -817,6 +1004,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		String geolevelName = getColumnFromResultSet(rif40Geolevels, "geolevel_name");
 		int max_geojson_digits=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "max_geojson_digits"));
 		int srid=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "srid"));
+		String geographyName = getColumnFromResultSet(rif40Geolevels, "geography");
 		CoordinateReferenceSystem rif40GeographiesCRS = getCRS(rifStudySubmission, rif40Geolevels);
 		MathTransform transform = null; // For re-projection
 		if (!CRS.toSRS(rif40GeographiesCRS).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
@@ -904,7 +1092,6 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				SimpleFeature shapefileFeature = (SimpleFeature) shapefileWriter.next(); 
 				SimpleFeatureBuilder builder = new SimpleFeatureBuilder(simpleFeatureType);
 				if (i == 1) {		
-					String geographyName = getColumnFromResultSet(rif40Geolevels, "geography");
 					printShapefileColumns(shapefileFeature, rsmd, outputFileName, rif40GeographiesCRS, geographyName, srid);
 				}	
 				
@@ -1007,7 +1194,36 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			connection.commit();
 		}
 		
-		RifFeatureCollection rifFeatureCollection=new RifFeatureCollection(featureCollection, 
+		String backgroundAreasGeolevel=getColumnFromResultSet(rif40Geolevels, "bg_geolevel_id",
+			true /* allowNulls */, false /*  allowNoRows */);
+		String backgroundAreasGeolevelName=getColumnFromResultSet(rif40Geolevels, "bg_geolevel_name",
+			true /* allowNulls */, false /*  allowNoRows */);
+		DefaultFeatureCollection backgroundAreasFeatureCollection=null;
+		if (backgroundAreasGeolevelName != null) {
+			String backgroundAreasOutputFileName=backgroundAreasGeolevelName.toLowerCase() + "_map";
+			
+			backgroundAreasFeatureCollection=getBackgroundAreas(
+				connection,
+				rifStudySubmission,
+				areaTableName,
+				temporaryDirectory,
+				dirName,
+				schemaName,
+				tileTableName,
+				backgroundAreasGeolevelName,
+				backgroundAreasOutputFileName,
+				zoomLevel,
+				backgroundAreasGeolevel,
+				rif40GeographiesCRS,
+				locale,
+				transform,
+				srid,
+				geographyName);
+		}
+		
+		RifFeatureCollection rifFeatureCollection=new RifFeatureCollection(
+			featureCollection, 
+			backgroundAreasFeatureCollection,
 			rif40GeographiesCRS);
 		rifFeatureCollection.SetupRifFeatureCollection();
 		
@@ -1177,7 +1393,9 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			}
 		}		
 		
-		stringFeature.append(",\"" + name + "\":\"" + newValue + "\"");
+		if (stringFeature != null) {			
+			stringFeature.append(",\"" + name + "\":\"" + newValue + "\"");
+		}
 		try {
 			if (ad.getType().getBinding() == Double.class) {
 				shapefileFeature.setAttribute(columnIndex, doubleVal);

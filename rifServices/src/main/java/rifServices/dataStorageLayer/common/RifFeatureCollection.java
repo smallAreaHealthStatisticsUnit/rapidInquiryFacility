@@ -84,6 +84,7 @@ public class RifFeatureCollection {
 	private static RifCoordinateReferenceSystem rifCoordinateReferenceSystem = null;
 		
 	private DefaultFeatureCollection featureCollection=null;
+	private DefaultFeatureCollection backgroundAreasFeatureCollection=null;
 	private CoordinateReferenceSystem crs=null;
 	private ReferencedEnvelope expandedEnvelope=null;
 	private ReferencedEnvelope initialEnvelope=null;
@@ -104,10 +105,12 @@ public class RifFeatureCollection {
      * Constructor.
 	 *
 	 * @param DefaultFeatureCollection featureCollection, 
+	 * @param DefaultFeatureCollection backgroundAreasFeatureCollection, 
 	 * @param CoordinateReferenceSystem crs
 	 */
 	public RifFeatureCollection(
 			DefaultFeatureCollection featureCollection,
+			DefaultFeatureCollection backgroundAreasFeatureCollection,
 			CoordinateReferenceSystem crs) {
 		this.rifCoordinateReferenceSystem = new RifCoordinateReferenceSystem();
 		
@@ -312,6 +315,15 @@ public class RifFeatureCollection {
 	 */	
 	public DefaultFeatureCollection getFeatureCollection() {
 		return featureCollection;
+	}
+	
+	/**
+     * Get background Areas Feature collection
+	 *
+	 * @returns DefaultFeatureCollection
+	 */	
+	public DefaultFeatureCollection getBackgroundAreasFeatureCollection() {
+		return backgroundAreasFeatureCollection;
 	}
 	
 	/**
