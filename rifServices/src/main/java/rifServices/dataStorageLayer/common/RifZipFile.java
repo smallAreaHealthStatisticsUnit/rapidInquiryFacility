@@ -389,6 +389,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		File submissionZipFile = null;
 		ZipOutputStream submissionZipOutputStream = null;
 		File submissionZipSavFile = null;
+		File submissionZipErrorFile = null;
 		
 		try {
 			//Establish the phrase that will be used to help name the main zip
@@ -416,6 +417,13 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			submissionZipFile = createSubmissionZipFile(
 					user,
 					baseStudyName);
+			if (submissionZipFile != null) {
+				String submissionZipErrorFileName = submissionZipFile.getAbsolutePath();
+				if (submissionZipErrorFileName != null) {
+					submissionZipErrorFileName=submissionZipErrorFileName.replace(".zip", ".err");
+				}
+				submissionZipErrorFile=new File(submissionZipErrorFileName);
+			}
 			if (submissionZipFile.isFile()) { // ZIP file exists - no need to recreate
 				Thread.sleep(500); // Sleep to allow JS promises time to work
 				rifLogger.info(this.getClass(), "No need to create ZIP file: " + 
@@ -542,6 +550,15 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				rifLogger.warning(this.getClass(), 
 					"createStudyExtract() close ZIP stream ERROR: " + err.getMessage());
 			}
+			
+			try {
+				// Dump error to file
+				writeErrorFile(exception, submissionZipErrorFile);
+			}
+			catch (Exception e) {
+				rifLogger.error(this.getClass(), "writeErrorFile() ERROR", e);
+			}
+			
 			RIFServiceException rifServiceExeption
 				= new RIFServiceException(
 					RIFServiceError.ZIPFILE_CREATE_FAILED, 
@@ -554,6 +571,43 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		}
 	}
 
+	/** Write error file for exception
+	  *
+	  * @param Exception exception, 
+	  * @param File submissionZipErrorFile
+	  */
+	public void writeErrorFile(
+			final Exception exception,
+			final File submissionZipErrorFile)
+				throws Exception {
+
+		BufferedWriter errorWriter = null;
+		if (submissionZipErrorFile == null) {
+			rifLogger.warning(this.getClass(), "Unable to create ZIP file exception trace");
+			return;
+		}
+		else if (submissionZipErrorFile.exists()) {
+			submissionZipErrorFile.delete();
+		}
+		
+		try {
+			rifLogger.info(this.getClass(), "Create ZIP file exception trace: " + 
+				submissionZipErrorFile.getAbsolutePath());
+			StringBuilder sb = new StringBuilder();
+			for (StackTraceElement element : exception.getStackTrace()) {
+				sb.append(element.toString() + lineSeparator);
+			}
+			errorWriter = new BufferedWriter(new FileWriter(submissionZipErrorFile));
+			errorWriter.write("EXCEPTION: " + exception.getMessage() + lineSeparator + 
+				lineSeparator + "TRACE: " + lineSeparator + sb.toString());
+		}
+		finally {
+			if (errorWriter != null) {
+				errorWriter.close();
+			}
+		}				
+	}
+	
 	private void addCssFile(
 			final File temporaryDirectory,
 			final ZipOutputStream submissionZipOutputStream,
