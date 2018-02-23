@@ -4,15 +4,25 @@ import rifGenericLibrary.util.RIFLogger;
 import rifServices.dataStorageLayer.common.RifCoordinateReferenceSystem;
 	
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.CoordinateSystem;	 
+
 import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 
-import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.cs.CoordinateSystem;	 
-	
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
+
 import java.lang.*;
+import java.util.Iterator;
 
 /**
  *
@@ -143,7 +153,6 @@ public class RifFeatureCollection {
 		this.initialEnvelope=featureCollection.getBounds(); // In rif40GeographiesCRS
 		ReferencedEnvelope nexpandedEnvelope=rifCoordinateReferenceSystem.expandMapBounds(
 				this.initialEnvelope.transform(DefaultGeographicCRS.WGS84, true /* Be lenient */),
-				1.3 	/* xMinExpansion */,
 				1.03 	/* otherExpansion */);
 		if (nexpandedEnvelope != null) {
 			this.expandedEnvelope=nexpandedEnvelope.transform(this.crs, true /* Be lenient */); 
@@ -307,6 +316,72 @@ public class RifFeatureCollection {
 			throw new Exception("gridEnvelope create return NULL ReferencedEnvelope");
 		}
 				
+		if (backgroundAreasFeatureCollection != null) {				
+			rifLogger.info(this.getClass(), "Crop backgroundAreas feature set to expandedEnvelope, size: " + 
+					backgroundAreasFeatureCollection.size());
+			Geometry expandedEnvelopeGeometry=(Geometry)createPolygonFromBBox(xMin, yMin, xMax-xMin, yMax-yMin);
+			FeatureIterator<SimpleFeature> iterator = backgroundAreasFeatureCollection.features();
+			DefaultFeatureCollection newBackgroundAreasFeatureCollection = new DefaultFeatureCollection(
+				backgroundAreasFeatureCollection.getID(), 
+				backgroundAreasFeatureCollection.getSchema());
+			int removes=0;
+			try {
+				int k=0;
+				while (iterator.hasNext()) {
+					k++;
+					SimpleFeature feature = iterator.next();
+					Geometry geometry = (Geometry) feature.getAttribute(0);
+					if (geometry == null) {
+						rifLogger.warning(this.getClass(), "No geometry for backgroundAreasFeature: " + k);
+					}
+					else if (geometry.within(expandedEnvelopeGeometry)) { // geometry is completely within expandedEnvelopeGeometry
+																		 // (no touching edges)
+						newBackgroundAreasFeatureCollection.add(feature);
+					}
+					else { // Remove
+						String areaId=(String)feature.getAttribute("AREAID");
+						String areaName=(String)feature.getAttribute("AREANAME");
+						rifLogger.info(this.getClass(), "Remove backgroundAreasFeature: " + k + "; areaId:" + areaId + "; areaName: " + areaName);
+						removes++;
+					}
+				}
+			}
+			finally {
+				 iterator.close();
+				 if (removes > 0) {
+					rifLogger.info(this.getClass(), "Removed " + removes + " features from backgroundAreasFeatureCollection");
+					backgroundAreasFeatureCollection=newBackgroundAreasFeatureCollection;
+				 }
+			}
+		}
+		else {
+			rifLogger.info(this.getClass(), "No backgroundAreas feature collection to Crop");
+		}
+	}
+
+	/**
+     * create Polygon from bounding box
+	 *
+	 * @param double xMin,
+	 * @param double yMin,
+	 * @param double width,
+	 * @param double height,
+	 *
+	 * @returns Polygon
+	 */		
+	private Polygon createPolygonFromBBox(double xMin, double yMin, double width, double height) {
+		GeometryFactory factory=JTSFactoryFinder.getGeometryFactory(null);
+		
+		Coordinate[] coordinates=new Coordinate[5];
+		coordinates[0]=new Coordinate(xMin, yMin);
+		coordinates[1]=new Coordinate(xMin + width, yMin);
+		coordinates[2]=new Coordinate(xMin + width, yMin + height);
+		coordinates[3]=new Coordinate(xMin, yMin + height);
+		coordinates[4]=new Coordinate(xMin, yMin);
+		LinearRing lr=factory.createLinearRing(coordinates);
+		Polygon polygon=factory.createPolygon(lr,new LinearRing[]{});
+		
+		return polygon;
 	}
 
 	/**

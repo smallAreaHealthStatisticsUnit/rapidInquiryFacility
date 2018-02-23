@@ -892,26 +892,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 					
 				backgroundAreasFeatureCollection.add(builder.buildFeature("id" + i));
 				shapefileWriter.write();
-			} // End of while loop
-			
-/*			rifLogger.info(this.getClass(), "Create backgroundAreas feature set, size: " + 
-				backgroundAreasFeatureCollection.size());
-			FeatureIterator<SimpleFeature> iterator = backgroundAreasFeatureCollection.features();
-			try {
-				int k=0;
-				while (iterator.hasNext()) {
-					k++;
-					SimpleFeature feature = iterator.next();
-					Geometry geometry = (Geometry) feature.getAttribute(0);
-					if (geometry == null) {
-						rifLogger.error(this.getClass(), "No geometry for feature: " + k);
-					}
-				}
-			}
-			finally {
-				 iterator.close();
-			} */
-			
+			} // End of while loop			
 		}
 		catch (Exception exception) {
 			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 

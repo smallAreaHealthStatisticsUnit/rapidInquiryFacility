@@ -320,10 +320,32 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		// Set projection
 		MapViewport vp = map.getViewport();
 		vp.setCoordinateReferenceSystem(crs);
-		
 		vp.setBounds(expandedEnvelope);	
+	
+		// Deduce aspect ratio (the ratio of the width to the height of an image or screen)
+		int imageWidth=(int)(mapWidthPixels/8);
+		int imageHeight=0;
+		double heightToWidth = expandedEnvelope.getSpan(1) / expandedEnvelope.getSpan(0); // Inverse aspect ratio
+		imageHeight=(int) Math.round(imageWidth * heightToWidth); 
+		Rectangle screenBounds = new Rectangle(0, 0, imageWidth, imageHeight);
+		// Set new right enlarged screen area and map bounds
+		
+		vp.setScreenArea(screenBounds);
+		vp.setMatchingAspectRatio(false);
+		vp.setEditable(false); /* Lock viewport to enforce bounds */
 		map.setViewport(vp);
-			
+		
+		Rectangle screenArea=vp.getScreenArea();
+		ReferencedEnvelope mapArea=vp.getBounds();	
+		ReferencedEnvelope mapMaxBounds=map.getMaxBounds();
+		rifLogger.info(this.getClass(), 
+			"Before layer add: Bounding box: " + expandedEnvelope.toString() + "; CRS: " + CRS.toSRS(crs) + lineSeparator +
+			"screen bonds: " + screenBounds.toString() + lineSeparator +
+			"aspect ratio: " + (double)(1/heightToWidth) + lineSeparator +
+			"map box: " + mapArea.toString() + "; CRS: " + CRS.toSRS(mapArea.getCoordinateReferenceSystem()) + lineSeparator +
+			"map max bounds: " + mapMaxBounds.toString() + "; CRS: " + CRS.toSRS(mapMaxBounds.getCoordinateReferenceSystem()) + lineSeparator +
+			"screenArea: " + screenArea.toString());	
+				
 		// Add layers to map
 		
 		rifLogger.info(this.getClass(), "Add grid; gridSquareWidth: " + gridSquareWidth + 
@@ -360,10 +382,18 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		if (!map.addLayer(legendLayer)) {
 			throw new Exception("Failed to add legendLayer to map: " + mapTitle);
 		}
-		
+
+		screenArea=vp.getScreenArea();
+		mapArea=vp.getBounds();	
+		mapMaxBounds=map.getMaxBounds();
+		rifLogger.info(this.getClass(), 
+			"After layer add: map box: " + mapArea.toString() + "; CRS: " + CRS.toSRS(mapArea.getCoordinateReferenceSystem()) + lineSeparator +
+			"map max bounds: " + mapMaxBounds.toString() + "; CRS: " + CRS.toSRS(mapMaxBounds.getCoordinateReferenceSystem()) + lineSeparator +
+			"screenArea: " + screenArea.toString());	
+			
 		// Save image
 		exportSVG(map, temporaryDirectory, dirName, filePrefix, studyID, featureCollection.size(), 
-			(int)(mapWidthPixels/8));	
+			imageWidth, imageHeight);	
 		createGraphicsMaps(temporaryDirectory, dirName, filePrefix, studyID);
 		
 		map.dispose();
@@ -442,7 +472,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param String studyID, 
 	 * @param int numberOfAreas,
 	 * @param int imageWidth. This sets the overall scale factor for the map, and is adjusted dependent on the 
-	 *						  size of the map
+	 *						  size of the map,
+	 * @param int imageHeight. Fixed by the aspect ratio
 	 */
 	public void exportSVG(
 		final MapContent map, 
@@ -451,7 +482,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final String filePrefix, 
 		final String studyID,
 		final int numberOfAreas,
-		final int imageWidth) throws Exception {
+		final int imageWidth,
+		final int imageHeight) throws Exception {
 			
 		CoordinateReferenceSystem crs=map.getCoordinateReferenceSystem();
 		String mapDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
@@ -472,16 +504,10 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		if (file.exists()) {
 			file.delete();
 		}
-
-		MapViewport vp = map.getViewport();
-		ReferencedEnvelope mapBounds = vp.getBounds();
-		
-		// Deduce aspect ration
-		int imageHeight=0;
-		double heightToWidth = mapBounds.getSpan(1) / mapBounds.getSpan(0);
-		imageHeight=(int) Math.round(imageWidth * heightToWidth);
-		Rectangle screenBounds = new Rectangle(0, 0, imageWidth, imageHeight);
-		
+	
+		rifLogger.info(this.getClass(), "Create map " + imageWidth + "x" + imageHeight + 
+			"; areas: " + numberOfAreas + "; file: " + svgFile);
+				
 		List<Layer>	mapLayers = map.layers();
 		StringBuffer sb = new StringBuffer();
 		int i=0;
@@ -497,17 +523,6 @@ public class RIFMaps extends SQLAbstractSQLManager {
 					"; bounds: NONE" + lineSeparator);
 			}
 		}
-		
-		// Set new right enlarged screen area and map bounds
-		vp.setScreenArea(screenBounds);
-		map.setViewport(vp);
-		ReferencedEnvelope envelope=vp.getBounds();	
-		Rectangle screenArea=vp.getScreenArea();	
-		rifLogger.info(this.getClass(), "Create map " + imageWidth + "x" + imageHeight + 
-			"; areas: " + numberOfAreas + "; file: " + svgFile + lineSeparator +
-			"bounding box: " + mapBounds.toString() + "; CRS: " + CRS.toSRS(crs) + lineSeparator +
-			"screenArea: " + screenArea.toString() + lineSeparator +
-			sb.toString());	
 			
 		Dimension canvasSize = new Dimension(imageWidth, imageHeight);
 		Document document = null;

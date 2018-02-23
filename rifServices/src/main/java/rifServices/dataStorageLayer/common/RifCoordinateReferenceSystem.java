@@ -328,14 +328,12 @@ public class RifCoordinateReferenceSystem {
 	 * Expand map bounds. xMin: 30% to allow for legend at right
 	 *
 	 * @param ReferencedEnvelope initialEnvelope [in WGS84]
-	 * @param double xMinExpansion: Expand map min Xbound by <xMinExpansion>% to allow for legend at left
 	 * @param double otherExpansion: other border expansion
 	 *
 	 * @returns ReferencedEnvelope in WGS84
 	 */	
 	public ReferencedEnvelope expandMapBounds(
 		final ReferencedEnvelope initialEnvelope, 
-		final double xMinExpansion, 
 		final double otherExpansion)	
 			throws Exception {
 					
@@ -351,9 +349,21 @@ public class RifCoordinateReferenceSystem {
 				
 		// WGS84 Bounds: -180.0000, -90.0000, 180.0000, 90.0000	
 		double xMin=initialEnvelope.getMinimum(0);
-		double xMax=initialEnvelope.getMaximum(0); 	
-		xMin=(double)(xMax-((xMax-xMin)*1.3)); // Expand map min Xbound by 30% to allow for legend at right
-		xMin=(double)(xMax-((xMax-xMin)*xMinExpansion)); // Expand map min Xbound by <xMinExpansion>% to allow for legend at left
+		double xMax=initialEnvelope.getMaximum(0); 		
+		double yMin=initialEnvelope.getMinimum(1);
+		double yMax=initialEnvelope.getMaximum(1);
+	
+		double aspectRatio = initialEnvelope.getSpan(0) / initialEnvelope.getSpan(1);  
+			// The ratio of the width to the height of an image or screen
+		double expansionFactor=1.2;
+			// Adjust expansion factor on the basis of the aspect ratio
+		if (aspectRatio > 1.3) { // Very wide
+			expansionFactor=1.1;
+		}
+		else if (aspectRatio < 0.8) { // Very tall
+			expansionFactor=1.3;
+		}
+		xMin=(double)(xMax-((xMax-xMin)*expansionFactor)); // Expand map min Xbound by <expansionFactor>% to allow for legend at left
 		if (xMin < -180) {
 			rifLogger.warning(this.getClass(), "Expand map bounds: xMin: " + xMin + " set to -180");
 			xMin=-180;
@@ -362,9 +372,7 @@ public class RifCoordinateReferenceSystem {
 		if (xMax > 180) {
 			rifLogger.warning(this.getClass(), "Expand map bounds: xMin: " + xMax + " set to 180");
 			xMax=180;
-		}		
-		double yMin=initialEnvelope.getMinimum(1);
-		double yMax=initialEnvelope.getMaximum(1);	
+		}			
 		yMin=(double)(yMax-((yMax-yMin)*otherExpansion)); // Expand map min Ybound by <otherExpansion>% for border
 		if (yMin < -90) {
 			rifLogger.warning(this.getClass(), "Expand map bounds: xMin: " + yMin + " set to -90");
