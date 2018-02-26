@@ -432,19 +432,23 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		}
 		rifLogger.info(this.getClass(), sb.toString());
 		
-/*		LegendLayer.LegendItem spacerLegendItem = new LegendLayer.LegendItem( // spacer
+		LegendLayer.LegendItem spacerLegendItem = new LegendLayer.LegendItem( // spacer
 			"", 
 			null,
 			Geometries.MULTIPOLYGON);
 		legendItems.add(spacerLegendItem);
-		LegendLayer.LegendItem noDataLegendItem = new LegendLayer.LegendItem(
+/*		LegendLayer.LegendItem noDataLegendItem = new LegendLayer.LegendItem( // -1 handler: nulls now not categorised
 			"No data", 
 			Color.decode("#808080"), // default fill is *probably* 50% gray
 			Geometries.MULTIPOLYGON); 
 		legendItems.add(noDataLegendItem); */
 		String crsName=""+envelope.getCoordinateReferenceSystem().getName();
+		crsName=crsName.replace("EPSG:", "");
+		if (crsName.length() < 12) {
+			crsName="Projection: " + crsName;
+		}	
 		LegendLayer.LegendItem gridNameLegendItem = new LegendLayer.LegendItem(
-			crsName.replace("EPSG:", ""), 
+			crsName, 
 			null,
 			Geometries.MULTIPOLYGON);
 		legendItems.add(gridNameLegendItem);

@@ -489,7 +489,7 @@ Could not write TIFF file because no WriteAdapter is availble
 		// Uses GradientBarPainter() by default
 		
 //      renderer.setDrawBarOutline(false);
-//      renderer.setErrorIndicatorPaint(Color.black);
+//      renderer.setErrorIndicatorPaint(Color.RED);
 //      renderer.setIncludeBaseInRange(false);
 
         CategoryPlot plot = new CategoryPlot(dataset, categoryAxis, valueAxis, 

@@ -173,7 +173,27 @@ public class RifFeatureCollection {
 		double xLength=initialEnvelope.getMaximum(0) - initialEnvelope.getMinimum(0); 
 		double yLength=initialEnvelope.getMaximum(1) - initialEnvelope.getMinimum(1);
 		// Scale appropriately
-		if (xLength > 200000.0 || yLength > 200000.0) {
+		if (xLength > 2000000.0 || yLength > 2000000.0) {
+			this.gridVertexSpacing=1000000.0; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=1000000.0;		
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="1000" + this.gridUnits;		
+			}
+			else {
+				this.gridScale="1000000" + this.gridUnits;
+			}
+		}
+		else if (xLength > 1000000.0 || yLength > 1000000.0) {
+			this.gridVertexSpacing=500000.0; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=50000.0;	
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="500" + this.gridUnits;
+			}
+			else {
+				this.gridScale="500000" + this.gridUnits;
+			}				
+		}
+		else if (xLength > 200000.0 || yLength > 200000.0) {
 			this.gridVertexSpacing=100000.0; 	// In rif40GeographiesCRS units
 			this.gridSquareWidth=100000.0;		
 			if (this.gridUnits.equals("km")) {
@@ -183,6 +203,16 @@ public class RifFeatureCollection {
 				this.gridScale="100000" + this.gridUnits;
 			}
 		}
+		else if (xLength > 100000.0 || yLength > 100000.0) {
+			this.gridVertexSpacing=50000.0; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=50000.0;	
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="50" + this.gridUnits;
+			}
+			else {
+				this.gridScale="50000" + this.gridUnits;
+			}				
+		}	
 		else if (xLength > 20000.0 || yLength > 20000.0) {
 			this.gridVertexSpacing=10000.0; 	// In rif40GeographiesCRS units
 			this.gridSquareWidth=10000.0;	
@@ -192,7 +222,17 @@ public class RifFeatureCollection {
 			else {
 				this.gridScale="10000" + this.gridUnits;
 			}	
-		}
+		}	
+		else if (xLength > 10000.0 || yLength > 10000.0) {
+			this.gridVertexSpacing=5000.0; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=5000.0;	
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="5" + this.gridUnits;
+			}
+			else {
+				this.gridScale="5000" + this.gridUnits;
+			}				
+		}	
 		else if (xLength > 2000.0 || yLength > 2000.0) {
 			this.gridVertexSpacing=1000.0; 		// In rif40GeographiesCRS units
 			this.gridSquareWidth=1000.0;		
@@ -202,7 +242,18 @@ public class RifFeatureCollection {
 			else {
 				this.gridScale="1000" + this.gridUnits;
 			}
-		}
+		}	
+		else if (xLength > 1000.0 || yLength > 1000.0) {
+			this.gridVertexSpacing=500.0; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=500.0;	
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="500m";			
+				this.gridUnits=	"m";
+			}
+			else {
+				this.gridScale="500" + this.gridUnits;
+			}				
+		}	
 		else if (xLength > 200.0 || yLength > 200.0) {
 			this.gridVertexSpacing=100.0; 	// In rif40GeographiesCRS units
 			this.gridSquareWidth=100.0;		
@@ -213,6 +264,17 @@ public class RifFeatureCollection {
 				this.gridScale="100" + this.gridUnits;
 			}	
 		}
+		else if (xLength > 100.0 || yLength > 100.0) {
+			this.gridVertexSpacing=50.0; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=50.0;	
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="50m";			
+				this.gridUnits=	"m";
+			}
+			else {
+				this.gridScale="50" + this.gridUnits;
+			}				
+		}		
 		else if (xLength > 20.0 || yLength > 20.0) {
 			this.gridVertexSpacing=10.0; 	// In rif40GeographiesCRS units
 			this.gridSquareWidth=10.0;		
@@ -224,6 +286,17 @@ public class RifFeatureCollection {
 				this.gridScale="10" + this.gridUnits;
 			}		
 		}	
+		else if (xLength > 10.0 || yLength > 10.0) {
+			this.gridVertexSpacing=5.0; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=5.0;	
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="5m";			
+				this.gridUnits=	"m";
+			}
+			else {
+				this.gridScale="5" + this.gridUnits;
+			}				
+		}		
 		else if (xLength > 2.0 || yLength > 2.0) {
 			this.gridVertexSpacing=1.0; 	// In rif40GeographiesCRS units
 			this.gridSquareWidth=1.0;	
@@ -235,6 +308,17 @@ public class RifFeatureCollection {
 				this.gridScale="1" + this.gridUnits;
 			}				
 		}	
+		else if (xLength > 1.0 || yLength > 1.0) {
+			this.gridVertexSpacing=0.5; 	// In rif40GeographiesCRS units
+			this.gridSquareWidth=0.5;	
+			if (this.gridUnits.equals("km")) {
+				this.gridScale="0.5m";			
+				this.gridUnits=	"m";
+			}
+			else {
+				this.gridScale="0.5" + this.gridUnits;
+			}				
+		}		
 		else if (xLength > 0.20 || yLength > 0.20) {
 			this.gridVertexSpacing=0.1; 	// In rif40GeographiesCRS units
 			this.gridSquareWidth=0.1;		
@@ -275,16 +359,16 @@ public class RifFeatureCollection {
 		double xMaxRemainder=this.expandedEnvelope.getMaximum(0)%gridSquareWidth;	
 		double yMinRemainder=this.expandedEnvelope.getMinimum(1)%gridVertexSpacing;	
 		double yMaxRemainder=this.expandedEnvelope.getMaximum(1)%gridVertexSpacing;		
-		if (xMinRemainder != 0.0) { // Has been rounded down
+		if (xMinRemainder < 0.0) { // Has been rounded down
 			xMin-=gridSquareWidth;
 		}	
-		if (xMaxRemainder != 0.0) { // Has been rounded down
+		if (xMaxRemainder > 0.0) { // Has been rounded down
 			xMax+=gridSquareWidth;
 		}	
-		if (yMinRemainder != 0.0) { // Has been rounded down
+		if (yMinRemainder < 0.0) { // Has been rounded down
 			yMin-=gridVertexSpacing;
 		}	
-		if (yMaxRemainder != 0.0) { // Has been rounded down
+		if (yMaxRemainder > 0.0) { // Has been rounded down
 			yMax+=gridVertexSpacing;
 		}	
 		ReferencedEnvelope finalGridEnvelope = new ReferencedEnvelope( // After rounding
@@ -294,12 +378,16 @@ public class RifFeatureCollection {
 					yMax /* bounds.getNorthBoundLatitude() */,
 					this.expandedEnvelope.getCoordinateReferenceSystem());
 
-		rifLogger.error(this.getClass(), 
+		rifLogger.info(this.getClass(), 
 			"Setup RifFeatureCollection units: " + gridUnits + "; scale: " + gridScale + lineSeparator +
 			"initialEnvelope(SRID): " + initialEnvelope.toString() + lineSeparator +
 			"nexpandedEnvelope(WGS84): " + nexpandedEnvelope.toString() + lineSeparator +
 			"expandedEnvelope(SRID): " + expandedEnvelope.toString() + lineSeparator +
 			"gridEnvelope(SRID): " + gridEnvelope.toString() + lineSeparator +
+			"xMin: " + xMin +
+			"; xMax: " + xMax +
+			"; yMin: " + yMin +
+			"; yMax: " + yMax + lineSeparator +
 			"xMinRemainder: " + xMinRemainder +
 			"; xMaxRemainder: " + xMaxRemainder +
 			"; yMinRemainder: " + yMinRemainder +

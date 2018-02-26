@@ -355,15 +355,20 @@ public class RifCoordinateReferenceSystem {
 	
 		double aspectRatio = initialEnvelope.getSpan(0) / initialEnvelope.getSpan(1);  
 			// The ratio of the width to the height of an image or screen
-		double expansionFactor=1.2;
+		double expansionFactor=1.5;
 			// Adjust expansion factor on the basis of the aspect ratio
-		if (aspectRatio > 1.3) { // Very wide
+		if (aspectRatio > 2.0) { // Very wide
 			expansionFactor=1.1;
 		}
-		else if (aspectRatio < 0.8) { // Very tall
-			expansionFactor=1.3;
+		else if (aspectRatio < 0.7) { // Very tall
+			expansionFactor=1.8;
 		}
-		xMin=(double)(xMax-((xMax-xMin)*expansionFactor)); // Expand map min Xbound by <expansionFactor>% to allow for legend at left
+		
+		double newxMin=(double)(xMax-((xMax-xMin)*expansionFactor)); // Expand map min Xbound by <expansionFactor>% to allow for legend at left
+		rifLogger.info(this.getClass(), 
+			"xMin aspectRatio: " + aspectRatio + "; expansionFactor: " + expansionFactor + 
+			"; xMin: " + xMin + " to: " + newxMin);
+		xMin=newxMin;
 		if (xMin < -180) {
 			rifLogger.warning(this.getClass(), "Expand map bounds: xMin: " + xMin + " set to -180");
 			xMin=-180;

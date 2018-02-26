@@ -1984,6 +1984,7 @@ TODO:
 * Report timeouts in front end export, add <export>.err file so failed exports can be detected;
 * Add parameter to "disable" vector grid;
 * Create RifDefaultMaps object with default derived from frontEndParameters.json5;
+* GeoTIFF support
 
 If feasible:
 
