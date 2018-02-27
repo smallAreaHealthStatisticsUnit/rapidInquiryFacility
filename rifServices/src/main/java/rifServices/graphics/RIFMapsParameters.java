@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.json.JSONObject;
+import org.json.JSONException;
 
 import rifServices.graphics.RIFStyle;
 
@@ -95,17 +96,16 @@ public class RIFMapsParameters {
 		 * 
 		 */	
 		public RIFMapsParameter(
-			final String mapTitle, 
 			final String resultsColumn,
-			final String classifierFunctionName,	
-			final String columnName,	
+			final String classifierFunctionName,
 			final String colorbrewerPalette,	
 			final int numberOfBreaks,
-			final Boolean invert) {
-			this.mapTitle = mapTitle;
+			final Boolean invert) 
+				throws Exception {
+			this.mapTitle = getMapTitle(resultsColumn);
 			this.resultsColumn = resultsColumn;
 			this.classifierFunctionName = classifierFunctionName;
-			this.columnName = columnName;
+			this.columnName = getColumnName(resultsColumn);
 			this.colorbrewerPalette = colorbrewerPalette;
 			this.numberOfBreaks = numberOfBreaks;
 			this.invert = invert;
@@ -127,6 +127,65 @@ public class RIFMapsParameters {
 				numberOfBreaks,
 				invert,
 				featureCollection);
+		}
+		
+		/** Log RIF parameter
+		 *
+		 * @param: String mapName 
+		 */		
+		protected void parameterLog(final String mapName) {
+			rifLogger.info(this.getClass(), mapName + ": " +
+				"; mapTitle: " + mapTitle + 
+				"; resultsColumn: " + resultsColumn + 
+				"; classifierFunctionName: " + classifierFunctionName +
+				"; columnName: " + columnName +
+				"; colorbrewerPalette: " + colorbrewerPalette +
+				"; numberOfBreaks: " + numberOfBreaks +
+				"; invert: " + invert);
+		}
+		
+		/** get map title
+		 *
+		 * @param: String feature 
+		 *
+		 * @returns: String 
+		 */		
+		private String getMapTitle(final String feature)
+				throws Exception {
+			if (feature.toLowerCase().equals("relative_risk")) {
+				return "Relative Risk";
+			}
+			else if (feature.toLowerCase().equals("smoothed_smr")) {
+				return "Smoothed SMR";
+			}
+			else if (feature.toLowerCase().equals("posterior_probability")) {
+				return "Posterior Probability";
+			}
+			else {
+				throw new Exception("getMapTitle() unsupported fature: " + feature);
+			}
+		}	
+
+		/** get column name
+		 *
+		 * @param: String feature 
+		 *
+		 * @returns: String 
+		 */		
+		private String getColumnName(final String feature) 
+				throws Exception {
+			if (feature.toLowerCase().equals("relative_risk")) {
+				return "rr";
+			}
+			else if (feature.toLowerCase().equals("smoothed_smr")) {
+				return "sm_smr";
+			}
+			else if (feature.toLowerCase().equals("posterior_probability")) {
+				return "post_prob";
+			}
+			else {
+				throw new Exception("getColumnName() unsupported fature: " + feature);
+			}
 		}
 	}
 	
@@ -183,33 +242,28 @@ public class RIFMapsParameters {
 	/**
 	 * Setup default map parameters
 	 */
-	private void setupDefaultMapParameters() {
+	private void setupDefaultMapParameters() 
+		throws Exception {
 		
-		RIFMapsParameter rifMapsParameter1 = new RIFMapsParameter(		
-			"Relative Risk"		/* mapTitle */, 
+		RIFMapsParameter rifMapsParameter1 = new RIFMapsParameter(	
 			"relative_risk"		/* resultsColumn */,
 			"quantile"		/* Classifier function name */, 
-			"rr"			/* Column */, 
 			"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
 			9				/* numberOfBreaks */, 
 			true			/* invert */);
 		rifMapsParameters.put("viewermap", rifMapsParameter1);
 				
 		RIFMapsParameter rifMapsParameter2 = new RIFMapsParameter(
-			"Smoothed SMR"		/* mapTitle */, 
 			"smoothed_smr"		/* resultsColumn */,
 			"quantile"		/* Classifier function name */, 
-			"sm_smr"		/* Column */, 
 			"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
 			9				/* numberOfBreaks */, 
 			true			/* invert */);		
 		rifMapsParameters.put("diseasemap1", rifMapsParameter2);
 		
 		RIFMapsParameter rifMapsParameter3 = new RIFMapsParameter(	
-			"Posterior Probability"		/* mapTitle */, 
 			"posterior_probability"		/* resultsColumn */,	
 			"AtlasProbability"	/* Classifier function name */, 
-			"post_prob"			/* Column */, 
 			null				/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
 			0					/* numberOfBreaks */, 
 			false				/* invert */);		
@@ -276,6 +330,8 @@ public class RIFMapsParameters {
 			jsonText=jsonText.replace(lineSeparator, "");							
 					// Remove line separators
 			JSONObject json = new JSONObject(jsonText);	
+			
+			parseJson(json);
 		}
 		catch (Exception exception) {
 			rifLogger.warning(this.getClass(), 
@@ -296,6 +352,67 @@ public class RIFMapsParameters {
 					return;
 				}
 			}	
+		}
+	}
+
+	/**
+	 * Parse JSON from frontEndParameters JSON5 file
+	 *
+	 * @param: JSONObject json
+	 */		
+	private void parseJson(final JSONObject json) {
+		try {
+			JSONObject parameters=json.getJSONObject("parameters");	
+			try {
+				JSONObject mappingDefaults=parameters.getJSONObject("mappingDefaults");
+				
+				Iterator<String> keys = mappingDefaults.keys();
+				while (keys.hasNext()) {
+					String mapName = keys.next();
+					JSONObject mapOptions = mappingDefaults.optJSONObject(mapName);
+					
+					/* 
+					'diseasemap1': {
+						method: 	'quantile', 
+						feature:	'smoothed_smr',
+						intervals: 	9,
+						invert:		true,
+						brewerName:	"PuOr"
+					} */
+					
+					if (mapOptions != null) {
+						String method=mapOptions.optString("method");
+						String feature=mapOptions.optString("feature");
+						int intervals=(int)mapOptions.optLong("intervals");
+						String invertString=mapOptions.optString("invert");
+						boolean invert=false;
+						if (invertString.toUpperCase().equals("TRUE")) {
+							invert=true;
+						}
+						String brewerName=mapOptions.optString("brewerName");
+							
+						try {					
+							RIFMapsParameter rifMapsParameter = new RIFMapsParameter(	
+								feature						/* resultsColumn */,	
+								method						/* Classifier function name */, 
+								brewerName					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+								intervals					/* numberOfBreaks */, 
+								invert						/* invert */);	
+							rifMapsParameters.put(mapName, rifMapsParameter);
+							rifMapsParameter.parameterLog(mapName);
+						}
+						catch (Exception exception) {
+							rifLogger.warning(this.getClass(), "Unable to parse mapOptions from: " + mapOptions.toString(2));
+						}
+					}	
+				}
+			}
+			catch (JSONException exception) {
+				rifLogger.warning(this.getClass(), "Unable to parse mappingDefaults from: " + parameters.toString(2));
+			}
+		}
+		catch (JSONException exception) {
+			rifLogger.warning(this.getClass(), "Unable to parse parameters from: " + json.toString(2));
 		}
 	}
 }		
