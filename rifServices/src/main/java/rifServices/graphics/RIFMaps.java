@@ -9,6 +9,7 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.graphics.RIFGraphics;
 import rifServices.graphics.RIFGraphicsOutputType;
 import rifServices.graphics.LegendLayer;
+import rifServices.graphics.RIFMapsParameters;
 
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
@@ -31,6 +32,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.w3c.dom.Document; 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -163,6 +165,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	protected int errors=0;
 	protected int features=0;
 	
+	private RIFMapsParameters rifMapsParameters = null;
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -185,7 +188,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		try {
 			mapWidthPixels=this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
 					"mapWidthPixels", 7480);		
-			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);		
+			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);	
+			this.rifMapsParameters = new RIFMapsParameters();
 		}
 		catch(Exception exception) {
 			rifLogger.warning(this.getClass(), 
@@ -235,55 +239,23 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		tileTableName.append("geometry_");
 		String geog = rifStudySubmission.getStudy().getGeography().getName();			
 		tileTableName.append(geog);
-
-		RIFStyle rifSyle1=new RIFStyle(
-				"quantile"		/* Classifier function name */, 
-				"rr"			/* Column */, 
-				"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-				9				/* numberOfBreaks */, 
-				true			/* invert */,
-				featureCollection.getFeatureCollection());
-		writeMap(
-			featureCollection,
-			temporaryDirectory,
-			studyID,
-			"Relative Risk"		/* mapTitle */, 
-			"relative_risk"		/* resultsColumn */,
-			rifSyle1,
-			baseStudyName);
+		
+		for (String key : rifMapsParameters.getKeySet()) {
+			RIFMapsParameters.RIFMapsParameter rifMapsParameter=
+				rifMapsParameters.getRIFMapsParameter(key);
+			String mapTitle=rifMapsParameter.getMapTitle();
+			String resultsColumn=rifMapsParameter.getResultsColumn();
+			RIFStyle rifSyle=rifMapsParameter.getRIFStyle(featureCollection.getFeatureCollection());
 			
-		RIFStyle rifSyle2=new RIFStyle(
-				"quantile"		/* Classifier function name */, 
-				"sm_smr"		/* Column */, 
-				"PuOr"			/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-				9				/* numberOfBreaks */, 
-				true			/* invert */,
-				featureCollection.getFeatureCollection());
-		writeMap(
-			featureCollection,
-			temporaryDirectory,
-			studyID,
-			"Smoothed SMR"		/* mapTitle */, 
-			"smoothed_smr"		/* resultsColumn */,
-			rifSyle2,
-			baseStudyName);
-
-		RIFStyle rifSyle3=new RIFStyle(
-				"AtlasProbability"	/* Classifier function name */, 
-				"post_prob"			/* Column */, 
-				null				/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-				0					/* numberOfBreaks */, 
-				false				/* invert */,
-				featureCollection.getFeatureCollection());
-		writeMap(
-			featureCollection,
-			temporaryDirectory,
-			studyID,
-			"Posterior Probability"		/* mapTitle */, 
-			"posterior_probability"		/* resultsColumn */,
-			rifSyle3,
-			baseStudyName);			
-
+			writeMap(
+				featureCollection,
+				temporaryDirectory,
+				studyID,
+				mapTitle, 
+				resultsColumn,
+				rifSyle,
+				baseStudyName);
+		}	
 	}
 	
 	private void writeMap(
