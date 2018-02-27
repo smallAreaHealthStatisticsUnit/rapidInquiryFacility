@@ -1977,10 +1977,10 @@ callPerformSmoothingActivity exitValue: 1
 * Add maps to report;
 * Add geolevel 2 to complete boundaries for the extent of the map; 
 * Zip file errors produce .err file for getExtractStatus() [zip file status] to detect;
+* Setup map scaling and pixel size correctly - use aspect ratio to decide % left expansion;
 
 TODO: 
 
-* Setup map scaling and pixel size correctly - use aspect ratio to decide % left expansion; 
 * Report timeouts in front end export, add <export>.err file so failed exports can be detected;
 * Add parameter to "disable" vector grid;
 * Create RifDefaultMaps object with default derived from frontEndParameters.json5;
@@ -1988,7 +1988,7 @@ TODO:
 
 If feasible:
 
-* Investigate vector grid styling (I don't think it is possible)
+* Investigate vector grid styling, e.g. grid labels (I don't think it is possible)
 * Get SVG to support layers
 
 ## In progress (February/March 2018):

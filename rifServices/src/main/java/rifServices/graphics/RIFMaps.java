@@ -323,7 +323,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		vp.setBounds(expandedEnvelope);	
 	
 		// Deduce aspect ratio (the ratio of the width to the height of an image or screen)
-		int imageWidth=(int)(mapWidthPixels/8);
+		int imageWidth=mapWidthPixels;
 		int imageHeight=0;
 		double heightToWidth = expandedEnvelope.getSpan(1) / expandedEnvelope.getSpan(0); // Inverse aspect ratio
 		imageHeight=(int) Math.round(imageWidth * heightToWidth); 
@@ -378,7 +378,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			throw new Exception("Failed to add FeatureLayer to map: " + mapTitle);
 		}		
 		
-		LegendLayer legendLayer = createLegendLayer(rifStyle, expandedEnvelope, mapTitle, gridScale); 
+		LegendLayer legendLayer = createLegendLayer(rifStyle, expandedEnvelope, mapTitle, gridScale, imageWidth); 
 		if (!map.addLayer(legendLayer)) {
 			throw new Exception("Failed to add legendLayer to map: " + mapTitle);
 		}
@@ -413,7 +413,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final RIFStyle rifSyle, 
 		final ReferencedEnvelope envelope,
 		final String mapTitle,
-		final String gridScale)
+		final String gridScale,
+		final int imageWidth)
 				throws Exception {
 			
 		ArrayList<LegendLayer.LegendItem> legendItems = new ArrayList<LegendLayer.LegendItem>();
@@ -442,23 +443,27 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			Color.decode("#808080"), // default fill is *probably* 50% gray
 			Geometries.MULTIPOLYGON); 
 		legendItems.add(noDataLegendItem); */
-		String crsName=""+envelope.getCoordinateReferenceSystem().getName();
-		crsName=crsName.replace("EPSG:", "");
-		if (crsName.length() < 12) {
-			crsName="Projection: " + crsName;
-		}	
-		LegendLayer.LegendItem gridNameLegendItem = new LegendLayer.LegendItem(
-			crsName, 
-			null,
-			Geometries.MULTIPOLYGON);
-		legendItems.add(gridNameLegendItem);
+	
 		LegendLayer.LegendItem gridScaleLegendItem = new LegendLayer.LegendItem(
 			"Grids: " + gridScale, 
 			null,
 			Geometries.MULTIPOLYGON);
 		legendItems.add(gridScaleLegendItem);	
+		String crsName=""+envelope.getCoordinateReferenceSystem().getName();
+		crsName=crsName.replace("EPSG:", "");
+		if (crsName.equals("OSGB 1936 / British National Grid")) {
+			crsName="British National Grid";
+		}
+		else if (crsName.length() < 12) {
+			crsName="Projection: " + crsName;
+		}		
+		LegendLayer.LegendItem gridNameLegendItem = new LegendLayer.LegendItem(
+			crsName, 
+			null,
+			Geometries.MULTIPOLYGON);
+		legendItems.add(gridNameLegendItem);
 			
-		LegendLayer legendLayer = new LegendLayer(mapTitle, Color.LIGHT_GRAY, legendItems);
+		LegendLayer legendLayer = new LegendLayer(mapTitle, Color.LIGHT_GRAY, legendItems, imageWidth);
 		legendLayer.setTitle("Legend");
 		
 		return legendLayer;

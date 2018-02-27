@@ -49,20 +49,22 @@ public class LegendLayer extends DirectLayer {
 	 * The legend is drawn within the "bounds" rectangle.  The following pixel values 
 	 * are used to lay out legend elements within this rectangle.
 	 */
-	private static int HOR_MARGIN   =  4;  // horizontal margin between edge and contents
-	private static int HOR_SPACE    =  7;  // horizontal space between legend components (e.g. between a label and icon)
-	private static int VERT_MARGIN  =  4;  // vertical margin between edge and contents
-	private static int LINESPACE    =  5;  // vertical space between lines of text
-	private static int LEFTX_OFFSET = 20;  // X coord val of left edge of bounds rectangle
-	private static int LEFTY_OFFSET = 20;  // Y coord val of bottom edge of bounds rectangle
-	private static int RIGHTX_OFFSET = 20;  // X coord val of right edge of bounds rectangle
-	private static int RIGHTY_OFFSET = 20;  // Y coord val of bottom edge of bounds rectangle
+	private int HOR_MARGIN   =  4;  // horizontal margin between edge and contents
+	private int HOR_SPACE    =  7;  // horizontal space between legend components (e.g. between a label and icon)
+	private int VERT_MARGIN  =  4;  // vertical margin between edge and contents
+	private int LINESPACE    =  5;  // vertical space between lines of text
+	private int LEFTX_OFFSET = 20;  // X coord val of left edge of bounds rectangle
+	private int LEFTY_OFFSET = 20;  // Y coord val of bottom edge of bounds rectangle
+	private int RIGHTX_OFFSET = 20;  // X coord val of right edge of bounds rectangle
+	private int RIGHTY_OFFSET = 20;  // Y coord val of bottom edge of bounds rectangle
 	
-	private static int FONT_SIZE_TITLE  = 12;
-	private static int FONT_SIZE_ITEM   = 10;
+	private int FONT_SIZE_TITLE  = 36; // Points
+	private int FONT_SIZE_ITEM   = 30;
 	
-	private Font titlef           = new Font("Ariel", Font.BOLD, FONT_SIZE_TITLE);
-	private Font itemf            = new Font("Ariel", Font.BOLD, FONT_SIZE_ITEM);
+	private int scaleFactor=1;
+	
+	private Font titlef           = null;
+	private Font itemf            = null;
 //	private Color backgroundColor = Color.LIGHT_GRAY;
 	private Color backgroundColor = Color.decode("#fafafa"); // Gray98 [very light gray!!!]
 
@@ -71,6 +73,8 @@ public class LegendLayer extends DirectLayer {
 	private int boundsw, boundsh;       // Width and height of the "bounds" rectangle
 	private int th;                     // height of title label
 	private int ih;                     // height of legend item label and icon
+	
+	private int imageWidth = 0;			// Width of the image in pixels
 	
 	private String legendTitle = DEFAULT_TITLE;
 
@@ -90,9 +94,31 @@ public class LegendLayer extends DirectLayer {
 		}
 	}
 	
-	public LegendLayer(String title, Color bgColor, List<LegendItem> featureInfo)
+	public LegendLayer(
+		final String title, 
+		final Color bgColor, 
+		final List<LegendItem> featureInfo, 
+		final int imageWidth)
 	{
 		legendTitle = title;
+		this.imageWidth=imageWidth;// 7480 pixels at 100 dpi - 74 pixels per scaleFactor
+		this.scaleFactor=(int)(imageWidth/1870); // 4 @ 7480 pixels
+		
+		this.HOR_MARGIN   *= this.scaleFactor;  // horizontal margin between edge and contents
+		this.HOR_SPACE    *= this.scaleFactor;  // horizontal space between legend components (e.g. between a label and icon)
+		this.VERT_MARGIN  *= this.scaleFactor;  // vertical margin between edge and contents
+		this.LINESPACE    *= this.scaleFactor;  // vertical space between lines of text
+		this.LEFTX_OFFSET *= this.scaleFactor;  // X coord val of left edge of bounds rectangle
+		this.LEFTY_OFFSET *= this.scaleFactor;  // Y coord val of bottom edge of bounds rectangle
+		this.RIGHTX_OFFSET *= this.scaleFactor;  // X coord val of right edge of bounds rectangle
+		this.RIGHTY_OFFSET *= this.scaleFactor;  // Y coord val of bottom edge of bounds rectangle
+	
+		this.FONT_SIZE_TITLE *= this.scaleFactor;
+		this.FONT_SIZE_ITEM  *= this.scaleFactor;
+		
+		titlef = new Font("Arial", Font.BOLD, this.FONT_SIZE_TITLE);
+		itemf = new Font("Arial", Font.BOLD, this.FONT_SIZE_ITEM);
+		
 		backgroundColor = bgColor;
 		legendItems = featureInfo;
 		buildLegendParams();
@@ -156,6 +182,8 @@ public class LegendLayer extends DirectLayer {
 	    	// Shape shape = new Rectangle(lrcy,ulcy,boundsw,boundsh); 			// BOttom right
 			rifLogger.info(this.getClass(), legendTitle + " scrRect: " + scrRect.toString() +
 				"; shape: " + shape.toString() +
+				"; scaleFactor: " + scaleFactor +
+				"; FONT_SIZE_ITEM: " + FONT_SIZE_ITEM + 
 				"; boundsw: " + boundsw);
 				
 			drawShape(graphics, shape, backgroundColor);
