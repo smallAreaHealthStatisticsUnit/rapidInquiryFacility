@@ -200,11 +200,10 @@ public class RIFMaps extends SQLAbstractSQLManager {
 
 
 	/** 
-	 * Write geospatial files in both geoJSON and shapefile format.
-	 * a) rif study area to GEOGRAPHY_SUBDIRECTORY
-	 * b) Comparison area to GEOGRAPHY_SUBDIRECTORY
-	 * c) Map (results) table to DATA_SUBDIRECTORY
-	 *    The column list for the map tsble is hard coded and reduced to 10 characters for DBF support
+	 * Write Results Maps to MAPS_SUBDIRECTORY. Map data is also saved [elsewhere] as a shapefile with .SLD
+	 * style layer descriptor files for each map. Maps are defined in the RIFMapsParameters object
+	 *
+	 * The column list for the map table is hard coded and reduced to 10 characters for DBF support
      * 
 	 * @param DefaultFeatureCollection featureCollection,
 	 * @param Connection connection, 
@@ -240,9 +239,11 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		String geog = rifStudySubmission.getStudy().getGeography().getName();			
 		tileTableName.append(geog);
 		
+		// Interate RIFMapsParameters hash map for each RIFMapsParameter 
 		for (String key : rifMapsParameters.getKeySet()) {
 			RIFMapsParameters.RIFMapsParameter rifMapsParameter=
 				rifMapsParameters.getRIFMapsParameter(key);
+				
 			String mapTitle=rifMapsParameter.getMapTitle();
 			String resultsColumn=rifMapsParameter.getResultsColumn();
 			RIFStyle rifSyle=rifMapsParameter.getRIFStyle(featureCollection.getFeatureCollection());
@@ -258,6 +259,16 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		}	
 	}
 	
+	/** Write map
+	 * 
+	 * @param: RifFeatureCollection rifFeatureCollection,
+	 * @param: File temporaryDirectory,
+	 * @param: String studyID,
+	 * @param: String mapTitle,
+	 * @param: String resultsColumn,
+	 * @param: RIFStyle rifStyle,
+	 * @param: String baseStudyName
+	 */
 	private void writeMap(
 		final RifFeatureCollection rifFeatureCollection,
 		final File temporaryDirectory,

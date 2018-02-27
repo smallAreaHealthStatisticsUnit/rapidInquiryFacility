@@ -78,7 +78,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 public class RIFMapsParameters {
 	
 	/* 
-	 * Information about a RIF Style range band
+	 * RIF map parameter
 	 */
 	public static class RIFMapsParameter
 	{
@@ -89,7 +89,11 @@ public class RIFMapsParameters {
 		private String colorbrewerPalette;	
 		private int numberOfBreaks;	
 		private Boolean invert;	
-		
+	
+		/**
+		 * Constructor.
+		 * 
+		 */	
 		public RIFMapsParameter(
 			final String mapTitle, 
 			final String resultsColumn,
@@ -157,15 +161,28 @@ public class RIFMapsParameters {
 		}		
 	}	
 
+	/** Accessor: get RIFMapsParameter for key
+	 *
+	 * @param: String key
+	 *
+	 * @returns: RIFMapsParameter
+	 */
 	public RIFMapsParameter getRIFMapsParameter(String key) {
 		return rifMapsParameters.get(key);
 	}
-	
+
+	/** Accessor: get key set
+	 *
+	 * @returns: Set<String> 
+	 */	
 	public Set<String> getKeySet() {
       Set<String> keySet = rifMapsParameters.keySet();
       return keySet;
 	}
 	
+	/**
+	 * Setup default map parameters
+	 */
 	private void setupDefaultMapParameters() {
 		
 		RIFMapsParameter rifMapsParameter1 = new RIFMapsParameter(		
@@ -198,7 +215,10 @@ public class RIFMapsParameters {
 			false				/* invert */);		
 		rifMapsParameters.put("diseasemap2", rifMapsParameter3);
 	}
-	
+
+	/**
+	 * Retrieve front end parameters
+	 */	
 	private void retrieveFrontEndParameters() 
 			throws Exception {
 				
