@@ -296,14 +296,14 @@ public class RIFMapsParameters {
 			
 		try {
 			input = new FileInputStream(fileName1);
-				rifLogger.info(this.getClass(), "Using: " + fileName1);
+				rifLogger.info(this.getClass(), "Using JSON5 file: " + fileName1);
 				// Read JSON
 				reader = new BufferedReader(new InputStreamReader(input));
 		} 
 		catch (IOException ioException) {
 			try {
 				input = new FileInputStream(fileName2);
-					rifLogger.info(this.getClass(), "Using: " + fileName2);
+				rifLogger.info(this.getClass(), "Using JSON5 file: " + fileName2);
 				// Read JSON
 				reader = new BufferedReader(new InputStreamReader(input));
 			} 
@@ -320,15 +320,27 @@ public class RIFMapsParameters {
 			StringBuffer sb = new StringBuffer();
 			String line = null;
 			while ((line = reader.readLine()) != null) {
-			  sb.append(line + lineSeparator);
+				sb.append(line.replaceAll("//.*", "") + lineSeparator); // Remove comments
 			}
 				
 			String jsonText=sb.toString();
-			jsonText=jsonText.replaceAll("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?://.*)","");	
+//			rifLogger.info(getClass(), "Retrieve FrontEnd Parameters1: " + jsonText);
+			
+// This regex can cause stack overflows!!!!		
+			try {
+				jsonText=jsonText.replaceAll("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)","");	 /* Comments */
+				// Could try:
+				// (\/\*.*?\*\/)
+				// /\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/
+			}
+			catch(StackOverflowError t) {
+				throw new Exception("Comment remover caused StackOverflowError");
+			}
 					// Remove comments
 			rifLogger.info(getClass(), "Retrieve FrontEnd Parameters: " + jsonText);
 			jsonText=jsonText.replace(lineSeparator, "");							
 					// Remove line separators
+//			rifLogger.info(getClass(), "Retrieve FrontEnd Parameters3: " + jsonText);
 			JSONObject json = new JSONObject(jsonText);	
 			
 			parseJson(json);

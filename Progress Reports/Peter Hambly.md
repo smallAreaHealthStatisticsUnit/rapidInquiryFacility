@@ -1992,7 +1992,7 @@ TODO:
 If feasible:
 
 * Investigate vector grid styling, e.g. grid labels (I don't think it is possible)
-* Get SVG to support layers
+* Get SVG to support layers: http://batik.2283329.n4.nabble.com/Combine-SVG-out-of-single-SVG-files-td3616984.html
 
 ## In progress (March/April 2018):
 

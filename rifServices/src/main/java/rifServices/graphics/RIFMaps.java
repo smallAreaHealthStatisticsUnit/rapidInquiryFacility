@@ -44,6 +44,7 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.Graphics2D;
 import java.awt.Dimension;
 
@@ -185,7 +186,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		this.rifCoordinateReferenceSystem = new RifCoordinateReferenceSystem();
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
-		try {
+		try {			
+			ImageIO.scanForPlugins();
 			mapWidthPixels=this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
 					"mapWidthPixels", 7480);		
 			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);	
@@ -377,8 +379,12 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		// Save image
 		exportSVG(map, temporaryDirectory, dirName, filePrefix, studyID, featureCollection.size(), 
 			imageWidth, imageHeight);	
+			
 		createGraphicsMaps(temporaryDirectory, dirName, filePrefix, studyID);
-		
+				
+		createImageIOMaps(map, temporaryDirectory, dirName, filePrefix, studyID, 
+			imageWidth, imageHeight, "tif");	
+	
 		map.dispose();
 	}
 
@@ -573,7 +579,117 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			features=0;
 		}			
 	}
+	
+	/**
+	 * Generate ImageIO graphic from the map. Curently only creates a TIF image, and not the sidecar
+	 * 
+	 * SVG file name:  <filePrefix><studyID>_<printingDPI>dpi.svg	  
+	 *
+	 * @param MapContent map - Contains the layers (features + styles) to be rendered,
+	 * @param File temporaryDirectory,
+	 * @param String dirName, 
+	 * @param String filePrefix, 
+	 * @param String studyID, 
+	 * @param int imageWidth. This sets the overall scale factor for the map, and is adjusted dependent on the 
+	 *						  size of the map,
+	 * @param int imageHeight. Fixed by the aspect ratio,
+	 * @param String imageType
+	 */
+	private void createImageIOMaps(
+		final MapContent map, 
+		final File temporaryDirectory,
+		final String dirName, 
+		final String filePrefix, 
+		final String studyID,
+		final int imageWidth,
+		final int imageHeight,
+		final String imageType) throws Exception {
+			
+		String mapDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
+		File mapDirectory = new File(mapDirName);
+		File newDirectory = new File(mapDirName);
+		if (newDirectory.exists()) {
+			rifLogger.debug(this.getClass(), 
+				"Found directory: " + newDirectory.getAbsolutePath());
+		}
+		else {
+			newDirectory.mkdirs();
+			rifLogger.info(this.getClass(), 
+				"Created directory: " + newDirectory.getAbsolutePath());
+		}
+		
+		String imageIOFile=mapDirName + File.separator + filePrefix + studyID + "_" + printingDPI + "dpi.tiff";
+		File geotiff = new File(imageIOFile);
+		if (geotiff.exists()) {
+			geotiff.delete();
+		}		
+			
+		ImageOutputStream outputImageFile = null;
+		FileOutputStream fileOutputStream = null;
+		try {	
+		
+			boolean hasPlugin=false;
+			String[] imageIOWriter = ImageIO.getWriterFormatNames();
+			/* 
+			JPEG 2000, JPG, tiff, bmp, gif, WBMP, PNG, RAW, JPEG, btiff, PNM, tif, TIFF, wbmp, jpeg, jpg,
+			JPEG2000, BMP, GIF, png, raw, pnm, TIF, jpeg2000, jpeg 2000, BTIFF
+			 */
+			for(int i=0; i < imageIOWriter.length; i++) {
+//				rifLogger.info(this.getClass(), "imageIOWriter: " + imageIOWriter[i]);
+				if (imageIOWriter[i].equals(imageType)) {
+					hasPlugin=true;
+				}
+			}
+			
+			if (hasPlugin) {
+				rifLogger.info(this.getClass(), "Create map " + imageWidth + "x" + imageHeight + 
+					"; file: " + imageIOFile);
 
+				fileOutputStream = new FileOutputStream(geotiff);
+				outputImageFile = ImageIO.createImageOutputStream(fileOutputStream);
+				
+				BufferedImage bufferedImage = new BufferedImage(imageWidth, imageHeight, 
+					BufferedImage.TYPE_INT_RGB);
+				Graphics2D g2d = bufferedImage.createGraphics();
+				
+				GTRenderer renderer = new StreamingRenderer();
+				renderer.setMapContent(map);
+				Rectangle outputArea = new Rectangle(imageWidth, imageHeight);
+				ReferencedEnvelope envelope=map.getMaxBounds();
+				renderer.paint(g2d, outputArea, envelope); 
+			
+				boolean res=false;
+				try {
+					res=ImageIO.write(bufferedImage, imageType, outputImageFile);
+				}
+				catch (IllegalAccessError exception) {
+					rifLogger.error(this.getClass(), "Unable to write file: " + imageIOFile, exception);			
+				}
+				
+				if (!res) {
+					throw new Exception("ImageIO.write failed writing file: " + imageIOFile);
+				}
+			}
+			else {
+				rifLogger.warning(this.getClass(), "Unable to write file: " + imageIOFile + 
+					"; NO PLUGIN FOUND FOR: " + imageType);
+			}
+
+		} 
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Exception writing file: " + imageIOFile, exception);
+			throw exception;
+		} 
+		finally {
+			if (outputImageFile != null) {
+				outputImageFile.flush();
+				outputImageFile.close();
+				fileOutputStream.flush();
+				fileOutputStream.close();
+			}
+		} 		
+	} 
+	
 	/** Build Graphics file from SVG source
 	  *
 	  * Graphics file name: <filePrefix><studyID>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
