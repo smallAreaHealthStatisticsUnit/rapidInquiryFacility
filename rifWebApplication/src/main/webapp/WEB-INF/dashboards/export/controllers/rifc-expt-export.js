@@ -253,6 +253,16 @@ angular.module("RIF")
 							$scope.exportURL = undefined;
 							$scope.disableMapListButton=true;
 						}
+						else if (res.data.status === "STUDY_ZIP_IN_PROGRESS") {
+							$scope.exportTAG="Zip in progress";
+							$scope.exportURL = undefined;
+							$scope.disableMapListButton=true;
+						}
+						else if (res.data.status === "STUDY_ZIP_FAILED") {
+							$scope.exportTAG="Zip Failed";
+							$scope.exportURL = undefined;
+							$scope.disableMapListButton=true;
+						}
 						else {		
 							$scope.exportTAG="Study NOT Exportable";
 							$scope.exportURL = undefined;

@@ -1223,10 +1223,16 @@ implements RIFStudySubmissionAPI {
 	 *   </il>
 	 *   <il>STUDY_NOT_FOUND: returned where the studyID was not found in rif40_studies
 	 *   </il>
+	 *   <il>STUDY_ZIP_FAILED: returned for the following rif40_studies.study_statu  code/meaning of: S: R success; 
+	 *       when the ZIP extract error file has been created
+	 *   </il>
+	 *   <il>STUDY_ZIP_IN_PROGRESS: returned for the following rif40_studies.study_statu  code/meaning of: S: R success; 
+	 *       when the ZIP extract file has been created
+	 *   </il>	 
 	 * </il>
 	 * </p>
 	 * <p>
-	 * Calls MSSQLStudyExtractManager.getExtractStatus()
+	 * Calls PGSQLStudyExtractManager.getExtractStatus()
 	 * </p>
 	 *
 	 * @param  _user 		Database username of logged on user.

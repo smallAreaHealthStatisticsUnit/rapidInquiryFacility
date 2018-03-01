@@ -203,6 +203,12 @@ public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager {
 	 *   <li>STUDY_EXTRABLE_ZIPPID: returned for the following rif40_studies.study_statu  code/meaning of: S: R success; 
 	 *       when the ZIP extrsct file has been created
 	 *   </il>
+	 *   <il>STUDY_ZIP_FAILED: returned for the following rif40_studies.study_statu  code/meaning of: S: R success; 
+	 *       when the ZIP extract error file has been created
+	 *   </il>
+	 *   <il>STUDY_ZIP_IN_PROGRESS: returned for the following rif40_studies.study_statu  code/meaning of: S: R success; 
+	 *       when the ZIP extract file has been created
+	 *   </il>	 
 	 * </il>
 	 * </p>
 	 *
