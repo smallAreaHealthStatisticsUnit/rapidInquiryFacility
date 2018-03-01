@@ -1985,11 +1985,11 @@ callPerformSmoothingActivity exitValue: 1
 * RIFMapsParameters comment removing regex ((?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)) can use stack errors
   handlers installed.
 * GeoTIFF support
+* Report timeouts in front end export, add <export>.err file so failed exports can be detected;
  
 TODO: 
 
-* Report timeouts in front end export, add <export>.err file so failed exports can be detected;
-* Add parameters to "disable" vector grid, defined copyright;
+* Add parameters to "disable" vector grid, define copyright;
 * Add title to TIFF metadata (and other images if supported) and on legend
 * Map grid background needs to be white (currently undefined)
 

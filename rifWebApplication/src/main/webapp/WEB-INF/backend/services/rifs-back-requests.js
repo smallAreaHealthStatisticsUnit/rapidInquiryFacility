@@ -257,9 +257,10 @@ angular.module("RIF")
                 };
 
                 //Save study tables to Zip file
-                self.createZipFile = function (username, studyID, zoomLevel) {
+                self.createZipFile = function (username, studyID, zoomLevel, getTimeout) {
                     //http://localhost:8080/rifServices/studySubmission/pg/createZipFile?userID=dwmorley&studyID=46
-                    return $http.get(servicesConfig.studySubmissionURL + DatabaseService.getDatabase() + 'createZipFile?userID=' + username + '&studyID=' + studyID + "&zoomLevel=" + zoomLevel, {timeout: 100000 /* 100s */});
+                    return $http.get(servicesConfig.studySubmissionURL + DatabaseService.getDatabase() + 'createZipFile?userID=' + username + '&studyID=' + studyID + "&zoomLevel=" + zoomLevel, 
+						{timeout: getTimeout /* in mS: 360s */});
                 };                
 				//Fetch Zip file
                self.getZipFileURL = function (username, studyID, zoomLevel) {
