@@ -78,6 +78,14 @@ public enum RIFGraphicsOutputType {
 			return "png";
 		}
 	},
+	RIFGRAPHICS_GEOTIFF(3, true, false) {
+		public String getRIFGraphicsOutputTypeDescription() {
+			return "Tagged Image File Format with imbedded georeferencing information";
+		}
+		public String getGraphicsExtentsion() {
+			return "tif";
+		}
+	},
 	RIFGRAPHICS_TIFF(3, false, false) {
 		public String getRIFGraphicsOutputTypeDescription() {
 			return "Tagged Image File Format";
