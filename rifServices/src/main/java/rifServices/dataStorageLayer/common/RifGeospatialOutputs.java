@@ -360,7 +360,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		Set<RIFGraphicsOutputType> htmlOutputTypes = EnumSet.of( // Can be viewed in browser
 			RIFGraphicsOutputType.RIFGRAPHICS_PNG,
 			RIFGraphicsOutputType.RIFGRAPHICS_JPEG,
-			RIFGraphicsOutputType.RIFGRAPHICS_TIFF,  
+			RIFGraphicsOutputType.RIFGRAPHICS_GEOTIFF, 
 			RIFGraphicsOutputType.RIFGRAPHICS_SVG);
 		Iterator <RIFGraphicsOutputType> htmlOutputTypeIter = htmlOutputTypes.iterator();
 		int j=0;
