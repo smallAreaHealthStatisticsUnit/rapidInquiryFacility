@@ -214,7 +214,8 @@ function setRifMapsFileType(event) {
 		document.getElementById("rifMaps").src);	
 		
 	document.getElementById("downloadForm2").action=document.getElementById("rifMaps").src;
-	document.getElementById("downloadButton2").innerText = "Download " + fileExt.toUpperCase();
+	document.getElementById("downloadButton2").innerText = "Download " + fileExt2.toUpperCase();
+	document.getElementById("downloadForm2").fileType=fileExt2;
 
 	consoleLog("setRifMapsFileType(" + fileExt + "): fileType=" + 		
 		document.getElementById("downloadForm2").fileType);
