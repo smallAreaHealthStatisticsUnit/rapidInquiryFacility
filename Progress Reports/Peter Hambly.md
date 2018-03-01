@@ -1982,12 +1982,16 @@ callPerformSmoothingActivity exitValue: 1
 
 * Setup map scaling and pixel size correctly - use aspect ratio to decide % left expansion;
 * Create RIFMapsParameters object with default derived from frontEndParameters.json5;
-
+* RIFMapsParameters comment removing regex ((?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)) can use stack errors
+  handlers installed.
+* GeoTIFF support
+ 
 TODO: 
 
 * Report timeouts in front end export, add <export>.err file so failed exports can be detected;
-* Add parameter to "disable" vector grid;
-* GeoTIFF support
+* Add parameters to "disable" vector grid, defined copyright;
+* Add title to TIFF metadata (and other images if supported) and on legend
+* Map grid background needs to be white (currently undefined)
 
 If feasible:
 

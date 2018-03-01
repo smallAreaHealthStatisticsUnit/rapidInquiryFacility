@@ -323,6 +323,12 @@
 		<version>2.2.0</version>
 		<type>pom</type>
 	</dependency>
+	
+	<dependency>
+	  <groupId>org.geotools</groupId>
+	  <artifactId>gt-geotiff</artifactId>
+	  <version>18.2</version>
+	</dependency>
 
 	<!-- Use local file in predictable RIF locations
 	<dependency>

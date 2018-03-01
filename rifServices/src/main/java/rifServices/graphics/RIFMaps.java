@@ -79,6 +79,17 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 
 import org.geotools.factory.CommonFactoryFinder;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridCoverageFactory;
+
+import org.geotools.gce.geotiff.GeoTiffWriteParams;
+import org.geotools.gce.geotiff.GeoTiffWriter;
+import org.geotools.gce.geotiff.GeoTiffFormat;
+import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
+import org.geotools.coverage.grid.io.imageio.geotiff.GeoTiffIIOMetadataEncoder.TagSet;
+import org.opengis.parameter.ParameterValue;
+import org.opengis.parameter.GeneralParameterValue;
+
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -483,7 +494,6 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final int imageWidth,
 		final int imageHeight) throws Exception {
 			
-		CoordinateReferenceSystem crs=map.getCoordinateReferenceSystem();
 		String mapDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		File mapDirectory = new File(mapDirName);
 		File newDirectory = new File(mapDirName);
@@ -577,6 +587,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			}
 			errors=0;
 			features=0;
+			
+			g2d.dispose();
 		}			
 	}
 	
@@ -645,30 +657,93 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				rifLogger.info(this.getClass(), "Create map " + imageWidth + "x" + imageHeight + 
 					"; file: " + imageIOFile);
 
-				fileOutputStream = new FileOutputStream(geotiff);
-				outputImageFile = ImageIO.createImageOutputStream(fileOutputStream);
 				
 				BufferedImage bufferedImage = new BufferedImage(imageWidth, imageHeight, 
 					BufferedImage.TYPE_INT_RGB);
 				Graphics2D g2d = bufferedImage.createGraphics();
-				
-				GTRenderer renderer = new StreamingRenderer();
-				renderer.setMapContent(map);
+
+				CoordinateReferenceSystem crs=map.getCoordinateReferenceSystem();
+				ReferencedEnvelope envelope=map.getMaxBounds();	
+				Rectangle screenBounds = new Rectangle(0, 0, imageWidth, imageHeight);
+
+/*
+ * Paint MapContent onto a buffered image
+ */				
+				GTRenderer gtRenderer = new StreamingRenderer();		
+				gtRenderer.addRenderListener(new RenderListener() {
+					public void featureRenderer(SimpleFeature feature) {
+						features++;
+					}
+					public void errorOccurred(Exception exception) {			
+						rifLogger.warning(this.getClass(), "GTRenderer error: " + exception.getMessage());
+						errors++;
+					}
+				}); 	
+
+				gtRenderer.setMapContent(map);
 				Rectangle outputArea = new Rectangle(imageWidth, imageHeight);
-				ReferencedEnvelope envelope=map.getMaxBounds();
-				renderer.paint(g2d, outputArea, envelope); 
-			
-				boolean res=false;
-				try {
-					res=ImageIO.write(bufferedImage, imageType, outputImageFile);
-				}
-				catch (IllegalAccessError exception) {
-					rifLogger.error(this.getClass(), "Unable to write file: " + imageIOFile, exception);			
-				}
+				gtRenderer.paint(g2d, outputArea, envelope); 
+					
+				if (imageType.toLowerCase().equals("tif") || imageType.toLowerCase().equals("tiff")) {		
+				// Turn Graphics2D into a Coverage, and then save it to GeoTiff?	
 				
-				if (!res) {
-					throw new Exception("ImageIO.write failed writing file: " + imageIOFile);
+					GridCoverageFactory factory = new GridCoverageFactory();
+					GridCoverage2D coverage = factory.create("geotiff", bufferedImage, envelope);
+						   
+					GeoTiffWriter geoTiffWriter = new GeoTiffWriter(geotiff); // get a writer
+		
+					// Setting a COPYRIGHT metadata
+					String copyrightInfo = "(C) Imperial College London";
+					String software = "Rapid Inquiry Facility V4.0";
+					
+					geoTiffWriter.setMetadataValue(
+						Integer.toString(BaselineTIFFTagSet.TAG_COPYRIGHT), copyrightInfo);
+					geoTiffWriter.setMetadataValue(
+						TagSet.BASELINE + ":" + Integer.toString(BaselineTIFFTagSet.TAG_SOFTWARE), software);
+		
+					final ParameterValue<Boolean> tfw = GeoTiffFormat.WRITE_TFW.createValue();
+					tfw.setValue(true);
+					try {
+						geoTiffWriter.write(coverage, new GeneralParameterValue[]{tfw} );	
+					}
+					catch (Exception exception) {
+						rifLogger.error(this.getClass(), "Unable to write " + imageType + " file: " + 
+							imageIOFile, exception);			
+					}
+					finally {
+						geoTiffWriter.dispose();
+						coverage.dispose(true);
+					}
 				}
+				else {					
+					fileOutputStream = new FileOutputStream(geotiff);
+					outputImageFile = ImageIO.createImageOutputStream(fileOutputStream);
+				
+					boolean res=false;
+					try {
+						res=ImageIO.write(bufferedImage, imageType, outputImageFile);
+					}
+					catch (IllegalAccessError exception) {
+						rifLogger.error(this.getClass(), "Unable to write " + imageType + " file: " + 
+							imageIOFile, exception);			
+					}
+					finally {
+						if (errors > 0) {
+							rifLogger.warning(this.getClass(), errors + " occurred rendering " + features + " features");
+						}
+						else {
+							rifLogger.info(this.getClass(),  "No errors occurred rendering " + features + " features");
+						}
+						errors=0;
+						features=0;
+						
+						g2d.dispose();
+					}	
+					
+					if (!res) {
+						throw new Exception("ImageIO.write failed writing file: " + imageIOFile);
+					}				
+				} 
 			}
 			else {
 				rifLogger.warning(this.getClass(), "Unable to write file: " + imageIOFile + 
