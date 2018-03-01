@@ -948,7 +948,11 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		String studyDescription=getColumnFromResultSet(rif40Studies, "description", 
 			true /* allowNulls */, false /* allowNoRows */);
 		if (studyDescription == null) {
-			studyDescription="No description";
+			studyDescription=getColumnFromResultSet(rif40Studies, "study_name", 	
+				true /* allowNulls */, false /* allowNoRows */);		
+			if (studyDescription == null) {
+				studyDescription="No study name or description";
+			}
 		}
 		CachedRowSetImpl rif40ExtraxctMaxMinYear=getStudyStartEndYear(connection, extractTable);
 		int minYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_year"));
@@ -1159,7 +1163,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			throws Exception {
 		SQLGeneralQueryFormatter rif40StudiesQueryFormatter = new SQLGeneralQueryFormatter();		
 		
-		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT extract_table, map_table, denom_tab, description, year_start, year_stop");
+		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT extract_table, map_table, denom_tab,");
+		rif40StudiesQueryFormatter.addQueryLine(0, "       study_name, description, year_start, year_stop");
 		rif40StudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");
 		rif40StudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 

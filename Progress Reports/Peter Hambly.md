@@ -1986,17 +1986,14 @@ callPerformSmoothingActivity exitValue: 1
   handlers installed.
 * GeoTIFF support
 * Report timeouts in front end export, add <export>.err file so failed exports can be detected;
+* Add parameters to "disable" map vector grid (enableMapGrids), define copyright (copyrightInfo);
+* Add title to TAG_IMAGE_DESCRIPTION TIFF metadata (and other images if supported) and on legend;
+* Support .tfw file (plain text files that store X and Y pixel size, rotational information, and 
+  world coordinates for a map); and .prj projection files
  
 TODO: 
 
-* Add parameters to "disable" vector grid, define copyright;
-* Add title to TIFF metadata (and other images if supported) and on legend
 * Map grid background needs to be white (currently undefined)
-
-If feasible:
-
-* Investigate vector grid styling, e.g. grid labels (I don't think it is possible)
-* Get SVG to support layers: http://batik.2283329.n4.nabble.com/Combine-SVG-out-of-single-SVG-files-td3616984.html
 
 ## In progress (March/April 2018):
 
@@ -2024,7 +2021,12 @@ If feasible:
 	* ERROR: Record "User" field "User ID" cannot be empty.
 	* ERROR: Unable to roll back database transaction.
 
-### Database TODO list (deferred to February 2018): 
+Maps if feasible:
+
+* Investigate vector grid styling, e.g. grid labels (I don't think it is possible)
+* Get SVG to support layers: http://batik.2283329.n4.nabble.com/Combine-SVG-out-of-single-SVG-files-td3616984.html
+
+### Database TODO list (deferred to March 2018): 
 
 * Add generate_series() to SQL Server port
 * Add t_rif40_warnings/rif40_warnings to contain warning messages on a study basis. Can be created 

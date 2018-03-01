@@ -178,6 +178,11 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	protected int features=0;
 	
 	private RIFMapsParameters rifMapsParameters = null;
+	
+	private String copyrightInfo = null;
+	private String software = "Rapid Inquiry Facility V4.0";
+	private boolean enableMapGrids = true;
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -201,7 +206,9 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			ImageIO.scanForPlugins();
 			mapWidthPixels=this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
 					"mapWidthPixels", 7480);		
-			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);	
+			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);
+			copyrightInfo=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("copyrightInfo", (String)null);
+			enableMapGrids=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("enableMapGrids", true);	
 			this.rifMapsParameters = new RIFMapsParameters();
 		}
 		catch(Exception exception) {
@@ -252,6 +259,12 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		String geog = rifStudySubmission.getStudy().getGeography().getName();			
 		tileTableName.append(geog);
 		
+		String studyDescription=getColumnFromResultSet(rif40Studies, "description", 
+			true /* allowNulls */, false /* allowNoRows */);	
+		if (studyDescription == null) {
+			studyDescription=getColumnFromResultSet(rif40Studies, "study_name", 	
+				true /* allowNulls */, false /* allowNoRows */);
+		} 
 		// Interate RIFMapsParameters hash map for each RIFMapsParameter 
 		for (String key : rifMapsParameters.getKeySet()) {
 			RIFMapsParameters.RIFMapsParameter rifMapsParameter=
@@ -268,7 +281,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				mapTitle, 
 				resultsColumn,
 				rifSyle,
-				baseStudyName);
+				baseStudyName,
+				studyDescription);
 		}	
 	}
 	
@@ -280,7 +294,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param: String mapTitle,
 	 * @param: String resultsColumn,
 	 * @param: RIFStyle rifStyle,
-	 * @param: String baseStudyName
+	 * @param: String baseStudyName,
+	 * @param: String studyDescription
 	 */
 	private void writeMap(
 		final RifFeatureCollection rifFeatureCollection,
@@ -289,7 +304,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final String mapTitle,
 		final String resultsColumn,
 		final RIFStyle rifStyle,
-		final String baseStudyName) 
+		final String baseStudyName,
+		final String studyDescription) 
 			throws Exception {
 	
 		DefaultFeatureCollection featureCollection=rifFeatureCollection.getFeatureCollection();
@@ -347,8 +363,12 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		rifLogger.info(this.getClass(), "Add grid; gridSquareWidth: " + gridSquareWidth + 
 			"; gridVertexSpacing: " + gridVertexSpacing);	
 		SimpleFeatureSource grid = Grids.createSquareGrid(expandedEnvelope, gridSquareWidth,
-			gridVertexSpacing);				
-		Layer gridLayer = new FeatureLayer(grid.getFeatures(), SLD.createLineStyle(Color.LIGHT_GRAY, 1));
+			gridVertexSpacing);		
+		Color gridColor=Color.WHITE;
+		if (enableMapGrids) {
+			gridColor=Color.LIGHT_GRAY;
+		}
+		Layer gridLayer = new FeatureLayer(grid.getFeatures(), SLD.createLineStyle(gridColor, 2 /* Width */));
 		gridLayer.setTitle("Grid");			
 		if (!map.addLayer(gridLayer)) {
 			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
@@ -374,7 +394,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			throw new Exception("Failed to add FeatureLayer to map: " + mapTitle);
 		}		
 		
-		LegendLayer legendLayer = createLegendLayer(rifStyle, expandedEnvelope, mapTitle, gridScale, imageWidth); 
+		LegendLayer legendLayer = createLegendLayer(rifStyle, expandedEnvelope, mapTitle, studyDescription,
+			gridScale, imageWidth); 
 		if (!map.addLayer(legendLayer)) {
 			throw new Exception("Failed to add legendLayer to map: " + mapTitle);
 		}
@@ -393,7 +414,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			
 		createGraphicsMaps(temporaryDirectory, dirName, filePrefix, studyID);
 				
-		createImageIOMaps(map, temporaryDirectory, dirName, filePrefix, studyID, 
+		createGeotoolsMaps(map, temporaryDirectory, dirName, filePrefix, studyID, studyDescription,
 			imageWidth, imageHeight, "tif");	
 	
 		map.dispose();
@@ -405,6 +426,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param RIFStyle rifSyle, 
 	 * @param ReferencedEnvelope envelope,
 	 * @param String mapTitle,
+	 * @param String studyDescription,
 	 * @param String gridScale
 	 *
 	 * @returns LegendLayer
@@ -413,6 +435,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final RIFStyle rifSyle, 
 		final ReferencedEnvelope envelope,
 		final String mapTitle,
+		final String studyDescription,
 		final String gridScale,
 		final int imageWidth)
 				throws Exception {
@@ -462,7 +485,12 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			null,
 			Geometries.MULTIPOLYGON);
 		legendItems.add(gridNameLegendItem);
-			
+		LegendLayer.LegendItem studyDescriptionItem = new LegendLayer.LegendItem(
+			studyDescription, 
+			null,
+			Geometries.MULTIPOLYGON);
+		legendItems.add(studyDescriptionItem);	
+		
 		LegendLayer legendLayer = new LegendLayer(mapTitle, Color.LIGHT_GRAY, legendItems, imageWidth);
 		legendLayer.setTitle("Legend");
 		
@@ -593,26 +621,37 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	}
 	
 	/**
-	 * Generate ImageIO graphic from the map. Curently only creates a TIF image, and not the sidecar
+	 * Generate map using Geotools GTRenderer and:
+	 *
+	 * a) ImageIO;
+	 * b) GeoTiffWriter
 	 * 
-	 * SVG file name:  <filePrefix><studyID>_<printingDPI>dpi.svg	  
+	 * File name:  <filePrefix><studyID>_<printingDPI>dpi.<file extension>	  
+	 *
+	 * GeoTIFF output also writes a .tfw file (plain text files that store X and Y pixel size, 
+	 * rotational information, and world coordinates for a map); and .prj projection files
+	 * The goespatial information is embedded in the file anyway!
 	 *
 	 * @param MapContent map - Contains the layers (features + styles) to be rendered,
 	 * @param File temporaryDirectory,
 	 * @param String dirName, 
 	 * @param String filePrefix, 
-	 * @param String studyID, 
+	 * @param String studyID,  
+	 * @param String studyDescription, 
 	 * @param int imageWidth. This sets the overall scale factor for the map, and is adjusted dependent on the 
 	 *						  size of the map,
 	 * @param int imageHeight. Fixed by the aspect ratio,
-	 * @param String imageType
+	 * @param String imageType. In theory should support: Jtiff, bmp, gif, btiff, tif, wbmp, jpeg, jpg,
+	 *							png, raw, pnm, jpeg2000.
+	 *							Tested on TIFF before converting to geotiff.
 	 */
-	private void createImageIOMaps(
+	private void createGeotoolsMaps(
 		final MapContent map, 
 		final File temporaryDirectory,
 		final String dirName, 
 		final String filePrefix, 
 		final String studyID,
+		final String studyDescription,
 		final int imageWidth,
 		final int imageHeight,
 		final String imageType) throws Exception {
@@ -630,7 +669,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				"Created directory: " + newDirectory.getAbsolutePath());
 		}
 		
-		String imageIOFile=mapDirName + File.separator + filePrefix + studyID + "_" + printingDPI + "dpi.tiff";
+		String imageIOFile=mapDirName + File.separator + filePrefix + studyID + "_" + printingDPI + "dpi.tif";
 		File geotiff = new File(imageIOFile);
 		if (geotiff.exists()) {
 			geotiff.delete();
@@ -685,26 +724,33 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				gtRenderer.paint(g2d, outputArea, envelope); 
 					
 				if (imageType.toLowerCase().equals("tif") || imageType.toLowerCase().equals("tiff")) {		
-				// Turn Graphics2D into a Coverage, and then save it to GeoTiff?	
+					// Turn Graphics2D into a Coverage, and then save it to GeoTiff	
 				
 					GridCoverageFactory factory = new GridCoverageFactory();
 					GridCoverage2D coverage = factory.create("geotiff", bufferedImage, envelope);
 						   
 					GeoTiffWriter geoTiffWriter = new GeoTiffWriter(geotiff); // get a writer
-		
-					// Setting a COPYRIGHT metadata
-					String copyrightInfo = "(C) Imperial College London";
-					String software = "Rapid Inquiry Facility V4.0";
 					
-					geoTiffWriter.setMetadataValue(
-						Integer.toString(BaselineTIFFTagSet.TAG_COPYRIGHT), copyrightInfo);
-					geoTiffWriter.setMetadataValue(
-						TagSet.BASELINE + ":" + Integer.toString(BaselineTIFFTagSet.TAG_SOFTWARE), software);
+					if (copyrightInfo != null) {
+						geoTiffWriter.setMetadataValue(
+							Integer.toString(BaselineTIFFTagSet.TAG_COPYRIGHT), copyrightInfo);
+					}	
+					if (studyDescription != null) {
+						geoTiffWriter.setMetadataValue(
+							Integer.toString(BaselineTIFFTagSet.TAG_IMAGE_DESCRIPTION), studyDescription);
+					}
+					if (software != null) {
+						geoTiffWriter.setMetadataValue(
+							TagSet.BASELINE + ":" + Integer.toString(BaselineTIFFTagSet.TAG_SOFTWARE), software);
+					}
 		
 					final ParameterValue<Boolean> tfw = GeoTiffFormat.WRITE_TFW.createValue();
+					// force the writer to write a tfw file (plain text files that store X and Y pixel size, 
+					// rotational information, and world coordinates for a map); and .prj projection files
+					// The goespatial information is embedded in the file anyway!
 					tfw.setValue(true);
-					try {
-						geoTiffWriter.write(coverage, new GeneralParameterValue[]{tfw} );	
+					try {		
+						geoTiffWriter.write(coverage, new GeneralParameterValue[]{tfw});
 					}
 					catch (Exception exception) {
 						rifLogger.error(this.getClass(), "Unable to write " + imageType + " file: " + 
@@ -771,6 +817,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
       *
 	  * SVG file name:  <filePrefix><studyID>.svg	  
 	  *
+	  * Does not build RIFGRAPHICS_GEOTIFF files (see createGeotoolsMaps)
+	  *
 	  * @param: File temporaryDirectory,
 	  * @param: String dirName,
 	  * @param: String filePrefix,
@@ -788,8 +836,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		
 		Set<RIFGraphicsOutputType> allOutputTypes = EnumSet.of(
 			RIFGraphicsOutputType.RIFGRAPHICS_JPEG,
-			RIFGraphicsOutputType.RIFGRAPHICS_PNG,
-			RIFGraphicsOutputType.RIFGRAPHICS_TIFF,    // Requires 1.9.2 or higher Batik
+			RIFGraphicsOutputType.RIFGRAPHICS_PNG,    
 			RIFGraphicsOutputType.RIFGRAPHICS_EPS,
 			RIFGraphicsOutputType.RIFGRAPHICS_PS);
 		Iterator <RIFGraphicsOutputType> allOutputTypeIter = allOutputTypes.iterator();
