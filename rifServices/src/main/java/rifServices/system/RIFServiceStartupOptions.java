@@ -258,6 +258,11 @@ public final class RIFServiceStartupOptions {
 	public static int getOptionalRIfServiceProperty(String propertyName, int defaultValue) 
 					throws Exception {
 		return RIFServiceStartupProperties.getOptionalRIfServiceProperty(propertyName, defaultValue);
+	}	
+	
+	public static boolean getOptionalRIfServiceProperty(String propertyName, boolean defaultValue) 
+					throws Exception {
+		return RIFServiceStartupProperties.getOptionalRIfServiceProperty(propertyName, defaultValue);
 	}		
 	
 	public String getExtraExtractFilesDirectoryPath() {

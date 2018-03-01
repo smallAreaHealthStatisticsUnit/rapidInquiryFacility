@@ -302,7 +302,7 @@ public final class RIFServiceStartupProperties {
 		}
 		else {
 			parameterWarnings.put(propertyName, new Integer(1));
-			rifLogger.warning("rifServices.system.RIFServiceStartupProperties", 
+			rifLogger.info("rifServices.system.RIFServiceStartupProperties", 
 				"Unable to fetch optional property: " + propertyName);
 		}
 	}
@@ -326,6 +326,24 @@ public final class RIFServiceStartupProperties {
 		return propertyValue;		
 	}
 
+	public static boolean getOptionalRIfServiceProperty(String propertyName, boolean defaultValue) 
+					throws Exception {
+		boolean propertyValue=defaultValue;
+		try {
+			propertyValue=Boolean.getBoolean(getProperty(propertyName));
+		}
+		catch(MissingResourceException exception) { 
+			updateParameterWarnings(propertyName);
+		}
+		catch(Exception exception) {
+			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+				"Unable to fetch optional property: " + propertyName, exception);
+			throw exception;
+		}
+
+		return propertyValue;		
+	}
+	
 	public static String getOptionalRIfServiceProperty(String propertyName, String defaultValue) 
 					throws Exception {
 		String propertyValue=defaultValue;
