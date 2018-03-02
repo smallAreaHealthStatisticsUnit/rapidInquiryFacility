@@ -319,13 +319,13 @@ angular.module("RIF")
 								var respTime = new Date().getTime() - startTime;
 								if(respTime >= $scope.createZipFileTimeout){
 									// time out handling
-									$scope.showError("Study tables export timeout for: " + 
+									$scope.showErrorNoHide("Study tables export timeout for: " + 
 										$scope.studyID["exportmap"].name + " after: " + (respTime/1000) + " S");
 									$scope.consoleLog("Export timeout: " + JSON.stringify(err));
 								} 
 								else {
 									// other error handling
-									$scope.showError("Study tables export error for: " + 
+									$scope.showErrorNoHide("Study tables export error for: " + 
 										$scope.studyID["exportmap"].name);
 									$scope.consoleLog("Export error: " + JSON.stringify(err));
 								}							
