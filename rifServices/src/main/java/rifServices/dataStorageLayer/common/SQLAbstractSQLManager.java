@@ -426,7 +426,7 @@ public abstract class SQLAbstractSQLManager {
 				}
 			}
 			else {
-				rifLogger.warning(this.getClass(), "getColumnComment() database: " + databaseType +
+				rifLogger.debug(this.getClass(), "getColumnComment() database: " + databaseType +
 					"; expected 1 row, got none");
 			}
 		}
