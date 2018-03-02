@@ -54,6 +54,7 @@ import org.geotools.geometry.jts.Geometries;
 import org.geotools.geometry.jts.JTS;
 
 import org.geotools.grid.Grids;
+import org.geotools.grid.GridElement;
 
 import org.geotools.data.simple.SimpleFeatureSource;
 
@@ -76,6 +77,8 @@ import org.geotools.styling.Style;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.grid.GridFeatureBuilder;
 
 import org.geotools.factory.CommonFactoryFinder;
 
@@ -181,8 +184,11 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	
 	private String copyrightInfo = null;
 	private String software = "Rapid Inquiry Facility V4.0";
-	private boolean enableMapGrids = true;
-	
+	private boolean enableMapGrids = false;
+//	private Color gridBackgroundColor=Color.decode("#fdfdfd"); // Very nearly white	
+	private Color gridBackgroundColor=Color.WHITE;
+	private Color gridColor=Color.WHITE; // enableMapGrids = false
+		
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -201,14 +207,17 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		
 		this.rifCoordinateReferenceSystem = new RifCoordinateReferenceSystem();
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
-		
+	
 		try {			
 			ImageIO.scanForPlugins();
 			mapWidthPixels=this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
 					"mapWidthPixels", 7480);		
 			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);
 			copyrightInfo=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("copyrightInfo", (String)null);
-			enableMapGrids=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("enableMapGrids", true);	
+			enableMapGrids=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("enableMapGrids", true);
+			if (enableMapGrids) {
+				gridColor=Color.BLACK;
+			}	
 			this.rifMapsParameters = new RIFMapsParameters();
 		}
 		catch(Exception exception) {
@@ -265,7 +274,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			studyDescription=getColumnFromResultSet(rif40Studies, "study_name", 	
 				true /* allowNulls */, false /* allowNoRows */);
 		} 
-		// Interate RIFMapsParameters hash map for each RIFMapsParameter 
+		
+		// Interate RIFMapsParameters hash map for each RIFMapsParameter and write map
 		for (String key : rifMapsParameters.getKeySet()) {
 			RIFMapsParameters.RIFMapsParameter rifMapsParameter=
 				rifMapsParameters.getRIFMapsParameter(key);
@@ -357,18 +367,14 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			"map box: " + mapArea.toString() + "; CRS: " + CRS.toSRS(mapArea.getCoordinateReferenceSystem()) + lineSeparator +
 			"map max bounds: " + mapMaxBounds.toString() + "; CRS: " + CRS.toSRS(mapMaxBounds.getCoordinateReferenceSystem()) + lineSeparator +
 			"screenArea: " + screenArea.toString());	
-				
+			
 		// Add layers to map
-		
-		rifLogger.info(this.getClass(), "Add grid; gridSquareWidth: " + gridSquareWidth + 
-			"; gridVertexSpacing: " + gridVertexSpacing);	
-		SimpleFeatureSource grid = Grids.createSquareGrid(expandedEnvelope, gridSquareWidth,
-			gridVertexSpacing);		
-		Color gridColor=Color.WHITE;
-		if (enableMapGrids) {
-			gridColor=Color.LIGHT_GRAY;
-		}
-		Layer gridLayer = new FeatureLayer(grid.getFeatures(), SLD.createLineStyle(gridColor, 2 /* Width */));
+		Layer gridLayer = createGridLayer(expandedEnvelope, gridSquareWidth, gridVertexSpacing, crs);
+
+//		SimpleFeatureSource grid = Grids.createSquareGrid(expandedEnvelope, gridSquareWidth,
+//			gridVertexSpacing);				
+//		Layer gridLayer = new FeatureLayer(grid.getFeatures(), SLD.createLineStyle(gridColor, 2 /* Width */));
+
 		gridLayer.setTitle("Grid");			
 		if (!map.addLayer(gridLayer)) {
 			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
@@ -421,6 +427,43 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	}
 
 	/**
+	 * Create grid layer
+	 *
+	 * @param ReferencedEnvelope expandedEnvelope, 
+	 * @param double gridSquareWidth,
+	 * @param double gridVertexSpacing,
+	 * @param CoordinateReferenceSystem crs
+	 *
+	 * @returns FeatureLayer
+	 */
+	private FeatureLayer createGridLayer(
+		final ReferencedEnvelope expandedEnvelope, 
+		final double gridSquareWidth,
+		final double gridVertexSpacing,
+		final CoordinateReferenceSystem crs) 
+			throws IOException {
+		rifLogger.info(this.getClass(), "Add grid; gridSquareWidth: " + gridSquareWidth + 
+			"; gridVertexSpacing: " + gridVertexSpacing);		
+		SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
+			typeBuilder.setName("squaretype");
+			typeBuilder.add("square", Polygon.class, crs);
+			typeBuilder.add("color", Color.class);			
+		SimpleFeatureType TYPE = typeBuilder.buildFeatureType();
+		GridFeatureBuilder builder = new GridFeatureBuilder(TYPE) {
+			@Override
+			public void setAttributes(GridElement element, Map<String, Object> attributes) {
+				attributes.put("color", gridBackgroundColor);
+			}
+		};
+		SimpleFeatureSource grid = Grids.createSquareGrid(expandedEnvelope, gridSquareWidth,
+			gridVertexSpacing, builder);	
+		
+		FeatureLayer gridLayer = new FeatureLayer(grid.getFeatures(), SLD.createLineStyle(gridColor, 2 /* Width */));
+
+		return gridLayer;
+	}
+	
+	/**
 	 * Create map legend [layer]
 	 *
 	 * @param RIFStyle rifSyle, 
@@ -467,11 +510,13 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			Geometries.MULTIPOLYGON); 
 		legendItems.add(noDataLegendItem); */
 	
-		LegendLayer.LegendItem gridScaleLegendItem = new LegendLayer.LegendItem(
-			"Grids: " + gridScale, 
-			null,
-			Geometries.MULTIPOLYGON);
-		legendItems.add(gridScaleLegendItem);	
+		if (enableMapGrids) {
+			LegendLayer.LegendItem gridScaleLegendItem = new LegendLayer.LegendItem(
+				"Grids: " + gridScale, 
+				null,
+				Geometries.MULTIPOLYGON);
+			legendItems.add(gridScaleLegendItem);	
+		}
 		String crsName=""+envelope.getCoordinateReferenceSystem().getName();
 		crsName=crsName.replace("EPSG:", "");
 		if (crsName.equals("OSGB 1936 / British National Grid")) {
@@ -485,11 +530,15 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			null,
 			Geometries.MULTIPOLYGON);
 		legendItems.add(gridNameLegendItem);
-		LegendLayer.LegendItem studyDescriptionItem = new LegendLayer.LegendItem(
-			studyDescription, 
-			null,
-			Geometries.MULTIPOLYGON);
-		legendItems.add(studyDescriptionItem);	
+		
+		if (studyDescription != null) {
+			legendItems.add(spacerLegendItem);
+			LegendLayer.LegendItem studyDescriptionItem = new LegendLayer.LegendItem(
+				studyDescription, 
+				null,
+				Geometries.MULTIPOLYGON);
+			legendItems.add(studyDescriptionItem);	
+		}
 		
 		LegendLayer legendLayer = new LegendLayer(mapTitle, Color.LIGHT_GRAY, legendItems, imageWidth);
 		legendLayer.setTitle("Legend");

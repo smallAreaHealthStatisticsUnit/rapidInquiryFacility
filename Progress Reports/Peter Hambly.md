@@ -1990,10 +1990,7 @@ callPerformSmoothingActivity exitValue: 1
 * Add title to TAG_IMAGE_DESCRIPTION TIFF metadata (and other images if supported) and on legend;
 * Support .tfw file (plain text files that store X and Y pixel size, rotational information, and 
   world coordinates for a map); and .prj projection files
- 
-TODO: 
-
-* Map grid background needs to be white (currently undefined)
+* Map grid background now white
 
 ## In progress (March/April 2018):
 
