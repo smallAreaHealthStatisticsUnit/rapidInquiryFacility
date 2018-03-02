@@ -370,12 +370,6 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			
 		// Add layers to map
 		Layer gridLayer = createGridLayer(expandedEnvelope, gridSquareWidth, gridVertexSpacing, crs);
-
-//		SimpleFeatureSource grid = Grids.createSquareGrid(expandedEnvelope, gridSquareWidth,
-//			gridVertexSpacing);				
-//		Layer gridLayer = new FeatureLayer(grid.getFeatures(), SLD.createLineStyle(gridColor, 2 /* Width */));
-
-		gridLayer.setTitle("Grid");			
 		if (!map.addLayer(gridLayer)) {
 			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
 		}
@@ -458,8 +452,10 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		SimpleFeatureSource grid = Grids.createSquareGrid(expandedEnvelope, gridSquareWidth,
 			gridVertexSpacing, builder);	
 		
-		FeatureLayer gridLayer = new FeatureLayer(grid.getFeatures(), SLD.createLineStyle(gridColor, 2 /* Width */));
-
+		FeatureLayer gridLayer = new FeatureLayer(grid.getFeatures(), 
+			SLD.createLineStyle(gridColor, 2 /* Width */));
+		gridLayer.setTitle("Grid");			
+		
 		return gridLayer;
 	}
 	
