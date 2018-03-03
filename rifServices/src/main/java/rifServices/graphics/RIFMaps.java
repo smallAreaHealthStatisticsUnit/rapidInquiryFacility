@@ -187,7 +187,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	private boolean enableMapGrids = false;
 //	private Color gridBackgroundColor=Color.decode("#fdfdfd"); // Very nearly white	
 	private Color gridBackgroundColor=Color.WHITE;
-	private Color gridColor=Color.WHITE; // enableMapGrids = false
+	private Color gridColor=Color.WHITE; 	// enableMapGrids = false
+	private int gridWidth=3;				// Pixels
 		
 	// ==========================================
 	// Section Properties
@@ -284,7 +285,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			String resultsColumn=rifMapsParameter.getResultsColumn();
 			RIFStyle rifSyle=rifMapsParameter.getRIFStyle(featureCollection.getFeatureCollection());
 			
-			writeMap(
+			writeWhiteBackgroundMap( // JPEG, PS, EPS, SVG
 				featureCollection,
 				temporaryDirectory,
 				studyID,
@@ -293,10 +294,20 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				rifSyle,
 				baseStudyName,
 				studyDescription);
+			
+			writeTransparentBackgroundMap( // GeoTIFF and PNG
+				featureCollection,
+				temporaryDirectory,
+				studyID,
+				mapTitle, 
+				resultsColumn,
+				rifSyle,
+				baseStudyName,
+				studyDescription);				
 		}	
 	}
 	
-	/** Write map
+	/** Write white background map
 	 * 
 	 * @param: RifFeatureCollection rifFeatureCollection,
 	 * @param: File temporaryDirectory,
@@ -307,7 +318,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param: String baseStudyName,
 	 * @param: String studyDescription
 	 */
-	private void writeMap(
+	private void writeWhiteBackgroundMap(
 		final RifFeatureCollection rifFeatureCollection,
 		final File temporaryDirectory,
 		final String studyID,
@@ -374,8 +385,9 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
 		}
 	
+		Layer backgroundAreasLayer = null;
 		if (backgroundAreasFeatureCollection != null) {
-			Layer backgroundAreasLayer = new FeatureLayer(backgroundAreasFeatureCollection, 
+			backgroundAreasLayer = new FeatureLayer(backgroundAreasFeatureCollection, 
 				SLD.createPolygonStyle(
 					Color.LIGHT_GRAY /* outlineColor */,
 					Color.decode("#ececec") /* fillColor */,
@@ -388,9 +400,9 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			}
 		}
 		
-        FeatureLayer layer = new FeatureLayer(featureCollection, style);	
-		layer.setTitle(mapTitle);		
-		if (!map.addLayer(layer)) {
+        FeatureLayer featureLayer = new FeatureLayer(featureCollection, style);	
+		featureLayer.setTitle(mapTitle);		
+		if (!map.addLayer(featureLayer)) {
 			throw new Exception("Failed to add FeatureLayer to map: " + mapTitle);
 		}		
 		
@@ -413,9 +425,130 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			imageWidth, imageHeight);	
 			
 		createGraphicsMaps(temporaryDirectory, dirName, filePrefix, studyID);
-				
+	
+		map.dispose();
+	}
+	
+	/** Write transparent background map
+	 * 
+	 * @param: RifFeatureCollection rifFeatureCollection,
+	 * @param: File temporaryDirectory,
+	 * @param: String studyID,
+	 * @param: String mapTitle,
+	 * @param: String resultsColumn,
+	 * @param: RIFStyle rifStyle,
+	 * @param: String baseStudyName,
+	 * @param: String studyDescription
+	 */
+	private void writeTransparentBackgroundMap(
+		final RifFeatureCollection rifFeatureCollection,
+		final File temporaryDirectory,
+		final String studyID,
+		final String mapTitle,
+		final String resultsColumn,
+		final RIFStyle rifStyle,
+		final String baseStudyName,
+		final String studyDescription) 
+			throws Exception {
+	
+		DefaultFeatureCollection featureCollection=rifFeatureCollection.getFeatureCollection();
+		DefaultFeatureCollection backgroundAreasFeatureCollection=
+			rifFeatureCollection.getBackgroundAreasFeatureCollection();
+		CoordinateReferenceSystem crs=rifFeatureCollection.getCoordinateReferenceSystem();
+		ReferencedEnvelope expandedEnvelope=rifFeatureCollection.getExpandedEnvelope();
+		ReferencedEnvelope initialEnvelope=rifFeatureCollection.getInitialEnvelope();
+		double gridSquareWidth=rifFeatureCollection.getGridSquareWidth();
+		double gridVertexSpacing=rifFeatureCollection.getGridVertexSpacing();
+		String gridScale=rifFeatureCollection.getGridScale();
+
+		String filePrefix=resultsColumn + "_";
+		String dirName=MAPS_SUBDIRECTORY;
+		
+		// Create SLD styling file for GIS tools
+		Style style=rifStyle.getStyle();
+		rifStyle.writeSldFile(resultsColumn, studyID, temporaryDirectory, dirName, mapTitle);
+
+		//Create map		
+		MapContent map = new MapContent();
+		map.setTitle(mapTitle);
+
+		// Set projection
+		MapViewport vp = map.getViewport();
+		vp.setCoordinateReferenceSystem(crs);
+		vp.setBounds(expandedEnvelope);	
+	
+		// Deduce aspect ratio (the ratio of the width to the height of an image or screen)
+		int imageWidth=mapWidthPixels;
+		int imageHeight=0;
+		double heightToWidth = expandedEnvelope.getSpan(1) / expandedEnvelope.getSpan(0); // Inverse aspect ratio
+		imageHeight=(int) Math.round(imageWidth * heightToWidth); 
+		Rectangle screenBounds = new Rectangle(0, 0, imageWidth, imageHeight);
+		// Set new right enlarged screen area and map bounds
+		
+		vp.setScreenArea(screenBounds);
+		vp.setMatchingAspectRatio(false);
+		vp.setEditable(false); /* Lock viewport to enforce bounds */
+		map.setViewport(vp);
+		
+		Rectangle screenArea=vp.getScreenArea();
+		ReferencedEnvelope mapArea=vp.getBounds();	
+		ReferencedEnvelope mapMaxBounds=map.getMaxBounds();
+		rifLogger.info(this.getClass(), 
+			"Before transparent layer add: Bounding box: " + expandedEnvelope.toString() + "; CRS: " + CRS.toSRS(crs) + lineSeparator +
+			"screen bonds: " + screenBounds.toString() + lineSeparator +
+			"aspect ratio: " + (double)(1/heightToWidth) + lineSeparator +
+			"map box: " + mapArea.toString() + "; CRS: " + CRS.toSRS(mapArea.getCoordinateReferenceSystem()) + lineSeparator +
+			"map max bounds: " + mapMaxBounds.toString() + "; CRS: " + CRS.toSRS(mapMaxBounds.getCoordinateReferenceSystem()) + lineSeparator +
+			"screenArea: " + screenArea.toString());	
+			
+		// Add layers to map		
+		SimpleFeatureSource grid = Grids.createSquareGrid(expandedEnvelope, gridSquareWidth,
+			gridVertexSpacing);				
+		Layer gridLayer = new FeatureLayer(grid.getFeatures(), SLD.createLineStyle(gridColor, gridWidth));
+		gridLayer.setTitle("TransparentGrid");	
+		if (!map.addLayer(gridLayer)) {
+			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
+		}
+	
+		Layer backgroundAreasLayer = null;
+		if (backgroundAreasFeatureCollection != null) {
+			backgroundAreasLayer = new FeatureLayer(backgroundAreasFeatureCollection, 
+				SLD.createPolygonStyle(
+					Color.LIGHT_GRAY /* outlineColor */,
+					Color.decode("#ececec") /* fillColor */,
+					1	/* opacity */,
+					null /* labelField */,
+					null /* labelFont */));
+			backgroundAreasLayer.setTitle("Background areas");			
+			if (!map.addLayer(backgroundAreasLayer)) {
+				throw new Exception("Failed to add backgroundAreasLayer to map: " + mapTitle);
+			}
+		}
+		
+        FeatureLayer featureLayer = new FeatureLayer(featureCollection, style);	
+		featureLayer.setTitle(mapTitle);		
+		if (!map.addLayer(featureLayer)) {
+			throw new Exception("Failed to add FeatureLayer to map: " + mapTitle);
+		}		
+		
+		LegendLayer legendLayer = createLegendLayer(rifStyle, expandedEnvelope, mapTitle, studyDescription,
+			gridScale, imageWidth); 
+		if (!map.addLayer(legendLayer)) {
+			throw new Exception("Failed to add legendLayer to map: " + mapTitle);
+		}
+
+		screenArea=vp.getScreenArea();
+		mapArea=vp.getBounds();	
+		mapMaxBounds=map.getMaxBounds();
+		rifLogger.info(this.getClass(), 
+			"After layer add: map box: " + mapArea.toString() + "; CRS: " + CRS.toSRS(mapArea.getCoordinateReferenceSystem()) + lineSeparator +
+			"map max bounds: " + mapMaxBounds.toString() + "; CRS: " + CRS.toSRS(mapMaxBounds.getCoordinateReferenceSystem()) + lineSeparator +
+			"screenArea: " + screenArea.toString());			
+		
 		createGeotoolsMaps(map, temporaryDirectory, dirName, filePrefix, studyID, studyDescription,
-			imageWidth, imageHeight, "tif");	
+			imageWidth, imageHeight, "tif");			
+		createGeotoolsMaps(map, temporaryDirectory, dirName, filePrefix, studyID, studyDescription,
+			imageWidth, imageHeight, "png");	
 	
 		map.dispose();
 	}
@@ -453,7 +586,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			gridVertexSpacing, builder);	
 		
 		FeatureLayer gridLayer = new FeatureLayer(grid.getFeatures(), 
-			SLD.createLineStyle(gridColor, 2 /* Width */));
+			SLD.createLineStyle(gridColor, gridWidth));
 		gridLayer.setTitle("Grid");			
 		
 		return gridLayer;
@@ -604,6 +737,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 					"; bounds: NONE" + lineSeparator);
 			}
 		}
+		rifLogger.info(this.getClass(), sb.toString());
+		
 			
 		Dimension canvasSize = new Dimension(imageWidth, imageHeight);
 		Document document = null;
@@ -653,10 +788,10 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				osw.close();
 			}
 			if (errors > 0) {
-				rifLogger.warning(this.getClass(), errors + " occurred rendering " + features + " features");
+				rifLogger.warning(this.getClass(), errors + " occurred rendering " + features + " SVG features");
 			}
 			else {
-				rifLogger.info(this.getClass(),  "No errors occurred rendering " + features + " features");
+				rifLogger.info(this.getClass(),  "No errors occurred rendering " + features + " SVG features");
 			}
 			errors=0;
 			features=0;
@@ -700,7 +835,26 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final int imageWidth,
 		final int imageHeight,
 		final String imageType) throws Exception {
-			
+
+		List<Layer>	mapLayers = map.layers();
+		StringBuffer sb = new StringBuffer();
+		int j=0;
+		for (Layer mapLayer : mapLayers) {
+			j++;
+			if (mapLayer != null) {
+				ReferencedEnvelope envel=mapLayer.getBounds();
+				if (envel != null) {
+					sb.append("Layer2[" + j + "]: " + mapLayer.getTitle() + 
+						"; bounds: " + envel.toString() + lineSeparator);
+				}
+				else  {
+					sb.append("Layer2[" + j + "]: " + mapLayer.getTitle() + 
+						"; bounds: NONE" + lineSeparator);
+				}
+			}
+		}
+		rifLogger.info(this.getClass(), sb.toString());
+		
 		String mapDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		File mapDirectory = new File(mapDirName);
 		File newDirectory = new File(mapDirName);
@@ -714,10 +868,11 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				"Created directory: " + newDirectory.getAbsolutePath());
 		}
 		
-		String imageIOFile=mapDirName + File.separator + filePrefix + studyID + "_" + printingDPI + "dpi.tif";
-		File geotiff = new File(imageIOFile);
-		if (geotiff.exists()) {
-			geotiff.delete();
+		String outputFileName=mapDirName + File.separator + filePrefix + studyID + "_" + printingDPI + "dpi." +
+			imageType.toLowerCase();
+		File outputFile = new File(outputFileName);
+		if (outputFile.exists()) {
+			outputFile.delete();
 		}		
 			
 		ImageOutputStream outputImageFile = null;
@@ -738,12 +893,20 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			}
 			
 			if (hasPlugin) {
-				rifLogger.info(this.getClass(), "Create map " + imageWidth + "x" + imageHeight + 
-					"; file: " + imageIOFile);
+				rifLogger.info(this.getClass(), "Create " + imageType + " map " + 
+					imageWidth + "x" + imageHeight + "; file: " + outputFileName);
 
-				
-				BufferedImage bufferedImage = new BufferedImage(imageWidth, imageHeight, 
-					BufferedImage.TYPE_INT_RGB);
+				BufferedImage bufferedImage = null;	
+				if (imageType.toLowerCase().equals("tif") || 
+				    imageType.toLowerCase().equals("tiff") ||
+				    imageType.toLowerCase().equals("png")) {	
+					bufferedImage = new BufferedImage(imageWidth, imageHeight, 
+						BufferedImage.TYPE_INT_ARGB); // Allow transparency [will work for PNG as well!]
+				}
+				else {	
+					bufferedImage = new BufferedImage(imageWidth, imageHeight, 
+						BufferedImage.TYPE_INT_RGB);
+				}
 				Graphics2D g2d = bufferedImage.createGraphics();
 
 				CoordinateReferenceSystem crs=map.getCoordinateReferenceSystem();
@@ -768,13 +931,14 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				Rectangle outputArea = new Rectangle(imageWidth, imageHeight);
 				gtRenderer.paint(g2d, outputArea, envelope); 
 					
-				if (imageType.toLowerCase().equals("tif") || imageType.toLowerCase().equals("tiff")) {		
+				if (imageType.toLowerCase().equals("tif") || imageType.toLowerCase().equals("tiff")) {	
+					// USe GeoTIFF renderer
 					// Turn Graphics2D into a Coverage, and then save it to GeoTiff	
 				
 					GridCoverageFactory factory = new GridCoverageFactory();
 					GridCoverage2D coverage = factory.create("geotiff", bufferedImage, envelope);
 						   
-					GeoTiffWriter geoTiffWriter = new GeoTiffWriter(geotiff); // get a writer
+					GeoTiffWriter geoTiffWriter = new GeoTiffWriter(outputFile); // get a writer
 					
 					if (copyrightInfo != null) {
 						geoTiffWriter.setMetadataValue(
@@ -796,18 +960,20 @@ public class RIFMaps extends SQLAbstractSQLManager {
 					tfw.setValue(true);
 					try {		
 						geoTiffWriter.write(coverage, new GeneralParameterValue[]{tfw});
+						rifLogger.info(this.getClass(),  "No errors occurred rendering " + features + " " + 
+							imageType + " " + " features to: " + outputFileName);
 					}
 					catch (Exception exception) {
 						rifLogger.error(this.getClass(), "Unable to write " + imageType + " file: " + 
-							imageIOFile, exception);			
+							outputFileName, exception);			
 					}
 					finally {
 						geoTiffWriter.dispose();
 						coverage.dispose(true);
 					}
 				}
-				else {					
-					fileOutputStream = new FileOutputStream(geotiff);
+				else {	// Use imageIO renderer				
+					fileOutputStream = new FileOutputStream(outputFile);
 					outputImageFile = ImageIO.createImageOutputStream(fileOutputStream);
 				
 					boolean res=false;
@@ -816,14 +982,16 @@ public class RIFMaps extends SQLAbstractSQLManager {
 					}
 					catch (IllegalAccessError exception) {
 						rifLogger.error(this.getClass(), "Unable to write " + imageType + " file: " + 
-							imageIOFile, exception);			
+							outputFileName, exception);			
 					}
 					finally {
 						if (errors > 0) {
-							rifLogger.warning(this.getClass(), errors + " occurred rendering " + features + " features");
+							rifLogger.warning(this.getClass(), errors + " occurred rendering " + features + " " + imageType + 
+								" " + " features to: " + outputFileName);
 						}
 						else {
-							rifLogger.info(this.getClass(),  "No errors occurred rendering " + features + " features");
+							rifLogger.info(this.getClass(),  "No errors occurred rendering " + features + " " + imageType + 
+								" " + " features to: " + outputFileName);
 						}
 						errors=0;
 						features=0;
@@ -832,18 +1000,18 @@ public class RIFMaps extends SQLAbstractSQLManager {
 					}	
 					
 					if (!res) {
-						throw new Exception("ImageIO.write failed writing file: " + imageIOFile);
+						throw new Exception("ImageIO.write failed writing file: " + outputFileName);
 					}				
 				} 
 			}
 			else {
-				rifLogger.warning(this.getClass(), "Unable to write file: " + imageIOFile + 
+				rifLogger.warning(this.getClass(), "Unable to write file: " + outputFileName + 
 					"; NO PLUGIN FOUND FOR: " + imageType);
 			}
 
 		} 
 		catch (Exception exception) {
-			rifLogger.error(this.getClass(), "Exception writing file: " + imageIOFile, exception);
+			rifLogger.error(this.getClass(), "Exception writing file: " + outputFileName, exception);
 			throw exception;
 		} 
 		finally {
@@ -880,8 +1048,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		RIFGraphics rifGraphics = new RIFGraphics(rifServiceStartupOptions);
 		
 		Set<RIFGraphicsOutputType> allOutputTypes = EnumSet.of(
-			RIFGraphicsOutputType.RIFGRAPHICS_JPEG,
-			RIFGraphicsOutputType.RIFGRAPHICS_PNG,    
+			RIFGraphicsOutputType.RIFGRAPHICS_JPEG,   
 			RIFGraphicsOutputType.RIFGRAPHICS_EPS,
 			RIFGraphicsOutputType.RIFGRAPHICS_PS);
 		Iterator <RIFGraphicsOutputType> allOutputTypeIter = allOutputTypes.iterator();
