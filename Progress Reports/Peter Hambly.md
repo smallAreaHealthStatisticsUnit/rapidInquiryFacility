@@ -1992,6 +1992,15 @@ callPerformSmoothingActivity exitValue: 1
   world coordinates for a map); and .prj projection files
 * Map grid background now white
 
+#### 5th to 9th March
+
+* Wecome Martin McCallion
+* RIF deoplyment meeting with Hima
+* RIF team meeting 
+* Makefile improvements
+* Rounding control, improvements to range displays
+* Issues around geotools label positioning prevent its use. More work needed.
+
 ## In progress (March/April 2018):
 
 * RIF results field renaming specification;

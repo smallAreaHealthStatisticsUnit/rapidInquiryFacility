@@ -19,6 +19,9 @@ import org.geotools.styling.Fill;
 import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.FeatureTypeStyle;
 import org.geotools.styling.PolygonSymbolizer;
+import org.geotools.styling.Symbolizer;
+import org.geotools.styling.AnchorPoint;
+import org.geotools.styling.PointPlacement;
 
 import org.geotools.feature.DefaultFeatureCollection;
 
@@ -35,8 +38,11 @@ import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.styling.SLDTransformer;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.styling.StyleFactory;
+import org.geotools.styling.StyleFactoryImpl;
 import org.geotools.styling.UserLayer;
 import org.geotools.styling.NamedLayer;
+import org.geotools.styling.Font;
+import org.geotools.styling.TextSymbolizer;
 
 /**
  *
@@ -138,6 +144,14 @@ public class RIFStyle {
 	private Double maxArray[] = null;
 	private ArrayList<RIFStyleBand> rifStyleBands = new ArrayList<RIFStyleBand>();
 
+	// https://github.com/geotools/geotools/blob/master/modules/unsupported/swt/src/main/java/org/geotools/swt/styling/simple/SLDs.java
+	public static final double ALIGN_LEFT = 1.0;
+    public static final double ALIGN_CENTER = 0.5;
+    public static final double ALIGN_RIGHT = 0.0;
+    public static final double ALIGN_BOTTOM = 1.0;
+    public static final double ALIGN_MIDDLE = 0.5;
+    public static final double ALIGN_TOP = 0.0;
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -145,6 +159,13 @@ public class RIFStyle {
 	// ==========================================
 	// Section Construction
 	// ==========================================
+
+	/**
+     * Constructor.
+     */	
+	public RIFStyle() {
+		
+	}
 	/**
      * Constructor.
      * 
@@ -405,35 +426,130 @@ public class RIFStyle {
 	}
 	
    /**
-     * Create a Style to draw polygon features with a thin blue outline and
-     * a cyan fill
+     * Create a Style to draw grid polygon features, with an optional label field in location (X, Y).
+	 * <label>, X and Y are atributes of the type builder (see usage in: RIFMaps.java)
+	 *
+	 * @param Color lineColor, 
+	 * @param Color fillColor, 
+	 * @param double lineSize, 
+	 * @param double opacity,
+	 * @param String label,
+	 * @param double labelFontSize
+	 *
+	 * @returns Style
      */
-    private Style createSimplePolygonStyle() {
+    public Style createGridPolygonStyle(
+		final Color lineColor, 
+		final Color fillColor, 
+		final double lineSize, 
+		final double fillOpacity,
+		final String label,
+		final double labelFontSize) {
 		StyleBuilder builder = new StyleBuilder();
 		FilterFactory filterFactory = builder.getFilterFactory();
 		
-        // create a partially opaque outline stroke
+        // create a fully opaque outline stroke
         Stroke stroke = builder.createStroke(
-                filterFactory.literal(Color.BLUE),
-                filterFactory.literal(1),
-                filterFactory.literal(0.5));
+                filterFactory.literal(lineColor),
+                filterFactory.literal(lineSize),
+                filterFactory.literal(1)); 			/* lineOpacity */
 
-        // create a partial opaque fill
-        Fill fill = builder.createFill(
-                filterFactory.literal(Color.CYAN),
-                filterFactory.literal(0.5));
+        // create a partially opaque fill
+        Fill fill = Fill.NULL;
+        if (fillColor != null) {
+			fill = builder.createFill(
+                filterFactory.literal(fillColor),
+                filterFactory.literal(fillOpacity)); /* fillOpacity */
+		}
+				
+		// Create a polygon symbolizer for the square grid		
+        PolygonSymbolizer sym = builder.createPolygonSymbolizer(stroke, fill, null /* geometryPropertyName */);
 
-        /*
-         * Setting the geometryPropertyName arg to null signals that we want to
-         * draw the default geomettry of features
-         */
-        PolygonSymbolizer sym = builder.createPolygonSymbolizer(stroke, fill, null);
+		StyleFactoryImpl styleFactory = (StyleFactoryImpl) CommonFactoryFinder.getStyleFactory();
+		Font font=styleFactory.getDefaultFont();
+		font.setSize(filterFactory.literal(labelFontSize));
+		
+		// Create a text symbolizer for the square grid label
+		TextSymbolizer tSym = null;
+		if (label != null) {
+			AnchorPoint anchorPoint = builder.createAnchorPoint( // Anchor to this relative position in the square
 
-        Rule rule = builder.createRule(sym);
-        FeatureTypeStyle fts = builder.createFeatureTypeStyle("rifstyle1", rule);
+				builder.attributeExpression("X"), 	/* horizAlign */
+				builder.attributeExpression("Y")); /* horizAlign */
+/*
+ * X and Y are set to:
+ *
+ * https://github.com/geotools/geotools/blob/master/modules/unsupported/swt/src/main/java/org/geotools/swt/styling/simple/SLDs.java
+ *
+ * The effects are detailed in:
+ *
+ * http://docs.geoserver.org/stable/en/user/styling/sld/reference/labeling.html
+ *
+	RIFStyle.ALIGN_LEFT = 1.0;
+    RIFStyle.ALIGN_CENTER = 0.5;
+    RIFStyle.ALIGN_RIGHT = 0.0;
+    RIFStyle.ALIGN_BOTTOM = 1.0;
+    RIFStyle.ALIGN_MIDDLE = 0.5;
+    RIFStyle.ALIGN_TOP = 0.0;
+ */
+
+			PointPlacement pointPlacement = builder.createPointPlacement(
+				anchorPoint, 
+				null,										/* Displacement */
+				builder.attributeExpression("rotation")	 	/* rotation */);
+			tSym = builder.createTextSymbolizer(
+				builder.createFill(
+					filterFactory.literal(Color.BLACK),
+					filterFactory.literal(1)),		/* fill */
+				new Font[] {font} , 				/* fonts */
+				builder.createHalo(),				/* halo */
+				builder.attributeExpression(label),	/* label */
+				pointPlacement 						/* labelPlacement */,
+				null 								/* geometryPropertyName */);
+		}
+		
+		Style style = null;
+		if (tSym != null) {
+			style=wrapSymbolizers("gridPolgonStyle", builder, styleFactory, sym, tSym);
+		}
+		else {
+			style=wrapSymbolizers("gridPolgonStyle2", builder, styleFactory, sym);
+		}
+
+        return style;
+    }
+	
+	/**
+     * Wrap one or more symbolizers into a Rule / FeatureTypeStyle / Style
+     *
+	 * @param String ftStyleName,
+	 * @param StyleBuilder builder,
+	 * @param StyleFactoryImpl styleFactory,
+     * @param symbolizers one or more symbolizer objects
+     *
+     * @return a new Style instance or null if no symbolizers are provided
+     */
+    public static Style wrapSymbolizers(
+		final String ftStyleName, 
+		final StyleBuilder builder, 
+		final StyleFactory styleFactory, 
+		final Symbolizer ...symbolizers) {
+        if (symbolizers == null || symbolizers.length == 0) {
+            return null;
+        }
+
+        Rule rule = styleFactory.createRule();
+
+        for (Symbolizer sym : symbolizers) {
+            rule.symbolizers().add(sym);
+        }
+
+        FeatureTypeStyle fts = styleFactory.createFeatureTypeStyle(new Rule[] {rule});
+
         Style style = builder.createStyle();
         style.featureTypeStyles().add(fts);
-
+		style.getDescription().setTitle("RIFStyle: " + ftStyleName);
+		
         return style;
     }
 	

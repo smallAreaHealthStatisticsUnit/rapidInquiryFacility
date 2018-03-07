@@ -55,6 +55,7 @@ import org.geotools.geometry.jts.JTS;
 
 import org.geotools.grid.Grids;
 import org.geotools.grid.GridElement;
+import org.geotools.grid.PolygonElement;
 
 import org.geotools.data.simple.SimpleFeatureSource;
 
@@ -66,13 +67,16 @@ import org.geotools.renderer.RenderListener;
 import org.geotools.renderer.lite.StreamingRenderer;
 
 import org.geotools.styling.SLD;
+import org.geotools.styling.Font;
+import org.geotools.styling.StyleFactoryImpl;
+import org.geotools.styling.Style;
+import org.geotools.styling.Stroke;
+import org.opengis.filter.FilterFactory;
 
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.map.MapViewport;
-
-import org.geotools.styling.Style;
 
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -167,7 +171,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
-		
+	private Class rifMapsClass=this.getClass();
+	
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	private static DatabaseType databaseType;
 	private static RifCoordinateReferenceSystem rifCoordinateReferenceSystem = null;
@@ -185,11 +190,13 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	private String copyrightInfo = null;
 	private String software = "Rapid Inquiry Facility V4.0";
 	private boolean enableMapGrids = false;
-//	private Color gridBackgroundColor=Color.decode("#fdfdfd"); // Very nearly white	
 	private Color gridBackgroundColor=Color.WHITE;
 	private Color gridColor=Color.WHITE; 	// enableMapGrids = false
 	private int gridWidth=3;				// Pixels
 		
+	private boolean enableCoordinateDisplay=false;
+	private double coordinateDisplayFontSize=60.0;
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -214,11 +221,24 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			mapWidthPixels=this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
 					"mapWidthPixels", 7480);		
 			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);
-			copyrightInfo=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("copyrightInfo", (String)null);
+			copyrightInfo=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("copyrightInfo", 
+				(String)null);
 			enableMapGrids=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("enableMapGrids", true);
+			enableCoordinateDisplay=this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
+				"enableCoordinateDisplay", false);
+
 			if (enableMapGrids) {
 				gridColor=Color.BLACK;
+//				gridBackgroundColor=Color.decode("#fdfdfd"); // Very nearly white	
+//				gridBackgroundColor=Color.RED;
+				
+				rifLogger.info(this.getClass(), "Grids enabled: " + gridColor.toString() + "; background: " +
+					gridBackgroundColor.toString());
 			}	
+			else {	
+				rifLogger.info(this.getClass(), "Grids disabled: " + gridColor.toString() + "; background: " +
+					gridBackgroundColor.toString());
+			}
 			this.rifMapsParameters = new RIFMapsParameters();
 		}
 		catch(Exception exception) {
@@ -380,7 +400,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			"screenArea: " + screenArea.toString());	
 			
 		// Add layers to map
-		Layer gridLayer = createGridLayer(expandedEnvelope, gridSquareWidth, gridVertexSpacing, crs);
+		Layer gridLayer = createGridLayer(expandedEnvelope, gridSquareWidth, gridVertexSpacing, crs,
+			gridBackgroundColor, rifStyle);
 		if (!map.addLayer(gridLayer)) {
 			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
 		}
@@ -494,7 +515,10 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		ReferencedEnvelope mapArea=vp.getBounds();	
 		ReferencedEnvelope mapMaxBounds=map.getMaxBounds();
 		rifLogger.info(this.getClass(), 
-			"Before transparent layer add: Bounding box: " + expandedEnvelope.toString() + "; CRS: " + CRS.toSRS(crs) + lineSeparator +
+			"Before transparent layer add: Bounding box: " + expandedEnvelope.toString() + 
+			"; CRS: " + CRS.toSRS(crs) + lineSeparator +
+			"grid Color: " + gridColor.toString() + 
+			"; grid width: " + gridWidth + lineSeparator +
 			"screen bonds: " + screenBounds.toString() + lineSeparator +
 			"aspect ratio: " + (double)(1/heightToWidth) + lineSeparator +
 			"map box: " + mapArea.toString() + "; CRS: " + CRS.toSRS(mapArea.getCoordinateReferenceSystem()) + lineSeparator +
@@ -554,12 +578,14 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	}
 
 	/**
-	 * Create grid layer
+	 * Create grid layer (white background maps only)
 	 *
 	 * @param ReferencedEnvelope expandedEnvelope, 
 	 * @param double gridSquareWidth,
 	 * @param double gridVertexSpacing,
-	 * @param CoordinateReferenceSystem crs
+	 * @param CoordinateReferenceSystem crs,
+	 * @param Color backgroundColor,
+	 * @param RIFStyle rifStyle
 	 *
 	 * @returns FeatureLayer
 	 */
@@ -567,26 +593,112 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final ReferencedEnvelope expandedEnvelope, 
 		final double gridSquareWidth,
 		final double gridVertexSpacing,
-		final CoordinateReferenceSystem crs) 
+		final CoordinateReferenceSystem crs,
+		final Color backgroundColor,
+		final RIFStyle rifStyle) 
 			throws IOException {
 		rifLogger.info(this.getClass(), "Add grid; gridSquareWidth: " + gridSquareWidth + 
-			"; gridVertexSpacing: " + gridVertexSpacing);		
+			"; gridVertexSpacing: " + gridVertexSpacing);
+			
 		SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
-			typeBuilder.setName("squaretype");
-			typeBuilder.add("square", Polygon.class, crs);
-			typeBuilder.add("color", Color.class);			
+		typeBuilder.setName("squaretype");
+		typeBuilder.add("square", Polygon.class, crs);
+		typeBuilder.add("color", Color.class);		
+		typeBuilder.add("coord", String.class);		
+		typeBuilder.add("X", Double.class);			
+		typeBuilder.add("Y", Double.class);			
+		typeBuilder.add("rotation", Double.class);		
+		
+		if (enableCoordinateDisplay) {		
+			rifLogger.info(this.getClass(), "Coordinate display enabled: " + gridColor.toString() + "; background: " +
+				gridBackgroundColor.toString());
+		}
+		else {		
+			rifLogger.info(this.getClass(), "Coordinate display disabled");
+		}
 		SimpleFeatureType TYPE = typeBuilder.buildFeatureType();
 		GridFeatureBuilder builder = new GridFeatureBuilder(TYPE) {
 			@Override
 			public void setAttributes(GridElement element, Map<String, Object> attributes) {
-				attributes.put("color", gridBackgroundColor);
+				PolygonElement polyEl = (PolygonElement) element;
+				ReferencedEnvelope bounds = element.getBounds();
+				
+				if (enableCoordinateDisplay) {	
+					double xMin=bounds.getMinimum(0);
+					double xMax=bounds.getMaximum(0); 		
+					double yMin=bounds.getMinimum(1);
+					double yMax=bounds.getMaximum(1);
+					double X=rifStyle.ALIGN_CENTER;		/* horizAlign */
+					double Y=rifStyle.ALIGN_MIDDLE; 	/* vertAlign */ 
+					double rotation=0; // Clockwise in degrees
+					
+					String coord=null;
+					if ((expandedEnvelope.getMaximum(1) == yMax) &&
+					    (expandedEnvelope.getMinimum(0) == xMin)) { // Top left
+						X=rifStyle.ALIGN_LEFT; 		/* horizAlign */
+						Y=rifStyle.ALIGN_TOP; 		/* vertAlign */ 
+						coord="(" + X + "," + Y + ") " + "TL(yMax): " + yMax;
+					}
+					else if ((expandedEnvelope.getMaximum(1) == yMax) &&
+							 (expandedEnvelope.getMaximum(0) == xMax)) { // Top right
+						X=rifStyle.ALIGN_RIGHT; 	/* horizAlign */
+						Y=rifStyle.ALIGN_BOTTOM; 	/* vertAlign */ 
+						rotation=90;
+						coord="(" + X + "," + Y + ") " + "TR(yMax): " + yMax;
+					}
+					else if ((expandedEnvelope.getMinimum(1) == yMin) &&
+							 (expandedEnvelope.getMaximum(0) == xMax)) { // Bottom right
+						X=rifStyle.ALIGN_RIGHT; 	/* horizAlign */
+						Y=rifStyle.ALIGN_BOTTOM; 	/* vertAlign */ 
+						coord="(" + X + "," + Y + ") " + "BR(xMax): " + xMax;
+					}
+					else if (expandedEnvelope.getMaximum(1) == yMax) { // Top middle
+						X=rifStyle.ALIGN_RIGHT; 	/* horizAlign */
+						Y=rifStyle.ALIGN_TOP; 		/* vertAlign */ 
+						coord="(" + X + "," + Y + ") " + "TM(yMax): " + yMax;
+					}
+					else if (expandedEnvelope.getMaximum(0) == xMax) { // Right middle
+						X=rifStyle.ALIGN_LEFT; 		/* horizAlign */
+						Y=rifStyle.ALIGN_BOTTOM; 	/* vertAlign */ 
+						coord="(" + X + "," + Y + ") " + "RM(yMax): " + yMax;
+					}
+					else if (expandedEnvelope.getMinimum(0) == xMin) { // Left, not top; Suppressed: Legend
+						coord="";
+					}
+					else if (expandedEnvelope.getMinimum(1) == yMin) { // Bottom
+						X=rifStyle.ALIGN_LEFT; 		/* horizAlign */
+						Y=rifStyle.ALIGN_BOTTOM; 	/* vertAlign */ 
+						coord="(" + X + "," + Y + ") " + "B(yMax): " + yMax;
+					}
+					coord=""; // Disable until fixed
+					rifLogger.info(rifMapsClass, "(" + xMin + "," + yMin + ") label: " + coord);	
+					attributes.put("coord", coord);
+					attributes.put("X", X); 	// horizAlign
+					attributes.put("Y", Y); 	// vertAlign
+					attributes.put("rotation", rotation); 	// rotation
+				}			
 			}
-		};
+		}; 
 		SimpleFeatureSource grid = Grids.createSquareGrid(expandedEnvelope, gridSquareWidth,
 			gridVertexSpacing, builder);	
+		StyleFactoryImpl styleFactory = (StyleFactoryImpl) CommonFactoryFinder.getStyleFactory();
+		FilterFactory ff = CommonFactoryFinder.getFilterFactory();
+		Font font=styleFactory.getDefaultFont();
+		font.setSize(ff.literal(coordinateDisplayFontSize));
 		
-		FeatureLayer gridLayer = new FeatureLayer(grid.getFeatures(), 
-			SLD.createLineStyle(gridColor, gridWidth));
+//		Style style=SLD.createPolygonStyle(gridColor, gridBackgroundColor, (float)0.5 /* fillOpacity */, 
+//			"coord" /* labelField */, (Font)font /* labelFont */); // Old style
+		RIFStyle rifSyle=new RIFStyle();
+		Style style=rifSyle.createGridPolygonStyle(
+			gridColor			/* lineColor */, 
+			backgroundColor 	/* fillColor */, 
+			gridWidth			/* lineWidth */, 
+			(float)0.5 			/* fillOpacity */,
+			"coord" 			/* label */,
+			coordinateDisplayFontSize	/* labelFontSize */);
+		FeatureLayer gridLayer = new FeatureLayer(grid.getFeatures(), style);
+//		FeatureLayer gridLayer = new FeatureLayer(grid.getFeatures(), // Old gridLayer
+//			SLD.createLineStyle(gridColor, gridWidth));
 		gridLayer.setTitle("Grid");			
 		
 		return gridLayer;
@@ -618,7 +730,15 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		int i=0;
 		for (RIFStyle.RIFStyleBand rifStyleBand : rifStyleBands) {
 			i++;
-			String title=rifStyleBand.getTitle().replace("..", " to ");
+			String title=null;
+			// Fix title into a mathematically correct form
+			// As per http://docs.geotools.org/stable/javadocs/org/geotools/filter/function/RangedClassifier.html
+			if (i < rifStyleBands.size()) {
+				title=rifStyleBand.getTitle().replace("..", " to < ");	
+			}
+			else {
+				title=rifStyleBand.getTitle().replace("..", " to <= ");		
+			}
 			sb.append("Legend item [" + i + "] " + title + "; " + rifStyleBand.getColor() + lineSeparator);
 			LegendLayer.LegendItem legendItem = new LegendLayer.LegendItem(
 				title, 
