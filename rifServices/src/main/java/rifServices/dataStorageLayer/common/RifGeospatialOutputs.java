@@ -148,6 +148,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	
 	private static RifCoordinateReferenceSystem rifCoordinateReferenceSystem = null;
 	private static RIFMaps rifMaps = null;
+	private static int roundDP=3;
 	
 	// ==========================================
 	// Section Properties
@@ -174,6 +175,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		try {
 			databaseType=this.rifServiceStartupOptions.getRifDatabaseType();
 			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);
+			roundDP=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("roundDP", 3);
 		}
 		catch(Exception exception) {
 			rifLogger.warning(this.getClass(), 
@@ -275,26 +277,34 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		if (databaseType == DatabaseType.POSTGRESQL) { 
 			extraColumns=", b.zoomlevel, c.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
 //				"/*, c.direct_standardisation */" +
-				", ROUND(c.adjusted::NUMERIC, 2) As adjusted, c.observed, ROUND(c.expected::NUMERIC, 2) AS expected" +
-				", ROUND(c.lower95::NUMERIC, 2) AS lower95, ROUND(c.upper95::NUMERIC, 2) AS upper95" +
-				", ROUND(c.relative_risk::NUMERIC, 2) AS rr, ROUND(c.smoothed_relative_risk::NUMERIC, 2) AS sm_rr" +
-				", ROUND(c.posterior_probability::NUMERIC, 2) AS post_prob" +
+				", ROUND(c.adjusted::NUMERIC, " + roundDP + ") As adjusted, c.observed" +
+				", ROUND(c.expected::NUMERIC, " + roundDP + ") AS expected" +
+				", ROUND(c.lower95::NUMERIC, " + roundDP + ") AS lower95" +
+				", ROUND(c.upper95::NUMERIC, " + roundDP + ") AS upper95" +
+				", ROUND(c.relative_risk::NUMERIC, " + roundDP + ") AS rr" +
+				", ROUND(c.smoothed_relative_risk::NUMERIC, " + roundDP + ") AS sm_rr" +
+				", ROUND(c.posterior_probability::NUMERIC, " + roundDP + ") AS post_prob" +
 //				"/*, c.posterior_probability_upper95, c.posterior_probability_lower95" +
 //				", c.residual_relative_risk, c.residual_rr_lower95, c.residual_rr_upper95 */" +
-				", ROUND(c.smoothed_smr::NUMERIC, 2) AS sm_smr, ROUND(c.smoothed_smr_lower95::NUMERIC, 2) AS sm_smr_l95" +
-				", ROUND(c.smoothed_smr_upper95::NUMERIC, 2) AS sm_smr_u95";
+				", ROUND(c.smoothed_smr::NUMERIC, " + roundDP + ") AS sm_smr" +
+				", ROUND(c.smoothed_smr_lower95::NUMERIC, " + roundDP + ") AS sm_smr_l95" +
+				", ROUND(c.smoothed_smr_upper95::NUMERIC, " + roundDP + ") AS sm_smr_u95";
 		}
 		else {
 			extraColumns=", b.zoomlevel, c.area_id, c.username, c.study_id, c.inv_id, c.band_id, c.genders" +
 //				"/*, c.direct_standardisation */" +
-				", ROUND(c.adjusted, 2) As adjusted, c.observed, ROUND(c.expected, 2) AS expected" +
-				", ROUND(c.lower95, 2) AS lower95, ROUND(c.upper95, 2) AS upper95" +
-				", ROUND(c.relative_risk, 2) AS rr, ROUND(c.smoothed_relative_risk, 2) AS sm_rr" +
-				", ROUND(c.posterior_probability, 2) AS post_prob" +
+				", ROUND(c.adjusted, " + roundDP + ") As adjusted, c.observed" +
+				", ROUND(c.expected, " + roundDP + ") AS expected" +
+				", ROUND(c.lower95, " + roundDP + ") AS lower95" +
+				", ROUND(c.upper95, " + roundDP + ") AS upper95" +
+				", ROUND(c.relative_risk, " + roundDP + ") AS rr" +
+				", ROUND(c.smoothed_relative_risk, " + roundDP + ") AS sm_rr" +
+				", ROUND(c.posterior_probability, " + roundDP + ") AS post_prob" +
 //				"/*, c.posterior_probability_upper95, c.posterior_probability_lower95" +
 //				", c.residual_relative_risk, c.residual_rr_lower95, c.residual_rr_upper95 */" +
-				", ROUND(c.smoothed_smr, 2) AS sm_smr, ROUND(c.smoothed_smr_lower95, 2) AS sm_smr_l95" +
-				", ROUND(c.smoothed_smr_upper95, 2) AS sm_smr_u95";
+				", ROUND(c.smoothed_smr, " + roundDP + ") AS sm_smr" +
+				", ROUND(c.smoothed_smr_lower95, " + roundDP + ") AS sm_smr_l95" +
+				", ROUND(c.smoothed_smr_upper95, " + roundDP + ") AS sm_smr_u95";
 		}
 		RifFeatureCollection mapFeatureCollection=writeMapQueryTogeoJSONFile(
 				connection,
