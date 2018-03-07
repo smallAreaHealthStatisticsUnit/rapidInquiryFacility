@@ -1450,13 +1450,12 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			final String tomcatServer) 
 					throws RIFServiceException {
 
-
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();			
 		
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return;
 		}
 

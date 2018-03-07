@@ -221,7 +221,7 @@ public final class RIFServiceStartupOptions {
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), 
 				"Error in RIFServiceStartupOptions() constructor", exception);
-			throw new NullPointerException();
+			throw new RuntimeException(exception);
 		}
 	}
 
@@ -780,7 +780,7 @@ public final class RIFServiceStartupOptions {
 			errorMessages.add(errorMessage);
 		}
 		
-		if (errorMessages.isEmpty() == false) {
+		if (!errorMessages.isEmpty()) {
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.INVALID_STARTUP_OPTIONS, 

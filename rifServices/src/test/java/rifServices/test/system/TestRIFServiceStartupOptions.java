@@ -110,16 +110,16 @@ public final class TestRIFServiceStartupOptions
 	 * Accept valid startup options.
 	 */
 	@Test
-	public void acceptValidStartupOptions_COMMON() {
+	public void acceptValidStartupOptions_COMMON() throws RIFServiceException {
 		RIFServiceStartupOptions rifServiceStartupOptions
 			= RIFServiceStartupOptions.newInstance(false, true);
 
-		try {
+//		try {
 			rifServiceStartupOptions.checkErrors();			
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}		
+//		}
+//		catch(RIFServiceException rifServiceException) {
+//			fail();
+//		}
 	}
 	
 	/**
