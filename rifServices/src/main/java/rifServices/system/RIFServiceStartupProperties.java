@@ -13,7 +13,7 @@ import java.util.*;
 
 
 /**
- * Reads values from the RIFServiceStartupProperties.properties file.
+ * Reads values from the RifServiceStartupProperties.properties file.
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -78,32 +78,43 @@ import java.util.*;
  *
 */
 
-public final class RIFServiceStartupProperties {
+public final class RifServiceStartupProperties {
 
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	/** The Constant resourceBundle. */
-	public static final ResourceBundle resourceBundle;
+
+	private final ResourceBundle resourceBundle;
 
 	protected static RIFLogger rifLogger = RIFLogger.getLogger();
  
 	// Creating a Hashtable for controlling warnings about optional parameters
-	private static Hashtable<String, Integer> parameterWarnings = 
-			  new Hashtable<String, Integer>();
+	private Hashtable<String, Integer> parameterWarnings =
+			new Hashtable<>();
 			  
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	/**
-	 * the context help cursor
-	 */
 
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	static {
+	public static RifServiceStartupProperties getInstance() {
+
+		return new RifServiceStartupProperties();
+	}
+
+	/*
+	 * Test cases can call this constructor and pass in a ResourceBundle.
+	 */
+	public RifServiceStartupProperties(ResourceBundle resourceBundle) {
+
+		this.resourceBundle = resourceBundle;
+	}
+
+	private RifServiceStartupProperties() {
+
 		resourceBundle=initRIFServiceStartupProperties();
 	}
 
@@ -116,7 +127,7 @@ public final class RIFServiceStartupProperties {
 	 *
 	 * @return the ResourceBundle
 	 */
-	private static ResourceBundle initRIFServiceStartupProperties() {		
+	private ResourceBundle initRIFServiceStartupProperties() {
 		ResourceBundle resourceBundle1=null;
 		ResourceBundle resourceBundle2=null;
 		Map<String, String> environmentalVariables = System.getenv();
@@ -126,7 +137,7 @@ public final class RIFServiceStartupProperties {
 		String catalinaHome = environmentalVariables.get("CATALINA_HOME");
 		if (catalinaHome != null) {
 //
-// Search for RIFServiceStartupProperties.properties in:
+// Search for RifServiceStartupProperties.properties in:
 //
 // %CATALINA_HOME%\
 // %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\
@@ -136,7 +147,7 @@ public final class RIFServiceStartupProperties {
 		}
 		else {
 			rifLogger.warning("rifServices.system.RIFServiceStartupProperties", 
-				"RIFServiceStartupProperties: CATALINA_HOME not set in environment"); 
+				"RifServiceStartupProperties: CATALINA_HOME not set in environment");
 			dirName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf";
 			dirName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes";
 		}   	
@@ -148,8 +159,8 @@ public final class RIFServiceStartupProperties {
 			reader = new InputStreamReader(fis);
 			resourceBundle1 = new PropertyResourceBundle(reader);
 			rifLogger.info("rifServices.system.RIFServiceStartupProperties", 
-				"RIFServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
-			System.out.println("RIFServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
+				"RifServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
+			System.out.println("RifServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
 		} 
 		catch (IOException ioException) {
 			try {
@@ -159,12 +170,12 @@ public final class RIFServiceStartupProperties {
 				resourceBundle2 = new PropertyResourceBundle(reader);
 			
 				rifLogger.info("rifServices.system.RIFServiceStartupProperties", 
-					"RIFServiceStartupProperties: using: " + dirName2 + "\\" + fileName);
-				System.out.println("RIFServiceStartupProperties: using: " + dirName2 + "\\" + fileName);
+					"RifServiceStartupProperties: using: " + dirName2 + "\\" + fileName);
+				System.out.println("RifServiceStartupProperties: using: " + dirName2 + "\\" + fileName);
 			} 
 			catch (IOException ioException2) {
 				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-					"RIFServiceStartupProperties error for files: " + 
+					"RifServiceStartupProperties error for files: " +
 						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
 					ioException2);
 			}
@@ -180,7 +191,7 @@ public final class RIFServiceStartupProperties {
 			}	
 			catch (IOException ioException3) {
 				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-					"RIFServiceStartupProperties error for files: " + 
+					"RifServiceStartupProperties error for files: " +
 						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
 					ioException3);
 			}
@@ -200,7 +211,7 @@ public final class RIFServiceStartupProperties {
 			}
 			catch (RIFServiceException rifServiceException) {
 				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-					"RIFServiceStartupProperties error for files: " + 
+					"RifServiceStartupProperties error for files: " +
 						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
 					rifServiceException);
 				return null;
@@ -208,59 +219,59 @@ public final class RIFServiceStartupProperties {
 		}
 	}
 
-	public static boolean isSSLSupported()
+	boolean isSSLSupported()
 					throws Exception {
 		String property
 			= getMandatoryRIfServiceProperty("database.isSSLSupported");
 		return Boolean.valueOf(property);		
 	}
 	
-	public static String getDatabaseDriverClassName() 
+	String getDatabaseDriverClassName()
 					throws Exception {
 		return getMandatoryRIfServiceProperty("database.driverClassName");
 	}
    
-	public static String getDatabaseDriverPrefix() 
+	String getDatabaseDriverPrefix()
 					throws Exception {
 		return getMandatoryRIfServiceProperty("database.jdbcDriverPrefix");
 	}
 	
-	public static String getHost() 
+	String getHost()
 					throws Exception {
 		return getMandatoryRIfServiceProperty("database.host");
 	}
 	
-	public static String getPort() 
+	String getPort()
 					throws Exception {
 		return getMandatoryRIfServiceProperty("database.port");
 	}
 
-	public static String getDatabaseName() 
+	String getDatabaseName()
 					throws Exception {
 		return getMandatoryRIfServiceProperty("database.databaseName");
 	}
 	
-	public static String getServerSideCacheDirectory() 
+	String getServerSideCacheDirectory()
 					throws Exception {
 		return getMandatoryRIfServiceProperty("cache");
 	}
 
-	public static String getWebApplicationDirectory() 
+	String getWebApplicationDirectory()
 					throws Exception {
 		return getMandatoryRIfServiceProperty("webApplicationDirectory");
 	}
 	
-	public static String getRScriptDirectory() 
+	String getRScriptDirectory()
 					throws Exception {
 		return getMandatoryRIfServiceProperty("rScriptDirectory");
 	}
 	
-	public static String getExtractDirectoryName() 
+	String getExtractDirectoryName()
 					throws Exception {
 		return getMandatoryRIfServiceProperty("extractDirectory");
 	} 
 
-	private static String getMandatoryRIfServiceProperty(String propertyName)
+	private String getMandatoryRIfServiceProperty(String propertyName)
 					throws Exception {
 		String propertyValue;
 		try {
@@ -275,7 +286,7 @@ public final class RIFServiceStartupProperties {
 		return propertyValue;		
 	}
 	
-	private static void updateParameterWarnings(String propertyName) {
+	private void updateParameterWarnings(String propertyName) {
 		if (parameterWarnings.containsKey(propertyName)) {
 			parameterWarnings.put(propertyName, parameterWarnings.get(propertyName)+1);
 		}
@@ -287,7 +298,7 @@ public final class RIFServiceStartupProperties {
 	}
 	
 	
-	public static String getOptionalRIfServiceProperty(String propertyName)
+	String getOptionalRIfServiceProperty(String propertyName)
 					throws Exception {
 		String propertyValue=null;
 		try {
@@ -305,7 +316,7 @@ public final class RIFServiceStartupProperties {
 		return propertyValue;		
 	}
 
-	public static boolean getOptionalRIfServiceProperty(String propertyName, boolean defaultValue) 
+	boolean getOptionalRIfServiceProperty(String propertyName, boolean defaultValue)
 					throws Exception {
 		boolean propertyValue=defaultValue;
 		try {
@@ -323,7 +334,7 @@ public final class RIFServiceStartupProperties {
 		return propertyValue;		
 	}
 	
-	public static String getOptionalRIfServiceProperty(String propertyName, String defaultValue) 
+	String getOptionalRIfServiceProperty(String propertyName, String defaultValue)
 					throws Exception {
 		String propertyValue=defaultValue;
 		try {
@@ -341,7 +352,7 @@ public final class RIFServiceStartupProperties {
 		return propertyValue;		
 	}
 
-	public static int getOptionalRIfServiceProperty(String propertyName, int defaultValue) 
+	int getOptionalRIfServiceProperty(String propertyName, int defaultValue)
 					throws Exception {
 		int propertyValue=defaultValue;
 		try {
@@ -359,7 +370,7 @@ public final class RIFServiceStartupProperties {
 		return propertyValue;		
 	}
 	
-	public static Float getOptionalRIfServiceProperty(String propertyName, Float defaultValue) 
+	Float getOptionalRIfServiceProperty(String propertyName, Float defaultValue)
 					throws Exception {
 		Float propertyValue=defaultValue;
 		try {
@@ -377,18 +388,18 @@ public final class RIFServiceStartupProperties {
 		return propertyValue;		
 	}
 	
-	public static String getTaxonomyServicesServer() 
+	String getTaxonomyServicesServer()
 					throws Exception {
 
 		return getOptionalRIfServiceProperty("taxonomyServicesServer");		
 	}
 	
-	public static String getExtraDirectoryForExtractFiles() 
+	String getExtraDirectoryForExtractFiles()
 					throws Exception {
 		return getMandatoryRIfServiceProperty("extraDirectoryForExtractFiles");
 	}
 	
-	public static DatabaseType getDatabaseType() 
+	public DatabaseType getDatabaseType()
 					throws Exception {
 		
 		DatabaseType databaseType
@@ -412,7 +423,7 @@ public final class RIFServiceStartupProperties {
 
 	}
 	
-	public static boolean isDatabaseCaseSensitive() 
+	boolean isDatabaseCaseSensitive()
 					throws Exception {
 		String property
 			= getMandatoryRIfServiceProperty("database.isCaseSensitive");
@@ -421,7 +432,7 @@ public final class RIFServiceStartupProperties {
 		return result;
 	}
 	
-	public static int getMaximumMapAreasAllowedForSingleDisplay() 
+	int getMaximumMapAreasAllowedForSingleDisplay()
 					throws Exception {
 		String property
 			= getMandatoryRIfServiceProperty("maximumMapAreasAllowedForSingleDisplay");
@@ -436,7 +447,7 @@ public final class RIFServiceStartupProperties {
 		return maximumValue;
 	}
 
-	public static boolean useSSLDebug() 
+	boolean useSSLDebug()
 					throws Exception {
 		String property
 			= getMandatoryRIfServiceProperty("database.useSSLDebug");
@@ -445,25 +456,23 @@ public final class RIFServiceStartupProperties {
 		return result; 	
 	}
 	
-	public static String getTrustStore() 
+	String getTrustStore()
 					throws Exception {
 		String property
 			= getMandatoryRIfServiceProperty("database.sslTrustStore");
 		return property; 	
 	}
 	
-	public static String getTrustStorePassword() 
+	String getTrustStorePassword()
 					throws Exception {
 		String property
 			= getMandatoryRIfServiceProperty("database.sslTrustStorePassword");
 		return property; 		
 	}
 	
-	public static String getODBCDataSourceName() 
+	String getODBCDataSourceName()
 					throws Exception {
-		String property
-			= getMandatoryRIfServiceProperty("odbcDataSourceName");
-		return property;		
+		return getMandatoryRIfServiceProperty("odbcDataSourceName");
 	}
 	
 	
@@ -473,7 +482,7 @@ public final class RIFServiceStartupProperties {
 	 * @param key the key
 	 * @return the message
 	 */
-	public static String getProperty(
+	public String getProperty(
 		final String key) {
 
 		if (resourceBundle != null) {
@@ -482,30 +491,8 @@ public final class RIFServiceStartupProperties {
 		return null;
 	}
 
-	public static ResourceBundle getResourceBundle() {
+	public ResourceBundle getResourceBundle() {
 		
 		return resourceBundle;
 	}
-
-	// ==========================================
-	// Section Mutators
-	// ==========================================
-
-	
-	// ==========================================
-	// Section Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Errors
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Overload
-	// ==========================================
-
 }

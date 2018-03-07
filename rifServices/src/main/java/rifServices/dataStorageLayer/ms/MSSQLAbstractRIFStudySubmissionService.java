@@ -1453,7 +1453,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();			
+			= rifServiceResources.getSqlConnectionManager();
 		
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return;
