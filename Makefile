@@ -62,18 +62,21 @@ else
 $(error 7ZIP unsupported: $(7ZIP))
 endif
 
-all: rifservice RIF4 taxonomyservice
+all: rifservice RIF4 taxonomyservice dataloader
 
 rifservice: 
 	$(MAVEN) --version
 	cd rifGenericLibrary; $(MAVEN) -Dmaven.test.skip=true install
-	cd rapidInquiryFacility ; $(MAVEN) -Dmaven.test.skip=true install
 	cd rifServices ; $(MAVEN) -Dmaven.test.skip=true install
 	$(COPY) rifServices/target/rifServices.war .
 	
+dataloader: 
+	$(MAVEN) --version
+	cd rifGenericLibrary; $(MAVEN) -Dmaven.test.skip=true install
+	cd rapidInquiryFacility ; $(MAVEN) -Dmaven.test.skip=true install
+	
 RIF4: RIF4.7z
 RIF4.7z:
-#	cd rifWebApplication/src/main/webapp/WEB-INF; ls -alR
 	cd rifWebApplication/src/main/webapp/WEB-INF; $(7ZIP) a -r ../../../../../RIF4.7z *
 	$(7ZIP) l RIF4.7z
 	
