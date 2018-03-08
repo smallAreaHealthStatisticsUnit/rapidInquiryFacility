@@ -100,22 +100,40 @@ public final class RIFServiceStartupProperties {
 	// Section Construction
 	// ==========================================
 
+	/**
+	 * This is the standard way to get an instance of a
+	 * {@link RIFServiceStartupProperties}. The values will be loaded from
+	 * the standard file.
+	 *
+	 * @return the {@link RIFServiceStartupProperties}
+	 */
 	public static RIFServiceStartupProperties getInstance() {
 
 		return new RIFServiceStartupProperties();
 	}
 
+	/**
+	 * This version is mainly for testing. Pass in a populated
+	 * {@link ResourceBundle}.
+	 * @param bundle the settings to use
+	 * @return the {@link RIFServiceStartupProperties}.
+	 */
+	public static RIFServiceStartupProperties getInstance(ResourceBundle bundle) {
+
+		return new RIFServiceStartupProperties(bundle);
+	}
+
 	/*
 	 * Test cases can call this constructor and pass in a ResourceBundle.
 	 */
-	public RIFServiceStartupProperties(ResourceBundle resourceBundle) {
+	private RIFServiceStartupProperties(ResourceBundle resourceBundle) {
 
 		this.resourceBundle = resourceBundle;
 	}
 
 	private RIFServiceStartupProperties() {
 
-		resourceBundle=initRIFServiceStartupProperties();
+		resourceBundle = initRIFServiceStartupProperties();
 	}
 
 	// ==========================================

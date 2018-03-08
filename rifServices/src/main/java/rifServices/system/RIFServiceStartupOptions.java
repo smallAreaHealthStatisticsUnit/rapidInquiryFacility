@@ -12,6 +12,7 @@ import rifGenericLibrary.util.RIFLogger;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * Class that holds configuration settings for rif services.  These will appear
@@ -141,9 +142,37 @@ public final class RIFServiceStartupOptions {
 	// Section Construction
 	// ==========================================
 
-	/**
-	 * Instantiates a new RIF service startup options.
-	 */
+	public static RIFServiceStartupOptions newInstance(
+			final boolean isWebDeployment,
+			final boolean useStrictValidationPolicy) {
+
+		return new RIFServiceStartupOptions(
+				isWebDeployment,
+				useStrictValidationPolicy);
+	}
+
+	public static RIFServiceStartupOptions newInstance(
+			final boolean isWebDeployment,
+			final boolean useStrictValidationPolicy,
+			final ResourceBundle bundle) {
+
+		return new RIFServiceStartupOptions(
+				isWebDeployment,
+				useStrictValidationPolicy,
+				bundle);
+	}
+
+	private RIFServiceStartupOptions(
+			final boolean isWebDeployment,
+			final boolean useStrictValidationPolicy,
+			final ResourceBundle bundle) {
+
+		this.isWebDeployment = isWebDeployment;
+		this.useStrictValidationPolicy = useStrictValidationPolicy;
+		properties = RIFServiceStartupProperties.getInstance(bundle);
+		populateOptions();
+	}
+
 	private RIFServiceStartupOptions(
 		final boolean isWebDeployment,
 		final boolean useStrictValidationPolicy) {
@@ -151,85 +180,57 @@ public final class RIFServiceStartupOptions {
 		this.isWebDeployment = isWebDeployment;
 		this.useStrictValidationPolicy = useStrictValidationPolicy;
 
-		//We should be able to read startup properties from
-		//a startup properties file
+		// We should be able to read startup properties from
+		// a startup properties file
 		properties = RIFServiceStartupProperties.getInstance();
-		
+		populateOptions();
+	}
+
+	private void populateOptions() {
 		try {
-			databaseDriverClassName 
-				= properties.getDatabaseDriverClassName();
-			databaseDriverPrefix
-				= properties.getDatabaseDriverPrefix();
-			host
-				= properties.getHost();
-			port
-				= properties.getPort();
-			databaseName
-				= properties.getDatabaseName();
-			webApplicationDirectory
-				= properties.getWebApplicationDirectory();
-			rScriptDirectory
-				= properties.getRScriptDirectory();
-			
-			odbcDataSourceName
-				= properties.getODBCDataSourceName();
-			databaseType = 
-				properties.getDatabaseType();
-			extractDirectory
-				= properties.getExtractDirectoryName();
-				
-			taxonomyServicesServer
-				= properties.getTaxonomyServicesServer();
-			
-			maximumMapAreasAllowedForSingleDisplay
-				= properties.getMaximumMapAreasAllowedForSingleDisplay();
-			
-			isDatabaseCaseSensitive
-				= properties.isDatabaseCaseSensitive();
-			sslSupported
-				= properties.isSSLSupported();
+			databaseDriverClassName = properties.getDatabaseDriverClassName();
+			databaseDriverPrefix = properties.getDatabaseDriverPrefix();
+			host = properties.getHost();
+			port = properties.getPort();
+			webApplicationDirectory = properties.getWebApplicationDirectory();
+			databaseName = properties.getDatabaseName();
+			rScriptDirectory = properties.getRScriptDirectory();
+			odbcDataSourceName = properties.getODBCDataSourceName();
+			databaseType =  properties.getDatabaseType();
+			extractDirectory = properties.getExtractDirectoryName();
+			taxonomyServicesServer = properties.getTaxonomyServicesServer();
+			maximumMapAreasAllowedForSingleDisplay = properties.getMaximumMapAreasAllowedForSingleDisplay();
+			isDatabaseCaseSensitive = properties.isDatabaseCaseSensitive();
+			sslSupported = properties.isSSLSupported();
 
 			if (sslSupported) {
-				rifLogger.info(this.getClass(), "RIFServicesStartupOptions -- using SSL debug");
-				useSSLDebug
-					= properties.useSSLDebug();
-				if (useSSLDebug) {			
-					System.setProperty(
-						"javax.net.debug", 
-						"ssl");				
+				rifLogger.info(this.getClass(),
+						"RIFServicesStartupOptions -- using SSL debug");
+				useSSLDebug = properties.useSSLDebug();
+				if (useSSLDebug) {
+
+					System.setProperty("javax.net.debug", "ssl");
 				}
 
-				String trustStore = properties.getTrustStore();
-				System.setProperty(
-					"javax.net.ssl.trustStore",
-						trustStore);
+				System.setProperty("javax.net.ssl.trustStore",
+						properties.getTrustStore());
 				trustStorePassword
 					= properties.getTrustStorePassword();
-				
-				System.setProperty(
-					"javax.net.ssl.trustStorePassword", 
-					trustStorePassword);
+
+				System.setProperty("javax.net.ssl.trustStorePassword",
+						trustStorePassword);
 			}
-			
+
 			extraExtractFilesDirectoryPath
 				= properties.getExtraDirectoryForExtractFiles();
 		}
 		catch(Exception exception) {
-			rifLogger.error(this.getClass(), 
+			rifLogger.error(this.getClass(),
 				"Error in RIFServiceStartupOptions() constructor", exception);
 			throw new RuntimeException(exception);
 		}
 	}
 
-	public static RIFServiceStartupOptions newInstance(
-		final boolean isWebDeployment,
-		final boolean useStrictValidationPolicy) {
-
-		return new RIFServiceStartupOptions(
-			isWebDeployment,
-			useStrictValidationPolicy);
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================

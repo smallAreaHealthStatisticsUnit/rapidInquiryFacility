@@ -1,22 +1,22 @@
 package rifServices.test.services.ms;
 
 
+import org.junit.After;
+import org.junit.Before;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.test.AbstractRIFTestCase;
-
-
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudySubmissionService;
 import rifServices.system.RIFServiceStartupOptions;
-
-import org.junit.After;
-import org.junit.Before;
+import rifServices.test.AbstractRIFTestCase;
+import rifServices.test.util.Bundle;
 
 import java.util.ArrayList;
+import java.util.ResourceBundle;
+
 /**
  *
  * <hr>
@@ -458,11 +458,14 @@ public class AbstractRIFServiceTestCase
 	// Section Accessors and Mutators
 	// ==========================================
 	protected void initialiseService() throws RIFServiceException {
+
 		rifServiceBundle = new MSSQLTestRIFStudyServiceBundle();
-		
-		startupOptions
-			= RIFServiceStartupOptions.newInstance(false, true);
-		startupOptions.setMaximumMapAreasAllowedForSingleDisplay(200);
+
+		ResourceBundle testBundle = new Bundle();
+
+		startupOptions = RIFServiceStartupOptions.newInstance(
+				false, true, testBundle);
+//		startupOptions.setMaximumMapAreasAllowedForSingleDisplay(200);
 		rifServiceBundle.initialise(startupOptions);
 		rifStudySubmissionService 
 			= (MSSQLTestRIFStudySubmissionService) rifServiceBundle.getRIFStudySubmissionService();
