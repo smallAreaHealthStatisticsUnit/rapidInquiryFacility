@@ -1,21 +1,18 @@
 package rifServices.system;
 
-import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.businessConceptLayer.Parameter;
-
-import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
-
-import java.lang.NullPointerException;
+import java.util.ResourceBundle;
 
 /**
  * Class that holds configuration settings for rif services.  These will appear
@@ -58,7 +55,7 @@ import java.lang.NullPointerException;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
+ *
  */
 
 /*
@@ -117,7 +114,6 @@ public final class RIFServiceStartupOptions {
 	private boolean isDatabaseCaseSensitive;
 	private boolean sslSupported;
 	private boolean useSSLDebug;
-	private String trustStore;
 	private String trustStorePassword;
 	
 	private String rifServiceClassDirectoryPath;
@@ -139,103 +135,102 @@ public final class RIFServiceStartupOptions {
 	private String extraExtractFilesDirectoryPath;
 	
 	private boolean useStrictValidationPolicy;
-	
+
+	private final RIFServiceStartupProperties properties;
+
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	
-	/**
-	 * Instantiates a new RIF service startup options.
-	 */
+	public static RIFServiceStartupOptions newInstance(
+			final boolean isWebDeployment,
+			final boolean useStrictValidationPolicy) {
+
+		return new RIFServiceStartupOptions(
+				isWebDeployment,
+				useStrictValidationPolicy);
+	}
+
+	public static RIFServiceStartupOptions newInstance(
+			final boolean isWebDeployment,
+			final boolean useStrictValidationPolicy,
+			final ResourceBundle bundle) {
+
+		return new RIFServiceStartupOptions(
+				isWebDeployment,
+				useStrictValidationPolicy,
+				bundle);
+	}
+
+	private RIFServiceStartupOptions(
+			final boolean isWebDeployment,
+			final boolean useStrictValidationPolicy,
+			final ResourceBundle bundle) {
+
+		this.isWebDeployment = isWebDeployment;
+		this.useStrictValidationPolicy = useStrictValidationPolicy;
+		properties = RIFServiceStartupProperties.getInstance(bundle);
+		populateOptions();
+	}
+
 	private RIFServiceStartupOptions(
 		final boolean isWebDeployment,
 		final boolean useStrictValidationPolicy) {
 		
 		this.isWebDeployment = isWebDeployment;
 		this.useStrictValidationPolicy = useStrictValidationPolicy;
-		
-		//We should be able to read startup properties from
-		//a startup properties file
-		
+
+		// We should be able to read startup properties from
+		// a startup properties file
+		properties = RIFServiceStartupProperties.getInstance();
+		populateOptions();
+	}
+
+	private void populateOptions() {
 		try {
-			databaseDriverClassName 
-				= RIFServiceStartupProperties.getDatabaseDriverClassName();
-			databaseDriverPrefix
-				= RIFServiceStartupProperties.getDatabaseDriverPrefix();
-			host
-				= RIFServiceStartupProperties.getHost();
-			port
-				= RIFServiceStartupProperties.getPort();
-			databaseName
-				= RIFServiceStartupProperties.getDatabaseName();
-			webApplicationDirectory
-				= RIFServiceStartupProperties.getWebApplicationDirectory();
-			rScriptDirectory
-				= RIFServiceStartupProperties.getRScriptDirectory();
-			
-			odbcDataSourceName
-				= RIFServiceStartupProperties.getODBCDataSourceName();
-			databaseType = 
-				RIFServiceStartupProperties.getDatabaseType();
-			extractDirectory
-				= RIFServiceStartupProperties.getExtractDirectoryName();
-				
-			taxonomyServicesServer
-				= RIFServiceStartupProperties.getTaxonomyServicesServer();
-			
-			maximumMapAreasAllowedForSingleDisplay
-				= RIFServiceStartupProperties.getMaximumMapAreasAllowedForSingleDisplay();
-			
-			isDatabaseCaseSensitive
-				= RIFServiceStartupProperties.isDatabaseCaseSensitive();
-			sslSupported
-				= RIFServiceStartupProperties.isSSLSupported();
+			databaseDriverClassName = properties.getDatabaseDriverClassName();
+			databaseDriverPrefix = properties.getDatabaseDriverPrefix();
+			host = properties.getHost();
+			port = properties.getPort();
+			webApplicationDirectory = properties.getWebApplicationDirectory();
+			databaseName = properties.getDatabaseName();
+			rScriptDirectory = properties.getRScriptDirectory();
+			odbcDataSourceName = properties.getODBCDataSourceName();
+			databaseType =  properties.getDatabaseType();
+			extractDirectory = properties.getExtractDirectoryName();
+			taxonomyServicesServer = properties.getTaxonomyServicesServer();
+			maximumMapAreasAllowedForSingleDisplay = properties.getMaximumMapAreasAllowedForSingleDisplay();
+			isDatabaseCaseSensitive = properties.isDatabaseCaseSensitive();
+			sslSupported = properties.isSSLSupported();
 
 			if (sslSupported) {
-				rifLogger.info(this.getClass(), "RIFServicesStartupOptions -- using SSL debug");
-				useSSLDebug
-					= RIFServiceStartupProperties.useSSLDebug();
-				if (useSSLDebug) {			
-					System.setProperty(
-						"javax.net.debug", 
-						"ssl");				
+				rifLogger.info(this.getClass(),
+						"RIFServicesStartupOptions -- using SSL debug");
+				useSSLDebug = properties.useSSLDebug();
+				if (useSSLDebug) {
+
+					System.setProperty("javax.net.debug", "ssl");
 				}
-				
-				trustStore
-					= RIFServiceStartupProperties.getTrustStore();
-				System.setProperty(
-					"javax.net.ssl.trustStore", 
-					trustStore);
+
+				System.setProperty("javax.net.ssl.trustStore",
+						properties.getTrustStore());
 				trustStorePassword
-					= RIFServiceStartupProperties.getTrustStorePassword();
-				
-				System.setProperty(
-					"javax.net.ssl.trustStorePassword", 
-					trustStorePassword);
+					= properties.getTrustStorePassword();
+
+				System.setProperty("javax.net.ssl.trustStorePassword",
+						trustStorePassword);
 			}
-			
+
 			extraExtractFilesDirectoryPath
-				= RIFServiceStartupProperties.getExtraDirectoryForExtractFiles();
+				= properties.getExtraDirectoryForExtractFiles();
 		}
 		catch(Exception exception) {
-			rifLogger.error(this.getClass(), 
+			rifLogger.error(this.getClass(),
 				"Error in RIFServiceStartupOptions() constructor", exception);
-			throw new NullPointerException();
+			throw new RuntimeException(exception);
 		}
 	}
 
-	public static RIFServiceStartupOptions newInstance(
-		final boolean isWebDeployment,
-		final boolean useStrictValidationPolicy) {
-		
-		RIFServiceStartupOptions rifServiceStartupOptions
-			= new RIFServiceStartupOptions(
-				isWebDeployment,
-				useStrictValidationPolicy);
-		return rifServiceStartupOptions;		
-	}
-	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
@@ -245,24 +240,24 @@ public final class RIFServiceStartupOptions {
 		return databaseType;
 	}
 
-	public static String getOptionalRIfServiceProperty(String propertyName, String defaultValue) 
+	public String getOptionalRIfServiceProperty(String propertyName, String defaultValue)
 					throws Exception {
-		return RIFServiceStartupProperties.getOptionalRIfServiceProperty(propertyName, defaultValue);
+		return properties.getOptionalRIfServiceProperty(propertyName, defaultValue);
 	}
 	
-	public static Float getOptionalRIfServiceProperty(String propertyName, Float defaultValue) 
+	public Float getOptionalRIfServiceProperty(String propertyName, Float defaultValue)
 					throws Exception {
-		return RIFServiceStartupProperties.getOptionalRIfServiceProperty(propertyName, defaultValue);
+		return properties.getOptionalRIfServiceProperty(propertyName, defaultValue);
 	}    	
 
-	public static int getOptionalRIfServiceProperty(String propertyName, int defaultValue) 
+	public int getOptionalRIfServiceProperty(String propertyName, int defaultValue)
 					throws Exception {
-		return RIFServiceStartupProperties.getOptionalRIfServiceProperty(propertyName, defaultValue);
+		return properties.getOptionalRIfServiceProperty(propertyName, defaultValue);
 	}	
 	
-	public static boolean getOptionalRIfServiceProperty(String propertyName, boolean defaultValue) 
+	public boolean getOptionalRIfServiceProperty(String propertyName, boolean defaultValue)
 					throws Exception {
-		return RIFServiceStartupProperties.getOptionalRIfServiceProperty(propertyName, defaultValue);
+		return properties.getOptionalRIfServiceProperty(propertyName, defaultValue);
 	}		
 	
 	public String getExtraExtractFilesDirectoryPath() {
@@ -344,7 +339,7 @@ public final class RIFServiceStartupOptions {
 	/**
 	 * Sets the database driver.
 	 *
-	 * @param databaseDriver the new database driver
+	 * @param databaseDriverClassName the new database driver
 	 */
 	public void setDatabaseDriverClassName(
 		final String databaseDriverClassName) {
@@ -365,7 +360,7 @@ public final class RIFServiceStartupOptions {
 	/**
 	 * Sets the database driver.
 	 *
-	 * @param databaseDriver the new database driver
+	 * @param databaseDriverPrefix the new database driver
 	 */
 	public void setDatabaseDriverPrefix(
 		final String databaseDriverPrefix) {
@@ -478,20 +473,11 @@ public final class RIFServiceStartupOptions {
 	public void setRIFServiceClassDirectory(
 		final String rifServiceClassDirectoryPath) {
 		
-		this.rifServiceClassDirectoryPath = rifServiceClassDirectoryPath;		
+		this.rifServiceClassDirectoryPath = rifServiceClassDirectoryPath;
 	}
 	
 	public String getRIFServiceResourcePath()
 		throws RIFServiceException {
-		/*
-		String currentDirectoryPath = null;
-		if (rifServiceClassDirectoryPath == null) {
-			currentDirectoryPath = (new File(".")).getAbsolutePath();			
-		}
-		else {
-			currentDirectoryPath = (new File(rifServiceClassDirectoryPath)).getAbsolutePath();			
-		}
-		*/
 
 		StringBuilder path = new StringBuilder();
 		//path.append(currentDirectoryPath);
@@ -501,9 +487,6 @@ public final class RIFServiceStartupOptions {
 			rifLogger.info(this.getClass(), "RIFServiceStartupOptions is web deployment");
 			Map<String, String> environmentalVariables = System.getenv();
 
-
-//			String catalineHome = "C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5";
-			
 			String catalinaHome = environmentalVariables.get("CATALINA_HOME");
 			if (catalinaHome == null) {
 				RIFServiceException rifServiceException
@@ -513,28 +496,7 @@ public final class RIFServiceStartupOptions {
 				rifLogger.error(this.getClass(), "RIFServiceStartupOptions error", rifServiceException);
 				throw rifServiceException;
 			}
-			/*
-			String[] tokens2 = catalinaHome.split("\\");
-			if (tokens2 == null) {
-				rifLogger.info(this.getClass(), "tokens are null");
-			}
-			else {
-				for (String token2 : tokens2) {
-					rifLogger.info(this.getClass(), "token222:"+token2+"==");
-				}	
-			}
-			
-			String[] tokens3 = catalinaHome.split("\\");
-			if (tokens3 == null) {
-				rifLogger.info(this.getClass(), "tokens are null");
-			}
-			else {
-				for (String token3 : tokens3) {
-					rifLogger.info(this.getClass(), "token333:"+token3+"==");
-				}	
-			}
-			*/
-					
+
 			String catalinaHomeDirectoryPath = environmentalVariables.get("CATALINA_HOME");
 			rifLogger.info(this.getClass(), "Get CATALINA_HOME="+catalinaHomeDirectoryPath);
 			catalinaHomeDirectoryPath = catalinaHomeDirectoryPath.replace("\\", "\\\\");
@@ -780,7 +742,7 @@ public final class RIFServiceStartupOptions {
 			errorMessages.add(errorMessage);
 		}
 		
-		if (errorMessages.isEmpty() == false) {
+		if (!errorMessages.isEmpty()) {
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.INVALID_STARTUP_OPTIONS, 

@@ -1,23 +1,15 @@
 package rifServices.system;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
-
-import rifGenericLibrary.util.RIFLogger;
-
-import java.text.Collator;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.PropertyResourceBundle;
-import java.util.Map;
-
-import java.io.*;
-import java.util.MissingResourceException;
-import java.util.Hashtable;
-
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
+import rifGenericLibrary.util.RIFLogger;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.*;
 
 
 /**
@@ -72,62 +64,88 @@ import rifGenericLibrary.system.RIFServiceExceptionFactory;
  * method, the order tells you it should appear under interface.
  * 
  * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (8)            Section Accessors
- * (9)            Section Mutators
- * (6)            Section Validation
- * (7)            Section Errors
- * (5)            Section Interfaces
- * (4)            Section Overload
+ * Precedence	Section
+ * ==========	======
+ * (1)			Section Constants
+ * (2)			Section Properties
+ * (3)			Section Construction
+ * (8)			Section Accessors
+ * (9)			Section Mutators
+ * (6)			Section Validation
+ * (7)			Section Errors
+ * (5)			Section Interfaces
+ * (4)			Section Overload
  *
 */
 
 public final class RIFServiceStartupProperties {
 
-    // ==========================================
-    // Section Constants
-    // ==========================================
-	/** The Constant resourceBundle. */
-    public static final ResourceBundle resourceBundle;
+	// ==========================================
+	// Section Constants
+	// ==========================================
 
-    /** The collator. */
-    private static Collator collator = Collator.getInstance(Locale.getDefault());
-	
+	private final ResourceBundle resourceBundle;
+
 	protected static RIFLogger rifLogger = RIFLogger.getLogger();
  
 	// Creating a Hashtable for controlling warnings about optional parameters
-	private static Hashtable<String, Integer> parameterWarnings = 
-              new Hashtable<String, Integer>();
+	private Hashtable<String, Integer> parameterWarnings =
+			new Hashtable<>();
 			  
-    // ==========================================
-    // Section Properties
-    // ==========================================
-    /**
-     * the context help cursor
-     */
+	// ==========================================
+	// Section Properties
+	// ==========================================
 
-    // ==========================================
-    // Section Construction
-    // ==========================================
+	// ==========================================
+	// Section Construction
+	// ==========================================
 
-    static {
-		resourceBundle=initRIFServiceStartupProperties();
-    }
+	/**
+	 * This is the standard way to get an instance of a
+	 * {@link RIFServiceStartupProperties}. The values will be loaded from
+	 * the standard file.
+	 *
+	 * @return the {@link RIFServiceStartupProperties}
+	 */
+	public static RIFServiceStartupProperties getInstance() {
 
-    // ==========================================
-    // Section Accessors
-    // ==========================================
+		return new RIFServiceStartupProperties();
+	}
+
+	/**
+	 * This version is mainly for testing. Pass in a populated
+	 * {@link ResourceBundle}.
+	 * @param bundle the settings to use
+	 * @return the {@link RIFServiceStartupProperties}.
+	 */
+	public static RIFServiceStartupProperties getInstance(ResourceBundle bundle) {
+
+		return new RIFServiceStartupProperties(bundle);
+	}
+
+	/*
+	 * Test cases can call this constructor and pass in a ResourceBundle.
+	 */
+	private RIFServiceStartupProperties(ResourceBundle resourceBundle) {
+
+		this.resourceBundle = resourceBundle;
+	}
+
+	private RIFServiceStartupProperties() {
+
+		resourceBundle = initRIFServiceStartupProperties();
+	}
+
+	// ==========================================
+	// Section Accessors
+	// ==========================================
 	
    /**
-     * Constructor function.
-     *
-     * @return the ResourceBundle
-     */
-	private static ResourceBundle initRIFServiceStartupProperties() {		
+	 * Constructor function.
+	 *
+	 * @return the ResourceBundle
+	 */
+	private ResourceBundle initRIFServiceStartupProperties() {
 		ResourceBundle resourceBundle1=null;
 		ResourceBundle resourceBundle2=null;
 		Map<String, String> environmentalVariables = System.getenv();
@@ -147,7 +165,7 @@ public final class RIFServiceStartupProperties {
 		}
 		else {
 			rifLogger.warning("rifServices.system.RIFServiceStartupProperties", 
-				"RIFServiceStartupProperties: CATALINA_HOME not set in environment"); 
+				"RIFServiceStartupProperties: CATALINA_HOME not set in environment");
 			dirName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf";
 			dirName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes";
 		}   	
@@ -155,9 +173,9 @@ public final class RIFServiceStartupProperties {
 		FileInputStream fis = null;
 		try {
 			File file = new File(dirName1, fileName);
-            fis = new FileInputStream(file);
-            reader = new InputStreamReader(fis);
-            resourceBundle1 = new PropertyResourceBundle(reader);
+			fis = new FileInputStream(file);
+			reader = new InputStreamReader(fis);
+			resourceBundle1 = new PropertyResourceBundle(reader);
 			rifLogger.info("rifServices.system.RIFServiceStartupProperties", 
 				"RIFServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
 			System.out.println("RIFServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
@@ -175,7 +193,7 @@ public final class RIFServiceStartupProperties {
 			} 
 			catch (IOException ioException2) {
 				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-					"RIFServiceStartupProperties error for files: " + 
+					"RIFServiceStartupProperties error for files: " +
 						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
 					ioException2);
 			}
@@ -191,7 +209,7 @@ public final class RIFServiceStartupProperties {
 			}	
 			catch (IOException ioException3) {
 				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-					"RIFServiceStartupProperties error for files: " + 
+					"RIFServiceStartupProperties error for files: " +
 						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
 					ioException3);
 			}
@@ -211,79 +229,69 @@ public final class RIFServiceStartupProperties {
 			}
 			catch (RIFServiceException rifServiceException) {
 				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-					"RIFServiceStartupProperties error for files: " + 
+					"RIFServiceStartupProperties error for files: " +
 						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
 					rifServiceException);
 				return null;
 			}
 		}
 	}
-   /**
-     * Gets the collator.
-     *
-     * @return the collator
-     */	
-    public static Collator getCollator() {	  
-    	
-	  Collator result = (Collator) collator.clone();
-	  return result;
-    }
 
-    public static boolean isSSLSupported() 
+	boolean isSSLSupported()
 					throws Exception {
-    	String property
-    		= getManadatoryRIfServiceProperty("database.isSSLSupported");
-    	return Boolean.valueOf(property);    	
-    }
-    
-    public static String getDatabaseDriverClassName() 
-					throws Exception {
-    	return getManadatoryRIfServiceProperty("database.driverClassName");
-    }
-   
-    public static String getDatabaseDriverPrefix() 
-					throws Exception {
-    	return getManadatoryRIfServiceProperty("database.jdbcDriverPrefix");
-    }
-    
-    public static String getHost() 
-					throws Exception {
-    	return getManadatoryRIfServiceProperty("database.host");
-    }
-    
-    public static String getPort() 
-					throws Exception {
-    	return getManadatoryRIfServiceProperty("database.port");    	
-    }
-
-    public static String getDatabaseName() 
-					throws Exception {
-    	return getManadatoryRIfServiceProperty("database.databaseName");    	
-    }
+		String property
+			= getMandatoryRIfServiceProperty("database.isSSLSupported");
+		return Boolean.valueOf(property);		
+	}
 	
-    public static String getServerSideCacheDirectory() 
+	String getDatabaseDriverClassName()
 					throws Exception {
-    	return getManadatoryRIfServiceProperty("cache");    	
-    }
+		return getMandatoryRIfServiceProperty("database.driverClassName");
+	}
+   
+	String getDatabaseDriverPrefix()
+					throws Exception {
+		return getMandatoryRIfServiceProperty("database.jdbcDriverPrefix");
+	}
+	
+	String getHost()
+					throws Exception {
+		return getMandatoryRIfServiceProperty("database.host");
+	}
+	
+	String getPort()
+					throws Exception {
+		return getMandatoryRIfServiceProperty("database.port");
+	}
 
-    public static String getWebApplicationDirectory() 
+	String getDatabaseName()
 					throws Exception {
-    	return getManadatoryRIfServiceProperty("webApplicationDirectory");    	
-    }
-    
-    public static String getRScriptDirectory() 
+		return getMandatoryRIfServiceProperty("database.databaseName");
+	}
+	
+	String getServerSideCacheDirectory()
 					throws Exception {
-    	return getManadatoryRIfServiceProperty("rScriptDirectory");    	
-    }
-    
-    public static String getExtractDirectoryName() 
-					throws Exception {
-    	return getManadatoryRIfServiceProperty("extractDirectory");    	
-    } 
+		return getMandatoryRIfServiceProperty("cache");
+	}
 
-	private static String getManadatoryRIfServiceProperty(String propertyName)
+	String getWebApplicationDirectory()
 					throws Exception {
-		String propertyValue=null;
+		return getMandatoryRIfServiceProperty("webApplicationDirectory");
+	}
+	
+	String getRScriptDirectory()
+					throws Exception {
+		return getMandatoryRIfServiceProperty("rScriptDirectory");
+	}
+	
+	String getExtractDirectoryName()
+					throws Exception {
+		return getMandatoryRIfServiceProperty("extractDirectory");
+	} 
+
+	private String getMandatoryRIfServiceProperty(String propertyName)
+					throws Exception {
+		String propertyValue;
 		try {
 			propertyValue=getProperty(propertyName);
 		}
@@ -296,7 +304,7 @@ public final class RIFServiceStartupProperties {
 		return propertyValue;		
 	}
 	
-	private static void updateParameterWarnings(String propertyName) {
+	private void updateParameterWarnings(String propertyName) {
 		if (parameterWarnings.containsKey(propertyName)) {
 			parameterWarnings.put(propertyName, parameterWarnings.get(propertyName)+1);
 		}
@@ -308,7 +316,7 @@ public final class RIFServiceStartupProperties {
 	}
 	
 	
-	public static String getOptionalRIfServiceProperty(String propertyName)
+	String getOptionalRIfServiceProperty(String propertyName)
 					throws Exception {
 		String propertyValue=null;
 		try {
@@ -326,7 +334,7 @@ public final class RIFServiceStartupProperties {
 		return propertyValue;		
 	}
 
-	public static boolean getOptionalRIfServiceProperty(String propertyName, boolean defaultValue) 
+	boolean getOptionalRIfServiceProperty(String propertyName, boolean defaultValue)
 					throws Exception {
 		boolean propertyValue=defaultValue;
 		String stringValue=null;
@@ -363,7 +371,7 @@ public final class RIFServiceStartupProperties {
 		return propertyValue;		
 	}
 	
-	public static String getOptionalRIfServiceProperty(String propertyName, String defaultValue) 
+	String getOptionalRIfServiceProperty(String propertyName, String defaultValue)
 					throws Exception {
 		String propertyValue=defaultValue;
 		try {
@@ -381,7 +389,7 @@ public final class RIFServiceStartupProperties {
 		return propertyValue;		
 	}
 
-	public static int getOptionalRIfServiceProperty(String propertyName, int defaultValue) 
+	int getOptionalRIfServiceProperty(String propertyName, int defaultValue)
 					throws Exception {
 		int propertyValue=defaultValue;
 		try {
@@ -399,7 +407,7 @@ public final class RIFServiceStartupProperties {
 		return propertyValue;		
 	}
 	
-	public static Float getOptionalRIfServiceProperty(String propertyName, Float defaultValue) 
+	Float getOptionalRIfServiceProperty(String propertyName, Float defaultValue)
 					throws Exception {
 		Float propertyValue=defaultValue;
 		try {
@@ -417,146 +425,111 @@ public final class RIFServiceStartupProperties {
 		return propertyValue;		
 	}
 	
-    public static String getTaxonomyServicesServer() 
+	String getTaxonomyServicesServer()
 					throws Exception {
 
-    	return getOptionalRIfServiceProperty("taxonomyServicesServer");    	
-    }
-	
-    public static String getExtraDirectoryForExtractFiles() 
-					throws Exception {
-    	return getManadatoryRIfServiceProperty("extraDirectoryForExtractFiles");    	
-    }
-    
-    public static DatabaseType getDatabaseType() 
-					throws Exception {
-    	
-    	DatabaseType databaseType
-    		= DatabaseType.UNKNOWN;
-    	
-    	String property
-    		= getManadatoryRIfServiceProperty("database.databaseType").toUpperCase();
-    	if (property != null) {
-    		property = property.toUpperCase();
-    		if (property.equals("POSTGRESQL")) {
-    			databaseType
-    				= DatabaseType.POSTGRESQL;
-    		}
-    		else if (property.equals("SQLSERVER")) {
-    			databaseType
-    				= DatabaseType.SQL_SERVER;  			
-    		}   		
-    	}
-    	
-    	return databaseType;
-
-    }
-    
-    public static boolean isDatabaseCaseSensitive() 
-					throws Exception {
-    	String property
-    		= getManadatoryRIfServiceProperty("database.isCaseSensitive");
-    	Boolean result
-    		= Boolean.valueOf(property);
-    	return result;
-    }
-    
-    public static int getMaximumMapAreasAllowedForSingleDisplay() 
-					throws Exception {
-    	String property
-    		= getManadatoryRIfServiceProperty("maximumMapAreasAllowedForSingleDisplay");
-    	Integer maximumValue = 0;
-    	try {
-    		maximumValue = Integer.valueOf(property);
-    	}
-    	catch(Exception exception) {
-    		maximumValue = 0;
-    	}
-    	
-    	return maximumValue;
-    }
-
-    public static boolean useSSLDebug() 
-					throws Exception {
-    	String property
-    		= getManadatoryRIfServiceProperty("database.useSSLDebug");
-    	Boolean result
-			= Boolean.valueOf(property);
-    	return result; 	
-    }
-    
-    public static String getTrustStore() 
-					throws Exception {
-    	String property
-			= getManadatoryRIfServiceProperty("database.sslTrustStore");
-    	return property; 	
-    }
-    
-    public static String getTrustStorePassword() 
-					throws Exception {
-    	String property
-    		= getManadatoryRIfServiceProperty("database.sslTrustStorePassword");
-    	return property; 	    
+		return getOptionalRIfServiceProperty("taxonomyServicesServer");		
 	}
-    
-    public static String getODBCDataSourceName() 
+	
+	String getExtraDirectoryForExtractFiles()
 					throws Exception {
-    	String property
-			= getManadatoryRIfServiceProperty("odbcDataSourceName");
-    	return property;    	
-    }
-    
-    
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @return the message
-     */
-    public static String getProperty(
-    	final String key) {
+		return getMandatoryRIfServiceProperty("extraDirectoryForExtractFiles");
+	}
+	
+	public DatabaseType getDatabaseType()
+					throws Exception {
+		
+		DatabaseType databaseType
+			= DatabaseType.UNKNOWN;
+		
+		String property
+			= getMandatoryRIfServiceProperty("database.databaseType");
+		if (property != null) {
+			property = property.toUpperCase();
+			if (property.equals("POSTGRESQL")) {
+				databaseType
+					= DatabaseType.POSTGRESQL;
+			}
+			else if (property.equals("SQLSERVER")) {
+				databaseType
+					= DatabaseType.SQL_SERVER;  			
+			}   		
+		}
+		
+		return databaseType;
 
-    	if (resourceBundle != null) {
-            return (resourceBundle.getString(key));
-        }
-        return null;
-    }
+	}
+	
+	boolean isDatabaseCaseSensitive()
+					throws Exception {
+		String property
+			= getMandatoryRIfServiceProperty("database.isCaseSensitive");
+		Boolean result
+			= Boolean.valueOf(property);
+		return result;
+	}
+	
+	int getMaximumMapAreasAllowedForSingleDisplay()
+					throws Exception {
+		String property
+			= getMandatoryRIfServiceProperty("maximumMapAreasAllowedForSingleDisplay");
+		Integer maximumValue = 0;
+		try {
+			maximumValue = Integer.valueOf(property);
+		}
+		catch(Exception exception) {
+			maximumValue = 0;
+		}
+		
+		return maximumValue;
+	}
 
-    public static ResourceBundle getResourceBundle() {
-    	
-        return resourceBundle;
-    }
-
-    // ==========================================
-    // Section Mutators
-    // ==========================================
-
+	boolean useSSLDebug()
+					throws Exception {
+		String property
+			= getMandatoryRIfServiceProperty("database.useSSLDebug");
+		Boolean result
+			= Boolean.valueOf(property);
+		return result; 	
+	}
+	
+	String getTrustStore()
+					throws Exception {
+		String property
+			= getMandatoryRIfServiceProperty("database.sslTrustStore");
+		return property; 	
+	}
+	
+	String getTrustStorePassword()
+					throws Exception {
+		String property
+			= getMandatoryRIfServiceProperty("database.sslTrustStorePassword");
+		return property; 		
+	}
+	
+	String getODBCDataSourceName()
+					throws Exception {
+		return getMandatoryRIfServiceProperty("odbcDataSourceName");
+	}
+	
 	
 	/**
-     * Sets the collator.
-     *
-     * @param _collator the new collator
-     */
-    static public void setCollator(
-    	final Collator _collator) {
+	 * Gets the message.
+	 *
+	 * @param key the key
+	 * @return the message
+	 */
+	public String getProperty(
+		final String key) {
 
-    	collator = _collator;
+		if (resourceBundle != null) {
+			return (resourceBundle.getString(key));
+		}
+		return null;
 	}
 
-    // ==========================================
-    // Section Validation
-    // ==========================================
-
-    // ==========================================
-    // Section Errors
-    // ==========================================
-
-    // ==========================================
-    // Section Interfaces
-    // ==========================================
-
-    // ==========================================
-    // Section Overload
-    // ==========================================
-
+	public ResourceBundle getResourceBundle() {
+		
+		return resourceBundle;
+	}
 }
