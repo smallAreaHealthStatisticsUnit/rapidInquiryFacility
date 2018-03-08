@@ -1455,7 +1455,7 @@ implements RIFStudySubmissionAPI {
 		PGSQLConnectionManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();			
 		
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return;
 		}
 

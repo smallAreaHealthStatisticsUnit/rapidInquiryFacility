@@ -11,6 +11,8 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
+import java.util.Locale;
+
 /**
  *
  * <hr>
@@ -113,7 +115,9 @@ public final class TestStudyDataExtraction
 			testSubmissionService.createStudyExtract(
 				validUser, 
 				validStudyID,
-				validZoomLevel);
+				validZoomLevel,
+				Locale.getDefault(),
+				"");
 			
 		}
 		catch(RIFServiceException rifServiceException) {

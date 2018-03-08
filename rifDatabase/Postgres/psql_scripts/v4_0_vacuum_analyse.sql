@@ -71,7 +71,7 @@ $$;
 \qecho -- GIT Header
 \qecho --
 \qecho -- $Format:Git ID: (%h) %ci$
-\qecho -- $Id: 8058807c7768e068f3d694785fb9dea983b0cc56 $
+\qecho -- $Id$
 \qecho -- Version hash: $Format:%H$
 \qecho --
 \qecho -- Description:

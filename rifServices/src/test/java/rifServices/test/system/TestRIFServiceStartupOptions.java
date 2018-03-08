@@ -10,6 +10,10 @@ import rifServices.test.AbstractRIFTestCase;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import rifServices.test.util.Bundle;
+
+import java.util.ListResourceBundle;
+import java.util.ResourceBundle;
 
 
 /**
@@ -51,7 +55,6 @@ import org.junit.Test;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -82,6 +85,8 @@ public final class TestRIFServiceStartupOptions
 	// Section Constants
 	// ==========================================
 
+	private ResourceBundle testBundle = new Bundle();
+
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -105,21 +110,16 @@ public final class TestRIFServiceStartupOptions
 	// Section Errors and Validation
 	// ==========================================
 
-	
 	/**
 	 * Accept valid startup options.
 	 */
 	@Test
-	public void acceptValidStartupOptions_COMMON() {
-		RIFServiceStartupOptions rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false, true);
+	public void acceptValidStartupOptions_COMMON() throws RIFServiceException {
 
-		try {
-			rifServiceStartupOptions.checkErrors();			
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}		
+		RIFServiceStartupOptions rifServiceStartupOptions = RIFServiceStartupOptions.newInstance(
+				false, true, testBundle);
+
+		rifServiceStartupOptions.checkErrors();
 	}
 	
 	/**
@@ -128,8 +128,9 @@ public final class TestRIFServiceStartupOptions
 	@Test
 	public void rejectNullFieldValues() {
 		
-		RIFServiceStartupOptions rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false, true);
+		RIFServiceStartupOptions rifServiceStartupOptions =
+				RIFServiceStartupOptions.newInstance(
+						false, true, testBundle);
 		rifServiceStartupOptions.setDatabaseDriverClassName(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
@@ -137,13 +138,14 @@ public final class TestRIFServiceStartupOptions
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
-				rifServiceException, 
-				RIFServiceError.INVALID_STARTUP_OPTIONS, 
+				rifServiceException,
+				RIFServiceError.INVALID_STARTUP_OPTIONS,
 				1);
-		}		
+		}
 
-		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false, true);
+		rifServiceStartupOptions =
+				RIFServiceStartupOptions.newInstance(
+						false, true, testBundle);
 		rifServiceStartupOptions.setDatabaseDriverPrefix(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
@@ -154,10 +156,11 @@ public final class TestRIFServiceStartupOptions
 				rifServiceException, 
 				RIFServiceError.INVALID_STARTUP_OPTIONS, 
 				1);
-		}		
-				
-		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false, true);
+		}
+
+		rifServiceStartupOptions =
+				RIFServiceStartupOptions.newInstance(
+						false, true, testBundle);
 		rifServiceStartupOptions.setDatabaseName(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
@@ -168,11 +171,11 @@ public final class TestRIFServiceStartupOptions
 				rifServiceException, 
 				RIFServiceError.INVALID_STARTUP_OPTIONS, 
 				1);
-		}		
-		
-		
-		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false, true);
+		}
+
+		rifServiceStartupOptions =
+				RIFServiceStartupOptions.newInstance(
+						false, true, testBundle);
 		rifServiceStartupOptions.setHost(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
@@ -183,11 +186,12 @@ public final class TestRIFServiceStartupOptions
 				rifServiceException, 
 				RIFServiceError.INVALID_STARTUP_OPTIONS, 
 				1);
-		}		
-		
-		
-		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false, true);
+		}
+
+
+		rifServiceStartupOptions =
+				RIFServiceStartupOptions.newInstance(
+						false, true, testBundle);
 		rifServiceStartupOptions.setPort(null);
 		try {
 			rifServiceStartupOptions.checkErrors();
@@ -201,8 +205,9 @@ public final class TestRIFServiceStartupOptions
 		}
 		
 		//check multiple null field values		
-		rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(false, true);
+		rifServiceStartupOptions =
+				RIFServiceStartupOptions.newInstance(
+						false, true, testBundle);
 		rifServiceStartupOptions.setPort(null);
 		rifServiceStartupOptions.setHost(null);
 		rifServiceStartupOptions.setDatabaseName(null);
