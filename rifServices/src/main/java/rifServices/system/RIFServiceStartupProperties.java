@@ -13,7 +13,7 @@ import java.util.*;
 
 
 /**
- * Reads values from the RifServiceStartupProperties.properties file.
+ * Reads values from the RIFServiceStartupProperties.properties file.
  *
  * <hr>
  * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
@@ -78,7 +78,7 @@ import java.util.*;
  *
 */
 
-public final class RifServiceStartupProperties {
+public final class RIFServiceStartupProperties {
 
 	// ==========================================
 	// Section Constants
@@ -100,20 +100,20 @@ public final class RifServiceStartupProperties {
 	// Section Construction
 	// ==========================================
 
-	public static RifServiceStartupProperties getInstance() {
+	public static RIFServiceStartupProperties getInstance() {
 
-		return new RifServiceStartupProperties();
+		return new RIFServiceStartupProperties();
 	}
 
 	/*
 	 * Test cases can call this constructor and pass in a ResourceBundle.
 	 */
-	public RifServiceStartupProperties(ResourceBundle resourceBundle) {
+	public RIFServiceStartupProperties(ResourceBundle resourceBundle) {
 
 		this.resourceBundle = resourceBundle;
 	}
 
-	private RifServiceStartupProperties() {
+	private RIFServiceStartupProperties() {
 
 		resourceBundle=initRIFServiceStartupProperties();
 	}
@@ -137,7 +137,7 @@ public final class RifServiceStartupProperties {
 		String catalinaHome = environmentalVariables.get("CATALINA_HOME");
 		if (catalinaHome != null) {
 //
-// Search for RifServiceStartupProperties.properties in:
+// Search for RIFServiceStartupProperties.properties in:
 //
 // %CATALINA_HOME%\
 // %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\
@@ -147,7 +147,7 @@ public final class RifServiceStartupProperties {
 		}
 		else {
 			rifLogger.warning("rifServices.system.RIFServiceStartupProperties", 
-				"RifServiceStartupProperties: CATALINA_HOME not set in environment");
+				"RIFServiceStartupProperties: CATALINA_HOME not set in environment");
 			dirName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf";
 			dirName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes";
 		}   	
@@ -159,8 +159,8 @@ public final class RifServiceStartupProperties {
 			reader = new InputStreamReader(fis);
 			resourceBundle1 = new PropertyResourceBundle(reader);
 			rifLogger.info("rifServices.system.RIFServiceStartupProperties", 
-				"RifServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
-			System.out.println("RifServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
+				"RIFServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
+			System.out.println("RIFServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
 		} 
 		catch (IOException ioException) {
 			try {
@@ -170,12 +170,12 @@ public final class RifServiceStartupProperties {
 				resourceBundle2 = new PropertyResourceBundle(reader);
 			
 				rifLogger.info("rifServices.system.RIFServiceStartupProperties", 
-					"RifServiceStartupProperties: using: " + dirName2 + "\\" + fileName);
-				System.out.println("RifServiceStartupProperties: using: " + dirName2 + "\\" + fileName);
+					"RIFServiceStartupProperties: using: " + dirName2 + "\\" + fileName);
+				System.out.println("RIFServiceStartupProperties: using: " + dirName2 + "\\" + fileName);
 			} 
 			catch (IOException ioException2) {
 				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-					"RifServiceStartupProperties error for files: " +
+					"RIFServiceStartupProperties error for files: " +
 						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
 					ioException2);
 			}
@@ -191,7 +191,7 @@ public final class RifServiceStartupProperties {
 			}	
 			catch (IOException ioException3) {
 				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-					"RifServiceStartupProperties error for files: " +
+					"RIFServiceStartupProperties error for files: " +
 						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
 					ioException3);
 			}
@@ -211,7 +211,7 @@ public final class RifServiceStartupProperties {
 			}
 			catch (RIFServiceException rifServiceException) {
 				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-					"RifServiceStartupProperties error for files: " +
+					"RIFServiceStartupProperties error for files: " +
 						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
 					rifServiceException);
 				return null;

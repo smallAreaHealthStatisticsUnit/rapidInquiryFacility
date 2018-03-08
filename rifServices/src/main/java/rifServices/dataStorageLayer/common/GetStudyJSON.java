@@ -133,7 +133,7 @@ public class GetStudyJSON extends SQLAbstractSQLManager {
      * @param String studyID (required)
      * @param Locale locale (required)
      * @param String tomcatServer [deduced from calling URL] (required)
-     * @param String taxonomyServicesServer [from RifServiceStartupProperties.java parameter] (required; may be NULL)
+     * @param String taxonomyServicesServer [from RIFServiceStartupProperties.java parameter] (required; may be NULL)
      * @return JSONObject [front end saves as JSON5 file]
      */
 	public JSONObject addRifStudiesJson(

@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * Class that holds configuration settings for rif services.  These will appear
- * in <code>RifServiceStartupProperties.properties</code>, a properties file
+ * in <code>RIFServiceStartupProperties.properties</code>, a properties file
  * containing a list of name-value pairs
  *
  * <hr>
@@ -113,7 +113,6 @@ public final class RIFServiceStartupOptions {
 	private boolean isDatabaseCaseSensitive;
 	private boolean sslSupported;
 	private boolean useSSLDebug;
-	private String trustStore;
 	private String trustStorePassword;
 	
 	private String rifServiceClassDirectoryPath;
@@ -136,7 +135,7 @@ public final class RIFServiceStartupOptions {
 	
 	private boolean useStrictValidationPolicy;
 
-	private final RifServiceStartupProperties properties;
+	private final RIFServiceStartupProperties properties;
 
 	// ==========================================
 	// Section Construction
@@ -154,7 +153,7 @@ public final class RIFServiceStartupOptions {
 
 		//We should be able to read startup properties from
 		//a startup properties file
-		properties = RifServiceStartupProperties.getInstance();
+		properties = RIFServiceStartupProperties.getInstance();
 		
 		try {
 			databaseDriverClassName 
@@ -199,12 +198,11 @@ public final class RIFServiceStartupOptions {
 						"javax.net.debug", 
 						"ssl");				
 				}
-				
-				trustStore
-					= properties.getTrustStore();
+
+				String trustStore = properties.getTrustStore();
 				System.setProperty(
-					"javax.net.ssl.trustStore", 
-					trustStore);
+					"javax.net.ssl.trustStore",
+						trustStore);
 				trustStorePassword
 					= properties.getTrustStorePassword();
 				
