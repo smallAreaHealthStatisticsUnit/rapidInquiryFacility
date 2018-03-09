@@ -99,7 +99,7 @@ angular.module("RIF")
 										
 										if ($scope.parameters.defaultLogin) {
 											$scope.username = $scope.username || $scope.parameters.defaultLogin.username;
-											$scope.password = $scope.username || $scope.parameters.defaultLogin.password;
+											$scope.password = $scope.password || $scope.parameters.defaultLogin.password;
 										}
 									}
 									else if (getFrontEndParameters && getFrontEndParameters.parameters) {			
