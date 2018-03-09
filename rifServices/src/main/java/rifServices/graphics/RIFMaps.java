@@ -195,7 +195,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	private int gridWidth=3;				// Pixels
 		
 	private boolean enableCoordinateDisplay=false;
-	private double coordinateDisplayFontSize=60.0;
+	private double coordinateDisplayFontSize=80.0;
 	
 	// ==========================================
 	// Section Properties
@@ -381,8 +381,12 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		double heightToWidth = expandedEnvelope.getSpan(1) / expandedEnvelope.getSpan(0); // Inverse aspect ratio
 		imageHeight=(int) Math.round(imageWidth * heightToWidth); 
 		Rectangle screenBounds = new Rectangle(0, 0, imageWidth, imageHeight);
-		// Set new right enlarged screen area and map bounds
 		
+		int xPixels=(int)Math.abs((mapWidthPixels*gridSquareWidth)/ 					// In a grid
+			(expandedEnvelope.getMaximum(0)-expandedEnvelope.getMinimum(0)));
+		int yPixels=(int)Math.abs(heightToWidth*xPixels);								// In a grid
+		
+		// Set new right enlarged screen area and map bounds
 		vp.setScreenArea(screenBounds);
 		vp.setMatchingAspectRatio(false);
 		vp.setEditable(false); /* Lock viewport to enforce bounds */
@@ -395,13 +399,15 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			"Before layer add: Bounding box: " + expandedEnvelope.toString() + "; CRS: " + CRS.toSRS(crs) + lineSeparator +
 			"screen bonds: " + screenBounds.toString() + lineSeparator +
 			"aspect ratio: " + (double)(1/heightToWidth) + lineSeparator +
+			"; xPixels: " + xPixels +
+			"; yPixels: " + yPixels + lineSeparator + 
 			"map box: " + mapArea.toString() + "; CRS: " + CRS.toSRS(mapArea.getCoordinateReferenceSystem()) + lineSeparator +
 			"map max bounds: " + mapMaxBounds.toString() + "; CRS: " + CRS.toSRS(mapMaxBounds.getCoordinateReferenceSystem()) + lineSeparator +
 			"screenArea: " + screenArea.toString());	
 			
 		// Add layers to map
 		Layer gridLayer = createGridLayer(expandedEnvelope, gridSquareWidth, gridVertexSpacing, crs,
-			gridBackgroundColor, rifStyle);
+			gridBackgroundColor, rifStyle, xPixels, yPixels);
 		if (!map.addLayer(gridLayer)) {
 			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
 		}
@@ -504,8 +510,12 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		double heightToWidth = expandedEnvelope.getSpan(1) / expandedEnvelope.getSpan(0); // Inverse aspect ratio
 		imageHeight=(int) Math.round(imageWidth * heightToWidth); 
 		Rectangle screenBounds = new Rectangle(0, 0, imageWidth, imageHeight);
-		// Set new right enlarged screen area and map bounds
+
+		int xPixels=(int)Math.abs((mapWidthPixels*gridSquareWidth)/ 					// In a grid
+			(expandedEnvelope.getMaximum(0)-expandedEnvelope.getMinimum(0)));
+		int yPixels=(int)Math.abs(heightToWidth*xPixels);								// In a grid
 		
+		// Set new right enlarged screen area and map bounds		
 		vp.setScreenArea(screenBounds);
 		vp.setMatchingAspectRatio(false);
 		vp.setEditable(false); /* Lock viewport to enforce bounds */
@@ -519,6 +529,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			"; CRS: " + CRS.toSRS(crs) + lineSeparator +
 			"grid Color: " + gridColor.toString() + 
 			"; grid width: " + gridWidth + lineSeparator +
+			"; xPixels: " + xPixels +
+			"; yPixels: " + yPixels + lineSeparator + 
 			"screen bonds: " + screenBounds.toString() + lineSeparator +
 			"aspect ratio: " + (double)(1/heightToWidth) + lineSeparator +
 			"map box: " + mapArea.toString() + "; CRS: " + CRS.toSRS(mapArea.getCoordinateReferenceSystem()) + lineSeparator +
@@ -585,7 +597,9 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param double gridVertexSpacing,
 	 * @param CoordinateReferenceSystem crs,
 	 * @param Color backgroundColor,
-	 * @param RIFStyle rifStyle
+	 * @param RIFStyle rifStyle,
+	 * @param Rint xPixels,
+	 * @param Rint yPixels
 	 *
 	 * @returns FeatureLayer
 	 */
@@ -595,7 +609,9 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final double gridVertexSpacing,
 		final CoordinateReferenceSystem crs,
 		final Color backgroundColor,
-		final RIFStyle rifStyle) 
+		final RIFStyle rifStyle, 
+		final int xPixels, 
+		final int yPixels) 
 			throws IOException {
 		rifLogger.info(this.getClass(), "Add grid; gridSquareWidth: " + gridSquareWidth + 
 			"; gridVertexSpacing: " + gridVertexSpacing);
@@ -605,9 +621,11 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		typeBuilder.add("square", Polygon.class, crs);
 		typeBuilder.add("color", Color.class);		
 		typeBuilder.add("coord", String.class);		
-		typeBuilder.add("X", Double.class);			
-		typeBuilder.add("Y", Double.class);			
-		typeBuilder.add("rotation", Double.class);		
+		typeBuilder.add("horizAlign", Double.class);			
+		typeBuilder.add("vertAlign", Double.class);			
+		typeBuilder.add("rotation", Double.class);
+		typeBuilder.add("xDisplacement", Integer.class);
+		typeBuilder.add("yDisplacement", Integer.class);		
 		
 		if (enableCoordinateDisplay) {		
 			rifLogger.info(this.getClass(), "Coordinate display enabled: " + gridColor.toString() + "; background: " +
@@ -628,54 +646,48 @@ public class RIFMaps extends SQLAbstractSQLManager {
 					double xMax=bounds.getMaximum(0); 		
 					double yMin=bounds.getMinimum(1);
 					double yMax=bounds.getMaximum(1);
-					double X=rifStyle.ALIGN_CENTER;		/* horizAlign */
-					double Y=rifStyle.ALIGN_MIDDLE; 	/* vertAlign */ 
-					double rotation=0; // Clockwise in degrees
+					double horizAlign=rifStyle.ALIGN_RIGHT;		
+					double vertAlign=rifStyle.ALIGN_MIDDLE; 	// Nothing else works!
+					double rotation=0; 							// Clockwise in degrees
+					int xDisplacement=0; 						// pixels
+					int yDisplacement=(int)(yPixels/2); 		// pixels (TOP of box)
 					
-					String coord=null;
+					String coord=createCoord(xMax, yMax);
 					if ((expandedEnvelope.getMaximum(1) == yMax) &&
 					    (expandedEnvelope.getMinimum(0) == xMin)) { // Top left
-						X=rifStyle.ALIGN_LEFT; 		/* horizAlign */
-						Y=rifStyle.ALIGN_TOP; 		/* vertAlign */ 
-						coord="(" + X + "," + Y + ") " + "TL(yMax): " + yMax;
+//						coord="(" + xMax + "," + yMax + ") " + "TL(xMax, yMax)";
 					}
 					else if ((expandedEnvelope.getMaximum(1) == yMax) &&
 							 (expandedEnvelope.getMaximum(0) == xMax)) { // Top right
-						X=rifStyle.ALIGN_RIGHT; 	/* horizAlign */
-						Y=rifStyle.ALIGN_BOTTOM; 	/* vertAlign */ 
-						rotation=90;
-						coord="(" + X + "," + Y + ") " + "TR(yMax): " + yMax;
+//						coord="(" + xMax + "," + yMax + ") " + "TR(xMax, yMax)";
 					}
 					else if ((expandedEnvelope.getMinimum(1) == yMin) &&
 							 (expandedEnvelope.getMaximum(0) == xMax)) { // Bottom right
-						X=rifStyle.ALIGN_RIGHT; 	/* horizAlign */
-						Y=rifStyle.ALIGN_BOTTOM; 	/* vertAlign */ 
-						coord="(" + X + "," + Y + ") " + "BR(xMax): " + xMax;
+//						coord="(" + xMax + "," + yMax + ") " + "BR(xMax, yMax)";
 					}
 					else if (expandedEnvelope.getMaximum(1) == yMax) { // Top middle
-						X=rifStyle.ALIGN_RIGHT; 	/* horizAlign */
-						Y=rifStyle.ALIGN_TOP; 		/* vertAlign */ 
-						coord="(" + X + "," + Y + ") " + "TM(yMax): " + yMax;
+//						coord="(" + xMax + "," + yMax + ") " + "TM(xMax, yMax)";
 					}
 					else if (expandedEnvelope.getMaximum(0) == xMax) { // Right middle
-						X=rifStyle.ALIGN_LEFT; 		/* horizAlign */
-						Y=rifStyle.ALIGN_BOTTOM; 	/* vertAlign */ 
-						coord="(" + X + "," + Y + ") " + "RM(yMax): " + yMax;
+//						coord="(" + xMax + "," + yMax + ") " + "RM(xMax, yMax)";
 					}
 					else if (expandedEnvelope.getMinimum(0) == xMin) { // Left, not top; Suppressed: Legend
 						coord="";
 					}
 					else if (expandedEnvelope.getMinimum(1) == yMin) { // Bottom
-						X=rifStyle.ALIGN_LEFT; 		/* horizAlign */
-						Y=rifStyle.ALIGN_BOTTOM; 	/* vertAlign */ 
-						coord="(" + X + "," + Y + ") " + "B(yMax): " + yMax;
+						coord="";
 					}
-					coord=""; // Disable until fixed
+					else { // Other
+						coord="";
+					}
+
 					rifLogger.info(rifMapsClass, "(" + xMin + "," + yMin + ") label: " + coord);	
 					attributes.put("coord", coord);
-					attributes.put("X", X); 	// horizAlign
-					attributes.put("Y", Y); 	// vertAlign
-					attributes.put("rotation", rotation); 	// rotation
+					attributes.put("horizAlign", horizAlign); 	
+					attributes.put("vertAlign", vertAlign); 	
+						// See: http://docs.geoserver.org/stable/en/user/styling/sld/reference/labeling.html
+					attributes.put("xDisplacement", xDisplacement); 	// pixels
+					attributes.put("yDisplacement", yDisplacement); 	// pixels
 				}			
 			}
 		}; 
@@ -703,7 +715,19 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		
 		return gridLayer;
 	}
-	
+
+	/**
+	 * Create coordinate string (x, y) left padding to 20 characters
+	 *
+	 * @param double x 
+	 * @param double y 
+	 * @returns String
+	 */
+	private String createCoord(final double x, final double y) {
+		int n=24; // left padding
+		return /* "*" + */ String.format("%1$" + n + "s", "(" + x + "," + y + ")");  
+	}
+
 	/**
 	 * Create map legend [layer]
 	 *
