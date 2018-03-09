@@ -36,7 +36,7 @@
   1. The default logger: rifGenericLibrary.util.RIFLogger used by the middleware: RIF_middleware.log
   2. "Other" for logger output not from rifGenericLibrary.util.RIFLogger: Other.log
   
-  Logs go to STDOUT and ${sys:catalina.base}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME/log4j2/<YYYY>-<MM>/
+  Logs go to STDOUT and ${env:CATALINA_HOME}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME/log4j2/<YYYY>-<MM>/
   Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
   messages not using rifGenericLibrary.util.RIFLogger
   
@@ -76,9 +76,9 @@
     <Console name="Console" target="SYSTEM_OUT" direct="true">
       <PatternLayout pattern="${other_log_pattern}"/>
     </Console>
-	<!-- File logs are in ${catalina.base}/log4j2 - %CATALINA_HOME/log4j2 -->
+	<!-- File logs are in ${CATALINA_HOME}/log4j2 - %CATALINA_HOME/log4j2 -->
     <RollingFile name="RIF_middleware" 
-				 filePattern="${sys:catalina.base}/log4j2/$${date:yyyy-MM}/${rif_middleware}-%d{yyyy-MM-dd}-%i.log"
+				 filePattern="${env:CATALINA_HOME}/log4j2/$${date:yyyy-MM}/${rif_middleware}-%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
 	  <Policies>
@@ -87,7 +87,7 @@
 	  </Policies>
     </RollingFile>
     <RollingFile name="Other" 
-				 filePattern="${sys:catalina.base}/log4j2/$${date:yyyy-MM}/${other}-%d{yyyy-MM-dd}-%i.log"
+				 filePattern="${env:CATALINA_HOME}/log4j2/$${date:yyyy-MM}/${other}-%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="false" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${other_log_pattern}"/>
 	  <Policies>

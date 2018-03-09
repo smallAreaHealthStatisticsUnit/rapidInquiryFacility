@@ -36,7 +36,7 @@
   1. The default logger: rifGenericLibrary.util.RIFLogger used by the middleware: RIF_middleware.log
   2. "Other" for logger output not from rifGenericLibrary.util.RIFLogger: Other.log
   
-  Logs go to STDOUT and ${sys:catalina.base}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME/log4j2/<YYYY>-<MM>/
+  Logs go to STDOUT and ${env:CATALINA_HOME}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME/log4j2/<YYYY>-<MM>/
   Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
   messages not using rifGenericLibrary.util.RIFLogger
   
@@ -65,7 +65,7 @@
   Author: Peter Hambly; 12/9/2017
   -->
   <Properties>
-    <Property name="logdir">${sys:catalina.base}/log4j2/$${date:yyyy-MM}</Property>
+    <Property name="logdir">${env:CATALINA_HOME}/log4j2/$${date:yyyy-MM}</Property>
     <Property name="default_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %class %logger{36}: %msg%n</Property>
     <Property name="rif_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %class : %msg%n</Property> 
     <Property name="other_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %class %logger{36}: %msg%n</Property>
@@ -74,7 +74,7 @@
     <Console name="CONSOLE" target="SYSTEM_OUT">
       <PatternLayout pattern="${default_log_pattern}"/>
     </Console>
-	<!-- File logs are in ${catalina.base}/log4j2 - %CATALINA_HOME%/log4j2 -->
+	<!-- File logs are in ${CATALINA_HOME}/log4j2 - %CATALINA_HOME%/log4j2 -->
     <RollingFile name="RIF_MIDDLEWARE" 
 				 filePattern="${logdir}/RIF_middleware.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
@@ -82,7 +82,7 @@
 	  <Policies>
 		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
-	  </Policies>
+	  </Policies>r. The key "type" will return the message type. Other keys will retrieve individual elements fro
     </RollingFile>	
     <RollingFile name="FRONTENDLOGGER" 
 				 filePattern="${logdir}/FrontEndLogger.%d{yyyy-MM-dd}-%i.log"
