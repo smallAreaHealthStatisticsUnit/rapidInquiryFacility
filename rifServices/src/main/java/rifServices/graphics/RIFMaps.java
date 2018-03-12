@@ -19,6 +19,8 @@ import rifServices.dataStorageLayer.common.RifFeatureCollection;
 import rifServices.dataStorageLayer.common.RifCoordinateReferenceSystem;
 import rifServices.dataStorageLayer.common.RifLocale;
 
+import rifServices.businessConceptLayer.Sex;
+
 import com.sun.rowset.CachedRowSetImpl;
 import java.io.*;
 import java.sql.*;
@@ -262,6 +264,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param String zoomLevel,
 	 * @param RIFStudySubmission rifStudySubmission,
 	 * @param CachedRowSetImpl rif40Studies,
+	 * @param CachedRowSetImpl rif40Investigations,
 	 * @param Locale locale
 	 */		
 	public void writeResultsMaps(
@@ -272,6 +275,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			final String zoomLevel,
 			final RIFStudySubmission rifStudySubmission,
 			final CachedRowSetImpl rif40Studies,
+			final CachedRowSetImpl rif40Investigations,
 			final Locale locale)
 					throws Exception {
 	
@@ -296,34 +300,67 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				true /* allowNulls */, false /* allowNoRows */);
 		} 
 		
+		// Available: inv_id, inv_name, inv_description, genders, numer_tab, year_start, year_stop, 
+		// min_age_group, max_age_group
+		int genders=Integer.parseInt(getColumnFromResultSet(rif40Investigations, "genders"));
+		String invID=getColumnFromResultSet(rif40Investigations, "inv_id");
+			// Usefully will currently blob if >1 row
+		Set<Sex> allSexes = null;
+		if (genders == Sex.MALES.getCode()) {
+			allSexes=EnumSet.of(
+				Sex.MALES);
+		}
+		else if (genders == Sex.FEMALES.getCode()) {
+			allSexes=EnumSet.of(
+				Sex.FEMALES);
+		}
+		else if (genders == Sex.BOTH.getCode()) {
+			allSexes=EnumSet.of(
+				Sex.MALES,   
+				Sex.FEMALES,
+				Sex.BOTH);
+		}
+		else {
+			throw new Exception("Invalid gender code: " + genders);
+		}
+			
 		// Interate RIFMapsParameters hash map for each RIFMapsParameter and write map
 		for (String key : rifMapsParameters.getKeySet()) {
 			RIFMapsParameters.RIFMapsParameter rifMapsParameter=
-				rifMapsParameters.getRIFMapsParameter(key);
+				rifMapsParameters.getRIFMapsParameter(key);	
 				
 			String mapTitle=rifMapsParameter.getMapTitle();
 			String resultsColumn=rifMapsParameter.getResultsColumn();
 			RIFStyle rifSyle=rifMapsParameter.getRIFStyle(featureCollection.getFeatureCollection());
-			
-			writeWhiteBackgroundMap( // JPEG, PS, EPS, SVG
-				featureCollection,
-				temporaryDirectory,
-				studyID,
-				mapTitle, 
-				resultsColumn,
-				rifSyle,
-				baseStudyName,
-				studyDescription);
-			
-			writeTransparentBackgroundMap( // GeoTIFF and PNG
-				featureCollection,
-				temporaryDirectory,
-				studyID,
-				mapTitle, 
-				resultsColumn,
-				rifSyle,
-				baseStudyName,
-				studyDescription);				
+						
+			Iterator <Sex> GenderIter = allSexes.iterator();
+			while (GenderIter.hasNext()) {
+				Sex sex=GenderIter.next();
+				
+				writeWhiteBackgroundMap( // JPEG, PS, EPS, SVG
+					featureCollection,
+					temporaryDirectory,
+					studyID,
+					invID,
+					mapTitle, 
+					resultsColumn,
+					rifSyle,
+					baseStudyName,
+					studyDescription,
+					sex);
+				
+				writeTransparentBackgroundMap( // GeoTIFF and PNG
+					featureCollection,
+					temporaryDirectory,
+					studyID,
+					invID,
+					mapTitle, 
+					resultsColumn,
+					rifSyle,
+					baseStudyName,
+					studyDescription,
+					sex);		
+			}					
 		}	
 	}
 	
@@ -332,21 +369,25 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param: RifFeatureCollection rifFeatureCollection,
 	 * @param: File temporaryDirectory,
 	 * @param: String studyID,
+	 * @param: String InvID,
 	 * @param: String mapTitle,
 	 * @param: String resultsColumn,
 	 * @param: RIFStyle rifStyle,
 	 * @param: String baseStudyName,
-	 * @param: String studyDescription
+	 * @param: String studyDescription,
+	 * @param: Sex sex
 	 */
 	private void writeWhiteBackgroundMap(
 		final RifFeatureCollection rifFeatureCollection,
 		final File temporaryDirectory,
 		final String studyID,
+		final String invID,
 		final String mapTitle,
 		final String resultsColumn,
 		final RIFStyle rifStyle,
 		final String baseStudyName,
-		final String studyDescription) 
+		final String studyDescription,
+		final Sex sex) 
 			throws Exception {
 	
 		DefaultFeatureCollection featureCollection=rifFeatureCollection.getFeatureCollection();
@@ -434,7 +475,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		}		
 		
 		LegendLayer legendLayer = createLegendLayer(rifStyle, expandedEnvelope, mapTitle, studyDescription,
-			gridScale, imageWidth); 
+			sex, gridScale, imageWidth); 
 		if (!map.addLayer(legendLayer)) {
 			throw new Exception("Failed to add legendLayer to map: " + mapTitle);
 		}
@@ -448,10 +489,10 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			"screenArea: " + screenArea.toString());	
 			
 		// Save image
-		exportSVG(map, temporaryDirectory, dirName, filePrefix, studyID, featureCollection.size(), 
-			imageWidth, imageHeight);	
+		exportSVG(map, temporaryDirectory, dirName, filePrefix, studyID, invID, featureCollection.size(), 
+			imageWidth, imageHeight, sex);	
 			
-		createGraphicsMaps(temporaryDirectory, dirName, filePrefix, studyID);
+		createGraphicsMaps(temporaryDirectory, dirName, filePrefix, studyID, invID, sex);
 	
 		map.dispose();
 	}
@@ -461,21 +502,25 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param: RifFeatureCollection rifFeatureCollection,
 	 * @param: File temporaryDirectory,
 	 * @param: String studyID,
+	 * @param: String invID,
 	 * @param: String mapTitle,
 	 * @param: String resultsColumn,
 	 * @param: RIFStyle rifStyle,
 	 * @param: String baseStudyName,
-	 * @param: String studyDescription
+	 * @param: String studyDescription,
+	 * @param: Sex sex
 	 */
 	private void writeTransparentBackgroundMap(
 		final RifFeatureCollection rifFeatureCollection,
 		final File temporaryDirectory,
 		final String studyID,
+		final String invID,
 		final String mapTitle,
 		final String resultsColumn,
 		final RIFStyle rifStyle,
 		final String baseStudyName,
-		final String studyDescription) 
+		final String studyDescription,
+		final Sex sex) 
 			throws Exception {
 	
 		DefaultFeatureCollection featureCollection=rifFeatureCollection.getFeatureCollection();
@@ -568,7 +613,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		}		
 		
 		LegendLayer legendLayer = createLegendLayer(rifStyle, expandedEnvelope, mapTitle, studyDescription,
-			gridScale, imageWidth); 
+			sex, gridScale, imageWidth); 
 		if (!map.addLayer(legendLayer)) {
 			throw new Exception("Failed to add legendLayer to map: " + mapTitle);
 		}
@@ -581,10 +626,10 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			"map max bounds: " + mapMaxBounds.toString() + "; CRS: " + CRS.toSRS(mapMaxBounds.getCoordinateReferenceSystem()) + lineSeparator +
 			"screenArea: " + screenArea.toString());			
 		
-		createGeotoolsMaps(map, temporaryDirectory, dirName, filePrefix, studyID, studyDescription,
-			imageWidth, imageHeight, "tif");			
-		createGeotoolsMaps(map, temporaryDirectory, dirName, filePrefix, studyID, studyDescription,
-			imageWidth, imageHeight, "png");	
+		createGeotoolsMaps(map, temporaryDirectory, dirName, filePrefix, studyID, invID, studyDescription,
+			imageWidth, imageHeight, "tif", sex);			
+		createGeotoolsMaps(map, temporaryDirectory, dirName, filePrefix, studyID, invID, studyDescription,
+			imageWidth, imageHeight, "png", sex);	
 	
 		map.dispose();
 	}
@@ -735,7 +780,9 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param ReferencedEnvelope envelope,
 	 * @param String mapTitle,
 	 * @param String studyDescription,
-	 * @param String gridScale
+	 * @param Sex sex,
+	 * @param String gridScale,
+	 * @param int imageWidth
 	 *
 	 * @returns LegendLayer
 	 */
@@ -744,6 +791,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final ReferencedEnvelope envelope,
 		final String mapTitle,
 		final String studyDescription,
+		final Sex sex,
 		final String gridScale,
 		final int imageWidth)
 				throws Exception {
@@ -812,6 +860,11 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				Geometries.MULTIPOLYGON);
 			legendItems.add(studyDescriptionItem);	
 		}
+		LegendLayer.LegendItem gendersItem = new LegendLayer.LegendItem(
+			"Genders: " + sex.getName(), 
+			null,
+			Geometries.MULTIPOLYGON);
+		legendItems.add(gendersItem);	
 		
 		LegendLayer legendLayer = new LegendLayer(mapTitle, Color.LIGHT_GRAY, legendItems, imageWidth);
 		legendLayer.setTitle("Legend");
@@ -822,17 +875,19 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	/**
 	 * Generate an SVG document from the map. 
 	 * 
-	 * SVG file name:  <filePrefix><studyID>_<printingDPI>dpi.svg	  
+	 * SVG file name:  <filePrefix><studyID>_<sex>_<printingDPI>dpi.svg	  
 	 *
 	 * @param MapContent map - Contains the layers (features + styles) to be rendered,
 	 * @param File temporaryDirectory,
 	 * @param String dirName, 
 	 * @param String filePrefix, 
 	 * @param String studyID, 
+	 * @param String invID, 
 	 * @param int numberOfAreas,
 	 * @param int imageWidth. This sets the overall scale factor for the map, and is adjusted dependent on the 
 	 *						  size of the map,
-	 * @param int imageHeight. Fixed by the aspect ratio
+	 * @param int imageHeight. Fixed by the aspect ratio,
+	 * @param: Sex sex
 	 */
 	public void exportSVG(
 		final MapContent map, 
@@ -840,9 +895,11 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final String dirName, 
 		final String filePrefix, 
 		final String studyID,
+		final String invID,
 		final int numberOfAreas,
 		final int imageWidth,
-		final int imageHeight) throws Exception {
+		final int imageHeight,
+		final Sex sex) throws Exception {
 			
 		String mapDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		File mapDirectory = new File(mapDirName);
@@ -857,7 +914,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				"Created directory: " + newDirectory.getAbsolutePath());
 		}
 		
-		String svgFile=mapDirName + File.separator + filePrefix + studyID + "_" + printingDPI + "dpi.svg";
+		String svgFile=mapDirName + File.separator + filePrefix + studyID + "_inv" + invID + 
+			"_" + sex.getName().toLowerCase() + "_" + printingDPI + "dpi.svg";
 		File file = new File(svgFile);
 		if (file.exists()) {
 			file.delete();
@@ -950,7 +1008,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * a) ImageIO;
 	 * b) GeoTiffWriter
 	 * 
-	 * File name:  <filePrefix><studyID>_<printingDPI>dpi.<file extension>	  
+	 * File name:  <filePrefix><studyID>_<sex>_<printingDPI>dpi.<file extension>	  
 	 *
 	 * GeoTIFF output also writes a .tfw file (plain text files that store X and Y pixel size, 
 	 * rotational information, and world coordinates for a map); and .prj projection files
@@ -961,13 +1019,15 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param String dirName, 
 	 * @param String filePrefix, 
 	 * @param String studyID,  
+	 * @param String invID,  
 	 * @param String studyDescription, 
 	 * @param int imageWidth. This sets the overall scale factor for the map, and is adjusted dependent on the 
 	 *						  size of the map,
 	 * @param int imageHeight. Fixed by the aspect ratio,
 	 * @param String imageType. In theory should support: Jtiff, bmp, gif, btiff, tif, wbmp, jpeg, jpg,
 	 *							png, raw, pnm, jpeg2000.
-	 *							Tested on TIFF before converting to geotiff.
+	 *							Tested on TIFF before converting to geotiff,
+	 * @param: Sex sex
 	 */
 	private void createGeotoolsMaps(
 		final MapContent map, 
@@ -975,10 +1035,12 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final String dirName, 
 		final String filePrefix, 
 		final String studyID,
+		final String invID,
 		final String studyDescription,
 		final int imageWidth,
 		final int imageHeight,
-		final String imageType) throws Exception {
+		final String imageType,
+		final Sex sex) throws Exception {
 
 		List<Layer>	mapLayers = map.layers();
 		StringBuffer sb = new StringBuffer();
@@ -1012,8 +1074,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 				"Created directory: " + newDirectory.getAbsolutePath());
 		}
 		
-		String outputFileName=mapDirName + File.separator + filePrefix + studyID + "_" + printingDPI + "dpi." +
-			imageType.toLowerCase();
+		String outputFileName=mapDirName + File.separator + filePrefix + studyID + "_inv" + invID +
+			"_" + sex.getName().toLowerCase() + "_" + printingDPI + "dpi." + imageType.toLowerCase();
 		File outputFile = new File(outputFileName);
 		if (outputFile.exists()) {
 			outputFile.delete();
@@ -1170,7 +1232,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	
 	/** Build Graphics file from SVG source
 	  *
-	  * Graphics file name: <filePrefix><studyID>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
+	  * Graphics file name: <filePrefix><studyID>_<sex>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
       *
 	  * SVG file name:  <filePrefix><studyID>.svg	  
 	  *
@@ -1180,13 +1242,17 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	  * @param: String dirName,
 	  * @param: String filePrefix,
 	  * @param: String studyID,
-	  * @param: RIFGraphicsOutputType outputType
+	  * @param: String invID,
+	  * @param: RIFGraphicsOutputType outputType,
+	  * @param: Sex sex
 	  */
 	private void createGraphicsMaps(
 		final File temporaryDirectory,
 		final String dirName,
 		final String filePrefix,
-		final String studyID) 
+		final String studyID,
+		final String invID,
+		final Sex sex) 
 			throws Exception {
 						
 		RIFGraphics rifGraphics = new RIFGraphics(rifServiceStartupOptions);
@@ -1205,8 +1271,10 @@ public class RIFMaps extends SQLAbstractSQLManager {
 						dirName, 									/* directory */
 						filePrefix, 								/* File prefix */
 						studyID,
+						invID,
 						outputType,
-						mapWidthPixels);
+						mapWidthPixels,
+						sex);
 				}
 				else {
 					rifGraphics.addGraphicsFile(
@@ -1214,8 +1282,10 @@ public class RIFMaps extends SQLAbstractSQLManager {
 						dirName, 									/* directory */
 						filePrefix, 								/* File prefix */
 						studyID,
+						invID,
 						outputType,
-						mapWidthPixels);
+						mapWidthPixels,
+						sex);
 				}
 			}
 		}		
