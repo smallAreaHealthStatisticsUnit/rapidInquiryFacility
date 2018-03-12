@@ -190,9 +190,9 @@ public abstract class MSSQLAbstractSQLManager {
 		return fieldName.toLowerCase();
 	}
 	*/
-	
-	
-	public void setEnableLogging(final boolean enableLogging) {
+
+
+	void setEnableLogging(final boolean enableLogging) {
 		this.enableLogging = enableLogging;
 	}	
 	
@@ -205,24 +205,24 @@ public abstract class MSSQLAbstractSQLManager {
 		final AbstractSQLQueryFormatter queryFormatter,
 		final String... parameters) {
 		
-		if (enableLogging == false || checkIfQueryLoggingEnabled(queryName) == false) {
+		if (!enableLogging || !checkIfQueryLoggingEnabled(queryName)) {
 			return;
 		}
 
 		
 		StringBuilder queryLog = new StringBuilder();
-		queryLog.append("QUERY NAME: " + queryName + lineSeparator);
-		queryLog.append("PARAMETERS:" + lineSeparator);
+		queryLog.append("QUERY NAME: ").append(queryName).append(lineSeparator);
+		queryLog.append("PARAMETERS:").append(lineSeparator);
 		for (int i = 0; i < parameters.length; i++) {
 			queryLog.append("\t");
 			queryLog.append(i + 1);
 			queryLog.append(":\"");
 			queryLog.append(parameters[i]);
-			queryLog.append("\"" + lineSeparator);			
+			queryLog.append("\"").append(lineSeparator);
 		}
-		queryLog.append("MSSQL QUERY TEXT: " + lineSeparator);
-		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
-		queryLog.append("<<< End MSSQLAbstractSQLManager logSQLQuery" + lineSeparator);
+		queryLog.append("MSSQL QUERY TEXT: ").append(lineSeparator);
+		queryLog.append(queryFormatter.generateQuery()).append(lineSeparator);
+		queryLog.append("<<< End MSSQLAbstractSQLManager logSQLQuery").append(lineSeparator);
 	
 		rifLogger.info(this.getClass(), "MSSQLAbstractSQLManager logSQLQuery >>>" + lineSeparator + queryLog.toString());	
 
@@ -236,8 +236,8 @@ public abstract class MSSQLAbstractSQLManager {
 		rifLogger.error(this.getClass(), "MSSQLAbstractSQLManager.logException error", exception);
 	}
 		
-	protected boolean checkIfQueryLoggingEnabled(
-		final String queryName) {
+	private boolean checkIfQueryLoggingEnabled(
+			final String queryName) {
 
 		if (prop == null) {
 			Map<String, String> environmentalVariables = System.getenv();
