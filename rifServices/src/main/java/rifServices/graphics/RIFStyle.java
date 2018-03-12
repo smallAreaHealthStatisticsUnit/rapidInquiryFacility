@@ -22,6 +22,7 @@ import org.geotools.styling.PolygonSymbolizer;
 import org.geotools.styling.Symbolizer;
 import org.geotools.styling.AnchorPoint;
 import org.geotools.styling.PointPlacement;
+import org.geotools.styling.Displacement;
 
 import org.geotools.feature.DefaultFeatureCollection;
 
@@ -474,8 +475,8 @@ public class RIFStyle {
 		if (label != null) {
 			AnchorPoint anchorPoint = builder.createAnchorPoint( // Anchor to this relative position in the square
 
-				builder.attributeExpression("X"), 	/* horizAlign */
-				builder.attributeExpression("Y")); /* horizAlign */
+				builder.attributeExpression("horizAlign"), 	/* horizAlign */
+				builder.attributeExpression("vertAlign")); 	/* vertAlign */
 /*
  * X and Y are set to:
  *
@@ -492,10 +493,12 @@ public class RIFStyle {
     RIFStyle.ALIGN_MIDDLE = 0.5;
     RIFStyle.ALIGN_TOP = 0.0;
  */
-
+			Displacement displacement=builder.createDisplacement(
+				builder.attributeExpression("xDisplacement"),
+				builder.attributeExpression("yDisplacement"));
 			PointPlacement pointPlacement = builder.createPointPlacement(
 				anchorPoint, 
-				null,										/* Displacement */
+				displacement,								/* Displacement */
 				builder.attributeExpression("rotation")	 	/* rotation */);
 			tSym = builder.createTextSymbolizer(
 				builder.createFill(

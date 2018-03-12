@@ -84,7 +84,7 @@ public final class RIFServiceStartupProperties {
 	// Section Constants
 	// ==========================================
 
-	private final ResourceBundle resourceBundle;
+	private static ResourceBundle resourceBundle=null;
 
 	protected static RIFLogger rifLogger = RIFLogger.getLogger();
  
@@ -132,8 +132,9 @@ public final class RIFServiceStartupProperties {
 	}
 
 	private RIFServiceStartupProperties() {
-
-		resourceBundle = initRIFServiceStartupProperties();
+		if (resourceBundle == null) {
+			resourceBundle = initRIFServiceStartupProperties(); // Initialise once
+		}
 	}
 
 	// ==========================================
