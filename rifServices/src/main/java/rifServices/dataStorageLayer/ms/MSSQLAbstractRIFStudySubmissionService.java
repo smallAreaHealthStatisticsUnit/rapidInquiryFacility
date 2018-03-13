@@ -1154,10 +1154,9 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			} else {
 				c1=jsonFromFile.charAt(i+1);
 			}
-			if (c0 == '\\' && c1 == '\'') { // "'" Does need to be escaped as in double quotes
-			} else {
+			if (c0 != '\\' || c1 != '\'') {
 				 escapedJson.append(c0);
-			}
+			} // "'" Does need to be escaped as in double quotes
 		}
 
 		return escapedJson.toString();

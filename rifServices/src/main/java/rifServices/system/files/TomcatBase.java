@@ -7,19 +7,22 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Provides a reference to the base directory of a Tomcat installation, or
+ * CATALINA_HOME, as it is usually set in the environment.
+ */
 public class TomcatBase {
 
 	private static RIFLogger rifLogger = RIFLogger.getLogger();
 
-	private Path baseDir;
+	private final Path baseDir;
 
 	public TomcatBase() {
 
-		Path catalinaBaseDir;
 		String catalinaHome = System.getenv().get("CATALINA_HOME");
 		if (System.getenv().get("CATALINA_HOME") != null) {
 
-			catalinaBaseDir = FileSystems.getDefault().getPath(catalinaHome);
+			baseDir = FileSystems.getDefault().getPath(catalinaHome);
 		} else {
 
 			rifLogger.warning("rifServices.system.RIFServiceStartupProperties",
@@ -27,7 +30,7 @@ public class TomcatBase {
 							"Trying Windows defaults");
 
 			if (SystemUtils.IS_OS_WINDOWS) {
-				catalinaBaseDir = Paths.get("C:", "Program Files",
+				baseDir = Paths.get("C:", "Program Files",
 						"Apache Software Foundation", "Tomcat 8.5");
 			} else {
 
@@ -37,7 +40,7 @@ public class TomcatBase {
 		}
 	}
 
-	public Path resolve() {
+	Path resolve() {
 
 		return baseDir;
 	}

@@ -9,16 +9,17 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.files.TomcatBase;
+import rifServices.system.files.TomcatFile;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Properties;
-import java.util.Map;
-
-import java.sql.*;
 
 /**
  *
@@ -83,7 +84,7 @@ import java.sql.*;
  *
  */
 
-public abstract class PGSQLAbstractSQLManager {
+public abstract class PGSQLAbstractSQLManager extends SQLAbstractSQLManager {
 
 	// ==========================================
 	// Section Constants
@@ -92,9 +93,7 @@ public abstract class PGSQLAbstractSQLManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDatabaseProperties rifDatabaseProperties;
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
-	private boolean enableLogging = true;
 	private static Properties prop = null;
 	private static String lineSeparator = System.getProperty("line.separator");
 	
@@ -107,11 +106,9 @@ public abstract class PGSQLAbstractSQLManager {
 	/**
 	 * Instantiates a new abstract sql manager.
 	 */
-	public PGSQLAbstractSQLManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+	public PGSQLAbstractSQLManager(final RIFDatabaseProperties rifDatabaseProperties) {
 
-		this.rifDatabaseProperties = rifDatabaseProperties;
-		
+		super(rifDatabaseProperties);
 	}
 
 	// ==========================================
@@ -129,7 +126,7 @@ public abstract class PGSQLAbstractSQLManager {
 	}
 	
 	/**
-	 * Use appropariate table name case.
+	 * Use appropriate table name case.
 	 *
 	 * @param tableComponentName the table component name
 	 * @return the string
@@ -230,10 +227,6 @@ public abstract class PGSQLAbstractSQLManager {
 	*/
 	
 	
-	public void setEnableLogging(final boolean enableLogging) {
-		this.enableLogging = enableLogging;
-	}	
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -242,7 +235,8 @@ public abstract class PGSQLAbstractSQLManager {
 		final String queryName,
 		final AbstractSQLQueryFormatter queryFormatter,
 		final String... parameters) {
-		
+
+		final boolean enableLogging = true;
 		if (enableLogging == false || checkIfQueryLoggingEnabled(queryName) == false) {
 			return;
 		}
@@ -272,94 +266,6 @@ public abstract class PGSQLAbstractSQLManager {
 
 	protected void logException(final Exception exception) {
 		rifLogger.error(this.getClass(), "PGSQLAbstractSQLManager.logException error", exception);
-	}
-	
-	protected boolean checkIfQueryLoggingEnabled(
-		final String queryName) {
-
-		if (prop == null) {
-			Map<String, String> environmentalVariables = System.getenv();
-			prop = new Properties();
-			InputStream input = null;
-			String fileName1;
-			String fileName2;
-			String catalinaHome = environmentalVariables.get("CATALINA_HOME");
-			if (catalinaHome != null) {
-				fileName1=catalinaHome + "\\conf\\AbstractSQLManager.properties";
-				fileName2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\AbstractSQLManager.properties";
-			}
-			else {
-				rifLogger.warning(this.getClass(), 
-					"PGSQLAbstractSQLManager.checkIfQueryLoggingEnabled: CATALINA_HOME not set in environment"); 
-				fileName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\AbstractSQLManager.properties";
-				fileName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\AbstractSQLManager.properties";
-			}
-
-			try {
-				input = new FileInputStream(fileName1);
-					rifLogger.info(this.getClass(), 
-						"PGSQLAbstractSQLManager.checkIfInfoLoggingEnabled: using: " + fileName1);
-				// load a properties file
-				prop.load(input);
-			} 
-			catch (IOException ioException) {
-				try {
-					input = new FileInputStream(fileName2);
-						rifLogger.info(this.getClass(), 
-							"PGSQLAbstractSQLManager.checkIfInfoLoggingEnabled: using: " + fileName2);
-					// load a properties file
-					prop.load(input);
-				} 
-				catch (IOException ioException2) {				
-					rifLogger.warning(this.getClass(), 
-						"PGSQLAbstractSQLManager.checkIfQueryLoggingEnabled error for files: " + 
-							fileName1 + " and " + fileName2, 
-						ioException2);
-					return true;
-				}
-			} 
-			finally {
-				if (input != null) {
-					try {
-						input.close();
-					} 
-					catch (IOException ioException) {
-						rifLogger.warning(this.getClass(), 
-							"PGSQLAbstractSQLManager.checkIfQueryLoggingEnabled error for files: " + 
-								fileName1 + " and " + fileName2, 
-							ioException);
-						return true;
-					}
-				}
-			}
-		}
-		
-		if (prop == null) { // There would have been previous warnings
-			return true;
-		}			
-		else {
-			String value = prop.getProperty(queryName);
-			if (value != null) {	
-				if (value.toLowerCase().equals("true")) {
-					rifLogger.debug(this.getClass(), 
-						"PGSQLAbstractSQLManager checkIfQueryLoggingEnabled=TRUE property: " + 
-						queryName + "=" + value);
-					return true;			
-				}
-				else {
-					rifLogger.debug(this.getClass(), 
-						"PGSQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " + 
-						queryName + "=" + value);
-					return false;	
-				}		
-			}
-			else {
-				rifLogger.warning(this.getClass(), 
-					"PGSQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " + 
-					queryName + " NOT FOUND");	
-				return false;
-			}
-		}
 	}
 	
 	protected void setAutoCommitOn(

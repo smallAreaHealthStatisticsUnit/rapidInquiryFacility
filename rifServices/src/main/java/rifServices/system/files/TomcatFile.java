@@ -7,23 +7,30 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
+/**
+ * Retrieves files from standard Tomcat locations, and makes their contents
+ * available in various forms.
+ */
 public class TomcatFile {
 
-	public static final String CONF_DIRECTORY = "conf";
-	public static final String WEBAPPS_DIRECTORY = "webapps";
-	public static final String RIF_SERVICES_DIRECTORY = "rifServices";
-	public static final String WEB_INF_DIRECTORY = "WEB-INF";
-	public static final String CLASSES_DIRECTORY = "classes";
 	public static final String FRONT_END_PARAMETERS_FILE = "frontEndParameters.json5";
 
-	private Path file;
+	private static final String CONF_DIRECTORY = "conf";
+	private static final String WEBAPPS_DIRECTORY = "webapps";
+	private static final String RIF_SERVICES_DIRECTORY = "rifServices";
+	private static final String WEB_INF_DIRECTORY = "WEB-INF";
+	private static final String CLASSES_DIRECTORY = "classes";
 
-	public TomcatFile(TomcatBase base, String fileName) {
+	private Path file;
+	private Properties props;
+	private BufferedReader reader;
+
+	public TomcatFile(final TomcatBase base, final String fileName) {
 
 		this(base.resolve(), fileName);
 	}
 
-	public TomcatFile(Path baseDir, String fileName) {
+	private TomcatFile(final Path baseDir, final String fileName) {
 
 		Path dir1 = baseDir.resolve(CONF_DIRECTORY);
 		Path dir2 = baseDir.resolve(WEBAPPS_DIRECTORY).resolve(RIF_SERVICES_DIRECTORY)
@@ -42,13 +49,18 @@ public class TomcatFile {
 
 	public BufferedReader reader() throws IOException {
 
-		return Files.newBufferedReader(file, StandardCharsets.UTF_8);
+		if (reader == null) {
+			reader = Files.newBufferedReader(file, StandardCharsets.UTF_8);
+		}
+		return reader;
 	}
 
 	public Properties properties() throws IOException {
 
-		Properties props = new Properties();
-		props.load(reader());
+		if (props == null) {
+			props = new Properties();
+			props.load(reader());
+		}
 		return props;
 	}
 

@@ -9,10 +9,8 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.system.files.TomcatBase;
-import rifServices.system.files.TomcatFile;
+import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
 
-import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -84,8 +82,7 @@ import java.util.Properties;
  *
  */
 
-public abstract class MSSQLAbstractSQLManager {
-	public static final String ABSTRACT_SQLMANAGER_PROPERTIES = "AbstractSQLManager.properties";
+public abstract class MSSQLAbstractSQLManager extends SQLAbstractSQLManager {
 
 	// ==========================================
 	// Section Constants
@@ -94,9 +91,7 @@ public abstract class MSSQLAbstractSQLManager {
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDatabaseProperties rifDatabaseProperties;
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
-	private boolean enableLogging = true;
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static Properties prop = null;
 	
@@ -112,7 +107,7 @@ public abstract class MSSQLAbstractSQLManager {
 	public MSSQLAbstractSQLManager(
 		final RIFDatabaseProperties rifDatabaseProperties) {
 
-		this.rifDatabaseProperties = rifDatabaseProperties;
+		super(rifDatabaseProperties);
 		
 	}
 
@@ -180,25 +175,6 @@ public abstract class MSSQLAbstractSQLManager {
 
 	}
 	
-	/**
-	 * Use appropriate field name case.
-	 *
-	 * @param fieldName the field name
-	 * @return the string
-	 */
-	/*
-	protected String useAppropriateFieldNameCase(
-		final String fieldName) {
-
-		return fieldName.toLowerCase();
-	}
-	*/
-
-
-	void setEnableLogging(final boolean enableLogging) {
-		this.enableLogging = enableLogging;
-	}	
-	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
@@ -207,7 +183,8 @@ public abstract class MSSQLAbstractSQLManager {
 		final String queryName,
 		final AbstractSQLQueryFormatter queryFormatter,
 		final String... parameters) {
-		
+
+		final boolean enableLogging = true;
 		if (!enableLogging || !checkIfQueryLoggingEnabled(queryName)) {
 			return;
 		}
@@ -239,42 +216,6 @@ public abstract class MSSQLAbstractSQLManager {
 		rifLogger.error(this.getClass(), "MSSQLAbstractSQLManager.logException error", exception);
 	}
 		
-	private boolean checkIfQueryLoggingEnabled(
-			final String queryName) {
-
-		if (prop == null) {
-
-			try {
-				prop = new TomcatFile(
-						new TomcatBase(), ABSTRACT_SQLMANAGER_PROPERTIES).properties();
-			} catch (IOException e) {
-				rifLogger.warning(this.getClass(),
-						"MSSQLAbstractSQLManager.checkIfQueryLoggingEnabled error for" +
-								ABSTRACT_SQLMANAGER_PROPERTIES, e);
-					return true;
-			}
-		}
-		String value = prop.getProperty(queryName);
-		if (value != null) {
-			if (value.toLowerCase().equals("true")) {
-				rifLogger.debug(this.getClass(),
-					"MSSQLAbstractSQLManager checkIfQueryLoggingEnabled=TRUE property: " +
-					queryName + "=" + value);
-				return true;
-			} else {
-				rifLogger.debug(this.getClass(),
-					"MSSQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
-					queryName + "=" + value);
-				return false;
-			}
-		} else {
-			rifLogger.warning(this.getClass(),
-				"MSSQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
-				queryName + " NOT FOUND");
-			return false;
-		}
-	}
-	
 	protected void setAutoCommitOn(
 		final Connection connection,
 		final boolean isAutoCommitOn)

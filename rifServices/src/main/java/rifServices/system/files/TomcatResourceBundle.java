@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
+/**
+ * A wrapper for a {@link TomcatFile}, accessing it as a {@link ResourceBundle}.
+ */
 public class TomcatResourceBundle {
 
 	private static RIFLogger rifLogger = RIFLogger.getLogger();
