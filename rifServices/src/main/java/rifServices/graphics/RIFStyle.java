@@ -115,6 +115,12 @@ public class RIFStyle {
 		private Color color;
 		private String title;
 		
+		/**
+		  * Constructor: Create style band
+		  *
+		  * @param: Color color
+		  * @param: String title
+		  */
 		public RIFStyleBand(Color color, String title) {
 			this.color = color;
 			this.title = title;
@@ -162,13 +168,14 @@ public class RIFStyle {
 	// ==========================================
 
 	/**
-     * Constructor.
+     * Constructor with no Style
      */	
 	public RIFStyle() {
 		
 	}
+	
 	/**
-     * Constructor.
+     * Constructor with pre-defined style
      * 
 	 * @param String classifyFunctionName,
 	 * @param String columnName,
@@ -186,7 +193,8 @@ public class RIFStyle {
 			final DefaultFeatureCollection featureCollection) {
 		
 		try {
-			style=createRifStyle(rifMethod, columnName, paletteName, numberOfBreaks, invert, featureCollection);
+			style=createPredefinedRifStyle(rifMethod, columnName, paletteName, numberOfBreaks, 
+				invert, featureCollection);
 		}
 		catch(Exception exception) {
 			rifLogger.warning(this.getClass(), 
@@ -194,8 +202,38 @@ public class RIFStyle {
 			throw new NullPointerException();
 		}
 	}	
-	
-	/** Create style for RIF choropleth maps. Uses same colorbrewer and classification schemes as the front end
+
+	/**
+     * Constructor with user defined style
+     * 	
+	 * @param String userStyleName,
+	 * @param String columnName,
+	 * @param String paletteName,
+	 * @param double[] breaks,
+	 * @param boolean invert,
+	 * @param DefaultFeatureCollection featureCollection
+     */
+	public RIFStyle(
+			final String userStyleName,
+			final String columnName,
+			final String paletteName,
+			final double[] breaks,
+			final boolean invert,
+			final DefaultFeatureCollection featureCollection) {
+		
+		try {
+			style=createUserDefinedRifStyle(userStyleName, columnName, paletteName, breaks, 
+				invert, featureCollection);
+		}
+		catch(Exception exception) {
+			rifLogger.warning(this.getClass(), 
+				"Error in RIFStyle() constructor", exception);
+			throw new NullPointerException();
+		}
+	}
+			
+	/** Create predefined style for RIF choropleth maps. Uses same colorbrewer and classification schemes 
+	  * as the front end
 	  *
 	  * See:
 	  *
@@ -211,14 +249,10 @@ public class RIFStyle {
   	  * 		
 	  * The RIF does NOT use:
 	  * -	UniqueInterval - variation of EqualInterval that takes into account unique values	 
-	  *	  
-	  * Two other scales are provided: 
-	  * - AtlasRelativeRisk: fixed scale at: [0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51] between +/-infinity; PuOr
-	  * - AtlasProbability: fixed scale at: [0.20, 0.81] between 0 and 1; RdYlGn
 	  *
 	  * See: rifs-util-choro.js
 	  *
-	  * @param String classifyFunctionName,
+	  * @param String rifMethod,
 	  * @param String columnName,
 	  * @param String paletteName,
 	  * @param int numberOfBreaks,
@@ -227,7 +261,7 @@ public class RIFStyle {
 	  *
 	  * @return Style 
 	  */													
-	private Style createRifStyle(
+	private Style createPredefinedRifStyle(
 			final String rifMethod,
 			final String columnName,
 			final String lpaletteName,
@@ -253,48 +287,113 @@ public class RIFStyle {
 		else if (rifMethod.equals("standardDeviation")) {
 			classifyFunctionName="standardDeviation";
 		}
-		else if (rifMethod.equals("AtlasRelativeRisk")) { // fixed scale at: [0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51] between +/-infinity
-			paletteName="PuOr";
-			numberOfBreaks=8;
-			Comparable min[] = new Comparable[]{Double.NEGATIVE_INFINITY, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35};
-			Comparable max[] = new Comparable[]{0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, Double.POSITIVE_INFINITY};
-			groups = new RangedClassifier(min, max);
-			groups = new RangedClassifier(min, max);
-			invert=true;
-		}
-		else if (rifMethod.equals("AtlasProbability")) { // fixed scale at: [0.20, 0.81] between 0 and 1
-			paletteName="RdYlGn";
-			numberOfBreaks=3;
-			Comparable min[] = new Comparable[]{0.0, 0.20, 0.81};
-			Comparable max[] = new Comparable[]{0.20, 0.81, 1.0};
-			groups = new RangedClassifier(min, max);
-		}		
 		else {
 			throw new Exception("Invalid RIF mapping method: " + rifMethod);
 		}
 
-		if (classifyFunctionName != null && !(classifyFunctionName.equals("EqualInterval") || 
-		      classifyFunctionName.equals("Jenks") ||
-			  classifyFunctionName.equals("Quantile") || 
-			  classifyFunctionName.equals("standardDeviation"))) {
+		if (classifyFunctionName != null && !(
+				classifyFunctionName.equals("EqualInterval") || 
+				classifyFunctionName.equals("Jenks") ||
+				classifyFunctionName.equals("Quantile") || 
+				classifyFunctionName.equals("standardDeviation")
+			)) {
 			throw new Exception("Unsupport classify Function Name: " + classifyFunctionName);
 		}
-		StyleBuilder builder = new StyleBuilder();
-		
-		ColorBrewer brewer = ColorBrewer.instance();
-		Color[] colors = brewer.getPalette(paletteName).getColors(numberOfBreaks);
-		if (invert) {
-			colors=invertColor(colors);
-		}
+
 		FilterFactory2 filterFactory = CommonFactoryFinder.getFilterFactory2();
 		PropertyName propertyExpression = filterFactory.property(columnName);
-		// Add support for -1 data
+
 		if (groups == null) {
 			Function classify = filterFactory.function(classifyFunctionName, 
 				propertyExpression, filterFactory.literal(numberOfBreaks));
 			groups = (Classifier) classify.evaluate(featureCollection);  // Classify data 
 		}
 
+		return createUsingFeatureTypeStyle(rifMethod, columnName, paletteName, numberOfBreaks, invert, 
+			groups, featureCollection, propertyExpression);
+	}
+
+	/**	Create user defined style for RIF choropleth maps. Uses same colorbrewer and classification schemes 
+	  * as the front end  
+	  *
+	  * Two other scales are provided: 
+	  * - AtlasRelativeRisk: fixed scale at: [0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51] between +/-infinity; PuOr
+	  * - AtlasProbability: fixed scale at: [0.20, 0.81] between 0 and 1; RdYlGn
+	  *
+	  * @param String userStyleName,
+	  * @param String columnName,
+	  * @param String paletteName,
+	  * @param int numberOfBreaks,
+	  * @param boolean invert,
+	  * @param DefaultFeatureCollection featureCollection
+	  *
+	  * @return Style 
+	  */													
+	private Style createUserDefinedRifStyle(
+			final String userStyleName,
+			final String columnName,
+			final String lpaletteName,
+			final double[] breaks,
+			final boolean linvert,
+			final DefaultFeatureCollection featureCollection) 
+				throws Exception {
+		Classifier groups=null;
+		
+		paletteName=lpaletteName;
+		invert=linvert;
+		String classifyFunctionName=null;	
+
+		numberOfBreaks=(breaks.length-1);
+		Comparable min[] = new Comparable[numberOfBreaks];
+		Comparable max[] = new Comparable[numberOfBreaks];
+		for (int i=1; i<breaks.length; i++) {
+			min[i-1]=breaks[i-1];
+			max[i-1]=breaks[i];
+		}
+		groups = new RangedClassifier(min, max);
+
+		FilterFactory2 filterFactory = CommonFactoryFinder.getFilterFactory2();
+		PropertyName propertyExpression = filterFactory.property(columnName);
+
+		return createUsingFeatureTypeStyle(userStyleName, columnName, paletteName, numberOfBreaks, invert, 
+			groups, featureCollection, propertyExpression);
+	}
+
+	/** Create Style using createFeatureTypeStyle [common to both style creation functions]
+	  * 
+	  * @param String rifMethod,
+	  * @param String columnName,
+	  * @param String paletteName,
+	  * @param int numberOfBreaks,
+	  * @param boolean invert,
+	  * @param Classifier groups,
+	  * @param DefaultFeatureCollection featureCollection,
+	  * @param PropertyName propertyExpression
+	  *
+	  * @return Style 
+	  */
+	private Style createUsingFeatureTypeStyle(
+		final String rifMethod,
+		final String columnName,
+		final String paletteName,
+		final int numberOfBreaks, 
+		final boolean invert,
+		final Classifier groups,
+		final DefaultFeatureCollection featureCollection,
+		final PropertyName propertyExpression) 
+			throws Exception {
+				
+		StyleBuilder builder = new StyleBuilder();
+		
+		// Setup colours
+		ColorBrewer brewer = ColorBrewer.instance();
+		Color[] colors = brewer.getPalette(paletteName).getColors(numberOfBreaks);
+		if (invert) {
+			colors=invertColor(colors);
+		}
+		
+		// Setup titles.Note these are modified by RIFMaps::createLegendLayer() from the .. form
+		// to " to < " or " to <= "
 		for (int i=0; i<colors.length; i++) {
 			String title=null;
 			try {
@@ -325,25 +424,29 @@ public class RIFStyle {
         style.featureTypeStyles().add(featureTypeStyle);
 			
 		style.getDescription().setTitle("RIFStyle: " + columnName);
-		style.getDescription().setAbstract(rifMethod + ": " + numberOfBreaks);
-
-        return style;		
+		style.getDescription().setAbstract(rifMethod.substring(0, 1).toUpperCase() + // Force first letter to
+																					 // a capital
+			rifMethod.substring(1));
+ 
+        return style;	
 	}
-
+	
 	/** Write style SLD file
 	  *
 	  * @param String resultsColumn, 
 	  * @param String studyID, 
 	  * @param File temporaryDirectory, 
 	  * @param String dirName, 
-	  * @param String mapTitle
+	  * @param String mapTitle, 
+	  * @param boolean useNamedLayer (as opposed to UserLayer)
 	  */
 	public void writeSldFile(
 			final String resultsColumn, 
 			final String studyID, 
 			final File temporaryDirectory,
 			final String dirName,
-			final String mapTitle) 
+			final String mapTitle,
+			final boolean useNamedLayer) 
 				throws Exception {
 		StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory();
 		StyledLayerDescriptor sld = styleFactory.createStyledLayerDescriptor();
@@ -352,12 +455,18 @@ public class RIFStyle {
 		sld.setAbstract(mapTitle);
 		
 		// Use NamedLayer instead of UserLayer as more standard (e.g. QGis likes it)
-//		UserLayer layer = styleFactory.createUserLayer();
-		NamedLayer layer = styleFactory.createNamedLayer();
-		layer.setName(resultsColumn);
-//		layer.userStyles().add(style);	
-		layer.addStyle(style);		
-		sld.layers().add(layer);
+		if (useNamedLayer) {
+			NamedLayer namedLayer = styleFactory.createNamedLayer();		
+			namedLayer.setName(resultsColumn);
+			namedLayer.addStyle(style);		
+			sld.layers().add(namedLayer);
+		}
+		else {
+			UserLayer userLayer = styleFactory.createUserLayer();	
+			userLayer.setName(resultsColumn);
+			userLayer.userStyles().add(style);
+			sld.layers().add(userLayer);
+		}
 		SLDTransformer styleTransform = new SLDTransformer();
 		String sldXml = styleTransform.transform(sld);
 		BufferedWriter sldWriter = null;
@@ -407,7 +516,22 @@ public class RIFStyle {
 	public ArrayList<RIFStyleBand> getRifStyleBands() {
 		return rifStyleBands;
 	}
-	
+	public String getTitle() {
+		if (style != null) {
+			return style.getDescription().getTitle().toString();
+		}
+		else {
+			return null;
+		}
+	}
+	public String getAbstract() {
+		if (style != null) {
+			return style.getDescription().getAbstract().toString();
+		}
+		else {
+			return null;
+		}
+	}
 
 	/**
 	 * Invert color array
@@ -427,8 +551,29 @@ public class RIFStyle {
 	}
 	
    /**
-     * Create a Style to draw grid polygon features, with an optional label field in location (X, Y).
-	 * <label>, X and Y are atributes of the type builder (see usage in: RIFMaps.java)
+     * Create a Style to draw grid polygon features, with an optional label field. The position of the label
+	 * is controlled by the following atributes of the type builder (see usage in: RIFMaps.java)
+	 *	 
+	 * horizAlign: 		ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT (no effect unless rotation 0, +/- 180 degrees)
+	 * vertAlign: 		ALIGN_BOTTOM, ALIGN_MIDDLE, ALIGN_TOP (no effect unless rotation +/- 90 degrees)
+	 * xDisplacement:	in pixels 
+	 * yDisplacement:	in pixels
+	 * rotation:		in degress
+	 *
+	 * horizAlign and vertAlign usage:
+	 *
+	 * https://github.com/geotools/geotools/blob/master/modules/unsupported/swt/src/main/java/org/geotools/swt/styling/simple/SLDs.java
+	 *
+	 * The effects are detailed in:
+	 *
+	 * http://docs.geoserver.org/stable/en/user/styling/sld/reference/labeling.html
+	 *
+	 *	  RIFStyle.ALIGN_LEFT = 1.0;
+	 *    RIFStyle.ALIGN_CENTER = 0.5;
+	 *    RIFStyle.ALIGN_RIGHT = 0.0;
+	 *    RIFStyle.ALIGN_BOTTOM = 1.0;
+	 *    RIFStyle.ALIGN_MIDDLE = 0.5;
+	 *    RIFStyle.ALIGN_TOP = 0.0;
 	 *
 	 * @param Color lineColor, 
 	 * @param Color fillColor, 
@@ -474,25 +619,10 @@ public class RIFStyle {
 		TextSymbolizer tSym = null;
 		if (label != null) {
 			AnchorPoint anchorPoint = builder.createAnchorPoint( // Anchor to this relative position in the square
-
+ 
 				builder.attributeExpression("horizAlign"), 	/* horizAlign */
 				builder.attributeExpression("vertAlign")); 	/* vertAlign */
-/*
- * X and Y are set to:
- *
- * https://github.com/geotools/geotools/blob/master/modules/unsupported/swt/src/main/java/org/geotools/swt/styling/simple/SLDs.java
- *
- * The effects are detailed in:
- *
- * http://docs.geoserver.org/stable/en/user/styling/sld/reference/labeling.html
- *
-	RIFStyle.ALIGN_LEFT = 1.0;
-    RIFStyle.ALIGN_CENTER = 0.5;
-    RIFStyle.ALIGN_RIGHT = 0.0;
-    RIFStyle.ALIGN_BOTTOM = 1.0;
-    RIFStyle.ALIGN_MIDDLE = 0.5;
-    RIFStyle.ALIGN_TOP = 0.0;
- */
+
 			Displacement displacement=builder.createDisplacement(
 				builder.attributeExpression("xDisplacement"),
 				builder.attributeExpression("yDisplacement"));

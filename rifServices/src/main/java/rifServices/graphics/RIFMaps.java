@@ -431,7 +431,9 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		
 		// Create SLD styling file for GIS tools
 		Style style=rifStyle.getStyle();
-		rifStyle.writeSldFile(resultsColumn, studyID, temporaryDirectory, dirName, mapTitle);
+		// Use NamedLayer instead of UserLayer as more standard (e.g. QGis likes it)
+		rifStyle.writeSldFile(resultsColumn, studyID, temporaryDirectory, dirName, mapTitle,
+			true /* useNamedLayer */);
 
 		//Create map		
 		MapContent map = new MapContent();
@@ -793,7 +795,13 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			"Genders: " + sex.getName(), 
 			null,
 			Geometries.MULTIPOLYGON);
-		legendItems.add(gendersItem);	
+		legendItems.add(gendersItem);
+		
+		LegendLayer.LegendItem abstractItem = new LegendLayer.LegendItem(
+			"Style: " + rifSyle.getAbstract(), 
+			null,
+			Geometries.MULTIPOLYGON);
+		legendItems.add(abstractItem);	
 		
 		LegendLayer legendLayer = new LegendLayer(mapTitle, Color.LIGHT_GRAY, legendItems, imageWidth);
 		legendLayer.setTitle("Legend");
