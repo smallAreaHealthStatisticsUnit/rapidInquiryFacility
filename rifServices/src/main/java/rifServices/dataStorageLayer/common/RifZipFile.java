@@ -436,6 +436,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				submissionZipOutputStream = new ZipOutputStream(new FileOutputStream(submissionZipSavFile));
 							
 				CachedRowSetImpl rif40Studies=getRif40Studies(connection, studyID);	
+				CachedRowSetImpl rif40Investigations=getRif40Investigations(connection, studyID);	
+					// Assumes one study at present
 				rifLogger.info(this.getClass(), 
 					"Create study extract for: " + studyID + "; databaseType: " + databaseType);
 				String denominatorHTML=addDenominator(
@@ -480,6 +482,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						zoomLevel,
 						rifStudySubmission,
 						rif40Studies,
+						rif40Investigations,
 						locale);
 						
 				addHtmlFile(
@@ -1155,7 +1158,44 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		
 		return cachedRowSet;
 	}
+
+	/*
+	 * Fetch inv_id, inv_name, inv_description, genders, numer_tab, year_start, year_stop, 
+	 * min_age_group, max_age_group from RIF40_INVESTIGATIONS for study
+	 *
+	 * @param: Connection connection,
+	 * @param: String studyID
+	 *
+	 * @returns: CachedRowSetImpl
+	 */
+	private CachedRowSetImpl getRif40Investigations(
+			final Connection connection,
+			final String studyID)
+			throws Exception {
+		SQLGeneralQueryFormatter rif40StudiesQueryFormatter = new SQLGeneralQueryFormatter();		
+		
+		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT inv_id, inv_name, inv_description,");
+		rif40StudiesQueryFormatter.addQueryLine(0, "       genders, numer_tab,");
+		rif40StudiesQueryFormatter.addQueryLine(0, "       year_start, year_stop, min_age_group, max_age_group");
+		rif40StudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_investigations");
+		rif40StudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+
+		int[] params = new int[1];
+		params[0]=Integer.parseInt(studyID);
+		CachedRowSetImpl cachedRowSet=createCachedRowSet(connection, rif40StudiesQueryFormatter,
+			"getRif40Investigations", params);	
+		
+		return cachedRowSet;
+	}	
 	
+	/*
+	 * Fetch study_geolevel_name, comparison_geolevel_name, geography from RIF40_STUDIES for study
+	 *
+	 * @param: Connection connection,
+	 * @param: String studyID
+	 *
+	 * @returns: CachedRowSetImpl
+	 */	
 	private void addStudyAndComparisonAreas(
 			final StringBuilder htmlFileText,
 			final Connection connection,

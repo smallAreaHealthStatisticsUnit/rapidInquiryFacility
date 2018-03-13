@@ -10,6 +10,7 @@ import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.graphics.RIFMaps;
 import rifServices.graphics.RIFGraphicsOutputType;
+import rifServices.businessConceptLayer.Sex;
 
 import com.sun.rowset.CachedRowSetImpl;
 import java.sql.*;
@@ -197,6 +198,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	 * @param String zoomLevel,
 	 * @param RIFStudySubmission rifStudySubmission,
 	 * @param CachedRowSetImpl rif40Studies,
+	 * @param CachedRowSetImpl rif40Investigations,
 	 * @param Locale locale
 	 *
 	 * @returns String
@@ -208,6 +210,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			final String zoomLevel,
 			final RIFStudySubmission rifStudySubmission,
 			final CachedRowSetImpl rif40Studies,
+			final CachedRowSetImpl rif40Investigations,
 			final Locale locale)
 					throws Exception {
 						
@@ -332,40 +335,102 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 				zoomLevel,
 				rifStudySubmission,
 				rif40Studies,
+				rif40Investigations,
 				locale);
 				
-		return createMapsHTML(studyID);
+		return createMapsHTML(studyID, rif40Investigations);
 	}		
 
 	/** 
 	 * Create HTML to view maps in ZIP html app
      *  
 	 * @param String studyID
+	 * @param CachedRowSetImpl rif40Investigations
 	 *
 	 * @returns HTML as string
 	 */	
 	private String createMapsHTML(
-		final String studyID) {
+		final String studyID,
+		final CachedRowSetImpl rif40Investigations)
+			throws Exception {
 			
 		StringBuffer mapHTML=new StringBuffer();
+		// Available: inv_id, inv_name, inv_description, genders, numer_tab, year_start, year_stop, 
+		// min_age_group, max_age_group
+		int genders=Integer.parseInt(getColumnFromResultSet(rif40Investigations, "genders"));
+		String invId=getColumnFromResultSet(rif40Investigations, "inv_id");
+		String invName=getColumnFromResultSet(rif40Investigations, "inv_name");
+		String invDescription=getColumnFromResultSet(rif40Investigations, "inv_description");
+		String numerTab=getColumnFromResultSet(rif40Investigations, "numer_tab");
+		String yearStart=getColumnFromResultSet(rif40Investigations, "year_start");
+		String yearStop=getColumnFromResultSet(rif40Investigations, "year_stop");
+			// Usefully will currently blob if >1 row
+		Set<Sex> allSexes = null;
+		Sex defaultGender = null;
+		if (genders == Sex.MALES.getCode()) {
+			allSexes=EnumSet.of(
+				Sex.MALES);
+			defaultGender = Sex.MALES;	
+		}
+		else if (genders == Sex.FEMALES.getCode()) {
+			allSexes=EnumSet.of(
+				Sex.FEMALES);
+			defaultGender = Sex.FEMALES;	
+		}
+		else if (genders == Sex.BOTH.getCode()) {
+			allSexes=EnumSet.of(
+				Sex.MALES,   
+				Sex.FEMALES,
+				Sex.BOTH);
+			defaultGender = Sex.BOTH;	
+		}
+		else {
+			throw new Exception("Invalid gender code: " + genders);
+		}
 		
+		// File name structure: <field>_<study ID>_inv<inv id>_<gender>_<printing DPI>.<extension>
+		String nonFieldFileName=studyID + 
+			"_inv" + invId + 
+			"_" + defaultGender.getName().toLowerCase() + 
+			"_" + printingDPI + "dpi.png\"";
 		mapHTML.append("    <h1 id=\"maps\">Maps</h1>" + lineSeparator);
+		mapHTML.append("      <h2 id=\"mapsInv\">Investigation: " + invId + ": " + invName + "; " + invDescription +
+			"</h2>" + lineSeparator);
+		mapHTML.append("      <p><il>" + lineSeparator);
+		mapHTML.append("           <li>Numerator table: " + numerTab + "</li>" + lineSeparator);
+		mapHTML.append("           <li>Period: " + yearStart + " to " + yearStop + "</li>" + lineSeparator);
+		mapHTML.append("         </il></p>" + lineSeparator);	
 		mapHTML.append("      <p>" + lineSeparator);	
 		mapHTML.append("      <div>" + lineSeparator);
 		mapHTML.append("        <form id=\"downloadForm2\" method=\"get\" action=\"maps\\smoothed_smr_" + 
-			studyID + "_" + printingDPI + "dpi.png\">" + lineSeparator);
+			nonFieldFileName + ">" + lineSeparator);
 		mapHTML.append("        Year: <select id=\"rifMapsList\">" + lineSeparator);					
 		mapHTML.append("          <option value=\"maps\\relative_risk_" + 
-			studyID + "_" + printingDPI + "dpi.png\" />Relative Risk</option>" + 
+			nonFieldFileName + "/>Relative Risk</option>" + 
 			lineSeparator);		
 		mapHTML.append("          <option value=\"maps\\posterior_probability_" + 
-			studyID + "_" + printingDPI + "dpi.png\" />Posterior Probability_</option>" + 
+			nonFieldFileName + "/>Posterior Probability_</option>" + 
 			lineSeparator);		
 		mapHTML.append("          <option value=\"maps\\smoothed_smr_" + 
-			studyID + "_" + printingDPI + "dpi.png\" selected />Smoothed SMR</option>" + 
+			nonFieldFileName + "\" selected />Smoothed SMR</option>" + 
 			lineSeparator);
 		mapHTML.append("        </select>" + lineSeparator);
 		
+		Iterator <Sex> GenderIter = allSexes.iterator();
+		mapHTML.append("        Genders: <select id=\"rifMapsGender\">" + lineSeparator);					
+		while (GenderIter.hasNext()) {
+			Sex sex=GenderIter.next();
+			if (sex.getCode() == defaultGender.getCode()) {
+				mapHTML.append("          <option value=\"" + sex.getName().toLowerCase() + "\" selected />" + sex.getName() + "</option>" + 
+					lineSeparator);
+			}
+			else {
+				mapHTML.append("          <option value=\"" + sex.getName().toLowerCase() + "\" />" + sex.getName() + "</option>" + 
+					lineSeparator);	
+			}	
+		}
+		mapHTML.append("        </select></br>" + lineSeparator);
+			
 		mapHTML.append("        Graphics Format: <select id=\"rifMapsFileType\">" + lineSeparator);
 		Set<RIFGraphicsOutputType> htmlOutputTypes = EnumSet.of( // Can be viewed in browser
 			RIFGraphicsOutputType.RIFGRAPHICS_PNG,
@@ -399,7 +464,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		mapHTML.append("        </form>" + lineSeparator);	
 		mapHTML.append("      </div>" + lineSeparator);
 		mapHTML.append("      <img src=\"maps\\smoothed_smr_" + 
-			studyID + "_" + printingDPI + "dpi.png\" id=\"rifMaps\" width=\"80%\" />");
+			nonFieldFileName + " id=\"rifMaps\" width=\"80%\" />");
 		mapHTML.append("      </p>" + lineSeparator);	
 		
 		return mapHTML.toString();

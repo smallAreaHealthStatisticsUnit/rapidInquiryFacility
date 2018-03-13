@@ -12,6 +12,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import rifServices.graphics.RIFStyle;
+
+import org.geotools.feature.DefaultFeatureCollection;
+
 /**
  *
  * <hr>
@@ -85,6 +93,7 @@ public class RIFMapsParameters {
 		private String columnName;	
 		private String colorbrewerPalette;	
 		private int numberOfBreaks;	
+		private double breaks[];
 		private Boolean invert;	
 	
 		/**
@@ -106,6 +115,28 @@ public class RIFMapsParameters {
 			this.numberOfBreaks = numberOfBreaks;
 			this.invert = invert;
 		}
+	
+		/**
+		 * Constructor.
+		 * 
+		 */			
+		public RIFMapsParameter(
+			final String resultsColumn,
+			final String classifierFunctionName,
+			final String colorbrewerPalette,	
+			final double[] breaks,
+			final Boolean invert) 
+				throws Exception {
+			this.mapTitle = getMapTitle(resultsColumn);
+			this.resultsColumn = resultsColumn;
+			this.classifierFunctionName = classifierFunctionName;
+			this.columnName = getColumnName(resultsColumn);
+			this.colorbrewerPalette = colorbrewerPalette;
+			this.breaks=breaks;
+			this.numberOfBreaks = (breaks.length-1);
+			this.invert = invert;
+		}
+		
 		/**
 		 * Accessors 
 		 */		
@@ -116,13 +147,27 @@ public class RIFMapsParameters {
 			return resultsColumn;
 		}
 		public RIFStyle getRIFStyle(DefaultFeatureCollection featureCollection) {
-			return new RIFStyle(
-				classifierFunctionName,
-				columnName,
-				colorbrewerPalette,
-				numberOfBreaks,
-				invert,
-				featureCollection);
+			RIFStyle rifStyle=null;
+			
+			if (breaks != null && breaks.length > 0) { // User defined
+				rifStyle=new RIFStyle(
+					classifierFunctionName,
+					columnName,
+					colorbrewerPalette,
+					breaks,
+					invert,
+					featureCollection);
+			}
+			else { // Pre-defined
+				rifStyle=new RIFStyle(
+					classifierFunctionName,
+					columnName,
+					colorbrewerPalette,
+					numberOfBreaks,
+					invert,
+					featureCollection);
+			}
+			return rifStyle;
 		}
 		
 		/** Log RIF parameter
@@ -183,14 +228,17 @@ public class RIFMapsParameters {
 				throw new Exception("getColumnName() unsupported fature: " + feature);
 			}
 		}
-	}
+	} // End of RIFMapsParameter()
 	
 	// ==========================================
 	// Section Constants
 	// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
-	
+	private static double atlasProbabilityBreaks[] = {0.0, 0.20, 0.81, 1.0};
+	private static double atlasRelativeRiskBreaks[] = {Double.NEGATIVE_INFINITY, 
+		0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51, Double.POSITIVE_INFINITY};
+
     private HashMap<String, RIFMapsParameter> rifMapsParameters = new HashMap<String, RIFMapsParameter>();
 	
 	// ==========================================
@@ -259,10 +307,10 @@ public class RIFMapsParameters {
 		
 		RIFMapsParameter rifMapsParameter3 = new RIFMapsParameter(	
 			"posterior_probability"		/* resultsColumn */,	
-			"AtlasProbability"	/* Classifier function name */, 
-			null				/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-			0					/* numberOfBreaks */, 
-			false				/* invert */);		
+			"AtlasProbability"			/* Classifier function name */, 
+			"RdYlGn"					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+			atlasProbabilityBreaks		/* breaks */, 
+			false						/* invert */);		
 		rifMapsParameters.put("diseasemap2", rifMapsParameter3);
 	}
 
@@ -275,20 +323,37 @@ public class RIFMapsParameters {
 		BufferedReader reader = new TomcatFile(
 				new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE).reader();
 
-		StringBuilder sb = new StringBuilder();
-		String line;
-		while ((line = reader.readLine()) != null) {
-			sb.append(line.replaceAll("//.*", "")).append(lineSeparator); // Remove comments
-		}
-
-		String jsonText=sb.toString();
-
+		String jsonText=null;
 		// This regex can cause stack overflows!!!!
 		try {
-			jsonText=jsonText.replaceAll("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)","");	 /* Comments */
-			// Could try:
-			// (\/\*.*?\*\/)
-			// /\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/
+			StringBuffer sb = new StringBuffer();
+			String line = null;
+			while ((line = reader.readLine()) != null) {
+				sb.append(line.replaceAll("//.*", "") + lineSeparator); // Remove comments
+			}
+				
+			jsonText=sb.toString();
+//			rifLogger.info(getClass(), "Retrieve FrontEnd Parameters1: " + jsonText);
+			
+// This regex can cause stack overflows!!!!		
+			try {
+				jsonText=jsonText.replaceAll("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)","");	 /* Comments */
+				// Could try:
+				// (\/\*.*?\*\/)
+				// /\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/
+			}
+			catch(StackOverflowError t) {
+				throw new Exception("Comment remover caused StackOverflowError");
+			}
+					// Remove comments
+			rifLogger.info(getClass(), "Retrieve FrontEnd Parameters: " + jsonText);
+			jsonText=jsonText.replace(lineSeparator, "");							
+					// Remove line separators
+//			rifLogger.info(getClass(), "Retrieve FrontEnd Parameters3: " + jsonText);
+			JSONObject json = new JSONObject(jsonText);	
+			
+			parseJson(json); // Call internal RIF parser
+
 		}
 		catch(StackOverflowError t) {
 			throw new Exception("Comment remover caused StackOverflowError");
@@ -325,7 +390,8 @@ public class RIFMapsParameters {
 						intervals: 	9,
 						invert:		true,
 						brewerName:	"PuOr"
-					} */
+					} 
+					*/
 					
 					if (mapOptions != null) {
 						String method=mapOptions.optString("method");
@@ -337,19 +403,43 @@ public class RIFMapsParameters {
 							invert=true;
 						}
 						String brewerName=mapOptions.optString("brewerName");
-							
-						try {					
-							RIFMapsParameter rifMapsParameter = new RIFMapsParameter(	
-								feature						/* resultsColumn */,	
-								method						/* Classifier function name */, 
-								brewerName					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
-								intervals					/* numberOfBreaks */, 
-								invert						/* invert */);	
-							rifMapsParameters.put(mapName, rifMapsParameter);
-							rifMapsParameter.parameterLog(mapName);
+						JSONArray breaksArray = mapOptions.optJSONArray("breaks");
+						if (breaksArray != null) { // User defined
+							intervals=(breaksArray.length()-1);
+							double[] breaks = new double[intervals+1];
+							for (int i = 0; i < breaksArray.length(); i++) {
+								breaks[i]=breaksArray.getDouble(i);
+							}
+							try {					
+								RIFMapsParameter rifMapsParameter = new RIFMapsParameter(	
+									feature						/* resultsColumn */,	
+									method						/* User style name */, 
+									brewerName					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+									breaks						/* Breaks */, 
+									invert						/* invert */);	
+								rifMapsParameters.put(mapName, rifMapsParameter);
+								rifMapsParameter.parameterLog(mapName);
+							}
+							catch (Exception exception) {
+								rifLogger.warning(this.getClass(), 
+									"Unable to parse user defined mapOptions from: " + mapOptions.toString(2));
+							}							
 						}
-						catch (Exception exception) {
-							rifLogger.warning(this.getClass(), "Unable to parse mapOptions from: " + mapOptions.toString(2));
+						else { // Predefined 
+							try {					
+								RIFMapsParameter rifMapsParameter = new RIFMapsParameter(	
+									feature						/* resultsColumn */,	
+									method						/* Classifier function name */, 
+									brewerName					/* colorbrewer palette: http://colorbrewer2.org/#type=diverging&scheme=PuOr&n=8 */, 
+									intervals					/* numberOfBreaks */, 
+									invert						/* invert */);	
+								rifMapsParameters.put(mapName, rifMapsParameter);
+								rifMapsParameter.parameterLog(mapName);
+							}
+							catch (Exception exception) {
+								rifLogger.warning(this.getClass(), 
+									"Unable to parse predefined mapOptions from: " + mapOptions.toString(2));
+							}							
 						}
 					}	
 				}
