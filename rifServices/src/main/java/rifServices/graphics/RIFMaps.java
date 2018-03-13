@@ -73,7 +73,9 @@ import org.geotools.styling.Font;
 import org.geotools.styling.StyleFactoryImpl;
 import org.geotools.styling.Style;
 import org.geotools.styling.Stroke;
+
 import org.opengis.filter.FilterFactory;
+import org.opengis.filter.Filter;
 
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.Layer;
@@ -81,6 +83,7 @@ import org.geotools.map.MapContent;
 import org.geotools.map.MapViewport;
 
 import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -303,8 +306,11 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		// Available: inv_id, inv_name, inv_description, genders, numer_tab, year_start, year_stop, 
 		// min_age_group, max_age_group
 		int genders=Integer.parseInt(getColumnFromResultSet(rif40Investigations, "genders"));
-		String invID=getColumnFromResultSet(rif40Investigations, "inv_id");
 			// Usefully will currently blob if >1 row
+		String invID=getColumnFromResultSet(rif40Investigations, "inv_id");
+		String invName=getColumnFromResultSet(rif40Investigations, "inv_name");
+		String invDescription=getColumnFromResultSet(rif40Investigations, "inv_description");
+		
 		Set<Sex> allSexes = null;
 		if (genders == Sex.MALES.getCode()) {
 			allSexes=EnumSet.of(
@@ -334,7 +340,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			RIFStyle rifSyle=rifMapsParameter.getRIFStyle(featureCollection.getFeatureCollection());
 						
 			Iterator <Sex> GenderIter = allSexes.iterator();
-			while (GenderIter.hasNext()) {
+			while (GenderIter.hasNext()) { // Iterate through genders
 				Sex sex=GenderIter.next();
 				
 				writeWhiteBackgroundMap( // JPEG, PS, EPS, SVG
@@ -347,6 +353,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 					rifSyle,
 					baseStudyName,
 					studyDescription,
+					invName,
+					invDescription,
 					sex);
 				
 				writeTransparentBackgroundMap( // GeoTIFF and PNG
@@ -359,6 +367,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 					rifSyle,
 					baseStudyName,
 					studyDescription,
+					invName,
+					invDescription,
 					sex);		
 			}					
 		}	
@@ -375,6 +385,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param: RIFStyle rifStyle,
 	 * @param: String baseStudyName,
 	 * @param: String studyDescription,
+	 * @param: String invName,
+	 * @param: String invDescription,
 	 * @param: Sex sex
 	 */
 	private void writeWhiteBackgroundMap(
@@ -387,10 +399,20 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final RIFStyle rifStyle,
 		final String baseStudyName,
 		final String studyDescription,
+		final String invName,
+		final String invDescription,
 		final Sex sex) 
 			throws Exception {
-	
-		DefaultFeatureCollection featureCollection=rifFeatureCollection.getFeatureCollection();
+				
+		FilterFactory filterFactory = CommonFactoryFinder.getFilterFactory();
+		Filter genderFilter=filterFactory.equal(
+			filterFactory.property("genders"), 
+			filterFactory.literal(""+sex.getCode() /* As string */),
+			true);
+		DefaultFeatureCollection dataFeatureCollection=rifFeatureCollection.getFeatureCollection();
+		FeatureCollection featureCollection=dataFeatureCollection.subCollection(genderFilter); 
+			// Apply gender filter
+		
 		DefaultFeatureCollection backgroundAreasFeatureCollection=
 			rifFeatureCollection.getBackgroundAreasFeatureCollection();
 		CoordinateReferenceSystem crs=rifFeatureCollection.getCoordinateReferenceSystem();
@@ -474,7 +496,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			throw new Exception("Failed to add FeatureLayer to map: " + mapTitle);
 		}		
 		
-		LegendLayer legendLayer = createLegendLayer(rifStyle, expandedEnvelope, mapTitle, studyDescription,
+		LegendLayer legendLayer = createLegendLayer(rifStyle, expandedEnvelope, mapTitle, 
+			studyDescription, invName, invDescription,
 			sex, gridScale, imageWidth); 
 		if (!map.addLayer(legendLayer)) {
 			throw new Exception("Failed to add legendLayer to map: " + mapTitle);
@@ -508,6 +531,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param: RIFStyle rifStyle,
 	 * @param: String baseStudyName,
 	 * @param: String studyDescription,
+	 * @param: final String invName,
+	 * @param: String invDescription,
 	 * @param: Sex sex
 	 */
 	private void writeTransparentBackgroundMap(
@@ -520,10 +545,20 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final RIFStyle rifStyle,
 		final String baseStudyName,
 		final String studyDescription,
+		final String invName,
+		final String invDescription,
 		final Sex sex) 
 			throws Exception {
 	
-		DefaultFeatureCollection featureCollection=rifFeatureCollection.getFeatureCollection();
+		FilterFactory filterFactory = CommonFactoryFinder.getFilterFactory();
+		Filter genderFilter=filterFactory.equal(
+			filterFactory.property("genders"), 
+			filterFactory.literal(""+sex.getCode() /* As string */),
+			true);
+		DefaultFeatureCollection dataFeatureCollection=rifFeatureCollection.getFeatureCollection();
+		FeatureCollection featureCollection=dataFeatureCollection.subCollection(genderFilter); 
+			// Apply gender filter
+			
 		DefaultFeatureCollection backgroundAreasFeatureCollection=
 			rifFeatureCollection.getBackgroundAreasFeatureCollection();
 		CoordinateReferenceSystem crs=rifFeatureCollection.getCoordinateReferenceSystem();
@@ -582,11 +617,14 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			"map max bounds: " + mapMaxBounds.toString() + "; CRS: " + CRS.toSRS(mapMaxBounds.getCoordinateReferenceSystem()) + lineSeparator +
 			"screenArea: " + screenArea.toString());	
 			
-		// Add layers to map		
-		SimpleFeatureSource grid = Grids.createSquareGrid(expandedEnvelope, gridSquareWidth,
-			gridVertexSpacing);				
-		Layer gridLayer = new FeatureLayer(grid.getFeatures(), SLD.createLineStyle(gridColor, gridWidth));
-		gridLayer.setTitle("TransparentGrid");	
+		// Add layers to map	
+
+		Layer gridLayer = createGridLayer(expandedEnvelope, gridSquareWidth, gridVertexSpacing, crs,
+			null /* gridBackgroundColor */, rifStyle, xPixels, yPixels);		
+//		SimpleFeatureSource grid = Grids.createSquareGrid(expandedEnvelope, gridSquareWidth,
+//			gridVertexSpacing);				
+//		Layer gridLayer = new FeatureLayer(grid.getFeatures(), SLD.createLineStyle(gridColor, gridWidth));
+//		gridLayer.setTitle("TransparentGrid");	
 		if (!map.addLayer(gridLayer)) {
 			throw new Exception("Failed to add gridLayer to map: " + mapTitle);
 		}
@@ -612,7 +650,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			throw new Exception("Failed to add FeatureLayer to map: " + mapTitle);
 		}		
 		
-		LegendLayer legendLayer = createLegendLayer(rifStyle, expandedEnvelope, mapTitle, studyDescription,
+		LegendLayer legendLayer = createLegendLayer(rifStyle, expandedEnvelope, mapTitle, 
+			studyDescription, invName, invDescription,
 			sex, gridScale, imageWidth); 
 		if (!map.addLayer(legendLayer)) {
 			throw new Exception("Failed to add legendLayer to map: " + mapTitle);
@@ -739,9 +778,9 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		SimpleFeatureSource grid = Grids.createSquareGrid(expandedEnvelope, gridSquareWidth,
 			gridVertexSpacing, builder);	
 		StyleFactoryImpl styleFactory = (StyleFactoryImpl) CommonFactoryFinder.getStyleFactory();
-		FilterFactory ff = CommonFactoryFinder.getFilterFactory();
+		FilterFactory filterFactory = CommonFactoryFinder.getFilterFactory();
 		Font font=styleFactory.getDefaultFont();
-		font.setSize(ff.literal(coordinateDisplayFontSize));
+		font.setSize(filterFactory.literal(coordinateDisplayFontSize));
 		
 //		Style style=SLD.createPolygonStyle(gridColor, gridBackgroundColor, (float)0.5 /* fillOpacity */, 
 //			"coord" /* labelField */, (Font)font /* labelFont */); // Old style
@@ -756,7 +795,12 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		FeatureLayer gridLayer = new FeatureLayer(grid.getFeatures(), style);
 //		FeatureLayer gridLayer = new FeatureLayer(grid.getFeatures(), // Old gridLayer
 //			SLD.createLineStyle(gridColor, gridWidth));
-		gridLayer.setTitle("Grid");			
+		if (backgroundColor != null) {
+			gridLayer.setTitle("Grid");	
+		}		
+		else {
+			gridLayer.setTitle("TransparentGrid");	
+		}
 		
 		return gridLayer;
 	}
@@ -780,6 +824,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	 * @param ReferencedEnvelope envelope,
 	 * @param String mapTitle,
 	 * @param String studyDescription,
+	 * @param String invName,
+	 * @param String invDescription,
 	 * @param Sex sex,
 	 * @param String gridScale,
 	 * @param int imageWidth
@@ -791,6 +837,8 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final ReferencedEnvelope envelope,
 		final String mapTitle,
 		final String studyDescription,
+		final String invName,
+		final String invDescription,
 		final Sex sex,
 		final String gridScale,
 		final int imageWidth)
@@ -852,10 +900,25 @@ public class RIFMaps extends SQLAbstractSQLManager {
 			Geometries.MULTIPOLYGON);
 		legendItems.add(gridNameLegendItem);
 		
+		legendItems.add(spacerLegendItem);
+		
 		if (studyDescription != null) {
-			legendItems.add(spacerLegendItem);
 			LegendLayer.LegendItem studyDescriptionItem = new LegendLayer.LegendItem(
 				studyDescription, 
+				null,
+				Geometries.MULTIPOLYGON);
+			legendItems.add(studyDescriptionItem);	
+		}
+		if (invName != null && !invName.equals("My_New_Investigation")) {
+			LegendLayer.LegendItem studyDescriptionItem = new LegendLayer.LegendItem(
+				invName, 
+				null,
+				Geometries.MULTIPOLYGON);
+			legendItems.add(studyDescriptionItem);	
+		}
+		if (invDescription != null) {
+			LegendLayer.LegendItem studyDescriptionItem = new LegendLayer.LegendItem(
+				invDescription, 
 				null,
 				Geometries.MULTIPOLYGON);
 			legendItems.add(studyDescriptionItem);	
