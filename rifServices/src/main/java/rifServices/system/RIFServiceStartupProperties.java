@@ -1,15 +1,14 @@
 package rifServices.system;
 
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
+import rifServices.system.files.TomcatBase;
+import rifServices.system.files.TomcatFile;
+import rifServices.system.files.TomcatResourceBundle;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.*;
+import java.util.Hashtable;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 
 /**
@@ -84,14 +83,14 @@ public final class RIFServiceStartupProperties {
 	// Section Constants
 	// ==========================================
 
-	private static ResourceBundle resourceBundle=null;
+	private static final String STARTUP_PROPERTIES_FILE = "RIFServiceStartupProperties.properties";
 
+	private static ResourceBundle resourceBundle = null;
 	protected static RIFLogger rifLogger = RIFLogger.getLogger();
  
 	// Creating a Hashtable for controlling warnings about optional parameters
-	private Hashtable<String, Integer> parameterWarnings =
-			new Hashtable<>();
-			  
+	private Hashtable<String, Integer> parameterWarnings = new Hashtable<>();
+
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -126,117 +125,23 @@ public final class RIFServiceStartupProperties {
 	/*
 	 * Test cases can call this constructor and pass in a ResourceBundle.
 	 */
-	private RIFServiceStartupProperties(ResourceBundle resourceBundle) {
+	private RIFServiceStartupProperties(ResourceBundle rb) {
 
-		this.resourceBundle = resourceBundle;
+		resourceBundle = rb;
 	}
 
 	private RIFServiceStartupProperties() {
+
 		if (resourceBundle == null) {
-			resourceBundle = initRIFServiceStartupProperties(); // Initialise once
+			resourceBundle = new TomcatResourceBundle(
+					new TomcatFile(
+							new TomcatBase(), STARTUP_PROPERTIES_FILE)).bundle();
 		}
 	}
 
 	// ==========================================
 	// Section Accessors
 	// ==========================================
-	
-   /**
-	 * Constructor function.
-	 *
-	 * @return the ResourceBundle
-	 */
-	private ResourceBundle initRIFServiceStartupProperties() {
-		ResourceBundle resourceBundle1=null;
-		ResourceBundle resourceBundle2=null;
-		Map<String, String> environmentalVariables = System.getenv();
-		String dirName1;
-		String dirName2;
-		String fileName="RIFServiceStartupProperties.properties";
-		String catalinaHome = environmentalVariables.get("CATALINA_HOME");
-		if (catalinaHome != null) {
-//
-// Search for RIFServiceStartupProperties.properties in:
-//
-// %CATALINA_HOME%\
-// %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\
-//
-			dirName1=catalinaHome + "\\conf";
-			dirName2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes";
-		}
-		else {
-			rifLogger.warning("rifServices.system.RIFServiceStartupProperties", 
-				"RIFServiceStartupProperties: CATALINA_HOME not set in environment");
-			dirName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf";
-			dirName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes";
-		}   	
-		InputStreamReader reader = null;
-		FileInputStream fis = null;
-		try {
-			File file = new File(dirName1, fileName);
-			fis = new FileInputStream(file);
-			reader = new InputStreamReader(fis);
-			resourceBundle1 = new PropertyResourceBundle(reader);
-			rifLogger.info("rifServices.system.RIFServiceStartupProperties", 
-				"RIFServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
-			System.out.println("RIFServiceStartupProperties: using: " + dirName1 + "\\" + fileName);
-		} 
-		catch (IOException ioException) {
-			try {
-				File file = new File(dirName2, fileName);
-				fis = new FileInputStream(file);
-				reader = new InputStreamReader(fis);
-				resourceBundle2 = new PropertyResourceBundle(reader);
-			
-				rifLogger.info("rifServices.system.RIFServiceStartupProperties", 
-					"RIFServiceStartupProperties: using: " + dirName2 + "\\" + fileName);
-				System.out.println("RIFServiceStartupProperties: using: " + dirName2 + "\\" + fileName);
-			} 
-			catch (IOException ioException2) {
-				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-					"RIFServiceStartupProperties error for files: " +
-						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
-					ioException2);
-			}
-		} 
-		finally {
-			try {
-				if (fis != null) {
-					fis.close();
-				}
-				if (reader != null) {
-					reader.close();
-				}
-			}	
-			catch (IOException ioException3) {
-				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-					"RIFServiceStartupProperties error for files: " +
-						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
-					ioException3);
-			}
-		}
-		
-		if (resourceBundle1 != null) {
-			return resourceBundle1;
-		}
-		else if (resourceBundle2 != null) {
-			return resourceBundle2;
-		}
-		else { // Should never get here
-			try {
-				RIFServiceExceptionFactory exceptionFactory
-					= new RIFServiceExceptionFactory();
-				throw exceptionFactory.createFileReadingProblemException();	
-			}
-			catch (RIFServiceException rifServiceException) {
-				rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
-					"RIFServiceStartupProperties error for files: " +
-						 dirName1 + "\\" + fileName + " and " +  dirName2 + "\\" + fileName, 
-					rifServiceException);
-				return null;
-			}
-		}
-	}
 
 	boolean isSSLSupported()
 					throws Exception {

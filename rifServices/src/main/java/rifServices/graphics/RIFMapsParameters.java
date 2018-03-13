@@ -1,11 +1,14 @@
 package rifServices.graphics;
 
+import org.geotools.feature.DefaultFeatureCollection;
+import org.json.JSONException;
+import org.json.JSONObject;
 import rifGenericLibrary.util.RIFLogger;
+import rifServices.system.files.TomcatBase;
+import rifServices.system.files.TomcatFile;
 
-import java.io.*;
-import java.util.Properties;
+import java.io.BufferedReader;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -317,46 +320,11 @@ public class RIFMapsParameters {
 	private void retrieveFrontEndParameters() 
 			throws Exception {
 				
-		Map<String, String> environmentalVariables = System.getenv();
-		InputStream input = null;
-		String fileName1;
-		String fileName2;
-		String catalinaHome = environmentalVariables.get("CATALINA_HOME");
-		BufferedReader reader = null;
-		
-		if (catalinaHome != null) {
-			fileName1=catalinaHome + "\\conf\\frontEndParameters.json5";
-			fileName2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\frontEndParameters.json5";
-		}
-		else {
-			rifLogger.warning(this.getClass(), 
-				"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters: CATALINA_HOME not set in environment"); 
-			fileName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\frontEndParameters.json5";
-			fileName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\frontEndParameters.json5";
-		}
-			
-		try {
-			input = new FileInputStream(fileName1);
-				rifLogger.info(this.getClass(), "Using JSON5 file: " + fileName1);
-				// Read JSON
-				reader = new BufferedReader(new InputStreamReader(input));
-		} 
-		catch (IOException ioException) {
-			try {
-				input = new FileInputStream(fileName2);
-				rifLogger.info(this.getClass(), "Using JSON5 file: " + fileName2);
-				// Read JSON
-				reader = new BufferedReader(new InputStreamReader(input));
-			} 
-			catch (IOException ioException2) {				
-				rifLogger.warning(this.getClass(), 
-					"retrieveFrontEndParameters IO error for files: " + 
-						fileName1 + " and " + fileName2, 
-					ioException2);
-				return;
-			}
-		} 	
-		
+		BufferedReader reader = new TomcatFile(
+				new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE).reader();
+
+		String jsonText=null;
+		// This regex can cause stack overflows!!!!
 		try {
 			StringBuffer sb = new StringBuffer();
 			String line = null;
@@ -364,7 +332,7 @@ public class RIFMapsParameters {
 				sb.append(line.replaceAll("//.*", "") + lineSeparator); // Remove comments
 			}
 				
-			String jsonText=sb.toString();
+			jsonText=sb.toString();
 //			rifLogger.info(getClass(), "Retrieve FrontEnd Parameters1: " + jsonText);
 			
 // This regex can cause stack overflows!!!!		
@@ -385,27 +353,18 @@ public class RIFMapsParameters {
 			JSONObject json = new JSONObject(jsonText);	
 			
 			parseJson(json); // Call internal RIF parser
+
 		}
-		catch (Exception exception) {
-			rifLogger.warning(this.getClass(), 
-				"retrieveFrontEndParameters parse error for files: " + 
-					fileName1 + " and " + fileName2, 
-				exception);	
+		catch(StackOverflowError t) {
+			throw new Exception("Comment remover caused StackOverflowError");
 		}
-		finally {
-			if (reader != null) {
-				try {
-					reader.close();
-				} 
-				catch (IOException ioException) {
-					rifLogger.warning(this.getClass(), 
-						"retrieveFrontEndParameters IO error for files: " + 
-							fileName1 + " and " + fileName2, 
-						ioException);
-					return;
-				}
-			}	
-		}
+
+		rifLogger.info(getClass(), "Retrieve FrontEnd Parameters: " + jsonText);
+		jsonText = jsonText.replace(lineSeparator, "");
+				// Remove line separators
+		JSONObject json = new JSONObject(jsonText);
+
+		parseJson(json);
 	}
 
 	/**

@@ -1,37 +1,25 @@
 package rifServices.dataStorageLayer.common;
 
-import rifGenericLibrary.util.RIFLogger;
-
-import java.io.*;
-import java.lang.*;
-import java.util.Map;
-import java.util.HashMap;
-import java.net.URL;
-
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.metadata.extent.GeographicExtent;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-
+import org.geotools.factory.Hints;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.metadata.iso.citation.Citations;
+import org.geotools.referencing.CRS;
 import org.geotools.referencing.ReferencingFactoryFinder;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.factory.PropertyAuthorityFactory;
 import org.geotools.referencing.factory.ReferencingFactoryContainer;
-import org.geotools.factory.Hints;
-import org.geotools.metadata.iso.citation.Citations;
-import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import rifGenericLibrary.util.RIFLogger;
+import rifServices.system.files.TomcatBase;
+import rifServices.system.files.TomcatFile;
 
-import org.geotools.geojson.geom.GeometryJSON;
-import org.geotools.geometry.jts.JTSFactoryFinder;
-import org.geotools.geometry.jts.Geometries;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.geotools.referencing.CRS;
-import org.geotools.data.shapefile.ShapefileDataStore; 
-import org.geotools.data.FeatureWriter; 
-import org.geotools.data.Transaction; 
-import org.geotools.grid.Envelopes;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -194,82 +182,29 @@ public class RifCoordinateReferenceSystem {
 	 * Setup CoordinateReferenceSystem referencing factory. Use predictable RIF locations for 
 	 * epsg.properties: %CATALINA_HOME%\conf and %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes
 	 */
-	private void setupReferencingFactory() 
-		throws Exception {
+	private void setupReferencingFactory() throws Exception {
 
 		String file="epsg.properties";
-		String file1 = null;
-		String file2 = null;
-		File input = null;
-		URL epsg = null;
-		
-		try {
-			
-			if (catalinaHome != null) {
-				file1=catalinaHome + "\\conf\\" + file;
-				file2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\" + file;
-			}
-			else {
-				rifLogger.warning(this.getClass(), 
-					"setupReferencingFactory: CATALINA_HOME not set in environment"); 
-				file1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\" + file;
-				file2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\" + file;
-			}
-			
-			input=new File(file1);
-			if (input.exists()) {
-				rifLogger.info(this.getClass(), 
-						"setupReferencingFactory: using: " + file1);
-			} 
-			else {
-				input=new File(file2);	
-				if (input.exists()) {
-					rifLogger.info(this.getClass(), 
-						"setupReferencingFactory: using: " + file2);
-				}
-				else {				
-					rifLogger.warning(this.getClass(), 
-						"setupReferencingFactory error: unable to find files: " + 
-							file1 + " and " + file2);
-					input=null;
-				}
-			}			
-				
-			if (input != null) {
-				epsg = input.toURI().toURL();
 
-				if (epsg != null) {
-					Hints hints = new Hints(Hints.CRS_AUTHORITY_FACTORY, PropertyAuthorityFactory.class);
-					ReferencingFactoryContainer referencingFactoryContainer =
-							   ReferencingFactoryContainer.instance(hints);
+		TomcatFile input = new TomcatFile(new TomcatBase(), file);
+		URL epsg = input.asUrl();
 
-					PropertyAuthorityFactory propertyAuthorityFactory = new PropertyAuthorityFactory(
-						referencingFactoryContainer, 	// ReferencingFactoryContainer
-						Citations.fromName("EPSG"), 	// Citation[]
-						epsg);							// URL
-						
-					ReferencingFactoryFinder.addAuthorityFactory(propertyAuthorityFactory);
-					ReferencingFactoryFinder.scanForPlugins(); // hook everything up
-					rifLogger.info(this.getClass(), 
-						"setupReferencingFactory(): Setup CoordinateReferenceSystem lookup OK");	
-				}			
-			}
-			else {
-				throw new Exception("Null URL");
-			}
+		if (epsg != null) {
+			Hints hints = new Hints(Hints.CRS_AUTHORITY_FACTORY, PropertyAuthorityFactory.class);
+			ReferencingFactoryContainer referencingFactoryContainer =
+					   ReferencingFactoryContainer.instance(hints);
+
+			PropertyAuthorityFactory propertyAuthorityFactory = new PropertyAuthorityFactory(
+				referencingFactoryContainer, 	// ReferencingFactoryContainer
+				Citations.fromName("EPSG"), 	// Citation[]
+				epsg);							// URL
+
+			ReferencingFactoryFinder.addAuthorityFactory(propertyAuthorityFactory);
+			ReferencingFactoryFinder.scanForPlugins(); // hook everything up
+			rifLogger.info(this.getClass(),
+				"setupReferencingFactory(): Setup CoordinateReferenceSystem lookup OK");
 		}
-		catch(Exception exception) { // If it fails, will use default (WGS84)
-		
-			if (epsg != null) {
-				rifLogger.warning(this.getClass(), 
-					"URL: " + epsg.getFile() + " had error: ", exception);
-			}
-			else {
-				rifLogger.warning(this.getClass(), 
-					"URL: <NULL> had error: ", exception);
-			}
-		}
-	}	
+	}
 	
 	/** 
 	 * Get default referenced envelope for map, using the defined extent of data Coordinate Reference System
