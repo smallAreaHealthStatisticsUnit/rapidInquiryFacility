@@ -20,18 +20,20 @@ public class TomcatBase {
 	public TomcatBase() {
 
 		String catalinaHome = System.getenv().get("CATALINA_HOME");
-		if (System.getenv().get("CATALINA_HOME") != null) {
-
+		if (catalinaHome != null) {
 			baseDir = FileSystems.getDefault().getPath(catalinaHome);
 		} else {
-
 			rifLogger.warning("rifServices.system.RIFServiceStartupProperties",
 					"RIFServiceStartupProperties: CATALINA_HOME not set in environment." +
 							"Trying Windows defaults");
 
 			if (SystemUtils.IS_OS_WINDOWS) {
 				baseDir = Paths.get("C:", "Program Files",
-						"Apache Software Foundation", "Tomcat 8.5");
+								"Apache Software Foundation", "Tomcat 8.5");
+				
+			} else if (SystemUtils.IS_OS_MAC) {
+				baseDir = Paths.get("usr", "local", "Cellar", "tomcat", "9.0.6", "libexec");
+				
 			} else {
 
 				// Add defaults for other platforms here, but until then...
