@@ -2,6 +2,8 @@ package rifServices.system.files;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -67,6 +69,11 @@ public class TomcatFile {
 	public String absolutePath() {
 
 		return file.toFile().getAbsolutePath();
+	}
+
+	public URL asUrl() throws MalformedURLException {
+
+		return file.toFile().toURI().toURL();
 	}
 
 }
