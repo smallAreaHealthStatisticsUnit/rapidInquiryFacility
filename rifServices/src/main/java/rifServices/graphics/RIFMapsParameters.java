@@ -273,7 +273,7 @@ public class RIFMapsParameters {
 			throws Exception {
 				
 		BufferedReader reader = new TomcatFile(
-				new TomcatBase(), "frontEndParameters.json5").reader();
+				new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE).reader();
 
 		StringBuilder sb = new StringBuilder();
 		String line;
