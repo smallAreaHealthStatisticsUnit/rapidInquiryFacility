@@ -253,12 +253,9 @@ public final class TestRIFStudySubmission
 	}
 		
 	/**
-	 * Reject empty rif output options.
-	 */
-	@Test
-	/**
 	 * rif job submission is invalid if no output options specified
 	 */
+	@Test
 	public void rejectEmptyRIFOutputOptionsList_ERROR() {
 
 		try {
@@ -296,7 +293,7 @@ public final class TestRIFStudySubmission
 				= rifStudySubmission.getRIFOutputOptions();
 			rifOutputOptions.add(null);
 			rifStudySubmission.checkErrors(getValidationPolicy());
-			fail();	
+			fail();
 		}
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(

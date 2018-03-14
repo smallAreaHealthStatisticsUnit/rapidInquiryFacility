@@ -542,7 +542,6 @@ public final class RIFStudySubmission
 			}
 		}
 		
-		
 		if (rifOutputOptions == null) {
 			String rifOutputOptionsFieldName
 				= RIFServiceMessages.getMessage("rifOutputOption.plural.label");
@@ -558,6 +557,17 @@ public final class RIFStudySubmission
 				= RIFServiceMessages.getMessage(
 					"rifStudySubmission.error.noRIFOutputOptionsSpecified");
 			errorMessages.add(errorMessage);			
+		} else {
+			
+			for (RIFOutputOption option : rifOutputOptions) {
+				
+				if (option == null) {
+					
+					String errorMessage = RIFServiceMessages.getMessage(
+						"rifStudySubmission.error.nullRIFOutputOptionSpecified");
+					errorMessages.add(errorMessage);
+				}
+			}
 		}
 		
 		countErrors(
