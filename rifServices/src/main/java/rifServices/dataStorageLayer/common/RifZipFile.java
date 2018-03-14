@@ -1,52 +1,32 @@
 package rifServices.dataStorageLayer.common;
 
-import rifServices.system.RIFServiceStartupOptions;
-import rifServices.businessConceptLayer.AbstractStudy;
-import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
+import com.sun.rowset.CachedRowSetImpl;
+import org.json.JSONObject;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.fileFormats.RIFStudySubmissionContentHandler;
-import rifGenericLibrary.fileFormats.XMLCommentInjector;
+import rifServices.graphics.RIFGraphics;
 import rifServices.graphics.RIFGraphicsOutputType;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
+import rifServices.system.files.TomcatBase;
+import rifServices.system.files.TomcatFile;
 
-import rifServices.graphics.RIFGraphics;
-
-import com.sun.rowset.CachedRowSetImpl;
+import java.io.*;
 import java.sql.*;
-import java.io.*;
-import java.io.*;
-import org.json.*;
-import java.lang.*;
-
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
-import java.util.EnumSet;
-import java.util.Iterator;
 import java.text.DateFormat;
 import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
-import java.util.ArrayList;
-
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import org.geotools.geojson.geom.GeometryJSON;
-import org.geotools.geometry.jts.JTSFactoryFinder;
-
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.io.WKTReader;
 
 /**
  *
@@ -456,6 +436,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				submissionZipOutputStream = new ZipOutputStream(new FileOutputStream(submissionZipSavFile));
 							
 				CachedRowSetImpl rif40Studies=getRif40Studies(connection, studyID);	
+				CachedRowSetImpl rif40Investigations=getRif40Investigations(connection, studyID);	
+					// Assumes one study at present
 				rifLogger.info(this.getClass(), 
 					"Create study extract for: " + studyID + "; databaseType: " + databaseType);
 				String denominatorHTML=addDenominator(
@@ -500,6 +482,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						zoomLevel,
 						rifStudySubmission,
 						rif40Studies,
+						rif40Investigations,
 						locale);
 						
 				addHtmlFile(
@@ -1175,7 +1158,44 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		
 		return cachedRowSet;
 	}
+
+	/*
+	 * Fetch inv_id, inv_name, inv_description, genders, numer_tab, year_start, year_stop, 
+	 * min_age_group, max_age_group from RIF40_INVESTIGATIONS for study
+	 *
+	 * @param: Connection connection,
+	 * @param: String studyID
+	 *
+	 * @returns: CachedRowSetImpl
+	 */
+	private CachedRowSetImpl getRif40Investigations(
+			final Connection connection,
+			final String studyID)
+			throws Exception {
+		SQLGeneralQueryFormatter rif40StudiesQueryFormatter = new SQLGeneralQueryFormatter();		
+		
+		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT inv_id, inv_name, inv_description,");
+		rif40StudiesQueryFormatter.addQueryLine(0, "       genders, numer_tab,");
+		rif40StudiesQueryFormatter.addQueryLine(0, "       year_start, year_stop, min_age_group, max_age_group");
+		rif40StudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_investigations");
+		rif40StudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
+
+		int[] params = new int[1];
+		params[0]=Integer.parseInt(studyID);
+		CachedRowSetImpl cachedRowSet=createCachedRowSet(connection, rif40StudiesQueryFormatter,
+			"getRif40Investigations", params);	
+		
+		return cachedRowSet;
+	}	
 	
+	/*
+	 * Fetch study_geolevel_name, comparison_geolevel_name, geography from RIF40_STUDIES for study
+	 *
+	 * @param: Connection connection,
+	 * @param: String studyID
+	 *
+	 * @returns: CachedRowSetImpl
+	 */	
 	private void addStudyAndComparisonAreas(
 			final StringBuilder htmlFileText,
 			final Connection connection,
@@ -1936,44 +1956,12 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	}
 
 	private String readFile(String file) throws IOException {
-		String line = null;
-		StringBuilder stringBuilder = new StringBuilder();
-		String file1;
-		String file2;
-		FileReader input = null;
-		
-		if (catalinaHome != null) {
-			file1=catalinaHome + "\\conf\\" + file;
-			file2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\" + file;
-		}
-		else {
-			rifLogger.warning(this.getClass(), 
-				"RifZipFile.readFile: CATALINA_HOME not set in environment"); 
-			file1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\" + file;
-			file2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\" + file;
-		}
-		
-		try {
-			input=new FileReader(file1);
-			rifLogger.info(this.getClass(), 
-				"RifZipFile.readFile: using: " + file1);
-		} 
-		catch (IOException ioException) {
-			try {
-				input=new FileReader(file2);
-				rifLogger.info(this.getClass(), 
-					"RifZipFile.readFile: using: " + file2);
-			}
-			catch (IOException ioException2) {				
-				rifLogger.warning(this.getClass(), 
-					"RifZipFile.readFile error for files: " + 
-						file1 + " and " + file2, 
-					ioException2);
-				return "/* No header file found */";
-			}
-		}	
+
+		TomcatFile tcFile = new TomcatFile(new TomcatBase(), file);
 				
-		BufferedReader reader = new BufferedReader(input);
+		BufferedReader reader = tcFile.reader();
+		String line;
+		StringBuilder stringBuilder = new StringBuilder();
 		while((line = reader.readLine()) != null) {
 			stringBuilder.append(line);
 			stringBuilder.append(lineSeparator);
@@ -1981,7 +1969,6 @@ public class RifZipFile extends SQLAbstractSQLManager {
 
 		reader.close();
 		return stringBuilder.toString();
-
 	}
 	
 	private String addDirToTemporaryDirectoryPath(

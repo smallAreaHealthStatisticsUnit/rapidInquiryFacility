@@ -2001,6 +2001,11 @@ callPerformSmoothingActivity exitValue: 1
 * Rounding control, improvements to range displays
 * Issues around geotools label positioning prevent its use. More work needed.
 
+#### 12th to 16th March
+
+* Added gender and investigation to maps;
+* Support for user defined styles in maps
+
 ## In progress (March/April 2018):
 
 * RIF results field renaming specification;
@@ -2034,6 +2039,10 @@ Maps if feasible:
 
 ### Database TODO list (deferred to March 2018): 
 
+* Production install script:
+  * Need to create schema called %NEWUSER% not "peter"
+  * Create dummy pgpass.conf for admin and user
+  * Check that %NEWSER% != "rif40"
 * Add generate_series() to SQL Server port
 * Add t_rif40_warnings/rif40_warnings to contain warning messages on a study basis. Can be created 
   by extract or R scripts. Add traps for:
@@ -2041,6 +2050,7 @@ Maps if feasible:
   * Missing years of numerator or denominator data;
   * Males/females not present when requested in numerator or denominator; 
   * ICD codes not present when requested in numerator.
+  * Maljoin detection
 * Add population to map table (max, min, average, rate increase/decrease?), remove join from getAttributes
 * Add viewer/diseasemap[12]_mapping, export_date, last_update_date, comparison_geolevel_select, 
   study_geolevel_select to rif40_studies

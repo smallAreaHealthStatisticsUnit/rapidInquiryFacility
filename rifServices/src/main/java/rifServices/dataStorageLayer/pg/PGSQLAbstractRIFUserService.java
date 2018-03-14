@@ -117,7 +117,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		PGSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return true;
 		}
 		
@@ -158,7 +158,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		PGSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		
@@ -234,7 +234,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		PGSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 			
@@ -298,7 +298,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		PGSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography 
@@ -382,7 +382,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		PGSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography 
@@ -473,7 +473,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		PGSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography 
@@ -580,7 +580,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		PGSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography 
@@ -676,7 +676,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		User user = User.createCopy(_user);		
 		PGSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			//TOUR SECURITY
 			/*
 			 * The first most important security task is to check whether the user has 
@@ -781,7 +781,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		PGSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography = Geography.createCopy(_geography);
@@ -862,7 +862,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		PGSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography = Geography.createCopy(_geography);

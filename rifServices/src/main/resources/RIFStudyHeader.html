@@ -95,6 +95,7 @@ li.nav a:hover:not(.active) {
   
 <!-- Javascript -->  
   <script>
+var oldGender = undefined;
 var fileExt = "png"; // Default  
 var fileExt2 = "png"; // Default  
 var fileType = 'RIFdenominator_pyramid_';
@@ -243,6 +244,35 @@ function setRifMaps() {
 }
 
 /*
+ * Function: 	setRifMapsGender()
+ * Parameters:  Event
+ * Returns: 	false
+ * Description:	change RIF maps gender
+ */
+function setRifMapsGender() {
+	var gender = this.value;
+		
+	if (gender) {
+		var str=document.getElementById("rifMaps").src;
+		if (!oldGender) {
+			if (str.indexOf("_males_") > 1) {
+				oldGender="males";
+			}
+			else if (str.indexOf("_females_") > 1) {
+				oldGender="females";
+			}
+			else if (str.indexOf("both") > 1) {
+				oldGender="both";
+			}
+		}
+		document.getElementById("rifMaps").src = str.replace(oldGender, gender);
+		consoleLog("setRifMapsGender(" + oldGender + " to: " + gender + "): rifMaps=" + 
+			document.getElementById("rifMaps").src);
+		oldGender=gender;
+	}
+}
+
+/*
  * Function: 	isIE()
  * Parameters: 	None
  * Returns: 	Nothing
@@ -260,6 +290,7 @@ window.onload = function(){
 	
 	document.getElementById("rifMapsList").onchange = setRifMaps;
 	document.getElementById("rifMapsFileType").onchange = setRifMapsFileType;	
+	document.getElementById("rifMapsGender").onchange = setRifMapsGender;
 	
 	if (isIE()) {
 		document.getElementById("svgSelect").disabled = true;  	

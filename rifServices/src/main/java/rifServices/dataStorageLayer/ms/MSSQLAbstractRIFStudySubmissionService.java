@@ -1,21 +1,24 @@
 package rifServices.dataStorageLayer.ms;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.*;
-import rifServices.system.*;
-import rifGenericLibrary.util.FieldValidationUtility;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
+import rifServices.system.files.TomcatBase;
+import rifServices.system.files.TomcatFile;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Properties;
-import java.util.Map;
 import java.util.Locale;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  * Main implementation of the RIF middle ware.  
@@ -1088,12 +1091,20 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 		}
 
 		return result;
-	}	
+	}
 
+	/**
+	 * Rationale here seems to be that we create a string containing a default set
+	 * of JSON values, and then try to read from a file in one of the standard
+	 * locations. If the file is found, its JSON is read, escaped, and returned.
+	 * Otherwise the default JSON is returned.
+	 * @param user is not used
+	 * @return either the default escaped JSON string, or the version from the file
+	 */
 	public String getFrontEndParameters(
 		final User user) {
 					
-		String result = "{" + lineSeparator +
+		String defaultJson = "{" + lineSeparator +
 					"	parameters: {" + lineSeparator +
 					"		usePouchDBCache: 	false,	// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;" + lineSeparator +
 					"		debugEnabled:		false,	// Disable front end debugging" + lineSeparator +
@@ -1109,90 +1120,46 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 					"	}" + lineSeparator +
 					"}";
 		RIFLogger rifLogger = RIFLogger.getLogger();
-		
-		Map<String, String> environmentalVariables = System.getenv();
-		InputStream input = null;
-		String fileName1;
-		String fileName2;
-		String catalinaHome = environmentalVariables.get("CATALINA_HOME");
-		String str;
-		
-		if (catalinaHome != null) {
-			fileName1=catalinaHome + "\\conf\\frontEndParameters.json5";
-			fileName2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\frontEndParameters.json5";
-		}
-		else {
-			rifLogger.warning(this.getClass(), 
-				"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters: CATALINA_HOME not set in environment"); 
-			fileName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\frontEndParameters.json5";
-			fileName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\frontEndParameters.json5";
-		}
-			
-		try {
-			input = new FileInputStream(fileName1);
-				rifLogger.info(this.getClass(), 
-					"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters: using: " + fileName1);
+
+		String jsonFromFile;
+		TomcatFile tcFile = new TomcatFile(new TomcatBase(), TomcatFile.FRONT_END_PARAMETERS_FILE);
+
+		try (BufferedReader reader = tcFile.reader()) {
+
+				rifLogger.info(getClass(),
+					"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters: using: "
+							+ tcFile.absolutePath());
+
 				// Read and string escape JSON
-				str = "{\"file\": \"" + StringEscapeUtils.escapeJavaScript(fileName1) + "\", \"frontEndParameters\": \"" + 
-					StringEscapeUtils.escapeJavaScript(new BufferedReader(new InputStreamReader(input)).lines().parallel().collect(Collectors.joining(lineSeparator))) +
-					"\"}";
-		} 
-		catch (IOException ioException) {
-			try {
-				input = new FileInputStream(fileName2);
-					rifLogger.info(this.getClass(), 
-						"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters: using: " + fileName2);
-				// Read and string escape JSON
-				str = "{\"file\": \"" + StringEscapeUtils.escapeJavaScript(fileName1) + "\", \"frontEndParameters\": \"" + 
-					StringEscapeUtils.escapeJavaScript(new BufferedReader(new InputStreamReader(input)).lines().parallel().collect(Collectors.joining(lineSeparator))) +
-					"\"}";
-			} 
-			catch (IOException ioException2) {				
-				rifLogger.warning(this.getClass(), 
-					"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters error for files: " + 
-						fileName1 + " and " + fileName2, 
-					ioException2);
-				return result;
-			}
-		} 
-		finally {
-			if (input != null) {
-				try {
-					input.close();
-				} 
-				catch (IOException ioException) {
-					rifLogger.warning(this.getClass(), 
-						"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters error for files: " + 
-							fileName1 + " and " + fileName2, 
-						ioException);
-					return result;
-				}
-			}
-			rifLogger.info(getClass(), "get FrontEnd Parameters: " + result);		
-		}	
-						
-		int len=str.length();
-		int unEscapes=0;
-		StringBuilder sb = new StringBuilder(len);
+				jsonFromFile = "{\"file\": \"" +
+						StringEscapeUtils.escapeJavaScript(tcFile.absolutePath()) +
+						"\", \"frontEndParameters\": \"" +
+						StringEscapeUtils.escapeJavaScript(
+								reader.lines().parallel().collect(Collectors
+										.joining(lineSeparator))) +"\"}";
+		} catch (IOException ioException2) {
+				rifLogger.warning(this.getClass(),
+					"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters error for file: " +
+						tcFile.absolutePath(), ioException2);
+				return defaultJson;
+		}
+
+		int len = jsonFromFile.length();
+		StringBuilder escapedJson = new StringBuilder(len);
 		for (int i = 0; i < len; i++) {
-			char c0 = str.charAt(i);
+			char c0 = jsonFromFile.charAt(i);
 			char c1;
 			if ((i+1) >= len) {
 				c1=0;
+			} else {
+				c1=jsonFromFile.charAt(i+1);
 			}
-			else {
-				c1=str.charAt(i+1);
-			}
-			if (c0 == '\\' && c1 == '\'') { // "'" Does need to be escaped as in double quotes
-				unEscapes++;
-			}
-			else {
-				 sb.append(c0);
-			}
-		} 
-		result = sb.toString();		
-		
-		return result;
+			if (c0 != '\\' || c1 != '\'') {
+				 escapedJson.append(c0);
+			} // "'" Does need to be escaped as in double quotes
+		}
+
+		return escapedJson.toString();
 	}
 		
 	/**

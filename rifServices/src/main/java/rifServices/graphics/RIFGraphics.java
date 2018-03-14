@@ -5,6 +5,8 @@ import rifServices.businessConceptLayer.AbstractStudy;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 
+import rifServices.businessConceptLayer.Sex;
+
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
@@ -249,9 +251,9 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 	}
 	
 	/**
-	  * Build Graphics file from SVG source
+	  * Build Graphics file from SVG source. Maps version
 	  *
-	  * Graphics file name: <filePrefix><studyID>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
+	  * Graphics file name: <filePrefix><studyID>_inv<invID>_<gender>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
       *
 	  * SVG file name:  <filePrefix><studyID>_<printingDPI>dpi.svg	  
 	  *
@@ -259,29 +261,31 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 	  * @param: String dirName,
 	  * @param: String filePrefix,
 	  * @param: String studyID,
+	  * @param: String invID,
 	  * @param: RIFGraphicsOutputType outputType,
-	  * @param: int pixelWdith (e.g. denominatorPyramidWidthPixels). For information; not used
+	  * @param: int pixelWdith (e.g. denominatorPyramidWidthPixels). For information; not used,
+	  * @param: Sex sex (may be null)
 	  */
 	public void addGraphicsFile(
 		final File temporaryDirectory,
 		final String dirName,
 		final String filePrefix,
 		final String studyID,
+		final String invID,
 		final RIFGraphicsOutputType outputType,
-		final int pixelWdith) 
+		final int pixelWdith,
+		final Sex sex) 
 			throws Exception {	
-		addGraphicsFile(temporaryDirectory, dirName, filePrefix, studyID, -1 /* Year */, 
-			outputType, pixelWdith);
-	}
-
+		addGraphicsFile(temporaryDirectory, dirName, filePrefix, studyID, invID, -1 /* Year */, 
+			outputType, pixelWdith, sex);
+	} 
+	
 	/**
-	  * Build Graphics file from SVG source
+	  * Build Graphics file from SVG source. Population pyramid version
 	  *
-	  * Graphics file name: <filePrefix><studyID>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
-	  * or (year == -1): <filePrefix><studyID>_<printingDPI>dpi_<year>.<outputType.getGraphicsExtentsion()>
-      *
-	  * SVG file name: <filePrefix><studyID>_<printingDPI>dpi_<year>.svg
-	  * or (year == -1):  <filePrefix><studyID>_<printingDPI>dpi.svg
+	  * File name structure: <field>_<study ID>_<printing DPI>_<year>.<extension>
+	  *
+	  * if (year == -1): No "_<year>" element
 	  *
 	  * @param: File temporaryDirectory,
 	  * @param: String dirName,
@@ -298,27 +302,60 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 		final String studyID,
 		final int year,
 		final RIFGraphicsOutputType outputType,
-		final int pixelWdith) 
+		final int pixelWdith)
+			throws Exception {	
+		addGraphicsFile(temporaryDirectory, dirName, filePrefix, studyID, null /* invId	*/, year, 
+			outputType, pixelWdith, null /* Sex */);
+	}
+	
+	/**
+	  * Build Graphics file from SVG source. Generic version
+	  *
+	  * File name structure: <field>_<study ID>_inv<inv id>_<gender>_<printing DPI>_<year>.<extension>
+	  *
+	  * if (sex == null): No "_<gender>" element
+	  * if (invId == null): No "_inv<inv id>" element
+	  * if (year == -1): No "_<year>" element
+	  *
+	  * @param: File temporaryDirectory,
+	  * @param: String dirName,
+	  * @param: String filePrefix,
+	  * @param: String invID (may be null),
+	  * @param: int year (may be -1 if not used),
+	  * @param: RIFGraphicsOutputType outputType,
+	  * @param: int pixelWdith (e.g. denominatorPyramidWidthPixels). For information; not used,
+	  * @param: Sex sex (may be null)
+	  */	
+	private void addGraphicsFile(
+		final File temporaryDirectory,
+		final String dirName,
+		final String filePrefix,
+		final String studyID,
+		final String invID,
+		final int year,
+		final RIFGraphicsOutputType outputType,
+		final int pixelWdith,
+		final Sex sex) 
 			throws Exception {
 		Float printingPixelPermm=(float)(printingDPI/25.4);
 		
-		String graphicFileName=null;
+		String graphicFileName=filePrefix + studyID;
+		if (invID != null) {
+			graphicFileName=graphicFileName + "_inv" + invID;
+		}
+		if (sex != null) {
+			graphicFileName=graphicFileName + "_" + sex.getName().toLowerCase();
+		}
+		graphicFileName=graphicFileName + "_" + printingDPI;
 		if (year == -1) {
-			graphicFileName=filePrefix + studyID + "_" + printingDPI +
-				"dpi." + outputType.getGraphicsExtentsion();
+			graphicFileName=graphicFileName + "dpi";
 		}
 		else {		
-			graphicFileName=filePrefix + studyID + "_" + printingDPI +
-				"dpi_" + year + "." + outputType.getGraphicsExtentsion();		
+			graphicFileName=graphicFileName + "dpi_" + year ;		
 		}
-		String svgFileName=null;
-		
-		if (year == -1) {
-			svgFileName=filePrefix + studyID + "_" + printingDPI + "dpi.svg";
-		}
-		else {	
-			svgFileName=filePrefix + studyID + "_" + printingDPI + "dpi_" + year + ".svg";
-		}
+		String svgFileName=graphicFileName + ".svg";
+		graphicFileName=graphicFileName + "." + outputType.getGraphicsExtentsion();
+
 		String svgDirName=temporaryDirectory.getAbsolutePath() + File.separator + dirName;
 		String graphicFile=svgDirName + File.separator + graphicFileName;
 		String svgFile=svgDirName + File.separator + svgFileName;

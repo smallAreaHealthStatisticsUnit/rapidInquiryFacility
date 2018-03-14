@@ -21,6 +21,8 @@ import java.util.Map;
 
 import java.sql.*;
 import com.sun.rowset.CachedRowSetImpl;
+import rifServices.system.files.TomcatBase;
+import rifServices.system.files.TomcatFile;
 
 /**
  *
@@ -93,10 +95,12 @@ public abstract class SQLAbstractSQLManager {
 	// Section Constants
 	// ==========================================
 
+	public static final String ABSTRACT_SQLMANAGER_PROPERTIES = "AbstractSQLManager.properties";
+
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private RIFDatabaseProperties rifDatabaseProperties;
+	protected RIFDatabaseProperties rifDatabaseProperties;
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
 	private boolean enableLogging = true;
 	private static Properties prop = null;
@@ -504,8 +508,6 @@ public abstract class SQLAbstractSQLManager {
 		return fieldName.toLowerCase();
 	}
 	*/
-	
-	
 	public void setEnableLogging(final boolean enableLogging) {
 		this.enableLogging = enableLogging;
 	}	
@@ -597,92 +599,41 @@ public abstract class SQLAbstractSQLManager {
 	protected void logException(final Exception exception) {
 		rifLogger.error(this.getClass(), "SQLAbstractSQLManager.logException error", exception);
 	}
-	
+
 	protected boolean checkIfQueryLoggingEnabled(
-		final String queryName) {
+			final String queryName) {
 
 		if (prop == null) {
-			Map<String, String> environmentalVariables = System.getenv();
-			prop = new Properties();
-			InputStream input = null;
-			String fileName1;
-			String fileName2;
-			String catalinaHome = environmentalVariables.get("CATALINA_HOME");
-			if (catalinaHome != null) {
-				fileName1=catalinaHome + "\\conf\\AbstractSQLManager.properties";
-				fileName2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\AbstractSQLManager.properties";
-			}
-			else {
-				rifLogger.warning(this.getClass(), 
-					"SQLAbstractSQLManager.checkIfQueryLoggingEnabled: CATALINA_HOME not set in environment"); 
-				fileName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\AbstractSQLManager.properties";
-				fileName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\AbstractSQLManager.properties";
-			}
 
 			try {
-				input = new FileInputStream(fileName1);
-					rifLogger.info(this.getClass(), 
-						"SQLAbstractSQLManager.checkIfInfoLoggingEnabled: using: " + fileName1);
-				// load a properties file
-				prop.load(input);
-			} 
-			catch (IOException ioException) {
-				try {
-					input = new FileInputStream(fileName2);
-						rifLogger.info(this.getClass(), 
-							"SQLAbstractSQLManager.checkIfInfoLoggingEnabled: using: " + fileName2);
-					// load a properties file
-					prop.load(input);
-				} 
-				catch (IOException ioException2) {				
-					rifLogger.warning(this.getClass(), 
-						"SQLAbstractSQLManager.checkIfQueryLoggingEnabled error for files: " + 
-							fileName1 + " and " + fileName2, 
-						ioException2);
-					return true;
-				}
-			} 
-			finally {
-				if (input != null) {
-					try {
-						input.close();
-					} 
-					catch (IOException ioException) {
-						rifLogger.warning(this.getClass(), 
-							"SQLAbstractSQLManager.checkIfQueryLoggingEnabled error for files: " + 
-								fileName1 + " and " + fileName2, 
-							ioException);
-						return true;
-					}
-				}
+				prop = new TomcatFile(
+						new TomcatBase(),
+						SQLAbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES).properties();
+			} catch (IOException e) {
+				rifLogger.warning(this.getClass(),
+						"SQLAbstractSQLManager.checkIfQueryLoggingEnabled error for" +
+								SQLAbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES, e);
+				return true;
 			}
 		}
-		
-		if (prop == null) { // There would have been previous warnings
-			return true;
-		}			
-		else {
-			String value = prop.getProperty(queryName);
-			if (value != null) {	
-				if (value.toLowerCase().equals("true")) {
-					rifLogger.debug(this.getClass(), 
-						"SQLAbstractSQLManager checkIfQueryLoggingEnabled=TRUE property: " + 
-						queryName + "=" + value);
-					return true;			
-				}
-				else {
-					rifLogger.debug(this.getClass(), 
-						"SQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " + 
-						queryName + "=" + value);
-					return false;	
-				}		
-			}
-			else {
-				rifLogger.warning(this.getClass(), 
-					"SQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " + 
-					queryName + " NOT FOUND");	
+		String value = prop.getProperty(queryName);
+		if (value != null) {
+			if (value.toLowerCase().equals("true")) {
+				rifLogger.debug(this.getClass(),
+						"SQLAbstractSQLManager checkIfQueryLoggingEnabled=TRUE property: " +
+								queryName + "=" + value);
+				return true;
+			} else {
+				rifLogger.debug(this.getClass(),
+						"SQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
+								queryName + "=" + value);
 				return false;
 			}
+		} else {
+			rifLogger.warning(this.getClass(),
+					"SQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
+							queryName + " NOT FOUND");
+			return false;
 		}
 	}
 	

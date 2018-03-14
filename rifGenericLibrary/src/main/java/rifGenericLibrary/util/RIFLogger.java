@@ -74,7 +74,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.Enumeration;
 import java.util.Map;
 
 public final class RIFLogger {
@@ -320,123 +319,14 @@ public final class RIFLogger {
 		}
 	}
 
-	protected boolean checkIfInfoLoggingEnabled(
-		final String className) {
-
-		if (prop == null) {
-			Map<String, String> environmentalVariables = System.getenv();
-			prop = new Properties();
-			InputStream input = null;
-			String fileName1;
-			String fileName2;
-			String catalinaHome = environmentalVariables.get("CATALINA_HOME");
-			if (catalinaHome != null) {
-//
-// Search for RIFLogger.properties in:
-//
-// %CATALINA_HOME%\
-// %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\
-//
-				fileName1=catalinaHome + "\\conf\\RIFLogger.properties";
-				fileName2=catalinaHome + "\\webapps\\rifServices\\WEB-INF\\classes\\RIFLogger.properties";
-			}
-			else {
-				rifLogger.warning(this.getClass(), 
-					"RIFLogger.checkIfInfoLoggingEnabled: CATALINA_HOME not set in environment"); 
-				fileName1="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\conf\\RIFLogger.properties";
-				fileName2="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\RIFLogger.properties";
-			}
-
-			try {
-				input = new FileInputStream(fileName1);
-				rifLogger.info(this.getClass(), 
-					"RIFLogger.checkIfInfoLoggingEnabled: using: " + fileName1);
-				// load a properties file
-				prop.load(input);
-			} 
-			catch (IOException ioException) {
-				try {
-					input = new FileInputStream(fileName2);
-					rifLogger.info(this.getClass(), 
-						"RIFLogger.checkIfInfoLoggingEnabled: using: " + fileName2);
-					// load a properties file
-					prop.load(input);
-				} 
-				catch (IOException ioException2) {
-					rifLogger.warning(this.getClass(), 
-						"RIFLogger.checkIfInfoLoggingEnabled error for files: " + 
-							fileName1 + " and " + fileName2, 
-						ioException2);
-					return true;
-				}
-			} 
-			finally {
-				if (input != null) {
-					try {
-						input.close();
-					} 
-					catch (IOException ioException) {
-						rifLogger.warning(this.getClass(), 
-							"RIFLogger.checkIfInfoLoggingEnabled error for files: " + 
-								fileName1 + " and " + fileName2, 
-							ioException);
-						return true;
-					}
-				}
-			}
-		}
-		
-		if (prop == null) { // There would have been previous warnings
-			return true;
-		}			
-		else {
-			String value = prop.getProperty(className);
-			if (value != null) {	
-				if (value.toLowerCase().equals("true")) {
-					rifLogger.debug(this.getClass(), 
-						"RIFLogger checkIfInfoLoggingEnabled=TRUE property: " + 
-						className + "=" + value);
-					return true;			
-				}
-				else {
-					rifLogger.debug(this.getClass(), 
-						"RIFLogger checkIfInfoLoggingEnabled=FALSE property: " + 
-						className + "=" + value);
-					return false;	
-				}		
-			}
-			// Always true
-			else if (className.equals("rifGenericLibrary.util.RIFLogger")) {
-					return true;			
-			}
-			else if (className.equals("rifServices.system.RIFServiceStartupProperties")) {
-					return true;			
-			}
-			else if (className.equals("rifServices.system.RIFServiceStartupOptions")) {
-					return true;			
-			}
-			else { // Found in RIFLogger.properties
-				rifLogger.warning(this.getClass(), 
-					"RIFLogger checkIfInfoLoggingEnabled=FALSE property: " + 
-					className + " NOT FOUND");	
-				return false;
-			}
-		}
-	}
-
 	public void info( // For use in Kev's endless statically defined functions
 		final String callingClassName,			
 		final String message) {
 		
 		if (log != null) {
-			if (checkIfInfoLoggingEnabled(callingClassName) == false) {
-				log.debug("["+callingClassName+"]:" + lineSeparator + message);
-			}
-			else {
-				log.info("["+callingClassName+"]:" + lineSeparator + message);
-			}
-		}
-		else {	
+			log.info("["+callingClassName+"]:" + lineSeparator + message);
+
+		} else {
 			System.out.println("INFO(no RIFLogger):" + lineSeparator + "["+callingClassName+"]" + message);
 		}
 	}
@@ -445,17 +335,7 @@ public final class RIFLogger {
 		final Class callingClass,			
 		final String message) {
 		
-		if (log != null) {
-			if (checkIfInfoLoggingEnabled(callingClass.getName()) == false) {
-				log.debug("["+callingClass.getName()+"]:" + lineSeparator + message);
-			}
-			else {
-				log.info("["+callingClass.getName()+"]:" + lineSeparator + message);
-			}
-		}
-		else {	
-			System.out.println("INFO(no RIFLogger):" + lineSeparator + "["+callingClass.getName()+"]" + message);
-		}
+		info(callingClass.getName(), message);
 	}
 
 	public void debug(
