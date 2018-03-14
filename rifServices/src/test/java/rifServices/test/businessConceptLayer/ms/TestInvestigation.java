@@ -205,9 +205,7 @@ public final class TestInvestigation
 		investigationA.identifyDifferences(
 			investigationB, 
 			differences);
-			
-		for (String difference : differences) {
-		}
+
 		assertEquals(2, differences.size());			
 	}
 	

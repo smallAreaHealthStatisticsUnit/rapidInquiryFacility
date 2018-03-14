@@ -95,13 +95,6 @@ public final class TestRIFServiceStartupOptions
 	// Section Construction
 	// ==========================================
 
-	/**
-	 * Instantiates a new test rif service startup options.
-	 */
-	public TestRIFServiceStartupOptions() {
-		//the default constructor should provide valid field values
-	}
-
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================

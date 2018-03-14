@@ -79,7 +79,7 @@ public final class RIFGenericLibraryMessages {
     // Section Constants
     // ==========================================
 	/** The Constant resourceBundle. */
-    public static final ResourceBundle resourceBundle;
+    private static final ResourceBundle resourceBundle;
 
     /** The collator. */
     private static Collator collator = null;
