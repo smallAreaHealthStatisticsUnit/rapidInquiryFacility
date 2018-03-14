@@ -256,6 +256,11 @@ public class RIFMapsParameters {
 		try {
 			setupDefaultMapParameters();
 			retrieveFrontEndParameters();
+		}		
+		catch(StackOverflowError stackOverflowError) {
+			rifLogger.warning(this.getClass(), 
+				"Comment remover caused StackOverflowError", stackOverflowError);
+			throw new NullPointerException();
 		}
 		catch(Exception exception) {
 			rifLogger.warning(this.getClass(), 
@@ -325,46 +330,42 @@ public class RIFMapsParameters {
 
 		String jsonText=null;
 		// This regex can cause stack overflows!!!!
-		try {
-			StringBuffer sb = new StringBuffer();
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				sb.append(line.replaceAll("//.*", "") + lineSeparator); // Remove comments
-			}
-				
-			jsonText=sb.toString();
-//			rifLogger.info(getClass(), "Retrieve FrontEnd Parameters1: " + jsonText);
-			
-// This regex can cause stack overflows!!!!		
-			try {
-				jsonText=jsonText.replaceAll("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)","");	 /* Comments */
-				// Could try:
-				// (\/\*.*?\*\/)
-				// /\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/
-			}
-			catch(StackOverflowError t) {
-				throw new Exception("Comment remover caused StackOverflowError");
-			}
-					// Remove comments
-			rifLogger.info(getClass(), "Retrieve FrontEnd Parameters: " + jsonText);
-			jsonText=jsonText.replace(lineSeparator, "");							
-					// Remove line separators
-//			rifLogger.info(getClass(), "Retrieve FrontEnd Parameters3: " + jsonText);
-			JSONObject json = new JSONObject(jsonText);	
-			
-			parseJson(json); // Call internal RIF parser
 
-		}
-		catch(StackOverflowError t) {
-			throw new Exception("Comment remover caused StackOverflowError");
-		}
-
+		StringBuffer sb = new StringBuffer();
+		String line = null;
+		while ((line = reader.readLine()) != null) {
+			sb.append(line.replaceAll("//.*", "") + lineSeparator); // Remove single line comments
+		} // This could theoretically cause a stack overflow; but it is very, very unlikely...
+			
+		jsonText=sb.toString();
+		jsonText=removeCstyleComments(jsonText);					// Remove C style comments
 		rifLogger.info(getClass(), "Retrieve FrontEnd Parameters: " + jsonText);
-		jsonText = jsonText.replace(lineSeparator, "");
-				// Remove line separators
-		JSONObject json = new JSONObject(jsonText);
+		
+		jsonText=jsonText.replace(lineSeparator, "");				// Remove line separators
+		
+		JSONObject json = new JSONObject(jsonText);	
+		
+		parseJson(json); // Call internal RIF parser
 
-		parseJson(json);
+	}
+	
+	/**
+	 * Remove C style comments (this comment) from JSON text string (pre parse)
+	 *
+	 * @param: JSONObject json
+	 */	
+	private String removeCstyleComments(final String jsonText) {
+			
+        String text = jsonText;
+		String comment = "";
+        int index = 0;
+        while( index != -1) {
+            comment = text.substring(text.indexOf("/*"),text.indexOf("*/")+2);
+            text = text.replace(comment, "");
+
+            index = text.indexOf("/*");
+        }
+        return text;
 	}
 
 	/**
