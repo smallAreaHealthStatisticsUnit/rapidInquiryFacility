@@ -100,3 +100,5 @@ rifWebApplication/src/main/webapp/WEB-INF/libs/standalone/images/Thumbs.db
 rifWebApplication/src/main/webapp/WEB-INF/images/Thumbs.db
 
 **/.idea/*
+**/.DS_Store
+**/*.iml
