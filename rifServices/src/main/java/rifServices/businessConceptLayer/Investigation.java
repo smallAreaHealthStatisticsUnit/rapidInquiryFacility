@@ -15,6 +15,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -1279,12 +1280,9 @@ public class Investigation
 		Collator collator = RIFGenericLibraryMessages.getCollator();
 		String noneChoice
 			= RIFServiceMessages.getMessage("general.choices.none");
-		if ((fieldValidationUtility.isEmpty(interval) == false) &&
-			collator.equals(interval, noneChoice) == false) {
-			try {
-				Integer.valueOf(interval);	
-			}
-			catch(NumberFormatException numberFormatException) {
+		if ((!fieldValidationUtility.isEmpty(interval)) &&
+		    !collator.equals(interval, noneChoice)) {
+			if (!StringUtils.isNumeric(interval)) {
 				String intervalFieldName
 					= RIFServiceMessages.getMessage("investigation.interval.label");
 				String errorMessage
@@ -1297,7 +1295,7 @@ public class Investigation
 			}
 		}
 		
-		if (covariates == null) {
+		if (covariates == null || fieldValidationUtility.isEmpty(covariates)) {
 			String covariatesFieldName
 				= RIFServiceMessages.getMessage("investigation.covariates.label");
 			String errorMessage

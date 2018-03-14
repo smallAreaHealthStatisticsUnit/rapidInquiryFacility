@@ -1,16 +1,18 @@
 package rifGenericLibrary.util;
 
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
-import java.util.regex.*;
 import java.util.HashMap;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
 
 
 /**
@@ -389,6 +391,11 @@ public final class FieldValidationUtility {
 		}
 		
 		return false;
+	}
+	
+	public boolean isEmpty(Collection<? extends Object> collection) {
+		
+		return collection.isEmpty();
 	}
 	
 	/**
