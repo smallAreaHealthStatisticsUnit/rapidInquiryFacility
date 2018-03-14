@@ -1,22 +1,17 @@
 
 package rifServices.fileFormats;
 
-
-import rifServices.businessConceptLayer.AbstractGeographicalArea;
-import rifServices.businessConceptLayer.MapArea;
-import rifServices.system.RIFServiceMessages;
-import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
-import rifGenericLibrary.fileFormats.XMLUtility;
-import rifGenericLibrary.presentationLayer.HTMLUtility;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.xml.sax.Attributes;
 
-
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
+import rifGenericLibrary.fileFormats.XMLUtility;
+import rifGenericLibrary.presentationLayer.HTMLUtility;
+import rifServices.businessConceptLayer.AbstractGeographicalArea;
+import rifServices.businessConceptLayer.MapArea;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -57,7 +52,6 @@ import java.util.ArrayList;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -104,12 +98,12 @@ public final class MapAreaContentHandler
     /**
      * Instantiates a new map area content handler.
      */
-	public MapAreaContentHandler() {
+    MapAreaContentHandler() {
 		
 		setPluralRecordName("map_areas");    	
 		setSingularRecordName("map_area");
 		
-		currentMapAreas = new ArrayList<MapArea>();
+		currentMapAreas = new ArrayList<>();
     }
 
 // ==========================================
@@ -125,14 +119,6 @@ public final class MapAreaContentHandler
 		return currentMapAreas;
 	}
 	
-    /**
-     * Clear map areas.
-     */
-    public void clearMapAreas() {
-    	
-    	currentMapAreas.clear();
-    }
-    
 	/**
 	 * Write xml.
 	 *
@@ -239,8 +225,7 @@ public final class MapAreaContentHandler
 		final String nameSpaceURI,
 		final String localName,
 		final String qualifiedName,
-		final Attributes attributes) 
-		throws SAXException {
+		final Attributes attributes) {
 
 		if (isPluralRecordName(qualifiedName)) {
 			currentMapAreas.clear();
@@ -256,22 +241,21 @@ public final class MapAreaContentHandler
 	public void endElement(
 		final String nameSpaceURI,
 		final String localName,
-		final String qualifiedName) 
-		throws SAXException {
+		final String qualifiedName) {
 				
-		if (isPluralRecordName(qualifiedName) == true) {
+		if (isPluralRecordName(qualifiedName)) {
 			deactivate();
 		}
-		else if (isSingularRecordName(qualifiedName) == true) {
+		else if (isSingularRecordName(qualifiedName)) {
 			currentMapAreas.add(currentMapArea);
 		}
-		else if (equalsFieldName(qualifiedName, "id") == true) {
+		else if (equalsFieldName(qualifiedName, "id")) {
 			currentMapArea.setIdentifier(getCurrentFieldValue());
 		}	
-		else if (equalsFieldName(qualifiedName, "gid") == true) {
+		else if (equalsFieldName(qualifiedName, "gid")) {
 			currentMapArea.setGeographicalIdentifier(getCurrentFieldValue());
 		}	
-		else if (equalsFieldName(qualifiedName, "label") == true) {
+		else if (equalsFieldName(qualifiedName, "label")) {
 			currentMapArea.setLabel(getCurrentFieldValue());
 		}		
 		else {

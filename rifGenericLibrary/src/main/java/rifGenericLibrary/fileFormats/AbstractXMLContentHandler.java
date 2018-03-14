@@ -54,7 +54,6 @@ import java.util.ArrayList;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -139,8 +138,8 @@ abstract public class AbstractXMLContentHandler
 		recordHeaderLevel = 1;
 		commentInjector = new XMLCommentInjector();
 		
-		ignoredXMLStartTags = new ArrayList<String>();
-		ignoredXMLEndTags = new ArrayList<String>();
+		ignoredXMLStartTags = new ArrayList<>();
+		ignoredXMLEndTags = new ArrayList<>();
     }
 
 // ==========================================
@@ -264,11 +263,8 @@ abstract public class AbstractXMLContentHandler
 	 */
 	public boolean isSingularRecordName(
 		final String candidateXMLTag) {
-
-		if (singularXMLTag.equals(candidateXMLTag) == true) {
-			return true;
-		}
-		return false;
+		
+		return singularXMLTag.equals(candidateXMLTag);
 	}
 		
 	/**
@@ -279,11 +275,8 @@ abstract public class AbstractXMLContentHandler
 	 */
 	public boolean isPluralRecordName(
 		final String candidatePluralXMLTag) {
-
-		if (pluralXMLTag.equals(candidatePluralXMLTag) == true) {
-			return true;
-		}
-		return false;		
+		
+		return pluralXMLTag.equals(candidatePluralXMLTag);
 	}
 	
 	/**
@@ -320,13 +313,10 @@ abstract public class AbstractXMLContentHandler
 	 */
 	public boolean isPluralRecordTypeApplicable(
 		final String currentTagName) {
-
-		if (pluralXMLTag == null) {
-			return false;
-		}
 		
-		return pluralXMLTag.equals(currentTagName);
-	}	
+		return pluralXMLTag != null && pluralXMLTag.equals(currentTagName);
+		
+	}
 	
 	/**
 	 * Assign delegated handler.
@@ -346,11 +336,7 @@ abstract public class AbstractXMLContentHandler
 	 */
 	public boolean isDelegatedHandlerAssigned() {
 		
-		if (currentDelegatedHandler == null) {
-			return false;
-		}
-		
-		return true;
+		return currentDelegatedHandler != null;
 	}
 	
 	/**
@@ -386,8 +372,7 @@ abstract public class AbstractXMLContentHandler
 	 *
 	 * @param currentFieldValue the new current field value
 	 */
-	public void setCurrentFieldValue(
-		final String currentFieldValue) {
+	private void setCurrentFieldValue(final String currentFieldValue) {
 
 		this.currentFieldValue = currentFieldValue;
 	}
@@ -438,7 +423,7 @@ abstract public class AbstractXMLContentHandler
 	 *
 	 * @return the record header level
 	 */
-	public int getRecordHeaderLevel() {
+	protected int getRecordHeaderLevel() {
 		
 		return recordHeaderLevel;
 	}
@@ -460,7 +445,7 @@ abstract public class AbstractXMLContentHandler
 	public void beginHTMLBulletedList() {
 		
 		HTMLUtility htmlUtility = getHTMLUtility();
-		htmlUtility.beginBulletedList();		
+		htmlUtility.beginBulletedList();
 	}
 	
 	/**
@@ -480,7 +465,7 @@ abstract public class AbstractXMLContentHandler
 	public void endHTMLBulletedList() {
 		
 		HTMLUtility htmlUtility = getHTMLUtility();
-		htmlUtility.endBulletedList();		
+		htmlUtility.endBulletedList();
 	}
 
 	/**
@@ -488,8 +473,8 @@ abstract public class AbstractXMLContentHandler
 	 *
 	 * @param xmlStartTag the xml start tag
 	 */
-	public void ignoreXMLStartTag(
-		final String xmlStartTag) {
+	protected void ignoreXMLStartTag(
+					final String xmlStartTag) {
 		
 		ignoredXMLStartTags.add(xmlStartTag);
 	}
@@ -500,8 +485,8 @@ abstract public class AbstractXMLContentHandler
 	 * @param xmlStartTag the xml start tag
 	 * @return true, if is ignored start tag
 	 */
-	public boolean isIgnoredStartTag(
-		final String xmlStartTag) {
+	protected boolean isIgnoredStartTag(
+					final String xmlStartTag) {
 
 		return ignoredXMLStartTags.contains(xmlStartTag);
 	}
@@ -521,8 +506,8 @@ abstract public class AbstractXMLContentHandler
 	 * @param xmlEndTag the xml end tag
 	 * @return true, if is ignored end tag
 	 */
-	public boolean isIgnoredEndTag(
-		final String xmlEndTag) {
+	protected boolean isIgnoredEndTag(
+					final String xmlEndTag) {
 
 		return ignoredXMLEndTags.contains(xmlEndTag);
 	}
@@ -543,8 +528,7 @@ abstract public class AbstractXMLContentHandler
 	public void characters(
 		final char[] characters, 
 		final int start, 
-		final int length)
-		throws SAXException {
+		final int length) {
 		
 		if (currentDelegatedHandler == null) {
 			setCurrentFieldValue(new String(characters, start, length)); 
