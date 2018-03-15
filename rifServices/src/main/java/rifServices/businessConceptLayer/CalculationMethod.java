@@ -406,7 +406,7 @@ private String name;
 			
 			CalculationMethod calculationMethodB
 				= methodsB.get(i);
-			if (calculationMethodA.hasIdenticalContents(calculationMethodB) == false) {
+			if (!calculationMethodA.hasIdenticalContents(calculationMethodB)) {
 				return false;
 			}		
 		}
@@ -473,7 +473,7 @@ private String name;
 		}
 		else if (name != null) {
 			//they must both be non-null
-			if (collator.equals(name, otherName) == false) {
+			if (!collator.equals(name, otherName)) {
 				return false;
 			}		
 		}
@@ -486,7 +486,7 @@ private String name;
 		}
 		else if (codeRoutineName != null) {
 			//they must both be non-null
-			if (collator.equals(codeRoutineName, otherCodeRoutine) == false) {
+			if (!collator.equals(codeRoutineName, otherCodeRoutine)) {
 				return false;
 			}		
 		}
@@ -500,14 +500,14 @@ private String name;
 		}
 		else if (description != null) {
 			//they must both be non-null
-			if (collator.equals(description, otherDescription) == false) {
+			if (!collator.equals(description, otherDescription)) {
 				return false;
 			}		
 		}
 
 		ArrayList<Parameter> otherParameters
 			= otherCalculationMethod.getParameters();		
-		if (Parameter.hasIdenticalContents(parameters, otherParameters) == false) {
+		if (!Parameter.hasIdenticalContents(parameters, otherParameters)) {
 			return false;
 		}
 
@@ -577,7 +577,7 @@ private String name;
 			= new FieldValidationUtility();
 		
 		if (validationPolicy == ValidationPolicy.STRICT) { 
-			if (fieldValidationUtility.isEmpty(name) == true) {
+			if (fieldValidationUtility.isEmpty(name)) {
 				String errorMessage
 					= RIFGenericLibraryMessages.getMessage(
 						"general.validation.emptyRequiredRecordField", 
@@ -596,7 +596,7 @@ private String name;
 			}
 		}
 		
-		if (fieldValidationUtility.isEmpty(codeRoutineName) == true) {
+		if (fieldValidationUtility.isEmpty(codeRoutineName)) {
 			String errorMessage
 				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
@@ -605,8 +605,7 @@ private String name;
 			errorMessages.add(errorMessage);		
 		}
 
-/*		
-		if (fieldValidationUtility.isEmpty(description) == true) {
+		if (fieldValidationUtility.isEmpty(description)) {
 			String errorMessage
 				= RIFGenericLibraryMessages.getMessage(
 					"general.validation.emptyRequiredRecordField", 
@@ -614,7 +613,7 @@ private String name;
 					descriptionFieldNameLabel);
 			errorMessages.add(errorMessage);		
 		}
-*/			
+		
 		if (parameters == null) {
 			String parametersFieldLabel
 				= RIFServiceMessages.getMessage("parameter.plural.label");
@@ -625,7 +624,7 @@ private String name;
 					parametersFieldLabel);
 			errorMessages.add(errorMessage);
 		}
-		else if (parameters.isEmpty() == false) {
+		else if (!parameters.isEmpty()) {
 			for (Parameter parameter : parameters) {
 				try {
 					parameter.checkErrors();

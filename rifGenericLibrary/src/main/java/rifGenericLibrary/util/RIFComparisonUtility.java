@@ -214,7 +214,7 @@ public final class RIFComparisonUtility {
 		if ((fieldValueA != null) && (fieldValueB != null)) {
 			
 			Collator collator = RIFGenericLibraryMessages.getCollator();
-			if (collator.equals(fieldValueA, fieldValueB) == false) {
+			if (!collator.equals(fieldValueA, fieldValueB)) {
 				
 				//eg: a.x = "5", b.x="7"
 				String difference

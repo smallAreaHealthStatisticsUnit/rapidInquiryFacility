@@ -380,7 +380,7 @@ public final class TestDiseaseMappingStudy
 			checkErrorType(
 				rifServiceException,
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY,
-				3);
+				4);
 		}		
 	}
 

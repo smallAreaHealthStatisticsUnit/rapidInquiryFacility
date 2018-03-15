@@ -122,7 +122,7 @@ public final class TestMapAreaJSONGenerator {
 		
 		StringBuilder expectedResult = new StringBuilder();
 		expectedResult.append("[{\"gid\":[");
-		expectedResult.append("'1','2','3','4','5'");
+		expectedResult.append("\"1\",\"2\",\"3\",\"4\",\"5\"");
 		expectedResult.append("]},");
 		expectedResult.append("{\"id\":[");
 		expectedResult.append("\"Birganj\",\"Campo Largo\",\"Ashbourne\",\"Zarichchya\",\"Eixo\"");

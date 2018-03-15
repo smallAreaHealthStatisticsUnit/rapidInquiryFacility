@@ -131,9 +131,6 @@ public final class TestCalculationMethod
 		}
 	}
 	
-	/**
-	 * Reject blank name.
-	 */
 	@Test
 	/**
 	 * A calculation method is invalid if it has a blank name

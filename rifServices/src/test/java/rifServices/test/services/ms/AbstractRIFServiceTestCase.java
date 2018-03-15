@@ -457,7 +457,7 @@ public class AbstractRIFServiceTestCase
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	protected void initialiseService() throws RIFServiceException {
+	void initialiseService() throws RIFServiceException {
 
 		rifServiceBundle = new MSSQLTestRIFStudyServiceBundle();
 

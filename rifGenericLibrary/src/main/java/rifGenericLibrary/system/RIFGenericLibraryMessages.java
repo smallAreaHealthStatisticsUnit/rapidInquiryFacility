@@ -1,6 +1,5 @@
 package rifGenericLibrary.system;
 
-import java.io.File;
 import java.text.Collator;
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -8,7 +7,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 
 /**
  *
@@ -49,7 +47,6 @@ import java.util.ResourceBundle;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 
 /*
@@ -82,7 +79,7 @@ public final class RIFGenericLibraryMessages {
     // Section Constants
     // ==========================================
 	/** The Constant resourceBundle. */
-    public static final ResourceBundle resourceBundle;
+    private static final ResourceBundle resourceBundle;
 
     /** The collator. */
     private static Collator collator = null;
@@ -90,9 +87,6 @@ public final class RIFGenericLibraryMessages {
     // ==========================================
     // Section Properties
     // ==========================================
-    /**
-     * the context help cursor
-     */
 
     // ==========================================
     // Section Construction

@@ -65,7 +65,6 @@ import java.util.Date;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -100,8 +99,6 @@ final public class RIFStudySubmissionContentHandler
 // ==========================================
 // Section Properties
 // ==========================================
-
-	private User currentUser;
 	
 	/** The current rif job submission. */
 	private RIFStudySubmission currentRIFJobSubmission;
@@ -302,7 +299,7 @@ final public class RIFStudySubmissionContentHandler
 			currentRIFJobSubmission = RIFStudySubmission.newInstance();
 			activate();
 		}
-		else if (isDelegatedHandlerAssigned() == true) {
+		else if (isDelegatedHandlerAssigned()) {
 			AbstractXMLContentHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
 			currentDelegatedHandler.startElement(
@@ -327,7 +324,7 @@ final public class RIFStudySubmissionContentHandler
 			}
 		
 			//either delegate or scan for field tags releated to this handler
-			if (isDelegatedHandlerAssigned() == true) {
+			if (isDelegatedHandlerAssigned()) {
 				//one of the above cases results in an active delegated handler.  Now delegate
 				AbstractXMLContentHandler currentDelegatedHandler
 					= getCurrentDelegatedHandler();
@@ -345,15 +342,15 @@ final public class RIFStudySubmissionContentHandler
 				currentRIFJobSubmission.setJobSubmissionTime(new Date());
 
 				FieldValidationUtility fieldValidationUtility = new FieldValidationUtility();
-				if (fieldValidationUtility.isEmpty(jobSubmissionTimePhrase) == false) {
-					if (collator.equals(jobSubmissionTimePhrase, "") == false) {
+				if (!fieldValidationUtility.isEmpty(jobSubmissionTimePhrase)) {
+					if (!collator.equals(jobSubmissionTimePhrase, "")) {
 						Date jobSubmissionTime
 							= RIFGenericLibraryMessages.getTime(jobSubmissionTimePhrase);
 						currentRIFJobSubmission.setJobSubmissionTime(jobSubmissionTime);
 					}
 				}
 			}
-			else if (isIgnoredStartTag(qualifiedName) == false) {
+			else if (!isIgnoredStartTag(qualifiedName)) {
 				assert false;
 			}
 		}
@@ -367,10 +364,10 @@ final public class RIFStudySubmissionContentHandler
 		final String qualifiedName) 
 		throws SAXException {
 
-		if (isSingularRecordName(qualifiedName) == true) {
+		if (isSingularRecordName(qualifiedName)) {
 			deactivate();
 		}
-		else if (isDelegatedHandlerAssigned() == true) {
+		else if (isDelegatedHandlerAssigned()) {
 			AbstractXMLContentHandler currentDelegatedHandler
 				= getCurrentDelegatedHandler();
 			currentDelegatedHandler.endElement(
@@ -378,7 +375,7 @@ final public class RIFStudySubmissionContentHandler
 				localName, 
 				qualifiedName);
 			
-			if (currentDelegatedHandler.isActive() == false) {
+			if (!currentDelegatedHandler.isActive()) {
 				//current handler has finished.  Therefore, cast delegator and obtain data
 				if (currentDelegatedHandler == projectContentHandler) {
 					Project project
@@ -406,9 +403,6 @@ final public class RIFStudySubmissionContentHandler
 				
 				unassignDelegatedHandler();
 			}
-		}
-		else if (equalsFieldName(qualifiedName, "submitted_by")) {	
-			currentUser = User.newInstance(getCurrentFieldValue(), "");
 		}
 		else if (equalsFieldName(qualifiedName, "job_submission_date")) {
 			Date jobSubmissionTime

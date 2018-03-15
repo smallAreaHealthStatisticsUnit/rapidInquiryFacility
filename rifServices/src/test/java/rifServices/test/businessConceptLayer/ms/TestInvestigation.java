@@ -52,7 +52,6 @@ import java.util.ArrayList;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 
 /*
@@ -206,9 +205,7 @@ public final class TestInvestigation
 		investigationA.identifyDifferences(
 			investigationB, 
 			differences);
-			
-		for (String difference : differences) {
-		}
+
 		assertEquals(2, differences.size());			
 	}
 	

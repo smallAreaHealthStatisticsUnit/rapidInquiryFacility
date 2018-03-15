@@ -352,9 +352,6 @@ public final class TestDiseaseMappingStudy
 		}		
 	}
 	
-	/**
-	 * Reject invalid investigation.
-	 */
 	@Test
 	/**
 	 * A disease mapping study is invalid if it has an invalid investigation
@@ -380,7 +377,7 @@ public final class TestDiseaseMappingStudy
 			checkErrorType(
 				rifServiceException,
 				RIFServiceError.INVALID_DISEASE_MAPPING_STUDY,
-				3);
+				4);
 		}		
 	}
 

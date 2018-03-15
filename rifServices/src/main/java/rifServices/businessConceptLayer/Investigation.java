@@ -15,6 +15,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -628,13 +629,13 @@ public class Investigation
 
 		//compare sex values
 		Sex anotherSex = anotherInvestigation.getSex();		
-		if (RIFComparisonUtility.identifyFieldNullityDifferences(
-			"sex.label", 
-			this, 
-			sex, 
-			anotherInvestigation, 
-			anotherInvestigation.getSex(), 
-			differences) == false) {
+		if (!RIFComparisonUtility.identifyFieldNullityDifferences(
+						"sex.label",
+						this,
+						sex,
+						anotherInvestigation,
+						anotherInvestigation.getSex(),
+						differences)) {
 			
 			
 			if (sex != anotherSex) {
@@ -654,13 +655,13 @@ public class Investigation
 		}
 		
 		//compare health theme values
-		if (RIFComparisonUtility.identifyFieldNullityDifferences(
-			"healthTheme.label", 
-			this, 
-			healthTheme, 
-			anotherInvestigation, 
-			anotherInvestigation.getHealthTheme(), 
-			differences) == false) {
+		if (!RIFComparisonUtility.identifyFieldNullityDifferences(
+						"healthTheme.label",
+						this,
+						healthTheme,
+						anotherInvestigation,
+						anotherInvestigation.getHealthTheme(),
+						differences)) {
 
 			if (healthTheme != null) {
 				
@@ -710,7 +711,7 @@ public class Investigation
 				= investigationsA.get(i);				
 			Investigation investigationB
 				= investigationsB.get(i);
-			if (investigationA.hasIdenticalContents(investigationB) == false) {					
+			if (!investigationA.hasIdenticalContents(investigationB)) {
 				return false;
 			}			
 		}
@@ -781,7 +782,7 @@ public class Investigation
 		}
 		else if (title != null) {
 			//they must both be non-null
-			if (collator.equals(title, otherTitle) == false) {
+			if (!collator.equals(title, otherTitle)) {
 				return false;
 			}			
 		}
@@ -792,7 +793,7 @@ public class Investigation
 		}
 		else if (description != null) {
 			//they must both be non-null
-			if (collator.equals(description, otherDescription) == false) {
+			if (!collator.equals(description, otherDescription)) {
 				return false;
 			}			
 		}
@@ -804,7 +805,7 @@ public class Investigation
 			}
 		}
 		else {
-			if (healthTheme.hasIdenticalContents(otherHealthTheme) == false) {
+			if (!healthTheme.hasIdenticalContents(otherHealthTheme)) {
 				return false;
 			}
 		}
@@ -815,18 +816,18 @@ public class Investigation
 			}
 		}
 		else {
-			if (ndPair.hasIdenticalContents(otherNDPair) == false) {
+			if (!ndPair.hasIdenticalContents(otherNDPair)) {
 				return false;
 			}
 		}
 
-		if (HealthCode.hasIdenticalContents(healthCodes, otherHealthCodes) == false) {
+		if (!HealthCode.hasIdenticalContents(healthCodes, otherHealthCodes)) {
 			return false;
 		}
 		
 		ArrayList<AgeBand> otherAgeBands
 			= otherInvestigation.getAgeBands();
-		if (AgeBand.hasIdenticalContents(ageBands, otherAgeBands) == false) {
+		if (!AgeBand.hasIdenticalContents(ageBands, otherAgeBands)) {
 			return false;
 		}
 
@@ -843,7 +844,7 @@ public class Investigation
 			return false;
 		}
 				
-		if (HealthCode.hasIdenticalContents(healthCodes, otherHealthCodes) == false) {
+		if (!HealthCode.hasIdenticalContents(healthCodes, otherHealthCodes)) {
 			return false;
 		}
 
@@ -853,16 +854,16 @@ public class Investigation
 			}
 		}
 		else {
-			if (yearRange.hasIdenticalContents(otherYearRange) == false) {
+			if (!yearRange.hasIdenticalContents(otherYearRange)) {
 				return false;
 			}
 		}
 		
-		if (YearInterval.hasIdenticalContents(yearIntervals, otherYearIntervals) == false) {
+		if (!YearInterval.hasIdenticalContents(yearIntervals, otherYearIntervals)) {
 			return false;
 		}
 
-		if (CovariateUtility.hasIdenticalContents(covariates, otherCovariates) == false) {
+		if (!CovariateUtility.hasIdenticalContents(covariates, otherCovariates)) {
 			return false;
 		}
 
@@ -873,7 +874,7 @@ public class Investigation
 		}
 		else if (interval != null) {
 			//they must both be non-null
-			if (collator.equals(interval, otherInterval) == false) {
+			if (!collator.equals(interval, otherInterval)) {
 				return false;
 			}			
 		}
@@ -905,7 +906,7 @@ public class Investigation
 		 * Covariates that are in this investigation but not the other investigation
 		 */
 		for (String covariateName : covariateNames) {
-			if (otherCovariateNames.contains(covariateName) == false) {
+			if (!otherCovariateNames.contains(covariateName)) {
 				String differenceMessage
 					= RIFServiceMessages.getMessage(
 						"investigation.covariateDifferences",
@@ -920,7 +921,7 @@ public class Investigation
 		 * Covariates that are in the other investigation but not in this one
 		 */
 		for (String otherCovariateName : otherCovariateNames) {
-			if (covariateNames.contains(otherCovariateName) == false) {
+			if (!covariateNames.contains(otherCovariateName)) {
 				String differenceMessage
 					= RIFServiceMessages.getMessage(
 						"investigation.covariateDifferences",
@@ -1043,7 +1044,7 @@ public class Investigation
 			//Ensuring that the title can be converted into something that serves as the 
 			//table name for the investigation
 			
-			if (Pattern.matches("^[a-zA-Z][a-zA-Z0-9_ ]{0,19}$", title) == false) {
+			if (!Pattern.matches("^[a-zA-Z][a-zA-Z0-9_ ]{0,19}$", title)) {
 				String errorMessage
 				= RIFServiceMessages.getMessage(
 					"investigation.error.titleContainsIllegalCharacters",
@@ -1186,7 +1187,7 @@ public class Investigation
 			}
 			
 			//now check there are no overlapping age bands
-			if (invalidAgeBandsDetected == false) {
+			if (!invalidAgeBandsDetected) {
 				errorMessages.addAll(AgeBand.checkGapsAndOverlaps(ageBands));				
 			}	
 		}
@@ -1266,7 +1267,7 @@ public class Investigation
 			
 				//now check that there are no duplicate or overlapping year intervals
 				//but only bother doing this if all the year interval values are valid
-				if (allYearIntervalsAreValid == true) {
+				if (allYearIntervalsAreValid) {
 					ArrayList<String> gapAndOverlapErrorMessages
 						= YearInterval.checkGapsAndOverlaps(yearIntervals);			
 					errorMessages.addAll(gapAndOverlapErrorMessages);			
@@ -1279,12 +1280,9 @@ public class Investigation
 		Collator collator = RIFGenericLibraryMessages.getCollator();
 		String noneChoice
 			= RIFServiceMessages.getMessage("general.choices.none");
-		if ((fieldValidationUtility.isEmpty(interval) == false) &&
-			collator.equals(interval, noneChoice) == false) {
-			try {
-				Integer.valueOf(interval);	
-			}
-			catch(NumberFormatException numberFormatException) {
+		if ((!fieldValidationUtility.isEmpty(interval)) &&
+		    !collator.equals(interval, noneChoice)) {
+			if (!StringUtils.isNumeric(interval)) {
 				String intervalFieldName
 					= RIFServiceMessages.getMessage("investigation.interval.label");
 				String errorMessage
@@ -1297,7 +1295,7 @@ public class Investigation
 			}
 		}
 		
-		if (covariates == null) {
+		if (covariates == null || fieldValidationUtility.isEmpty(covariates)) {
 			String covariatesFieldName
 				= RIFServiceMessages.getMessage("investigation.covariates.label");
 			String errorMessage
