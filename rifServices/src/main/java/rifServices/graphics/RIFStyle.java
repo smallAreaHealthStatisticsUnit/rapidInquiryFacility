@@ -1,6 +1,7 @@
 package rifServices.graphics;
 
 import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.Sex;
 
 import java.io.*;
 import java.awt.Color;
@@ -411,6 +412,7 @@ public class RIFStyle {
 			rifStyleBands.add(rifStyleBand);
 		}
 			
+		// Create FeatureTypeStyle
 		FeatureTypeStyle featureTypeStyle = StyleGenerator.createFeatureTypeStyle(
             groups												/* Classifier */,
             propertyExpression,
@@ -420,9 +422,44 @@ public class RIFStyle {
             StyleGenerator.ELSEMODE_IGNORE,
             0.95	/* opacity */,
             null 	/* defaultStroke */);
-        Style style = builder.createStyle();
+	
+		// You cannot add a genders filter genders filter here as 
+		// 1. You would need to add it at the end (no effect, no styling)
+		// 2. Modify existing - but the the bands would be wrong for Qunatiles etc
+		// So it must be done pre styling
+		Rule currRules[]=featureTypeStyle.rules().toArray(new Rule[0]);	
+		// Dump rules for debug
+		StringBuilder currRulesText = new StringBuilder();
+		for (int i=0; i<currRules.length; i++) {
+			currRulesText.append("[" + i + "]: " + currRules[i].toString());
+		}
+/*
+currRules: [0]: <RuleImpl:rule01> [[ rr >= -Infinity ] AND [ rr < 0.68 ]]
+	org.geotools.styling.PolygonSymbolizerImpl@40cc9623
+[1]: <RuleImpl:rule02> [[ rr >= 0.68 ] AND [ rr < 0.76 ]]
+	org.geotools.styling.PolygonSymbolizerImpl@b00c2acd
+[2]: <RuleImpl:rule03> [[ rr >= 0.76 ] AND [ rr < 0.86 ]]
+	org.geotools.styling.PolygonSymbolizerImpl@74b1b842
+[3]: <RuleImpl:rule04> [[ rr >= 0.86 ] AND [ rr < 0.96 ]]
+	org.geotools.styling.PolygonSymbolizerImpl@a012a045
+[4]: <RuleImpl:rule05> [[ rr >= 0.96 ] AND [ rr < 1.07 ]]
+	org.geotools.styling.PolygonSymbolizerImpl@7ddeb506
+[5]: <RuleImpl:rule06> [[ rr >= 1.07 ] AND [ rr < 1.2 ]]
+	org.geotools.styling.PolygonSymbolizerImpl@3d72f275
+[6]: <RuleImpl:rule07> [[ rr >= 1.2 ] AND [ rr < 1.35 ]]
+	org.geotools.styling.PolygonSymbolizerImpl@da25724c
+[7]: <RuleImpl:rule08> [[ rr >= 1.35 ] AND [ rr < 1.51 ]]
+	org.geotools.styling.PolygonSymbolizerImpl@a7cb1cd7
+[8]: <RuleImpl:rule09> [[ rr >= 1.51 ] AND [ rr <= Infinity ]]
+	org.geotools.styling.PolygonSymbolizerImpl@1ec14d21
+ */
+		rifLogger.info(this.getClass(), "Rules: " + currRulesText.toString());
+
+		// Create Style
+		Style style = builder.createStyle();
         style.featureTypeStyles().add(featureTypeStyle);
 			
+		// Add title and abstract
 		style.getDescription().setTitle("RIFStyle: " + columnName);
 		style.getDescription().setAbstract(rifMethod.substring(0, 1).toUpperCase() + // Force first letter to
 																					 // a capital
