@@ -47,62 +47,16 @@ ECHO ON
 SET PWD=%CD%
 call mvn --version
 
-cd rifGenericLibrary
 call mvn -Dmaven.test.skip=true clean
 if %errorlevel% neq 0  (
 	cd %PWD%	
 	exit /b 1
 )
-cd ..\rapidInquiryFacility
-call mvn -Dmaven.test.skip=true clean
-if %errorlevel% neq 0  (
-	cd %PWD%		
-	exit /b 1
-)
-cd ..\rifServices
-call mvn -Dmaven.test.skip=true clean
-if %errorlevel% neq 0  (	
-	cd %PWD%	
-	exit /b 1
-)
-cd ..\taxonomyServices
-call mvn -Dmaven.test.skip=true clean
-if %errorlevel% neq 0  (
-	cd %PWD%		
-	exit /b 1
-)
-
-cd ..\rifGenericLibrary
 call mvn -Dmaven.test.skip=true install
 if %errorlevel% neq 0  (
 	cd %PWD%		
 	exit /b 1
 )
-cd ..\rapidInquiryFacility
-call mvn -Dmaven.test.skip=true install
-if %errorlevel% neq 0  (
-	cd %PWD%		
-	exit /b 1
-)
-cd ..\rifServices
-call mvn -Dmaven.test.skip=true install
-if %errorlevel% neq 0  (
-	cd %PWD%		
-	exit /b 1
-)
-cd ..\taxonomyServices
-call mvn -Dmaven.test.skip=true install
-if %errorlevel% neq 0  (
-	cd %PWD%		
-	exit /b 1
-)
-cd ..\rifDataLoaderTool
-call mvn -Dmaven.test.skip=true install
-if %errorlevel% neq 0  (
-	cd %PWD%		
-	exit /b 1
-)
-cd ..
 COPY rifServices\target\rifServices.war rifServices.war
 if %errorlevel% neq 0  (
 	cd %PWD%		
