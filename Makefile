@@ -46,6 +46,7 @@
 #
 
 OS?=Unknown
+MAVEN_FLAGS=-Dmaven.test.skip=true
 ifeq ($(OS),Windows_NT)
 	MAVEN=mvn
 	7ZIP="C:\Program Files\7-Zip\7z.exe"
@@ -62,36 +63,56 @@ else
 $(error 7ZIP unsupported: $(7ZIP))
 endif
 
-all: rifservice RIF4 taxonomyservice dataloader
+all: RIF4
+	$(MAVEN) --version
+	$(MAVEN) $(MAVEN_FLAGS) install
+	$(COPY) taxonomyServices/target/taxonomyServices.war .
+	$(COPY) rifServices/target/rifServices.war .
+	$(COPY) rifDataLoaderTool\target\rifDataLoaderTool-jar-with-dependencies.jar rifDataLoaderTool-jar-with-dependencies.jar
+#	$(COPY) rifITGovernanceTool\target\rifITGovernanceTool-jar-with-dependencies.jar rifITGovernanceTool-jar-with-dependencies.jar
 
+#
+# Will now work with Windows 7 (does not understand ";")
+#
 rifservice: 
 	$(MAVEN) --version
-	cd rifGenericLibrary; $(MAVEN) -Dmaven.test.skip=true install
-	cd rifServices ; $(MAVEN) -Dmaven.test.skip=true install
+	cd rifGenericLibrary && $(MAVEN) $(MAVEN_FLAGS) install
+	cd rifServices && $(MAVEN) $(MAVEN_FLAGS) install
 	$(COPY) rifServices/target/rifServices.war .
 	
 dataloader: 
 	$(MAVEN) --version
-	cd rifGenericLibrary; $(MAVEN) -Dmaven.test.skip=true install
-	cd rapidInquiryFacility ; $(MAVEN) -Dmaven.test.skip=true install
+	cd rifDataLoaderTool && $(MAVEN) $(MAVEN_FLAGS) install
+	$(COPY) rifDataLoaderTool\target\rifDataLoaderTool-jar-with-dependencies.jar rifDataLoaderTool-jar-with-dependencies.jar
+
+#
+# Not built yet
+#	
+itgovernancetool: 
+	$(MAVEN) --version
+	cd rifITGovernanceTool && $(MAVEN) $(MAVEN_FLAGS) install
+#	$(COPY) rifITGovernanceTool\target\rifITGovernanceTool-jar-with-dependencies.jar rifITGovernanceTool-jar-with-dependencies.jar
 	
-RIF4: RIF4.7z
-RIF4.7z:
-	cd rifWebApplication/src/main/webapp/WEB-INF; $(7ZIP) a -r ../../../../../RIF4.7z *
+RIF4: 
+	cd rifWebApplication/src/main/webapp/WEB-INF && $(7ZIP) a -r ../../../../../RIF4.7z *
 	$(7ZIP) l RIF4.7z
 	
 taxonomyservice:	
-	cd rifGenericLibrary; $(MAVEN) -Dmaven.test.skip=true install
-	cd taxonomyServices ; $(MAVEN) -Dmaven.test.skip=true install
+	$(MAVEN) --version
+	cd rifGenericLibrary && $(MAVEN) $(MAVEN_FLAGS) install
+	cd taxonomyServices && $(MAVEN) $(MAVEN_FLAGS) install
 	$(COPY) taxonomyServices/target/taxonomyServices.war .
 	
+#
+# Does NOT install RIF4.7z
+#	
 install: clean all
+	$(COPY) rifServices.war "$(CATALINA_HOME)/webapps"
+	$(COPY) taxonomyServices.war "$(CATALINA_HOME)/webapps"
 
 clean: 
-	cd rapidInquiryFacility ; $(MAVEN) clean
-	cd rifGenericLibrary; $(MAVEN) clean
-	cd rifServices; $(MAVEN) clean
-	cd taxonomyServices; $(MAVEN) clean
+	$(MAVEN) --version
+	$(MAVEN) clean
 	$(DELETE) taxonomyServices.war rifServices.war RIF4.7z
 #
 # Eof
