@@ -437,7 +437,6 @@ public class AbstractRIFServiceTestCase
 	public void setUp() {
 		try {
 			initialiseService();			
-			rifServiceBundle.login("kgarwood", "kgarwood");			
 		}
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
