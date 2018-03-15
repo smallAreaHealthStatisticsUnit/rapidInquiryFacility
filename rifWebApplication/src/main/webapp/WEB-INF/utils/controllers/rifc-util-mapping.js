@@ -98,8 +98,22 @@ angular.module("RIF")
 									invert:		true,
 									brewerName:	"PuOr"
 							}
+						},
+						userMethods: {
+							'AtlasRelativeRisk': {
+									description: 'Atlas Relative Risk',
+									breaks:		[-Infinity, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51, Infinity],
+									invert:		true,
+									brewerName: "PuOr"
+							},
+							'AtlasProbability': {
+									description: 'Atlas Probability',
+									breaks: 	[0.0, 0.20, 0.81, 1.0],	
+									invert:		false,
+									brewerName:	"RdYlGn"
+							}
 						}
-					} ;	
+					};	
 					// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;	
 
 				$scope.disableMapLocking=$scope.parameters.disableMapLocking||false;	
