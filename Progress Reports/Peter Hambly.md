@@ -2004,7 +2004,9 @@ callPerformSmoothingActivity exitValue: 1
 #### 12th to 16th March
 
 * Added gender and investigation to maps;
-* Support for user defined styles in maps
+* Support for user defined styles in maps;
+* Investigate adding gender filter to Styling - not possible
+* Fixed regex C style comment remover stack overflow issues. 
 
 ## In progress (March/April 2018):
 
