@@ -83,7 +83,7 @@ public final class RIFServiceMessages {
 	/** The Constant resourceBundle. */
 	
 	private static final Messages MESSAGES = 
-					new Messages(ResourceBundle.getBundle("RIFServiceMessages"));
+					new Messages(ResourceBundle.getBundle(Messages.RIF_SERVICE_MESSAGES));
 
     // ==========================================
     // Section Accessors

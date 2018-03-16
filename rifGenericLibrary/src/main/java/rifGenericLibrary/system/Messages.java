@@ -12,6 +12,9 @@ import java.util.ResourceBundle;
 
 public class Messages {
 	
+	public static final String RIF_GENERIC_LIBRARY_MESSAGES = "RIFGenericLibraryMessages";
+	public static final String RIF_SERVICE_MESSAGES = "RIFServiceMessages";
+	
 	private static Collection<ResourceBundle> bundles = new ArrayList<>();
 	private static Collator collator;
 	

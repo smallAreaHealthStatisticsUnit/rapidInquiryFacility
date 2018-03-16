@@ -77,9 +77,9 @@ public final class RIFGenericLibraryMessages {
 	// ==========================================
     // Section Constants
     // ==========================================
-
-    private static final Messages MESSAGES =
-				    new Messages(ResourceBundle.getBundle("RIFGenericLibraryMessages"));
+	
+	private static final Messages MESSAGES =
+				    new Messages(ResourceBundle.getBundle(Messages.RIF_GENERIC_LIBRARY_MESSAGES));
 	
 	// ==========================================
     // Section Accessors
