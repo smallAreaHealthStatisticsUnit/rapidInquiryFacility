@@ -1,39 +1,15 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-
 import java.text.Collator;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  * A convenience class that centralises the creation of data type objects.
@@ -90,7 +66,9 @@ public class RIFDataTypeFactory {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -566,7 +544,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_TEXT_DATA_TYPE.getIdentifier());
@@ -580,7 +558,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_AGE_DATA_TYPE.getIdentifier());		
@@ -594,7 +572,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_SEX_DATA_TYPE.getIdentifier());		
@@ -607,7 +585,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_DOUBLE_DATA_TYPE.getIdentifier());		
@@ -620,7 +598,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_INTEGER_DATA_TYPE.getIdentifier());		
@@ -634,7 +612,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_ASCII_DATA_TYPE.getIdentifier());		
@@ -647,7 +625,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_ICD_DATA_TYPE.getIdentifier());		
@@ -660,7 +638,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_YEAR_DATA_TYPE.getIdentifier());		
@@ -673,7 +651,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_UK_POSTAL_CODE_DATA_TYPE.getIdentifier());		
@@ -686,7 +664,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_QUINTILISE_DATA_TYPE.getIdentifier());		
@@ -699,7 +677,7 @@ public class RIFDataTypeFactory {
 		}
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		boolean result
 			= collator.equals(rifDataType.getIdentifier(), 
 				RIF_DATE_DATA_TYPE.getIdentifier());		

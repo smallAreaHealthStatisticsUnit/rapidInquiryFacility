@@ -1,16 +1,15 @@
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import java.text.Collator;
+import java.util.ArrayList;
 
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-
-import java.util.ArrayList;
-import java.text.Collator;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -82,6 +81,8 @@ public final class AgeBand
 	// ==========================================
 	// Section Constants
 	// ==========================================
+
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
 
 	// ==========================================
 	// Section Properties
@@ -556,7 +557,7 @@ public final class AgeBand
 			if (lowerLimitAgeGroup == null) {
 				bothLimitsAreValid = false;
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						lowerLimitFieldName);
@@ -577,7 +578,7 @@ public final class AgeBand
 			if (upperLimitAgeGroup == null) {
 				bothLimitsAreValid = false;
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						upperLimitFieldName);

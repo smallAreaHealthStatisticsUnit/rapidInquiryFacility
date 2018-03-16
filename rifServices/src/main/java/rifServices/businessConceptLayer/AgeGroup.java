@@ -1,15 +1,14 @@
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import java.text.Collator;
+import java.util.ArrayList;
 
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-
-import java.util.ArrayList;
-import java.text.Collator;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 
 /**
@@ -83,6 +82,8 @@ public final class AgeGroup
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
 
 	/**
 	 * The Enum DisplayNameOption.
@@ -375,7 +376,7 @@ public final class AgeGroup
 		
 		if (fieldValidationUtility.isEmpty(nameFieldValue)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					nameFieldName);
@@ -391,7 +392,7 @@ public final class AgeGroup
 			Integer lowerLimitNumber = null;
 			if (fieldValidationUtility.isEmpty(lowerLimitFieldValue)) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						lowerLimitFieldName);
@@ -418,7 +419,7 @@ public final class AgeGroup
 			Integer upperLimitNumber = null;
 			if (fieldValidationUtility.isEmpty(upperLimitFieldValue)) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						upperLimitFieldName,

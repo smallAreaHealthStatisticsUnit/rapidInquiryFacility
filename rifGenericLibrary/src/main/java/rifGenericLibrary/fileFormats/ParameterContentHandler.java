@@ -1,17 +1,15 @@
 
 package rifGenericLibrary.fileFormats;
 
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.presentationLayer.HTMLUtility;
+import java.io.IOException;
+import java.util.ArrayList;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
+import rifGenericLibrary.businessConceptLayer.Parameter;
+import rifGenericLibrary.presentationLayer.HTMLUtility;
+import rifGenericLibrary.system.Messages;
 
 /**
  *
@@ -53,7 +51,6 @@ import java.util.ArrayList;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 
 /*
@@ -85,7 +82,9 @@ final public class ParameterContentHandler
 // ==========================================
 // Section Constants
 // ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -171,12 +170,12 @@ final public class ParameterContentHandler
 		HTMLUtility htmlUtility = getHTMLUtility();
 		
 		String parametersLabel
-			= RIFGenericLibraryMessages.getMessage("parameters.label");
+			= GENERIC_MESSAGES.getMessage("parameters.label");
 		int recordHeaderLevel = getRecordHeaderLevel();
 		htmlUtility.writeHeader(recordHeaderLevel, parametersLabel);
 		if (parameters.isEmpty()) {
 			String none
-				= RIFGenericLibraryMessages.getMessage("general.emptyList.none");
+				= GENERIC_MESSAGES.getMessage("general.emptyList.none");
 			htmlUtility.writeParagraph(none);
 		}
 		else {
@@ -184,9 +183,9 @@ final public class ParameterContentHandler
 			
 			//write out header row
 			String nameFieldLabel
-				= RIFGenericLibraryMessages.getMessage("parameter.name.label");
+				= GENERIC_MESSAGES.getMessage("parameter.name.label");
 			String valueFieldLabel
-				= RIFGenericLibraryMessages.getMessage("parameter.value.label");
+				= GENERIC_MESSAGES.getMessage("parameter.value.label");
 			htmlUtility.beginRow();
 			htmlUtility.writeBoldColumnValue(nameFieldLabel);
 			htmlUtility.writeBoldColumnValue(valueFieldLabel);			

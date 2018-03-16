@@ -1,14 +1,13 @@
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import java.util.ArrayList;
 
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
-import java.util.ArrayList;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 
 
@@ -84,7 +83,9 @@ public class HealthCodeTaxonomy
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -365,7 +366,7 @@ public class HealthCodeTaxonomy
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordName,
 					nameFieldName);
@@ -374,7 +375,7 @@ public class HealthCodeTaxonomy
 
 		if (fieldValidationUtility.isEmpty(description)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordName,
 						descriptionFieldName);
@@ -383,7 +384,7 @@ public class HealthCodeTaxonomy
 		
 		if (fieldValidationUtility.isEmpty(nameSpace)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordName,
 						nameSpaceFieldName);
@@ -392,7 +393,7 @@ public class HealthCodeTaxonomy
 
 		if (fieldValidationUtility.isEmpty(version)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordName,
 						versionFieldName);

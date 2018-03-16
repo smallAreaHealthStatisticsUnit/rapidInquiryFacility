@@ -1,11 +1,13 @@
 package rifGenericLibrary.presentationLayer;
 
-import javax.swing.*;
+import java.awt.GridBagConstraints;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import javax.swing.ButtonGroup;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
-import java.awt.*;
-
+import rifGenericLibrary.system.Messages;
 
 /**
  *
@@ -62,7 +64,9 @@ public final class YesNoQuestionPanel {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -91,11 +95,11 @@ public final class YesNoQuestionPanel {
 		questionLabel
 			= userInterfaceFactory.createLabel(questionText);
 		String yesChoiceText
-			= RIFGenericLibraryMessages.getMessage("radioButtons.yes.label");
+			= GENERIC_MESSAGES.getMessage("radioButtons.yes.label");
 		yesChoice
 			= userInterfaceFactory.createRadioButton(yesChoiceText);
 		String noChoiceText
-			= RIFGenericLibraryMessages.getMessage("radioButtons.no.label");
+			= GENERIC_MESSAGES.getMessage("radioButtons.no.label");
 		noChoice
 			= userInterfaceFactory.createRadioButton(noChoiceText);
 		ButtonGroup buttonGroup

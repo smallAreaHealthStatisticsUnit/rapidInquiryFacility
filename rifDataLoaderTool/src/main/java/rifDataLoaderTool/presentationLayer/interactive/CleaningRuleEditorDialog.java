@@ -352,7 +352,7 @@ class CleaningRuleEditorDialog
 			CleaningRule cleaningRuleFromForm = getCleaningRuleFromForm();
 			cleaningRuleFromForm.checkErrors();
 			
-			FieldValidationUtility.checkListDuplicate(
+			new FieldValidationUtility().checkListDuplicate(
 				cleaningRuleFromForm.getDisplayName(), 
 				existingListItemNames);
 			

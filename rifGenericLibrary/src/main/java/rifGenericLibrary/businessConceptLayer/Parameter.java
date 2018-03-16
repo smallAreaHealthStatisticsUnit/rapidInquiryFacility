@@ -1,18 +1,17 @@
 
 package rifGenericLibrary.businessConceptLayer;
 
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.HashSet;
+
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.text.Collator;
-
 
 /**
  *
@@ -53,7 +52,6 @@ import java.text.Collator;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -86,7 +84,9 @@ public final class Parameter
 // ==========================================
 // Section Constants
 // ==========================================
-
+	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -431,9 +431,9 @@ public final class Parameter
 		
 		//Extract field names
 		String nameFieldLabel
-			= RIFGenericLibraryMessages.getMessage("parameter.name.label");
+			= GENERIC_MESSAGES.getMessage("parameter.name.label");
 		String valueFieldLabel
-			= RIFGenericLibraryMessages.getMessage("parameter.value.label");
+			= GENERIC_MESSAGES.getMessage("parameter.value.label");
 	
 		//Check for security problems.  Ensure EVERY text field is checked
 		//These checks will throw a security exception and stop further validation
@@ -458,16 +458,16 @@ public final class Parameter
 		
 		//Extract field names
 		String nameFieldLabel
-			= RIFGenericLibraryMessages.getMessage("parameter.name.label");
+			= GENERIC_MESSAGES.getMessage("parameter.name.label");
 		String valueFieldLabel
-			= RIFGenericLibraryMessages.getMessage("parameter.value.label");
+			= GENERIC_MESSAGES.getMessage("parameter.value.label");
 				
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		FieldValidationUtility fieldValidationUtility 
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					nameFieldLabel);
@@ -476,7 +476,7 @@ public final class Parameter
 			
 		if (fieldValidationUtility.isEmpty(value)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					valueFieldLabel);
@@ -502,7 +502,7 @@ public final class Parameter
 		for (Parameter parameter : parameters) {
 			
 			String currentParameterName = parameter.getName();
-			if (existingNames.contains(currentParameterName) == true) {
+			if (existingNames.contains(currentParameterName)) {
 				duplicateParameters.add(parameter);				
 			}
 			else {
@@ -524,7 +524,7 @@ public final class Parameter
 			}
 			
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"parameter.error.duplicateParameters", 
 					duplicateParameterListing.toString());
 
@@ -556,7 +556,7 @@ public final class Parameter
 
 	public String getRecordType() {
 		String recordNameLabel
-			= RIFGenericLibraryMessages.getMessage("parameter.label");
+			= GENERIC_MESSAGES.getMessage("parameter.label");
 		return recordNameLabel;
 	}
 

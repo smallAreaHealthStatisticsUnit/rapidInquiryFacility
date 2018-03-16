@@ -1,22 +1,16 @@
 
 package rifServices.businessConceptLayer;
 
-import rifServices.businessConceptLayer.AbstractStudy;
-import rifServices.businessConceptLayer.DiseaseMappingStudy;
-import rifServices.businessConceptLayer.CalculationMethod;
-import rifServices.businessConceptLayer.RIFOutputOption;
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceError;
-import rifGenericLibrary.util.RIFLogger;
-
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.RIFLogger;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -56,7 +50,6 @@ import java.util.HashSet;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -90,6 +83,7 @@ public final class RIFStudySubmission
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
 // ==========================================
 // Section Properties
@@ -468,7 +462,7 @@ public final class RIFStudySubmission
 			String studyFieldName
 				= RIFServiceMessages.getMessage("diseaseMappingStudy.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					studyFieldName);
@@ -489,7 +483,7 @@ public final class RIFStudySubmission
 			String ageBandsFieldName
 				= RIFServiceMessages.getMessage("calculationMethod.label.plural");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					ageBandsFieldName);
@@ -546,7 +540,7 @@ public final class RIFStudySubmission
 			String rifOutputOptionsFieldName
 				= RIFServiceMessages.getMessage("rifOutputOption.plural.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					rifOutputOptionsFieldName);

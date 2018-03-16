@@ -1,23 +1,20 @@
 
 package rifDataLoaderTool.fileFormats;
 
-
-import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.fileFormats.AbstractDataLoaderConfigurationHandler;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.fileFormats.XMLCommentInjector;
-import rifGenericLibrary.fileFormats.XMLUtility;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.Collator;
 import java.util.ArrayList;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+import rifDataLoaderTool.businessConceptLayer.ShapeFile;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.fileFormats.XMLUtility;
+import rifGenericLibrary.system.Messages;
 
 /**
  *
@@ -59,7 +56,6 @@ import java.util.ArrayList;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -90,8 +86,10 @@ final class ShapeFileConfigurationHandler
 // ==========================================
 // Section Constants
 // ==========================================
-
-// ==========================================
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
+	// ==========================================
 // Section Properties
 // ==========================================
 	private ArrayList<ShapeFile> shapeFiles;
@@ -312,7 +310,7 @@ final class ShapeFileConfigurationHandler
 			String totalAreaIdentifiersPhrase
 				= getCurrentFieldValue();
 			Collator collator
-				= RIFGenericLibraryMessages.getCollator();
+				= GENERIC_MESSAGES.getCollator();
 			if (collator.equals(
 				totalAreaIdentifiersPhrase, 
 				unknownPhrase)) {

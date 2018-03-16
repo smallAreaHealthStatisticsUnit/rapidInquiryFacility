@@ -1,18 +1,18 @@
 
 package rifServices.fileFormats;
 
-import rifServices.businessConceptLayer.HealthCode;
-import rifServices.system.RIFServiceMessages;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
-import rifGenericLibrary.fileFormats.XMLUtility;
+import java.io.IOException;
+import java.text.Collator;
+import java.util.ArrayList;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.text.Collator;
-import java.util.ArrayList;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
+import rifGenericLibrary.fileFormats.XMLUtility;
+import rifGenericLibrary.system.Messages;
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.system.RIFServiceMessages;
 
 
 /**
@@ -116,7 +116,7 @@ final class HealthCodeContentHandler
 		healthCodes = new ArrayList<HealthCode>();
 		setSingularRecordName("health_code");
 		this.setPluralRecordName("health_codes");
-		collator = RIFGenericLibraryMessages.getCollator();
+		collator = Messages.genericMessages().getCollator();
 		
 		yesAnswer 
 			= RIFServiceMessages.getMessage("general.xml.yes");

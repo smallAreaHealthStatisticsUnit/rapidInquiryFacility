@@ -1,31 +1,31 @@
 package rifServices.dataStorageLayer.pg;
 
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.text.Collator;
+import java.util.ArrayList;
+
+import rifGenericLibrary.businessConceptLayer.Parameter;
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.system.ClassFileLocator;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Investigation;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceStartupOptions;
 import rifServices.ontologyServices.HealthCodeProviderInterface;
 import rifServices.ontologyServices.ICD10ClaMLTaxonomyProvider;
 import rifServices.ontologyServices.RIFXMLTaxonomyProvider;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.ClassFileLocator;
-import rifGenericLibrary.util.RIFLogger;
-
-import java.util.ArrayList;
-import java.io.File;
-import java.sql.*;
-import java.text.Collator;
-
-
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 /**
  *
@@ -66,7 +66,6 @@ import java.text.Collator;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 
 /*
@@ -96,8 +95,10 @@ final class PGSQLHealthOutcomeManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -524,7 +525,7 @@ final class PGSQLHealthOutcomeManager {
 	private HealthCodeProviderInterface getRelevantHealthCodeProvider(
 		final String nameSpace) {
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		for (HealthCodeProviderInterface healthCodeProvider : healthCodeProviders) {
 			HealthCodeTaxonomy healthCodeTaxonomy
 				= healthCodeProvider.getHealthCodeTaxonomy();

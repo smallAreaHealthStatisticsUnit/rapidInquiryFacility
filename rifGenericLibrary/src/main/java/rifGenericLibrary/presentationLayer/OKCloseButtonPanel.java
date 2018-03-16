@@ -1,16 +1,14 @@
 
 package rifGenericLibrary.presentationLayer;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
-import javax.swing.JButton;
-import javax.swing.JPanel;
 import java.util.ArrayList;
 
+import javax.swing.JButton;
+import javax.swing.JPanel;
 
-
+import rifGenericLibrary.system.Messages;
 
 /**
  *
@@ -82,7 +80,9 @@ public final class OKCloseButtonPanel {
 // ==========================================
 // Section Constants
 // ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -146,7 +146,7 @@ public final class OKCloseButtonPanel {
 		panelGC.gridx++;			
 		
 		String okText
-			= RIFGenericLibraryMessages.getMessage("buttons.ok.label");
+			= GENERIC_MESSAGES.getMessage("buttons.ok.label");
 		okButton = userInterfaceFactory.createButton(okText);
 
 		if (includeOKButton) {
@@ -155,7 +155,7 @@ public final class OKCloseButtonPanel {
 		
 		panelGC.gridx++;
 		String closeText
-			= RIFGenericLibraryMessages.getMessage("buttons.close.label");
+			= GENERIC_MESSAGES.getMessage("buttons.close.label");
 		closeButton = userInterfaceFactory.createButton(closeText);
 		panel.add(closeButton, panelGC);		
 	}

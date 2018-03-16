@@ -1,12 +1,19 @@
 package rifGenericLibrary.fileFormats;
 
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.presentationLayer.HTMLUtility;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import rifGenericLibrary.presentationLayer.HTMLUtility;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  * A very basic CSV file reader whose main purpose is to check the integrity of the 
@@ -66,7 +73,9 @@ public class CSVFilePreviewReader {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -93,7 +102,7 @@ public class CSVFilePreviewReader {
 		numberOfLinesToPreview = 1000;
 			
 		lineLabelText
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"csvFilePreviewReader.line.label");
 		
 		firstFewLines = new ArrayList<String>();
@@ -156,7 +165,7 @@ public class CSVFilePreviewReader {
 				int currentNumberOfColumnsPerRow = fieldValues.length;
 				if (currentNumberOfColumnsPerRow != expectedNumberOfColumnsPerRow) {
 					String errorMessage
-						= RIFGenericLibraryMessages.getMessage(
+						= GENERIC_MESSAGES.getMessage(
 							"csvFilePreviewReader.error.unexpectedNumberOfColumns",
 							String.valueOf(currentLineNumber),
 							String.valueOf(expectedNumberOfColumnsPerRow),
@@ -177,14 +186,14 @@ public class CSVFilePreviewReader {
 		}
 		catch(FileNotFoundException fileNotFoundException) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"csvFilePreviewReader.error.nonExistentInputFile",
 					file.getAbsolutePath());
 			errorMessages.add(errorMessage);
 		}
 		catch(IOException ioException) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"csvFilePreviewReader.error.generalReaderError",
 					file.getAbsolutePath());
 			errorMessages.add(errorMessage);		
@@ -196,7 +205,7 @@ public class CSVFilePreviewReader {
 				}
 				catch(IOException ioException) {
 					String errorMessage
-						= RIFGenericLibraryMessages.getMessage(
+						= GENERIC_MESSAGES.getMessage(
 							"csvFilePreviewReader.error.unableToCloseFile",
 							file.getAbsolutePath());
 					errorMessages.add(errorMessage);					
@@ -209,7 +218,7 @@ public class CSVFilePreviewReader {
 			
 			//throw an exception indicating that 
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"",
 					file.getName(),
 					String.valueOf(errorCount));
@@ -271,7 +280,7 @@ public class CSVFilePreviewReader {
 		}
 		catch(IOException ioException) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"csvFilePreviewReader.error.unableToWriteLogFile",
 					logFile.getAbsolutePath());
 			RIFServiceException rifServiceException
@@ -288,7 +297,7 @@ public class CSVFilePreviewReader {
 				}
 				catch(IOException ioException) {
 					String errorMessage
-						= RIFGenericLibraryMessages.getMessage(
+						= GENERIC_MESSAGES.getMessage(
 							"csvFilePreviewReader.error.unableToCloseFile",
 							logFile.getName());
 					RIFServiceException rifServiceException

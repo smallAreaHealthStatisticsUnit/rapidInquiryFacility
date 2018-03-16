@@ -1,16 +1,14 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Objects;
-import java.util.Date;
 
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 /**
  * The base class for classes which implement the {@link rifDataLoaderTool.businessConceptLayer.RIFDataTypeInterface} 
@@ -144,7 +142,9 @@ public final class RIFDataType
 	// ==========================================
 	// Section Constants
 	// ==========================================
+
 	public static final RIFDataType EMPTY_RIF_DATA_TYPE = new RIFDataType(false);
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
 	// ==========================================
 	// Section Properties
@@ -677,7 +677,7 @@ public final class RIFDataType
 		if (fieldValidationUtility.isEmpty(identifier)) {		
 
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					identifierFieldName);
@@ -685,7 +685,7 @@ public final class RIFDataType
 		}
 		else if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					nameFieldName);
@@ -693,7 +693,7 @@ public final class RIFDataType
 		}
 		else if (fieldValidationUtility.isEmpty(description)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					descriptionFieldName);

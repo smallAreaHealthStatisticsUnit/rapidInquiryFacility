@@ -1,22 +1,23 @@
 
 package rifGenericLibrary.taxonomyServices;
 
-import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceExceptionFactory;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-
-import org.xml.sax.InputSource;
+import java.io.File;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.io.*;
-import java.util.Map;
+import org.xml.sax.InputSource;
 
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
+import rifGenericLibrary.util.RIFLogger;
 
 /**
  *
@@ -58,7 +59,6 @@ import java.util.Map;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -85,11 +85,12 @@ import java.util.Map;
 
 public final class TaxonomyServiceConfigurationXMLReader {
 
-	
 // ==========================================
 // Section Constants
 // ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -204,7 +205,7 @@ public final class TaxonomyServiceConfigurationXMLReader {
 				catch(Exception exception) {
 					exception.printStackTrace(System.out);
 					String errorMessage
-						= RIFGenericLibraryMessages.getMessage(
+						= GENERIC_MESSAGES.getMessage(
 							"taxonomyServices.error.initialisationFailure", 
 							currentServiceConfiguration.getName());				
 					errorMessages.add(errorMessage);

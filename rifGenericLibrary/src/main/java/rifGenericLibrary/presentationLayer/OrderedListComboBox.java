@@ -7,8 +7,7 @@ import java.util.Vector;
 
 import javax.swing.JComboBox;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
+import rifGenericLibrary.system.Messages;
 
 /**
  *
@@ -79,9 +78,9 @@ public final class OrderedListComboBox {
 // ==========================================
 // Section Constants
 // ==========================================
-	/** The Constant CHOOSE_PROMPT. */
-	private static final String CHOOSE_PROMPT 
-		= RIFGenericLibraryMessages.getMessage("comboBox.choices.choose");
+
+	private static final String CHOOSE_PROMPT
+		= Messages.genericMessages().getMessage("comboBox.choices.choose");
 
 // ==========================================
 // Section Properties

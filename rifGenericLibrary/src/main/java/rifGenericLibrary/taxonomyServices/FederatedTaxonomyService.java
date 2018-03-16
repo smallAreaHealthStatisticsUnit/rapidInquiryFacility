@@ -1,12 +1,12 @@
 package rifGenericLibrary.taxonomyServices;
 
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  * This class reads descriptions of taxonomy services from a configuration file and then
@@ -67,7 +67,9 @@ public class FederatedTaxonomyService {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -139,7 +141,7 @@ public class FederatedTaxonomyService {
 			//The federated taxonomy service itself has not finished initialising
 
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage("federatedTaxonomyService.error.notInitialised");
+				= GENERIC_MESSAGES.getMessage("federatedTaxonomyService.error.notInitialised");
 			RIFServiceException rifServiceException
 				 = new RIFServiceException(
 						RIFGenericLibraryError.FEDERATED_TAXONOMY_SERVICE_NOT_INITIALISED, 
@@ -160,7 +162,7 @@ public class FederatedTaxonomyService {
 		if (taxonomyService == null) {
 			//Error: Non-existent service
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"taxonomyServices.error.nonExistentTaxonomyService", 
 					taxonomyServiceIdentifier);
 			RIFServiceException rifServiceException
@@ -173,7 +175,7 @@ public class FederatedTaxonomyService {
 			//service exists but check if it's working
 			if (taxonomyService.isServiceWorking() == false) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"taxonomyServices.error.serviceNotWorking",
 						taxonomyServiceIdentifier);
 				RIFServiceException rifServiceException

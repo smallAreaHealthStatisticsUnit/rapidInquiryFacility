@@ -1,15 +1,14 @@
 package rifServices.businessConceptLayer;
 
+import java.text.Collator;
+import java.util.ArrayList;
+
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
-import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
-
-import java.text.Collator;
-import java.util.ArrayList;
+import rifServices.system.RIFServiceMessages;
 
 
 /**
@@ -82,7 +81,9 @@ public final class NumeratorDenominatorPair
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -444,7 +445,7 @@ public final class NumeratorDenominatorPair
 			= RIFServiceMessages.getMessage("numeratorDenominatorPair.numeratorTableName.label");		
 		if (fieldValidationUtility.isEmpty(numeratorTableName)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					numeratorTableNameLabel);
@@ -455,7 +456,7 @@ public final class NumeratorDenominatorPair
 			= RIFServiceMessages.getMessage("numeratorDenominatorPair.denominatorTableName.label");		
 		if (fieldValidationUtility.isEmpty(denominatorTableName)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					denominatorTableNameLabel);
@@ -467,7 +468,7 @@ public final class NumeratorDenominatorPair
 				= RIFServiceMessages.getMessage("numeratorDenominatorPair.numeratorTableDescription.label");		
 			if (fieldValidationUtility.isEmpty(numeratorTableDescription)) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						numeratorTableDescriptionLabel);
@@ -478,7 +479,7 @@ public final class NumeratorDenominatorPair
 				= RIFServiceMessages.getMessage("numeratorDenominatorPair.denominatorTableDescription.label");		
 			if (fieldValidationUtility.isEmpty(denominatorTableDescription)) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						denominatorTableDescriptionLabel);

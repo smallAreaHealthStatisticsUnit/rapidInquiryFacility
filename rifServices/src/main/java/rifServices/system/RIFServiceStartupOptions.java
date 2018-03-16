@@ -1,18 +1,18 @@
 package rifServices.system;
 
-import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.dataStorageLayer.DatabaseType;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.util.RIFLogger;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.ResourceBundle;
+
+import rifGenericLibrary.businessConceptLayer.Parameter;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.util.RIFLogger;
 
 /**
  * Class that holds configuration settings for rif services.  These will appear
@@ -86,7 +86,9 @@ public final class RIFServiceStartupOptions {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -691,7 +693,7 @@ public final class RIFServiceStartupOptions {
 			String databaseDriverLabel
 				= RIFServiceMessages.getMessage("rifServiceStartupOptions.databaseDriverClassName.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					databaseDriverLabel);
@@ -702,7 +704,7 @@ public final class RIFServiceStartupOptions {
 			String databaseDriverLabel
 				= RIFServiceMessages.getMessage("rifServiceStartupOptions.databaseDriverPrefix.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					databaseDriverLabel);
@@ -713,7 +715,7 @@ public final class RIFServiceStartupOptions {
 			String hostLabel
 				= RIFServiceMessages.getMessage("rifServiceStartupOptions.host.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					hostLabel);
@@ -724,7 +726,7 @@ public final class RIFServiceStartupOptions {
 			String portLabel
 				= RIFServiceMessages.getMessage("rifServiceStartupOptions.port.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					portLabel);
@@ -735,7 +737,7 @@ public final class RIFServiceStartupOptions {
 			String databaseNameLabel
 				= RIFServiceMessages.getMessage("rifServiceStartupOptions.databaseName.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					databaseNameLabel);

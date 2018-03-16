@@ -1,17 +1,16 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.util.FieldValidationUtility;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 /**
  *
@@ -70,6 +69,7 @@ public class ShapeFile
 	// Section Constants
 	// ==========================================
 	public static final int UNKNOWN_TOTAL_AREA_IDENTIFIERS = -1;
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
 	// ==========================================
 	// Section Properties
@@ -439,7 +439,7 @@ public class ShapeFile
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(shapeFileDescription)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordName,
 					shapeFileDescriptionFieldLabel);
@@ -448,7 +448,7 @@ public class ShapeFile
 		
 		if (fieldValidationUtility.isEmpty(areaIdentifierFieldName)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordName,
 					areaIdentifierFieldLabel);
@@ -457,7 +457,7 @@ public class ShapeFile
 		
 		if (fieldValidationUtility.isEmpty(nameFieldName)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordName,
 					nameFieldLabel);

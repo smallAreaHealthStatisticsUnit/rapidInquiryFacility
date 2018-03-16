@@ -1,18 +1,24 @@
 package rifDataLoaderTool.dataStorageLayer.ms;
 
-import rifDataLoaderTool.businessConceptLayer.*;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.Collator;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaAreaPropertyManager;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.businessConceptLayer.WorkflowValidator;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreateIndexQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteIndexQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
-
-import java.sql.*;
-import java.text.Collator;
-import java.io.*;
 
 /**
  *
@@ -72,7 +78,9 @@ final class MSSQLOptimiseWorkflowManager
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -237,7 +245,7 @@ final class MSSQLOptimiseWorkflowManager
 	private boolean excludeFromIndexableFields(
 		final String fieldName) {
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		if (collator.equals(fieldName, "sex")) {
 			return true;
 		}

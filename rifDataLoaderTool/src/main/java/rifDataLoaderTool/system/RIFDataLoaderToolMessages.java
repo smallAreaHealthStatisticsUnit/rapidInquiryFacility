@@ -4,6 +4,7 @@ import java.text.Collator;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
+import rifGenericLibrary.system.Messages;
 
 /**
  * A class used to retrieve parameterised text messages from a properties file.  This class
@@ -78,28 +79,12 @@ public final class RIFDataLoaderToolMessages {
     // ==========================================
     // Section Constants
     // ==========================================
-	/** The Constant resourceBundle. */
-    public static final ResourceBundle resourceBundle;
 
-    /** The collator. */
-    private static Collator collator = null;
-
-    // ==========================================
-    // Section Properties
-    // ==========================================
-    /**
-     * the context help cursor
-     */
-
-    // ==========================================
-    // Section Construction
-    // ==========================================
-
-    static {
-        resourceBundle 
-        	= ResourceBundle.getBundle("RIFDataLoaderToolMessages");
-    }
-
+    public static final ResourceBundle resourceBundle
+        	= ResourceBundle.getBundle(Messages.DATA_LOADER_TOOL_MESSAGES);
+	
+	private static Collator collator = null;
+    
     // ==========================================
     // Section Accessors
     // ==========================================

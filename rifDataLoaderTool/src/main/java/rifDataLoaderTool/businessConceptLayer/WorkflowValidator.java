@@ -1,14 +1,12 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-
 import java.text.Collator;
 import java.util.ArrayList;
 
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  *
@@ -65,11 +63,13 @@ public class WorkflowValidator {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	RIFSchemaAreaPropertyManager schemaAreaPropertyManager;
+	private RIFSchemaAreaPropertyManager schemaAreaPropertyManager;
 	
 	// ==========================================
 	// Section Construction
@@ -434,7 +434,7 @@ public class WorkflowValidator {
 				String expectedDataTypeIdentifier
 					= expectedDataType.getIdentifier();
 				Collator collator
-					= RIFGenericLibraryMessages.getCollator();
+					= GENERIC_MESSAGES.getCollator();
 				if (collator.equals(
 					proposedDataTypeIdentifier, 
 					expectedDataTypeIdentifier) == false) {
@@ -608,7 +608,7 @@ public class WorkflowValidator {
 			if (fieldConfiguration == null) {
 				//this can only mean that the field has been synthesised from conversion
 				//For now, the only field to consider is age_sex_group
-				Collator collator = RIFGenericLibraryMessages.getCollator();
+				Collator collator = GENERIC_MESSAGES.getCollator();
 				if (collator.equals(requiredFieldName, "age_sex_group") == false) {
 					String errorMessage
 						= RIFDataLoaderToolMessages.getMessage(

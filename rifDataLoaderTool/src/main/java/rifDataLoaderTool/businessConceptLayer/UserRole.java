@@ -1,11 +1,9 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import java.text.Collator;
 
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
-import java.text.Collator;
+import rifGenericLibrary.system.Messages;
 
 /**
  *
@@ -58,11 +56,12 @@ import java.text.Collator;
  */
 
 public enum UserRole {
-
 	
 	RIF_USER("userRole.rifUser.label"),
 	RIF_MANAGER("userRole.rifManager.label"),
 	RIF_STUDENT("userRole.rifStudent.label");
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
 	private String propertyName;
 	
@@ -85,7 +84,7 @@ public enum UserRole {
 		}
 		
 		String name = getName();
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		return collator.equals(name, userRoleName);
 	}
 	

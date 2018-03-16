@@ -1,26 +1,56 @@
 
 package rifGenericLibrary.presentationLayer;
 
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.table.JTableHeader;
-import javax.swing.text.JTextComponent;
-
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.io.ByteArrayOutputStream;
 import java.util.Vector;
 
-import javax.swing.plaf.basic.BasicArrowButton;
-import javax.swing.table.TableModel;
+import javax.swing.ButtonGroup;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JEditorPane;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.JTree;
+import javax.swing.ListModel;
+import javax.swing.SwingConstants;
+import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.plaf.basic.BasicArrowButton;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableModel;
+import javax.swing.text.JTextComponent;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
-
-
+import rifGenericLibrary.system.Messages;
 
 /**
  *
@@ -61,7 +91,6 @@ import rifGenericLibrary.system.RIFGenericLibraryMessages;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 
 /*
@@ -86,9 +115,7 @@ import rifGenericLibrary.system.RIFGenericLibraryMessages;
  *
  */
 
-
 public final class UserInterfaceFactory {
-
 
 // ==========================================
 // Section Constants
@@ -107,7 +134,9 @@ public final class UserInterfaceFactory {
 	
 	/** The Constant VERTICAL_COMPONENT_GAP. */
 	public static final int VERTICAL_COMPONENT_GAP = 10;
-		
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -472,25 +501,25 @@ public final class UserInterfaceFactory {
 	
 	public JMenu createFileMenu() {
 		String fileMenuText
-			= RIFGenericLibraryMessages.getMessage("menus.file.label");
+			= GENERIC_MESSAGES.getMessage("menus.file.label");
 		return createMenu(fileMenuText);
 	}
 	
 	public JMenuItem createLoadMenuItem() {
 		String loadMenuItemText
-			= RIFGenericLibraryMessages.getMessage("buttons.load.label");
+			= GENERIC_MESSAGES.getMessage("buttons.load.label");
 		return createJMenuItem(loadMenuItemText);			
 	}
 	
 	public JMenuItem createSaveAsMenuItem() {
 		String saveAsMenuItemText
-			= RIFGenericLibraryMessages.getMessage("buttons.saveAs.label");
+			= GENERIC_MESSAGES.getMessage("buttons.saveAs.label");
 		return createJMenuItem(saveAsMenuItemText);		
 	}
 	
 	public JMenuItem createExitMenuItem() {
 		String exitMenuItemText
-			= RIFGenericLibraryMessages.getMessage("fileMenu.exit.label");
+			= GENERIC_MESSAGES.getMessage("fileMenu.exit.label");
 		return createJMenuItem(exitMenuItemText);
 	}
 	
@@ -1040,42 +1069,42 @@ public final class UserInterfaceFactory {
 	
 	public JLabel createNameLabel() {
 		String nameLabelText
-			= RIFGenericLibraryMessages.getMessage("labels.name");
+			= GENERIC_MESSAGES.getMessage("labels.name");
 		JLabel label = createLabel(nameLabelText);
 		return label;
 	}
 	
 	public JLabel createDescriptionLabel() {
 		String descriptionLabelText
-			= RIFGenericLibraryMessages.getMessage("labels.description");		
+			= GENERIC_MESSAGES.getMessage("labels.description");		
 		JLabel label = createLabel(descriptionLabelText);
 		return label;
 	}
 	
 	public JButton createBrowseButton() {
 		String browseButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.browse.label");		
+			= GENERIC_MESSAGES.getMessage("buttons.browse.label");		
 		JButton button = createButton(browseButtonText);
 		return button;
 	}
 	
 	public JButton createRunButton() {
 		String runButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.run.label");		
+			= GENERIC_MESSAGES.getMessage("buttons.run.label");		
 		JButton button = createButton(runButtonText);
 		return button;
 	}
 	
 	public JButton createViewButton() {
 		String viewButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.view.label");		
+			= GENERIC_MESSAGES.getMessage("buttons.view.label");		
 		JButton button = createButton(viewButtonText);
 		return button;
 	}	
 	
 	public JButton createEditButton() {
 		String viewButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.edit.label");		
+			= GENERIC_MESSAGES.getMessage("buttons.edit.label");		
 		JButton button = createButton(viewButtonText);
 		return button;
 	}	

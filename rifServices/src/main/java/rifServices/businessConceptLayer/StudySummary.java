@@ -1,15 +1,14 @@
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceError;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import java.util.ArrayList;
 
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
-
-import java.util.ArrayList;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -79,7 +78,9 @@ public final class StudySummary {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -254,7 +255,7 @@ public final class StudySummary {
 			String studyIDFieldName
 				= RIFServiceMessages.getMessage("studySummary.identifier.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					studyIDFieldName);

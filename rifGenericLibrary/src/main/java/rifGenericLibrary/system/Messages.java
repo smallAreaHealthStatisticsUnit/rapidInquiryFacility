@@ -14,9 +14,31 @@ public class Messages {
 	
 	public static final String RIF_GENERIC_LIBRARY_MESSAGES = "RIFGenericLibraryMessages";
 	public static final String RIF_SERVICE_MESSAGES = "RIFServiceMessages";
+	public static final String DATA_LOADER_TOOL_MESSAGES = "RIFDataLoaderToolMessages";
+	public static final String TAXONOMY_SERVICE_MESSAGES = "TaxonomyServiceMessages";
 	
 	private static Collection<ResourceBundle> bundles = new ArrayList<>();
 	private static Collator collator;
+	
+	public static Messages serviceMessages() {
+		
+		return new Messages(ResourceBundle.getBundle(RIF_SERVICE_MESSAGES));
+	}
+	
+	public static Messages genericMessages() {
+		
+		return new Messages(ResourceBundle.getBundle(RIF_GENERIC_LIBRARY_MESSAGES));
+	}
+	
+	public static Messages dataLoaderMessages() {
+		
+		return new Messages(ResourceBundle.getBundle(DATA_LOADER_TOOL_MESSAGES));
+	}
+	
+	public static Messages taxonomyMessages() {
+		
+		return new Messages(ResourceBundle.getBundle(TAXONOMY_SERVICE_MESSAGES));
+	}
 	
 	public Messages(ResourceBundle rb) {
 		

@@ -1,15 +1,14 @@
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import java.text.Collator;
+import java.util.ArrayList;
 
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
-import java.util.ArrayList;
-import java.text.Collator;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -84,7 +83,9 @@ public abstract class AbstractRIFContextOption
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -269,7 +270,7 @@ public abstract class AbstractRIFContextOption
 			= new FieldValidationUtility();
 		if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					nameFieldName);

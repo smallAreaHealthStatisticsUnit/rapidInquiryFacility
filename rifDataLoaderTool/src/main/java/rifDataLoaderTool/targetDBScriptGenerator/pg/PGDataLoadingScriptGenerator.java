@@ -1,14 +1,17 @@
 package rifDataLoaderTool.targetDBScriptGenerator.pg;
 
-import rifDataLoaderTool.businessConceptLayer.*;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifDataLoaderTool.dataStorageLayer.SampleDataGenerator;
-
-import rifDataLoaderTool.targetDBScriptGenerator.ms.*;
-
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.io.*;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.GeographyMetaData;
+import rifDataLoaderTool.businessConceptLayer.HealthTheme;
+import rifGenericLibrary.system.Messages;
 
 /**
  * This class generates a single PostgreSQL script that will load all of the 
@@ -64,41 +67,12 @@ import java.io.*;
 public class PGDataLoadingScriptGenerator {
 
 	
-	/*
-	public static void main(String[] args) {
-		SampleDataGenerator testDataGenerator = new SampleDataGenerator();
-		DataLoaderToolConfiguration configuration
-			= testDataGenerator.createSahsulandConfiguration();
-		File outputDirectory = new File("C:\\rifTest");
-		
-		PGDataLoadingScriptGenerator pgScriptGenerator
-			= new PGDataLoadingScriptGenerator();
-		MSDataLoadingScriptGenerator msScriptGenerator	
-			= new MSDataLoadingScriptGenerator();
-		//try {
-
-		pgScriptGenerator.writeScript(
-			outputDirectory, 
-			configuration);
-
-		msScriptGenerator.writeScript(
-			outputDirectory, 
-			configuration);
-		
-		//}
-		//catch(RIFServiceException rifServiceException) {
-			//rifServiceException.printErrors();
-		//}
-		
-	}
-	
-	*/
-	
-	
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -287,7 +261,7 @@ public class PGDataLoadingScriptGenerator {
 		filePath.append(File.separator);
 		filePath.append("pg_run_data_loader_");
 		String timeStamp
-			= RIFGenericLibraryMessages.getTimeStampForFileName(new Date());
+			= GENERIC_MESSAGES.getTimeStampForFileName(new Date());
 		filePath.append(timeStamp);
 		filePath.append(".sql");
 		

@@ -1,21 +1,18 @@
 package rifGenericLibrary.dataStorageLayer.pg;
 
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFGenericLibraryError;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
+import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 
 /**
@@ -88,8 +85,8 @@ public final class PGUserDatabaseConnections {
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");	
 	private static String callingClassName="rifGenericLibrary.dataStorageLayer.pg.PGUserDatabaseConnections";
-		// this.getClass().getName();
-		// So you can call the static safe RIFLogger functions
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -215,7 +212,7 @@ public final class PGUserDatabaseConnections {
 			rifLogger.error(callingClassName, "Jdb.error.unableToLoadDatabaseDriver ERROR", 
 				classNotFoundException);
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"db.error.unableToLoadDatabaseDriver");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
@@ -228,7 +225,7 @@ public final class PGUserDatabaseConnections {
 				"Jdb.error.unableToRegisterUser ERROR", 
 				sqlException);
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"db.error.unableToRegisterUser",
 					userID);
 			
@@ -313,7 +310,7 @@ public final class PGUserDatabaseConnections {
 		synchronized(readOnlyConnectionsLock) {
 			if (availableReadOnlyConnections.isEmpty()) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"db.error.maximumReadConnectionsExceeded",
 						userID);
 				RIFServiceException rifServiceException
@@ -363,7 +360,7 @@ public final class PGUserDatabaseConnections {
 		synchronized(writeOnlyConnectionsLock) {
 			if (availableWriteOnlyConnections.isEmpty()) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"db.error.maximumReadConnectionsExceeded",
 						userID);
 				RIFServiceException rifServiceException

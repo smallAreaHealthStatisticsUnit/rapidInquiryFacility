@@ -1,16 +1,15 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Objects;
+
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
-
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.HashMap;
 
 /**
  * A rule that is used to generate SQL code that can search and replace values. Apart from
@@ -95,11 +94,12 @@ import java.util.HashMap;
 public final class ValidationRule 
 	extends AbstractDataLoaderToolConcept {
 
-	
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -363,7 +363,7 @@ public final class ValidationRule
 			
 		if (fieldValidationUtility.isEmpty(validValue)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					validFieldName);

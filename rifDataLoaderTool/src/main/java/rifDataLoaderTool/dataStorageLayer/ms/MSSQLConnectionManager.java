@@ -1,14 +1,5 @@
 package rifDataLoaderTool.dataStorageLayer.ms;
 
-
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
-import rifGenericLibrary.util.RIFLogger;
-
 import java.io.File;
 import java.io.FileReader;
 import java.sql.Connection;
@@ -17,6 +8,14 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.PropertyResourceBundle;
+
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
 
 /**
  * Responsible for managing a pool of connections for each registered user.  Connections will
@@ -101,9 +100,9 @@ final class MSSQLConnectionManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final int MAXIMUM_DATA_LOADER_CONNECTIONS = 5;
-
 	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	private static final int MAXIMUM_DATA_LOADER_CONNECTIONS = 5;
 	
 	// ==========================================
 	// Section Properties
@@ -327,7 +326,7 @@ final class MSSQLConnectionManager {
 			//Record original exception, throw sanitised, human-readable version
 			logException(exception);
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"sqlConnectionManager.error.unableToReclaimWriteConnection");
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
@@ -377,7 +376,7 @@ final class MSSQLConnectionManager {
 			//Record original exception, throw sanitised, human-readable version
 			logException(exception);
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"sqlConnectionManager.error.unableToAssignWriteConnection");
 
 			RIFLogger rifLogger = RIFLogger.getLogger();

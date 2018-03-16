@@ -1,10 +1,9 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
 import java.text.Collator;
+
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.Messages;
 
 
 /**
@@ -123,12 +122,14 @@ public enum FieldChangeAuditLevel {
 		"include_field_change_description",
 		"fieldChangeAuditLevel.includeFieldChangeDescription.label");
 	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	private String code;
 	private String propertyName;
 	
-	private FieldChangeAuditLevel(
-		final String code,
-		final String propertyName) {
+	FieldChangeAuditLevel(
+					final String code,
+					final String propertyName) {
 		
 		this.code = code;
 		this.propertyName = propertyName;
@@ -157,22 +158,22 @@ public enum FieldChangeAuditLevel {
 	public static FieldChangeAuditLevel getValueFromName(
 		final String code) {
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		if (collator.equals(
-			code, 
-			NONE.getName()) == true) {
+						code,
+						NONE.getName())) {
 
 			return NONE;
 		}
 		else if (collator.equals(
-			code, 
-			INCLUDE_FIELD_NAME_ONLY.getName()) == true) {
+						code,
+						INCLUDE_FIELD_NAME_ONLY.getName())) {
 
 			return INCLUDE_FIELD_NAME_ONLY;
 		}
 		else if (collator.equals(
-			code, 
-			INCLUDE_FIELD_CHANGE_DESCRIPTION.getName()) == true) {
+						code,
+						INCLUDE_FIELD_CHANGE_DESCRIPTION.getName())) {
 
 			return INCLUDE_FIELD_CHANGE_DESCRIPTION;
 		}
@@ -186,22 +187,22 @@ public enum FieldChangeAuditLevel {
 	public static FieldChangeAuditLevel getValueFromCode(
 		final String code) {
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		if (collator.equals(
-			code, 
-			NONE.getCode()) == true) {
+						code,
+						NONE.getCode())) {
 
 			return NONE;
 		}
 		else if (collator.equals(
-			code, 
-			INCLUDE_FIELD_NAME_ONLY.getCode()) == true) {
+						code,
+						INCLUDE_FIELD_NAME_ONLY.getCode())) {
 
 			return INCLUDE_FIELD_NAME_ONLY;
 		}
 		else if (collator.equals(
-			code, 
-			INCLUDE_FIELD_CHANGE_DESCRIPTION.getCode()) == true) {
+						code,
+						INCLUDE_FIELD_CHANGE_DESCRIPTION.getCode())) {
 
 			return INCLUDE_FIELD_CHANGE_DESCRIPTION;
 		}

@@ -1,16 +1,15 @@
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceError;
+import java.text.Collator;
+import java.util.ArrayList;
 
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifGenericLibrary.util.FieldValidationUtility;
-
-import java.util.ArrayList;
-import java.text.Collator;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -157,8 +156,8 @@ public abstract class AbstractRIFConcept
 			return false;
 		}
 
-		Collator collator = RIFGenericLibraryMessages.getCollator();
-		
+		Collator collator = Messages.genericMessages().getCollator();
+
 		String otherIdentifier = otherRIFConcept.getIdentifier();
 
 		if (FieldValidationUtility.hasDifferentNullity(identifier, otherIdentifier)) {
@@ -167,7 +166,7 @@ public abstract class AbstractRIFConcept
 		}
 		else if (identifier != null) {
 			//they must both be non-null
-			if (collator.equals(identifier, otherIdentifier) == false) {
+			if (!collator.equals(identifier, otherIdentifier)) {
 				return false;
 			}
 		}	

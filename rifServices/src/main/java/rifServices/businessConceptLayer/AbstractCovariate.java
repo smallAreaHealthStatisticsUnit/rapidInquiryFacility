@@ -1,14 +1,12 @@
 package rifServices.businessConceptLayer;
 
-import rifServices.businessConceptLayer.AbstractRIFConcept;
-import rifServices.system.RIFServiceMessages;
-
-import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.util.FieldValidationUtility;
-
 import java.text.Collator;
 import java.util.ArrayList;
+
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifServices.system.RIFServiceMessages;
 
 /**
 * Describes the basic properties that a covariate should have.  
@@ -86,6 +84,8 @@ abstract public class AbstractCovariate
 // Section Constants
 // ==========================================
 
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -238,7 +238,7 @@ abstract public class AbstractCovariate
 	public boolean hasIdenticalContents(
 		final AbstractCovariate otherCovariate) {
 
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		
 		String otherName = otherCovariate.getName();
 		String otherMinimumValue = otherCovariate.getMinimumValue();
@@ -363,9 +363,9 @@ abstract public class AbstractCovariate
 		
 		FieldValidationUtility fieldValidationUtility 
 			= new FieldValidationUtility();
-		if (fieldValidationUtility.isEmpty(name) == true) {
+		if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage 
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					nameLabel);
@@ -385,7 +385,7 @@ abstract public class AbstractCovariate
 		
 			if (fieldValidationUtility.isEmpty(minimumValue)) {				
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField",
 						recordType,
 						minimumFieldNameLabel);
@@ -394,7 +394,7 @@ abstract public class AbstractCovariate
 
 			if (fieldValidationUtility.isEmpty(maximumValue)) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField",
 						recordType,
 						maximumFieldNameLabel);

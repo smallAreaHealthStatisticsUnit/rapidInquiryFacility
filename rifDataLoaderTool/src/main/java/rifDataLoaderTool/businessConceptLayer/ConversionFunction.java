@@ -1,17 +1,17 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.FieldValidationUtility;
-
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
-import java.text.Collator;
+
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
+
+;
 
 /**
  * <p>
@@ -80,7 +80,9 @@ public class ConversionFunction {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -200,7 +202,7 @@ public class ConversionFunction {
 	private String getCleanFieldNameFromActualParameterName(
 		final String actualParameterName) {
 			
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		for (DataSetFieldConfiguration actualParameterValue : actualParameterValues) {
 			String convertFieldName
 				= actualParameterValue.getConvertFieldName();
@@ -268,7 +270,7 @@ public class ConversionFunction {
 			errorMessages.add(errorMessage);
 		}
 		else {		
-			Collator collator = RIFGenericLibraryMessages.getCollator();
+			Collator collator = GENERIC_MESSAGES.getCollator();
 		
 			for (int i = 0; i < formalParameterNames.size(); i++) {		
 				String currentFormalParameterName

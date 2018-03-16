@@ -1,8 +1,5 @@
 package rifGenericLibrary.system;
 
-import rifGenericLibrary.system.RIFServiceException;
-
-
 /**
  *
  * Convenience factory to help manufacture common types of RIFServiceException.
@@ -59,7 +56,9 @@ public class RIFServiceExceptionFactory {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -78,7 +77,7 @@ public class RIFServiceExceptionFactory {
 
 	public RIFServiceException createUnableToChangeDBCommitException() {
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage("general.db.error.unableToSetCommit");
+			= GENERIC_MESSAGES.getMessage("general.db.error.unableToSetCommit");
 		RIFServiceException rifServiceException
 			= new RIFServiceException(
 				RIFGenericLibraryError.DB_UNABLE_TO_ADJUST_AUTO_COMMIT,
@@ -88,7 +87,7 @@ public class RIFServiceExceptionFactory {
 	
 	public RIFServiceException createFileExecutionProblemException(final String fileName) {
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"io.error.problemExecutingFile",
 				fileName);
 		RIFServiceException rifServiceException
@@ -102,7 +101,7 @@ public class RIFServiceExceptionFactory {
 		final String rScriptExceptionTrace) {
 		
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"R.error.RscriptExecution",
 				rScriptExceptionTrace);
 		RIFServiceException rifServiceException
@@ -116,7 +115,7 @@ public class RIFServiceExceptionFactory {
 		final String commandLineExecutable) {
 		
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"R.error.unableToCreateREngine",
 				commandLineExecutable);
 		RIFServiceException rifServiceException
@@ -130,7 +129,7 @@ public class RIFServiceExceptionFactory {
 		final String dbExceptionTrace) {
 		
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"db.error.extractexception",
 				dbExceptionTrace);
 		RIFServiceException rifServiceException
@@ -144,7 +143,7 @@ public class RIFServiceExceptionFactory {
 		final String fileName) {
 		
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"io.error.problemReadingFile",
 				fileName);
 		RIFServiceException rifServiceException
@@ -158,7 +157,7 @@ public class RIFServiceExceptionFactory {
 	public RIFServiceException createFileReadingProblemException() {
 		
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"io.error.generalProblemReadingFile");
 		RIFServiceException rifServiceException
 			= new RIFServiceException(
@@ -171,7 +170,7 @@ public class RIFServiceExceptionFactory {
 		final String fileName) {
 
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"io.error.problemWritingFile",
 				fileName);
 		RIFServiceException rifServiceException
@@ -185,7 +184,7 @@ public class RIFServiceExceptionFactory {
 	public RIFServiceException createUnableToUseDBConnectionString(
 		final String databaseConnectionString) {
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"db.error.unableToUseDatabaseConnectionString",
 				databaseConnectionString);
 		RIFServiceException rifServiceException
@@ -197,7 +196,7 @@ public class RIFServiceExceptionFactory {
 	
 	public RIFServiceException createUnableToRegisterUser(final String userID) {
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"db.error.unableToRegisterUser",
 				userID);
 		RIFServiceException rifServiceException
@@ -210,7 +209,7 @@ public class RIFServiceExceptionFactory {
 	
 	public RIFServiceException createUnableToDeregisterUser(final String userID) {
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"db.error.unableToDeregisterUser",
 				userID);
 		RIFServiceException rifServiceException
@@ -222,7 +221,7 @@ public class RIFServiceExceptionFactory {
 	
 	public RIFServiceException createUnableLoadDBDriver() {
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"db.error.unableToLoadDatabaseDriver");
 		RIFServiceException rifServiceException
 			= new RIFServiceException(
@@ -233,7 +232,7 @@ public class RIFServiceExceptionFactory {
 	
 	public RIFServiceException createNonExistentFile(final String fileName) {
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"io.error.nonExistentFile",
 				fileName);
 		RIFServiceException rifServiceException
@@ -245,7 +244,7 @@ public class RIFServiceExceptionFactory {
 	
 	public RIFServiceException createNonExistentParameter(final String parameterName) {
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"parameter.error.nonExistentParameter",
 				parameterName);
 		RIFServiceException rifServiceException
@@ -260,7 +259,7 @@ public class RIFServiceExceptionFactory {
 		final String taxonomyTermLabel) {
 		
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"taxonomyService.error.nonExistentTerm",
 				taxonomyServiceIdentifier,
 				taxonomyTermLabel);
@@ -274,7 +273,7 @@ public class RIFServiceExceptionFactory {
 	public RIFServiceException createProblemCreatingHTML() {
 			
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"io.error.problemGeneratingHTML");
 		RIFServiceException rifServiceException
 			= new RIFServiceException(

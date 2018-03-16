@@ -1,21 +1,19 @@
 package rifServices.businessConceptLayer;
 
-
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.util.RIFComparisonUtility;
-
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+
+import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.util.RIFComparisonUtility;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -86,7 +84,9 @@ public class Investigation
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -1033,7 +1033,7 @@ public class Investigation
 			String titleFieldName
 				= RIFServiceMessages.getMessage("investigation.title.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					titleFieldName);
@@ -1062,7 +1062,7 @@ public class Investigation
 				= RIFServiceMessages.getMessage("healthTheme.label");
 			
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					healthTheme);
@@ -1083,7 +1083,7 @@ public class Investigation
 			String ndPairLabel
 				= RIFServiceMessages.getMessage("numeratorDenominatorPair.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					ndPairLabel);			
@@ -1108,7 +1108,7 @@ public class Investigation
 			String healthCodesFieldName
 				= RIFServiceMessages.getMessage("healthCode.plural.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					healthCodesFieldName);
@@ -1149,7 +1149,7 @@ public class Investigation
 			String ageBandsFieldName
 				= RIFServiceMessages.getMessage("ageBand.plural.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					ageBandsFieldName);
@@ -1196,7 +1196,7 @@ public class Investigation
 			String sexFieldName
 				= RIFServiceMessages.getMessage("sex.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					sexFieldName);
@@ -1207,7 +1207,7 @@ public class Investigation
 			String yearRangeFieldName
 				= RIFServiceMessages.getMessage("yearRange.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					yearRangeFieldName);
@@ -1229,7 +1229,7 @@ public class Investigation
 				String yearIntervalsFieldName
 					= RIFServiceMessages.getMessage("yearInterval.plural.label");
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField",
 						recordType,
 						yearIntervalsFieldName);
@@ -1277,7 +1277,7 @@ public class Investigation
 
 		//Interval can be none.  It just means that all the years will be included
 		//together
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		String noneChoice
 			= RIFServiceMessages.getMessage("general.choices.none");
 		if ((!fieldValidationUtility.isEmpty(interval)) &&
@@ -1299,7 +1299,7 @@ public class Investigation
 			String covariatesFieldName
 				= RIFServiceMessages.getMessage("investigation.covariates.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					covariatesFieldName);

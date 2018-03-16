@@ -1,18 +1,18 @@
 
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceError;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+
 import rifGenericLibrary.businessConceptLayer.Parameter;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
-import java.util.ArrayList;
-import java.text.Collator;
-import java.util.Collections;
-import java.util.HashMap;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 
 /**
@@ -86,7 +86,9 @@ public final class CalculationMethod
 // ==========================================
 // Section Constants
 // ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -579,7 +581,7 @@ private String name;
 		if (validationPolicy == ValidationPolicy.STRICT) { 
 			if (fieldValidationUtility.isEmpty(name)) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						nameFieldNameLabel);
@@ -588,7 +590,7 @@ private String name;
 
 			if (calculationMethodPrior == null) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						recordType,
 						priorFieldNameLabel);
@@ -598,7 +600,7 @@ private String name;
 		
 		if (fieldValidationUtility.isEmpty(codeRoutineName)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					codeRoutineFieldNameLabel);
@@ -607,7 +609,7 @@ private String name;
 
 		if (fieldValidationUtility.isEmpty(description)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					descriptionFieldNameLabel);
@@ -618,7 +620,7 @@ private String name;
 			String parametersFieldLabel
 				= RIFServiceMessages.getMessage("parameter.plural.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					parametersFieldLabel);

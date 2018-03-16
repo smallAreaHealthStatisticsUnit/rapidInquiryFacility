@@ -1,14 +1,13 @@
 package rifGenericLibrary.presentationLayer;
 
-import javax.swing.JButton;
-
-import java.awt.event.ActionListener;
-import java.awt.GridBagConstraints;
 import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.Messages;
 
 /**
  *
@@ -73,7 +72,9 @@ public final class WorkflowNavigationButtonPanel
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -95,12 +96,12 @@ public final class WorkflowNavigationButtonPanel
 		super(userInterfaceFactory);
 
 		String submitButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.submit.label");
+			= GENERIC_MESSAGES.getMessage("buttons.submit.label");
 		submitButton
 			= userInterfaceFactory.createButton(submitButtonText);
 		
 		String quitButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.quit.label");
+			= GENERIC_MESSAGES.getMessage("buttons.quit.label");
 		quitButton
 			= userInterfaceFactory.createButton(quitButtonText);
 		

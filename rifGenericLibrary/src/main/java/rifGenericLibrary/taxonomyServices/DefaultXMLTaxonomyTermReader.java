@@ -1,19 +1,19 @@
 package rifGenericLibrary.taxonomyServices;
 
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
 import java.io.File;
 import java.text.Collator;
 import java.util.Stack;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
 
 
 /**
@@ -72,7 +72,9 @@ public class DefaultXMLTaxonomyTermReader
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -95,7 +97,7 @@ public class DefaultXMLTaxonomyTermReader
 	// ==========================================
 
 	public DefaultXMLTaxonomyTermReader() {
-		collator = RIFGenericLibraryMessages.getCollator();
+		collator = Messages.genericMessages().getCollator();
 		taxonomyTermManager = TaxonomyTermManager.newInstance();
 		parentTerms = new Stack<TaxonomyTerm>();
 
@@ -130,7 +132,7 @@ public class DefaultXMLTaxonomyTermReader
 		}
 		catch(Exception exception) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"defaultXMLTaxonomyService.error.unableToReadFile",
 					taxonomyTermsFile.getName());
 			RIFServiceException rifServiceException

@@ -1,11 +1,10 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
 import java.text.Collator;
 import java.util.ArrayList;
+
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.Messages;
 
 /**
  * Describes the sequence of steps the a RIF Manager would use to process a new data source
@@ -137,7 +136,9 @@ public enum WorkflowState {
 		"workflowState.delete.label",
 		"workflowState.delete.statusMessage",
 		"dl_");
-		
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	private int stateSequenceNumber;
 	private String code;
 	private String statePropertyName;
@@ -218,7 +219,7 @@ public enum WorkflowState {
 	public static WorkflowState getWorkflowStateFromCode(
 		final String code) {
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		if (collator.equals(code, START.getCode())) {
 			return START;
 		}
@@ -259,7 +260,7 @@ public enum WorkflowState {
 	public static WorkflowState getWorkflowStateFromName(
 		final String name) {
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		if (collator.equals(name, START.getStateName())) {
 			return START;
 		}

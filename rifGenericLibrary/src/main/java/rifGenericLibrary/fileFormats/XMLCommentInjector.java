@@ -1,13 +1,11 @@
 
 package rifGenericLibrary.fileFormats;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.ArrayList;
 
-
+import rifGenericLibrary.system.Messages;
 
 /**
  * Is used to write a description of an XML tag where it first occurs in an XML
@@ -36,7 +34,6 @@ import java.util.ArrayList;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 
 /*
@@ -67,7 +64,9 @@ public final class XMLCommentInjector {
 // ==========================================
 // Section Constants
 // ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -94,7 +93,7 @@ public final class XMLCommentInjector {
 		
 		/*
 		String introductionMessage
-			= RIFGenericLibraryMessages.getMessage("general.dataSharingComment1");
+			= GENERIC_MESSAGES.getMessage("general.dataSharingComment1");
 		addIntroductionComment(introductionMessage);
 		
 		setRecordToolTipMessage("user", "user.toolTip");
@@ -302,7 +301,7 @@ public final class XMLCommentInjector {
 		final String propertyName) {
 		
 		String toolTipText
-			= RIFGenericLibraryMessages.getMessage(propertyName);
+			= GENERIC_MESSAGES.getMessage(propertyName);
 		registerFieldComment(recordTagName, "", toolTipText);
 	}	
 	
@@ -319,7 +318,7 @@ public final class XMLCommentInjector {
 		final String propertyName) {
 		
 		String toolTipText
-			= RIFGenericLibraryMessages.getMessage(propertyName);
+			= GENERIC_MESSAGES.getMessage(propertyName);
 		registerFieldComment(recordTagName, fieldTagName, toolTipText);
 	}
 	

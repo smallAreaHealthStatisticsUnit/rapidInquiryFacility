@@ -1,15 +1,14 @@
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import java.text.Collator;
+import java.util.ArrayList;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
-
-import java.util.ArrayList;
-import java.text.Collator;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 
 
@@ -83,7 +82,9 @@ public final class MapAreaAttributeValue
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -261,7 +262,7 @@ public final class MapAreaAttributeValue
 	public boolean hasIdenticalContents(
 		final MapAreaAttributeValue otherMapAreaAttributeValue) {
 
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 
 		String otherLabel = otherMapAreaAttributeValue.getLabel();
 		if (FieldValidationUtility.hasDifferentNullity(label, otherLabel)) {
@@ -361,7 +362,7 @@ public final class MapAreaAttributeValue
 			String identifierFieldName
 				= RIFServiceMessages.getMessage("general.fieldNames.identifier.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					identifierFieldName);
@@ -376,7 +377,7 @@ public final class MapAreaAttributeValue
 			String labelFieldName
 				= RIFServiceMessages.getMessage("mapArea.label.label");	
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					labelFieldName);

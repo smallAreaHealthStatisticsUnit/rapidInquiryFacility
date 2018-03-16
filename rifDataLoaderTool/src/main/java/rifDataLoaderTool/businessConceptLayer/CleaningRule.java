@@ -1,15 +1,15 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.util.FieldValidationUtility;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 /**
  * A rule that is used to generate SQL code that can search and replace values. Apart from
@@ -98,6 +98,8 @@ public final class CleaningRule
 	// Section Constants
 	// ==========================================
 
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -392,7 +394,7 @@ public final class CleaningRule
 		
 		if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					nameField);
@@ -402,7 +404,7 @@ public final class CleaningRule
 		
 		if (fieldValidationUtility.isEmpty(searchValue)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					searchFieldName);
@@ -411,7 +413,7 @@ public final class CleaningRule
 				
 		if (fieldValidationUtility.isEmpty(replaceValue)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					replaceFieldName);

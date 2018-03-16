@@ -1,19 +1,19 @@
 package rifServices.dataStorageLayer.ms;
 
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceStartupOptions;
+import java.sql.Connection;
+
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.StudyState;
 import rifServices.businessConceptLayer.StudyStateMachine;
-import rifGenericLibrary.businessConceptLayer.User;;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.RIFLogger;
-
-import java.sql.*;
+;
 
 /**
  *

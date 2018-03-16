@@ -1,10 +1,9 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
 import java.text.Collator;
+
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.Messages;
 
 /**
  * Describes the meaning of a CSV field as it will relate to the RIF.  
@@ -87,6 +86,8 @@ public enum FieldPurpose {
 		"other",
 		"fieldPurpose.other.label");
 	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	private String code;
 	private String propertyName;
 	
@@ -103,15 +104,14 @@ public enum FieldPurpose {
 	}
 	
 	public String getName() {
-		String name 
-			= RIFDataLoaderToolMessages.getMessage(propertyName);
-		return name;
+		
+		return RIFDataLoaderToolMessages.getMessage(propertyName);
 	}
 	
 	public static FieldPurpose getValueFromCode(
 		final String code) {
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		if (collator.equals(code, COVARIATE.getCode())) {
 			return COVARIATE;
 		}
@@ -146,7 +146,7 @@ public enum FieldPurpose {
 	
 	
 	public static FieldPurpose getFieldPurposeFromName(final String name) {
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		if (collator.equals(COVARIATE.getName(), name)) {
 			return COVARIATE;
 		}

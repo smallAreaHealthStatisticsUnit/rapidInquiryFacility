@@ -1,21 +1,31 @@
 package rifDataLoaderTool.dataStorageLayer.ms;
 
-import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.fileFormats.PostgreSQLDataLoadingScriptWriter;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
-import rifGenericLibrary.system.RIFServiceException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 
-import java.sql.*;
-import java.io.*;
-import java.util.zip.*;
-import java.util.Date;
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.fileFormats.PostgreSQLDataLoadingScriptWriter;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  *
@@ -75,7 +85,9 @@ final class MSSQLPublishWorkflowManager
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================	
@@ -243,7 +255,7 @@ final class MSSQLPublishWorkflowManager
 			zipFileName.append(publishTableName);
 			zipFileName.append("_");
 			String datePhrase
-				= RIFGenericLibraryMessages.getTimeStampForFileName(new Date());
+				= GENERIC_MESSAGES.getTimeStampForFileName(new Date());
 			zipFileName.append(datePhrase);
 			zipFileName.append(".zip");
 			

@@ -1,10 +1,9 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
 import java.text.Collator;
+
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.Messages;
 
 /**
  * Generates names for different fields in 
@@ -67,7 +66,9 @@ public class DataSetFieldNameGenerator {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -128,7 +129,7 @@ public class DataSetFieldNameGenerator {
 		final String baseFieldName,
 		final String[] existingFieldNames) {
 
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		int i = 1;
 		String candidateFieldName = baseFieldName + String.valueOf(i);
 		if (existingFieldNames.length == 0) {

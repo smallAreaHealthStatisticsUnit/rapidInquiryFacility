@@ -1,15 +1,15 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.util.FieldValidationUtility;
-
 import java.util.ArrayList;
 import java.util.Objects;
+
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 /**
  * This is the concept of a Geography as the Data Loader Tool would understand
@@ -74,7 +74,9 @@ public class Geography
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -312,7 +314,7 @@ public class Geography
 			= RIFDataLoaderToolMessages.getMessage("dlGeography.name.label");
 		if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordName,
 					nameFieldName);
