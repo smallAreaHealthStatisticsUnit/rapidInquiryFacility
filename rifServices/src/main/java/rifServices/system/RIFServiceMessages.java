@@ -1,10 +1,8 @@
 package rifServices.system;
 
-import java.io.File;
-import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
-
+import rifGenericLibrary.system.Messages;
 
 /**
  * A class that retrieves messages that may appear in reports or exceptions that
@@ -48,7 +46,7 @@ import java.util.ResourceBundle;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
+ * @deprecated Use an instance of {@link Messages} instead
  */
 
 /*
@@ -75,6 +73,7 @@ import java.util.ResourceBundle;
  *
 */
 
+@Deprecated
 public final class RIFServiceMessages {
 
     // ==========================================
@@ -82,19 +81,9 @@ public final class RIFServiceMessages {
     // ==========================================
 	
 	/** The Constant resourceBundle. */
-    public static final ResourceBundle resourceBundle;
-
-    // ==========================================
-    // Section Properties
-    // ==========================================
-
-    // ==========================================
-    // Section Construction
-    // ==========================================
-
-    static {
-        resourceBundle = ResourceBundle.getBundle("RIFServiceMessages");
-    }
+	
+	private static final Messages MESSAGES = 
+					new Messages(ResourceBundle.getBundle("RIFServiceMessages"));
 
     // ==========================================
     // Section Accessors
@@ -106,317 +95,150 @@ public final class RIFServiceMessages {
      * @param key the key
      * @return the message
      */
-    public static String getMessage(
-    	final String key) {
-
-    	if (resourceBundle != null) {
-            return (resourceBundle.getString(key));
-        }
-        return key;
-    }
-
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0) {
-
-        String[] parameters = new String[1];
-        parameters[0] = parameter0;
-
-        return fillInTheBlanks(key,
-        	parameters);
-    }
-
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @param parameter1 the parameter1
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1) {
-
-        String[] parameters = new String[2];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-
-        return fillInTheBlanks(key,
-        	parameters);
-    }
-
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @param parameter1 the parameter1
-     * @param parameter2 the parameter2
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2) {
-
-        String[] parameters = new String[3];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-
-        return fillInTheBlanks(key,
-        	parameters);
-    }
-
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @param parameter1 the parameter1
-     * @param parameter2 the parameter2
-     * @param parameter3 the parameter3
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2,
-        final String parameter3) {
-
-        String[] parameters = new String[4];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-        parameters[3] = parameter3;
-        return fillInTheBlanks(key,
-        	parameters);
-
-    }
-
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @param parameter1 the parameter1
-     * @param parameter2 the parameter2
-     * @param parameter3 the parameter3
-     * @param parameter3 the parameter4
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2,
-        final String parameter3,
-        final String parameter4) {
-
-        String[] parameters = new String[5];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-        parameters[3] = parameter3;
-        parameters[4] = parameter4;
-        return fillInTheBlanks(key,
-        	parameters);
-
-    }
-
-
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @param parameter1 the parameter1
-     * @param parameter2 the parameter2
-     * @param parameter3 the parameter3
-     * @param parameter3 the parameter4
-     * @param parameter3 the parameter5
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2,
-        final String parameter3,
-        final String parameter4,
-        final String parameter5) {
-
-        String[] parameters = new String[6];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-        parameters[3] = parameter3;
-        parameters[4] = parameter4;
-        parameters[5] = parameter5;
-        return fillInTheBlanks(key,
-        	parameters);
-    }
-    
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @param parameter1 the parameter1
-     * @param parameter2 the parameter2
-     * @param parameter3 the parameter3
-     * @param parameter3 the parameter4
-     * @param parameter3 the parameter5
-     * @param parameter3 the parameter6
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2,
-        final String parameter3,
-        final String parameter4,
-        final String parameter5,
-        final String parameter6) {
-
-        String[] parameters = new String[7];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-        parameters[3] = parameter3;
-        parameters[4] = parameter4;
-        parameters[5] = parameter5;
-        parameters[6] = parameter6;
-        return fillInTheBlanks(key,
-        	parameters);
-    }
-    
-    /**
-     * Gets the message.
-     *
-     * @param key the key
-     * @param parameter0 the parameter0
-     * @param parameter1 the parameter1
-     * @param parameter2 the parameter2
-     * @param parameter3 the parameter3
-     * @param parameter3 the parameter4
-     * @param parameter3 the parameter5
-     * @param parameter3 the parameter6
-     * @param parameter3 the parameter7
-     * @return the message
-     */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2,
-        final String parameter3,
-        final String parameter4,
-        final String parameter5,
-        final String parameter6,        
-        final String parameter7) {
-
-        String[] parameters = new String[8];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-        parameters[3] = parameter3;
-        parameters[4] = parameter4;
-        parameters[5] = parameter5;
-        parameters[6] = parameter6;
-        parameters[7] = parameter7;
+    public static String getMessage(final String key) {
         
-        return fillInTheBlanks(key,
-        	parameters);
+        return MESSAGES.getMessage(key);
     }
-    
-    
+
     /**
-     * Fill in the blanks.
+     * Gets the message.
      *
      * @param key the key
-     * @param parameters the parameters
-     * @return the string
+     * @param parameter0 the parameter0
+     * @return the message
      */
-    static private String fillInTheBlanks(
-		final String key,
-        final String[] parameters) {
-
-        String messageWithBlanks = resourceBundle.getString(key);
-
-        MessageFormat messageFormat
-                = new MessageFormat(messageWithBlanks);
-        String messageWithoutBlanks
-                = messageFormat.format(parameters);
-        return messageWithoutBlanks;
+    static public String getMessage(final String key, final String parameter0) {
+    
+        return MESSAGES.getMessage(key, parameter0);
     }
 
-    public static ResourceBundle getResourceBundle() {
-
-    	return resourceBundle;
+    /**
+     * Gets the message.
+     *
+     * @param key the key
+     * @param parameter0 the parameter0
+     * @param parameter1 the parameter1
+     * @return the message
+     */
+    static public String getMessage(final String key, final String parameter0,
+                    final String parameter1) {
+    
+        return MESSAGES.getMessage(key, parameter0, parameter1);
     }
 
-    // ==========================================
-    // Section Mutators
-    // ==========================================
-
-    /*
-    public static String getRIFServicesClassRootLocation() {
-    	String classPath = System.getProperty("java.class.path");
-    	
-    	//we will get every directory used in the classpath.  Now we want to 
-    	//find the directory that is the start of where the class files for the
-    	//rifServices project are located.  This location can be used to find
-    	//other resource files (eg: text and XML files).
-		String[] classPathEntries
-			= classPath.split(File.pathSeparator);
-		StringBuilder pathToFind = new StringBuilder();
-		pathToFind.append("rapidInquiryFacility");
-		pathToFind.append(File.separator);
-		pathToFind.append("rifServices");
-		pathToFind.append(File.separator);
-		pathToFind.append("target");
-		pathToFind.append(File.separator);
-		pathToFind.append("classes");
-    	
-		String targetClassesEntry = null;
-    	for (String classPathEntry : classPathEntries) {
-    		if (classPathEntry.endsWith(pathToFind.toString())) {
-    			targetClassesEntry = classPathEntry;
-    			break;
-    		}
-    	}
-    	
-    	return targetClassesEntry;
-    	
+    /**
+     * Gets the message.
+     *
+     * @param key the key
+     * @param parameter0 the parameter0
+     * @param parameter1 the parameter1
+     * @param parameter2 the parameter2
+     * @return the message
+     */
+    static public String getMessage(final String key, final String parameter0,
+				    final String parameter1, final String parameter2) {
+	
+	    return MESSAGES.getMessage(key, parameter0, parameter1, parameter2);
     }
-    */
-    // ==========================================
-    // Section Validation
-    // ==========================================
 
-    // ==========================================
-    // Section Errors
-    // ==========================================
+    /**
+     * Gets the message.
+     *
+     * @param key the key
+     * @param parameter0 the parameter0
+     * @param parameter1 the parameter1
+     * @param parameter2 the parameter2
+     * @param parameter3 the parameter3
+     * @return the message
+     */
+    static public String getMessage(final String key, final String parameter0,
+				    final String parameter1, final String parameter2, final String parameter3) {
+	
+	    return MESSAGES.getMessage(key, parameter0, parameter1,
+					    parameter2, parameter3);
+    }
 
-    // ==========================================
-    // Section Interfaces
-    // ==========================================
+    /**
+     * Gets the message.
+     *
+     * @param key the key
+     * @param parameter0 the parameter0
+     * @param parameter1 the parameter1
+     * @param parameter2 the parameter2
+     * @param parameter3 the parameter3
+     * @param parameter4 the parameter4
+     * @return the message
+     */
+    static public String getMessage(final String key, final String parameter0,
+				    final String parameter1, final String parameter2, final String parameter3,
+				    final String parameter4) {
+	
+	    return MESSAGES.getMessage(key, parameter0, parameter1,
+					    parameter2, parameter3, parameter4);
+    }
 
-    // ==========================================
-    // Section Overload
-    // ==========================================
 
+    /**
+     * Gets the message.
+     *
+     * @param key the key
+     * @param parameter0 the parameter0
+     * @param parameter1 the parameter1
+     * @param parameter2 the parameter2
+     * @param parameter3 the parameter3
+     * @param parameter4 the parameter4
+     * @param parameter5 the parameter5
+     * @return the message
+     */
+    static public String getMessage(final String key, final String parameter0,
+				    final String parameter1, final String parameter2, final String parameter3,
+				    final String parameter4, final String parameter5) {
+		
+		    return MESSAGES.getMessage(key, parameter0, parameter1,
+						    parameter2, parameter3, parameter4, parameter5);
+    }
+    
+    /**
+     * Gets the message.
+     *
+     * @param key the key
+     * @param parameter0 the parameter0
+     * @param parameter1 the parameter1
+     * @param parameter2 the parameter2
+     * @param parameter3 the parameter3
+     * @param parameter4 the parameter4
+     * @param parameter5 the parameter5
+     * @param parameter6 the parameter6
+     * @return the message
+     */
+    static public String getMessage(final String key, final String parameter0,
+				    final String parameter1, final String parameter2, final String parameter3,
+				    final String parameter4, final String parameter5, final String parameter6) {
+	
+	    return MESSAGES.getMessage(key, parameter0, parameter1, parameter2,
+					    parameter3, parameter4, parameter5, parameter6);
+    }
+    
+    /**
+     * Gets the message.
+     *
+     * @param key the key
+     * @param parameter0 the parameter0
+     * @param parameter1 the parameter1
+     * @param parameter2 the parameter2
+     * @param parameter3 the parameter3
+     * @param parameter4 the parameter4
+     * @param parameter5 the parameter5
+     * @param parameter6 the parameter6
+     * @param parameter7 the parameter7
+     * @return the message
+     */
+    static public String getMessage(final String key, final String parameter0,
+				    final String parameter1, final String parameter2, final String parameter3,
+				    final String parameter4, final String parameter5, final String parameter6,
+				    final String parameter7) {
+	
+	    return MESSAGES.getMessage(key, parameter0, parameter1, parameter2,
+					    parameter3, parameter4, parameter5, parameter6, parameter7);
+    }
 }

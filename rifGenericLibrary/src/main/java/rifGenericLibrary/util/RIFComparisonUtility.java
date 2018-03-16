@@ -102,7 +102,7 @@ public final class RIFComparisonUtility {
 		
 		if (rifObjectA == rifObjectB) {
 			//same nullity: either they're both non-null or
-			//they're refering to the same objects
+			//they're referring to the same objects
 			return false;
 		}
 		
