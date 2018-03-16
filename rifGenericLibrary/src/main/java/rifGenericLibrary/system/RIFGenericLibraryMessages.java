@@ -1,9 +1,6 @@
 package rifGenericLibrary.system;
 
 import java.text.Collator;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -47,6 +44,7 @@ import java.util.ResourceBundle;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
+ * @deprecated Use an instance of {@link Messages} instead
  */
 
 /*
@@ -73,44 +71,23 @@ import java.util.ResourceBundle;
  *
 */
 
+@Deprecated
 public final class RIFGenericLibraryMessages {
-
-    // ==========================================
+	
+	// ==========================================
     // Section Constants
     // ==========================================
-	/** The Constant resourceBundle. */
-    private static final ResourceBundle resourceBundle;
-
-    /** The collator. */
-    private static Collator collator = null;
-
-    // ==========================================
-    // Section Properties
-    // ==========================================
-
-    // ==========================================
-    // Section Construction
-    // ==========================================
-
-    static {
-        resourceBundle 
-        	= ResourceBundle.getBundle("RIFGenericLibraryMessages");
-    }
-
-    // ==========================================
+	
+	private static final Messages MESSAGES =
+				    new Messages(ResourceBundle.getBundle(Messages.RIF_GENERIC_LIBRARY_MESSAGES));
+	
+	// ==========================================
     // Section Accessors
     // ==========================================
     
-    public static String getTimeStampForFileName(
-        final Date _date) {
+    public static String getTimeStampForFileName(final Date _date) {
         	
-        //Safe copy
-        Date date = new Date(_date.getTime());
-        	
-        SimpleDateFormat simpleTimeFormat 
-     	 	= new SimpleDateFormat("dd-MMM-yyyy_HH_mm_ss");
-     	 String result = simpleTimeFormat.format(date);
-     	  return result;
+     	  return MESSAGES.getTimeStampForFileName(_date);
     }   
 
     /**
@@ -119,17 +96,10 @@ public final class RIFGenericLibraryMessages {
      * @param _date the _date
      * @return the time phrase
      */
-    public static String getTimePhrase(
-    	final Date _date) {
-    	
-    	//Safe copy
-    	Date date = new Date(_date.getTime());
-    	
-    	SimpleDateFormat simpleTimeFormat 
- 	   		= new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss:SSS");
- 	   	String result = simpleTimeFormat.format(date);
- 	   	return result;
-    }   
+    public static String getTimePhrase(final Date _date) {
+
+    	return MESSAGES.getTimePhrase(_date);
+    }
         
   
     /**
@@ -138,47 +108,20 @@ public final class RIFGenericLibraryMessages {
      * @param datePhrase the date phrase
      * @return the date
      */
-    public static Date getDate(
-    	final String datePhrase) {
+    public static Date getDate(final String datePhrase) {
     	
-    	Date result = null;
-    	try {    		
-    		SimpleDateFormat simpleDateFormat 
-   				= new SimpleDateFormat("dd-MMM-yyyy");
-    		result = simpleDateFormat.parse(datePhrase);
-    	}
-    	catch(ParseException parseException) {
-    		//@TODO decide whether to handle this particular
-    		//exception or ignore it   		
-    	}
-		return result;    	
+    	return MESSAGES.getDate(datePhrase);
     }
 
-    public static Date getCurrentTime() {
-    	return new Date(System.currentTimeMillis());
-    }
-    
     /**
      * Gets the time.
      *
      * @param timePhrase the time phrase
      * @return the time
      */
-    public static Date getTime(
-    	final String timePhrase) {    	
+    public static Date getTime(final String timePhrase) {
 
-    	Date result = null;
-    	try {
-    		SimpleDateFormat simpleTimeFormat 
-    	  		= new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss:SSS");
-    		result = simpleTimeFormat.parse(timePhrase);
-    	}
-    	catch(ParseException parseException) {
-    		//@TODO decide whether to handle this particular
-    		//exception or ignore it
-    	}
-    	
-    	return result;
+    	return MESSAGES.getTime(timePhrase);
     }
     
    /**
@@ -187,18 +130,10 @@ public final class RIFGenericLibraryMessages {
     * @param _date the _date
     * @return the date phrase
     */
-    public static String getDatePhrase(
-    	final Date _date) {
+    public static String getDatePhrase(final Date _date) {
 
-	   //Safe copy
-	   Date date = new Date(_date.getTime());
-	   
-	   SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MMM-yyyy");
-	   String result = simpleDateFormat.format(date);
-	   return result;
+	   return MESSAGES.getDatePhrase(_date);
    }
-    
-
    
    /**
     * Gets the locale.
@@ -207,7 +142,7 @@ public final class RIFGenericLibraryMessages {
     */
    public static Locale getLocale() {
 
-	   return Locale.getDefault();
+	   return MESSAGES.getLocale();
    }
  
    /**
@@ -217,12 +152,7 @@ public final class RIFGenericLibraryMessages {
      */
     public static Collator getCollator() {
     	
-	  if ( collator == null) {
-		 collator = Collator.getInstance();
-	  } //end if ()
-	  
-	  Collator result = (Collator) collator.clone();
-	  return result;
+	  return MESSAGES.getCollator();
    }
 
     /**
@@ -231,15 +161,11 @@ public final class RIFGenericLibraryMessages {
      * @param key the key
      * @return the message
      */
-    public static String getMessage(
-    	final String key) {
+    public static String getMessage(final String key) {
 
-    	if (resourceBundle != null) {
-            return (resourceBundle.getString(key));
-        }
-        return key;
+        return MESSAGES.getMessage(key);
     }
-
+	
     /**
      * Gets the message.
      *
@@ -247,15 +173,9 @@ public final class RIFGenericLibraryMessages {
      * @param parameter0 the parameter0
      * @return the message
      */
-    static public String getMessage(
-		final String key,
-        final String parameter0) {
-
-        String[] parameters = new String[1];
-        parameters[0] = parameter0;
-
-        return fillInTheBlanks(key,
-        	parameters);
+    static public String getMessage(final String key, final String parameter0) {
+	
+	    return MESSAGES.getMessage(key, parameter0);
     }
 
     /**
@@ -266,17 +186,10 @@ public final class RIFGenericLibraryMessages {
      * @param parameter1 the parameter1
      * @return the message
      */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
+    static public String getMessage(final String key, final String parameter0,
         final String parameter1) {
-
-        String[] parameters = new String[2];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-
-        return fillInTheBlanks(key,
-        	parameters);
+	
+	    return MESSAGES.getMessage(key, parameter0, parameter1);
     }
 
     /**
@@ -288,19 +201,10 @@ public final class RIFGenericLibraryMessages {
      * @param parameter2 the parameter2
      * @return the message
      */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2) {
-
-        String[] parameters = new String[3];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-
-        return fillInTheBlanks(key,
-        	parameters);
+    static public String getMessage(final String key, final String parameter0,
+        final String parameter1, final String parameter2) {
+	
+	    return MESSAGES.getMessage(key, parameter0, parameter1, parameter2);
     }
 
     /**
@@ -313,23 +217,13 @@ public final class RIFGenericLibraryMessages {
      * @param parameter3 the parameter3
      * @return the message
      */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2,
-        final String parameter3) {
-
-        String[] parameters = new String[4];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-        parameters[3] = parameter3;
-        return fillInTheBlanks(key,
-        	parameters);
-
+    static public String getMessage(final String key, final String parameter0,
+				    final String parameter1, final String parameter2,
+				    final String parameter3) {
+	
+	    return MESSAGES.getMessage(key, parameter0, parameter1, parameter2,
+					    parameter3);
     }
-
 
     /**
      * Gets the message.
@@ -342,87 +236,12 @@ public final class RIFGenericLibraryMessages {
      * @param parameter3 the parameter4
      * @return the message
      */
-    static public String getMessage(
-		final String key,
-        final String parameter0,
-        final String parameter1,
-        final String parameter2,
-        final String parameter3,
-        final String parameter4) {
-
-        String[] parameters = new String[5];
-        parameters[0] = parameter0;
-        parameters[1] = parameter1;
-        parameters[2] = parameter2;
-        parameters[3] = parameter3;
-        parameters[4] = parameter4;
-        return fillInTheBlanks(key,
-        	parameters);
+    static public String getMessage(final String key, final String parameter0,
+				    final String parameter1, final String parameter2, final String parameter3,
+				    final String parameter4) {
+	
+	    return MESSAGES.getMessage(key, parameter0, parameter1, parameter2,
+					    parameter3, parameter4);
 
     }
-    
-    
-    /**
-     * Fill in the blanks.
-     *
-     * @param key the key
-     * @param parameters the parameters
-     * @return the string
-     */
-    static private String fillInTheBlanks(
-		final String key,
-        final String[] parameters) {
-
-        String messageWithBlanks = resourceBundle.getString(key);
-
-        MessageFormat messageFormat
-                = new MessageFormat(messageWithBlanks);
-        String messageWithoutBlanks
-                = messageFormat.format(parameters);
-        return messageWithoutBlanks;
-    }
-
-    /**
-     * returns the model directory.  It will be something like
-     * project35/dist/models/tutorial, or project35/dist/models/mymodel etc. ...
-     *
-     * @return the resource bundle
-     */
-    public static ResourceBundle getResourceBundle() {
-    	
-        return resourceBundle;
-    }
-    
-    // ==========================================
-    // Section Mutators
-    // ==========================================
-
-	/**
-     * Sets the collator.
-     *
-     * @param _collator the new collator
-     */
-    public static void setCollator(
-    	final Collator _collator) {
-
-    	collator = _collator;
-	}    
-    
-    
-    // ==========================================
-    // Section Validation
-    // ==========================================
-
-    // ==========================================
-    // Section Errors
-    // ==========================================
-
-    // ==========================================
-    // Section Interfaces
-    // ==========================================
-
-    // ==========================================
-    // Section Overload
-    // ==========================================
-
 }

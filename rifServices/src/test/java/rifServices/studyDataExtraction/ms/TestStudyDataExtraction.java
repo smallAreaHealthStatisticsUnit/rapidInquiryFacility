@@ -126,23 +126,19 @@ public final class TestStudyDataExtraction
 	}
 	
 	@Test
-	public void deleteStudy() {		
-		try {
-			User validUser = cloneValidUser();
-			String validStudyID = "18";
+	public void deleteStudy() throws RIFServiceException {
+
+		User validUser = cloneValidUser();
+		String validStudyID = "18";
+		
+		MSSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
+			= getRIFServiceBundle();
+		
+		MSSQLTestRIFStudySubmissionService testSubmissionService
+			= (MSSQLTestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
+		testSubmissionService.deleteStudy(validUser, validStudyID);
 			
-			MSSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
-				= getRIFServiceBundle();
-			
-			MSSQLTestRIFStudySubmissionService testSubmissionService
-				= (MSSQLTestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
-			testSubmissionService.deleteStudy(validUser, validStudyID);
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
-	}		
+	}
 	
 	// ==========================================
 	// Section Interfaces

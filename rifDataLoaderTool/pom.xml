@@ -71,7 +71,7 @@
   	<groupId>rapidInquiryFacility</groupId>
   	<artifactId>rifGeneral</artifactId>
   	<version>0.0.1-SNAPSHOT</version>
-    <relativePath>../rapidInquiryFacility/pom.xml</relativePath>  
+    <relativePath>../pom.xml</relativePath>
 
   </parent>
   
