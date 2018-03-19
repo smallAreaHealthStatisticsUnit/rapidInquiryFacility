@@ -362,7 +362,7 @@ public final class MSSQLTestRIFStudySubmissionService
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();	
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return;
 		}
 		

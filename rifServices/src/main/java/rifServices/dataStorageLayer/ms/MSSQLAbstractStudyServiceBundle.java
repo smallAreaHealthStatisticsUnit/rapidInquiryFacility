@@ -90,7 +90,7 @@ class MSSQLAbstractStudyServiceBundle {
 	// Section Construction
 	// ==========================================
 
-	public MSSQLAbstractStudyServiceBundle() {
+	MSSQLAbstractStudyServiceBundle() {
 		isInitialised = false;
 	}
 		
@@ -98,7 +98,7 @@ class MSSQLAbstractStudyServiceBundle {
 		final RIFServiceStartupOptions rifServiceStartupOptions) 
 		throws RIFServiceException {
 		
-		if (isInitialised == false) {
+		if (!isInitialised) {
 			
 			rifServiceResources
 				= MSSQLRIFServiceResources.newInstance(rifServiceStartupOptions);

@@ -12,10 +12,10 @@ import java.util.ResourceBundle;
 
 public class Messages {
 	
-	public static final String RIF_GENERIC_LIBRARY_MESSAGES = "RIFGenericLibraryMessages";
 	public static final String RIF_SERVICE_MESSAGES = "RIFServiceMessages";
 	public static final String DATA_LOADER_TOOL_MESSAGES = "RIFDataLoaderToolMessages";
-	public static final String TAXONOMY_SERVICE_MESSAGES = "TaxonomyServiceMessages";
+	private static final String RIF_GENERIC_LIBRARY_MESSAGES = "RIFGenericLibraryMessages";
+	private static final String TAXONOMY_SERVICE_MESSAGES = "TaxonomyServiceMessages";
 	
 	private static Collection<ResourceBundle> bundles = new ArrayList<>();
 	private static Collator collator;

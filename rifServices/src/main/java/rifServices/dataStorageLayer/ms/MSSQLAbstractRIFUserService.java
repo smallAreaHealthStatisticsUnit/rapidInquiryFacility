@@ -120,7 +120,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return true;
 		}
 		
@@ -161,7 +161,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		
@@ -237,7 +237,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 			
@@ -301,7 +301,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography 
@@ -385,7 +385,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography 
@@ -476,7 +476,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography 
@@ -583,7 +583,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography 
@@ -679,7 +679,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		User user = User.createCopy(_user);		
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			//TOUR SECURITY
 			/*
 			 * The first most important security task is to check whether the user has 
@@ -786,7 +786,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography = Geography.createCopy(_geography);
@@ -867,7 +867,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography = Geography.createCopy(_geography);
@@ -952,7 +952,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 			User user = User.createCopy(_user);
 			MSSQLConnectionManager sqlConnectionManager
 				= rifServiceResources.getSqlConnectionManager();
-			if (sqlConnectionManager.isUserBlocked(user) == true) {
+			if (sqlConnectionManager.isUserBlocked(user)) {
 				return null;
 			}
 			Geography geography
@@ -1041,7 +1041,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography

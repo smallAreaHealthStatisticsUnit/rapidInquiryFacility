@@ -150,13 +150,13 @@ public final class MSSQLConnectionManager
 		super(rifServiceStartupOptions.getRIFDatabaseProperties());
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
-		readOnlyConnectionsFromUser = new HashMap<String, ConnectionQueue>();
-		writeConnectionsFromUser = new HashMap<String, ConnectionQueue>();
+		readOnlyConnectionsFromUser = new HashMap<>();
+		writeConnectionsFromUser = new HashMap<>();
 				
-		userIDsToBlock = new HashSet<String>();
-		registeredUserIDs = new HashSet<String>();
+		userIDsToBlock = new HashSet<>();
+		registeredUserIDs = new HashSet<>();
 	
-		suspiciousEventCounterFromUser = new HashMap<String, Integer>();
+		suspiciousEventCounterFromUser = new HashMap<>();
 		
 		StringBuilder query = new StringBuilder();
 		
