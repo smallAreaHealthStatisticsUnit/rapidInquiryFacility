@@ -1,19 +1,15 @@
 package rifServices.businessConceptLayer;
 
-import rifServices.businessConceptLayer.Project;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Date;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
-
-import java.util.ArrayList;
-import java.text.Collator;
-import java.util.Date;
-
-
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -54,7 +50,6 @@ import java.util.Date;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -84,7 +79,9 @@ public class Project
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -395,7 +392,7 @@ public class Project
 			= RIFServiceMessages.getMessage("project.name.label");
 		if (fieldValidationUtility.isEmpty(getName())) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					nameFieldName);
@@ -406,7 +403,7 @@ public class Project
 			= RIFServiceMessages.getMessage("project.description.label");
 		if (fieldValidationUtility.isEmpty(getDescription())) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					descriptionFieldName);
@@ -419,14 +416,14 @@ public class Project
 		Date startDate = null;
 		if (fieldValidationUtility.isEmpty(startDatePhrase)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					startDateFieldName);
 			errorMessages.add(errorMessage);			
 		}
 		else {
-			startDate = RIFGenericLibraryMessages.getDate(startDatePhrase);		
+			startDate = GENERIC_MESSAGES.getDate(startDatePhrase);		
 			if (startDate == null) {
 				String errorMessage
 					= RIFServiceMessages.getMessage(
@@ -447,7 +444,7 @@ public class Project
 		/*
 		if (fieldValidationUtility.isEmpty(endDatePhrase)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					endDateFieldName);
@@ -457,7 +454,7 @@ public class Project
 		
 		if (fieldValidationUtility.isEmpty(endDatePhrase) == false) {
 //		else {
-			endDate = RIFGenericLibraryMessages.getDate(endDatePhrase);		
+			endDate = GENERIC_MESSAGES.getDate(endDatePhrase);		
 			if (endDate == null) {
 				String errorMessage
 					= RIFServiceMessages.getMessage(

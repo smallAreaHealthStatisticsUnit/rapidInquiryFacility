@@ -1,13 +1,5 @@
 package rifServices.restfulWebServices;
 
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceError;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.util.FieldValidationUtility;
-
 import java.util.ArrayList;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -15,6 +7,14 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -92,7 +92,9 @@ public final class StudySummaryProxy {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -229,7 +231,7 @@ public final class StudySummaryProxy {
 			String studyIDFieldName
 				= RIFServiceMessages.getMessage("studySummary.identifier.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					studyIDFieldName);

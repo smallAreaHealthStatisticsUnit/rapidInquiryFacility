@@ -1,18 +1,15 @@
 package rifDataLoaderTool.businessConceptLayer;
 
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Objects;
+
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
-
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.Geography;
-import rifDataLoaderTool.businessConceptLayer.HealthTheme;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
-
-import java.util.*;
-import java.text.Collator;
 
 /**
  * This is one of the major business classes that describes properties
@@ -159,7 +156,9 @@ public class DataSetConfiguration
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -716,11 +715,11 @@ public class DataSetConfiguration
 		throws RIFServiceException {
 	
 
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = Messages.genericMessages().getCollator();
 		
 		String targetCoreFieldName = targetDataSetFieldConfiguration.getCoreFieldName();
 		
-		ArrayList<String> errorMessages = new ArrayList<String>();
+		ArrayList<String> errorMessages = new ArrayList<>();
 		
 		String targetLoadFieldName
 			= targetDataSetFieldConfiguration.getLoadFieldName();
@@ -730,7 +729,7 @@ public class DataSetConfiguration
 			String currentLoadFieldName
 				= fieldConfiguration.getLoadFieldName();
 			if (collator.equals(currentLoadFieldName, targetLoadFieldName) &&
-				collator.equals(currentCoreFieldName, targetCoreFieldName) == false) {
+				collator.equals(currentCoreFieldName, targetCoreFieldName)) {
 				
 				String errorMessage
 				= RIFDataLoaderToolMessages.getMessage(
@@ -904,7 +903,7 @@ public class DataSetConfiguration
 		final String convertFieldName) {
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		
 		for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 			String currentFieldName

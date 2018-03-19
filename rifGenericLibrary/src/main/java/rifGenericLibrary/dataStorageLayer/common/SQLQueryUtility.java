@@ -1,21 +1,17 @@
 package rifGenericLibrary.dataStorageLayer.common;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.sql.Statement;
 
-
-
-
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
 
 /**
  * Properly closes down statements, connections, result sets.  When these operations
@@ -58,7 +54,6 @@ import java.sql.SQLWarning;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -89,10 +84,8 @@ public class SQLQueryUtility {
 	// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
-
-	private static String callingClassName="rifGenericLibrary.dataStorageLayer.pg.SQLQueryUtility"; 
-		// this.getClass().getName();
-		// So you can call the static safe RIFLogger functions
+	private static String callingClassName="rifGenericLibrary.dataStorageLayer.pg.SQLQueryUtility";
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 		
 	// ==========================================
 	// Section Properties
@@ -132,7 +125,7 @@ public class SQLQueryUtility {
 		}
 		catch(SQLException sqlException) {			
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage("sqlConnectionManager.error.unableToCloseResource");
+				= GENERIC_MESSAGES.getMessage("sqlConnectionManager.error.unableToCloseResource");
 			
 			rifLogger.error(
 				SQLQueryUtility.class, 
@@ -167,7 +160,7 @@ public class SQLQueryUtility {
 		catch(SQLException sqlException) {
 
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
 			
 			rifLogger.error(
@@ -202,7 +195,7 @@ public class SQLQueryUtility {
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
 			
 			rifLogger.error(
@@ -287,7 +280,7 @@ public class SQLQueryUtility {
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage("general.db.error.unableToCommit");
+				= GENERIC_MESSAGES.getMessage("general.db.error.unableToCommit");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFGenericLibraryError.DB_UNABLE_TO_COMMIT,
@@ -310,7 +303,7 @@ public class SQLQueryUtility {
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage("general.db.error.unableToRollback");
+				= GENERIC_MESSAGES.getMessage("general.db.error.unableToRollback");
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFGenericLibraryError.DB_UNABLE_TO_ROLLBACK,

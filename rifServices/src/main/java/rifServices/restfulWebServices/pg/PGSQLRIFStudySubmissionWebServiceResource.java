@@ -1,23 +1,50 @@
 package rifServices.restfulWebServices.pg;
 
-import rifServices.system.RIFServiceMessages;
-import rifServices.businessConceptLayer.*;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.businessConceptLayer.User;
-
-import com.sun.jersey.multipart.*;
-
-import javax.ws.rs.*;
-
-import rifServices.restfulWebServices.*;
-
-import javax.ws.rs.core.*;
-import javax.servlet.http.HttpServletRequest;
-
+import java.io.InputStream;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.io.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import com.sun.jersey.multipart.FormDataParam;
+
+import rifGenericLibrary.businessConceptLayer.Parameter;
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.system.Messages;
+import rifServices.businessConceptLayer.AbstractCovariate;
+import rifServices.businessConceptLayer.AdjustableCovariate;
+import rifServices.businessConceptLayer.AgeGroup;
+import rifServices.businessConceptLayer.AgeGroupSortingOption;
+import rifServices.businessConceptLayer.CalculationMethod;
+import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.businessConceptLayer.HealthCodeTaxonomy;
+import rifServices.businessConceptLayer.HealthTheme;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.Project;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.restfulWebServices.AgeGroupJSONGenerator;
+import rifServices.restfulWebServices.CalculationMethodProxy;
+import rifServices.restfulWebServices.CovariateProxy;
+import rifServices.restfulWebServices.HealthCodeProxy;
+import rifServices.restfulWebServices.HealthCodeTaxonomyProxy;
+import rifServices.restfulWebServices.HealthThemeProxy;
+import rifServices.restfulWebServices.ParameterProxy;
+import rifServices.restfulWebServices.ProjectProxy;
+import rifServices.restfulWebServices.SexesProxy;
+import rifServices.restfulWebServices.WebServiceResponseGenerator;
+import rifServices.system.RIFServiceMessages;
 
 
 
@@ -108,7 +135,9 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -499,7 +528,7 @@ public class PGSQLRIFStudySubmissionWebServiceResource
 				= studySubmissionService.getProjects(user);			
 
 			//Convert results to support JSON
-			Collator collator = RIFGenericLibraryMessages.getCollator();
+			Collator collator = GENERIC_MESSAGES.getCollator();
 			Project selectedProject = null;
 			for (Project project : projects) {
 				if (collator.equals(projectName, project.getName())) {

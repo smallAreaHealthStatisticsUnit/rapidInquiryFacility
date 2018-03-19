@@ -1,18 +1,16 @@
 
 package rifServices.businessConceptLayer;
 
-import rifServices.businessConceptLayer.AbstractRIFConcept;
-import rifServices.system.RIFServiceMessages;
-
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
-
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
+
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifServices.system.RIFServiceMessages;
 
 
 /**
@@ -58,7 +56,6 @@ import java.util.Hashtable;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 
 /*
@@ -91,7 +88,9 @@ abstract public class AbstractStudy
 // ==========================================
 // Section Constants
 // ==========================================
-
+	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -189,7 +188,6 @@ abstract public class AbstractStudy
 	/**
 	 * Sets the other notes.
 	 *
-	 * @param knownIssues the new known issues
 	 */
 	public void setOtherNotes(
 		final String otherNotes) {
@@ -435,7 +433,7 @@ abstract public class AbstractStudy
 		FieldValidationUtility fieldValidationUtility = new FieldValidationUtility();		
 		if (fieldValidationUtility.isEmpty(name) == true) {
 			String errorMessage 
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					nameFieldLabel);
@@ -444,7 +442,7 @@ abstract public class AbstractStudy
     
 		if (fieldValidationUtility.isEmpty(getDescription()) == true) {
 			String errorMessage 
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					descriptionFieldLabel);
@@ -455,7 +453,7 @@ abstract public class AbstractStudy
 			String comparisonAreaLabel
 				= RIFServiceMessages.getMessage("geography.label");
 			String errorMessage 
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					comparisonAreaLabel);
@@ -474,7 +472,7 @@ abstract public class AbstractStudy
 			String comparisonAreaLabel
 				= RIFServiceMessages.getMessage("comparisonArea.label");
 			String errorMessage 
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					comparisonAreaLabel);
@@ -493,7 +491,7 @@ abstract public class AbstractStudy
 			String investigationsFieldName
 				= RIFServiceMessages.getMessage("investigation.plural.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					investigationsFieldName);

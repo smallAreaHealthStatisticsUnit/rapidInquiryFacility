@@ -1,16 +1,17 @@
 package rifGenericLibrary.presentationLayer;
 
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifGenericLibrary.system.RIFServiceException;
-
-import javax.swing.*;
-
-import java.awt.event.*;
-import java.awt.*;
+import java.awt.GridBagConstraints;
+import java.awt.event.ActionEvent;
 import java.text.Collator;
 import java.util.ArrayList;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  *
@@ -68,7 +69,9 @@ public class NamedListItemDialog
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -107,7 +110,7 @@ public class NamedListItemDialog
 			= userInterfaceFactory.createGridBagConstraints();
 		
 		String nameFieldLabelText
-			= RIFGenericLibraryMessages.getMessage("nameListItemDialog.name.label");
+			= GENERIC_MESSAGES.getMessage("nameListItemDialog.name.label");
 		JLabel nameFieldLabel
 			= userInterfaceFactory.createLabel(nameFieldLabelText);
 		panel.add(nameFieldLabel, panelGC);
@@ -137,14 +140,14 @@ public class NamedListItemDialog
 		throws RIFServiceException {
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		
 		String currentNameCandidate
 			= nameTextField.getText().trim();
 		for (String existingName : existingNames) {
 			if (collator.equals(existingName, currentNameCandidate)) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"nameListItemDialog.error.duplicateCopiedName",
 						currentNameCandidate);
 				RIFServiceException rifServiceException

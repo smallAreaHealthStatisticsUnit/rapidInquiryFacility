@@ -1,13 +1,14 @@
 package rifGenericLibrary.presentationLayer;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
-import javax.swing.JPanel;
-import javax.swing.JButton;
-import javax.swing.border.LineBorder;
-import java.util.ArrayList;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
+
+import rifGenericLibrary.system.Messages;
 
 
 /**
@@ -84,6 +85,8 @@ public final class ListEditingButtonPanel {
 	// Section Constants
 	// ==========================================
 	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -119,31 +122,31 @@ public final class ListEditingButtonPanel {
 		panel = userInterfaceFactory.createPanel();
 		
 		String addButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.add.label");
+			= GENERIC_MESSAGES.getMessage("buttons.add.label");
 		addButton = userInterfaceFactory.createButton(addButtonText);
 		
 		String editButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.edit.label");
+			= GENERIC_MESSAGES.getMessage("buttons.edit.label");
 		editButton = userInterfaceFactory.createButton(editButtonText);
 
 		String copyButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.copy.label");
+			= GENERIC_MESSAGES.getMessage("buttons.copy.label");
 		copyButton = userInterfaceFactory.createButton(copyButtonText);
 
 		String deleteButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.delete.label");
+			= GENERIC_MESSAGES.getMessage("buttons.delete.label");
 		deleteButton = userInterfaceFactory.createButton(deleteButtonText);
 		
 		String clearButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.clear.label");
+			= GENERIC_MESSAGES.getMessage("buttons.clear.label");
 		clearButton = userInterfaceFactory.createButton(clearButtonText);
 		
 		String importButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.import.label");
+			= GENERIC_MESSAGES.getMessage("buttons.import.label");
 		importButton = userInterfaceFactory.createButton(importButtonText);
 		
 		String exportButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.export.label");
+			= GENERIC_MESSAGES.getMessage("buttons.export.label");
 		exportButton = userInterfaceFactory.createButton(exportButtonText);
 		
 		isLeftJustified = false;
@@ -370,7 +373,7 @@ public final class ListEditingButtonPanel {
 		addButton.setEnabled(true);
 		
 		String editButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.edit.label");
+			= GENERIC_MESSAGES.getMessage("buttons.edit.label");
 		editButton.setText(editButtonText);		
 		editButton.setEnabled(false);
 		copyButton.setEnabled(false);
@@ -382,7 +385,7 @@ public final class ListEditingButtonPanel {
 		addButton.setEnabled(true);
 		
 		String editButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.edit.label");
+			= GENERIC_MESSAGES.getMessage("buttons.edit.label");
 		editButton.setText(editButtonText);		
 		editButton.setEnabled(true);
 		copyButton.setEnabled(true);
@@ -394,7 +397,7 @@ public final class ListEditingButtonPanel {
 		addButton.setEnabled(false);
 		
 		String viewButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.view.label");
+			= GENERIC_MESSAGES.getMessage("buttons.view.label");
 		editButton.setText(viewButtonText);
 		editButton.setEnabled(true);
 		copyButton.setEnabled(false);
@@ -406,7 +409,7 @@ public final class ListEditingButtonPanel {
 		addButton.setEnabled(true);
 		
 		String viewButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.view.label");
+			= GENERIC_MESSAGES.getMessage("buttons.view.label");
 		editButton.setText(viewButtonText);
 		editButton.setEnabled(true);
 		copyButton.setEnabled(true);
@@ -418,7 +421,7 @@ public final class ListEditingButtonPanel {
 		addButton.setEnabled(true);
 		
 		String editButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.edit.label");
+			= GENERIC_MESSAGES.getMessage("buttons.edit.label");
 		editButton.setText(editButtonText);
 		editButton.setEnabled(true);
 		copyButton.setEnabled(true);

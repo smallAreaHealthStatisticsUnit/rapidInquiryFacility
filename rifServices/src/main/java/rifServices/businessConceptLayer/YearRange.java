@@ -1,19 +1,16 @@
 
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-
-import java.util.ArrayList;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -54,7 +51,6 @@ import java.util.Date;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 
 /*
@@ -92,6 +88,7 @@ final public class YearRange
 	//@TODO At some point, make this something that can be set through a property
 	/** The Constant REALISTIC_LOWEST_YEAR. */
 	private static final int REALISTIC_LOWEST_YEAR = 1950;
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
 // ==========================================
 // Section Properties
@@ -589,7 +586,7 @@ final public class YearRange
 		//check for nulls
 		if (lowerBound == null) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					lowerBoundFieldName);
@@ -598,7 +595,7 @@ final public class YearRange
 		
 		if (upperBound == null) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					upperBoundFieldName);

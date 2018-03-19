@@ -1,10 +1,10 @@
 package rifGenericLibrary.util;
 
-import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
-import java.util.ArrayList;
 import java.text.Collator;
+import java.util.ArrayList;
+
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+import rifGenericLibrary.system.Messages;
 
 /**
  *
@@ -71,7 +71,9 @@ public final class RIFComparisonUtility {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -102,7 +104,7 @@ public final class RIFComparisonUtility {
 		
 		if (rifObjectA == rifObjectB) {
 			//same nullity: either they're both non-null or
-			//they're refering to the same objects
+			//they're referring to the same objects
 			return false;
 		}
 		
@@ -112,7 +114,7 @@ public final class RIFComparisonUtility {
 		
 		if (rifObjectA == null) {
 			String difference
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"differences.rifObjectsHaveDifferentNullity",
 					rifObjectB.getDisplayName());
 			differences.add(difference);
@@ -120,7 +122,7 @@ public final class RIFComparisonUtility {
 		}
 		else if (rifObjectB == null) {
 			String difference
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"differences.rifObjectsHaveDifferentNullity",
 					rifObjectA.getDisplayName());
 			differences.add(difference);
@@ -161,11 +163,11 @@ public final class RIFComparisonUtility {
 		//a is not NULL and b is NULL
 		
 		String fieldName
-			= RIFGenericLibraryMessages.getMessage(comparedFieldPropertyName);
+			= GENERIC_MESSAGES.getMessage(comparedFieldPropertyName);
 		
 		if (fieldA == null) {
 			String difference
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"differences.rifObjectFieldsHaveDifferentNullity",
 					fieldName,
 					rifObjectB.getDisplayName(),
@@ -175,7 +177,7 @@ public final class RIFComparisonUtility {
 		}
 		else if (fieldB == null) {
 			String difference
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"differences.rifObjectFieldsHaveDifferentNullity",
 					fieldName,
 					rifObjectA.getDisplayName(),
@@ -209,16 +211,16 @@ public final class RIFComparisonUtility {
 		final ArrayList<String> differences) {
 		
 		String fieldNameUsedInComparison
-			= RIFGenericLibraryMessages.getMessage(comparedFieldPropertyName);
+			= GENERIC_MESSAGES.getMessage(comparedFieldPropertyName);
 
 		if ((fieldValueA != null) && (fieldValueB != null)) {
 			
-			Collator collator = RIFGenericLibraryMessages.getCollator();
+			Collator collator = GENERIC_MESSAGES.getCollator();
 			if (!collator.equals(fieldValueA, fieldValueB)) {
 				
 				//eg: a.x = "5", b.x="7"
 				String difference
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"differences.fieldsDiffer",
 						fieldNameUsedInComparison,
 						ownerOfFieldValueA.getDisplayName(),
@@ -234,7 +236,7 @@ public final class RIFComparisonUtility {
 			//eg: a.x = null, b.x="7"
 
 			String difference
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"differences.oneFieldIsNull",
 					fieldNameUsedInComparison,
 					ownerOfFieldValueB.getDisplayName(),
@@ -247,7 +249,7 @@ public final class RIFComparisonUtility {
 			//eg: a.x = "5", b.x=null
 
 			String difference
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"differences.oneFieldIsNull",
 					fieldNameUsedInComparison,
 					ownerOfFieldValueA.getDisplayName(),

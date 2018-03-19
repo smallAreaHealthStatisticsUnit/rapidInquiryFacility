@@ -1,17 +1,6 @@
 
 package rifServices.ontologyServices;
 
-import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
 import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -22,6 +11,16 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
+import rifServices.businessConceptLayer.HealthCodeTaxonomy;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -63,7 +62,6 @@ import javax.xml.parsers.SAXParserFactory;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -94,7 +92,9 @@ final class XMLHealthCodeTaxonomyContentHandler
 // ==========================================
 // Section Constants
 // ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -127,7 +127,7 @@ final class XMLHealthCodeTaxonomyContentHandler
      */
 	public XMLHealthCodeTaxonomyContentHandler() {
     	isValidRifHealthCodeProvider = false;
-		collator = RIFGenericLibraryMessages.getCollator();
+		collator = GENERIC_MESSAGES.getCollator();
 		parentTerms = new Stack<TaxonomyTerm>();
 		
 		allTerms = new ArrayList<TaxonomyTerm>();
@@ -362,7 +362,7 @@ final class XMLHealthCodeTaxonomyContentHandler
 		final String label,
 		final String nameSpace) {
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		
 		String healthTaxonomyNameSpace 
 			= healthCodeTaxonomy.getNameSpace();

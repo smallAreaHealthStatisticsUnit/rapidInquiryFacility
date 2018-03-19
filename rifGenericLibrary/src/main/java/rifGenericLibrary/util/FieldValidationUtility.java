@@ -9,8 +9,8 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 
@@ -74,6 +74,8 @@ public final class FieldValidationUtility {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
 	// ==========================================
 	// Section Properties
@@ -160,7 +162,7 @@ public final class FieldValidationUtility {
 		
 		if (parameterValue == null) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.nullMethodParameter",
 					methodName,
 					parameterName);
@@ -176,7 +178,7 @@ public final class FieldValidationUtility {
 					= (String) parameterValue;
 				if (isEmpty(parameterValuePhrase) == true) {
 					String errorMessage
-						= RIFGenericLibraryMessages.getMessage(
+						= GENERIC_MESSAGES.getMessage(
 							"general.validation.nullMethodParameter",
 							methodName,
 							parameterName);
@@ -227,7 +229,7 @@ public final class FieldValidationUtility {
 			Matcher matcher = maliciousCodePattern.matcher(parameterValue);
 			if (matcher.find()) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"genaral.validation.maliciousMethodParameterDetected",
 						methodName,
 						parameterName,
@@ -270,7 +272,7 @@ public final class FieldValidationUtility {
 				Matcher matcher = maliciousCodePattern.matcher(parameterValue);
 				if (matcher.find()) {
 					String errorMessage
-						= RIFGenericLibraryMessages.getMessage(
+						= GENERIC_MESSAGES.getMessage(
 							"genaral.validation.maliciousMethodParameterDetected",
 							methodName,
 							parameterName,
@@ -307,7 +309,7 @@ public final class FieldValidationUtility {
 			Matcher matcher = maliciousCodePattern.matcher(new String(password));
 			if (matcher.find()) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"genaral.validation.maliciousMethodParameterDetected",
 						methodName,
 						parameterName,
@@ -334,7 +336,7 @@ public final class FieldValidationUtility {
 		
 		if (isEmpty(fieldValue)) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredParameter", 
 					fieldName);
 			RIFServiceException rifServiceException
@@ -358,7 +360,7 @@ public final class FieldValidationUtility {
 		}
 		catch(NumberFormatException numberformatException) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.invalidIntegerMethodParameter", 
 					methodName,
 					fieldValue,
@@ -385,7 +387,7 @@ public final class FieldValidationUtility {
 			return true;
 		}
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		if (collator.equals(fieldValue, "")) {
 			return true;
 		}
@@ -416,10 +418,9 @@ public final class FieldValidationUtility {
 	 * @return
 	 */
 	public String convertToDatabaseTableName(final String candidateTableName) {
+		
 		return candidateTableName.replace(" ", "_").toUpperCase();
 	}
-	
-	
 	
 	/**
 	 * Check malicious code.
@@ -453,7 +454,7 @@ public final class FieldValidationUtility {
 			Matcher matcher = maliciousCodePattern.matcher(fieldValue);
 			if (matcher.find()) {
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= GENERIC_MESSAGES.getMessage(
 						"genaral.validation.maliciousRecordFieldDetected",
 						recordName,
 						fieldName,
@@ -486,68 +487,12 @@ public final class FieldValidationUtility {
 		return false;		
 	}
 	
-	public static String compareNullities(
-		final Object fieldValueA,
-		final String recordNameA,
-		final String fieldNameA,		
-		final Object fieldValueB,
-		final String recordNameB,
-		final String fieldNameB) {
-			
-		if (hasDifferentNullity(fieldValueA, fieldValueB) == false) {
-			//fieldValueA and fieldValueB are either both null or both non-null
-			return null;
-		}
-		
-		String differenceMessage = "";
-		if (fieldValueA == null) {
-			differenceMessage
-				= RIFGenericLibraryMessages.getMessage(
-					"fieldValidationUtility.nullityDifferences.fieldLevelDifference",
-					recordNameA,
-					fieldNameA,
-					recordNameB,
-					fieldNameB);
-		}
-		else {
-			differenceMessage
-				= RIFGenericLibraryMessages.getMessage(
-					"fieldValidationUtility.nullityDifferences.fieldLevelDifference",
-					recordNameB,
-					fieldNameB,
-					recordNameA,
-					fieldNameA);
-		}		
-		
-		return differenceMessage;			
-	}
-	
-	public static boolean areFieldsEqual(
-		final String valueA, 
-		final String valueB) {
-	
-		Collator collator 
-			= RIFGenericLibraryMessages.getCollator();
-		if ((valueA == null) && (valueB != null)) {
-			return false;
-		}
-		else if ((valueA != null) && (valueB == null)) {
-			return false;
-		}
-		else if (valueA != valueB) {			
-			return collator.equals(valueA, valueB);
-		}
-		else {
-			return true;
-		}
-	}
-
 	public static String generateUniqueListItemName(
 		final String baseName,
 		final ArrayList<String> existingNames) {
 		
 		//Check - if base name is already unique then return that
-		if (existingNames.contains(baseName) == false) {
+		if (!existingNames.contains(baseName)) {
 			return baseName;
 		}
 		
@@ -556,14 +501,14 @@ public final class FieldValidationUtility {
 			counter++;
 			String candidateName
 				= baseName + "-" + String.valueOf(counter);
-			if (existingNames.contains(candidateName) == false) {
+			if (!existingNames.contains(candidateName)) {
 				//name is unique
 				return candidateName;
 			}
 		}	
 	}
 	
-	public static void checkListDuplicate(
+	public void checkListDuplicate(
 		final String candidateItem,
 		final ArrayList<String> currentListItems) 
 		throws RIFServiceException {
@@ -571,7 +516,7 @@ public final class FieldValidationUtility {
 		if (currentListItems.contains(candidateItem)) {
 			//Error Message
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"listItemNameUtility.duplicateFieldName",
 					candidateItem);
 			RIFServiceException rifServiceException

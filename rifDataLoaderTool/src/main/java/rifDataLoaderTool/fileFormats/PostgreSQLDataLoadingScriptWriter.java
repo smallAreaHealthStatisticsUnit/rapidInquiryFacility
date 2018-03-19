@@ -1,17 +1,27 @@
 package rifDataLoaderTool.fileFormats;
 
-import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.system.*;
-import rifGenericLibrary.system.*;
-import rifGenericLibrary.dataStorageLayer.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.Date;
+
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
+import rifDataLoaderTool.businessConceptLayer.RIFDataType;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLAddCommentQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateIndexQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLImportTableFromCSVQueryFormatter;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Date;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
 
 
 
@@ -115,7 +125,7 @@ public class PostgreSQLDataLoadingScriptWriter {
 
 			Date currentTime = new Date();
 			String currentTimePhrase
-				= RIFGenericLibraryMessages.getTimePhrase(currentTime);
+				= Messages.genericMessages().getTimePhrase(currentTime);
 			String timeStampCommentLine
 				= RIFDataLoaderToolMessages.getMessage(
 					"loadingScriptWriter.comment.timeStamp",

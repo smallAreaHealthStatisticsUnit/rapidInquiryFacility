@@ -1,22 +1,6 @@
 
 package rifServices.fileFormats;
 
-import rifServices.businessConceptLayer.CalculationMethod;
-import rifServices.businessConceptLayer.DiseaseMappingStudy;
-import rifServices.businessConceptLayer.Project;
-import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.businessConceptLayer.RIFOutputOption;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
-import rifGenericLibrary.fileFormats.XMLCommentInjector;
-import rifGenericLibrary.fileFormats.XMLUtility;
-import rifGenericLibrary.presentationLayer.HTMLUtility;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -24,6 +8,21 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.fileFormats.AbstractXMLContentHandler;
+import rifGenericLibrary.fileFormats.XMLCommentInjector;
+import rifGenericLibrary.fileFormats.XMLUtility;
+import rifGenericLibrary.presentationLayer.HTMLUtility;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifServices.businessConceptLayer.CalculationMethod;
+import rifServices.businessConceptLayer.DiseaseMappingStudy;
+import rifServices.businessConceptLayer.Project;
+import rifServices.businessConceptLayer.RIFOutputOption;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 
 /**
  *
@@ -95,7 +94,9 @@ final public class RIFStudySubmissionContentHandler
 // ==========================================
 // Section Constants
 // ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -228,7 +229,7 @@ final public class RIFStudySubmissionContentHandler
 		}
 		else {
 			String jobSubmissionDatePhrase 
-				= RIFGenericLibraryMessages.getTimePhrase(jobSubmissionTime);
+				= GENERIC_MESSAGES.getTimePhrase(jobSubmissionTime);
 			xmlUtility.writeField(
 				recordName,
 				"job_submission_date", 
@@ -337,7 +338,7 @@ final public class RIFStudySubmissionContentHandler
 			else if (equalsFieldName(qualifiedName, "job_submission_date")) {
 				String jobSubmissionTimePhrase
 					= getCurrentFieldValue();
-				Collator collator = RIFGenericLibraryMessages.getCollator();
+				Collator collator = GENERIC_MESSAGES.getCollator();
 				
 				currentRIFJobSubmission.setJobSubmissionTime(new Date());
 
@@ -345,7 +346,7 @@ final public class RIFStudySubmissionContentHandler
 				if (!fieldValidationUtility.isEmpty(jobSubmissionTimePhrase)) {
 					if (!collator.equals(jobSubmissionTimePhrase, "")) {
 						Date jobSubmissionTime
-							= RIFGenericLibraryMessages.getTime(jobSubmissionTimePhrase);
+							= GENERIC_MESSAGES.getTime(jobSubmissionTimePhrase);
 						currentRIFJobSubmission.setJobSubmissionTime(jobSubmissionTime);
 					}
 				}
@@ -406,7 +407,7 @@ final public class RIFStudySubmissionContentHandler
 		}
 		else if (equalsFieldName(qualifiedName, "job_submission_date")) {
 			Date jobSubmissionTime
-				= RIFGenericLibraryMessages.getTime(getCurrentFieldValue());
+				= GENERIC_MESSAGES.getTime(getCurrentFieldValue());
 			currentRIFJobSubmission.setJobSubmissionTime(jobSubmissionTime);
 		}
 		else {

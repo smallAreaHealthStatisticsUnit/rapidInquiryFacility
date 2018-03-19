@@ -1,33 +1,47 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.Collator;
+import java.util.ArrayList;
+
+import org.postgresql.copy.CopyManager;
+import org.postgresql.core.BaseConnection;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
-import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
-import rifGenericLibrary.dataStorageLayer.*;
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLExportTableToCSVQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSchemaCommentQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLUpdateQueryFormatter;
-import rifGenericLibrary.system.*;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
-
-import org.postgresql.copy.CopyManager;
-import org.postgresql.core.BaseConnection;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.text.Collator;
-import java.io.*;
 
 /**
  * provides functionality common to all manager classes associated with different steps
@@ -86,11 +100,8 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	private DataLoaderToolSettings dataLoaderToolSettings;
+	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
 	// ==========================================
 	// Section Construction
@@ -104,18 +115,10 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 	// Section Accessors and Mutators
 	// ==========================================
 	
-	public void setDataLoaderToolSettings(
-		final DataLoaderToolSettings dataLoaderToolSettings) {
-		
-		this.dataLoaderToolSettings = dataLoaderToolSettings;
-	}
-	
-	protected RIFResultTable getTableData(
-		final Connection connection,
-		final String tableName,
-		final String[] fieldNames)
-		throws SQLException,
-		RIFServiceException {
+	RIFResultTable getTableData(
+					final Connection connection,
+					final String tableName,
+					final String[] fieldNames) throws SQLException, RIFServiceException {
 				
 		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
 			
@@ -174,7 +177,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 						else {
 							Date date = new Date(timeStamp.getTime());
 							String datePhrase
-								= RIFGenericLibraryMessages.getDatePhrase(date);
+								= GENERIC_MESSAGES.getDatePhrase(date);
 							tableData[ithRow][i] = datePhrase;
 						}
 					}
@@ -442,7 +445,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 		if (workflowState.getStateSequenceNumber() >= WorkflowState.CONVERT.getStateSequenceNumber()) {
 			String convertFieldName = dataSetFieldConfiguration.getConvertFieldName();
 			
-			Collator collator = RIFGenericLibraryMessages.getCollator();			
+			Collator collator = GENERIC_MESSAGES.getCollator();			
 			if (collator.equals(convertFieldName, "age") ||
 			   collator.equals(convertFieldName, "sex")) {
 				

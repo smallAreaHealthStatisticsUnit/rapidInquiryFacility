@@ -1,19 +1,17 @@
 package rifServices.ontologyServices;
 
-
-import rifServices.businessConceptLayer.HealthCode;
-import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
-
 import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;
 
+import rifGenericLibrary.businessConceptLayer.Parameter;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.businessConceptLayer.HealthCodeTaxonomy;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -54,7 +52,6 @@ import java.util.ArrayList;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -84,7 +81,9 @@ public final class RIFXMLTaxonomyProvider
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -143,7 +142,7 @@ public final class RIFXMLTaxonomyProvider
 		final String parameterName,
 		final ArrayList<Parameter> parameters) {
 	
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		for (Parameter parameter : parameters) {
 			String currentParameterName
 				= parameter.getName();
@@ -163,7 +162,7 @@ public final class RIFXMLTaxonomyProvider
 	public boolean supportsTaxonomy(
 		final HealthCodeTaxonomy otherHealthCodeTaxonomy) {
 
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		
 		String nameSpace = healthCodeTaxonomy.getNameSpace();		
 		String otherNameSpace = otherHealthCodeTaxonomy.getNameSpace();
@@ -178,7 +177,7 @@ public final class RIFXMLTaxonomyProvider
 	public boolean supportsTaxonomy(
 		final HealthCode healthCode) {
 
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		
 		String nameSpace = healthCodeTaxonomy.getNameSpace();		
 		String otherNameSpace = healthCode.getNameSpace();

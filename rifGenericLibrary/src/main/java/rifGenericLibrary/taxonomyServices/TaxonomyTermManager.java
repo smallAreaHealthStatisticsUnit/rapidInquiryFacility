@@ -1,16 +1,14 @@
 package rifGenericLibrary.taxonomyServices;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceExceptionFactory;
-import rifGenericLibrary.system.RIFServiceException;
-
-
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
 /**
  * A convenience class to manage a collection of 
@@ -77,7 +75,9 @@ public class TaxonomyTermManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -147,7 +147,7 @@ public class TaxonomyTermManager {
 			return null;			
 		}
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 
 		TaxonomyTerm targetTerm = null;
 		for (TaxonomyTerm term : allTerms) {			

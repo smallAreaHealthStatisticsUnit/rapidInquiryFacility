@@ -1,14 +1,12 @@
 
 package rifServices.fileFormats;
 
-import rifServices.system.RIFServiceMessages;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
-import java.text.Collator;
 import java.io.File;
+import java.text.Collator;
 import java.util.Locale;
 
+import rifGenericLibrary.system.Messages;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -50,7 +48,6 @@ import java.util.Locale;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -81,7 +78,9 @@ public final class RIFZFileFilter
 // ==========================================
 // Section Constants
 // ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -125,7 +124,7 @@ public final class RIFZFileFilter
     	int fileExtensionDotIndex
     		= currentFilePath.lastIndexOf(".");
     	
-    	Locale locale = RIFGenericLibraryMessages.getLocale();
+    	Locale locale = GENERIC_MESSAGES.getLocale();
     	String desiredExtension = "." + RIFZ_EXTENSION.toLowerCase(locale);
     	if (fileExtensionDotIndex == -1) {
     		//the file doesn't have a file extension so add one
@@ -134,7 +133,7 @@ public final class RIFZFileFilter
     	}
     	else {
     		String upperCasePath 
-    			= currentFilePath.toUpperCase(RIFGenericLibraryMessages.getLocale());
+    			= currentFilePath.toUpperCase(GENERIC_MESSAGES.getLocale());
     		if (upperCasePath.endsWith(desiredExtension.toUpperCase(locale)) == false) {
     			resultingPath.append(desiredExtension);
     		} 		
@@ -164,7 +163,7 @@ public final class RIFZFileFilter
 			= upperCasePathName.substring(dotPosition+1);
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		if (collator.equals(RIFZ_EXTENSION, currentExtension) == true) {
 			return true;
 		}

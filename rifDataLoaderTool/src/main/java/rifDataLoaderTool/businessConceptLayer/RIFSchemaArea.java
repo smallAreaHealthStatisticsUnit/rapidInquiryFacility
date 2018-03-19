@@ -1,11 +1,10 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
 import java.text.Collator;
 import java.util.ArrayList;
+
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.Messages;
 
 /**
  * An enumeration that describes the intended area of the RIF schema that
@@ -81,8 +80,9 @@ public enum RIFSchemaArea {
 		"rifSchemaArea.populationDenominatorData.label", 
 		"population_denominator_data",
 		"pop_");
-
-		
+	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	private String propertyName;
 	private String code;
 	private String tablePrefix;
@@ -116,14 +116,14 @@ public enum RIFSchemaArea {
 	}
 	
 	private boolean matchesName(final String schemaAreaName) {
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		String name = getName();
 		
 		return collator.equals(name, schemaAreaName);
 	}
 
 	private boolean matchesCode(final String candidateCode) {
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		
 		return collator.equals(code, candidateCode);
 	}

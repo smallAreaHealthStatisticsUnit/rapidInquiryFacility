@@ -1,17 +1,16 @@
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
-
-import java.util.ArrayList;
-import java.text.Collator;
-import java.util.Collections;
-import java.util.HashSet;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 
 /**
@@ -84,7 +83,9 @@ public final class MapArea
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -399,7 +400,7 @@ public final class MapArea
 	public boolean hasIdenticalContents(
 		final MapArea otherMapArea) {
 
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 
 		String otherLabel = otherMapArea.getLabel();
 		if (FieldValidationUtility.hasDifferentNullity(label, otherLabel)) {
@@ -490,7 +491,7 @@ public final class MapArea
 			String geographicalIdentifierFieldName
 				= RIFServiceMessages.getMessage("mapArea.geographicalIdentifier.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					geographicalIdentifierFieldName);
@@ -507,7 +508,7 @@ public final class MapArea
 			String labelFieldName
 				= RIFServiceMessages.getMessage("mapArea.label.label");	
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					labelFieldName);

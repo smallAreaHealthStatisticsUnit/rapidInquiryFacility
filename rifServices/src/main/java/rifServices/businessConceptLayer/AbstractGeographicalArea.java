@@ -1,15 +1,12 @@
 
 package rifServices.businessConceptLayer;
 
-import rifServices.businessConceptLayer.AbstractRIFConcept;
-import rifServices.system.RIFServiceMessages;
+import java.util.ArrayList;
 
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
-
-import java.util.ArrayList;
 
 /**
  * Describes properties that are common to the concept of a study area and a 
@@ -55,7 +52,6 @@ import java.util.ArrayList;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 
 /*
@@ -92,6 +88,8 @@ abstract public class AbstractGeographicalArea
 // ==========================================
 // Section Properties
 // ==========================================
+	
+	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 	
 	/** The geo level view. */
 	private GeoLevelView geoLevelView;
@@ -405,9 +403,9 @@ protected AbstractGeographicalArea() {
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 		String mapAreaIdentiferFieldName
-			= RIFServiceMessages.getMessage("mapArea.identifier.label");
+			= SERVICE_MESSAGES.getMessage("mapArea.identifier.label");
 		String mapAreaLabelFieldName
-			= RIFServiceMessages.getMessage("mapArea.label.label");
+			= SERVICE_MESSAGES.getMessage("mapArea.label.label");
 		for (MapArea mapArea : mapAreas) {
 			if (mapArea != null) {
 				fieldValidationUtility.checkMaliciousCode(
@@ -436,9 +434,9 @@ protected AbstractGeographicalArea() {
 		
 		if (geoLevelView == null) {
 			String fieldName
-				= RIFServiceMessages.getMessage("geoLevelView.label");
+				= SERVICE_MESSAGES.getMessage("geoLevelView.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= SERVICE_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					fieldName);
@@ -456,9 +454,9 @@ protected AbstractGeographicalArea() {
 		if (validationPolicy == ValidationPolicy.STRICT) { 		
 			if (geoLevelArea == null) {
 				String fieldName
-					= RIFServiceMessages.getMessage("geoLevelArea.label");
+					= SERVICE_MESSAGES.getMessage("geoLevelArea.label");
 				String errorMessage
-					= RIFGenericLibraryMessages.getMessage(
+					= SERVICE_MESSAGES.getMessage(
 						"general.validation.emptyRequiredRecordField", 
 						fieldName);
 				errorMessages.add(errorMessage);
@@ -476,9 +474,9 @@ protected AbstractGeographicalArea() {
 		
 		if (geoLevelSelect == null) {
 			String fieldName
-				= RIFServiceMessages.getMessage("geoLevelSelect.label");
+				= SERVICE_MESSAGES.getMessage("geoLevelSelect.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= SERVICE_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					fieldName);
@@ -495,9 +493,9 @@ protected AbstractGeographicalArea() {
 		
 		if (geoLevelToMap == null) {
 			String fieldName
-				= RIFServiceMessages.getMessage("geoLevelToMap.label");
+				= SERVICE_MESSAGES.getMessage("geoLevelToMap.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= SERVICE_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					fieldName);			
@@ -515,9 +513,9 @@ protected AbstractGeographicalArea() {
 		if (mapAreas == null) {
 			
 			String mapAreasFieldLabel
-				= RIFServiceMessages.getMessage("mapArea.plural.label");
+				= SERVICE_MESSAGES.getMessage("mapArea.plural.label");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= SERVICE_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					mapAreasFieldLabel);			
@@ -528,7 +526,7 @@ protected AbstractGeographicalArea() {
 				
 				//ERROR: StudyArea must have at least one area identifier
 				String errorMessage
-					= RIFServiceMessages.getMessage(
+					= SERVICE_MESSAGES.getMessage(
 						"abstractGeographicalArea.error.noMapAreasDefined",
 						recordType);
 				errorMessages.add(errorMessage);
@@ -538,9 +536,9 @@ protected AbstractGeographicalArea() {
 				for (MapArea mapArea : mapAreas) {
 					if (mapArea == null) {
 						String mapAreaRecordType
-							= RIFServiceMessages.getMessage("mapArea.label");
+							= SERVICE_MESSAGES.getMessage("mapArea.label");
 						String errorMessage
-							= RIFServiceMessages.getMessage(
+							= SERVICE_MESSAGES.getMessage(
 								"general.validation.nullListItem",
 								getRecordType(),
 								mapAreaRecordType);
@@ -572,7 +570,7 @@ protected AbstractGeographicalArea() {
 						}
 					
 						String errorMessage
-							= RIFServiceMessages.getMessage(
+							= SERVICE_MESSAGES.getMessage(
 								"abstractGeographicalArea.error.duplicateMapAreas",
 								recordType,
 								buffer.toString());

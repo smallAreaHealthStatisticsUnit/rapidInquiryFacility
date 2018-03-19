@@ -1,17 +1,16 @@
 package rifDataLoaderTool.presentationLayer.batch;
 
-import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
-import rifDataLoaderTool.businessConceptLayer.RIFSchemaAreaPropertyManager;
-import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-
 import java.io.File;
 import java.text.Collator;
+
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaAreaPropertyManager;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  *
@@ -82,6 +81,8 @@ public class DataLoaderBatchTool {
 	// Section Constants
 	// ==========================================
 	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -113,7 +114,7 @@ public class DataLoaderBatchTool {
 				throw rifServiceException;
 			}
 			
-			Collator collator = RIFGenericLibraryMessages.getCollator();
+			Collator collator = GENERIC_MESSAGES.getCollator();
 			String operationArgument = commandLineArguments[0].toUpperCase();
 			
 			if (collator.equals(operationArgument, "-RESERVEDFIELDNAMES")) {

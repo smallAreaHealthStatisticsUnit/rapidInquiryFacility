@@ -174,7 +174,7 @@ public class HealthThemeEditorDialog extends OKCloseButtonDialog {
 		
 		if (originalDisplayName != revisedDisplayName) {
 
-			FieldValidationUtility.checkListDuplicate(
+			new FieldValidationUtility().checkListDuplicate(
 				revisedDisplayName, 
 				currentDisplayNames);
 

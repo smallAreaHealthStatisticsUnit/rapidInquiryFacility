@@ -1,19 +1,18 @@
 package rifServices.ontologyServices;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.text.Collator;
+import java.util.ArrayList;
 
+import rifGenericLibrary.businessConceptLayer.Parameter;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.system.RIFServiceError;
-import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
-
-import java.text.Collator;
-import java.util.ArrayList;
-import java.io.File;
-import java.io.FileReader;
-import java.io.BufferedReader;
 
 /**
  * This is the basic outline for a taxonomy service which will read the WHO's ICD 10 data files.
@@ -85,7 +84,9 @@ public class ICD10TaxonomyService
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -158,7 +159,7 @@ public class ICD10TaxonomyService
 		final String parameterName,
 		final ArrayList<Parameter> parameters) {
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();		
+		Collator collator = GENERIC_MESSAGES.getCollator();		
 		for (Parameter parameter : parameters) {
 			if (collator.equals(parameterName, parameter.getName())) {
 				return parameter;
@@ -212,7 +213,7 @@ public class ICD10TaxonomyService
 		final String otherNameSpace) {
 		
 		String nameSpace = healthCodeTaxonomy.getNameSpace();
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		
 		if (collator.equals(nameSpace, otherNameSpace)) {
 			return true;			
@@ -286,7 +287,7 @@ public class ICD10TaxonomyService
 		final String label,
 		final String nameSpace) {
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		
 		String healthTaxonomyNameSpace 
 			= healthCodeTaxonomy.getNameSpace();

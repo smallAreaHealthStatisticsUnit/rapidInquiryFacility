@@ -1,17 +1,15 @@
 package rifServices.businessConceptLayer;
 
+import java.text.Collator;
+import java.util.ArrayList;
 
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
-
-import java.util.ArrayList;
-import java.text.Collator;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 /**
  * This class was developed to reduce the number of parameters that 
@@ -92,7 +90,9 @@ public class StudyResultRetrievalContext {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -182,7 +182,7 @@ public class StudyResultRetrievalContext {
 	public boolean hasIdenticalContents(
 		final StudyResultRetrievalContext otherStudyRetrievalContext) {
 
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 
 		String otherGeographyName
 			= otherStudyRetrievalContext.getGeographyName();
@@ -263,7 +263,7 @@ public class StudyResultRetrievalContext {
 			String fieldName
 				= RIFServiceMessages.getMessage("studyResultRetrievalContext.geographyName");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					fieldName);
@@ -274,7 +274,7 @@ public class StudyResultRetrievalContext {
 			String fieldName
 				= RIFServiceMessages.getMessage("studyResultRetrievalContext.geoLevelSelectName");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					fieldName);
@@ -285,7 +285,7 @@ public class StudyResultRetrievalContext {
 			String fieldName
 				= RIFServiceMessages.getMessage("studyResultRetrievalContext.studyID");
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField", 
 					recordType,
 					fieldName);

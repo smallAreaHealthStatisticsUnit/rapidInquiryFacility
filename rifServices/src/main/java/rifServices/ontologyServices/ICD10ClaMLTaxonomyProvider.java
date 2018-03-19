@@ -1,13 +1,5 @@
 package rifServices.ontologyServices;
 
-import rifServices.businessConceptLayer.HealthCode;
-import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.system.RIFServiceError;
-import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
@@ -25,6 +17,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import rifGenericLibrary.businessConceptLayer.Parameter;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.businessConceptLayer.HealthCodeTaxonomy;
+import rifServices.system.RIFServiceError;
 
 /**
  *
@@ -99,7 +99,9 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -405,7 +407,7 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 		final String parameterName,
 		final ArrayList<Parameter> parameters) {
 			
-		Collator collator = RIFGenericLibraryMessages.getCollator();		
+		Collator collator = GENERIC_MESSAGES.getCollator();		
 		for (Parameter parameter : parameters) {
 			if (collator.equals(parameterName, parameter.getName())) {
 				return parameter;
@@ -439,7 +441,7 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 			return false;
 		}
 		String nameSpace = healthCodeTaxonomy.getNameSpace();
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		return collator.equals(nameSpace, otherNameSpace);
 	}
 	

@@ -1,23 +1,45 @@
 package rifDataLoaderTool.presentationLayer.interactive;
 
-import rifDataLoaderTool.system.*;
-import rifDataLoaderTool.businessConceptLayer.*;
-import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
-import rifDataLoaderTool.dataStorageLayer.pg.ProductionPGDataLoaderService;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.fileFormats.XMLFileFilter;
-import rifGenericLibrary.fileFormats.DirectoryFileFilter;
-import rifGenericLibrary.presentationLayer.*;
+import java.awt.GridBagConstraints;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Objects;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.io.*;
-import java.util.*;
+import rifDataLoaderTool.businessConceptLayer.ConfigurationHints;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderServiceAPI;
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.LinearWorkflow;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
+import rifDataLoaderTool.dataStorageLayer.pg.ProductionPGDataLoaderService;
+import rifDataLoaderTool.system.DataLoaderToolSession;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.fileFormats.DirectoryFileFilter;
+import rifGenericLibrary.fileFormats.XMLFileFilter;
+import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
+import rifGenericLibrary.presentationLayer.ErrorDialog;
+import rifGenericLibrary.presentationLayer.ListEditingButtonPanel;
+import rifGenericLibrary.presentationLayer.NamedListItemDialog;
+import rifGenericLibrary.presentationLayer.OKCloseButtonDialog;
+import rifGenericLibrary.presentationLayer.OrderedListPanel;
+import rifGenericLibrary.presentationLayer.UserInterfaceFactory;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  *
@@ -74,7 +96,6 @@ class PopulationHealthDataLoaderDialog
 
 	public static void main(String[] arguments) {
 
-
 		try {
 			ProductionPGDataLoaderService service
 				= new ProductionPGDataLoaderService();
@@ -96,7 +117,9 @@ class PopulationHealthDataLoaderDialog
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -348,7 +371,7 @@ class PopulationHealthDataLoaderDialog
 
 		panelGC.gridx++;
 		String runWorkflowButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.run.label");
+			= GENERIC_MESSAGES.getMessage("buttons.run.label");
 		runWorkflowButton
 			= userInterfaceFactory.createButton(runWorkflowButtonText);
 		runWorkflowButton.addActionListener(this);

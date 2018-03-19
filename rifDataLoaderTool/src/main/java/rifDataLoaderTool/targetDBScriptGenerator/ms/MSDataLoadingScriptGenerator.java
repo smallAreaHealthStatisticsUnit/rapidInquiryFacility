@@ -1,17 +1,17 @@
 package rifDataLoaderTool.targetDBScriptGenerator.ms;
 
-import rifDataLoaderTool.businessConceptLayer.*;
-
-import rifDataLoaderTool.fileFormats.DataLoaderToolConfigurationReader;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-
-import rifDataLoaderTool.targetDBScriptGenerator.pg.*;
-
-
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.io.*;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.GeographyMetaData;
+import rifDataLoaderTool.businessConceptLayer.HealthTheme;
+import rifGenericLibrary.system.Messages;
 
 /**
  * This class generates a single PostgreSQL script that will load all of the 
@@ -69,7 +69,9 @@ public class MSDataLoadingScriptGenerator {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -255,7 +257,7 @@ public class MSDataLoadingScriptGenerator {
 		filePath.append(File.separator);
 		filePath.append("ms_run_data_loader_");
 		String timeStamp
-			= RIFGenericLibraryMessages.getTimeStampForFileName(new Date());
+			= GENERIC_MESSAGES.getTimeStampForFileName(new Date());
 		filePath.append(timeStamp);
 		filePath.append(".sql");
 		

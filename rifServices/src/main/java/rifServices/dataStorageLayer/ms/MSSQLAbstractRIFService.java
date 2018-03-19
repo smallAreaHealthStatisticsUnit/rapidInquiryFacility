@@ -1,17 +1,15 @@
 package rifServices.dataStorageLayer.ms;
 
-import rifServices.businessConceptLayer.RIFServiceInformation;
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceStartupOptions;
-
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.system.RIFServiceSecurityException.SecurityThreatType;
-import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.util.FieldValidationUtility;
-
+import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.RIFServiceInformation;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 /**
  * The base class of all services in the RIF tool suite.
@@ -79,7 +77,9 @@ public class MSSQLAbstractRIFService {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
 	// ==========================================
 	// Section Properties
@@ -176,7 +176,7 @@ public class MSSQLAbstractRIFService {
 		
 		//invalid user attempting to use service
 		String errorMessage
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"user.error.invalidUser",
 				user.getUserID());
 		RIFServiceSecurityException rifServiceSecurityException

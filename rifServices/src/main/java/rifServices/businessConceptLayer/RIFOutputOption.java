@@ -1,16 +1,14 @@
 
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceMessages;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.util.FieldValidationUtility;
-
-import java.util.ArrayList;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *
@@ -54,8 +52,8 @@ import java.util.HashMap;
  */
 
 public enum RIFOutputOption {
-    
-    /** The data. */
+	
+	/** The data. */
     DATA("rifOutputOption.data.label", "rifOutputOption.data.directoryName"),
     
     /** The maps. */
@@ -66,6 +64,8 @@ public enum RIFOutputOption {
     
     /** The ratios and rates. */
     RATIOS_AND_RATES("rifOutputOption.ratiosAndRates.label", "rifOutputOption.ratiosAndRates.directoryName");
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
 	/** The message property. */
 	private String messageProperty;
@@ -115,7 +115,7 @@ public enum RIFOutputOption {
 	public static RIFOutputOption getOptionFromPhrase(
 		final String phrase) {
 
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		
 		String dataPhrase
 			= RIFServiceMessages.getMessage("rifOutputOption.data.label");

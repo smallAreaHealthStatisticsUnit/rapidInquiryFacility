@@ -1,37 +1,45 @@
 package rifDataLoaderTool.dataStorageLayer.ms;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.Collator;
+import java.util.ArrayList;
+
 import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
-import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
-import rifGenericLibrary.dataStorageLayer.*;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
-
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLExportTableToCSVQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSchemaCommentQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLUpdateQueryFormatter;
-import rifGenericLibrary.system.*;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
-
-import org.postgresql.copy.CopyManager;
-import org.postgresql.core.BaseConnection;
-import com.microsoft.sqlserver.jdbc.SQLServerBulkCopy;
-import com.microsoft.sqlserver.jdbc.SQLServerBulkCSVFileRecord;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.text.Collator;
-import java.io.*;
 
 /**
  * provides functionality common to all manager classes associated with different steps
@@ -90,7 +98,9 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -179,27 +189,27 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 						else {
 							Date date = new Date(timeStamp.getTime());
 							String datePhrase
-								= RIFGenericLibraryMessages.getDatePhrase(date);
+								= GENERIC_MESSAGES.getDatePhrase(date);
 							tableData[ithRow][i] = datePhrase;
 						}
 					}
 					else {
 						//String type
-						tableData[ithRow][i] = resultSet.getString(i + 1);						
-					}					
+						tableData[ithRow][i] = resultSet.getString(i + 1);
+					}
 				}
 				ithRow++;
 			}
 
 			rifResultTable.setData(tableData);
-				
+			
 			return rifResultTable;
 		}
 		finally {
 			MSSQLQueryUtility.close(statement);
 			MSSQLQueryUtility.close(resultSet);
 		}
-				
+		
 	}
 	
 	public void checkTotalRowsMatch(
@@ -207,7 +217,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		final Writer logFileWriter,
 		final String coreTableName,
 		final RIFTemporaryTablePrefixes firstTablePrefix,
-		final RIFTemporaryTablePrefixes secondTablePrefix) 
+		final RIFTemporaryTablePrefixes secondTablePrefix)
 		throws RIFServiceException {
 		
 		String firstTableName
@@ -215,7 +225,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		String secondTableName
 			= secondTablePrefix.getTableName(coreTableName);
 		
-		SQLGeneralQueryFormatter queryFormatter 
+		SQLGeneralQueryFormatter queryFormatter
 			= new SQLGeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "WITH");
 		queryFormatter.padAndFinishLine();
@@ -265,7 +275,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		
 		RIFLogger logger = RIFLogger.getLogger();
 		logger.debugQuery(
-			this, 
+			this,
 			"checkTotalRowsMatch",
 			queryFormatter.generateQuery());
 		
@@ -273,7 +283,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			statement 
+			statement
 				= connection.prepareStatement(queryFormatter.generateQuery());
 			resultSet = statement.executeQuery();
 			resultSet.next();
@@ -286,7 +296,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 						secondTableName);
 				RIFServiceException rifDataLoaderException
 					= new RIFServiceException(
-						RIFDataLoaderToolError.COMPARE_TABLE_SIZES, 
+						RIFDataLoaderToolError.COMPARE_TABLE_SIZES,
 						errorMessage);
 				throw rifDataLoaderException;
 			}
@@ -295,7 +305,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			logSQLException(
 				logFileWriter,
 				sqlException);
-			String errorMessage	
+			String errorMessage
 				= RIFDataLoaderToolMessages.getMessage("tableIntegrityChecker.error.unableToCompareTables");
 			RIFServiceException RIFServiceException
 				= new RIFServiceException(
@@ -315,7 +325,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		final Writer logFileWriter,
 		final String targetTable,
 		final DataSetConfiguration dataSetConfiguration,
-		final WorkflowState workflowState) 
+		final WorkflowState workflowState)
 		throws RIFServiceException {
 		
 		PreparedStatement statement = null;
@@ -324,12 +334,12 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			MSSQLSchemaCommentQueryFormatter queryFormatter
 				= new MSSQLSchemaCommentQueryFormatter(false);
 			queryFormatter.setTableComment(
-				targetTable, 
+				targetTable,
 				dataSetConfiguration.getDescription());
 			queryFormatter.setDatabaseSchemaName("dbo");
 			statement
 				= createPreparedStatement(
-					connection, 
+					connection,
 					queryFormatter);
 			
 			//System.out.println(queryFormatter.toString());
@@ -337,7 +347,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 
 			//add data_set_id, row_number
 			addRIFGeneratedFieldDescriptions(
-				connection, 
+				connection,
 				logFileWriter,
 				targetTable,
 				dataSetConfiguration,
@@ -350,7 +360,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			for (DataSetFieldConfiguration fieldConfiguration : fieldConfigurations) {
 				
 				if (excludeFieldFromConsideration(
-					rifSchemaArea, 
+					rifSchemaArea,
 					fieldConfiguration,
 					workflowState) == false) {
 
@@ -373,22 +383,22 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 					targetTable);
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
-					RIFGenericLibraryError.DATABASE_QUERY_FAILED, 
+					RIFGenericLibraryError.DATABASE_QUERY_FAILED,
 					errorMessage);
-			throw rifServiceException;			
-		}		
+			throw rifServiceException;
+		}
 		finally {
 			MSSQLQueryUtility.close(statement);
 		}
 	}
 
 	private void addRIFGeneratedFieldDescriptions(
-		final Connection connection, 
+		final Connection connection,
 		final Writer logFileWriter,
 		final String targetTable,
 		final DataSetConfiguration dataSetConfiguration,
-		final WorkflowState workflowState) 
-		throws SQLException, 
+		final WorkflowState workflowState)
+		throws SQLException,
 		RIFServiceException {
 		
 		String rowNumberFieldDescription
@@ -425,7 +435,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 				logFileWriter,
 				targetTable,
 				"age_sex_group",
-				ageSexGroupFieldDescription);			
+				ageSexGroupFieldDescription);
 		}
 		
 		if (workflowState.getStateSequenceNumber() >= WorkflowState.CHECK.getStateSequenceNumber()) {
@@ -438,7 +448,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 				logFileWriter,
 				targetTable,
 				"keep_record",
-				keepDescription);			
+				keepDescription);
 			
 		}
 		
@@ -452,7 +462,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		if (workflowState.getStateSequenceNumber() >= WorkflowState.CONVERT.getStateSequenceNumber()) {
 			String convertFieldName = dataSetFieldConfiguration.getConvertFieldName();
 			
-			Collator collator = RIFGenericLibraryMessages.getCollator();			
+			Collator collator = GENERIC_MESSAGES.getCollator();
 			if (collator.equals(convertFieldName, "age") ||
 			   collator.equals(convertFieldName, "sex")) {
 				

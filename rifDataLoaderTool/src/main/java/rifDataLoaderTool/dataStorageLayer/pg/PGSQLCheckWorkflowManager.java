@@ -1,26 +1,27 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.Collator;
+import java.util.ArrayList;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.text.Collator;
-import java.io.*;
-
 
 /**
  * Contains the code used to apply data quality assessments of 
@@ -99,7 +100,9 @@ final public class PGSQLCheckWorkflowManager
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -338,17 +341,16 @@ final public class PGSQLCheckWorkflowManager
 	private String[] getDuplicateIdentificationFieldNames(
 		final DataSetConfiguration dataSetConfiguration) {
 		
-
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 
 		ArrayList<String> filteredDuplicateCriteriaFields
-			= new ArrayList<String>();
+			= new ArrayList<>();
 		
 		String[] duplicateCriteriaFields
 			= dataSetConfiguration.getFieldsUsedForDuplicationChecks();
 		for (String duplicateCriterionField : duplicateCriteriaFields) {
-			if ((collator.equals(duplicateCriterionField, "age") == false) &&
-				(collator.equals(duplicateCriterionField, "sex") == false)) {
+			if ((!collator.equals(duplicateCriterionField, "age")) &&
+			    (!collator.equals(duplicateCriterionField, "sex"))) {
 				
 				filteredDuplicateCriteriaFields.add(duplicateCriterionField);			
 			}			
@@ -668,7 +670,7 @@ final public class PGSQLCheckWorkflowManager
 		if ((rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
 			(rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
 			
-			Collator collator = RIFGenericLibraryMessages.getCollator();
+			Collator collator = GENERIC_MESSAGES.getCollator();
 			
 			if (collator.equals(convertFieldName, "age") ||
 				collator.equals(convertFieldName, "sex") ||
@@ -989,7 +991,7 @@ final public class PGSQLCheckWorkflowManager
 		final String convertFieldName) {
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		if (collator.equals(convertFieldName, "year")) {
 			return true;
 		}
@@ -1004,7 +1006,7 @@ final public class PGSQLCheckWorkflowManager
 		String convertFieldName
 			= dataSetFieldConfiguration.getConvertFieldName();
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		if (collator.equals(convertFieldName, "age")) {
 			return true;
 		}

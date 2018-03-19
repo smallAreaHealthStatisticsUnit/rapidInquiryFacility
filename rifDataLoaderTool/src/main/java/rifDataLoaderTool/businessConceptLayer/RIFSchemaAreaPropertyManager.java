@@ -1,11 +1,10 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import rifGenericLibrary.system.Messages;
 
 /**
  * Holds knowledge about what properties are expected for different parts of the
@@ -63,6 +62,8 @@ public class RIFSchemaAreaPropertyManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
 
 	// ==========================================
 	// Section Properties
@@ -181,7 +182,7 @@ public class RIFSchemaAreaPropertyManager {
 
 		ArrayList<String> missingRequiredFieldNames = new ArrayList<String>();
 
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		
 		String[] requiredConvertFieldNames
 			= getRequiredConvertFieldNames(rifSchemaArea);		
@@ -219,7 +220,7 @@ public class RIFSchemaAreaPropertyManager {
 		final String searchItem,
 		final String[] listItems) {
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		
 		for (String listItem : listItems) {
 			if (collator.equals(searchItem, listItem)) {

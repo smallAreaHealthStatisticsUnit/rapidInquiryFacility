@@ -1,21 +1,21 @@
 
 package rifDataLoaderTool.fileFormats;
 
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Date;
+
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.fileFormats.XMLUtility;
 import rifGenericLibrary.presentationLayer.DisplayableListItemInterface;
 import rifGenericLibrary.presentationLayer.HTMLUtility;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.nio.charset.Charset;
-import java.util.Date;
-
-import org.xml.sax.*;
-import org.xml.sax.helpers.DefaultHandler;
+import rifGenericLibrary.system.Messages;
 
 /**
  *
@@ -89,7 +89,9 @@ abstract class AbstractDataLoaderConfigurationHandler
 // ==========================================
 // Section Constants
 // ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -558,6 +560,7 @@ abstract class AbstractDataLoaderConfigurationHandler
 	}
 	
 	protected void setIsCommentingActive(final boolean isCommentingActive) {
+		
 		this.isCommentingActive = isCommentingActive;
 	}
 	
@@ -566,11 +569,12 @@ abstract class AbstractDataLoaderConfigurationHandler
 	}
 	
 	protected String getLastModifiedTimeStampPhrase(final Date lastModifiedDate) {
-		return RIFGenericLibraryMessages.getTimePhrase(lastModifiedDate);
+		
+		return GENERIC_MESSAGES.getTimePhrase(lastModifiedDate);
 	}
 	
 	protected Date getLastModifiedTimeStamp(final String lastModifiedTimeStampPhrase) {
-		return RIFGenericLibraryMessages.getTime(lastModifiedTimeStampPhrase);
+		return GENERIC_MESSAGES.getTime(lastModifiedTimeStampPhrase);
 	}
 	
 // ==========================================

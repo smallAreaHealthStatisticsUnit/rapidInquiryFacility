@@ -13,9 +13,8 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
-import taxonomyServices.system.TaxonomyServiceMessages;
-
 import rifGenericLibrary.util.RIFLogger;
 
 //TOUR_WEB_SERVICES-7
@@ -208,6 +207,7 @@ final class WebServiceResponseUtility {
 	// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
+	private static final Messages TAXONOMY_MESSAGES = Messages.taxonomyMessages();
 	
 	// ==========================================
 	// Section Properties
@@ -377,7 +377,7 @@ final class WebServiceResponseUtility {
 		StringBuilder responseText = new StringBuilder();
 		responseText.append("[{\"");
 		String resultPropertyName
-			= TaxonomyServiceMessages.getMessage("webService.json.messagePropertyName");
+			= TAXONOMY_MESSAGES.getMessage("webService.json.messagePropertyName");
 		responseText.append(resultPropertyName);
 		responseText.append("\"");
 		responseText.append(":");
@@ -424,7 +424,7 @@ final class WebServiceResponseUtility {
 				String[] errorMessages = new String[1];
 				String timeStamp = sd.format(new Date());
 				errorMessages[0]
-					= TaxonomyServiceMessages.getMessage(
+					= TAXONOMY_MESSAGES.getMessage(
 						"webServices.error.unexpectedError",
 						timeStamp);
 			
@@ -441,7 +441,7 @@ final class WebServiceResponseUtility {
 				exception);
 			String timeStamp = sd.format(new Date());
 			result 
-				= TaxonomyServiceMessages.getMessage(
+				= TAXONOMY_MESSAGES.getMessage(
 					"webServices.error.unableToProvideError",
 					timeStamp);
 		}

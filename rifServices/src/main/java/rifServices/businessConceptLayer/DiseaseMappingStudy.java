@@ -1,14 +1,13 @@
 
 package rifServices.businessConceptLayer;
 
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import java.util.ArrayList;
 
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
-import java.util.ArrayList;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 
 /**
@@ -80,7 +79,9 @@ public final class DiseaseMappingStudy
 // ==========================================
 // Section Constants
 // ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 // ==========================================
 // Section Properties
 // ==========================================
@@ -235,7 +236,7 @@ public final class DiseaseMappingStudy
 				= RIFServiceMessages.getMessage("diseaseMappingStudyArea.label");
 		
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					diseaseMappingStudyAreaFieldName);

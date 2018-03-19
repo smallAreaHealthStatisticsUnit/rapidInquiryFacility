@@ -2,7 +2,7 @@ package rifServices.restfulWebServices;
 
 import java.text.Collator;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.Messages;
 
 /**
  *
@@ -69,6 +69,8 @@ public enum StudySubmissionFormat {
 	JSON("JSON"),
 	XML("XML");
 	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	private String name;
 	
 	StudySubmissionFormat(
@@ -88,7 +90,7 @@ public enum StudySubmissionFormat {
 			return false;
 		}
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 		if (collator.equals(formatName.toUpperCase(), name)) {
 			return true;			
 		}

@@ -1,18 +1,17 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.CallableStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.SQLException;
-import java.sql.SQLWarning;
+import java.sql.Statement;
+
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
 
 /**
  * Properly closes down statements, connections, result sets.  When these operations
@@ -55,7 +54,6 @@ import java.sql.SQLWarning;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -84,9 +82,11 @@ public final class MSSQLQueryUtility {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
-
+	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -125,7 +125,7 @@ public final class MSSQLQueryUtility {
 		}
 		catch(SQLException sqlException) {			
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage("sqlConnectionManager.error.unableToCloseResource");
+				= GENERIC_MESSAGES.getMessage("sqlConnectionManager.error.unableToCloseResource");
 			
 			rifLogger.error(
 				MSSQLQueryUtility.class, 
@@ -160,7 +160,7 @@ public final class MSSQLQueryUtility {
 		catch(SQLException sqlException) {
 
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
 			;
 			rifLogger.error(
@@ -195,75 +195,18 @@ public final class MSSQLQueryUtility {
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage(
+				= GENERIC_MESSAGES.getMessage(
 					"sqlConnectionManager.error.unableToCloseResource");
 			
 			rifLogger.error(
 				MSSQLQueryUtility.class, 
 				errorMessage, 
 				sqlException);
-																		
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.DB_UNABLE_CLOSE_RESOURCE,
-					errorMessage);
-			throw rifServiceException;			
-		}		
-	}
-	
-	/**
-	 * printWarnings. Print info and warning messages
-	 *
-	 * @param warning SQLWarning
-	 * @throws nothing
-	 */	
-	public String printWarnings(PreparedStatement runStudyStatement) {
-		SQLWarning warnings;
-		StringBuilder message;
-		int warningCount=0;
-		
-		try {
-			warnings=runStudyStatement.getWarnings();
-			message = new StringBuilder();
 			
-			while (warnings != null) {	
-				warningCount++;
-				if (warnings.getErrorCode() == 0) {
-					message.append(warnings.getMessage() + lineSeparator);	       
-				}
-				else {
-					message.append(
-						"SQL Error/Warning >>>" + lineSeparator +
-						"Message:           " + warnings.getMessage() + lineSeparator +
-						"SQLState:          " + warnings.getSQLState() + lineSeparator +
-						"Vendor error code: " +	warnings.getErrorCode() + lineSeparator);
-						
-					rifLogger.warning(this.getClass(), 
-						"SQL Error/Warning >>>" + lineSeparator +
-						"Message:           " + warnings.getMessage() + lineSeparator +
-						"SQLState:          " + warnings.getSQLState() + lineSeparator +
-						"Vendor error code: " +	warnings.getErrorCode() + lineSeparator);	       
-				}
-				warnings = warnings.getNextWarning();
-			}
-			
-			if (message.length() > 0) {
-				rifLogger.info(this.getClass(), warningCount + " warnings/messages" + lineSeparator +
-					message.toString());
-					
-					return warningCount + " warnings/messages" + lineSeparator + message.toString();
-			}	 
-			else {
-				rifLogger.warning(this.getClass(), "No warnings/messages found.");
-				return "No warnings/messages found.";
-			}
+			throw new RIFServiceException(
+				RIFGenericLibraryError.DB_UNABLE_CLOSE_RESOURCE,
+				errorMessage);
 		}		
-		catch(SQLException sqlException) { // Do nothing - they are warnings!
-			rifLogger.warning(this.getClass(), "PGSQLQueryUtility.printWarnings() caught sqlException: " + 
-				sqlException.getMessage());
-		}
-		
-		return null;
 	}
 	
 	public static void rollback(
@@ -279,12 +222,10 @@ public final class MSSQLQueryUtility {
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFGenericLibraryMessages.getMessage("general.db.error.unableToRollback");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.DB_UNABLE_TO_ROLLBACK,
-					errorMessage);
-			throw rifServiceException;
+				= GENERIC_MESSAGES.getMessage("general.db.error.unableToRollback");
+			throw new RIFServiceException(
+				RIFGenericLibraryError.DB_UNABLE_TO_ROLLBACK,
+				errorMessage);
 		}		
 	}
 	

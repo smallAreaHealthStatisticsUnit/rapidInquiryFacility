@@ -1,11 +1,10 @@
 package rifDataLoaderTool.businessConceptLayer;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
 import java.text.Collator;
 import java.util.ArrayList;
+
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.system.Messages;
 
 
 /**
@@ -93,7 +92,7 @@ public enum CheckOption {
 	public static CheckOption getOptionFromCode(
 		final String code) {
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = Messages.genericMessages().getCollator();
 		if (collator.equals(code, "percent_empty")) {
 			return CheckOption.PERCENT_EMPTY;
 		}

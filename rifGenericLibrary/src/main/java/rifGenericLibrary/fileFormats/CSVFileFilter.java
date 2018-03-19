@@ -1,9 +1,10 @@
 package rifGenericLibrary.fileFormats;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import java.io.File;
 
 import javax.swing.filechooser.FileFilter;
-import java.io.File;
+
+import rifGenericLibrary.system.Messages;
 
 /**
  *
@@ -60,7 +61,9 @@ public class CSVFileFilter extends FileFilter {
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	
 	private static final String CSV_EXTENSION = "CSV";
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
 	// ==========================================
 	// Section Properties
@@ -107,7 +110,7 @@ public class CSVFileFilter extends FileFilter {
 	
 	public String getDescription() {
 		String description
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"io.csvFileFilter.description");
 		return description;
 	}

@@ -4,7 +4,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifGenericLibrary.system.Messages;
 
 /**
  * A convenience class for holding properties of navigation panels.
@@ -61,7 +61,9 @@ public abstract class AbstractNavigationPanel {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -83,22 +85,22 @@ public abstract class AbstractNavigationPanel {
 		this.userInterfaceFactory = userInterfaceFactory;
 		
 		String firstButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.first.label");
+			= GENERIC_MESSAGES.getMessage("buttons.first.label");
 		firstButton
 			= userInterfaceFactory.createButton(firstButtonText);
 
 		String previousButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.previous.label");
+			= GENERIC_MESSAGES.getMessage("buttons.previous.label");
 		previousButton
 			= userInterfaceFactory.createButton(previousButtonText);
 
 		String nextButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.next.label");
+			= GENERIC_MESSAGES.getMessage("buttons.next.label");
 		nextButton
 			= userInterfaceFactory.createButton(nextButtonText);
 	
 		String lastButtonText
-			= RIFGenericLibraryMessages.getMessage("buttons.last.label");
+			= GENERIC_MESSAGES.getMessage("buttons.last.label");
 		lastButton
 			= userInterfaceFactory.createButton(lastButtonText);
 	}

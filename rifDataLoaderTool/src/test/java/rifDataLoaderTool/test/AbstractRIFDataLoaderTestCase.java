@@ -1,25 +1,22 @@
 package rifDataLoaderTool.test;
 
-import rifDataLoaderTool.dataStorageLayer.pg.TestPGDataLoaderService;
-import rifDataLoaderTool.dataStorageLayer.ms.TestMSDataLoaderService;
-
-
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
-import rifDataLoaderTool.businessConceptLayer.TestDataLoaderServiceAPI;
-import rifGenericLibrary.businessConceptLayer.RIFResultTable;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.ClassFileLocator;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import java.io.File;
+import java.text.Collator;
 
 import org.junit.After;
 import org.junit.Before;
 
-import java.io.File;
-import java.text.Collator;
+import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
+import rifDataLoaderTool.businessConceptLayer.TestDataLoaderServiceAPI;
+import rifDataLoaderTool.dataStorageLayer.ms.TestMSDataLoaderService;
+import rifDataLoaderTool.dataStorageLayer.pg.TestPGDataLoaderService;
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.system.ClassFileLocator;
+import rifGenericLibrary.system.Messages;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
 
 
 /**
@@ -252,7 +249,7 @@ public abstract class AbstractRIFDataLoaderTestCase {
 			return false;
 		}
 		
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = Messages.genericMessages().getCollator();
 		for (int ithRow = 0; ithRow < expectedResults.length; ithRow++) {
 			int numberOfColumns = expectedResults[ithRow].length;
 			if (actualResults[ithRow].length != expectedResults[ithRow].length) {
@@ -267,9 +264,9 @@ public abstract class AbstractRIFDataLoaderTestCase {
 			}
 			else {
 				for (int ithColumn = 0; ithColumn < numberOfColumns; ithColumn++) {
-					if (collator.equals(
-						actualResults[ithRow][ithColumn],
-						expectedResults[ithRow][ithColumn]) == false) {
+					if (!collator.equals(
+									actualResults[ithRow][ithColumn],
+									expectedResults[ithRow][ithColumn])) {
 
 						StringBuilder buffer = new StringBuilder();
 						buffer.append("Actual[");

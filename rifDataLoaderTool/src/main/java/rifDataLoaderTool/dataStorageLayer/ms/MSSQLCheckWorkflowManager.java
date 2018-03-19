@@ -1,25 +1,27 @@
 package rifDataLoaderTool.dataStorageLayer.ms;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.Collator;
+import java.util.ArrayList;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.text.Collator;
-import java.io.*;
 
 
 /**
@@ -99,7 +101,9 @@ final public class MSSQLCheckWorkflowManager
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -336,7 +340,7 @@ final public class MSSQLCheckWorkflowManager
 		final DataSetConfiguration dataSetConfiguration) {
 		
 
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = GENERIC_MESSAGES.getCollator();
 
 		ArrayList<String> filteredDuplicateCriteriaFields
 			= new ArrayList<String>();
@@ -666,7 +670,7 @@ final public class MSSQLCheckWorkflowManager
 		if ((rifSchemaArea == RIFSchemaArea.HEALTH_NUMERATOR_DATA) ||
 			(rifSchemaArea == RIFSchemaArea.POPULATION_DENOMINATOR_DATA)) {
 			
-			Collator collator = RIFGenericLibraryMessages.getCollator();
+			Collator collator = GENERIC_MESSAGES.getCollator();
 			
 			if (collator.equals(convertFieldName, "age") ||
 				collator.equals(convertFieldName, "sex") ||
@@ -997,7 +1001,7 @@ final public class MSSQLCheckWorkflowManager
 		final String convertFieldName) {
 		
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		if (collator.equals(convertFieldName, "year")) {
 			return true;
 		}
@@ -1012,7 +1016,7 @@ final public class MSSQLCheckWorkflowManager
 		String convertFieldName
 			= dataSetFieldConfiguration.getConvertFieldName();
 		Collator collator
-			= RIFGenericLibraryMessages.getCollator();
+			= GENERIC_MESSAGES.getCollator();
 		if (collator.equals(convertFieldName, "age")) {
 			return true;
 		}

@@ -1,28 +1,24 @@
 package rifServices.dataStorageLayer.pg;
 
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-import rifServices.businessConceptLayer.StudyState;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.businessConceptLayer.RIFResultTable;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.RIFLogger;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import java.lang.Integer;
 import org.apache.commons.lang.StringEscapeUtils;
+
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.StudyState;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 
 /**
  *

@@ -1,18 +1,30 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
-import rifDataLoaderTool.businessConceptLayer.*;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.Collator;
+import java.util.ArrayList;
+
+import rifDataLoaderTool.businessConceptLayer.ConversionFunction;
+import rifDataLoaderTool.businessConceptLayer.ConversionFunctionFactory;
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.FieldRequirementLevel;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaAreaPropertyManager;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.businessConceptLayer.WorkflowValidator;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
-
-import java.util.ArrayList;
-import java.sql.*;
-import java.text.Collator;
-import java.io.*;
 
 /**
  * This class manages the code used to map fields from an imported table to
@@ -338,7 +350,7 @@ final public class PGSQLConvertWorkflowManager
 		 * 
 		 */
 		//there is no function
-		Collator collator = RIFGenericLibraryMessages.getCollator();
+		Collator collator = Messages.genericMessages().getCollator();
 		String cleanFieldName = dataSetFieldConfiguration.getCleanFieldName();
 		String convertFieldName = dataSetFieldConfiguration.getConvertFieldName();
 		

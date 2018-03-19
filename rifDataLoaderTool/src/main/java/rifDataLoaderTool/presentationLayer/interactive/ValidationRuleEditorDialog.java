@@ -308,7 +308,7 @@ class ValidationRuleEditorDialog
 			ValidationRule validationRuleFromForm = getValidationRuleFromForm();
 			validationRuleFromForm.checkErrors();
 			
-			FieldValidationUtility.checkListDuplicate(
+			new FieldValidationUtility().checkListDuplicate(
 				validationRuleFromForm.getDisplayName(), 
 				existingListItemNames);
 			

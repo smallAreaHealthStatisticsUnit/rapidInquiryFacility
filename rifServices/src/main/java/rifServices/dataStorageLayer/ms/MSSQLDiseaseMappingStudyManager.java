@@ -1,20 +1,34 @@
 package rifServices.dataStorageLayer.ms;
 
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.sql.*;
 
-import rifServices.businessConceptLayer.*;
-//import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.AbstractGeographicalArea;
+import rifServices.businessConceptLayer.ComparisonArea;
+import rifServices.businessConceptLayer.DiseaseMappingStudy;
+import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
+import rifServices.businessConceptLayer.GeoLevelSelect;
+import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.businessConceptLayer.GeoLevelView;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.Investigation;
+import rifServices.businessConceptLayer.Project;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+
+//import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 
 /**
  *
@@ -85,7 +99,9 @@ final class MSSQLDiseaseMappingStudyManager
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -156,13 +172,13 @@ final class MSSQLDiseaseMappingStudyManager
 				Date startDate
 					= resultSet.getDate(3);
 				String startDatePhrase
-					= RIFGenericLibraryMessages.getDatePhrase(startDate);
+					= GENERIC_MESSAGES.getDatePhrase(startDate);
 				project.setStartDate(startDatePhrase);
 				Date endDate
 					= resultSet.getDate(4);
 				if (endDate != null) {
 					String endDatePhrase
-						= RIFGenericLibraryMessages.getDatePhrase(endDate);
+						= GENERIC_MESSAGES.getDatePhrase(endDate);
 					project.setEndDate(endDatePhrase);					
 				}
 				results.add(project);

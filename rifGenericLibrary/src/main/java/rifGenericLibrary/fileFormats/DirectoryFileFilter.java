@@ -1,8 +1,8 @@
 package rifGenericLibrary.fileFormats;
 
-import rifGenericLibrary.system.RIFGenericLibraryMessages;
-
 import java.io.File;
+
+import rifGenericLibrary.system.Messages;
 
 
 /**
@@ -61,7 +61,9 @@ public class DirectoryFileFilter extends javax.swing.filechooser.FileFilter
 	// ==========================================
 	// Section Constants
 	// ==========================================
-
+	
+	private Messages GENERIC_MESSAGES = Messages.genericMessages();
+	
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -98,7 +100,7 @@ public class DirectoryFileFilter extends javax.swing.filechooser.FileFilter
 	
 	public String getDescription() {
 		String description
-			= RIFGenericLibraryMessages.getMessage(
+			= GENERIC_MESSAGES.getMessage(
 				"io.directoriesOnly.description");
 		return description;
 	}
