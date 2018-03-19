@@ -118,9 +118,7 @@ public final class MSSQLTestRIFStudySubmissionService
 	/**
 	 * Test method used to ensure that service can identify age groups that
 	 * don't exist in the age groups providers
-	 * @param user
-	 * @param connection
-	 * @param healthCodes
+	 * @param _user
 	 * @throws RIFServiceException
 	 */
 	public void checkNonExistentAgeGroups(
@@ -133,7 +131,7 @@ public final class MSSQLTestRIFStudySubmissionService
 		User user = User.createCopy(_user);		
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return;
 		}
 		ArrayList<AgeBand> ageBands
@@ -189,9 +187,7 @@ public final class MSSQLTestRIFStudySubmissionService
 	/**
 	 * Test method used to ensure that service can identify age groups that
 	 * don't exist in the age groups providers
-	 * @param user
-	 * @param connection
-	 * @param healthCodes
+	 * @param _user
 	 * @throws RIFServiceException
 	 */
 	public void checkNonExistentCovariates(
@@ -205,7 +201,7 @@ public final class MSSQLTestRIFStudySubmissionService
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();						
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return;
 		}
 		Geography geography = Geography.createCopy(_geography);

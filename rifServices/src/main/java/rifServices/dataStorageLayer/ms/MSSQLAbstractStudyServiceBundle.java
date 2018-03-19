@@ -314,7 +314,7 @@ class MSSQLAbstractStudyServiceBundle {
 			}
 		}
 
-		if (userDeregistered == false) {
+		if (!userDeregistered) {
 			//this helps service recover when one call generates an exception
 			//and subsequent calls have one less available connection
 			//because the try...catch setup didn't allow connection to

@@ -34,6 +34,7 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.Sex;
+import rifServices.restfulWebServices.AbstractWebServiceResource;
 import rifServices.restfulWebServices.AgeGroupJSONGenerator;
 import rifServices.restfulWebServices.CalculationMethodProxy;
 import rifServices.restfulWebServices.CovariateProxy;
@@ -129,8 +130,7 @@ import rifServices.system.RIFServiceMessages;
  */
 
 @Path("/")
-public class PGSQLRIFStudySubmissionWebServiceResource 
-	extends PGSQLAbstractRIFWebServiceResource {
+public class PGSQLRIFStudySubmissionWebServiceResource extends AbstractWebServiceResource {
 
 	// ==========================================
 	// Section Constants

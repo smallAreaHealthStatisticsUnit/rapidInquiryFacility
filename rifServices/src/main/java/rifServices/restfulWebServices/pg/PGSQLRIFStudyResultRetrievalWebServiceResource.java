@@ -1,10 +1,6 @@
 package rifServices.restfulWebServices.pg;
 
-import rifGenericLibrary.businessConceptLayer.RIFResultTable;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifServices.businessConceptLayer.*;
-
-import rifServices.restfulWebServices.*;
+import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -14,10 +10,15 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.restfulWebServices.AbstractWebServiceResource;
+import rifServices.restfulWebServices.RIFResultTableJSONGenerator;
+import rifServices.restfulWebServices.SexesProxy;
+import rifServices.restfulWebServices.WebServiceResponseGenerator;
 
 /**
  * This class advertises API methods found in 
@@ -100,8 +101,7 @@ import rifGenericLibrary.util.RIFLogger;
  */
 
 @Path("/")
-public class PGSQLRIFStudyResultRetrievalWebServiceResource 
-extends PGSQLAbstractRIFWebServiceResource {
+public class PGSQLRIFStudyResultRetrievalWebServiceResource extends AbstractWebServiceResource {
 
 	// ==========================================
 	// Section Constants
