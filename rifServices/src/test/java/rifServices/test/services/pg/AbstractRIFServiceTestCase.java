@@ -17,82 +17,13 @@ import org.junit.After;
 import org.junit.Before;
 
 import java.util.ArrayList;
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- */
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-public class AbstractRIFServiceTestCase 
-	extends AbstractRIFTestCase {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
-	protected static double TOLERANCE = 0.0001;
+public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	protected PGSQLTestRIFStudyServiceBundle rifServiceBundle;
+	PGSQLTestRIFStudyServiceBundle rifServiceBundle;
 	protected PGSQLTestRIFStudySubmissionService rifStudySubmissionService;
 	protected PGSQLTestRIFStudyRetrievalService rifStudyRetrievalService;
 
-	
 	/** The test user. */
 	private User validUser;
 	
@@ -116,8 +47,6 @@ public class AbstractRIFServiceTestCase
 	
 	/** The malicious geography. */
 	private Geography maliciousGeography;	
-	
-
 	
 	/** The valid sahsu geo level select value. */
 	private GeoLevelSelect validGeoLevelSelectValue;	
@@ -178,13 +107,6 @@ public class AbstractRIFServiceTestCase
 	private GeoLevelAttributeSource nonExistentGeoLevelAttributeSource;
 	private GeoLevelAttributeSource maliciousGeoLevelAttributeSource;
 	
-	/*
-	private GeoLevelAttributeTheme validGeoLevelAttributeTheme;
-	private GeoLevelAttributeTheme emptyGeoLevelAttributeTheme;
-	private GeoLevelAttributeTheme nonExistentGeoLevelAttributeTheme;
-	private GeoLevelAttributeTheme maliciousGeoLevelAttributeTheme;
-	*/
-	
 	private String validGeoLevelSourceAttribute;
 	private String emptyGeoLevelSourceAttribute;
 	private String nonExistentGeoLevelSourceAttribute;
@@ -203,10 +125,6 @@ public class AbstractRIFServiceTestCase
 	
 	private RIFServiceStartupOptions startupOptions;
 	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
 	public AbstractRIFServiceTestCase() {
 		rifServiceBundle
 			= new PGSQLTestRIFStudyServiceBundle();
@@ -298,9 +216,7 @@ public class AbstractRIFServiceTestCase
 				"Cancer cases in SAHSU land", 
 				"SAHSULAND_POP", 
 				"SAHSU land population");
-		
 
-		
 		validHealthTheme
 			= HealthTheme.newInstance(
 				"SAHSULAND", 
@@ -453,10 +369,7 @@ public class AbstractRIFServiceTestCase
 		}				
 	}	
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	protected void initialiseService() throws RIFServiceException {
+	void initialiseService() throws RIFServiceException {
 		rifServiceBundle = new PGSQLTestRIFStudyServiceBundle();
 		
 		startupOptions
@@ -510,11 +423,11 @@ public class AbstractRIFServiceTestCase
 		return GeoLevelSelect.createCopy(validGeoLevelSelectValue);
 	}
 	
-	protected GeoLevelSelect cloneEmptyGeoLevelSelect() {
+	GeoLevelSelect cloneEmptyGeoLevelSelect() {
 		return GeoLevelSelect.createCopy(emptyGeoLevelSelectValue);
 	}
 	
-	protected GeoLevelSelect cloneNonExistentGeoLevelSelect() {
+	GeoLevelSelect cloneNonExistentGeoLevelSelect() {
 		return GeoLevelSelect.createCopy(nonExistentGeoLevelSelectValue);		
 	}
 	
@@ -522,19 +435,19 @@ public class AbstractRIFServiceTestCase
 		return GeoLevelSelect.createCopy(maliciousGeoLevelSelectValue);		
 	}
 
-	protected GeoLevelToMap cloneValidGeoLevelToMap() {
+	GeoLevelToMap cloneValidGeoLevelToMap() {
 		return GeoLevelToMap.createCopy(validGeoLevelToMapValue);
 	}
 	
-	protected GeoLevelToMap cloneEmptyGeoLevelToMap() {
+	GeoLevelToMap cloneEmptyGeoLevelToMap() {
 		return GeoLevelToMap.createCopy(emptyGeoLevelToMapValue);
 	}
 	
-	protected GeoLevelToMap cloneNonExistentGeoLevelToMap() {
+	GeoLevelToMap cloneNonExistentGeoLevelToMap() {
 		return GeoLevelToMap.createCopy(nonExistentGeoLevelToMapValue);		
 	}
 	
-	protected GeoLevelToMap cloneMaliciousGeoLevelToMap() {
+	GeoLevelToMap cloneMaliciousGeoLevelToMap() {
 		return GeoLevelToMap.createCopy(maliciousGeoLevelToMapValue);		
 	}
 
@@ -542,7 +455,7 @@ public class AbstractRIFServiceTestCase
 		return GeoLevelView.createCopy(validGeoLevelViewValue);
 	}
 	
-	protected GeoLevelView cloneEmptyGeoLevelView() {
+	GeoLevelView cloneEmptyGeoLevelView() {
 		return GeoLevelView.createCopy(emptyGeoLevelViewValue);
 	}
 	
@@ -573,35 +486,35 @@ public class AbstractRIFServiceTestCase
 		return GeoLevelArea.createCopy(maliciousGeoLevelAreaValue);
 	}
 
-	protected NumeratorDenominatorPair cloneValidNDPair() {
+	NumeratorDenominatorPair cloneValidNDPair() {
 		return NumeratorDenominatorPair.createCopy(validNDPair);
 	}
 	
-	protected NumeratorDenominatorPair cloneEmptyNDPair() {
+	NumeratorDenominatorPair cloneEmptyNDPair() {
 		return NumeratorDenominatorPair.createCopy(emptyNDPair);
 	}
 	
-	protected NumeratorDenominatorPair cloneNonExistentNDPair() {
+	NumeratorDenominatorPair cloneNonExistentNDPair() {
 		return NumeratorDenominatorPair.createCopy(nonExistentNDPair);
 	}
 	
-	protected NumeratorDenominatorPair cloneMaliciousNDPair() {
+	NumeratorDenominatorPair cloneMaliciousNDPair() {
 		return NumeratorDenominatorPair.createCopy(maliciousNDPair);
 	}
 	
-	protected HealthTheme cloneValidHealthTheme() {
+	HealthTheme cloneValidHealthTheme() {
 		return HealthTheme.createCopy(validHealthTheme);
 	}
 
-	protected HealthTheme cloneNonExistentHealthTheme() {
+	HealthTheme cloneNonExistentHealthTheme() {
 		return HealthTheme.createCopy(nonExistentHealthTheme);		
 	}
 	
-	protected HealthTheme cloneMaliciousHealthTheme() {
+	HealthTheme cloneMaliciousHealthTheme() {
 		return HealthTheme.createCopy(maliciousHealthTheme);	
 	}
 	
-	protected HealthTheme cloneEmptyHealthTheme() {
+	HealthTheme cloneEmptyHealthTheme() {
 		return HealthTheme.createCopy(emptyHealthTheme);
 	}
 	
@@ -629,11 +542,11 @@ public class AbstractRIFServiceTestCase
 		return MapArea.createCopy(emptyMapArea);
 	}
 	
-	protected MapArea cloneNonExistentMapArea() {
+	MapArea cloneNonExistentMapArea() {
 		return MapArea.createCopy(nonExistentMapArea);		
 	}
 	
-	protected MapArea cloneMaliciousMapArea() {
+	MapArea cloneMaliciousMapArea() {
 		return MapArea.createCopy(maliciousMapArea);
 	}
 
@@ -716,31 +629,19 @@ public class AbstractRIFServiceTestCase
 		return Project.createCopy(masterValidProject);
 	}
 	
-	protected Project cloneEmptyProject() {
+	Project cloneEmptyProject() {
 		return Project.createCopy(masterEmptyProject);
 	}
 	
-	protected Project cloneNonExistentProject() {
+	Project cloneNonExistentProject() {
 		return Project.createCopy(masterNonExistentProject);
 	}
 	
-	protected Project cloneMaliciousProject() {
+	Project cloneMaliciousProject() {
 		return Project.createCopy(masterMaliciousProject);
 	}
 	
 	protected RIFServiceStartupOptions getStartupOptions() {
 		return startupOptions;
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }
