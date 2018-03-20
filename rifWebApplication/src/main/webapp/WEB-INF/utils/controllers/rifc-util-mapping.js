@@ -104,13 +104,15 @@ angular.module("RIF")
 									description: 'Atlas Relative Risk',
 									breaks:		[-Infinity, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51, Infinity],
 									invert:		true,
-									brewerName: "PuOr"
+									brewerName: "PuOr",
+									invalidScales: ["Constant", "Dark2", "Accent", "Pastel2", "Set2"]
 							},
 							'AtlasProbability': {
 									description: 'Atlas Probability',
 									breaks: 	[0.0, 0.20, 0.81, 1.0],	
 									invert:		false,
-									brewerName:	"RdYlGn"
+									brewerName:	"RdYlGn",
+									invalidScales: ["Constant"]
 							}
 						}
 					};	
