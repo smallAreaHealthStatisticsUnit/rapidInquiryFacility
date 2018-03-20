@@ -118,7 +118,6 @@ public final class MSSQLRIFServiceResources {
 		final RIFServiceStartupOptions rifServiceStartupOptions) 
 		throws RIFServiceException {
 		
-		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		sqlConnectionManager = new MSSQLConnectionManager(rifServiceStartupOptions);

@@ -95,7 +95,7 @@ public abstract class SQLAbstractSQLManager {
 	// Section Constants
 	// ==========================================
 
-	public static final String ABSTRACT_SQLMANAGER_PROPERTIES = "AbstractSQLManager.properties";
+	private static final String ABSTRACT_SQLMANAGER_PROPERTIES = "AbstractSQLManager.properties";
 
 	// ==========================================
 	// Section Properties
@@ -121,7 +121,7 @@ public abstract class SQLAbstractSQLManager {
 		final RIFDatabaseProperties rifDatabaseProperties) {
 
 		this.rifDatabaseProperties = rifDatabaseProperties;
-		this.databaseType=this.rifDatabaseProperties.getDatabaseType();
+		databaseType = this.rifDatabaseProperties.getDatabaseType();
 		
 	}
 

@@ -73,7 +73,6 @@ import java.util.Properties;
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 /*
  * Code Road Map:
@@ -97,8 +96,7 @@ import java.util.Properties;
  *
  */
 
-public final class MSSQLConnectionManager 
-	extends MSSQLAbstractSQLManager {
+public final class MSSQLConnectionManager extends MSSQLAbstractSQLManager {
 
 	// ==========================================
 	// Section Constants
@@ -158,11 +156,7 @@ public final class MSSQLConnectionManager
 	
 		suspiciousEventCounterFromUser = new HashMap<>();
 		
-		StringBuilder query = new StringBuilder();
-		
-	    query.append("EXEC rif40.rif40_startup ?"); 
-
-		initialisationQuery = query.toString();
+		initialisationQuery = "EXEC rif40.rif40_startup ?";
 		
 		databaseURL = generateURLText();
 	}

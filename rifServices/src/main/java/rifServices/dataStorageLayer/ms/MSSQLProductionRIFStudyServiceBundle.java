@@ -116,9 +116,9 @@ public final class MSSQLProductionRIFStudyServiceBundle
 	 * 
 	 */
 	private static final MSSQLProductionRIFStudyServiceBundle rifStudyServiceBundle
-		= new MSSQLProductionRIFStudyServiceBundle();
+					= new MSSQLProductionRIFStudyServiceBundle();
 
-		// ==========================================
+	// ==========================================
 	// Section Properties
 	// ==========================================
 
@@ -126,7 +126,7 @@ public final class MSSQLProductionRIFStudyServiceBundle
 	// Section Construction
 	// ==========================================
 
-	public MSSQLProductionRIFStudyServiceBundle() {
+	private MSSQLProductionRIFStudyServiceBundle() {
 
 		MSSQLProductionRIFStudySubmissionService rifStudySubmissionService
 			= new MSSQLProductionRIFStudySubmissionService();
@@ -142,6 +142,7 @@ public final class MSSQLProductionRIFStudyServiceBundle
 	// Section Accessors and Mutators
 	// ==========================================
 	public static MSSQLProductionRIFStudyServiceBundle getRIFServiceBundle() {
+		
 		return rifStudyServiceBundle;
 	}
 	
