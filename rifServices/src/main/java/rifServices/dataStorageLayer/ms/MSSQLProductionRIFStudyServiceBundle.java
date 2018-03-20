@@ -127,9 +127,9 @@ public final class MSSQLProductionRIFStudyServiceBundle
 	// ==========================================
 
 	private MSSQLProductionRIFStudyServiceBundle() {
-
-		MSSQLProductionRIFStudySubmissionService rifStudySubmissionService
-			= new MSSQLProductionRIFStudySubmissionService();
+		
+		MSSQLRIFStudySubmissionService rifStudySubmissionService
+			= new MSSQLRIFStudySubmissionService();
 		setRIFStudySubmissionService(rifStudySubmissionService);
 
 		MSSQLProductionRIFStudyRetrievalService rifStudyRetrievalService
