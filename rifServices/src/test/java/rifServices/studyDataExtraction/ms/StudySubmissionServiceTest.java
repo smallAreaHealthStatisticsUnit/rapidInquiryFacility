@@ -43,7 +43,7 @@ public final class StudySubmissionServiceTest extends AbstractRIFServiceTestCase
 	}
 	
 	@Test
-	public void testExtract1() throws RIFServiceException {
+	public void createStudyExtract_managerMethodCalled() throws RIFServiceException {
 
 		User validUser = cloneValidUser();
 		String validStudyID = "75";
