@@ -556,7 +556,12 @@ angular.module("RIF")
 						mapID: mapID,
 						options: [],
 						domain: [],
-						tableData: {}
+						tableData: {},
+						consoleLog: $scope.consoleLog,
+						consoleError: $scope.consoleError,
+						consoleDebug: $scope.consoleDebug,
+						showError: $scope.showError,
+						showWarning: $scope.showWarning
 					}
 					choroScope.input.isDefault = ChoroService.getMaps(mapID).isDefault;
 					choroScope.input.checkboxInvert = ChoroService.getMaps(mapID).invert;
@@ -594,7 +599,17 @@ angular.module("RIF")
 					
 //					$scope.consoleDebug("[rifc-util-mapping.js] defaultRenderMap() mapID: " + mapID + "; choroScope: " + JSON.stringify(choroScope, null, 2)); 
 					choroScope.tableData[mapID]=$scope.tableData[mapID];	
-					ChoroService.doRenderSwatch(true /* Called on modal open */, true /* Secret field, always true */, choroScope, ColorBrewerService);
+					try {
+						ChoroService.doRenderSwatch(
+							true /* Called on modal open */, 
+							true /* Secret field, always true */, 
+							choroScope, 
+							ColorBrewerService);
+					}
+					catch (e) {
+						$scope.consoleError("[rifc-util-mapping.js] Caught error in doRenderSwatch(): " + 
+							JSON.stringify(e));
+					}
 					
 					$scope.input=choroScope.input;
 					$scope.domain=choroScope.domain;

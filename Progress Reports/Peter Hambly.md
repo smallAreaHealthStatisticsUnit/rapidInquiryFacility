@@ -2007,6 +2007,45 @@ callPerformSmoothingActivity exitValue: 1
 * Support for user defined styles in maps;
 * Investigate adding gender filter to Styling - not possible
 * Fixed regex C style comment remover stack overflow issues. 
+ools label positioning prevent its use. More work needed.
+
+#### 19th to 23rd March
+
+* Make mapping defaults configurable
+* Test MM changes and run study faults:
+  1. A covariate must be used or you will get:
+
+    ```
+    ARWS - getRIFSubmissionFromXMLSource stop
+    09:54:45.390 [https-jsse-nio-8080-exec-9] ERROR rifGenericLibrary.util.RIFLogger : [rifGenericLibrary.system.RIFServiceException]:
+    Record "Investigation" field "Covariates" cannot be empty.
+    ```
+    This is not failing correctly so the user sees no error. I need to review all the code in this area so 
+	that it fails properly and then fix the spurious error. (covariates can be empty!)  
+
+    It is not obvious were the error crept in since it was working 2-3 weeks ago when I last created a test 
+	study and no one has touched code in this area for a very long time.
+
+    The JSON submitted looks like:
+    ```
+				"investigation": [{
+                                                 ...
+ 
+						"sex": "Both",
+						"covariates": []
+					}
+				]
+    ```
+    2. R failure
+
+	```
+     Connect to database: SQLServer11
+     R Error/Warning/Notice: Error in odbcSetAutoCommit(connDB, autoCommit = FALSE) : 
+       first argument is not an open RODBC channel
+    ```
+    This I suspect is caused by the R interface is using the username as the password and should be easy to fix!
+
+* Imperial network login tests
 
 ## In progress (March/April 2018):
 
