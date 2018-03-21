@@ -9,6 +9,8 @@ import org.mockito.MockitoAnnotations;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.dataStorageLayer.common.StudyExtract;
 import rifServices.dataStorageLayer.ms.MSSQLConnectionManager;
 import rifServices.dataStorageLayer.ms.MSSQLRIFServiceResources;
 import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
@@ -19,6 +21,7 @@ import rifServices.test.services.ms.AbstractRIFServiceTestCase;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -49,26 +52,14 @@ public final class StudySubmissionServiceTest extends AbstractRIFServiceTestCase
 		String validStudyID = "75";
 		String validZoomLevel = "9";
 		
-		MSSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
-			= getRIFServiceBundle();
-		
-		MSSQLRIFStudySubmissionService testSubmissionService
-			= (MSSQLRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
-
 		when(resources.getSqlConnectionManager()).thenReturn(sqlMgr);
 		when(sqlMgr.userExists(validUser.getUserID())).thenReturn(true);
 		when(resources.getRIFSubmissionManager()).thenReturn(subMgr);
 		when(resources.getSQLStudyExtractManager()).thenReturn(extractMgr);
 		
-		testSubmissionService.initialise(resources);
-		testSubmissionService.createStudyExtract(
-			validUser,
-			validStudyID,
-			validZoomLevel,
-			Locale.getDefault(),
-			"");
-		verify(extractMgr).createStudyExtract(any(), any(), any(), any(), any(), any(),
-				anyString());
-		
+		new StudyExtract(validUser, validStudyID, validZoomLevel, Locale.getDefault(),
+				"", resources).create();
+		verify(extractMgr).createStudyExtract(any(), any(User.class), any(),
+				eq(validZoomLevel), eq(validStudyID), eq(Locale.getDefault()), eq(""));
 	}
 }

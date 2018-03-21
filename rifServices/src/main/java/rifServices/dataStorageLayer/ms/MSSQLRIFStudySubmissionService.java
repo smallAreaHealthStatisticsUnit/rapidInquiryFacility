@@ -27,6 +27,7 @@ import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.Sex;
+import rifServices.dataStorageLayer.common.StudyExtract;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.files.TomcatBase;
@@ -1250,10 +1251,9 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();			
+		MSSQLConnectionManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
 		
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 
@@ -1334,99 +1334,12 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 		return result;
 	}						
 		
-	public void createStudyExtract(
-			final User _user,
-			final String studyID,
-			final String zoomLevel,
-			final Locale locale,
-			final String tomcatServer) 
-					throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();
+	public void createStudyExtract(final User user, final String studyID, final String zoomLevel,
+			final Locale locale, final String tomcatServer) throws RIFServiceException {
 		
-		if (sqlConnectionManager.isUserBlocked(user)) {
-			return;
-		}
-
-		RIFLogger rifLogger = RIFLogger.getLogger();
-		Connection connection = null;
-		try {
-
-			//Part II: Check for empty parameter values
-			FieldValidationUtility fieldValidationUtility
-			= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-					"createStudyExtract",
-					"user",
-					user);
-			fieldValidationUtility.checkNullMethodParameter(
-					"createStudyExtract",
-					"studyID",
-					studyID);	
-			fieldValidationUtility.checkNullMethodParameter(
-					"createStudyExtract",
-					"zoomLevel",
-					zoomLevel);	
-
-
-			//Check for security violations
-			validateUser(user);
-			fieldValidationUtility.checkMaliciousMethodParameter(
-					"createStudyExtract", 
-					"studyID", 
-					studyID);
-
-			//Audit attempt to do operation
-			String auditTrailMessage
-			= RIFServiceMessages.getMessage("logging.createStudyExtract",
-					user.getUserID(),
-					user.getIPAddress(),
-					studyID,
-					zoomLevel);
-			rifLogger.info(
-					getClass(),
-					auditTrailMessage);
-
-			//Assign pooled connection
-			connection
-			= sqlConnectionManager.assignPooledWriteConnection(user);
-
-			MSSQLRIFSubmissionManager sqlRIFSubmissionManager
-					= rifServiceResources.getRIFSubmissionManager();
-			RIFStudySubmission rifStudySubmission =
-					sqlRIFSubmissionManager.getRIFStudySubmission(connection, user, studyID);
-
-			MSSQLStudyExtractManager studyExtractManager =
-					rifServiceResources.getSQLStudyExtractManager();
-			studyExtractManager.createStudyExtract(
-					connection, 
-					user, 
-					rifStudySubmission,
-					zoomLevel,
-					studyID,
-					locale,
-					tomcatServer);
-
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-					user,
-					"createStudyExtract",
-					rifServiceException);	
-		}
-		finally {
-			rifLogger.info(getClass(), "Create ZIP file completed OK");
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledWriteConnection(
-					user, 
-					connection);			
-		}
-
-	} 
+		new StudyExtract(user, studyID, zoomLevel, locale, tomcatServer,
+				rifServiceResources).create();
+	}
 	
 	public String getStudyExtractFIleName(
 			final User user,
@@ -1670,7 +1583,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();	
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		
@@ -1724,4 +1637,5 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 	
 		return results;
 	}
+	
 }
