@@ -46,7 +46,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-public class AbstractWebServiceResource {
+public class WebService {
 	// ==========================================
 	// Section Properties
 	// ==========================================
@@ -59,7 +59,7 @@ public class AbstractWebServiceResource {
 	private WebServiceResponseGenerator webServiceResponseGenerator;
 	private FrontEndLogger frontEndLogger = FrontEndLogger.getLogger();
 	
-	public AbstractWebServiceResource() {
+	public WebService() {
 		
 		startTime = new Date();
 		webServiceResponseGenerator = new WebServiceResponseGenerator();

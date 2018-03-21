@@ -15,7 +15,7 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.Sex;
-import rifServices.restfulWebServices.AbstractWebServiceResource;
+import rifServices.restfulWebServices.WebService;
 import rifServices.restfulWebServices.RIFResultTableJSONGenerator;
 import rifServices.restfulWebServices.SexesProxy;
 import rifServices.restfulWebServices.WebServiceResponseGenerator;
@@ -101,7 +101,7 @@ import rifServices.restfulWebServices.WebServiceResponseGenerator;
  */
 
 @Path("/")
-public class MSSQLRIFStudyResultRetrievalWebServiceResource extends AbstractWebServiceResource {
+public class MSSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 
 	// ==========================================
 	// Section Constants

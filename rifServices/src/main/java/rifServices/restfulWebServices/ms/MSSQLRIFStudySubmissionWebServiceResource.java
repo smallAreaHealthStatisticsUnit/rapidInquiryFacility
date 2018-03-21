@@ -34,7 +34,7 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.Sex;
-import rifServices.restfulWebServices.AbstractWebServiceResource;
+import rifServices.restfulWebServices.WebService;
 import rifServices.restfulWebServices.AgeGroupJSONGenerator;
 import rifServices.restfulWebServices.CalculationMethodProxy;
 import rifServices.restfulWebServices.CovariateProxy;
@@ -130,7 +130,7 @@ import rifServices.system.RIFServiceMessages;
  */
 
 @Path("/")
-public class MSSQLRIFStudySubmissionWebServiceResource extends AbstractWebServiceResource {
+public class MSSQLRIFStudySubmissionWebServiceResource extends WebService {
 
 	// ==========================================
 	// Section Constants
