@@ -9,18 +9,14 @@ import org.mockito.MockitoAnnotations;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.dataStorageLayer.common.StudyExtract;
 import rifServices.dataStorageLayer.ms.MSSQLConnectionManager;
 import rifServices.dataStorageLayer.ms.MSSQLRIFServiceResources;
-import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
 import rifServices.dataStorageLayer.ms.MSSQLRIFSubmissionManager;
 import rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager;
-import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
 import rifServices.test.services.ms.AbstractRIFServiceTestCase;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
