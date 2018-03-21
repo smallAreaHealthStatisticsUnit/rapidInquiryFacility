@@ -38,18 +38,4 @@ public final class TestStudyDataExtraction extends AbstractRIFServiceTestCase {
 			Locale.getDefault(),
 			"");
 	}
-		
-	@Test
-	public void deleteStudy() throws RIFServiceException {
-		
-		User validUser = cloneValidUser();
-		String validStudyID = "18";
-		
-		PGSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
-			= getRIFServiceBundle();
-		
-		PGSQLTestRIFStudySubmissionService testSubmissionService
-			= (PGSQLTestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
-		testSubmissionService.deleteStudy(validUser, validStudyID);
-	}
 }
