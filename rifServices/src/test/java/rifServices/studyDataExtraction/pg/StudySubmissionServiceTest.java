@@ -1,22 +1,16 @@
 package rifServices.studyDataExtraction.pg;
 
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
-import rifServices.test.services.pg.AbstractRIFServiceTestCase;
-
-
-import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyServiceBundle;
-import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudySubmissionService;
-import static org.junit.Assert.fail;
+import java.util.Locale;
 
 import org.junit.Test;
 
-import java.util.Locale;
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyServiceBundle;
+import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudySubmissionService;
+import rifServices.test.services.pg.AbstractRIFServiceTestCase;
 
-public final class TestStudyDataExtraction extends AbstractRIFServiceTestCase {
-
-	public TestStudyDataExtraction() {
-	}
+public final class StudySubmissionServiceTest extends AbstractRIFServiceTestCase {
 
 	@Test
 	public void testExtract1() throws RIFServiceException {

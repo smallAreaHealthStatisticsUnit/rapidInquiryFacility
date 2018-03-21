@@ -10,9 +10,7 @@ import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
 import rifServices.test.services.ms.AbstractRIFServiceTestCase;
 
-import static org.junit.Assert.fail;
-
-public final class TestStudyDataExtraction extends AbstractRIFServiceTestCase {
+public final class StudySubmissionServiceTest extends AbstractRIFServiceTestCase {
 
 	@Test
 	public void testExtract1() throws RIFServiceException {

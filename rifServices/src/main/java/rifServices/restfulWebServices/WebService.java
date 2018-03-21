@@ -47,9 +47,6 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
 public class WebService {
-	// ==========================================
-	// Section Properties
-	// ==========================================
 	
 	private static final MSSQLProductionRIFStudyServiceBundle rifStudyServiceBundle
 		= MSSQLProductionRIFStudyServiceBundle.getRIFServiceBundle();
@@ -73,8 +70,9 @@ public class WebService {
 			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
 		}
 		catch(RIFServiceException exception) {
-			rifLogger.error(this.getClass(), getClass().getSimpleName() +
-			                                 " rifStudyServiceBundle.initialise error", exception);
+			rifLogger.error(this.getClass(),
+					getClass().getSimpleName()
+					+ " rifStudyServiceBundle.initialise error", exception);
 		}
 	}
 	
