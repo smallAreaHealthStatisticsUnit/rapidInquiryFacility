@@ -96,7 +96,7 @@ import java.util.Properties;
  *
  */
 
-public final class MSSQLConnectionManager extends MSSQLAbstractSQLManager {
+public class MSSQLConnectionManager extends MSSQLAbstractSQLManager {
 
 	// ==========================================
 	// Section Constants

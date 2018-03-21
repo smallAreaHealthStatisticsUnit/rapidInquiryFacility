@@ -1395,15 +1395,12 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
 			MSSQLRIFSubmissionManager sqlRIFSubmissionManager
-			= rifServiceResources.getRIFSubmissionManager();
-			RIFStudySubmission rifStudySubmission
-			= sqlRIFSubmissionManager.getRIFStudySubmission(
-					connection, 
-					user, 
-					studyID);
+					= rifServiceResources.getRIFSubmissionManager();
+			RIFStudySubmission rifStudySubmission =
+					sqlRIFSubmissionManager.getRIFStudySubmission(connection, user, studyID);
 
-			MSSQLStudyExtractManager studyExtractManager
-			= rifServiceResources.getSQLStudyExtractManager();
+			MSSQLStudyExtractManager studyExtractManager =
+					rifServiceResources.getSQLStudyExtractManager();
 			studyExtractManager.createStudyExtract(
 					connection, 
 					user, 

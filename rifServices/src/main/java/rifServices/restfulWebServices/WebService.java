@@ -49,7 +49,7 @@ import rifServices.system.RIFServiceStartupOptions;
 public class WebService {
 	
 	private static final MSSQLProductionRIFStudyServiceBundle rifStudyServiceBundle
-		= MSSQLProductionRIFStudyServiceBundle.getRIFServiceBundle();
+			= MSSQLProductionRIFStudyServiceBundle.getRIFServiceBundle();
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss:SSS");
 	protected RIFLogger rifLogger = RIFLogger.getLogger();
 	private Date startTime;

@@ -65,7 +65,7 @@ import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
  *
  */
 
-public final class MSSQLRIFServiceResources {
+public class MSSQLRIFServiceResources {
 
 	// ==========================================
 	// Section Constants

@@ -75,7 +75,7 @@ import java.sql.*;
  *
  */
 
-final class MSSQLRIFSubmissionManager 
+public class MSSQLRIFSubmissionManager
 	extends MSSQLAbstractSQLManager {
 
 	public static void main(String[] args) {
