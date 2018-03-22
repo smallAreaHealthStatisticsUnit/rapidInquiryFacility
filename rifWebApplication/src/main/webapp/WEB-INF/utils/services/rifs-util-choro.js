@@ -67,7 +67,26 @@ angular.module("RIF")
 							isDefault:		true
 					}
 				};
-                
+                                       
+				var defaultClassificationsList = [ // Standard methods
+					{
+						id: 	'quantile',
+						label: 	'Quantile'
+					},
+					{
+						id: 	'quantize',
+						label: 	'Equal Interval'
+					},
+					{
+						id: 	'jenks',
+						label: 	'Jenks'
+					},
+					{
+						id: 	'standardDeviation',
+						label: 	'Standard Deviation'
+					}
+				];
+				
                 //a default symbology
                 function symbology(mapID, choroScaleMethod) {
 					
@@ -91,6 +110,20 @@ angular.module("RIF")
                 }
 				
 				var parameters=ParametersService.getParameters();
+				
+				if (parameters && parameters.userMethods) { // Add userMethods
+
+					for (var userMethodName in parameters.userMethods) {
+						var userMethod=parameters.userMethods[userMethodName]						
+						defaultClassificationsList.push({
+								id: userMethodName,
+								label: userMethod.description
+							});
+					}
+					console.log('defaultClassificationsList: ' + 
+						JSON.stringify(defaultClassificationsList, null, 2));
+				}
+				
 				var choroScaleMethod = undefined;
 				if (parameters && parameters.mappingDefaults) {
 					choroScaleMethod = parameters.mappingDefaults;
@@ -153,8 +186,16 @@ angular.module("RIF")
                  *       			mn: mn,
                  *       			mx: mx}
 				 */
-                function choroScale(method, domain, rangeIn, flip, map, oldRval, intervals, choroScope) {
+                function choroScale(methodObj, domain, rangeIn, flip, map, oldRval, intervals, choroScope) {
                     var scale;
+					var method;
+					if (typeof methodObj === 'object') { // Comes from rifp-util-choro.html renderSwatch()
+						throw new Error("Choropeth map method: " + JSON.stringify(methodObj) + 
+							" not valid for choroScale()");  
+					}
+					else {
+						method=methodObj;
+					}
                     var mx = Math.max.apply(Math, domain); // Defaults: max
                     var mn = Math.min.apply(Math, domain); // Defaults: min
 					
@@ -168,6 +209,8 @@ angular.module("RIF")
                     }
 					var brewerName=maps[map].brewerName;
 					var description=method;
+					var changeAble=true;
+					var selectedFeature=choroScope.input.selectedFeature;
 
                     //find the breaks
                     switch (method) {
@@ -228,50 +271,6 @@ angular.module("RIF")
                                     .domain(breaks)
                                     .range(range);
                             break;						
-/*                      case "AtlasRelativeRisk":
-                            //RR scale as used in Health Atlas
-                            var tmp;
-                            var invalidScales = ["Constant", "Dark2", "Accent", "Pastel2", "Set2"];
-                            if (invalidScales.indexOf(maps[map].brewerName) !== -1) {
-                                tmp = ColorBrewerService.getColorbrewer("PuOr", 9).reverse();
-                                maps[map].brewerName = "PuOr";
-                            } else {
-                                tmp = ColorBrewerService.getColorbrewer(maps[map].brewerName, 9);
-                            }
-                            if (!flip) {
-                                range = angular.copy(tmp);
-                            } else {
-                                range = angular.copy(tmp).reverse();
-                            }
-                            breaks = [0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51];
-                            scale = d3.scaleThreshold()
-                                    .domain(breaks)
-                                    .range(range);
-                            mn = -Infinity;
-                            mx = Infinity;
-                            break;
-                        case "AtlasProbability":
-                            //Probability scale as used in Health Atlas
-                            var tmp;
-                            var invalidScales = ["Constant"];
-                            if (invalidScales.indexOf(maps[map].brewerName) !== -1) {
-                                tmp = angular.copy(ColorBrewerService.getColorbrewer("RdYlGn", 3)).reverse();
-                                maps[map].brewerName = "RdYlGn";
-                            } else {
-                                tmp = ColorBrewerService.getColorbrewer(maps[map].brewerName, 3);
-                            }
-                            if (!flip) {
-                                range = angular.copy(tmp);
-                            } else {
-                                range = angular.copy(tmp).reverse();
-                            }
-                            breaks = [0.20, 0.81];
-                            scale = d3.scaleThreshold()
-                                    .domain(breaks)
-                                    .range(range);
-                            mn = 0;
-                            mx = 1;
-                            break; */
                         case "logarithmic":
 							throw new Error("Choropeth map method: " + method + " not implemented");       
                             break;
@@ -286,6 +285,7 @@ angular.module("RIF")
 								for (var userMethodName in parameters.userMethods) {
 									if (userMethodName == method) {
 										userMethodFound=true;
+										changeAble=false;
 										
 										var userMethod=parameters.userMethods[userMethodName]
 										var numBreaks=0; 
@@ -308,7 +308,7 @@ angular.module("RIF")
 											}					
 										}
 										else {
-											numBreaks=breaks.length-1;
+											numBreaks=breaks.length-1; // Breaks expected
 										}
 										
 										if (userMethod.invalidScales == undefined) {
@@ -324,6 +324,12 @@ angular.module("RIF")
 										}
 										if (userMethod.description) {
 											description=userMethod.description;
+										}
+										if (userMethod.invert && userMethod.invert == true) {
+											flip=userMethod.invert;
+										}
+										else {
+											flip=false;
 										}
 										
 										var tmp;
@@ -375,77 +381,26 @@ angular.module("RIF")
 											if (mx == undefined) {
 												mx=Infinity;
 											}	
-						
-											if (oldRval && oldRval.method && oldRval.method == method &&
-											    intervals && intervals != (breaks.length+1)) {
-												if (choroScope.showWarning) { // Should always be in scope
-													choroScope.showWarning("Changing the number of intervals from " +
-														intervals +
-														" to " +
-														(breaks.length+1) +
-														" is not valid for " + userMethodName);
-												}
-												else {
-													throw new Error("choroScope.showWarning() not in scope");
-												}
-											}
-											/* Not called just for break change - check in controller
-											if (oldRval && oldRval.breaks && oldRval.breaks.length != breaks.length) {
-												if (choroScope.showWarning) { // Should always be in scope
-													choroScope.showWarning("Changing the number of breaks from " +
-														oldRval.breaks.length +
-														" to " +
-														breaks.length +
-														" is not valid for " + userMethodName);
-												}
-											}
-											else if (oldRval && oldRval.breaks && oldRval.breaks.length > 0) { 
-												// Check have changed
-												var changedBreaks=0;
-												var checkedBreaks=0;
-												for (var j=0; j<oldRval.breaks.length; j++) {
-													if (oldRval.breaks[j] != breaks[j]) {
-														changedBreaks++;
-													}
-													else {
-														checkedBreaks++;
-													}
-												}
-												
-												if (changedBreaks > 0) {
-													if (choroScope.showWarning) { // Should always be in scope
-														choroScope.showWarning("Changing " + changedBreaks +
-															"/" + checkedBreaks + " break values" +
-															" is not valid for " + userMethodName);
-													}														
-												}
-												else {
-													if (choroScope.consoleLog) { // Should always be in scope
-														choroScope.consoleLog("Checked " + checkedBreaks +
-															" break values: " + JSON.stringify(breaks) + 
-															" OK for " + userMethodName);
-													}
-												}
-											} */
 											
 											scale = d3.scaleThreshold()
 													.domain(breaks)
 													.range(range);
-										}
-							
+										}			
 									}
 								}
 								if (!userMethodFound) {	
 									throw new Error("Cannot find user method for choropeth map method: " + 
-										method);  
+										JSON.stringify(method));  
 								}
 							}
                     }
 					var rval={
-						selectedFeature: choroScope.input.selectedFeature,
+						selectedFeature: selectedFeature,
 						intervals: (breaks.length+1),
+						invert: flip,
 						method: method,
 						description: description,
+						changeAble: changeAble,
 						brewerName: brewerName,
                         scale: scale,
                         breaks: breaks,
@@ -491,6 +446,23 @@ angular.module("RIF")
 					bCalc /* Secret field, always true */, 
 					choroScope, 
 					ColorBrewerService) {
+				//Extract method from methodObj
+
+					if (typeof choroScope.input.methodObj === 'object' &&
+						choroScope.input.methodObj.id) { // Comes from rifp-util-choro.html renderSwatch()
+						choroScope.input.method=choroScope.input.methodObj.id;
+					}
+					else {
+						if (choroScope.consoleError) { // Should always be in scope
+							choroScope.consoleError("Error in renderSwatch() choroScope.input.methodObj not recognized: " + 
+								JSON.stringify(choroScope.input.methodObj));
+						}
+						else {
+							throw new Error("Error in renderSwatch() choroScope.input.methodObj not recognized: " + 
+								JSON.stringify(choroScope.input.methodObj));
+						}
+					}	
+				
                 //ensure that the colour scheme allows the selected number of classes
 					var n = angular.copy(choroScope.input.selectedN);
 					choroScope.input.intervalRange = ColorBrewerService.getSchemeIntervals(
@@ -623,6 +595,9 @@ angular.module("RIF")
                     getMaps: function (i) {
                         return maps[i];
                     },
+					getClassifications: function() {
+						return defaultClassificationsList;
+					},
                     getRenderFeatureMapping: function (scale, value, selected) {
                         return renderFeatureMapping(scale, value, selected);
                     },

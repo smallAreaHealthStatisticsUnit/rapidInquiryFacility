@@ -569,6 +569,7 @@ angular.module("RIF")
 					choroScope.input.intervalRange = ColorBrewerService.getSchemeIntervals(choroScope.selectedSchemeName);
 					choroScope.input.selectedN = ChoroService.getMaps(mapID).intervals;
 					choroScope.input.method = ChoroService.getMaps(mapID).method;
+					choroScope.input.classifications = ChoroService.getMaps(mapID).classifications;
                     var colorBrewerList = ColorBrewerService.getSchemeList();
                     for (var j in colorBrewerList) {
                         choroScope.options.push({name: colorBrewerList[j], image: 'images/colorBrewer/' + colorBrewerList[j] + '.png'});

@@ -122,6 +122,7 @@ Comments:
 			},
 			'AtlasProbability': {
 					description: 'Atlas Probability',
+					feature:	'posterior_probability',
 					breaks: 	[0.0, 0.20, 0.81, 1.0],	
 					invert:		false,
 					brewerName:	"RdYlGn",

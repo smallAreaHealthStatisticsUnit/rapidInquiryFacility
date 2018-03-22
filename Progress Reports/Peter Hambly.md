@@ -2011,7 +2011,10 @@ ools label positioning prevent its use. More work needed.
 
 #### 19th to 23rd March
 
-* Make mapping defaults configurable
+* Make mapping defaults configurable. Remaining issues:
+  * Preset feature does not work. 
+  * Color brewer does not change when expected going between user methods
+  * Breaks are editable (should not be!) 
 * Test MM changes and run study faults:
   1. A covariate must be used or you will get:
 
