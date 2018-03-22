@@ -2015,7 +2015,7 @@ ools label positioning prevent its use. More work needed.
   * Preset feature does not work. 
   * Color brewer does not change when expected going between user methods
   * Breaks are editable (should not be!) 
-* Test MM changes and run study faults:
+* Test MM changes and run study faults (SQL Server only!):
   1. A covariate must be used or you will get:
 
     ```
@@ -2048,26 +2048,6 @@ ools label positioning prevent its use. More work needed.
     ```
     This I suspect is caused by the R interface is using the username as the password and should be easy to fix!
 
-* US mapping error:
-```
-+15.6: [ERROR] [rifc-util-mapping.js] Null mapID; layer options: {
-  "pane": "overlayPane",
-  "nonBubblingEvents": [],
-  "attribution": null
-}
-Stack: $scope.consoleError@https://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:217:10
-$scope.handleLayer@https://localhost:8080/RIF4/utils/controllers/rifc-util-mapping.js:516:8
-eachLayer@https://localhost:8080/RIF4/libs/standalone/leaflet.js:7:19313
-$scope.refresh@https://localhost:8080/RIF4/utils/controllers/rifc-util-mapping.js:463:8
-doLoadWork@https://localhost:8080/RIF4/utils/controllers/rifc-util-mapping.js:759:9
-$scope.createTopoJSONLayer/</<@https://localhost:8080/RIF4/utils/controllers/rifc-util-mapping.js:803:9
-whenReady@https://localhost:8080/RIF4/libs/standalone/leaflet.js:6:4300
-$scope.createTopoJSONLayer/<@https://localhost:8080/RIF4/utils/controllers/rifc-util-mapping.js:735:7
-fire@https://localhost:8080/RIF4/libs/standalone/leaflet.js:5:4947
-_tileReady@https://localhost:8080/RIF4/libs/standalone/leaflet.js:6:25816
-createTile/<@https://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:207:7
-fetchTile/request.onload@https://localhost:8080/RIF4/libs/TopoJSONGridLayer.js:383:8
-```	
 * Imperial network login tests
 
 ## In progress (March/April 2018):
