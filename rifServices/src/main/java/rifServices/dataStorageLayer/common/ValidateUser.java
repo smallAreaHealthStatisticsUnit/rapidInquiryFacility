@@ -4,12 +4,11 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.dataStorageLayer.ms.MSSQLAbstractRIFService;
 import rifServices.dataStorageLayer.ms.MSSQLConnectionManager;
-import rifServices.dataStorageLayer.ms.MSSQLRIFServiceResources;
 
 /**
  * Checks a user's validity.
+ *
  * <p>This code was originally extracted from
  * {@link rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService}, in the interests of
  * creating smaller, more testable classes.
