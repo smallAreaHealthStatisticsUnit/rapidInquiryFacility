@@ -62,7 +62,22 @@ angular.module("RIF")
                         if (!angular.isUndefined(res.data[0])) {
                             if (!angular.isUndefined(res.data[0].errorMessages)) {
                                 var scope = $injector.get('$rootScope');
-                                scope.$root.$$childHead.showError(res.data[0].errorMessages[0]);
+								/* Trap:
+								 *
+								 * API method "isLoggedIn" has a null "userID" parameter.
+								 * Record "User" field "User ID" cannot be empty.
+								 */
+								if (res.data[0].errorMessages[0] ==
+									'API method "isLoggedIn" has a null "userID" parameter.') {
+									scope.$root.$$childHead.consoleError(res.data[0].errorMessages[0]);
+								}
+								else if (res.data[0].errorMessages[0] ==
+									'Record "User" field "User ID" cannot be empty.') {
+									scope.$root.$$childHead.consoleError(res.data[0].errorMessages[0]);
+								}
+								else {
+									scope.$root.$$childHead.showError(res.data[0].errorMessages[0]);
+								}
                                 return $q.reject();
                             }
                         }

@@ -67,7 +67,26 @@ angular.module("RIF")
 							isDefault:		true
 					}
 				};
-                
+                                       
+				var defaultClassificationsList = [ // Standard methods
+					{
+						id: 	'quantile',
+						label: 	'Quantile'
+					},
+					{
+						id: 	'quantize',
+						label: 	'Equal Interval'
+					},
+					{
+						id: 	'jenks',
+						label: 	'Jenks'
+					},
+					{
+						id: 	'standardDeviation',
+						label: 	'Standard Deviation'
+					}
+				];
+				
                 //a default symbology
                 function symbology(mapID, choroScaleMethod) {
 					
@@ -79,6 +98,7 @@ angular.module("RIF")
                     this.method = choroScaleMethod[mapID].method || defaultChoroScaleMethod[mapID].method;
 					this.isDefault = defaultChoroScaleMethod[mapID].isDefault || false; 
                     this.renderer = {
+						intervals: this.intervals,
                         scale: null,
                         breaks: [],
                         range: ["#9BCD9B"],
@@ -90,6 +110,20 @@ angular.module("RIF")
                 }
 				
 				var parameters=ParametersService.getParameters();
+				
+				if (parameters && parameters.userMethods) { // Add userMethods
+
+					for (var userMethodName in parameters.userMethods) {
+						var userMethod=parameters.userMethods[userMethodName]						
+						defaultClassificationsList.push({
+								id: userMethodName,
+								label: userMethod.description
+							});
+					}
+					console.log('defaultClassificationsList: ' + 
+						JSON.stringify(defaultClassificationsList, null, 2));
+				}
+				
 				var choroScaleMethod = undefined;
 				if (parameters && parameters.mappingDefaults) {
 					choroScaleMethod = parameters.mappingDefaults;
@@ -138,17 +172,45 @@ angular.module("RIF")
                     }
                 }
 
-                function choroScale(method, domain, rangeIn, flip, map) {
+				/*
+				 * Function: 	choroScale()
+				 * Arguments:	method name, data domain, input range, flip (invert color ramp),
+				 *				map ID, previous rval object (may be null), number of intervals,
+				 * 				scope of calling controller (for access to alert controller)
+				 * Description:	Set up choropleth map scale
+				 * Called from: renderSwatch(), getChoroScale() [thence controller rifc-util-choro.js]
+				 * Returns:		rval object {
+                 *    			   	scale: scale,
+                 * 			      	breaks: breaks,
+                 * 			      	range: range,
+                 *       			mn: mn,
+                 *       			mx: mx}
+				 */
+                function choroScale(methodObj, domain, rangeIn, flip, map, oldRval, intervals, choroScope) {
                     var scale;
-                    var mx = Math.max.apply(Math, domain);
-                    var mn = Math.min.apply(Math, domain);
-                    //flip the colour ramp
+					var method;
+					if (typeof methodObj === 'object') { // Comes from rifp-util-choro.html renderSwatch()
+						throw new Error("Choropeth map method: " + JSON.stringify(methodObj) + 
+							" not valid for choroScale()");  
+					}
+					else {
+						method=methodObj;
+					}
+                    var mx = Math.max.apply(Math, domain); // Defaults: max
+                    var mn = Math.min.apply(Math, domain); // Defaults: min
+					
                     var range = [];
+					var breaks = [];
+                    //flip the colour ramp
                     if (!flip) {
                         range = angular.copy(rangeIn);
                     } else {
                         range = angular.copy(rangeIn).reverse();
                     }
+					var brewerName=maps[map].brewerName;
+					var description=method;
+					var changeAble=true;
+					var selectedFeature=choroScope.input.selectedFeature;
 
                     //find the breaks
                     switch (method) {
@@ -156,13 +218,13 @@ angular.module("RIF")
                             scale = d3.scaleQuantile()
                                     .domain(domain)
                                     .range(range);
-                            var breaks = scale.quantiles();
+                            breaks = scale.quantiles();
                             break;
                         case "quantize": // Equal Interval
                             scale = d3.scaleQuantize()
                                     .domain([mn, mx])
                                     .range(range);
-                            var breaks = [];
+                            breaks = [];
                             var l = (mx - mn) / scale.range().length;
                             for (var i = 0; i < range.length; i++) {
                                 breaks.push(mn + (i * l));
@@ -170,7 +232,7 @@ angular.module("RIF")
                             breaks.shift();
                             break;
                         case "jenks":
-                            var breaks = ss.jenks(domain, range.length);
+                            breaks = ss.jenks(domain, range.length);
                             breaks.pop(); //remove max
                             breaks.shift(); //remove min
                             scale = d3.scaleThreshold()
@@ -186,7 +248,7 @@ angular.module("RIF")
                                 scale = d3.scaleQuantile()
                                         .domain(domain)
                                         .range(range);
-                                var breaks = scale.quantiles();
+                                breaks = scale.quantiles();
                                 break;
                             }
                             var sd = ss.sample_standard_deviation(domain);
@@ -209,61 +271,146 @@ angular.module("RIF")
                                     .domain(breaks)
                                     .range(range);
                             break;						
-                        case "AtlasRelativeRisk":
-                            //RR scale as used in Health Atlas
-                            var tmp;
-                            var invalidScales = ["Constant", "Dark2", "Accent", "Pastel2", "Set2"];
-                            if (invalidScales.indexOf(maps[map].brewerName) !== -1) {
-                                tmp = ColorBrewerService.getColorbrewer("PuOr", 9).reverse();
-                                maps[map].brewerName = "PuOr";
-                            } else {
-                                tmp = ColorBrewerService.getColorbrewer(maps[map].brewerName, 9);
-                            }
-                            if (!flip) {
-                                range = angular.copy(tmp);
-                            } else {
-                                range = angular.copy(tmp).reverse();
-                            }
-                            var breaks = [0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51];
-                            scale = d3.scaleThreshold()
-                                    .domain(breaks)
-                                    .range(range);
-                            mn = -Infinity;
-                            mx = Infinity;
-                            break;
-                        case "AtlasProbability":
-                            //Probability scale as used in Health Atlas
-                            var tmp;
-                            var invalidScales = ["Constant"];
-                            if (invalidScales.indexOf(maps[map].brewerName) !== -1) {
-                                tmp = angular.copy(ColorBrewerService.getColorbrewer("RdYlGn", 3)).reverse();
-                                maps[map].brewerName = "RdYlGn";
-                            } else {
-                                tmp = ColorBrewerService.getColorbrewer(maps[map].brewerName, 3);
-                            }
-                            if (!flip) {
-                                range = angular.copy(tmp);
-                            } else {
-                                range = angular.copy(tmp).reverse();
-                            }
-                            var breaks = [0.20, 0.81];
-                            scale = d3.scaleThreshold()
-                                    .domain(breaks)
-                                    .range(range);
-                            mn = 0;
-                            mx = 1;
-                            break;
                         case "logarithmic":
-                            //Check, not implemented by Fred         
+							throw new Error("Choropeth map method: " + method + " not implemented");       
                             break;
+						default:
+							// Process 
+							if (!parameters.userMethods) {		
+								throw new Error("Cannot find user defined methods for choropeth map method: " + 
+									method);  
+							}
+							else {
+								var userMethodFound=false;
+								for (var userMethodName in parameters.userMethods) {
+									if (userMethodName == method) {
+										userMethodFound=true;
+										changeAble=false;
+										
+										var userMethod=parameters.userMethods[userMethodName]
+										var numBreaks=0; 
+										var breaks;
+										if (userMethod.breaks == undefined) {
+											if (choroScope.showWarning) { // Should always be in scope
+												choroScope.showWarning("No breaks are defined");
+											}
+											else {
+												throw new Error("choroScope.showWarning() not in scope");
+											}
+										}
+										else if (userMethod.breaks) {
+											breaks = angular.copy(userMethod.breaks); 
+										}										
+										if (breaks && breaks.length < 2) {
+											if (choroScope.showWarning) { // Should always be in scope
+												choroScope.showWarning("Insufficent breaks defined: " + 
+													breaks.length + "; a minumum of 2 are required.");
+											}					
+										}
+										else {
+											numBreaks=breaks.length-1; // Breaks expected
+										}
+										
+										if (userMethod.invalidScales == undefined) {
+											throw new Error("No invalidScales are defined for " + userMethodName);
+										}
+										
+										if (userMethod.brewerName == undefined) {
+											throw new Error("No brewerName are defined for " + userMethodName);
+										}
+										
+										if (userMethod.feature) {
+											selectedFeature=userMethodName.feature;
+										}
+										if (userMethod.description) {
+											description=userMethod.description;
+										}
+										if (userMethod.invert && userMethod.invert == true) {
+											flip=userMethod.invert;
+										}
+										else {
+											flip=false;
+										}
+										
+										var tmp;
+										if (oldRval && oldRval.method && oldRval.method == method) {
+											// Method has not changed
+											
+											if (userMethod.invalidScales &&
+												userMethod.invalidScales.indexOf(maps[map].brewerName) !== -1) {
+												
+												if (choroScope.showWarning) { // Should always be in scope
+													choroScope.showWarning("Color brewer: " + maps[map].brewerName +
+														" is not valid for " + userMethodName);
+												}
+												else {
+													throw new Error("choroScope.showWarning() not in scope");
+												}
+												tmp = ColorBrewerService.getColorbrewer(userMethod.brewerName, 
+													numBreaks);
+												brewerName=userMethod.brewerName;
+											} 
+											else { // Method has not changed; user has changed color brewer
+												tmp = ColorBrewerService.getColorbrewer(maps[map].brewerName, 
+													numBreaks);
+											}
+										}
+										else { // Method has changed, use default
+											tmp = ColorBrewerService.getColorbrewer(userMethod.brewerName, 
+												numBreaks);
+											brewerName=userMethod.brewerName;
+										}
+										
+										if (tmp == undefined) {
+											throw new Error("No brewerName range cound be deduced for " + userMethodName);
+										}
+										
+										if (!flip) {
+											range = angular.copy(tmp);
+										} 
+										else {
+											range = angular.copy(tmp).reverse();
+										}
+		
+										if (breaks) {
+											mn=breaks.shift(); // Remove first element (mn)
+											mx=breaks.pop(); // Remove last element (mx)
+											if (mn == undefined) {
+												mn=-Infinity;
+											}
+											if (mx == undefined) {
+												mx=Infinity;
+											}	
+											
+											scale = d3.scaleThreshold()
+													.domain(breaks)
+													.range(range);
+										}			
+									}
+								}
+								if (!userMethodFound) {	
+									throw new Error("Cannot find user method for choropeth map method: " + 
+										JSON.stringify(method));  
+								}
+							}
                     }
-                    return {
+					var rval={
+						selectedFeature: selectedFeature,
+						intervals: (breaks.length+1),
+						invert: flip,
+						method: method,
+						description: description,
+						changeAble: changeAble,
+						brewerName: brewerName,
                         scale: scale,
                         breaks: breaks,
                         range: range,
                         mn: mn,
-                        mx: mx
+                        mx: mx,
+						oldRval: oldRval
                     };
+					
+                    return rval;
                 }
 
                 function makeLegend(thisMap, attr) {
@@ -286,14 +433,51 @@ angular.module("RIF")
                     });
                 }
 				
-				function renderSwatch(bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, choroScope, ColorBrewerService) {
+				/*
+				 * Function: 	renderSwatch()
+				 * Arguments:	Called on modal open, bCalc (believed to always be true),
+				 *				scope of calling controller, color brewer service
+				 * Called from: doRenderSwatch()
+				 * Description:	Redo all choropleth map scales
+				 * Returns:		choroScope.input.thisMap
+				 */
+				function renderSwatch(
+					bOnOpen /* Called on modal open */, 
+					bCalc /* Secret field, always true */, 
+					choroScope, 
+					ColorBrewerService) {
+				//Extract method from methodObj
+
+					if (typeof choroScope.input.methodObj === 'object' &&
+						choroScope.input.methodObj.id) { // Comes from rifp-util-choro.html renderSwatch()
+						choroScope.input.method=choroScope.input.methodObj.id;
+					}
+					else {
+						if (choroScope.consoleError) { // Should always be in scope
+							choroScope.consoleError("Error in renderSwatch() choroScope.input.methodObj not recognized: " + 
+								JSON.stringify(choroScope.input.methodObj));
+						}
+						else {
+							throw new Error("Error in renderSwatch() choroScope.input.methodObj not recognized: " + 
+								JSON.stringify(choroScope.input.methodObj));
+						}
+					}	
+				
                 //ensure that the colour scheme allows the selected number of classes
 					var n = angular.copy(choroScope.input.selectedN);
-					choroScope.input.intervalRange = ColorBrewerService.getSchemeIntervals(choroScope.input.currOption.name);
+					choroScope.input.intervalRange = ColorBrewerService.getSchemeIntervals(
+						choroScope.input.currOption.name);
 					if (choroScope.input.selectedN > Math.max.apply(Math, choroScope.input.intervalRange)) {
 						choroScope.input.selectedN = Math.max.apply(Math, choroScope.input.intervalRange);
 					} else if (choroScope.input.selectedN < Math.min.apply(Math, choroScope.input.intervalRange)) {
 						choroScope.input.selectedN = Math.min.apply(Math, choroScope.input.intervalRange);
+					}
+					
+					if (n != choroScope.input.selectedN) {					
+						if (choroScope.consoleLog) { // Should always be in scope
+							choroScope.consoleLog("[rifs-util-choro.js] choroScope.input.selectedN changed from: " + n + " to: " +
+								choroScope.input.selectedN);
+						}
 					}
 
 					//get the domain 
@@ -305,60 +489,137 @@ angular.module("RIF")
 					//save the selected brewer
 					maps[choroScope.mapID].brewerName = choroScope.input.currOption.name;
 
-					if (bOnOpen) {
-						//if called on modal open
-						if (!maps[choroScope.mapID].init) {
-							//initialise basic renderer
-							maps[choroScope.mapID].init = true;
-							choroScope.input.thisMap = choroScale(choroScope.input.method, choroScope.domain, ColorBrewerService.getColorbrewer(choroScope.input.currOption.name,
-									choroScope.input.selectedN), choroScope.input.checkboxInvert, choroScope.mapID);
-							maps[choroScope.mapID].renderer = choroScope.input.thisMap;
-						} else {
-							//restore previous renderer
-							choroScope.input.thisMap = maps[choroScope.mapID].renderer;
+					try {
+						var oldRval;
+						if (maps[choroScope.mapID].renderer && maps[choroScope.mapID].renderer.breaks &&
+						    maps[choroScope.mapID].renderer.breaks.length > 0) {
+							oldRval=maps[choroScope.mapID].renderer;
 						}
-					} else {
-						//update current renderer
-						if (!bCalc) {
-							if (n !== choroScope.input.selectedN) {
-								//reset as class number requested not possible
-								choroScope.input.thisMap = choroScale(choroScope.input.method, choroScope.domain, ColorBrewerService.getColorbrewer(choroScope.input.currOption.name,
-										choroScope.input.selectedN), choroScope.input.checkboxInvert, choroScope.mapID);
-							} else {
-								var tempRenderer = choroScale(choroScope.input.method, choroScope.domain, ColorBrewerService.getColorbrewer(choroScope.input.currOption.name,
-										choroScope.input.selectedN), choroScope.input.checkboxInvert, choroScope.mapID);
-								choroScope.input.thisMap.range = tempRenderer.range;
-								choroScope.input.thisMap.scale = tempRenderer.scale;
+						
+						if (bOnOpen) {
+							//if called on modal open
+							if (!maps[choroScope.mapID].init) {
+								//initialise basic renderer
+								maps[choroScope.mapID].init = true;
+								choroScope.input.thisMap = choroScale(
+									choroScope.input.method, 		// Method name
+									choroScope.domain, 				// Data
+									ColorBrewerService.getColorbrewer(
+										choroScope.input.currOption.name, choroScope.input.selectedN), 
+									choroScope.input.checkboxInvert, // Flip
+									choroScope.mapID,				// Map
+									oldRval,						// Old (previous) rval
+									choroScope.input.selectedN,		// Intervals
+									choroScope);					// $scope of controller 
+																	// (for access to alert service)
+								maps[choroScope.mapID].renderer = choroScope.input.thisMap;
+							} 
+							else {
+								//restore previous renderer
+								choroScope.input.thisMap = maps[choroScope.mapID].renderer;
 							}
 						} else {
-							choroScope.input.thisMap = choroScale(choroScope.input.method, choroScope.domain, ColorBrewerService.getColorbrewer(choroScope.input.currOption.name,
-									choroScope.input.selectedN), choroScope.input.checkboxInvert, choroScope.mapID);
+							//update current renderer
+							if (!bCalc) {
+								if (n !== choroScope.input.selectedN) {
+									//reset as class number requested not possible
+									choroScope.input.thisMap = choroScale(
+										choroScope.input.method,  		// Method name
+										choroScope.domain,  			// Data
+										ColorBrewerService.getColorbrewer(
+											choroScope.input.currOption.name,
+											choroScope.input.selectedN), 
+										choroScope.input.checkboxInvert, // Flip 
+										choroScope.mapID,				// Map
+										oldRval,						// Old (previous) rval
+										choroScope.input.selectedN,		// Intervals
+										choroScope);					// $scope of controller 
+																		// (for access to alert service)
+								} 
+								else {
+									var tempRenderer = choroScale(
+										choroScope.input.method,  		// Method name
+										choroScope.domain,  			// Data
+										ColorBrewerService.getColorbrewer(
+											choroScope.input.currOption.name,
+											choroScope.input.selectedN), 
+										choroScope.input.checkboxInvert, // Flip 
+										choroScope.mapID,				// Map
+										oldRval,						// Old (previous) rval
+										choroScope.input.selectedN,		// Intervals
+										choroScope);					// $scope of controller 
+																		// (for access to alert service)
+									choroScope.input.thisMap.range = tempRenderer.range;
+									choroScope.input.thisMap.scale = tempRenderer.scale;
+								}
+							} 
+							else {
+								choroScope.input.thisMap = choroScale(
+									choroScope.input.method,  		// Method name
+									choroScope.domain,  			// Data
+									ColorBrewerService.getColorbrewer(
+										choroScope.input.currOption.name,
+										choroScope.input.selectedN), 
+									choroScope.input.checkboxInvert, // Flip 
+									choroScope.mapID,				// Map
+									oldRval,						// Old (previous) rval
+									choroScope.input.selectedN,		// Intervals
+									choroScope);					// $scope of controller 
+																	// (for access to alert service)
+							}
 						}
+					}
+					catch(e) {
+						if (choroScope.consoleError) { // Should always be in scope
+							choroScope.consoleError("Error in renderSwatch(): " + JSON.stringify(e.message));
+						}
+						else {
+							throw e;
+						}
+					}
+					
+					if (oldRval == undefined && 	// First run (init)
+					    choroScope.consoleLog) {    // Should always be in scope
+						choroScope.consoleLog("[rifs-util-choro.js] choroScope.input: " + 
+							JSON.stringify(choroScope.input, null, 2));
 					}
 // Redo all scales							
 					choroScope.input.thisMap.scale = d3.scaleThreshold()
 						   .domain(choroScope.input.thisMap.breaks)
-						   .range(choroScope.input.thisMap.range);		
+						   .range(choroScope.input.thisMap.range);	
+
+					return choroScope.input.thisMap;
 				}
 				
                 return {
                     getMaps: function (i) {
                         return maps[i];
                     },
+					getClassifications: function() {
+						return defaultClassificationsList;
+					},
                     getRenderFeatureMapping: function (scale, value, selected) {
                         return renderFeatureMapping(scale, value, selected);
                     },
                     getRenderFeatureViewer: function (scale, feature, value, selected) {
                         return renderFeatureViewer(scale, feature, value, selected);
                     },
-                    getChoroScale: function (method, domain, rangeIn, flip, map) {
-                        return choroScale(method, domain, rangeIn, flip, map);
+                    getChoroScale: function (method, domain, rangeIn, flip, map, oldRval, intervals, choroScope) {
+                        return choroScale(method, domain, rangeIn, flip, map, oldRval, intervals, choroScope);
                     },
                     getMakeLegend: function (thisMap, attr) {
                         return makeLegend(thisMap, attr);
                     },
-					doRenderSwatch: function (bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, choroScope, ColorBrewerService) {
-						return renderSwatch(bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, choroScope, ColorBrewerService);
+					doRenderSwatch: function (
+						bOnOpen /* Called on modal open */, 
+						bCalc /* Secret field, always true */, 
+						choroScope, 
+						ColorBrewerService) {
+						return renderSwatch(
+							bOnOpen /* Called on modal open */, 
+							bCalc /* Secret field, always true */, 
+							choroScope, 
+							ColorBrewerService);
 					},
                     resetState: function (map) {
                         maps[map] = new symbology(map, choroScaleMethod);

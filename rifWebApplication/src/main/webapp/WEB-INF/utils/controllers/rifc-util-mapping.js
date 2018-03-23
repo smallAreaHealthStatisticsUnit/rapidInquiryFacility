@@ -98,8 +98,24 @@ angular.module("RIF")
 									invert:		true,
 									brewerName:	"PuOr"
 							}
+						},
+						userMethods: {
+							'AtlasRelativeRisk': {
+									description: 'Atlas Relative Risk',
+									breaks:		[-Infinity, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51, Infinity],
+									invert:		true,
+									brewerName: "PuOr",
+									invalidScales: ["Constant", "Dark2", "Accent", "Pastel2", "Set2"]
+							},
+							'AtlasProbability': {
+									description: 'Atlas Probability',
+									breaks: 	[0.0, 0.20, 0.81, 1.0],	
+									invert:		false,
+									brewerName:	"RdYlGn",
+									invalidScales: ["Constant"]
+							}
 						}
-					} ;	
+					};	
 					// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;	
 
 				$scope.disableMapLocking=$scope.parameters.disableMapLocking||false;	
@@ -540,7 +556,12 @@ angular.module("RIF")
 						mapID: mapID,
 						options: [],
 						domain: [],
-						tableData: {}
+						tableData: {},
+						consoleLog: $scope.consoleLog,
+						consoleError: $scope.consoleError,
+						consoleDebug: $scope.consoleDebug,
+						showError: $scope.showError,
+						showWarning: $scope.showWarning
 					}
 					choroScope.input.isDefault = ChoroService.getMaps(mapID).isDefault;
 					choroScope.input.checkboxInvert = ChoroService.getMaps(mapID).invert;
@@ -548,6 +569,7 @@ angular.module("RIF")
 					choroScope.input.intervalRange = ColorBrewerService.getSchemeIntervals(choroScope.selectedSchemeName);
 					choroScope.input.selectedN = ChoroService.getMaps(mapID).intervals;
 					choroScope.input.method = ChoroService.getMaps(mapID).method;
+					choroScope.input.classifications = ChoroService.getMaps(mapID).classifications;
                     var colorBrewerList = ColorBrewerService.getSchemeList();
                     for (var j in colorBrewerList) {
                         choroScope.options.push({name: colorBrewerList[j], image: 'images/colorBrewer/' + colorBrewerList[j] + '.png'});
@@ -578,7 +600,17 @@ angular.module("RIF")
 					
 //					$scope.consoleDebug("[rifc-util-mapping.js] defaultRenderMap() mapID: " + mapID + "; choroScope: " + JSON.stringify(choroScope, null, 2)); 
 					choroScope.tableData[mapID]=$scope.tableData[mapID];	
-					ChoroService.doRenderSwatch(true /* Called on modal open */, true /* Secret field, always true */, choroScope, ColorBrewerService);
+					try {
+						ChoroService.doRenderSwatch(
+							true /* Called on modal open */, 
+							true /* Secret field, always true */, 
+							choroScope, 
+							ColorBrewerService);
+					}
+					catch (e) {
+						$scope.consoleError("[rifc-util-mapping.js] Caught error in doRenderSwatch(): " + 
+							JSON.stringify(e));
+					}
 					
 					$scope.input=choroScope.input;
 					$scope.domain=choroScope.domain;

@@ -116,6 +116,7 @@ public class MSSQLRunStudyThread
 	public void initialise(
 		final Connection connection,
 		final User user,
+		final String password,		
 		final RIFStudySubmission studySubmission,
 		final RIFServiceStartupOptions rifServiceStartupOptions,
 		final MSSQLRIFServiceResources rifServiceResources) {
@@ -144,7 +145,7 @@ public class MSSQLRunStudyThread
 		smoothResultsSubmissionStep = new MSSQLSmoothResultsSubmissionStep();
 		smoothResultsSubmissionStep.initialise(
 			user.getUserID(), 
-			user.getUserID(), 
+			password, 
 			rifServiceStartupOptions);			
 	}
 		

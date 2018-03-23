@@ -89,7 +89,7 @@ public final class RIFServiceStartupProperties {
 	protected static RIFLogger rifLogger = RIFLogger.getLogger();
  
 	// Creating a Hashtable for controlling warnings about optional parameters
-	private Hashtable<String, Integer> parameterWarnings = new Hashtable<>();
+	static private Hashtable<String, Integer> parameterWarnings = new Hashtable<>();
 
 	// ==========================================
 	// Section Properties

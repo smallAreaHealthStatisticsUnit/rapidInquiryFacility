@@ -57,7 +57,7 @@ HTML partial for symbology modal
                     </div>
                 </div>
                 <div class="txt-fld">
-                    <label for="fieldToMap"> Field to Map:</label>
+                    <label for="fieldToMap"> Field to map:</label>
                     <select ng-style="{'text-transform': 'none'}" id='fieldToMap' ng-options="s for s in input.features" ng-model="input.selectedFeature" ng-change="renderSwatch(false, true)"></select>
                 </div>
                 <div class="txt-fld">
@@ -66,13 +66,14 @@ HTML partial for symbology modal
                 </div>
                 <div class="txt-fld">
                     <label for="classification">Classification:</label>
-                    <select id='classification' ng-model="input.method" ng-change="renderSwatch(false, true)">
+					   <select id='classification' ng-options="item as item.label for item in input.classifications track by item.id" ng-model="input.methodObj" ng-model="selected" ng-change="renderSwatch(false, true)">
+<!--                       <select id='classification' ng-model="input.method" ng-change="renderSwatch(false, true)">
                         <option value='quantile'>Quantile</option>
                         <option value='quantize'>Equal Interval</option>
                         <option value='jenks'>Jenks</option>
                         <option value='standardDeviation'> Standard Deviation</option> 
                         <option value='AtlasRelativeRisk'> Atlas Relative Risk</option>
-                        <option value='AtlasProbability'> Atlas Probability</option>
+                        <option value='AtlasProbability'> Atlas Probability</option> -->
                         <!--<option value='logarithmic'> Logarithmic</option>-->
                     </select>
                 </div>

@@ -96,6 +96,7 @@ angular.module("RIF")
 													password:	""
 												}
 											};
+//										$scope.consoleDebug('INIT $scope.parameters: ' + JSON.stringify($scope.parameters, null, 2));
 										
 										if ($scope.parameters.defaultLogin) {
 											$scope.username = $scope.username || $scope.parameters.defaultLogin.username;

@@ -62,7 +62,8 @@ public final class PGSQLConnectionManager extends PGSQLAbstractSQLManager {
 	private final String databaseURL;
 
 	private final HashMap<String, Integer> suspiciousEventCounterFromUser;
-
+	private final HashMap<String, String> passwordHashList;
+	
 	private final HashSet<String> registeredUserIDs;
 	private final HashSet<String> userIDsToBlock;
 
@@ -79,7 +80,7 @@ public final class PGSQLConnectionManager extends PGSQLAbstractSQLManager {
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		readOnlyConnectionsFromUser = new HashMap<>();
 		writeConnectionsFromUser = new HashMap<>();
-
+		passwordHashList = new HashMap<>();
 		userIDsToBlock = new HashSet<>();
 		registeredUserIDs = new HashSet<>();
 
@@ -107,6 +108,23 @@ public final class PGSQLConnectionManager extends PGSQLAbstractSQLManager {
 		       + rifServiceStartupOptions.getDatabaseName();
 	}
 
+	/**
+	 * User password.
+	 *
+	 * @param userID the user id
+	 * @return password String, if successful
+	 */
+	public String getUserPassword(
+			final User user) {
+
+		if (userExists(user.getUserID()) && !isUserBlocked(user)) {
+			return passwordHashList.get(user.getUserID());
+		}
+		else {
+			return null;
+		}
+	}
+	
 	/**
 	 * User exists.
 	 *
@@ -226,7 +244,7 @@ public final class PGSQLConnectionManager extends PGSQLAbstractSQLManager {
 				writeOnlyConnectionQueue.addConnection(currentConnection);
 			}			
 			writeConnectionsFromUser.put(userID, writeOnlyConnectionQueue);
-			registeredUserIDs.add(userID);
+			passwordHashList.put(userID, password);
 			rifLogger.info(this.getClass(), "XXXXXXXXXXX P O S T G R E S Q L XXXXXXXXXX");
 		}
 		catch(ClassNotFoundException classNotFoundException) {

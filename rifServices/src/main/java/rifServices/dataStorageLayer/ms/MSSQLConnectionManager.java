@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 
+import javax.ws.rs.HEAD;
 
 /**
  * Responsible for managing a pool of connections for each registered user.  Connections will
@@ -128,6 +129,7 @@ public class MSSQLConnectionManager extends MSSQLAbstractSQLManager {
 	private final String databaseURL;
 	
 	private final HashMap<String, Integer> suspiciousEventCounterFromUser;
+	private final HashMap<String, String> passwordHashList;	
 	
 	private final HashSet<String> registeredUserIDs;
 	private final HashSet<String> userIDsToBlock;
@@ -150,7 +152,8 @@ public class MSSQLConnectionManager extends MSSQLAbstractSQLManager {
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		readOnlyConnectionsFromUser = new HashMap<>();
 		writeConnectionsFromUser = new HashMap<>();
-				
+		passwordHashList = new HashMap<>();
+		
 		userIDsToBlock = new HashSet<>();
 		registeredUserIDs = new HashSet<>();
 	
@@ -186,6 +189,23 @@ public class MSSQLConnectionManager extends MSSQLAbstractSQLManager {
 		urlText.append(rifServiceStartupOptions.getDatabaseName());
 				
 		return urlText.toString();
+	}
+
+	/**
+	 * User password.
+	 *
+	 * @param userID the user id
+	 * @return password String, if successful
+	 */
+	public String getUserPassword(
+			final User user) {
+
+		if (userExists(user.getUserID()) && !isUserBlocked(user)) {
+			return passwordHashList.get(user.getUserID());
+		}
+		else {
+			return null;
+		}
 	}
 	
 	/**

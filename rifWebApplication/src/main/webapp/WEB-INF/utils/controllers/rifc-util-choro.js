@@ -96,6 +96,8 @@ angular.module("RIF")
             $scope.input.intervalRange = ColorBrewerService.getSchemeIntervals($scope.input.selectedSchemeName);
             $scope.input.selectedN = ChoroService.getMaps($scope.mapID).intervals;
             $scope.input.method = ChoroService.getMaps($scope.mapID).method;
+			$scope.input.methodObj = {id: $scope.input.method};
+			$scope.input.classifications = ChoroService.getClassifications();
 
             //set saved swatch selection
             var cb = ChoroService.getMaps($scope.mapID).brewerName;
@@ -118,10 +120,46 @@ angular.module("RIF")
 
             $scope.domain = [];
 
-            $scope.renderSwatch = function (bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */) {
-				ChoroService.doRenderSwatch(bOnOpen /* Called on modal open */, bCalc /* Secret field, always true */, $scope, ColorBrewerService);
-
-//				$scope.consoleDebug("[rifc-util-choro.js] renderSwatch $scope.input.thisMap: " + JSON.stringify($scope.input, null, 2));
+            $scope.renderSwatch = function (
+				bOnOpen /* Called on modal open */, 
+				bCalc /* Secret field, always true */) {
+				var rval=ChoroService.doRenderSwatch( // rval is $scope.input.thisMap
+					bOnOpen 	/* Called on modal open */, 
+					bCalc 		/* Secret field, always true */, 
+					$scope, 
+					ColorBrewerService);
+				if (rval) {
+					$scope.input.thisMap=rval;
+				}
+				$scope.consoleDebug("[rifc-util-choro.js] renderSwatch $scope.input: " + 
+					JSON.stringify($scope.input, null, 2));
+				
+				// Set brewerName and intervals are per getChoroScale() return values
+				if ($scope.input.thisMap.brewerName) {
+					ChoroService.getMaps($scope.mapID).brewerName=$scope.input.thisMap.brewerName;
+				}
+				if ($scope.input.thisMap.intervals) {
+					$scope.input.selectedN=$scope.input.thisMap.intervals;
+				}	
+				if ($scope.input.thisMap.invert && $scope.input.thisMap.invert == true) {
+					$scope.input.checkboxInvert=$scope.input.thisMap.invert;
+				}
+				else {
+					$scope.input.checkboxInvert=false;	
+				}				
+				if ($scope.input.thisMap.selectedFeature) { // This does not work!
+					$scope.consoleDebug("[rifc-util-choro.js] renderSwatch selectedFeature: " + 
+						$scope.input.thisMap.selectedFeature);
+//					ChoroService.getMaps($scope.mapID).feature=$scope.input.thisMap.selectedFeature;
+					$scope.input.selectedFeature=$scope.input.thisMap.selectedFeature;
+				}
+				//set swatch selection
+				var cb = ChoroService.getMaps($scope.mapID).brewerName;
+				for (var i = 0; i < $scope.options.length; i++) {
+					if ($scope.options[i].name === cb) {
+						$scope.input.currOption = $scope.options[i];
+					}
+				}				
             };
             
             //ensure modal fields are filled
@@ -163,7 +201,9 @@ angular.module("RIF")
 				$scope.input.selectedSchemeName = ChoroService.getMaps($scope.mapID).brewerName;
 				$scope.input.intervalRange = ColorBrewerService.getSchemeIntervals($scope.input.selectedSchemeName);
 				$scope.input.selectedN = ChoroService.getMaps($scope.mapID).intervals;
-				$scope.input.method = ChoroService.getMaps($scope.mapID).method;	
+				$scope.input.method = ChoroService.getMaps($scope.mapID).method;
+				$scope.input.methodObj = {id: $scope.input.method};
+				$scope.input.classifications = ChoroService.getClassifications();
 				
 				var cb = ChoroService.getMaps($scope.mapID).brewerName;
 				for (var i = 0; i < $scope.options.length; i++) { 
@@ -183,9 +223,16 @@ angular.module("RIF")
 
                 $scope.consoleDebug("[rifc-util-choro.js] Reset: " + $scope.mapID);
 					
+				var oldRval;
+				var intervals=$scope.input.selectedN;
+				if (ChoroService.getMaps($scope.mapID).renderer) {
+					oldRval=ChoroService.getMaps($scope.mapID).renderer;
+				}
 				$scope.input.thisMap = ChoroService.getChoroScale($scope.input.method, $scope.domain, 
-					brewer, $scope.input.checkboxInvert, $scope.mapID);
-				
+					brewer, $scope.input.checkboxInvert, $scope.mapID, 
+					oldRval, intervals, $scope);
+				 
+				// Set renderer, brewer
 				$scope.input.renderer = ChoroService.getMaps($scope.mapID).renderer;
 				$scope.input.brewer = ChoroService.getMaps($scope.mapID).brewer;
 				$scope.input.selectedFeature = feature; // Will force a re-render						
@@ -213,7 +260,9 @@ angular.module("RIF")
                         return;
                     }
                 }
-
+				
+				// You could check if the breaks have been changed!
+											
                 //apply any user made changes to breaks
                 $scope.input.thisMap.scale = d3.scaleThreshold()
                         .domain($scope.input.thisMap.breaks)
