@@ -362,6 +362,7 @@ public final class MSSQLConnectionManager
 			}			
 			writeConnectionsFromUser.put(userID, writeOnlyConnectionQueue);
 
+			passwordHashList.put(userID, password);
 			registeredUserIDs.add(userID);		
 			
 		//	rifLogger.info(this.getClass(), "JAVA LIBRARY PATH >>>");
