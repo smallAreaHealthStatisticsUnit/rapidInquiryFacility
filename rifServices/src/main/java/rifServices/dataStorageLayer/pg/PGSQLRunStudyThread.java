@@ -113,6 +113,7 @@ public class PGSQLRunStudyThread
 	public void initialise(
 		final Connection connection,
 		final User user,
+		final String password,
 		final RIFStudySubmission studySubmission,
 		final RIFServiceStartupOptions rifServiceStartupOptions,
 		final PGSQLRIFServiceResources rifServiceResources) {
@@ -141,7 +142,7 @@ public class PGSQLRunStudyThread
 		smoothResultsSubmissionStep = new PGSQLSmoothResultsSubmissionStep();
 		smoothResultsSubmissionStep.initialise(
 			user.getUserID(), 
-			user.getUserID(), 
+			password, 
 			rifServiceStartupOptions);
 			
 	}

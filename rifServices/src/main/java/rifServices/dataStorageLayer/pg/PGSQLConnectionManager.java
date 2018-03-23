@@ -131,7 +131,8 @@ extends PGSQLAbstractSQLManager {
 	private final String databaseURL;
 
 	private final HashMap<String, Integer> suspiciousEventCounterFromUser;
-
+	private final HashMap<String, String> passwordHashList;
+	
 	private final HashSet<String> registeredUserIDs;
 	private final HashSet<String> userIDsToBlock;
 
@@ -153,6 +154,7 @@ extends PGSQLAbstractSQLManager {
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		readOnlyConnectionsFromUser = new HashMap<String, ConnectionQueue>();
 		writeConnectionsFromUser = new HashMap<String, ConnectionQueue>();
+		passwordHashList = new HashMap<String, String>();
 
 		userIDsToBlock = new HashSet<String>();
 		registeredUserIDs = new HashSet<String>();
@@ -195,6 +197,23 @@ extends PGSQLAbstractSQLManager {
 		return urlText.toString();
 	}
 
+	/**
+	 * User password.
+	 *
+	 * @param userID the user id
+	 * @return password String, if successful
+	 */
+	public String getUserPassword(
+			final User user) {
+
+		if (userExists(user.getUserID()) && !isUserBlocked(user)) {
+			return passwordHashList.get(user.getUserID());
+		}
+		else {
+			return null;
+		}
+	}
+	
 	/**
 	 * User exists.
 	 *
@@ -343,7 +362,8 @@ extends PGSQLAbstractSQLManager {
 				writeOnlyConnectionQueue.addConnection(currentConnection);
 			}			
 			writeConnectionsFromUser.put(userID, writeOnlyConnectionQueue);
-
+			
+			passwordHashList.put(userID, password);
 			registeredUserIDs.add(userID);	
 			
 		//	rifLogger.info(this.getClass(), "JAVA LIBRARY PATH >>>");

@@ -202,7 +202,7 @@ implements RIFStudySubmissionAPI {
 			//Assign pooled connection
 			connection 
 			= sqlConnectionManager.assignPooledWriteConnection(user);
-
+			String password=sqlConnectionManager.getUserPassword(user);
 			PGSQLSampleTestObjectGenerator testDataGenerator
 			= new PGSQLSampleTestObjectGenerator();
 			RIFStudySubmission studySubmission
@@ -215,6 +215,7 @@ implements RIFStudySubmissionAPI {
 			runStudyThread.initialise(
 					connection, 
 					user, 
+					password,
 					studySubmission, 
 					rifServiceStartupOptions, 
 					rifServiceResources);
@@ -1059,6 +1060,7 @@ implements RIFStudySubmissionAPI {
 			//Assign pooled connection
 			connection
 			= sqlConnectionManager.assignPooledWriteConnection(user);
+			String password=sqlConnectionManager.getUserPassword(user);
 
 			//Delegate operation to a specialised manager class			
 			RIFServiceStartupOptions rifServiceStartupOptions
@@ -1067,6 +1069,7 @@ implements RIFStudySubmissionAPI {
 			runStudyThread.initialise(
 					connection, 
 					user, 
+					password,
 					rifStudySubmission, 
 					rifServiceStartupOptions, 
 					rifServiceResources);

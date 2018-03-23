@@ -130,6 +130,7 @@ public final class MSSQLConnectionManager
 	private final String databaseURL;
 	
 	private final HashMap<String, Integer> suspiciousEventCounterFromUser;
+	private final HashMap<String, String> passwordHashList;	
 	
 	private final HashSet<String> registeredUserIDs;
 	private final HashSet<String> userIDsToBlock;
@@ -152,7 +153,8 @@ public final class MSSQLConnectionManager
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		readOnlyConnectionsFromUser = new HashMap<String, ConnectionQueue>();
 		writeConnectionsFromUser = new HashMap<String, ConnectionQueue>();
-				
+		passwordHashList = new HashMap<String, String>();
+		
 		userIDsToBlock = new HashSet<String>();
 		registeredUserIDs = new HashSet<String>();
 	
@@ -192,6 +194,23 @@ public final class MSSQLConnectionManager
 		urlText.append(rifServiceStartupOptions.getDatabaseName());
 				
 		return urlText.toString();
+	}
+
+	/**
+	 * User password.
+	 *
+	 * @param userID the user id
+	 * @return password String, if successful
+	 */
+	public String getUserPassword(
+			final User user) {
+
+		if (userExists(user.getUserID()) && !isUserBlocked(user)) {
+			return passwordHashList.get(user.getUserID());
+		}
+		else {
+			return null;
+		}
 	}
 	
 	/**

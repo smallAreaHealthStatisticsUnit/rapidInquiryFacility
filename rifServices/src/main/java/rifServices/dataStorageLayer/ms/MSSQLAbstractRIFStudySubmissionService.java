@@ -202,6 +202,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			//Assign pooled connection
 			connection 
 				= sqlConnectionManager.assignPooledWriteConnection(user);
+			String password=sqlConnectionManager.getUserPassword(user);
 			
 			MSSQLSampleTestObjectGenerator testDataGenerator
 				= new MSSQLSampleTestObjectGenerator();
@@ -215,6 +216,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			runStudyThread.initialise(
 				connection, 
 				user, 
+				password,
 				studySubmission, 
 				rifServiceStartupOptions, 
 				rifServiceResources);
@@ -1061,6 +1063,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			//Assign pooled connection
 			connection
 				= sqlConnectionManager.assignPooledWriteConnection(user);
+			String password=sqlConnectionManager.getUserPassword(user);
 
 			//Delegate operation to a specialised manager class			
 			RIFServiceStartupOptions rifServiceStartupOptions
@@ -1069,6 +1072,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			runStudyThread.initialise(
 				connection, 
 				user, 
+				password,
 				rifStudySubmission, 
 				rifServiceStartupOptions, 
 				rifServiceResources);

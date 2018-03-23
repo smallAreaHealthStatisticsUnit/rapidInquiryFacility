@@ -2015,7 +2015,7 @@ ools label positioning prevent its use. More work needed.
   * Preset feature does not work. 
   * Color brewer does not change when expected going between user methods
   * Breaks are editable (should not be!) 
-* Test MM changes and run study faults (SQL Server only!):
+* Test MM changes and run study faults (both Postgres and SQL Server):
   1. A covariate must be used or you will get:
 
     ```
@@ -2049,6 +2049,7 @@ ools label positioning prevent its use. More work needed.
     This I suspect is caused by the R interface is using the username as the password and should be easy to fix!
 
 * Imperial network login tests
+* Fix for R username=password failure
 
 ## In progress (March/April 2018):
 
