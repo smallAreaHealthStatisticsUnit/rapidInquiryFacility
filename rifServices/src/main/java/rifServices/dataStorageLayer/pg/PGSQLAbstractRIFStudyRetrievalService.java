@@ -347,7 +347,7 @@ implements RIFStudyResultRetrievalAPI {
 			= RIFServiceMessages.getMessage("logging.getCurrentStatusAllStudies",
 					user.getUserID(),
 					user.getIPAddress());
-			rifLogger.info(
+			rifLogger.debug(
 					getClass(),
 					auditTrailMessage);
 
