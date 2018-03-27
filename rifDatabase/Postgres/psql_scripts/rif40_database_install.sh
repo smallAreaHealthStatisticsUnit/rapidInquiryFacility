@@ -75,7 +75,7 @@ then
 fi
 
 psql -U postgres -d postgres -h localhost -w -e -P pager=off \
-	-v testuser=$NEWUSER -v newdb=$NEWDB -v newpw=$NEWPW \
+	-v testuser=$NEWUSER -v newdb=$NEWDB -v newpw=$®∏ \
 	-v verbosity=terse \
 	-v debug_level=1 \
 	-v echo=all \
@@ -84,7 +84,7 @@ psql -U postgres -d postgres -h localhost -w -e -P pager=off \
 	-v tablespace_dir= \
 	-v pghost=localhost \
 	-v os=macos \
-	-f db_create.sql
+	-f db_create.sql | tee db_create.log
 
 ECHO db_create.sql built $NEWDB OK
 
