@@ -1205,9 +1205,9 @@ getParameter("p 1")     yes     c d
 					rifStudySubmission, 
 					null);
 		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
-		}
+//		catch(RIFServiceException rifServiceException) {
+//			rifServiceException.printErrors();
+//		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), 
 				"PGSQLAbstractRIFWebServiceResource.submitStudy error", exception);
