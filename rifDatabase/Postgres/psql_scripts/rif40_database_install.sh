@@ -7,7 +7,7 @@
 # Rapid Enquiry Facility (RIF) - RIF40 create production Postgres database from backup
 #								   One directory (production) version
 #
-# This is a manual rewrite in Bash of te rif40_database_install.bat
+# This is a manual rewrite in Bash of the rif40_database_install.bat
 # Windows script. At the time of writing (2018-03-22) it still has 
 # a certain amount of hardcoding. In particular it doesn't prompt the user
 # for anything.
