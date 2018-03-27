@@ -357,6 +357,7 @@ public class MSSQLConnectionManager extends MSSQLAbstractSQLManager {
 			}			
 			writeConnectionsFromUser.put(userID, writeOnlyConnectionQueue);
 
+			passwordHashList.put(userID, password);
 			registeredUserIDs.add(userID);		
 			
 		//	rifLogger.info(this.getClass(), "JAVA LIBRARY PATH >>>");
