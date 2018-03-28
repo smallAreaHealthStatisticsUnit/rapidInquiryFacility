@@ -457,6 +457,7 @@ public final class RIFStudySubmission
 		ArrayList<String> errorMessages = new ArrayList<String>();
 		
 		String recordType = getRecordType();
+		DiseaseMappingStudy diseaseMappingStudy=null;
 		
 		if (study == null) {
 			String studyFieldName
@@ -470,11 +471,12 @@ public final class RIFStudySubmission
 		}
 		else {
 			try {
-				DiseaseMappingStudy diseaseMappingStudy
-					= (DiseaseMappingStudy) study;
+				diseaseMappingStudy = (DiseaseMappingStudy) study;
 				diseaseMappingStudy.checkErrors(validationPolicy);
 			}
 			catch(RIFServiceException rifServiceException) {
+				rifLogger.debug(this.getClass(), "DiseaseMappingStudy.checkErrors(): " + 
+					rifServiceException.getErrorMessages().size());
 				errorMessages.addAll(rifServiceException.getErrorMessages());
 			}
 		}
@@ -508,6 +510,8 @@ public final class RIFStudySubmission
 					calculationMethod.checkErrors(validationPolicy);
 				}
 				catch(RIFServiceException rifServiceException) {
+					rifLogger.debug(this.getClass(), "CalculationMethod.checkErrors(): " + 
+						rifServiceException.getErrorMessages().size());
 					errorMessages.addAll(errorMessages);
 				}
 			}
@@ -531,6 +535,8 @@ public final class RIFStudySubmission
 					calculationMethod.checkErrors(validationPolicy);				
 				}
 				catch(RIFServiceException rifServiceException) {
+					rifLogger.debug(this.getClass(), "[Unique] CalculationMethod.checkErrors(): " + 
+						rifServiceException.getErrorMessages().size());
 					errorMessages.addAll(rifServiceException.getErrorMessages());				
 				}
 			}
@@ -564,6 +570,21 @@ public final class RIFStudySubmission
 			}
 		}
 		
+		if (errorMessages.size() > 0) {
+			for (int i = 0; i < errorMessages.size(); i++) {
+				rifLogger.warning(this.getClass(), "JSON parse error [" + (i+1) + "/" + errorMessages.size() +"]: " + 
+					errorMessages.get(i));
+			}
+		}
+		else if (diseaseMappingStudy != null) {
+			rifLogger.info(this.getClass(), "JSON parse OK for " + diseaseMappingStudy.getName());
+		}
+		else {
+			errorMessages.add("JSON parse OK but study object is null");
+			Exception exception=new Exception("JSON parse OK but study object is null");
+			rifLogger.error(this.getClass(), "JSON parse OK but study object is null", exception);
+		}
+
 		countErrors(
 			RIFServiceError.INVALID_RIF_JOB_SUBMISSION, 
 			errorMessages);

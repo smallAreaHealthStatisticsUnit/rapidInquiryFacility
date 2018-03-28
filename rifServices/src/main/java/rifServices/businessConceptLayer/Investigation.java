@@ -14,6 +14,7 @@ import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFComparisonUtility;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.util.RIFLogger;
 
 /**
  *
@@ -84,6 +85,8 @@ public class Investigation
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
 	
 	private Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
@@ -1073,6 +1076,8 @@ public class Investigation
 				healthTheme.checkErrors(validationPolicy);
 			}
 			catch(RIFServiceException rifServiceException) {
+				rifLogger.info(this.getClass(), "HealthTheme.checkErrors(): " + 
+					rifServiceException.getErrorMessages().size());
 				errorMessages.addAll(rifServiceException.getErrorMessages());
 			}			
 		}
@@ -1100,6 +1105,8 @@ public class Investigation
 					validationPolicy);
 			}
 			catch(RIFServiceException rifServiceException) {
+				rifLogger.info(this.getClass(), "NumeratorDenominatorPair.checkErrors(): " + 
+					rifServiceException.getErrorMessages().size());
 				errorMessages.addAll(rifServiceException.getErrorMessages());
 			}			
 		}
@@ -1138,6 +1145,8 @@ public class Investigation
 						healthCode.checkErrors(validationPolicy);
 					}
 					catch(RIFServiceException rifServiceException) {
+						rifLogger.info(this.getClass(), "HealthCode.checkErrors(): " + 
+							rifServiceException.getErrorMessages().size());
 						errorMessages.addAll(rifServiceException.getErrorMessages());					
 					}
 				}
@@ -1180,6 +1189,8 @@ public class Investigation
 						ageBand.checkErrors(validationPolicy);
 					}
 					catch(RIFServiceException rifServiceException) {
+						rifLogger.info(this.getClass(), "AgeBand.checkErrors(): " + 
+							rifServiceException.getErrorMessages().size());
 						errorMessages.addAll(rifServiceException.getErrorMessages());
 						invalidAgeBandsDetected = true;
 					}
@@ -1218,6 +1229,8 @@ public class Investigation
 				yearRange.checkErrors(validationPolicy);
 			}
 			catch(RIFServiceException rifServiceException) {
+				rifLogger.info(this.getClass(), "YearRange.checkErrors(): " + 
+					rifServiceException.getErrorMessages().size());
 				errorMessages.addAll(rifServiceException.getErrorMessages());
 			}
 		
@@ -1259,6 +1272,8 @@ public class Investigation
 							yearInterval.checkErrors(validationPolicy);					
 						}
 						catch(RIFServiceException rifServiceException) {
+							rifLogger.info(this.getClass(), "YearInterval.checkErrors(): " + 
+								rifServiceException.getErrorMessages().size());
 							errorMessages.addAll(rifServiceException.getErrorMessages());
 							allYearIntervalsAreValid = false;
 						}
@@ -1296,18 +1311,19 @@ public class Investigation
 		}
 		
 		if (covariates == null || fieldValidationUtility.isEmpty(covariates)) {
-			String covariatesFieldName
+			rifLogger.info(this.getClass(), "Investigation " + title + " has no convariates");
+/*			String covariatesFieldName
 				= RIFServiceMessages.getMessage("investigation.covariates.label");
 			String errorMessage
 				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					covariatesFieldName);
-			errorMessages.add(errorMessage);			
+			errorMessages.add(errorMessage);		*/	
 		}
 		else {
 			for (AbstractCovariate covariate : covariates) {
-				if (covariate == null) {
+				if (covariate != null) {
 					String covariateRecordType
 						= RIFServiceMessages.getMessage("covariate.label");
 					String errorMessage
@@ -1322,10 +1338,11 @@ public class Investigation
 						covariate.checkErrors(validationPolicy);
 					}
 					catch(RIFServiceException rifServiceException) {
+						rifLogger.info(this.getClass(), "Covariate.checkErrors(): " + 
+							rifServiceException.getErrorMessages().size());
 						errorMessages.addAll(rifServiceException.getErrorMessages());					
 					}
 				}
-
 			}			
 		}
 
@@ -1334,7 +1351,11 @@ public class Investigation
 		//		= RIFServiceMessages.getMessage("investigation.error.noCovariatesSpecified");
 		//	errorMessages.add(errorMessage);			
 		//}
-		
+
+		if (errorMessages.size() > 0) {
+			rifLogger.info(this.getClass(), "Investigation.checkErrors(): " + 
+				errorMessages.size());
+		}			
 		
 		countErrors(RIFServiceError.INVALID_INVESTIGATION, errorMessages);
 	}

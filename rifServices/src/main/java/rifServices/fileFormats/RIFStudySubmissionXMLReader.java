@@ -3,6 +3,7 @@ package rifServices.fileFormats;
 
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
+import rifGenericLibrary.util.RIFLogger;
 
 import rifServices.businessConceptLayer.RIFStudySubmission;
 
@@ -84,6 +85,8 @@ public final class RIFStudySubmissionXMLReader {
 // ==========================================
 // Section Constants
 // ==========================================
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");	
 
 // ==========================================
 // Section Properties
@@ -121,6 +124,8 @@ public final class RIFStudySubmissionXMLReader {
 			saxParser.parse(rifSubmissionFile, rifStudySubmissionContentHandler);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "Caught exception in RIFStudySubmissionXMLReader.readFile(File)", 
+				exception);
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
 			throw exceptionFactory.createFileReadingProblemException(
@@ -141,6 +146,8 @@ public final class RIFStudySubmissionXMLReader {
 			saxParser.parse(inputSource, rifStudySubmissionContentHandler);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "Caught exception in RIFStudySubmissionXMLReader.readFileFromString()", 
+				exception);
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
 			throw exceptionFactory.createFileReadingProblemException("");			
@@ -160,6 +167,8 @@ public final class RIFStudySubmissionXMLReader {
 				rifStudySubmissionContentHandler);
 		}
 		catch(Exception exception) {
+			rifLogger.error(this.getClass(), "Caught exception in RIFStudySubmissionXMLReader.readFile(InputStream)", 
+				exception);
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
 			throw exceptionFactory.createFileReadingProblemException("");			
@@ -168,6 +177,7 @@ public final class RIFStudySubmissionXMLReader {
 	
 	
 	public RIFStudySubmission getStudySubmission() {
+		
 		return rifStudySubmissionContentHandler.getRIFJobSubmission();		
 	}
 	
