@@ -1,16 +1,16 @@
 package rifServices.dataStorageLayer.ms;
 
-
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.dataStorageLayer.common.ServiceBundle;
 import rifServices.system.RIFServiceStartupOptions;
 import rifGenericLibrary.util.FieldValidationUtility;
 
-class MSSQLAbstractStudyServiceBundle {
+class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 
 	private boolean isInitialised;
 	private MSSQLRIFServiceResources rifServiceResources;
@@ -48,6 +48,7 @@ class MSSQLAbstractStudyServiceBundle {
 		return rifServiceResources;
 	}
 	
+	@Override
 	public RIFStudyResultRetrievalAPI getRIFStudyRetrievalService() {
 		return rifStudyRetrievalService;
 	}
@@ -58,6 +59,7 @@ class MSSQLAbstractStudyServiceBundle {
 		this.rifStudyRetrievalService = rifStudyRetrievalService;
 	}
 	
+	@Override
 	public RIFStudySubmissionAPI getRIFStudySubmissionService() {
 
 		return rifStudySubmissionService;
@@ -75,6 +77,7 @@ class MSSQLAbstractStudyServiceBundle {
 	 * @param password
 	 * @throws RIFServiceException
 	 */
+	@Override
 	public void login(
 		final String userID,
 		final String password) 
@@ -118,6 +121,7 @@ class MSSQLAbstractStudyServiceBundle {
 		}
 	}
 
+	@Override
 	public boolean isLoggedIn(
 		final String userID) 
 		throws RIFServiceException {
@@ -153,6 +157,7 @@ class MSSQLAbstractStudyServiceBundle {
 	 * @param _user
 	 * @throws RIFServiceException
 	 */
+	@Override
 	public void logout(
 		final User _user) 
 		throws RIFServiceException {

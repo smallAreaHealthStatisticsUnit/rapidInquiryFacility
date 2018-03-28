@@ -13,93 +13,18 @@ import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
-import java.util.Map;
 
 import java.sql.*;
 import com.sun.rowset.CachedRowSetImpl;
 import rifServices.system.files.TomcatBase;
 import rifServices.system.files.TomcatFile;
 
-/**
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- *
- * Made in common class by Peter Hambly; extensively modified
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-public abstract class SQLAbstractSQLManager {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
+public abstract class AbstractSQLManager implements SQLManager {
 
 	private static final String ABSTRACT_SQLMANAGER_PROPERTIES = "AbstractSQLManager.properties";
 
-	// ==========================================
-	// Section Properties
-	// ==========================================
 	protected RIFDatabaseProperties rifDatabaseProperties;
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
 	private boolean enableLogging = true;
@@ -109,44 +34,37 @@ public abstract class SQLAbstractSQLManager {
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
 	
 	private static DatabaseType databaseType;
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
 
 	/**
 	 * Instantiates a new abstract sql manager.
 	 */
-	public SQLAbstractSQLManager(
+	public AbstractSQLManager(
 		final RIFDatabaseProperties rifDatabaseProperties) {
 
 		this.rifDatabaseProperties = rifDatabaseProperties;
 		databaseType = this.rifDatabaseProperties.getDatabaseType();
-		
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
+	@Override
 	public ValidationPolicy getValidationPolicy() {
 		return validationPolicy;
 	}
 		
+	@Override
 	public void setValidationPolicy(
-		final ValidationPolicy validationPolicy) {
+			final ValidationPolicy validationPolicy) {
 		
 		this.validationPolicy = validationPolicy;
 	}
 	
 	/**
-	 * Use appropariate table name case.
+	 * Use appropriate table name case.
 	 *
 	 * @param tableComponentName the table component name
 	 * @return the string
 	 */
-	protected String useAppropariateTableNameCase(
-		final String tableComponentName) {
+	protected String useAppropriateTableNameCase(
+			final String tableComponentName) {
 		
 		//TODO: KLG - find out more about when we will need to convert
 		//to one case or another
@@ -495,19 +413,7 @@ public abstract class SQLAbstractSQLManager {
 		}		
 	}
 	
-	/**
-	 * Use appropriate field name case.
-	 *
-	 * @param fieldName the field name
-	 * @return the string
-	 */
-	/*
-	protected String useAppropriateFieldNameCase(
-		final String fieldName) {
-
-		return fieldName.toLowerCase();
-	}
-	*/
+	@Override
 	public void setEnableLogging(final boolean enableLogging) {
 		this.enableLogging = enableLogging;
 	}	
@@ -521,7 +427,7 @@ public abstract class SQLAbstractSQLManager {
 		final AbstractSQLQueryFormatter queryFormatter,
 		final String... parameters) {
 		
-		if (enableLogging == false || checkIfQueryLoggingEnabled(queryName) == false) {
+		if (!enableLogging || !queryLoggingIsEnabled(queryName)) {
 			return;
 		}
 
@@ -537,9 +443,9 @@ public abstract class SQLAbstractSQLManager {
 		}
 		queryLog.append("PGSQL QUERY TEXT: " + lineSeparator);
 		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
-		queryLog.append("<<< End SQLAbstractSQLManager logSQLQuery" + lineSeparator);
+		queryLog.append("<<< End AbstractSQLManager logSQLQuery" + lineSeparator);
 	
-		rifLogger.info(this.getClass(), "SQLAbstractSQLManager logSQLQuery >>>" + 
+		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
 			lineSeparator + queryLog.toString());	
 
 	}
@@ -549,7 +455,7 @@ public abstract class SQLAbstractSQLManager {
 		final AbstractSQLQueryFormatter queryFormatter,
 		final int[] parameters) {
 		
-		if (enableLogging == false || checkIfQueryLoggingEnabled(queryName) == false) {
+		if (enableLogging == false || queryLoggingIsEnabled(queryName) == false) {
 			return;
 		}
 
@@ -565,9 +471,9 @@ public abstract class SQLAbstractSQLManager {
 		}
 		queryLog.append("PGSQL QUERY TEXT: " + lineSeparator);
 		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
-		queryLog.append("<<< End SQLAbstractSQLManager logSQLQuery" + lineSeparator);
+		queryLog.append("<<< End AbstractSQLManager logSQLQuery" + lineSeparator);
 	
-		rifLogger.info(this.getClass(), "SQLAbstractSQLManager logSQLQuery >>>" + 
+		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
 			lineSeparator + queryLog.toString());	
 
 	}
@@ -576,7 +482,7 @@ public abstract class SQLAbstractSQLManager {
 		final String queryName,
 		final AbstractSQLQueryFormatter queryFormatter) {
 		
-		if (enableLogging == false || checkIfQueryLoggingEnabled(queryName) == false) {
+		if (enableLogging == false || queryLoggingIsEnabled(queryName) == false) {
 			return;
 		}
 
@@ -585,22 +491,22 @@ public abstract class SQLAbstractSQLManager {
 		queryLog.append("NO PARAMETERS." + lineSeparator);
 		queryLog.append("PGSQL QUERY TEXT: " + lineSeparator);
 		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
-		queryLog.append("<<< End SQLAbstractSQLManager logSQLQuery" + lineSeparator);
+		queryLog.append("<<< End AbstractSQLManager logSQLQuery" + lineSeparator);
 	
-		rifLogger.info(this.getClass(), "SQLAbstractSQLManager logSQLQuery >>>" + 
+		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
 			lineSeparator + queryLog.toString());	
 
 	}
 		
 	protected void logSQLException(final SQLException sqlException) {
-		rifLogger.error(this.getClass(), "SQLAbstractSQLManager.logSQLException error", sqlException);
+		rifLogger.error(this.getClass(), "AbstractSQLManager.logSQLException error", sqlException);
 	}
 
 	protected void logException(final Exception exception) {
-		rifLogger.error(this.getClass(), "SQLAbstractSQLManager.logException error", exception);
+		rifLogger.error(this.getClass(), "AbstractSQLManager.logException error", exception);
 	}
 
-	protected boolean checkIfQueryLoggingEnabled(
+	protected boolean queryLoggingIsEnabled(
 			final String queryName) {
 
 		if (prop == null) {
@@ -608,11 +514,11 @@ public abstract class SQLAbstractSQLManager {
 			try {
 				prop = new TomcatFile(
 						new TomcatBase(),
-						SQLAbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES).properties();
+						AbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES).properties();
 			} catch (IOException e) {
 				rifLogger.warning(this.getClass(),
-						"SQLAbstractSQLManager.checkIfQueryLoggingEnabled error for" +
-								SQLAbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES, e);
+						"AbstractSQLManager.checkIfQueryLoggingEnabled error for" +
+						AbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES, e);
 				return true;
 			}
 		}
@@ -620,18 +526,18 @@ public abstract class SQLAbstractSQLManager {
 		if (value != null) {
 			if (value.toLowerCase().equals("true")) {
 				rifLogger.debug(this.getClass(),
-						"SQLAbstractSQLManager checkIfQueryLoggingEnabled=TRUE property: " +
+						"AbstractSQLManager checkIfQueryLoggingEnabled=TRUE property: " +
 								queryName + "=" + value);
 				return true;
 			} else {
 				rifLogger.debug(this.getClass(),
-						"SQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
+						"AbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
 								queryName + "=" + value);
 				return false;
 			}
 		} else {
 			rifLogger.warning(this.getClass(),
-					"SQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
+					"AbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
 							queryName + " NOT FOUND");
 			return false;
 		}
@@ -652,13 +558,4 @@ public abstract class SQLAbstractSQLManager {
 		}
 		
 	}
-	
-	
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

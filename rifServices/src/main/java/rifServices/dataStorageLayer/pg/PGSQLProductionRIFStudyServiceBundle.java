@@ -60,7 +60,7 @@ package rifServices.dataStorageLayer.pg;
  *
  */
 
-public final class PGSQLProductionRIFStudyServiceBundle 
+public final class PGSQLProductionRIFStudyServiceBundle
 	extends PGSQLAbstractStudyServiceBundle {
 
 	// ==========================================

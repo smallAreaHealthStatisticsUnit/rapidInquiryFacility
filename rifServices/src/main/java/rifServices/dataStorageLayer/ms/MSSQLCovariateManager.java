@@ -16,6 +16,8 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Investigation;
+import rifServices.dataStorageLayer.common.CovariateManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
@@ -90,8 +92,7 @@ import java.sql.SQLException;
  *
  */
 
-final class MSSQLCovariateManager 
-	extends MSSQLAbstractSQLManager {
+final class MSSQLCovariateManager extends MSSQLAbstractSQLManager implements CovariateManager {
 
 	// ==========================================
 	// Section Constants
@@ -101,7 +102,7 @@ final class MSSQLCovariateManager
 	// Section Properties
 	// ==========================================
 	/** The sql rif context manager. */
-	private MSSQLRIFContextManager sqlRIFContextManager;
+	private RIFContextManager sqlRIFContextManager;
 	
 	// ==========================================
 	// Section Construction
@@ -114,7 +115,7 @@ final class MSSQLCovariateManager
 	 */
 	public MSSQLCovariateManager(
 		final RIFDatabaseProperties rifDatabaseProperties,
-		final MSSQLRIFContextManager sqlRIFContextManager) {
+		final RIFContextManager sqlRIFContextManager) {
 		
 		super(rifDatabaseProperties);
 		this.sqlRIFContextManager = sqlRIFContextManager;
@@ -218,7 +219,6 @@ final class MSSQLCovariateManager
 	 *
 	 * @param connection the connection
 	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
 	 * @param geoLevelToMap the geo level to map
 	 * @return the covariates
 	 * @throws RIFServiceException the RIF service exception

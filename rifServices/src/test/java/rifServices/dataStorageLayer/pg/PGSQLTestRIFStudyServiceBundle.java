@@ -1,6 +1,7 @@
 package rifServices.dataStorageLayer.pg;
 
 import rifGenericLibrary.system.RIFServiceException;
+import rifServices.dataStorageLayer.common.ServiceResources;
 
 /**
  *
@@ -93,7 +94,7 @@ public final class PGSQLTestRIFStudyServiceBundle
 		return rifStudyServiceBundle;
 	}
 	
-	public PGSQLRIFServiceResources getRIFServiceResources() {		
+	public ServiceResources getRIFServiceResources() {
 		return super.getRIFServiceResources();
 	}
 	

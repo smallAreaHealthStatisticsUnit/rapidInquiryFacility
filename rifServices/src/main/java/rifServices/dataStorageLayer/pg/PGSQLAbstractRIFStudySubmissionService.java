@@ -6,6 +6,14 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.*;
+import rifServices.dataStorageLayer.common.AbstractSQLManager;
+import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
+import rifServices.dataStorageLayer.common.HealthOutcomeManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
+import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.dataStorageLayer.common.StudyExtractManager;
+import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.files.TomcatBase;
@@ -21,7 +29,7 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
- * Main implementation of the RIF middle ware.  
+ * Main implementation of the RIF middleware.
  * <p>
  * The main roles of this class are to support:
  * <ul>
@@ -59,7 +67,7 @@ import java.util.stream.Collectors;
  *business objects it may possess.
  *</li>
  *<li>
- *Obtain a connection object from the {@link rifServices.dataStorageLayer.SQLConnectionManager}.
+ *Obtain a connection object from the {@lin SQLConnectionManager}.
  *</li>
  *<li>
  *Delegate to a manager class, using a method with the same name.  Pass the connection object as part of the call. 
@@ -76,85 +84,16 @@ import java.util.stream.Collectors;
  *methods are intended to identify an attack anyway.  We feel that we should not merely prevent malicious attacks but
  *log any attempts to do so.  If the method throws a {@link rifGenericLibrary.system.RIFServiceSecurityException},
  *then this class will log it and continue to pass it to client application.
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
+  * <hr>
  * Kevin Garwood
  * @author kgarwood
  * @version
  */
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-abstract class PGSQLAbstractRIFStudySubmissionService 
-extends PGSQLAbstractRIFUserService
-implements RIFStudySubmissionAPI {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
+abstract class PGSQLAbstractRIFStudySubmissionService extends PGSQLAbstractRIFUserService
+		implements RIFStudySubmissionAPI {
 
 		private static String lineSeparator = System.getProperty("line.separator");	
-		
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
-	// ==========================================
-	// Section Construction
-	// ==========================================
 
 	/**
 	 * Instantiates a new production rif job submission service.
@@ -175,26 +114,11 @@ implements RIFStudySubmissionAPI {
 		setServiceContactEmail(serviceContactEmail);
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-
-	public void test(final User user)		
+	public void test(final User user)
 			throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
-		PGSQLConnectionManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();	
+		SQLManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
 
 		Connection connection = null;
 		try {
@@ -246,9 +170,8 @@ implements RIFStudySubmissionAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		SQLManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 
@@ -304,9 +227,8 @@ implements RIFStudySubmissionAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		SQLManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography = Geography.createCopy(_geography);
@@ -362,10 +284,11 @@ implements RIFStudySubmissionAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			PGSQLAgeGenderYearManager sqlAgeGenderYearManager
+			AgeGenderYearManager sqlAgeGenderYearManager
 			= rifServiceResources.getSqlAgeGenderYearManager();
 			results
 			= sqlAgeGenderYearManager.getAgeGroups(
+					User.NULL_USER,
 					connection,
 					geography,
 					ndPair,
@@ -395,9 +318,8 @@ implements RIFStudySubmissionAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);		
-		PGSQLConnectionManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		SQLManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 
@@ -426,7 +348,7 @@ implements RIFStudySubmissionAPI {
 
 
 			//Delegate operation to a specialised manager class
-			PGSQLAgeGenderYearManager sqlAgeGenderYearManager
+			AgeGenderYearManager sqlAgeGenderYearManager
 			= rifServiceResources.getSqlAgeGenderYearManager();
 			results
 			= sqlAgeGenderYearManager.getGenders();
@@ -459,10 +381,9 @@ implements RIFStudySubmissionAPI {
 			final String healthCodeNameSpace) throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);		
-		PGSQLConnectionManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		User user = User.createCopy(_user);
+		SQLManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 
@@ -509,7 +430,7 @@ implements RIFStudySubmissionAPI {
 					auditTrailMessage);
 
 			//Delegate operation to a specialised manager class
-			PGSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 			= rifServiceResources.getHealthOutcomeManager();
 			result
 			= healthOutcomeManager.getHealthCode(
@@ -535,10 +456,9 @@ implements RIFStudySubmissionAPI {
 					throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);		
-		PGSQLConnectionManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		User user = User.createCopy(_user);
+		SQLManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		HealthCode parentHealthCode = HealthCode.createCopy(_parentHealthCode);
@@ -575,7 +495,7 @@ implements RIFStudySubmissionAPI {
 
 
 			//Delegate operation to a specialised manager class
-			PGSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 			= rifServiceResources.getHealthOutcomeManager();
 			results
 			= healthOutcomeManager.getImmediateSubterms(
@@ -599,7 +519,7 @@ implements RIFStudySubmissionAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);		
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();				
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -638,7 +558,7 @@ implements RIFStudySubmissionAPI {
 					auditTrailMessage);
 
 			//Delegate operation to a specialised manager class
-			PGSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 			= rifServiceResources.getHealthOutcomeManager();
 			result
 			= healthOutcomeManager.getParentHealthCode(
@@ -665,7 +585,7 @@ implements RIFStudySubmissionAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);		
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();				
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -717,7 +637,7 @@ implements RIFStudySubmissionAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class		
-			PGSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 			= rifServiceResources.getHealthOutcomeManager();			
 			results 
 			= healthOutcomeManager.getHealthCodes(
@@ -751,7 +671,7 @@ implements RIFStudySubmissionAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);		
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();				
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -802,13 +722,14 @@ implements RIFStudySubmissionAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class			
-			PGSQLRIFContextManager sqlRIFContextManager
+			RIFContextManager sqlRIFContextManager
 			= rifServiceResources.getSQLRIFContextManager();
 			results
 			= sqlRIFContextManager.getNumeratorDenominatorPairs(
 					connection, 
 					geography,
-					healthTheme);
+					healthTheme,
+					User.NULL_USER);
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
@@ -830,9 +751,8 @@ implements RIFStudySubmissionAPI {
 
 	/**
 	 * Convenience method to obtain everything that is needed to get 
-	 * @param user
-	 * @param geography
-	 * @param healthTheme
+	 * @param _user
+	 * @param _geography
 	 * @param numeratorTableName
 	 * @return
 	 * @throws RIFServiceException
@@ -845,9 +765,9 @@ implements RIFStudySubmissionAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);		
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 
@@ -902,10 +822,11 @@ implements RIFStudySubmissionAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			PGSQLRIFContextManager sqlRIFContextManager
+			RIFContextManager sqlRIFContextManager
 			= rifServiceResources.getSQLRIFContextManager();
 			result
 			= sqlRIFContextManager.getNDPairFromNumeratorTableName(
+					User.NULL_USER,
 					connection, 
 					geography,
 					numeratorTableName);
@@ -934,7 +855,7 @@ implements RIFStudySubmissionAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();	
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -971,7 +892,7 @@ implements RIFStudySubmissionAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);	
 
 			//Delegate operation to a specialised manager class
-			PGSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager
+			DiseaseMappingStudyManager sqlDiseaseMappingStudyManager
 			= rifServiceResources.getSqlDiseaseMappingStudyManager();
 
 			results
@@ -1007,11 +928,10 @@ implements RIFStudySubmissionAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();	
+		SQLManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
 
 		String result = null;
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return result;
 		}
 		RIFStudySubmission rifStudySubmission
@@ -1211,10 +1131,9 @@ implements RIFStudySubmissionAPI {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();			
+		SQLManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
 		
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 
@@ -1254,7 +1173,7 @@ implements RIFStudySubmissionAPI {
 			connection
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
-			PGSQLRIFSubmissionManager sqlRIFSubmissionManager
+			SubmissionManager sqlRIFSubmissionManager
 			= rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission
 			= sqlRIFSubmissionManager.getRIFStudySubmission(
@@ -1262,7 +1181,7 @@ implements RIFStudySubmissionAPI {
 					user, 
 					studyID);
 
-			PGSQLStudyExtractManager studyExtractManager
+			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			result=studyExtractManager.getExtractStatus(
 					connection, 
@@ -1317,7 +1236,7 @@ implements RIFStudySubmissionAPI {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();			
 		
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
@@ -1360,7 +1279,7 @@ implements RIFStudySubmissionAPI {
 			connection
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
-			PGSQLRIFSubmissionManager sqlRIFSubmissionManager
+			SubmissionManager sqlRIFSubmissionManager
 			= rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission
 			= sqlRIFSubmissionManager.getRIFStudySubmission(
@@ -1368,7 +1287,7 @@ implements RIFStudySubmissionAPI {
 					user, 
 					studyID);
 
-			PGSQLStudyExtractManager studyExtractManager
+			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			result=studyExtractManager.getJsonFile(
 					connection, 
@@ -1412,7 +1331,7 @@ implements RIFStudySubmissionAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();			
 		
 		if (sqlConnectionManager.isUserBlocked(user)) {
@@ -1462,7 +1381,7 @@ implements RIFStudySubmissionAPI {
 			connection
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
-			PGSQLRIFSubmissionManager sqlRIFSubmissionManager
+			SubmissionManager sqlRIFSubmissionManager
 			= rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission
 			= sqlRIFSubmissionManager.getRIFStudySubmission(
@@ -1470,7 +1389,7 @@ implements RIFStudySubmissionAPI {
 					user, 
 					studyID);
 
-			PGSQLStudyExtractManager studyExtractManager
+			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			studyExtractManager.createStudyExtract(
 					connection, 
@@ -1504,7 +1423,7 @@ implements RIFStudySubmissionAPI {
 			final String studyID)
 		throws RIFServiceException {
 		
-			PGSQLStudyExtractManager studyExtractManager
+			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			return studyExtractManager.getStudyExtractFIleName(
 					user, 
@@ -1521,7 +1440,7 @@ implements RIFStudySubmissionAPI {
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		FileInputStream fileInputStream = null;
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();			
 
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
@@ -1571,7 +1490,7 @@ implements RIFStudySubmissionAPI {
 			connection
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
-			PGSQLRIFSubmissionManager sqlRIFSubmissionManager
+			SubmissionManager sqlRIFSubmissionManager
 			= rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission
 			= sqlRIFSubmissionManager.getRIFStudySubmission(
@@ -1579,7 +1498,7 @@ implements RIFStudySubmissionAPI {
 					user, 
 					studyID);
 
-			PGSQLStudyExtractManager studyExtractManager
+			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			fileInputStream = studyExtractManager.getStudyExtract( 
 					connection, 
@@ -1611,17 +1530,17 @@ implements RIFStudySubmissionAPI {
 	/**
 	 * Gets the health code taxonomy given the name space
 	 *
-	 * @param user the user
+	 * @param _user the user
 	 * @return the health code taxonomy corresponding to the name space
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public HealthCodeTaxonomy getHealthCodeTaxonomyFromNameSpace(
-			final User _user, 
+			final User _user,
 			final String nameSpace) throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();	
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -1661,7 +1580,7 @@ implements RIFStudySubmissionAPI {
 					auditTrailMessage);
 
 			//Delegate operation to a specialised manager class
-			PGSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 			= rifServiceResources.getHealthOutcomeManager();
 			result 
 			= healthOutcomeManager.getHealthCodeTaxonomyFromNameSpace(
@@ -1685,7 +1604,7 @@ implements RIFStudySubmissionAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();	
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -1716,7 +1635,7 @@ implements RIFStudySubmissionAPI {
 
 
 			//Delegate operation to a specialised manager class			
-			PGSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 			= rifServiceResources.getHealthOutcomeManager();			
 			results 
 			= healthOutcomeManager.getHealthCodeTaxonomies();
@@ -1739,9 +1658,8 @@ implements RIFStudySubmissionAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();	
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		SQLManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 
@@ -1778,7 +1696,7 @@ implements RIFStudySubmissionAPI {
 					auditTrailMessage);
 
 			//Delegate operation to a specialised manager class
-			PGSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 			= rifServiceResources.getHealthOutcomeManager();			
 			results 
 			= healthOutcomeManager.getTopLevelCodes(

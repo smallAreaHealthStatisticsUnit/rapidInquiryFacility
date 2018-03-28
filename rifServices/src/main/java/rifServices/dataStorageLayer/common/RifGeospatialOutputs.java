@@ -1,11 +1,9 @@
 package rifServices.dataStorageLayer.common;
 
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.businessConceptLayer.AbstractStudy;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.graphics.RIFMaps;
@@ -21,17 +19,14 @@ import java.text.NumberFormat;
 import java.util.Map;
 import java.util.Calendar;
 import java.util.Locale;
-import java.net.URL;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Iterator;
 
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.type.AttributeDescriptor; 
-import org.opengis.feature.type.AttributeType;
-import org.opengis.feature.type.PropertyType;
-import org.opengis.feature.type.GeometryDescriptor; 
+import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.geometry.BoundingBox;
@@ -46,13 +41,11 @@ import org.geotools.geometry.jts.GeometryBuilder;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.FeatureIterator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.CRS;
 import org.geotools.data.shapefile.ShapefileDataStore; 
 import org.geotools.data.FeatureWriter; 
-import org.geotools.data.Transaction; 
-import org.geotools.map.MapViewport;
+import org.geotools.data.Transaction;
 
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
@@ -120,7 +113,7 @@ import com.vividsolutions.jts.io.WKTReader;
  *
  */
 
-public class RifGeospatialOutputs extends SQLAbstractSQLManager {
+public class RifGeospatialOutputs extends AbstractSQLManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================

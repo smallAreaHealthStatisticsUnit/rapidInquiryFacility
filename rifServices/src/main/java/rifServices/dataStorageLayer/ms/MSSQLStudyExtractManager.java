@@ -1,6 +1,7 @@
 package rifServices.dataStorageLayer.ms;
 
 
+import rifServices.dataStorageLayer.common.StudyExtractManager;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.RIFStudySubmission;
@@ -30,95 +31,20 @@ import java.util.Locale;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- */
+public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
+		implements StudyExtractManager {
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
 	private static String EXTRACT_DIRECTORY;
 	private static String TAXONOMY_SERVICES_SERVER;
 	private static final String STUDY_QUERY_SUBDIRECTORY = "study_query";
 	private static final String STUDY_EXTRACT_SUBDIRECTORY = "study_extract";
 	private static final String RATES_AND_RISKS_SUBDIRECTORY = "rates_and_risks";
 	private static final String GEOGRAPHY_SUBDIRECTORY = "geography";
-	//private static final String STATISTICAL_POSTPROCESSING_SUBDIRECTORY = "statistical_post_processing";
-	
-	//private static final String TERMS_CONDITIONS_SUBDIRECTORY = "terms_and_conditions";
 
 	private static final int BASE_FILE_STUDY_NAME_LENGTH = 100;
 	private static String lineSeparator = System.getProperty("line.separator");
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	private static DatabaseType databaseType;
-	
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
-	//private File termsAndConditionsDirectory;
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
 
 	public MSSQLStudyExtractManager(
 		final RIFServiceStartupOptions rifServiceStartupOptions) {
@@ -133,10 +59,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 		databaseType=this.rifServiceStartupOptions.getRifDatabaseType();
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	
+	@Override
 	public String getStudyExtractFIleName(
 			final User user,
 			final String studyID)
@@ -164,6 +87,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	 * 
 	 * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
 	 */	
+	@Override
 	public FileInputStream getStudyExtract(
 			final Connection connection,
 			final User user,
@@ -229,7 +153,8 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	 * 
 	 * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
 	 */
-	 public String getExtractStatus(
+	@Override
+	public String getExtractStatus(
 			final Connection connection,
 			final User user,
 			final RIFStudySubmission rifStudySubmission,
@@ -431,7 +356,8 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 	 * 
 	 * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
 	 */
-	 public String getJsonFile(
+	@Override
+	public String getJsonFile(
 			final Connection connection,
 			final User user,
 			final RIFStudySubmission rifStudySubmission,
@@ -479,6 +405,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
      * @param String tomcatServer [deduced from calling URL] (required)
      * @return JSONObject [front end saves as JSON5 file]
      */		
+	@Override
 	public void createStudyExtract(
 			final Connection connection,
 			final User user,
@@ -500,126 +427,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager {
 			TAXONOMY_SERVICES_SERVER);
 
 	}
-	
-	/*
-	private void writeStatisticalPostProcessingFiles(
-		final Connection connection,
-		final String temporaryDirectoryPath,		
-		final ZipOutputStream submissionZipOutputStream,
-		final String baseStudyName,
-		final RIFStudySubmission rifStudySubmission)
-		throws Exception {
-				
-		
-		ArrayList<CalculationMethod> calculationMethods
-			= rifStudySubmission.getCalculationMethods();
-		for (CalculationMethod calculationMethod : calculationMethods) {
-			
-			StringBuilder postProcessedTableName = new StringBuilder();			
-			postProcessedTableName.append("s");
-			postProcessedTableName.append(rifStudySubmission.getStudyID());
-			postProcessedTableName.append("_");
-			postProcessedTableName.append(calculationMethod.getName());
-			
-			StringBuilder postProcessedFileName = new StringBuilder();
-			postProcessedFileName.append(temporaryDirectoryPath);
-			postProcessedFileName.append(File.separator);
-			postProcessedFileName.append(baseStudyName);
-			postProcessedFileName.append("_");
-			postProcessedFileName.append(calculationMethod.getName());
-			postProcessedFileName.append(".csv");
-			
-			File postProcessedFile = new File(postProcessedFileName.toString());
-			addFileToZipFile(
-				submissionZipOutputStream, 
-				STATISTICAL_POSTPROCESSING_SUBDIRECTORY, 
-				postProcessedFile);
-		}
-	}	
-	*/
-	
-	/*
-	private void writeTermsAndConditionsFiles(
-		final ZipOutputStream submissionZipOutputStream) 
-		throws Exception {
-		
-		File[] files = termsAndConditionsDirectory.listFiles();
-		for (File file : files) {
-			addFileToZipFile(
-				submissionZipOutputStream, 
-				TERMS_CONDITIONS_SUBDIRECTORY,
-				file);			
-		}		
-	}
-	*/
 
-	
-	/*
-	 * General methods for writing to zip files
-	 */
-		
-	
-	/*
-	public void addFileToZipFile(
-		final ZipOutputStream submissionZipOutputStream,
-		final String zipEntryName,
-		final File inputFile)
-		throws Exception {
-		
-		ZipEntry rifQueryFileNameZipEntry = new ZipEntry(zipEntryName);
-		submissionZipOutputStream.putNextEntry(rifQueryFileNameZipEntry);
-				
-		byte[] BUFFER = new byte[4096 * 1024];
-		FileInputStream fileInputStream = new FileInputStream(inputFile);		
-		int bytesRead = fileInputStream.read(BUFFER);		
-		while (bytesRead != -1) {
-			submissionZipOutputStream.write(BUFFER, 0, bytesRead);			
-			bytesRead = fileInputStream.read(BUFFER);
-		}
-		submissionZipOutputStream.flush();
-		fileInputStream.close();
-		submissionZipOutputStream.closeEntry();
-		
-		rifLogger.info(this.getClass(), "Add to ZIP file: " + inputFile);
-	}
-
-    private void addFileToZipFile(
-    	final ZipOutputStream submissionZipOutputStream, 
-    	final String zipFilePath, 
-    	final File file) throws Exception {
-    	
-    	
-    	if (file.isDirectory()) {
-    		addDirectoryToZipFile(
-    		submissionZipOutputStream,
-    		zipFilePath,
-    		file); 
-    		return;
-    	}
-    	
-    	//assume file is not a directory
-    	ZipEntry zipEntry
-    		= createZipEntry(
-    			zipFilePath,
-    			file);
-    	submissionZipOutputStream.putNextEntry(zipEntry);
-
-        FileInputStream fileInputStream 
-        	= new FileInputStream(file);
-        byte[] buffer = new byte[4092];
-        int byteCount = 0;
-        while ((byteCount = fileInputStream.read(buffer)) != -1)
-        {
-        	submissionZipOutputStream.write(buffer, 0, byteCount);
-            rifLogger.info(this.getClass(), '.');
-        }
-
-        fileInputStream.close();
-        submissionZipOutputStream.closeEntry();
-    }
-    
-    	*/
-	
 	public String getRif40StudyState(
 			final Connection connection,
 			final String studyID)

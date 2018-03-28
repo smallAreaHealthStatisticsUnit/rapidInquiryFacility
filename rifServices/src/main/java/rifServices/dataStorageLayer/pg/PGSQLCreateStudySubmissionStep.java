@@ -3,6 +3,8 @@ package rifServices.dataStorageLayer.pg;
 
 import rifServices.businessConceptLayer.*;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
+import rifServices.dataStorageLayer.common.MapDataManager;
 import rifServices.system.*;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.*;
@@ -95,8 +97,8 @@ final class PGSQLCreateStudySubmissionStep
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private PGSQLDiseaseMappingStudyManager diseaseMappingStudyManager;
-	private PGSQLMapDataManager mapDataManager;
+	private DiseaseMappingStudyManager diseaseMappingStudyManager;
+	private MapDataManager mapDataManager;
 	
 	// ==========================================
 	// Section Construction
@@ -107,8 +109,8 @@ final class PGSQLCreateStudySubmissionStep
 	 */
 	public PGSQLCreateStudySubmissionStep(
 		final RIFDatabaseProperties rifDatabaseProperties,
-		final PGSQLDiseaseMappingStudyManager diseaseMappingStudyManager,
-		final PGSQLMapDataManager mapDataManager) {
+		final DiseaseMappingStudyManager diseaseMappingStudyManager,
+		final MapDataManager mapDataManager) {
 
 		super(rifDatabaseProperties);	
 		this.diseaseMappingStudyManager = diseaseMappingStudyManager;
@@ -938,7 +940,7 @@ final class PGSQLCreateStudySubmissionStep
 		
 		DiseaseMappingStudy diseaseMappingStudy
 			= (DiseaseMappingStudy) rifStudySubmission.getStudy();
-		diseaseMappingStudyManager.checkNonExistentItems(
+		diseaseMappingStudyManager.checkNonExistentItems(User.NULL_USER,
 			connection, 
 			diseaseMappingStudy);
 		

@@ -14,6 +14,10 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.CovariateManager;
+import rifServices.dataStorageLayer.common.HealthOutcomeManager;
+import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.ontologyServices.HealthCodeProviderInterface;
 import rifGenericLibrary.util.FieldValidationUtility;
 
@@ -167,7 +171,7 @@ public final class PGSQLTestRIFStudySubmissionService
 			//Delegate operation to a specialised manager class
 			Connection connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
-			PGSQLAgeGenderYearManager sqlAgeGenderYearManager
+			AgeGenderYearManager sqlAgeGenderYearManager
 				= rifServiceResources.getSqlAgeGenderYearManager();
 			sqlAgeGenderYearManager.checkNonExistentAgeGroups(
 				connection,
@@ -263,7 +267,7 @@ public final class PGSQLTestRIFStudySubmissionService
 			Connection connection
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
-			PGSQLCovariateManager sqlCovariateManager
+			CovariateManager sqlCovariateManager
 				= rifServiceResources.getSqlCovariateManager();
 			sqlCovariateManager.checkNonExistentCovariates(
 				connection,
@@ -307,7 +311,7 @@ public final class PGSQLTestRIFStudySubmissionService
 		//Part II: Check for security violations
 		try {
 			validateUser(adminUser);
-			PGSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			healthOutcomeManager.addHealthCodeProvider(healthCodeProvider);
 		}
@@ -340,7 +344,7 @@ public final class PGSQLTestRIFStudySubmissionService
 		try {
 			//Part II: Check for security violations
 			validateUser(adminUser);
-			PGSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();			
 			healthOutcomeManager.clearHealthCodeProviders();		
 		}
@@ -391,7 +395,7 @@ public final class PGSQLTestRIFStudySubmissionService
 			Connection connection 
 				= sqlConnectionManager.assignPooledWriteConnection(user);
 
-			PGSQLRIFSubmissionManager sqlRIFSubmissionManager
+			SubmissionManager sqlRIFSubmissionManager
 				= rifServiceResources.getRIFSubmissionManager();
 			sqlRIFSubmissionManager.deleteStudy(connection, studyID);
 
@@ -490,7 +494,7 @@ public final class PGSQLTestRIFStudySubmissionService
 			connection 
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
-			PGSQLRIFSubmissionManager sqlRIFSubmissionManager
+			SubmissionManager sqlRIFSubmissionManager
 				= rifServiceResources.getRIFSubmissionManager();	
 			result
 				= sqlRIFSubmissionManager.getRIFStudySubmission(

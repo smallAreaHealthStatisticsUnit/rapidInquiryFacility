@@ -1,5 +1,11 @@
 package rifServices.dataStorageLayer.ms;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLAggregateValueQueryFormatter;
@@ -8,114 +14,26 @@ import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-import rifServices.businessConceptLayer.GeoLevelSelect;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.GeoLevelArea;
+import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
-import java.util.ArrayList;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-
-
-/**
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-final class MSSQLRIFContextManager 
-	extends MSSQLAbstractSQLManager {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
+final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RIFContextManager {
 
 	/**
 	 * Instantiates a new SQLRIF context manager.
 	 */
-	public MSSQLRIFContextManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+	public MSSQLRIFContextManager(final RIFDatabaseProperties rifDatabaseProperties) {
 
 		super(rifDatabaseProperties);
 	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
 
 	/**
 	 * Gets the geographies.
@@ -287,6 +205,7 @@ final class MSSQLRIFContextManager
 	 * @return
 	 * @throws RIFServiceException
 	 */
+	@Override
 	public NumeratorDenominatorPair getNDPairFromNumeratorTableName(
 		final User user,
 		final Connection connection,
@@ -406,11 +325,11 @@ final class MSSQLRIFContextManager
 	 * @param connection the connection
 	 * @param geography the geography
 	 * @param healthTheme the health theme
-	 * @param user the user
 	 * @return the numerator denominator pairs
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<NumeratorDenominatorPair> getNumeratorDenominatorPairs(	
+	@Override
+	public ArrayList<NumeratorDenominatorPair> getNumeratorDenominatorPairs(
 		final Connection connection,
 		final Geography geography,
 		final HealthTheme healthTheme,
@@ -425,8 +344,8 @@ final class MSSQLRIFContextManager
 				
 		PreparedStatement statement = null;
 		ResultSet dbResultSet = null;
-		ArrayList<NumeratorDenominatorPair> results 
-			= new ArrayList<NumeratorDenominatorPair>();;
+		ArrayList<NumeratorDenominatorPair> results
+			= new ArrayList<>();;
 	
 		try {			
 			//Create SQL query		
@@ -482,11 +401,9 @@ final class MSSQLRIFContextManager
 					= RIFServiceMessages.getMessage(
 						"sqlRIFContextManager.error.noNDPairForHealthTheme",
 						healthTheme.getName());
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.NO_ND_PAIR_FOR_HEALTH_THEME,
-						errorMessage);
-				throw rifServiceException;
+				throw new RIFServiceException(
+					RIFServiceError.NO_ND_PAIR_FOR_HEALTH_THEME,
+					errorMessage);
 			}
 		}
 		catch(SQLException sqlException) {
@@ -1055,7 +972,7 @@ final class MSSQLRIFContextManager
 	 * checks if geography exists.  If it doesn't it throws an exception.
 	 *
 	 * @param connection the connection
-	 * @param geography the geography
+	 * @param geographyName the geography
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public void checkGeographyExists(
@@ -1145,8 +1062,8 @@ final class MSSQLRIFContextManager
 	 * Check non existent geo level select.
 	 *
 	 * @param connection the connection
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
+	 * @param geographyName the geography
+	 * @param geoLevelSelectName the geo level select
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public void checkGeoLevelSelectExists(
@@ -1245,9 +1162,9 @@ final class MSSQLRIFContextManager
 	 * Check non existent geo level area.
 	 *
 	 * @param connection the connection
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @param geoLevelArea the geo level area
+	 * @param geographyName the geography
+	 * @param geoLevelSelectName the geo level select
+	 * @param geoLevelAreaName the geo level area
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public void checkGeoLevelAreaExists(
@@ -1747,12 +1664,9 @@ final class MSSQLRIFContextManager
 	 * @param ndPair the nd pair
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void checkNDPairExists(
-		final User user,
-		final Connection connection,
-		final Geography geography,
-		final NumeratorDenominatorPair ndPair) 
-		throws RIFServiceException {
+	public void checkNDPairExists(final User user, final Connection connection,
+			final Geography geography, final NumeratorDenominatorPair ndPair)
+			throws RIFServiceException {
 				
 		PreparedStatement getNDPairExistsStatement = null;
 		ResultSet getNDPairExistsResultSet = null;
@@ -1783,7 +1697,7 @@ final class MSSQLRIFContextManager
 			getNDPairExistsResultSet
 				= getNDPairExistsStatement.executeQuery();
 			connection.commit();
-			if (getNDPairExistsResultSet.next() == false) {
+			if (!getNDPairExistsResultSet.next()) {
 				//no such ND pair exists
 				String errorMessage
 					= RIFServiceMessages.getMessage(
@@ -1833,16 +1747,18 @@ final class MSSQLRIFContextManager
 	/**
 	 * Check non existent nd pair.
 	 *
+	 * @param user the user
 	 * @param connection the connection
 	 * @param geography the geography
-	 * @param ndPair the nd pair
+	 * @param numeratorTableName the nd pair
 	 * @throws RIFServiceException the RIF service exception
 	 */
+	@Override
 	public void checkNumeratorTableExists(
 		final User user,
 		final Connection connection,
 		final Geography geography,
-		final String numeratorTableName) 
+		final String numeratorTableName)
 		throws RIFServiceException {
 				
 		PreparedStatement getNDPairExistsStatement = null;
@@ -1870,7 +1786,7 @@ final class MSSQLRIFContextManager
 
 			getNDPairExistsResultSet
 				= getNDPairExistsStatement.executeQuery();
-			if (getNDPairExistsResultSet.next() == false) {
+			if (!getNDPairExistsResultSet.next()) {
 				String recordType
 					= RIFServiceMessages.getMessage("numeratorDenominatorPair.numerator.label");
 				//no such ND pair exists
@@ -1908,13 +1824,11 @@ final class MSSQLRIFContextManager
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
 				errorMessage, 
-				sqlException);			
-												
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
+				sqlException);
+			
+			throw new RIFServiceException(
+				RIFServiceError.DATABASE_QUERY_FAILED,
+				errorMessage);
 		}
 		finally {
 			//Cleanup database resources
@@ -1922,13 +1836,4 @@ final class MSSQLRIFContextManager
 			MSSQLQueryUtility.close(getNDPairExistsResultSet);						
 		}		
 	}
-	
-	
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

@@ -1,19 +1,11 @@
 package rifServices.graphics;
 
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.businessConceptLayer.AbstractStudy;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 
-import rifServices.graphics.RIFGraphics;
-import rifServices.graphics.RIFGraphicsOutputType;
-import rifServices.graphics.LegendLayer;
-import rifServices.graphics.RIFMapsParameters;
-
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
+import rifServices.dataStorageLayer.common.AbstractSQLManager;
 
 import rifServices.dataStorageLayer.common.RifFeatureCollection;
 import rifServices.dataStorageLayer.common.RifCoordinateReferenceSystem;
@@ -24,7 +16,6 @@ import rifServices.businessConceptLayer.Sex;
 import com.sun.rowset.CachedRowSetImpl;
 import java.io.*;
 import java.sql.*;
-import org.json.*;
 import java.lang.*;
 import java.util.Calendar;
 import java.text.DateFormat;
@@ -51,9 +42,7 @@ import java.awt.Graphics2D;
 import java.awt.Dimension;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.geometry.jts.Geometries;
-import org.geotools.geometry.jts.JTS;
 
 import org.geotools.grid.Grids;
 import org.geotools.grid.GridElement;
@@ -61,7 +50,6 @@ import org.geotools.grid.PolygonElement;
 
 import org.geotools.data.simple.SimpleFeatureSource;
 
-import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.CRS;
 
 import org.geotools.renderer.GTRenderer;
@@ -72,7 +60,6 @@ import org.geotools.styling.SLD;
 import org.geotools.styling.Font;
 import org.geotools.styling.StyleFactoryImpl;
 import org.geotools.styling.Style;
-import org.geotools.styling.Stroke;
 
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.Filter;
@@ -85,8 +72,6 @@ import org.geotools.map.MapViewport;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.grid.GridFeatureBuilder;
 
 import org.geotools.factory.CommonFactoryFinder;
@@ -94,7 +79,6 @@ import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
 
-import org.geotools.gce.geotiff.GeoTiffWriteParams;
 import org.geotools.gce.geotiff.GeoTiffWriter;
 import org.geotools.gce.geotiff.GeoTiffFormat;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
@@ -106,8 +90,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 
 /**
@@ -170,7 +152,7 @@ import com.vividsolutions.jts.geom.Polygon;
  *
  */
 	
-public class RIFMaps extends SQLAbstractSQLManager {
+public class RIFMaps extends AbstractSQLManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================

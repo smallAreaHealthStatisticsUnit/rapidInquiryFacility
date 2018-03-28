@@ -88,7 +88,7 @@ import java.util.zip.ZipOutputStream;
  *
  */
 
-public class RifZipFile extends SQLAbstractSQLManager {
+public class RifZipFile extends AbstractSQLManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================

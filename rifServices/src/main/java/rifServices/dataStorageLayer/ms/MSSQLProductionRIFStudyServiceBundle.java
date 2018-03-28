@@ -60,8 +60,7 @@ package rifServices.dataStorageLayer.ms;
  *
  */
 
-public final class MSSQLProductionRIFStudyServiceBundle 
-	extends MSSQLAbstractStudyServiceBundle {
+public final class MSSQLProductionRIFStudyServiceBundle extends MSSQLAbstractStudyServiceBundle {
 
 	// ==========================================
 	// Section Constants

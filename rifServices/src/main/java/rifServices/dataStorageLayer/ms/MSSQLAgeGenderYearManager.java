@@ -14,6 +14,9 @@ import rifServices.businessConceptLayer.AgeGroupSortingOption;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
+import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
@@ -23,105 +26,25 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
+		implements AgeGenderYearManager  {
 
-
-/**
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-final class MSSQLAgeGenderYearManager 
-	extends MSSQLAbstractSQLManager {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	private static String lineSeparator = System.getProperty("line.separator");
 	
-	// ==========================================
-	// Section Properties
-	// ==========================================
 	/** The sql rif context manager. */
-	private MSSQLRIFContextManager sqlRIFContextManager;
-	// ==========================================
-	// Section Construction
-	// ==========================================
+	private RIFContextManager sqlRIFContextManager;
 
 	/**
 	 * Instantiates a new SQL age gender year manager.
 	 *
 	 * @param sqlRIFContextManager the sql rif context manager
 	 */
-	public MSSQLAgeGenderYearManager(
-		final RIFDatabaseProperties rifDatabaseProperties,
-		final MSSQLRIFContextManager sqlRIFContextManager) {
+	public MSSQLAgeGenderYearManager(final RIFDatabaseProperties rifDatabaseProperties,
+			final RIFContextManager sqlRIFContextManager) {
 
 		super(rifDatabaseProperties);
 		this.sqlRIFContextManager = sqlRIFContextManager;
 	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
 
 	/**
 	 * Gets the age groups.
@@ -133,13 +56,10 @@ final class MSSQLAgeGenderYearManager
 	 * @return the age groups
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<AgeGroup> getAgeGroups(
-		final User user,
-		final Connection connection,
-		final Geography geography,
-		final NumeratorDenominatorPair ndPair,
-		final AgeGroupSortingOption sortingOrder)
-		throws RIFServiceException {
+	@Override
+	public ArrayList<AgeGroup> getAgeGroups(final User user, final Connection connection,
+			final Geography geography, final NumeratorDenominatorPair ndPair,
+			final AgeGroupSortingOption sortingOrder) throws RIFServiceException {
 				
 		//Validate parameters
 		validateCommonMethodParameters(
@@ -327,12 +247,10 @@ final class MSSQLAgeGenderYearManager
 	 * @return the year range
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public YearRange getYearRange(
-		final User user,
-		final Connection connection,
-		final Geography geography,
-		final NumeratorDenominatorPair ndPair) 
-		throws RIFServiceException {
+	@Override
+	public YearRange getYearRange(final User user, final Connection connection,
+			final Geography geography, final NumeratorDenominatorPair ndPair)
+			throws RIFServiceException {
 		
 		//Validate parameters
 		validateCommonMethodParameters(
@@ -372,7 +290,7 @@ final class MSSQLAgeGenderYearManager
 			statement.setString(1, ndPair.getNumeratorTableName());
 			resultSet = statement.executeQuery();
 			//there should be exactly one result
-			if (resultSet.next() == false) {
+			if (!resultSet.next()) {
 				//no entry found in the rif40 tables
 				String errorMessage
 					= RIFServiceMessages.getMessage(
@@ -418,12 +336,10 @@ final class MSSQLAgeGenderYearManager
 				MSSQLAgeGenderYearManager.class, 
 				errorMessage, 
 				sqlException);
-						
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
+			
+			throw new RIFServiceException(
+				RIFServiceError.DATABASE_QUERY_FAILED,
+				errorMessage);
 		}
 		finally {
 			//Cleanup database resources
@@ -431,11 +347,7 @@ final class MSSQLAgeGenderYearManager
 			PGSQLQueryUtility.close(resultSet);			
 		}
 	}
-	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
+
 	/**
 	 * Validate common method parameters.
 	 *
@@ -462,11 +374,7 @@ final class MSSQLAgeGenderYearManager
 		}
 		if (ndPair != null) {
 			ndPair.checkErrors(validationPolicy);
-			sqlRIFContextManager.checkNDPairExists(
-				user,
-				connection, 
-				geography,
-				ndPair);			
+			sqlRIFContextManager.checkNDPairExists(user, connection, geography, ndPair);
 		}
 	}
 

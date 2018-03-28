@@ -17,6 +17,11 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.CovariateManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
+import rifServices.dataStorageLayer.common.ResultsQueryManager;
+import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.dataStorageLayer.ms.MSSQLConnectionManager;
 import rifServices.dataStorageLayer.ms.MSSQLResultsQueryManager;
 import rifServices.system.RIFServiceError;
@@ -202,7 +207,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 						
 			//Delegate operation to a specialised manager class
-			MSSQLRIFSubmissionManager rifSubmissionManager
+			SubmissionManager rifSubmissionManager
 				= rifServiceResources.getRIFSubmissionManager();
 			
 			result
@@ -269,7 +274,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			MSSQLRIFContextManager sqlRIFContextManager	
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();		
 			results
 				= sqlRIFContextManager.getGeographies(connection);			
@@ -350,7 +355,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			MSSQLRIFContextManager sqlRIFContextManager	
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();		
 			results
 				= sqlRIFContextManager.getGeoLevelSelectValues(
@@ -426,7 +431,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 						
 			//Delegate operation to a specialised manager class
-			MSSQLRIFContextManager sqlRIFContextManager	
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();		
 			result
 				= sqlRIFContextManager.getDefaultGeoLevelSelectValue(
@@ -547,7 +552,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class				
-			MSSQLRIFContextManager sqlRIFContextManager	
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();		
 			results
 				= sqlRIFContextManager.getGeoLevelAreaValues(
@@ -632,7 +637,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			MSSQLRIFContextManager sqlRIFContextManager	
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();		
 			results
 				= sqlRIFContextManager.getGeoLevelViewValues(
@@ -743,12 +748,12 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			MSSQLAgeGenderYearManager sqlAgeGenderYearManager
+			AgeGenderYearManager sqlAgeGenderYearManager
 				= rifServiceResources.getSqlAgeGenderYearManager();
 			result
 				= sqlAgeGenderYearManager.getYearRange(
 					user,
-					connection, 
+					connection,
 					geography,
 					ndPair);
 		}
@@ -833,7 +838,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class			
-			MSSQLRIFContextManager sqlRIFContextManager
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();
 			results
 				= sqlRIFContextManager.getHealthThemes(connection, geography);
@@ -916,7 +921,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			
 			//Delegate operation to a specialised manager class		
-			MSSQLCovariateManager sqlCovariateManager
+			CovariateManager sqlCovariateManager
 				= rifServiceResources.getSqlCovariateManager();
 			results 
 				= sqlCovariateManager.getCovariates(
@@ -1002,7 +1007,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 					= sqlConnectionManager.assignPooledReadConnection(user);
 				
 				//Delegate operation to a specialised manager class
-				MSSQLResultsQueryManager sqlResultsQueryManager
+				ResultsQueryManager sqlResultsQueryManager
 					= rifServiceResources.getSqlResultsQueryManager();
 				result
 					= sqlResultsQueryManager.getTileMakerCentroids(
@@ -1120,7 +1125,7 @@ class MSSQLAbstractRIFUserService extends MSSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			
 			//Delegate operation to a specialised manager class
-			MSSQLResultsQueryManager sqlResultsQueryManager
+			ResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			result
 				= sqlResultsQueryManager.getTileMakerTiles(

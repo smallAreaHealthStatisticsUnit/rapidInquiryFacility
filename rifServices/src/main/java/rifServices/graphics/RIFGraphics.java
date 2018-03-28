@@ -1,7 +1,7 @@
 package rifServices.graphics;
 
+import rifServices.dataStorageLayer.common.AbstractSQLManager;
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.businessConceptLayer.AbstractStudy;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 
@@ -9,7 +9,6 @@ import rifServices.businessConceptLayer.Sex;
 
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
 
 import org.apache.batik.transcoder.image.JPEGTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
@@ -21,18 +20,13 @@ import org.apache.batik.svggen.SVGGraphics2D;
 //import org.jfree.graphics2d.svg.SVGGraphics2D; // Needs jfreesvg
 import org.apache.batik.dom.GenericDOMImplementation;
 
-import org.apache.fop.svg.AbstractFOPTranscoder; 
-import org.apache.fop.svg.PDFTranscoder; 
-import org.apache.fop.render.ps.PSTranscoder; 
+import org.apache.fop.render.ps.PSTranscoder;
 import org.apache.fop.render.ps.EPSTranscoder; 
 
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.data.general.DefaultKeyedValues2DDataset;
 import org.jfree.data.general.KeyedValues2DDataset;
-import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.ChartRenderingInfo;
@@ -42,21 +36,17 @@ import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.ui.RectangleInsets;
-import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.renderer.category.StandardBarPainter;
 
 import org.w3c.dom.DOMImplementation; 
-import org.w3c.dom.Document; 
-import org.w3c.dom.Element; 
+import org.w3c.dom.Document;
 
 import java.io.*;
 import java.sql.*;
-import org.json.*;
 import java.lang.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.Rectangle;
 import java.awt.Color;
-import java.awt.Paint;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 
@@ -120,7 +110,7 @@ import java.awt.image.BufferedImage;
  *
  */
 	
-public class RIFGraphics extends SQLAbstractSQLManager {
+public class RIFGraphics extends AbstractSQLManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================

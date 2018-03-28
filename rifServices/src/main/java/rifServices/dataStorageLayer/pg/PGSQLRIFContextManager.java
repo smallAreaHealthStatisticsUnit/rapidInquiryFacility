@@ -1,5 +1,6 @@
 package rifServices.dataStorageLayer.pg;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLAggregateValueQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
@@ -14,6 +15,7 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
@@ -23,73 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-
-
-/**
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-final class PGSQLRIFContextManager 
-	extends PGSQLAbstractSQLManager {
+final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RIFContextManager {
 
 	// ==========================================
 	// Section Constants
@@ -116,16 +52,9 @@ final class PGSQLRIFContextManager
 	// Section Accessors and Mutators
 	// ==========================================
 
-	/**
-	 * Gets the geographies.
-	 *
-	 * @param connection the connection
-	 * @return the geographies
-	 * @throws RIFServiceException the RIF service exception
-	 */
-
+	@Override
 	public ArrayList<Geography> getGeographies(
-		final Connection connection) 
+			final Connection connection)
 		throws RIFServiceException {
 		
 		//Parameterise and execute query		
@@ -192,17 +121,10 @@ final class PGSQLRIFContextManager
 	}
 
 	
-	/**
-	 * Gets the health themes.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @return the health themes
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<HealthTheme> getHealthThemes(			
-		final Connection connection,
-		final Geography geography) 
+	@Override
+	public ArrayList<HealthTheme> getHealthThemes(
+			final Connection connection,
+			final Geography geography)
 		throws RIFServiceException {
 		
 		//Validate parameters
@@ -273,24 +195,12 @@ final class PGSQLRIFContextManager
 		}		
 	}
 	
-	/**
-	 * A helper method used by services which are deployed within web resources. 
-	 * When users build up their queries using web-based forms, the forms obtain field values
-	 * by making calls to the web services.  The URL is supposed to contain all the
-	 * parameter values that are necessary to retrieve the correct information.  
-	 * The parameter values are strings, not complete Java objects.  The web resource needs
-	 * a means of creating Java objects for the api of the RIFJobSubmissionService.  This 
-	 * method helps obtain a numerator denominator pair given the numerator table name
-	 * @param connection
-	 * @param geography
-	 * @param numeratorTableName
-	 * @return
-	 * @throws RIFServiceException
-	 */
+	@Override
 	public NumeratorDenominatorPair getNDPairFromNumeratorTableName(
-		final Connection connection,
-		final Geography geography,
-		final String numeratorTableName) 
+			final User user,
+			final Connection connection,
+			final Geography geography,
+			final String numeratorTableName)
 		throws RIFServiceException {
 		
 		validateCommonMethodParameters(
@@ -299,10 +209,7 @@ final class PGSQLRIFContextManager
 				null,
 				null);
 
-		checkNumeratorTableExists(
-			connection,
-			geography,
-			numeratorTableName);
+		checkNumeratorTableExists(user, connection, geography, numeratorTableName);
 
 		ArrayList<NumeratorDenominatorPair> results 
 			= new ArrayList<NumeratorDenominatorPair>();;
@@ -398,19 +305,12 @@ final class PGSQLRIFContextManager
 		
 	}
 	
-	/**
-	 * Gets the numerator denominator pairs.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @param healthTheme the health theme
-	 * @return the numerator denominator pairs
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public ArrayList<NumeratorDenominatorPair> getNumeratorDenominatorPairs(
-		final Connection connection,
-		final Geography geography,
-		final HealthTheme healthTheme) 
+			final Connection connection,
+			final Geography geography,
+			final HealthTheme healthTheme,
+			final User user)
 		throws RIFServiceException {
 
 		validateCommonMethodParameters(
@@ -513,17 +413,10 @@ final class PGSQLRIFContextManager
 	}
 	
 	
-	/**
-	 * Gets the geo level select values.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @return the geo level select values
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public ArrayList<GeoLevelSelect> getGeoLevelSelectValues(
-		final Connection connection,
-		final Geography geography) 
+			final Connection connection,
+			final Geography geography)
 		throws RIFServiceException {
 				
 		//TOUR_VALIDATION
@@ -645,17 +538,10 @@ final class PGSQLRIFContextManager
 		return results;		
 	}
 	
-	/**
-	 * Gets the default geo level select value.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @return the default geo level select value
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public GeoLevelSelect getDefaultGeoLevelSelectValue(
-		final Connection connection,
-		final Geography geography) 
+			final Connection connection,
+			final Geography geography)
 		throws RIFServiceException {
 			
 		//Validate parameters
@@ -733,19 +619,11 @@ final class PGSQLRIFContextManager
 		}		
 	}
 
-	/**
-	 * Gets the geo level area values.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @return the geo level area values
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public ArrayList<GeoLevelArea> getGeoLevelAreaValues(
-		final Connection connection,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect) 
+			final Connection connection,
+			final Geography geography,
+			final GeoLevelSelect geoLevelSelect)
 		throws RIFServiceException {
 		
 		//Validate parameters
@@ -874,19 +752,11 @@ final class PGSQLRIFContextManager
 	}	
 	
 	
-	/**
-	 * Gets the geo level view values.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @return the geo level view values
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public ArrayList<GeoLevelView> getGeoLevelViewValues(
-		final Connection connection,
-		final Geography geography,
-		final GeoLevelSelect geoLevelSelect) 
+			final Connection connection,
+			final Geography geography,
+			final GeoLevelSelect geoLevelSelect)
 		throws RIFServiceException {
 
 		//Validate parameters
@@ -1045,16 +915,10 @@ final class PGSQLRIFContextManager
 		}
 	}
 	
-	/**
-	 * checks if geography exists.  If it doesn't it throws an exception.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public void checkGeographyExists(
-		final Connection connection,
-		final String geographyName)
+			final Connection connection,
+			final String geographyName)
 		throws RIFServiceException {
 
 		
@@ -1135,18 +999,11 @@ final class PGSQLRIFContextManager
 		}
 	}
 	
-	/**
-	 * Check non existent geo level select.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public void checkGeoLevelSelectExists(
-		final Connection connection,
-		final String geographyName,
-		final String geoLevelSelectName)
+			final Connection connection,
+			final String geographyName,
+			final String geoLevelSelectName)
 		throws RIFServiceException {
 
 		PreparedStatement checkGeoLevelViewExistsStatement = null;
@@ -1235,20 +1092,12 @@ final class PGSQLRIFContextManager
 		}		
 	}
 		
-	/**
-	 * Check non existent geo level area.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @param geoLevelArea the geo level area
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public void checkGeoLevelAreaExists(
-		final Connection connection,
-		final String geographyName,
-		final String geoLevelSelectName,
-		final String geoLevelAreaName) 
+			final Connection connection,
+			final String geographyName,
+			final String geoLevelSelectName,
+			final String geoLevelAreaName)
 		throws RIFServiceException {
 		
 		//Find the correct lookup table where all the areas will be listed
@@ -1360,21 +1209,13 @@ final class PGSQLRIFContextManager
 		
 	}
 	
-	/**
-	 * Check non existent geo level to map value.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @param geoLevelToMap the geo level to map
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public void checkGeoLevelToMapOrViewValueExists(
-		final Connection connection,
-		final String geographyName,
-		final String geoLevelSelectName,
-		final String geoLevelValueName,
-		final boolean isToMapValue) 
+			final Connection connection,
+			final String geographyName,
+			final String geoLevelSelectName,
+			final String geoLevelValueName,
+			final boolean isToMapValue)
 		throws RIFServiceException {
 
 		PreparedStatement geoLevelIDStatement = null;
@@ -1525,20 +1366,12 @@ final class PGSQLRIFContextManager
 	}
 
 	
-	/**
-	 * Check non existent geo level to map value.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @param geoLevelToMap the geo level to map
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public void checkGeoLevelToMapOrViewValueExists(
-		final Connection connection,
-		final String geographyName,
-		final String geoLevelValueName,
-		final boolean isToMapValue) 
+			final Connection connection,
+			final String geographyName,
+			final String geoLevelValueName,
+			final boolean isToMapValue)
 		throws RIFServiceException {
 
 		PGSQLRecordExistsQueryFormatter queryFormatter 
@@ -1646,16 +1479,10 @@ final class PGSQLRIFContextManager
 		
 	}
 	
-	/**
-	 * Check non existent health theme.
-	 *
-	 * @param connection the connection
-	 * @param healthTheme the health theme
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public void checkHealthThemeExists(
-		final Connection connection,
-		final String healthThemeDescription)
+			final Connection connection,
+			final String healthThemeDescription)
 		throws RIFServiceException {
 
 		PreparedStatement checkHealthThemeExistsStatement = null;
@@ -1733,18 +1560,12 @@ final class PGSQLRIFContextManager
 		}		
 	}	
 
-	/**
-	 * Check non existent nd pair.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @param ndPair the nd pair
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public void checkNDPairExists(
-		final Connection connection,
-		final Geography geography,
-		final NumeratorDenominatorPair ndPair) 
+			final User user,
+			final Connection connection,
+			final Geography geography,
+			final NumeratorDenominatorPair ndPair)
 		throws RIFServiceException {
 				
 		PreparedStatement getNDPairExistsStatement = null;
@@ -1776,7 +1597,7 @@ final class PGSQLRIFContextManager
 			getNDPairExistsResultSet
 				= getNDPairExistsStatement.executeQuery();
 			connection.commit();
-			if (getNDPairExistsResultSet.next() == false) {
+			if (!getNDPairExistsResultSet.next()) {
 				//no such ND pair exists
 				String errorMessage
 					= RIFServiceMessages.getMessage(
@@ -1823,18 +1644,12 @@ final class PGSQLRIFContextManager
 		}		
 	}
 
-	/**
-	 * Check non existent nd pair.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @param ndPair the nd pair
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public void checkNumeratorTableExists(
-		final Connection connection,
-		final Geography geography,
-		final String numeratorTableName) 
+			final User user,
+			final Connection connection,
+			final Geography geography,
+			final String numeratorTableName)
 		throws RIFServiceException {
 				
 		PreparedStatement getNDPairExistsStatement = null;
@@ -1862,7 +1677,7 @@ final class PGSQLRIFContextManager
 
 			getNDPairExistsResultSet
 				= getNDPairExistsStatement.executeQuery();
-			if (getNDPairExistsResultSet.next() == false) {
+			if (!getNDPairExistsResultSet.next()) {
 				String recordType
 					= RIFServiceMessages.getMessage("numeratorDenominatorPair.numerator.label");
 				//no such ND pair exists
@@ -1914,13 +1729,4 @@ final class PGSQLRIFContextManager
 			PGSQLQueryUtility.close(getNDPairExistsResultSet);						
 		}		
 	}
-	
-	
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

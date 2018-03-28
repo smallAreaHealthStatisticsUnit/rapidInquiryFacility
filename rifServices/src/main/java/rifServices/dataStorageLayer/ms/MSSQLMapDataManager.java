@@ -10,6 +10,8 @@ import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.MapArea;
+import rifServices.dataStorageLayer.common.MapDataManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
@@ -82,8 +84,7 @@ import java.util.ArrayList;
  *
  */
 
-final class MSSQLMapDataManager 
-	extends MSSQLAbstractSQLManager {
+final class MSSQLMapDataManager extends MSSQLAbstractSQLManager implements MapDataManager {
 
 	// ==========================================
 	// Section Constants
@@ -107,16 +108,12 @@ final class MSSQLMapDataManager
 	 */
 	public MSSQLMapDataManager(
 		final RIFServiceStartupOptions rifServiceStartupOptions,
-		final MSSQLRIFContextManager sqlRIFContextManager) {
+		final RIFContextManager sqlRIFContextManager) {
 
 		super(rifServiceStartupOptions.getRIFDatabaseProperties());
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators///////
-	// ==========================================//
-
-		
+	@Override
 	public ArrayList<MapArea> getAllRelevantMapAreas(
 		final Connection connection,
 		final Geography geography,
@@ -366,7 +363,7 @@ final class MSSQLMapDataManager
 			}		
 			
 			result
-				= useAppropariateTableNameCase(resultSet.getString(1));
+				= useAppropriateTableNameCase(resultSet.getString(1));
 		}
 		finally {
 			//Cleanup database resources			

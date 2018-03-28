@@ -76,12 +76,12 @@ public class StudyExtract {
 
 			connection = sqlConnectionManager.assignPooledWriteConnection(user);
 
-			MSSQLRIFSubmissionManager sqlRIFSubmissionManager =
+			SubmissionManager sqlRIFSubmissionManager =
 					rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission =
 					sqlRIFSubmissionManager.getRIFStudySubmission(connection, user, studyID);
 
-			MSSQLStudyExtractManager studyExtractManager =
+			StudyExtractManager studyExtractManager =
 					rifServiceResources.getSQLStudyExtractManager();
 			studyExtractManager.createStudyExtract(connection, user, rifStudySubmission, zoomLevel,
 					studyID, locale, tomcatServer);

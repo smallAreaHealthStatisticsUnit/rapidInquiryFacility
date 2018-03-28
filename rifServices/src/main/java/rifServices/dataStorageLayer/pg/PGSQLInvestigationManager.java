@@ -1,5 +1,6 @@
 package rifServices.dataStorageLayer.pg;
 
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
@@ -13,6 +14,10 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.CovariateManager;
+import rifServices.dataStorageLayer.common.HealthOutcomeManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
@@ -93,9 +98,9 @@ final class PGSQLInvestigationManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private PGSQLRIFContextManager rifContextManager;
-	private PGSQLAgeGenderYearManager ageGenderYearManager;
-	private PGSQLCovariateManager covariateManager;
+	private RIFContextManager rifContextManager;
+	private AgeGenderYearManager ageGenderYearManager;
+	private CovariateManager covariateManager;
 	
 	// ==========================================
 	// Section Construction
@@ -106,10 +111,10 @@ final class PGSQLInvestigationManager
 	 */
 	public PGSQLInvestigationManager(
 		final RIFDatabaseProperties rifDatabaseProperties,
-		final PGSQLRIFContextManager rifContextManager,
-		final PGSQLAgeGenderYearManager ageGenderYearManager,
-		final PGSQLCovariateManager covariateManager,
-		final PGSQLHealthOutcomeManager healthOutcomeManager) {
+		final RIFContextManager rifContextManager,
+		final AgeGenderYearManager ageGenderYearManager,
+		final CovariateManager covariateManager,
+		final HealthOutcomeManager healthOutcomeManager) {
 
 		super(rifDatabaseProperties);
 		this.rifContextManager = rifContextManager;
@@ -185,7 +190,7 @@ final class PGSQLInvestigationManager
 			healthTheme.getDescription());
 
 		NumeratorDenominatorPair ndPair = investigation.getNdPair();
-		rifContextManager.checkNDPairExists(
+		rifContextManager.checkNDPairExists(User.NULL_USER,
 			connection, 
 			geography, 
 			ndPair);

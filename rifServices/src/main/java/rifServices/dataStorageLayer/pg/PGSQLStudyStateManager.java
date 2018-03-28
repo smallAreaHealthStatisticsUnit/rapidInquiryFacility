@@ -17,87 +17,14 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.StudyState;
+import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
-/**
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
+final class PGSQLStudyStateManager extends PGSQLAbstractSQLManager implements StudyStateManager {
 
-final class PGSQLStudyStateManager 
-	extends PGSQLAbstractSQLManager {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
 
 	/**
 	 * Instantiates a new SQL covariate manager.
@@ -109,16 +36,12 @@ final class PGSQLStudyStateManager
 		
 		super(rifDatabaseProperties);
 	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
 	
-	
+	@Override
 	public void clearStudyStatusUpdates(
-		final Connection connection,
-		final User user, 
-		final String studyID) 
+			final Connection connection,
+			final User user,
+			final String studyID)
 		throws RIFServiceException {
 		
 				
@@ -164,20 +87,11 @@ final class PGSQLStudyStateManager
 	
 	
 	
-	/**
-	 * Gets the covariates.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @param geoLevelToMap the geo level to map
-	 * @return the covariates
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public StudyState getStudyState(
-		final Connection connection,
-		final User user,
-		final String studyID) 
+			final Connection connection,
+			final User user,
+			final String studyID)
 		throws RIFServiceException {
 				
 		StudyState result = null;
@@ -301,9 +215,10 @@ final class PGSQLStudyStateManager
 	}	
 	
 
+	@Override
 	public void rollbackStudy(
-		final Connection connection, 
-		final String studyID)  
+			final Connection connection,
+			final String studyID)
 		throws RIFServiceException {
 		try {
 			connection.rollback();
@@ -325,13 +240,14 @@ final class PGSQLStudyStateManager
 		}			
 	}
 	
+	@Override
 	public void updateStudyStatus(
-		final Connection connection, 
-		final User user,
-		final String studyID, 
-		final StudyState studyState,
-		final String statusMessage,
-		final String traceMessage) 
+			final Connection connection,
+			final User user,
+			final String studyID,
+			final StudyState studyState,
+			final String statusMessage,
+			final String traceMessage)
 		throws RIFServiceException {
 		
 		if (studyState == StudyState.STUDY_NOT_CREATED) {
@@ -412,9 +328,10 @@ final class PGSQLStudyStateManager
 	}
 		
 	
+	@Override
 	public RIFResultTable getCurrentStatusAllStudies(
-		final Connection connection, 
-		final User user) 
+			final Connection connection,
+			final User user)
 		throws RIFServiceException {
 		
 		
@@ -762,10 +679,11 @@ final class PGSQLStudyStateManager
 	// Section Errors and Validation
 	// ==========================================
 	
+	@Override
 	public void checkNonExistentStudyID(
-		final Connection connection,
-		final User user,
-		final String studyID)
+			final Connection connection,
+			final User user,
+			final String studyID)
 		throws RIFServiceException {
 		
 		PreparedStatement statement = null;

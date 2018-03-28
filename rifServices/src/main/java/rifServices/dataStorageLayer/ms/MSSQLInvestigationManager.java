@@ -1,24 +1,31 @@
 package rifServices.dataStorageLayer.ms;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.businessConceptLayer.User;
+import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.AgeBand;
-import rifServices.businessConceptLayer.Investigation;
-import rifServices.businessConceptLayer.AbstractCovariate;
-import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
+import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.CovariateManager;
+import rifServices.dataStorageLayer.common.HealthOutcomeManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-
-import java.sql.*;
-import java.util.ArrayList;
 
 
 /**
@@ -94,9 +101,9 @@ final class MSSQLInvestigationManager
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private MSSQLRIFContextManager rifContextManager;
-	private MSSQLAgeGenderYearManager ageGenderYearManager;
-	private MSSQLCovariateManager covariateManager;
+	private RIFContextManager rifContextManager;
+	private AgeGenderYearManager ageGenderYearManager;
+	private CovariateManager covariateManager;
 	
 	// ==========================================
 	// Section Construction
@@ -107,10 +114,10 @@ final class MSSQLInvestigationManager
 	 */
 	public MSSQLInvestigationManager(
 		final RIFDatabaseProperties rifDatabaseProperties,
-		final MSSQLRIFContextManager rifContextManager,
-		final MSSQLAgeGenderYearManager ageGenderYearManager,
-		final MSSQLCovariateManager covariateManager,
-		final MSSQLHealthOutcomeManager healthOutcomeManager) {
+		final RIFContextManager rifContextManager,
+		final AgeGenderYearManager ageGenderYearManager,
+		final CovariateManager covariateManager,
+		final HealthOutcomeManager healthOutcomeManager) {
 
 		super(rifDatabaseProperties);
 		this.rifContextManager = rifContextManager;
@@ -189,7 +196,7 @@ final class MSSQLInvestigationManager
 		NumeratorDenominatorPair ndPair = investigation.getNdPair();
 		rifContextManager.checkNDPairExists(
 			user,
-			connection, 
+			connection,
 			geography, 
 			ndPair);
 		

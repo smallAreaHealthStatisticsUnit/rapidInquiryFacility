@@ -17,6 +17,12 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.CovariateManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
+import rifServices.dataStorageLayer.common.ResultsQueryManager;
+import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifGenericLibrary.util.FieldValidationUtility;
@@ -115,7 +121,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		throws RIFServiceException {
 
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return true;
@@ -156,7 +162,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -199,7 +205,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 						
 			//Delegate operation to a specialised manager class
-			PGSQLRIFSubmissionManager rifSubmissionManager
+			SubmissionManager rifSubmissionManager
 				= rifServiceResources.getRIFSubmissionManager();
 			
 			result
@@ -232,7 +238,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -266,7 +272,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			PGSQLRIFContextManager sqlRIFContextManager	
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();		
 			results
 				= sqlRIFContextManager.getGeographies(connection);			
@@ -296,7 +302,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -347,7 +353,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			PGSQLRIFContextManager sqlRIFContextManager	
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();		
 			results
 				= sqlRIFContextManager.getGeoLevelSelectValues(
@@ -380,7 +386,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -423,7 +429,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 						
 			//Delegate operation to a specialised manager class
-			PGSQLRIFContextManager sqlRIFContextManager	
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();		
 			result
 				= sqlRIFContextManager.getDefaultGeoLevelSelectValue(
@@ -471,7 +477,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		 */
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -544,7 +550,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class				
-			PGSQLRIFContextManager sqlRIFContextManager	
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();		
 			results
 				= sqlRIFContextManager.getGeoLevelAreaValues(
@@ -578,7 +584,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -629,7 +635,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			PGSQLRIFContextManager sqlRIFContextManager	
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();		
 			results
 				= sqlRIFContextManager.getGeoLevelViewValues(
@@ -674,7 +680,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);		
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			//TOUR SECURITY
@@ -740,10 +746,10 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			PGSQLAgeGenderYearManager sqlAgeGenderYearManager
+			AgeGenderYearManager sqlAgeGenderYearManager
 				= rifServiceResources.getSqlAgeGenderYearManager();
 			result
-				= sqlAgeGenderYearManager.getYearRange(
+				= sqlAgeGenderYearManager.getYearRange(User.NULL_USER,
 					connection, 
 					geography,
 					ndPair);
@@ -779,7 +785,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -828,7 +834,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class			
-			PGSQLRIFContextManager sqlRIFContextManager
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();
 			results
 				= sqlRIFContextManager.getHealthThemes(connection, geography);
@@ -860,7 +866,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -911,7 +917,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			
 			//Delegate operation to a specialised manager class		
-			PGSQLCovariateManager sqlCovariateManager
+			CovariateManager sqlCovariateManager
 				= rifServiceResources.getSqlCovariateManager();
 			results 
 				= sqlCovariateManager.getCovariates(
@@ -945,7 +951,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			
 			//Defensively copy parameters and guard against blocked users
 			User user = User.createCopy(_user);
-			PGSQLConnectionManager sqlConnectionManager
+			SQLManager sqlConnectionManager
 				= rifServiceResources.getSqlConnectionManager();
 			if (sqlConnectionManager.isUserBlocked(user) == true) {
 				return null;
@@ -995,7 +1001,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 					= sqlConnectionManager.assignPooledReadConnection(user);
 				
 				//Delegate operation to a specialised manager class
-				PGSQLResultsQueryManager sqlResultsQueryManager
+				ResultsQueryManager sqlResultsQueryManager
 					= rifServiceResources.getSqlResultsQueryManager();
 				result
 					= sqlResultsQueryManager.getTileMakerCentroids(
@@ -1033,7 +1039,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -1114,7 +1120,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			
 			//Delegate operation to a specialised manager class
-			PGSQLResultsQueryManager sqlResultsQueryManager
+			ResultsQueryManager sqlResultsQueryManager
 				= rifServiceResources.getSqlResultsQueryManager();
 			result
 				= sqlResultsQueryManager.getTileMakerTiles(

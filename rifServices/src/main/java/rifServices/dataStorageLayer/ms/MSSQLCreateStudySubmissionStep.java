@@ -3,6 +3,8 @@ package rifServices.dataStorageLayer.ms;
 
 import rifServices.businessConceptLayer.*;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
+import rifServices.dataStorageLayer.common.MapDataManager;
 import rifServices.system.*;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.*;
@@ -95,8 +97,8 @@ final class MSSQLCreateStudySubmissionStep
 	// ==========================================
 	// Section Properties
 	// ==========================================
-	private MSSQLDiseaseMappingStudyManager diseaseMappingStudyManager;
-	private MSSQLMapDataManager mapDataManager;
+	private DiseaseMappingStudyManager diseaseMappingStudyManager;
+	private MapDataManager mapDataManager;
 	
 	// ==========================================
 	// Section Construction
@@ -107,8 +109,8 @@ final class MSSQLCreateStudySubmissionStep
 	 */
 	public MSSQLCreateStudySubmissionStep(
 		final RIFDatabaseProperties rifDatabaseProperties,
-		final MSSQLDiseaseMappingStudyManager diseaseMappingStudyManager,
-		final MSSQLMapDataManager mapDataManager) {
+		final DiseaseMappingStudyManager diseaseMappingStudyManager,
+		final MapDataManager mapDataManager) {
 
 		super(rifDatabaseProperties);	
 		this.diseaseMappingStudyManager = diseaseMappingStudyManager;
@@ -940,10 +942,7 @@ final class MSSQLCreateStudySubmissionStep
 		
 		DiseaseMappingStudy diseaseMappingStudy
 			= (DiseaseMappingStudy) rifStudySubmission.getStudy();
-		diseaseMappingStudyManager.checkNonExistentItems(
-			user,
-			connection, 
-			diseaseMappingStudy);
+		diseaseMappingStudyManager.checkNonExistentItems(user, connection, diseaseMappingStudy);
 		
 		ArrayList<CalculationMethod> calculationMethods
 			= rifStudySubmission.getCalculationMethods();

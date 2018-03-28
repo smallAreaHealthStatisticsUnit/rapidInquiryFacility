@@ -27,7 +27,13 @@ import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.Sex;
+import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
+import rifServices.dataStorageLayer.common.HealthOutcomeManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.dataStorageLayer.common.StudyExtract;
+import rifServices.dataStorageLayer.common.StudyExtractManager;
+import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.files.TomcatBase;
@@ -292,14 +298,10 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			MSSQLAgeGenderYearManager sqlAgeGenderYearManager
+			AgeGenderYearManager sqlAgeGenderYearManager
 				= rifServiceResources.getSqlAgeGenderYearManager();
 			results
-				= sqlAgeGenderYearManager.getAgeGroups(
-					user,
-					connection,
-					geography,
-					ndPair,
+				= sqlAgeGenderYearManager.getAgeGroups(user, connection, geography, ndPair,
 					sortingOrder);
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -357,7 +359,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 			
 			
 			//Delegate operation to a specialised manager class
-			MSSQLAgeGenderYearManager sqlAgeGenderYearManager
+			AgeGenderYearManager sqlAgeGenderYearManager
 				= rifServiceResources.getSqlAgeGenderYearManager();
 			results
 				= sqlAgeGenderYearManager.getGenders();
@@ -440,7 +442,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 				auditTrailMessage);
 			
 			//Delegate operation to a specialised manager class
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			result
 				= healthOutcomeManager.getHealthCode(
@@ -506,7 +508,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 			
 
 			//Delegate operation to a specialised manager class
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			results
 				= healthOutcomeManager.getImmediateSubterms(
@@ -569,7 +571,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 				auditTrailMessage);
 						
 			//Delegate operation to a specialised manager class
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			result
 				= healthOutcomeManager.getParentHealthCode(
@@ -648,7 +650,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class		
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();			
 			results 
 				= healthOutcomeManager.getHealthCodes(
@@ -733,11 +735,11 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class			
-			MSSQLRIFContextManager sqlRIFContextManager
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();
 			results
 				= sqlRIFContextManager.getNumeratorDenominatorPairs(
-					connection, 
+					connection,
 					geography,
 					healthTheme,
 					user);
@@ -763,7 +765,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 	/**
 	 * Convenience method to obtain everything that is needed to get 
 	 * @param u
-	 * @param geography
+	 * @param geog
 	 * @param numeratorTableName
 	 * @return
 	 * @throws RIFServiceException
@@ -831,12 +833,12 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			
 			//Delegate operation to a specialised manager class
-			MSSQLRIFContextManager sqlRIFContextManager
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();
 			result
 				= sqlRIFContextManager.getNDPairFromNumeratorTableName(
 					user,
-					connection, 
+					connection,
 					geography,
 					numeratorTableName);
 		}
@@ -900,7 +902,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 				= sqlConnectionManager.assignPooledReadConnection(user);	
 
 			//Delegate operation to a specialised manager class
-			MSSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager
+			DiseaseMappingStudyManager sqlDiseaseMappingStudyManager
 				= rifServiceResources.getSqlDiseaseMappingStudyManager();
 			
 			results
@@ -1192,7 +1194,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 			connection
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
-			MSSQLRIFSubmissionManager sqlRIFSubmissionManager
+			SubmissionManager sqlRIFSubmissionManager
 			= rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission
 			= sqlRIFSubmissionManager.getRIFStudySubmission(
@@ -1200,7 +1202,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 					user, 
 					studyID);
 
-			MSSQLStudyExtractManager studyExtractManager
+			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			result=studyExtractManager.getExtractStatus(
 					connection, 
@@ -1297,7 +1299,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 			connection
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
-			MSSQLRIFSubmissionManager sqlRIFSubmissionManager
+			SubmissionManager sqlRIFSubmissionManager
 			= rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission
 			= sqlRIFSubmissionManager.getRIFStudySubmission(
@@ -1305,7 +1307,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 					user, 
 					studyID);
 
-			MSSQLStudyExtractManager studyExtractManager
+			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			result=studyExtractManager.getJsonFile(
 					connection, 
@@ -1350,7 +1352,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 			final String studyID)
 		throws RIFServiceException {
 		
-			MSSQLStudyExtractManager studyExtractManager
+			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			return studyExtractManager.getStudyExtractFIleName(
 					user, 
@@ -1417,7 +1419,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 			connection
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
-			MSSQLRIFSubmissionManager sqlRIFSubmissionManager
+			SubmissionManager sqlRIFSubmissionManager
 			= rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission
 			= sqlRIFSubmissionManager.getRIFStudySubmission(
@@ -1425,7 +1427,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 					user, 
 					studyID);
 
-			MSSQLStudyExtractManager studyExtractManager
+			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			fileInputStream = studyExtractManager.getStudyExtract(
 					connection, 
@@ -1507,7 +1509,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 				auditTrailMessage);
 			
 			//Delegate operation to a specialised manager class
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			result 
 				= healthOutcomeManager.getHealthCodeTaxonomyFromNameSpace(
@@ -1562,7 +1564,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 			
 			
 			//Delegate operation to a specialised manager class			
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();			
 			results 
 				= healthOutcomeManager.getHealthCodeTaxonomies();
@@ -1624,7 +1626,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 				auditTrailMessage);
 			
 			//Delegate operation to a specialised manager class
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();			
 			results 
 				= healthOutcomeManager.getTopLevelCodes(

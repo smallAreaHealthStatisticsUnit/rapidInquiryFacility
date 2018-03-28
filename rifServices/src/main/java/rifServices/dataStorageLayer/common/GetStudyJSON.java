@@ -5,7 +5,6 @@ import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 
-import java.net.URI;
 import javax.net.ssl.*;
 
 // Requires v2 Jersey/Javax-ws
@@ -27,7 +26,6 @@ import java.sql.*;
 import org.json.*;
 import java.lang.*;
 
-import java.util.Date;
 import java.util.Map;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -95,7 +93,7 @@ import java.util.Locale;
  *
  */
 
-public class GetStudyJSON extends SQLAbstractSQLManager {
+public class GetStudyJSON extends AbstractSQLManager {
 	// ==========================================
 	// Section Constants
 	// ==========================================

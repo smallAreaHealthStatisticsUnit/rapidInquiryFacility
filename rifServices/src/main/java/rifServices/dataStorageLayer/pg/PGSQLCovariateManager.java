@@ -16,6 +16,8 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Investigation;
+import rifServices.dataStorageLayer.common.CovariateManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 
@@ -91,7 +93,7 @@ import java.sql.SQLException;
  */
 
 final class PGSQLCovariateManager 
-	extends PGSQLAbstractSQLManager {
+	extends PGSQLAbstractSQLManager implements CovariateManager {
 
 	// ==========================================
 	// Section Constants
@@ -101,7 +103,7 @@ final class PGSQLCovariateManager
 	// Section Properties
 	// ==========================================
 	/** The sql rif context manager. */
-	private PGSQLRIFContextManager sqlRIFContextManager;
+	private RIFContextManager sqlRIFContextManager;
 	
 	// ==========================================
 	// Section Construction
@@ -114,7 +116,7 @@ final class PGSQLCovariateManager
 	 */
 	public PGSQLCovariateManager(
 		final RIFDatabaseProperties rifDatabaseProperties,
-		final PGSQLRIFContextManager sqlRIFContextManager) {
+		final RIFContextManager sqlRIFContextManager) {
 		
 		super(rifDatabaseProperties);
 		this.sqlRIFContextManager = sqlRIFContextManager;
@@ -124,21 +126,12 @@ final class PGSQLCovariateManager
 	// Section Accessors and Mutators
 	// ==========================================
 	
-	/**
-	 * Gets the covariates for investigation.
-	 *
-	 * @param connection the connection
-	 * @param user the user
-	 * @param diseaseMappingStudy the disease mapping study
-	 * @param investigation the investigation
-	 * @return the covariates for investigation
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public ArrayList<AbstractCovariate> getCovariatesForInvestigation(
-		final Connection connection,
-		final User user,
-		final DiseaseMappingStudy diseaseMappingStudy,
-		final Investigation investigation) 
+			final Connection connection,
+			final User user,
+			final DiseaseMappingStudy diseaseMappingStudy,
+			final Investigation investigation)
 		throws RIFServiceException {
 		
 		PreparedStatement statement = null;
@@ -213,20 +206,11 @@ final class PGSQLCovariateManager
 		}	
 	}
 		
-	/**
-	 * Gets the covariates.
-	 *
-	 * @param connection the connection
-	 * @param geography the geography
-	 * @param geoLevelSelect the geo level select
-	 * @param geoLevelToMap the geo level to map
-	 * @return the covariates
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public ArrayList<AbstractCovariate> getCovariates(
-		final Connection connection,
-		final Geography geography,
-		final GeoLevelToMap geoLevelToMap)
+			final Connection connection,
+			final Geography geography,
+			final GeoLevelToMap geoLevelToMap)
 		throws RIFServiceException {
 				
 		
@@ -378,12 +362,13 @@ final class PGSQLCovariateManager
 	}
 	
 	
+	@Override
 	@SuppressWarnings("resource")
 	public void checkNonExistentCovariates(
-		final Connection connection,
-		final Geography geography,
-		final GeoLevelToMap geoLevelToMap,
-		final ArrayList<AbstractCovariate> covariates)
+			final Connection connection,
+			final Geography geography,
+			final GeoLevelToMap geoLevelToMap,
+			final ArrayList<AbstractCovariate> covariates)
 		throws RIFServiceException {
 		
 		
