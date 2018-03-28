@@ -9,6 +9,7 @@ import java.util.Hashtable;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.system.RIFServiceMessages;
 
@@ -88,6 +89,8 @@ abstract public class AbstractStudy
 // ==========================================
 // Section Constants
 // ==========================================
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
 	
 	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
@@ -464,6 +467,8 @@ abstract public class AbstractStudy
 				geography.checkErrors(validationPolicy);
 			}
 			catch(RIFServiceException exception) {
+				rifLogger.debug(this.getClass(), "Geography.checkErrors(): " + 
+					exception.getErrorMessages().size());
 				errorMessages.addAll(exception.getErrorMessages());
 			}			
 		}
@@ -483,6 +488,8 @@ abstract public class AbstractStudy
 				comparisonArea.checkErrors(validationPolicy);
 			}
 			catch(RIFServiceException exception) {
+				rifLogger.debug(this.getClass(), "ComparisonArea.checkErrors(): " + 
+					exception.getErrorMessages().size());
 				errorMessages.addAll(exception.getErrorMessages());
 			}			
 		}
@@ -522,6 +529,8 @@ abstract public class AbstractStudy
 						investigation.checkErrors(validationPolicy);
 					}
 					catch(RIFServiceException exception) {
+						rifLogger.debug(this.getClass(), "Investigation.checkErrors(): " + 
+							exception.getErrorMessages().size());
 						errorMessages.addAll(exception.getErrorMessages());			
 					}
 				}

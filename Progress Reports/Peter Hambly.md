@@ -2051,6 +2051,10 @@ ools label positioning prevent its use. More work needed.
 * Imperial network login tests
 * Fix for R username=password failure
 
+#### 26th to 30th March
+
+* Fix for no covariates error; also fix for untrapped error and improved messages
+
 ## In progress (March/April 2018):
 
 * RIF results field renaming specification;

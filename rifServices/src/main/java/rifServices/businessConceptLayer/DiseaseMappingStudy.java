@@ -8,6 +8,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifGenericLibrary.util.RIFLogger;
 
 
 /**
@@ -79,6 +80,8 @@ public final class DiseaseMappingStudy
 // ==========================================
 // Section Constants
 // ==========================================
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
 	
 	private Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
@@ -229,6 +232,10 @@ public final class DiseaseMappingStudy
 		super.checkErrors(
 			validationPolicy,
 			errorMessages);
+		if (errorMessages.size() > 0) {
+			rifLogger.debug(this.getClass(), "AbstractStudy.checkErrors(): " + 
+				errorMessages.size());
+		}	
 				
 		//add any errors inherent in the study area object
 		if (diseaseMappingStudyArea == null) {
@@ -247,6 +254,8 @@ public final class DiseaseMappingStudy
 				diseaseMappingStudyArea.checkErrors(validationPolicy);
 			}
 			catch(RIFServiceException exception) {
+				rifLogger.debug(this.getClass(), "DiseaseMappingStudyArea.checkErrors(): " + 
+					exception.getErrorMessages().size());
 				errorMessages.addAll(exception.getErrorMessages());
 			}
 		}
