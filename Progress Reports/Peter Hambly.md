@@ -1869,27 +1869,27 @@ Todo:
   This fixes the extract this then causes and R issue (replicates on both systems):
   ```
   Covariates: MEDIAN_HH_INCOME_QUIN
-Stack tracer >>>
+	Stack tracer >>>
 
- performSmoothingActivity.R#710: .handleSimpleError(function (obj) 
-{
-    ca FUN(X[[i]], ...) lapply(X = X, FUN = FUN, ...) performSmoothingActivity.R#709: sapply(x, FUN = function(y) {
-    ans = y
-  performSmoothingActivity.R#106: findNULL(data[, i.d.adj[i]]) performSmoothingActivity(data, AdjRowset) Adj_Cov_Smooth_JRI.R#369: withVisible(expr) Adj_Cov_Smooth_JRI.R#369: withCallingHandlers(withVisible(expr), error = er withErrorTracing({
-    data = fetchExtractTable()
-    AdjRowset = getAdjace doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names, parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryCatch({
-    withErrorTracing({
-        data = fetchExtractTable()
-       eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) Adj_Cov_Smooth_JRI.R#390: capture.output({
-    tryCatch({
-        withError runRSmoothingFunctions() 
-<<< End of stack tracer.
-callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  if 
-callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  y == "NULL" 
-callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  {
-    ans = 0
-} 
-callPerformSmoothingActivity exitValue: 1
+	 performSmoothingActivity.R#710: .handleSimpleError(function (obj) 
+	{
+		ca FUN(X[[i]], ...) lapply(X = X, FUN = FUN, ...) performSmoothingActivity.R#709: sapply(x, FUN = function(y) {
+		ans = y
+	  performSmoothingActivity.R#106: findNULL(data[, i.d.adj[i]]) performSmoothingActivity(data, AdjRowset) Adj_Cov_Smooth_JRI.R#369: withVisible(expr) Adj_Cov_Smooth_JRI.R#369: withCallingHandlers(withVisible(expr), error = er withErrorTracing({
+		data = fetchExtractTable()
+		AdjRowset = getAdjace doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names, parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryCatch({
+		withErrorTracing({
+			data = fetchExtractTable()
+		   eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) Adj_Cov_Smooth_JRI.R#390: capture.output({
+		tryCatch({
+			withError runRSmoothingFunctions() 
+	<<< End of stack tracer.
+	callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  if 
+	callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  y == "NULL" 
+	callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  {
+		ans = 0
+	} 
+	callPerformSmoothingActivity exitValue: 1
   ```
 
 #### 22nd to 26th January 2018
