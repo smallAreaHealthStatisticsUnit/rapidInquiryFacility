@@ -215,7 +215,7 @@ angular.module("RIF")
 													"; running: (" + check.running.length + "): " + getStudyIds(check.running));
 											}
 											else {	
-												$scope.showSuccess("Study " + studies[i].study_id + " - " + studies[i].study_name + " is now running");
+												$scope.showSuccessNoHide("Study " + studies[i].study_id + " - " + studies[i].study_name + " is now running");
 												studies[i].isRunning=true;
 											}
 										}

@@ -305,18 +305,31 @@ angular.module("RIF")
 						// time since application init in S
 				var msgInterval=(Math.round((end - $scope.lastMessageTime)/100))/10; 
 						// time since last message in S	
-				if (angular.isUndefined($scope.lastMessage) || $scope.lastMessage != msg || msgInterval > 5 /* Secs */) {
+				if (angular.isUndefined($scope.lastMessage) || 
+				    $scope.lastMessage != msg || msgInterval > 5 /* Secs */) {
 					$scope.consoleLog("+" + elapsed + ": [" + $scope.messageCount + "] " + messageLevel + ": " + msg);
 					
 					if (messageLevel.toUpperCase() == "ERROR") {	
-						notifications.showError({message: 'Error: ' + msg, hideDelay: $scope.delay, hide: rifHide});	
+						notifications.showError({
+							message: 'Error: ' + msg, 
+							hideDelay: $scope.delay, 
+							hide: rifHide
+							});	
 						$scope.consoleLog("Stack: " + err.stack);
 					}
 					else if (messageLevel.toUpperCase() == "WARNING") {
-						notifications.showWarning({message: 'Warning: ' + msg, hideDelay: $scope.delay, hide: rifHide});
+						notifications.showWarning({
+							message: 'Warning: ' + msg, 
+							hideDelay: $scope.delay, 
+							hide: rifHide
+							});
 					}
 					else if (messageLevel.toUpperCase() == "SUCCESS") {
-						notifications.showSuccess({message: 'Success: ' + msg, hideDelay: $scope.delay, hide: rifHide});
+						notifications.showSuccess({
+							message: 'Success: ' + msg, 
+							hideDelay: 
+							$scope.delay, 
+							hide: rifHide});
 					}	
 				}
 				else { // Thses are caused by bugs in notifications, or by the RIF generating the messages to often

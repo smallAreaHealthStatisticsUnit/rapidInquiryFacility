@@ -2058,7 +2058,7 @@ callPerformSmoothingActivity exitValue: 1
   * ERROR: Record "User" field "User ID" cannot be empty.
   * ERROR: Unable to roll back database transaction.
 * Alerts:
-  * Handle study state change with mal-reporting previous studies
+  * Handle study state change without mal-reporting previous studies
   * Limit new/completed messages to within 14 days of message time
 
 ## In progress (March/April 2018):
