@@ -2007,7 +2007,6 @@ callPerformSmoothingActivity exitValue: 1
 * Support for user defined styles in maps;
 * Investigate adding gender filter to Styling - not possible
 * Fixed regex C style comment remover stack overflow issues. 
-ools label positioning prevent its use. More work needed.
 
 #### 19th to 23rd March
 
@@ -2054,6 +2053,13 @@ ools label positioning prevent its use. More work needed.
 #### 26th to 30th March
 
 * Fix for no covariates error; also fix for untrapped error and improved messages
+* Suppressed Kev's irritating messages caused by logout not waiting for the tab control status timer to stop:
+  * ERROR: API method "isLoggedIn" has a null "userID" parameter.
+  * ERROR: Record "User" field "User ID" cannot be empty.
+  * ERROR: Unable to roll back database transaction.
+* Alerts:
+  * Handle study state change with mal-reporting previous studies
+  * Limit new/completed messages to within 14 days of message time
 
 ## In progress (March/April 2018):
 
@@ -2074,12 +2080,6 @@ ools label positioning prevent its use. More work needed.
   * Create an alert service (for use in directives etc)
   * Angular exception handler
   * Alert messages list popup
-  * Scan last 15s for duplicates not just the last message
-  * Limit new/completed messages to within 30s of message time
-  * Kev's irritating messages caused by logout not waiting for the tab control status timer to stop:
-    * ERROR: API method "isLoggedIn" has a null "userID" parameter.
-	* ERROR: Record "User" field "User ID" cannot be empty.
-	* ERROR: Unable to roll back database transaction.
 
 Maps if feasible:
 

@@ -451,7 +451,7 @@ final class PGSQLStudyStateManager
 		 *    rif40.rif40_studies,
 		 *    most_recent_updates
 		 * WHERE
-		 *    rif40.rif40_studies.study_id = kgarwood.study_status.study_id
+		 *    rif40.rif40_studies.study_id = most_recent_updates.study_id
 		 * ORDER BY
 		 *    study_date DESC,
 		 *    creation_date DESC
