@@ -2060,7 +2060,7 @@ Todo:
 * Alerts:
   * Handle study state change without mal-reporting previous studies
   * Limit new/completed messages to within 14 days of message time
-
+* Update TODO list; plans for next period
 
 
 
