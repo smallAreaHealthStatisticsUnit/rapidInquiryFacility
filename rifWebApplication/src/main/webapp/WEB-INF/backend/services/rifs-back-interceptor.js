@@ -75,6 +75,10 @@ angular.module("RIF")
 									'Record "User" field "User ID" cannot be empty.') {
 									scope.$root.$$childHead.consoleError(res.data[0].errorMessages[0]);
 								}
+								else if (res.data[0].errorMessages[0] ==
+									'Unable to roll back database transaction.') {
+									scope.$root.$$childHead.consoleError(res.data[0].errorMessages[0]);
+								}
 								else {
 									scope.$root.$$childHead.showError(res.data[0].errorMessages[0]);
 								}
