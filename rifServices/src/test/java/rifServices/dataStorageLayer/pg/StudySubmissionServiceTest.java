@@ -1,4 +1,4 @@
-package rifServices.studyDataExtraction.pg;
+package rifServices.dataStorageLayer.pg;
 
 import java.util.Locale;
 
@@ -6,6 +6,8 @@ import org.junit.Test;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.dataStorageLayer.common.ServiceBundle;
 import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudySubmissionService;
 import rifServices.test.services.pg.AbstractRIFServiceTestCase;
@@ -19,11 +21,10 @@ public final class StudySubmissionServiceTest extends AbstractRIFServiceTestCase
 		String validStudyID = "45";
 		String validZoomLevel = "9";
 		
-		PGSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
-			= getRIFServiceBundle();
+		ServiceBundle testRIFStudyServiceBundle = getRIFServiceBundle();
 		
-		PGSQLTestRIFStudySubmissionService testSubmissionService
-			= (PGSQLTestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
+		RIFStudySubmissionAPI testSubmissionService =
+				testRIFStudyServiceBundle.getRIFStudySubmissionService();
 	
 		testSubmissionService.createStudyExtract(
 			validUser,

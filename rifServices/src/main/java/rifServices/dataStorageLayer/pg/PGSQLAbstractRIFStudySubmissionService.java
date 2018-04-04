@@ -1,12 +1,32 @@
 package rifServices.dataStorageLayer.pg;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang.StringEscapeUtils;
+
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
-import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.common.AbstractSQLManager;
+import rifServices.businessConceptLayer.AgeGroup;
+import rifServices.businessConceptLayer.AgeGroupSortingOption;
+import rifServices.businessConceptLayer.CalculationMethod;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.businessConceptLayer.HealthCodeTaxonomy;
+import rifServices.businessConceptLayer.HealthTheme;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.Project;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.businessConceptLayer.Sex;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
@@ -18,15 +38,6 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.files.TomcatBase;
 import rifServices.system.files.TomcatFile;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.stream.Collectors;
 
 /**
  * Main implementation of the RIF middleware.
