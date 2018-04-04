@@ -1,28 +1,26 @@
 package rifServices.dataStorageLayer.pg;
 
+import java.sql.Connection;
+import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
-
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.AbstractCovariate;
-
-
 import rifServices.businessConceptLayer.AdjustableCovariate;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.ExposureCovariate;
-import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelToMap;
-import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
+import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
+import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.ontologyServices.HealthCodeProviderInterface;
-import rifGenericLibrary.util.FieldValidationUtility;
-
-import java.sql.Connection;
-import java.util.ArrayList;
 
 /**
  *
@@ -135,7 +133,7 @@ public final class PGSQLTestRIFStudySubmissionService
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);		
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();				
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
@@ -207,9 +205,9 @@ public final class PGSQLTestRIFStudySubmissionService
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();						
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return;
 		}
 		Geography geography = Geography.createCopy(_geography);
@@ -302,9 +300,9 @@ public final class PGSQLTestRIFStudySubmissionService
 		
 		//Defensively copy parameters and guard against blocked users
 		User adminUser = User.createCopy(_adminUser);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();	
-		if (sqlConnectionManager.isUserBlocked(adminUser) == true) {
+		if (sqlConnectionManager.isUserBlocked(adminUser)) {
 			return;
 		}
 		
@@ -335,9 +333,9 @@ public final class PGSQLTestRIFStudySubmissionService
 		
 		//Defensively copy parameters and guard against blocked users
 		User adminUser = User.createCopy(_adminUser);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(adminUser) == true) {
+		if (sqlConnectionManager.isUserBlocked(adminUser)) {
 			return;
 		}
 		
@@ -364,9 +362,9 @@ public final class PGSQLTestRIFStudySubmissionService
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();	
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return;
 		}
 		
@@ -418,9 +416,9 @@ public final class PGSQLTestRIFStudySubmissionService
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();	
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return;
 		}
 		
@@ -440,7 +438,7 @@ public final class PGSQLTestRIFStudySubmissionService
 			//Delegate operation to a specialised manager class
 			Connection connection 
 				= sqlConnectionManager.assignPooledReadConnection(user);
-			PGSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager
+			DiseaseMappingStudyManager sqlDiseaseMappingStudyManager
 				= rifServiceResources.getSqlDiseaseMappingStudyManager();
 			sqlDiseaseMappingStudyManager.clearStudiesForUser(
 				connection, 
@@ -465,11 +463,11 @@ public final class PGSQLTestRIFStudySubmissionService
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();	
 		
 		RIFStudySubmission result = null;
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return result;
 		}
 		

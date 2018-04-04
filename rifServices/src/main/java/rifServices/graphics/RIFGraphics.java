@@ -1,119 +1,57 @@
 package rifServices.graphics;
 
-import rifServices.dataStorageLayer.common.AbstractSQLManager;
-import rifServices.system.RIFServiceStartupOptions;
-import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
-import rifServices.businessConceptLayer.Sex;
-
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-
+import org.apache.batik.dom.GenericDOMImplementation;
+import org.apache.batik.svggen.SVGGraphics2D;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.ImageTranscoder;
 import org.apache.batik.transcoder.image.JPEGTranscoder;
 import org.apache.batik.transcoder.image.PNGTranscoder;
 import org.apache.batik.transcoder.image.TIFFTranscoder;
-import org.apache.batik.transcoder.image.ImageTranscoder;
-import org.apache.batik.transcoder.TranscoderInput;
-import org.apache.batik.transcoder.TranscoderOutput;
-import org.apache.batik.svggen.SVGGraphics2D;
-//import org.jfree.graphics2d.svg.SVGGraphics2D; // Needs jfreesvg
-import org.apache.batik.dom.GenericDOMImplementation;
-
+import org.apache.fop.render.ps.EPSTranscoder;
 import org.apache.fop.render.ps.PSTranscoder;
-import org.apache.fop.render.ps.EPSTranscoder; 
-
+import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.data.general.DefaultKeyedValues2DDataset;
-import org.jfree.data.general.KeyedValues2DDataset;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.PlotRenderingInfo;
-import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
-import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.chart.renderer.category.StandardBarPainter;
-
-import org.w3c.dom.DOMImplementation; 
+import org.jfree.chart.ui.RectangleInsets;
+import org.jfree.data.general.DefaultKeyedValues2DDataset;
+import org.jfree.data.general.KeyedValues2DDataset;
+import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
-import java.io.*;
-import java.sql.*;
-import java.lang.*;
-import java.awt.geom.Rectangle2D;
-import java.awt.Rectangle;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
+import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.system.RIFServiceStartupOptions;
 
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Peter Hambly
- * @author phambly
- */
+//import org.jfree.graphics2d.svg.SVGGraphics2D; // Needs jfreesvg
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-	
-public class RIFGraphics extends AbstractSQLManager {
-	// ==========================================
-	// Section Constants
-	// ==========================================
+public class RIFGraphics {
+
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static int denominatorPyramidWidthPixels;
@@ -123,36 +61,23 @@ public class RIFGraphics extends AbstractSQLManager {
 	private static float populationPyramidAspactRatio; 
 										// ratio of the width to the height of an image or screen. 
 										// r=w/h, h=w/r
-		
-	private RIFServiceStartupOptions rifServiceStartupOptions;
+	
 	private static DatabaseType databaseType;
 	
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-	/**
-     * Constructor.
-     * 
-     * @param RIFServiceStartupOptions rifServiceStartupOptions (required)
-     */
-	public RIFGraphics(
-			final RIFServiceStartupOptions rifServiceStartupOptions) {
-		super(rifServiceStartupOptions.getRIFDatabaseProperties());
+	private final SQLManager manager;
+
+	public RIFGraphics(final RIFServiceStartupOptions rifServiceStartupOptions, SQLManager manager) {
 		
-		this.rifServiceStartupOptions = rifServiceStartupOptions;
+		this.manager = manager;
 		
 		try {
-			denominatorPyramidWidthPixels=this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
+			denominatorPyramidWidthPixels= rifServiceStartupOptions.getOptionalRIfServiceProperty(
 					"denominatorPyramidWidthPixels", 3543);
-			printingDPI=this.rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);
+			printingDPI= rifServiceStartupOptions.getOptionalRIfServiceProperty("printingDPI", 1000);
 			
-			jpegQuality = this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
+			jpegQuality = rifServiceStartupOptions.getOptionalRIfServiceProperty(
 					"jpegQuality", new Float(0.8));
-			populationPyramidAspactRatio = this.rifServiceStartupOptions.getOptionalRIfServiceProperty(
+			populationPyramidAspactRatio = rifServiceStartupOptions.getOptionalRIfServiceProperty(
 					"populationPyramidAspactRatio", new Float(1.43)); 
 											// ratio of the width to the height of an image or screen. 
 											// r=w/h, h=w/r	
@@ -658,7 +583,7 @@ Could not write TIFF file because no WriteAdapter is availble
 		extractTableQueryFormatter.addQueryLine(0, " GROUP BY b.sex, b.age_group, a.fieldname");
 		extractTableQueryFormatter.addQueryLine(0, " ORDER BY b.sex, b.age_group DESC");
 
-		PreparedStatement statement = createPreparedStatement(connection, extractTableQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection, extractTableQueryFormatter);
 		DefaultKeyedValues2DDataset data = null;
 		try {	
 			statement.setString(1, denominatorTable);

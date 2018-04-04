@@ -1,35 +1,21 @@
 package rifServices.dataStorageLayer.ms;
 
-
-import rifServices.dataStorageLayer.common.StudyExtractManager;
-import rifServices.system.RIFServiceStartupOptions;
-import rifServices.businessConceptLayer.AbstractStudy;
-import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.fileFormats.RIFStudySubmissionContentHandler;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-//import rifGenericLibrary.dataStorageLayer.common.SQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.DatabaseType;
-import rifServices.dataStorageLayer.common.GetStudyJSON;
-import rifServices.dataStorageLayer.common.RifZipFile;
-import rifGenericLibrary.fileFormats.XMLCommentInjector;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceExceptionFactory;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-import rifGenericLibrary.util.RIFDateFormat;
-
-import java.io.*;
-import java.sql.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-import java.util.Date;
-import java.util.Calendar;
+import java.io.FileInputStream;
+import java.sql.Connection;
 import java.util.Locale;
 
 import org.json.JSONObject;
-import org.json.JSONArray;
+
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.dataStorageLayer.common.GetStudyJSON;
+import rifServices.dataStorageLayer.common.RifZipFile;
+import rifServices.dataStorageLayer.common.StudyExtractManager;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 		implements StudyExtractManager {
@@ -50,7 +36,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 		final RIFServiceStartupOptions rifServiceStartupOptions) {
 
 		
-		super(rifServiceStartupOptions.getRIFDatabaseProperties());
+		super(rifServiceStartupOptions);
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
@@ -80,7 +66,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 	 * @param  connection	Database specfic Connection object assigned from pool
 	 * @param  user 		Database username of logged on user.
 	 * @param  rifStudySubmission 		RIFStudySubmission object.
-	 * @param  String 		zoomLevel (as text!).
+	 * @param  zoomLevel (as text!).
 	 * @param  studyID 		Study_id (as text!).
 	 *
 	 * @return 				FileInputStream 
@@ -96,7 +82,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 			final String studyID)
 					throws RIFServiceException {
 						
-		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions);
+		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions, this);
 		FileInputStream zipStream=rifZipFile.getStudyExtract(
 			connection,
 			user,
@@ -161,7 +147,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 			final String studyID
 			)
 					throws RIFServiceException {
-		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions);
+		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions, this);
 		String extractStatus=rifZipFile.getExtractStatus(
 			connection,
 			user,
@@ -365,11 +351,11 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 			final Locale locale,
 			final String tomcatServer)
 					throws RIFServiceException {
-		String result="{}";
+		String result;
 
 		try {
 			JSONObject json = new JSONObject();
-			GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
+			GetStudyJSON getStudyJSON = new GetStudyJSON(this);
 			JSONObject rif_job_submission=getStudyJSON.addRifStudiesJson(connection, 
 				studyID, locale, tomcatServer, TAXONOMY_SERVICES_SERVER);
 			rif_job_submission.put("created_by", user.getUserID());
@@ -396,13 +382,13 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 	/** 
      * Create study extract. 
 	 *
-     * @param Connection connection (required)
-     * @param User user (required)
-     * @param RIFStudySubmission rifStudySubmission (required)
-     * @param String zoomLevel (required)
-     * @param String studyID (required)
-     * @param Locale locale (required)
-     * @param String tomcatServer [deduced from calling URL] (required)
+     * @param connection (required)
+     * @param user (required)
+     * @param rifStudySubmission (required)
+     * @param zoomLevel (required)
+     * @param studyID (required)
+     * @param locale (required)
+     * @param tomcatServer [deduced from calling URL] (required)
      * @return JSONObject [front end saves as JSON5 file]
      */		
 	@Override
@@ -416,7 +402,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 			final String tomcatServer)
 					throws RIFServiceException {
 						
-		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions);
+		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions, this);
 		rifZipFile.createStudyExtract(connection,
 			user,
 			rifStudySubmission,
@@ -433,7 +419,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 			final String studyID)
 					throws Exception {
 		String studyState;
-		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions);
+		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions, this);
 		studyState=rifZipFile.getRif40StudyState(connection,
 			studyID);
 		

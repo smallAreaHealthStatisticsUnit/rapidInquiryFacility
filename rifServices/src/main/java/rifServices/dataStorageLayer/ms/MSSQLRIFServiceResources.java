@@ -64,60 +64,45 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 			= rifServiceStartupOptions.getRIFDatabaseProperties();
 		
 		sqlRIFContextManager 
-			= new MSSQLRIFContextManager(rifDatabaseProperties);
+			= new MSSQLRIFContextManager(rifServiceStartupOptions);
 		
 		sqlSmoothedResultManager
-			= new MSSQLSmoothedResultManager(rifDatabaseProperties);
+			= new MSSQLSmoothedResultManager(rifServiceStartupOptions);
 		
-		sqlAgeGenderYearManager 
-			= new MSSQLAgeGenderYearManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager);
+		sqlAgeGenderYearManager = new MSSQLAgeGenderYearManager(sqlRIFContextManager,
+				rifServiceStartupOptions);
 		sqlMapDataManager 
 			= new MSSQLMapDataManager(
 				rifServiceStartupOptions, 
 				sqlRIFContextManager);
-		sqlCovariateManager 
-			= new MSSQLCovariateManager(
-				rifDatabaseProperties,
+		sqlCovariateManager = new MSSQLCovariateManager(rifServiceStartupOptions,
 				sqlRIFContextManager);
 		
 		MSSQLInvestigationManager sqlInvestigationManager = new MSSQLInvestigationManager(
-				rifDatabaseProperties,
+				rifServiceStartupOptions,
 				sqlRIFContextManager,
 				sqlAgeGenderYearManager,
-				sqlCovariateManager,
-				healthOutcomeManager);
+				sqlCovariateManager);
 		
 		sqlDiseaseMappingStudyManager 
 			= new MSSQLDiseaseMappingStudyManager(
-				rifDatabaseProperties,
+				rifServiceStartupOptions,
 				sqlRIFContextManager,
 				sqlInvestigationManager);
 				
 		sqlStudyStateManager
-			= new MSSQLStudyStateManager(rifDatabaseProperties);
+			= new MSSQLStudyStateManager(rifServiceStartupOptions);
 		
 		sqlRIFSubmissionManager 
 			= new MSSQLRIFSubmissionManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager,
-				sqlAgeGenderYearManager,
-				sqlCovariateManager,
-				sqlDiseaseMappingStudyManager,
-				sqlMapDataManager,
+				rifServiceStartupOptions,
 				sqlStudyStateManager);
 
 		sqlStudyExtractManager
 			= new MSSQLStudyExtractManager(
 				rifServiceStartupOptions);
 		
-		sqlResultsQueryManager
-			= new MSSQLResultsQueryManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager,
-				sqlMapDataManager,
-				sqlDiseaseMappingStudyManager);
+		sqlResultsQueryManager = new MSSQLResultsQueryManager(rifServiceStartupOptions);
 
 		ValidationPolicy validationPolicy = null;
 		if (rifServiceStartupOptions.useStrictValidationPolicy()) {

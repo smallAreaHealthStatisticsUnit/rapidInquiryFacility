@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
@@ -26,10 +25,11 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.Project;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
-import rifServices.dataStorageLayer.common.MapDataManager;
+import rifServices.dataStorageLayer.common.InvestigationManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 final class PGSQLDiseaseMappingStudyManager extends PGSQLAbstractSQLManager
 		implements DiseaseMappingStudyManager {
@@ -37,17 +37,17 @@ final class PGSQLDiseaseMappingStudyManager extends PGSQLAbstractSQLManager
 	private Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
 	private RIFContextManager rifContextManager;
-	private PGSQLInvestigationManager investigationManager;
+	private InvestigationManager investigationManager;
 
 	/**
 	 * Instantiates a new SQL disease mapping study manager.
 	 */
 	public PGSQLDiseaseMappingStudyManager(
-		final RIFDatabaseProperties rifDatabaseProperties,
+		final RIFServiceStartupOptions startupOptions,
 		final RIFContextManager rifContextManager,
-		final PGSQLInvestigationManager investigationManager) {
+		final InvestigationManager investigationManager) {
 
-		super(rifDatabaseProperties);
+		super(startupOptions);
 		this.rifContextManager = rifContextManager;
 		this.investigationManager = investigationManager;
 

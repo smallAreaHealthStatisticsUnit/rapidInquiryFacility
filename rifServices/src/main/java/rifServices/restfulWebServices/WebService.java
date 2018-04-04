@@ -1162,9 +1162,6 @@ getParameter("p 1")     yes     c d
 				rifStudySubmission,
 				null);
 		}
-//		catch(RIFServiceException rifServiceException) {
-//			rifServiceException.printErrors();
-//		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +
 			                                 ".submitStudy error", exception);

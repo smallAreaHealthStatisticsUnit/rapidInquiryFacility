@@ -7,6 +7,7 @@ import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
+import rifServices.dataStorageLayer.common.InvestigationManager;
 import rifServices.dataStorageLayer.common.MapDataManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.dataStorageLayer.common.ResultsQueryManager;
@@ -97,48 +98,27 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 				= rifServiceStartupOptions.getRIFDatabaseProperties();
 		
 		sqlRIFContextManager
-				= new PGSQLRIFContextManager(rifDatabaseProperties);
+				= new PGSQLRIFContextManager(rifServiceStartupOptions);
 		
 		sqlSmoothedResultManager
-				= new PGSQLSmoothedResultManager(rifDatabaseProperties);
+				= new PGSQLSmoothedResultManager(rifServiceStartupOptions);
 		
-		sqlAgeGenderYearManager
-				= new PGSQLAgeGenderYearManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager);
-		sqlMapDataManager
-				= new PGSQLMapDataManager(
-				rifServiceStartupOptions,
-				sqlRIFContextManager);
-		sqlCovariateManager
-				= new PGSQLCovariateManager(
-				rifDatabaseProperties,
+		sqlAgeGenderYearManager = new PGSQLAgeGenderYearManager(sqlRIFContextManager,
+				rifServiceStartupOptions);
+		sqlMapDataManager = new PGSQLMapDataManager(rifServiceStartupOptions, sqlRIFContextManager);
+		sqlCovariateManager = new PGSQLCovariateManager(rifServiceStartupOptions,
 				sqlRIFContextManager);
 		
-		PGSQLInvestigationManager sqlInvestigationManager = new PGSQLInvestigationManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager,
-				sqlAgeGenderYearManager,
-				sqlCovariateManager,
-				healthOutcomeManager);
+		InvestigationManager sqlInvestigationManager = new PGSQLInvestigationManager(rifServiceStartupOptions, sqlRIFContextManager,
+				sqlAgeGenderYearManager, sqlCovariateManager);
 		
-		sqlDiseaseMappingStudyManager
-				= new PGSQLDiseaseMappingStudyManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager,
-				sqlInvestigationManager);
+		sqlDiseaseMappingStudyManager = new PGSQLDiseaseMappingStudyManager(rifServiceStartupOptions,
+				sqlRIFContextManager, sqlInvestigationManager);
 		
 		sqlStudyStateManager
-				= new PGSQLStudyStateManager(rifDatabaseProperties);
+				= new PGSQLStudyStateManager(rifServiceStartupOptions);
 		
-		sqlRIFSubmissionManager
-				= new PGSQLRIFSubmissionManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager,
-				sqlAgeGenderYearManager,
-				sqlCovariateManager,
-				sqlDiseaseMappingStudyManager,
-				sqlMapDataManager,
+		sqlRIFSubmissionManager = new PGSQLRIFSubmissionManager(rifServiceStartupOptions,
 				sqlStudyStateManager);
 		
 		sqlStudyExtractManager
@@ -146,11 +126,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 				rifServiceStartupOptions);
 		
 		sqlResultsQueryManager
-				= new PGSQLResultsQueryManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager,
-				sqlMapDataManager,
-				sqlDiseaseMappingStudyManager);
+				= new PGSQLResultsQueryManager(rifServiceStartupOptions);
 		
 		ValidationPolicy validationPolicy;
 		if (rifServiceStartupOptions.useStrictValidationPolicy()) {

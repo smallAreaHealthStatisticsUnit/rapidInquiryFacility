@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLAggregateValueQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
@@ -24,15 +23,19 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RIFContextManager {
 
 	/**
 	 * Instantiates a new SQLRIF context manager.
 	 */
-	public MSSQLRIFContextManager(final RIFDatabaseProperties rifDatabaseProperties) {
+	public MSSQLRIFContextManager(final RIFServiceStartupOptions options) {
 
-		super(rifDatabaseProperties);
+		super(options);
+		if (rifDatabaseProperties == null) {
+			rifDatabaseProperties = options.getRIFDatabaseProperties();
+		}
 	}
 
 	/**

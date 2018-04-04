@@ -113,7 +113,7 @@ final class PGSQLMapDataManager
 		final RIFServiceStartupOptions rifServiceStartupOptions,
 		final RIFContextManager sqlRIFContextManager) {
 
-		super(rifServiceStartupOptions.getRIFDatabaseProperties());		
+		super(rifServiceStartupOptions);
 	}
 
 	// ==========================================

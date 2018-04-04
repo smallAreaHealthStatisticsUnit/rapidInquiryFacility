@@ -1,56 +1,39 @@
 package rifServices.dataStorageLayer.pg;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLAggregateValueQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-import rifServices.businessConceptLayer.GeoLevelSelect;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.businessConceptLayer.GeoLevelArea;
+import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-
-import java.util.ArrayList;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import rifServices.system.RIFServiceStartupOptions;
 
 final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RIFContextManager {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
+	public PGSQLRIFContextManager(final RIFServiceStartupOptions options) {
 
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	/**
-	 * Instantiates a new SQLRIF context manager.
-	 */
-	public PGSQLRIFContextManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
-
-		super(rifDatabaseProperties);
+		super(options);
+		if (rifDatabaseProperties == null) {
+			rifDatabaseProperties = options.getRIFDatabaseProperties();
+		}
 	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
 
 	@Override
 	public ArrayList<Geography> getGeographies(

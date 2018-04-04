@@ -1,23 +1,35 @@
 package rifServices.dataStorageLayer.ms;
 
-import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.common.AgeGenderYearManager;
-import rifServices.dataStorageLayer.common.CovariateManager;
-import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
-import rifServices.dataStorageLayer.common.MapDataManager;
-import rifServices.dataStorageLayer.common.RIFContextManager;
-import rifServices.dataStorageLayer.common.StudyStateManager;
-import rifServices.dataStorageLayer.common.SubmissionManager;
-import rifServices.system.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-
-import java.sql.*;
+import rifServices.businessConceptLayer.AbstractStudy;
+import rifServices.businessConceptLayer.AgeBand;
+import rifServices.businessConceptLayer.AgeGroup;
+import rifServices.businessConceptLayer.ComparisonArea;
+import rifServices.businessConceptLayer.DiseaseMappingStudy;
+import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
+import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.Investigation;
+import rifServices.businessConceptLayer.MapArea;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.StudyStateManager;
+import rifServices.dataStorageLayer.common.SubmissionManager;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 public class MSSQLRIFSubmissionManager extends MSSQLAbstractSQLManager
 		implements SubmissionManager {
@@ -28,15 +40,10 @@ public class MSSQLRIFSubmissionManager extends MSSQLAbstractSQLManager
 	 * Instantiates a new SQLRIF submission manager.
 	 */
 	public MSSQLRIFSubmissionManager(
-		final RIFDatabaseProperties rifDatabaseProperties,
-		final RIFContextManager rifContextManager,
-		final AgeGenderYearManager ageGenderYearManager,
-		final CovariateManager covariateManager,
-		final DiseaseMappingStudyManager diseaseMappingStudyManager,
-		final MapDataManager mapDataManager,
+		final RIFServiceStartupOptions options,
 		final StudyStateManager studyStateManager) {
 
-		super(rifDatabaseProperties);		
+		super(options);
 		this.studyStateManager = studyStateManager;
 		
 		setEnableLogging(false);

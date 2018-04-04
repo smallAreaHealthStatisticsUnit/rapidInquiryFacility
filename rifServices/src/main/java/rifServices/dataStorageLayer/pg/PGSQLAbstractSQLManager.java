@@ -1,5 +1,11 @@
 package rifServices.dataStorageLayer.pg;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Properties;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
@@ -7,63 +13,37 @@ import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
-import rifGenericLibrary.util.RIFLogger;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.dataStorageLayer.common.AbstractSQLManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Properties;
-
 public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 	
 	private static final int POOLED_READ_ONLY_CONNECTIONS_PER_PERSON = 10;
 	private static final int POOLED_WRITE_CONNECTIONS_PER_PERSON = 5;
-	private static final int MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD = 5;
-	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 	private static String lineSeparator = System.getProperty("line.separator");
 	
 	/** The rif service startup options. */
 	protected final RIFServiceStartupOptions rifServiceStartupOptions;
-	/** The read connection from user. */
-	private final HashMap<String, ConnectionQueue> readOnlyConnectionsFromUser;
-	/** The write connection from user. */
-	private final HashMap<String, ConnectionQueue> writeConnectionsFromUser;
 	/** The initialisation query. */
 	private final String initialisationQuery;
 	/** The database url. */
 	private final String databaseURL;
-	private final HashMap<String, Integer> suspiciousEventCounterFromUser;
 	private final HashMap<String, String> passwordHashList;
-	private final HashSet<String> registeredUserIDs;
-	private final HashSet<String> userIDsToBlock;
 	
 	/**
 	 * Instantiates a new abstract sql manager.
 	 */
-	public PGSQLAbstractSQLManager(final RIFDatabaseProperties rifDatabaseProperties, final RIFServiceStartupOptions rifServiceStartupOptions) {
+	public PGSQLAbstractSQLManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
 
-		super(rifDatabaseProperties);
+		super(rifServiceStartupOptions.getRIFDatabaseProperties());
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
-		userIDsToBlock = new HashSet<>();
 		databaseURL = generateURLText();
 		passwordHashList = new HashMap<>();
-		suspiciousEventCounterFromUser = new HashMap<>();
-		writeConnectionsFromUser = new HashMap<>();
-		readOnlyConnectionsFromUser = new HashMap<>();
 		initialisationQuery = "SELECT rif40_startup(?) AS rif40_init;";
-		registeredUserIDs = new HashSet<>();
 	}
 
 	/**
@@ -84,8 +64,8 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 		return rifDatabaseProperties;
 	}
 	
-	protected void configureQueryFormatterForDB(
-		final AbstractSQLQueryFormatter queryFormatter) {
+	@Override
+	public void configureQueryFormatterForDB(final AbstractSQLQueryFormatter queryFormatter) {
 		
 		queryFormatter.setDatabaseType(
 			rifDatabaseProperties.getDatabaseType());
@@ -93,19 +73,17 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 			rifDatabaseProperties.isCaseSensitive());
 	}
 	
-	protected PreparedStatement createPreparedStatement(
-		final Connection connection,
-		final AbstractSQLQueryFormatter queryFormatter) 
-		throws SQLException {
+	public PreparedStatement createPreparedStatement(final Connection connection,
+			final AbstractSQLQueryFormatter queryFormatter) throws SQLException {
 				
 		return PGSQLQueryUtility.createPreparedStatement(
 			connection,
 			queryFormatter);
-
 	}
 	
-	protected void enableDatabaseDebugMessages(
-		final Connection connection) 
+	@Override
+	public void enableDatabaseDebugMessages(
+			final Connection connection)
 		throws RIFServiceException {
 			
 		PGSQLFunctionCallerQueryFormatter setupDatabaseLogQueryFormatter 
@@ -152,10 +130,9 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 		}		
 	}
 
-	protected void logSQLQuery(
-		final String queryName,
-		final AbstractSQLQueryFormatter queryFormatter,
-		final String... parameters) {
+	@Override
+	public void logSQLQuery(final String queryName, final AbstractSQLQueryFormatter queryFormatter,
+			final String... parameters) {
 
 		final boolean enableLogging = true;
 		if (!queryLoggingIsEnabled(queryName)) {
@@ -181,7 +158,9 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 
 	}
 	
-	protected void logSQLException(final SQLException sqlException) {
+	@Override
+	public void logSQLException(final SQLException sqlException) {
+		
 		rifLogger.error(this.getClass(), "PGSQLAbstractSQLManager.logSQLException error", sqlException);
 	}
 
@@ -240,78 +219,6 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 	}
 	
 	/**
-	 * User exists.
-	 *
-	 * @param userID the user id
-	 * @return true, if successful
-	 */
-	@Override
-	public boolean userExists(final String userID) {
-
-		return registeredUserIDs.contains(userID);
-	}
-	
-	@Override
-	public boolean isUserBlocked(
-			final User user) {
-		
-		if (user == null) {
-			return false;
-		}
-		
-		String userID = user.getUserID();
-		return userID != null && userIDsToBlock.contains(userID);
-		
-	}
-	
-	@Override
-	public void logSuspiciousUserEvent(
-			final User user) {
-
-		String userID = user.getUserID();
-
-		Integer suspiciousEventCounter = suspiciousEventCounterFromUser.get(userID);
-		if (suspiciousEventCounter == null) {
-
-			//no incidents recorded yet, this is the first
-			suspiciousEventCounterFromUser.put(userID, 1);
-		}
-		else {
-			suspiciousEventCounterFromUser.put(userID, ++suspiciousEventCounter);
-		}
-	}
-	
-	@Override
-	public boolean userExceededMaximumSuspiciousEvents(final User user) {
-		
-		String userID = user.getUserID();
-		Integer suspiciousEventCounter
-						= suspiciousEventCounterFromUser.get(userID);
-		return suspiciousEventCounter != null
-		       && suspiciousEventCounter >= MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD;
-		
-	}
-	
-	@Override
-	public void addUserIDToBlock(final User user) {
-
-		if (user == null) {
-			return;
-		}
-
-		String userID = user.getUserID();
-		if (userID == null) {
-			return;
-		}
-
-		if (userIDsToBlock.contains(userID)) {
-			return;
-		}
-
-		userIDsToBlock.add(userID);
-	}
-	
-	/**
 	 * Register user.
 	 *
 	 * @param userID the user id
@@ -330,7 +237,7 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 		 * by checking whether
 		 */
 
-		if (isLoggedIn(userID)) {
+		if (userExists(userID)) {
 			return;
 		}
 
@@ -385,54 +292,6 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 	}
 	
 	@Override
-	public boolean isLoggedIn(
-			final String userID) {
-		
-		return registeredUserIDs.contains(userID);
-	}
-	
-	/**
-	 * Assumes that user is valid.
-	 *
-	 * @param user the user
-	 * @return the connection
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	@Override
-	public Connection assignPooledReadConnection(final User user) throws RIFServiceException {
-
-		Connection result;
-
-		String userID = user.getUserID();
-		if (userIDsToBlock.contains(userID)) {
-			return null;
-		}
-
-		ConnectionQueue availableReadConnectionQueue =
-						readOnlyConnectionsFromUser.get(user.getUserID());
-
-		try {
-			result = availableReadConnectionQueue.assignConnection();
-		}
-		catch(Exception exception) {
-			//Record original exception, throw sanitised, human-readable version
-			logException(exception);
-			String errorMessage = SERVICE_MESSAGES.getMessage(
-					"sqlConnectionManager.error.unableToAssignReadConnection");
-
-			rifLogger.error(
-					PGSQLConnectionManager.class,
-					errorMessage,
-					exception);
-			
-			throw new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-		}
-		return result;
-	}
-	
-	@Override
 	public void reclaimPooledReadConnection(final User user, final Connection connection)
 					throws RIFServiceException {
 
@@ -463,129 +322,6 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 			throw new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED,
 					errorMessage);
-		}
-	}
-	
-	@Override
-	public void reclaimPooledWriteConnection(
-			final User user,
-			final Connection connection)
-					throws RIFServiceException {
-
-		try {
-
-			if (user == null) {
-				return;
-			}
-			if (connection == null) {
-				return;
-			}
-
-			//connection.setAutoCommit(true);
-			ConnectionQueue writeOnlyConnectionQueue
-			= writeConnectionsFromUser.get(user.getUserID());
-			writeOnlyConnectionQueue.reclaimConnection(connection);
-		}
-		catch(Exception exception) {
-			//Record original exception, throw sanitised, human-readable version
-			logException(exception);
-			String errorMessage = SERVICE_MESSAGES.getMessage(
-					"sqlConnectionManager.error.unableToReclaimWriteConnection");
-
-			rifLogger.error(PGSQLConnectionManager.class, errorMessage, exception);
-			
-			throw new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-		}
-	}
-	
-	/**
-	 * Assumes that user is valid.
-	 *
-	 * @param user the user
-	 * @return the connection
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	@Override
-	public Connection assignPooledWriteConnection(
-			final User user)
-					throws RIFServiceException {
-
-		Connection result;
-		try {
-
-			String userID = user.getUserID();
-			if (userIDsToBlock.contains(userID)) {
-				return null;
-			}
-
-			ConnectionQueue writeConnectionQueue = writeConnectionsFromUser.get(user.getUserID());
-			result = writeConnectionQueue.assignConnection();
-		}
-		catch(Exception exception) {
-			//Record original exception, throw sanitised, human-readable version
-			logException(exception);
-			String errorMessage = SERVICE_MESSAGES.getMessage(
-					"sqlConnectionManager.error.unableToAssignWriteConnection");
-
-			rifLogger.error(
-					PGSQLConnectionManager.class,
-					errorMessage,
-					exception);
-			
-			throw new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-		}
-
-		return result;
-	}
-	
-	@Override
-	public void logout(final User user) throws RIFServiceException {
-
-		if (user == null) {
-			return;
-		}
-
-		String userID = user.getUserID();
-		if (userID == null) {
-			return;
-		}
-
-		if (!registeredUserIDs.contains(userID)) {
-			//Here we anticipate the possibility that the user
-			//may not be registered.  In this case, there is no chance
-			//that there are connections that need to be closed for that ID
-			return;
-		}
-
-		closeConnectionsForUser(userID);
-		registeredUserIDs.remove(userID);
-		suspiciousEventCounterFromUser.remove(userID);
-	}
-	
-	/**
-	 * Deregister user.
-	 *
-	 * @param userID the user
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	private void closeConnectionsForUser(
-					final String userID)
-					throws RIFServiceException {
-
-		ConnectionQueue readOnlyConnectionQueue
-		= readOnlyConnectionsFromUser.get(userID);
-		if (readOnlyConnectionQueue != null) {
-			readOnlyConnectionQueue.closeAllConnections();
-		}
-
-		ConnectionQueue writeConnectionQueue
-		= writeConnectionsFromUser.get(userID);
-		if (writeConnectionQueue != null) {
-			writeConnectionQueue.closeAllConnections();
 		}
 	}
 	

@@ -32,7 +32,7 @@ public final class PGSQLConnectionManager extends PGSQLAbstractSQLManager {
 	public PGSQLConnectionManager(
 			final RIFServiceStartupOptions rifServiceStartupOptions) {
 
-		super(rifServiceStartupOptions.getRIFDatabaseProperties(), rifServiceStartupOptions);
+		super(rifServiceStartupOptions);
 		
 	}
 	

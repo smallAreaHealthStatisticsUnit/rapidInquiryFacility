@@ -1,22 +1,25 @@
 package rifServices.dataStorageLayer.ms;
 
-import rifServices.dataStorageLayer.common.SmoothedResultManager;
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceError;
-import rifServices.businessConceptLayer.Sex;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
+
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCountTableRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
-import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-
-import java.sql.*;
-import java.util.Hashtable;
-import java.util.ArrayList;
-import java.util.HashSet;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.dataStorageLayer.common.SmoothedResultManager;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager
 		implements SmoothedResultManager {
@@ -28,10 +31,9 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager
 	private HashSet<String> numericColumns;
 	private HashSet<String> doublePrecisionColumns;
 
-	public MSSQLSmoothedResultManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+	public MSSQLSmoothedResultManager(final RIFServiceStartupOptions options) {
 
-		super(rifDatabaseProperties);
+		super(options);
 				
 		numericColumns = new HashSet<>();
 		doublePrecisionColumns = new HashSet<>();

@@ -129,16 +129,16 @@ public class PGSQLRunStudyThread
 		RIFDatabaseProperties rifDatabaseProperties 
 			= rifServiceStartupOptions.getRIFDatabaseProperties();
 		
-		studyStateManager = new PGSQLStudyStateManager(rifDatabaseProperties);
+		studyStateManager = new PGSQLStudyStateManager(rifServiceStartupOptions);
 		
 		createStudySubmissionStep 
 			= new PGSQLCreateStudySubmissionStep(
-				rifDatabaseProperties,
+				rifServiceStartupOptions,
 				rifServiceResources.getSqlDiseaseMappingStudyManager(),
 				rifServiceResources.getSQLMapDataManager());
 
 		generateResultsSubmissionStep
-			= new PGSQLGenerateResultsSubmissionStep(rifDatabaseProperties);
+			= new PGSQLGenerateResultsSubmissionStep(studyStateManager);
 		
 		//KLG: @TODO - we need a facility to feed password to this.
 		smoothResultsSubmissionStep = new PGSQLSmoothResultsSubmissionStep();

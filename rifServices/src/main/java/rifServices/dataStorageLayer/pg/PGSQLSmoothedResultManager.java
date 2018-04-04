@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.Hashtable;
 
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCountTableRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
@@ -20,6 +19,7 @@ import rifServices.businessConceptLayer.Sex;
 import rifServices.dataStorageLayer.common.SmoothedResultManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager
 		implements SmoothedResultManager {
@@ -32,10 +32,9 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager
 	private HashSet<String> numericColumns;
 	private HashSet<String> doublePrecisionColumns;
 
-	public PGSQLSmoothedResultManager(
-			final RIFDatabaseProperties rifDatabaseProperties) {
+	public PGSQLSmoothedResultManager(final RIFServiceStartupOptions options) {
 
-		super(rifDatabaseProperties);
+		super(options);
 
 		numericColumns = new HashSet<String>();
 		doublePrecisionColumns = new HashSet<String>();

@@ -1,24 +1,41 @@
 package rifServices.dataStorageLayer.ms;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
-import rifServices.businessConceptLayer.*;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
-import rifServices.dataStorageLayer.common.MapDataManager;
-import rifServices.system.*;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.*;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
-
-import java.sql.*;
-import java.util.ArrayList;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.AbstractCovariate;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.businessConceptLayer.AgeGroup;
+import rifServices.businessConceptLayer.CalculationMethod;
+import rifServices.businessConceptLayer.ComparisonArea;
+import rifServices.businessConceptLayer.DiseaseMappingStudy;
+import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.businessConceptLayer.Investigation;
+import rifServices.businessConceptLayer.MapArea;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.Project;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
+import rifServices.dataStorageLayer.common.MapDataManager;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 /**
  *
@@ -99,33 +116,25 @@ final class MSSQLCreateStudySubmissionStep
 	// ==========================================
 	private DiseaseMappingStudyManager diseaseMappingStudyManager;
 	private MapDataManager mapDataManager;
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
 
 	/**
 	 * Instantiates a new SQLRIF submission manager.
 	 */
 	public MSSQLCreateStudySubmissionStep(
-		final RIFDatabaseProperties rifDatabaseProperties,
+		final RIFServiceStartupOptions options,
 		final DiseaseMappingStudyManager diseaseMappingStudyManager,
 		final MapDataManager mapDataManager) {
 
-		super(rifDatabaseProperties);	
+		super(options);
 		this.diseaseMappingStudyManager = diseaseMappingStudyManager;
 		this.mapDataManager = mapDataManager;
 		setEnableLogging(true);
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	public String performStep(
-		final Connection connection,
-		final User user,
-		final RIFStudySubmission studySubmission) 
+	String performStep(
+			final Connection connection,
+			final User user,
+			final RIFStudySubmission studySubmission)
 		throws RIFServiceException {
 
 		//Validate parameters

@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
@@ -29,6 +28,7 @@ import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 final class MSSQLDiseaseMappingStudyManager extends MSSQLAbstractSQLManager
 		implements DiseaseMappingStudyManager {
@@ -42,11 +42,11 @@ final class MSSQLDiseaseMappingStudyManager extends MSSQLAbstractSQLManager
 	 * Instantiates a new SQL disease mapping study manager.
 	 */
 	public MSSQLDiseaseMappingStudyManager(
-		final RIFDatabaseProperties rifDatabaseProperties,
+		final RIFServiceStartupOptions options,
 		final RIFContextManager rifContextManager,
 		final MSSQLInvestigationManager investigationManager) {
 
-		super(rifDatabaseProperties);
+		super(options);
 		this.rifContextManager = rifContextManager;
 		this.investigationManager = investigationManager;
 	}

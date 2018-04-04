@@ -1,125 +1,58 @@
 package rifServices.dataStorageLayer.common;
 
-import rifServices.system.RIFServiceStartupOptions;
-import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-
-import javax.net.ssl.*;
-
-// Requires v2 Jersey/Javax-ws
-//import javax.ws.rs.client.Client;
-//import javax.ws.rs.client.ClientBuilder;
-//import javax.ws.rs.client.WebTarget;
-//import javax.ws.rs.core.MediaType;
-//import javax.ws.rs.core.Response;
-//import javax.ws.rs.core.UriBuilder;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.client.urlconnection.HTTPSProperties; 
-import java.security.cert.X509Certificate; 
-import java.security.SecureRandom; 
-
-import java.sql.*;
-import org.json.*;
-import java.lang.*;
-
-import java.util.Map;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Map;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Peter Hambly
- * @author phambly
- */
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.client.urlconnection.HTTPSProperties;
 
-public class GetStudyJSON extends AbstractSQLManager {
-	// ==========================================
-	// Section Constants
-	// ==========================================
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
+import rifGenericLibrary.util.RIFLogger;
+
+public class GetStudyJSON {
+
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
+	
+	private final SQLManager manager;
 	private Connection connection;
 	private String studyID;
 	private String tomcatServer;
 	private boolean taxonomyInitialiseError=false;
 	private Exception otherTaxonomyError=null;
 	
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
-	// ==========================================
-	// Section Construction
-	// ==========================================
 	/**
      * Constructor.
      * 
-     * @param RIFServiceStartupOptions rifServiceStartupOptions (required)
+     * @param manager an SQLManager
      */
-	public GetStudyJSON(
-			final RIFServiceStartupOptions rifServiceStartupOptions) {
-		super(rifServiceStartupOptions.getRIFDatabaseProperties());
+	public GetStudyJSON(final SQLManager manager) {
+		
+		this.manager = manager;
 	}
 	
 	/** 
@@ -127,11 +60,11 @@ public class GetStudyJSON extends AbstractSQLManager {
 	 *
 	 * View for data: RIF40_STUDIES
 	 *
-     * @param Connection connection (required)
-     * @param String studyID (required)
-     * @param Locale locale (required)
-     * @param String tomcatServer [deduced from calling URL] (required)
-     * @param String taxonomyServicesServer [from RIFServiceStartupProperties.java parameter] (required; may be NULL)
+     * @param connection (required)
+     * @param studyID (required)
+     * @param locale (required)
+     * @param tomcatServer [deduced from calling URL] (required)
+     * @param taxonomyServicesServer [from RIFServiceStartupProperties.java parameter] (required; may be NULL)
      * @return JSONObject [front end saves as JSON5 file]
      */
 	public JSONObject addRifStudiesJson(
@@ -170,7 +103,8 @@ public class GetStudyJSON extends AbstractSQLManager {
 		rifStudiesQueryFormatter.addQueryLine(0, "       covariate_table,project,project_description,stats_method");
 		rifStudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");	
 		rifStudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");	
-		PreparedStatement statement = createPreparedStatement(connection, rifStudiesQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				rifStudiesQueryFormatter);
 		
 		try {		
 			statement.setInt(1, Integer.parseInt(studyID));	
@@ -393,7 +327,7 @@ public class GetStudyJSON extends AbstractSQLManager {
 	/**
 	 * Get geography description
 	 *
-     * @param String geographyName (required)
+     * @param geographyName (required)
 	 * @return geography description string
      */	
 	private String getGeographyDescription(String geographyName)
@@ -402,7 +336,8 @@ public class GetStudyJSON extends AbstractSQLManager {
 		ResultSet resultSet = null;
 		
 		rifGeographyQueryFormatter.addQueryLine(0, "SELECT description FROM rif40.rif40_geographies WHERE geography = ?");
-		PreparedStatement statement = createPreparedStatement(connection, rifGeographyQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				rifGeographyQueryFormatter);
 		String geographyDescription=null;
 		try {			
 			statement.setString(1, geographyName);	
@@ -432,7 +367,7 @@ public class GetStudyJSON extends AbstractSQLManager {
 	/**
 	 * Add SQL statement log
 	 *
-     * @param JSONObject additionalData (required)
+     * @param additionalData (required)
      */	
 	private void addSqlLog(JSONObject additionalData) 
 					throws Exception {
@@ -445,7 +380,8 @@ public class GetStudyJSON extends AbstractSQLManager {
 		addSqlLogQueryFormatter.addQueryLine(0, " WHERE study_id = ?"); 
 		addSqlLogQueryFormatter.addQueryLine(0, " GROUP BY statement_number"); 
 		addSqlLogQueryFormatter.addQueryLine(0, " ORDER BY statement_number");
-		PreparedStatement statement = createPreparedStatement(connection, addSqlLogQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				addSqlLogQueryFormatter);
 		String geographyDescription=null;
 		try {			
 			statement.setInt(1, Integer.parseInt(studyID));		
@@ -497,8 +433,8 @@ public class GetStudyJSON extends AbstractSQLManager {
 	/**
 	 * Add SQL Log lines
 	 *
-     * @param JSONObject additionalData (required)
-     * @param String statementNumber (required)
+     * @param additionalData (required)
+     * @param statementNumber (required)
      */	
 	private void addSQLLogLines(JSONObject additionalData, String statementNumber) 
 					throws Exception {
@@ -509,7 +445,8 @@ public class GetStudyJSON extends AbstractSQLManager {
 		addAdditionalTablesQueryFormatter.addQueryLine(0, "SELECT * FROM rif40.rif40_study_sql_log"); 
 		addAdditionalTablesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 		addAdditionalTablesQueryFormatter.addQueryLine(0, "   AND statement_number = ?");
-		PreparedStatement statement = createPreparedStatement(connection, addAdditionalTablesQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				addAdditionalTablesQueryFormatter);
 		String geographyDescription=null;
 		try {			
 			statement.setInt(1, Integer.parseInt(studyID));	
@@ -559,8 +496,8 @@ public class GetStudyJSON extends AbstractSQLManager {
 	/**
 	 * Add SQL Log SQL
 	 *
-     * @param JSONObject additionalData (required)
-     * @param String statementNumber (required)
+     * @param additionalData (required)
+     * @param statementNumber (required)
      */	
 	private void addSQLLogSql(JSONObject additionalData, String statementNumber) 
 					throws Exception {
@@ -572,7 +509,8 @@ public class GetStudyJSON extends AbstractSQLManager {
 		addAdditionalTablesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 		addAdditionalTablesQueryFormatter.addQueryLine(0, "   AND statement_number = ?");
 		addAdditionalTablesQueryFormatter.addQueryLine(0, " ORDER BY line_number");
-		PreparedStatement statement = createPreparedStatement(connection, addAdditionalTablesQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				addAdditionalTablesQueryFormatter);
 		String geographyDescription=null;
 		try {			
 			statement.setInt(1, Integer.parseInt(studyID));	
@@ -621,8 +559,8 @@ public class GetStudyJSON extends AbstractSQLManager {
 	/**
 	 * Add additional tables
 	 *
-     * @param JSONObject additionalData (required)
-     * @param String tableName (required)
+     * @param additionalData (required)
+     * @param tableName (required)
      */	
 	private void addAdditionalTables(JSONObject additionalData, String tableName) 
 					throws Exception {
@@ -632,7 +570,8 @@ public class GetStudyJSON extends AbstractSQLManager {
 		
 		addAdditionalTablesQueryFormatter.addQueryLine(0, "SELECT * FROM rif40." + tableName.toLowerCase()); 
 		addAdditionalTablesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
-		PreparedStatement statement = createPreparedStatement(connection, addAdditionalTablesQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				addAdditionalTablesQueryFormatter);
 		String geographyDescription=null;
 		try {			
 			statement.setInt(1, Integer.parseInt(studyID));		
@@ -743,9 +682,9 @@ public class GetStudyJSON extends AbstractSQLManager {
 	/**
 	 * Get health code description from taxonomy service [public version]
 	 *
-     * @param String tomcatServer (required)
-     * @param String taxonomyServicesServer (required)
-     * @param String code (required)
+     * @param tomcatServer (required)
+     * @param taxonomyServicesServer (required)
+     * @param code (required)
 	 * @return health code description string
      */	
 	public JSONObject getHealthCodeDesription(
@@ -768,7 +707,7 @@ public class GetStudyJSON extends AbstractSQLManager {
 	/**
 	 * Get health code description from taxonomy service
 	 *
-     * @param String code (required)
+     * @param code (required)
 	 * @return health code description string
      */	
 	private JSONObject getHealthCodeDesription(String code) 
@@ -967,7 +906,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	 * Get outcome type. Will return the current ontology version e.g. icd10 even if icd9 codes 
 	 * are actually being used
 	 *
-     * @param String outcome_group_name (required)
+     * @param outcome_group_name (required)
 	 * @return outcome type string
      */	
 	private String getOutcomeType(String outcome_group_name) 
@@ -977,7 +916,8 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 		
 		rifOutcomeGroupsQueryFormatter.addQueryLine(0, 
 			"SELECT a.outcome_type, b.current_version FROM rif40.rif40_outcome_groups a, rif40.rif40_outcomes b WHERE a.outcome_group_name = ? AND a.outcome_type = b.outcome_type");
-		PreparedStatement statement = createPreparedStatement(connection, rifOutcomeGroupsQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				rifOutcomeGroupsQueryFormatter);
 		String outcomeGroup=null;
 		try {			
 			statement.setString(1, outcome_group_name);	
@@ -1007,8 +947,8 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	/**
 	 * Get rif40_studies data table name
      *
-     * @param Connection connection (required)
-     * @param String studyID (required)
+     * @param connection (required)
+     * @param studyID (required)
 	 * @return JSONObject
      */	
 	public JSONObject getStudyData(Connection connection, String studyID)
@@ -1026,7 +966,8 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 		rifStudiesQueryFormatter.addQueryLine(0, "       project_description,stats_method");
 		rifStudiesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_studies");
 		rifStudiesQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
-		PreparedStatement statement = createPreparedStatement(connection, rifStudiesQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				rifStudiesQueryFormatter);
 		JSONObject studiesData = new JSONObject();
 		try {			
 			statement.setInt(1, Integer.parseInt(studyID));	
@@ -1067,9 +1008,9 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	/**
 	 * Get geolevelLookup table name
      *
-     * @param Connection connection (required)
-     * @param String geolevelName (required)
-     * @param String geographyName (required)
+     * @param connection (required)
+     * @param geolevelName (required)
+     * @param geographyName (required)
 	 * @return JSONObject
      */	
 	public JSONObject getLookupTableName(Connection connection, String geolevelName, String geographyName)
@@ -1080,7 +1021,8 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 		rifGeographyQueryFormatter.addQueryLine(0, "SELECT description,lookup_table,lookup_desc_column");
 		rifGeographyQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_geolevels");
 		rifGeographyQueryFormatter.addQueryLine(0, " WHERE geography = ? AND geolevel_name = ?");
-		PreparedStatement statement = createPreparedStatement(connection, rifGeographyQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				rifGeographyQueryFormatter);
 		JSONObject geolevelData = new JSONObject();
 		try {			
 			statement.setString(1, geographyName);	
@@ -1124,10 +1066,10 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	 *	
 	 * View for data: RIF40_STUDY_AREAS
 	 *
-     * @param JSONObject disease_mapping_study_areas (required)
-     * @param JSONObject String studyGeolevelName (required)
-     * @param JSONObject String comparisonGeolevelName (required)
-     * @param JSONObject String geographyName (required)
+     * @param disease_mapping_study_areas (required)
+     * @param studyGeolevelName (required)
+     * @param comparisonGeolevelName (required)
+     * @param geographyName (required)
      */		
 	private void addStudyAreas(JSONObject disease_mapping_study_areas, 
 		String studyGeolevelName, String comparisonGeolevelName, String geographyName)
@@ -1143,7 +1085,8 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			studyGeolevel.getString("lookup_table").toLowerCase() + 
 			" b ON (a.area_id = b." + studyGeolevelName.toLowerCase() + ")");	
 		rifStudyAreasQueryFormatter.addQueryLine(0, " WHERE a.study_id = ? ORDER BY band_id");
-		PreparedStatement statement = createPreparedStatement(connection, rifStudyAreasQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				rifStudyAreasQueryFormatter);
 		
 		JSONArray mapAreaArray=new JSONArray();
 		try {		
@@ -1209,10 +1152,10 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	 *	
 	 * View for data: RIF40_COMPARISON_AREAS
 	 *
-     * @param JSONObject comparison_areas (required)
-     * @param JSONObject String studyGeolevelName (required)
-     * @param JSONObject String comparisonGeolevelName (required)
-     * @param JSONObject String geographyName (required)
+     * @param comparison_areas (required)
+     * @param studyGeolevelName (required)
+     * @param comparisonGeolevelName (required)
+     * @param geographyName (required)
      */		
 	private void addComparisonAreas(JSONObject comparison_areas, 
 		String studyGeolevelName, String comparisonGeolevelName, String geographyName)
@@ -1228,7 +1171,8 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			comparisonGeolevel.getString("lookup_table").toLowerCase() + " b ON (a.area_id = b." + 
 			comparisonGeolevelName.toLowerCase() + ")");		
 		rifComparisonAreasQueryFormatter.addQueryLine(0, " WHERE a.study_id = ? ORDER BY area_id");
-		PreparedStatement statement = createPreparedStatement(connection, rifComparisonAreasQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				rifComparisonAreasQueryFormatter);
 		
 		JSONArray mapAreaArray=new JSONArray();
 		try {		
@@ -1294,9 +1238,9 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	 *	
 	 * View for data: RIF40_INV_CONDITIONS
 	 *
-     * @param JSONObject healthCodes (required)
-     * @param String studyID (required)
-     * @param int invID (required)
+     * @param healthCodes (required)
+     * @param studyID (required)
+     * @param invID (required)
      */						
 	private void addHealthCodes(JSONObject healthCodes, String studyID, int invID)
 					throws Exception {
@@ -1307,7 +1251,8 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 		rifInvConditionsQueryFormatter.addQueryLine(0, "       field_name,condition,CAST(column_comment AS VARCHAR(2000)) AS column_comment");		
 		rifInvConditionsQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_inv_conditions");	
 		rifInvConditionsQueryFormatter.addQueryLine(0, " WHERE study_id = ? AND inv_id = ? ORDER BY line_number");
-		PreparedStatement statement = createPreparedStatement(connection, rifInvConditionsQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				rifInvConditionsQueryFormatter);
 		
 		JSONArray healthCodeArray=new JSONArray();
 		try {		
@@ -1399,9 +1344,9 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	 *	
 	 * View for data: RIF40_INV_COVARIATES
 	 *
-     * @param JSONArray covariateArray (required)
-     * @param String studyID (required)
-     * @param int invID (required)
+     * @param covariateArray (required)
+     * @param studyID (required)
+     * @param invID (required)
      */			
 	private void addCovariates(JSONArray covariateArray, String studyID, int invID)
 					throws Exception {
@@ -1410,7 +1355,8 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 		rifInvCovariatesQueryFormatter.addQueryLine(0, "SELECT covariate_name,min,max,geography,study_geolevel_name");
 		rifInvCovariatesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_inv_covariates");
 		rifInvCovariatesQueryFormatter.addQueryLine(0, " WHERE study_id = ? AND inv_id = ?");
-		PreparedStatement statement = createPreparedStatement(connection, rifInvCovariatesQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				rifInvCovariatesQueryFormatter);
 		
 		try {		
 			statement.setInt(1, Integer.parseInt(studyID));	
@@ -1467,8 +1413,8 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	 *	
 	 * View for data: RIF40_INVESTIGATIONS
 	 *
-     * @param JSONArray investigation (required)
-     * @param String geographyName (required)
+     * @param investigation (required)
+     * @param geographyName (required)
      */		
 	private void addInvestigations(JSONArray investigation, String geographyName)
 					throws Exception {
@@ -1480,7 +1426,8 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 		rifInvestigationsQueryFormatter.addQueryLine(0, "       mh_test_type,inv_description,classifier,classifier_bands,investigation_state");
 		rifInvestigationsQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_investigations");
 		rifInvestigationsQueryFormatter.addQueryLine(0, " WHERE study_id = ? ORDER BY inv_id");
-		PreparedStatement statement = createPreparedStatement(connection, rifInvestigationsQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				rifInvestigationsQueryFormatter);
 
 		try {		
 			statement.setInt(1, Integer.parseInt(studyID));	
@@ -1620,8 +1567,8 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
      *         }
      *       },
 	 *
-     * @param int offset (required)
-     * @param String tableName (required)
+     * @param offset (required)
+     * @param tableName (required)
 	 * @return JSONObject
      */	
 	private JSONObject addAgeSexGroup(int offset, String tableName) 
@@ -1634,7 +1581,8 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 		ageSexGroupQueryFormatter.addQueryLine(0, "   AND b.table_name   = ?");
 		
 		ResultSet resultSet = null;
-		PreparedStatement statement = createPreparedStatement(connection, ageSexGroupQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				ageSexGroupQueryFormatter);
 		JSONObject age_group = new JSONObject();
 
 		try {		
@@ -1689,10 +1637,10 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 	 *	
 	 * View for data: RIF40_NUM_DENOM
 	 *
-     * @param String numeratorTable (required)
-     * @param JSONObject numerator_denominator_pair (required)
-     * @param JSONObject health_theme (required)
-     * @param String geographyName (required)
+     * @param numeratorTable (required)
+     * @param numerator_denominator_pair (required)
+     * @param health_theme (required)
+     * @param geographyName (required)
      */	
 	private void addNumeratorDenominatorPair(String numeratorTable, 
 						JSONObject numerator_denominator_pair, JSONObject health_theme, 
@@ -1706,7 +1654,8 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 		rifNumDenomQueryFormatter.addQueryLine(0, "  FROM rif40_num_denom a");
 		rifNumDenomQueryFormatter.addQueryLine(0, "       LEFT OUTER JOIN rif40.rif40_health_study_themes b ON (a.theme_description = b.description)");
 		rifNumDenomQueryFormatter.addQueryLine(0, " WHERE a.geography = ? AND a.numerator_table = ?");
-		PreparedStatement statement = createPreparedStatement(connection, rifNumDenomQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				rifNumDenomQueryFormatter);
 
 		try {		
 			statement.setString(1, geographyName);	
@@ -1759,16 +1708,4 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			SQLQueryUtility.close(statement);
 		}
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

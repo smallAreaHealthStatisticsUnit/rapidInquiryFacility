@@ -9,7 +9,6 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
@@ -20,6 +19,7 @@ import rifServices.businessConceptLayer.StudyState;
 import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 final class MSSQLStudyStateManager extends MSSQLAbstractSQLManager implements StudyStateManager {
 
@@ -31,9 +31,9 @@ final class MSSQLStudyStateManager extends MSSQLAbstractSQLManager implements St
 	 * @param sqlRIFContextManager the sql rif context manager
 	 */
 	public MSSQLStudyStateManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+		final RIFServiceStartupOptions options) {
 		
-		super(rifDatabaseProperties);
+		super(options);
 	}
 	
 	@Override
@@ -743,7 +743,7 @@ final class MSSQLStudyStateManager extends MSSQLAbstractSQLManager implements St
 					studyID);
 
 			rifLogger.error(
-				MSSQLRIFContextManager.class, 
+				MSSQLStudyStateManager.class,
 				errorMessage, 
 				sqlException);										
 					

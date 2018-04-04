@@ -1,22 +1,23 @@
 package rifServices.dataStorageLayer.ms;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
-import rifServices.dataStorageLayer.common.MapDataManager;
-import rifServices.dataStorageLayer.common.RIFContextManager;
-import rifServices.dataStorageLayer.common.ResultsQueryManager;
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceError;
 import rifGenericLibrary.util.RIFLogger;
-
-import java.sql.*;
+import rifServices.businessConceptLayer.GeoLevelSelect;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.dataStorageLayer.common.ResultsQueryManager;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 		implements ResultsQueryManager {
@@ -24,12 +25,9 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 	RIFLogger rifLogger = RIFLogger.getLogger();
 	
 	public MSSQLResultsQueryManager(
-		final RIFDatabaseProperties rifDatabaseProperties,
-		final RIFContextManager sqlRIFContextManager,
-		final MapDataManager sqlMapDataManager,
-		final DiseaseMappingStudyManager sqlDiseaseMappingStudyManager) {
+		final RIFServiceStartupOptions options) {
 		
-		super(rifDatabaseProperties);
+		super(options);
 		
 		MSSQLFunctionCallerQueryFormatter getTilesQueryFormatter = new MSSQLFunctionCallerQueryFormatter(false);
 		configureQueryFormatterForDB(getTilesQueryFormatter);

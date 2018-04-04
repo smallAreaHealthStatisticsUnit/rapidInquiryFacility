@@ -2,18 +2,16 @@ package rifServices.dataStorageLayer.pg;
 
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.common.MapDataManager;
-import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.dataStorageLayer.common.ResultsQueryManager;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceError;
 import rifGenericLibrary.util.RIFLogger;
+import rifServices.system.RIFServiceStartupOptions;
 
 import java.sql.*;
 
@@ -23,12 +21,9 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager
 	RIFLogger rifLogger = RIFLogger.getLogger();
 	
 	public PGSQLResultsQueryManager(
-		final RIFDatabaseProperties rifDatabaseProperties,
-		final RIFContextManager sqlRIFContextManager,
-		final MapDataManager sqlMapDataManager,
-		final PGSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager) {
+			final RIFServiceStartupOptions startupOptions) {
 		
-		super(rifDatabaseProperties);
+		super(startupOptions);
 		
 		PGSQLFunctionCallerQueryFormatter getTilesQueryFormatter = new PGSQLFunctionCallerQueryFormatter();
 		configureQueryFormatterForDB(getTilesQueryFormatter);

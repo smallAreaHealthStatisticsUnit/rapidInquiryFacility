@@ -1,30 +1,29 @@
 package rifServices.dataStorageLayer.ms;
 
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.businessConceptLayer.AgeGroup;
-import rifServices.businessConceptLayer.AgeBand;
-import rifServices.businessConceptLayer.Geography;
-import rifServices.businessConceptLayer.AgeGroupSortingOption;
-import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.Sex;
-import rifServices.businessConceptLayer.YearRange;
-import rifServices.dataStorageLayer.common.AgeGenderYearManager;
-import rifServices.dataStorageLayer.common.RIFContextManager;
-import rifServices.dataStorageLayer.common.SQLManager;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.businessConceptLayer.AgeBand;
+import rifServices.businessConceptLayer.AgeGroup;
+import rifServices.businessConceptLayer.AgeGroupSortingOption;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 		implements AgeGenderYearManager  {
@@ -39,10 +38,10 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 	 *
 	 * @param sqlRIFContextManager the sql rif context manager
 	 */
-	public MSSQLAgeGenderYearManager(final RIFDatabaseProperties rifDatabaseProperties,
-			final RIFContextManager sqlRIFContextManager) {
+	public MSSQLAgeGenderYearManager(final RIFContextManager sqlRIFContextManager,
+			final RIFServiceStartupOptions options) {
 
-		super(rifDatabaseProperties);
+		super(options);
 		this.sqlRIFContextManager = sqlRIFContextManager;
 	}
 
@@ -79,20 +78,20 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 			Integer ageGroupID = null;
 			PGSQLSelectQueryFormatter getAgeIDQueryFormatter 
 				= new PGSQLSelectQueryFormatter();
-			configureQueryFormatterForDB(getAgeIDQueryFormatter);
+			sqlRIFContextManager.configureQueryFormatterForDB(getAgeIDQueryFormatter);
 			getAgeIDQueryFormatter.addSelectField("age_group_id");
 			getAgeIDQueryFormatter.addFromTable("rif40.rif40_tables");
 			getAgeIDQueryFormatter.addWhereParameter("table_name");
 			getAgeIDQueryFormatter.addWhereParameter("isnumerator");
-				
-			logSQLQuery(
+			
+			sqlRIFContextManager.logSQLQuery(
 				"getAgeIDQuery",
 				getAgeIDQueryFormatter,
 				ndPair.getNumeratorTableName(),
 				String.valueOf(1));
 		
 			getAgeIDStatement
-				= createPreparedStatement(
+				= sqlRIFContextManager.createPreparedStatement(
 					connection, 
 					getAgeIDQueryFormatter);
 			getAgeIDStatement.setString(1, ndPair.getNumeratorTableName());
@@ -100,7 +99,7 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 			getAgeIDStatement.setInt(2, 1);
 			getAgeIDResultSet = getAgeIDStatement.executeQuery();
 			
-			if (getAgeIDResultSet.next() == false) {
+			if (!getAgeIDResultSet.next()) {
 				//ERROR: No entry available
 				String errorMessage
 					= RIFServiceMessages.getMessage(
@@ -134,7 +133,7 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 			//sort them by low_age
 			PGSQLSelectQueryFormatter getAgesForAgeGroupID 
 				= new PGSQLSelectQueryFormatter();
-			configureQueryFormatterForDB(getAgesForAgeGroupID);
+			sqlRIFContextManager.configureQueryFormatterForDB(getAgesForAgeGroupID);
 
 			getAgesForAgeGroupID.addSelectField("age_group_id");
 			getAgesForAgeGroupID.addSelectField("low_age");
@@ -166,15 +165,15 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 					PGSQLSelectQueryFormatter.SortOrder.DESCENDING);		
 				assert sortingOrder == AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
 			}
-
-			logSQLQuery(
+			
+			sqlRIFContextManager.logSQLQuery(
 				"getAgesForAgeGroupIDQuery",
 				getAgesForAgeGroupID,
 				String.valueOf(ageGroupID));
 				
 			//Execute query and generate results
 			getAgesForAgeGroupStatement
-				= createPreparedStatement(
+				= sqlRIFContextManager.createPreparedStatement(
 					connection, 
 					getAgesForAgeGroupID);				
 			getAgesForAgeGroupStatement.setInt(1, ageGroupID);
@@ -194,7 +193,7 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
+			sqlRIFContextManager.logSQLException(sqlException);
 			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("ageGroup.error.unableToGetAgeGroups");
@@ -265,19 +264,19 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 
 			//Create query
 			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
-			configureQueryFormatterForDB(queryFormatter);
+			sqlRIFContextManager.configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("year_start");
 			queryFormatter.addSelectField("year_stop");
 			queryFormatter.addFromTable("rif40.rif40_tables");
 			queryFormatter.addWhereParameter("table_name");
-
-			logSQLQuery(
+			
+			sqlRIFContextManager.logSQLQuery(
 				"getYearRange",
 				queryFormatter,
 				ndPair.getNumeratorTableName());
 				
 			statement 
-				= createPreparedStatement(
+				= sqlRIFContextManager.createPreparedStatement(
 					connection, 
 					queryFormatter);
 						
@@ -325,7 +324,7 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 			 */
 
 			//Record original exception, throw sanitised, human-readable version			
-			logSQLException(sqlException);
+			sqlRIFContextManager.logSQLException(sqlException);
 			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -363,7 +362,7 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 		final NumeratorDenominatorPair ndPair) 
 		throws RIFServiceException {
 
-		ValidationPolicy validationPolicy = getValidationPolicy();
+		ValidationPolicy validationPolicy = sqlRIFContextManager.getValidationPolicy();
 		
 		if (geography != null) {
 			geography.checkErrors(validationPolicy);
@@ -448,8 +447,8 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 			*/
 			
 			String denominatorTableName
-				= ndPair.getDenominatorTableName();			
-			logSQLQuery(
+				= ndPair.getDenominatorTableName();
+			sqlRIFContextManager.logSQLQuery(
 				"checkNonExistentAgeGroup",
 				queryFormatter,
 				"0",
@@ -458,7 +457,7 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 							
 			//Execute query and generate results
 			statement 
-				= createPreparedStatement(
+				= sqlRIFContextManager.createPreparedStatement(
 					connection, 
 					queryFormatter);
 			
@@ -499,7 +498,7 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
-			logSQLException(sqlException);
+			sqlRIFContextManager.logSQLException(sqlException);
 			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
