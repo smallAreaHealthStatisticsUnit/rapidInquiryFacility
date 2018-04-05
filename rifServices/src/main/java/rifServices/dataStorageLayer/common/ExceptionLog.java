@@ -4,19 +4,17 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.RIFLogger;
-import rifServices.dataStorageLayer.ms.MSSQLConnectionManager;
-import rifServices.dataStorageLayer.ms.MSSQLRIFServiceResources;
 
 public class ExceptionLog {
 	
 	private User user;
 	private String methodName;
 	private RIFServiceException rifServiceException;
-	private MSSQLRIFServiceResources rifServiceResources;
+	private ServiceResources rifServiceResources;
 	private RIFLogger rifLogger;
 	
 	public ExceptionLog(User user, String methodName, RIFServiceException rifServiceException,
-			MSSQLRIFServiceResources rifServiceResources, RIFLogger rifLogger) {
+			ServiceResources rifServiceResources, RIFLogger rifLogger) {
 		
 		this.user = user;
 		this.methodName = methodName;
@@ -27,7 +25,7 @@ public class ExceptionLog {
 	
 	public void log() throws RIFServiceException {
 		
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		
 		if (rifServiceException instanceof RIFServiceSecurityException) {

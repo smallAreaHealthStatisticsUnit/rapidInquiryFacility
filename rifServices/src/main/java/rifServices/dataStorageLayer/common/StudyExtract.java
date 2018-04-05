@@ -11,9 +11,6 @@ import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.dataStorageLayer.ms.MSSQLConnectionManager;
 import rifServices.dataStorageLayer.ms.MSSQLRIFServiceResources;
-import rifServices.dataStorageLayer.ms.MSSQLRIFSubmissionManager;
-import rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager;
-import rifServices.system.RIFServiceMessages;
 
 /**
  * Creates a study extract.
@@ -31,11 +28,11 @@ public class StudyExtract {
 	private String zoomLevel;
 	private Locale locale;
 	private String tomcatServer;
-	private MSSQLRIFServiceResources rifServiceResources;
+	private ServiceResources rifServiceResources;
 	private Connection connection;
 	
 	public StudyExtract(User user, String studyID, String zoomLevel, Locale locale,
-			String tomcatServer, MSSQLRIFServiceResources rifServiceResources) {
+			String tomcatServer, ServiceResources rifServiceResources) {
 		
 		this.user = user;
 		this.studyID = studyID;
@@ -47,7 +44,7 @@ public class StudyExtract {
 	
 	public void create() throws RIFServiceException {
 		
-		MSSQLConnectionManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
+		SQLManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return;
 		}

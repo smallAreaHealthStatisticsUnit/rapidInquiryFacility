@@ -19,9 +19,9 @@ public class ValidateUser {
 	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
 	private User user;
-	private MSSQLConnectionManager sqlConnectionManager;
+	private SQLManager sqlConnectionManager;
 	
-	public ValidateUser(User user, MSSQLConnectionManager sqlConnectionManager) {
+	public ValidateUser(User user, SQLManager sqlConnectionManager) {
 		
 		this.user = user;
 		this.sqlConnectionManager = sqlConnectionManager;

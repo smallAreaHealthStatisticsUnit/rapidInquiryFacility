@@ -1,4 +1,4 @@
-package rifServices.studyDataExtraction.ms;
+package rifServices.dataStorageLayer.common;
 
 import java.util.Locale;
 
@@ -9,11 +9,11 @@ import org.mockito.MockitoAnnotations;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.StudyExtract;
-import rifServices.dataStorageLayer.ms.MSSQLConnectionManager;
-import rifServices.dataStorageLayer.ms.MSSQLRIFServiceResources;
-import rifServices.dataStorageLayer.ms.MSSQLRIFSubmissionManager;
-import rifServices.dataStorageLayer.ms.MSSQLStudyExtractManager;
+import rifServices.dataStorageLayer.common.StudyExtractManager;
+import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.test.services.ms.AbstractRIFServiceTestCase;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -24,16 +24,16 @@ import static org.mockito.Mockito.when;
 public final class StudySubmissionServiceTest extends AbstractRIFServiceTestCase {
 
 	@Mock
-	private MSSQLRIFServiceResources resources;
+	private ServiceResources resources;
 	
 	@Mock
-	private	MSSQLConnectionManager sqlMgr;
+	private SQLManager sqlMgr;
 	
 	@Mock
-	private	MSSQLRIFSubmissionManager subMgr;
+	private SubmissionManager subMgr;
 	
 	@Mock
-	private MSSQLStudyExtractManager extractMgr;
+	private StudyExtractManager extractMgr;
 	
 	@Before
 	public void setup() {

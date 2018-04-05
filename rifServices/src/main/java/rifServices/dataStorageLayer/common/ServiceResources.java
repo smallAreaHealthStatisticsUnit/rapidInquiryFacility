@@ -1,13 +1,12 @@
 package rifServices.dataStorageLayer.common;
 
-import rifServices.dataStorageLayer.pg.PGSQLConnectionManager;
 import rifServices.system.RIFServiceStartupOptions;
 
 public interface ServiceResources {
 	
 	RIFServiceStartupOptions getRIFServiceStartupOptions();
 	
-	AbstractSQLManager getSqlConnectionManager();
+	SQLManager getSqlConnectionManager();
 	
 	RIFContextManager getSQLRIFContextManager();
 	
