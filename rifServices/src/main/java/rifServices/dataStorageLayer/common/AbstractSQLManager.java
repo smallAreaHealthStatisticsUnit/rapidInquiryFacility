@@ -25,7 +25,6 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.dataStorageLayer.pg.PGSQLConnectionManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.files.TomcatBase;
@@ -318,20 +317,20 @@ public abstract class AbstractSQLManager implements SQLManager {
 		return columnValue;
 	}
 
-	/** 
+	/**
 	 * Get column comment from data dictionary
-	 * 
+	 *
 	 * @param connection,
 	 * @param schemaName,
 	 * @param tableName,
 	 * @param columnName
-	 */	
+	 */
 	@Override
-	public String getColumnComment(Connection connection,
-			String schemaName, String tableName, String columnName)
-			throws Exception {
-		SQLGeneralQueryFormatter columnCommentQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+	public String getColumnComment(Connection connection, String schemaName, String tableName,
+			String columnName) throws Exception {
+		
+		SQLGeneralQueryFormatter columnCommentQueryFormatter = new SQLGeneralQueryFormatter();
+		ResultSet resultSet;
 		if (databaseType == DatabaseType.POSTGRESQL) {
 			columnCommentQueryFormatter.addQueryLine(0, // Postgres
 				"SELECT pg_catalog.col_description(c.oid, cols.ordinal_position::int) AS column_comment");
@@ -350,27 +349,27 @@ public abstract class AbstractSQLManager implements SQLManager {
 			columnCommentQueryFormatter.addQueryLine(0, "FROM fn_listextendedproperty (NULL, 'schema', ?, 'view', ?, 'column', ?)");
 		}
 		else {
-			throw new Exception("getColumnComment(): invalid databaseType: " + 
+			throw new Exception("getColumnComment(): invalid databaseType: " +
 				databaseType);
 		}
 		PreparedStatement statement = createPreparedStatement(connection, columnCommentQueryFormatter);
 		
-		String columnComment=columnName.substring(0, 1).toUpperCase() + 
+		String columnComment=columnName.substring(0, 1).toUpperCase() +
 			columnName.substring(1).replace("_", " "); // Default if not found [initcap, remove underscores]
-		try {			
+		try {
 		
-			statement.setString(1, schemaName);	
-			statement.setString(2, tableName);	
-			statement.setString(3, columnName);	
+			statement.setString(1, schemaName);
+			statement.setString(2, tableName);
+			statement.setString(3, columnName);
 			if (databaseType == DatabaseType.SQL_SERVER) {
-				statement.setString(4, schemaName);	
+				statement.setString(4, schemaName);
 				statement.setString(5, tableName);
-				statement.setString(6, columnName);		
-			}			
+				statement.setString(6, columnName);
+			}
 			resultSet = statement.executeQuery();
-			if (resultSet.next()) {		
+			if (resultSet.next()) {
 				columnComment=resultSet.getString(1);
-				if (resultSet.next()) {		
+				if (resultSet.next()) {
 					throw new Exception("getColumnComment() database: " + databaseType +
 						"; expected 1 row, got >1");
 				}
@@ -381,7 +380,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 			}
 		}
 		catch (Exception exception) {
-			rifLogger.error(this.getClass(), "Error in SQL Statement (" + databaseType + ") >>> " + 
+			rifLogger.error(this.getClass(), "Error in SQL Statement (" + databaseType + ") >>> " +
 				lineSeparator + columnCommentQueryFormatter.generateQuery(),
 				exception);
 			throw exception;
@@ -450,27 +449,26 @@ public abstract class AbstractSQLManager implements SQLManager {
 	public void logSQLQuery(final String queryName, final AbstractSQLQueryFormatter queryFormatter,
 			final String... parameters) {
 		
-		if (!enableLogging || !queryLoggingIsEnabled(queryName)) {
+		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
 			return;
 		}
 
 		StringBuilder queryLog = new StringBuilder();
-		queryLog.append("QUERY NAME: " + queryName + lineSeparator);
-		queryLog.append("PARAMETERS:" + lineSeparator);
+		queryLog.append("QUERY NAME: ").append(queryName).append(lineSeparator);
+		queryLog.append("PARAMETERS:").append(lineSeparator);
 		for (int i = 0; i < parameters.length; i++) {
 			queryLog.append("\t");
 			queryLog.append(i + 1);
 			queryLog.append(":\"");
 			queryLog.append(parameters[i]);
-			queryLog.append("\"" + lineSeparator);			
+			queryLog.append("\"").append(lineSeparator);
 		}
-		queryLog.append("PGSQL QUERY TEXT: " + lineSeparator);
-		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
-		queryLog.append("<<< End AbstractSQLManager logSQLQuery" + lineSeparator);
+		queryLog.append("SQL QUERY TEXT: ").append(lineSeparator);
+		queryLog.append(queryFormatter.generateQuery()).append(lineSeparator);
+		queryLog.append("<<< End AbstractSQLManager logSQLQuery").append(lineSeparator);
 	
 		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
-			lineSeparator + queryLog.toString());	
-
+			lineSeparator + queryLog.toString());
 	}
 	
 	protected void logSQLQuery(
@@ -478,23 +476,23 @@ public abstract class AbstractSQLManager implements SQLManager {
 		final AbstractSQLQueryFormatter queryFormatter,
 		final int[] parameters) {
 		
-		if (enableLogging == false || queryLoggingIsEnabled(queryName) == false) {
+		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
 			return;
 		}
 
 		StringBuilder queryLog = new StringBuilder();
-		queryLog.append("QUERY NAME: " + queryName + lineSeparator);
-		queryLog.append("PARAMETERS:" + lineSeparator);
+		queryLog.append("QUERY NAME: ").append(queryName).append(lineSeparator);
+		queryLog.append("PARAMETERS:").append(lineSeparator);
 		for (int i = 0; i < parameters.length; i++) {
 			queryLog.append("\t");
 			queryLog.append(i + 1);
 			queryLog.append(":\"");
 			queryLog.append(parameters[i]);
-			queryLog.append("\"" + lineSeparator);			
+			queryLog.append("\"").append(lineSeparator);
 		}
-		queryLog.append("PGSQL QUERY TEXT: " + lineSeparator);
-		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
-		queryLog.append("<<< End AbstractSQLManager logSQLQuery" + lineSeparator);
+		queryLog.append("SQL QUERY TEXT: ").append(lineSeparator);
+		queryLog.append(queryFormatter.generateQuery()).append(lineSeparator);
+		queryLog.append("<<< End AbstractSQLManager logSQLQuery").append(lineSeparator);
 	
 		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
 			lineSeparator + queryLog.toString());	
@@ -505,32 +503,31 @@ public abstract class AbstractSQLManager implements SQLManager {
 		final String queryName,
 		final AbstractSQLQueryFormatter queryFormatter) {
 		
-		if (enableLogging == false || queryLoggingIsEnabled(queryName) == false) {
+		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
 			return;
 		}
-
-		StringBuilder queryLog = new StringBuilder();
-		queryLog.append("QUERY NAME: " + queryName + lineSeparator);
-		queryLog.append("NO PARAMETERS." + lineSeparator);
-		queryLog.append("PGSQL QUERY TEXT: " + lineSeparator);
-		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
-		queryLog.append("<<< End AbstractSQLManager logSQLQuery" + lineSeparator);
-	
+		
+		String queryLog = ("QUERY NAME: " + queryName + lineSeparator)
+		                  + "NO PARAMETERS." + lineSeparator
+		                  + "SQL QUERY TEXT: " + lineSeparator
+		                  + queryFormatter.generateQuery() + lineSeparator
+		                  + "<<< End AbstractSQLManager logSQLQuery" + lineSeparator;
 		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
-			lineSeparator + queryLog.toString());	
-
+		                                lineSeparator + queryLog);
 	}
 		
 	@Override
 	public void logSQLException(final SQLException sqlException) {
-		rifLogger.error(this.getClass(), "AbstractSQLManager.logSQLException error", sqlException);
+		rifLogger.error(getClass(), "AbstractSQLManager.logSQLException error",
+				sqlException);
 	}
 
 	protected void logException(final Exception exception) {
-		rifLogger.error(this.getClass(), "AbstractSQLManager.logException error", exception);
+		rifLogger.error(this.getClass(), "AbstractSQLManager.logException error",
+				 exception);
 	}
 
-	protected boolean queryLoggingIsEnabled(
+	protected boolean queryLoggingIsDisabled(
 			final String queryName) {
 
 		if (prop == null) {
@@ -543,7 +540,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 				rifLogger.warning(this.getClass(),
 						"AbstractSQLManager.checkIfQueryLoggingEnabled error for" +
 						AbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES, e);
-				return true;
+				return false;
 			}
 		}
 		String value = prop.getProperty(queryName);
@@ -552,18 +549,18 @@ public abstract class AbstractSQLManager implements SQLManager {
 				rifLogger.debug(this.getClass(),
 						"AbstractSQLManager checkIfQueryLoggingEnabled=TRUE property: " +
 								queryName + "=" + value);
-				return true;
+				return false;
 			} else {
 				rifLogger.debug(this.getClass(),
 						"AbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
 								queryName + "=" + value);
-				return false;
+				return true;
 			}
 		} else {
 			rifLogger.warning(this.getClass(),
 					"AbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
 							queryName + " NOT FOUND");
-			return false;
+			return true;
 		}
 	}
 	
@@ -643,7 +640,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 					"sqlConnectionManager.error.unableToAssignReadConnection");
 
 			rifLogger.error(
-					PGSQLConnectionManager.class,
+					getClass(),
 					errorMessage,
 					exception);
 			
@@ -680,7 +677,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 			String errorMessage = SERVICE_MESSAGES.getMessage(
 					"sqlConnectionManager.error.unableToReclaimWriteConnection");
 
-			rifLogger.error(PGSQLConnectionManager.class, errorMessage, exception);
+			rifLogger.error(getClass(), errorMessage, exception);
 			
 			throw new RIFServiceException(
 					RIFServiceError.DATABASE_QUERY_FAILED,
@@ -814,7 +811,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 					"sqlConnectionManager.error.unableToAssignWriteConnection");
 
 			rifLogger.error(
-					AbstractSQLManager.class,
+					getClass(),
 					errorMessage,
 					exception);
 			

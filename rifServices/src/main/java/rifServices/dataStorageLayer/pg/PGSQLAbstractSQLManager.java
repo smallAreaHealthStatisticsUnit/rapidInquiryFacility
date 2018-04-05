@@ -130,40 +130,6 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 		}		
 	}
 
-	@Override
-	public void logSQLQuery(final String queryName, final AbstractSQLQueryFormatter queryFormatter,
-			final String... parameters) {
-
-		final boolean enableLogging = true;
-		if (!queryLoggingIsEnabled(queryName)) {
-			return;
-		}
-
-		StringBuilder queryLog = new StringBuilder();
-		queryLog.append("QUERY NAME: " + queryName + lineSeparator);
-		queryLog.append("PARAMETERS:" + lineSeparator);
-		for (int i = 0; i < parameters.length; i++) {
-			queryLog.append("\t");
-			queryLog.append(i + 1);
-			queryLog.append(":\"");
-			queryLog.append(parameters[i]);
-			queryLog.append("\"" + lineSeparator);			
-		}
-		queryLog.append("PGSQL QUERY TEXT: " + lineSeparator);
-		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
-		queryLog.append("<<< End PGSQLAbstractSQLManager logSQLQuery" + lineSeparator);
-	
-		rifLogger.info(this.getClass(), "PGSQLAbstractSQLManager logSQLQuery >>>" + 
-			lineSeparator + queryLog.toString());	
-
-	}
-	
-	@Override
-	public void logSQLException(final SQLException sqlException) {
-		
-		rifLogger.error(this.getClass(), "PGSQLAbstractSQLManager.logSQLException error", sqlException);
-	}
-
 	protected void logException(final Exception exception) {
 		rifLogger.error(this.getClass(), "PGSQLAbstractSQLManager.logException error", exception);
 	}

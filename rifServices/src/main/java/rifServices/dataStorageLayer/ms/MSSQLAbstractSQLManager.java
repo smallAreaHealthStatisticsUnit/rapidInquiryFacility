@@ -118,7 +118,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 			final String... parameters) {
 
 		final boolean enableLogging = true;
-		if (!enableLogging || !queryLoggingIsEnabled(queryName)) {
+		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
 			return;
 		}
 

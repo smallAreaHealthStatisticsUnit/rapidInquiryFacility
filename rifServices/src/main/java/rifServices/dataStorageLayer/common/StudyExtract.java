@@ -9,8 +9,6 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.dataStorageLayer.ms.MSSQLConnectionManager;
-import rifServices.dataStorageLayer.ms.MSSQLRIFServiceResources;
 
 /**
  * Creates a study extract.

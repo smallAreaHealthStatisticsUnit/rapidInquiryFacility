@@ -27,8 +27,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class PGSQLCovariateManager 
-	extends PGSQLAbstractSQLManager implements CovariateManager {
+final class PGSQLCovariateManager extends PGSQLAbstractSQLManager implements CovariateManager {
 	
 	/** The sql rif context manager. */
 	private RIFContextManager sqlRIFContextManager;

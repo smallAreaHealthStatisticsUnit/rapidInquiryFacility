@@ -1,7 +1,33 @@
 package rifServices.dataStorageLayer.common;
 
-import com.sun.rowset.CachedRowSetImpl;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import org.json.JSONObject;
+
+import com.sun.rowset.CachedRowSetImpl;
+
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
@@ -19,14 +45,6 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.files.TomcatBase;
 import rifServices.system.files.TomcatFile;
-
-import java.io.*;
-import java.sql.*;
-import java.text.DateFormat;
-import java.text.NumberFormat;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public class RifZipFile {
 
@@ -128,7 +146,7 @@ public class RifZipFile {
 					user,
 					baseStudyName);
 					
-			if (submissionZipFile.isFile()) { // No file (i.e. NULL) handled in MSSQLAbstractRIFWebServiceResource.java
+			if (submissionZipFile.isFile()) { // No file (i.e. NULL) handled in *AbstractRIFWebServiceResource.java
 				fileInputStream = new FileInputStream(submissionZipFile);	
 				rifLogger.info(this.getClass(), "Fetched ZIP file: " + 
 					submissionZipFile.getAbsolutePath());
@@ -139,18 +157,16 @@ public class RifZipFile {
 			}
 		}
 		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "MSSQLStudyExtractManager ERROR", exception);
+			rifLogger.error(this.getClass(), "RifZipFile ERROR", exception);
 				
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlStudyStateManager.error.unableToGetStudyExtract",
 					user.getUserID(),
 					submissionZipFile.getAbsolutePath());
-			RIFServiceException rifServiceExeption
-				= new RIFServiceException(
-				RIFServiceError.ZIPFILE_CREATE_FAILED, 
-					errorMessage);
-			throw rifServiceExeption;
+			throw new RIFServiceException(
+			RIFServiceError.ZIPFILE_CREATE_FAILED,
+				errorMessage);
 		}	
 
 		return fileInputStream;
@@ -272,7 +288,7 @@ public class RifZipFile {
 			}
 		}
 		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "MSSQLStudyExtractManager ERROR", exception);
+			rifLogger.error(this.getClass(), "RifZipFile ERROR", exception);
 				
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -280,11 +296,9 @@ public class RifZipFile {
 					user.getUserID(),
 					studyID,
 					zipFileName);
-			RIFServiceException rifServiceExeption
-				= new RIFServiceException(
-					RIFServiceError.ZIPFILE_GET_STATUS_FAILED, 
-					errorMessage);
-			throw rifServiceExeption;
+			throw new RIFServiceException(
+				RIFServiceError.ZIPFILE_GET_STATUS_FAILED,
+				errorMessage);
 		}
 
 		return "{\"status\":\"" + result + "\"}";

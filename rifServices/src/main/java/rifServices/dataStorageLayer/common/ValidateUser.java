@@ -4,7 +4,6 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.dataStorageLayer.ms.MSSQLConnectionManager;
 
 /**
  * Checks a user's validity.
