@@ -145,15 +145,10 @@ public final class TestDiseaseMappingStudy
 	/**
 	 * Accept a valid disease mapping study with typical fields
 	 */
-	public void acceptValidInstance_COMMON1() {
-		try {
-			DiseaseMappingStudy diseaseMappingStudy
-				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
-			diseaseMappingStudy.checkErrors(getValidationPolicy());
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
+	public void acceptValidInstance_COMMON1() throws RIFServiceException {
+		DiseaseMappingStudy diseaseMappingStudy
+			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
+		diseaseMappingStudy.checkErrors(getValidationPolicy());
 	}
 	
 	/**

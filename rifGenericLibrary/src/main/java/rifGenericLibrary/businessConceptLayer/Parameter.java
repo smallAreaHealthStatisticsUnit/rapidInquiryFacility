@@ -483,7 +483,7 @@ public final class Parameter
 			errorMessages.add(errorMessage);			
 		}
 		
-		fieldValidationUtility.countErrors(RIFGenericLibraryError.INVALID_PARAMETER, errorMessages);
+		fieldValidationUtility.throwExceptionIfErrorsFound(RIFGenericLibraryError.INVALID_PARAMETER, errorMessages);
 
 	}
 	
