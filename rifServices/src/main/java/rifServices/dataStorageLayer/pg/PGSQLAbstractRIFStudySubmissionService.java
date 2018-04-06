@@ -1088,7 +1088,8 @@ abstract class PGSQLAbstractRIFStudySubmissionService extends PGSQLAbstractRIFUs
 	/**
 	 * Get textual extract status of a study.                          
 	 * <p>   
-	 * This fucntion determines whether a study can be extracted from the database and the results returned to the user in a ZIP file 
+	 * This function determines whether a study can be extracted from the database and the
+	 * results returned to the user in a ZIP file
 	 * </p>
 	 * <p>
 	 * Returns the following textual strings:

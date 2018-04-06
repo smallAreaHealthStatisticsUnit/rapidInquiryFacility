@@ -5,6 +5,8 @@ import java.util.ResourceBundle;
 
 import org.junit.After;
 import org.junit.Before;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -21,12 +23,18 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.StudyResultRetrievalContext;
 import rifServices.businessConceptLayer.StudySummary;
+import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.dataStorageLayer.common.ServiceResources;
+import rifServices.dataStorageLayer.common.StudyExtractManager;
+import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.test.AbstractRIFTestCase;
 import rifServices.test.util.Bundle;
+
+import static org.mockito.Mockito.when;
 
 public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 
@@ -137,7 +145,20 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	private Project masterMaliciousProject;
 	
 	private RIFServiceStartupOptions startupOptions;
-	
+
+	@Mock
+	public ServiceResources resources;
+
+	@Mock
+	public SQLManager sqlMgr;
+
+	@Mock
+	public SubmissionManager subMgr;
+
+	@Mock
+	public StudyExtractManager extractMgr;
+
+
 	public AbstractRIFServiceTestCase() {
 		rifServiceBundle
 			= new MSSQLTestRIFStudyServiceBundle();
@@ -364,7 +385,15 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	}
 
 	@Before
-	public void setUp() {
+	public void setup() {
+
+		MockitoAnnotations.initMocks(this);
+
+		when(resources.getSqlConnectionManager()).thenReturn(sqlMgr);
+		when(sqlMgr.userExists(validUser.getUserID())).thenReturn(true);
+		when(resources.getRIFSubmissionManager()).thenReturn(subMgr);
+		when(resources.getSQLStudyExtractManager()).thenReturn(extractMgr);
+
 		try {
 			initialiseService();			
 		}
@@ -375,6 +404,7 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 
 	@After
 	public void tearDown() {
+
 		try {
 			rifServiceBundle.deregisterAllUsers();
 		}

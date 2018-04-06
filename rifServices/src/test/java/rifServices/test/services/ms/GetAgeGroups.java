@@ -102,24 +102,21 @@ public final class GetAgeGroups
 	// ==========================================
 	
 	@Test
-	public void getAgeGroups_COMMON1() {
-		try {
-			User validUser = cloneValidUser();
-			Geography validGeography = cloneValidGeography();
-			NumeratorDenominatorPair validNDPair = cloneValidNDPair();
-			
-			ArrayList<AgeGroup> ageGroups
-				= rifStudySubmissionService.getAgeGroups(
-					validUser, 
-					validGeography, 
-					validNDPair, 
-					AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
-			if (ageGroups.isEmpty()) {
-				fail();
-			}
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
+	public void getAgeGroups_COMMON1() throws RIFServiceException {
+
+		User validUser = cloneValidUser();
+		Geography validGeography = cloneValidGeography();
+		NumeratorDenominatorPair validNDPair = cloneValidNDPair();
+
+		ArrayList<AgeGroup> ageGroups = rifStudySubmissionService.getAgeGroups(
+				validUser,
+				validGeography,
+				validNDPair,
+				AgeGroupSortingOption.ASCENDING_LOWER_LIMIT);
+
+		if (ageGroups.isEmpty()) {
+
+			fail(getClass().getSimpleName() + "; Age Groups cannot be empty");
 		}
 	}
 	

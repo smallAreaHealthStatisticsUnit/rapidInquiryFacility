@@ -3,7 +3,6 @@ package rifGenericLibrary.system;
 import java.util.ArrayList;
 
 import rifGenericLibrary.util.RIFLogger;
-import sun.awt.CausedFocusEvent;
 
 /**
  *<p>
