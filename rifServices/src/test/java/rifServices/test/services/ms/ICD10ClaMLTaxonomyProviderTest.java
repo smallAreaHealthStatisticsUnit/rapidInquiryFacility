@@ -89,7 +89,7 @@ public class ICD10ClaMLTaxonomyProviderTest {
 	// ==========================================
 
 	public ICD10ClaMLTaxonomyProviderTest() {
-		icd10provider =new ICD10ClaMLTaxonomyProvider();
+		icd10provider = new ICD10ClaMLTaxonomyProvider();
 	}
    
 	@Before
@@ -99,7 +99,7 @@ public class ICD10ClaMLTaxonomyProviderTest {
 		Parameter inputFileParameter = Parameter.newInstance();
 		inputFileParameter.setName("icd10_ClaML_file");
 		//Need a better way to set the file location
-		inputFileParameter.setValue("C:/rapidInquiryFacility/rifServices/src/main/resources/ExampleClaMLICD10Codes.xml");
+		inputFileParameter.setValue("src/main/resources/ExampleClaMLICD10Codes.xml");
 		
 		//System.out.println(this.getClass().getResource("../../../../../main/resources/ExampleClaMLICD10Codes.xml").getPath());		
 		//inputFileParameter.setValue("../../../../../main/resources/ExampleClaMLICD10Codes.xml");
