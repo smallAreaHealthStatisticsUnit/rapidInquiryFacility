@@ -150,9 +150,10 @@ public final class TestDiseaseMappingStudy
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.checkErrors(getValidationPolicy());
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
+
+		} catch(RIFServiceException e) {
+
+			fail(e.toString());
 		}
 	}
 	

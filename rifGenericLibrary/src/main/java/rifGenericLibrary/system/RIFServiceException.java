@@ -17,89 +17,19 @@ import rifGenericLibrary.util.RIFLogger;
  * enumerated error object is used in the automated test suites
  * so they can be precise in identifying the kind of exception that may be expected
  * by test cases that are excercising scenarios with errors.
- * 
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
  */
 
 public class RIFServiceException 
 	extends Exception {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
 	private static final long serialVersionUID = 609449213280772202L;
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
-	// ==========================================
-	// Section Properties
-	// ==========================================
 	/** The error. */
 	private Object error;
 	
 	/** The error messages. */
 	private ArrayList<String> errorMessages;
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
 
 	/**
 	 * Instantiates a new RIF service exception.
@@ -126,7 +56,6 @@ public class RIFServiceException
 		errorMessages = new ArrayList<String>();
 		errorMessages.add(errorMessage);
 	}
-	
 
 	/**
 	 * Instantiates a new RIF service exception.
@@ -150,10 +79,6 @@ public class RIFServiceException
 		this.errorMessages.addAll(errorMessages);
 	}	
 	
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
 	/**
 	 * Gets the error.
 	 *
@@ -184,21 +109,25 @@ public class RIFServiceException
 		return errorMessages.size();
 	}
 	
-	
 	public void printErrors() {
 		for (String errorMessage : errorMessages) {
 			rifLogger.error(this.getClass(), (errorMessage));
 		}
 	}
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
+	@Override
+	public String toString() {
 
-	// ==========================================
-	// Section Override
-	// ==========================================
+		String msg = "%d error(s). Error is '%s'. Message list is: %s";
+		StringBuilder msgs = new StringBuilder();
+
+		for (String s : getErrorMessages()) {
+
+			msgs.append("'").append(s).append("'").append(" | ");
+		}
+
+		// The regex below strips the last divider off the end of the messages list
+		return String.format(msg, getErrorMessageCount(), getError(),
+		                     msgs.toString().replaceAll(" \\| $", ""));
+	}
 }

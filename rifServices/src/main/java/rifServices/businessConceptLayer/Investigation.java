@@ -1312,18 +1312,17 @@ public class Investigation
 		
 		if (covariates == null || fieldValidationUtility.isEmpty(covariates)) {
 			rifLogger.info(this.getClass(), "Investigation " + title + " has no convariates");
-/*			String covariatesFieldName
+			String covariatesFieldName
 				= RIFServiceMessages.getMessage("investigation.covariates.label");
 			String errorMessage
 				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					covariatesFieldName);
-			errorMessages.add(errorMessage);		*/	
-		}
-		else {
+			errorMessages.add(errorMessage);
+		} else {
 			for (AbstractCovariate covariate : covariates) {
-				if (covariate != null) {
+				if (covariate == null) {
 					String covariateRecordType
 						= RIFServiceMessages.getMessage("covariate.label");
 					String errorMessage
@@ -1332,12 +1331,10 @@ public class Investigation
 							getRecordType(),
 							covariateRecordType);
 					errorMessages.add(errorMessage);
-				}
-				else {
+				} else {
 					try {
 						covariate.checkErrors(validationPolicy);
-					}
-					catch(RIFServiceException rifServiceException) {
+					} catch(RIFServiceException rifServiceException) {
 						rifLogger.info(this.getClass(), "Covariate.checkErrors(): " + 
 							rifServiceException.getErrorMessages().size());
 						errorMessages.addAll(rifServiceException.getErrorMessages());					
@@ -1345,12 +1342,6 @@ public class Investigation
 				}
 			}			
 		}
-
-		//else if (covariates.isEmpty()) {
-		//	String errorMessage
-		//		= RIFServiceMessages.getMessage("investigation.error.noCovariatesSpecified");
-		//	errorMessages.add(errorMessage);			
-		//}
 
 		if (errorMessages.size() > 0) {
 			rifLogger.info(this.getClass(), "Investigation.checkErrors(): " + 
