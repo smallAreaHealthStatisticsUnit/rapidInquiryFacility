@@ -158,8 +158,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 		setServiceName(serviceName);
 		String serviceVersion
 			= RIFServiceMessages.getMessage("rifStudyRetrievalService.version");
-		setServiceVersion(Double.valueOf(serviceVersion));
-	
+
 		String serviceDescription
 			= RIFServiceMessages.getMessage("rifStudyRetrievalService.description");
 		setServiceDescription(serviceDescription);

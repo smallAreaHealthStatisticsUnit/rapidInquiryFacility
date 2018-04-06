@@ -115,7 +115,6 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 		setServiceName(serviceName);
 		String serviceVersion
 			= RIFServiceMessages.getMessage("rifStudySubmissionService.version");
-		setServiceVersion(Double.valueOf(serviceVersion));
 		String serviceDescription
 			= RIFServiceMessages.getMessage("rifStudySubmissionService.description");
 		setServiceDescription(serviceDescription);

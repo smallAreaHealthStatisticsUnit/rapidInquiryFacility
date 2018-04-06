@@ -5,7 +5,10 @@ import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.DiseaseMappingStudy;
@@ -16,106 +19,32 @@ import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.RIFServiceInformation;
 import rifServices.businessConceptLayer.YearRange;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.dataStorageLayer.common.ResultsQueryManager;
 import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.SubmissionManager;
+import rifServices.dataStorageLayer.common.ValidateUser;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-import rifGenericLibrary.util.FieldValidationUtility;
+import rifServices.system.RIFServiceStartupOptions;
 
+abstract class PGSQLAbstractRIFUserService {
 
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- */
-
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	
-	// ==========================================
-	// Section Properties
-	// ==========================================
-				
-	// ==========================================
-	// Section Construction
-	// ==========================================
+	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
+	protected ServiceResources rifServiceResources;
+	private String serviceName;
+	private String serviceDescription;
+	private String serviceContactEmail;
 
 	public PGSQLAbstractRIFUserService() {
 
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-	
-	
 	public boolean isInformationGovernancePolicyActive(
 		final User _user) 
 		throws RIFServiceException {
@@ -193,7 +122,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			
 			//Audit attempt to do operation				
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getDiseaseMappingStudy",
+				= SERVICE_MESSAGES.getMessage("logging.getDiseaseMappingStudy",
 					user.getUserID(),
 					user.getIPAddress());
 			rifLogger.info(
@@ -244,7 +173,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			return null;
 		}
 			
-		ArrayList<Geography> results = new ArrayList<Geography>();
+		ArrayList<Geography> results = new ArrayList<>();
 		Connection connection = null;
 		try {
 			//Check for empty parameters
@@ -260,7 +189,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 
 			//Audit attempt to do operation				
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getGeographies",
+				= SERVICE_MESSAGES.getMessage("logging.getGeographies",
 					user.getUserID(),
 					user.getIPAddress());
 			rifLogger.info(
@@ -310,7 +239,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		Geography geography 
 			= Geography.createCopy(_geography);
 
-		ArrayList<GeoLevelSelect> results = new ArrayList<GeoLevelSelect>();
+		ArrayList<GeoLevelSelect> results = new ArrayList<>();
 		Connection connection = null;
 		try {
 			//TOUR_VALIDATION
@@ -340,7 +269,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 
 			//Audit attempt to do operation
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getGeographicalLevelSelectValues",
+				= SERVICE_MESSAGES.getMessage("logging.getGeographicalLevelSelectValues",
 					user.getUserID(),
 					user.getIPAddress(),
 					geography.getDisplayName());
@@ -416,7 +345,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 
 			//Audit attempt to do operation				
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getDefaultGeoLevelSelectValue",
+				= SERVICE_MESSAGES.getMessage("logging.getDefaultGeoLevelSelectValue",
 					user.getUserID(),
 					user.getIPAddress(),
 					geography.getDisplayName());
@@ -487,7 +416,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		GeoLevelSelect geoLevelSelect
 			= GeoLevelSelect.createCopy(_geoLevelSelect);
 	
-		ArrayList<GeoLevelArea> results = new ArrayList<GeoLevelArea>();
+		ArrayList<GeoLevelArea> results = new ArrayList<>();
 		Connection connection = null;
 		try {
 			
@@ -514,7 +443,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 
 			//Audit attempt to do operation				
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getGeoLevelAreaValues",
+				= SERVICE_MESSAGES.getMessage("logging.getGeoLevelAreaValues",
 					user.getUserID(),
 					user.getIPAddress(),
 					geography.getDisplayName(),
@@ -594,7 +523,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		GeoLevelSelect geoLevelSelect
 			= GeoLevelSelect.createCopy(_geoLevelSelect);
 		
-		ArrayList<GeoLevelView> results = new ArrayList<GeoLevelView>();
+		ArrayList<GeoLevelView> results = new ArrayList<>();
 		Connection connection = null;
 		try {
 			
@@ -621,13 +550,13 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 
 			//Audit attempt to do operation				
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getGeoLevelViewValues",
+				= SERVICE_MESSAGES.getMessage("logging.getGeoLevelViewValues",
 					user.getUserID(),
 					user.getIPAddress(),
 					geography.getDisplayName(),
 					geoLevelSelect.getDisplayName());
 			rifLogger.info(
-				PGSQLAbstractRIFUserService.class,
+				getClass(),
 				auditTrailMessage);
 
 			//Assign pooled connection
@@ -732,7 +661,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 
 			//Audit attempt to do operation				
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getYearRange",
+				= SERVICE_MESSAGES.getMessage("logging.getYearRange",
 					user.getUserID(),
 					user.getIPAddress(),
 					geography.getDisplayName(),
@@ -792,7 +721,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		}
 		Geography geography = Geography.createCopy(_geography);
 		
-		ArrayList<HealthTheme> results = new ArrayList<HealthTheme>();
+		ArrayList<HealthTheme> results = new ArrayList<>();
 		Connection connection = null;
 		try {
 			
@@ -821,7 +750,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			 */
 			//Audit attempt to do operation				
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getHealthThemes",
+				= SERVICE_MESSAGES.getMessage("logging.getHealthThemes",
 					user.getUserID(),
 					user.getIPAddress(),
 					geography.getDisplayName());
@@ -875,7 +804,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		GeoLevelToMap geoLevelToMap
 			= GeoLevelToMap.createCopy(_geoLevelToMap);
 	
-		ArrayList<AbstractCovariate> results = new ArrayList<AbstractCovariate>();
+		ArrayList<AbstractCovariate> results = new ArrayList<>();
 		Connection connection = null;
 		try {
 			
@@ -903,7 +832,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 
 			//Audit attempt to do operation				
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getCovariates",
+				= SERVICE_MESSAGES.getMessage("logging.getCovariates",
 					user.getUserID(),
 					user.getIPAddress(),
 					geography.getDisplayName(),
@@ -953,7 +882,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			User user = User.createCopy(_user);
 			SQLManager sqlConnectionManager
 				= rifServiceResources.getSqlConnectionManager();
-			if (sqlConnectionManager.isUserBlocked(user) == true) {
+			if (sqlConnectionManager.isUserBlocked(user)) {
 				return null;
 			}
 			Geography geography
@@ -987,7 +916,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 								
 				//Audit attempt to do operation				
 				String auditTrailMessage
-					= RIFServiceMessages.getMessage("logging.getTileMakerCentroids",
+					= SERVICE_MESSAGES.getMessage("logging.getTileMakerCentroids",
 						user.getUserID(),
 						user.getIPAddress(),
 						geography.getDisplayName(),
@@ -1041,7 +970,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography
@@ -1084,14 +1013,12 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 			if ((zoomlevel <1) || (zoomlevel > 20)) {
 				//zoom factor is out of range.
 				String errorMessage
-					= RIFServiceMessages.getMessage(
+					= SERVICE_MESSAGES.getMessage(
 						"getTiles.zoomFactor.error",
 						String.valueOf(zoomlevel));
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.INVALID_ZOOM_FACTOR, 
-						errorMessage);
-				throw rifServiceException;
+				throw new RIFServiceException(
+					RIFServiceError.INVALID_ZOOM_FACTOR,
+					errorMessage);
 			}
 			
 			//Check for security violations
@@ -1103,7 +1030,7 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 								
 			//Audit attempt to do operation				
 			String auditTrailMessage
-				= RIFServiceMessages.getMessage("logging.getTileMakerTiles",
+				= SERVICE_MESSAGES.getMessage("logging.getTileMakerTiles",
 					user.getUserID(),
 					user.getIPAddress(),
 					geography.getDisplayName(),
@@ -1148,13 +1075,130 @@ class PGSQLAbstractRIFUserService extends PGSQLAbstractRIFService {
 
 		return result;	
 	}
-	
-	
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
 
-	// ==========================================
-	// Section Override
-	// ==========================================
+	public void initialise(final Object startupParameter) {
+
+		this.rifServiceResources
+			= (ServiceResources) startupParameter;
+	}
+
+	void setServiceName(final String serviceName) {
+		this.serviceName = serviceName;
+	}
+
+	void setServiceDescription(final String serviceDescription) {
+		this.serviceDescription = serviceDescription;
+	}
+
+	void setServiceContactEmail(final String serviceContactEmail) {
+		this.serviceContactEmail = serviceContactEmail;
+	}
+
+	/**
+	 * Validate user.
+	 *
+	 * @param user the user
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	void validateUser(final User user) throws RIFServiceException {
+
+		new ValidateUser(user, rifServiceResources.getSqlConnectionManager()).validate();
+	}
+
+	public void logException(
+		final User user,
+		final String methodName,
+		final RIFServiceException rifServiceException)
+		throws RIFServiceException {
+
+		SQLManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (rifServiceException instanceof RIFServiceSecurityException) {
+			//TOUR_SECURITY
+			/*
+			 * If the code encounters a security exception, then the user
+			 * associated with the exception will be blacklisted.
+			 */
+			RIFServiceSecurityException rifServiceSecurityException
+				= (RIFServiceSecurityException) rifServiceException;
+			if (rifServiceSecurityException.getSecurityThreatType() == RIFServiceSecurityException.SecurityThreatType.MALICIOUS_CODE) {
+				//gives opportunity to log security issue and deregister user
+				sqlConnectionManager.addUserIDToBlock(user);
+				sqlConnectionManager.logout(user);
+			}
+			else {
+				//suspiciuous behaviour.
+				//log suspicious event and see whether this particular user is associated with
+				//a number of suspicious events that exceeds a threshold.
+				sqlConnectionManager.logSuspiciousUserEvent(user);
+				if (sqlConnectionManager.userExceededMaximumSuspiciousEvents(user)) {
+					sqlConnectionManager.addUserIDToBlock(user);
+					sqlConnectionManager.logout(user);
+				}
+			}
+
+		}
+
+		rifLogger.error(
+			getClass(),
+			methodName,
+			rifServiceException);
+
+		throw rifServiceException;
+	}
+
+	public RIFServiceInformation getRIFServiceInformation(
+		final User _user)
+		throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		User user = User.createCopy(_user);
+		SQLManager sqlConnectionManager
+			= rifServiceResources.getSqlConnectionManager();
+		if (sqlConnectionManager.isUserBlocked(user)) {
+			return null;
+		}
+
+		RIFServiceInformation result
+			= RIFServiceInformation.newInstance();
+		try {
+			//Check for empty parameters
+			FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+			fieldValidationUtility.checkNullMethodParameter(
+				"getRIFServiceInformation",
+				"user",
+				user);
+
+			//Check for security violations
+			validateUser(user);
+
+			//Audit attempt to do operation
+			String auditTrailMessage
+				= SERVICE_MESSAGES.getMessage("logging.getRIFSubmissionServiceInformation",
+					user.getUserID(),
+					user.getIPAddress());
+			rifLogger.info(
+				getClass(),
+				auditTrailMessage);
+
+			//Delegate operation to a specialised manager class
+			result.setServiceName(serviceName);
+			result.setServiceDescription(serviceDescription);
+			result.setContactEmail(serviceContactEmail);
+		}
+		catch(RIFServiceException rifServiceException) {
+			//Audit failure of operation
+			logException(
+				user,
+				"getRIFServiceInformation",
+				rifServiceException);
+		}
+
+		return result;
+	}
+
+	public RIFServiceStartupOptions getRIFServiceStartupOptions() {
+		return rifServiceResources.getRIFServiceStartupOptions();
+	}
 }

@@ -101,8 +101,7 @@ import rifServices.system.files.TomcatFile;
  * @version
  */
 
-abstract class PGSQLAbstractRIFStudySubmissionService extends PGSQLAbstractRIFUserService
-		implements RIFStudySubmissionAPI {
+abstract class PGSQLAbstractRIFStudySubmissionService extends PGSQLAbstractRIFUserService {
 
 		private static String lineSeparator = System.getProperty("line.separator");	
 
@@ -116,7 +115,6 @@ abstract class PGSQLAbstractRIFStudySubmissionService extends PGSQLAbstractRIFUs
 		setServiceName(serviceName);
 		String serviceVersion
 		= RIFServiceMessages.getMessage("rifStudySubmissionService.version");
-		setServiceVersion(Double.valueOf(serviceVersion));
 		String serviceDescription
 		= RIFServiceMessages.getMessage("rifStudySubmissionService.description");
 		setServiceDescription(serviceDescription);

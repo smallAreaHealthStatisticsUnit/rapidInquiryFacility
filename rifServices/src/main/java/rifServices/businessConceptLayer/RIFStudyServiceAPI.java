@@ -15,7 +15,7 @@ import rifGenericLibrary.system.RIFServiceException;
  */
 
 public interface RIFStudyServiceAPI {
-	
+
 	boolean isInformationGovernancePolicyActive(
 					final User user)
 		throws RIFServiceException;
@@ -92,9 +92,5 @@ public interface RIFStudyServiceAPI {
 					final GeoLevelSelect geoLevelSelect)
 		throws RIFServiceException;	
 	
-	void initialise(final Object startupParameter)
-		throws RIFServiceException;
-		
-	boolean isInitialised();
-	
+	void initialise(final Object startupParameter) throws RIFServiceException;
 }
