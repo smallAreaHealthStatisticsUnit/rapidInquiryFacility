@@ -25,6 +25,8 @@ import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.ExceptionLog;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.dataStorageLayer.common.ResultsQueryManager;
+import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.dataStorageLayer.common.ValidateUser;
 import rifServices.system.RIFServiceError;
@@ -35,7 +37,7 @@ class MSSQLAbstractRIFUserService {
 	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
-	protected MSSQLRIFServiceResources rifServiceResources;
+	protected ServiceResources rifServiceResources;
 	private String serviceName;
 	private String serviceDescription;
 	private String serviceContactEmail;
@@ -45,11 +47,11 @@ class MSSQLAbstractRIFUserService {
 	}
 
 	public boolean isInformationGovernancePolicyActive(
-		final User _user) 
+		final User _user)
 		throws RIFServiceException {
 
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return true;
@@ -90,7 +92,7 @@ class MSSQLAbstractRIFUserService {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -166,7 +168,7 @@ class MSSQLAbstractRIFUserService {
 			
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -230,7 +232,7 @@ class MSSQLAbstractRIFUserService {
 			
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -314,7 +316,7 @@ class MSSQLAbstractRIFUserService {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -405,7 +407,7 @@ class MSSQLAbstractRIFUserService {
 		 */
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -512,7 +514,7 @@ class MSSQLAbstractRIFUserService {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -555,7 +557,7 @@ class MSSQLAbstractRIFUserService {
 					geography.getDisplayName(),
 					geoLevelSelect.getDisplayName());
 			rifLogger.info(
-				MSSQLAbstractRIFUserService.class,
+				getClass(),
 				auditTrailMessage);
 
 			//Assign pooled connection
@@ -608,7 +610,7 @@ class MSSQLAbstractRIFUserService {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);		
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			//TOUR SECURITY
@@ -715,7 +717,7 @@ class MSSQLAbstractRIFUserService {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -796,7 +798,7 @@ class MSSQLAbstractRIFUserService {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -881,7 +883,7 @@ class MSSQLAbstractRIFUserService {
 			
 			//Defensively copy parameters and guard against blocked users
 			User user = User.createCopy(_user);
-			MSSQLConnectionManager sqlConnectionManager
+			SQLManager sqlConnectionManager
 				= rifServiceResources.getSqlConnectionManager();
 			if (sqlConnectionManager.isUserBlocked(user)) {
 				return null;
@@ -970,7 +972,7 @@ class MSSQLAbstractRIFUserService {
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
@@ -1122,7 +1124,7 @@ class MSSQLAbstractRIFUserService {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;

@@ -1,18 +1,20 @@
 package rifServices.dataStorageLayer.ms;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
-import rifServices.businessConceptLayer.*;
+import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.businessConceptLayer.StudyState;
+import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.dataStorageLayer.common.SmoothedResultManager;
 import rifServices.dataStorageLayer.common.StudyStateManager;
-import rifServices.system.*;
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifServices.businessConceptLayer.StudyState;
-
-import java.sql.Connection;
-import java.util.ArrayList;
+import rifServices.system.RIFServiceMessages;
 
 /**
  * Main implementation of the RIF middle ware.  
@@ -181,9 +183,9 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return;
 		}
 		
@@ -251,7 +253,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
@@ -319,7 +321,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -389,7 +391,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -482,7 +484,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -570,7 +572,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -645,7 +647,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 			
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -720,7 +722,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -793,7 +795,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 			
 			//Defensively copy parameters and guard against blocked users
 			User user = User.createCopy(_user);
-			MSSQLConnectionManager sqlConnectionManager
+			SQLManager sqlConnectionManager
 				= rifServiceResources.getSqlConnectionManager();
 			if (sqlConnectionManager.isUserBlocked(user) == true) {
 				return null;
@@ -866,7 +868,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 			
 			//Defensively copy parameters and guard against blocked users
 			User user = User.createCopy(_user);
-			MSSQLConnectionManager sqlConnectionManager
+			SQLManager sqlConnectionManager
 				= rifServiceResources.getSqlConnectionManager();
 			if (sqlConnectionManager.isUserBlocked(user) == true) {
 				return null;
@@ -942,7 +944,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;

@@ -9,6 +9,7 @@ import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.StudyState;
 import rifServices.businessConceptLayer.StudyStateMachine;
+import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
@@ -44,7 +45,7 @@ public class MSSQLRunStudyThread
 		final String password,		
 		final RIFStudySubmission studySubmission,
 		final RIFServiceStartupOptions rifServiceStartupOptions,
-		final MSSQLRIFServiceResources rifServiceResources) {
+		final ServiceResources rifServiceResources) {
 		
 		this.connection = connection;
 		this.user = user;				
