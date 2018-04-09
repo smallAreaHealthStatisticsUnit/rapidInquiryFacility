@@ -1,5 +1,7 @@
 package rifServices.dataStorageLayer.ms;
 
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifServices.businessConceptLayer.AgeGroup;
 import rifServices.businessConceptLayer.AgeGroupSortingOption;
 import rifServices.businessConceptLayer.Geography;
@@ -10,19 +12,30 @@ import rifServices.system.RIFServiceError;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifServices.system.RIFServiceStartupOptions;
 import rifServices.test.services.ms.AbstractRIFServiceTestCase;
 
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.crypto.Data;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 public final class GetAgeGroups extends AbstractRIFServiceTestCase {
 
 	private AgeGenderYearManager manager;
+
+	@Mock
+	private RIFServiceStartupOptions options;
+
+	@Mock
+	private RIFDatabaseProperties databaseProps;
 
 	public GetAgeGroups() {
 	}
@@ -31,9 +44,19 @@ public final class GetAgeGroups extends AbstractRIFServiceTestCase {
 	public void setup() {
 
 		super.setup();
+		when(resources.getRIFServiceStartupOptions()).thenReturn(options);
+		when(options.getRIFDatabaseProperties()).thenReturn(databaseProps);
+		when(options.getRifDatabaseType()).thenReturn(DatabaseType.SQL_SERVER);
+		when(options.getRIFDatabaseProperties().getDatabaseType())
+				.thenReturn(DatabaseType.SQL_SERVER);
+		when(databaseProps.getDatabaseType()).thenReturn(DatabaseType.SQL_SERVER);
 		manager = new MSSQLAgeGenderYearManager(
 				new MSSQLRIFContextManager(resources.getRIFServiceStartupOptions()),
 		        resources.getRIFServiceStartupOptions());
+
+		// This is a bit weird: we're telling a mock to return a real object. But I suppose
+		// it should work.
+		when(resources.getSqlAgeGenderYearManager()).thenReturn(manager);
 	}
 
 	@Test

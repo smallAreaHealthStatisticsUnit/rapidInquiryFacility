@@ -18,80 +18,10 @@ import rifGenericLibrary.util.RIFLogger;
  * Class that holds configuration settings for rif services.  These will appear
  * in <code>RIFServiceStartupProperties.properties</code>, a properties file
  * containing a list of name-value pairs
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- *
  */
+public class RIFServiceStartupOptions {
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-public final class RIFServiceStartupOptions {
-
-	
-	// ==========================================
-	// Section Constants
-	// ==========================================
-	
 	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
-	
-	// ==========================================
-	// Section Properties
-	// ==========================================
 
 	private int maximumMapAreasAllowedForSingleDisplay;
 	private RIFLogger rifLogger = RIFLogger.getLogger();
@@ -117,9 +47,7 @@ public final class RIFServiceStartupOptions {
 	private boolean sslSupported;
 	private boolean useSSLDebug;
 	private String trustStorePassword;
-	
-	private String rifServiceClassDirectoryPath;
-	
+
 	private String odbcDataSourceName;
 	
 	/** The server side cache directory. */
@@ -139,10 +67,6 @@ public final class RIFServiceStartupOptions {
 	private boolean useStrictValidationPolicy;
 
 	private final RIFServiceStartupProperties properties;
-
-	// ==========================================
-	// Section Construction
-	// ==========================================
 
 	public static RIFServiceStartupOptions newInstance(
 			final boolean isWebDeployment,
@@ -233,10 +157,6 @@ public final class RIFServiceStartupOptions {
 		}
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
     public DatabaseType getRifDatabaseType() { // To avoid confusion with
 													  // PG/MSSQLAbstractRIFWebServiceResource() etc
 		return databaseType;
@@ -260,12 +180,8 @@ public final class RIFServiceStartupOptions {
 	public boolean getOptionalRIfServiceProperty(String propertyName, boolean defaultValue)
 					throws Exception {
 		return properties.getOptionalRIfServiceProperty(propertyName, defaultValue);
-	}		
-	
-	public String getExtraExtractFilesDirectoryPath() {
-		return extraExtractFilesDirectoryPath;
 	}
-	
+
 	public ArrayList<Parameter> extractParameters() {
 		ArrayList<Parameter> parameters = new ArrayList<Parameter>();
 		
@@ -303,14 +219,11 @@ public final class RIFServiceStartupOptions {
 	}
 	
 	public RIFDatabaseProperties getRIFDatabaseProperties() {
-				
-		RIFDatabaseProperties rifDatabaseProperties
-			= RIFDatabaseProperties.newInstance(
-				databaseType, 
-				isDatabaseCaseSensitive,
-				sslSupported);
-		
-		return rifDatabaseProperties;
+
+		return RIFDatabaseProperties.newInstance(
+			databaseType,
+			isDatabaseCaseSensitive,
+			sslSupported);
 	}
 	
 	
@@ -460,30 +373,14 @@ public final class RIFServiceStartupOptions {
 	 * @return the record type
 	 */
 	private String getRecordType() {
-		
-		String recordType
-			= RIFServiceMessages.getMessage("rifServiceStartupOptions.label");
-		return recordType;
-	}
-	
-	
-	public String getWebApplicationDirectory() {
-		return webApplicationDirectory;
+
+		return RIFServiceMessages.getMessage("rifServiceStartupOptions.label");
 	}
 
-	
-	public void setRIFServiceClassDirectory(
-		final String rifServiceClassDirectoryPath) {
-		
-		this.rifServiceClassDirectoryPath = rifServiceClassDirectoryPath;
-	}
-	
 	public String getRIFServiceResourcePath()
 		throws RIFServiceException {
 
 		StringBuilder path = new StringBuilder();
-		//path.append(currentDirectoryPath);
-		//path.append(File.separator);
 
 		if (isWebDeployment) {
 			rifLogger.info(this.getClass(), "RIFServiceStartupOptions is web deployment");
@@ -524,57 +421,7 @@ public final class RIFServiceStartupOptions {
 				
 		return path.toString();
 	}
-	
-	public void setWebApplicationDirectory(
-		final String webApplicationDirectory) {
-		this.webApplicationDirectory = webApplicationDirectory;
-	}
-	
-	public String getRScriptDirectory() {
-		return rScriptDirectory;
-	}
-	
-	public void setRScriptDirectory(
-		final String rScriptDirectory) {
-		
-		this.rScriptDirectory = rScriptDirectory;
-	}
-			
-	public String getReadOnlyDatabaseConnectionString() {
-		
-		StringBuilder urlText = new StringBuilder();
-		urlText.append(databaseDriverPrefix);
-		urlText.append(":");
-		urlText.append("//");
-		urlText.append(host);
-		urlText.append(":");
-		urlText.append(port);
-		urlText.append("/");
-		urlText.append(databaseName);
-		
-		return urlText.toString();
-	}	
-	
-	public String getWriteOnlyDatabaseConnectionString() {
-		
-		StringBuilder urlText = new StringBuilder();
-		urlText.append(databaseDriverPrefix);
-		urlText.append(":");
-		urlText.append("//");
-		urlText.append(host);
-		urlText.append(":");
-		urlText.append(port);
-		urlText.append("/");
-		urlText.append(databaseName);
-		
-		return urlText.toString();
-	}	
-	
-	
-	public int getMaximumMapAreasAllowedForSingleDisplay() {
-		return maximumMapAreasAllowedForSingleDisplay;
-	}
-	
+
 	public void setMaximumMapAreasAllowedForSingleDisplay(
 		final int maximumMapAreasAllowedForSingleDisplay) {
 		
@@ -585,35 +432,7 @@ public final class RIFServiceStartupOptions {
 	public boolean useStrictValidationPolicy() {
 		return useStrictValidationPolicy;
 	}
-	
-	public void setUseStrictValidationPolicy(
-		final boolean useStrictValidationPolicy) {
-		this.useStrictValidationPolicy = useStrictValidationPolicy;
-	}
-	
-	public boolean useSSLDebug() {
-		return useSSLDebug;
-	}
 
-	public void setUseSSLDebug(
-		final boolean useSSLDebug) {
-
-		this.useSSLDebug = useSSLDebug;
-	}
-
-	public String getTrustStorePassword() {
-		return trustStorePassword;
-	}
-
-	public void setTrustStorePassword(
-		final String trustStorePassword) {
-
-		this.trustStorePassword = trustStorePassword;
-	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 	/**
 	 * Check security violations.
 	 *
@@ -645,8 +464,6 @@ public final class RIFServiceStartupOptions {
 				databaseDriverPrefix);
 		}
 
-		
-		
 		if (host != null) {
 			String hostLabel
 				= RIFServiceMessages.getMessage("rifServiceStartupOptions.host.label");		
@@ -753,12 +570,4 @@ public final class RIFServiceStartupOptions {
 			throw rifServiceException;
 		}
 	}
-	
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }
