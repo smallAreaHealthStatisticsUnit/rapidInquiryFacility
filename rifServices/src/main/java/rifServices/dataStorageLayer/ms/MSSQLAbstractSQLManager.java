@@ -15,12 +15,12 @@ import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.dataStorageLayer.common.AbstractSQLManager;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
 public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
@@ -28,20 +28,21 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static final int POOLED_READ_ONLY_CONNECTIONS_PER_PERSON = 10;
 	private static final int POOLED_WRITE_CONNECTIONS_PER_PERSON = 5;
+	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 	private static String lineSeparator = System.getProperty("line.separator");
 	/** The rif service startup options. */
 	protected final RIFServiceStartupOptions rifServiceStartupOptions;
 	/** The read connection from user. */
-	protected final HashMap<String, ConnectionQueue> readOnlyConnectionsFromUser;
+	final HashMap<String, ConnectionQueue> readOnlyConnectionsFromUser;
 	/** The write connection from user. */
-	protected final HashMap<String, ConnectionQueue> writeConnectionsFromUser;
+	final HashMap<String, ConnectionQueue> writeConnectionsFromUser;
 	/** The initialisation query. */
-	protected final String initialisationQuery;
+	private final String initialisationQuery;
 	/** The database url. */
-	protected final String databaseURL;
-	protected final HashMap<String, String> passwordHashList;
-	protected final HashSet<String> registeredUserIDs;
-	protected final HashSet<String> userIDsToBlock;
+	private final String databaseURL;
+	private final HashMap<String, String> passwordHashList;
+	final HashSet<String> registeredUserIDs;
+	final HashSet<String> userIDsToBlock;
 	
 
 	/**
@@ -59,7 +60,6 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 		readOnlyConnectionsFromUser = new HashMap<>();
 		initialisationQuery = "EXEC rif40.rif40_startup ?";
 		databaseURL = generateURLText();
-		
 	}
  
 	/**
@@ -109,20 +109,14 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 			query);
 
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	public void logSQLQuery(final String queryName, final AbstractSQLQueryFormatter queryFormatter,
 			final String... parameters) {
 
-		final boolean enableLogging = true;
-		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
+		if (queryLoggingIsDisabled(queryName)) {
 			return;
 		}
 
-		
 		StringBuilder queryLog = new StringBuilder();
 		queryLog.append("QUERY NAME: ").append(queryName).append(lineSeparator);
 		queryLog.append("PARAMETERS:").append(lineSeparator);
@@ -172,7 +166,6 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 	 *
 	 * @param userID the user id
 	 * @param password the password
-	 * @return the connection
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	public void login(
@@ -248,7 +241,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 			readOnlyConnectionQueue.closeAllConnections();
 			writeOnlyConnectionQueue.closeAllConnections();
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= SERVICE_MESSAGES.getMessage(
 					"sqlConnectionManager.error.unableToRegisterUser",
 					userID);
 			
@@ -272,7 +265,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 		throws SQLException,
 		RIFServiceException {
 		
-		Connection connection = null;
+		Connection connection;
 		PreparedStatement statement = null;
 		try {
 			
@@ -286,23 +279,11 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 				databaseProperties.setProperty("ssl", "true");
 			}
 
-			//databaseProperties.setProperty("logUnclosedConnections", "true");
 			databaseProperties.setProperty("prepareThreshold", "3");
 
-			//KLG: @TODO this introduces a porting issue
-			//int logLevel = org.postgresql.Driver.DEBUG;
-			//databaseProperties.setProperty("loglevel", String.valueOf(logLevel));
-			
 			connection
 				= DriverManager.getConnection(databaseURL, databaseProperties);
-			/*
-			Connection currentConnection
-				= DriverManager.getConnection(
-					databaseURL,
-					userID,
-					password);
-			*/
-			
+
 			//Execute RIF start-up function
 			//MSSQL > EXEC rif40.rif40_startup ?
 			//PGSQL > SELECT rif40_startup(?) AS rif40_init;
@@ -319,8 +300,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 			else {
 				statement.setInt(1, 0);
 			}
-			
-			
+
 			statement.execute();
 			statement.close();
 
@@ -345,20 +325,16 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 	 * @return the string
 	 */
 	private String generateURLText() {
-		
-		StringBuilder urlText = new StringBuilder();
-		
-		urlText.append(rifServiceStartupOptions.getDatabaseDriverPrefix());
-		urlText.append(":");
-		urlText.append("//");
-		urlText.append(rifServiceStartupOptions.getHost());
-		urlText.append(":");
-		urlText.append(rifServiceStartupOptions.getPort());
-		urlText.append(";");
-		urlText.append("databaseName=");
-		urlText.append(rifServiceStartupOptions.getDatabaseName());
-		
-		return urlText.toString();
+
+		return rifServiceStartupOptions.getDatabaseDriverPrefix()
+		       + ":"
+		       + "//"
+		       + rifServiceStartupOptions.getHost()
+		       + ":"
+		       + rifServiceStartupOptions.getPort()
+		       + ";"
+		       + "databaseName="
+		       + rifServiceStartupOptions.getDatabaseName();
 	}
 	
 	public void reclaimPooledReadConnection(
@@ -383,7 +359,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 			//Record original exception, throw sanitised, human-readable version
 			logException(exception);
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= SERVICE_MESSAGES.getMessage(
 					"sqlConnectionManager.error.unableToReclaimReadConnection");
 
 
@@ -391,12 +367,10 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 				MSSQLConnectionManager.class,
 				errorMessage,
 				exception);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-			throw rifServiceException;
+
+			throw new RIFServiceException(
+				RIFServiceError.DATABASE_QUERY_FAILED,
+				errorMessage);
 		}
 		
 	}

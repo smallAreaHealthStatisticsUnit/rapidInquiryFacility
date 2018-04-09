@@ -13,19 +13,19 @@ import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifServices.dataStorageLayer.common.AbstractSQLManager;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
 public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 	
 	private static final int POOLED_READ_ONLY_CONNECTIONS_PER_PERSON = 10;
 	private static final int POOLED_WRITE_CONNECTIONS_PER_PERSON = 5;
-	private static String lineSeparator = System.getProperty("line.separator");
-	
+	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
+
 	/** The rif service startup options. */
 	protected final RIFServiceStartupOptions rifServiceStartupOptions;
 	/** The initialisation query. */
@@ -117,12 +117,11 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFServiceMessages.getMessage("abstractSQLManager.error.unableToEnableDatabaseDebugging");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_TO_MAINTAIN_DEBUG, 
-					errorMessage);
-			throw rifServiceException;
+				= SERVICE_MESSAGES.getMessage("abstractSQLManager.error.unableToEnableDatabaseDebugging");
+
+			throw new RIFServiceException(
+				RIFServiceError.DB_UNABLE_TO_MAINTAIN_DEBUG,
+				errorMessage);
 		}
 		finally {
 			PGSQLQueryUtility.close(setupLogStatement);
@@ -155,7 +154,7 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 	 *
 	 * @return the string
 	 */
-	protected String generateURLText() {
+	private String generateURLText() {
 		
 		return rifServiceStartupOptions.getDatabaseDriverPrefix()
 		       + ":"
