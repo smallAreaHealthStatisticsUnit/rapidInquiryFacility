@@ -1,12 +1,8 @@
 package rifServices.test.services.ms;
 
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 
 import org.junit.After;
-import org.junit.Before;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -23,31 +19,13 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.StudyResultRetrievalContext;
 import rifServices.businessConceptLayer.StudySummary;
-import rifServices.dataStorageLayer.common.SQLManager;
-import rifServices.dataStorageLayer.common.ServiceResources;
-import rifServices.dataStorageLayer.common.StudyExtractManager;
-import rifServices.dataStorageLayer.common.SubmissionManager;
-import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
-import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
-import rifServices.system.RIFServiceStartupOptions;
 import rifServices.test.AbstractRIFTestCase;
-import rifServices.test.util.Bundle;
-
-import static org.mockito.Mockito.when;
 
 public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 
 	protected static double TOLERANCE = 0.0001;
-	
-	MSSQLTestRIFStudyServiceBundle rifServiceBundle;
-	protected MSSQLRIFStudySubmissionService rifStudySubmissionService;
-	protected MSSQLTestRIFStudyRetrievalService rifStudyRetrievalService;
 
-	
-	/** The test user. */
-	private User validUser;
-	
 	/** The invalid user. */
 	private User emptyUser;
 
@@ -143,32 +121,15 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	private Project masterEmptyProject;
 	private Project masterNonExistentProject;
 	private Project masterMaliciousProject;
-	
-	private RIFServiceStartupOptions startupOptions;
-
-	@Mock
-	public ServiceResources resources;
-
-	@Mock
-	public SQLManager sqlMgr;
-
-	@Mock
-	public SubmissionManager subMgr;
-
-	@Mock
-	public StudyExtractManager extractMgr;
-
 
 	public AbstractRIFServiceTestCase() {
-		rifServiceBundle
-			= new MSSQLTestRIFStudyServiceBundle();
+		super();
 
 		FieldValidationUtility fieldValidationUtility 
 			= new FieldValidationUtility();
 		String maliciousFieldValue 
-			= fieldValidationUtility.getTestMaliciousFieldValue();		
-	
-		validUser = User.newInstance("kgarwood", "11.111.11.228");
+			= fieldValidationUtility.getTestMaliciousFieldValue();
+
 		nonExistentUser = User.newInstance("nobody", "11.111.11.228");
 		emptyUser = User.newInstance(null, "11.111.11.228");
 		maliciousUser = User.newInstance(maliciousFieldValue, "11.111.11.228");
@@ -331,10 +292,6 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 		nonExistentGeoLevelSourceAttribute = "obyyyserved";
 		maliciousGeoLevelSourceAttribute
 			= getTestMaliciousValue();
-
-
-		
-		
 		masterValidStudySummary
 			= StudySummary.newInstance(
 				"1", 
@@ -377,28 +334,10 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 				"Test Project. Will be disabled when in production.");
 		
 		try {
-			initialiseService();
+			initialiseService(resources);
 		}
 		catch(RIFServiceException rifServiceException) {
 		
-		}
-	}
-
-	@Before
-	public void setup() {
-
-		MockitoAnnotations.initMocks(this);
-
-		when(resources.getSqlConnectionManager()).thenReturn(sqlMgr);
-		when(sqlMgr.userExists(validUser.getUserID())).thenReturn(true);
-		when(resources.getRIFSubmissionManager()).thenReturn(subMgr);
-		when(resources.getSQLStudyExtractManager()).thenReturn(extractMgr);
-
-		try {
-			initialiseService();			
-		}
-		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
 		}
 	}
 
@@ -411,24 +350,8 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 		catch(RIFServiceException exception) {
 			exception.printStackTrace(System.out);
 		}				
-	}	
-
-	void initialiseService() throws RIFServiceException {
-
-		rifServiceBundle = new MSSQLTestRIFStudyServiceBundle();
-
-		ResourceBundle testBundle = new Bundle();
-
-		startupOptions = RIFServiceStartupOptions.newInstance(
-				false, true, testBundle);
-//		startupOptions.setMaximumMapAreasAllowedForSingleDisplay(200);
-		rifServiceBundle.initialise(startupOptions);
-		rifStudySubmissionService 
-			= (MSSQLRIFStudySubmissionService) rifServiceBundle.getRIFStudySubmissionService();
-		rifStudyRetrievalService
-			= (MSSQLTestRIFStudyRetrievalService) rifServiceBundle.getRIFStudyRetrievalService();
 	}
-	
+
 	protected MSSQLTestRIFStudyServiceBundle getRIFServiceBundle() {
 		return rifServiceBundle;
 	}
@@ -686,9 +609,5 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	
 	protected Project cloneMaliciousProject() {
 		return Project.createCopy(masterMaliciousProject);
-	}
-	
-	protected RIFServiceStartupOptions getStartupOptions() {
-		return startupOptions;
 	}
 }

@@ -3,17 +3,18 @@ package rifServices.dataStorageLayer.ms;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.dataStorageLayer.common.ServiceBundle;
-import rifServices.system.RIFServiceStartupOptions;
-import rifGenericLibrary.util.FieldValidationUtility;
+import rifServices.dataStorageLayer.common.ServiceResources;
 
 class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 
 	private boolean isInitialised;
-	private MSSQLRIFServiceResources rifServiceResources;
+	private ServiceResources rifServiceResources;
 	private RIFStudySubmissionAPI rifStudySubmissionService;
 	private RIFStudyResultRetrievalAPI rifStudyRetrievalService;
 
@@ -21,30 +22,21 @@ class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 		isInitialised = false;
 	}
 		
-	public synchronized void initialise(
-		final RIFServiceStartupOptions rifServiceStartupOptions) 
-		throws RIFServiceException {
+	public synchronized void initialise(final ServiceResources resources)
+			throws RIFServiceException {
 		
 		if (!isInitialised) {
-			
-			rifServiceResources
-				= MSSQLRIFServiceResources.newInstance(rifServiceStartupOptions);
-			setRIFServiceResources(rifServiceResources);
 
-			rifStudySubmissionService.initialise(rifServiceResources);		
+			rifServiceResources = resources;
+
+			rifStudySubmissionService.initialise(rifServiceResources);
 			rifStudyRetrievalService.initialise(rifServiceResources);
 		
 			isInitialised = true;
 		}
 	}	
 	
-	private void setRIFServiceResources(
-					final MSSQLRIFServiceResources rifServiceResources) {
-
-		this.rifServiceResources = rifServiceResources;
-	}
-	
-	protected MSSQLRIFServiceResources getRIFServiceResources() {
+	protected ServiceResources getRIFServiceResources() {
 		return rifServiceResources;
 	}
 	
@@ -108,7 +100,7 @@ class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 				password);
 			
 			//Delegate operation to a specialised manager class
-			MSSQLConnectionManager sqlConnectionManager
+			SQLManager sqlConnectionManager
 				= rifServiceResources.getSqlConnectionManager();
 			sqlConnectionManager.login(userID, password);
 		}
@@ -137,7 +129,7 @@ class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 				userID);
 			
 			//Delegate operation to a specialised manager class
-			MSSQLConnectionManager sqlConnectionManager
+			SQLManager sqlConnectionManager
 				= rifServiceResources.getSqlConnectionManager();
 			result = sqlConnectionManager.isLoggedIn(userID);			
 		}
@@ -176,7 +168,7 @@ class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 		
 			//Check for security violations
 			user.checkSecurityViolations();
-			MSSQLConnectionManager sqlConnectionManager
+			SQLManager sqlConnectionManager
 				= rifServiceResources.getSqlConnectionManager();
 			sqlConnectionManager.logout(user);		
 		}
@@ -192,7 +184,7 @@ class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 	protected void deregisterAllUsers() 
 		throws RIFServiceException {		
 
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		sqlConnectionManager.deregisterAllUsers();
 	}
@@ -204,7 +196,7 @@ class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 		throws RIFServiceException {
 			
 		boolean userDeregistered = false;
-		MSSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (rifServiceException instanceof RIFServiceSecurityException) {
 			//gives opportunity to log security issue and deregister user

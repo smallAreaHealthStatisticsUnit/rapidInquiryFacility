@@ -63,7 +63,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 	}
  
 	/**
-	 * Use appropariate table name case.
+	 * Use appropriate table name case.
 	 *
 	 * @param tableComponentName the table component name
 	 * @return the string

@@ -1,6 +1,7 @@
 package rifServices.dataStorageLayer.ms;
 
 import rifGenericLibrary.system.RIFServiceException;
+import rifServices.dataStorageLayer.common.ServiceResources;
 
 public final class MSSQLTestRIFStudyServiceBundle extends MSSQLAbstractStudyServiceBundle {
 
@@ -17,7 +18,7 @@ public final class MSSQLTestRIFStudyServiceBundle extends MSSQLAbstractStudyServ
 		setRIFStudyRetrievalService(rifStudyRetrievalService);		
 	}
 	
-	public MSSQLRIFServiceResources getRIFServiceResources() {
+	public ServiceResources getRIFServiceResources() {
 		return super.getRIFServiceResources();
 	}
 

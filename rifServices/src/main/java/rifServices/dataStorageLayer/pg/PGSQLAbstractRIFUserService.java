@@ -1076,10 +1076,9 @@ abstract class PGSQLAbstractRIFUserService {
 		return result;	
 	}
 
-	public void initialise(final Object startupParameter) {
+	public void initialise(final ServiceResources startupParameter) {
 
-		this.rifServiceResources
-			= (ServiceResources) startupParameter;
+		this.rifServiceResources = startupParameter;
 	}
 
 	void setServiceName(final String serviceName) {

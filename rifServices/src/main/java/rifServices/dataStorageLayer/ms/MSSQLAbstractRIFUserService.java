@@ -1080,10 +1080,9 @@ class MSSQLAbstractRIFUserService {
 		return result;	
 	}
 
-	public void initialise(final Object startupParameter) {
+	public void initialise(final ServiceResources startupParameter) {
 
-		this.rifServiceResources
-			= (MSSQLRIFServiceResources) startupParameter;
+		this.rifServiceResources = startupParameter;
 	}
 
 	void setServiceName(final String serviceName) {

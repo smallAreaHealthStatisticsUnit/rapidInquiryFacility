@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import rifServices.dataStorageLayer.common.ServiceResources;
 
 /**
  * Defines methods that are common to both study submission and study result
@@ -92,5 +93,5 @@ public interface RIFStudyServiceAPI {
 					final GeoLevelSelect geoLevelSelect)
 		throws RIFServiceException;	
 	
-	void initialise(final Object startupParameter) throws RIFServiceException;
+	void initialise(final ServiceResources startupParameter) throws RIFServiceException;
 }

@@ -242,7 +242,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography = Geography.createCopy(_geography);
@@ -251,7 +251,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 		//no need to defensively copy sortingOrder because
 		//it is an enumerated type
 		
-		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();		
+		ArrayList<AgeGroup> results = new ArrayList<>();
 		Connection connection = null;
 		try {			
 			//Check for empty parameters
@@ -300,9 +300,8 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 			//Delegate operation to a specialised manager class
 			AgeGenderYearManager sqlAgeGenderYearManager
 				= rifServiceResources.getSqlAgeGenderYearManager();
-			results
-				= sqlAgeGenderYearManager.getAgeGroups(user, connection, geography, ndPair,
-					sortingOrder);
+			results = sqlAgeGenderYearManager.getAgeGroups(user, connection, geography, ndPair,
+			                                               sortingOrder);
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation

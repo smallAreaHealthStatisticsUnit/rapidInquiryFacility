@@ -38,6 +38,8 @@ import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.ServiceResources;
+import rifServices.dataStorageLayer.common.ServiceResourcesFactory;
 import rifServices.dataStorageLayer.ms.MSSQLProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.ms.MSSQLSampleTestObjectGenerator;
 import rifServices.fileFormats.RIFStudySubmissionXMLReader;
@@ -65,14 +67,15 @@ public class WebService {
 						= RIFServiceStartupOptions.newInstance(
 						true,
 						false);
-		
+
 		try {
-			rifStudyServiceBundle.initialise(rifServiceStartupOptions);
+			rifStudyServiceBundle.initialise(
+					ServiceResourcesFactory.getInstance(rifServiceStartupOptions));
 		}
 		catch(RIFServiceException exception) {
 			rifLogger.error(this.getClass(),
 					getClass().getSimpleName()
-					+ " rifStudyServiceBundle.initialise error", exception);
+					+ ".initialise error", exception);
 		}
 	}
 	
