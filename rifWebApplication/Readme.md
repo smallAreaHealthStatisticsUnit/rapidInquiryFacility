@@ -1040,11 +1040,11 @@ root of the github repository, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquir
 ```
 mvn --version
 cd rifGenericLibrary
-mvn -Dmaven.test.skip=true install
+mvn install
 cd ..\rapidInquiryFacility
-mvn -Dmaven.test.skip=true install
+mvn install
 cd ..\rifServices
-mvn -Dmaven.test.skip=true install
+mvn install
 ```
 
 Maven produces a lot of output:
@@ -1057,7 +1057,7 @@ Java version: 1.8.0_111, vendor: Oracle Corporation
 Java home: c:\Program Files\Java\jdk1.8.0_111\jre
 Default locale: en_GB, platform encoding: Cp1252
 OS name: "windows 8.1", version: "6.3", arch: "amd64", family: "dos"
-cd rifGenericLibrary; mvn -Dmaven.test.skip=true install
+cd rifGenericLibrary; mvn install
 [INFO] Scanning for projects...
 [INFO]
 [INFO] ------------------------------------------------------------------------
@@ -1083,7 +1083,7 @@ development team.
 
 The order is important; the directories must be built in the order: rifGenericLibrary, rapidInquiryFacility, rifServices. It is always
 assumed you build taxonomyServices later. If you get a build failure try a *mvn clean* in each directory first; then retry with a 
-*mvn  -Dmaven.test.skip=true install*.
+*mvn install*.
 
 This method  does not build the *taxonomyServices* or the web application 7zip file.
 
@@ -1150,7 +1150,7 @@ If SAHSU has supplied a taxonomyServices.war file skip to step 3.
    e.g. C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\taxonomyServices and type:
 
 	```
-	mvn –Dmaven.test.skip=TRUE install
+	mvn install
 	```
 
 	Log from a succsful web service deployment:

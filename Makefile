@@ -46,7 +46,6 @@
 #
 
 OS?=Unknown
-MAVEN_FLAGS=-Dmaven.test.skip=true
 ifeq ($(OS),Windows_NT)
 	MAVEN=mvn
 	7ZIP="C:\Program Files\7-Zip\7z.exe"

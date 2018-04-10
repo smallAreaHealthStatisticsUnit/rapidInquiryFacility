@@ -82,7 +82,7 @@ endif
 all: $(TARGETS)
 
 $(TARGETS):
-	$(RUN) build.log ../../rapidInquiryFacility $(MVN) --errors clean install -Dmaven.test.skip=true
+	$(RUN) build.log ../../rapidInquiryFacility $(MVN) --errors clean install
 	$(RUN) war.log ../../rifServices $(MVN) --errors war:war
 	$(DELETE) rifServices.war 
 	$(COPY) ../../rifServices/target/rifServices-0.0.1-SNAPSHOT.war .
