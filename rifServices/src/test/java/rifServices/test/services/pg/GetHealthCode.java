@@ -10,8 +10,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -102,28 +104,25 @@ public final class GetHealthCode
 
 	
 	@Test
-	public void getHealthCode_COMMON1() {
-		try {
-			User validUser = cloneValidUser();
+	@Ignore
+	public void getHealthCode_COMMON1() throws RIFServiceException {
 
-			HealthCode healthCode = cloneValidHealthCode();
-			
-			HealthCode result
-				= rifStudySubmissionService.getHealthCode(
-					validUser, 
-					healthCode.getCode(), 
-					healthCode.getNameSpace());
-			assertNotNull(result);
-			assertEquals(
-				healthCode.getCode(), 
-				result.getCode());
-			assertEquals(
-				healthCode.getNameSpace(),
-				result.getNameSpace());
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
+		User validUser = cloneValidUser();
+
+		HealthCode healthCode = cloneValidHealthCode();
+
+		HealthCode result
+			= rifStudySubmissionService.getHealthCode(
+				validUser,
+				healthCode.getCode(),
+				healthCode.getNameSpace());
+		assertNotNull(result);
+		assertEquals(
+			healthCode.getCode(),
+			result.getCode());
+		assertEquals(
+			healthCode.getNameSpace(),
+			result.getNameSpace());
 	}
 	
 	@Test
@@ -160,7 +159,7 @@ public final class GetHealthCode
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}
@@ -181,7 +180,7 @@ public final class GetHealthCode
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}
@@ -202,7 +201,7 @@ public final class GetHealthCode
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}
@@ -223,7 +222,7 @@ public final class GetHealthCode
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}
@@ -244,7 +243,7 @@ public final class GetHealthCode
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}
@@ -268,6 +267,7 @@ public final class GetHealthCode
 	}
 
 	@Test
+	@Ignore
 	public void getHealthCode_NONEXISTENT2() {
 		try {
 			User validUser = cloneValidUser();

@@ -742,28 +742,11 @@ public final class PGSQLSampleTestObjectGenerator {
 		
 		return rifStudySubmission;
 	}
-	
-	
-	
-	
+
 	public File generateSampleOutputFile() {
-		StringBuilder fileName = new StringBuilder();
-		fileName.append(".");
-		fileName.append(File.separator);
-		fileName.append("SampleOutputFile.txt");
-		File sampleOutputFile = new File(fileName.toString());
-		return sampleOutputFile;
+		final String fileName = "."
+		                        + File.separator
+		                        + "SampleOutputFile.txt";
+		return new File(fileName);
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

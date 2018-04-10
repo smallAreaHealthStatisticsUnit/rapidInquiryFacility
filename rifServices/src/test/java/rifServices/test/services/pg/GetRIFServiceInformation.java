@@ -1,18 +1,18 @@
 package rifServices.test.services.pg;
 
-import rifServices.businessConceptLayer.RIFServiceInformation;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.RIFServiceInformation;
+import rifServices.system.RIFServiceMessages;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-
-
-
-import org.junit.Test;
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -93,50 +93,38 @@ public final class GetRIFServiceInformation
 
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-	
 	@Test
-	public void getRIFServiceInformation_COMMON1() {
-		try {
-			User validUser = cloneValidUser();
-			RIFServiceInformation submissionServiceInformation
-				= rifStudySubmissionService.getRIFServiceInformation(validUser);			
-			String expectedSubmissionServiceName
-				= RIFServiceMessages.getMessage("rifStudySubmissionService.name");
-			assertEquals(
-					expectedSubmissionServiceName, 
-					submissionServiceInformation.getServiceName());
-			String expectedSubmissionServiceVersion	
-				= RIFServiceMessages.getMessage("rifStudySubmissionService.version");			
-			assertEquals(
-				Double.valueOf(expectedSubmissionServiceVersion),
-				submissionServiceInformation.getVersionNumber(),
-				0);
-			
-			RIFServiceInformation retrievalServiceInformation
-				= rifStudyRetrievalService.getRIFServiceInformation(validUser);
-			String expectedRetrievalServiceName
-				= RIFServiceMessages.getMessage("rifStudyRetrievalService.name");
-			assertEquals(
-				expectedRetrievalServiceName, 
-				retrievalServiceInformation.getServiceName());
-			String expectedRetrievalServiceVersion	
-				= RIFServiceMessages.getMessage("rifStudyRetrievalService.version");			
-			assertEquals(
-				Double.valueOf(expectedRetrievalServiceVersion),
-				retrievalServiceInformation.getVersionNumber(),
-				0);
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
+	@Ignore
+	public void getRIFServiceInformation_COMMON1() throws RIFServiceException {
+
+		User validUser = cloneValidUser();
+		RIFServiceInformation submissionServiceInformation
+			= rifStudySubmissionService.getRIFServiceInformation(validUser);
+		String expectedSubmissionServiceName
+			= RIFServiceMessages.getMessage("rifStudySubmissionService.name");
+		assertEquals(
+				expectedSubmissionServiceName,
+				submissionServiceInformation.getServiceName());
+		String expectedSubmissionServiceVersion
+			= RIFServiceMessages.getMessage("rifStudySubmissionService.version");
+		assertEquals(
+			Double.valueOf(expectedSubmissionServiceVersion),
+			submissionServiceInformation.getVersionNumber(),
+			0);
+
+		RIFServiceInformation retrievalServiceInformation
+			= rifStudyRetrievalService.getRIFServiceInformation(validUser);
+		String expectedRetrievalServiceName
+			= RIFServiceMessages.getMessage("rifStudyRetrievalService.name");
+		assertEquals(
+			expectedRetrievalServiceName,
+			retrievalServiceInformation.getServiceName());
+		String expectedRetrievalServiceVersion
+			= RIFServiceMessages.getMessage("rifStudyRetrievalService.version");
+		assertEquals(
+			Double.valueOf(expectedRetrievalServiceVersion),
+			retrievalServiceInformation.getVersionNumber(),
+			0);
 	}
 
 	@Test
@@ -163,7 +151,7 @@ public final class GetRIFServiceInformation
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 	}

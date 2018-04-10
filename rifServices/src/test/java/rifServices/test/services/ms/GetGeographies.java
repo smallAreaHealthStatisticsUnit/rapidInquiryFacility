@@ -9,6 +9,7 @@ import rifServices.system.RIFServiceError;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -102,6 +103,7 @@ public final class GetGeographies
 
 
 	@Test
+	@Ignore
 	public void getGeographies_COMMON1() {
 
 		try {

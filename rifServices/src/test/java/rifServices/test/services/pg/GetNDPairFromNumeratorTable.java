@@ -10,8 +10,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -92,40 +94,29 @@ public final class GetNDPairFromNumeratorTable
 
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-	
 	@Test
-	public void getNDPairFromNumeratorTable_COMMON1() {
-		try {
-			User validUser = cloneValidUser();
-			Geography validGeography = cloneValidGeography();
-			
-			NumeratorDenominatorPair validNDPair = cloneValidNDPair();
+	@Ignore
+	public void getNDPairFromNumeratorTable_COMMON1() throws RIFServiceException {
 
-			NumeratorDenominatorPair result
-				= rifStudySubmissionService.getNumeratorDenominatorPairFromNumeratorTable(
-					validUser, 
-					validGeography, 
-					validNDPair.getNumeratorTableName());
-			
-			Assert.assertNotNull(result);
-			assertEquals(
-				validNDPair.getNumeratorTableName(),
-				result.getNumeratorTableName());
-			
-			assertEquals(
-				validNDPair.getDenominatorTableName(),
-				result.getDenominatorTableName());
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}				
+		User validUser = cloneValidUser();
+		Geography validGeography = cloneValidGeography();
+
+		NumeratorDenominatorPair validNDPair = cloneValidNDPair();
+
+		NumeratorDenominatorPair result
+			= rifStudySubmissionService.getNumeratorDenominatorPairFromNumeratorTable(
+				validUser,
+				validGeography,
+				validNDPair.getNumeratorTableName());
+
+		Assert.assertNotNull(result);
+		assertEquals(
+			validNDPair.getNumeratorTableName(),
+			result.getNumeratorTableName());
+
+		assertEquals(
+			validNDPair.getDenominatorTableName(),
+			result.getDenominatorTableName());
 	}
 
 	@Test
@@ -143,7 +134,7 @@ public final class GetNDPairFromNumeratorTable
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}				
 	}
@@ -185,12 +176,13 @@ public final class GetNDPairFromNumeratorTable
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}				
 	}
 	
 	@Test
+	@Ignore
 	public void getNDPairFromNumeratorTable_EMPTY2() {
 		try {
 			User validUser = cloneValidUser();
@@ -227,7 +219,7 @@ public final class GetNDPairFromNumeratorTable
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}				
 	}
@@ -249,7 +241,7 @@ public final class GetNDPairFromNumeratorTable
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}				
 	}
@@ -277,6 +269,7 @@ public final class GetNDPairFromNumeratorTable
 	}
 	
 	@Test
+	@Ignore
 	public void getNDPairFromNumeratorTable_NONEXISTENT2() {
 		try {
 			User validUser = cloneValidUser();
@@ -299,6 +292,7 @@ public final class GetNDPairFromNumeratorTable
 	}
 	
 	@Test
+	@Ignore
 	public void getNDPairFromNumeratorTable_NONEXISTENT3() {
 		try {
 			User validUser = cloneValidUser();

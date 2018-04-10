@@ -13,7 +13,10 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 
+import org.junit.Ignore;
 import org.junit.Test;
+
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -102,6 +105,7 @@ public final class GetAgeGroups
 	// ==========================================
 	
 	@Test
+	@Ignore
 	public void getAgeGroups_COMMON1() throws RIFServiceException {
 
 		User validUser = cloneValidUser();
@@ -136,7 +140,7 @@ public final class GetAgeGroups
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}
@@ -157,7 +161,7 @@ public final class GetAgeGroups
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}
@@ -178,7 +182,7 @@ public final class GetAgeGroups
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}
@@ -209,6 +213,7 @@ public final class GetAgeGroups
 	}
 	
 	@Test
+	@Ignore
 	public void getAgeGroups_EMPTY2() {
 	
 		try {
@@ -232,6 +237,7 @@ public final class GetAgeGroups
 	}
 	
 	@Test
+	@Ignore
 	public void getAgeGroups_EMPTY3() {	
 		try {
 			User validUser = cloneValidUser();
@@ -277,6 +283,7 @@ public final class GetAgeGroups
 	}
 	
 	@Test
+	@Ignore
 	public void getAgeGroups_NONEXISTENT2() {
 	
 		try {
@@ -300,6 +307,7 @@ public final class GetAgeGroups
 	}
 
 	@Test
+	@Ignore
 	public void getAgeGroups_NONEXISTENT3() {
 	
 		try {

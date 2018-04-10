@@ -9,6 +9,7 @@ import rifServices.system.RIFServiceError;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -101,6 +102,7 @@ public final class GetDefaultGeoLevelSelectValue
 
 	
 	@Test
+	@Ignore
 	public void getDefaultGeoLevelSelectValue_COMMON1() {
 		try {
 			User validUser = cloneValidUser();
@@ -118,6 +120,7 @@ public final class GetDefaultGeoLevelSelectValue
 	}
 	
 	@Test
+	@Ignore
 	public void getDefaultGeoLevelSelectValue_NULL1() {
 
 		//empty user
@@ -155,6 +158,7 @@ public final class GetDefaultGeoLevelSelectValue
 	}
 	
 	@Test
+	@Ignore
 	public void getDefaultGeoLevelSelectValue_NULL2() {
 
 		//empty geography
@@ -174,6 +178,7 @@ public final class GetDefaultGeoLevelSelectValue
 	}
 	
 	@Test
+	@Ignore
 	public void getDefaultGeoLevelSelectValue_EMPTY2() {
 		try {			
 			User validUser = cloneValidUser();
@@ -214,6 +219,7 @@ public final class GetDefaultGeoLevelSelectValue
 	}
 
 	@Test
+	@Ignore
 	public void getDefaultGeoLevelSelectValue_NONEXISTENT2() {	
 
 		try {

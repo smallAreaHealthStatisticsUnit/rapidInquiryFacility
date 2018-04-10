@@ -11,6 +11,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -143,7 +144,7 @@ public final class IsInformationGovernancePolicyActive
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}

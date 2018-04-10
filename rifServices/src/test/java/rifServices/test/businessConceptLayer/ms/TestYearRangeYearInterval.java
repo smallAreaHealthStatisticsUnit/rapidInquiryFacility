@@ -2,6 +2,7 @@ package rifServices.test.businessConceptLayer.ms;
 
 import java.util.ArrayList;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import rifGenericLibrary.system.RIFServiceException;
@@ -15,7 +16,8 @@ import rifServices.test.AbstractRIFTestCase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public final class TestYearRangeYearInterval 
+@Ignore
+public final class TestYearRangeYearInterval
 	extends AbstractRIFTestCase {
 
 	private MSSQLTestRIFStudyServiceBundle rifStudyServiceBundle;

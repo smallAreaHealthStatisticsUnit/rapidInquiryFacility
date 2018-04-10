@@ -10,6 +10,7 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -108,6 +109,7 @@ public final class GetSexes
 	 * @return the genders accept valid inputs
 	 */
 	@Test
+	@Ignore
 	public void getSexes_COMMON1() {
 		try {
 			User validUser = cloneValidUser();
@@ -129,7 +131,7 @@ public final class GetSexes
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}

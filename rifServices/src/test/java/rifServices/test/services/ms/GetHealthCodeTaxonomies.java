@@ -10,7 +10,10 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 
+import org.junit.Ignore;
 import org.junit.Test;
+
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -100,6 +103,7 @@ public final class GetHealthCodeTaxonomies
 	// ==========================================
 	
 	@Test
+	@Ignore
 	public void getHealthCodeTaxonomies_COMMON1() {
 		try {
 			User validUser = cloneValidUser();
@@ -136,7 +140,7 @@ public final class GetHealthCodeTaxonomies
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 	}

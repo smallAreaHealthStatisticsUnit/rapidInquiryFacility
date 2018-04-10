@@ -7,6 +7,7 @@ import rifDataLoaderTool.dataStorageLayer.LinearWorkflowEnactor;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -112,6 +113,7 @@ public class TestCheck extends AbstractRIFDataLoaderTestCase {
 	}
 	
 	@Test
+	@Ignore
 	public void test2() {
 
 		LinearWorkflow numeratorWorkflow = getNumeratorWorkflow("sahsuland_cancer.csv");

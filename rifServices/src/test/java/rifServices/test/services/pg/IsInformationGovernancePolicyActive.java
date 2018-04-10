@@ -9,8 +9,10 @@ import rifGenericLibrary.system.RIFGenericLibraryError;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -115,20 +117,17 @@ public final class IsInformationGovernancePolicyActive
 
 
 	@Test
-	public void isInformationGovernancePolicyActive_COMMON1() {		
-		try {
-			//test check
-			User validUser = cloneValidUser();
-			
-			//until the Information Governance Tool is developed, this will remain 
-			//false
-			boolean isInformationGovernancePolicyActive
-				= rifStudySubmissionService.isInformationGovernancePolicyActive(validUser);
-			assertEquals(false, isInformationGovernancePolicyActive);
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
+	@Ignore
+	public void isInformationGovernancePolicyActive_COMMON1() throws RIFServiceException {
+
+		//test check
+		User validUser = cloneValidUser();
+
+		//until the Information Governance Tool is developed, this will remain
+		//false
+		boolean isInformationGovernancePolicyActive
+			= rifStudySubmissionService.isInformationGovernancePolicyActive(validUser);
+		assertEquals(false, isInformationGovernancePolicyActive);
 	}
 	
 	@Test
@@ -143,7 +142,7 @@ public final class IsInformationGovernancePolicyActive
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}

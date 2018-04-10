@@ -12,7 +12,10 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 
+import org.junit.Ignore;
 import org.junit.Test;
+
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -103,6 +106,7 @@ public final class GetNumeratorDenominatorPair
 	
 	
 	@Test
+	@Ignore
 	public void getNumeratorDenominatorPair_COMMON1() {
 		try {
 			User validUser = cloneValidUser();
@@ -135,7 +139,7 @@ public final class GetNumeratorDenominatorPair
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}
@@ -163,6 +167,7 @@ public final class GetNumeratorDenominatorPair
 	}
 
 	@Test
+	@Ignore
 	public void getNumeratorDenominatorPair_EMPTY2() {
 	
 		try {
@@ -201,12 +206,13 @@ public final class GetNumeratorDenominatorPair
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}
 
 	@Test
+	@Ignore
 	public void getNumeratorDenominatorPair_EMPTY3() {
 	
 		try {
@@ -245,7 +251,7 @@ public final class GetNumeratorDenominatorPair
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}

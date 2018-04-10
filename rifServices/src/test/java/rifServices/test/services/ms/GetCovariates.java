@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -109,6 +110,7 @@ public final class GetCovariates
 	// ==========================================
 
 	@Test
+	@Ignore
 	public void getCovariates_COMMON1() {
 		try {
 			
@@ -138,6 +140,7 @@ public final class GetCovariates
 	}
 
 	@Test
+	@Ignore
 	public void getCovariates_NULL1() {
 		try {
 			Geography validGeography = cloneValidGeography();
@@ -183,6 +186,7 @@ public final class GetCovariates
 	
 	
 	@Test
+	@Ignore
 	public void getCovariates_NULL2() {
 	
 		try {
@@ -205,6 +209,7 @@ public final class GetCovariates
 	}
 	
 	@Test
+	@Ignore
 	public void getCovariates_EMPTY2() {
 	
 		try {
@@ -229,6 +234,7 @@ public final class GetCovariates
 	
 		
 	@Test
+	@Ignore
 	public void getCovariates_NULL3() {
 					
 		try {
@@ -250,6 +256,7 @@ public final class GetCovariates
 	}
 		
 	@Test
+	@Ignore
 	public void getCovariates_EMPTY3() {
 					
 		try {
@@ -294,6 +301,7 @@ public final class GetCovariates
 	}
 	
 	@Test
+	@Ignore
 	public void getCovariates_NONEXISTENT2() {
 		
 		try {
@@ -317,6 +325,7 @@ public final class GetCovariates
 	
 		
 	@Test
+	@Ignore
 	public void getCovariates_NONEXISTENT3() {
 		
 		try {

@@ -1,17 +1,18 @@
 package rifServices.test.services.ms;
 
-import rifServices.businessConceptLayer.CalculationMethod;
-import rifServices.system.RIFServiceError;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 
 import org.junit.Test;
 
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.CalculationMethod;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -140,7 +141,7 @@ public final class GetAvailableCalculationMethods
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 	}

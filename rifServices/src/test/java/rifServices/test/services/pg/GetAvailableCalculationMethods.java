@@ -10,6 +10,7 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -103,17 +104,14 @@ public final class GetAvailableCalculationMethods
 
 	
 	@Test
-	public void getAvailableCalculationMethods_COMMON1() {
-		try {
-			User validUser = cloneValidUser();
-			ArrayList<CalculationMethod> calculationMethods
-				= rifStudySubmissionService.getAvailableCalculationMethods(validUser);
-			assertEquals(3, calculationMethods.size());
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();			
-		}		
+	@Ignore
+	public void getAvailableCalculationMethods_COMMON1() throws RIFServiceException {
+
+		User validUser = cloneValidUser();
+		ArrayList<CalculationMethod> calculationMethods
+			= rifStudySubmissionService.getAvailableCalculationMethods(validUser);
+		assertEquals(3, calculationMethods.size());
+
 	}
 	
 	@Test
@@ -140,7 +138,7 @@ public final class GetAvailableCalculationMethods
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 	}

@@ -3,6 +3,7 @@ package rifServices.dataStorageLayer.ms;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 
@@ -59,6 +60,7 @@ public final class AgeGenderYearManagerTest extends AbstractRIFServiceTestCase {
 	}
 
 	@Test
+	@Ignore
 	public void getAgeGroups_COMMON1() throws RIFServiceException {
 
 		User validUser = cloneValidUser();
@@ -78,6 +80,7 @@ public final class AgeGenderYearManagerTest extends AbstractRIFServiceTestCase {
 	}
 	
 	@Test
+	@Ignore
 	public void getAgeGroups_NULL1() {
 		try {
 			Geography validGeography = cloneValidGeography();
@@ -99,6 +102,7 @@ public final class AgeGenderYearManagerTest extends AbstractRIFServiceTestCase {
 	}
 	
 	@Test
+	@Ignore
 	public void getAgeGroups_NULL2() {
 		try {
 			User validUser = cloneValidUser();
@@ -120,6 +124,7 @@ public final class AgeGenderYearManagerTest extends AbstractRIFServiceTestCase {
 	}
 	
 	@Test
+	@Ignore
 	public void getAgeGroups_NULL3() {	
 		try {
 			User validUser = cloneValidUser();
@@ -234,6 +239,7 @@ public final class AgeGenderYearManagerTest extends AbstractRIFServiceTestCase {
 	}
 	
 	@Test
+	@Ignore
 	public void getAgeGroups_NONEXISTENT2() {
 	
 		try {
@@ -257,6 +263,7 @@ public final class AgeGenderYearManagerTest extends AbstractRIFServiceTestCase {
 	}
 
 	@Test
+	@Ignore
 	public void getAgeGroups_NONEXISTENT3() {
 	
 		try {

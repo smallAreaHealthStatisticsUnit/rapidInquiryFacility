@@ -13,6 +13,8 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
+
 /**
  *
  * <hr>
@@ -134,7 +136,7 @@ public final class GetProjects
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 	}

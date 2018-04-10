@@ -9,6 +9,7 @@ import rifGenericLibrary.system.RIFGenericLibraryError;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -118,6 +119,7 @@ public final class GetTileMakerTiles
 
 
 	@Test
+	@Ignore
 	public void GetTileMakerTiles_COMMON1() {
 		
 		try {
