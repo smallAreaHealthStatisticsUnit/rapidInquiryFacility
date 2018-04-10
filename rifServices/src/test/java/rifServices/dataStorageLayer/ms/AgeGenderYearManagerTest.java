@@ -1,33 +1,30 @@
 package rifServices.dataStorageLayer.ms;
 
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AgeGroup;
 import rifServices.businessConceptLayer.AgeGroupSortingOption;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
-import rifServices.dataStorageLayer.ms.MSSQLAgeGenderYearManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.test.services.ms.AbstractRIFServiceTestCase;
 
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.crypto.Data;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-
-public final class GetAgeGroups extends AbstractRIFServiceTestCase {
+public final class AgeGenderYearManagerTest extends AbstractRIFServiceTestCase {
 
 	private AgeGenderYearManager manager;
 
@@ -37,7 +34,10 @@ public final class GetAgeGroups extends AbstractRIFServiceTestCase {
 	@Mock
 	private RIFDatabaseProperties databaseProps;
 
-	public GetAgeGroups() {
+	@Mock
+	private RIFContextManager contextManager;
+
+	public AgeGenderYearManagerTest() {
 	}
 
 	@Before
@@ -50,9 +50,8 @@ public final class GetAgeGroups extends AbstractRIFServiceTestCase {
 		when(options.getRIFDatabaseProperties().getDatabaseType())
 				.thenReturn(DatabaseType.SQL_SERVER);
 		when(databaseProps.getDatabaseType()).thenReturn(DatabaseType.SQL_SERVER);
-		manager = new MSSQLAgeGenderYearManager(
-				new MSSQLRIFContextManager(resources.getRIFServiceStartupOptions()),
-		        resources.getRIFServiceStartupOptions());
+		manager = new MSSQLAgeGenderYearManager(contextManager,
+		                                        resources.getRIFServiceStartupOptions());
 
 		// This is a bit weird: we're telling a mock to return a real object. But I suppose
 		// it should work.

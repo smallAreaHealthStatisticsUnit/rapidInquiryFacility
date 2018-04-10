@@ -92,7 +92,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 	public PreparedStatement createPreparedStatement(final Connection connection,
 			final AbstractSQLQueryFormatter queryFormatter) throws SQLException {
 				
-		return PGSQLQueryUtility.createPreparedStatement(
+		return MSSQLQueryUtility.createPreparedStatement(
 			connection,
 			queryFormatter);
 

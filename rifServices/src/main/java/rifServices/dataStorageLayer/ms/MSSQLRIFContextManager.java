@@ -1009,7 +1009,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 			checkGeographyExistsResultSet 
 				= checkGeographyExistsStatement.executeQuery();
 			
-			if (checkGeographyExistsResultSet.next() == false) {
+			if (!checkGeographyExistsResultSet.next()) {
 				
 				//ERROR: no such geography exists
 				String recordType
