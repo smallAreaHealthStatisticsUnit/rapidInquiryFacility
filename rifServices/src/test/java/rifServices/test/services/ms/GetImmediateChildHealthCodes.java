@@ -1,21 +1,20 @@
 package rifServices.test.services.ms;
 
-
-import rifServices.businessConceptLayer.HealthCode;
-import rifServices.system.RIFServiceError;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifServices.test.services.CommonHealthCodeProviderTestCase;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 
 import org.junit.Ignore;
 import org.junit.Test;
+
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.system.RIFServiceError;
+import rifServices.test.services.CommonHealthCodeProviderTestCase;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
@@ -79,8 +78,7 @@ import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_P
  *
  */
 
-public final class GetImmediateChildHealthCodes
-		extends CommonHealthCodeProviderTestCase {
+public final class GetImmediateChildHealthCodes extends CommonHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants

@@ -1,19 +1,19 @@
 package rifServices.test.services.ms;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.system.RIFServiceError;
-import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.test.services.CommonHealthCodeProviderTestCase;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-
-import org.junit.Ignore;
-import org.junit.Test;
 
 import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
@@ -77,8 +77,7 @@ import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_P
  *
  */
 
-public final class GetHealthCode
-		extends CommonHealthCodeProviderTestCase {
+public final class GetHealthCode extends CommonHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants
