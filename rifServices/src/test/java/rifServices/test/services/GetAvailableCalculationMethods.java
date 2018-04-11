@@ -8,7 +8,6 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.CalculationMethod;
-import rifServices.test.services.CommonRIFServiceTestCase;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
