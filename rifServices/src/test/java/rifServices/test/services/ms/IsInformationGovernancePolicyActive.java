@@ -1,15 +1,14 @@
 package rifServices.test.services.ms;
 
-
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifServices.system.RIFServiceError;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
+
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
@@ -116,20 +115,16 @@ public final class IsInformationGovernancePolicyActive
 
 
 	@Test
-	public void isInformationGovernancePolicyActive_COMMON1() {		
-		try {
-			//test check
-			User validUser = cloneValidUser();
-			
-			//until the Information Governance Tool is developed, this will remain 
-			//false
-			boolean isInformationGovernancePolicyActive
-				= rifStudySubmissionService.isInformationGovernancePolicyActive(validUser);
-			assertEquals(false, isInformationGovernancePolicyActive);
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
+	public void isInformationGovernancePolicyActive_COMMON1() throws RIFServiceException {
+
+		//test check
+		User validUser = cloneValidUser();
+
+		//until the Information Governance Tool is developed, this will remain
+		//false
+		boolean isInformationGovernancePolicyActive =
+				rifStudySubmissionService.isInformationGovernancePolicyActive(validUser);
+		assertFalse(isInformationGovernancePolicyActive);
 	}
 	
 	@Test

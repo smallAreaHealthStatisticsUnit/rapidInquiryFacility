@@ -1,16 +1,15 @@
 package rifServices.test.services.pg;
 
-
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifServices.system.RIFServiceError;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Ignore;
 import org.junit.Test;
+
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
@@ -127,7 +126,7 @@ public final class IsInformationGovernancePolicyActive
 		//false
 		boolean isInformationGovernancePolicyActive
 			= rifStudySubmissionService.isInformationGovernancePolicyActive(validUser);
-		assertEquals(false, isInformationGovernancePolicyActive);
+		assertFalse(isInformationGovernancePolicyActive);
 	}
 	
 	@Test
