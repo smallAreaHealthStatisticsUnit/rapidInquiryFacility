@@ -1,16 +1,16 @@
 package rifServices.test.services.pg;
 
 import rifServices.businessConceptLayer.CalculationMethod;
-import rifServices.system.RIFServiceError;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifServices.test.services.CommonRIFServiceTestCase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -74,8 +74,7 @@ import org.junit.Test;
  *
  */
 
-public final class GetAvailableCalculationMethods 
-	extends AbstractRIFServiceTestCase {
+public final class GetAvailableCalculationMethods extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -104,14 +103,12 @@ public final class GetAvailableCalculationMethods
 
 	
 	@Test
-	@Ignore
 	public void getAvailableCalculationMethods_COMMON1() throws RIFServiceException {
 
 		User validUser = cloneValidUser();
 		ArrayList<CalculationMethod> calculationMethods
 			= rifStudySubmissionService.getAvailableCalculationMethods(validUser);
 		assertEquals(3, calculationMethods.size());
-
 	}
 	
 	@Test

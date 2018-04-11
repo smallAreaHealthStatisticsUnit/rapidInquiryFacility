@@ -5,7 +5,8 @@ import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.Geography;
-import rifServices.system.RIFServiceError;
+import rifServices.test.services.CommonRIFServiceTestCase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -74,8 +75,7 @@ import java.util.ArrayList;
  *
  */
 
-public final class GetGeographies 
-	extends AbstractRIFServiceTestCase {
+public final class GetGeographies extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

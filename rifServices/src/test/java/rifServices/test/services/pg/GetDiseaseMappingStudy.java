@@ -7,6 +7,7 @@ import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.pg.PGSQLSampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 import rifServices.fileFormats.RIFZipFileWriter;
+import rifServices.test.services.CommonRIFServiceTestCase;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -78,8 +79,7 @@ import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_P
  *
  */
 
-public final class GetDiseaseMappingStudy 
-	extends AbstractRIFServiceTestCase {
+public final class GetDiseaseMappingStudy extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -154,7 +154,6 @@ public final class GetDiseaseMappingStudy
 	
 	
 	@Test
-	@Ignore
 	public void getDiseaseMappingStudy_EMPTY1() throws RIFServiceException {
 
 		User validUser = cloneValidUser();
@@ -172,7 +171,6 @@ public final class GetDiseaseMappingStudy
 	}
 	
 	@Test
-	@Ignore
 	public void submitStudy_EMPTY1() throws RIFServiceException {
 
 		User validUser = cloneValidUser();

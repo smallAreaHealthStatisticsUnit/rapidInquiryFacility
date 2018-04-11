@@ -6,6 +6,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.*;
 import rifServices.system.*;
+import rifServices.test.services.CommonRIFServiceTestCase;
 
 import java.util.ArrayList;
 
@@ -79,8 +80,8 @@ import org.junit.Test;
  *
  */
 
-public final class GetCovariates 
-	extends AbstractRIFServiceTestCase {
+public final class GetCovariates
+		extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

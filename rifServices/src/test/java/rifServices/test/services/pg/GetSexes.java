@@ -1,10 +1,11 @@
 package rifServices.test.services.pg;
 
 import rifServices.businessConceptLayer.Sex;
-import rifServices.system.RIFServiceError;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifServices.test.services.CommonRIFServiceTestCase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -74,8 +75,7 @@ import org.junit.Test;
  *
  */
 
-public final class GetSexes 
-	extends AbstractRIFServiceTestCase {
+public final class GetSexes extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

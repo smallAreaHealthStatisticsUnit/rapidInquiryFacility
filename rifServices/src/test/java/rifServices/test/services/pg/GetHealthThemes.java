@@ -6,6 +6,8 @@ import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.system.RIFServiceError;
+import rifServices.test.services.CommonRIFServiceTestCase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -76,8 +78,7 @@ import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_P
  *
  */
 
-public final class GetHealthThemes 
-	extends AbstractRIFServiceTestCase {
+public final class GetHealthThemes extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

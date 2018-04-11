@@ -7,6 +7,7 @@ import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.ms.MSSQLSampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 import rifServices.fileFormats.RIFZipFileWriter;
+import rifServices.test.services.CommonRIFServiceTestCase;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -76,8 +77,8 @@ import org.junit.Test;
  *
  */
 
-public final class GetDiseaseMappingStudy 
-	extends AbstractRIFServiceTestCase {
+public final class GetDiseaseMappingStudy
+		extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

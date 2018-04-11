@@ -7,6 +7,8 @@ import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.system.RIFServiceError;
+import rifServices.test.services.CommonRIFServiceTestCase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -77,8 +79,8 @@ import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_P
  *
  */
 
-public final class GetGeoLevelAreaValues 
-	extends AbstractRIFServiceTestCase {
+public final class GetGeoLevelAreaValues
+		extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

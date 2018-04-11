@@ -20,12 +20,12 @@ import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.test.services.ms.AbstractRIFServiceTestCase;
+import rifServices.test.services.CommonRIFServiceTestCase;
 
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 
-public final class AgeGenderYearManagerTest extends AbstractRIFServiceTestCase {
+public final class AgeGenderYearManagerTest extends CommonRIFServiceTestCase {
 
 	private AgeGenderYearManager manager;
 

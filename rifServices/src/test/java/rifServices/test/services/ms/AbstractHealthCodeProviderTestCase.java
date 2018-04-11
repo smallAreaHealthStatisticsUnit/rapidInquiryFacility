@@ -4,6 +4,7 @@ import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 
 import rifGenericLibrary.util.FieldValidationUtility;
+import rifServices.test.services.CommonRIFServiceTestCase;
 
 /**
  *
@@ -65,8 +66,7 @@ import rifGenericLibrary.util.FieldValidationUtility;
  *
  */
 
-public abstract class AbstractHealthCodeProviderTestCase 
-	extends AbstractRIFServiceTestCase {
+public abstract class AbstractHealthCodeProviderTestCase extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

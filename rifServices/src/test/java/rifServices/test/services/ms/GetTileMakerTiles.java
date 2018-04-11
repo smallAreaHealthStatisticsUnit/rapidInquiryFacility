@@ -2,10 +2,10 @@ package rifServices.test.services.ms;
 
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
-import rifServices.system.RIFServiceError;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifServices.test.services.CommonRIFServiceTestCase;
+
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
 
@@ -73,8 +73,8 @@ import org.junit.Test;
  *
  */
 
-public final class GetTileMakerTiles 
-	extends AbstractRIFServiceTestCase {
+public final class GetTileMakerTiles
+		extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

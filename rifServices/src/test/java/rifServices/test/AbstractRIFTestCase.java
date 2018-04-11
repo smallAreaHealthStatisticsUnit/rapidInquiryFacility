@@ -10,6 +10,9 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.dataStorageLayer.common.HealthOutcomeManager;
 import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.StudyExtractManager;
@@ -25,14 +28,21 @@ public class AbstractRIFTestCase {
 
 	@Mock
 	public ServiceResources resources;
+
 	@Mock
 	public SQLManager sqlMgr;
+
 	@Mock
 	public SubmissionManager subMgr;
+
 	@Mock
 	public StudyExtractManager extractMgr;
-	protected MSSQLRIFStudySubmissionService rifStudySubmissionService;
-	protected MSSQLTestRIFStudyRetrievalService rifStudyRetrievalService;
+
+	@Mock
+	HealthOutcomeManager healthOutcomeManager;
+
+	protected RIFStudySubmissionAPI rifStudySubmissionService;
+	protected RIFStudyResultRetrievalAPI rifStudyRetrievalService;
 	/** The test user. */
 	protected User validUser;
 	public MSSQLTestRIFStudyServiceBundle rifServiceBundle;
@@ -51,6 +61,25 @@ public class AbstractRIFTestCase {
 		validUser = User.newInstance("kgarwood", "11.111.11.228");
 		rifServiceBundle
 			= new MSSQLTestRIFStudyServiceBundle();
+	}
+
+	@Before
+	public void setup() {
+
+		MockitoAnnotations.initMocks(this);
+
+		when(resources.getSqlConnectionManager()).thenReturn(sqlMgr);
+		when(sqlMgr.userExists(validUser.getUserID())).thenReturn(true);
+		when(resources.getRIFSubmissionManager()).thenReturn(subMgr);
+		when(resources.getSQLStudyExtractManager()).thenReturn(extractMgr);
+		when(resources.getHealthOutcomeManager()).thenReturn(healthOutcomeManager);
+
+		try {
+			initialiseService(resources);
+		}
+		catch(RIFServiceException exception) {
+			exception.printStackTrace(System.out);
+		}
 	}
 
 	public ValidationPolicy getValidationPolicy() {
@@ -101,24 +130,6 @@ public class AbstractRIFTestCase {
 	 */
 	public String getTestMaliciousValue() {
 		return testMaliciousFieldValue;
-	}
-
-	@Before
-	public void setup() {
-
-		MockitoAnnotations.initMocks(this);
-
-		when(resources.getSqlConnectionManager()).thenReturn(sqlMgr);
-		when(sqlMgr.userExists(validUser.getUserID())).thenReturn(true);
-		when(resources.getRIFSubmissionManager()).thenReturn(subMgr);
-		when(resources.getSQLStudyExtractManager()).thenReturn(extractMgr);
-
-		try {
-			initialiseService(resources);
-		}
-		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
-		}
 	}
 
 	public void initialiseService(ServiceResources resources) throws RIFServiceException {

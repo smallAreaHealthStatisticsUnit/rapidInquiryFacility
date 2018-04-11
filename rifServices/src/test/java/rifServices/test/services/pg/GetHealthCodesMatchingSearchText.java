@@ -1,18 +1,18 @@
 package rifServices.test.services.pg;
 
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifServices.businessConceptLayer.HealthCode;
-import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.system.RIFServiceError;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 
 import org.junit.Ignore;
 import org.junit.Test;
+
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.businessConceptLayer.HealthCodeTaxonomy;
+import rifServices.system.RIFServiceError;
+
+import static org.junit.Assert.assertEquals;
 
 import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
@@ -76,8 +76,7 @@ import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_P
  *
  */
 
-public final class GetHealthCodesMatchingSearchText 
-	extends AbstractHealthCodeProviderTestCase {
+public final class GetHealthCodesMatchingSearchText extends AbstractHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants

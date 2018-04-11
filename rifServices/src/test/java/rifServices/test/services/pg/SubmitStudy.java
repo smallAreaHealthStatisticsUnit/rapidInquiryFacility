@@ -18,14 +18,14 @@ import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.dataStorageLayer.pg.PGSQLSampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
+import rifServices.test.services.CommonRIFServiceTestCase;
 
 import static org.junit.Assert.fail;
 
 import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 import static rifServices.system.RIFServiceError.INVALID_RIF_JOB_SUBMISSION;
 
-public final class SubmitStudy 
-	extends AbstractRIFServiceTestCase {
+public final class SubmitStudy extends CommonRIFServiceTestCase {
 
 	public SubmitStudy() {}
 

@@ -1,4 +1,4 @@
-package rifServices.test.services.ms;
+package rifServices.test.services;
 
 import java.util.ArrayList;
 
@@ -22,9 +22,7 @@ import rifServices.businessConceptLayer.StudySummary;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
 import rifServices.test.AbstractRIFTestCase;
 
-public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
-
-	protected static double TOLERANCE = 0.0001;
+public class CommonRIFServiceTestCase extends AbstractRIFTestCase {
 
 	/** The invalid user. */
 	private User emptyUser;
@@ -122,7 +120,7 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 	private Project masterNonExistentProject;
 	private Project masterMaliciousProject;
 
-	public AbstractRIFServiceTestCase() {
+	public CommonRIFServiceTestCase() {
 		super();
 
 		FieldValidationUtility fieldValidationUtility 
@@ -352,10 +350,6 @@ public class AbstractRIFServiceTestCase extends AbstractRIFTestCase {
 		}				
 	}
 
-	protected MSSQLTestRIFStudyServiceBundle getRIFServiceBundle() {
-		return rifServiceBundle;
-	}
-	
 	protected Geography cloneValidGeography() {
 		return Geography.createCopy(validGeography);
 	}

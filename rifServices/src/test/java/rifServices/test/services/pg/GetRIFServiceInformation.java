@@ -1,6 +1,5 @@
 package rifServices.test.services.pg;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import rifGenericLibrary.businessConceptLayer.User;
@@ -8,6 +7,7 @@ import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFServiceInformation;
 import rifServices.system.RIFServiceMessages;
+import rifServices.test.services.CommonRIFServiceTestCase;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -74,8 +74,7 @@ import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_P
  *
  */
 
-public final class GetRIFServiceInformation 
-	extends AbstractRIFServiceTestCase {
+public final class GetRIFServiceInformation extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -94,7 +93,6 @@ public final class GetRIFServiceInformation
 	}
 
 	@Test
-	@Ignore
 	public void getRIFServiceInformation_COMMON1() throws RIFServiceException {
 
 		User validUser = cloneValidUser();

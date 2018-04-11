@@ -3,6 +3,7 @@ package rifServices.test.services.pg;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
+import rifServices.test.services.CommonRIFServiceTestCase;
 
 import java.util.ArrayList;
 
@@ -70,8 +71,7 @@ import java.util.ArrayList;
  *
  */
 
-public final class TestGUIScenario 
-	extends AbstractRIFServiceTestCase {
+public final class TestGUIScenario extends CommonRIFServiceTestCase {
 
 	/**
 	 * The main method.
@@ -117,7 +117,7 @@ public final class TestGUIScenario
 	 */
 	public void runScenario() {
 		try {
-			initialiseService();
+			initialiseService(resources);
 			rifServiceBundle.login("kgarwood", "kgarwood");			
 			
 			System.out.println("Logging on as kgarwood...");

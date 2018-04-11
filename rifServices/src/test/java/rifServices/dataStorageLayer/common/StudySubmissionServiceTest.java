@@ -6,13 +6,13 @@ import org.junit.Test;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.test.services.ms.AbstractRIFServiceTestCase;
+import rifServices.test.services.CommonRIFServiceTestCase;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
-public final class StudySubmissionServiceTest extends AbstractRIFServiceTestCase {
+public final class StudySubmissionServiceTest extends CommonRIFServiceTestCase {
 
 	@Test
 	public void createStudyExtract_managerMethodCalled() throws RIFServiceException {

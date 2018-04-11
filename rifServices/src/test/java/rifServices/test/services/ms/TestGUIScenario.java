@@ -3,11 +3,12 @@ package rifServices.test.services.ms;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
+import rifServices.test.services.CommonRIFServiceTestCase;
 
 import java.util.ArrayList;
 
 public final class TestGUIScenario
-	extends AbstractRIFServiceTestCase {
+		extends CommonRIFServiceTestCase {
 
 	/**
 	 * The main method.

@@ -7,6 +7,7 @@ import rifServices.system.RIFServiceError;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifServices.test.services.CommonRIFServiceTestCase;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -76,8 +77,8 @@ import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_P
  *
  */
 
-public final class SubmitStudy 
-	extends AbstractRIFServiceTestCase {
+public final class SubmitStudy
+		extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

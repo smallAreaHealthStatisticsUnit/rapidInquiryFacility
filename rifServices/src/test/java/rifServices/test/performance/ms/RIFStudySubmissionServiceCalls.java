@@ -3,7 +3,7 @@ package rifServices.test.performance.ms;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.test.services.ms.AbstractRIFServiceTestCase;
+import rifServices.test.services.CommonRIFServiceTestCase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -16,7 +16,7 @@ import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
 
 @Ignore // Ignoring failing performance tests for now (MM 2018-04-05)
-public final class RIFStudySubmissionServiceCalls extends AbstractRIFServiceTestCase {
+public final class RIFStudySubmissionServiceCalls extends CommonRIFServiceTestCase {
 
 	private static final long NUMBER_REPETITIONS = 1000;
 	

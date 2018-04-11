@@ -10,12 +10,12 @@ import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
-import rifServices.test.services.pg.AbstractRIFServiceTestCase;
+import rifServices.test.services.CommonRIFServiceTestCase;
 
 import static org.junit.Assert.assertEquals;
 
 @Ignore // Ignoring failing performance tests for now (MM 2018-04-05)
-public final class RIFStudySubmissionServiceCalls extends AbstractRIFServiceTestCase {
+public final class RIFStudySubmissionServiceCalls extends CommonRIFServiceTestCase {
 
 	private static final long NUMBER_REPETITIONS = 1000;
 
