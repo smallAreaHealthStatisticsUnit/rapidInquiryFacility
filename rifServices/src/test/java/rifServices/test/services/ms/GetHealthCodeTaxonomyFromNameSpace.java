@@ -5,6 +5,8 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.system.RIFServiceError;
+import rifServices.test.services.CommonHealthCodeProviderTestCase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -73,8 +75,8 @@ import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_P
  *
  */
 
-public final class GetHealthCodeTaxonomyFromNameSpace 
-	extends AbstractHealthCodeProviderTestCase {
+public final class GetHealthCodeTaxonomyFromNameSpace
+		extends CommonHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants

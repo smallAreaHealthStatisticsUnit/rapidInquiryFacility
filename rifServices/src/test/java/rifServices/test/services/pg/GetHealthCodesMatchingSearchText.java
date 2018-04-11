@@ -11,6 +11,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.system.RIFServiceError;
+import rifServices.test.services.CommonHealthCodeProviderTestCase;
 
 import static org.junit.Assert.assertEquals;
 
@@ -76,7 +77,7 @@ import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_P
  *
  */
 
-public final class GetHealthCodesMatchingSearchText extends AbstractHealthCodeProviderTestCase {
+public final class GetHealthCodesMatchingSearchText extends CommonHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants

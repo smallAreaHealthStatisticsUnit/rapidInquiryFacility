@@ -7,6 +7,8 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.DisplayableItemSorter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifServices.test.services.CommonHealthCodeProviderTestCase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -77,8 +79,8 @@ import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_P
  *
  */
 
-public final class GetImmediateChildHealthCodes 
-	extends AbstractHealthCodeProviderTestCase {
+public final class GetImmediateChildHealthCodes
+		extends CommonHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants

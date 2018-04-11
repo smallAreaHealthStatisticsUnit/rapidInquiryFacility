@@ -6,7 +6,7 @@ import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.system.RIFServiceError;
 import rifGenericLibrary.util.FieldValidationUtility;
-import rifServices.test.services.ms.AbstractHealthCodeProviderTestCase;
+import rifServices.test.services.CommonHealthCodeProviderTestCase;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -77,7 +77,7 @@ import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_P
  *
  */
 
-public final class GetHealthCode extends AbstractHealthCodeProviderTestCase {
+public final class GetHealthCode extends CommonHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants
