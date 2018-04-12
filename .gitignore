@@ -104,3 +104,5 @@ rifWebApplication/src/main/webapp/WEB-INF/images/Thumbs.db
 **/*.iml
 *.todo
 rif.taskpaper
+rifDatabase/Postgres/psql_scripts/test_scripts/data/test_6_geojson_test_01.js
+rifDatabase/Postgres/psql_scripts/test_scripts/data/test_6_geojson_test_01.json
