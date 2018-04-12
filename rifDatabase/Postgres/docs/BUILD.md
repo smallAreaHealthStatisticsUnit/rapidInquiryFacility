@@ -17,7 +17,7 @@ RIF40 Postgres database build from Github
       - [2.3.2.1 Setup](#2321-setup)
         - [2.3.2.1.1 User setup](#23211-user-setup)
         - [2.2.2.1.2 Makefile.local settings](#23212-makefilelocal-settings)
-        - [2.3.2.1.3 Principal targets](#23213-principal-target)
+        - [2.3.2.1.3 Principal build target](#23213-principal-build-target)
         - [2.3.2.1.4 Issues with the build](#23214-issues-with-the-build)
         - [2.3.2.1.5 Other Build targets](#23214-other-build-targets)
       - [2.3.2.2 Porting limitations](#2322-porting-limitations)
@@ -218,6 +218,8 @@ The RIF database is built using GNU make for ease of portability. The RIF is bui
 
 ##### 2.3.2.1.1 User setup
 
+Make **MUST NOT** be run as an administrator but a normal user (completely the oppposite of the SQL Server port!). Beware: you must *NOT* have power user privilege. 
+
 For make to work it needs to be able to logon as following users:
 
 * postgres     - The database administrator. You will have set this password when you or the installer created 
@@ -227,13 +229,14 @@ For make to work it needs to be able to logon as following users:
 * notarifuser  - A security test user
 
 The password for all users must be set in your local .pgpass/pgpass.conf files. See [Postgres documentation](https://www.postgresql.org/docs/9.6/static/libpq-pgpass.html) for its location on various ports. 
-The postgres user password must be correct in the .pgpass/pgpass.conf file and in Makefile.local or you will be locked out of postgres. 
+The postgres user password must be correct in the .pgpass/pgpass.conf file and in Makefile.local or you may be locked out of postgres. 
 The accounts apart from postgres are created by *db_create.sql*.
 
 **IMPORTANT**
 
 * By default *&lt;user login&gt;* and *notarifuser* passwords are the same as the username. It is advisable to set
-  the *rif40* password to *rif40* for the moment as the middleware still uses hard coded passwords. This will be removed.  
+  the *rif40* password to *rif40* for the moment as the middleware still uses hard coded passwords. This will be removed. 
+* The *&lt;user login&gt;* password can be set using TESTPASSWORD in Makefile.local
 * By default Postgres uses MD5 authentication; the user password is idependent of the Windows password unless you set up
   operating system, Kerberos or LDAP authentication 
 * Before you build the database only the administrator account *postgres* is setup!.
@@ -257,7 +260,14 @@ well hidden on Windows 10, but you can type the path into Windows explorer! Choo
   ```PGDATABASE=sahsuland```
   and if required PGHOST and PGPORT to the user environment
   
-Once you have setup the *pgpass* file, check you can logon using psql as the database adminstrator account; *postgres*.
+
+Create as Administrator a directory for a system wide *psql* logon script (plsqrc) in Postgres 
+  
+```C:\Program Files\PostgreSQL\9.6\etc```
+
+This needs to be set so your database creation user can wruite file to this directory.
+   
+Once you have setup the *pgpass* file and the Postgres environment, check you can logon using psql as the database adminstrator account; *postgres*.
 ```
 psql -d postgres -U postgres
 You are connected to database "postgres" as user "postgres" on host "wpea-rif1" at port "5432".
@@ -303,6 +313,14 @@ SELECT 'md5'||md5('Imperial1234'||'rif40') AS password;
 
 The database creation script *db_create.sql* check tyo see of the current Postgres adminstrator (*postgres*) password is the 
 same as set in the Makefile, and will abort database creation if it is not.
+```
+psql:db_create.sql:147: INFO:  db_create.sql() User check: postgres
+psql:db_create.sql:147: INFO:  db_create.sql() rif40 needs to be created encrypted password will be ="md5971757ca86c61e2d8f618fe7ab7a32a1"
+psql:db_create.sql:147: ERROR:  db_create.sql() postgres encrypted password set in makefile="md5b631d55b5718b4d083a4b6e73e5fd0c5" differs from database: "md5ef9bbf3d76edb4da049ed82636ca74f1
+CONTEXT:  PL/pgSQL function inline_code_block line 53 at RAISE
+```
+
+You can change the password direct using the encrypted hash; ***beware this can get you locked out if you get it wrong**!
 ```
 ALTER USER postgres ENCRYPTED PASSWORD 'md5a210d9711fa5ffb4f170c60676c8a63e';
 ```
@@ -438,6 +456,13 @@ DEFAULT_WINDOWS_ADMIN_USER=Administrator
 #CREATE_SAHSULAND_ONLY=N
 
 #
+# Testuser: defaults to USERNAME; set if USERNAME is in mixed case or contains spaces
+# Testpassword: password for testuser; defaults to USERNAME; set if USERNAME is in mixed case or contains spaces
+#
+# TESTUSER=myusername
+# TESTPASSWORD=myusername
+
+#
 # Eof
 ```
 
@@ -461,8 +486,11 @@ Parameters:
   * sahsuland_dev: A complete database created from scripts complete with the *SAHSULAND* exmaple data.
   * sahusland: A production database creared from a script and an export. Eventually a scriot will be create install sahsulabd from the 
     export.
+
+* Use clean aswell to force rebuild
+	
 ```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make db_setup
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean db_setup
 ```
    **Note that this does not apply the alter scripts under development**
 
@@ -552,7 +580,29 @@ SAHSULAND and SAHSULAND_DEV setup completed OK
 
 ##### 2.3.2.1.4 Issues with the build
 
-* 1. Lack of networking with cause Node.js makefiles to fail:
+* 1. Cannot ccpy psqlrc to Postgres etc directory
+
+```
+Makefile:358: warning: overriding commands for target `../production/sahsuland.dump'
+Makefile:350: warning: ignoring old commands for target `../production/sahsuland.dump'
+Please create c:/Program Files/PostgreSQL/9.6/etc as root/Administrator
+Please create c:/Program Files/PostgreSQL/9.6/etc as root/Administrator
+powershell -ExecutionPolicy ByPass -file copy.ps1  ../etc/psqlrc c:/Program Files/PostgreSQL/9.6/etc
+Please Create: c:/Program Files/PostgreSQL/9.6/etc as root/Administrator
+```
+
+* Fix: permissions on directory, create if needed
+
+* 2. ENCRYPTED_POSTGRES_PASSWORD is incorrect in Makefile.local
+
+```
+psql:db_create.sql:147: INFO:  db_create.sql() User check: postgres
+psql:db_create.sql:147: INFO:  db_create.sql() rif40 needs to be created encrypted password will be ="md5971757ca86c61e2d8f618fe7ab7a32a1"
+psql:db_create.sql:147: ERROR:  db_create.sql() postgres encrypted password set in makefile="md5b631d55b5718b4d083a4b6e73e5fd0c5" differs from database: "md5ef9bbf3d76edb4da049ed82636ca74f1
+CONTEXT:  PL/pgSQL function inline_code_block line 53 at RAISE
+```
+
+* 2. Lack of networking with cause Node.js makefiles to fail:
 
      * Node.js program (in directory *../Node*) *topojson_convert.js*. This will be replaced by a 
        web service. This causes a web service testing error later in the build:
