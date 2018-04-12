@@ -4,19 +4,18 @@ package rifServices.test.businessConceptLayer.ms;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.ms.MSSQLSampleTestObjectGenerator;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 import rifServices.test.AbstractRIFTestCase;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.python.antlr.ast.For;
 
 public final class TestDiseaseMappingStudy
 	extends AbstractRIFTestCase {
 
 	/** The master disease mapping study. */
-	private MSSQLSampleTestObjectGenerator generator;
+	private SampleTestObjectGenerator generator;
 	private DiseaseMappingStudy masterDiseaseMappingStudy;
 
 	private AdjustableCovariate masterNearDistCovariate;
@@ -28,7 +27,7 @@ public final class TestDiseaseMappingStudy
 	 */
 	public TestDiseaseMappingStudy() {
 		generator
-			= new MSSQLSampleTestObjectGenerator();
+			= new SampleTestObjectGenerator();
 		masterDiseaseMappingStudy 
 			= generator.createSampleDiseaseMappingStudy();
 
@@ -268,8 +267,8 @@ public final class TestDiseaseMappingStudy
 	 * A disease mapping study is invalid if it has an invalid investigation
 	 */	
 	public void rejectInvalidInvestigation_ERROR() {
-		MSSQLSampleTestObjectGenerator generator 
-			= new MSSQLSampleTestObjectGenerator();
+		SampleTestObjectGenerator generator
+			= new SampleTestObjectGenerator();
 		Investigation invalidInvestigation
 			= generator.createSampleInvestigation("This is an invalid investigation");
 		HealthCode invalidHealthCode 
@@ -300,8 +299,8 @@ public final class TestDiseaseMappingStudy
 			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 		diseaseMappingStudy.clearInvestigations();
 		
-		MSSQLSampleTestObjectGenerator generator 
-			= new MSSQLSampleTestObjectGenerator();
+		SampleTestObjectGenerator generator
+			= new SampleTestObjectGenerator();
 		Investigation investigation1
 			= generator.createSampleInvestigation("Investigation 1");
 		NumeratorDenominatorPair ndPair1

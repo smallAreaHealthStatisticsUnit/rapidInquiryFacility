@@ -25,7 +25,6 @@ import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
@@ -38,7 +37,7 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.files.TomcatBase;
 import rifServices.system.files.TomcatFile;
-
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 /**
  * Main implementation of the RIF middleware.
  * <p>
@@ -136,8 +135,8 @@ abstract class PGSQLAbstractRIFStudySubmissionService extends PGSQLAbstractRIFUs
 			connection 
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 			String password=sqlConnectionManager.getUserPassword(user);
-			PGSQLSampleTestObjectGenerator testDataGenerator
-			= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator testDataGenerator
+			= new SampleTestObjectGenerator();
 			RIFStudySubmission studySubmission
 			= testDataGenerator.createSampleRIFJobSubmission();
 
@@ -210,8 +209,7 @@ abstract class PGSQLAbstractRIFStudySubmissionService extends PGSQLAbstractRIFUs
 					auditTrailMessage);
 
 			//Delegate operation to a specialised manager class		
-			PGSQLSampleTestObjectGenerator generator
-			= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator generator = new SampleTestObjectGenerator();
 			results = generator.getSampleCalculationMethods();
 		}
 		catch(RIFServiceException rifServiceException) {

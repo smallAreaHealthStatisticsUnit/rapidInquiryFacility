@@ -41,7 +41,7 @@ import rifServices.businessConceptLayer.YearRange;
 import rifServices.dataStorageLayer.common.ServiceBundle;
 import rifServices.dataStorageLayer.common.ServiceBundleFactory;
 import rifServices.dataStorageLayer.common.ServiceResourcesFactory;
-import rifServices.dataStorageLayer.ms.MSSQLSampleTestObjectGenerator;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.fileFormats.RIFStudySubmissionXMLReader;
 import rifServices.fileFormats.RIFStudySubmissionXMLWriter;
 import rifServices.system.RIFServiceError;
@@ -854,7 +854,7 @@ public class WebService {
 					user,
 					studyID);
 			
-			MSSQLSampleTestObjectGenerator generator = new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator generator = new SampleTestObjectGenerator();
 			RIFStudySubmission sampleStudySubmission
 				= generator.createSampleRIFJobSubmission();
 			sampleStudySubmission.setStudy(diseaseMappingStudy);

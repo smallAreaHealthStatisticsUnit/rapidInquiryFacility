@@ -30,6 +30,7 @@ import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 
 final class PGSQLRIFSubmissionManager extends PGSQLAbstractSQLManager
 		implements SubmissionManager {
@@ -180,8 +181,7 @@ final class PGSQLRIFSubmissionManager extends PGSQLAbstractSQLManager
 			final String studyID)
 		throws RIFServiceException {
 		
-		PGSQLSampleTestObjectGenerator testDataGenerator
-			= new PGSQLSampleTestObjectGenerator();
+		SampleTestObjectGenerator testDataGenerator = new SampleTestObjectGenerator();
 		RIFStudySubmission rifStudySubmission
 			= testDataGenerator.createSampleRIFJobSubmission();
 		DiseaseMappingStudy diseaseMappingStudy

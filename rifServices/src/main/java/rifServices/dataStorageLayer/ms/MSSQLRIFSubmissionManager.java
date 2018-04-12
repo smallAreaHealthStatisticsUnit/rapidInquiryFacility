@@ -25,6 +25,7 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.system.RIFServiceError;
@@ -181,8 +182,8 @@ public class MSSQLRIFSubmissionManager extends MSSQLAbstractSQLManager
 		final String studyID)
 		throws RIFServiceException {
 		
-		MSSQLSampleTestObjectGenerator testDataGenerator
-			= new MSSQLSampleTestObjectGenerator();
+		SampleTestObjectGenerator testDataGenerator
+			= new SampleTestObjectGenerator();
 		RIFStudySubmission rifStudySubmission
 			= testDataGenerator.createSampleRIFJobSubmission();
 		DiseaseMappingStudy diseaseMappingStudy

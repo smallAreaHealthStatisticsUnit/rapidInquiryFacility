@@ -32,6 +32,7 @@ import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.dataStorageLayer.common.StudyExtract;
 import rifServices.dataStorageLayer.common.StudyExtractManager;
 import rifServices.dataStorageLayer.common.SubmissionManager;
@@ -139,8 +140,8 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 				= sqlConnectionManager.assignPooledWriteConnection(user);
 			String password=sqlConnectionManager.getUserPassword(user);
 			
-			MSSQLSampleTestObjectGenerator testDataGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator testDataGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission studySubmission
 				= testDataGenerator.createSampleRIFJobSubmission();
 			
@@ -214,8 +215,8 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 				auditTrailMessage);
 
 			//Delegate operation to a specialised manager class		
-			MSSQLSampleTestObjectGenerator generator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator generator
+				= new SampleTestObjectGenerator();
 			results = generator.getSampleCalculationMethods();
 		}
 		catch(RIFServiceException rifServiceException) {

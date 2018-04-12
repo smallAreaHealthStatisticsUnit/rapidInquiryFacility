@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer.pg;
+package rifServices.dataStorageLayer.common;
 
 import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifServices.businessConceptLayer.*;
@@ -72,7 +72,7 @@ import java.io.File;
  *
  */
 
-public final class PGSQLSampleTestObjectGenerator {
+public final class SampleTestObjectGenerator {
 
 	// ==========================================
 	// Section Constants
@@ -89,7 +89,7 @@ public final class PGSQLSampleTestObjectGenerator {
 	/**
 	 * Instantiates a new sample test object generator.
 	 */
-	public PGSQLSampleTestObjectGenerator() {
+	public SampleTestObjectGenerator() {
 
 	}
 
@@ -115,8 +115,8 @@ public final class PGSQLSampleTestObjectGenerator {
 		project.setDescription("Test Project. Will be disabled when in production.");
 		rifStudySubmission.setProject(project);
 		
-		PGSQLSampleTestObjectGenerator generator
-			= new PGSQLSampleTestObjectGenerator();
+		SampleTestObjectGenerator generator
+			= new SampleTestObjectGenerator();
 		DiseaseMappingStudy diseaseMappingStudy
 			= generator.createSampleDiseaseMappingStudy();
 		rifStudySubmission.setStudy(diseaseMappingStudy);
@@ -336,8 +336,8 @@ public final class PGSQLSampleTestObjectGenerator {
 		diseaseMappingStudyArea.setGeoLevelToMap(geoLevelToMap);		
 		diseaseMappingStudy.setDiseaseMappingStudyArea(diseaseMappingStudyArea);
 	
-		PGSQLSampleTestObjectGenerator generator
-			= new PGSQLSampleTestObjectGenerator();
+		SampleTestObjectGenerator generator
+			= new SampleTestObjectGenerator();
 		//Investigation sampleInvestigation1
 		//	= generator.createSampleInvestigation("Lung cancer study");
 		Investigation sampleInvestigation1
@@ -742,11 +742,28 @@ public final class PGSQLSampleTestObjectGenerator {
 		
 		return rifStudySubmission;
 	}
-
+	
+	
+	
+	
 	public File generateSampleOutputFile() {
-		final String fileName = "."
-		                        + File.separator
-		                        + "SampleOutputFile.txt";
-		return new File(fileName);
+		StringBuilder fileName = new StringBuilder();
+		fileName.append(".");
+		fileName.append(File.separator);
+		fileName.append("SampleOutputFile.txt");
+		File sampleOutputFile = new File(fileName.toString());
+		return sampleOutputFile;
 	}
+
+	// ==========================================
+	// Section Errors and Validation
+	// ==========================================
+
+	// ==========================================
+	// Section Interfaces
+	// ==========================================
+
+	// ==========================================
+	// Section Override
+	// ==========================================
 }

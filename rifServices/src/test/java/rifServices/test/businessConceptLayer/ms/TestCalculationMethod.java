@@ -5,7 +5,7 @@ import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.CalculationMethod;
-import rifServices.dataStorageLayer.ms.MSSQLSampleTestObjectGenerator;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 import rifServices.test.*;
 import static org.junit.Assert.*;
@@ -97,8 +97,8 @@ public final class TestCalculationMethod
 	 * Instantiates a new test calculation method.
 	 */
 	public TestCalculationMethod() {
-		MSSQLSampleTestObjectGenerator generator
-			= new MSSQLSampleTestObjectGenerator();
+		SampleTestObjectGenerator generator
+			= new SampleTestObjectGenerator();
 		masterCalculationMethod 
 			= generator.createSampleBYMMethod();
 	}

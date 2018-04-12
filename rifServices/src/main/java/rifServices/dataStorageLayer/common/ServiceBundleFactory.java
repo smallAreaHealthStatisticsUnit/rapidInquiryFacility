@@ -23,9 +23,9 @@ public class ServiceBundleFactory {
 
 			case UNKNOWN:
 			default:
-				throw new IllegalStateException("Unknown database type: " +
-				                              resources.getRIFServiceStartupOptions()
-						                              .getRifDatabaseType());
+				throw new IllegalStateException(
+						"Unknown database type: "
+						+ resources.getRIFServiceStartupOptions().getRifDatabaseType());
 		}
 	}
 }
