@@ -7,9 +7,9 @@ RIF40 Postgres database build from Github
   - [2.1 Database Development Environment](#21-database-development-environment)
   - [2.2 Tool Chain](#22-tool-chain)
     - [2.2.1 Windows](#221-windows)
+    - [2.2.1.1 Fixing Windows Code page errors](#2211-fixing-windows-code-page-errors)
     - [2.2.2 Unixen](#222-unixen)
-    - [2.2.2.1 Fixing Windows Code page errors](#2221-fixing-windows-code-page-errors)
-  - [2.3] Building the Database](#23-building-the-database)
+  - [2.3 Building the Database](#23-building-the-database)
     - [2.3.1 Pre build Tests](#231-pre-build-tests)
       - [2.3.1.1 Configuring make](#2311-configuring-make)
     - [2.3.2 Build control using make](#232-build-control-using-make)
@@ -26,12 +26,12 @@ RIF40 Postgres database build from Github
 
 # 1. Postgres Requirements 
 
+The new V4.0 RIF uses either Postgres or Microsoft SQL server as a database backend.
+
 WARNING: The RIF requires Postgres 9.3 or above to work. 9.1 and 9.2 will not work. In particular PL/pgsql GET STACKED DIAGNOSTICS is used which 
 is a post 9.2 option. 
 
-The new V4.0 RIF uses either Postgres or Microsoft SQL server as a database backend.
-
-It is possible to insstall Windows Postgres RIF using pg_dump and scripts
+It is possible to insstall Windows Postgres RIF using pg_dump and scripts. This could also be used for MacOS and Linux with shell scripts instead.
 
 * Uses *pg_dump* and Powershell
 * Does **NOT** need *make* or *Node.js* 
@@ -40,15 +40,18 @@ See: [Windows Postgres Install using pg_dump and scripts](https://github.com/sma
 
 # 2. Postgres Setup
 
-Postgres is usually setup in one of three ways:
+Postgres is usually setup in one of four ways:
  
-* Standalone mode on a Windows firewalled laptop. This uses local database MD5 passwords and no SSL and is not considered secure for network use.
-* Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS 
+1 Standalone mode on a Windows firewalled laptop. This uses local database MD5 passwords and no SSL and is not considered secure for network use.
+2 Secure mode on a Windows server. This uses remote database connections using SSL; with MD5 passwords for psql and Java connectivity.
+3 Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS 
   connectivity) for psql and secure LDAP for Java connectivity.
-* Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for 
+4 Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for 
   psql and secure LDAP for Java connectivity.
 
-Postgres can proxy users (see ident.conf examples in the bottom of the buuild notes. 
+The front and and middleware requirew username and password authentications; so method 4 must not be used.
+  
+Postgres also can proxy users (see ident.conf examples in the bottom of the buuild notes. 
 Typically this is used to allow remote postgres administrator user authentication and to logon as the schema owner (rif40).
 
 ## 2.1 Database Development Environment
@@ -66,7 +69,7 @@ Imperial network the database structure is only modified by alter scripts so tha
 and Microsoft SQL Server Ports can be kept up to date. Alter scripts are designed to be run more than once without 
 side effects, although they must be run in numeric order.
 
-Once the RIF is in production alter scripts will only be able to complete successfully once and cannot then 
+Once the RIF is in production alter scripts will be setup to only be able to complete successfully once and cannot then 
 be re-run.
 
 The directory structure is *rifDatabase\Postgres\*:
@@ -98,14 +101,14 @@ The databases *sahsuland*, *sahsuland_dev* and *sahusland_empty* are built using
 ### 2.2.1 Windows
 
 * Install [MinGW](https://sourceforge.net/projects/mingw/files/latest/download?source=files) with the full development environment and add *c:\MinGW\msys\1.0\bin* to path
-* Install Python 2.7 **not Python 3.n**
+* Install [Python 2.7](https://www.python.org/downloads/) **not Python 3.n**
 * Install a C/C++ compiler, suitable for use by Node.js. I used Microsoft Visual Studio 2012 
   under an Academic licence. The dependency on Node.js will be reduced by replacing the current 
   program with Node.js web services available for use by the wider RIF community.
 * Install 64 bit [Node.js](https://nodejs.org/en/download/). The 32 bit node will run into memory limitation problems will vary large 
   shapefiles. node.js is required to build to geoJSON to topoJSON converter by Mike Bostock at: 
   (https://github.com/mbostock/topojson/wiki/Installation). Node.js is available from: (http://nodejs.org/)
-* The RIF calls R directly from Java and therefore does not need PLR. If Postgres/R integration is required: 
+* The RIF calls R directly from Java using JRI and therefore does not need PLR. If Postgres/R integration is required: 
   install R; integrate R into Postgres [optional R integration](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/plr.md).
    * Create the PL/R local R_library (in $PGDATA/R_Library), e.g: *C:/Program Files/PostgreSQL/9.3/data/R_library*
    * Create the Postgres etc directory (e.g. *C:\Program Files\PostgreSQL\9.3\etc*) and grant the ability to write 
@@ -122,12 +125,14 @@ The databases *sahsuland*, *sahsuland_dev* and *sahusland_empty* are built using
     * pgJDBC (Java database connector for PostGres)
     * pgODBC (ODBC database connector for PostGres)
 
-   The following are optional:
+    The following are optional:
 
-   * pgAgent (batch engine)
-   * pgBouncer (load balancer; for use if you have a synchronous or near synchronous replica database)
+    * pgAgent (batch engine)
+    * pgBouncer (load balancer; for use if you have a synchronous or near synchronous replica database)
 
 #### 2.2.1.1 Fixing Windows Code page errors
+
+See [notes for windows users](https://www.postgresql.org/docs/9.6/static/app-psql.html):
 
 ```
 H:\>psql
@@ -146,7 +151,7 @@ cmd.exe /c chcp 1252
  
 ### 2.2.2 Unixen
 
-For more information see: 
+Unix builds are not currently supported. For more information see: 
 
 * [Linux install from repository notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/linux_repo.md)
 * [MACoS install from repository notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/macos_repo.md)
@@ -171,7 +176,7 @@ make: *** No targets specified and no makefile found.  Stop.
 
 **Do not edit the Makefile directly; subsequent git changes will cause conflicts and you may loose 
 your changes.** Instead, in the GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts build directory, 
-copy Makefile.local.example to Makefile.local and edit Makefile.local. Beware 
+copy *Makefile.local.example* to *Makefile.local* and edit *Makefile.local*. Beware 
 of your choice of editor on especially Windows. The RIF is developed on Windows and Linux at the same time so 
 you will have files with both Linux <CR> and Windows <CRLF> semantics. Windows Notepad in particular 
 does not understand Linux files.
@@ -214,6 +219,7 @@ The accounts apart from postgres are created by *db_create.sql*.
   the *rif40* password to *rif40* for the moment as the middleware still uses hard coded passwords. This will be removed.  
 * By default Postgres uses MD5 authentication; the user password is idependent of the Windows password unless you set up
   operating system, Kerberos or LDAP authentication 
+* BEfore you build the database only the administrator acco8unt *postgres* is setup!.
 
 E.g. C:\Users\pch\AppData\Roaming\postgresql\pgpass.conf:
 ```
