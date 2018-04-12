@@ -254,7 +254,7 @@ localhost:5432:*:notarifuser:<password>
 See *Configuration File Examples* below.
 
 Set the following Postgres environment vcariables using the sytem control panel: *Control Panel\All Control Panel Items\System:*. This is 
-well hidden on Windows 10, but you can type the path into Windows explorer! Choose *Advanced System Settings* and *Enviornment variables*
+well hidden on Windows 10, but you can type the path into Windows explorer! Choose *Advanced System Settings*, *Enviornment variables* and modify the *System Variables*.
 
 * Make sure Postgres, MSys and the Java development kit are on the path
 * Add: 

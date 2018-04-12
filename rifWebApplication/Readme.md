@@ -109,6 +109,21 @@ and has not been tested - we DO NOT have any!*). The 32 bit version will cause 3
 JRE_HOME is used by the Apache tomcat manual start script *catalina.bat*. Normally, Java upgrades go into the same 
 directory as installed, but if Java is upgraded by hand or re-installed these environment settings may need to 
 be changed.
+ 
+## 1.3 Apache Tomcat
+
+Apache Tomcat can be downloaded from: https://tomcat.apache.org/download-80.cgi
+
+Please use tomcat version 8, not 9 as we have not tested 9. The version tested was 8.5.13. It is advised to use the MSI
+version.
+
+Set the following environment vcariables using the sytem control panel: *Control Panel\All Control Panel Items\System:*. This is 
+well hidden on Windows 10, but you can type the path into Windows explorer! Choose *Advanced System Settings*, *Enviornment variables* and modify the *System Variables*.
+
+* Add CATALINA_HOME=&lt;Tomcat install directory; e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5&gt; to the global environment using adminstrator prvileges.
+* Add =&lt;Tomcat bin directory; e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin&gt to the path
+
+Start a new command window as an Admninstrator (type *cmd* into windows search, right click on the command icon and select "run as Administrator").
 
 Use the configure Tomcat application (tomcat8w) to use the default Java installed on the machine. 
 This prevents upgrades from breaking *tomcat*!
@@ -118,13 +133,6 @@ This makes tomcat Java upgrade proof; but this may have unintended effects if:
 
 * You have not removed all the old Java releases
 * You install another version of Java (e.g. the Oracle installer may do this)
- 
-## 1.3 Apache Tomcat
-
-Apache Tomcat can be downloaded from: https://tomcat.apache.org/download-80.cgi
-
-Please use tomcat version 8, not 9 as we have not tested 9. The version tested was 8.5.13. It is advised to use the MSI
-version.
 
 ### 1.3.1 Apache Tomcat on a single host
 
