@@ -32,7 +32,7 @@ RIF40 Postgres database build from Github
 The new V4.0 RIF uses either Postgres or Microsoft SQL server as a database backend.
 
 WARNING: The RIF requires Postgres 9.3 or above to work. 9.1 and 9.2 will not work. In particular PL/pgsql GET STACKED DIAGNOSTICS is used which 
-is a post 9.2 option. 
+is a post 9.2 option. It has *NOT* yet been tested on Postgres 10.
 
 It is possible to insstall Windows Postgres RIF using pg_dump and scripts. This could also be used for MacOS and Linux with shell scripts instead.
 
@@ -41,7 +41,7 @@ It is possible to insstall Windows Postgres RIF using pg_dump and scripts. This 
 
 See: [Windows Postgres Install using pg_dump and scripts](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/windows_install_from_pg_dump.md)
 
-The database build creates the production database dumnp file ````sahsuland.sql``` is present in *rapidInquiryFacility\rifDatabase\Postgres\production* used to create production databases.
+The database build creates the production database dumnp file ```sahsuland.sql``` is present in *rapidInquiryFacility\rifDatabase\Postgres\production* used to create production databases.
 
 ## 1.1 Memory Requirements
  
@@ -504,7 +504,7 @@ Parameters:
 	make[1]: Leaving directory `/c/Users/phamb/Documents/GitHub/rapidInquiryFacility/rifDatabase/Postgres/psql_scripts'
 	SAHSULAND and SAHSULAND_DEV setup completed OK  
   ```
-  and the production database dumnp file ````sahsuland.sql``` is present in *rapidInquiryFacility\rifDatabase\Postgres\production*.
+  and the production database dumnp file ```sahsuland.sql``` is present in *rapidInquiryFacility\rifDatabase\Postgres\production*.
   
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean db_setup
@@ -549,8 +549,10 @@ The principal build target (*make db_setup*) runs the following Makefiles/target
 	  Under development [not run by *db_setup*; use *make dev* to build]:
 	  
 	  * *v4_0_alter_3.sql*: Range partitioning (e.g. by year).
- 	  * *v4_0_alter_4.sql*: Hash partitioning (e.g. by study_id).
+ 	  * *v4_0_alter_4.sql*: Hash partitioning (e.g. by study_id) [will require PostGres 11]
 	  
+      Paritioning is a native feature in Postgres 10; so once this is stable (e.g. 10.2) we can convert to partitioning using SQL.
+ 	  
 	  Completed alter script logs are named *v4_0_alter_N.&lt;database&gt;_rpt*; and renamed to *v4_0_alter_N.&lt;database&gt;_rpt.err* on error.
 	  This gives make a dependency so it can re-run.
 	  
