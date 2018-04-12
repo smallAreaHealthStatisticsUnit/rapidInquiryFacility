@@ -6,18 +6,24 @@ RIF40 Postgres database build from Github
 - [2. Postgres Setup](#2-postgres-setup)
 - [2.1 Database Development Environment](#21-database-development-environment)
 - [2.2 Tool Chain](#22-tool-chain)
-- [2.2.1 Pre build Tests](#221-pre-build-tests)
-- [2.2.1.1 Configuring make](#2211-configuring-make)
-- [2.2.2 Build control using make](#222-build-control-using-make)
-- [2.2.2.1 Principal targets](#2221-principal-targets)
-- [2.2.2.1.1 User setup](#22211-user-setup)
+- [2.2.1 Windows](#221-windows)
+- [2.2.2 Unixen](#222-unixen)
+- [2.2.1.1 Fixing Windows Code page errors](#22-fixing-windows-code-page-errors)
+
+- [2.3] Building the Database]](#23-building-the-database)
+- [2.3.1 Pre build Tests](#221-pre-build-tests)
+- [2.3.1.1 Configuring make](#2211-configuring-make)
+- [2.3.2 Build control using make](#222-build-control-using-make)
+- [2.3.2.1 Setup](#2221-setup)
+- [2.3.2.1.1 User setup](#22211-user-setup)
 - [2.2.2.1.2 Makefile.local settings](#22212-makefilelocal-settings)
-- [2.2.2.2 Porting limitations](#2.2.2.2-porting-limitations)
-- [2.2.2.3 Help](#2223-help)
-- [2.2.2.4 Configuration File Examples](#2224-configuration-file-examples)
-- [2.2.2.4.1 Postgres user password file](#22241-postgres-user-password-file)
-- [2.2.2.4.2 Authentication Setup (hba.conf)](#22242-authentication-setup-hbaconf)
-- [2.2.2.4.3 Proxy User Setup (ident.conf)](#22243-proxy-user-setup-identconf)
+- [2.3.2.1.3 Principal targets](#22213-principal-targets)
+- [2.3.2.2 Porting limitations](#2.2.2.2-porting-limitations)
+- [2.3.2.3 Help](#2223-help)
+- [2.3.2.4 Configuration File Examples](#2224-configuration-file-examples)
+- [2.3.2.4.1 Postgres user password file](#22241-postgres-user-password-file)
+- [2.3.2.4.2 Authentication Setup (hba.conf)](#22242-authentication-setup-hbaconf)
+- [2.3.2.4.3 Proxy User Setup (ident.conf)](#22243-proxy-user-setup-identconf)
 
 # 1. Postgres Requirements 
 
@@ -90,21 +96,13 @@ The databases *sahsuland*, *sahsuland_dev* and *sahusland_empty* are built using
 
 ## 2.2 Tool Chain 
 
-On Windows:
+### 2.2.1 Windows
 
 * Install [MinGW](https://sourceforge.net/projects/mingw/files/latest/download?source=files) with the full development environment and add *c:\MinGW\msys\1.0\bin* to path
 * Install Python 2.7 **not Python 3.n**
 * Install a C/C++ compiler, suitable for use by Node.js. I used Microsoft Visual Studio 2012 
   under an Academic licence. The dependency on Node.js will be reduced by replacing the current 
   program with Node.js web services available for use by the wider RIF community.
-
-For more information see: [Windows install notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/windows.md)
-
-On Windows, Linux and MacOS
-
-* Install Postgres 9.3.5+ or 9.4.1+ and PostGIS 2.1.3+ (See port specific install notes). Building will fail on Postgres 9.2 or 
-  below as PL/pgsql GET STACKED DIAGNOSTICS is used; PostGIS before 2.1.3 has bugs that will cause 
-  shapefile simplification to fail (both the original PostGIS version and the newer TileMaker Node.js version).
 * Install 64 bit [Node.js](https://nodejs.org/en/download/). The 32 bit node will run into memory limitation problems will vary large 
   shapefiles. node.js is required to build to geoJSON to topoJSON converter by Mike Bostock at: 
   (https://github.com/mbostock/topojson/wiki/Installation). Node.js is available from: (http://nodejs.org/)
@@ -113,14 +111,52 @@ On Windows, Linux and MacOS
    * Create the PL/R local R_library (in $PGDATA/R_Library), e.g: *C:/Program Files/PostgreSQL/9.3/data/R_library*
    * Create the Postgres etc directory (e.g. *C:\Program Files\PostgreSQL\9.3\etc*) and grant the ability to write 
      files (full control on Windows) to the username(s) running db_setup. This is so the build can install the psqlrc file.
+* Install Postgres 9.3.5+ or 9.4.1+ and PostGIS 2.1.3+ (See port specific install notes). Building will fail on Postgres 9.2 or 
+  below as PL/pgsql GET STACKED DIAGNOSTICS is used; PostGIS before 2.1.3 has bugs that will cause 
+  shapefile simplification to fail (both the original PostGIS version and the newer TileMaker Node.js version).
   
+  * Postgres is best downloaded from Enterprise DB: http://www.enterprisedb.com/products-services-training/pgdownload. 
+  * Install Postgres
+  * The Postgres installer then runs stack builder to download and install the additional packages. The following additional packages need to be installed:
+
+    * PostGIS (Geospatial integration)
+    * pgJDBC (Java database connector for PostGres)
+    * pgODBC (ODBC database connector for PostGres)
+
+   The following are optional:
+
+   * pgAgent (batch engine)
+   * pgBouncer (load balancer; for use if you have a synchronous or near synchronous replica database)
+
+#### 2.2.1.1 Fixing Windows Code page errors
+
+```
+H:\>psql
+psql (9.3.2)
+WARNING: Console code page (850) differs from Windows code page (1252)
+         8-bit characters might not work correctly. See psql reference
+         page "Notes for Windows users" for details.
+SSL connection (cipher: DHE-RSA-AES256-SHA, bits: 256)
+Type "help" for help.
+```
+* Type:
+```
+cmd.exe /c chcp 1252
+```
+* Or: modify the cmd shortcut to run *cmd.exe /k chcp 1252*
+ 
+### 2.2.2 Unixen
+
 For more information see: 
 
 * [Linux install from repository notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/linux_repo.md)
 * [MACoS install from repository notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/macos_repo.md)
 * [Linux install from source notes](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/linux_source.md)
 
-### 2.2.1 Pre Build Tests
+
+## 2.3 Building the Database
+
+### 2.3.1 Pre Build Tests
 
 Run up a shell/command tool, *not* in the Postgres build directory (psql_scripts). The Window sizing needs to be at least 
 132 columns wide and 50 rows high; preferably with a multi thousand line buffer. Otherwiser psql scripts may require <ENTER> 
@@ -132,7 +168,7 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres>make
 make: *** No targets specified and no makefile found.  Stop.
 ```
 
-#### 2.2.1.1 Configuring make
+#### 2.3.1.1 Configuring make
 
 **Do not edit the Makefile directly; subsequent git changes will cause conflicts and you may loose 
 your changes.** Instead, in the GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts build directory, 
@@ -152,52 +188,14 @@ If you enable PL/R then the directories R_library (in $PGDATA/R_Library) and $R_
   The requirement for Node will be removed.
 * Check R is integrated into Postgres as PLR (See the PLR build instructions).
 
-### 2.2.2 Build control using make
+### 2.3.2 Build control using make
 
 The RIF database is built using GNU make for ease of portability. The RIF is built from the directory 
 *GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts*.
 
-#### 2.2.2.1 Principal targets
+#### 2.3.2.1 Setup
 
-* The `db_setup` target is normally used to build a new database from scratch or to re-create a database. Creates the following databases:
-  * sahsuland_empty: A empty database with the *SAHSULAND* geography and no data. For testing the data loader.
-  * sahsuland_dev: A complete database created from scripts complete with the *SAHSULAND* exmaple data.
-  * sahusland: A production database creared from a script and an export. Eventually a scriot will be create install sahsulabd from the 
-    export.
-```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make db_setup
-```
-   **Note that this does not apply the alter scripts under development**
-   
-* To build or rebuild the sahsuland_dev development database. This is normally used for regression testing:
-```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean sahsuland_dev
-```
-   **Note that this does not apply the alter scripts under development**
-   
-* To build or rebuild sahsuland_empty
-```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean sahsuland_empty
-```
-
-* To patch sahsuland and sahsuland_dev:
-```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make patch
-```
-
-* To re-patch sahsuland and sahsuland_dev:
-```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make repatch
-```
-
-* To patch sahsuland_dev using the alter scripts under development:
-```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make dev
-```
-   **Patching will be improved so that scripts are only run once; at present all patch scripts are run and 
-     designed to be run multiple times**
-
-##### 2.2.2.1.1 User setup
+##### 2.3.2.1.1 User setup
 
 For make to work it needs to be able to logon as following users:
 
@@ -286,7 +284,7 @@ file is setup correctly.
 
 **See next section for Makefile.local example**
 
-##### 2.2.2.1.2 Makefile.local settings
+##### 2.3.2.1.2 Makefile.local settings
 
 Typical example (Makefile.local.example):
 ```
@@ -428,7 +426,47 @@ Parameters:
 * DEFAULT_USE_PLR
 * DEFAULT_CREATE_SAHSULAND_ONLY
 
-#### 2.2.2.2 Porting limitations
+##### 2.3.2.1.3 Principal targets
+
+* The `db_setup` target is normally used to build a new database from scratch or to re-create a database. Creates the following databases:
+  * sahsuland_empty: A empty database with the *SAHSULAND* geography and no data. For testing the data loader.
+  * sahsuland_dev: A complete database created from scripts complete with the *SAHSULAND* exmaple data.
+  * sahusland: A production database creared from a script and an export. Eventually a scriot will be create install sahsulabd from the 
+    export.
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make db_setup
+```
+   **Note that this does not apply the alter scripts under development**
+   
+* To build or rebuild the sahsuland_dev development database. This is normally used for regression testing:
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean sahsuland_dev
+```
+   **Note that this does not apply the alter scripts under development**
+   
+* To build or rebuild sahsuland_empty
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean sahsuland_empty
+```
+
+* To patch sahsuland and sahsuland_dev:
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make patch
+```
+
+* To re-patch sahsuland and sahsuland_dev:
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make repatch
+```
+
+* To patch sahsuland_dev using the alter scripts under development:
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make dev
+```
+   **Patching will be improved so that scripts are only run once; at present all patch scripts are run and 
+     designed to be run multiple times**
+
+#### 2.3.2.2 Porting limitations
 
 Makefiles have the following limitations:
 
@@ -437,7 +475,7 @@ Makefiles have the following limitations:
 * A fully working version of Node.js that can compile is required or you will not be able to generate the 
   topoJSON tiles data.
 
-#### 2.2.2.3 Help
+#### 2.3.2.3 Help
 
 The Makefile has [help](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/psql_scripts/Make%20Help.md):
 
@@ -445,9 +483,9 @@ The Makefile has [help](https://github.com/smallAreaHealthStatisticsUnit/rapidIn
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make help
 ```
  
-#### 2.2.2.4 Configuration File Examples
+#### 2.3.2.4 Configuration File Examples
 
-##### 2.2.2.4.1 Postgres user password file
+##### 2.3.2.4.1 Postgres user password file
 
 Postgres user password files are located in:
 
@@ -469,7 +507,7 @@ wpea-rif1:5432:*:postgres: XXXXXXX
 wpea-rif1:5432:*:pch: XXXXXXX
 ```
 
-##### 2.2.2.4.2 Authentication Setup (hba.conf)
+##### 2.3.2.4.2 Authentication Setup (hba.conf)
 
 * TYPE: Connection type:
   * local: UDP
@@ -633,7 +671,7 @@ hostssl	traffic		all	 	146.179.138. xxx	255.255.255.255	sspi
 #host    replication     postgres        ::1/128                 md5
 ```
 
-##### 2.2.2.4.3 Proxy User Setup (ident.conf)
+##### 2.3.2.4.3 Proxy User Setup (ident.conf)
 
 One line per per system user and map in the order:
 
