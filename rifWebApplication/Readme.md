@@ -101,8 +101,8 @@ If you build the *war* files using Maven you **MUST** download and install the J
 **Make sure to install the 64 bit version of Java**, unless you have a 32 bit ONLY machine (*This is very unlikely 
 and has not been tested - we DO NOT have any!*). The 32 bit version will cause 32/64 bit issues with R.
 
-- If you use the Java Runtime Environment (JRE), set *JRE_HOME* in the environment (*C:\Program Files\Java\jre1.8.0_111*).
-- If you use the Java Development Environment (JDK), set *JAVA_HOME* in the environment (*C:\Program Files\Java\jdk1.8.0_111*).
+- If you use the Java Runtime Environment (JRE), set *JRE_HOME* in the environment (e.g. *C:\Program Files\Java\jre1.8.0_111*).
+- If you use the Java Development Environment (JDK), set *JAVA_HOME* in the environment (e.g. *C:\Program Files\Java\jdk1.8.0_111*).
 - Add the Java bin directory (*C:\Program Files\Java\jdk1.8.0_111\bin*) to the path.
 - Test Java is installed correctly with *java -showversion* in a new command window.
 
@@ -118,15 +118,15 @@ Please use tomcat version 8, not 9 as we have not tested 9. The version tested w
 version.
 
 Set the following environment vcariables using the sytem control panel: *Control Panel\All Control Panel Items\System:*. This is 
-well hidden on Windows 10, but you can type the path into Windows explorer! Choose *Advanced System Settings*, *Enviornment variables* and modify the *System Variables*.
+well hidden on Windows 10, but you can type the path into Windows explorer! Choose *Advanced System Settings*, *Enviornment variables* and modify the *System Variables* using adminstrator prvileges.
 
-* Add CATALINA_HOME=&lt;Tomcat install directory; e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5&gt; to the global environment using adminstrator prvileges.
-* Add =&lt;Tomcat bin directory; e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin&gt to the path
+* Add CATALINA_HOME=&lt;Tomcat install directory; e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5&gt; to the global environment.
+* Add &lt;Tomcat bin directory; e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin&gt to the path
 
 Start a new command window as an Admninstrator (type *cmd* into windows search, right click on the command icon and select "run as Administrator").
 
-Use the configure Tomcat application (tomcat8w) to use the default Java installed on the machine. 
-This prevents upgrades from breaking *tomcat*!
+Use the configure Tomcat application (tomcat8w) to use the default Java installed on the machine. This prevents upgrades from breaking *tomcat*!
+
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
 
 This makes tomcat Java upgrade proof; but this may have unintended effects if:
@@ -175,6 +175,8 @@ Tomcat can be run from the command line. The advantage of this is all the output
 stopped (i.e. in the Windows services panel or via Linux runvel scripts (/etc/init.d/tomcat*). Notmally tomcat is run as a server (i.e. as a 
 daemon in Unix parlance).
 
+**Make sure you start a new command window (cmd) after setting any environment variables**. The new settings will *NOT* be picked up otherwise.
+
 cd to %CATALINA_HOME%\bin; run *catalina.bat* with the parameter *start* or *stop*. 
 
 Do NOT run *tomcat8.exe*; this will work but you will not be able to interupt Tomcat! (This is caused by the 
@@ -192,7 +194,21 @@ Using CLASSPATH:       "C:\Program Files\Apache Software Foundation\Tomcat 8.5\b
 undation\Tomcat 8.5\bin\tomcat-juli.jar"
 ```
 
-This pops up a Java scrollable window:
+Not setting JRE_HOME or JAVA_HOME results in:
+
+```
+C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>catalina.bat
+Neither the JAVA_HOME nor the JRE_HOME environment variable is defined
+At least one of these environment variable is needed to run this program
+```
+
+You may get a complaint from your firewall or security software; allow tomcat the access it requires. Do *NOT* disdable Tomcat or it will not work! 
+
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/windows_defender_message.png?raw=true "Prevent Tomcat from being disabled by your security software")
+
+You may need to consult a syestem or r netwrok administrator at this point.
+  
+Normally this pops up a Java scrollable window:
 ```
 11-Apr-2017 14:38:54.070 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version:        Apache Tomcat/8.5.13
 11-Apr-2017 14:38:54.074 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Mar 27 2017 14:25:04 UTC
@@ -241,7 +257,8 @@ Two scripts are provided to start and stop the RIF from the command line:
 * start_rif.bat
 * stop_rif.bat
 
-These can be placed on the desktop. The shortcuts created then need to be run as an Adminstrator.
+These should be copied to a local directory and then sent to the desktop asd a shortcut; find each file, right click, "select send to" then "Desktop (create shortcut)". 
+The shortcuts created then need to be medified to run as an Adminstrator (right click on shortcut, select properties, in shortcut properties window select advanced then check run as adminstrator).
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/setting_runas_administrator.png?raw=true "Make a shortcut run as an administrator")
 
