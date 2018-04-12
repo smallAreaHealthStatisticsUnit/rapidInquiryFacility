@@ -166,11 +166,13 @@ Run up a shell/command tool, *not* in the Postgres build directory (psql_scripts
 132 columns wide and 50 rows high; preferably with a multi thousand line buffer. Otherwiser psql scripts may require <ENTER> 
 on scrolling:
 
-* Type *make*. Check make works correctly:
+* Type *make* in the directory *rapidInquiryFacility\rifDatabase\Postgres*. Check make works correctly:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres>make
 make: *** No targets specified and no makefile found.  Stop.
 ```
+
+If you type make in the *rapidInquiryFacility* directory make will build the middleware. This may not be what you want!
 
 #### 2.3.1.1 Configuring make
 
@@ -219,18 +221,27 @@ The accounts apart from postgres are created by *db_create.sql*.
   the *rif40* password to *rif40* for the moment as the middleware still uses hard coded passwords. This will be removed.  
 * By default Postgres uses MD5 authentication; the user password is idependent of the Windows password unless you set up
   operating system, Kerberos or LDAP authentication 
-* BEfore you build the database only the administrator acco8unt *postgres* is setup!.
+* Before you build the database only the administrator account *postgres* is setup!.
 
 E.g. C:\Users\pch\AppData\Roaming\postgresql\pgpass.conf:
 ```
-wpea-rif1:5432:*:postgres:<password>
-wpea-rif1:5432:*:pch:<password>
-wpea-rif1:5432:*:rif40:<password>
-wpea-rif1:5432:*:notarifuser:<password>
+localhost:5432:*:postgres:<password>
+localhost:5432:*:pch:<password>
+localhost:5432:*:rif40:<password>
+localhost:5432:*:notarifuser:<password>
 ```
 
 See *Configuration File Examples* below.
 
+Set the following Postgres environment vcariables using the sytem control panel: *Control Panel\All Control Panel Items\System:*. This is 
+well hidden on Windows 10, but you can type the path into Windows explorer! Choose *Advanced System Settings* and *Enviornment variables*
+
+* Make sure Postgres, MSys and the Java development kit are on the path
+* Add: 
+  ```PGUSER=&lt;user login&gt;```
+  ```PGDATABASE=sahsuland```
+  and if required PGHOST and PGPORT to the user environment
+  
 Once you have setup the *pgpass* file, check you can logon using psql as the database adminstrator account; *postgres*.
 ```
 psql -d postgres -U postgres
@@ -257,12 +268,8 @@ host  all   all  127.0.0.1/32  trust
 psql -U postgres -d postgres
 ALTER USER postgres PASSWORD <new password>;
 ```
-See the port specific instructions if you get a code page error or the shell cannot find psql.
-
-The following should normally be set in your shell environment (see port specific instructions):
-
-* PGDATABASE - sahusland_dev
-* PGHOST - localhost
+See [fixing windows code page errors](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/BUILD.md#2211-fixing-windows-code-page-errors) 
+if you get a code page error.
 
 Makefile.local is used to set:
 
