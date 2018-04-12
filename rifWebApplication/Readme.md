@@ -53,6 +53,7 @@ RIF Web Services
    - [6.2 RIF Middleware](#62-rif-middleware)
    - [6.3 Tomcat](#63-tomcat)
    - [6.4 R](#64-r)
+- [ 7. Front End and Middleware Software Upgrades](#7-front-end-and-middleware-software-upgrades)
    
 # 1. Installation Prerequistes
 
@@ -67,7 +68,7 @@ installer knows how to:
 The RIF web application will install on a modern laptop.
 
 Complex Apacahe Tomcat setup (e.g. clustering, runtime deployment of updated WAR files) are not within the scope of this document 
-od this document and are not required for simple RIF setups.
+of this document and are not required for simple RIF setups.
 
 
 ## 1.1 Apache Maven
@@ -93,7 +94,9 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.144-b01, mixed mode)
 ...
 ```
 
-Download and install the Java Development Environment (JDK): http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+If you build the *war* files using Maven you **MUST** download and install the Java Development Environment (JDK): http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+
+**DO NOT USE JAVA 9 or JAVA 10**. They have not been tested!
 
 **Make sure to install the 64 bit version of Java**, unless you have a 32 bit ONLY machine (*This is very unlikely 
 and has not been tested - we DO NOT have any!*). The 32 bit version will cause 32/64 bit issues with R.
@@ -110,7 +113,8 @@ be changed.
 Use the configure Tomcat application (tomcat8w) to use the default Java installed on the machine. 
 This prevents upgrades from breaking *tomcat*!
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
-This makes tomcat Java uopgrade proof; but this may have unintended effects if:
+
+This makes tomcat Java upgrade proof; but this may have unintended effects if:
 
 * You have not removed all the old Java releases
 * You install another version of Java (e.g. the Oracle installer may do this)
@@ -2530,4 +2534,17 @@ ALWAYS RESTART THE SERVER!
 
 To be added.
 
-Peter Hambly, 12th April 2017; revised 4th August 2017
+# 7. Front End and Middleware Software Upgrades
+
+The RIF uses frozoen in time the front end Java and libraries. The following updates in particular will need to be carried out in 2019 to keep the code stable, current and supported:
+
+* Update Java from version 8 to 10. JDK 8 end of likfe is January 2019;
+* Angular: 1.5.8 to 1.6.9. Moving to Angular 2.x is likely far too difficult for little gain;
+* Leaflet: 1.0.3 to 1.3.1;
+* Jackson: 1.9.2 to 2.9.5+;
+* Jersey: 1.19 to 2.27+;
+* JRI: 0.8.4 to 0.9.9+;
+
+Of these updates, Java, Jersey and JAckson are likly to create the most problems.
+
+Peter Hambly, 12th April 2017; revised 4th August 2017 and 12/4/2018
