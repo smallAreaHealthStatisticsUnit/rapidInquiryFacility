@@ -141,7 +141,7 @@ WINDOWS_ADMIN_USER?=$(DEFAULT_WINDOWS_ADMIN_USER)
 #
 PSQL=psql
 PSQL_FLAGS=-U $(PSQL_USER) -d $(PGDATABASE) -h $(PGHOST) -w -e -P pager=off \
-	-v testuser=$(TESTUSER) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO) \
+	-v testuser=$(TESTUSER) -v testpassword=$(TESTPASSWORD) -v verbosity=$(VERBOSITY) -v debug_level=$(DEBUG_LEVEL) -v echo=$(ECHO) \
 	-v encrypted_postgres_password=$(ENCRYPTED_POSTGRES_PASSWORD) \
 	-v encrypted_rif40_password=$(ENCRYPTED_RIF40_PASSWORD) \
 	-v use_plr=$(USE_PLR) \
@@ -178,6 +178,14 @@ ifeq ($(OS),Windows_NT)
 	ifeq ($(TESTUSER),)
 		TESTUSER=$(USERNAME)
 	endif
+	TESTPASSWORD?=$(CLEAN_USERNAME)
+	ifeq ($(TESTPASSWORD),)
+		TESTPASSWORD=$(USERNAME)
+	endif
+# Causes hangs; does strange things to console!!!
+#	AM_I_ADMIN=$(shell cmd /C .\am_i_admin.bat)
+#	ifeq ($(AM_I_ADMIN),Y)
+#			$(error DO not tun this makefile as an administrator)
 #	TOPOJSON="C:\node_modules\.bin\topojson.cmd"
 	PGPASSFILE=$(APPDATA)\postgresql\pgpass.conf
 else
@@ -472,7 +480,7 @@ $(PGPASSFILE):
 $(POSTGRES_ETC_DIR):
 	@echo "Please create $(POSTGRES_ETC_DIR) as root/Administrator"
 psqlrc:	../etc/psqlrc $(POSTGRES_ETC_DIR)
-		-$(COPY) ../etc/psqlrc $(POSTGRES_ETC_DIR)
+		$(COPY) ../etc/psqlrc $(POSTGRES_ETC_DIR)
 #
 # R library directory - need to be created aka POSTGRES_ETC_DIR
 #

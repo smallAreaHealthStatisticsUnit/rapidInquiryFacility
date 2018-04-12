@@ -581,10 +581,13 @@ $$;
 -- 
 \set ntestuser '''XXXX':testuser''''
 SET rif40.testuser TO :ntestuser;
+\set ntestpassword '''XXXX':testpassword''''
+SET rif40.testpassword TO :ntestpassword;
 DO LANGUAGE plpgsql $$
 DECLARE
 	c1 CURSOR FOR 
-		SELECT CURRENT_SETTING('rif40.testuser') AS testuser;
+		SELECT CURRENT_SETTING('rif40.testuser') AS testuser,
+		       CURRENT_SETTING('rif40.testpassword') AS testpassword;
 	c2 CURSOR(l_usename VARCHAR) FOR 
 		SELECT * FROM pg_user WHERE usename = l_usename;
 	c1_rec RECORD;
@@ -614,7 +617,7 @@ BEGIN
 	IF c2_rec.usename IS NULL THEN
 		RAISE NOTICE 'db_create.sql() C209xx: User account does not exist: %; creating', u_name;	
 		sql_stmt:='CREATE ROLE '||LOWER(SUBSTR(c1_rec.testuser, 5))||
-			' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||u_name||'''';
+			' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||LOWER(SUBSTR(c1_rec.testpassword, 5))||'''';
 		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 		EXECUTE sql_stmt;
 	ELSIF pg_has_role(c2_rec.usename, 'rif_user', 'MEMBER') THEN
