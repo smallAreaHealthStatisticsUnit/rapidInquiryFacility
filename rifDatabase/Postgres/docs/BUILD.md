@@ -41,6 +41,8 @@ It is possible to insstall Windows Postgres RIF using pg_dump and scripts. This 
 
 See: [Windows Postgres Install using pg_dump and scripts](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/windows_install_from_pg_dump.md)
 
+The database build creates the production database dumnp file ````sahsuland.sql``` is present in *rapidInquiryFacility\rifDatabase\Postgres\production* used to create production databases.
+
 ## 1.1 Memory Requirements
  
 Approximately: 
@@ -481,6 +483,8 @@ Parameters:
 
 ##### 2.3.2.1.3 Principal build target
 
+**DO NOT RUN AS AN ADMINISTRATOR**
+
 * The `db_setup` target is normally used to build a new database from scratch or to re-create a database. Creates the following databases:
   * sahsuland_empty: A empty database with the *SAHSULAND* geography and no data. For testing the data loader.
   * sahsuland_dev: A complete database created from scripts complete with the *SAHSULAND* exmaple data.
@@ -488,7 +492,20 @@ Parameters:
     export.
 
 * Use clean aswell to force rebuild
-	
+* If the build works it ends with:
+  ```
+	pg_dump: creating ACL "rif_data.TABLE tiles_sahsuland"
+	pg_dump: creating ACL "rif_studies.TABLE s1_extract"
+	pg_dump: creating ACL "rif_studies.TABLE s1_map"
+	pg_dump: creating ACL "rif_studies.TABLE s2_extract"
+	pg_dump: creating ACL "rif_studies.TABLE s2_map"
+	pg_dump: creating ACL "rif_studies.TABLE s5_extract"
+	pg_dump: creating ACL "rif_studies.TABLE s5_map"
+	make[1]: Leaving directory `/c/Users/phamb/Documents/GitHub/rapidInquiryFacility/rifDatabase/Postgres/psql_scripts'
+	SAHSULAND and SAHSULAND_DEV setup completed OK  
+  ```
+  and the production database dumnp file ````sahsuland.sql``` is present in *rapidInquiryFacility\rifDatabase\Postgres\production*.
+  
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make clean db_setup
 ```
@@ -515,6 +532,19 @@ The principal build target (*make db_setup*) runs the following Makefiles/target
  	  * *v4_0_alter_7.sql*: Support for taxonomies/ontologies (e.g. ICD9, 10); removed previous table based support.
                             Modify t_rif40_inv_conditions to remove SQL injection risk.
  	  * *v4_0_alter_8.sql*: Database test harness; see [test harness README](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/TestHarness/db_test_harness/README.md)
+ 	  * *v4_0_alter_9.sql*: Misc integration fixes
+
+		  1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; 
+			 use rif40_geolevels lookup_table/tile_table
+		  2. Make RIF40_TABLES.THEME nullable for denominators
+		  3. INSERT INTO rif40_table_outcomes wrong OUTCOME_GROUP_NAME used in v4_0_postgres_sahsuland_imports.sql, suspect ICD hard coded. [Not a bug]
+		  4. Fix:
+			 * RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS to COLUMN_EXISTS
+			 * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
+		  5. Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) or PARAM_DESCRIPTION (Postgres)
+		  6. rif40_GetAdjacencyMatrix.sql: change ST_Touches() to ST_Intersects() to fix missing adjacencies caused by small slivers
+		  7. Add t_rif40_study_status/rif40_study_status
+		  8. Add stats_method to rif40_studies
 	  
 	  Under development [not run by *db_setup*; use *make dev* to build]:
 	  
@@ -591,7 +621,7 @@ powershell -ExecutionPolicy ByPass -file copy.ps1  ../etc/psqlrc c:/Program File
 Please Create: c:/Program Files/PostgreSQL/9.6/etc as root/Administrator
 ```
 
-* Fix: permissions on directory, create if needed
+* Fix: permissions on directory, create if needed. Needs to be writeable by the user not an adminsitrator only
 
 * 2. ENCRYPTED_POSTGRES_PASSWORD is incorrect in Makefile.local
 
@@ -600,20 +630,6 @@ psql:db_create.sql:147: INFO:  db_create.sql() User check: postgres
 psql:db_create.sql:147: INFO:  db_create.sql() rif40 needs to be created encrypted password will be ="md5971757ca86c61e2d8f618fe7ab7a32a1"
 psql:db_create.sql:147: ERROR:  db_create.sql() postgres encrypted password set in makefile="md5b631d55b5718b4d083a4b6e73e5fd0c5" differs from database: "md5ef9bbf3d76edb4da049ed82636ca74f1
 CONTEXT:  PL/pgSQL function inline_code_block line 53 at RAISE
-```
-
-* 2. Lack of networking with cause Node.js makefiles to fail:
-
-     * Node.js program (in directory *../Node*) *topojson_convert.js*. This will be replaced by a 
-       web service. This causes a web service testing error later in the build:
-       ```
-       <DETECT FAILURE EARLIER; caused by psql not exiting on shell errors>
-       ``` 
-    * Node.js program (in directory *../../TestHarness/db_test_harness*): *db_test_harness.js*
-
-**IMPROVE TEST 8 ERROR MESSAGE**
-```
-ADD
 ```
 
 ##### 2.3.2.1.5 Other build targets
@@ -652,15 +668,99 @@ Makefiles have the following limitations:
 
 * Full dependency tracking for SQL scripts has not yet been implemented; you are advised to do a *make clean* 
   or *make devclean* before building as in the below examples or nothing much may happen.
-* A fully working version of Node.js that can compile is required or you will not be able to generate the 
-  topoJSON tiles data.
-
+  
 #### 2.3.2.3 Help
 
 The Makefile has [help](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/psql_scripts/Make%20Help.md):
 
-```
-C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make help
+```C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>make help
+Debug level set to default: 0
+Makefile:366: warning: overriding commands for target `../production/sahsuland.dump'
+Makefile:358: warning: ignoring old commands for target `../production/sahsuland.dump'
+findstr "#-" Makefile
+#-
+#- Rapid Enquiry Facility (RIF) - Makefile for \\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts
+#-
+#- DO NOT RUN THE SUBDIRECTORY MAKEFILES DIRECTLY; THEY REQUIRE ENVIRONMENT SETUP TO WORK CORRECTLY
+#-
+        HELP=findstr "\#-" Makefile
+        HELP=grep "\#-" Makefile
+#-
+#- PL/pgsql debug levels (DEBUG_LEVEL);
+#-
+#- 0 - Suppressed, INFO only
+#- 1 - Major function calls
+#- 2 - Major function calls, data
+#- 3 - Reserved for future used
+#- 4 - Reserved for future used
+#-
+#- PSQL verbosity (VERBOSITY):
+#-
+#- verbose      - Messages/errors with full context
+#- terse        - Just the error or message
+#-
+#- PSQL echo (ECHO)
+#-
+#- all:                 - All SQL
+#- none:                - No SQL
+#-
+#- Targets
+#-
+#- 1. patching
+#-
+#- all: Run all completed alter scripts and test [DEFAULT]
+#- patch: Run all completed alter scripts on both sahsuland_dev and sahusland
+#- repatch: Re-run all in-complete alter scripts on both sahsuland_dev and sahusland
+#- world: fully rebuild databases from source
+#- dev: Run all alter scripts in development
+#-
+#- 2. build
+#-
+#- sahsuland_dev_no_alter: Rebuild sahsuland_dev, test [State of SAHSULAND at port to SQL server], finally VACUUM ANALYSE
+#- sahsuland_dev: Rebuild sahsuland_dev, test, then patch dev only, retest, finally VACUUM ANALYZE
+#- Does not run all alter scripts in development
+#- Test can fail
+#- sahsuland_empty: Rebuild sahsuland_empty, test, then patch dev only
+#- Does not run all alter scripts in development
+#- Test can fail
+#- topojson_convert: GeoJSON to topoJSON converter
+#-
+#- 3. installers
+#-
+#- sahsuland.sql: Dump sahsuland database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
+#- sahsuland_dev_dump: Dump sahsuland_dev database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
+#-                     Used to create sahsuland
+#-
+#- 4. test
+#-
+#- test: Run all test scripts [Non verbose, no debug]
+#- retest: Re-run incomplete test scripts [Non verbose, no debug]
+#- test_no_alter: Run test scripts able to be run before the alter scripts [Non verbose, no debug]
+#- test: Run all test scripts [debug_level=1]
+#- test: Run all test scripts [debug_level=1]
+#- test: Run all test scripts [Verbose, debug_level=2, echo=all]
+#-
+#- 5. cleanup
+#-
+#- clean: Remove logs so completed scripts can be re-run
+#- devclean: Remove logs so alter scripts in development can be r-run
+#-           Not normally needed as they abort.
+#-
+#- 7. Database setup. Needs to be able to connect to postgresDB as postgres
+#-
+#- db_setup: Re-create empty sahsuland, sahsuland_dev; build sahusland_dev from scripts;
+#-           build dev dump files; restore sahsuland from dev dump; patch sahsuland to dev standard;
+#-           build production dump file; rebuild ERD model
+#- ERD: remake ERD
+#- db_create: Create empty database
+#-
+#- 7. miscellaneous
+#-
+#- v4_0_vacuum_analyse_dev: VACUUM ANALYZE sahsuland dev database
+#- help: Display this help
+#- recurse: Recursive make target: make recurse <recursive target>
+#-          e.g. make recurse alter_1.rpt
+#-
 ```
  
 #### 2.3.2.4 Configuration File Examples
@@ -672,7 +772,7 @@ Postgres user password files are located in:
 * Windows *%APPDATA%\Roaming\postgresql\pgpass.conf*, e.g. *C:\Users\pch\AppData\Roaming\postgresql\pgpass.conf*
 * Linux/MacOS: *~/.pgpass*
 
-One line per host, database and account. Order is:
+One line per host, database and account. Fields separated by ":". Order is:
 
 * Host
 * Port
@@ -688,6 +788,10 @@ wpea-rif1:5432:*:pch: XXXXXXX
 ```
 
 ##### 2.3.2.4.2 Authentication Setup (hba.conf)
+
+You **MUST** read the Postgres manuls before editing this file.
+
+Fields separated by TAB.
 
 * TYPE: Connection type:
   * local: UDP
@@ -853,7 +957,9 @@ hostssl	traffic		all	 	146.179.138. xxx	255.255.255.255	sspi
 
 ##### 2.3.2.4.3 Proxy User Setup (ident.conf)
 
-One line per per system user and map in the order:
+You **MUST** read the Postgres manuls before editing this file.
+
+One line per per system user and map, fields separated by TAB in the order:
 
 * MAPNAME: map name in hba.conf (not all authentication types can proxy - e.g. md5 cannot!)       
 * SYSTEM-USERNAME: account name to proxy for         
