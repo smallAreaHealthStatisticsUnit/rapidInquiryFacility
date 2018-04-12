@@ -3,6 +3,7 @@ RIF40 Postgres database build from Github
 
 # Contents
 - [1. Postgres Requirements](#1-postgres-requirements)
+  - [1.1 Memory Requirements](#11-memory-requirements)
 - [2. Postgres Setup](#2-postgres-setup)
   - [2.1 Database Development Environment](#21-database-development-environment)
   - [2.2 Tool Chain](#22-tool-chain)
@@ -37,6 +38,18 @@ It is possible to insstall Windows Postgres RIF using pg_dump and scripts. This 
 * Does **NOT** need *make* or *Node.js* 
 
 See: [Windows Postgres Install using pg_dump and scripts](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/windows_install_from_pg_dump.md)
+
+## 1.1 Memory Requirements
+ 
+Approximately: 
+
+* Windows 10 seems to needs 6-8GB to function in normal use; 
+* The database needs 1-2 GB (SQL server will automatically; Postgres will run in less); 
+* R needs 1-2 GB (depends on study size; may need more); 
+* The Middleware 2-3GB;
+* The front end 1-2GB.
+ 
+16GB recommanded. If you process large geographies using the Node.js tilemaker 48-64GB is recommended.
 
 # 2. Postgres Setup
 
