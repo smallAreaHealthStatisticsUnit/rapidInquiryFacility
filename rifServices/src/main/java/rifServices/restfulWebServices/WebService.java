@@ -38,9 +38,9 @@ import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.YearRange;
-import rifServices.dataStorageLayer.common.ServiceResources;
+import rifServices.dataStorageLayer.common.ServiceBundle;
+import rifServices.dataStorageLayer.common.ServiceBundleFactory;
 import rifServices.dataStorageLayer.common.ServiceResourcesFactory;
-import rifServices.dataStorageLayer.ms.MSSQLProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.ms.MSSQLSampleTestObjectGenerator;
 import rifServices.fileFormats.RIFStudySubmissionXMLReader;
 import rifServices.fileFormats.RIFStudySubmissionXMLWriter;
@@ -49,10 +49,9 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
 public class WebService {
-	
-	private static final MSSQLProductionRIFStudyServiceBundle rifStudyServiceBundle
-			= MSSQLProductionRIFStudyServiceBundle.getRIFServiceBundle();
+
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss:SSS");
+	private final ServiceBundle rifStudyServiceBundle;
 	protected RIFLogger rifLogger = RIFLogger.getLogger();
 	private Date startTime;
 	private WebServiceResponseGenerator webServiceResponseGenerator;
@@ -63,20 +62,11 @@ public class WebService {
 		startTime = new Date();
 		webServiceResponseGenerator = new WebServiceResponseGenerator();
 		
-		RIFServiceStartupOptions rifServiceStartupOptions
-						= RIFServiceStartupOptions.newInstance(
-						true,
-						false);
+		RIFServiceStartupOptions rifServiceStartupOptions =
+				RIFServiceStartupOptions.newInstance(true, false);
 
-		try {
-			rifStudyServiceBundle.initialise(
-					ServiceResourcesFactory.getInstance(rifServiceStartupOptions));
-		}
-		catch(RIFServiceException exception) {
-			rifLogger.error(this.getClass(),
-					getClass().getSimpleName()
-					+ ".initialise error", exception);
-		}
+		rifStudyServiceBundle = ServiceBundleFactory.getInstance(
+				ServiceResourcesFactory.getInstance(rifServiceStartupOptions));
 	}
 	
 	protected Response rifFrontEndLogger(
@@ -198,10 +188,7 @@ public class WebService {
 			servletRequest,
 			result);
 	}
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
+
 	protected RIFStudySubmissionAPI getRIFStudySubmissionService() {
 		
 		return rifStudyServiceBundle.getRIFStudySubmissionService();

@@ -115,11 +115,10 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 	/**
 	 * Instantiates a new SQL health outcome manager.
 	 */
-	public MSSQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) 
-		throws RIFServiceException {
+	public MSSQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
+
 		healthCodeProviders = new ArrayList<HealthCodeProviderInterface>();
-		
-		
+
 		String targetPathValue
 			= rifServiceStartupOptions.getRIFServiceResourcePath();
 		if (targetPathValue == null) {
@@ -233,10 +232,8 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 	/**
 	 * Initialise taxonomies.
 	 *
-	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void initialiseTaxomies() 
-		throws RIFServiceException {
+	public void initialiseTaxomies() {
 
 		
 	}

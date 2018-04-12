@@ -115,13 +115,10 @@ final class PGSQLHealthOutcomeManager implements HealthOutcomeManager {
 	/**
 	 * Instantiates a new SQL health outcome manager.
 	 */
-	public PGSQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) 
-		throws RIFServiceException {
-		healthCodeProviders = new ArrayList<HealthCodeProviderInterface>();
-		
-		
-		String targetPathValue
-			= rifServiceStartupOptions.getRIFServiceResourcePath();
+	public PGSQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
+		healthCodeProviders = new ArrayList<>();
+
+		String targetPathValue = rifServiceStartupOptions.getRIFServiceResourcePath();
 		if (targetPathValue == null) {
 			targetPathValue = ClassFileLocator.getClassRootLocation("rifServices");
 		}
@@ -231,11 +228,7 @@ final class PGSQLHealthOutcomeManager implements HealthOutcomeManager {
 	}
 
 	@Override
-	public void initialiseTaxomies()
-		throws RIFServiceException {
-
-		
-	}
+	public void initialiseTaxomies() {}
 	
 	// ==========================================
 	// Section Accessors and Mutators

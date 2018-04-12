@@ -15,10 +15,8 @@ public interface HealthOutcomeManager {
 	/**
 	 * Initialise taxonomies.
 	 *
-	 * @throws RIFServiceException the RIF service exception
 	 */
-	void initialiseTaxomies()
-		throws RIFServiceException;
+	void initialiseTaxomies();
 	
 	/**
 	 * Clear health code providers.

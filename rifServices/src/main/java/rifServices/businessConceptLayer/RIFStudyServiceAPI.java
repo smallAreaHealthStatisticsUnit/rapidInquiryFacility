@@ -93,5 +93,5 @@ public interface RIFStudyServiceAPI {
 					final GeoLevelSelect geoLevelSelect)
 		throws RIFServiceException;	
 	
-	void initialise(final ServiceResources startupParameter) throws RIFServiceException;
+	void initialise(final ServiceResources startupParameter);
 }

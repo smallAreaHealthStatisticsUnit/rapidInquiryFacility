@@ -67,16 +67,14 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 	
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	
-	public static ServiceResources newInstance(RIFServiceStartupOptions rifStartupOptions)
-			throws RIFServiceException {
+	public static ServiceResources newInstance(RIFServiceStartupOptions rifStartupOptions) {
 		
 		return new PGSQLRIFServiceResources(rifStartupOptions);
 	}
 	
 	public static ServiceResources newInstance(
 			boolean isWebDeployment,
-			boolean useStrictValidationPolicy)
-			throws RIFServiceException {
+			boolean useStrictValidationPolicy) {
 		
 		RIFServiceStartupOptions rifServiceStartupOptions
 				= RIFServiceStartupOptions.newInstance(
@@ -86,8 +84,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		return new PGSQLRIFServiceResources(rifServiceStartupOptions);
 	}
 	
-	public PGSQLRIFServiceResources(final RIFServiceStartupOptions rifServiceStartupOptions)
-			throws RIFServiceException {
+	public PGSQLRIFServiceResources(final RIFServiceStartupOptions rifServiceStartupOptions) {
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		

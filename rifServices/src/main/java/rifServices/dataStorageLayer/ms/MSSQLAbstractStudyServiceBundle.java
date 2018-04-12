@@ -22,8 +22,7 @@ class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 		isInitialised = false;
 	}
 		
-	public synchronized void initialise(final ServiceResources resources)
-			throws RIFServiceException {
+	public synchronized void initialise(final ServiceResources resources) {
 		
 		if (!isInitialised) {
 

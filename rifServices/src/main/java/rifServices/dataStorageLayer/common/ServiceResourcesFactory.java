@@ -1,14 +1,12 @@
 package rifServices.dataStorageLayer.common;
 
-import rifGenericLibrary.system.RIFServiceException;
 import rifServices.dataStorageLayer.ms.MSSQLRIFServiceResources;
 import rifServices.dataStorageLayer.pg.PGSQLRIFServiceResources;
 import rifServices.system.RIFServiceStartupOptions;
 
 public class ServiceResourcesFactory {
 	
-	public static ServiceResources getInstance(RIFServiceStartupOptions options)
-			throws RIFServiceException {
+	public static ServiceResources getInstance(RIFServiceStartupOptions options) {
 		
 		switch (options.getRifDatabaseType()) {
 			
@@ -20,7 +18,7 @@ public class ServiceResourcesFactory {
 	
 			case UNKNOWN:
 			default:
-				throw new RIFServiceException("Unknown database type: " + options.getRifDatabaseType());
+				throw new IllegalStateException("Unknown database type: " + options.getRifDatabaseType());
 		}
 	}
 }

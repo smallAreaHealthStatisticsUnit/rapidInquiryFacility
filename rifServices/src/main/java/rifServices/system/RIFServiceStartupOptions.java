@@ -377,8 +377,7 @@ public class RIFServiceStartupOptions {
 		return RIFServiceMessages.getMessage("rifServiceStartupOptions.label");
 	}
 
-	public String getRIFServiceResourcePath()
-		throws RIFServiceException {
+	public String getRIFServiceResourcePath() {
 
 		StringBuilder path = new StringBuilder();
 
@@ -393,7 +392,7 @@ public class RIFServiceStartupOptions {
 						RIFServiceError.INVALID_STARTUP_OPTIONS, 
 						"CATALINA_HOME not set in the environment");
 				rifLogger.error(this.getClass(), "RIFServiceStartupOptions error", rifServiceException);
-				throw rifServiceException;
+				throw new IllegalStateException(rifServiceException);
 			}
 
 			String catalinaHomeDirectoryPath = environmentalVariables.get("CATALINA_HOME");

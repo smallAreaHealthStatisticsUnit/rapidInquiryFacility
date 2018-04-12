@@ -23,10 +23,7 @@ class PGSQLAbstractStudyServiceBundle implements ServiceBundle {
 		isInitialised = false;
 	}
 		
-	public synchronized void initialise(
-		
-		final RIFServiceStartupOptions rifServiceStartupOptions) 
-		throws RIFServiceException {
+	public synchronized void initialise(final RIFServiceStartupOptions rifServiceStartupOptions) {
 		
 		if (!isInitialised) {
 			

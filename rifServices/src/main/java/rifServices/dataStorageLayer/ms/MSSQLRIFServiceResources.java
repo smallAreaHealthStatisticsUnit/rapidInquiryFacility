@@ -52,8 +52,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 	
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	
-	private MSSQLRIFServiceResources(final RIFServiceStartupOptions rifServiceStartupOptions)
-			throws RIFServiceException {
+	private MSSQLRIFServiceResources(final RIFServiceStartupOptions rifServiceStartupOptions) {
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
@@ -128,8 +127,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 	}
 	
 	public static MSSQLRIFServiceResources newInstance(
-		final RIFServiceStartupOptions rifStartupOptions)
-		throws RIFServiceException {
+		final RIFServiceStartupOptions rifStartupOptions) {
 		
 		return new MSSQLRIFServiceResources(rifStartupOptions);
 	}
