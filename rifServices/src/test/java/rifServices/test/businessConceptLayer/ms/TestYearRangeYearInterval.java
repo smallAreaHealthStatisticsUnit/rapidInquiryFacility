@@ -9,6 +9,8 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
+import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
 import rifServices.system.RIFServiceError;
 import rifServices.test.AbstractRIFTestCase;
@@ -108,8 +110,10 @@ public final class TestYearRangeYearInterval
 		masterInterval949596 = YearInterval.newInstance("1994", "1996");
 		masterInterval959697 = YearInterval.newInstance("1995", "1997");
 
-		rifStudyServiceBundle = new MSSQLTestRIFStudyServiceBundle();
-		rifStudyServiceBundle.initialise(resources);
+		rifStudyServiceBundle = new MSSQLTestRIFStudyServiceBundle(
+				resources,
+				new MSSQLRIFStudySubmissionService(),
+				new MSSQLTestRIFStudyRetrievalService());
 
 		service
 			= rifStudyServiceBundle.getRIFStudySubmissionService();

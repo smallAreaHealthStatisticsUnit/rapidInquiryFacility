@@ -110,7 +110,7 @@ public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
 	/**
 	 * Instantiates a new production rif job submission service.
 	 */
-	MSSQLRIFStudySubmissionService() {
+	public MSSQLRIFStudySubmissionService() {
 
 		String serviceName
 			= RIFServiceMessages.getMessage("rifStudySubmissionService.name");

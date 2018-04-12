@@ -5,7 +5,9 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 
-public interface ServiceBundle { RIFStudyResultRetrievalAPI getRIFStudyRetrievalService();
+public interface ServiceBundle {
+
+	RIFStudyResultRetrievalAPI getRIFStudyRetrievalService();
 	
 	RIFStudySubmissionAPI getRIFStudySubmissionService();
 	

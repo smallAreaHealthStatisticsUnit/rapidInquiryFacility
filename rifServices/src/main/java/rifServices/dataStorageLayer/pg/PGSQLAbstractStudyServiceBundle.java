@@ -1,8 +1,11 @@
 package rifServices.dataStorageLayer.pg;
 
+import java.util.Objects;
+
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
@@ -10,39 +13,28 @@ import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.dataStorageLayer.common.ServiceBundle;
 import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.system.RIFServiceStartupOptions;
-import rifGenericLibrary.util.FieldValidationUtility;
 
 class PGSQLAbstractStudyServiceBundle implements ServiceBundle {
 
-	private boolean isInitialised;
 	private ServiceResources rifServiceResources;
 	private RIFStudySubmissionAPI rifStudySubmissionService;
 	private RIFStudyResultRetrievalAPI rifStudyRetrievalService;
 
-	PGSQLAbstractStudyServiceBundle() {
-		isInitialised = false;
-	}
-		
-	public synchronized void initialise(final RIFServiceStartupOptions rifServiceStartupOptions) {
-		
-		if (!isInitialised) {
-			
-			rifServiceResources
+	PGSQLAbstractStudyServiceBundle(final RIFServiceStartupOptions rifServiceStartupOptions,
+			RIFStudySubmissionAPI submission,  RIFStudyResultRetrievalAPI retrieval) {
+
+		Objects.requireNonNull(rifServiceStartupOptions);
+		Objects.requireNonNull(submission);
+		Objects.requireNonNull(retrieval);
+
+		rifServiceResources
 				= PGSQLRIFServiceResources.newInstance(rifServiceStartupOptions);
-			setRIFServiceResources(rifServiceResources);
-
-			rifStudySubmissionService.initialise(rifServiceResources);		
-			rifStudyRetrievalService.initialise(rifServiceResources);
-		
-			isInitialised = true;
-		}
-	}	
-	
-	private void setRIFServiceResources(final ServiceResources rifServiceResources) {
-
-		this.rifServiceResources = rifServiceResources;
+		rifStudySubmissionService = submission;
+		rifStudyRetrievalService = retrieval;
+		rifStudySubmissionService.initialise(rifServiceResources);
+		rifStudyRetrievalService.initialise(rifServiceResources);
 	}
-	
+
 	protected ServiceResources getRIFServiceResources() {
 		return rifServiceResources;
 	}

@@ -26,7 +26,7 @@ import rifServices.ontologyServices.HealthCodeProviderInterface;
 public final class PGSQLTestRIFStudySubmissionService extends PGSQLAbstractRIFStudySubmissionService
 		implements RIFStudySubmissionAPI {
 
-	PGSQLTestRIFStudySubmissionService() {
+	public PGSQLTestRIFStudySubmissionService() {
 
 	}
 

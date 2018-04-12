@@ -59,8 +59,6 @@ public class AbstractRIFTestCase {
 				= new FieldValidationUtility();
 		testMaliciousFieldValue = fieldValidationUtility.getTestMaliciousFieldValue();
 		validUser = User.newInstance("kgarwood", "11.111.11.228");
-		rifServiceBundle
-			= new MSSQLTestRIFStudyServiceBundle();
 	}
 
 	@Before
@@ -74,12 +72,11 @@ public class AbstractRIFTestCase {
 		when(resources.getSQLStudyExtractManager()).thenReturn(extractMgr);
 		when(resources.getHealthOutcomeManager()).thenReturn(healthOutcomeManager);
 
-		try {
-			initialiseService(resources);
-		}
-		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
-		}
+		initialiseService(resources);
+		rifServiceBundle = new MSSQLTestRIFStudyServiceBundle(
+				resources,
+				new MSSQLRIFStudySubmissionService(),
+				new MSSQLTestRIFStudyRetrievalService());
 	}
 
 	public ValidationPolicy getValidationPolicy() {
@@ -132,14 +129,14 @@ public class AbstractRIFTestCase {
 		return testMaliciousFieldValue;
 	}
 
-	public void initialiseService(ServiceResources resources) throws RIFServiceException {
+	protected void initialiseService(ServiceResources resources) {
 
-		rifServiceBundle = new MSSQLTestRIFStudyServiceBundle();
+		rifServiceBundle = new MSSQLTestRIFStudyServiceBundle(
+				resources,
+				new MSSQLRIFStudySubmissionService(),
+				new MSSQLTestRIFStudyRetrievalService());
 		this.resources = resources;
-		rifServiceBundle.initialise(resources);
-		rifStudySubmissionService
-			= (MSSQLRIFStudySubmissionService) rifServiceBundle.getRIFStudySubmissionService();
-		rifStudyRetrievalService
-			= (MSSQLTestRIFStudyRetrievalService) rifServiceBundle.getRIFStudyRetrievalService();
+		rifStudySubmissionService = rifServiceBundle.getRIFStudySubmissionService();
+		rifStudyRetrievalService = rifServiceBundle.getRIFStudyRetrievalService();
 	}
 }

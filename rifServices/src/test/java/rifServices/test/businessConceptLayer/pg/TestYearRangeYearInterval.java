@@ -3,7 +3,11 @@ package rifServices.test.businessConceptLayer.pg;
 
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.*;
+import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
+import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
+import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyServiceBundle;
+import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudySubmissionService;
 import rifServices.system.*;
 import rifServices.test.AbstractRIFTestCase;
 
@@ -189,12 +193,13 @@ public final class TestYearRangeYearInterval
 		masterInterval959697 = YearInterval.newInstance("1995", "1997");
 
 		try {
-			rifStudyServiceBundle
-				= new PGSQLTestRIFStudyServiceBundle();
-			RIFServiceStartupOptions startupOptions
-				= RIFServiceStartupOptions.newInstance(false, true);
-			rifStudyServiceBundle.initialise(startupOptions);
-		
+			RIFServiceStartupOptions startupOptions =
+					RIFServiceStartupOptions.newInstance(false, true);
+			rifStudyServiceBundle = new PGSQLTestRIFStudyServiceBundle(
+					startupOptions,
+					new PGSQLTestRIFStudySubmissionService(),
+					new PGSQLTestRIFStudyRetrievalService());
+
 			service
 				= rifStudyServiceBundle.getRIFStudySubmissionService();
 			rifStudyServiceBundle.login(

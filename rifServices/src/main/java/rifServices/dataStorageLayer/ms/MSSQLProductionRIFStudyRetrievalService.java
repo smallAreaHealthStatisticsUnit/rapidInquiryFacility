@@ -90,7 +90,7 @@ package rifServices.dataStorageLayer.ms;
  * </p>
  *  
  */
-final class MSSQLProductionRIFStudyRetrievalService 
+public final class MSSQLProductionRIFStudyRetrievalService
 	extends MSSQLAbstractRIFStudyRetrievalService {
 
 	// ==========================================

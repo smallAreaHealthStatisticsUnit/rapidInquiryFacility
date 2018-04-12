@@ -90,7 +90,7 @@ package rifServices.dataStorageLayer.pg;
  * </p>
  *  
  */
-final class PGSQLProductionRIFStudyRetrievalService 
+public final class PGSQLProductionRIFStudyRetrievalService
 	extends PGSQLAbstractRIFStudyRetrievalService {
 
 	// ==========================================

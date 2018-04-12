@@ -3,6 +3,7 @@ package rifServices.test.services;
 import java.util.ArrayList;
 
 import org.junit.After;
+import org.junit.Before;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -330,13 +331,6 @@ public class CommonRIFServiceTestCase extends AbstractRIFTestCase {
 			= Project.newInstance(
 				maliciousFieldValue,
 				"Test Project. Will be disabled when in production.");
-		
-		try {
-			initialiseService(resources);
-		}
-		catch(RIFServiceException rifServiceException) {
-		
-		}
 	}
 
 	@After
