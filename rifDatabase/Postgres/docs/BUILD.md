@@ -17,7 +17,9 @@ RIF40 Postgres database build from Github
       - [2.3.2.1 Setup](#2321-setup)
         - [2.3.2.1.1 User setup](#23211-user-setup)
         - [2.2.2.1.2 Makefile.local settings](#23212-makefilelocal-settings)
-        - [2.3.2.1.3 Principal targets](#23213-principal-targets)
+        - [2.3.2.1.3 Principal targets](#23213-principal-target)
+        - [2.3.2.1.4 Issues with the build](#23214-issues-with-the-build)
+        - [2.3.2.1.5 Other Build targets](#23214-other-build-targets)
       - [2.3.2.2 Porting limitations](#2322-porting-limitations)
       - [2.3.2.3 Help](#2323-help)
       - [2.3.2.4 Configuration File Examples](#2324-configuration-file-examples)
@@ -43,7 +45,7 @@ See: [Windows Postgres Install using pg_dump and scripts](https://github.com/sma
  
 Approximately: 
 
-* Windows 10 seems to needs 6-8GB to function in normal use; 
+* Windows 10 seems to need 6-8GB to function in normal use; 
 * The database needs 1-2 GB (SQL server will automatically; Postgres will run in less); 
 * R needs 1-2 GB (depends on study size; may need more); 
 * The Middleware 2-3GB;
@@ -55,12 +57,12 @@ Approximately:
 
 Postgres is usually setup in one of four ways:
  
-1 Standalone mode on a Windows firewalled laptop. This uses local database MD5 passwords and no SSL and is not considered secure for network use.
-2 Secure mode on a Windows server. This uses remote database connections using SSL; with MD5 passwords for psql and Java connectivity.
-3 Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS 
-  connectivity) for psql and secure LDAP for Java connectivity.
-4 Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for 
-  psql and secure LDAP for Java connectivity.
+* 1 Standalone mode on a Windows firewalled laptop. This uses local database MD5 passwords and no SSL and is not considered secure for network use.
+* 2 Secure mode on a Windows server. This uses remote database connections using SSL; with MD5 passwords for psql and Java connectivity.
+* 3 Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS 
+    connectivity) for psql and secure LDAP for Java connectivity.
+* 4 Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for 
+    psql and secure LDAP for Java connectivity.
 
 The front and and middleware requirew username and password authentications; so method 4 must not be used.
   
@@ -224,7 +226,7 @@ For make to work it needs to be able to logon as following users:
 * &lt;user login&gt; - Your user login. This must be in lowercase and without spaces. The username (TESTUSER) may be set in Makefile.local
 * notarifuser  - A security test user
 
-The password for all users must be set in your local .pgpass/pgpass.conf files (see Postgres documentation for its location on various OS). 
+The password for all users must be set in your local .pgpass/pgpass.conf files. See [Postgres documentation](https://www.postgresql.org/docs/9.6/static/libpq-pgpass.html) for its location on various ports. 
 The postgres user password must be correct in the .pgpass/pgpass.conf file and in Makefile.local or you will be locked out of postgres. 
 The accounts apart from postgres are created by *db_create.sql*.
 
@@ -265,8 +267,9 @@ Type "help" for help.
 postgres=#
 ```
 
-**IT IS STRONGLY ADVISED TO LEAVE THIS WINDOW OPEN SO YOU CANNOT LOCK YOURSELF OUT OF THE DATABASE IF YOU SET IT UP WRONG**. This scripts 
-do check the setup is correct; but this could fail. It is possible to login to postgres as postgres without a password using the administrator or 
+**IT IS STRONGLY ADVISED TO LEAVE THIS WINDOW OPEN SO YOU CANNOT LOCK YOURSELF OUT OF THE DATABASE IF YOU SET IT UP WRONG**. 
+
+This scripts do check the setup is correct; but this could fail. It is possible to login to postgres as postgres without a password using the administrator or 
 root accounts. If you lock yourself out the hba.conf file will need the following line temporary added at the top of the file:
 
 ```
@@ -451,7 +454,7 @@ Parameters:
 * DEFAULT_USE_PLR
 * DEFAULT_CREATE_SAHSULAND_ONLY
 
-##### 2.3.2.1.3 Principal targets
+##### 2.3.2.1.3 Principal build target
 
 * The `db_setup` target is normally used to build a new database from scratch or to re-create a database. Creates the following databases:
   * sahsuland_empty: A empty database with the *SAHSULAND* geography and no data. For testing the data loader.
@@ -462,6 +465,108 @@ Parameters:
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts> make db_setup
 ```
    **Note that this does not apply the alter scripts under development**
+
+The principal build target (*make db_setup*) runs the following Makefiles/targets/scripts:
+
+* Clean build targets (log files); local make target: clean
+* Run local make target: *db_create*; parameters: *PSQL_USER=postgres PGDATABASE=postgres DEBUG_LEVEL=1 ECHO=all*
+  * Run psql script *db_create.sql*; log: *db_create.rpt*
+* Install required Node.js locally (in directory *../Node*) make target: *install*	
+* Run local make target: *sahsuland_dev*; parameters: *PGDATABASE=sahsuland_dev*
+  * Run local make target to create **sahsuland_dev**:
+    * Run local make target: *clean*
+	* Run local make target: *$(PLR_DIRS)*
+	* Run main **sahsuland_dev** creation psql script: *v4_0_create_sahsuland.sql*; log: *v4_0_create_sahsuland.rpt* 
+	* Run test scripts not dependent on alter scripts (in directory *test_scripts*) make target: *no_alter*; *parameters: DEBUG_LEVEL=1 ECHO=all*
+	  **This is the build state at the point the SQL Server port was started**.
+	* Run alter scripts (in directory *alter_scripts*) make targets: *clean all*; parameters: *DEBUG_LEVEL=1 ECHO=all*
+	  * *v4_0_alter_1.sql*: Misc schema design changes
+ 	  * *v4_0_alter_2.sql*: Misc data viewer changes.
+ 	  * *v4_0_alter_5.sql*: Zoomlevel support. Rebuilds all geolevel tables with full partitioning (alter #3 support).
+ 	  * *v4_0_alter_6.sql*: R support [optional script if PL/R integration is enabled with *USE_PLR=Y*].
+ 	  * *v4_0_alter_7.sql*: Support for taxonomies/ontologies (e.g. ICD9, 10); removed previous table based support.
+                            Modify t_rif40_inv_conditions to remove SQL injection risk.
+ 	  * *v4_0_alter_8.sql*: Database test harness; see [test harness README](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/TestHarness/db_test_harness/README.md)
+	  
+	  Under development [not run by *db_setup*; use *make dev* to build]:
+	  
+	  * *v4_0_alter_3.sql*: Range partitioning (e.g. by year).
+ 	  * *v4_0_alter_4.sql*: Hash partitioning (e.g. by study_id).
+	  
+	  Completed alter script logs are named *v4_0_alter_N.&lt;database&gt;_rpt*; and renamed to *v4_0_alter_N.&lt;database&gt;_rpt.err* on error.
+	  This gives make a dependency so it can re-run.
+	  
+	* Run test scripts (in directory *test_scripts*) make targets: *clean all*; parameters: *DEBUG_LEVEL=1 ECHO=all*
+	  Test scripts that **do not** require alter scripts to be run (*no_alter* target above): 
+	  * *test_1_sahsuland_geography.sql*: Test sahsuland geography is setup correctly.
+	  * *test_2_ddl_checks.sql*: Check all tables, triggers, columns and comments are present, objects granted to rif_user/rif_manmger, sequences granted
+	  * *test_3_user_setup.sql*:Check &lt;test user&gt; is setup correctly.
+	  
+	  Test scripts that **do** require alter scripts to be run:
+	  * *test_8_triggers.sql*: Test trest harness, load and run trigger tests.
+	  * *test_6_middleware_1.sql*: Middleware tests 1 for *v4_0_alter_1.sql*.
+	  * *test_4_study_id_1.sql*: This creates the standard study_id 1.
+	  * *test_5_clone_delete_test.sql*: Clone delete test for standard study_id 1.
+	  * *test_7_middleware_2.sql*: Test 7: Middleware tests 2 for *v4_0_alter_2.sql*
+	  
+	  Completed alter script logs are named *&lt;script&gt;.&lt;database&gt;_rpt*; and renamed to *&lt;script&gt;.&lt;database&gt;_rpt.err* on error.
+	  This gives make a dependency so it can re-run.
+	  
+	  There is no concept of test scripts for alter scripts under development.
+	  
+	  Test scripts are run in sequence apart from test 8 which is run first to test the test harness.
+	  
+  * Run local make target: *v4_0_vacuum_analyse_dev*
+    * Run psql script to *VACUUM ANALYZE* the *sahsuland_dev* database *v4_0_vacuum_analyse.sql*; log: *v4_0_vacuum_analyse.rpt*  
+* Run local make target: *sahsuland_dev_dump*; parameters: *PGDATABASE=sahsuland_dev*
+  * Dump *sahsuland_dev* database using *pg_dump* in custom format, excluding UK geography tables, 
+    parameters: -U postgres -w -F custom -T '\*x_uk\*' -T '\*.x_ew01\*' -v sahsuland_dev > ../install/sahsuland_dev.dump
+    **This is used to create the *sahsuland* database**.	
+* Run in *../install* *pg_restore*; log; *pg_restore.rpt*; parameters: *-d sahsuland -U postgres -v ../install/sahsuland_dev.dump* 
+* Run alter scripts (in directory alter_scripts) make targets: *clean all*; parameters: *PGDATABASE=sahsuland*		
+* Run Node.js program (in directory *../Node*) make target: *topojson_convert*; parameters: *PGDATABASE=sahsuland*
+  This runs the Node.js program *topojson_convert.js* to convert GeoJSON to TopoJSON. This will be replaced by a web service.
+* Run local make targets: *clean v4_0_vacuum_analyse_dev*; parameters: *PGDATABASE=sahsuland*
+    * Run psql script to *VACUUM ANALYZE* the *sahsuland* database *v4_0_vacuum_analyse.sql*; log: *v4_0_vacuum_analyse.rpt*
+* Run test scripts (in directory *test_scripts*) make targets: *test_scripts clean all*; parameters: *PGDATABASE=sahsuland*	
+* Run local make target: *sahsuland_dump*
+  * Dump *sahsuland* database using *pg_dump* in custom format, excluding UK geography tables, 
+    parameters: *-U postgres -w -F custom -T '\*x_uk\*' -T '\*.x_ew01\*' -v sahsuland > ../install/sahsuland.dump*
+    **This is used as the *sahsuland* database* installer.**	
+* Run Entity Relationship Diagrams build (in directory *../../ERD*) make target: *dbms_tools*
+  <ADD>
+	
+End of a successful db_setup make run:
+```
+pg_dump: setting owner and privileges for FK CONSTRAINT table_or_view_name_hide_fk
+pg_dump: setting owner and privileges for FK CONSTRAINT table_or_view_name_hide_fk
+make[1]: Leaving directory `/c/Users/pch/Documents/GitHub/rapidInquiryFacility/rifDatabase/Postgres/psql_scripts'
+make -C ../../ERD dbms_tools
+Debug level set to default: 0
+make[1]: Entering directory `/c/Users/pch/Documents/GitHub/rapidInquiryFacility/rifDatabase/ERD'
+Makefile:184: *** commands commence before first target.  Stop.
+make[1]: Leaving directory `/c/Users/pch/Documents/GitHub/rapidInquiryFacility/rifDatabase/ERD'
+make: [db_setup] Error 2 (ignored)
+SAHSULAND and SAHSULAND_DEV setup completed OK
+```
+
+##### 2.3.2.1.4 Issues with the build
+
+* 1. Lack of networking with cause Node.js makefiles to fail:
+
+     * Node.js program (in directory *../Node*) *topojson_convert.js*. This will be replaced by a 
+       web service. This causes a web service testing error later in the build:
+       ```
+       <DETECT FAILURE EARLIER; caused by psql not exiting on shell errors>
+       ``` 
+    * Node.js program (in directory *../../TestHarness/db_test_harness*): *db_test_harness.js*
+
+**IMPROVE TEST 8 ERROR MESSAGE**
+```
+ADD
+```
+
+##### 2.3.2.1.5 Other build targets
    
 * To build or rebuild the sahsuland_dev development database. This is normally used for regression testing:
 ```

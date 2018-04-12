@@ -661,3 +661,19 @@ Done:
 ### Alter 8
 
 * Database test harness
+ 
+### Alter 9
+
+* Alter 9: Misc integration fixes
+
+  1. Replace old geosptial build code with new data loader. Obsolete t_rif40_sahsu_geometry/t_rif40_sahsu_maptiles; 
+     use rif40_geolevels lookup_table/tile_table
+  2. Make RIF40_TABLES.THEME nullable for denominators
+  3. INSERT INTO rif40_table_outcomes wrong OUTCOME_GROUP_NAME used in v4_0_postgres_sahsuland_imports.sql, suspect ICD hard coded. [Not a bug]
+  4. Fix:
+     * RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS to COLUMN_EXISTS
+     * T_RIF40_CONTEXTUAL_STATS/RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION to TOTAL_COMPARISON_POPULATION
+  5. Resolve: RIF40_PARAMETERS.DESCRIPTION (SQL Server) or PARAM_DESCRIPTION (Postgres)
+  6. rif40_GetAdjacencyMatrix.sql: change ST_Touches() to ST_Intersects() to fix missing adjacencies caused by small slivers
+  7. Add t_rif40_study_status/rif40_study_status
+  8. Add stats_method to rif40_studies
