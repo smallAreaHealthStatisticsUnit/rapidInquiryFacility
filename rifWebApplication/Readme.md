@@ -60,10 +60,18 @@ RIF Web Services
 These instructions are for Windows Apache Tomcat. Linux Tomcat will be very similar. It is assumed that the 
 installer knows how to:
 
+* Can modify Windows file permissions
 * Set environment variables; check settings; setup up the executable and library search paths
 * Can install and de-install programs 
 * Can start and stop system services
 * Is able to administer the installation machine.
+
+If you are running with power user privilege, as most laptops and Imperial staff PCs do, you already have far too much privilege and you may not need
+to modify file permissions much.
+
+For help on file permission see: [Windows file permissions](https://technet.microsoft.com/en-us/library/dd277411.aspx). As a general rule, it is much 
+better to add yourself, probably with full control to a file or directory than to take ownership of a file or folder. Also, be careful about giving yourself full control over
+binary and configuration directories. Remember less privilege is always more secure!
 
 The RIF web application will install on a modern laptop.
 
@@ -172,7 +180,7 @@ an updated ServerInfo.properties:
 ### 1.3.3 Running Tomcat on the command line
 
 Tomcat can be run from the command line. The advantage of this is all the output appears in the same place! To do this the tomcat server must be
-stopped (i.e. in the Windows services panel or via Linux runvel scripts (/etc/init.d/tomcat*). Notmally tomcat is run as a server (i.e. as a 
+stopped (i.e. in the Windows services panel or via Linux runlevel scripts (/etc/init.d/tomcat*). Notmally tomcat is run as a server (i.e. as a 
 daemon in Unix parlance).
 
 **Make sure you start a new command window (cmd) after setting any environment variables**. The new settings will *NOT* be picked up otherwise.
@@ -202,7 +210,7 @@ Neither the JAVA_HOME nor the JRE_HOME environment variable is defined
 At least one of these environment variable is needed to run this program
 ```
 
-You may get a complaint from your firewall or security software; allow tomcat the access it requires. Do *NOT* disdable Tomcat or it will not work! 
+You may get a complaint from your firewall or security software; allow tomcat the access it requires. Do *NOT* disdable Tomcat or the RIF will not work! 
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/windows_defender_message.png?raw=true "Prevent Tomcat from being disabled by your security software")
 
@@ -252,7 +260,64 @@ Normally this pops up a Java scrollable window:
 * To abort, use *catalina.bat stop* or quit the Java window. Use of control-C in the Java Window 
   will not work once a study have been run.
 
-Two scripts are provided to start and stop the RIF from the command line:
+A successful start odf the RIF looks like:
+```
+12-Apr-2018 14:58:26.423 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version:        Apache Tomcat/8.5.29
+12-Apr-2018 14:58:26.425 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Mar 5 2018 13:11:12 UTC
+12-Apr-2018 14:58:26.425 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server number:         8.5.29.0
+12-Apr-2018 14:58:26.425 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Windows 10
+12-Apr-2018 14:58:26.425 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            10.0
+12-Apr-2018 14:58:26.425 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+12-Apr-2018 14:58:26.426 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             C:\Program Files\Java\jdk1.8.0_162\jre
+12-Apr-2018 14:58:26.426 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           1.8.0_162-b12
+12-Apr-2018 14:58:26.426 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Oracle Corporation
+12-Apr-2018 14:58:26.427 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         C:\Program Files\Apache Software Foundation\Tomcat 8.5
+12-Apr-2018 14:58:26.427 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         C:\Program Files\Apache Software Foundation\Tomcat 8.5
+12-Apr-2018 14:58:26.428 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\logging.properties
+12-Apr-2018 14:58:26.428 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+12-Apr-2018 14:58:26.428 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+12-Apr-2018 14:58:26.428 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+12-Apr-2018 14:58:26.428 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dignore.endorsed.dirs=
+12-Apr-2018 14:58:26.428 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=C:\Program Files\Apache Software Foundation\Tomcat 8.5
+12-Apr-2018 14:58:26.429 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=C:\Program Files\Apache Software Foundation\Tomcat 8.5
+12-Apr-2018 14:58:26.429 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=C:\Program Files\Apache Software Foundation\Tomcat 8.5\temp
+12-Apr-2018 14:58:26.429 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: [C:\Program Files\Java\jdk1.8.0_162\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\iCLS\;C:\Program Files\Intel\Intel(R) Management Engine Components\iCLS\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\PostgreSQL\9.6\bin;C:\Program Files\Java\jdk1.8.0_162\bin;C:\Program Files\Apache Software Foundation\apache-maven-3.5.3\bin;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\130\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\140\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\ManagementStudio\;C:\Program Files\nodejs\;C:\Program Files\dotnet\;C:\MinGW\msys\1.0\bin;C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin;C:\Users\admin\AppData\Local\Microsoft\WindowsApps;.]
+12-Apr-2018 14:58:26.725 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8080"]
+12-Apr-2018 14:58:27.012 INFO [main] org.apache.tomcat.util.net.NioSelectorPool.getSharedSelector Using a shared selector for servlet write/read
+12-Apr-2018 14:58:27.028 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["ajp-nio-8009"]
+12-Apr-2018 14:58:27.030 INFO [main] org.apache.tomcat.util.net.NioSelectorPool.getSharedSelector Using a shared selector for servlet write/read
+12-Apr-2018 14:58:27.031 INFO [main] org.apache.catalina.startup.Catalina.load Initialization processed in 1530 ms
+12-Apr-2018 14:58:27.251 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+12-Apr-2018 14:58:27.253 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet Engine: Apache Tomcat/8.5.29
+12-Apr-2018 14:58:27.350 INFO [localhost-startStop-1] org.apache.catalina.startup.HostConfig.deployWAR Deploying web application archive [C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices.war]
+12-Apr-2018 14:58:44.273 INFO [localhost-startStop-1] org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+12-Apr-2018 14:58:44.367 INFO [localhost-startStop-1] com.sun.jersey.server.impl.container.servlet.JerseyServletContainerInitializer.addServletWithApplication Registering the Jersey servlet application, named rifServices.restfulWebServices.ms.MSSQLRIFStudyResultRetrievalWebServiceApplication, at the servlet mapping, /studyResultRetrieval/ms/*, with the Application class of the same name
+12-Apr-2018 14:58:44.368 INFO [localhost-startStop-1] com.sun.jersey.server.impl.container.servlet.JerseyServletContainerInitializer.addServletWithApplication Registering the Jersey servlet application, named rifServices.restfulWebServices.pg.PGSQLRIFStudySubmissionWebServiceApplication, at the servlet mapping, /studySubmission/pg/*, with the Application class of the same name
+12-Apr-2018 14:58:44.369 INFO [localhost-startStop-1] com.sun.jersey.server.impl.container.servlet.JerseyServletContainerInitializer.addServletWithApplication Registering the Jersey servlet application, named rifServices.restfulWebServices.ms.MSSQLRIFStudySubmissionWebServiceApplication, at the servlet mapping, /studySubmission/ms/*, with the Application class of the same name
+12-Apr-2018 14:58:44.370 INFO [localhost-startStop-1] com.sun.jersey.server.impl.container.servlet.JerseyServletContainerInitializer.addServletWithApplication Registering the Jersey servlet application, named rifServices.restfulWebServices.pg.PGSQLRIFStudyResultRetrievalWebServiceApplication, at the servlet mapping, /studyResultRetrieval/pg/*, with the Application class of the same name
+12-Apr-2018 14:58:44.391 INFO [localhost-startStop-1] com.sun.jersey.api.core.PackagesResourceConfig.init Scanning for root resource and provider classes in the packages:
+  PGSQLRIFStudySubmissionWebServiceResource
+  PGSQLRIFStudyResultRetrievalWebServiceResource
+  MSSQLRIFStudySubmissionWebServiceResource
+  MSSQLRIFStudyResultRetrievalWebServiceResource
+12-Apr-2018 14:58:44.522 INFO [localhost-startStop-1] com.sun.jersey.server.impl.application.WebApplicationImpl._initiate Initiating Jersey application, version 'Jersey: 1.19 02/11/2015 03:25 AM'
+12-Apr-2018 14:58:44.926 SEVERE [localhost-startStop-1] com.sun.jersey.server.impl.application.RootResourceUriRules.<init> The ResourceConfig instance does not contain any root resource classes.
+12-Apr-2018 14:58:45.186 INFO [localhost-startStop-1] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive [C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices.war] has finished in [17,836] ms
+12-Apr-2018 14:58:45.226 INFO [localhost-startStop-1] org.apache.catalina.startup.HostConfig.deployWAR Deploying web application archive [C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\taxonomyServices.war]
+12-Apr-2018 14:58:47.470 INFO [localhost-startStop-1] org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+12-Apr-2018 14:58:47.478 INFO [localhost-startStop-1] com.sun.jersey.server.impl.container.servlet.JerseyServletContainerInitializer.addServletWithApplication Registering the Jersey servlet application, named taxonomyServices.RIFTaxonomyWebServiceApplication, at the servlet mapping, /taxonomyServices/*, with the Application class of the same name
+12-Apr-2018 14:58:47.494 INFO [localhost-startStop-1] com.sun.jersey.api.core.servlet.WebAppResourceConfig.init Scanning for root resource and provider classes in the Web app resource paths:
+  /WEB-INF/lib
+  /WEB-INF/classes
+12-Apr-2018 14:58:47.851 INFO [localhost-startStop-1] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive [C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\taxonomyServices.war] has finished in [2,625] ms
+12-Apr-2018 14:58:47.858 INFO [localhost-startStop-1] org.apache.catalina.startup.HostConfig.deployDirectory Deploying web application directory [C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\ROOT]
+12-Apr-2018 14:58:47.983 INFO [localhost-startStop-1] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\ROOT] has finished in [126] ms
+12-Apr-2018 14:58:47.996 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
+12-Apr-2018 14:58:48.025 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["ajp-nio-8009"]
+12-Apr-2018 14:58:48.032 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in 21000 ms  
+```
+
+  Two scripts are provided to start and stop the RIF from the command line:
   
 * start_rif.bat
 * stop_rif.bat
@@ -264,12 +329,50 @@ The shortcuts created then need to be medified to run as an Adminstrator (right 
 
 When running Tomcat at the command line on Windows 10 the new Unix like copy paste functionality will prevent
 the buffer from scrolling and thence cause tomcat to hang. This can be alleviated by typing <enter> or 
-<return> in the log window and fixed by changing the properies of the log window:
+<return> in the log window and fixed by changing the properies of the log window (right click on tomcat in the top left corner of the Java logging window, 
+select properties; In options unset "quick edit mode", "insert mode", "filter clipboard contents on paste" and "enable line wrapping selection"):
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat_console_properties.png?raw=true "Windows 10 Tomcat console window properties")
 
+Tomcat can be stopped using "control-C" if R has not been run or using stop_rif.bat.
+  
 ### 1.3.4 Running Tomcat as a service
   
+You only need to do this if you want tomcat to start when the server boots. This is not advised on a laptop as it uses 2GB of memory; stop and start tomcat manually.
+You can do this last!
+  
+* It is advised to reinstall the tomcat service as the tomcat installer usually messes it up! In the directory %CATALINA_HOME%/bin; see: 
+  [Windows service HOW-TO](http://tomcat.apache.org/tomcat-8.0-doc/windows-service-howto.html#Installing_services)
+
+	```
+	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>service.bat install
+	Installing the service 'Tomcat8' ...
+	Using CATALINA_HOME:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
+	Using CATALINA_BASE:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
+	Using JAVA_HOME:        "C:\Program Files\Java\jdk1.8.0_162"
+	Using JRE_HOME:         "C:\Program Files\Java\jdk1.8.0_162\jre"
+	Using JVM:              "C:\Program Files\Java\jdk1.8.0_162\jre\bin\server\jvm.dll"
+	Failed installing 'Tomcat8' service
+
+	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>service.bat remove
+	Removing the service 'Tomcat8' ...
+	Using CATALINA_BASE:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
+	The service 'Tomcat8' has been removed
+
+	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>service.bat install
+	Installing the service 'Tomcat8' ...
+	Using CATALINA_HOME:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
+	Using CATALINA_BASE:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
+	Using JAVA_HOME:        "C:\Program Files\Java\jdk1.8.0_162"
+	Using JRE_HOME:         "C:\Program Files\Java\jdk1.8.0_162\jre"
+	Using JVM:              "C:\Program Files\Java\jdk1.8.0_162\jre\bin\server\jvm.dll"
+	The service 'Tomcat8' has been installed. 
+	```
+ 
+  Then use the configure Tomcat application (tomcat8w) to use the default Java installed on the machine. This prevents upgrades from breaking *tomcat*!
+
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
+
 * Use the configure Tomcat application (tomcat8w) to make the startup type automatic.
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_1.png?raw=true "Make the startup type automatic")
@@ -293,6 +396,8 @@ the buffer from scrolling and thence cause tomcat to hang. This can be alleviate
 * Restart Tomcat using the configure Tomcat application (tomcat8w) or the services panel.   
   The *tomcat* output trace will appear in %CATALINA_HOME%/logs as:
   *tomcat8-stderr.<date in format YYYY-MM-DD>* and also possibly *tomcat8-stdout.<date in format YYYY-MM-DD>*.
+  
+* When further instructions tell you to stop and start tomcat you will need to use the configure Tomcat application (tomcat8w) or the services panel
 
 ### 1.3.5 Middleware Logging (Log4j2) Setup
 
@@ -966,6 +1071,12 @@ bit version
 
 # 2. Building Web Services using Maven
 
+Normally users will be supplied with pre=built files:
+
+* RIF middleware: rifServices.war
+* Taxconomy service (ICD10): taxonomyServices.war
+* Front end: RIF4.7zip
+
 ## 2.1 Building Using Make
 
 If you have installed make (i.e. you are building the Postgrs port from Scratch), run make from the 
@@ -1170,7 +1281,6 @@ If SAHSU has supplied a taxonomyServices.war file skip to step 3.
 
   * icdClaML2016ens.xml
   * TaxonomyServicesConfiguration.xml
-  * ClaML.dtd
 
 2) Build the Taxonomy Service using *maven*.
    Either: 
@@ -1207,12 +1317,19 @@ If SAHSU has supplied a taxonomyServices.war file skip to step 3.
 
 ## 3.2 RIF Web Application
 
+Normally method 2 is used.
+
+### Method 1: manual
+
 Create RIF4 in web-apps:
 
 * Change directory to *%CATALINA_HOME%\webapps*; e,g, *cd "C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps"*
 * Create the directory *RIF4*
 * Copy all files and directories from the directory: *"C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifWebApplication\src\main\webapp\WEB-INF"* 
   to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4*
+* 7zip must be be installed.
+
+### Method 2: Using pre-supplied RIF4.7zip
 
 If you are supplied with the *7zip* archive, RIF4.7z needs to be copied to: 
 *%CATALINA_HOME%\webapps\RIF4* and unpacked using the file manager *7zip*. Do not use the command line 
@@ -1264,23 +1381,27 @@ it is not automatically spotted unlike the services *.war* files..
 
 ## 4.1 Setup Database
 
-The Java connector for theRifServices middleware is setup in the file: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*
+The Java connector for the RifServices middleware is setup in the file: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*.
+This should be copied to *%CATALINA_HOME%\conf*
 
 * If the folder rifServices does not exist; start tomcat and it will be expanded from the war file.
-* The database name (databaseName) is normally *sahsuland*
-* The database host (database.host) is *localhost* on a standalone machine with no network access or the hostname. This does not notrmally need to be fully qualifed 
-  (i.e. aepw-rif27.sm.med.ic.ac.uk is not required)
-* The SQL Server host will be the same as the SQLCMDSERVER variable.
+* The default database is setup as follows:
+  * type (key database.databaseType) is Postgres. You will need to comment out the Postgres setting and use the SQL Server examples for SQL Server;
+  * name (key database.databaseName) is *sahsuland*;
+  * Port (key database.port) is *5432*;
+  * host (key database.host) is *localhost* for Postgres. Normally tomcat is installed on the same server as the database; if this is not the case Postgres and the 
+    firewalls will need to be setup coreectly, see [Postgres Client Authentication](https://www.postgresql.org/docs/9.9/static/client-authentication.html). 
+	This usually requires skilled database and network administrators. The SQL Server host will be the same as the SQLCMDSERVER variable;
 
-Do not set up the database not network access or open the firewall ports unless this is required; it is secure on *localhost*! The database 
-can be remote but users must take care to ensure that it is setup securely. If you use a remote database, user are advised the secure the database:
+    Do not set up the database not network access or open the firewall ports unless this is required; it is secure on *localhost*! The database 
+    can be remote but users must take care to ensure that it is setup securely. If you use a remote database, users are advised the secure the database:
 
-* Always use TLS.
-* Restrict access using **BOTH** the database software (*hba.conf* in Postgres) and the network infrastruture
-* Keep the database fully patched as per vendor advice.
-* Follow the appropriate guidelines, e.g. OWASP, but be consult SAHSU as some of the changes may break the RIF: 
-  - [OWASP Postgres guidelines](https://www.owasp.org/index.php/OWASP_Backend_Security_Project_PostgreSQL_Hardening)
-  - [OWASP SQL Server guidelines](https://www.owasp.org/index.php/OWASP_Backend_Security_Project_SQLServer_Hardening)
+    * Always use TLS.
+    * Restrict access using **BOTH** the database software (*hba.conf* in Postgres) and the network infrastruture
+    * Keep the database fully patched as per vendor advice.
+    * Follow the appropriate guidelines, e.g. OWASP, but be consult SAHSU as some of the changes may break the RIF: 
+      - [OWASP Postgres guidelines](https://www.owasp.org/index.php/OWASP_Backend_Security_Project_PostgreSQL_Hardening)
+      - [OWASP SQL Server guidelines](https://www.owasp.org/index.php/OWASP_Backend_Security_Project_SQLServer_Hardening)
 
 ### 4.1.1 SQL Server
 
@@ -1310,7 +1431,9 @@ database.databaseType=postgresql
 
 ## 4.2 Setup Network
 
-By default tomcat runs on port 8080, if you have installed the Apache webserver (Postgres install can) then it will appear on port 8081. This can be 
+This section not required is yuou are running on localhost (e.g. a laptop).
+
+By default tomcat runs on port 8080, if you have installed the Apache webserver (Postgres installs can) then it will appear on port 8081. This can be 
 detected using the netstat command (the syntax will be slightly differ on Linux):
 
 ```
@@ -1364,7 +1487,7 @@ Localhost can be edited here
 		}]);
 ```
 
-Usually the script is able to detect protocol, port and hostname; so does not need to be chnaged. If it doesn't or you are installing into an unusual environment, 
+Usually the script is able to detect protocol, port and hostname; so does not need to be changed. If it doesn't or you are installing into an unusual environment, 
 use the hardcoded version and edit:
 
 * The port number in use; e.g. 8080 as in the above example or 8443 if you are in a production environment with TLS enabled;
@@ -1486,7 +1609,8 @@ This setup will support:
    * Extract: ```extractDirectory=c:\\rifDemo\\scratchSpace```
    * Policies: ```extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies```
 
-   Grant read, write and execute access to these directories for Tomcat and SQL Server
+   Grant appropriate read, write and execute access to these directories for Tomcat and SQL Server. Both normally run as the local adminstrator  Administrators 
+   (DESKTOP-4P2SA80\Administrators) so you do not need to do anything, it is advised to grant access to your local user if you are on a development system.
    
 2. Create and test a system ODBC datasource for the database in use; the default is:
 
