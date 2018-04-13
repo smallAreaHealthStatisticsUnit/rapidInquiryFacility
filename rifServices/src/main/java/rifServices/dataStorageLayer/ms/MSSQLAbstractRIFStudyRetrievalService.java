@@ -17,7 +17,7 @@ import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.system.RIFServiceMessages;
 
 /**
- * Main implementation of the RIF middle ware.  
+ * Main implementation of the RIF middleware.
  * <p>
  * The main roles of this class are to support:
  * <ul>
@@ -49,13 +49,15 @@ import rifServices.system.RIFServiceMessages;
  *</li>
  *<li>
  *Scan every parameter value for malicious field values.  Sometimes this just means scanning a String parameter value
- *for text that could be used as part of a malicous code attack.  In this step, the <code>checkSecurityViolations(..)</code>
+ *for text that could be used as part of a malicious code attack.  In this step, the
+ * <code>checkSecurityViolations(..)</code>
  *methods for business objects are called.  Note that the <code>checkSecurityViolations</code> method of a business
  *object will scan each text field for malicious field values, and recursively call the same method in any child
  *business objects it may possess.
  *</li>
  *<li>
- *Obtain a connection object from the {@lin rifServices.dataStorageLayer.SLQConnectionManager}.
+ * Obtain a connection object from the
+ * {@link rifServices.dataStorageLayer.common.SQLManager}.
  *</li>
  *<li>
  *Delegate to a manager class, using a method with the same name.  Pass the connection object as part of the call. 
@@ -72,83 +74,9 @@ import rifServices.system.RIFServiceMessages;
  *methods are intended to identify an attack anyway.  We feel that we should not merely prevent malicious attacks but
  *log any attempts to do so.  If the method throws a {@link rifGenericLibrary.system.RIFServiceSecurityException},
  *then this class will log it and continue to pass it to client application.
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
  */
-
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-abstract class MSSQLAbstractRIFStudyRetrievalService 
-	extends MSSQLAbstractRIFUserService 
-	implements RIFStudyResultRetrievalAPI {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
+abstract class MSSQLAbstractRIFStudyRetrievalService extends MSSQLAbstractRIFUserService
+		implements RIFStudyResultRetrievalAPI {
 
 	/**
 	 * Instantiates a new production rif job submission service.
@@ -158,8 +86,6 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 		String serviceName
 			= RIFServiceMessages.getMessage("rifStudyRetrievalService.name");
 		setServiceName(serviceName);
-		String serviceVersion
-			= RIFServiceMessages.getMessage("rifStudyRetrievalService.version");
 
 		String serviceDescription
 			= RIFServiceMessages.getMessage("rifStudyRetrievalService.description");
@@ -169,12 +95,6 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 		setServiceContactEmail(serviceContactEmail);		
 	}
 
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	
-	
 	public void clearStudyStatusUpdates(
 		final User _user, 
 		final String studyID)
@@ -239,8 +159,6 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 				user, 
 				connection);
 		}
-		
-		
 	}
 	
 	public void updateStudyStatus(
@@ -255,7 +173,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return;
 		}
 		
@@ -1039,18 +957,4 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 
 		return results;
 	}
-	
-	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-	
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-	
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

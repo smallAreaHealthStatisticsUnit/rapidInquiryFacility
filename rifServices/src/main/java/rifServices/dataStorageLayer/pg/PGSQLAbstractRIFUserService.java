@@ -28,11 +28,12 @@ import rifServices.dataStorageLayer.common.ResultsQueryManager;
 import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.SubmissionManager;
+import rifServices.dataStorageLayer.common.UserService;
 import rifServices.dataStorageLayer.common.ValidateUser;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceStartupOptions;
 
-abstract class PGSQLAbstractRIFUserService {
+abstract class PGSQLAbstractRIFUserService implements UserService {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
@@ -45,6 +46,7 @@ abstract class PGSQLAbstractRIFUserService {
 
 	}
 
+	@Override
 	public boolean isInformationGovernancePolicyActive(
 		final User _user) 
 		throws RIFServiceException {
@@ -83,7 +85,8 @@ abstract class PGSQLAbstractRIFUserService {
 		return false;		
 	
 	}
-		
+
+	@Override
 	public DiseaseMappingStudy getDiseaseMappingStudy(
 		final User _user,
 		final String studyID)
@@ -160,7 +163,8 @@ abstract class PGSQLAbstractRIFUserService {
 		return result;		
 
 	}
-			
+
+	@Override
 	public ArrayList<Geography> getGeographies(
 		final User _user) 
 		throws RIFServiceException {
@@ -222,8 +226,8 @@ abstract class PGSQLAbstractRIFUserService {
 			
 		return results;		
 	}
-	
-		
+
+	@Override
 	public ArrayList<GeoLevelSelect> getGeoLevelSelectValues(
 		final User _user,
 		final Geography _geography)
@@ -306,8 +310,8 @@ abstract class PGSQLAbstractRIFUserService {
 		
 		return results;
 	}
-	
-	
+
+	@Override
 	public GeoLevelSelect getDefaultGeoLevelSelectValue(
 		final User _user,
 		final Geography _geography) 
@@ -390,6 +394,7 @@ abstract class PGSQLAbstractRIFUserService {
 	 * cannot reassign the parameter within the code block.  It is used to prevent accidentally
 	 * doing it as the code block is altered for maintenance.
 	 */
+	@Override
 	public ArrayList<GeoLevelArea> getGeoLevelAreaValues(
 		final User _user,
 		final Geography _geography,
@@ -503,8 +508,9 @@ abstract class PGSQLAbstractRIFUserService {
 		}
 
 		return results;
-	}	
+	}
 
+	@Override
 	public ArrayList<GeoLevelView> getGeoLevelViewValues(
 		final User _user,
 		final Geography _geography,
@@ -589,7 +595,8 @@ abstract class PGSQLAbstractRIFUserService {
 		
 		return results;
 	}
-	
+
+	@Override
 	public YearRange getYearRange(
 		final User _user,
 		final Geography _geography,
@@ -706,7 +713,8 @@ abstract class PGSQLAbstractRIFUserService {
 		
 		return result;		
 	}
-		
+
+	@Override
 	public ArrayList<HealthTheme> getHealthThemes(
 		final User _user,
 		final Geography _geography)
@@ -784,9 +792,8 @@ abstract class PGSQLAbstractRIFUserService {
 			
 		return results;
 	}
-	
-	
 
+	@Override
 	public ArrayList<AbstractCovariate> getCovariates(
 		final User _user,
 		final Geography _geography,
@@ -872,6 +879,7 @@ abstract class PGSQLAbstractRIFUserService {
 		return results;		
 	}
 
+	@Override
 	public RIFResultTable getTileMakerCentroids(
 			final User _user,
 			final Geography _geography,
@@ -955,8 +963,8 @@ abstract class PGSQLAbstractRIFUserService {
 
 			return result;	
 		}
-	
-	
+
+	@Override
 	public String getTileMakerTiles(
 		final User _user,
 		final Geography _geography,
@@ -1076,6 +1084,7 @@ abstract class PGSQLAbstractRIFUserService {
 		return result;	
 	}
 
+	@Override
 	public void initialise(final ServiceResources startupParameter) {
 
 		this.rifServiceResources = startupParameter;
@@ -1104,6 +1113,7 @@ abstract class PGSQLAbstractRIFUserService {
 		new ValidateUser(user, rifServiceResources.getSqlConnectionManager()).validate();
 	}
 
+	@Override
 	public void logException(
 		final User user,
 		final String methodName,
@@ -1146,6 +1156,7 @@ abstract class PGSQLAbstractRIFUserService {
 		throw rifServiceException;
 	}
 
+	@Override
 	public RIFServiceInformation getRIFServiceInformation(
 		final User _user)
 		throws RIFServiceException {
@@ -1197,6 +1208,7 @@ abstract class PGSQLAbstractRIFUserService {
 		return result;
 	}
 
+	@Override
 	public RIFServiceStartupOptions getRIFServiceStartupOptions() {
 		return rifServiceResources.getRIFServiceStartupOptions();
 	}

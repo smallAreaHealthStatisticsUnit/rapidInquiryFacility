@@ -28,11 +28,12 @@ import rifServices.dataStorageLayer.common.ResultsQueryManager;
 import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.SubmissionManager;
+import rifServices.dataStorageLayer.common.UserService;
 import rifServices.dataStorageLayer.common.ValidateUser;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceStartupOptions;
 
-class MSSQLAbstractRIFUserService {
+class MSSQLAbstractRIFUserService implements UserService {
 
 	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 
@@ -46,8 +47,9 @@ class MSSQLAbstractRIFUserService {
 
 	}
 
+	@Override
 	public boolean isInformationGovernancePolicyActive(
-		final User _user)
+			final User _user)
 		throws RIFServiceException {
 
 		User user = User.createCopy(_user);
@@ -85,9 +87,10 @@ class MSSQLAbstractRIFUserService {
 	
 	}
 			
+	@Override
 	public DiseaseMappingStudy getDiseaseMappingStudy(
-		final User _user,
-		final String studyID)
+			final User _user,
+			final String studyID)
 		throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
@@ -162,8 +165,9 @@ class MSSQLAbstractRIFUserService {
 
 	}
 				
+	@Override
 	public ArrayList<Geography> getGeographies(
-		final User _user) 
+			final User _user)
 		throws RIFServiceException {
 			
 		//Defensively copy parameters and guard against blocked users
@@ -225,9 +229,10 @@ class MSSQLAbstractRIFUserService {
 	}
 	
 		
+	@Override
 	public ArrayList<GeoLevelSelect> getGeoLevelSelectValues(
-		final User _user,
-		final Geography _geography)
+			final User _user,
+			final Geography _geography)
 		throws RIFServiceException {
 			
 		//Defensively copy parameters and guard against blocked users
@@ -309,9 +314,10 @@ class MSSQLAbstractRIFUserService {
 	}
 	
 	
+	@Override
 	public GeoLevelSelect getDefaultGeoLevelSelectValue(
-		final User _user,
-		final Geography _geography) 
+			final User _user,
+			final Geography _geography)
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -391,10 +397,11 @@ class MSSQLAbstractRIFUserService {
 	 * cannot reassign the parameter within the code block.  It is used to prevent accidentally
 	 * doing it as the code block is altered for maintenance.
 	 */
+	@Override
 	public ArrayList<GeoLevelArea> getGeoLevelAreaValues(
-		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect) 
+			final User _user,
+			final Geography _geography,
+			final GeoLevelSelect _geoLevelSelect)
 		throws RIFServiceException {
 
 		//TOUR_CONCURRENCY
@@ -506,10 +513,11 @@ class MSSQLAbstractRIFUserService {
 		return results;
 	}	
 
+	@Override
 	public ArrayList<GeoLevelView> getGeoLevelViewValues(
-		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect) 
+			final User _user,
+			final Geography _geography,
+			final GeoLevelSelect _geoLevelSelect)
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -591,10 +599,11 @@ class MSSQLAbstractRIFUserService {
 		return results;
 	}
 	
+	@Override
 	public YearRange getYearRange(
-		final User _user,
-		final Geography _geography,
-		final NumeratorDenominatorPair _ndPair) 
+			final User _user,
+			final Geography _geography,
+			final NumeratorDenominatorPair _ndPair)
 		throws RIFServiceException {
 
 		//TOUR_SECURITY
@@ -710,9 +719,10 @@ class MSSQLAbstractRIFUserService {
 	}
 		
 
+	@Override
 	public ArrayList<HealthTheme> getHealthThemes(
-		final User _user,
-		final Geography _geography)
+			final User _user,
+			final Geography _geography)
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -790,10 +800,11 @@ class MSSQLAbstractRIFUserService {
 	
 	
 
+	@Override
 	public ArrayList<AbstractCovariate> getCovariates(
-		final User _user,
-		final Geography _geography,
-		final GeoLevelToMap _geoLevelToMap)
+			final User _user,
+			final Geography _geography,
+			final GeoLevelToMap _geoLevelToMap)
 		throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
@@ -875,6 +886,7 @@ class MSSQLAbstractRIFUserService {
 		return results;		
 	}
 	
+	@Override
 	public RIFResultTable getTileMakerCentroids(
 			final User _user,
 			final Geography _geography,
@@ -961,13 +973,14 @@ class MSSQLAbstractRIFUserService {
 			return result;	
 		}
 	
+	@Override
 	public String getTileMakerTiles(
-		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect,
-		final Integer zoomlevel,
-		final Integer x,
-		final Integer y)
+			final User _user,
+			final Geography _geography,
+			final GeoLevelSelect _geoLevelSelect,
+			final Integer zoomlevel,
+			final Integer x,
+			final Integer y)
 		throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
@@ -1080,6 +1093,7 @@ class MSSQLAbstractRIFUserService {
 		return result;	
 	}
 
+	@Override
 	public void initialise(final ServiceResources startupParameter) {
 
 		this.rifServiceResources = startupParameter;
@@ -1108,17 +1122,19 @@ class MSSQLAbstractRIFUserService {
 		new ValidateUser(user, rifServiceResources.getSqlConnectionManager()).validate();
 	}
 
+	@Override
 	public void logException(
-		final User user,
-		final String methodName,
-		final RIFServiceException rifServiceException)
+			final User user,
+			final String methodName,
+			final RIFServiceException rifServiceException)
 		throws RIFServiceException {
 
 		new ExceptionLog(user, methodName, rifServiceException, rifServiceResources, rifLogger).log();
 	}
 
+	@Override
 	public RIFServiceInformation getRIFServiceInformation(
-		final User _user)
+			final User _user)
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -1168,6 +1184,7 @@ class MSSQLAbstractRIFUserService {
 		return result;
 	}
 
+	@Override
 	public RIFServiceStartupOptions getRIFServiceStartupOptions() {
 		return rifServiceResources.getRIFServiceStartupOptions();
 	}
