@@ -32,79 +32,20 @@ import rifGenericLibrary.util.RIFLogger;
  * Environment and Health. Funding for this project has also been received 
  * from the United States Centers for Disease Control and Prevention.  
  *</p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
  */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
 public class SQLQueryUtility {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static String callingClassName="rifGenericLibrary.dataStorageLayer.pg.SQLQueryUtility";
 	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 		
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
 	/**
 	 * Instantiates a new SQL query utility.
 	 */
 	public SQLQueryUtility() { // Made public for printWarnings()
 
 	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
 
 	/**
 	 * Close.
@@ -131,12 +72,10 @@ public class SQLQueryUtility {
 				SQLQueryUtility.class, 
 				errorMessage, 
 				sqlException);
-																
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.DB_UNABLE_CLOSE_RESOURCE,
-					errorMessage);
-			throw rifServiceException;
+
+			throw new RIFServiceException(
+				RIFGenericLibraryError.DB_UNABLE_CLOSE_RESOURCE,
+				errorMessage);
 		}
 	}
 	
@@ -167,12 +106,10 @@ public class SQLQueryUtility {
 				SQLQueryUtility.class, 
 				errorMessage, 
 				sqlException);
-																		
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.DB_UNABLE_CLOSE_RESOURCE,
-					errorMessage);
-			throw rifServiceException;
+
+			throw new RIFServiceException(
+				RIFGenericLibraryError.DB_UNABLE_CLOSE_RESOURCE,
+				errorMessage);
 		}
 	}
 	
@@ -215,8 +152,7 @@ public class SQLQueryUtility {
 	 * printWarnings. Print info and warning messages
 	 *
 	 * @param warning SQLWarning
-	 * @throws nothing
-	 */	
+	 */
 	public String printWarnings(PreparedStatement runStudyStatement) {
 		SQLWarning warnings;
 		StringBuilder message;
@@ -229,14 +165,15 @@ public class SQLQueryUtility {
 			while (warnings != null) {	
 				warningCount++;
 				if (warnings.getErrorCode() == 0) {
-					message.append(warnings.getMessage() + lineSeparator);	       
+					message.append(warnings.getMessage()).append(lineSeparator);
 				}
 				else {
-					message.append(
-						"SQL Error/Warning >>>" + lineSeparator +
-						"Message:           " + warnings.getMessage() + lineSeparator +
-						"SQLState:          " + warnings.getSQLState() + lineSeparator +
-						"Vendor error code: " +	warnings.getErrorCode() + lineSeparator);
+					message.append("SQL Error/Warning >>>").append(lineSeparator)
+							.append("Message:           ").append(warnings.getMessage())
+							.append(lineSeparator).append("SQLState:          ")
+							.append(warnings.getSQLState()).append(lineSeparator)
+							.append("Vendor error code: ").append(warnings.getErrorCode())
+							.append(lineSeparator);
 						
 					rifLogger.warning(this.getClass(), 
 						"SQL Error/Warning >>>" + lineSeparator +
@@ -281,11 +218,9 @@ public class SQLQueryUtility {
 		catch(SQLException sqlException) {
 			String errorMessage
 				= GENERIC_MESSAGES.getMessage("general.db.error.unableToCommit");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.DB_UNABLE_TO_COMMIT,
-					errorMessage);
-			throw rifServiceException;
+			throw new RIFServiceException(
+				RIFGenericLibraryError.DB_UNABLE_TO_COMMIT,
+				errorMessage);
 		}		
 	}
 	
@@ -304,11 +239,9 @@ public class SQLQueryUtility {
 		catch(SQLException sqlException) {
 			String errorMessage
 				= GENERIC_MESSAGES.getMessage("general.db.error.unableToRollback");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.DB_UNABLE_TO_ROLLBACK,
-					errorMessage);
-			throw rifServiceException;
+			throw new RIFServiceException(
+				RIFGenericLibraryError.DB_UNABLE_TO_ROLLBACK,
+				errorMessage);
 		}		
 	}
 	
@@ -316,43 +249,24 @@ public class SQLQueryUtility {
 		final Connection connection,
 		final AbstractSQLQueryFormatter queryFormatter) 
 		throws SQLException {
-		
-			PreparedStatement statement
-				= connection.prepareStatement(
-					queryFormatter.generateQuery(),
-					ResultSet.TYPE_FORWARD_ONLY,
-					ResultSet.CONCUR_READ_ONLY,
-					ResultSet.CLOSE_CURSORS_AT_COMMIT);
-					
-			return statement;	
+
+		return connection.prepareStatement(
+			queryFormatter.generateQuery(),
+			ResultSet.TYPE_FORWARD_ONLY,
+			ResultSet.CONCUR_READ_ONLY,
+			ResultSet.CLOSE_CURSORS_AT_COMMIT);
 	}
 
 	public static PreparedStatement createPreparedStatement(
 		final Connection connection,
 		final String query) 
 		throws SQLException {
-		
-		PreparedStatement statement
-			= connection.prepareStatement(
-				query,
-				ResultSet.TYPE_FORWARD_ONLY,
-				ResultSet.CONCUR_READ_ONLY,
-				ResultSet.CLOSE_CURSORS_AT_COMMIT);
-					
-		return statement;
+
+		return connection.prepareStatement(
+			query,
+			ResultSet.TYPE_FORWARD_ONLY,
+			ResultSet.CONCUR_READ_ONLY,
+			ResultSet.CLOSE_CURSORS_AT_COMMIT);
 	
 	}
-
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

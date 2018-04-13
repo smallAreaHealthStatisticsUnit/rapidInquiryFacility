@@ -87,7 +87,8 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 			rifDatabaseProperties.isCaseSensitive());
 		
 	}
-	
+
+	@Override
 	public PreparedStatement createPreparedStatement(final Connection connection,
 			final AbstractSQLQueryFormatter queryFormatter) throws SQLException {
 				

@@ -33,7 +33,7 @@ import rifServices.system.files.TomcatFile;
 public abstract class AbstractSQLManager implements SQLManager {
 	
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
-	protected static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
+	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 	private static final String ABSTRACT_SQLMANAGER_PROPERTIES = "AbstractSQLManager.properties";
 	private static final int MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD = 5;
 	protected final HashSet<String> userIDsToBlock;
