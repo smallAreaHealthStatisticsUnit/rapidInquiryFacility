@@ -60,13 +60,13 @@ RIF Web Services
 These instructions are for Windows Apache Tomcat. Linux Tomcat will be very similar. It is assumed that the 
 installer knows how to:
 
-* Can modify Windows file permissions
+* Modify Windows file permissions
 * Set environment variables; check settings; setup up the executable and library search paths
-* Can install and de-install programs 
-* Can start and stop system services
-* Is able to administer the installation machine.
+* Install and de-install programs 
+* Start and stop system services
+* Has the access rights to administer the installation machine.
 
-If you are running with power user privilege, as most laptops and Imperial staff PCs do, you already have far too much privilege and you may not need
+If you are running with power user privilege, as most laptops and Imperial staff PCs do, you already have *far too much* privilege and you may not need
 to modify file permissions much.
 
 For help on file permission see: [Windows file permissions](https://technet.microsoft.com/en-us/library/dd277411.aspx). As a general rule, it is much 
@@ -260,7 +260,7 @@ Normally this pops up a Java scrollable window:
 * To abort, use *catalina.bat stop* or quit the Java window. Use of control-C in the Java Window 
   will not work once a study have been run.
 
-A successful start odf the RIF looks like:
+A successful start of the RIF looks like:
 ```
 12-Apr-2018 14:58:26.423 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version:        Apache Tomcat/8.5.29
 12-Apr-2018 14:58:26.425 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Mar 5 2018 13:11:12 UTC
@@ -401,20 +401,22 @@ You can do this last!
 
 ### 1.3.5 Middleware Logging (Log4j2) Setup
 
+This section introduces RIF logging. You do not need to do anything!
+
 The RIF middleware now uses Log4j version 2 for logging. The configuration file: 
 *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up two loggers:
   
   1. The default logger: *rifGenericLibrary.util.RIFLogger* used by the middleware: RIF_middleware.log
   2. "Other" for logger output not from *rifGenericLibrary.util.RIFLogger*: Other.log
   
-  Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>``` and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/Other.log-<N>```
-  where ```<YYYY>``` is the  year, ```<MM>``` is the numeric month numeric and ```<N>``` is the log sequence number.
-  Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
-  messages not using *rifGenericLibrary.util.RIFLogger*
+Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>``` and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/Other.log-<N>```
+where ```<YYYY>``` is the  year, ```<MM>``` is the numeric month numeric and ```<N>``` is the log sequence number.
+Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
+messages not using *rifGenericLibrary.util.RIFLogger*
   
-  Logs are rotated everyday or every 100 MB in the year/month specific directory
-  
-  Typical log entry: 
+Logs are rotated everyday or every 100 MB in the year/month specific directory
+
+Typical log entry: 
 ```
 14:29:37.812 [http-nio-8080-exec-5] INFO  rifGenericLibrary.util.RIFLogger: [rifServices.dataStorageLayer.pg.PGSQLRIFContextManager]:
 PGSQLAbstractSQLManager logSQLQuery >>>
@@ -430,7 +432,7 @@ ORDER BY
 <<< End PGSQLAbstractSQLManager logSQLQuery
 ```
 	
-  Configuration file:
+RIF only Configuration file (no tomcat logging):
 	
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -482,9 +484,6 @@ ORDER BY
   </Loggers>
 </Configuration>
 ```
-
-**To send  RIF output to the console uncomment: 
-```<!-- <AppenderRef ref="Console"/> uncomment to see RIF middleware output on the console -->```**. 
 
 R stdout/stderroutput always appears on the console and cannot be redirected:
 ```
@@ -1069,7 +1068,7 @@ See: [R setup](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFaci
 As with Java, do NOT use the 32 bit only version unless you have to. These instructions assume you you the 64 
 bit version
 
-Add the 64 bit R executabvle to the path; e.g. *C:\Program Files\R\R-3.4.4\bin\x64*
+Add the 64 bit R executable to the path; e.g. *C:\Program Files\R\R-3.4.4\bin\x64*
 
 # 2. Building Web Services using Maven
 
