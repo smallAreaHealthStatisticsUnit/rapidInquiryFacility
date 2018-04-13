@@ -42,12 +42,6 @@ public interface UserService {
 			Geography _geography)
 						throws RIFServiceException;
 
-	//TOUR_CONCURRENCY
-	/*
-	 * We mark all method parameters as "final" to ensure that the code within the method
-	 * cannot reassign the parameter within the code block.  It is used to prevent accidentally
-	 * doing it as the code block is altered for maintenance.
-	 */
 	ArrayList<GeoLevelArea> getGeoLevelAreaValues(
 			User _user,
 			Geography _geography,

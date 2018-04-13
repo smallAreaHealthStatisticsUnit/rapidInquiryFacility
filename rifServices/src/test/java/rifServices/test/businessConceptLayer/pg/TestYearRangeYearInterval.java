@@ -10,16 +10,13 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
-import rifServices.dataStorageLayer.common.CommonUserService;
 import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyServiceBundle;
-import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudySubmissionService;
 import rifServices.system.RIFServiceError;
 import rifServices.test.AbstractRIFTestCase;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-
 
 /**
  *
