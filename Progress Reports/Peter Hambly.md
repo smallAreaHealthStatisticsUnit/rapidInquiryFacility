@@ -2065,5 +2065,10 @@ Todo:
 #### 12th to 13th April
 
 * Review and test Postgres database build instructions; merging in Windows specific instructions and build README.md comments
+* Review and test RIF Web Application and Middleware Installation instructions
+* Fix log4j logging hangs (added separate taxonomyServices logger to avoid thread clash bug inm log4j)
+* Fix for whitespace in properties file causes crashes
+* Text VPN commention
 
+#### 16th to 21st April
 

@@ -925,25 +925,169 @@ Run Jconsole from *%JAVA_HOME%\bin* e.g. ```"%JAVA_HOME%\bin\Jconsole"```
 Front end logging is enabled by default to the log file: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```; e.g.
  *FrontEndLogger.2017-11-27-1.log*.
  
-To enable debugging in *%CATALINA_HOME%\webapps\RIF4\utils\controllers\rifc-util-alert.js* set ```$scope.debugEnabled = true;```:
+To enable debugging in the front end, copy frontEndParameters.json5 from %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes. Coopy this file to *%CATALINA_HOME%\conf*.
+Set *debugEnabled* to *true*
 
-```javascript
+This file contains various parameter to help debug the front end web application; all should be false unless you are a front end developer. 
+You will need to check the code to see what they have:
 
-/* 
- * CONTROLLER to handle alert bars and notifications over whole application
+* usePouchDBCache:  DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
+* disableMapLocking:Disable disease map initial sync [You can re-enable it!]
+* disableSelectionLocking:  Disable selection locking [You can re-enable it!]
+* syncMapping2EventsDisabled: Disable syncMapping2Events handler [for leak testing]
+* rrDropLineRedrawDisabled: Disable rrDropLineRedraw handler [for leak testing]
+* rrchartWatchDisabled: Disable Angular $watch on rrchart<mapID> [for leak testing]	
+
+Aslo:
+ 
+* mapLockingOptions: Map locking options (options for Leaflet.Sync())
+
+Pther parameters:
+
+* You can define a *defaultLogin* do not do this in a production environment; for use on single user tests system only!
+* The parameter *userMethods* allows you to define your own methods for mapping.
+* The parameter *mappingDefaults* sets up the defaults for the three maps (viewermap, dismap1 and 1).
+
+Mapping parameters should be changed with extreme caution as they will brerak the RIF badly if you set them up incorrectly. 
+You must logout, restart tomcat and login again if you test any of the parameters.
+
+```json
+/**
+ *
+ *
+ * <hr>
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * <p>
+ * Copyright 2017 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ * </p>
+ *
+ * <pre> 
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+ * </pre>
+ *
+ * <hr>
+ * Peter Hambly
+ * @author phambly
+ * @version
  */
-angular.module("RIF")
-        .controller('AlertCtrl', ['$scope', 'notifications', 'user', function ($scope, notifications, user) {
-            $scope.delay = 0; // mS
-			$scope.lastMessage = undefined;
-			$scope.messageList = [];
-			$scope.messageCount = undefined;
-			$scope.messageStart = new Date().getTime();
-			$scope.debugEnabled = true;
-			
+
+// THIS FILE MUST BE VALID JSON5; can contain comments and line feeds!
+// http://json5.org/ or https://github.com/json5/json5
+
+/*
+The following is the exact list of additions to JSON’s syntax introduced by JSON5. All of these are optional, and all of these come from ES5.
+
+Objects:
+* Object keys can be unquoted if they’re valid identifiers. Yes, even reserved keywords (like default) are valid unquoted keys in ES5 [§11.1.5, §7.6]. (More info)
+  (TODO: Unicode characters and escape sequences aren’t yet supported in this implementation.)
+* Object keys can also be single-quoted.
+* Objects can have trailing commas.
+
+Arrays:
+* Arrays can have trailing commas.
+
+Strings:
+* Strings can be single-quoted.
+* Strings can be split across multiple lines; just prefix each newline with a backslash. [ES5 §7.8.4]
+
+Numbers:
+* Numbers can be hexadecimal (base 16).
+* Numbers can begin or end with a (leading or trailing) decimal point.
+* Numbers can include Infinity, -Infinity, NaN, and -NaN.
+* Numbers can begin with an explicit plus sign.
+
+Comments:
+* Both inline (single-line) and block (multi-line) comments are allowed.
+*/
+{
+	parameters: {
+		usePouchDBCache: 	false,			// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
+		debugEnabled:		false,			// Disable front end debugging
+		disableMapLocking:	false,			// Disable disease map initial sync [You can re-enable it!]
+		disableSelectionLocking: false,		// Disable selection locking [You can re-enable it!]
+		
+		syncMapping2EventsDisabled: false,	// Disable syncMapping2Events handler [for leak testing]
+		rrDropLineRedrawDisabled: false,	// Disable rrDropLineRedraw handler [for leak testing]
+		rrchartWatchDisabled: false,		// Disable Angular $watch on rrchart<mapID> [for leak testing]
+		
+		mapLockingOptions: {},				// Map locking options (for Leaflet.Sync())
+		
+		/*
+		 * For the Color Brewer names see: https://github.com/timothyrenner/ColorBrewer.jl
+		 * Derived from: http://colorbrewer2.org/
+		 */
+		mappingDefaults: {				
+			'diseasemap1': {
+					method: 	'quantile', 
+					feature:	'smoothed_smr',
+					intervals: 	9,
+					invert:		true,
+					brewerName:	"PuOr"
+			},
+			'diseasemap2': {
+					method: 	'AtlasProbability', 
+					feature:	'posterior_probability',
+					breaks: 	[0.0, 0.20, 0.81, 1.0],	
+					invert:		false,
+					brewerName:	"RdYlGn"
+			},
+			'viewermap': {
+					method: 	'AtlasRelativeRisk', 
+					feature:	'relative_risk',
+					breaks:		[-Infinity, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51, Infinity],
+					invert:		true,
+					brewerName: "PuOr"
+			}
+		},
+		defaultLogin: {						// DO NOT SET in a production environment; for use on single user tests system only!
+			username: 	"",
+			password:	""
+		},
+		userMethods: {
+			'AtlasRelativeRisk': {
+					description: 'Atlas Relative Risk',
+					breaks:		[-Infinity, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51, Infinity],
+					invert:		true,
+					brewerName: "PuOr",
+					invalidScales: ["Constant", "Dark2", "Accent", "Pastel2", "Set2"]
+			},
+			'AtlasProbability': {
+					description: 'Atlas Probability',
+					feature:	'posterior_probability',
+					breaks: 	[0.0, 0.20, 0.81, 1.0],	
+					invert:		false,
+					brewerName:	"RdYlGn",
+                    invalidScales: ["Constant"]
+			}
+		}
+	}
+}              		
 ```
 
-Chnage the log level to debug in the log4j setup for *rifGenericLibrary.util.FrontEndLogger*:
+Change the log level to debug in the log4j setup for *rifGenericLibrary.util.FrontEndLogger*:
 
 ```xml
     <!-- RIF FRont End logger: rifGenericLibrary.util.FrontEndLogger -->
@@ -1076,6 +1220,7 @@ source.
 ```
 	
 ## 1.4 R
+
 Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
 
 See: [R setup](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#43-setup-r)
@@ -1297,6 +1442,7 @@ If SAHSU has supplied a taxonomyServices.war file skip to step 3.
 
   * icdClaML2016ens.xml
   * TaxonomyServicesConfiguration.xml
+  * ClaML.dtd
 
 2) Build the Taxonomy Service using *maven*.
    Either: 
