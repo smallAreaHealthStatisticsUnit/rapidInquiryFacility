@@ -1,6 +1,7 @@
 package rifServices.dataStorageLayer.pg;
 
 import rifServices.businessConceptLayer.*;
+import rifServices.dataStorageLayer.common.CommonRService;
 import rifServices.system.RIFServiceStartupOptions;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
@@ -80,7 +81,7 @@ import rifGenericLibrary.util.RIFMemoryManager;
  *
  */
 
-public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
+public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 
 	// ==========================================
 	// Section Constants
