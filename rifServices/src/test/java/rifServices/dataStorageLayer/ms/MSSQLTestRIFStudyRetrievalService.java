@@ -3,7 +3,7 @@ package rifServices.dataStorageLayer.ms;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifServices.businessConceptLayer.StudyState;
 import rifGenericLibrary.system.RIFServiceException;
-
+import rifServices.dataStorageLayer.common.StudyRetrievalService;
 
 /**
  *
@@ -65,8 +65,8 @@ import rifGenericLibrary.system.RIFServiceException;
  *
  */
 
-public final class MSSQLTestRIFStudyRetrievalService 
-	extends MSSQLAbstractRIFStudyRetrievalService {
+public final class MSSQLTestRIFStudyRetrievalService
+		extends StudyRetrievalService {
 
 	// ==========================================
 	// Section Constants

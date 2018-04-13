@@ -77,6 +77,9 @@ package rifServices.dataStorageLayer.ms;
  * it cannot be sub-classed in ways that would create concurrency problems.
  */
 //TOUR_SECURITY
+
+import rifServices.dataStorageLayer.common.StudyRetrievalService;
+
 /**
  * <p>
  * The class is declared final to prevent a malicious client application to submit a subclass
@@ -91,7 +94,7 @@ package rifServices.dataStorageLayer.ms;
  *  
  */
 public final class MSSQLProductionRIFStudyRetrievalService
-	extends MSSQLAbstractRIFStudyRetrievalService {
+		extends StudyRetrievalService {
 
 	// ==========================================
 	// Section Constants
