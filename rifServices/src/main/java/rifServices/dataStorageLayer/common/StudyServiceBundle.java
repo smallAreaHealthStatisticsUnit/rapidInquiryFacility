@@ -15,12 +15,12 @@ import rifServices.dataStorageLayer.common.ServiceResources;
 
 public class StudyServiceBundle implements ServiceBundle {
 
-	private ServiceResources rifServiceResources;
-	private RIFStudySubmissionAPI rifStudySubmissionService;
-	private RIFStudyResultRetrievalAPI rifStudyRetrievalService;
+	private final ServiceResources rifServiceResources;
+	private final RIFStudySubmissionAPI rifStudySubmissionService;
+	private final RIFStudyResultRetrievalAPI rifStudyRetrievalService;
 
 	protected StudyServiceBundle(final ServiceResources resources,
-			RIFStudySubmissionAPI submission,  RIFStudyResultRetrievalAPI retrieval) {
+			final RIFStudySubmissionAPI submission,final RIFStudyResultRetrievalAPI retrieval) {
 
 		Objects.requireNonNull(resources);
 		Objects.requireNonNull(submission);
@@ -42,22 +42,10 @@ public class StudyServiceBundle implements ServiceBundle {
 		return rifStudyRetrievalService;
 	}
 
-	protected void setRIFStudyRetrievalService(final RIFStudyResultRetrievalAPI
-			                                     rifStudyRetrievalService) {
-
-		this.rifStudyRetrievalService = rifStudyRetrievalService;
-	}
-	
 	@Override
 	public RIFStudySubmissionAPI getRIFStudySubmissionService() {
 
 		return rifStudySubmissionService;
-	}
-	
-	protected void setRIFStudySubmissionService(final RIFStudySubmissionAPI
-			                                         rifStudySubmissionService) {
-
-		this.rifStudySubmissionService = rifStudySubmissionService;
 	}
 	
 	@Override

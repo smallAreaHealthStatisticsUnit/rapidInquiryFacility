@@ -12,13 +12,6 @@ public final class PGSQLTestRIFStudyServiceBundle extends StudyServiceBundle {
 			RIFStudySubmissionAPI submission,  RIFStudyResultRetrievalAPI retrieval) {
 
 		super(resources, submission, retrieval);
-		PGSQLTestRIFStudySubmissionService rifStudySubmissionService
-			= new PGSQLTestRIFStudySubmissionService();
-		setRIFStudySubmissionService(rifStudySubmissionService);
-
-		PGSQLTestRIFStudyRetrievalService rifStudyRetrievalService
-			= new PGSQLTestRIFStudyRetrievalService();
-		setRIFStudyRetrievalService(rifStudyRetrievalService);		
 	}
 
 	public ServiceResources getRIFServiceResources() {
