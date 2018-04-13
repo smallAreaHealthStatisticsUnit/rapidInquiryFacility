@@ -12,6 +12,7 @@ import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
@@ -629,9 +630,20 @@ Could not write TIFF file because no WriteAdapter is availble
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		return data;
 		
+	}
+	private void closeStatement(PreparedStatement statement) {
+
+		if (statement == null) {
+			return;
+		}
+
+		try {
+			statement.close();
+		}
+		catch(SQLException ignore) {}
 	}
 }

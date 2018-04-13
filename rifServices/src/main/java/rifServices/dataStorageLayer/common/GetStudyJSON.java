@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -318,7 +319,7 @@ public class GetStudyJSON {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 
 		return rif_job_submission;
@@ -358,7 +359,7 @@ public class GetStudyJSON {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 
 		return geographyDescription;
@@ -424,7 +425,7 @@ public class GetStudyJSON {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		
 		additionalData.put("rif40_study_sql", tableData);	
@@ -487,7 +488,7 @@ public class GetStudyJSON {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		
 		additionalData.put("rif40_study_sql_log", tableData);	
@@ -550,7 +551,7 @@ public class GetStudyJSON {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		
 		additionalData.put("sql", tableData);	
@@ -609,7 +610,7 @@ public class GetStudyJSON {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		
 		additionalData.put(tableName.toLowerCase(), tableData);	
@@ -938,7 +939,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 
 		return outcomeGroup.toLowerCase();
@@ -999,7 +1000,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 
 		return studiesData;
@@ -1055,7 +1056,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 
 		return geolevelData;
@@ -1143,7 +1144,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}									
 	}
 
@@ -1229,7 +1230,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}								
 	}
 	
@@ -1335,7 +1336,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}					
 	}
 
@@ -1404,7 +1405,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}				
 	}
 	
@@ -1546,7 +1547,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 	}
 
@@ -1615,7 +1616,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		
 		return age_group;
@@ -1705,7 +1706,18 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
+	}
+	private void closeStatement(PreparedStatement statement) {
+
+		if (statement == null) {
+			return;
+		}
+
+		try {
+			statement.close();
+		}
+		catch(SQLException ignore) {}
 	}
 }

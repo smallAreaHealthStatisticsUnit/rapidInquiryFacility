@@ -112,7 +112,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	public PreparedStatement createPreparedStatement(final Connection connection, final AbstractSQLQueryFormatter queryFormatter)
 			throws SQLException {
 				
-		return SQLQueryUtility.createPreparedStatement(
+		return new SQLQueryUtility().createPreparedStatement(
 			connection,
 			queryFormatter);
 	}
@@ -155,7 +155,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		
 		return cachedRowSet;			
@@ -195,7 +195,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		
 		return cachedRowSet;			
@@ -240,7 +240,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		
 		return cachedRowSet;			
@@ -386,7 +386,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		
 		return columnComment;
@@ -435,8 +435,8 @@ public abstract class AbstractSQLManager implements SQLManager {
 			throw rifServiceException;
 		}
 		finally {
-			SQLQueryUtility.close(setupLogStatement);
-			SQLQueryUtility.close(sendDebugToInfoStatement);	
+			closeStatement(setupLogStatement);
+			closeStatement(sendDebugToInfoStatement);	
 		}		
 	}
 	
@@ -821,5 +821,17 @@ public abstract class AbstractSQLManager implements SQLManager {
 		}
 
 		return result;
+	}
+
+	private void closeStatement(PreparedStatement statement) {
+
+		if (statement == null) {
+			return;
+		}
+
+		try {
+			statement.close();
+		}
+		catch(SQLException ignore) {}
 	}
 }

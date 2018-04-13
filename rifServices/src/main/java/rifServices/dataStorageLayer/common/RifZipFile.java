@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -31,7 +32,6 @@ import com.sun.rowset.CachedRowSetImpl;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.fileFormats.XMLCommentInjector;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
@@ -836,7 +836,7 @@ public class RifZipFile {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		
 		htmlFileText.append("    </p>" + lineSeparator);
@@ -1217,7 +1217,7 @@ public class RifZipFile {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}	
 	}
 	
@@ -1274,7 +1274,7 @@ public class RifZipFile {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		
 		return tableComment;
@@ -1499,7 +1499,7 @@ public class RifZipFile {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}	
 	}	
 	
@@ -1547,7 +1547,7 @@ public class RifZipFile {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		
 		return outcomeGroup;
@@ -1867,7 +1867,7 @@ public class RifZipFile {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}					
 	}
 	
@@ -2143,5 +2143,15 @@ public class RifZipFile {
 		return studyStatus;
 
 	}
-		
+	private void closeStatement(PreparedStatement statement) {
+
+		if (statement == null) {
+			return;
+		}
+
+		try {
+			statement.close();
+		}
+		catch(SQLException ignore) {}
+	}
 }

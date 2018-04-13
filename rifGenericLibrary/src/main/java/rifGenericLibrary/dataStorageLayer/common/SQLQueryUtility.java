@@ -53,7 +53,7 @@ public class SQLQueryUtility {
 	 * @param connection the connection
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public static void close(
+	public void close(
 		final Connection connection) 
 		throws RIFServiceException {
 
@@ -85,7 +85,7 @@ public class SQLQueryUtility {
 	 * @param resultSet the result set
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public static void close(
+	public void close(
 		final ResultSet resultSet) 
 		throws RIFServiceException {
 		
@@ -119,7 +119,7 @@ public class SQLQueryUtility {
 	 * @param statement the statement
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public static void close(
+	public void close(
 		final Statement statement) 
 		throws RIFServiceException {
 
@@ -203,7 +203,7 @@ public class SQLQueryUtility {
 		return null;
 	}
 	
-	public static void commit(
+	public void commit(
 		final Connection connection ) 
 		throws RIFServiceException {
 		
@@ -224,7 +224,7 @@ public class SQLQueryUtility {
 		}		
 	}
 	
-	public static void rollback(
+	public void rollback(
 		final Connection connection ) 
 		throws RIFServiceException {
 		
@@ -245,7 +245,7 @@ public class SQLQueryUtility {
 		}		
 	}
 	
-	public static PreparedStatement createPreparedStatement(
+	public PreparedStatement createPreparedStatement(
 		final Connection connection,
 		final AbstractSQLQueryFormatter queryFormatter) 
 		throws SQLException {
@@ -257,7 +257,7 @@ public class SQLQueryUtility {
 			ResultSet.CLOSE_CURSORS_AT_COMMIT);
 	}
 
-	public static PreparedStatement createPreparedStatement(
+	public PreparedStatement createPreparedStatement(
 		final Connection connection,
 		final String query) 
 		throws SQLException {

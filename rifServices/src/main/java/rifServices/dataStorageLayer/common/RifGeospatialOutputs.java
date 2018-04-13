@@ -733,7 +733,7 @@ public class RifGeospatialOutputs {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 		}
 		
 		return dbEnvelope;
@@ -902,7 +902,7 @@ public class RifGeospatialOutputs {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 			if (shapefileWriter != null) {
 				shapefileWriter.close();	
 			}	
@@ -1188,7 +1188,7 @@ public class RifGeospatialOutputs {
 			throw exception;
 		}
 		finally {
-			SQLQueryUtility.close(statement);
+			closeStatement(statement);
 
 			bufferedWriter.flush();
 			bufferedWriter.close();	
@@ -1503,5 +1503,15 @@ public class RifGeospatialOutputs {
 				truncatedCount + " columns will be truncated; names will be unpredictable");
 		}
 	}
+	private void closeStatement(PreparedStatement statement) {
 
+		if (statement == null) {
+			return;
+		}
+
+		try {
+			statement.close();
+		}
+		catch(SQLException ignore) {}
+	}
 }	
