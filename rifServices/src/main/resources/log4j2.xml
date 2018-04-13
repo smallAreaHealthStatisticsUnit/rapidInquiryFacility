@@ -31,10 +31,27 @@
   
   Default log4j2 setup for the RIF middleware. 
   
-  Sets up two loggers:
+  The RIF middleware now uses Log4j version 2 for logging. The configuration file: 
+  *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up five loggers:
   
-  1. The default logger: rifGenericLibrary.util.RIFLogger used by the middleware: RIF_middleware.log
-  2. "Other" for logger output not from rifGenericLibrary.util.RIFLogger: Other.log
+  1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
+  2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the middleware: RIF_middleware.log
+  3. The taxonmy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the middleware: TaxonomyLogger.log
+  4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the middleware: FrontEndLogger.log
+  5. "Other" for all other logger output not the above: Other.log
+
+  Log4j2 was chosen because it is easy to integrate with tomcat; it is however old and does not always rotate the logs well.
+  
+  Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/<Log name>.<YYYY>-<MM>-<DD>-<N>.log```; where:
+
+  * ```<Log name>``` is one of: *tomcat*, *RIF_middleware", "TaxonomyLogger*, *FrontEndLogger*;
+  * ```<YYYY>``` is the year;
+  * ```<MM>``` is the numeric month;
+  * ```<DD>``` is the numeric day and; 
+  * ```<N>``` is the log sequence number.
+
+  Other messages go to the console. RIF middleware message **DO NOT** go to the console so we can find
+  messages not using *rifGenericLibrary.util.RIFLogger*. You can change this.
   
   Logs go to STDOUT and ${sys:catalina.base}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME/log4j2/<YYYY>-<MM>/
   Other messages go to the console. RIF middleware message DO NOT go to the console so we can find

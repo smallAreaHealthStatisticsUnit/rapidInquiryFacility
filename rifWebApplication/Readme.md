@@ -11,7 +11,7 @@ RIF Web Services
      - [1.3.2 Apache Tomcat for internet use](#132-apache-tomcat-for-internet-use)	
 	 - [1.3.3 Running Tomcat on the command line](#133-running-tomcat-on-the-command-line)
 	 - [1.3.4 Running Tomcat as a service](#134-running-tomcat-as-a-service)
-	 - [1.3.5 Middleware Logging (Log4j2) Setup](#135-middleware-logging-log4j2-setup)
+	 - [1.3.5 Middleware Logging (Log4j2) Introduction](#135-middleware-logging-log4j2-introduction)
 	 - [1.3.6 Tomcat Logging (Log4j2) Setup](#136-tomcat-logging-log4j2-setup) 
 	 - [1.3.7 Using JConsole with Tomcat](#137-using-jconsole-with-tomcat) 
 	 - [1.3.8 Front End Logging](#138-front-end-logging)
@@ -399,22 +399,34 @@ You can do this last!
   
 * When further instructions tell you to stop and start tomcat you will need to use the configure Tomcat application (tomcat8w) or the services panel
 
-### 1.3.5 Middleware Logging (Log4j2) Setup
+### 1.3.5 Middleware Logging (Log4j2) Introduction
 
 This section introduces RIF logging. You do not need to do anything!
 
 The RIF middleware now uses Log4j version 2 for logging. The configuration file: 
-*%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up two loggers:
+*%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up five loggers:
   
-  1. The default logger: *rifGenericLibrary.util.RIFLogger* used by the middleware: RIF_middleware.log
-  2. "Other" for logger output not from *rifGenericLibrary.util.RIFLogger*: Other.log
+  1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
+  2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the middleware: RIF_middleware.log
+  3. The taxonmy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the middleware: TaxonomyLogger.log
+  4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the middleware: FrontEndLogger.log
+  5. "Other" for all other logger output not the above: Other.log
+
+Log4j2 was chosen because it is easy to integrate with tomcat; it is however old and does not always rotate the logs well.
   
-Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>``` and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/Other.log-<N>```
-where ```<YYYY>``` is the  year, ```<MM>``` is the numeric month numeric and ```<N>``` is the log sequence number.
-Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
-messages not using *rifGenericLibrary.util.RIFLogger*
+Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/<Log name>.<YYYY>-<MM>-<DD>-<N>.log```; where:
+
+* ```<Log name>``` is one of: *tomcat*, *RIF_middleware", "TaxonomyLogger*, *FrontEndLogger*;
+* ```<YYYY>``` is the year;
+* ```<MM>``` is the numeric month;
+* ```<DD>``` is the numeric day and; 
+* ```<N>``` is the log sequence number.
+
+Other messages go to the console. RIF middleware message **DO NOT** go to the console so we can find
+messages not using *rifGenericLibrary.util.RIFLogger*. You can change this.
   
-Logs are rotated everyday or every 100 MB in the year/month specific directory
+Logs are rotated everyday or every 100 MB in the year/month specific directory. Note the rollover occrus with the first 
+message received after the time/size condition is met (i.e. don't expect it to occur at midnight)
 
 Typical log entry: 
 ```
@@ -432,7 +444,7 @@ ORDER BY
 <<< End PGSQLAbstractSQLManager logSQLQuery
 ```
 	
-RIF only Configuration file (no tomcat logging):
+As an example a RIF middleware only configuration file (**DO NOT USE!**):
 	
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -455,7 +467,7 @@ RIF only Configuration file (no tomcat logging):
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
 	  <Policies>
-		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<TimeBasedTriggeringPolicy interval="1" modulate="true" />              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
     </RollingFile>
@@ -464,7 +476,7 @@ RIF only Configuration file (no tomcat logging):
 				 immediateFlush="false" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${other_log_pattern}"/>
 	  <Policies>
-		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<TimeBasedTriggeringPolicy interval="1" modulate="true" />              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
     </RollingFile>
@@ -566,99 +578,8 @@ createStatusTable=true
 This uses the log4j JDK Logging Adapter. The JDK Logging Adapter is a custom implementation of 
 java.util.logging.LogManager that uses Log4j. 
 
-Create a log4j version 2 XML configuation file for tomcat. Two choices are provided here:
-
-1. Stock tomcat logging, as per the standard setup but in the *%CATALINA_HOME%/log4j2 diretory*. Beware that 
-   this configuiartion will overide the Middleware Logging (Log4j2) Setup in the previous section.
-2. RIF Tomcat logging to the following files:
-
-   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/tomcat.log-<N>```: Tomcat/catalina messages (org.apache.catalina.core.ContainerBase.[Catalina].[localhost]*)
-   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>```: RIF messages
-   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```: RIF front end messages
-   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/Other.log-<N>```: Other messages
-   
-   where ```<YYYY>``` is the  year, ```<MM>``` is the numeric month numeric and ```<N>``` is the log sequence number.
-   Logs are rotated everyday or every 100 MB in the year/month specific directory
-
-   This configuration superceeds the rifServices configuration file.
-   
-Both send non RIF output to the console.
-
 The configuration file is in *%CATALINA_HOME%/conf/log4j2.xml*. This configuration file completely replaces the 
 configuration in the previous section (which is a subset).
-
-Stock tomcat logging configuarion:
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<Configuration status="info" monitorInterval="30" name="Tomcat Default">
-  <Properties>
-    <Property name="logdir">${sys:catalina.base}/log4j2</Property>
-    <Property name="layout">%d [%t] %-5p %c- %m%n</Property>
-  </Properties>
-  <Appenders>
-    <Console name="CONSOLE" target="SYSTEM_OUT">
-      <PatternLayout pattern="${layout}"/>
-    </Console>
-    <RollingFile name="CATALINA"
-        fileName="${logdir}/catalina.log"
-        filePattern="${logdir}/catalina.%d{yyyy-MM-dd}-%i.log">
-      <PatternLayout pattern="${layout}"/>
-      <Policies>
-        <TimeBasedTriggeringPolicy />
-        <SizeBasedTriggeringPolicy size="1 MB"/>
-      </Policies>
-      <DefaultRolloverStrategy max="10"/>
-    </RollingFile>
-    <RollingFile name="LOCALHOST"
-        fileName="${logdir}/localhost.log"
-        filePattern="${logdir}/localhost.%d{yyyy-MM-dd}-%i.log">
-      <PatternLayout pattern="${layout}"/>
-      <Policies>
-        <TimeBasedTriggeringPolicy />
-        <SizeBasedTriggeringPolicy size="1 MB"/>
-      </Policies>
-      <DefaultRolloverStrategy max="10"/>
-    </RollingFile>
-    <RollingFile name="MANAGER"
-        fileName="${logdir}/manager.log"
-        filePattern="${logdir}/manager.%d{yyyy-MM-dd}-%i.log">
-      <PatternLayout pattern="${layout}"/>
-      <Policies>
-        <TimeBasedTriggeringPolicy />
-        <SizeBasedTriggeringPolicy size="1 MB"/>
-      </Policies>
-      <DefaultRolloverStrategy max="10"/>
-    </RollingFile>
-    <RollingFile name="HOST-MANAGER"
-        fileName="${logdir}/host-manager.log"
-        filePattern="${logdir}/host-manager.%d{yyyy-MM-dd}-%i.log">
-      <PatternLayout pattern="${layout}"/>
-      <Policies>
-        <TimeBasedTriggeringPolicy />
-        <SizeBasedTriggeringPolicy size="1 MB"/>
-      </Policies>
-      <DefaultRolloverStrategy max="10"/>
-    </RollingFile>
-  </Appenders>
-  <Loggers>
-    <Root level="info">
-      <AppenderRef ref="CATALINA"/>
-    </Root>
-    <Logger name="org.apache.catalina.core.ContainerBase.[Catalina].[localhost]"
-        level="info" additivity="false">
-      <AppenderRef ref="LOCALHOST"/>
-    </Logger>
-    <Logger name="org.apache.catalina.core.ContainerBase.[Catalina].[localhost].[/manager]"
-        level="info" additivity="false">
-      <AppenderRef ref="MANAGER"/>
-    </Logger>
-    <Logger name="org.apache.catalina.core.ContainerBase.[Catalina].[localhost].[/host-manager]"
-        level="info" additivity="false">
-      <AppenderRef ref="HOST-MANAGER"/>
-    </Logger>
-  </Loggers>
-</Configuration>
-```
 
 RIF Tomcat logging configuarion. This file must be placed in: *%CATALINA_HOME%\comf\log4j2.xml*
 and an example is found in: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml*
@@ -702,10 +623,30 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
   
   Default log4j2 setup for the RIF middleware. 
   
-  Sets up two loggers:
+  The RIF middleware now uses Log4j version 2 for logging. The configuration file: 
+  *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up five loggers:
   
-  1. The default logger: rifGenericLibrary.util.RIFLogger used by the middleware: RIF_middleware.log
-  2. "Other" for logger output not from rifGenericLibrary.util.RIFLogger: Other.log
+  1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
+  2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the middleware: RIF_middleware.log
+  3. The taxonmy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the middleware: TaxonomyLogger.log
+  4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the middleware: FrontEndLogger.log
+  5. "Other" for all other logger output not the above: Other.log
+
+  Log4j2 was chosen because it is easy to integrate with tomcat; it is however old and does not always rotate the logs well.
+  
+  Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/<Log name>.<YYYY>-<MM>-<DD>-<N>.log```; where:
+
+  * ```<Log name>``` is one of: *tomcat*, *RIF_middleware", "TaxonomyLogger*, *FrontEndLogger*;
+  * ```<YYYY>``` is the year;
+  * ```<MM>``` is the numeric month;
+  * ```<DD>``` is the numeric day and; 
+  * ```<N>``` is the log sequence number.
+
+  Other messages go to the console. RIF middleware message **DO NOT** go to the console so we can find
+  messages not using *rifGenericLibrary.util.RIFLogger*. You can change this.
+  
+  Logs are rotated everyday or every 100 MB in the year/month specific directory. Note the rollover occrus with the first 
+  message received after the time/size condition is met (i.e. don't expect it to occur at midnight)
   
   Logs go to STDOUT and ${sys:catalina.base}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME/log4j2/<YYYY>-<MM>/
   Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
@@ -726,6 +667,10 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
 	   rif40_geographies 
 	ORDER BY 
 	   geography ASC;
+
+
+	;
+
 
 	<<< End PGSQLAbstractSQLManager logSQLQuery
 
@@ -753,6 +698,15 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
     </RollingFile>	
     <RollingFile name="FRONTENDLOGGER" 
 				 filePattern="${logdir}/FrontEndLogger.%d{yyyy-MM-dd}-%i.log"
+				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
+      <PatternLayout pattern="${rif_log_pattern}"/>
+	  <Policies>
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
+		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+	  </Policies>
+    </RollingFile>
+    <RollingFile name="TAXONOMYLOGGER" 
+				 filePattern="${logdir}/TaxonomyLogger.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
 	  <Policies>
@@ -816,13 +770,20 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
 		level="info" additivity="false"> <!-- Chnage to debug for more output -->
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
       <AppenderRef ref="FRONTENDLOGGER"/>
+    </Logger>
+      <!-- RIF FRont End logger: rifGenericLibrary.util.TaxonomyLogger -->
+    <Logger name="rifGenericLibrary.util.TaxonomyLogger"
+		level="info" additivity="false"> <!-- Chnage to debug for more output -->
+      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
+      <AppenderRef ref="TAXONOMYLOGGER"/>
     </Logger>		
   </Loggers>
 </Configuration>
 ```
 
 Create an environment overrides file for catalina.bat as %CATALINA_HOME%\bin\setenv.bat. A copy is provided in:
-%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes
+%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes. Coopy this file to *%CATALINA_HOME%\bin*.
+
 ```bat
 REM Tomcat log4j2 setup
 REM 
@@ -861,10 +822,12 @@ Add the following files to *%CATALINA_HOME%\lib*:
 * log4j-jul-2.9.0.jar
 
 If you use Maven to build the Middleware, these files are in subdirectories below 
-*%USER%\.m2\repository\org\apache\logging\log4j\*
+*%USER%\.m2\repository\org\apache\logging\log4j\<log4j module>\2.9.0* where <log4j module is log4j-api etc.
+
+SAHSU will normally supply these JAR files (in the log4j directory) togther with the war files (in the tomcat webapps directory).
 
 Do NOT set the enviroment variables LOGGING_MANAGER or LOGGING_CONFIG.
-Do set set:
+This script sets *CATALINA_OPTS* and *CLASSPATH* in the tomcat environment*:
 ```
 CATALINA_OPTS=-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile="%CATALINA_HOME%\conf\log4j2.xml"
 CLASSPATH=%CATALINA_HOME%\lib\log4j-core-2.9.0.jar;%CATALINA_HOME%\lib\log4j-api-2.9.0.jar;%CATALINA_HOME%\lib\log4j-jul-2.9.CONSOLE0.jar
