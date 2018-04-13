@@ -18,7 +18,7 @@ public class ServiceBundleFactory {
 				RIFStudySubmissionAPI pgSubmission =
 						new MSSQLRIFStudySubmissionService();
 				return new PGSQLProductionRIFStudyServiceBundle(
-						resources.getRIFServiceStartupOptions(),
+						resources,
 						pgSubmission,
 						retrieval);
 

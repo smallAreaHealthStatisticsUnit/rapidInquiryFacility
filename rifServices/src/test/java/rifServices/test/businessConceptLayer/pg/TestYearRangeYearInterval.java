@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
 
 
@@ -191,33 +192,28 @@ public final class TestYearRangeYearInterval
 		masterInterval939495 = YearInterval.newInstance("1993", "1995");
 		masterInterval949596 = YearInterval.newInstance("1994", "1996");
 		masterInterval959697 = YearInterval.newInstance("1995", "1997");
+	}
 
+	@Before
+	public void setup() {
+
+		// Make sure the mocks defined in the parent are created before we try to use them.
+		super.setup();
 		try {
-			RIFServiceStartupOptions startupOptions =
-					RIFServiceStartupOptions.newInstance(false, true);
 			rifStudyServiceBundle = new PGSQLTestRIFStudyServiceBundle(
-					startupOptions,
+					resources,
 					new PGSQLTestRIFStudySubmissionService(),
 					new PGSQLTestRIFStudyRetrievalService());
 
-			service
-				= rifStudyServiceBundle.getRIFStudySubmissionService();
+			service = rifStudyServiceBundle.getRIFStudySubmissionService();
 			rifStudyServiceBundle.login(
-				"kgarwood", 
-				"kgarwood");			
+					"kgarwood",
+					"kgarwood");
 		}
-		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
+		catch(RIFServiceException e) {
+			throw new RuntimeException(e);
 		}
 	}
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	/**
 	 * Valid year range n1.

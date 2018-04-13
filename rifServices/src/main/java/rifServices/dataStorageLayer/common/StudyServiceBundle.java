@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer.ms;
+package rifServices.dataStorageLayer.common;
 
 import java.util.Objects;
 
@@ -13,27 +13,26 @@ import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.dataStorageLayer.common.ServiceBundle;
 import rifServices.dataStorageLayer.common.ServiceResources;
 
-class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
+public class StudyServiceBundle implements ServiceBundle {
 
-	private final ServiceResources rifServiceResources;
-	private final RIFStudySubmissionAPI rifStudySubmissionService;
-	private final RIFStudyResultRetrievalAPI rifStudyRetrievalService;
+	private ServiceResources rifServiceResources;
+	private RIFStudySubmissionAPI rifStudySubmissionService;
+	private RIFStudyResultRetrievalAPI rifStudyRetrievalService;
 
-	MSSQLAbstractStudyServiceBundle(final ServiceResources resources,
-			final RIFStudySubmissionAPI submissionService,
-			final RIFStudyResultRetrievalAPI retrievalService) {
+	protected StudyServiceBundle(final ServiceResources resources,
+			RIFStudySubmissionAPI submission,  RIFStudyResultRetrievalAPI retrieval) {
 
 		Objects.requireNonNull(resources);
-		Objects.requireNonNull(submissionService);
-		Objects.requireNonNull(retrievalService);
+		Objects.requireNonNull(submission);
+		Objects.requireNonNull(retrieval);
 
 		rifServiceResources = resources;
-		rifStudySubmissionService = submissionService;
-		rifStudyRetrievalService = retrievalService;
+		rifStudySubmissionService = submission;
+		rifStudyRetrievalService = retrieval;
 		rifStudySubmissionService.initialise(rifServiceResources);
 		rifStudyRetrievalService.initialise(rifServiceResources);
 	}
-	
+
 	protected ServiceResources getRIFServiceResources() {
 		return rifServiceResources;
 	}
@@ -43,24 +42,31 @@ class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 		return rifStudyRetrievalService;
 	}
 
+	protected void setRIFStudyRetrievalService(final RIFStudyResultRetrievalAPI
+			                                     rifStudyRetrievalService) {
+
+		this.rifStudyRetrievalService = rifStudyRetrievalService;
+	}
+	
 	@Override
 	public RIFStudySubmissionAPI getRIFStudySubmissionService() {
 
 		return rifStudySubmissionService;
 	}
 	
-	/**
-	 * starts the session of a user
-	 * @param userID
-	 * @param password
-	 * @throws RIFServiceException
-	 */
-	@Override
-	public void login(
-		final String userID,
-		final String password) 
-		throws RIFServiceException {
+	protected void setRIFStudySubmissionService(final RIFStudySubmissionAPI
+			                                         rifStudySubmissionService) {
 
+		this.rifStudySubmissionService = rifStudySubmissionService;
+	}
+	
+	@Override
+	public void login(final String userID, final String password) throws RIFServiceException {
+
+		//Defensively copy parameters and guard against blocked users
+		//No need -- userID and password are final objects
+		
+		//Check for empty parameters
 		try {
 			FieldValidationUtility fieldValidationUtility
 				= new FieldValidationUtility();
@@ -97,11 +103,12 @@ class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 				"login",
 				rifServiceException);
 		}
+		
 	}
 
 	@Override
 	public boolean isLoggedIn(
-		final String userID) 
+			final String userID)
 		throws RIFServiceException {
 		
 		//Check for empty parameters
@@ -130,14 +137,9 @@ class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 		return result;
 	}
 	
-	/**
-	 * ends the current session of the user
-	 * @param _user
-	 * @throws RIFServiceException
-	 */
 	@Override
 	public void logout(
-		final User _user) 
+			final User _user)
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -181,6 +183,7 @@ class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 		final RIFServiceException rifServiceException) 
 		throws RIFServiceException {
 
+		boolean userDeregistered = false;
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (rifServiceException instanceof RIFServiceSecurityException) {
@@ -196,7 +199,7 @@ class MSSQLAbstractStudyServiceBundle implements ServiceBundle {
 				sqlConnectionManager.logout(user);
 			}
 			else {
-				//suspiciuous behaviour.  
+				//suspicious behaviour.
 				//log suspicious event and see whether this particular user is associated with
 				//a number of suspicious events that exceeds a threshold.
 				sqlConnectionManager.logSuspiciousUserEvent(user);

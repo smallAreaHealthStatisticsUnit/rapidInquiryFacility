@@ -4,14 +4,14 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.dataStorageLayer.common.ServiceResources;
-import rifServices.system.RIFServiceStartupOptions;
+import rifServices.dataStorageLayer.common.StudyServiceBundle;
 
-public final class PGSQLTestRIFStudyServiceBundle extends PGSQLAbstractStudyServiceBundle {
+public final class PGSQLTestRIFStudyServiceBundle extends StudyServiceBundle {
 
-	public PGSQLTestRIFStudyServiceBundle(final RIFServiceStartupOptions options,
+	public PGSQLTestRIFStudyServiceBundle(final ServiceResources resources,
 			RIFStudySubmissionAPI submission,  RIFStudyResultRetrievalAPI retrieval) {
 
-		super(options, submission, retrieval);
+		super(resources, submission, retrieval);
 		PGSQLTestRIFStudySubmissionService rifStudySubmissionService
 			= new PGSQLTestRIFStudySubmissionService();
 		setRIFStudySubmissionService(rifStudySubmissionService);

@@ -14,7 +14,6 @@ import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
