@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer.pg;
+package rifServices.dataStorageLayer.common;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -7,7 +7,6 @@ import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractCovariate;
@@ -23,6 +22,7 @@ import rifServices.businessConceptLayer.RIFServiceInformation;
 import rifServices.businessConceptLayer.YearRange;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
+import rifServices.dataStorageLayer.common.ExceptionLog;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.dataStorageLayer.common.ResultsQueryManager;
 import rifServices.dataStorageLayer.common.SQLManager;
@@ -33,22 +33,23 @@ import rifServices.dataStorageLayer.common.ValidateUser;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceStartupOptions;
 
-abstract class PGSQLAbstractRIFUserService implements UserService {
+public class CommonUserService implements UserService {
 
-	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
+
+	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
 	protected ServiceResources rifServiceResources;
 	private String serviceName;
 	private String serviceDescription;
 	private String serviceContactEmail;
 
-	public PGSQLAbstractRIFUserService() {
+	public CommonUserService() {
 
 	}
 
 	@Override
 	public boolean isInformationGovernancePolicyActive(
-		final User _user) 
+			final User _user)
 		throws RIFServiceException {
 
 		User user = User.createCopy(_user);
@@ -85,11 +86,11 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 		return false;		
 	
 	}
-
+			
 	@Override
 	public DiseaseMappingStudy getDiseaseMappingStudy(
-		final User _user,
-		final String studyID)
+			final User _user,
+			final String studyID)
 		throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
@@ -163,10 +164,10 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 		return result;		
 
 	}
-
+				
 	@Override
 	public ArrayList<Geography> getGeographies(
-		final User _user) 
+			final User _user)
 		throws RIFServiceException {
 			
 		//Defensively copy parameters and guard against blocked users
@@ -226,11 +227,12 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 			
 		return results;		
 	}
-
+	
+		
 	@Override
 	public ArrayList<GeoLevelSelect> getGeoLevelSelectValues(
-		final User _user,
-		final Geography _geography)
+			final User _user,
+			final Geography _geography)
 		throws RIFServiceException {
 			
 		//Defensively copy parameters and guard against blocked users
@@ -271,7 +273,7 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 			validateUser(user);
 			geography.checkSecurityViolations();
 
-			//Audit attempt to do operation
+			//Audit attempt to do operation				
 			String auditTrailMessage
 				= SERVICE_MESSAGES.getMessage("logging.getGeographicalLevelSelectValues",
 					user.getUserID(),
@@ -310,11 +312,12 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 		
 		return results;
 	}
-
+	
+	
 	@Override
 	public GeoLevelSelect getDefaultGeoLevelSelectValue(
-		final User _user,
-		final Geography _geography) 
+			final User _user,
+			final Geography _geography)
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -396,9 +399,9 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 	 */
 	@Override
 	public ArrayList<GeoLevelArea> getGeoLevelAreaValues(
-		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect) 
+			final User _user,
+			final Geography _geography,
+			final GeoLevelSelect _geoLevelSelect)
 		throws RIFServiceException {
 
 		//TOUR_CONCURRENCY
@@ -446,7 +449,7 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 			geography.checkSecurityViolations();
 			geoLevelSelect.checkSecurityViolations();
 
-			//Audit attempt to do operation				
+			//Audit attempt to do operation			
 			String auditTrailMessage
 				= SERVICE_MESSAGES.getMessage("logging.getGeoLevelAreaValues",
 					user.getUserID(),
@@ -508,13 +511,13 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 		}
 
 		return results;
-	}
+	}	
 
 	@Override
 	public ArrayList<GeoLevelView> getGeoLevelViewValues(
-		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect) 
+			final User _user,
+			final Geography _geography,
+			final GeoLevelSelect _geoLevelSelect)
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -595,12 +598,12 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 		
 		return results;
 	}
-
+	
 	@Override
 	public YearRange getYearRange(
-		final User _user,
-		final Geography _geography,
-		final NumeratorDenominatorPair _ndPair) 
+			final User _user,
+			final Geography _geography,
+			final NumeratorDenominatorPair _ndPair)
 		throws RIFServiceException {
 
 		//TOUR_SECURITY
@@ -685,8 +688,9 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 			AgeGenderYearManager sqlAgeGenderYearManager
 				= rifServiceResources.getSqlAgeGenderYearManager();
 			result
-				= sqlAgeGenderYearManager.getYearRange(User.NULL_USER,
-					connection, 
+				= sqlAgeGenderYearManager.getYearRange(
+					user,
+					connection,
 					geography,
 					ndPair);
 		}
@@ -713,11 +717,12 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 		
 		return result;		
 	}
+		
 
 	@Override
 	public ArrayList<HealthTheme> getHealthThemes(
-		final User _user,
-		final Geography _geography)
+			final User _user,
+			final Geography _geography)
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
@@ -792,12 +797,14 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 			
 		return results;
 	}
+	
+	
 
 	@Override
 	public ArrayList<AbstractCovariate> getCovariates(
-		final User _user,
-		final Geography _geography,
-		final GeoLevelToMap _geoLevelToMap)
+			final User _user,
+			final Geography _geography,
+			final GeoLevelToMap _geoLevelToMap)
 		throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
@@ -878,7 +885,7 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 				
 		return results;		
 	}
-
+	
 	@Override
 	public RIFResultTable getTileMakerCentroids(
 			final User _user,
@@ -921,7 +928,9 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 				validateUser(user);
 				geography.checkSecurityViolations();
 				geoLevelSelect.checkSecurityViolations();	
-								
+				
+				//rifLogger.info(this.getClass(), geography.getDisplayName());
+									
 				//Audit attempt to do operation				
 				String auditTrailMessage
 					= SERVICE_MESSAGES.getMessage("logging.getTileMakerCentroids",
@@ -963,15 +972,15 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 
 			return result;	
 		}
-
+	
 	@Override
 	public String getTileMakerTiles(
-		final User _user,
-		final Geography _geography,
-		final GeoLevelSelect _geoLevelSelect,
-		final Integer zoomlevel,
-		final Integer x,
-		final Integer y)
+			final User _user,
+			final Geography _geography,
+			final GeoLevelSelect _geoLevelSelect,
+			final Integer zoomlevel,
+			final Integer x,
+			final Integer y)
 		throws RIFServiceException {
 		
 		//Defensively copy parameters and guard against blocked users
@@ -1090,15 +1099,15 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 		this.rifServiceResources = startupParameter;
 	}
 
-	void setServiceName(final String serviceName) {
+	protected void setServiceName(final String serviceName) {
 		this.serviceName = serviceName;
 	}
 
-	void setServiceDescription(final String serviceDescription) {
+	protected void setServiceDescription(final String serviceDescription) {
 		this.serviceDescription = serviceDescription;
 	}
 
-	void setServiceContactEmail(final String serviceContactEmail) {
+	protected void setServiceContactEmail(final String serviceContactEmail) {
 		this.serviceContactEmail = serviceContactEmail;
 	}
 
@@ -1108,57 +1117,24 @@ abstract class PGSQLAbstractRIFUserService implements UserService {
 	 * @param user the user
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	void validateUser(final User user) throws RIFServiceException {
+	protected void validateUser(final User user) throws RIFServiceException {
 
 		new ValidateUser(user, rifServiceResources.getSqlConnectionManager()).validate();
 	}
 
 	@Override
 	public void logException(
-		final User user,
-		final String methodName,
-		final RIFServiceException rifServiceException)
+			final User user,
+			final String methodName,
+			final RIFServiceException rifServiceException)
 		throws RIFServiceException {
 
-		SQLManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();
-		if (rifServiceException instanceof RIFServiceSecurityException) {
-			//TOUR_SECURITY
-			/*
-			 * If the code encounters a security exception, then the user
-			 * associated with the exception will be blacklisted.
-			 */
-			RIFServiceSecurityException rifServiceSecurityException
-				= (RIFServiceSecurityException) rifServiceException;
-			if (rifServiceSecurityException.getSecurityThreatType() == RIFServiceSecurityException.SecurityThreatType.MALICIOUS_CODE) {
-				//gives opportunity to log security issue and deregister user
-				sqlConnectionManager.addUserIDToBlock(user);
-				sqlConnectionManager.logout(user);
-			}
-			else {
-				//suspiciuous behaviour.
-				//log suspicious event and see whether this particular user is associated with
-				//a number of suspicious events that exceeds a threshold.
-				sqlConnectionManager.logSuspiciousUserEvent(user);
-				if (sqlConnectionManager.userExceededMaximumSuspiciousEvents(user)) {
-					sqlConnectionManager.addUserIDToBlock(user);
-					sqlConnectionManager.logout(user);
-				}
-			}
-
-		}
-
-		rifLogger.error(
-			getClass(),
-			methodName,
-			rifServiceException);
-
-		throw rifServiceException;
+		new ExceptionLog(user, methodName, rifServiceException, rifServiceResources, rifLogger).log();
 	}
 
 	@Override
 	public RIFServiceInformation getRIFServiceInformation(
-		final User _user)
+			final User _user)
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users

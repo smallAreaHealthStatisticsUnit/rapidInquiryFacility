@@ -1,21 +1,21 @@
 package rifServices.dataStorageLayer.pg;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
-import rifServices.businessConceptLayer.*;
+import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.businessConceptLayer.StudyState;
+import rifServices.dataStorageLayer.common.CommonUserService;
 import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.dataStorageLayer.common.SmoothedResultManager;
 import rifServices.dataStorageLayer.common.StudyStateManager;
-import rifServices.system.*;
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifServices.businessConceptLayer.StudyState;
-
-
-
-import java.sql.Connection;
-import java.util.ArrayList;
+import rifServices.system.RIFServiceMessages;
 
 /**
  * Main implementation of the RIF middle ware.  
@@ -135,9 +135,8 @@ import java.util.ArrayList;
  *
  */
 
-abstract class PGSQLAbstractRIFStudyRetrievalService 
-extends PGSQLAbstractRIFUserService 
-implements RIFStudyResultRetrievalAPI {
+abstract class PGSQLAbstractRIFStudyRetrievalService extends CommonUserService
+		implements RIFStudyResultRetrievalAPI {
 
 	// ==========================================
 	// Section Constants

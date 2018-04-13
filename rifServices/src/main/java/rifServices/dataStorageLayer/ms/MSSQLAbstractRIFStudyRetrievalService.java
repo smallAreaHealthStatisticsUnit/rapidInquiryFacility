@@ -11,6 +11,7 @@ import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.StudyState;
+import rifServices.dataStorageLayer.common.CommonUserService;
 import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.dataStorageLayer.common.SmoothedResultManager;
 import rifServices.dataStorageLayer.common.StudyStateManager;
@@ -75,7 +76,7 @@ import rifServices.system.RIFServiceMessages;
  *log any attempts to do so.  If the method throws a {@link rifGenericLibrary.system.RIFServiceSecurityException},
  *then this class will log it and continue to pass it to client application.
  */
-abstract class MSSQLAbstractRIFStudyRetrievalService extends MSSQLAbstractRIFUserService
+abstract class MSSQLAbstractRIFStudyRetrievalService extends CommonUserService
 		implements RIFStudyResultRetrievalAPI {
 
 	/**

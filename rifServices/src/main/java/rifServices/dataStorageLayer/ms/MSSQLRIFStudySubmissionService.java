@@ -28,6 +28,7 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.CommonUserService;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
@@ -102,7 +103,7 @@ import rifServices.system.files.TomcatFile;
  * @author kgarwood
  */
 
-public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
+public class MSSQLRIFStudySubmissionService extends CommonUserService
 				implements RIFStudySubmissionAPI {
 
 	private static String lineSeparator = System.getProperty("line.separator");

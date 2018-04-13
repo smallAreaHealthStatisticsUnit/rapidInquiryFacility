@@ -27,6 +27,7 @@ import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.CommonUserService;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
@@ -100,7 +101,7 @@ import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
  * @version
  */
 
-abstract class PGSQLAbstractRIFStudySubmissionService extends PGSQLAbstractRIFUserService {
+abstract class PGSQLAbstractRIFStudySubmissionService extends CommonUserService {
 
 		private static String lineSeparator = System.getProperty("line.separator");	
 
