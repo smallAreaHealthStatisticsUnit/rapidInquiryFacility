@@ -36,7 +36,7 @@ RIF Web Application and Middleware Installation
      - [4.3.1 R Debugging](#431-r-debugging)
 	 - [4.3.2 R Memory Management](#432-r-memory-management)
    - [4.4 Common Setup Errors](#44-common-setup-errors)
-     - [4.4.1 Logon RIF Serice Call Incorrect](#441-logon-rif-serice-call-incorrect)
+     - [4.4.1 Logon RIF Serivce Call Incorrect](#441-logon-rif-serice-call-incorrect)
      - [4.4.2 TLS Errors](#442-tls-errors)
      - [4.4.3 Unable to unpack war files](#443-unable-to-unpack-war-files)
      - [4.4.4 No Taxonomy Services](#444-no-taxonomy-services)
@@ -942,7 +942,7 @@ Aslo:
  
 * mapLockingOptions: Map locking options (options for Leaflet.Sync())
 
-Pther parameters:
+Other parameters:
 
 * You can define a *defaultLogin* do not do this in a production environment; for use on single user tests system only!
 * The parameter *userMethods* allows you to define your own methods for mapping.
@@ -2131,8 +2131,6 @@ Rengine Stopped, exit value==1==
    * *rif40_run_R_env.bat* - Study settings in use. Does *NOT* include the password!
    * *tmp_s33_adjacency_matrix.csv* - adjacency matrix for extract
    * *tmp_s33_extract.csv* - study data extract
-
-   **This will be added to the extract during October 2017.**
    
 ```bat
 C:\rifDemo\scratchSpace\s33\data>rif40_run_R.bat
@@ -2508,7 +2506,7 @@ If the RIF is started as per these instructions, the *tomcat* output trace will 
 
 If it does not, check the tomcat service setup.
 
-### 4.4.1 Logon RIF Serice Call Incorrect
+### 4.4.1 Logon RIF Service Call Incorrect
 
 Use developer mode in the browser to bring up the console log:
 
