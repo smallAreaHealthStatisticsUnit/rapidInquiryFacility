@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
@@ -14,12 +15,14 @@ import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
 import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.dataStorageLayer.common.ServiceBundle;
 import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.StudyExtractManager;
 import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
+import rifServices.system.RIFServiceStartupOptions;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
@@ -30,22 +33,25 @@ public class AbstractRIFTestCase {
 	public ServiceResources resources;
 
 	@Mock
-	public SQLManager sqlMgr;
+	private SQLManager sqlMgr;
 
 	@Mock
-	public SubmissionManager subMgr;
+	private SubmissionManager subMgr;
 
 	@Mock
-	public StudyExtractManager extractMgr;
+	protected StudyExtractManager extractMgr;
 
 	@Mock
 	HealthOutcomeManager healthOutcomeManager;
+
+	@Mock
+	RIFServiceStartupOptions options;
 
 	protected RIFStudySubmissionAPI rifStudySubmissionService;
 	protected RIFStudyResultRetrievalAPI rifStudyRetrievalService;
 	/** The test user. */
 	protected User validUser;
-	public MSSQLTestRIFStudyServiceBundle rifServiceBundle;
+	protected ServiceBundle rifServiceBundle;
 	/** The test malicious field value. */
 	private String testMaliciousFieldValue;
 	
@@ -71,12 +77,11 @@ public class AbstractRIFTestCase {
 		when(resources.getRIFSubmissionManager()).thenReturn(subMgr);
 		when(resources.getSQLStudyExtractManager()).thenReturn(extractMgr);
 		when(resources.getHealthOutcomeManager()).thenReturn(healthOutcomeManager);
+		when(resources.getRIFServiceStartupOptions()).thenReturn(options);
+		when(options.getRifDatabaseType()).thenReturn(DatabaseType.POSTGRESQL); // Shouldn't matter.
 
 		initialiseService(resources);
-		rifServiceBundle = new MSSQLTestRIFStudyServiceBundle(
-				resources,
-				new MSSQLRIFStudySubmissionService(),
-				new MSSQLTestRIFStudyRetrievalService());
+		rifServiceBundle = ServiceBundle.getInstance(resources);
 	}
 
 	public ValidationPolicy getValidationPolicy() {

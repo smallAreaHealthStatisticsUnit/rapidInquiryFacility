@@ -39,8 +39,7 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.YearRange;
 import rifServices.dataStorageLayer.common.ServiceBundle;
-import rifServices.dataStorageLayer.common.ServiceBundleFactory;
-import rifServices.dataStorageLayer.common.ServiceResourcesFactory;
+import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.fileFormats.RIFStudySubmissionXMLReader;
 import rifServices.fileFormats.RIFStudySubmissionXMLWriter;
@@ -65,8 +64,8 @@ public class WebService {
 		RIFServiceStartupOptions rifServiceStartupOptions =
 				RIFServiceStartupOptions.newInstance(true, false);
 
-		rifStudyServiceBundle = ServiceBundleFactory.getInstance(
-				ServiceResourcesFactory.getInstance(rifServiceStartupOptions));
+		rifStudyServiceBundle = ServiceBundle.getInstance(
+				ServiceResources.getInstance(rifServiceStartupOptions));
 	}
 	
 	protected Response rifFrontEndLogger(

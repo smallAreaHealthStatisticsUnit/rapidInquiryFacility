@@ -1,27 +1,24 @@
 package rifServices.test.businessConceptLayer.pg;
 
-
-import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
-import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
-import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyRetrievalService;
-import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyServiceBundle;
-import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudySubmissionService;
-import rifServices.system.*;
-import rifServices.test.AbstractRIFTestCase;
-
-
-
-
-
-
 import java.util.ArrayList;
-
-import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.businessConceptLayer.YearInterval;
+import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.CommonUserService;
+import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyRetrievalService;
+import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyServiceBundle;
+import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudySubmissionService;
+import rifServices.system.RIFServiceError;
+import rifServices.test.AbstractRIFTestCase;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -160,17 +157,15 @@ public final class TestYearRangeYearInterval
 	
 	/** The master interval959697. */
 	private YearInterval masterInterval959697;
-		
-	// ==========================================
-	// Section Construction
-	// ==========================================
+
+	@Mock
+	RIFStudySubmissionAPI submission;
 
 	/**
 	 * Instantiates a new test year range year interval.
 	 */
 	public TestYearRangeYearInterval() {
 		
-
 		masterInterval91 = YearInterval.newInstance("1991", "1991");
 		masterInterval92 = YearInterval.newInstance("1992", "1992");
 		masterInterval93 = YearInterval.newInstance("1993", "1993");
@@ -202,7 +197,7 @@ public final class TestYearRangeYearInterval
 		try {
 			rifStudyServiceBundle = new PGSQLTestRIFStudyServiceBundle(
 					resources,
-					new PGSQLTestRIFStudySubmissionService(),
+					submission,
 					new PGSQLTestRIFStudyRetrievalService());
 
 			service = rifStudyServiceBundle.getRIFStudySubmissionService();

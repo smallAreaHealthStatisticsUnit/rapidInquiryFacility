@@ -333,16 +333,16 @@ public class CommonRIFServiceTestCase extends AbstractRIFTestCase {
 				"Test Project. Will be disabled when in production.");
 	}
 
-	@After
-	public void tearDown() {
-
-		try {
-			rifServiceBundle.deregisterAllUsers();
-		}
-		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
-		}				
-	}
+	// @After
+	// public void tearDown() {
+	//
+	// 	try {
+	// 		rifServiceBundle.deregisterAllUsers();
+	// 	}
+	// 	catch(RIFServiceException exception) {
+	// 		exception.printStackTrace(System.out);
+	// 	}
+	// }
 
 	protected Geography cloneValidGeography() {
 		return Geography.createCopy(validGeography);
