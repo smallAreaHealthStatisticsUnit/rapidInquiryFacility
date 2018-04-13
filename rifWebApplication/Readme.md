@@ -1069,6 +1069,8 @@ See: [R setup](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFaci
 As with Java, do NOT use the 32 bit only version unless you have to. These instructions assume you you the 64 
 bit version
 
+Add the 64 bit R executabvle to the path; e.g. *C:\Program Files\R\R-3.4.4\bin\x64*
+
 # 2. Building Web Services using Maven
 
 Normally users will be supplied with pre=built files:
@@ -1382,7 +1384,7 @@ it is not automatically spotted unlike the services *.war* files..
 ## 4.1 Setup Database
 
 The Java connector for the RifServices middleware is setup in the file: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*.
-This should be copied to *%CATALINA_HOME%\conf*
+This should be copied to *%CATALINA_HOME%\conf* so it is not overwritten by middleware upgrades.
 
 * If the folder rifServices does not exist; start tomcat and it will be expanded from the war file.
 * The default database is setup as follows:
@@ -1604,38 +1606,31 @@ This setup will support:
 
 ## 4.3 Setup R
   
-1. Create directories for extract (extractDirectory) and policies (extraDirectoryForExtractFiles). The defaults are:
+1. Create directories for extract (extractDirectory) and policies (extraDirectoryForExtractFiles). The defaults in *RIFServiceStartupProperties.properties* are:
 
    * Extract: ```extractDirectory=c:\\rifDemo\\scratchSpace```
    * Policies: ```extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies```
 
    Grant appropriate read, write and execute access to these directories for Tomcat and SQL Server. Both normally run as the local adminstrator  Administrators 
-   (DESKTOP-4P2SA80\Administrators) so you do not need to do anything, it is advised to grant access to your local user if you are on a development system.
+   (e.g. DESKTOP-4P2SA80\Administrators) so you do not need to do anything, it is advised to grant access to your local user if you are on a development system.
    
-2. Create and test a system ODBC datasource for the database in use; the default is:
+2. Create and test a system ODBC datasource 
 
-   * ODBC sytstem data source: ```odbcDataSourceName=PostgreSQL30```
-
-   For SQL Server use SQL Server Native Client version 11, 2011 version or later; 
-   For Postgres use the latest driver from https://www.postgresql.org/ftp/odbc/versions/msi/
+   * For Postgres if you did not install it using stackbuilder, install the latest driver from https://www.postgresql.org/ftp/odbc/versions/msi/
+   * Using "control panel", "administrative tools", "ODBC Data Sources(64 bit)", right click "run as ADminstrator" for the database in use; the default is:
+   * Create a ODBC system using using the "system" tab and "Add". The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=PostgreSQL35W```; so   
+     the name is *PostgreSQL35W*. For Postgres chose the Unicode driver and fill in the database, server, host, port, RIF username and password (the password is not used in  the R):
+	 
+     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_setup.png?raw=true "ODBC setup")
+	
+   * For Postgres, select the datasourcde tab and set *Max Varchar* and *Max Long Varchar* to 8190.
    
-   For Postgres, select the datasourcde tab and set *Max Varchar* and *Max Long Varchar* to 8190.
-   
-These settings are in the Java connector for the RifServices middleware: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*
+     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_options.png?raw=true "ODBC options")
+  
+   * For SQL Server use SQL Server Native Client version 11, 2011 version or later; 
+   * Test it!
 
-**BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
-
-```java
-webApplicationDirectory=rifServices
-rScriptDirectory=rScripts
-maximumMapAreasAllowedForSingleDisplay=200
-extractDirectory=c:\\rifDemo\\scratchSpace
-odbcDataSourceName=PostgreSQL30
-#odbcDataSourceName=SQLServer11
-extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies
-```
-
-3. Start *R* as Administrator and run the following script:
+3. Start *R* in an Administrator command window and run the following script:
 
 ```R
 # CHECK & AUTO INSTALL MISSING PACKAGES
@@ -1649,8 +1644,9 @@ if (!require(INLA)) {
 
 ``` 
 
+* If R cannpot be found, add it to the PATH and restart the administrator Window 
 * R will ask for the nearest CRAN (R code archive); select one geographically near you (e.g. same country).
-* R output:
+* R output (version numbers will be higher as you always get the latest version):
 
 ```
 --- Please select a CRAN mirror for use in this session ---
@@ -1748,7 +1744,7 @@ The downloaded binary packages are in
         C:\Users\admin\AppData\Local\Temp\RtmpSkeuRW\downloaded_packages
 ```
 
-4. Add R_HOME to the environment
+4. Add R_HOME, e.g. *C:\Program Files\R\R-3.4.4* to the environment
 
 5. Add the 64bit JRI native library location and the R_HOME bin\x64 directory to the path
 
@@ -1757,14 +1753,14 @@ The downloaded binary packages are in
    rJava, use
 	```
 	> system.file("jri",package="rJava")
-	[1] "C:/Program Files/R/R-3.4.0/library/rJava/jri"
+	[1] "C:/Program Files/R/R-3.4.4/library/rJava/jri"
 	```
    from inside of R [command-line]. Above command will give you a path. You will be able to find the 64 bit *libjri.so*
    which is the shared library JRI is looking for.
   
    These directories with the 32 or 64 bit subdirectory appended needs to be added to the path: 
-   *C:\Program Files\R\R-3.4.0\bin\x64;C:\Program Files\R\R-3.4.0\library\rJava\jri\x64*. This ensures that file "x64\jri.dll" 
-   is in java.library.path
+   *C:\Program Files\R\R-3.4.4\library\rJava\jri\x64*. This ensures that file "x64\jri.dll" 
+   is in java.library.path. If you have 64bit Java (as instructed previous) you will need to use the 64 bit version.
    
    Just after user logon the middleware can print the JAVA LIBRARY PATH: *System.getProperty("java.library.path")*
 
@@ -1785,6 +1781,8 @@ The downloaded binary packages are in
 	am Files\nodejs\;C:\Program Files\Apache Software Foundation\apache-maven-3.3.9\bin;C:\Program Files\R\R-3.4.0\bin;C:\Program Files
 	(x86)\Skype\Phone\;C:/Program Files/R/R-3.4.0/library/rJava/jri;.
 	```
+	
+	**RESTART YOUR ADMINISTRATOR TO PICK UP YOUR CHANGES** 
 	
 6. JRI Errors
 	
