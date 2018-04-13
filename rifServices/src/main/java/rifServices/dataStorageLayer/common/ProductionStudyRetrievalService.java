@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer.pg;
+package rifServices.dataStorageLayer.common;
 
 
 /**
@@ -21,8 +21,6 @@ package rifServices.dataStorageLayer.pg;
  */
 //TOUR_SECURITY
 
-import rifServices.dataStorageLayer.common.StudyRetrievalService;
-
 /**
  * <p>
  * The class is declared final to prevent a malicious client application to submit a subclass
@@ -36,9 +34,9 @@ import rifServices.dataStorageLayer.common.StudyRetrievalService;
  * </p>
  *  
  */
-public final class PGSQLProductionRIFStudyRetrievalService extends StudyRetrievalService {
+public final class ProductionStudyRetrievalService extends StudyRetrievalService {
 
-	public PGSQLProductionRIFStudyRetrievalService() {
+	public ProductionStudyRetrievalService() {
 
 	}
 }

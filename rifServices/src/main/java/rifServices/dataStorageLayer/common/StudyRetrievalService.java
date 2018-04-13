@@ -82,7 +82,7 @@ public abstract class StudyRetrievalService extends CommonUserService
 	/**
 	 * Instantiates a new production rif job submission service.
 	 */
-	public StudyRetrievalService() {
+	protected StudyRetrievalService() {
 
 		String serviceName
 			= RIFServiceMessages.getMessage("rifStudyRetrievalService.name");

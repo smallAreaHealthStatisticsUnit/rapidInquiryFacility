@@ -2,35 +2,31 @@ package rifServices.dataStorageLayer.common;
 
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.dataStorageLayer.ms.MSSQLProductionRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.ms.MSSQLProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
-import rifServices.dataStorageLayer.pg.PGSQLProductionRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.pg.PGSQLProductionRIFStudyServiceBundle;
 
 public class ServiceBundleFactory {
 
 	public static ServiceBundle getInstance(final ServiceResources resources) {
 
+		RIFStudyResultRetrievalAPI retrieval = new ProductionStudyRetrievalService();
+
 		switch (resources.getRIFServiceStartupOptions().getRifDatabaseType()) {
 
 			case POSTGRESQL:
 				RIFStudySubmissionAPI pgSubmission =
 						new MSSQLRIFStudySubmissionService();
-				RIFStudyResultRetrievalAPI pgRetrieval =
-						new PGSQLProductionRIFStudyRetrievalService();
 				return new PGSQLProductionRIFStudyServiceBundle(
 						resources.getRIFServiceStartupOptions(),
 						pgSubmission,
-						pgRetrieval);
+						retrieval);
 
 			case SQL_SERVER:
 				RIFStudySubmissionAPI msSubmission =
 						new MSSQLRIFStudySubmissionService();
-				RIFStudyResultRetrievalAPI msRetrieval =
-						new MSSQLProductionRIFStudyRetrievalService();
 				return new MSSQLProductionRIFStudyServiceBundle(
-						resources, msSubmission, msRetrieval);
+						resources, msSubmission, retrieval);
 
 			case UNKNOWN:
 			default:

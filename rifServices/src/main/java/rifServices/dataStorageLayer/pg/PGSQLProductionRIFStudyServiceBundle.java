@@ -2,6 +2,7 @@ package rifServices.dataStorageLayer.pg;
 
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.dataStorageLayer.common.ProductionStudyRetrievalService;
 import rifServices.system.RIFServiceStartupOptions;
 
 public final class PGSQLProductionRIFStudyServiceBundle
@@ -16,8 +17,8 @@ public final class PGSQLProductionRIFStudyServiceBundle
 			= new PGSQLProductionRIFStudySubmissionService();
 		setRIFStudySubmissionService(rifStudySubmissionService);
 
-		PGSQLProductionRIFStudyRetrievalService rifStudyRetrievalService
-			= new PGSQLProductionRIFStudyRetrievalService();
+		ProductionStudyRetrievalService rifStudyRetrievalService
+			= new ProductionStudyRetrievalService();
 		setRIFStudyRetrievalService(rifStudyRetrievalService);
 		
 	}
