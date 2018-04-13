@@ -31,12 +31,29 @@
   
   Default log4j2 setup for the RIF middleware. 
   
-  Sets up two loggers:
+  The RIF middleware now uses Log4j version 2 for logging. The configuration file: 
+  *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up five loggers:
   
-  1. The default logger: rifGenericLibrary.util.RIFLogger used by the middleware: RIF_middleware.log
-  2. "Other" for logger output not from rifGenericLibrary.util.RIFLogger: Other.log
+  1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
+  2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the middleware: RIF_middleware.log
+  3. The taxonmy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the middleware: TaxonomyLogger.log
+  4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the middleware: FrontEndLogger.log
+  5. "Other" for all other logger output not the above: Other.log
+
+  Log4j2 was chosen because it is easy to integrate with tomcat; it is however old and does not always rotate the logs well.
   
-  Logs go to STDOUT and ${env:CATALINA_HOME}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME/log4j2/<YYYY>-<MM>/
+  Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/<Log name>.<YYYY>-<MM>-<DD>-<N>.log```; where:
+
+  * ```<Log name>``` is one of: *tomcat*, *RIF_middleware", "TaxonomyLogger*, *FrontEndLogger*;
+  * ```<YYYY>``` is the year;
+  * ```<MM>``` is the numeric month;
+  * ```<DD>``` is the numeric day and; 
+  * ```<N>``` is the log sequence number.
+
+  Other messages go to the console. RIF middleware message **DO NOT** go to the console so we can find
+  messages not using *rifGenericLibrary.util.RIFLogger*. You can change this.
+  
+  Logs go to STDOUT and ${sys:catalina.base}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME/log4j2/<YYYY>-<MM>/
   Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
   messages not using rifGenericLibrary.util.RIFLogger
   
@@ -65,7 +82,7 @@
   Author: Peter Hambly; 12/9/2017
   -->
   <Properties>
-    <Property name="logdir">${env:CATALINA_HOME}/log4j2/$${date:yyyy-MM}</Property>
+    <Property name="logdir">${sys:catalina.base}/log4j2/$${date:yyyy-MM}</Property>
     <Property name="default_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %class %logger{36}: %msg%n</Property>
     <Property name="rif_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %class : %msg%n</Property> 
     <Property name="other_log_pattern">%d{HH:mm:ss.SSS} [%t] %-5level %class %logger{36}: %msg%n</Property>
@@ -74,7 +91,7 @@
     <Console name="CONSOLE" target="SYSTEM_OUT">
       <PatternLayout pattern="${default_log_pattern}"/>
     </Console>
-	<!-- File logs are in ${CATALINA_HOME}/log4j2 - %CATALINA_HOME%/log4j2 -->
+	<!-- File logs are in ${catalina.base}/log4j2 - %CATALINA_HOME%/log4j2 -->
     <RollingFile name="RIF_MIDDLEWARE" 
 				 filePattern="${logdir}/RIF_middleware.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
@@ -82,10 +99,19 @@
 	  <Policies>
 		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
-	  </Policies>r. The key "type" will return the message type. Other keys will retrieve individual elements fro
+	  </Policies>
     </RollingFile>	
     <RollingFile name="FRONTENDLOGGER" 
 				 filePattern="${logdir}/FrontEndLogger.%d{yyyy-MM-dd}-%i.log"
+				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
+      <PatternLayout pattern="${rif_log_pattern}"/>
+	  <Policies>
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
+		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+	  </Policies>
+    </RollingFile>
+    <RollingFile name="TAXONOMYLOGGER" 
+				 filePattern="${logdir}/TaxonomyLogger.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
 	  <Policies>
@@ -149,6 +175,12 @@
 		level="info" additivity="false"> <!-- Chnage to debug for more output -->
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
       <AppenderRef ref="FRONTENDLOGGER"/>
+    </Logger>
+      <!-- RIF FRont End logger: rifGenericLibrary.util.TaxonomyLogger -->
+    <Logger name="rifGenericLibrary.util.TaxonomyLogger"
+		level="info" additivity="false"> <!-- Chnage to debug for more output -->
+      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
+      <AppenderRef ref="TAXONOMYLOGGER"/>
     </Logger>		
   </Loggers>
 </Configuration>

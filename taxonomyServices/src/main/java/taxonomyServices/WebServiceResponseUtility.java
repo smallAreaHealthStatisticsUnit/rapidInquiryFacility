@@ -15,7 +15,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.RIFLogger;
+import rifGenericLibrary.util.TaxonomyLogger;
 
 //TOUR_WEB_SERVICES-7
 /*
@@ -205,7 +205,7 @@ final class WebServiceResponseUtility {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static final TaxonomyLogger rifLogger = TaxonomyLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static final Messages TAXONOMY_MESSAGES = Messages.taxonomyMessages();
 	

@@ -9,7 +9,7 @@ import rifServices.system.files.TomcatResourceBundle;
 import java.util.Hashtable;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Reads values from the RIFServiceStartupProperties.properties file.
@@ -299,7 +299,7 @@ public final class RIFServiceStartupProperties {
 					throws Exception {
 		int propertyValue=defaultValue;
 		try {
-			propertyValue=Integer.parseInt(getProperty(propertyName));
+			propertyValue=Integer.parseInt(StringUtils.trim(getProperty(propertyName)));
 		}
 		catch(MissingResourceException exception) { 
 			updateParameterWarnings(propertyName);
@@ -317,7 +317,7 @@ public final class RIFServiceStartupProperties {
 					throws Exception {
 		Float propertyValue=defaultValue;
 		try {
-			propertyValue=Float.parseFloat(getProperty(propertyName));
+			propertyValue=Float.parseFloat(StringUtils.trim(getProperty(propertyName)));
 		}
 		catch(MissingResourceException exception) { 
 			updateParameterWarnings(propertyName);

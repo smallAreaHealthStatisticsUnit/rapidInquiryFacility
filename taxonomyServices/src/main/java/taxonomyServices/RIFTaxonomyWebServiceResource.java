@@ -12,7 +12,7 @@ import javax.servlet.ServletContext;
 
 import java.util.ArrayList;
 
-import rifGenericLibrary.util.RIFLogger;
+import rifGenericLibrary.util.TaxonomyLogger;
 
 /*
  * Code Road Map:
@@ -42,7 +42,7 @@ public class RIFTaxonomyWebServiceResource {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static final TaxonomyLogger rifLogger = TaxonomyLogger.getLogger();
 
 	// ==========================================
 	// Section Properties

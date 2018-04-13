@@ -1,5 +1,5 @@
-RIF Web Services
-================
+RIF Web Application and Middleware Installation
+===============================================
 
 # Contents
 
@@ -11,7 +11,7 @@ RIF Web Services
      - [1.3.2 Apache Tomcat for internet use](#132-apache-tomcat-for-internet-use)	
 	 - [1.3.3 Running Tomcat on the command line](#133-running-tomcat-on-the-command-line)
 	 - [1.3.4 Running Tomcat as a service](#134-running-tomcat-as-a-service)
-	 - [1.3.5 Middleware Logging (Log4j2) Setup](#135-middleware-logging-log4j2-setup)
+	 - [1.3.5 Middleware Logging (Log4j2) Introduction](#135-middleware-logging-log4j2-introduction)
 	 - [1.3.6 Tomcat Logging (Log4j2) Setup](#136-tomcat-logging-log4j2-setup) 
 	 - [1.3.7 Using JConsole with Tomcat](#137-using-jconsole-with-tomcat) 
 	 - [1.3.8 Front End Logging](#138-front-end-logging)
@@ -36,7 +36,7 @@ RIF Web Services
      - [4.3.1 R Debugging](#431-r-debugging)
 	 - [4.3.2 R Memory Management](#432-r-memory-management)
    - [4.4 Common Setup Errors](#44-common-setup-errors)
-     - [4.4.1 Logon RIF Serice Call Incorrect](#441-logon-rif-serice-call-incorrect)
+     - [4.4.1 Logon RIF Serivce Call Incorrect](#441-logon-rif-serice-call-incorrect)
      - [4.4.2 TLS Errors](#442-tls-errors)
      - [4.4.3 Unable to unpack war files](#443-unable-to-unpack-war-files)
      - [4.4.4 No Taxonomy Services](#444-no-taxonomy-services)
@@ -57,16 +57,16 @@ RIF Web Services
    
 # 1. Installation Prerequistes
 
-These instructions are for Windows Apache Tomcat. Linux Tomcat will be very similar. It is assumed that the 
-installer knows how to:
+These instructions are to install and setup the RIF middleware and web application (front end) and are for Windows Apache Tomcat. Linux Tomcat 
+will be very similar. It is assumed that the installer knows how to:
 
-* Can modify Windows file permissions
+* Modify Windows file permissions
 * Set environment variables; check settings; setup up the executable and library search paths
-* Can install and de-install programs 
-* Can start and stop system services
-* Is able to administer the installation machine.
+* Install and de-install programs 
+* Start and stop system services
+* Has the access rights to administer the installation machine.
 
-If you are running with power user privilege, as most laptops and Imperial staff PCs do, you already have far too much privilege and you may not need
+If you are running with power user privilege, as most laptops and Imperial staff PCs do, you already have *far too much* privilege and you may not need
 to modify file permissions much.
 
 For help on file permission see: [Windows file permissions](https://technet.microsoft.com/en-us/library/dd277411.aspx). As a general rule, it is much 
@@ -78,7 +78,59 @@ The RIF web application will install on a modern laptop.
 Complex Apacahe Tomcat setup (e.g. clustering, runtime deployment of updated WAR files) are not within the scope of this document 
 of this document and are not required for simple RIF setups.
 
+### Printing this document direct from GitHub
 
+The HTML version of this github markdown was created using *grip*. Python 2.7 (for Node.js) needs to be installed and on your path. You can then point your web browser at: *http://localhost:6419/* (or wherever else grip chooses)
+and chose "save as HTML" in the browser. Do not do this in the github repository or it will make a mess,
+```
+python -m pip install grip
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifWebApplication>python -m grip
+ * Running on http://localhost:6419/ (Press CTRL+C to quit)
+ * Downloading style https://assets-cdn.github.com/assets/frameworks-592c4aa40e940d1b0607a3cf272916ff.css
+ * Downloading style https://assets-cdn.github.com/assets/github-96ebb1551fc5dba84c6d2a0fa7b1cfcf.css
+ * Downloading style https://assets-cdn.github.com/assets/site-348211d27070b0d7bb5d31b1ac3d265b.css
+ * Cached all downloads in C:\Users\phamb\.grip\cache-4.5.2
+127.0.0.1 - - [13/Apr/2018 14:27:31] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:27:31] "GET /__/grip/asset/frameworks-592c4aa40e940d1b0607a3cf272916ff.css HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:27:31] "GET /__/grip/asset/github-96ebb1551fc5dba84c6d2a0fa7b1cfcf.css HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:27:31] "GET /__/grip/asset/site-348211d27070b0d7bb5d31b1ac3d265b.css HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:27:31] "GET /__/grip/static/octicons/octicons.css HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:27:31] "GET /__/grip/static/octicons/octicons.woff2?ef21c39f0ca9b1b5116e5eb7ac5eabe6 HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:27:33] "GET /__/grip/static/favicon.ico HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:27:33] "GET /__/grip/static/favicon.ico HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:29:02] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:29:02] "GET /__/grip/asset/frameworks-592c4aa40e940d1b0607a3cf272916ff.css HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:29:02] "GET /__/grip/asset/github-96ebb1551fc5dba84c6d2a0fa7b1cfcf.css HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:29:02] "GET /__/grip/asset/site-348211d27070b0d7bb5d31b1ac3d265b.css HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:29:02] "GET /__/grip/static/octicons/octicons.css HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:29:03] "GET /__/grip/static/octicons/octicons.woff2?ef21c39f0ca9b1b5116e5eb7ac5eabe6 HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:29:04] "GET /__/grip/static/favicon.ico HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:32:14] "GET / HTTP/1.1" 200 -
+----------------------------------------
+Exception happened during processing of request from ('127.0.0.1', 59782)
+Traceback (most recent call last):
+  File "C:\Python27\lib\SocketServer.py", line 596, in process_request_thread
+    self.finish_request(request, client_address)
+  File "C:\Python27\lib\SocketServer.py", line 331, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "C:\Python27\lib\SocketServer.py", line 654, in __init__
+    self.finish()
+  File "C:\Python27\lib\SocketServer.py", line 713, in finish
+    self.wfile.close()
+  File "C:\Python27\lib\socket.py", line 283, in close
+    self.flush()
+  File "C:\Python27\lib\socket.py", line 307, in flush
+    self._sock.sendall(view[write_offset:write_offset+buffer_size])
+error: [Errno 10054] An existing connection was forcibly closed by the remote host
+----------------------------------------
+127.0.0.1 - - [13/Apr/2018 14:32:14] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:32:14] "GET /__/grip/asset/frameworks-592c4aa40e940d1b0607a3cf272916ff.css HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:32:14] "GET /__/grip/asset/site-348211d27070b0d7bb5d31b1ac3d265b.css HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:32:14] "GET /__/grip/static/octicons/octicons.css HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:32:14] "GET /__/grip/asset/github-96ebb1551fc5dba84c6d2a0fa7b1cfcf.css HTTP/1.1" 200 -
+127.0.0.1 - - [13/Apr/2018 14:32:14] "GET /__/grip/static/octicons/octicons.woff2?ef21c39f0ca9b1b5116e5eb7ac5eabe6 HTTP/1.1" 200 -
+ * Shutting down...
+```
 ## 1.1 Apache Maven
 
 Apache Maven is required to build the RIF web application (War) files and the data loader tool from source. It is 
@@ -260,7 +312,7 @@ Normally this pops up a Java scrollable window:
 * To abort, use *catalina.bat stop* or quit the Java window. Use of control-C in the Java Window 
   will not work once a study have been run.
 
-A successful start odf the RIF looks like:
+A successful start of the RIF looks like:
 ```
 12-Apr-2018 14:58:26.423 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version:        Apache Tomcat/8.5.29
 12-Apr-2018 14:58:26.425 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Mar 5 2018 13:11:12 UTC
@@ -399,22 +451,36 @@ You can do this last!
   
 * When further instructions tell you to stop and start tomcat you will need to use the configure Tomcat application (tomcat8w) or the services panel
 
-### 1.3.5 Middleware Logging (Log4j2) Setup
+### 1.3.5 Middleware Logging (Log4j2) Introduction
+
+This section introduces RIF logging. You do not need to do anything!
 
 The RIF middleware now uses Log4j version 2 for logging. The configuration file: 
-*%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up two loggers:
+*%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up five loggers:
   
-  1. The default logger: *rifGenericLibrary.util.RIFLogger* used by the middleware: RIF_middleware.log
-  2. "Other" for logger output not from *rifGenericLibrary.util.RIFLogger*: Other.log
+  1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
+  2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the middleware: RIF_middleware.log
+  3. The taxonmy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the middleware: TaxonomyLogger.log
+  4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the middleware: FrontEndLogger.log
+  5. "Other" for all other logger output not the above: Other.log
+
+Log4j2 was chosen because it is easy to integrate with tomcat; it is however old and does not always rotate the logs well.
   
-  Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>``` and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/Other.log-<N>```
-  where ```<YYYY>``` is the  year, ```<MM>``` is the numeric month numeric and ```<N>``` is the log sequence number.
-  Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
-  messages not using *rifGenericLibrary.util.RIFLogger*
+Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/<Log name>.<YYYY>-<MM>-<DD>-<N>.log```; where:
+
+* ```<Log name>``` is one of: *tomcat*, *RIF_middleware", "TaxonomyLogger*, *FrontEndLogger*;
+* ```<YYYY>``` is the year;
+* ```<MM>``` is the numeric month;
+* ```<DD>``` is the numeric day and; 
+* ```<N>``` is the log sequence number.
+
+Other messages go to the console. RIF middleware message **DO NOT** go to the console so we can find
+messages not using *rifGenericLibrary.util.RIFLogger*. You can change this.
   
-  Logs are rotated everyday or every 100 MB in the year/month specific directory
-  
-  Typical log entry: 
+Logs are rotated everyday or every 100 MB in the year/month specific directory. Note the rollover occrus with the first 
+message received after the time/size condition is met (i.e. don't expect it to occur at midnight)
+
+Typical log entry: 
 ```
 14:29:37.812 [http-nio-8080-exec-5] INFO  rifGenericLibrary.util.RIFLogger: [rifServices.dataStorageLayer.pg.PGSQLRIFContextManager]:
 PGSQLAbstractSQLManager logSQLQuery >>>
@@ -430,7 +496,7 @@ ORDER BY
 <<< End PGSQLAbstractSQLManager logSQLQuery
 ```
 	
-  Configuration file:
+As an example a RIF middleware only configuration file (**DO NOT USE!**):
 	
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -453,7 +519,7 @@ ORDER BY
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
 	  <Policies>
-		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<TimeBasedTriggeringPolicy interval="1" modulate="true" />              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
     </RollingFile>
@@ -462,7 +528,7 @@ ORDER BY
 				 immediateFlush="false" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${other_log_pattern}"/>
 	  <Policies>
-		<TimeBasedTriggeringPolicy />              <!-- Rotated everyday -->
+		<TimeBasedTriggeringPolicy interval="1" modulate="true" />              <!-- Rotated everyday -->
 		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
 	  </Policies>
     </RollingFile>
@@ -482,9 +548,6 @@ ORDER BY
   </Loggers>
 </Configuration>
 ```
-
-**To send  RIF output to the console uncomment: 
-```<!-- <AppenderRef ref="Console"/> uncomment to see RIF middleware output on the console -->```**. 
 
 R stdout/stderroutput always appears on the console and cannot be redirected:
 ```
@@ -567,99 +630,8 @@ createStatusTable=true
 This uses the log4j JDK Logging Adapter. The JDK Logging Adapter is a custom implementation of 
 java.util.logging.LogManager that uses Log4j. 
 
-Create a log4j version 2 XML configuation file for tomcat. Two choices are provided here:
-
-1. Stock tomcat logging, as per the standard setup but in the *%CATALINA_HOME%/log4j2 diretory*. Beware that 
-   this configuiartion will overide the Middleware Logging (Log4j2) Setup in the previous section.
-2. RIF Tomcat logging to the following files:
-
-   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/tomcat.log-<N>```: Tomcat/catalina messages (org.apache.catalina.core.ContainerBase.[Catalina].[localhost]*)
-   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>```: RIF messages
-   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```: RIF front end messages
-   * ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/Other.log-<N>```: Other messages
-   
-   where ```<YYYY>``` is the  year, ```<MM>``` is the numeric month numeric and ```<N>``` is the log sequence number.
-   Logs are rotated everyday or every 100 MB in the year/month specific directory
-
-   This configuration superceeds the rifServices configuration file.
-   
-Both send non RIF output to the console.
-
 The configuration file is in *%CATALINA_HOME%/conf/log4j2.xml*. This configuration file completely replaces the 
 configuration in the previous section (which is a subset).
-
-Stock tomcat logging configuarion:
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<Configuration status="info" monitorInterval="30" name="Tomcat Default">
-  <Properties>
-    <Property name="logdir">${sys:catalina.base}/log4j2</Property>
-    <Property name="layout">%d [%t] %-5p %c- %m%n</Property>
-  </Properties>
-  <Appenders>
-    <Console name="CONSOLE" target="SYSTEM_OUT">
-      <PatternLayout pattern="${layout}"/>
-    </Console>
-    <RollingFile name="CATALINA"
-        fileName="${logdir}/catalina.log"
-        filePattern="${logdir}/catalina.%d{yyyy-MM-dd}-%i.log">
-      <PatternLayout pattern="${layout}"/>
-      <Policies>
-        <TimeBasedTriggeringPolicy />
-        <SizeBasedTriggeringPolicy size="1 MB"/>
-      </Policies>
-      <DefaultRolloverStrategy max="10"/>
-    </RollingFile>
-    <RollingFile name="LOCALHOST"
-        fileName="${logdir}/localhost.log"
-        filePattern="${logdir}/localhost.%d{yyyy-MM-dd}-%i.log">
-      <PatternLayout pattern="${layout}"/>
-      <Policies>
-        <TimeBasedTriggeringPolicy />
-        <SizeBasedTriggeringPolicy size="1 MB"/>
-      </Policies>
-      <DefaultRolloverStrategy max="10"/>
-    </RollingFile>
-    <RollingFile name="MANAGER"
-        fileName="${logdir}/manager.log"
-        filePattern="${logdir}/manager.%d{yyyy-MM-dd}-%i.log">
-      <PatternLayout pattern="${layout}"/>
-      <Policies>
-        <TimeBasedTriggeringPolicy />
-        <SizeBasedTriggeringPolicy size="1 MB"/>
-      </Policies>
-      <DefaultRolloverStrategy max="10"/>
-    </RollingFile>
-    <RollingFile name="HOST-MANAGER"
-        fileName="${logdir}/host-manager.log"
-        filePattern="${logdir}/host-manager.%d{yyyy-MM-dd}-%i.log">
-      <PatternLayout pattern="${layout}"/>
-      <Policies>
-        <TimeBasedTriggeringPolicy />
-        <SizeBasedTriggeringPolicy size="1 MB"/>
-      </Policies>
-      <DefaultRolloverStrategy max="10"/>
-    </RollingFile>
-  </Appenders>
-  <Loggers>
-    <Root level="info">
-      <AppenderRef ref="CATALINA"/>
-    </Root>
-    <Logger name="org.apache.catalina.core.ContainerBase.[Catalina].[localhost]"
-        level="info" additivity="false">
-      <AppenderRef ref="LOCALHOST"/>
-    </Logger>
-    <Logger name="org.apache.catalina.core.ContainerBase.[Catalina].[localhost].[/manager]"
-        level="info" additivity="false">
-      <AppenderRef ref="MANAGER"/>
-    </Logger>
-    <Logger name="org.apache.catalina.core.ContainerBase.[Catalina].[localhost].[/host-manager]"
-        level="info" additivity="false">
-      <AppenderRef ref="HOST-MANAGER"/>
-    </Logger>
-  </Loggers>
-</Configuration>
-```
 
 RIF Tomcat logging configuarion. This file must be placed in: *%CATALINA_HOME%\comf\log4j2.xml*
 and an example is found in: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml*
@@ -703,10 +675,30 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
   
   Default log4j2 setup for the RIF middleware. 
   
-  Sets up two loggers:
+  The RIF middleware now uses Log4j version 2 for logging. The configuration file: 
+  *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up five loggers:
   
-  1. The default logger: rifGenericLibrary.util.RIFLogger used by the middleware: RIF_middleware.log
-  2. "Other" for logger output not from rifGenericLibrary.util.RIFLogger: Other.log
+  1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
+  2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the middleware: RIF_middleware.log
+  3. The taxonmy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the middleware: TaxonomyLogger.log
+  4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the middleware: FrontEndLogger.log
+  5. "Other" for all other logger output not the above: Other.log
+
+  Log4j2 was chosen because it is easy to integrate with tomcat; it is however old and does not always rotate the logs well.
+  
+  Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/<Log name>.<YYYY>-<MM>-<DD>-<N>.log```; where:
+
+  * ```<Log name>``` is one of: *tomcat*, *RIF_middleware", "TaxonomyLogger*, *FrontEndLogger*;
+  * ```<YYYY>``` is the year;
+  * ```<MM>``` is the numeric month;
+  * ```<DD>``` is the numeric day and; 
+  * ```<N>``` is the log sequence number.
+
+  Other messages go to the console. RIF middleware message **DO NOT** go to the console so we can find
+  messages not using *rifGenericLibrary.util.RIFLogger*. You can change this.
+  
+  Logs are rotated everyday or every 100 MB in the year/month specific directory. Note the rollover occrus with the first 
+  message received after the time/size condition is met (i.e. don't expect it to occur at midnight)
   
   Logs go to STDOUT and ${sys:catalina.base}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME/log4j2/<YYYY>-<MM>/
   Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
@@ -727,6 +719,10 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
 	   rif40_geographies 
 	ORDER BY 
 	   geography ASC;
+
+
+	;
+
 
 	<<< End PGSQLAbstractSQLManager logSQLQuery
 
@@ -754,6 +750,15 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
     </RollingFile>	
     <RollingFile name="FRONTENDLOGGER" 
 				 filePattern="${logdir}/FrontEndLogger.%d{yyyy-MM-dd}-%i.log"
+				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
+      <PatternLayout pattern="${rif_log_pattern}"/>
+	  <Policies>
+		<TimeBasedTriggeringPolicy interval="1" modulate="true"/>              <!-- Rotated everyday -->
+		<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+	  </Policies>
+    </RollingFile>
+    <RollingFile name="TAXONOMYLOGGER" 
+				 filePattern="${logdir}/TaxonomyLogger.%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
 	  <Policies>
@@ -817,13 +822,20 @@ The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log
 		level="info" additivity="false"> <!-- Chnage to debug for more output -->
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
       <AppenderRef ref="FRONTENDLOGGER"/>
+    </Logger>
+      <!-- RIF FRont End logger: rifGenericLibrary.util.TaxonomyLogger -->
+    <Logger name="rifGenericLibrary.util.TaxonomyLogger"
+		level="info" additivity="false"> <!-- Chnage to debug for more output -->
+      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
+      <AppenderRef ref="TAXONOMYLOGGER"/>
     </Logger>		
   </Loggers>
 </Configuration>
 ```
 
 Create an environment overrides file for catalina.bat as %CATALINA_HOME%\bin\setenv.bat. A copy is provided in:
-%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes
+%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes. Coopy this file to *%CATALINA_HOME%\bin*.
+
 ```bat
 REM Tomcat log4j2 setup
 REM 
@@ -862,10 +874,12 @@ Add the following files to *%CATALINA_HOME%\lib*:
 * log4j-jul-2.9.0.jar
 
 If you use Maven to build the Middleware, these files are in subdirectories below 
-*%USER%\.m2\repository\org\apache\logging\log4j\*
+*%USER%\.m2\repository\org\apache\logging\log4j\<log4j module>\2.9.0* where <log4j module is log4j-api etc.
+
+SAHSU will normally supply these JAR files (in the log4j directory) togther with the war files (in the tomcat webapps directory).
 
 Do NOT set the enviroment variables LOGGING_MANAGER or LOGGING_CONFIG.
-Do set set:
+This script sets *CATALINA_OPTS* and *CLASSPATH* in the tomcat environment*:
 ```
 CATALINA_OPTS=-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile="%CATALINA_HOME%\conf\log4j2.xml"
 CLASSPATH=%CATALINA_HOME%\lib\log4j-core-2.9.0.jar;%CATALINA_HOME%\lib\log4j-api-2.9.0.jar;%CATALINA_HOME%\lib\log4j-jul-2.9.CONSOLE0.jar
@@ -911,25 +925,169 @@ Run Jconsole from *%JAVA_HOME%\bin* e.g. ```"%JAVA_HOME%\bin\Jconsole"```
 Front end logging is enabled by default to the log file: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```; e.g.
  *FrontEndLogger.2017-11-27-1.log*.
  
-To enable debugging in *%CATALINA_HOME%\webapps\RIF4\utils\controllers\rifc-util-alert.js* set ```$scope.debugEnabled = true;```:
+To enable debugging in the front end, copy frontEndParameters.json5 from %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes. Coopy this file to *%CATALINA_HOME%\conf*.
+Set *debugEnabled* to *true*
 
-```javascript
+This file contains various parameter to help debug the front end web application; all should be false unless you are a front end developer. 
+You will need to check the code to see what they have:
 
-/* 
- * CONTROLLER to handle alert bars and notifications over whole application
+* usePouchDBCache:  DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
+* disableMapLocking:Disable disease map initial sync [You can re-enable it!]
+* disableSelectionLocking:  Disable selection locking [You can re-enable it!]
+* syncMapping2EventsDisabled: Disable syncMapping2Events handler [for leak testing]
+* rrDropLineRedrawDisabled: Disable rrDropLineRedraw handler [for leak testing]
+* rrchartWatchDisabled: Disable Angular $watch on rrchart<mapID> [for leak testing]	
+
+Aslo:
+ 
+* mapLockingOptions: Map locking options (options for Leaflet.Sync())
+
+Other parameters:
+
+* You can define a *defaultLogin* do not do this in a production environment; for use on single user tests system only!
+* The parameter *userMethods* allows you to define your own methods for mapping.
+* The parameter *mappingDefaults* sets up the defaults for the three maps (viewermap, dismap1 and 1).
+
+Mapping parameters should be changed with extreme caution as they will brerak the RIF badly if you set them up incorrectly. 
+You must logout, restart tomcat and login again if you test any of the parameters.
+
+```json
+/**
+ *
+ *
+ * <hr>
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * <p>
+ * Copyright 2017 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ * </p>
+ *
+ * <pre> 
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+ * </pre>
+ *
+ * <hr>
+ * Peter Hambly
+ * @author phambly
+ * @version
  */
-angular.module("RIF")
-        .controller('AlertCtrl', ['$scope', 'notifications', 'user', function ($scope, notifications, user) {
-            $scope.delay = 0; // mS
-			$scope.lastMessage = undefined;
-			$scope.messageList = [];
-			$scope.messageCount = undefined;
-			$scope.messageStart = new Date().getTime();
-			$scope.debugEnabled = true;
-			
+
+// THIS FILE MUST BE VALID JSON5; can contain comments and line feeds!
+// http://json5.org/ or https://github.com/json5/json5
+
+/*
+The following is the exact list of additions to JSON’s syntax introduced by JSON5. All of these are optional, and all of these come from ES5.
+
+Objects:
+* Object keys can be unquoted if they’re valid identifiers. Yes, even reserved keywords (like default) are valid unquoted keys in ES5 [§11.1.5, §7.6]. (More info)
+  (TODO: Unicode characters and escape sequences aren’t yet supported in this implementation.)
+* Object keys can also be single-quoted.
+* Objects can have trailing commas.
+
+Arrays:
+* Arrays can have trailing commas.
+
+Strings:
+* Strings can be single-quoted.
+* Strings can be split across multiple lines; just prefix each newline with a backslash. [ES5 §7.8.4]
+
+Numbers:
+* Numbers can be hexadecimal (base 16).
+* Numbers can begin or end with a (leading or trailing) decimal point.
+* Numbers can include Infinity, -Infinity, NaN, and -NaN.
+* Numbers can begin with an explicit plus sign.
+
+Comments:
+* Both inline (single-line) and block (multi-line) comments are allowed.
+*/
+{
+	parameters: {
+		usePouchDBCache: 	false,			// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
+		debugEnabled:		false,			// Disable front end debugging
+		disableMapLocking:	false,			// Disable disease map initial sync [You can re-enable it!]
+		disableSelectionLocking: false,		// Disable selection locking [You can re-enable it!]
+		
+		syncMapping2EventsDisabled: false,	// Disable syncMapping2Events handler [for leak testing]
+		rrDropLineRedrawDisabled: false,	// Disable rrDropLineRedraw handler [for leak testing]
+		rrchartWatchDisabled: false,		// Disable Angular $watch on rrchart<mapID> [for leak testing]
+		
+		mapLockingOptions: {},				// Map locking options (for Leaflet.Sync())
+		
+		/*
+		 * For the Color Brewer names see: https://github.com/timothyrenner/ColorBrewer.jl
+		 * Derived from: http://colorbrewer2.org/
+		 */
+		mappingDefaults: {				
+			'diseasemap1': {
+					method: 	'quantile', 
+					feature:	'smoothed_smr',
+					intervals: 	9,
+					invert:		true,
+					brewerName:	"PuOr"
+			},
+			'diseasemap2': {
+					method: 	'AtlasProbability', 
+					feature:	'posterior_probability',
+					breaks: 	[0.0, 0.20, 0.81, 1.0],	
+					invert:		false,
+					brewerName:	"RdYlGn"
+			},
+			'viewermap': {
+					method: 	'AtlasRelativeRisk', 
+					feature:	'relative_risk',
+					breaks:		[-Infinity, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51, Infinity],
+					invert:		true,
+					brewerName: "PuOr"
+			}
+		},
+		defaultLogin: {						// DO NOT SET in a production environment; for use on single user tests system only!
+			username: 	"",
+			password:	""
+		},
+		userMethods: {
+			'AtlasRelativeRisk': {
+					description: 'Atlas Relative Risk',
+					breaks:		[-Infinity, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51, Infinity],
+					invert:		true,
+					brewerName: "PuOr",
+					invalidScales: ["Constant", "Dark2", "Accent", "Pastel2", "Set2"]
+			},
+			'AtlasProbability': {
+					description: 'Atlas Probability',
+					feature:	'posterior_probability',
+					breaks: 	[0.0, 0.20, 0.81, 1.0],	
+					invert:		false,
+					brewerName:	"RdYlGn",
+                    invalidScales: ["Constant"]
+			}
+		}
+	}
+}              		
 ```
 
-Chnage the log level to debug in the log4j setup for *rifGenericLibrary.util.FrontEndLogger*:
+Change the log level to debug in the log4j setup for *rifGenericLibrary.util.FrontEndLogger*:
 
 ```xml
     <!-- RIF FRont End logger: rifGenericLibrary.util.FrontEndLogger -->
@@ -1062,12 +1220,15 @@ source.
 ```
 	
 ## 1.4 R
+
 Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
 
 See: [R setup](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#43-setup-r)
 
 As with Java, do NOT use the 32 bit only version unless you have to. These instructions assume you you the 64 
 bit version
+
+Add the 64 bit R executable to the path; e.g. *C:\Program Files\R\R-3.4.4\bin\x64*
 
 # 2. Building Web Services using Maven
 
@@ -1281,6 +1442,7 @@ If SAHSU has supplied a taxonomyServices.war file skip to step 3.
 
   * icdClaML2016ens.xml
   * TaxonomyServicesConfiguration.xml
+  * ClaML.dtd
 
 2) Build the Taxonomy Service using *maven*.
    Either: 
@@ -1382,7 +1544,7 @@ it is not automatically spotted unlike the services *.war* files..
 ## 4.1 Setup Database
 
 The Java connector for the RifServices middleware is setup in the file: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*.
-This should be copied to *%CATALINA_HOME%\conf*
+This should be copied to *%CATALINA_HOME%\conf* so it is not overwritten by middleware upgrades.
 
 * If the folder rifServices does not exist; start tomcat and it will be expanded from the war file.
 * The default database is setup as follows:
@@ -1604,38 +1766,31 @@ This setup will support:
 
 ## 4.3 Setup R
   
-1. Create directories for extract (extractDirectory) and policies (extraDirectoryForExtractFiles). The defaults are:
+1. Create directories for extract (extractDirectory) and policies (extraDirectoryForExtractFiles). The defaults in *RIFServiceStartupProperties.properties* are:
 
    * Extract: ```extractDirectory=c:\\rifDemo\\scratchSpace```
    * Policies: ```extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies```
 
    Grant appropriate read, write and execute access to these directories for Tomcat and SQL Server. Both normally run as the local adminstrator  Administrators 
-   (DESKTOP-4P2SA80\Administrators) so you do not need to do anything, it is advised to grant access to your local user if you are on a development system.
+   (e.g. DESKTOP-4P2SA80\Administrators) so you do not need to do anything, it is advised to grant access to your local user if you are on a development system.
    
-2. Create and test a system ODBC datasource for the database in use; the default is:
+2. Create and test a system ODBC datasource 
 
-   * ODBC sytstem data source: ```odbcDataSourceName=PostgreSQL30```
-
-   For SQL Server use SQL Server Native Client version 11, 2011 version or later; 
-   For Postgres use the latest driver from https://www.postgresql.org/ftp/odbc/versions/msi/
+   * For Postgres if you did not install it using stackbuilder, install the latest driver from https://www.postgresql.org/ftp/odbc/versions/msi/
+   * Using "control panel", "administrative tools", "ODBC Data Sources(64 bit)", right click "run as ADminstrator" for the database in use; the default is:
+   * Create a ODBC system using using the "system" tab and "Add". The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=PostgreSQL35W```; so   
+     the name is *PostgreSQL35W*. For Postgres chose the Unicode driver and fill in the database, server, host, port, RIF username and password (the password is not used in  the R):
+	 
+     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_setup.png?raw=true "ODBC setup")
+	
+   * For Postgres, select the datasourcde tab and set *Max Varchar* and *Max Long Varchar* to 8190.
    
-   For Postgres, select the datasourcde tab and set *Max Varchar* and *Max Long Varchar* to 8190.
-   
-These settings are in the Java connector for the RifServices middleware: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*
+     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_options.png?raw=true "ODBC options")
+  
+   * For SQL Server use SQL Server Native Client version 11, 2011 version or later; 
+   * Test it!
 
-**BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
-
-```java
-webApplicationDirectory=rifServices
-rScriptDirectory=rScripts
-maximumMapAreasAllowedForSingleDisplay=200
-extractDirectory=c:\\rifDemo\\scratchSpace
-odbcDataSourceName=PostgreSQL30
-#odbcDataSourceName=SQLServer11
-extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies
-```
-
-3. Start *R* as Administrator and run the following script:
+3. Start *R* in an Administrator command window and run the following script:
 
 ```R
 # CHECK & AUTO INSTALL MISSING PACKAGES
@@ -1649,8 +1804,9 @@ if (!require(INLA)) {
 
 ``` 
 
+* If R cannpot be found, add it to the PATH and restart the administrator Window 
 * R will ask for the nearest CRAN (R code archive); select one geographically near you (e.g. same country).
-* R output:
+* R output (version numbers will be higher as you always get the latest version):
 
 ```
 --- Please select a CRAN mirror for use in this session ---
@@ -1748,7 +1904,7 @@ The downloaded binary packages are in
         C:\Users\admin\AppData\Local\Temp\RtmpSkeuRW\downloaded_packages
 ```
 
-4. Add R_HOME to the environment
+4. Add R_HOME, e.g. *C:\Program Files\R\R-3.4.4* to the environment
 
 5. Add the 64bit JRI native library location and the R_HOME bin\x64 directory to the path
 
@@ -1757,14 +1913,14 @@ The downloaded binary packages are in
    rJava, use
 	```
 	> system.file("jri",package="rJava")
-	[1] "C:/Program Files/R/R-3.4.0/library/rJava/jri"
+	[1] "C:/Program Files/R/R-3.4.4/library/rJava/jri"
 	```
    from inside of R [command-line]. Above command will give you a path. You will be able to find the 64 bit *libjri.so*
    which is the shared library JRI is looking for.
   
    These directories with the 32 or 64 bit subdirectory appended needs to be added to the path: 
-   *C:\Program Files\R\R-3.4.0\bin\x64;C:\Program Files\R\R-3.4.0\library\rJava\jri\x64*. This ensures that file "x64\jri.dll" 
-   is in java.library.path
+   *C:\Program Files\R\R-3.4.4\library\rJava\jri\x64*. This ensures that file "x64\jri.dll" 
+   is in java.library.path. If you have 64bit Java (as instructed previous) you will need to use the 64 bit version.
    
    Just after user logon the middleware can print the JAVA LIBRARY PATH: *System.getProperty("java.library.path")*
 
@@ -1785,6 +1941,8 @@ The downloaded binary packages are in
 	am Files\nodejs\;C:\Program Files\Apache Software Foundation\apache-maven-3.3.9\bin;C:\Program Files\R\R-3.4.0\bin;C:\Program Files
 	(x86)\Skype\Phone\;C:/Program Files/R/R-3.4.0/library/rJava/jri;.
 	```
+	
+	**RESTART YOUR ADMINISTRATOR TO PICK UP YOUR CHANGES** 
 	
 6. JRI Errors
 	
@@ -1973,8 +2131,6 @@ Rengine Stopped, exit value==1==
    * *rif40_run_R_env.bat* - Study settings in use. Does *NOT* include the password!
    * *tmp_s33_adjacency_matrix.csv* - adjacency matrix for extract
    * *tmp_s33_extract.csv* - study data extract
-
-   **This will be added to the extract during October 2017.**
    
 ```bat
 C:\rifDemo\scratchSpace\s33\data>rif40_run_R.bat
@@ -2350,7 +2506,7 @@ If the RIF is started as per these instructions, the *tomcat* output trace will 
 
 If it does not, check the tomcat service setup.
 
-### 4.4.1 Logon RIF Serice Call Incorrect
+### 4.4.1 Logon RIF Service Call Incorrect
 
 Use developer mode in the browser to bring up the console log:
 
