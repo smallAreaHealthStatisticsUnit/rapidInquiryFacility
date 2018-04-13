@@ -2062,6 +2062,8 @@ Todo:
   * Limit new/completed messages to within 14 days of message time
 * Update TODO list; plans for next period
 
+#### 12th to 13th April
 
+* Review and test Postgres database build instructions; merging in Windows specific instructions and build README.md comments
 
 

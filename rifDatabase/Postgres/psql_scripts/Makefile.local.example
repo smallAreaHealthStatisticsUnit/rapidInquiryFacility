@@ -124,11 +124,12 @@ DEFAULT_WINDOWS_ADMIN_USER=Administrator
 # Default is 4G
 #
 #NODE_MAX_MEMORY=4096
-
 #
 # Testuser: defaults to USERNAME; set if USERNAME is in mixed case or contains spaces
+# Testpassword: password for testuser; defaults to USERNAME; set if USERNAME is in mixed case or contains spaces
 #
 # TESTUSER=myusername
+# TESTPASSWORD=myusername
 
 #
 # Eof
