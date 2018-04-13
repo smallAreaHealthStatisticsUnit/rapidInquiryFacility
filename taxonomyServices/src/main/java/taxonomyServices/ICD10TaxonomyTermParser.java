@@ -6,7 +6,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.taxonomyServices.TaxonomyTerm;
 import rifGenericLibrary.taxonomyServices.TaxonomyTermManager;
 
-import rifGenericLibrary.util.RIFLogger;
+import rifGenericLibrary.util.TaxonomyLogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -106,7 +106,7 @@ public final class ICD10TaxonomyTermParser {
 	// ==========================================
 	// Section Constants
 	// ==========================================
-	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+	private static final TaxonomyLogger rifLogger = TaxonomyLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 	
 	// ==========================================
