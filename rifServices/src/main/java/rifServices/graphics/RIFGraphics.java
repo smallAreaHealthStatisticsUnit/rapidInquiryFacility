@@ -169,7 +169,7 @@ public class RIFGraphics extends SQLAbstractSQLManager {
 		}
 		catch(Exception exception) {
 			rifLogger.warning(this.getClass(), 
-				"Error in RIFGraphics() constructor");
+				"Error in RIFGraphics() constructor", exception);
 			throw new NullPointerException();
 		}
 	}

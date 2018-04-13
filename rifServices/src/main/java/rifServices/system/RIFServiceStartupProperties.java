@@ -317,7 +317,7 @@ public final class RIFServiceStartupProperties {
 					throws Exception {
 		Float propertyValue=defaultValue;
 		try {
-			propertyValue=Float.parseFloat(StringUtils.trim((propertyName)));
+			propertyValue=Float.parseFloat(StringUtils.trim(getProperty(propertyName)));
 		}
 		catch(MissingResourceException exception) { 
 			updateParameterWarnings(propertyName);
