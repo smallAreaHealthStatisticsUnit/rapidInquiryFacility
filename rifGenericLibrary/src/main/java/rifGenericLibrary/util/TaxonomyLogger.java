@@ -110,14 +110,6 @@ public final class TaxonomyLogger {
 	private static final TaxonomyLogger taxonomyLogger = new TaxonomyLogger();
 	private static Logger log;
 	private static String lineSeparator = System.getProperty("line.separator");
-	private static Properties prop = null;
-		
-	private enum MessageType {
-				ERROR,
-				WARNING,
-				SUCCESS,	// For compatibility with ngNotificationsBar; mapped to INFO in middleware
-				INFO,
-				DEBUG};	
 				
 	// ==========================================
 	// Section Construction: log4j

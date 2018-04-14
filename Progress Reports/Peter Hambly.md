@@ -2069,6 +2069,8 @@ Todo:
 * Fix log4j logging hangs (added separate taxonomyServices logger to avoid thread clash bug inm log4j)
 * Fix for whitespace in properties file causes crashes
 * Text VPN commention
+* Download sample ICD9 codes: from https://raw.githubusercontent.com/drobbins/ICD9/master/icd9.txt; reformatted 
+  from: https://www.cms.gov/ICD9ProviderDiagnosticCodes/downloads/cmsv29_master_descriptions.zip
 
 #### 16th to 21st April
 
