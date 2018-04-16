@@ -5,7 +5,7 @@ RIF Web Application and Middleware Installation
 
 - [1. Installation Prerequisites](#1-installation-prerequisites)
    - [1.1 Apache Maven](#11-apache-maven)	
-   - [1.2 Java Development Environment](#12-lava-development-environment)	
+   - [1.2 Java Runtime Environment](#12-lava-runtime-environment)	
    - [1.3 Apache Tomcat](#13-apache-tomcat)	
      - [1.3.1 Apache Tomcat on a single host](#131-apache-tomcat-on-a-single-host)	
      - [1.3.2 Apache Tomcat for internet use](#132-apache-tomcat-for-internet-use)	
@@ -25,7 +25,7 @@ RIF Web Application and Middleware Installation
 - [3. Installing Web Services in Tomcat](#3-installing-web-services-in-tomcat)
    - [3.1 Web Services](#31-web-services)
      - [3.1.1 RIF Services](#311-rif-services)
-     - [3.1.2 Taxonomy Service](#312-taxonomy-service)
+     - [3.1.2 Taxonomy Services](#312-taxonomy-services)
    - [3.2 RIF Web Application](#32-rif-web-application)
 - [4. RIF Setup](#4-rif-setup)
    - [4.1 Setup Database](#41-setup-database)
@@ -47,8 +47,8 @@ RIF Web Application and Middleware Installation
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
    - [5.3 R Issues](#53-r-issues)
-     - [5.3.2 R ERROR: argument is of length zero ; call stack: if scale.model](#532-r-error-argument-is-of-length-zero--call-stack-if-scalemodel)
      - [5.3.1 Cannot find JRI native library](#531-cannot-find-jri-native-library)
+     - [5.3.2 R ERROR: argument is of length zero ; call stack: if scale.model](#532-r-error-argument-is-of-length-zero--call-stack-if-scalemodel)
 - [ 6. Patching](#6-patching)
    - [6.1 RIF Web Application](#61-rif-web-application)
    - [6.2 RIF Middleware](#62-rif-middleware)
@@ -1563,7 +1563,7 @@ RIF services uses Taxonomy services directly a) when creating study JSON from th
 
 This is code in `...rapidInquiryFacility\rifServices\src\main\java\rifServices\dataStorageLayer\common\GetStudyJSON.java`
 
-### 3.1.2 Taxonomy Service
+### 3.1.2 Taxonomy Services
 
 If SAHSU has supplied a taxonomyServices.war file skip to step 3.
 
@@ -1624,10 +1624,10 @@ Create RIF4 in web-apps:
   to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4*
 * 7zip must be be installed.
 
-### Method 2: Using pre-supplied RIF4.7zip
+### Method 2: Using pre-supplied RIF4.7z
 
-If you are supplied with the *7zip* archive, RIF4.7z needs to be copied to: 
-*%CATALINA_HOME%\webapps\RIF4* and unpacked using the file manager *7zip*. Do not use the command line 
+If you are supplied with the *7-Zip* archive, *RIF4.7z* needs to be copied to: 
+*%CATALINA_HOME%\webapps\RIF4* and unpacked using the file manager *7-Zip* (right click -> 7-Zip -> Extract to "RIF4\"). Do not use the command line 
 (```"C:\Program Files\7-Zip\7z.exe" x RIF4.7z```) it does not work!
 
 ```
@@ -1692,7 +1692,7 @@ This should be copied to *%CATALINA_HOME%\conf* so it is not overwritten by midd
     can be remote but users must take care to ensure that it is setup securely. If you use a remote database, users are advised the secure the database:
 
     * Always use TLS.
-    * Restrict access using **BOTH** the database software (*hba.conf* in Postgres) and the network infrastruture
+    * Restrict access using **BOTH** the database software (*hba.conf* in Postgres) and the network infrastructure
     * Keep the database fully patched as per vendor advice.
     * Follow the appropriate guidelines, e.g. OWASP, but be consult SAHSU as some of the changes may break the RIF: 
       - [OWASP Postgres guidelines](https://www.owasp.org/index.php/OWASP_Backend_Security_Project_PostgreSQL_Hardening)
@@ -1722,11 +1722,11 @@ database.databaseName=sahsuland
 database.databaseType=postgresql
 ```
 
-**BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
+**BEWARE** Make sure you keep a copy of this file; a RIF services upgrade will overwrite it.
 
 ## 4.2 Setup Network
 
-This section not required is yuou are running on localhost (e.g. a laptop).
+This section not required is you are running on localhost (e.g. a laptop).
 
 By default tomcat runs on port 8080, if you have installed the Apache webserver (Postgres installs can) then it will appear on port 8081. This can be 
 detected using the ```netstat``` command (the syntax will be slightly differ on Linux):
