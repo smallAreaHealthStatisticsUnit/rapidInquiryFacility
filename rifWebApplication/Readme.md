@@ -15,7 +15,8 @@ RIF Web Application and Middleware Installation
 	 - [1.3.6 Tomcat Logging (Log4j2) Setup](#136-tomcat-logging-log4j2-setup) 
 	 - [1.3.7 Using JConsole with Tomcat](#137-using-jconsole-with-tomcat) 
 	 - [1.3.8 Front End Logging](#138-front-end-logging)
-	 - [1.3.9 Securing Tomcat](#139-securing-tomcat)
+	 - [1.3.9 Printing Defaults](#139-printing-defaults)
+	 - [1.3.10 Securing Tomcat](#1310-securing-tomcat)
   - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
    - [2.1 Building Using Make](#21-building-using-make)	
@@ -473,6 +474,13 @@ Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/<Log name>.<YYYY>-<M
 * ```<MM>``` is the numeric month;
 * ```<DD>``` is the numeric day and; 
 * ```<N>``` is the log sequence number.
+
+Log4j has a bug in it where if more than one service logs to the same log source the log files will not rotate. Therefore if you have a RIF without (<13/4/2018)
+a TaxonomyLogger you must upgrade *log4j2.xml* to add the TaxonomyLogger.
+
+Log4j also tends to chnage the date one day in arrear; i..e it will start on the corerect day and then be one day behind. Changing to SL4J, which is a much 
+more modern logger would probsably fix these issues but Tomcat is built with log4j. This means to use log4j a custom Tomcat would be required with all the 
+support difficulties this would entail.
 
 Other messages go to the console. RIF middleware message **DO NOT** go to the console so we can find
 messages not using *rifGenericLibrary.util.RIFLogger*. You can change this.
@@ -1122,7 +1130,132 @@ actual time:  27/11/2017 13:06:23
 relative:     +28.5
 ```
 
-### 1.3.9 Securing Tomcat
+### 1.3.9 Printing Defaults
+
+The RIF has impleneted the Elsevier guidelines: https://www.elsevier.com/authors/author-schemas/artwork-and-media-instructions/artwork-sizing
+ 
+Number of pixels versus resolution and print size, for bitmap images
+Image resolution, number of pixels and print size are related mathematically: Pixels = Resolution (DPI) × Print size (in inches); 300 DPI for halftone images; 500 DPI for combination art; 1000 DPI for line art. 72 Points in one inch.
+
+| TARGET SIZE                | Image width     | Pixels@300dpi | Pixels@500dpi | Pixels@1000dpi |
+|----------------------------|-----------------|:--------------|:--------------|:---------------|
+| Minimal size               | 30 mm (85 pt)   | 354           | 591           | 1181           | 
+| Single column              | 90 mm (255 pt)  | 1063          | 1772          | 3543           | 
+| 1.5 column                 | 140 mm (397 pt) | 1654          | 2756          | 5512           | 
+| Double column (full width) | 190 mm (539 pt) | 2244          | 3740          | 7480           | 
+
+The PlosOne guildelines are: http://journals.plos.org/plosone/s/figures 
+
+Figure File Requirements
+The list below is an abbreviated summary of the figure specifications. Read the full details of the requirements in the corresponding sections on this page.
+
+* File Format:			TIFF or EPS
+* Dimensions:			Width: 789 – 2250 pixels (at 300 dpi). Height maximum: 2625 pixels (at 300 dpi).
+* Resolution:			300 – 600 dpi
+* File Size:			<10 MB
+* Text within Figures: 	Arial, Times, or Symbol font only in 8-12 point
+* Figure Files: 		Fig1.tif, Fig2.eps, and so on. Match file name to caption label and citation.
+* Captions:				In the manuscript, not in the figure file.
+
+Printing defaults can be set system wide in *%CATALINA_HOME%\conf\RIFServiceStartupProperties.properties*
+ 
+The RIF has the following defaults:
+
+* printingDPI = 1000 
+  100 dots per inch
+* denominatorPyramidWidthPixels = 3543
+  Single column 
+* mapWidthPixels = 7480
+  Double column (full width)
+* jpegQuality = 0.8
+  JPEG quality: betwen 0.75 and 1.0 (no loss)
+  Below 0.75 will result is visible artifacts
+* populationPyramidAspactRatio = 1.43
+  Allows you to chnage the population pyramid aspect ratio
+* copyrightInfo=null (not set)
+   Set this to appropriate text to define Copyright in map images (only GEOTIFF supported at present)
+   \u00A9 is the Unicode for the Copyright symbol (C)
+* enableMapGrids=true
+  This enables grid lines on the maps. This are to provide a scale
+* enableCoordinateDisplay=false
+  This is an experimental feature and add coordinates to the grids
+ 
+Example from *RIFServiceStartupProperties.properties*
+```.properties
+#
+# Printing setup:
+#
+# Journal requirements:
+#
+# PlosOne: http://journals.plos.org/plosone/s/figures 
+#
+# Figure File Requirements
+# The list below is an abbreviated summary of the figure specifications. Read the full details of the requirements in the corresponding sections on this page.
+# File Format:			TIFF or EPS
+# Dimensions:			Width: 789 – 2250 pixels (at 300 dpi). Height maximum: 2625 pixels (at 300 dpi).
+# Resolution:			300 – 600 dpi
+# File Size:			<10 MB
+# Text within Figures: 	Arial, Times, or Symbol font only in 8-12 point
+# Figure Files: 		Fig1.tif, Fig2.eps, and so on. Match file name to caption label and citation.
+# Captions:				In the manuscript, not in the figure file.
+
+# Elsevier: https://www.elsevier.com/authors/author-schemas/artwork-and-media-instructions/artwork-sizing
+#
+# Number of pixels versus resolution and print size, for bitmap images
+# Image resolution, number of pixels and print size are related mathematically: Pixels = Resolution (DPI) × Print size (in inches); 300 DPI for halftone images; 500 DPI for combination art; 1000 DPI for line art. 72 Points in one inch.
+# TARGET SIZE                   Image width 	Pixels@300dpi 	Pixels@500dpi 	Pixels@1000dpi 	
+# Minimal size                   30 mm (85 pt)  354 	 		591 			1181 
+# Single column                  90 mm (255 pt) 1063 			1772 			3543 
+# 1.5 column 	                140 mm (397 pt) 1654 			2756 			5512 
+# Double column (full width)    190 mm (539 pt) 2244 			3740 			7480
+
+#
+# RIF default setup: 
+# denominator [population] Pyramid: 1000 dpi, 90mm width 
+#
+# 1000dpi = 39.370079 pixel/mm
+# 500dpi  = 16.685039 pixel/mm
+# 300dpi  = 11.811024 pixel/mm
+#
+# 1 inch = 25.4mm
+# 1000dpi => pixel/mm = dpi/25.4
+#
+printingDPI = 1000 
+denominatorPyramidWidthPixels = 3543
+mapWidthPixels = 7480
+#
+# JPEG quality: betwen 0.75 and 1.0 (no loss)
+# Below 0.75 will result is visible artifacts
+#
+jpegQuality = 0.8
+#
+# Population pyramid aspect ratio
+#
+populationPyramidAspactRatio = 1.43
+
+#
+# Set this to appropriate text to define Copyright in map images (only GEOTIFF supported at present)
+# \u00A9 is the Unicode for the Copyright symbol (C)
+#
+#copyrightInfo="(C) <enter your name here>"
+
+#
+# To disable the map grids
+#
+# enableMapGrids=false
+
+#
+# To enable Coordinate Display
+#
+# enableCoordinateDisplay=true
+
+#
+# To change to the level of rounding in the results; including quantiles etc.
+# 
+# roundDP=3
+```
+
+### 1.3.10 Securing Tomcat
 
 Injecting HTTP Response with the secure header can mitigate most of the web security vulnerabilities. These changes
 implement the necessary HTTP headers to comply with OWASP security standards.
@@ -1754,6 +1887,9 @@ This will generate a self signed certificate; this will cause browsers to compla
 
 To sign the certificates, follow the instructions in: https://tomcat.apache.org/tomcat-8.5-doc/ssl-howto.html#SSL_and_Tomcat
 
+**Do not sign certificates if your server will be on an air gapped network such as the SAHSU private network**. The clients will be unable to verify the server certificate 
+with the signing authority and the connection **WILL** fail!
+ 
 This setup will support:
 
 - Android 4.4.2 and later
@@ -2809,36 +2945,57 @@ This fixesthe error : "R BYM sahsuland fault\R BYM sahsuland fault - no covariat
 * Change directory to *%CATALINA_HOME%\webapps*; rename RIF4 to RIF4.old;
 * Follow the instructions in 
 [section 3.2 for installing the RIF Web Application](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#32-rif-web-application)
-* Restore *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-urls.js*;
+* Restore *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-urls.js* if you have modified it;
 * Start tomcat;
 * When you are satisiffied with the patch remove the RIF4.old directory in *%CATALINA_HOME%\webapps*.
 
 ## 6.2 RIF Middleware
 
-* Save the Java connector for the RifServices middleware: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties* 
-outside of the tomcat tree;
+* If you have not already moved it tthen save the Java connector for the RifServices middleware: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties* 
+  to *%CATALINA_HOME%\conf\RIFServiceStartupProperties.properties*;
 * Stop Tomcat;
 * Change directory to *%CATALINA_HOME%\webapps*; rename the .WAR files to .WAR.OLD; rename the rifServices and taxonomyServices trees to .old;
 * Follow the instructions in 
 [section 3.1 for installing the web services](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#311-rif-services);
 * Start tomcat, check rifServices and taxonomyServices are unpacked and check they are running in the logs;
-* Restore *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*;
 * Restart tomcat;
 * When you are satisiffied with the patch remove the .old files and directories in *%CATALINA_HOME%\webapps*.
 
+Do **NOT** attempt to warm upgrade the RIF middleware. It wil fail if any of the following are true:
+
+* You have run a study (R does not shutdown correctly);
+* You have not copied the optional logging proprerties files to *%CATALINA_HOME%\conf* and they are in use;
+* You have any file in %CATALINA_HOME%\webapps* open in an editor.
+
+In the first case *tomcat&* will restart the services but R will not run as it cannot attach the R shared library (see earlier). In the other two cases Tomcat will still be running 
+but the service will be down with a minimal file tree under *%CATALINA_HOME%\webapps*\rifServices*. The front end will report that the middleware is down.
+
+In both cases restart *tomcat*.
+
 ## 6.3 Tomcat
 
-To be added. Files to be saved/restored:
+This has not been tested ans it has not been required. Files to be saved/restored:
 
 * *%CATALINA_HOME%/conf/server.xml*
 * *%CATALINA_HOME%/conf/web.xml*
  
-ALWAYS RESTART THE SERVER!
+**ALWAYS RESTART THE SERVER!**
  
 ## 6.4 R
 
-To be added.
+If you upgrade R to newer version then follow the instructions for installting and configuring R and JRI in [Setup R](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#43-setup-r). 
+Make abolutely sure the PATH and R_HOME are set correctly.
 
+Updating the packages can also be done (consult your statisticians first); on a private network you have two choices:
+
+* Create a private CRAN on a webserver and get R to use your local CRAN. This is the method used on the SAHSU private work before;
+* Update the packages manually from R .tar.gz/.zip files. This requires a knowledge of the dependencies and is not recommended apart from for INLA.
+  - Download INLA from: https://inla.r-inla-download.org/R/stable/bin/windows/contrib/3.4/INLA_0.0-1485844051.zip
+  - Install INLA manually as Administrator:
+    ```
+    R CMD INSTALL INLA_0.0-1485844051.zip
+    ```
+  
 # 7. Front End and Middleware Software Upgrades
 
 The RIF uses frozoen in time the front end Java and libraries. The following updates in particular will need to be carried out in 2019 to keep the code stable, current and supported:

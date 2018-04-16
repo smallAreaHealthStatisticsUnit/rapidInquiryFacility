@@ -2074,3 +2074,57 @@ Todo:
 
 #### 16th to 21st April
 
+* Test running as daemon. Unable to export study data due to running out of memory
+  - Error being trapped by front end but NOT in log.
+HTTP Status 500 Internal Server Error
+
+Type Exception Report
+
+Message java.lang.OutOfMemoryError: Java heap space
+
+Description The server encountered an unexpected condition that prevented it from fulfilling the request.
+
+Exception
+
+
+java.lang.OutOfMemoryError: 	
+	com.sun.jersey.spi.container.servlet.WebComponent.service(WebComponent.java:420)
+	com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:558)
+	com.sun.jersey.spi.container.servlet.ServletContainer.service(ServletContainer.java:733)
+	javax.servlet.http.HttpServlet.service(HttpServlet.java:742)
+	org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:52)\r\n</pre><p><b>Root Cause</b></p><pre>java.lang.OutOfMemoryError: Java heap space
+	java.awt.image.DataBufferInt.&lt;init&gt;(DataBufferInt.java:75)
+	java.awt.image.Raster.createPackedRaster(Raster.java:467)
+	java.awt.image.DirectColorModel.createCompatibleWritableRaster(DirectColorModel.java:1032)
+	java.awt.image.BufferedImage.&lt;init&gt;(BufferedImage.java:324)
+	org.apache.batik.transcoder.image.JPEGTranscoder.createImage(JPEGTranscoder.java:55)
+	org.apache.batik.transcoder.image.ImageTranscoder.transcode(ImageTranscoder.java:116)
+	org.apache.batik.transcoder.XMLAbstractTranscoder.transcode(XMLAbstractTranscoder.java:142)
+	org.apache.batik.transcoder.SVGAbstractTranscoder.transcode(SVGAbstractTranscoder.java:156)
+	rifServices.graphics.RIFGraphics.graphicsTranscode(RIFGraphics.java:250)
+	rifServices.graphics.RIFGraphics.addGraphicsFile(RIFGraphics.java:413)
+	rifServices.graphics.RIFGraphics.addGraphicsFile(RIFGraphics.java:307)
+	rifServices.dataStorageLayer.common.RifZipFile.addDenominator(RifZipFile.java:1102)
+	rifServices.dataStorageLayer.common.RifZipFile.createStudyExtract(RifZipFile.java:443)
+	rifServices.dataStorageLayer.pg.PGSQLStudyExtractManager.createStudyExtract(PGSQLStudyExtractManager.java:485)
+	rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.createStudyExtract(PGSQLAbstractRIFStudySubmissionService.java:1475)
+	rifServices.restfulWebServices.pg.PGSQLAbstractRIFWebServiceResource.createZipFile(PGSQLAbstractRIFWebServiceResource.java:965)
+	rifServices.restfulWebServices.pg.PGSQLRIFStudySubmissionWebServiceResource.createZipFile(PGSQLRIFStudySubmissionWebServiceResource.java:1239)
+	sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	java.lang.reflect.Method.invoke(Method.java:498)
+	com.sun.jersey.spi.container.JavaMethodInvokerFactory$1.invoke(JavaMethodInvokerFactory.java:60)
+	com.sun.jersey.server.impl.model.method.dispatch.AbstractResourceMethodDispatchProvider$ResponseOutInvoker._dispatch(AbstractResourceMethodDispatchProvider.java:205)
+	com.sun.jersey.server.impl.model.method.dispatch.ResourceJavaMethodDispatcher.dispatch(ResourceJavaMethodDispatcher.java:75)
+	com.sun.jersey.server.impl.uri.rules.HttpMethodRule.accept(HttpMethodRule.java:302)
+	com.sun.jersey.server.impl.uri.rules.RightHandPathRule.accept(RightHandPathRule.java:147)
+	com.sun.jersey.server.impl.uri.rules.ResourceClassRule.accept(ResourceClassRule.java:108)
+	com.sun.jersey.server.impl.uri.rules.RightHandPathRule.accept(RightHandPathRule.java:147)
+	com.sun.jersey.server.impl.uri.rules.RootResourceClassesRule.accept(RootResourceClassesRule.java:84)
+	com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1542)
+	com.sun.jersey.server.impl.application.WebApplicationImpl._handleRequest(WebApplicationImpl.java:1473)
+	com.sun.jersey.server.impl.application.WebApplicationImpl.handleRequest(WebApplicationImpl.java:1419)
+Note The full stack trace of the root cause is available in the server logs.
+Apache Tomcat/8.5.29
+
