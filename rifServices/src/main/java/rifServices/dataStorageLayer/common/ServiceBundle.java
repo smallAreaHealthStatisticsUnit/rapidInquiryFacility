@@ -7,6 +7,7 @@ import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.dataStorageLayer.ms.MSSQLProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
 import rifServices.dataStorageLayer.pg.PGSQLProductionRIFStudyServiceBundle;
+import rifServices.dataStorageLayer.pg.PGSQLRIFStudySubmissionService;
 
 public interface ServiceBundle {
 
@@ -18,7 +19,7 @@ public interface ServiceBundle {
 
 			case POSTGRESQL:
 				RIFStudySubmissionAPI pgSubmission =
-						new MSSQLRIFStudySubmissionService();
+						new PGSQLRIFStudySubmissionService();
 				return new PGSQLProductionRIFStudyServiceBundle(
 						resources,
 						pgSubmission,
