@@ -17,21 +17,6 @@ import rifGenericLibrary.util.RIFLogger;
  * Properly closes down statements, connections, result sets.  When these operations
  * fail, it produces error messages.  The class is used to help minimise and 
  * standardise code for cleaning up resources for database queries
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *</p>
  */
 public class SQLQueryUtility {
 
@@ -39,13 +24,6 @@ public class SQLQueryUtility {
 	private static String lineSeparator = System.getProperty("line.separator");
 	private static String callingClassName="rifGenericLibrary.dataStorageLayer.pg.SQLQueryUtility";
 	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
-		
-	/**
-	 * Instantiates a new SQL query utility.
-	 */
-	public SQLQueryUtility() { // Made public for printWarnings()
-
-	}
 
 	/**
 	 * Close.
@@ -69,7 +47,7 @@ public class SQLQueryUtility {
 				= GENERIC_MESSAGES.getMessage("sqlConnectionManager.error.unableToCloseResource");
 			
 			rifLogger.error(
-				SQLQueryUtility.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);
 
@@ -103,7 +81,7 @@ public class SQLQueryUtility {
 					"sqlConnectionManager.error.unableToCloseResource");
 			
 			rifLogger.error(
-				SQLQueryUtility.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);
 
@@ -136,7 +114,7 @@ public class SQLQueryUtility {
 					"sqlConnectionManager.error.unableToCloseResource");
 			
 			rifLogger.error(
-				SQLQueryUtility.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);
 																		

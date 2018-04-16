@@ -31,7 +31,6 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.util.RIFLogger;
 
 public class GetStudyJSON {

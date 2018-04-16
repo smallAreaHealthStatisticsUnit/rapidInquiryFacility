@@ -43,7 +43,6 @@ import org.w3c.dom.Document;
 
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.dataStorageLayer.common.SQLManager;

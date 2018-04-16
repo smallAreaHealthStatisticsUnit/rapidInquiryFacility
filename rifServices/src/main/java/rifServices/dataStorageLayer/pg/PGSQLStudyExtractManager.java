@@ -1,31 +1,23 @@
 package rifServices.dataStorageLayer.pg;
 
+import java.io.FileInputStream;
+import java.sql.Connection;
+import java.util.Locale;
 
-import rifServices.dataStorageLayer.common.StudyExtractManager;
-import rifServices.system.RIFServiceStartupOptions;
-import rifServices.businessConceptLayer.AbstractStudy;
-import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.fileFormats.RIFStudySubmissionContentHandler;
+import org.json.JSONObject;
+
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-//import rifGenericLibrary.dataStorageLayer.common.SQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.dataStorageLayer.common.GetStudyJSON;
 import rifServices.dataStorageLayer.common.RifZipFile;
-import rifGenericLibrary.fileFormats.XMLCommentInjector;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceExceptionFactory;
+import rifServices.dataStorageLayer.common.StudyExtractManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-import rifGenericLibrary.util.RIFDateFormat;
+import rifServices.system.RIFServiceStartupOptions;
 
-import java.io.*;
-import java.sql.*;
-import org.json.JSONObject;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-import java.util.Locale;
+//import rifGenericLibrary.dataStorageLayer.common.SQLFunctionCallerQueryFormatter;
 
 public class PGSQLStudyExtractManager extends PGSQLAbstractSQLManager
 		implements StudyExtractManager {

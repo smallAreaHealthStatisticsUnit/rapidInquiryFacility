@@ -1,57 +1,62 @@
 package rifServices.dataStorageLayer.common;
 
-import rifServices.system.RIFServiceStartupOptions;
-import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.DatabaseType;
-import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.graphics.RIFMaps;
-import rifServices.graphics.RIFGraphicsOutputType;
-import rifServices.businessConceptLayer.Sex;
-
-import com.sun.rowset.CachedRowSetImpl;
-import java.sql.*;
-import java.io.*;
-import java.lang.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.NumberFormat;
-import java.util.Map;
 import java.util.Calendar;
-import java.util.Locale;
-import java.util.Set;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.data.FeatureWriter;
+import org.geotools.data.Transaction;
+import org.geotools.data.shapefile.ShapefileDataStore;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geojson.geom.GeometryJSON;
+import org.geotools.geometry.jts.Geometries;
+import org.geotools.geometry.jts.GeometryBuilder;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.JTSFactoryFinder;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.geometry.BoundingBox;
 
-import org.geotools.geojson.geom.GeometryJSON;
-import org.geotools.geometry.jts.JTSFactoryFinder;
-import org.geotools.geometry.jts.Geometries;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.geometry.jts.GeometryBuilder;
-
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.geotools.referencing.CRS;
-import org.geotools.data.shapefile.ShapefileDataStore; 
-import org.geotools.data.FeatureWriter; 
-import org.geotools.data.Transaction;
-
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Polygon;
+import com.sun.rowset.CachedRowSetImpl;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.WKTReader;
+
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.graphics.RIFGraphicsOutputType;
+import rifServices.graphics.RIFMaps;
+import rifServices.system.RIFServiceStartupOptions;
 
 public class RifGeospatialOutputs {
 
