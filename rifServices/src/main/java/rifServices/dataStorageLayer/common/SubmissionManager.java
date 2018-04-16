@@ -10,17 +10,6 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 
 public interface SubmissionManager extends SQLManager {
 
-	String deleteStudy(
-			Connection connection,
-			String studyID)
-		throws RIFServiceException;
-	
-	void deleteStudy(
-			Connection connection,
-			User user,
-			AbstractStudy study)
-			throws RIFServiceException;
-	
 	RIFStudySubmission getRIFStudySubmission(
 			Connection connection,
 			User user,
