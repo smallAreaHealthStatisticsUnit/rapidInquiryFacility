@@ -43,6 +43,8 @@ RIF Web Application and Middleware Installation
      - [4.4.4 No Taxonomy Services](#444-no-taxonomy-services)
 	 - [4.4.5 RIF Services crash on logon](#445-rif-services-crash-on-logon)
 	 - [4.4.6 SQL Server TCP/IP Java Connection Errors](#446-sql-server-tcpip-java-connection-errors)
+	 - [4.4.7 Tomcat service will not start](#447-tomcat-service-will-not-start)
+	 [4.4.8 OutOfMemoryError: Java heap space](#448-outofmemoryerror-java-heap-space)
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
@@ -426,6 +428,13 @@ You can do this last!
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
 
+  Note: on some desktop systems this may prevent tomcat running as a service if a 32bit Java was installed first, with the Windows event log having the cryptic message
+  ```
+  The Apache Tomcat 8.5 Tomcat8 service terminated with the following service-specific error: 
+  Incorrect function.
+  ```
+  Tomcat logs to: commons-daemon.<date e.g.,  2018-04-16>.log, tomcat8-stderr.<date e.g.,  2018-04-16>.log, tomcat8-stdout.<date e.g.,  2018-04-16>.log instead of to the console
+  
 * Use the configure Tomcat application (tomcat8w) to make the startup type automatic.
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_1.png?raw=true "Make the startup type automatic")
@@ -433,6 +442,25 @@ You can do this last!
 * Use the configure Tomcat application (tomcat8w) to set the logging level to debug.
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_2.PNG?raw=true "Set the logging level to debug")
+  	
+* Check the memory available to your Java version:
+  ```
+	C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>java -XX:+PrintFlagsFinal -version | findstr HeapSize
+		uintx ErgoHeapSizeLimit                         = 0                                   {product}
+		uintx HeapSizePerGCThread                       = 87241520                            {product}
+		uintx InitialHeapSize                          := 199229440                           {product}
+		uintx LargePageHeapSizeThreshold                = 134217728                           {product}
+		uintx MaxHeapSize                              := 3187671040                          {product}
+	java version "1.8.0_162"
+	Java(TM) SE Runtime Environment (build 1.8.0_162-b12)
+	Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
+  ```	
+
+  In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M, 
+  increase this to a much larger value less than the maximum, at least 2048M.
+
+# 5. Running the RIF
+
 
 * Edit %CATALINA_HOME%/conf/logging.properties and change the default log level enable debugging 
   (*ALL* not *DEBUG*!):
@@ -2802,6 +2830,84 @@ The method for configuring a specific port is detailed in: https://docs.microsof
 	sqlcmd -U peter -P XXXXXXXXXX -d sahsuland_dev -S 192.168.1.65\SAHSU,1433
 	1> quit
 	```
+
+### 4.4.7 Tomcat service will not start
+
+When the Tomcat application (tomcat8w) is used to set the default Java installed on the machine, some desktop systems may not run tomcat as a service if a 32bit Java was installed first.
+the Windows event log has the following cryptic message
+```
+The Apache Tomcat 8.5 Tomcat8 service terminated with the following service-specific error: 
+Incorrect function.
+```
+  
+The comms deamon log: commons-daemon.<date e.g.,  2018-04-16>.log has:
+```
+[2018-04-16 12:58:37] [info]  ( prunsrv.c:1733) [18188] Commons Daemon procrun (1.1.0.0 64-bit) started
+[2018-04-16 12:58:37] [info]  ( prunsrv.c:1643) [18188] Running 'Tomcat8' Service...
+[2018-04-16 12:58:37] [debug] ( prunsrv.c:1417) [19736] Inside ServiceMain...
+[2018-04-16 12:58:37] [debug] ( prunsrv.c:885 ) [19736] reportServiceStatusE: dwCurrentState = 2, dwWin32ExitCode = 0, dwWaitHint = 3000, dwServiceSpecificExitCode = 0
+[2018-04-16 12:58:37] [info]  ( prunsrv.c:1175) [19736] Starting service...
+[2018-04-16 12:58:37] [error] ( prunsrv.c:1210) [19736] Failed creating Java 
+[2018-04-16 12:58:37] [error] ( prunsrv.c:1580) [19736] ServiceStart returned 1
+[2018-04-16 12:58:37] [debug] ( prunsrv.c:885 ) [19736] reportServiceStatusE: dwCurrentState = 1, dwWin32ExitCode = 1066, dwWaitHint = 0, dwServiceSpecificExitCode = 1
+[2018-04-16 12:58:37] [info]  ( prunsrv.c:1645) [18188] Run service finished.
+[2018-04-16 12:58:37] [info]  ( prunsrv.c:1814) [18188] Commons Daemon procrun finished
+```
+
+Since there is no sign of Java in the program listing, but the system came with 32bit JRE pre-installed.
+
+### 4.4.8 OutOfMemoryError: Java heap space
+
+The front end reports: ```ERROR: Study tables export error for: 1002 LUNG CANCER```
+
+The middleware log contains:
+```
+Adding RIFGRAPHICS_JPEG for report file: c:\rifDemo\scratchSpace\d1-100\s7\maps\smoothed_smr_7_inv7_males_1000dpi.jpg; pixel width: 7480; pixels/mm: 39.37008
+13:26:48.942 [http-nio-8080-exec-5] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.RifZipFile]:
+createStudyExtract() OutOfMemoryError; heap usage: 117M, 228M
+getMessage:          OutOfMemoryError: Java heap space
+getRootCauseMessage: OutOfMemoryError: Java heap space
+getThrowableCount:   1
+getRootCauseStackTrace >>>
+java.lang.OutOfMemoryError: Java heap space
+	at java.awt.image.DataBufferInt.<init>(DataBufferInt.java:75)
+	at java.awt.image.SinglePixelPackedSampleModel.createDataBuffer(SinglePixelPackedSampleModel.java:242)
+	at java.awt.image.Raster.createWritableRaster(Raster.java:941)
+	at org.apache.batik.gvt.renderer.StaticRenderer.updateWorkingBuffers(StaticRenderer.java:536)
+	at org.apache.batik.gvt.renderer.StaticRenderer.repaint(StaticRenderer.java:375)
+	at org.apache.batik.gvt.renderer.StaticRenderer.repaint(StaticRenderer.java:344)
+	at org.apache.batik.transcoder.image.ImageTranscoder.transcode(ImageTranscoder.java:111)
+	at org.apache.batik.transcoder.XMLAbstractTranscoder.transcode(XMLAbstractTranscoder.java:142)
+	at org.apache.batik.transcoder.SVGAbstractTranscoder.transcode(SVGAbstractTranscoder.java:156)
+	at rifServices.graphics.RIFGraphics.graphicsTranscode(RIFGraphics.java:250)
+	at rifServices.graphics.RIFGraphics.addGraphicsFile(RIFGraphics.java:413)
+	at rifServices.graphics.RIFGraphics.addGraphicsFile(RIFGraphics.java:279)
+	at rifServices.graphics.RIFMaps.createGraphicsMaps(RIFMaps.java:1217)
+	at rifServices.graphics.RIFMaps.writeMap(RIFMaps.java:532)
+	at rifServices.graphics.RIFMaps.writeResultsMaps(RIFMaps.java:346)
+	at rifServices.dataStorageLayer.common.RifGeospatialOutputs.writeGeospatialFiles(RifGeospatialOutputs.java:330)
+	at rifServices.dataStorageLayer.common.RifZipFile.createStudyExtract(RifZipFile.java:481)
+	at rifServices.dataStorageLayer.pg.PGSQLStudyExtractManager.createStudyExtract(PGSQLStudyExtractManager.java:485)
+	at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.createStudyExtract(PGSQLAbstractRIFStudySubmissionService.java:1475)
+	at rifServices.restfulWebServices.pg.PGSQLAbstractRIFWebServiceResource.createZipFile(PGSQLAbstractRIFWebServiceResource.java:965)
+	at rifServices.restfulWebServices.pg.PGSQLRIFStudySubmissionWebServiceResource.createZipFile(PGSQLRIFStudySubmissionWebServiceResource.java:1239)
+```
+	
+Check the memory available to your Java version:
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>java -XX:+PrintFlagsFinal -version | findstr HeapSize
+    uintx ErgoHeapSizeLimit                         = 0                                   {product}
+    uintx HeapSizePerGCThread                       = 87241520                            {product}
+    uintx InitialHeapSize                          := 199229440                           {product}
+    uintx LargePageHeapSizeThreshold                = 134217728                           {product}
+    uintx MaxHeapSize                              := 3187671040                          {product}
+java version "1.8.0_162"
+Java(TM) SE Runtime Environment (build 1.8.0_162-b12)
+Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
+```	
+
+In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M, 
+increase this to a much larger value less than the maximum, at least 2048M. Restart the tomcat service.
 
 # 5. Running the RIF
 

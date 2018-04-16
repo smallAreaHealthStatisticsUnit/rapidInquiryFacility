@@ -27,6 +27,9 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 
 /**
  *
@@ -520,6 +523,46 @@ public class RifZipFile extends SQLAbstractSQLManager {
 				rifLogger.info(this.getClass(), "Created ZIP file: " + 
 					submissionZipFile.getAbsolutePath());
 			}
+		}
+		catch(OutOfMemoryError outOfMemoryError) {
+			
+			MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+            MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
+            long maxMemory = heapUsage.getMax() / (1024*1024);
+            long usedMemory = heapUsage.getUsed() / (1024*1024);
+			
+			rifLogger.error(this.getClass(), "createStudyExtract() OutOfMemoryError; " + 
+				"heap usage: " + usedMemory + "M, " + maxMemory + "M", outOfMemoryError);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+						"sqlStudyStateManager.error.unableToCreateStudyExtract",
+						user.getUserID(),
+						submissionZipFile.getAbsolutePath());
+			try {
+				submissionZipOutputStream.flush();
+				submissionZipOutputStream.close();
+				submissionZipSavFile.delete();
+			}
+			catch(Exception err) {
+				rifLogger.warning(this.getClass(), 
+					"createStudyExtract() close ZIP stream ERROR: " + err.getMessage());
+			}
+			
+			try {
+				Exception exception=new Exception("OutOfMemoryError: " + 
+				"; Memory Use :" + usedMemory + "M/" + maxMemory + "M", outOfMemoryError);
+				// Dump error to file
+				writeErrorFile(exception, submissionZipErrorFile);
+			}
+			catch (Exception e) {
+				rifLogger.error(this.getClass(), "writeErrorFile() ERROR", e);
+			}
+			
+			RIFServiceException rifServiceExeption
+				= new RIFServiceException(
+					RIFServiceError.ZIPFILE_CREATE_FAILED, 
+					errorMessage);
+			throw rifServiceExeption;						
 		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(), "createStudyExtract() ERROR", exception);

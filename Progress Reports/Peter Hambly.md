@@ -2128,6 +2128,7 @@ Todo:
 	Note The full stack trace of the root cause is available in the server logs.
 	Apache Tomcat/8.5.29
     ```
+  * Added trap for OutOfMemoryError; added instructions to setup	
   * Test of fixing test 3 branch fails with:
   ```
   11:38:15.412 [http-nio-8080-exec-21] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLConnectionManager]:
