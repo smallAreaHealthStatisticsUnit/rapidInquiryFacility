@@ -1,152 +1,92 @@
 package rifServices.dataStorageLayer.common;
 
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Properties;
+
+import com.sun.rowset.CachedRowSetImpl;
+
+import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.common.SQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLFunctionCallerQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
+import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-import java.util.Map;
-
-import java.sql.*;
-import com.sun.rowset.CachedRowSetImpl;
 import rifServices.system.files.TomcatBase;
 import rifServices.system.files.TomcatFile;
 
-/**
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- *
- * Made in common class by Peter Hambly; extensively modified
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-public abstract class SQLAbstractSQLManager {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	public static final String ABSTRACT_SQLMANAGER_PROPERTIES = "AbstractSQLManager.properties";
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
+public abstract class AbstractSQLManager implements SQLManager {
+	
+	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
+	protected static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
+	private static final String ABSTRACT_SQLMANAGER_PROPERTIES = "AbstractSQLManager.properties";
+	private static final int MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD = 5;
+	protected final HashSet<String> userIDsToBlock;
+	private final HashMap<String, Integer> suspiciousEventCounterFromUser;
+	/** The read connection from user. */
+	protected final HashMap<String, ConnectionQueue> readOnlyConnectionsFromUser;
+	/** The write connection from user. */
+	protected final HashMap<String, ConnectionQueue> writeConnectionsFromUser;
+	protected final HashSet<String> registeredUserIDs;
+	
 	protected RIFDatabaseProperties rifDatabaseProperties;
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
 	private boolean enableLogging = true;
 	private static Properties prop = null;
 	private static String lineSeparator = System.getProperty("line.separator");
 	
-	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
-	
 	private static DatabaseType databaseType;
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
 
 	/**
 	 * Instantiates a new abstract sql manager.
 	 */
-	public SQLAbstractSQLManager(
+	public AbstractSQLManager(
 		final RIFDatabaseProperties rifDatabaseProperties) {
 
 		this.rifDatabaseProperties = rifDatabaseProperties;
-		this.databaseType=this.rifDatabaseProperties.getDatabaseType();
-		
+		databaseType = this.rifDatabaseProperties.getDatabaseType();
+		userIDsToBlock = new HashSet<>();
+		suspiciousEventCounterFromUser = new HashMap<>();
+		readOnlyConnectionsFromUser = new HashMap<>();
+		writeConnectionsFromUser = new HashMap<>();
+		registeredUserIDs = new HashSet<>();
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
+	@Override
 	public ValidationPolicy getValidationPolicy() {
 		return validationPolicy;
 	}
 		
+	@Override
 	public void setValidationPolicy(
-		final ValidationPolicy validationPolicy) {
+			final ValidationPolicy validationPolicy) {
 		
 		this.validationPolicy = validationPolicy;
 	}
 	
 	/**
-	 * Use appropariate table name case.
+	 * Use appropriate table name case.
 	 *
 	 * @param tableComponentName the table component name
 	 * @return the string
 	 */
-	protected String useAppropariateTableNameCase(
-		final String tableComponentName) {
+	protected String useAppropriateTableNameCase(
+			final String tableComponentName) {
 		
 		//TODO: KLG - find out more about when we will need to convert
 		//to one case or another
@@ -157,8 +97,9 @@ public abstract class SQLAbstractSQLManager {
 		return rifDatabaseProperties;
 	}
 	
-	protected void configureQueryFormatterForDB(
-		final AbstractSQLQueryFormatter queryFormatter) {
+	@Override
+	public void configureQueryFormatterForDB(
+			final AbstractSQLQueryFormatter queryFormatter) {
 		
 		queryFormatter.setDatabaseType(
 			rifDatabaseProperties.getDatabaseType());
@@ -167,10 +108,9 @@ public abstract class SQLAbstractSQLManager {
 		
 	}
 	
-	protected PreparedStatement createPreparedStatement(
-		final Connection connection,
-		final AbstractSQLQueryFormatter queryFormatter) 
-		throws SQLException {
+	@Override
+	public PreparedStatement createPreparedStatement(final Connection connection, final AbstractSQLQueryFormatter queryFormatter)
+			throws SQLException {
 				
 		return SQLQueryUtility.createPreparedStatement(
 			connection,
@@ -181,10 +121,10 @@ public abstract class SQLAbstractSQLManager {
 	 * Create cached row set from AbstractSQLQueryFormatter.
 	 * No checks 0,1 or 1+ rows returned
 	 * 
-	 * @param Connection connection, 
-	 * @param AbstractSQLQueryFormatter queryFormatter, 
-	 * @param String queryName, 
-	 * @param String[] params
+	 * @param connection an SQL connection
+	 * @param queryFormatter  the Formatter
+	 * @param queryName the name
+	 * @param params the query parameters
 	 *
 	 * @return CachedRowSetImpl cached row set
 	 */		
@@ -225,13 +165,14 @@ public abstract class SQLAbstractSQLManager {
 	 * Create cached row set from AbstractSQLQueryFormatter.
 	 * No checks 0,1 or 1+ rows returned
 	 * 
-	 * @param Connection connection, 
-	 * @param AbstractSQLQueryFormatter queryFormatter, 
-	 * @param String queryName
+	 * @param connection,
+	 * @param queryFormatter,
+	 * @param queryName
 	 *
 	 * @return CachedRowSetImpl cached row set
-	 */	
-	protected CachedRowSetImpl createCachedRowSet(
+	 */
+	@Override
+	public CachedRowSetImpl createCachedRowSet(
 			final Connection connection,
 			AbstractSQLQueryFormatter queryFormatter,
 			final String queryName)
@@ -264,14 +205,15 @@ public abstract class SQLAbstractSQLManager {
 	 * Create cached row set from AbstractSQLQueryFormatter.
 	 * No checks 0,1 or 1+ rows returned
 	 * 
-	 * @param Connection connection, 
-	 * @param AbstractSQLQueryFormatter queryFormatter, 
-	 * @param String queryName, 
-	 * @param int[] params
+	 * @param connection,
+	 * @param queryFormatter,
+	 * @param queryName,
+	 * @param params
 	 *
 	 * @return CachedRowSetImpl cached row set
-	 */	
-	protected CachedRowSetImpl createCachedRowSet(
+	 */
+	@Override
+	public CachedRowSetImpl createCachedRowSet(
 			final Connection connection,
 			AbstractSQLQueryFormatter queryFormatter,
 			final String queryName,
@@ -308,12 +250,13 @@ public abstract class SQLAbstractSQLManager {
 	 * Get row from cached row set
 	 * Row set must contain one row, and the value must not be null
 	 * 
-	 * @param CachedRowSetImpl cachedRowSet, 
-	 * @param String columnName
+	 * @param cachedRowSet,
+	 * @param columnName
 	 *
 	 * @return String column comment
-	 */		
-	protected String getColumnFromResultSet(
+	 */
+	@Override
+	public String getColumnFromResultSet(
 			final CachedRowSetImpl cachedRowSet,
 			final String columnName)
 			throws Exception {
@@ -326,14 +269,15 @@ public abstract class SQLAbstractSQLManager {
 	 * Checks 0,1 or 1+ rows; assumed multiple rows not permitted
 	 * Flag controls 0/1 null/not null checks
 	 * 
-	 * @param achedRowSetImpl cachedRowSet, 
-	 * @param String columnName, 
-	 * @param boolean allowNulls, 
-	 * @param boolean allowNoRows
+	 * @param cachedRowSet,
+	 * @param columnName,
+	 * @param allowNulls,
+	 * @param allowNoRows
 	 *
 	 * @return String column comment
-	 */		
-	protected String getColumnFromResultSet(
+	 */
+	@Override
+	public String getColumnFromResultSet(
 			final CachedRowSetImpl cachedRowSet,
 			final String columnName,
 			final boolean allowNulls,
@@ -373,19 +317,20 @@ public abstract class SQLAbstractSQLManager {
 		return columnValue;
 	}
 
-	/** 
+	/**
 	 * Get column comment from data dictionary
-	 * 
-	 * @param Connection connection, 
-	 * @param String schemaName, 
-	 * @param String tableName, 
-	 * @param String columnName
-	 */	
-	protected String getColumnComment(Connection connection, 
-		String schemaName, String tableName, String columnName)
-			throws Exception {
-		SQLGeneralQueryFormatter columnCommentQueryFormatter = new SQLGeneralQueryFormatter();		
-		ResultSet resultSet = null;
+	 *
+	 * @param connection,
+	 * @param schemaName,
+	 * @param tableName,
+	 * @param columnName
+	 */
+	@Override
+	public String getColumnComment(Connection connection, String schemaName, String tableName,
+			String columnName) throws Exception {
+		
+		SQLGeneralQueryFormatter columnCommentQueryFormatter = new SQLGeneralQueryFormatter();
+		ResultSet resultSet;
 		if (databaseType == DatabaseType.POSTGRESQL) {
 			columnCommentQueryFormatter.addQueryLine(0, // Postgres
 				"SELECT pg_catalog.col_description(c.oid, cols.ordinal_position::int) AS column_comment");
@@ -404,27 +349,27 @@ public abstract class SQLAbstractSQLManager {
 			columnCommentQueryFormatter.addQueryLine(0, "FROM fn_listextendedproperty (NULL, 'schema', ?, 'view', ?, 'column', ?)");
 		}
 		else {
-			throw new Exception("getColumnComment(): invalid databaseType: " + 
+			throw new Exception("getColumnComment(): invalid databaseType: " +
 				databaseType);
 		}
 		PreparedStatement statement = createPreparedStatement(connection, columnCommentQueryFormatter);
 		
-		String columnComment=columnName.substring(0, 1).toUpperCase() + 
+		String columnComment=columnName.substring(0, 1).toUpperCase() +
 			columnName.substring(1).replace("_", " "); // Default if not found [initcap, remove underscores]
-		try {			
+		try {
 		
-			statement.setString(1, schemaName);	
-			statement.setString(2, tableName);	
-			statement.setString(3, columnName);	
+			statement.setString(1, schemaName);
+			statement.setString(2, tableName);
+			statement.setString(3, columnName);
 			if (databaseType == DatabaseType.SQL_SERVER) {
-				statement.setString(4, schemaName);	
+				statement.setString(4, schemaName);
 				statement.setString(5, tableName);
-				statement.setString(6, columnName);		
-			}			
+				statement.setString(6, columnName);
+			}
 			resultSet = statement.executeQuery();
-			if (resultSet.next()) {		
+			if (resultSet.next()) {
 				columnComment=resultSet.getString(1);
-				if (resultSet.next()) {		
+				if (resultSet.next()) {
 					throw new Exception("getColumnComment() database: " + databaseType +
 						"; expected 1 row, got >1");
 				}
@@ -435,7 +380,7 @@ public abstract class SQLAbstractSQLManager {
 			}
 		}
 		catch (Exception exception) {
-			rifLogger.error(this.getClass(), "Error in SQL Statement (" + databaseType + ") >>> " + 
+			rifLogger.error(this.getClass(), "Error in SQL Statement (" + databaseType + ") >>> " +
 				lineSeparator + columnCommentQueryFormatter.generateQuery(),
 				exception);
 			throw exception;
@@ -447,9 +392,9 @@ public abstract class SQLAbstractSQLManager {
 		return columnComment;
 	}
 	
-	protected void enableDatabaseDebugMessages(
-		final Connection connection) 
-		throws RIFServiceException {
+	@Override
+	public void enableDatabaseDebugMessages(final Connection connection)
+			throws RIFServiceException {
 			
 		SQLFunctionCallerQueryFormatter setupDatabaseLogQueryFormatter 
 			= new SQLFunctionCallerQueryFormatter();
@@ -495,53 +440,35 @@ public abstract class SQLAbstractSQLManager {
 		}		
 	}
 	
-	/**
-	 * Use appropriate field name case.
-	 *
-	 * @param fieldName the field name
-	 * @return the string
-	 */
-	/*
-	protected String useAppropriateFieldNameCase(
-		final String fieldName) {
-
-		return fieldName.toLowerCase();
-	}
-	*/
+	@Override
 	public void setEnableLogging(final boolean enableLogging) {
 		this.enableLogging = enableLogging;
 	}	
 	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	protected void logSQLQuery(
-		final String queryName,
-		final AbstractSQLQueryFormatter queryFormatter,
-		final String... parameters) {
+	@Override
+	public void logSQLQuery(final String queryName, final AbstractSQLQueryFormatter queryFormatter,
+			final String... parameters) {
 		
-		if (enableLogging == false || checkIfQueryLoggingEnabled(queryName) == false) {
+		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
 			return;
 		}
 
 		StringBuilder queryLog = new StringBuilder();
-		queryLog.append("QUERY NAME: " + queryName + lineSeparator);
-		queryLog.append("PARAMETERS:" + lineSeparator);
+		queryLog.append("QUERY NAME: ").append(queryName).append(lineSeparator);
+		queryLog.append("PARAMETERS:").append(lineSeparator);
 		for (int i = 0; i < parameters.length; i++) {
 			queryLog.append("\t");
 			queryLog.append(i + 1);
 			queryLog.append(":\"");
 			queryLog.append(parameters[i]);
-			queryLog.append("\"" + lineSeparator);			
+			queryLog.append("\"").append(lineSeparator);
 		}
-		queryLog.append("PGSQL QUERY TEXT: " + lineSeparator);
-		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
-		queryLog.append("<<< End SQLAbstractSQLManager logSQLQuery" + lineSeparator);
+		queryLog.append("SQL QUERY TEXT: ").append(lineSeparator);
+		queryLog.append(queryFormatter.generateQuery()).append(lineSeparator);
+		queryLog.append("<<< End AbstractSQLManager logSQLQuery").append(lineSeparator);
 	
-		rifLogger.info(this.getClass(), "SQLAbstractSQLManager logSQLQuery >>>" + 
-			lineSeparator + queryLog.toString());	
-
+		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
+			lineSeparator + queryLog.toString());
 	}
 	
 	protected void logSQLQuery(
@@ -549,25 +476,25 @@ public abstract class SQLAbstractSQLManager {
 		final AbstractSQLQueryFormatter queryFormatter,
 		final int[] parameters) {
 		
-		if (enableLogging == false || checkIfQueryLoggingEnabled(queryName) == false) {
+		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
 			return;
 		}
 
 		StringBuilder queryLog = new StringBuilder();
-		queryLog.append("QUERY NAME: " + queryName + lineSeparator);
-		queryLog.append("PARAMETERS:" + lineSeparator);
+		queryLog.append("QUERY NAME: ").append(queryName).append(lineSeparator);
+		queryLog.append("PARAMETERS:").append(lineSeparator);
 		for (int i = 0; i < parameters.length; i++) {
 			queryLog.append("\t");
 			queryLog.append(i + 1);
 			queryLog.append(":\"");
 			queryLog.append(parameters[i]);
-			queryLog.append("\"" + lineSeparator);			
+			queryLog.append("\"").append(lineSeparator);
 		}
-		queryLog.append("PGSQL QUERY TEXT: " + lineSeparator);
-		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
-		queryLog.append("<<< End SQLAbstractSQLManager logSQLQuery" + lineSeparator);
+		queryLog.append("SQL QUERY TEXT: ").append(lineSeparator);
+		queryLog.append(queryFormatter.generateQuery()).append(lineSeparator);
+		queryLog.append("<<< End AbstractSQLManager logSQLQuery").append(lineSeparator);
 	
-		rifLogger.info(this.getClass(), "SQLAbstractSQLManager logSQLQuery >>>" + 
+		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
 			lineSeparator + queryLog.toString());	
 
 	}
@@ -576,31 +503,31 @@ public abstract class SQLAbstractSQLManager {
 		final String queryName,
 		final AbstractSQLQueryFormatter queryFormatter) {
 		
-		if (enableLogging == false || checkIfQueryLoggingEnabled(queryName) == false) {
+		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
 			return;
 		}
-
-		StringBuilder queryLog = new StringBuilder();
-		queryLog.append("QUERY NAME: " + queryName + lineSeparator);
-		queryLog.append("NO PARAMETERS." + lineSeparator);
-		queryLog.append("PGSQL QUERY TEXT: " + lineSeparator);
-		queryLog.append(queryFormatter.generateQuery() + lineSeparator);
-		queryLog.append("<<< End SQLAbstractSQLManager logSQLQuery" + lineSeparator);
-	
-		rifLogger.info(this.getClass(), "SQLAbstractSQLManager logSQLQuery >>>" + 
-			lineSeparator + queryLog.toString());	
-
+		
+		String queryLog = ("QUERY NAME: " + queryName + lineSeparator)
+		                  + "NO PARAMETERS." + lineSeparator
+		                  + "SQL QUERY TEXT: " + lineSeparator
+		                  + queryFormatter.generateQuery() + lineSeparator
+		                  + "<<< End AbstractSQLManager logSQLQuery" + lineSeparator;
+		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
+		                                lineSeparator + queryLog);
 	}
 		
-	protected void logSQLException(final SQLException sqlException) {
-		rifLogger.error(this.getClass(), "SQLAbstractSQLManager.logSQLException error", sqlException);
+	@Override
+	public void logSQLException(final SQLException sqlException) {
+		rifLogger.error(getClass(), "AbstractSQLManager.logSQLException error",
+				sqlException);
 	}
 
 	protected void logException(final Exception exception) {
-		rifLogger.error(this.getClass(), "SQLAbstractSQLManager.logException error", exception);
+		rifLogger.error(this.getClass(), "AbstractSQLManager.logException error",
+				 exception);
 	}
 
-	protected boolean checkIfQueryLoggingEnabled(
+	protected boolean queryLoggingIsDisabled(
 			final String queryName) {
 
 		if (prop == null) {
@@ -608,32 +535,32 @@ public abstract class SQLAbstractSQLManager {
 			try {
 				prop = new TomcatFile(
 						new TomcatBase(),
-						SQLAbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES).properties();
+						AbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES).properties();
 			} catch (IOException e) {
 				rifLogger.warning(this.getClass(),
-						"SQLAbstractSQLManager.checkIfQueryLoggingEnabled error for" +
-								SQLAbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES, e);
-				return true;
+						"AbstractSQLManager.checkIfQueryLoggingEnabled error for" +
+						AbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES, e);
+				return false;
 			}
 		}
 		String value = prop.getProperty(queryName);
 		if (value != null) {
 			if (value.toLowerCase().equals("true")) {
 				rifLogger.debug(this.getClass(),
-						"SQLAbstractSQLManager checkIfQueryLoggingEnabled=TRUE property: " +
-								queryName + "=" + value);
-				return true;
-			} else {
-				rifLogger.debug(this.getClass(),
-						"SQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
+						"AbstractSQLManager checkIfQueryLoggingEnabled=TRUE property: " +
 								queryName + "=" + value);
 				return false;
+			} else {
+				rifLogger.debug(this.getClass(),
+						"AbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
+								queryName + "=" + value);
+				return true;
 			}
 		} else {
 			rifLogger.warning(this.getClass(),
-					"SQLAbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
+					"AbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
 							queryName + " NOT FOUND");
-			return false;
+			return true;
 		}
 	}
 	
@@ -653,12 +580,246 @@ public abstract class SQLAbstractSQLManager {
 		
 	}
 	
+	@Override
+	public boolean isUserBlocked(
+			final User user) {
+		
+		if (user == null) {
+			return false;
+		}
+		
+		String userID = user.getUserID();
+		return userID != null && userIDsToBlock.contains(userID);
+		
+	}
 	
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
+	@Override
+	public void logSuspiciousUserEvent(
+			final User user) {
 
-	// ==========================================
-	// Section Override
-	// ==========================================
+		String userID = user.getUserID();
+
+		Integer suspiciousEventCounter = suspiciousEventCounterFromUser.get(userID);
+		if (suspiciousEventCounter == null) {
+
+			//no incidents recorded yet, this is the first
+			suspiciousEventCounterFromUser.put(userID, 1);
+		}
+		else {
+			suspiciousEventCounterFromUser.put(userID, ++suspiciousEventCounter);
+		}
+	}
+	
+	/**
+	 * Assumes that user is valid.
+	 *
+	 * @param user the user
+	 * @return the connection
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	@Override
+	public Connection assignPooledReadConnection(final User user) throws RIFServiceException {
+
+		Connection result;
+
+		String userID = user.getUserID();
+		if (userIDsToBlock.contains(userID)) {
+			return null;
+		}
+
+		ConnectionQueue availableReadConnectionQueue =
+						readOnlyConnectionsFromUser.get(user.getUserID());
+
+		try {
+			result = availableReadConnectionQueue.assignConnection();
+		}
+		catch(Exception exception) {
+			//Record original exception, throw sanitised, human-readable version
+			logException(exception);
+			String errorMessage = SERVICE_MESSAGES.getMessage(
+					"sqlConnectionManager.error.unableToAssignReadConnection");
+
+			rifLogger.error(
+					getClass(),
+					errorMessage,
+					exception);
+			
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+		}
+		return result;
+	}
+	
+	@Override
+	public void reclaimPooledWriteConnection(
+			final User user,
+			final Connection connection)
+					throws RIFServiceException {
+
+		try {
+
+			if (user == null) {
+				return;
+			}
+			if (connection == null) {
+				return;
+			}
+
+			//connection.setAutoCommit(true);
+			ConnectionQueue writeOnlyConnectionQueue
+			= writeConnectionsFromUser.get(user.getUserID());
+			writeOnlyConnectionQueue.reclaimConnection(connection);
+		}
+		catch(Exception exception) {
+			//Record original exception, throw sanitised, human-readable version
+			logException(exception);
+			String errorMessage = SERVICE_MESSAGES.getMessage(
+					"sqlConnectionManager.error.unableToReclaimWriteConnection");
+
+			rifLogger.error(getClass(), errorMessage, exception);
+			
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+		}
+	}
+	
+	@Override
+	public void logout(final User user) throws RIFServiceException {
+
+		if (user == null) {
+			return;
+		}
+
+		String userID = user.getUserID();
+		if (userID == null) {
+			return;
+		}
+
+		if (!registeredUserIDs.contains(userID)) {
+			//Here we anticipate the possibility that the user
+			//may not be registered.  In this case, there is no chance
+			//that there are connections that need to be closed for that ID
+			return;
+		}
+
+		closeConnectionsForUser(userID);
+		registeredUserIDs.remove(userID);
+		suspiciousEventCounterFromUser.remove(userID);
+	}
+	
+	/**
+	 * Deregister user.
+	 *
+	 * @param userID the user
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	protected void closeConnectionsForUser(
+			final String userID)
+					throws RIFServiceException {
+
+		ConnectionQueue readOnlyConnectionQueue
+		= readOnlyConnectionsFromUser.get(userID);
+		if (readOnlyConnectionQueue != null) {
+			readOnlyConnectionQueue.closeAllConnections();
+		}
+
+		ConnectionQueue writeConnectionQueue
+		= writeConnectionsFromUser.get(userID);
+		if (writeConnectionQueue != null) {
+			writeConnectionQueue.closeAllConnections();
+		}
+	}
+	
+	@Override
+	public boolean isLoggedIn(
+			final String userID) {
+		
+		return registeredUserIDs.contains(userID);
+	}
+	
+	@Override
+	public boolean userExceededMaximumSuspiciousEvents(final User user) {
+		
+		String userID = user.getUserID();
+		Integer suspiciousEventCounter
+						= suspiciousEventCounterFromUser.get(userID);
+		return suspiciousEventCounter != null
+		       && suspiciousEventCounter >= MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD;
+		
+	}
+	
+	/**
+	 * User exists.
+	 *
+	 * @param userID the user id
+	 * @return true, if successful
+	 */
+	@Override
+	public boolean userExists(final String userID) {
+
+		return isLoggedIn(userID);
+	}
+	
+	@Override
+	public void addUserIDToBlock(final User user) {
+
+		if (user == null) {
+			return;
+		}
+
+		String userID = user.getUserID();
+		if (userID == null) {
+			return;
+		}
+
+		if (userIDsToBlock.contains(userID)) {
+			return;
+		}
+
+		userIDsToBlock.add(userID);
+	}
+	
+	/**
+	 * Assumes that user is valid.
+	 *
+	 * @param user the user
+	 * @return the connection
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	@Override
+	public Connection assignPooledWriteConnection(
+			final User user)
+					throws RIFServiceException {
+
+		Connection result;
+		try {
+
+			String userID = user.getUserID();
+			if (userIDsToBlock.contains(userID)) {
+				return null;
+			}
+
+			ConnectionQueue writeConnectionQueue = writeConnectionsFromUser.get(user.getUserID());
+			result = writeConnectionQueue.assignConnection();
+		}
+		catch(Exception exception) {
+			//Record original exception, throw sanitised, human-readable version
+			logException(exception);
+			String errorMessage = SERVICE_MESSAGES.getMessage(
+					"sqlConnectionManager.error.unableToAssignWriteConnection");
+
+			rifLogger.error(
+					getClass(),
+					errorMessage,
+					exception);
+			
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+		}
+
+		return result;
+	}
 }

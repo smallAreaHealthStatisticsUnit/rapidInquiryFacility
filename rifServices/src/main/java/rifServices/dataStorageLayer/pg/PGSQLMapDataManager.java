@@ -10,6 +10,8 @@ import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.MapArea;
+import rifServices.dataStorageLayer.common.MapDataManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
@@ -83,7 +85,7 @@ import java.util.ArrayList;
  */
 
 final class PGSQLMapDataManager 
-	extends PGSQLAbstractSQLManager {
+	extends PGSQLAbstractSQLManager implements MapDataManager {
 	
 	//TODO: (DM) class is full of unused methods
 
@@ -109,9 +111,9 @@ final class PGSQLMapDataManager
 	 */
 	public PGSQLMapDataManager(
 		final RIFServiceStartupOptions rifServiceStartupOptions,
-		final PGSQLRIFContextManager sqlRIFContextManager) {
+		final RIFContextManager sqlRIFContextManager) {
 
-		super(rifServiceStartupOptions.getRIFDatabaseProperties());		
+		super(rifServiceStartupOptions);
 	}
 
 	// ==========================================
@@ -119,10 +121,11 @@ final class PGSQLMapDataManager
 	// ==========================================?//
 
 	
+	@Override
 	public ArrayList<MapArea> getAllRelevantMapAreas(
-		final Connection connection,
-		final Geography geography,
-		final AbstractGeographicalArea geographicalArea)
+			final Connection connection,
+			final Geography geography,
+			final AbstractGeographicalArea geographicalArea)
 		throws RIFServiceException {
 		
 		rifLogger.info(this.getClass(), "SQLMapDataManager getAllRelevantAreas!!!!!!!!!!!");
@@ -368,7 +371,7 @@ final class PGSQLMapDataManager
 			}		
 			
 			result
-				= useAppropariateTableNameCase(resultSet.getString(1));
+				= useAppropriateTableNameCase(resultSet.getString(1));
 		}
 		finally {
 			//Cleanup database resources			

@@ -2,199 +2,139 @@ package rifServices.dataStorageLayer.pg;
 
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.system.RIFServiceStartupOptions;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.CovariateManager;
+import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
+import rifServices.dataStorageLayer.common.HealthOutcomeManager;
+import rifServices.dataStorageLayer.common.InvestigationManager;
+import rifServices.dataStorageLayer.common.MapDataManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
+import rifServices.dataStorageLayer.common.ResultsQueryManager;
+import rifServices.dataStorageLayer.common.ServiceResources;
+import rifServices.dataStorageLayer.common.SmoothedResultManager;
+import rifServices.dataStorageLayer.common.StudyExtractManager;
+import rifServices.dataStorageLayer.common.StudyStateManager;
+import rifServices.dataStorageLayer.common.SubmissionManager;
+import rifServices.system.RIFServiceStartupOptions;
 
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- */
-
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-public final class PGSQLRIFServiceResources {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	/** The health outcome manager. */
-	private PGSQLHealthOutcomeManager healthOutcomeManager;
+public final class PGSQLRIFServiceResources implements ServiceResources {
 	
-	/** The covariate manager. */
-	private PGSQLCovariateManager sqlCovariateManager;
+	/**
+	 * The health outcome manager.
+	 */
+	private HealthOutcomeManager healthOutcomeManager;
 	
-	/** The sql connection manager. */
+	/**
+	 * The covariate manager.
+	 */
+	private CovariateManager sqlCovariateManager;
+	
+	/**
+	 * The sql connection manager.
+	 */
 	private PGSQLConnectionManager sqlConnectionManager;
 	
-	/** The sql rif context manager. */
-	private PGSQLRIFContextManager sqlRIFContextManager;
+	/**
+	 * The sql rif context manager.
+	 */
+	private RIFContextManager sqlRIFContextManager;
 	
-	private PGSQLSmoothedResultManager sqlSmoothedResultManager;
+	private SmoothedResultManager sqlSmoothedResultManager;
 	
-	/** The sql age gender year manager. */
-	private PGSQLAgeGenderYearManager sqlAgeGenderYearManager;
+	/**
+	 * The sql age gender year manager.
+	 */
+	private AgeGenderYearManager sqlAgeGenderYearManager;
 	
-	/** The sql map data manager. */
-	private PGSQLMapDataManager sqlMapDataManager;
+	/**
+	 * The sql map data manager.
+	 */
+	private MapDataManager sqlMapDataManager;
 	
-	/** The disease mapping study manager. */
+	/**
+	 * The disease mapping study manager.
+	 */
 	private PGSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager;
 	
-	private PGSQLRIFSubmissionManager sqlRIFSubmissionManager;
+	private SubmissionManager sqlRIFSubmissionManager;
 	
-	private PGSQLStudyExtractManager sqlStudyExtractManager;
+	private StudyExtractManager sqlStudyExtractManager;
 	
-	private PGSQLResultsQueryManager sqlResultsQueryManager;
+	private ResultsQueryManager sqlResultsQueryManager;
 	
-	private PGSQLInvestigationManager sqlInvestigationManager;
-
-	private PGSQLStudyStateManager sqlStudyStateManager;
-	
+	private StudyStateManager sqlStudyStateManager;
 	
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	private PGSQLRIFServiceResources(
-		final RIFServiceStartupOptions rifServiceStartupOptions) 
-		throws RIFServiceException {
+	public static ServiceResources newInstance(RIFServiceStartupOptions rifStartupOptions)
+			throws RIFServiceException {
 		
+		return new PGSQLRIFServiceResources(rifStartupOptions);
+	}
+	
+	public static ServiceResources newInstance(
+			boolean isWebDeployment,
+			boolean useStrictValidationPolicy)
+			throws RIFServiceException {
+		
+		RIFServiceStartupOptions rifServiceStartupOptions
+				= RIFServiceStartupOptions.newInstance(
+				isWebDeployment,
+				useStrictValidationPolicy);
+		
+		return new PGSQLRIFServiceResources(rifServiceStartupOptions);
+	}
+	
+	public PGSQLRIFServiceResources(final RIFServiceStartupOptions rifServiceStartupOptions)
+			throws RIFServiceException {
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		sqlConnectionManager = new PGSQLConnectionManager(rifServiceStartupOptions);
 		healthOutcomeManager = new PGSQLHealthOutcomeManager(rifServiceStartupOptions);
-
+		
 		RIFDatabaseProperties rifDatabaseProperties
-			= rifServiceStartupOptions.getRIFDatabaseProperties();
+				= rifServiceStartupOptions.getRIFDatabaseProperties();
 		
-		sqlRIFContextManager 
-			= new PGSQLRIFContextManager(rifDatabaseProperties);
-		
+		sqlRIFContextManager
+				= new PGSQLRIFContextManager(rifServiceStartupOptions);
 		
 		sqlSmoothedResultManager
-			= new PGSQLSmoothedResultManager(rifDatabaseProperties);
+				= new PGSQLSmoothedResultManager(rifServiceStartupOptions);
 		
-		sqlAgeGenderYearManager 
-			= new PGSQLAgeGenderYearManager(
-				rifDatabaseProperties,
+		sqlAgeGenderYearManager = new PGSQLAgeGenderYearManager(sqlRIFContextManager,
+				rifServiceStartupOptions);
+		sqlMapDataManager = new PGSQLMapDataManager(rifServiceStartupOptions, sqlRIFContextManager);
+		sqlCovariateManager = new PGSQLCovariateManager(rifServiceStartupOptions,
 				sqlRIFContextManager);
-		sqlMapDataManager 
-			= new PGSQLMapDataManager(
-				rifServiceStartupOptions, 
-				sqlRIFContextManager);
-		sqlCovariateManager 
-			= new PGSQLCovariateManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager);
-
-		sqlInvestigationManager 
-			= new PGSQLInvestigationManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager,
-				sqlAgeGenderYearManager,
-				sqlCovariateManager,
-				healthOutcomeManager);
 		
+		InvestigationManager sqlInvestigationManager = new PGSQLInvestigationManager(rifServiceStartupOptions, sqlRIFContextManager,
+				sqlAgeGenderYearManager, sqlCovariateManager);
 		
-		sqlDiseaseMappingStudyManager 
-			= new PGSQLDiseaseMappingStudyManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager,
-				sqlInvestigationManager,
-				sqlMapDataManager);
-				
+		sqlDiseaseMappingStudyManager = new PGSQLDiseaseMappingStudyManager(rifServiceStartupOptions,
+				sqlRIFContextManager, sqlInvestigationManager);
+		
 		sqlStudyStateManager
-			= new PGSQLStudyStateManager(rifDatabaseProperties);
+				= new PGSQLStudyStateManager(rifServiceStartupOptions);
 		
-		sqlRIFSubmissionManager 
-			= new PGSQLRIFSubmissionManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager,
-				sqlAgeGenderYearManager,
-				sqlCovariateManager,
-				sqlDiseaseMappingStudyManager,
-				sqlMapDataManager,
+		sqlRIFSubmissionManager = new PGSQLRIFSubmissionManager(rifServiceStartupOptions,
 				sqlStudyStateManager);
-
+		
 		sqlStudyExtractManager
-			= new PGSQLStudyExtractManager(
+				= new PGSQLStudyExtractManager(
 				rifServiceStartupOptions);
 		
 		sqlResultsQueryManager
-			= new PGSQLResultsQueryManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager,
-				sqlMapDataManager,
-				sqlDiseaseMappingStudyManager);
-
-		ValidationPolicy validationPolicy = null;
+				= new PGSQLResultsQueryManager(rifServiceStartupOptions);
+		
+		ValidationPolicy validationPolicy;
 		if (rifServiceStartupOptions.useStrictValidationPolicy()) {
 			validationPolicy = ValidationPolicy.STRICT;
+		} else {
+			validationPolicy = ValidationPolicy.RELAXED;
 		}
-		else {
-			validationPolicy = ValidationPolicy.RELAXED;			
-		}
-
+		
 		sqlCovariateManager.setValidationPolicy(validationPolicy);
 		sqlRIFContextManager.setValidationPolicy(validationPolicy);
 		sqlAgeGenderYearManager.setValidationPolicy(validationPolicy);
@@ -206,99 +146,86 @@ public final class PGSQLRIFServiceResources {
 		sqlResultsQueryManager.setValidationPolicy(validationPolicy);
 		sqlRIFContextManager.setValidationPolicy(validationPolicy);
 		sqlInvestigationManager.setValidationPolicy(validationPolicy);
-			
-		healthOutcomeManager.initialiseTaxomies();	
+		
+		healthOutcomeManager.initialiseTaxomies();
 	}
 	
-	public static PGSQLRIFServiceResources newInstance(
-		final RIFServiceStartupOptions rifStartupOptions)
-		throws RIFServiceException {
-		
-		PGSQLRIFServiceResources rifServiceResources
-			= new PGSQLRIFServiceResources(rifStartupOptions);
-		
-		return rifServiceResources;
-	}
-
-	public static PGSQLRIFServiceResources newInstance(
-		final boolean isWebDeployment,
-		final boolean useStrictValidationPolicy)
-		throws RIFServiceException {
-			
-		RIFServiceStartupOptions rifServiceStartupOptions
-			= RIFServiceStartupOptions.newInstance(
-				isWebDeployment,
-				useStrictValidationPolicy);
-		PGSQLRIFServiceResources rifServiceResources
-			= new PGSQLRIFServiceResources(rifServiceStartupOptions);
-		
-		return rifServiceResources;
-	}
-	
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	
+	@Override
 	public RIFServiceStartupOptions getRIFServiceStartupOptions() {
+		
 		return rifServiceStartupOptions;
 	}
 	
+	@Override
 	public PGSQLConnectionManager getSqlConnectionManager() {
+		
 		return sqlConnectionManager;
 	}
-
-	public PGSQLRIFContextManager getSQLRIFContextManager() {
+	
+	@Override
+	public RIFContextManager getSQLRIFContextManager() {
+		
 		return sqlRIFContextManager;
 	}
-
-	public PGSQLSmoothedResultManager getSQLSmoothedResultManager() {
+	
+	@Override
+	public SmoothedResultManager getSQLSmoothedResultManager() {
+		
 		return sqlSmoothedResultManager;
 	}
 	
-	public PGSQLAgeGenderYearManager getSqlAgeGenderYearManager() {
+	@Override
+	public AgeGenderYearManager getSqlAgeGenderYearManager() {
+		
 		return sqlAgeGenderYearManager;
 	}
 	
-	public PGSQLCovariateManager getSqlCovariateManager() {
+	@Override
+	public CovariateManager getSqlCovariateManager() {
+		
 		return sqlCovariateManager;
 	}
-
-	public PGSQLDiseaseMappingStudyManager getSqlDiseaseMappingStudyManager() {
+	
+	@Override
+	public DiseaseMappingStudyManager getSqlDiseaseMappingStudyManager() {
+		
 		return sqlDiseaseMappingStudyManager;
 	}
-
-	public PGSQLResultsQueryManager getSqlResultsQueryManager() {
+	
+	@Override
+	public ResultsQueryManager getSqlResultsQueryManager() {
+		
 		return sqlResultsQueryManager;
 	}
 	
-	public PGSQLHealthOutcomeManager getHealthOutcomeManager() {
+	@Override
+	public HealthOutcomeManager getHealthOutcomeManager() {
+		
 		return healthOutcomeManager;
 	}
-
-	public PGSQLStudyStateManager getStudyStateManager() {
+	
+	@Override
+	public StudyStateManager getStudyStateManager() {
+		
 		return sqlStudyStateManager;
 	}
 	
-	public PGSQLRIFSubmissionManager getRIFSubmissionManager() {
+	@Override
+	public SubmissionManager getRIFSubmissionManager() {
+		
 		return sqlRIFSubmissionManager;
 	}
 	
-	public PGSQLStudyExtractManager getSQLStudyExtractManager() {
-		return sqlStudyExtractManager;		
+	@Override
+	public StudyExtractManager getSQLStudyExtractManager() {
+		
+		return sqlStudyExtractManager;
 	}
-	public PGSQLMapDataManager getSQLMapDataManager() {
+	
+	@Override
+	public MapDataManager getSQLMapDataManager() {
+		
 		return this.sqlMapDataManager;
 	}
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }
+

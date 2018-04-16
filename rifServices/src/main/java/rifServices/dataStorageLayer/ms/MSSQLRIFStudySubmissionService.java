@@ -1,16 +1,5 @@
 package rifServices.dataStorageLayer.ms;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.util.RIFLogger;
-import rifServices.businessConceptLayer.*;
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceStartupOptions;
-import rifServices.system.files.TomcatBase;
-import rifServices.system.files.TomcatFile;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,8 +9,38 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringEscapeUtils;
+
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.AgeGroup;
+import rifServices.businessConceptLayer.AgeGroupSortingOption;
+import rifServices.businessConceptLayer.CalculationMethod;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.businessConceptLayer.HealthCodeTaxonomy;
+import rifServices.businessConceptLayer.HealthTheme;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.Project;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
+import rifServices.dataStorageLayer.common.HealthOutcomeManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
+import rifServices.dataStorageLayer.common.StudyExtract;
+import rifServices.dataStorageLayer.common.StudyExtractManager;
+import rifServices.dataStorageLayer.common.SubmissionManager;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
+import rifServices.system.files.TomcatBase;
+import rifServices.system.files.TomcatFile;
+
 /**
- * Main implementation of the RIF middle ware.  
+ * Main implementation of the RIF middleware.
  * <p>
  * The main roles of this class are to support:
  * <ul>
@@ -59,7 +78,7 @@ import java.util.stream.Collectors;
  *business objects it may possess.
  *</li>
  *<li>
- *Obtain a connection object from the {@link rifServices.dataStorageLayer.SLQConnectionManager}.  
+ *Obtain a connection object from the {@link rifServices.dataStorageLayer.ms.MSSQLConnectionManager}.
  *</li>
  *<li>
  *Delegate to a manager class, using a method with the same name.  Pass the connection object as part of the call. 
@@ -76,90 +95,20 @@ import java.util.stream.Collectors;
  *methods are intended to identify an attack anyway.  We feel that we should not merely prevent malicious attacks but
  *log any attempts to do so.  If the method throws a {@link rifGenericLibrary.system.RIFServiceSecurityException},
  *then this class will log it and continue to pass it to client application.
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
  * <hr>
  * Kevin Garwood
  * @author kgarwood
- * @version
  */
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
+public class MSSQLRIFStudySubmissionService extends MSSQLAbstractRIFUserService
+				implements RIFStudySubmissionAPI {
 
-abstract class MSSQLAbstractRIFStudySubmissionService 
-	extends MSSQLAbstractRIFUserService
-	implements RIFStudySubmissionAPI {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-		private static String lineSeparator = System.getProperty("line.separator");	
+	private static String lineSeparator = System.getProperty("line.separator");
 		
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
 	/**
 	 * Instantiates a new production rif job submission service.
 	 */
-	public MSSQLAbstractRIFStudySubmissionService() {
+	MSSQLRIFStudySubmissionService() {
 
 		String serviceName
 			= RIFServiceMessages.getMessage("rifStudySubmissionService.name");
@@ -174,20 +123,6 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			= RIFServiceMessages.getMessage("rifStudySubmissionService.contactEmail");
 		setServiceContactEmail(serviceContactEmail);
 	}
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-	
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-	
 	
 	public void test(final User user)		
 		throws RIFServiceException {
@@ -363,14 +298,10 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			MSSQLAgeGenderYearManager sqlAgeGenderYearManager
+			AgeGenderYearManager sqlAgeGenderYearManager
 				= rifServiceResources.getSqlAgeGenderYearManager();
 			results
-				= sqlAgeGenderYearManager.getAgeGroups(
-					user,
-					connection,
-					geography,
-					ndPair,
+				= sqlAgeGenderYearManager.getAgeGroups(user, connection, geography, ndPair,
 					sortingOrder);
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -428,7 +359,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			
 			
 			//Delegate operation to a specialised manager class
-			MSSQLAgeGenderYearManager sqlAgeGenderYearManager
+			AgeGenderYearManager sqlAgeGenderYearManager
 				= rifServiceResources.getSqlAgeGenderYearManager();
 			results
 				= sqlAgeGenderYearManager.getGenders();
@@ -511,7 +442,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 				auditTrailMessage);
 			
 			//Delegate operation to a specialised manager class
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			result
 				= healthOutcomeManager.getHealthCode(
@@ -577,7 +508,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			
 
 			//Delegate operation to a specialised manager class
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			results
 				= healthOutcomeManager.getImmediateSubterms(
@@ -640,7 +571,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 				auditTrailMessage);
 						
 			//Delegate operation to a specialised manager class
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			result
 				= healthOutcomeManager.getParentHealthCode(
@@ -719,7 +650,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class		
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();			
 			results 
 				= healthOutcomeManager.getHealthCodes(
@@ -804,11 +735,11 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class			
-			MSSQLRIFContextManager sqlRIFContextManager
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();
 			results
 				= sqlRIFContextManager.getNumeratorDenominatorPairs(
-					connection, 
+					connection,
 					geography,
 					healthTheme,
 					user);
@@ -833,31 +764,29 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 
 	/**
 	 * Convenience method to obtain everything that is needed to get 
-	 * @param user
-	 * @param geography
-	 * @param healthTheme
+	 * @param u
+	 * @param geog
 	 * @param numeratorTableName
 	 * @return
 	 * @throws RIFServiceException
 	 */
 	public NumeratorDenominatorPair getNumeratorDenominatorPairFromNumeratorTable(
-		final User _user,
-		final Geography _geography,
+		final User u,
+		final Geography geog,
 		final String numeratorTableName) 
 		throws RIFServiceException {
 
 		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);		
-		MSSQLConnectionManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		User user = User.createCopy(u);
+		MSSQLConnectionManager sqlConnectionManager =
+						rifServiceResources.getSqlConnectionManager();
+		
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 
-		Geography geography = Geography.createCopy(_geography);
-		
-		
-		NumeratorDenominatorPair result = NumeratorDenominatorPair.newInstance(); 
+		Geography geography = Geography.createCopy(geog);
+		NumeratorDenominatorPair result = NumeratorDenominatorPair.newInstance();
 		Connection connection = null;
 		try {
 			
@@ -877,7 +806,6 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 				"getNumeratorDenominatorPairFromNumeratorTable",
 				"numeratorTableName",
 				numeratorTableName);		
-			
 			
 			//Check for security violations
 			validateUser(user);
@@ -905,12 +833,12 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 			
 			//Delegate operation to a specialised manager class
-			MSSQLRIFContextManager sqlRIFContextManager
+			RIFContextManager sqlRIFContextManager
 				= rifServiceResources.getSQLRIFContextManager();
 			result
 				= sqlRIFContextManager.getNDPairFromNumeratorTableName(
 					user,
-					connection, 
+					connection,
 					geography,
 					numeratorTableName);
 		}
@@ -974,7 +902,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 				= sqlConnectionManager.assignPooledReadConnection(user);	
 
 			//Delegate operation to a specialised manager class
-			MSSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager
+			DiseaseMappingStudyManager sqlDiseaseMappingStudyManager
 				= rifServiceResources.getSqlDiseaseMappingStudyManager();
 			
 			results
@@ -1131,7 +1059,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 		try (BufferedReader reader = tcFile.reader()) {
 
 				rifLogger.info(getClass(),
-					"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters: using: "
+					"MSSQLRIFStudySubmissionService.getFrontEndParameters: using: "
 							+ tcFile.absolutePath());
 
 				// Read and string escape JSON
@@ -1143,7 +1071,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 										.joining(lineSeparator))) +"\"}";
 		} catch (IOException ioException2) {
 				rifLogger.warning(this.getClass(),
-					"MSSQLAbstractRIFStudySubmissionService.getFrontEndParameters error for file: " +
+					"MSSQLRIFStudySubmissionService.getFrontEndParameters error for file: " +
 						tcFile.absolutePath(), ioException2);
 				return defaultJson;
 		}
@@ -1266,7 +1194,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			connection
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
-			MSSQLRIFSubmissionManager sqlRIFSubmissionManager
+			SubmissionManager sqlRIFSubmissionManager
 			= rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission
 			= sqlRIFSubmissionManager.getRIFStudySubmission(
@@ -1274,7 +1202,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 					user, 
 					studyID);
 
-			MSSQLStudyExtractManager studyExtractManager
+			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			result=studyExtractManager.getExtractStatus(
 					connection, 
@@ -1329,10 +1257,9 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 		
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
-		= rifServiceResources.getSqlConnectionManager();			
+		MSSQLConnectionManager sqlConnectionManager = rifServiceResources.getSqlConnectionManager();
 		
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 
@@ -1372,7 +1299,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			connection
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
-			MSSQLRIFSubmissionManager sqlRIFSubmissionManager
+			SubmissionManager sqlRIFSubmissionManager
 			= rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission
 			= sqlRIFSubmissionManager.getRIFStudySubmission(
@@ -1380,7 +1307,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 					user, 
 					studyID);
 
-			MSSQLStudyExtractManager studyExtractManager
+			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			result=studyExtractManager.getJsonFile(
 					connection, 
@@ -1413,109 +1340,19 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 		return result;
 	}						
 		
-	public void createStudyExtract(
-			final User _user,
-			final String studyID,
-			final String zoomLevel,
-			final Locale locale,
-			final String tomcatServer) 
-					throws RIFServiceException {
-
-		//Defensively copy parameters and guard against blocked users
-		User user = User.createCopy(_user);
-		MSSQLConnectionManager sqlConnectionManager
-			= rifServiceResources.getSqlConnectionManager();
+	public void createStudyExtract(final User user, final String studyID, final String zoomLevel,
+			final Locale locale, final String tomcatServer) throws RIFServiceException {
 		
-		if (sqlConnectionManager.isUserBlocked(user)) {
-			return;
-		}
-
-		RIFLogger rifLogger = RIFLogger.getLogger();
-		Connection connection = null;
-		try {
-
-			//Part II: Check for empty parameter values
-			FieldValidationUtility fieldValidationUtility
-			= new FieldValidationUtility();
-			fieldValidationUtility.checkNullMethodParameter(
-					"createStudyExtract",
-					"user",
-					user);
-			fieldValidationUtility.checkNullMethodParameter(
-					"createStudyExtract",
-					"studyID",
-					studyID);	
-			fieldValidationUtility.checkNullMethodParameter(
-					"createStudyExtract",
-					"zoomLevel",
-					zoomLevel);	
-
-
-			//Check for security violations
-			validateUser(user);
-			fieldValidationUtility.checkMaliciousMethodParameter(
-					"createStudyExtract", 
-					"studyID", 
-					studyID);
-
-			//Audit attempt to do operation
-			String auditTrailMessage
-			= RIFServiceMessages.getMessage("logging.createStudyExtract",
-					user.getUserID(),
-					user.getIPAddress(),
-					studyID,
-					zoomLevel);
-			rifLogger.info(
-					getClass(),
-					auditTrailMessage);
-
-			//Assign pooled connection
-			connection
-			= sqlConnectionManager.assignPooledWriteConnection(user);
-
-			MSSQLRIFSubmissionManager sqlRIFSubmissionManager
-			= rifServiceResources.getRIFSubmissionManager();
-			RIFStudySubmission rifStudySubmission
-			= sqlRIFSubmissionManager.getRIFStudySubmission(
-					connection, 
-					user, 
-					studyID);
-
-			MSSQLStudyExtractManager studyExtractManager
-			= rifServiceResources.getSQLStudyExtractManager();
-			studyExtractManager.createStudyExtract(
-					connection, 
-					user, 
-					rifStudySubmission,
-					zoomLevel,
-					studyID,
-					locale,
-					tomcatServer);
-
-		}
-		catch(RIFServiceException rifServiceException) {
-			//Audit failure of operation
-			logException(
-					user,
-					"createStudyExtract",
-					rifServiceException);	
-		}
-		finally {
-			rifLogger.info(getClass(), "Create ZIP file completed OK");
-			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledWriteConnection(
-					user, 
-					connection);			
-		}
-
-	} 
+		new StudyExtract(user, studyID, zoomLevel, locale, tomcatServer,
+				rifServiceResources).create();
+	}
 	
 	public String getStudyExtractFIleName(
 			final User user,
 			final String studyID)
 		throws RIFServiceException {
 		
-			MSSQLStudyExtractManager studyExtractManager
+			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			return studyExtractManager.getStudyExtractFIleName(
 					user, 
@@ -1582,7 +1419,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			connection
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
-			MSSQLRIFSubmissionManager sqlRIFSubmissionManager
+			SubmissionManager sqlRIFSubmissionManager
 			= rifServiceResources.getRIFSubmissionManager();
 			RIFStudySubmission rifStudySubmission
 			= sqlRIFSubmissionManager.getRIFStudySubmission(
@@ -1590,7 +1427,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 					user, 
 					studyID);
 
-			MSSQLStudyExtractManager studyExtractManager
+			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
 			fileInputStream = studyExtractManager.getStudyExtract(
 					connection, 
@@ -1622,7 +1459,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 	/**
 	 * Gets the health code taxonomy given the name space
 	 *
-	 * @param user the user
+	 * @param _user the user
 	 * @return the health code taxonomy corresponding to the name space
 	 * @throws RIFServiceException the RIF service exception
 	 */
@@ -1672,7 +1509,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 				auditTrailMessage);
 			
 			//Delegate operation to a specialised manager class
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();
 			result 
 				= healthOutcomeManager.getHealthCodeTaxonomyFromNameSpace(
@@ -1727,7 +1564,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 			
 			
 			//Delegate operation to a specialised manager class			
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();			
 			results 
 				= healthOutcomeManager.getHealthCodeTaxonomies();
@@ -1752,7 +1589,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 		User user = User.createCopy(_user);
 		MSSQLConnectionManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();	
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		
@@ -1789,7 +1626,7 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 				auditTrailMessage);
 			
 			//Delegate operation to a specialised manager class
-			MSSQLHealthOutcomeManager healthOutcomeManager
+			HealthOutcomeManager healthOutcomeManager
 				= rifServiceResources.getHealthOutcomeManager();			
 			results 
 				= healthOutcomeManager.getTopLevelCodes(
@@ -1806,8 +1643,5 @@ abstract class MSSQLAbstractRIFStudySubmissionService
 	
 		return results;
 	}
-		
-	// ==========================================
-	// Section Override
-	// ==========================================
+	
 }

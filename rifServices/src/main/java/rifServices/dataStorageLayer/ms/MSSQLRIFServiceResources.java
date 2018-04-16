@@ -2,122 +2,58 @@ package rifServices.dataStorageLayer.ms;
 
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.system.RIFServiceStartupOptions;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.CovariateManager;
+import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
+import rifServices.dataStorageLayer.common.HealthOutcomeManager;
+import rifServices.dataStorageLayer.common.MapDataManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
+import rifServices.dataStorageLayer.common.ResultsQueryManager;
+import rifServices.dataStorageLayer.common.ServiceResources;
+import rifServices.dataStorageLayer.common.SmoothedResultManager;
+import rifServices.dataStorageLayer.common.StudyExtractManager;
+import rifServices.dataStorageLayer.common.StudyStateManager;
+import rifServices.dataStorageLayer.common.SubmissionManager;
+import rifServices.system.RIFServiceStartupOptions;
 
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- */
+public class MSSQLRIFServiceResources implements ServiceResources {
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-public final class MSSQLRIFServiceResources {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
 	/** The health outcome manager. */
-	private MSSQLHealthOutcomeManager healthOutcomeManager;
+	private HealthOutcomeManager healthOutcomeManager;
 	
 	/** The covariate manager. */
-	private MSSQLCovariateManager sqlCovariateManager;
+	private CovariateManager sqlCovariateManager;
 	
 	/** The sql connection manager. */
 	private MSSQLConnectionManager sqlConnectionManager;
 	
 	/** The sql rif context manager. */
-	private MSSQLRIFContextManager sqlRIFContextManager;
+	private RIFContextManager sqlRIFContextManager;
 	
-	private MSSQLSmoothedResultManager sqlSmoothedResultManager;
+	private SmoothedResultManager sqlSmoothedResultManager;
 	
 	/** The sql age gender year manager. */
-	private MSSQLAgeGenderYearManager sqlAgeGenderYearManager;
+	private AgeGenderYearManager sqlAgeGenderYearManager;
 	
 	/** The sql map data manager. */
-	private MSSQLMapDataManager sqlMapDataManager;
+	private MapDataManager sqlMapDataManager;
 	
 	/** The disease mapping study manager. */
-	private MSSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager;
+	private DiseaseMappingStudyManager sqlDiseaseMappingStudyManager;
 	
-	private MSSQLRIFSubmissionManager sqlRIFSubmissionManager;
+	private SubmissionManager sqlRIFSubmissionManager;
 	
-	private MSSQLStudyExtractManager sqlStudyExtractManager;
+	private StudyExtractManager sqlStudyExtractManager;
 	
-	private MSSQLResultsQueryManager sqlResultsQueryManager;
+	private ResultsQueryManager sqlResultsQueryManager;
 	
-	private MSSQLInvestigationManager sqlInvestigationManager;
-
-	private MSSQLStudyStateManager sqlStudyStateManager;
-	
+	private StudyStateManager sqlStudyStateManager;
 	
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	private MSSQLRIFServiceResources(
-		final RIFServiceStartupOptions rifServiceStartupOptions) 
-		throws RIFServiceException {
-		
+	private MSSQLRIFServiceResources(final RIFServiceStartupOptions rifServiceStartupOptions)
+			throws RIFServiceException {
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
@@ -128,64 +64,45 @@ public final class MSSQLRIFServiceResources {
 			= rifServiceStartupOptions.getRIFDatabaseProperties();
 		
 		sqlRIFContextManager 
-			= new MSSQLRIFContextManager(rifDatabaseProperties);
-		
+			= new MSSQLRIFContextManager(rifServiceStartupOptions);
 		
 		sqlSmoothedResultManager
-			= new MSSQLSmoothedResultManager(rifDatabaseProperties);
+			= new MSSQLSmoothedResultManager(rifServiceStartupOptions);
 		
-		sqlAgeGenderYearManager 
-			= new MSSQLAgeGenderYearManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager);
+		sqlAgeGenderYearManager = new MSSQLAgeGenderYearManager(sqlRIFContextManager,
+				rifServiceStartupOptions);
 		sqlMapDataManager 
 			= new MSSQLMapDataManager(
 				rifServiceStartupOptions, 
 				sqlRIFContextManager);
-		sqlCovariateManager 
-			= new MSSQLCovariateManager(
-				rifDatabaseProperties,
+		sqlCovariateManager = new MSSQLCovariateManager(rifServiceStartupOptions,
 				sqlRIFContextManager);
-
-		sqlInvestigationManager 
-			= new MSSQLInvestigationManager(
-				rifDatabaseProperties,
+		
+		MSSQLInvestigationManager sqlInvestigationManager = new MSSQLInvestigationManager(
+				rifServiceStartupOptions,
 				sqlRIFContextManager,
 				sqlAgeGenderYearManager,
-				sqlCovariateManager,
-				healthOutcomeManager);
-		
+				sqlCovariateManager);
 		
 		sqlDiseaseMappingStudyManager 
 			= new MSSQLDiseaseMappingStudyManager(
-				rifDatabaseProperties,
+				rifServiceStartupOptions,
 				sqlRIFContextManager,
-				sqlInvestigationManager,
-				sqlMapDataManager);
+				sqlInvestigationManager);
 				
 		sqlStudyStateManager
-			= new MSSQLStudyStateManager(rifDatabaseProperties);
+			= new MSSQLStudyStateManager(rifServiceStartupOptions);
 		
 		sqlRIFSubmissionManager 
 			= new MSSQLRIFSubmissionManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager,
-				sqlAgeGenderYearManager,
-				sqlCovariateManager,
-				sqlDiseaseMappingStudyManager,
-				sqlMapDataManager,
+				rifServiceStartupOptions,
 				sqlStudyStateManager);
 
 		sqlStudyExtractManager
 			= new MSSQLStudyExtractManager(
 				rifServiceStartupOptions);
 		
-		sqlResultsQueryManager
-			= new MSSQLResultsQueryManager(
-				rifDatabaseProperties,
-				sqlRIFContextManager,
-				sqlMapDataManager,
-				sqlDiseaseMappingStudyManager);
+		sqlResultsQueryManager = new MSSQLResultsQueryManager(rifServiceStartupOptions);
 
 		ValidationPolicy validationPolicy = null;
 		if (rifServiceStartupOptions.useStrictValidationPolicy()) {
@@ -214,10 +131,7 @@ public final class MSSQLRIFServiceResources {
 		final RIFServiceStartupOptions rifStartupOptions)
 		throws RIFServiceException {
 		
-		MSSQLRIFServiceResources rifServiceResources
-			= new MSSQLRIFServiceResources(rifStartupOptions);
-		
-		return rifServiceResources;
+		return new MSSQLRIFServiceResources(rifStartupOptions);
 	}
 
 	public static MSSQLRIFServiceResources newInstance(
@@ -229,76 +143,72 @@ public final class MSSQLRIFServiceResources {
 			= RIFServiceStartupOptions.newInstance(
 				isWebDeployment,
 				useStrictValidationPolicy);
-		MSSQLRIFServiceResources rifServiceResources
-			= new MSSQLRIFServiceResources(rifServiceStartupOptions);
 		
-		return rifServiceResources;
+		return new MSSQLRIFServiceResources(rifServiceStartupOptions);
 	}
 	
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	
+	@Override
 	public RIFServiceStartupOptions getRIFServiceStartupOptions() {
 		return rifServiceStartupOptions;
 	}
 	
+	@Override
 	public MSSQLConnectionManager getSqlConnectionManager() {
 		return sqlConnectionManager;
 	}
-
-	public MSSQLRIFContextManager getSQLRIFContextManager() {
+	
+	@Override
+	public RIFContextManager getSQLRIFContextManager() {
 		return sqlRIFContextManager;
 	}
-
-	public MSSQLSmoothedResultManager getSQLSmoothedResultManager() {
+	
+	@Override
+	public SmoothedResultManager getSQLSmoothedResultManager() {
 		return sqlSmoothedResultManager;
 	}
 	
-	public MSSQLAgeGenderYearManager getSqlAgeGenderYearManager() {
+	@Override
+	public AgeGenderYearManager getSqlAgeGenderYearManager() {
 		return sqlAgeGenderYearManager;
 	}
 	
-	public MSSQLCovariateManager getSqlCovariateManager() {
+	@Override
+	public CovariateManager getSqlCovariateManager() {
 		return sqlCovariateManager;
 	}
-
-	public MSSQLDiseaseMappingStudyManager getSqlDiseaseMappingStudyManager() {
+	
+	@Override
+	public DiseaseMappingStudyManager getSqlDiseaseMappingStudyManager() {
 		return sqlDiseaseMappingStudyManager;
 	}
-
-	public MSSQLResultsQueryManager getSqlResultsQueryManager() {
+	
+	@Override
+	public ResultsQueryManager getSqlResultsQueryManager() {
 		return sqlResultsQueryManager;
 	}
 	
-	public MSSQLHealthOutcomeManager getHealthOutcomeManager() {
+	@Override
+	public HealthOutcomeManager getHealthOutcomeManager() {
 		return healthOutcomeManager;
 	}
-
-	public MSSQLStudyStateManager getStudyStateManager() {
+	
+	@Override
+	public StudyStateManager getStudyStateManager() {
 		return sqlStudyStateManager;
 	}
 	
-	public MSSQLRIFSubmissionManager getRIFSubmissionManager() {
+	@Override
+	public SubmissionManager getRIFSubmissionManager() {
 		return sqlRIFSubmissionManager;
 	}
 	
-	public MSSQLStudyExtractManager getSQLStudyExtractManager() {
+	@Override
+	public StudyExtractManager getSQLStudyExtractManager() {
 		return sqlStudyExtractManager;		
 	}
-	public MSSQLMapDataManager getSQLMapDataManager() {
+	
+	@Override
+	public MapDataManager getSQLMapDataManager() {
 		return this.sqlMapDataManager;
 	}
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

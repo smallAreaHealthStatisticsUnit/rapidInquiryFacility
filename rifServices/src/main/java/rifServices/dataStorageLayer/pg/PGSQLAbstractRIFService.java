@@ -8,6 +8,8 @@ import rifGenericLibrary.system.RIFServiceSecurityException.SecurityThreatType;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFServiceInformation;
+import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
@@ -90,7 +92,7 @@ public class PGSQLAbstractRIFService {
 	private String serviceDescription;
 	private String serviceContactEmail;
 	
-	protected PGSQLRIFServiceResources rifServiceResources;
+	protected ServiceResources rifServiceResources;
 	private boolean isInitialised;
 		
 	// ==========================================
@@ -115,7 +117,7 @@ public class PGSQLAbstractRIFService {
 		throws RIFServiceException {
 
 		this.rifServiceResources 
-			= (PGSQLRIFServiceResources) startupParameter;
+			= (ServiceResources) startupParameter;
 		isInitialised = true;
 	}
 	
@@ -165,7 +167,7 @@ public class PGSQLAbstractRIFService {
 		user.checkSecurityViolations();
 		user.checkErrors();
 
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.userExists(user.getUserID())) {
 			//user exists so valid
@@ -193,7 +195,7 @@ public class PGSQLAbstractRIFService {
 		throws RIFServiceException {
 		
 		boolean userDeregistered = false;
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
 		if (rifServiceException instanceof RIFServiceSecurityException) {
 			//TOUR_SECURITY
@@ -248,9 +250,9 @@ public class PGSQLAbstractRIFService {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 			

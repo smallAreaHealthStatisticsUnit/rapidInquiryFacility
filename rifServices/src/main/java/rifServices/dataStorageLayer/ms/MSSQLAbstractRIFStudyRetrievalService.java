@@ -5,6 +5,8 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.*;
+import rifServices.dataStorageLayer.common.SmoothedResultManager;
+import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.system.*;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.StudyState;
@@ -51,7 +53,7 @@ import java.util.ArrayList;
  *business objects it may possess.
  *</li>
  *<li>
- *Obtain a connection object from the {@link rifServices.dataStorageLayer.SLQConnectionManager}.  
+ *Obtain a connection object from the {@lin rifServices.dataStorageLayer.SLQConnectionManager}.
  *</li>
  *<li>
  *Delegate to a manager class, using a method with the same name.  Pass the connection object as part of the call. 
@@ -216,7 +218,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 				= sqlConnectionManager.assignPooledWriteConnection(user);
 
 			//Delegate operation to a specialised manager class
-			MSSQLStudyStateManager studyStateManager
+			StudyStateManager studyStateManager
 				= rifServiceResources.getStudyStateManager();
 			studyStateManager.clearStudyStatusUpdates(
 				connection, 
@@ -287,7 +289,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 				= sqlConnectionManager.assignPooledWriteConnection(user);
 
 			//Delegate operation to a specialised manager class
-			MSSQLStudyStateManager studyStateManager
+			StudyStateManager studyStateManager
 				= rifServiceResources.getStudyStateManager();
 			studyStateManager.updateStudyStatus(
 				connection, 
@@ -354,7 +356,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 				= sqlConnectionManager.assignPooledReadConnection(user);			
 
 			//Delegate operation to a specialised manager class
-			MSSQLStudyStateManager studyStateManager
+			StudyStateManager studyStateManager
 				= rifServiceResources.getStudyStateManager();
 			result 
 				= studyStateManager.getCurrentStatusAllStudies(
@@ -445,7 +447,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			MSSQLSmoothedResultManager sqlSmoothedResultQueryManager
+			SmoothedResultManager sqlSmoothedResultQueryManager
 				= rifServiceResources.getSQLSmoothedResultManager();
 			
 			results
@@ -533,7 +535,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			MSSQLSmoothedResultManager sqlSmoothedResultQueryManager
+			SmoothedResultManager sqlSmoothedResultQueryManager
 				= rifServiceResources.getSQLSmoothedResultManager();
 
 			results
@@ -613,7 +615,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class			
-			MSSQLSmoothedResultManager smoothedResultManager
+			SmoothedResultManager smoothedResultManager
 				= rifServiceResources.getSQLSmoothedResultManager();
 			results
 				= smoothedResultManager.getYears(
@@ -688,7 +690,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class			
-			MSSQLSmoothedResultManager smoothedResultManager
+			SmoothedResultManager smoothedResultManager
 				= rifServiceResources.getSQLSmoothedResultManager();
 			results
 				= smoothedResultManager.getSexes(
@@ -763,7 +765,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 				= sqlConnectionManager.assignPooledReadConnection(user);
 	
 			//Delegate operation to a specialised manager class			
-			MSSQLSmoothedResultManager smoothedResultManager
+			SmoothedResultManager smoothedResultManager
 				= rifServiceResources.getSQLSmoothedResultManager();
 			results
 				= smoothedResultManager.getGeographyAndLevelForStudy(connection, studyID);			
@@ -836,7 +838,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 					= sqlConnectionManager.assignPooledReadConnection(user);
 		
 				//Delegate operation to a specialised manager class			
-				MSSQLSmoothedResultManager smoothedResultManager
+				SmoothedResultManager smoothedResultManager
 					= rifServiceResources.getSQLSmoothedResultManager();
 				results
 					= smoothedResultManager.getDetailsForProcessedStudy(connection, studyID);			
@@ -909,7 +911,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 					= sqlConnectionManager.assignPooledReadConnection(user);
 		
 				//Delegate operation to a specialised manager class			
-				MSSQLSmoothedResultManager smoothedResultManager
+				SmoothedResultManager smoothedResultManager
 					= rifServiceResources.getSQLSmoothedResultManager();
 				results
 					= smoothedResultManager.getHealthCodesForProcessedStudy(connection, studyID);			
@@ -1009,7 +1011,7 @@ abstract class MSSQLAbstractRIFStudyRetrievalService
 			= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			MSSQLSmoothedResultManager sqlSmoothedResultQueryManager
+			SmoothedResultManager sqlSmoothedResultQueryManager
 			= rifServiceResources.getSQLSmoothedResultManager();
 
 			results

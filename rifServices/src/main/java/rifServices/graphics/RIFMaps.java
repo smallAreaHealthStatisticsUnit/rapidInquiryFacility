@@ -1,19 +1,12 @@
 package rifServices.graphics;
 
+import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.businessConceptLayer.AbstractStudy;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 
-import rifServices.graphics.RIFGraphics;
-import rifServices.graphics.RIFGraphicsOutputType;
-import rifServices.graphics.LegendLayer;
-import rifServices.graphics.RIFMapsParameters;
-
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
+import rifServices.dataStorageLayer.common.AbstractSQLManager;
 
 import rifServices.dataStorageLayer.common.RifFeatureCollection;
 import rifServices.dataStorageLayer.common.RifCoordinateReferenceSystem;
@@ -24,7 +17,6 @@ import rifServices.businessConceptLayer.Sex;
 import com.sun.rowset.CachedRowSetImpl;
 import java.io.*;
 import java.sql.*;
-import org.json.*;
 import java.lang.*;
 import java.util.Calendar;
 import java.text.DateFormat;
@@ -51,9 +43,7 @@ import java.awt.Graphics2D;
 import java.awt.Dimension;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.geometry.jts.Geometries;
-import org.geotools.geometry.jts.JTS;
 
 import org.geotools.grid.Grids;
 import org.geotools.grid.GridElement;
@@ -61,7 +51,6 @@ import org.geotools.grid.PolygonElement;
 
 import org.geotools.data.simple.SimpleFeatureSource;
 
-import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.CRS;
 
 import org.geotools.renderer.GTRenderer;
@@ -72,7 +61,6 @@ import org.geotools.styling.SLD;
 import org.geotools.styling.Font;
 import org.geotools.styling.StyleFactoryImpl;
 import org.geotools.styling.Style;
-import org.geotools.styling.Stroke;
 
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.Filter;
@@ -85,8 +73,6 @@ import org.geotools.map.MapViewport;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.grid.GridFeatureBuilder;
 
 import org.geotools.factory.CommonFactoryFinder;
@@ -94,7 +80,6 @@ import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
 
-import org.geotools.gce.geotiff.GeoTiffWriteParams;
 import org.geotools.gce.geotiff.GeoTiffWriter;
 import org.geotools.gce.geotiff.GeoTiffFormat;
 import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
@@ -106,79 +91,17 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Peter Hambly
- * @author phambly
- */
+public class RIFMaps {
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-	
-public class RIFMaps extends SQLAbstractSQLManager {
-	// ==========================================
-	// Section Constants
-	// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 	private Class rifMapsClass=this.getClass();
 	
 	private RIFServiceStartupOptions rifServiceStartupOptions;
+	private final SQLManager manager;
+	
 	private static DatabaseType databaseType;
 	private static RifCoordinateReferenceSystem rifCoordinateReferenceSystem = null;
 
@@ -202,23 +125,11 @@ public class RIFMaps extends SQLAbstractSQLManager {
 	private boolean enableCoordinateDisplay=false;
 	private double coordinateDisplayFontSize=80.0;
 	
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-	/**
-     * Constructor.
-     * 
-     * @param RIFServiceStartupOptions rifServiceStartupOptions (required)
-     */
-	public RIFMaps(
-			final RIFServiceStartupOptions rifServiceStartupOptions) {
-		super(rifServiceStartupOptions.getRIFDatabaseProperties());
+	public RIFMaps(final RIFServiceStartupOptions rifServiceStartupOptions,
+			final SQLManager manager) {
 		
-		this.rifCoordinateReferenceSystem = new RifCoordinateReferenceSystem();
+		this.manager = manager;
+		rifCoordinateReferenceSystem = new RifCoordinateReferenceSystem();
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 	
 		try {			
@@ -288,7 +199,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		DateFormat df = rifLocale.getDateFormat();
 		
 		String studyID = rifStudySubmission.getStudyID();
-		String mapTable=getColumnFromResultSet(rif40Studies, "map_table");
+		String mapTable=manager.getColumnFromResultSet(rif40Studies, "map_table");
 		
 		//Add geographies to zip file
 		StringBuilder tileTableName = new StringBuilder();	
@@ -296,20 +207,20 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		String geog = rifStudySubmission.getStudy().getGeography().getName();			
 		tileTableName.append(geog);
 		
-		String studyDescription=getColumnFromResultSet(rif40Studies, "description", 
+		String studyDescription=manager.getColumnFromResultSet(rif40Studies, "description",
 			true /* allowNulls */, false /* allowNoRows */);	
 		if (studyDescription == null) {
-			studyDescription=getColumnFromResultSet(rif40Studies, "study_name", 	
+			studyDescription=manager.getColumnFromResultSet(rif40Studies, "study_name",
 				true /* allowNulls */, false /* allowNoRows */);
 		} 
 		
 		// Available: inv_id, inv_name, inv_description, genders, numer_tab, year_start, year_stop, 
 		// min_age_group, max_age_group
-		int genders=Integer.parseInt(getColumnFromResultSet(rif40Investigations, "genders"));
+		int genders=Integer.parseInt(manager.getColumnFromResultSet(rif40Investigations, "genders"));
 			// Usefully will currently blob if >1 row
-		String invID=getColumnFromResultSet(rif40Investigations, "inv_id");
-		String invName=getColumnFromResultSet(rif40Investigations, "inv_name");
-		String invDescription=getColumnFromResultSet(rif40Investigations, "inv_description");
+		String invID=manager.getColumnFromResultSet(rif40Investigations, "inv_id");
+		String invName=manager.getColumnFromResultSet(rif40Investigations, "inv_name");
+		String invDescription=manager.getColumnFromResultSet(rif40Investigations, "inv_description");
 		
 		Set<Sex> allSexes = null;
 		if (genders == Sex.MALES.getCode()) {
@@ -1192,7 +1103,7 @@ public class RIFMaps extends SQLAbstractSQLManager {
 		final Sex sex) 
 			throws Exception {
 						
-		RIFGraphics rifGraphics = new RIFGraphics(rifServiceStartupOptions);
+		RIFGraphics rifGraphics = new RIFGraphics(rifServiceStartupOptions, manager);
 		
 		Set<RIFGraphicsOutputType> allOutputTypes = EnumSet.of(
 			RIFGraphicsOutputType.RIFGRAPHICS_JPEG,   

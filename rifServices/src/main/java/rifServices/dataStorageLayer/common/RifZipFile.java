@@ -1,7 +1,33 @@
 package rifServices.dataStorageLayer.common;
 
-import com.sun.rowset.CachedRowSetImpl;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import org.json.JSONObject;
+
+import com.sun.rowset.CachedRowSetImpl;
+
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
@@ -20,78 +46,8 @@ import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.files.TomcatBase;
 import rifServices.system.files.TomcatFile;
 
-import java.io.*;
-import java.sql.*;
-import java.text.DateFormat;
-import java.text.NumberFormat;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+public class RifZipFile {
 
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Peter Hambly
- * @author phambly
- */
-
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-public class RifZipFile extends SQLAbstractSQLManager {
-	// ==========================================
-	// Section Constants
-	// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 	private Connection connection;
@@ -112,23 +68,18 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	private static DatabaseType databaseType;
 	private static int denominatorPyramidWidthPixels;
 	
-	// ==========================================
-	// Section Properties
-	// ==========================================
+	private final SQLManager manager;
 
-	// ==========================================
-	// Section Construction
-	// ==========================================
 	/**
      * Constructor.
      * 
-     * @param RIFServiceStartupOptions rifServiceStartupOptions (required)
+     * @param rifServiceStartupOptions (required)
      */
 	public RifZipFile(
-			final RIFServiceStartupOptions rifServiceStartupOptions) {
-		super(rifServiceStartupOptions.getRIFDatabaseProperties());
+			final RIFServiceStartupOptions rifServiceStartupOptions, SQLManager manager) {
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
+		this.manager = manager;
 		
 		try {
 			EXTRACT_DIRECTORY = this.rifServiceStartupOptions.getExtractDirectory();
@@ -150,7 +101,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 	 * @param  connection	Database specfic Connection object assigned from pool
 	 * @param  user 		Database username of logged on user.
 	 * @param  rifStudySubmission 		RIFStudySubmission object.
-	 * @param  String 		zoomLevel (as text!).
+	 * @param  zoomLevel (as text!).
 	 * @param  studyID 		Study_id (as text!).
 	 *
 	 * @return 				FileInputStream 
@@ -195,7 +146,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					user,
 					baseStudyName);
 					
-			if (submissionZipFile.isFile()) { // No file (i.e. NULL) handled in MSSQLAbstractRIFWebServiceResource.java
+			if (submissionZipFile.isFile()) { // No file (i.e. NULL) handled in *AbstractRIFWebServiceResource.java
 				fileInputStream = new FileInputStream(submissionZipFile);	
 				rifLogger.info(this.getClass(), "Fetched ZIP file: " + 
 					submissionZipFile.getAbsolutePath());
@@ -206,18 +157,16 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			}
 		}
 		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "MSSQLStudyExtractManager ERROR", exception);
+			rifLogger.error(this.getClass(), "RifZipFile ERROR", exception);
 				
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlStudyStateManager.error.unableToGetStudyExtract",
 					user.getUserID(),
 					submissionZipFile.getAbsolutePath());
-			RIFServiceException rifServiceExeption
-				= new RIFServiceException(
-				RIFServiceError.ZIPFILE_CREATE_FAILED, 
-					errorMessage);
-			throw rifServiceExeption;
+			throw new RIFServiceException(
+			RIFServiceError.ZIPFILE_CREATE_FAILED,
+				errorMessage);
 		}	
 
 		return fileInputStream;
@@ -339,7 +288,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			}
 		}
 		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "MSSQLStudyExtractManager ERROR", exception);
+			rifLogger.error(this.getClass(), "RifZipFile ERROR", exception);
 				
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -347,11 +296,9 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					user.getUserID(),
 					studyID,
 					zipFileName);
-			RIFServiceException rifServiceExeption
-				= new RIFServiceException(
-					RIFServiceError.ZIPFILE_GET_STATUS_FAILED, 
-					errorMessage);
-			throw rifServiceExeption;
+			throw new RIFServiceException(
+				RIFServiceError.ZIPFILE_GET_STATUS_FAILED,
+				errorMessage);
 		}
 
 		return "{\"status\":\"" + result + "\"}";
@@ -474,7 +421,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						"RIFPopulationPyramid.css");
 						
 				RifGeospatialOutputs rifGeospatialOutputs = 
-					new RifGeospatialOutputs(rifServiceStartupOptions);
+					new RifGeospatialOutputs(rifServiceStartupOptions, manager);
 				String mapHTML=rifGeospatialOutputs.writeGeospatialFiles(
 						connection,
 						temporaryDirectory,
@@ -659,7 +606,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			final String mapHTML) 
 			throws Exception {
 				
-		GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
+		GetStudyJSON getStudyJSON = new GetStudyJSON(manager);
 
 		StringBuilder htmlFileText=new StringBuilder();
 		htmlFileText.append(readFile("RIFStudyHeader.html") + lineSeparator);
@@ -820,15 +767,15 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		htmlFileText.append("    <h" + headerLevel + " id=\"numerator\">Numerator</h" + headerLevel + ">" + lineSeparator);
 		htmlFileText.append("    <p>" + lineSeparator);				
 
-		String extractTable=getColumnFromResultSet(rif40Studies, "extract_table");
-		int yearStart=Integer.parseInt(getColumnFromResultSet(rif40Studies, "year_start"));
-		int yearStop=Integer.parseInt(getColumnFromResultSet(rif40Studies, "year_stop"));
+		String extractTable=manager.getColumnFromResultSet(rif40Studies, "extract_table");
+		int yearStart=Integer.parseInt(manager.getColumnFromResultSet(rif40Studies, "year_start"));
+		int yearStop=Integer.parseInt(manager.getColumnFromResultSet(rif40Studies, "year_stop"));
 		
 		CachedRowSetImpl rif40ExtraxctMaxMinYear=getStudyStartEndYear(connection, extractTable);
-		int minYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_year"));
-		int maxYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_year"));
-		int minSex=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_sex"));
-		int maxSex=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_sex"));
+		int minYear=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_year"));
+		int maxYear=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_year"));
+		int minSex=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_sex"));
+		int maxSex=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_sex"));
 				
 		SQLGeneralQueryFormatter investigationsQueryFormatter = new SQLGeneralQueryFormatter();		
 		ResultSet resultSet = null;
@@ -838,7 +785,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		investigationsQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 		investigationsQueryFormatter.addQueryLine(0, " ORDER BY inv_id");
 	
-		PreparedStatement statement = createPreparedStatement(connection, investigationsQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection, investigationsQueryFormatter);
 		try {	
 			statement.setInt(1, Integer.parseInt(studyID));	
 			resultSet = statement.executeQuery();
@@ -910,8 +857,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 					
 		StringBuilder htmlFileText=new StringBuilder();
 		
-		GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
-		RIFGraphics rifGraphics = new RIFGraphics(rifServiceStartupOptions);
+		GetStudyJSON getStudyJSON = new GetStudyJSON(manager);
+		RIFGraphics rifGraphics = new RIFGraphics(rifServiceStartupOptions, manager);
 		
 		JSONObject studyData=getStudyJSON.getStudyData(
 			connection, studyID);
@@ -926,22 +873,22 @@ public class RifZipFile extends SQLAbstractSQLManager {
 
 		String denominatorDirName=addDirToTemporaryDirectoryPath(user, studyID, 
 			"reports" + File.separator + "denominator");
-		String extractTable=getColumnFromResultSet(rif40Studies, "extract_table");
-		String denominatorTable=getColumnFromResultSet(rif40Studies, "denom_tab");
-		String studyDescription=getColumnFromResultSet(rif40Studies, "description", 
+		String extractTable=manager.getColumnFromResultSet(rif40Studies, "extract_table");
+		String denominatorTable=manager.getColumnFromResultSet(rif40Studies, "denom_tab");
+		String studyDescription=manager.getColumnFromResultSet(rif40Studies, "description",
 			true /* allowNulls */, false /* allowNoRows */);
 		if (studyDescription == null) {
-			studyDescription=getColumnFromResultSet(rif40Studies, "study_name", 	
+			studyDescription=manager.getColumnFromResultSet(rif40Studies, "study_name",
 				true /* allowNulls */, false /* allowNoRows */);		
 			if (studyDescription == null) {
 				studyDescription="No study name or description";
 			}
 		}
 		CachedRowSetImpl rif40ExtraxctMaxMinYear=getStudyStartEndYear(connection, extractTable);
-		int minYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_year"));
-		int maxYear=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_year"));
-		int minSex=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_sex"));
-		int maxSex=Integer.parseInt(getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_sex"));
+		int minYear=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_year"));
+		int maxYear=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_year"));
+		int minSex=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_sex"));
+		int maxSex=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_sex"));
 		String[] queryArgs = new String[5];
 		queryArgs[0]="rif_studies." + extractTable; // 1: Extract table name; e.g. s367_extract
 		queryArgs[1]=Integer.toString(yearStart);	// 2: Min year
@@ -1134,7 +1081,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		extractTableQueryFormatter.addQueryLine(0, "  FROM rif_studies." + extractTable.toLowerCase());
 		extractTableQueryFormatter.addQueryLine(0, " WHERE study_or_comparison = 'S'");
 
-		CachedRowSetImpl cachedRowSet=createCachedRowSet(connection, extractTableQueryFormatter,
+		CachedRowSetImpl cachedRowSet=manager.createCachedRowSet(connection, extractTableQueryFormatter,
 			"getStudyStartEndYear");	
 		
 		return cachedRowSet;
@@ -1153,7 +1100,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 
 		int[] params = new int[1];
 		params[0]=Integer.parseInt(studyID);
-		CachedRowSetImpl cachedRowSet=createCachedRowSet(connection, rif40StudiesQueryFormatter,
+		CachedRowSetImpl cachedRowSet=manager.createCachedRowSet(connection, rif40StudiesQueryFormatter,
 			"getRif40Studies", params);	
 		
 		return cachedRowSet;
@@ -1182,10 +1129,9 @@ public class RifZipFile extends SQLAbstractSQLManager {
 
 		int[] params = new int[1];
 		params[0]=Integer.parseInt(studyID);
-		CachedRowSetImpl cachedRowSet=createCachedRowSet(connection, rif40StudiesQueryFormatter,
-			"getRif40Investigations", params);	
 		
-		return cachedRowSet;
+		return manager.createCachedRowSet(connection, rif40StudiesQueryFormatter,
+			"getRif40Investigations", params);
 	}	
 	
 	/*
@@ -1214,7 +1160,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		studyAndComparisonReportQueryFormatter.addQueryLine(0, "  FROM " + schemaName + ".rif40_studies");
 		studyAndComparisonReportQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 
-		PreparedStatement statement = createPreparedStatement(connection, studyAndComparisonReportQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection, studyAndComparisonReportQueryFormatter);
 		try {
 			statement.setInt(1, Integer.parseInt(studyID));		
 			resultSet = statement.executeQuery();
@@ -1295,7 +1241,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			throw new Exception("getTableComment(): invalid databaseType: " + 
 				databaseType);
 		}
-		PreparedStatement statement = createPreparedStatement(connection, tableCommentQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				tableCommentQueryFormatter);
 		
 		String tableComment=tableName;
 		try {			
@@ -1356,7 +1303,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		invConditionsQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_inv_conditions");
 		invConditionsQueryFormatter.addQueryLine(0, " WHERE study_id = ?");
 		invConditionsQueryFormatter.addQueryLine(0, " ORDER BY inv_id,line_number");
-		PreparedStatement statement = createPreparedStatement(connection, invConditionsQueryFormatter);	
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				invConditionsQueryFormatter);
 		ResultSet resultSet = null;
 		htmlFileText.append("    <h" + headerLevel + " id=\"" + tableName + "\">Conditions</h" + headerLevel + ">" + lineSeparator);
 			
@@ -1432,7 +1380,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						else {
 							if (rowCount == 1) {
 								
-								String columnComment=getColumnComment(connection, 
+								String columnComment=manager.getColumnComment(connection,
 									schemaName, tableName, name /* Column name */);
 								if (name.equals("numer_tab")) {
 									name="numerator_table";
@@ -1577,7 +1525,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			"  FROM rif40.rif40_outcome_groups a, rif40.rif40_outcomes b"); 
 		rifOutcomeGroupsQueryFormatter.addQueryLine(0, 
 			" WHERE a.outcome_group_name = ? AND a.outcome_type = b.outcome_type");
-		PreparedStatement statement = createPreparedStatement(connection, 
+		PreparedStatement statement = manager.createPreparedStatement(connection,
 			rifOutcomeGroupsQueryFormatter);
 		String outcomeGroup=null;
 		try {			
@@ -1738,7 +1686,8 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		String tableComment=getTableComment(connection, schemaName, tableName, defaultTitle);
 		
 		ResultSet resultSet = null;
-		PreparedStatement statement = createPreparedStatement(connection, htmlReportQueryFormatter);
+		PreparedStatement statement = manager.createPreparedStatement(connection,
+				htmlReportQueryFormatter);
 		try {			
 			int rowCount = 0;
 				
@@ -1836,7 +1785,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 						
 						if (rowCount == 1) {
 							
-							String columnComment=getColumnComment(connection, 
+							String columnComment=manager.getColumnComment(connection,
 								schemaName, tableName, name /* Column name */);
 							if (rotate) {
 								rotatedRowsArray[i-1]="          <td title=\"" + columnComment + "\">" + 
@@ -1933,7 +1882,7 @@ public class RifZipFile extends SQLAbstractSQLManager {
 			throws Exception {
 				
 		JSONObject json=new JSONObject();
-		GetStudyJSON getStudyJSON = new GetStudyJSON(rifServiceStartupOptions);
+		GetStudyJSON getStudyJSON = new GetStudyJSON(manager);
 		JSONObject rif_job_submission=getStudyJSON.addRifStudiesJson(connection, 
 			studyID, locale, tomcatServer, null);
 		rif_job_submission.put("created_by", user.getUserID());
@@ -2178,8 +2127,9 @@ public class RifZipFile extends SQLAbstractSQLManager {
 		String studyStatus = null;
 		
 		try {
-			logSQLQuery("getRif40StudyState", studyStatusQueryFormatter, studyID);
-			PreparedStatement studyStatusStatement = createPreparedStatement(connection, studyStatusQueryFormatter);
+			manager.logSQLQuery("getRif40StudyState", studyStatusQueryFormatter, studyID);
+			PreparedStatement studyStatusStatement = manager.createPreparedStatement(connection,
+					studyStatusQueryFormatter);
 			studyStatusStatement.setInt(1, Integer.parseInt(studyID));	
 			studyStatusResultSet = studyStatusStatement.executeQuery();
 			studyStatusResultSet.next();

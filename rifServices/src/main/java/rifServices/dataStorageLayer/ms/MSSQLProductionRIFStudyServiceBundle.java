@@ -60,8 +60,7 @@ package rifServices.dataStorageLayer.ms;
  *
  */
 
-public final class MSSQLProductionRIFStudyServiceBundle 
-	extends MSSQLAbstractStudyServiceBundle {
+public final class MSSQLProductionRIFStudyServiceBundle extends MSSQLAbstractStudyServiceBundle {
 
 	// ==========================================
 	// Section Constants
@@ -116,9 +115,9 @@ public final class MSSQLProductionRIFStudyServiceBundle
 	 * 
 	 */
 	private static final MSSQLProductionRIFStudyServiceBundle rifStudyServiceBundle
-		= new MSSQLProductionRIFStudyServiceBundle();
+					= new MSSQLProductionRIFStudyServiceBundle();
 
-		// ==========================================
+	// ==========================================
 	// Section Properties
 	// ==========================================
 
@@ -126,10 +125,10 @@ public final class MSSQLProductionRIFStudyServiceBundle
 	// Section Construction
 	// ==========================================
 
-	public MSSQLProductionRIFStudyServiceBundle() {
-
-		MSSQLProductionRIFStudySubmissionService rifStudySubmissionService
-			= new MSSQLProductionRIFStudySubmissionService();
+	private MSSQLProductionRIFStudyServiceBundle() {
+		
+		MSSQLRIFStudySubmissionService rifStudySubmissionService
+			= new MSSQLRIFStudySubmissionService();
 		setRIFStudySubmissionService(rifStudySubmissionService);
 
 		MSSQLProductionRIFStudyRetrievalService rifStudyRetrievalService
@@ -142,6 +141,7 @@ public final class MSSQLProductionRIFStudyServiceBundle
 	// Section Accessors and Mutators
 	// ==========================================
 	public static MSSQLProductionRIFStudyServiceBundle getRIFServiceBundle() {
+		
 		return rifStudyServiceBundle;
 	}
 	

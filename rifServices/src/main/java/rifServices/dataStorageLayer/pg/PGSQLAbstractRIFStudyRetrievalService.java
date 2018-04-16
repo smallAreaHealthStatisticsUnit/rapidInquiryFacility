@@ -5,6 +5,9 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.*;
+import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.dataStorageLayer.common.SmoothedResultManager;
+import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.system.*;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.StudyState;
@@ -182,7 +185,7 @@ implements RIFStudyResultRetrievalAPI {
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
@@ -218,7 +221,7 @@ implements RIFStudyResultRetrievalAPI {
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
 			//Delegate operation to a specialised manager class
-			PGSQLStudyStateManager studyStateManager
+			StudyStateManager studyStateManager
 			= rifServiceResources.getStudyStateManager();
 			studyStateManager.clearStudyStatusUpdates(
 					connection, 
@@ -252,7 +255,7 @@ implements RIFStudyResultRetrievalAPI {
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return;
@@ -289,7 +292,7 @@ implements RIFStudyResultRetrievalAPI {
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
 			//Delegate operation to a specialised manager class
-			PGSQLStudyStateManager studyStateManager
+			StudyStateManager studyStateManager
 			= rifServiceResources.getStudyStateManager();
 			studyStateManager.updateStudyStatus(
 					connection, 
@@ -320,7 +323,7 @@ implements RIFStudyResultRetrievalAPI {
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -356,7 +359,7 @@ implements RIFStudyResultRetrievalAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);			
 
 			//Delegate operation to a specialised manager class
-			PGSQLStudyStateManager studyStateManager
+			StudyStateManager studyStateManager
 			= rifServiceResources.getStudyStateManager();
 			result 
 			= studyStateManager.getCurrentStatusAllStudies(
@@ -389,7 +392,7 @@ implements RIFStudyResultRetrievalAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -446,7 +449,7 @@ implements RIFStudyResultRetrievalAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			PGSQLSmoothedResultManager sqlSmoothedResultQueryManager
+			SmoothedResultManager sqlSmoothedResultQueryManager
 			= rifServiceResources.getSQLSmoothedResultManager();
 
 			results
@@ -483,7 +486,7 @@ implements RIFStudyResultRetrievalAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -535,7 +538,7 @@ implements RIFStudyResultRetrievalAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			PGSQLSmoothedResultManager sqlSmoothedResultQueryManager
+			SmoothedResultManager sqlSmoothedResultQueryManager
 			= rifServiceResources.getSQLSmoothedResultManager();
 
 			results
@@ -571,7 +574,7 @@ implements RIFStudyResultRetrievalAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -615,7 +618,7 @@ implements RIFStudyResultRetrievalAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class			
-			PGSQLSmoothedResultManager smoothedResultManager
+			SmoothedResultManager smoothedResultManager
 			= rifServiceResources.getSQLSmoothedResultManager();
 			results
 			= smoothedResultManager.getYears(
@@ -646,7 +649,7 @@ implements RIFStudyResultRetrievalAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -690,7 +693,7 @@ implements RIFStudyResultRetrievalAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class			
-			PGSQLSmoothedResultManager smoothedResultManager
+			SmoothedResultManager smoothedResultManager
 			= rifServiceResources.getSQLSmoothedResultManager();
 			results
 			= smoothedResultManager.getSexes(
@@ -721,7 +724,7 @@ implements RIFStudyResultRetrievalAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -765,7 +768,7 @@ implements RIFStudyResultRetrievalAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class			
-			PGSQLSmoothedResultManager smoothedResultManager
+			SmoothedResultManager smoothedResultManager
 			= rifServiceResources.getSQLSmoothedResultManager();
 			results
 			= smoothedResultManager.getGeographyAndLevelForStudy(connection, studyID);			
@@ -794,7 +797,7 @@ implements RIFStudyResultRetrievalAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -838,7 +841,7 @@ implements RIFStudyResultRetrievalAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class			
-			PGSQLSmoothedResultManager smoothedResultManager
+			SmoothedResultManager smoothedResultManager
 			= rifServiceResources.getSQLSmoothedResultManager();
 			results
 			= smoothedResultManager.getDetailsForProcessedStudy(connection, studyID);			
@@ -867,7 +870,7 @@ implements RIFStudyResultRetrievalAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -911,7 +914,7 @@ implements RIFStudyResultRetrievalAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class			
-			PGSQLSmoothedResultManager smoothedResultManager
+			SmoothedResultManager smoothedResultManager
 			= rifServiceResources.getSQLSmoothedResultManager();
 			results
 			= smoothedResultManager.getHealthCodesForProcessedStudy(connection, studyID);			
@@ -943,7 +946,7 @@ implements RIFStudyResultRetrievalAPI {
 
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
-		PGSQLConnectionManager sqlConnectionManager
+		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();
 		if (sqlConnectionManager.isUserBlocked(user) == true) {
 			return null;
@@ -1011,7 +1014,7 @@ implements RIFStudyResultRetrievalAPI {
 			= sqlConnectionManager.assignPooledReadConnection(user);
 
 			//Delegate operation to a specialised manager class
-			PGSQLSmoothedResultManager sqlSmoothedResultQueryManager
+			SmoothedResultManager sqlSmoothedResultQueryManager
 			= rifServiceResources.getSQLSmoothedResultManager();
 
 			results

@@ -20,6 +20,7 @@ import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Investigation;
+import rifServices.dataStorageLayer.common.HealthOutcomeManager;
 import rifServices.ontologyServices.HealthCodeProviderInterface;
 import rifServices.ontologyServices.ICD10ClaMLTaxonomyProvider;
 import rifServices.ontologyServices.RIFXMLTaxonomyProvider;
@@ -90,7 +91,7 @@ import rifServices.system.RIFServiceStartupOptions;
  *
  */
 
-final class MSSQLHealthOutcomeManager {
+final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 
 	// ==========================================
 	// Section Constants

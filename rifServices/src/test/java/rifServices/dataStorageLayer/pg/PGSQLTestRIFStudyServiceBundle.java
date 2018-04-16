@@ -1,17 +1,7 @@
-package rifServices.studyDataExtraction.pg;
+package rifServices.dataStorageLayer.pg;
 
-import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.test.services.pg.AbstractRIFServiceTestCase;
-
-
-import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyServiceBundle;
-import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudySubmissionService;
-import static org.junit.Assert.fail;
-
-import org.junit.Test;
-
-import java.util.Locale;
+import rifServices.dataStorageLayer.common.ServiceResources;
 
 /**
  *
@@ -73,8 +63,8 @@ import java.util.Locale;
  *
  */
 
-public final class TestStudyDataExtraction 
-	extends AbstractRIFServiceTestCase {
+public final class PGSQLTestRIFStudyServiceBundle 
+	extends PGSQLAbstractStudyServiceBundle {
 
 	// ==========================================
 	// Section Constants
@@ -83,67 +73,45 @@ public final class TestStudyDataExtraction
 	// ==========================================
 	// Section Properties
 	// ==========================================
+	private static final PGSQLTestRIFStudyServiceBundle rifStudyServiceBundle
+		= new PGSQLTestRIFStudyServiceBundle();
 
 	// ==========================================
 	// Section Construction
 	// ==========================================
 
-	public TestStudyDataExtraction() {
+	public PGSQLTestRIFStudyServiceBundle() {
+		PGSQLTestRIFStudySubmissionService rifStudySubmissionService
+			= new PGSQLTestRIFStudySubmissionService();
+		setRIFStudySubmissionService(rifStudySubmissionService);
+
+		PGSQLTestRIFStudyRetrievalService rifStudyRetrievalService
+			= new PGSQLTestRIFStudyRetrievalService();
+		setRIFStudyRetrievalService(rifStudyRetrievalService);		
 	}
 
+	public static PGSQLTestRIFStudyServiceBundle getRIFServiceBundle() {
+		return rifStudyServiceBundle;
+	}
+	
+	public ServiceResources getRIFServiceResources() {
+		return super.getRIFServiceResources();
+	}
+	
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
 
+	public void deregisterAllUsers() 
+		throws RIFServiceException {
+
+		super.deregisterAllUsers();
+	}
+	
 	// ==========================================
 	// Section Errors and Validation
 	// ==========================================
-	
-	@Test
-	public void testExtract1() {
-		try {
-			User validUser = cloneValidUser();
-			String validStudyID = "45";		
-			String validZoomLevel = "9";
-			
-			PGSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
-				= getRIFServiceBundle();
-			
-			PGSQLTestRIFStudySubmissionService testSubmissionService
-				= (PGSQLTestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
-		
-			testSubmissionService.createStudyExtract(
-				validUser, 
-				validStudyID,
-				validZoomLevel,
-				Locale.getDefault(),
-				"");
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
-	}
-		
-	@Test
-	public void deleteStudy() {		
-		try {
-			User validUser = cloneValidUser();
-			String validStudyID = "18";
-			
-			PGSQLTestRIFStudyServiceBundle testRIFStudyServiceBundle
-				= getRIFServiceBundle();
-			
-			PGSQLTestRIFStudySubmissionService testSubmissionService
-				= (PGSQLTestRIFStudySubmissionService) testRIFStudyServiceBundle.getRIFStudySubmissionService();
-			testSubmissionService.deleteStudy(validUser, validStudyID);
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
-	}		
-	
+
 	// ==========================================
 	// Section Interfaces
 	// ==========================================

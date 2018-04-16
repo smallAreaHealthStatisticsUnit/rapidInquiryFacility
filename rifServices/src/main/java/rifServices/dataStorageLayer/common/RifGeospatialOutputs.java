@@ -1,11 +1,9 @@
 package rifServices.dataStorageLayer.common;
 
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.businessConceptLayer.AbstractStudy;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifServices.dataStorageLayer.common.SQLAbstractSQLManager;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.graphics.RIFMaps;
@@ -21,17 +19,14 @@ import java.text.NumberFormat;
 import java.util.Map;
 import java.util.Calendar;
 import java.util.Locale;
-import java.net.URL;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Iterator;
 
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.type.AttributeDescriptor; 
-import org.opengis.feature.type.AttributeType;
-import org.opengis.feature.type.PropertyType;
-import org.opengis.feature.type.GeometryDescriptor; 
+import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.geometry.BoundingBox;
@@ -46,13 +41,11 @@ import org.geotools.geometry.jts.GeometryBuilder;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.FeatureIterator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.CRS;
 import org.geotools.data.shapefile.ShapefileDataStore; 
 import org.geotools.data.FeatureWriter; 
-import org.geotools.data.Transaction; 
-import org.geotools.map.MapViewport;
+import org.geotools.data.Transaction;
 
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
@@ -60,70 +53,8 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.io.WKTReader;
 
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Peter Hambly
- * @author phambly
- */
+public class RifGeospatialOutputs {
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-public class RifGeospatialOutputs extends SQLAbstractSQLManager {
-	// ==========================================
-	// Section Constants
-	// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 	private Connection connection;
@@ -151,23 +82,18 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 	private static RIFMaps rifMaps = null;
 	private static int roundDP=3;
 	
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
-	// ==========================================
-	// Section Construction
-	// ==========================================
+	private final SQLManager manager;
+	
 	/**
      * Constructor.
      * 
-     * @param RIFServiceStartupOptions rifServiceStartupOptions (required)
+     * @param rifServiceStartupOptions (required)
      */
 	public RifGeospatialOutputs(
-			final RIFServiceStartupOptions rifServiceStartupOptions) {
-		super(rifServiceStartupOptions.getRIFDatabaseProperties());
+			final RIFServiceStartupOptions rifServiceStartupOptions, final SQLManager manager) {
 		
-		this.rifCoordinateReferenceSystem = new RifCoordinateReferenceSystem();
+		this.manager = manager;
+		rifCoordinateReferenceSystem = new RifCoordinateReferenceSystem();
 		geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
 		geoJSONWriter = new GeometryJSON();
 		
@@ -215,11 +141,11 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 					throws Exception {
 						
 	if (rifMaps == null) {
-			rifMaps = new RIFMaps(rifServiceStartupOptions);
+			rifMaps = new RIFMaps(rifServiceStartupOptions, manager);
 		}						
 		
 		String studyID = rifStudySubmission.getStudyID();
-		String mapTable=getColumnFromResultSet(rif40Studies, "map_table");
+		String mapTable=manager.getColumnFromResultSet(rif40Studies, "map_table");
 		
 		//Add geographies to zip file
 		StringBuilder tileTableName = new StringBuilder();	
@@ -357,13 +283,13 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		StringBuffer mapHTML=new StringBuffer();
 		// Available: inv_id, inv_name, inv_description, genders, numer_tab, year_start, year_stop, 
 		// min_age_group, max_age_group
-		int genders=Integer.parseInt(getColumnFromResultSet(rif40Investigations, "genders"));
-		String invId=getColumnFromResultSet(rif40Investigations, "inv_id");
-		String invName=getColumnFromResultSet(rif40Investigations, "inv_name");
-		String invDescription=getColumnFromResultSet(rif40Investigations, "inv_description");
-		String numerTab=getColumnFromResultSet(rif40Investigations, "numer_tab");
-		String yearStart=getColumnFromResultSet(rif40Investigations, "year_start");
-		String yearStop=getColumnFromResultSet(rif40Investigations, "year_stop");
+		int genders=Integer.parseInt(manager.getColumnFromResultSet(rif40Investigations, "genders"));
+		String invId=manager.getColumnFromResultSet(rif40Investigations, "inv_id");
+		String invName=manager.getColumnFromResultSet(rif40Investigations, "inv_name");
+		String invDescription=manager.getColumnFromResultSet(rif40Investigations, "inv_description");
+		String numerTab=manager.getColumnFromResultSet(rif40Investigations, "numer_tab");
+		String yearStart=manager.getColumnFromResultSet(rif40Investigations, "year_start");
+		String yearStop=manager.getColumnFromResultSet(rif40Investigations, "year_stop");
 			// Usefully will currently blob if >1 row
 		Set<Sex> allSexes = null;
 		Sex defaultGender = null;
@@ -509,7 +435,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		
 		int[] params = new int[1];
 		params[0]=Integer.parseInt(studyID);
-		CachedRowSetImpl cachedRowSet=createCachedRowSet(connection, geolevelQueryFormatter,
+		CachedRowSetImpl cachedRowSet=manager.createCachedRowSet(connection, geolevelQueryFormatter,
 			"writeMapQueryTogeoJSONFile", params);	
 		
 		return cachedRowSet;
@@ -581,8 +507,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		
 		CoordinateReferenceSystem crs=null;
 		
-		String geographyName = getColumnFromResultSet(rif40Geolevels, "geography");
-		int srid=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "srid"));
+		String geographyName = manager.getColumnFromResultSet(rif40Geolevels, "geography");
+		int srid=Integer.parseInt(manager.getColumnFromResultSet(rif40Geolevels, "srid"));
 		try {
 			crs = rifCoordinateReferenceSystem.getCRS(srid);	
 		}
@@ -752,14 +678,14 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		}
 		queryFormatter.addQueryLine(0, "  FROM c");
 		
-		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);	
+		PreparedStatement statement = manager.createPreparedStatement(connection, queryFormatter);
 		ResultSet resultSet = null;
 		try {	
 			String[] queryArgs = new String[3];
 			queryArgs[0]=studyID;
 			queryArgs[1]=geolevel;
 			queryArgs[2]=zoomLevel;
-			logSQLQuery("getMapReferencedEnvelope", queryFormatter, queryArgs);
+			manager.logSQLQuery("getMapReferencedEnvelope", queryFormatter, queryArgs);
 			statement.setInt(1, Integer.parseInt(studyID));	
 			statement.setInt(2, Integer.parseInt(geolevel));
 			statement.setInt(3, Integer.parseInt(zoomLevel));				
@@ -874,7 +800,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			" c ON (b.areaid = c." + geolevelName.toLowerCase() + ")");
 		queryFormatter.addQueryLine(0, " WHERE b.geolevel_id = ? AND b.zoomlevel = ?");		
 		
-		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);	
+		PreparedStatement statement = manager.createPreparedStatement(connection, queryFormatter);
 		
 		SimpleFeatureType simpleFeatureType=null;
 		
@@ -883,8 +809,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			String[] queryArgs = new String[2];
 			queryArgs[0]=geolevel;
 			queryArgs[1]=zoomLevel;
-			logSQLQuery("getBackgroundAreas", queryFormatter, queryArgs);
-			statement = createPreparedStatement(connection, queryFormatter);
+			manager.logSQLQuery("getBackgroundAreas", queryFormatter, queryArgs);
+			statement = manager.createPreparedStatement(connection, queryFormatter);
 			statement.setInt(1, Integer.parseInt(geolevel));
 			statement.setInt(2, Integer.parseInt(zoomLevel));				
 			resultSet = statement.executeQuery();
@@ -1078,11 +1004,11 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		
 		CachedRowSetImpl rif40Geolevels=getRif40Geolevels(connection, studyID, areaTableName);	
 			//get geolevel
-		String geolevel=getColumnFromResultSet(rif40Geolevels, "geolevel_id");
-		String geolevelName = getColumnFromResultSet(rif40Geolevels, "geolevel_name");
-		int max_geojson_digits=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "max_geojson_digits"));
-		int srid=Integer.parseInt(getColumnFromResultSet(rif40Geolevels, "srid"));
-		String geographyName = getColumnFromResultSet(rif40Geolevels, "geography");
+		String geolevel=manager.getColumnFromResultSet(rif40Geolevels, "geolevel_id");
+		String geolevelName = manager.getColumnFromResultSet(rif40Geolevels, "geolevel_name");
+		int max_geojson_digits=Integer.parseInt(manager.getColumnFromResultSet(rif40Geolevels, "max_geojson_digits"));
+		int srid=Integer.parseInt(manager.getColumnFromResultSet(rif40Geolevels, "srid"));
+		String geographyName = manager.getColumnFromResultSet(rif40Geolevels, "geography");
 		CoordinateReferenceSystem rif40GeographiesCRS = getCRS(rifStudySubmission, rif40Geolevels);
 		MathTransform transform = null; // For re-projection
 		if (!CRS.toSRS(rif40GeographiesCRS).equals(CRS.toSRS(DefaultGeographicCRS.WGS84))) {
@@ -1115,7 +1041,7 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 		}
 		queryFormatter.addQueryLine(0, " WHERE b.geolevel_id = ? AND b.zoomlevel = ?");		
 		
-		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);	
+		PreparedStatement statement = manager.createPreparedStatement(connection, queryFormatter);
 		
 		DefaultFeatureCollection featureCollection = null;
 		SimpleFeatureType simpleFeatureType=null;
@@ -1126,8 +1052,8 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			queryArgs[0]=studyID;
 			queryArgs[1]=geolevel;
 			queryArgs[2]=zoomLevel;
-			logSQLQuery("writeMapQueryTogeoJSONFile", queryFormatter, queryArgs);
-			statement = createPreparedStatement(connection, queryFormatter);
+			manager.logSQLQuery("writeMapQueryTogeoJSONFile", queryFormatter, queryArgs);
+			statement = manager.createPreparedStatement(connection, queryFormatter);
 			statement.setInt(1, Integer.parseInt(studyID));	
 			statement.setInt(2, Integer.parseInt(geolevel));
 			statement.setInt(3, Integer.parseInt(zoomLevel));				
@@ -1272,9 +1198,9 @@ public class RifGeospatialOutputs extends SQLAbstractSQLManager {
 			connection.commit();
 		}
 		
-		String backgroundAreasGeolevel=getColumnFromResultSet(rif40Geolevels, "bg_geolevel_id",
+		String backgroundAreasGeolevel=manager.getColumnFromResultSet(rif40Geolevels, "bg_geolevel_id",
 			true /* allowNulls */, false /*  allowNoRows */);
-		String backgroundAreasGeolevelName=getColumnFromResultSet(rif40Geolevels, "bg_geolevel_name",
+		String backgroundAreasGeolevelName=manager.getColumnFromResultSet(rif40Geolevels, "bg_geolevel_name",
 			true /* allowNulls */, false /*  allowNoRows */);
 		DefaultFeatureCollection backgroundAreasFeatureCollection=null;
 		if (backgroundAreasGeolevelName != null) {

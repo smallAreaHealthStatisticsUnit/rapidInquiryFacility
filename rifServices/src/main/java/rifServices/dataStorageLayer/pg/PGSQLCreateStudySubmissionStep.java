@@ -1,22 +1,41 @@
 package rifServices.dataStorageLayer.pg;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
-import rifServices.businessConceptLayer.*;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.system.*;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.*;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.util.FieldValidationUtility;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
-
-import java.sql.*;
-import java.util.ArrayList;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.FieldValidationUtility;
+import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.AbstractCovariate;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.businessConceptLayer.AgeGroup;
+import rifServices.businessConceptLayer.CalculationMethod;
+import rifServices.businessConceptLayer.ComparisonArea;
+import rifServices.businessConceptLayer.DiseaseMappingStudy;
+import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.businessConceptLayer.Investigation;
+import rifServices.businessConceptLayer.MapArea;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.Project;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
+import rifServices.dataStorageLayer.common.MapDataManager;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
 /**
  *
@@ -81,36 +100,21 @@ import java.util.ArrayList;
  *
  */
 
-final class PGSQLCreateStudySubmissionStep 
-	extends PGSQLAbstractSQLManager {
-
-	
-	// ==========================================
-	// Section Constants
-	// ==========================================
+final class PGSQLCreateStudySubmissionStep extends PGSQLAbstractSQLManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
 	
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	private PGSQLDiseaseMappingStudyManager diseaseMappingStudyManager;
-	private PGSQLMapDataManager mapDataManager;
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
+	private DiseaseMappingStudyManager diseaseMappingStudyManager;
+	private MapDataManager mapDataManager;
 
 	/**
 	 * Instantiates a new SQLRIF submission manager.
 	 */
-	public PGSQLCreateStudySubmissionStep(
-		final RIFDatabaseProperties rifDatabaseProperties,
-		final PGSQLDiseaseMappingStudyManager diseaseMappingStudyManager,
-		final PGSQLMapDataManager mapDataManager) {
+	public PGSQLCreateStudySubmissionStep(final RIFServiceStartupOptions options, final DiseaseMappingStudyManager diseaseMappingStudyManager,
+			final MapDataManager mapDataManager) {
 
-		super(rifDatabaseProperties);	
+		super(options);
 		this.diseaseMappingStudyManager = diseaseMappingStudyManager;
 		this.mapDataManager = mapDataManager;
 		setEnableLogging(false);
@@ -938,7 +942,7 @@ final class PGSQLCreateStudySubmissionStep
 		
 		DiseaseMappingStudy diseaseMappingStudy
 			= (DiseaseMappingStudy) rifStudySubmission.getStudy();
-		diseaseMappingStudyManager.checkNonExistentItems(
+		diseaseMappingStudyManager.checkNonExistentItems(User.NULL_USER,
 			connection, 
 			diseaseMappingStudy);
 		
@@ -1021,7 +1025,7 @@ final class PGSQLCreateStudySubmissionStep
 					project.getName());
 
 			rifLogger.error(
-				PGSQLRIFContextManager.class, 
+				PGSQLCreateStudySubmissionStep.class,
 				errorMessage, 
 				sqlException);										
 					
