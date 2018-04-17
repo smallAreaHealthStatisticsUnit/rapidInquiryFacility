@@ -84,10 +84,16 @@ of this document and are not required for a simple RIF setup.
 ### Printing this document direct from GitHub
 
 The HTML version of this github markdown was created using *grip*. Python 2.7 (for Node.js) needs to be installed and on your path. You can then point your web browser at: *http://localhost:6419/* (or wherever else grip chooses)
-and chose "save as HTML" in the browser. Do not do this in the github repository or it will make a mess,
+and chose "save as HTML" in the browser. Do not do this in the github repository or it will make a mess.
+
+To install:
 ```
 python -m pip install grip
-C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifWebApplication>python -m grip
+```
+
+To document this: *rifWebApplication\Readme.md*
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>python -m grip rifWebApplication\Readme.md
  * Running on http://localhost:6419/ (Press CTRL+C to quit)
  * Downloading style https://assets-cdn.github.com/assets/frameworks-592c4aa40e940d1b0607a3cf272916ff.css
  * Downloading style https://assets-cdn.github.com/assets/github-96ebb1551fc5dba84c6d2a0fa7b1cfcf.css
@@ -184,7 +190,7 @@ Set the following environment variables using the system control panel: *Control
 well hidden on Windows 10, but you can type the path into Windows explorer! Choose *Advanced System Settings*, *Environment variables* and modify the *System Variables* using administrator privileges.
 
 * Add CATALINA_HOME=&lt;Tomcat install directory; e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5&gt; to the global environment.
-* Add &lt;Tomcat bin directory; e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin&gt to the path
+* Add &lt;Tomcat bin directory; e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin&gt; to the path
 
 Start a new command window as an Administrator (type *cmd* into windows search, right click on the command icon and select "run as Administrator").
 
@@ -265,7 +271,7 @@ Neither the JAVA_HOME nor the JRE_HOME environment variable is defined
 At least one of these environment variable is needed to run this program
 ```
 
-You may get a complaint from your firewall or security software; allow tomcat the access it requires. Do *NOT* disdable Tomcat or the RIF will not work! 
+You may get a complaint from your firewall or security software; allow tomcat the access it requires. Do *NOT* disable Tomcat or the RIF will not work! 
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/windows_defender_message.png?raw=true "Prevent Tomcat from being disabled by your security software")
 

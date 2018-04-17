@@ -1323,15 +1323,8 @@ public class Investigation
 		}
 		else {
 			for (AbstractCovariate covariate : covariates) {
-				if (covariate != null) {
-					String covariateRecordType
-						= RIFServiceMessages.getMessage("covariate.label");
-					String errorMessage
-						= RIFServiceMessages.getMessage(
-							"general.validation.nullListItem",
-							getRecordType(),
-							covariateRecordType);
-					errorMessages.add(errorMessage);
+				if (covariate == null) {
+					// Do nothings - they can be!
 				}
 				else {
 					try {
