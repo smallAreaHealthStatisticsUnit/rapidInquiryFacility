@@ -158,7 +158,7 @@ BEGIN
 			END LOOP;
 			etp:=clock_timestamp();		
 --
-		PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_execute_insert_statement', 
+			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_execute_insert_statement', 
 				'[56005] SQL> %;', n_sql_stmt::VARCHAR);
 			PERFORM rif40_log_pkg.rif40_log('DEBUG1', 'rif40_execute_insert_statement', 
 				'[56602] Study ID %, statement: %'||E'\n'||'Description: %'||E'\n'||' query plan:'||E'\n'||'%'::VARCHAR,
