@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
@@ -561,7 +562,7 @@ final class MSSQLCreateStudySubmissionStep
 		throws SQLException,
 		RIFServiceException {
 		
-		MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+		SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.addSelectField("\"offset\"");
@@ -739,7 +740,7 @@ final class MSSQLCreateStudySubmissionStep
 		PreparedStatement addCovariateStatement = null;
 		try {
 		
-			MSSQLSelectQueryFormatter getMinMaxCovariateValuesQueryFormatter
+			SelectQueryFormatter getMinMaxCovariateValuesQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			getMinMaxCovariateValuesQueryFormatter.addSelectField("min");
 			getMinMaxCovariateValuesQueryFormatter.addSelectField("max");
@@ -845,7 +846,7 @@ final class MSSQLCreateStudySubmissionStep
 		PreparedStatement addHealthCodeStatement = null;
 		try {
 						
-			MSSQLSelectQueryFormatter getOutcomeGroupNameQueryFormatter
+			SelectQueryFormatter getOutcomeGroupNameQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			getOutcomeGroupNameQueryFormatter.addSelectField("outcome_group_name");
 			getOutcomeGroupNameQueryFormatter.addSelectField("field_name");			

@@ -8,6 +8,7 @@ import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLCountQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
@@ -524,7 +525,7 @@ final public class MSSQLCleanWorkflowManager
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 				
-		MSSQLSelectQueryFormatter queryFormatter 
+		SelectQueryFormatter queryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
@@ -590,7 +591,7 @@ final public class MSSQLCleanWorkflowManager
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 	
-		MSSQLSelectQueryFormatter queryFormatter 
+		SelectQueryFormatter queryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
@@ -658,7 +659,7 @@ final public class MSSQLCleanWorkflowManager
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 		
-		MSSQLSelectQueryFormatter queryFormatter 
+		SelectQueryFormatter queryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");

@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
@@ -208,7 +209,7 @@ final class MSSQLMapDataManager extends MSSQLAbstractSQLManager implements MapDa
 				
 		String result = "";
 				
-		MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+		SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 		queryFormatter.addSelectField("hierarchytable");
 		queryFormatter.addFromTable("rif40.rif40_geographies");
 		queryFormatter.addWhereParameter("geography");
@@ -260,7 +261,7 @@ final class MSSQLMapDataManager extends MSSQLAbstractSQLManager implements MapDa
 		String result = null;
 		try {
 		
-			MSSQLSelectQueryFormatter queryFormatter 
+			SelectQueryFormatter queryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("lookup_table");

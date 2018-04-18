@@ -5,6 +5,7 @@ import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
@@ -100,7 +101,7 @@ final public class MSSQLDataSetManager
 		ResultSet resultSet = null;
 		PreparedStatement statement = null;
 		try {
-			MSSQLSelectQueryFormatter queryFormatter 
+			SelectQueryFormatter queryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			//KLG_SCHEMA
 			//queryFormatter.setDatabaseSchemaName("dbo");

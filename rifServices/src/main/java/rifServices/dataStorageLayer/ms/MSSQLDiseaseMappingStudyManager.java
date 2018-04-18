@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
@@ -69,7 +70,7 @@ final class MSSQLDiseaseMappingStudyManager extends MSSQLAbstractSQLManager
 		ArrayList<Project> results = new ArrayList<Project>();
 		try {
 			
-			MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);	
 			queryFormatter.setDatabaseSchemaName("rif40");
 			queryFormatter.addSelectField("project");

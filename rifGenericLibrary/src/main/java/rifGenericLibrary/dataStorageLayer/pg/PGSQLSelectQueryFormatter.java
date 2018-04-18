@@ -3,94 +3,18 @@ package rifGenericLibrary.dataStorageLayer.pg;
 import java.util.ArrayList;
 
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 
 /**
  * Convenience class used to help format typical SELECT FROM WHERE clauses.
  * We don't expect all SQL queries to follow the basic SELECT statement but
  * the utility class is meant to help format the text and alignment of SQL
  * queries, and to reduce the risk of having syntax problems occur.
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
  */
 
-public final class PGSQLSelectQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+public final class PGSQLSelectQueryFormatter extends AbstractSQLQueryFormatter
+		implements SelectQueryFormatter {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
-	/**
-	 * The Enum SortOrder.
-	 */
-	public enum SortOrder {
-		/** The ascending. */
-		ASCENDING, 
-		/** The descending. */
-		DESCENDING};
-
-	
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
 	/** The use distinct. */
 	private boolean useDistinct;
 	
@@ -114,10 +38,6 @@ public final class PGSQLSelectQueryFormatter
 	
 	private String ctasTable;
 	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
 	/**
 	 * Instantiates a new SQL select query formatter.
 	 */
@@ -133,9 +53,6 @@ public final class PGSQLSelectQueryFormatter
 		whereLikeFieldNames = new ArrayList<String>();
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
 	/**
 	 * Sets the use distinct.
 	 *
@@ -145,15 +62,6 @@ public final class PGSQLSelectQueryFormatter
 		final boolean useDistinct) {
 		
 		this.useDistinct = useDistinct;
-	}
-	
-	
-	public void setCTASTable(final String ctasTable) {
-		this.ctasTable = ctasTable;
-	}
-	
-	public String getCTASTable() {
-		return ctasTable;
 	}
 
 	/**
@@ -165,12 +73,10 @@ public final class PGSQLSelectQueryFormatter
 		final String tableName,
 		final String selectField) {
 
-		StringBuilder selectPhrase = new StringBuilder();
-		selectPhrase.append(tableName);
-		selectPhrase.append(".");
-		selectPhrase.append(selectField);
-		
-		selectFields.add(selectPhrase.toString());		
+		final String selectPhrase = tableName
+		                            + "."
+		                            + selectField;
+		selectFields.add(selectPhrase);
 	}	
 	
 	/**
@@ -184,7 +90,6 @@ public final class PGSQLSelectQueryFormatter
 		selectFields.add(selectField);		
 	}
 	
-	
 	/**
 	 * Adds the select field.
 	 *
@@ -194,13 +99,10 @@ public final class PGSQLSelectQueryFormatter
 		final String selectField,
 		final String aliasName) {
 
-		StringBuilder selectFieldPhrase
-			= new StringBuilder();
-		selectFieldPhrase.append(selectField);
-		selectFieldPhrase.append(" AS ");
-		selectFieldPhrase.append(aliasName);
-		
-		selectFields.add(selectFieldPhrase.toString());		
+		final String selectFieldPhrase = selectField
+		                                 + " AS "
+		                                 + aliasName;
+		selectFields.add(selectFieldPhrase);
 	}
 	
 	
@@ -214,15 +116,12 @@ public final class PGSQLSelectQueryFormatter
 		final String selectField,
 		final String aliasName) {
 
-		StringBuilder selectFieldPhrase
-			= new StringBuilder();
-		selectFieldPhrase.append(tableName);
-		selectFieldPhrase.append(".");
-		selectFieldPhrase.append(selectField);
-		selectFieldPhrase.append(" AS ");
-		selectFieldPhrase.append(aliasName);
-		
-		selectFields.add(selectFieldPhrase.toString());		
+		final String selectFieldPhrase = tableName
+		                                 + "."
+		                                 + selectField
+		                                 + " AS "
+		                                 + aliasName;
+		selectFields.add(selectFieldPhrase);
 	}
 	
 	
@@ -236,13 +135,12 @@ public final class PGSQLSelectQueryFormatter
 	public void addTextLiteralSelectField(
 		final String fieldValue,
 		final String aliasName) {
-		
-		StringBuilder textLiteralSelectPhrase = new StringBuilder();
-		textLiteralSelectPhrase.append("'");
-		textLiteralSelectPhrase.append(fieldValue);		
-		textLiteralSelectPhrase.append("' AS ");
-		textLiteralSelectPhrase.append(aliasName);
-		selectFields.add(textLiteralSelectPhrase.toString());
+
+		final String textLiteralSelectPhrase = "'"
+		                                       + fieldValue
+		                                       + "' AS "
+		                                       + aliasName;
+		selectFields.add(textLiteralSelectPhrase);
 	}
 		
 	/**
@@ -255,18 +153,7 @@ public final class PGSQLSelectQueryFormatter
 
 		fromTables.add(fromTable);
 	}
-	
-	/**
-	 * Or all where conditions.
-	 *
-	 * @param orAllWhereConditions the or all where conditions
-	 */
-	public void orAllWhereConditions(
-		final boolean orAllWhereConditions) {
-		
-		this.orAllWhereConditions = orAllWhereConditions;
-	}
-	
+
 	/**
 	 * Adds the where join condition.
 	 *
@@ -281,16 +168,14 @@ public final class PGSQLSelectQueryFormatter
 		final String tableB,
 		final String fieldNameB) {
 
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(getSchemaTableName(tableA));
-		whereCondition.append(".");
-		whereCondition.append(fieldNameA);
-		whereCondition.append("=");
-		whereCondition.append(getSchemaTableName(tableB));
-		whereCondition.append(".");
-		whereCondition.append(fieldNameB);
-		
-		whereConditions.add(whereCondition.toString());
+		final String whereCondition = getSchemaTableName(tableA)
+		                              + "."
+		                              + fieldNameA
+		                              + "="
+		                              + getSchemaTableName(tableB)
+		                              + "."
+		                              + fieldNameB;
+		whereConditions.add(whereCondition);
 	}
 	
 	/**
@@ -303,12 +188,10 @@ public final class PGSQLSelectQueryFormatter
 		final String tableFieldA,
 		final String tableFieldB) {
 
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(tableFieldA);
-		whereCondition.append("=");
-		whereCondition.append(tableFieldB);
-		
-		whereConditions.add(whereCondition.toString());		
+		final String whereCondition = tableFieldA
+		                              + "="
+		                              + tableFieldB;
+		whereConditions.add(whereCondition);
 	}
 	
 	/**
@@ -318,19 +201,16 @@ public final class PGSQLSelectQueryFormatter
 	 */
 	public void addWhereParameter(
 		final String fieldName) {
-		
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(fieldName);
-		whereCondition.append("=?");
 
-		whereConditions.add(whereCondition.toString());
+		final String whereCondition = fieldName
+		                              + "=?";
+		whereConditions.add(whereCondition);
 	}
 	
 	
 	/**
 	 * Adds the where parameter.
 	 *
-	 * @param fieldName the field name
 	 */
 	public void addWhereParameterWithOperator(
 		final String tableA,
@@ -338,18 +218,17 @@ public final class PGSQLSelectQueryFormatter
 		final String operator,
 		final String tableB,
 		final String tableBField) {
-		
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(getSchemaTableName(tableA));
-		whereCondition.append(".");
-		whereCondition.append(tableAField);
-		whereCondition.append(" ");
-		whereCondition.append(operator);
-		whereCondition.append(" ");
-		whereCondition.append(getSchemaTableName(tableB));
-		whereCondition.append(".");
-		whereCondition.append(tableBField);
-		whereConditions.add(whereCondition.toString());
+
+		final String whereCondition = getSchemaTableName(tableA)
+		                              + "."
+		                              + tableAField
+		                              + " "
+		                              + operator
+		                              + " "
+		                              + getSchemaTableName(tableB)
+		                              + "."
+		                              + tableBField;
+		whereConditions.add(whereCondition);
 	}
 	
 	
@@ -363,38 +242,16 @@ public final class PGSQLSelectQueryFormatter
 		final String tableName,
 		final String fieldName,
 		final String literalValue) {
-		
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(getSchemaTableName(tableName));
-		whereCondition.append(".");
-		whereCondition.append(fieldName);
-		whereCondition.append("='");
-		whereCondition.append(literalValue);
-		whereCondition.append("'");
 
-		whereConditions.add(whereCondition.toString());
+		final String whereCondition = getSchemaTableName(tableName)
+		                              + "."
+		                              + fieldName
+		                              + "='"
+		                              + literalValue
+		                              + "'";
+		whereConditions.add(whereCondition);
 	}
-		
-	
-	/**
-	 * Adds the where parameter.
-	 *
-	 * @param fieldName the field name
-	 */
-	public void addWhereParameterWithLiteralValue(
-		final String fieldName,
-		final String literalValue) {
-		
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(fieldName);
-		whereCondition.append("='");
-		whereCondition.append(literalValue);
-		whereCondition.append("'");
 
-		whereConditions.add(whereCondition.toString());
-	}
-		
-	
 	/**
 	 * Adds the where parameter with operator.
 	 *
@@ -405,46 +262,12 @@ public final class PGSQLSelectQueryFormatter
 		final String fieldName,
 		final String operator) {
 
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(fieldName);
-		whereCondition.append(operator);
-		whereCondition.append("?");
-		
-		whereConditions.add(whereCondition.toString());
+		final String whereCondition = fieldName
+		                              + operator
+		                              + "?";
+		whereConditions.add(whereCondition);
 	}
 
-	/**
-	 * Adds the where BETWEEN with limits
-	 *
-	 * @param fieldName the field name
-	 * @param operator the operator
-	 */
-	public void addWhereBetweenParameter(
-		final String fieldName,
-		final String startValue,
-		final String endValue) {
-
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(fieldName);
-		whereCondition.append(" BETWEEN ");
-		whereCondition.append(startValue);
-		whereCondition.append(" AND ");
-		whereCondition.append(endValue);		
-		whereConditions.add(whereCondition.toString());
-	}
-	
-	
-	/**
-	 * Adds the where like field name.
-	 *
-	 * @param fieldName the field name
-	 */
-	public void addWhereLikeFieldName(
-		final String fieldName) {
-		
-		whereLikeFieldNames.add(fieldName);
-	}
-	
 	/**
 	 * Adds the where parameter.
 	 *
@@ -454,14 +277,12 @@ public final class PGSQLSelectQueryFormatter
 	public void addWhereParameter(
 		final String tableName, 
 		final String fieldName) {
-		
-		StringBuilder whereCondition = new StringBuilder();
-		whereCondition.append(getSchemaTableName(tableName));
-		whereCondition.append(".");		
-		whereCondition.append(fieldName);
-		whereCondition.append("=?");
 
-		whereConditions.add(whereCondition.toString());
+		final String whereCondition = getSchemaTableName(tableName)
+		                              + "."
+		                              + fieldName
+		                              + "=?";
+		whereConditions.add(whereCondition);
 	}
 
 	
@@ -503,11 +324,11 @@ public final class PGSQLSelectQueryFormatter
 		final String fieldName) {
 
 		addOrderByCondition(
-			tableName, 
-			fieldName, 
-			SortOrder.ASCENDING);		
+				tableName,
+				fieldName,
+				SortOrder.ASCENDING);
 	}
-	
+
 	/**
 	 * Adds the order by condition.
 	 *
@@ -515,6 +336,7 @@ public final class PGSQLSelectQueryFormatter
 	 * @param fieldName the field name
 	 * @param sortOrder the sort order
 	 */
+	@Override
 	public void addOrderByCondition(
 		final String tableName,
 		final String fieldName,
@@ -550,7 +372,7 @@ public final class PGSQLSelectQueryFormatter
 			padAndFinishLine();
 		}
 		addQueryPhrase(0, "SELECT");
-		if (useDistinct == true) {
+		if (useDistinct) {
 			addQueryPhrase(" DISTINCT");
 		}
 		padAndFinishLine();
@@ -576,17 +398,14 @@ public final class PGSQLSelectQueryFormatter
 			}
 			addQueryPhrase(1, convertCase(getSchemaTableName(fromTables.get(i))));
 		}
-		
-		
-		ArrayList<String> allWhereConditions = new ArrayList<String>();
-		allWhereConditions.addAll(whereConditions);
+
+		ArrayList<String> allWhereConditions = new ArrayList<String>(whereConditions);
 		
 		//now add in the like conditions
 		for (String whereLikeFieldName : whereLikeFieldNames) {
-			StringBuilder condition = new StringBuilder();
-			condition.append(whereLikeFieldName);
-			condition.append(" LIKE ?");
-			allWhereConditions.add(condition.toString());
+			final String condition = whereLikeFieldName
+			                         + " LIKE ?";
+			allWhereConditions.add(condition);
 		}
 		
 		
@@ -596,7 +415,7 @@ public final class PGSQLSelectQueryFormatter
 			addQueryPhrase(0, "WHERE");
 			padAndFinishLine();
 			
-			if (orAllWhereConditions == true) {
+			if (orAllWhereConditions) {
 				for (int i = 0; i < numberOfWhereConditions; i++) {
 					if (i > 0) {
 						addQueryPhrase(" OR");
@@ -630,7 +449,7 @@ public final class PGSQLSelectQueryFormatter
 			}
 		}
 
-		if (endWithSemiColon() == true) {			
+		if (endWithSemiColon()) {
 			addQueryPhrase(";");
 			finishLine();
 			addBlankLine();
@@ -639,16 +458,4 @@ public final class PGSQLSelectQueryFormatter
 				
 		return super.generateQuery();
 	}
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

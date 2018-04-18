@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLAggregateValueQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
@@ -56,7 +57,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 		
 			//Create SQL query		
-			MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("geography");
@@ -139,7 +140,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 		
 			//Create SQL query		
-			MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("theme");
@@ -236,7 +237,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 		
 			//Create SQL query		
-			MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("numerator_description");
@@ -354,7 +355,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 			//Create SQL query		
 			String userID = user.getUserID(); 
 			
-			MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("numerator_table");
@@ -511,7 +512,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 			}
 		
 			//Create SQL query		
-			MSSQLSelectQueryFormatter getGeoLevelSelectValuesQueryFormatter 
+			SelectQueryFormatter getGeoLevelSelectValuesQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(getGeoLevelSelectValuesQueryFormatter);
 			getGeoLevelSelectValuesQueryFormatter.addSelectField("geolevel_name");
@@ -597,7 +598,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 		
 			//Create SQL query		
-			MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("defaultcomparea");
 			queryFormatter.addFromTable("rif40.rif40_geographies");
@@ -685,7 +686,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 
 		//First, obtain the name of the table that will contain the names of 
 		//areas		
-		MSSQLSelectQueryFormatter lookupTableQueryFormatter 
+		SelectQueryFormatter lookupTableQueryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 		configureQueryFormatterForDB(lookupTableQueryFormatter);
 		lookupTableQueryFormatter.addSelectField("lookup_table");
@@ -737,7 +738,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 			}
 
 			//Given the lookup table name, retrieve the areas
-			MSSQLSelectQueryFormatter geographicAreaQueryFormatter
+			SelectQueryFormatter geographicAreaQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(geographicAreaQueryFormatter);
 			geographicAreaQueryFormatter.addSelectField(geoLevelSelect.getName());		
@@ -837,7 +838,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 			
 			//Create SQL query		
-			MSSQLSelectQueryFormatter geoLevelIDQueryFormatter 
+			SelectQueryFormatter geoLevelIDQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(geoLevelIDQueryFormatter);
 			geoLevelIDQueryFormatter.addSelectField("geolevel_id");
@@ -873,7 +874,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 				throw rifServiceException;
 			}
 		
-			MSSQLSelectQueryFormatter geoLevelViewsQueryFormatter 
+			SelectQueryFormatter geoLevelViewsQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(geoLevelViewsQueryFormatter);
 			geoLevelViewsQueryFormatter.addSelectField("geolevel_name");
@@ -1192,7 +1193,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		ResultSet geoLevelAreaExistsResultSet = null;
 		ResultSet getLookupTableResultSet = null;
 		try {
-			MSSQLSelectQueryFormatter lookupTableQueryQueryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter lookupTableQueryQueryFormatter = new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(lookupTableQueryQueryFormatter);
 			lookupTableQueryQueryFormatter.addSelectField("lookup_table");
 			lookupTableQueryQueryFormatter.addFromTable("rif40.rif40_geolevels");
@@ -1330,7 +1331,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 		
 			//Obtain the minimimum geolevel ID that the geoLevelMap needs to have
-			MSSQLSelectQueryFormatter geoLevelIDQueryFormatter 
+			SelectQueryFormatter geoLevelIDQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(geoLevelIDQueryFormatter);		
 			geoLevelIDQueryFormatter.addSelectField("geolevel_id");

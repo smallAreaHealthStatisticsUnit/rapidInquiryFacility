@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
@@ -126,7 +127,7 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 			//"2" may represent age ranges that are broken down every 4 years
 			//After obtaining the list of age groups having the correct age group id
 			//sort them by low_age
-			MSSQLSelectQueryFormatter getAgesForAgeGroupID
+			SelectQueryFormatter getAgesForAgeGroupID
 				= new MSSQLSelectQueryFormatter(false);
 			sqlRIFContextManager.configureQueryFormatterForDB(getAgesForAgeGroupID);
 
@@ -140,23 +141,23 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 			if ((sortingOrder == null) ||
 				(sortingOrder == AgeGroupSortingOption.ASCENDING_LOWER_LIMIT)) {
 				getAgesForAgeGroupID.addOrderByCondition(
-					"low_age", MSSQLSelectQueryFormatter.SortOrder.ASCENDING);
+						"low_age", SelectQueryFormatter.SortOrder.ASCENDING);
 			}
 			else if (sortingOrder == AgeGroupSortingOption.DESCENDING_LOWER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
-					"low_age",
-					MSSQLSelectQueryFormatter.SortOrder.DESCENDING);
+						"low_age",
+						SelectQueryFormatter.SortOrder.DESCENDING);
 			}
 			else if (sortingOrder == AgeGroupSortingOption.ASCENDING_UPPER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
-					"high_age",
-					MSSQLSelectQueryFormatter.SortOrder.ASCENDING);
+						"high_age",
+						SelectQueryFormatter.SortOrder.ASCENDING);
 			}
 			else {
 				//it must be descending lower limit.		
 				getAgesForAgeGroupID.addOrderByCondition(
-					"high_age",
-					MSSQLSelectQueryFormatter.SortOrder.DESCENDING);
+						"high_age",
+						SelectQueryFormatter.SortOrder.DESCENDING);
 				assert sortingOrder == AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
 			}
 			

@@ -1,5 +1,6 @@
 package rifServices.dataStorageLayer.ms;
 
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.common.CommonRService;
 import rifServices.system.RIFServiceStartupOptions;
@@ -504,7 +505,7 @@ password=XXXXXXXX
 
 		rifLogger.info(this.getClass(), "SQLSmoothedResultsSubmissionStep getInvestigationID studyID=="+studyID+"==investigation_name=="+investigation.getTitle()+"==inv_description=="+investigation.getDescription()+"==");
 
-		MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+		SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.addFromTable("rif40_investigations");
 		queryFormatter.addSelectField("inv_id");

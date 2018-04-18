@@ -2,6 +2,7 @@ package rifGenericLibrary.dataStorageLayer.ms;
 
 import java.util.ArrayList;
 
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 
 /**
  * Convenience class used to help format typical SELECT FROM WHERE clauses.
@@ -9,18 +10,9 @@ import java.util.ArrayList;
  * the utility class is meant to help format the text and alignment of SQL
  * queries, and to reduce the risk of having syntax problems occur.
  */
-public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter {
+public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
+		implements SelectQueryFormatter {
 
-	/**
-	 * The Enum SortOrder.
-	 */
-	public enum SortOrder {
-		/** The ascending. */
-		ASCENDING, 
-		/** The descending. */
-		DESCENDING};
-
-	
 	/** The use distinct. */
 	private boolean useDistinct;
 	
@@ -59,25 +51,17 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 		whereLikeFieldNames = new ArrayList<String>();
 	}
 
-	/**
-	 * Sets the use distinct.
-	 *
-	 * @param useDistinct the new use distinct
-	 */
+	@Override
 	public void setUseDistinct(
-		final boolean useDistinct) {
+			final boolean useDistinct) {
 		
 		this.useDistinct = useDistinct;
 	}
 
-	/**
-	 * Adds the select field.
-	 *
-	 * @param selectField the select field
-	 */
+	@Override
 	public void addSelectField(
-		final String tableName,
-		final String selectField) {
+			final String tableName,
+			final String selectField) {
 
 		final String selectPhrase = tableName
 		                            + "."
@@ -85,25 +69,17 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 		selectFields.add(selectPhrase);
 	}	
 	
-	/**
-	 * Adds the select field.
-	 *
-	 * @param selectField the select field
-	 */
+	@Override
 	public void addSelectField(
-		final String selectField) {
+			final String selectField) {
 
 		selectFields.add(selectField);		
 	}
 
-	/**
-	 * Adds the select field.
-	 *
-	 * @param selectField the select field
-	 */
+	@Override
 	public void addSelectFieldWithAlias(
-		final String selectField,
-		final String aliasName) {
+			final String selectField,
+			final String aliasName) {
 
 		final String selectFieldPhrase = selectField
 		                                 + " AS "
@@ -112,15 +88,11 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 	}
 	
 	
-	/**
-	 * Adds the select field.
-	 *
-	 * @param selectField the select field
-	 */
+	@Override
 	public void addSelectFieldWithAlias(
-		final String tableName,
-		final String selectField,
-		final String aliasName) {
+			final String tableName,
+			final String selectField,
+			final String aliasName) {
 
 		final String selectFieldPhrase = tableName
 		                                 + "."
@@ -132,15 +104,10 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 	
 	
 	
-	/**
-	 * adds a constant value in a select statement
-	 * eg: 
-	 * @param fieldValue
-	 * @param aliasName
-	 */
+	@Override
 	public void addTextLiteralSelectField(
-		final String fieldValue,
-		final String aliasName) {
+			final String fieldValue,
+			final String aliasName) {
 
 		final String textLiteralSelectPhrase = "'"
 		                                       + fieldValue
@@ -149,30 +116,19 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 		selectFields.add(textLiteralSelectPhrase);
 	}
 		
-	/**
-	 * Adds the from table.
-	 *
-	 * @param fromTable the from table
-	 */
+	@Override
 	public void addFromTable(
-		final String fromTable) {
+			final String fromTable) {
 
 		fromTables.add(fromTable);
 	}
 
-	/**
-	 * Adds the where join condition.
-	 *
-	 * @param tableA the table a
-	 * @param fieldNameA the field name a
-	 * @param tableB the table b
-	 * @param fieldNameB the field name b
-	 */
+	@Override
 	public void addWhereJoinCondition(
-		final String tableA,
-		final String fieldNameA,
-		final String tableB,
-		final String fieldNameB) {
+			final String tableA,
+			final String fieldNameA,
+			final String tableB,
+			final String fieldNameB) {
 
 		final String whereCondition = getSchemaTableName(tableA)
 		                              + "."
@@ -184,15 +140,10 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 		whereConditions.add(whereCondition);
 	}
 	
-	/**
-	 * Adds the where join condition.
-	 *
-	 * @param tableFieldA the table field a
-	 * @param tableFieldB the table field b
-	 */
+	@Override
 	public void addWhereJoinCondition(
-		final String tableFieldA,
-		final String tableFieldB) {
+			final String tableFieldA,
+			final String tableFieldB) {
 
 		final String whereCondition = tableFieldA
 		                              + "="
@@ -200,13 +151,9 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 		whereConditions.add(whereCondition);
 	}
 	
-	/**
-	 * Adds the where parameter.
-	 *
-	 * @param fieldName the field name
-	 */
+	@Override
 	public void addWhereParameter(
-		final String fieldName) {
+			final String fieldName) {
 
 		final String whereCondition = fieldName
 		                              + "=?";
@@ -214,16 +161,13 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 	}
 	
 	
-	/**
-	 * Adds the where parameter.
-	 *
-	 */
+	@Override
 	public void addWhereParameterWithOperator(
-		final String tableA,
-		final String tableAField,
-		final String operator,
-		final String tableB,
-		final String tableBField) {
+			final String tableA,
+			final String tableAField,
+			final String operator,
+			final String tableB,
+			final String tableBField) {
 
 		final String whereCondition = getSchemaTableName(tableA)
 		                              + "."
@@ -239,15 +183,11 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 	
 	
 	
-	/**
-	 * Adds the where parameter.
-	 *
-	 * @param fieldName the field name
-	 */
+	@Override
 	public void addWhereParameterWithLiteralValue(
-		final String tableName,
-		final String fieldName,
-		final String literalValue) {
+			final String tableName,
+			final String fieldName,
+			final String literalValue) {
 
 		final String whereCondition = getSchemaTableName(tableName)
 		                              + "."
@@ -258,15 +198,10 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 		whereConditions.add(whereCondition);
 	}
 
-	/**
-	 * Adds the where parameter with operator.
-	 *
-	 * @param fieldName the field name
-	 * @param operator the operator
-	 */
+	@Override
 	public void addWhereParameterWithOperator(
-		final String fieldName,
-		final String operator) {
+			final String fieldName,
+			final String operator) {
 
 		StringBuilder whereCondition = new StringBuilder();
 		whereCondition.append(fieldName);
@@ -276,15 +211,10 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 		whereConditions.add(whereCondition.toString());
 	}
 
-	/**
-	 * Adds the where parameter.
-	 *
-	 * @param tableName the table name
-	 * @param fieldName the field name
-	 */
+	@Override
 	public void addWhereParameter(
-		final String tableName, 
-		final String fieldName) {
+			final String tableName,
+			final String fieldName) {
 
 		final String whereCondition = getSchemaTableName(tableName)
 		                              + "."
@@ -294,26 +224,17 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 	}
 
 	
-	/**
-	 * Adds the order by condition.
-	 *
-	 * @param fieldName the field name
-	 */
+	@Override
 	public void addOrderByCondition(
-		final String fieldName) {
+			final String fieldName) {
 			
 		addOrderByCondition(null, fieldName, SortOrder.ASCENDING);
 	}
 
-	/**
-	 * Adds the order by condition.
-	 *
-	 * @param fieldName the field name
-	 * @param sortOrder the sort order
-	 */
+	@Override
 	public void addOrderByCondition(
-		final String fieldName,
-		final SortOrder sortOrder) {
+			final String fieldName,
+			final SortOrder sortOrder) {
 		
 		addOrderByCondition(
 			null, 
@@ -321,15 +242,10 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 			sortOrder);
 	}
 	
-	/**
-	 * Adds the order by condition.
-	 *
-	 * @param tableName the table name
-	 * @param fieldName the field name
-	 */
+	@Override
 	public void addOrderByCondition(
-		final String tableName,
-		final String fieldName) {
+			final String tableName,
+			final String fieldName) {
 
 		addOrderByCondition(
 			tableName, 
@@ -337,17 +253,11 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 			SortOrder.ASCENDING);		
 	}
 	
-	/**
-	 * Adds the order by condition.
-	 *
-	 * @param tableName the table name
-	 * @param fieldName the field name
-	 * @param sortOrder the sort order
-	 */
+	@Override
 	public void addOrderByCondition(
-		final String tableName,
-		final String fieldName,
-		final SortOrder sortOrder) {
+			final String tableName,
+			final String fieldName,
+			final SortOrder sortOrder) {
 			
 		StringBuilder orderByCondition = new StringBuilder();
 			

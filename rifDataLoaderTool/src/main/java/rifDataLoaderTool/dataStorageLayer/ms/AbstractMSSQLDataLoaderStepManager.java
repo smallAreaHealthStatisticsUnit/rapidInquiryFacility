@@ -29,6 +29,7 @@ import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSchemaCommentQueryFormatter;
@@ -131,7 +132,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		throws SQLException,
 		RIFServiceException {
 				
-		MSSQLSelectQueryFormatter queryFormatter 
+		SelectQueryFormatter queryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 		//queryFormatter.setDatabaseSchemaName("dbo");//KLG_SCHEMA
 		//SELECT field1, field2, fields3...
@@ -638,7 +639,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		try {
 			
 			cname = new FileWriter(exportFileName.toString());
-			MSSQLSelectQueryFormatter selFormatter = new  MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter selFormatter = new  MSSQLSelectQueryFormatter(false);
 			selFormatter.addSelectField("*");
 			selFormatter.addFromTable(tableName);
 			statement = createPreparedStatement(connection, selFormatter);

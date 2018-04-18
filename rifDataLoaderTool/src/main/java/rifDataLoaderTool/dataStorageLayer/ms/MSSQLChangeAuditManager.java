@@ -276,7 +276,7 @@ final public class MSSQLChangeAuditManager
 		
 		String cleanFieldName = dataSetFieldConfiguration.getCleanFieldName();
 		
-		MSSQLSelectQueryFormatter queryFormatter 
+		SelectQueryFormatter queryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addSelectField(searchReplaceTableName, "data_set_id");
@@ -593,7 +593,7 @@ final public class MSSQLChangeAuditManager
 		String cleanFieldName
 			= auditableField.getCleanFieldName();
 		
-		MSSQLSelectQueryFormatter queryFormatter
+		SelectQueryFormatter queryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
@@ -646,7 +646,7 @@ final public class MSSQLChangeAuditManager
 		String cleanFieldName
 			= auditableField.getCleanFieldName();
 		
-		MSSQLSelectQueryFormatter queryFormatter
+		SelectQueryFormatter queryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
@@ -702,7 +702,7 @@ final public class MSSQLChangeAuditManager
 		ResultSet resultSet = null;
 		PreparedStatement statement = null;
 		try {
-			MSSQLSelectQueryFormatter queryFormatter 
+			SelectQueryFormatter queryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			queryFormatter.addSelectField("id");
 			queryFormatter.addFromTable("data_set_configurations");

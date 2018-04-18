@@ -7,6 +7,7 @@ import java.sql.SQLException;
 
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
@@ -45,7 +46,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 			final GeoLevelSelect geoLevelSelect)
 			throws RIFServiceException {
 								
-		MSSQLSelectQueryFormatter getMapTileTableQueryFormatter
+		SelectQueryFormatter getMapTileTableQueryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 			
 		getMapTileTableQueryFormatter.setDatabaseSchemaName("rif_data");
@@ -152,7 +153,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 		WHERE geography = 'SAHSULAND';
 		*/
 							
-		MSSQLSelectQueryFormatter getMapTileTableQueryFormatter
+		SelectQueryFormatter getMapTileTableQueryFormatter
 			= new MSSQLSelectQueryFormatter(false);		
 			
 		getMapTileTableQueryFormatter.setDatabaseSchemaName("rif40");
@@ -184,7 +185,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 			//This is the tile table name for this geography
 			String myTileTable = "rif_data." + resultSet.getString(1);
 					
-			MSSQLSelectQueryFormatter getMapTilesQueryFormatter
+			SelectQueryFormatter getMapTilesQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 				
 			//STEP 2: get the tiles	
@@ -272,7 +273,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 		ResultSet resultSet = null;
 		try {
 		
-			MSSQLSelectQueryFormatter queryFormatter
+			SelectQueryFormatter queryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("study_name");
