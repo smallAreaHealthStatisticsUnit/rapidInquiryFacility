@@ -26,9 +26,6 @@ public class AbstractSQLQueryFormatter implements QueryFormatter {
 	
 	private boolean endWithSemiColon;
 
-	/**
-	 * Instantiates a new SQL query formatter.
-	 */
 	public AbstractSQLQueryFormatter() {
 		isCaseSensitive = true;
 		query = new StringBuilder();
