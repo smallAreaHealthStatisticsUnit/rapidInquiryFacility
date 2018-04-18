@@ -2067,8 +2067,8 @@ Todo:
 * Review and test Postgres database build instructions; merging in Windows specific instructions and build README.md comments
 * Review and test RIF Web Application and Middleware Installation instructions
 * Fix log4j logging hangs (added separate taxonomyServices logger to avoid thread clash bug inm log4j)
-* Fix for whitespace in properties file causes crashes
-* Text VPN commention
+* Fix for whitespace in properties file causing crashes
+* Text VPN connection
 * Download sample ICD9 codes: from https://raw.githubusercontent.com/drobbins/ICD9/master/icd9.txt; reformatted 
   from: https://www.cms.gov/ICD9ProviderDiagnosticCodes/downloads/cmsv29_master_descriptions.zip
 
@@ -2128,7 +2128,8 @@ Todo:
 	Note The full stack trace of the root cause is available in the server logs.
 	Apache Tomcat/8.5.29
     ```
-  * Test of fixing test 3 branch fails with:
+  - Added trap for OutOfMemoryError; added instructions to setup on howto resolve	
+* Test of fixing test 3 branch fails with:
   ```
   11:38:15.412 [http-nio-8080-exec-21] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLConnectionManager]:
 Unable to register user peter.
@@ -2145,3 +2146,6 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 	at rifServices.dataStorageLayer.ms.MSSQLProductionRIFStudyServiceBundle.login(MSSQLProductionRIFStudyServiceBundle.java:63)
 	at rifServices.restfulWebServices.WebService.login(WebService.java:148)
   ```
+* Test covariate extracts and maps with and without additional covariate (SES); OK: issues is with the reports. First year is not being inserted (caused by Postgres EXPLAIN VERBOSE); fixed;
+  Rechecked all counts in extract and map tables, all OK
+* Fix for incorrect denominator totals in report

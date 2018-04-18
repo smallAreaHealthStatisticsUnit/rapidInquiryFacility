@@ -5,7 +5,7 @@ RIF Web Application and Middleware Installation
 
 - [1. Installation Prerequisites](#1-installation-prerequisites)
    - [1.1 Apache Maven](#11-apache-maven)	
-   - [1.2 Java Development Environment](#12-lava-development-environment)	
+   - [1.2 Java Runtime Environment](#12-lava-runtime-environment)	
    - [1.3 Apache Tomcat](#13-apache-tomcat)	
      - [1.3.1 Apache Tomcat on a single host](#131-apache-tomcat-on-a-single-host)	
      - [1.3.2 Apache Tomcat for internet use](#132-apache-tomcat-for-internet-use)	
@@ -25,7 +25,7 @@ RIF Web Application and Middleware Installation
 - [3. Installing Web Services in Tomcat](#3-installing-web-services-in-tomcat)
    - [3.1 Web Services](#31-web-services)
      - [3.1.1 RIF Services](#311-rif-services)
-     - [3.1.2 Taxonomy Service](#312-taxonomy-service)
+     - [3.1.2 Taxonomy Services](#312-taxonomy-services)
    - [3.2 RIF Web Application](#32-rif-web-application)
 - [4. RIF Setup](#4-rif-setup)
    - [4.1 Setup Database](#41-setup-database)
@@ -43,12 +43,14 @@ RIF Web Application and Middleware Installation
      - [4.4.4 No Taxonomy Services](#444-no-taxonomy-services)
 	 - [4.4.5 RIF Services crash on logon](#445-rif-services-crash-on-logon)
 	 - [4.4.6 SQL Server TCP/IP Java Connection Errors](#446-sql-server-tcpip-java-connection-errors)
+	 - [4.4.7 Tomcat service will not start](#447-tomcat-service-will-not-start)
+	 [4.4.8 OutOfMemoryError: Java heap space](#448-outofmemoryerror-java-heap-space)
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
    - [5.3 R Issues](#53-r-issues)
-     - [5.3.2 R ERROR: argument is of length zero ; call stack: if scale.model](#532-r-error-argument-is-of-length-zero--call-stack-if-scalemodel)
      - [5.3.1 Cannot find JRI native library](#531-cannot-find-jri-native-library)
+     - [5.3.2 R ERROR: argument is of length zero ; call stack: if scale.model](#532-r-error-argument-is-of-length-zero--call-stack-if-scalemodel)
 - [ 6. Patching](#6-patching)
    - [6.1 RIF Web Application](#61-rif-web-application)
    - [6.2 RIF Middleware](#62-rif-middleware)
@@ -82,10 +84,16 @@ of this document and are not required for a simple RIF setup.
 ### Printing this document direct from GitHub
 
 The HTML version of this github markdown was created using *grip*. Python 2.7 (for Node.js) needs to be installed and on your path. You can then point your web browser at: *http://localhost:6419/* (or wherever else grip chooses)
-and chose "save as HTML" in the browser. Do not do this in the github repository or it will make a mess,
+and chose "save as HTML" in the browser. Do not do this in the github repository or it will make a mess.
+
+To install:
 ```
 python -m pip install grip
-C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifWebApplication>python -m grip
+```
+
+To document this: *rifWebApplication\Readme.md*
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>python -m grip rifWebApplication\Readme.md
  * Running on http://localhost:6419/ (Press CTRL+C to quit)
  * Downloading style https://assets-cdn.github.com/assets/frameworks-592c4aa40e940d1b0607a3cf272916ff.css
  * Downloading style https://assets-cdn.github.com/assets/github-96ebb1551fc5dba84c6d2a0fa7b1cfcf.css
@@ -182,7 +190,7 @@ Set the following environment variables using the system control panel: *Control
 well hidden on Windows 10, but you can type the path into Windows explorer! Choose *Advanced System Settings*, *Environment variables* and modify the *System Variables* using administrator privileges.
 
 * Add CATALINA_HOME=&lt;Tomcat install directory; e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5&gt; to the global environment.
-* Add &lt;Tomcat bin directory; e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin&gt to the path
+* Add &lt;Tomcat bin directory; e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin&gt; to the path
 
 Start a new command window as an Administrator (type *cmd* into windows search, right click on the command icon and select "run as Administrator").
 
@@ -263,7 +271,7 @@ Neither the JAVA_HOME nor the JRE_HOME environment variable is defined
 At least one of these environment variable is needed to run this program
 ```
 
-You may get a complaint from your firewall or security software; allow tomcat the access it requires. Do *NOT* disdable Tomcat or the RIF will not work! 
+You may get a complaint from your firewall or security software; allow tomcat the access it requires. Do *NOT* disable Tomcat or the RIF will not work! 
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/windows_defender_message.png?raw=true "Prevent Tomcat from being disabled by your security software")
 
@@ -426,6 +434,13 @@ You can do this last!
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
 
+  Note: on some desktop systems this may prevent tomcat running as a service if a 32bit Java was installed first, with the Windows event log having the cryptic message
+  ```
+  The Apache Tomcat 8.5 Tomcat8 service terminated with the following service-specific error: 
+  Incorrect function.
+  ```
+  Tomcat logs to: commons-daemon.<date e.g.,  2018-04-16>.log, tomcat8-stderr.<date e.g.,  2018-04-16>.log, tomcat8-stdout.<date e.g.,  2018-04-16>.log instead of to the console
+  
 * Use the configure Tomcat application (tomcat8w) to make the startup type automatic.
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_1.png?raw=true "Make the startup type automatic")
@@ -433,6 +448,25 @@ You can do this last!
 * Use the configure Tomcat application (tomcat8w) to set the logging level to debug.
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_2.PNG?raw=true "Set the logging level to debug")
+  	
+* Check the memory available to your Java version:
+  ```
+	C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>java -XX:+PrintFlagsFinal -version | findstr HeapSize
+		uintx ErgoHeapSizeLimit                         = 0                                   {product}
+		uintx HeapSizePerGCThread                       = 87241520                            {product}
+		uintx InitialHeapSize                          := 199229440                           {product}
+		uintx LargePageHeapSizeThreshold                = 134217728                           {product}
+		uintx MaxHeapSize                              := 3187671040                          {product}
+	java version "1.8.0_162"
+	Java(TM) SE Runtime Environment (build 1.8.0_162-b12)
+	Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
+  ```	
+
+  In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M, 
+  increase this to a much larger value less than the maximum, at least 2048M.
+
+# 5. Running the RIF
+
 
 * Edit %CATALINA_HOME%/conf/logging.properties and change the default log level enable debugging 
   (*ALL* not *DEBUG*!):
@@ -1563,7 +1597,7 @@ RIF services uses Taxonomy services directly a) when creating study JSON from th
 
 This is code in `...rapidInquiryFacility\rifServices\src\main\java\rifServices\dataStorageLayer\common\GetStudyJSON.java`
 
-### 3.1.2 Taxonomy Service
+### 3.1.2 Taxonomy Services
 
 If SAHSU has supplied a taxonomyServices.war file skip to step 3.
 
@@ -1624,10 +1658,10 @@ Create RIF4 in web-apps:
   to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4*
 * 7zip must be be installed.
 
-### Method 2: Using pre-supplied RIF4.7zip
+### Method 2: Using pre-supplied RIF4.7z
 
-If you are supplied with the *7zip* archive, RIF4.7z needs to be copied to: 
-*%CATALINA_HOME%\webapps\RIF4* and unpacked using the file manager *7zip*. Do not use the command line 
+If you are supplied with the *7-Zip* archive, *RIF4.7z* needs to be copied to: 
+*%CATALINA_HOME%\webapps\RIF4* and unpacked using the file manager *7-Zip* (right click -> 7-Zip -> Extract to "RIF4\"). Do not use the command line 
 (```"C:\Program Files\7-Zip\7z.exe" x RIF4.7z```) it does not work!
 
 ```
@@ -1692,7 +1726,7 @@ This should be copied to *%CATALINA_HOME%\conf* so it is not overwritten by midd
     can be remote but users must take care to ensure that it is setup securely. If you use a remote database, users are advised the secure the database:
 
     * Always use TLS.
-    * Restrict access using **BOTH** the database software (*hba.conf* in Postgres) and the network infrastruture
+    * Restrict access using **BOTH** the database software (*hba.conf* in Postgres) and the network infrastructure
     * Keep the database fully patched as per vendor advice.
     * Follow the appropriate guidelines, e.g. OWASP, but be consult SAHSU as some of the changes may break the RIF: 
       - [OWASP Postgres guidelines](https://www.owasp.org/index.php/OWASP_Backend_Security_Project_PostgreSQL_Hardening)
@@ -1722,11 +1756,11 @@ database.databaseName=sahsuland
 database.databaseType=postgresql
 ```
 
-**BEWARE** Make sure you keep a copy of this file; any front end RIF web application upgrade will overwrite it.
+**BEWARE** Make sure you keep a copy of this file; a RIF services upgrade will overwrite it.
 
 ## 4.2 Setup Network
 
-This section not required is yuou are running on localhost (e.g. a laptop).
+This section not required is you are running on localhost (e.g. a laptop).
 
 By default tomcat runs on port 8080, if you have installed the Apache webserver (Postgres installs can) then it will appear on port 8081. This can be 
 detected using the ```netstat``` command (the syntax will be slightly differ on Linux):
@@ -2802,6 +2836,84 @@ The method for configuring a specific port is detailed in: https://docs.microsof
 	sqlcmd -U peter -P XXXXXXXXXX -d sahsuland_dev -S 192.168.1.65\SAHSU,1433
 	1> quit
 	```
+
+### 4.4.7 Tomcat service will not start
+
+When the Tomcat application (tomcat8w) is used to set the default Java installed on the machine, some desktop systems may not run tomcat as a service if a 32bit Java was installed first.
+the Windows event log has the following cryptic message
+```
+The Apache Tomcat 8.5 Tomcat8 service terminated with the following service-specific error: 
+Incorrect function.
+```
+  
+The comms deamon log: commons-daemon.<date e.g.,  2018-04-16>.log has:
+```
+[2018-04-16 12:58:37] [info]  ( prunsrv.c:1733) [18188] Commons Daemon procrun (1.1.0.0 64-bit) started
+[2018-04-16 12:58:37] [info]  ( prunsrv.c:1643) [18188] Running 'Tomcat8' Service...
+[2018-04-16 12:58:37] [debug] ( prunsrv.c:1417) [19736] Inside ServiceMain...
+[2018-04-16 12:58:37] [debug] ( prunsrv.c:885 ) [19736] reportServiceStatusE: dwCurrentState = 2, dwWin32ExitCode = 0, dwWaitHint = 3000, dwServiceSpecificExitCode = 0
+[2018-04-16 12:58:37] [info]  ( prunsrv.c:1175) [19736] Starting service...
+[2018-04-16 12:58:37] [error] ( prunsrv.c:1210) [19736] Failed creating Java 
+[2018-04-16 12:58:37] [error] ( prunsrv.c:1580) [19736] ServiceStart returned 1
+[2018-04-16 12:58:37] [debug] ( prunsrv.c:885 ) [19736] reportServiceStatusE: dwCurrentState = 1, dwWin32ExitCode = 1066, dwWaitHint = 0, dwServiceSpecificExitCode = 1
+[2018-04-16 12:58:37] [info]  ( prunsrv.c:1645) [18188] Run service finished.
+[2018-04-16 12:58:37] [info]  ( prunsrv.c:1814) [18188] Commons Daemon procrun finished
+```
+
+Since there is no sign of Java in the program listing, but the system came with 32bit JRE pre-installed.
+
+### 4.4.8 OutOfMemoryError: Java heap space
+
+The front end reports: ```ERROR: Study tables export error for: 1002 LUNG CANCER```
+
+The middleware log contains:
+```
+Adding RIFGRAPHICS_JPEG for report file: c:\rifDemo\scratchSpace\d1-100\s7\maps\smoothed_smr_7_inv7_males_1000dpi.jpg; pixel width: 7480; pixels/mm: 39.37008
+13:26:48.942 [http-nio-8080-exec-5] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.RifZipFile]:
+createStudyExtract() OutOfMemoryError; heap usage: 117M, 228M
+getMessage:          OutOfMemoryError: Java heap space
+getRootCauseMessage: OutOfMemoryError: Java heap space
+getThrowableCount:   1
+getRootCauseStackTrace >>>
+java.lang.OutOfMemoryError: Java heap space
+	at java.awt.image.DataBufferInt.<init>(DataBufferInt.java:75)
+	at java.awt.image.SinglePixelPackedSampleModel.createDataBuffer(SinglePixelPackedSampleModel.java:242)
+	at java.awt.image.Raster.createWritableRaster(Raster.java:941)
+	at org.apache.batik.gvt.renderer.StaticRenderer.updateWorkingBuffers(StaticRenderer.java:536)
+	at org.apache.batik.gvt.renderer.StaticRenderer.repaint(StaticRenderer.java:375)
+	at org.apache.batik.gvt.renderer.StaticRenderer.repaint(StaticRenderer.java:344)
+	at org.apache.batik.transcoder.image.ImageTranscoder.transcode(ImageTranscoder.java:111)
+	at org.apache.batik.transcoder.XMLAbstractTranscoder.transcode(XMLAbstractTranscoder.java:142)
+	at org.apache.batik.transcoder.SVGAbstractTranscoder.transcode(SVGAbstractTranscoder.java:156)
+	at rifServices.graphics.RIFGraphics.graphicsTranscode(RIFGraphics.java:250)
+	at rifServices.graphics.RIFGraphics.addGraphicsFile(RIFGraphics.java:413)
+	at rifServices.graphics.RIFGraphics.addGraphicsFile(RIFGraphics.java:279)
+	at rifServices.graphics.RIFMaps.createGraphicsMaps(RIFMaps.java:1217)
+	at rifServices.graphics.RIFMaps.writeMap(RIFMaps.java:532)
+	at rifServices.graphics.RIFMaps.writeResultsMaps(RIFMaps.java:346)
+	at rifServices.dataStorageLayer.common.RifGeospatialOutputs.writeGeospatialFiles(RifGeospatialOutputs.java:330)
+	at rifServices.dataStorageLayer.common.RifZipFile.createStudyExtract(RifZipFile.java:481)
+	at rifServices.dataStorageLayer.pg.PGSQLStudyExtractManager.createStudyExtract(PGSQLStudyExtractManager.java:485)
+	at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.createStudyExtract(PGSQLAbstractRIFStudySubmissionService.java:1475)
+	at rifServices.restfulWebServices.pg.PGSQLAbstractRIFWebServiceResource.createZipFile(PGSQLAbstractRIFWebServiceResource.java:965)
+	at rifServices.restfulWebServices.pg.PGSQLRIFStudySubmissionWebServiceResource.createZipFile(PGSQLRIFStudySubmissionWebServiceResource.java:1239)
+```
+	
+Check the memory available to your Java version:
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>java -XX:+PrintFlagsFinal -version | findstr HeapSize
+    uintx ErgoHeapSizeLimit                         = 0                                   {product}
+    uintx HeapSizePerGCThread                       = 87241520                            {product}
+    uintx InitialHeapSize                          := 199229440                           {product}
+    uintx LargePageHeapSizeThreshold                = 134217728                           {product}
+    uintx MaxHeapSize                              := 3187671040                          {product}
+java version "1.8.0_162"
+Java(TM) SE Runtime Environment (build 1.8.0_162-b12)
+Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
+```	
+
+In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M, 
+increase this to a much larger value less than the maximum, at least 2048M. Restart the tomcat service.
 
 # 5. Running the RIF
 

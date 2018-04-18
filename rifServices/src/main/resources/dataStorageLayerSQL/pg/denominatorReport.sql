@@ -60,18 +60,24 @@ WITH x AS (
 	SELECT generate_series(%2, %3) AS year
 ), y AS (
 	SELECT generate_series(%4, %5) AS sex
-), a AS (
+), z AS (
 	SELECT x.year, 
 	       y.sex,
-		   SUM(c.total_pop) AS c_total_pop,
-		   SUM(s.total_pop) AS s_total_pop
+		   SUM(c.total_pop) AS c_total_pop
 	  FROM x CROSS JOIN y
 				FULL OUTER JOIN %1 c ON (
 					c.sex = y.sex AND c.year = x.year AND c.study_or_comparison = 'C')
-				FULL OUTER JOIN %1 s ON (
-					y.sex = s.sex AND x.year = s.year AND s.study_or_comparison = 'S')
 	 GROUP BY x.year, y.sex
-) 
+), a AS(
+	SELECT z.year,
+	       z.sex, 
+		   z.c_total_pop,
+		   SUM(s.total_pop) AS s_total_pop
+	  FROM z
+				FULL OUTER JOIN %1 s ON (
+					z.sex = s.sex AND z.year = s.year AND s.study_or_comparison = 'S')
+	 GROUP BY z.year, z.sex, z.c_total_pop
+)
 SELECT a.year, 
        a.c_total_pop comparison_males, 
        b.c_total_pop comparison_females, 
@@ -83,5 +89,5 @@ SELECT a.year,
 			FULL OUTER JOIN a b ON (
 				a.year = b.year AND b.sex = 2 /* Females */) 
  WHERE a.sex = 1 /* Males */
- ORDER BY year;
+ ORDER BY year;	
  

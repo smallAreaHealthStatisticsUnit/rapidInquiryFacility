@@ -1065,12 +1065,12 @@ public class PGSQLRIFStudySubmissionService extends CommonUserService
 		int len=jsonFromFile.length();
 		StringBuilder escapedJson = new StringBuilder(len);
 		for (int i = 0; i < len; i++) {
-			char c0 = escapedJson.charAt(i);
+			char c0 = jsonFromFile.charAt(i);
 			char c1;
 			if ((i+1) >= len) {
 				c1=0;
 			} else {
-				c1=escapedJson.charAt(i+1);
+				c1=jsonFromFile.charAt(i+1);
 			}
 
 			if (c0 != '\\' || c1 != '\'') {

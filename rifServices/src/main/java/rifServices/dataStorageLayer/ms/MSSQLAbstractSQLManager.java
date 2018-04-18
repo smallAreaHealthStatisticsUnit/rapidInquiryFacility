@@ -40,7 +40,6 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 	/** The database url. */
 	private final String databaseURL;
 	private final HashMap<String, String> passwordHashList;
-	final HashSet<String> registeredUserIDs;
 	final HashSet<String> userIDsToBlock;
 	
 
@@ -54,7 +53,6 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 		userIDsToBlock = new HashSet<>();
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		writeConnectionsFromUser = new HashMap<>();
-		registeredUserIDs = new HashSet<>();
 		passwordHashList = new HashMap<>();
 		readOnlyConnectionsFromUser = new HashMap<>();
 		initialisationQuery = "EXEC rif40.rif40_startup ?";

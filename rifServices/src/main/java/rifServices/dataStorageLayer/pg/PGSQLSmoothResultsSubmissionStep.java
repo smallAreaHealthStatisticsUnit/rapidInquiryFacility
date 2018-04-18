@@ -1,25 +1,31 @@
 package rifServices.dataStorageLayer.pg;
 
-import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.common.CommonRService;
-import rifServices.system.RIFServiceStartupOptions;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceExceptionFactory;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
+import org.rosuda.JRI.REXP;
+import org.rosuda.JRI.Rengine;
+
 import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.logging.Logger;
-import java.util.logging.LogManager;
-import java.io.*;
-
-import org.rosuda.JRI.*;
-
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.util.RIFMemoryManager;
+import rifServices.businessConceptLayer.AbstractCovariate;
+import rifServices.businessConceptLayer.AbstractStudy;
+import rifServices.businessConceptLayer.Investigation;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.dataStorageLayer.common.CommonRService;
+import rifServices.system.RIFServiceStartupOptions;
 
 /**
  *
@@ -322,8 +328,7 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 				
 				rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
 				rifScriptPath.append(File.separator);
-				rifScriptPath.append(File.separator);
-				
+
 				Adj_Cov_Smooth_JRI.append(rifScriptPath);
 				Adj_Cov_Smooth_JRI.append("Adj_Cov_Smooth_JRI.R");
 				RIF_odbc.append(rifScriptPath);
