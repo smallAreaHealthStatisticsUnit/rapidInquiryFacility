@@ -129,7 +129,7 @@ public class SQLQueryUtility {
 	/**
 	 * printWarnings. Print info and warning messages
 	 *
-	 * @param warning SQLWarning
+	 * @param runStudyStatement the statement whose warnings to print.
 	 */
 	public String printWarnings(PreparedStatement runStudyStatement) {
 		SQLWarning warnings;

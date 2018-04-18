@@ -12,9 +12,9 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFComparisonUtility;
+import rifGenericLibrary.util.RIFLogger;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-import rifGenericLibrary.util.RIFLogger;
 
 /**
  *
