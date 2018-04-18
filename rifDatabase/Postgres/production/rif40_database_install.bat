@@ -43,12 +43,25 @@ REM
 REM Usage: rif40_database_install.bat
 REM
 
+(SET NEWDB=)
+(SET NEWUSER=)
+(SET NEWPW=)
+(SET PGPASSWORD=)
+(SET RIF40PW=)
+
 REM
 REM Get DB settings
 REM 
 echo Creating production RIF Postgres database
 for /f "delims=" %%a in ('pg_config --sysconfdir') do @set PG_SYSCONFDIR=%%a
 echo PG_SYSCONFDIR=%PG_SYSCONFDIR%
+
+REM
+REM Production install script:
+REM * Need to create schema called %NEWUSER% not "peter";
+REM * Create dummy pgpass.conf for admin and user;
+REM * Check that %NEWSER% != "rif40
+REM
 
 REM
 REM Install psqlrc if an administrator
@@ -104,6 +117,13 @@ IF NOT DEFINED NEWDB (
 	SET /P NEWDB=New RIF40 db [default sahsuland]: %=%	|| SET NEWDB=sahsuland
 )
 
+REM * Check that %NEWSER% != "rif40
+IF %NEWUSER% EQU "rif40"  (
+	ECHO RIF40 is not a valid RIF user
+	PAUSE
+	exit /b 1
+)
+
 REM
 REM Get passwords from C:\Users\%USERNAME%\AppData\Roaming\postgresql\pgpass.conf if it exists
 REM
@@ -114,10 +134,55 @@ IF NOT EXIST "%PGPASSWORDDIR%" (
 	MKDIR "%PGPASSWORDDIR%"
 	if %errorlevel% neq 0 (
 		ECHO Unable to create PG password directory %PGPASSWORDDIR%
+		PAUSE
+		exit /b 1
 	)		
 )
 		
+REM
+REM Password file does not exist, create it
+REM
+IF NOT EXIST %PGPASSWORDFILE% (
+	ECHO Creating PGPASSWORDFILE %PGPASSWORDFILE%
+	IF NOT DEFINED PGPASSWORD (
+		SET /P PGPASSWORD=Postgres password [postgres]: %=%	|| SET PGPASSWORD=postgres
+	)
+	SET RIF40PW=rif40%RANDOM%_%RANDOM%
+	SET NEWPW=%NEWUSER%_%RANDOM%_%RANDOM%
+)
+
+REM
+REM Set environment variables in three sections so expansions work correctly
+REM
+IF NOT EXIST %PGPASSWORDFILE% (
+REM
+REM hostname:port:database:username:password
+REM
+	SET LINE=localhost:5432:*:postgres:%PGPASSWORD%
+	SET LINE2=localhost:5432:*:rif40:%RIF40PW%
+	SET LINE3=localhost:5432:*:%NEWUSER%:%NEWPW%
+)
+
+IF NOT EXIST %PGPASSWORDFILE% (
+	ECHO PGPASSWORD %PGPASSWORD%
+	ECHO RIF40PW %RIF40PW%
+	ECHO NEWDB %NEWDB%
+	ECHO LINE %LINE%
+	ECHO LINE2 %LINE2%
+	ECHO LINE3 %LINE3%
+	
+	ECHO %LINE%> %PGPASSWORDFILE%
+	IF NOT EXIST %PGPASSWORDFILE% (
+		ECHO Cannot create PGPASSWORDFILE %PGPASSWORDFILE%
+		PAUSE
+		exit /b 1
+ 	)
+	ECHO %LINE2%>> %PGPASSWORDFILE%
+	ECHO %LINE3%>> %PGPASSWORDFILE%
+)
+
 IF EXIST %PGPASSWORDFILE% (
+	ECHO Using previously created %PGPASSWORDFILE%
 	FOR /F "tokens=5 delims=:" %%F IN ('findstr "localhost:5432:\*:postgres:" %PGPASSWORDFILE%') DO (
 	  SET PGPASSWORD=%%F
 	)
@@ -166,11 +231,11 @@ ECHO #
 ECHO # WARNING! this script will the drop and create the RIF40 %NEWDB% Postgres database.
 ECHO # Type control-C to abort.
 ECHO #
-ECHO # Test user: %NEWUSER%; password: %NEWPW%
-ECHO # Postgres password:       %PGPASSWORD%
-ECHO # Schema (rif40) password: %RIF40PW%
-ECHO # PG password directory:   %PGPASSDIR%
-ECHO # PG sysconfig directory:  %PG_SYSCONFDIR%
+ECHO # Test user %NEWUSER%; password %NEWPW%
+ECHO # Postgres password       %PGPASSWORD%
+ECHO # Schema (rif40) password %RIF40PW%
+ECHO # PG password directory   %PGPASSDIR%
+ECHO # PG sysconfig directory  %PG_SYSCONFDIR%
 ECHO #
 ECHO ##########################################################################################
 PAUSE
