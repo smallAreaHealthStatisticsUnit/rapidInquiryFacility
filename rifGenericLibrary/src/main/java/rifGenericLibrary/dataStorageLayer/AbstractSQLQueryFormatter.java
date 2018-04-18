@@ -8,7 +8,7 @@ import java.util.Map;
 
 import rifGenericLibrary.util.RIFLogger;
 
-public abstract class AbstractSQLQueryFormatter implements QueryFormatter {
+public class AbstractSQLQueryFormatter implements QueryFormatter {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
@@ -133,7 +133,7 @@ public abstract class AbstractSQLQueryFormatter implements QueryFormatter {
 			
 		addIndentation(indentationLevel);	
 		query.append(queryPhrase);
-		query.append(" ").append(lineSeparator)
+		query.append(" ").append(lineSeparator);
 	}
 
 	@Override
