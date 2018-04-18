@@ -69,7 +69,7 @@ import java.util.Map;
  *
  */
 
-public abstract class AbstractSQLQueryFormatter {
+public abstract class AbstractSQLQueryFormatter implements QueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -110,10 +110,12 @@ public abstract class AbstractSQLQueryFormatter {
 	// Section Accessors and Mutators
 	// ==========================================
 	
+	@Override
 	public void setDatabaseSchemaName(final String databaseSchemaName) {
 		this.databaseSchemaName = databaseSchemaName;
 	}
 	
+	@Override
 	public String getDatabaseSchemaName() {
 		return databaseSchemaName;
 	}
@@ -150,22 +152,26 @@ public abstract class AbstractSQLQueryFormatter {
 		}		
 	}
 	
+	@Override
 	public DatabaseType getDatabaseType() {
 		return databaseType;
 	}
 	
+	@Override
 	public void setDatabaseType(
-		final DatabaseType databaseType) {
+			final DatabaseType databaseType) {
 		
 		this.databaseType = databaseType;
 	}
 	
+	@Override
 	public boolean isCaseSensitive() {
 		return isCaseSensitive;
 	}
 	
+	@Override
 	public void setCaseSensitive(
-		final boolean isCaseSensitive) {
+			final boolean isCaseSensitive) {
 
 		this.isCaseSensitive = isCaseSensitive;
 	}
@@ -175,56 +181,55 @@ public abstract class AbstractSQLQueryFormatter {
 	 * is to help convert to lower case or upper case, depending on database-specific
 	 * needs.  eg: one vendor uses capital letters, another does not
 	 */
+	@Override
 	public void addCaseSensitivePhrase(
-		final String queryPhrase) {
+			final String queryPhrase) {
 		
 		query.append(queryPhrase);
 	}
 
+	@Override
 	public void addPaddedQueryPhrase(
-		final String queryPhrase) {
+			final String queryPhrase) {
 		
 		query.append(queryPhrase);
 		query.append(" " + lineSeparator);		
 	}
 	
+	@Override
 	public void addBlankLine() {
 		query.append(lineSeparator + lineSeparator);
 	}
 
+	@Override
 	public void addPaddedQueryLine(
-		final int indentationLevel,
-		final String queryPhrase) {
+			final int indentationLevel,
+			final String queryPhrase) {
 			
 		addIndentation(indentationLevel);	
 		query.append(queryPhrase);
 		query.append(" " + lineSeparator);		
 	}
 
+	@Override
 	public void addQueryPhrase(
-		final int indentationLevel,
-		final String queryPhrase) {
+			final int indentationLevel,
+			final String queryPhrase) {
 		
 		addIndentation(indentationLevel);	
 		query.append(queryPhrase);		
 	}
 	
+	@Override
 	public void addQueryPhrase(
-		final String queryPhrase) {
+			final String queryPhrase) {
 		
 		query.append(queryPhrase);
 	}
 
-	/**
-	 * Create query from file
-	 *
-	 * @param  fileName		Name of file containing query
-	 * @param  args 		Argument list.
-	 * @param  databaseType DatabaseType
-	 *						Replaces %1 with args[0] etc
-	 *						NO SUPPORT FOR ESCAPING!
-	 */	
-	public void createQueryFromFile(final String fileName, final String[] args, final DatabaseType databaseType)  
+	@Override
+	public void createQueryFromFile(final String fileName, final String[] args,
+			final DatabaseType databaseType)
 			throws Exception {
 		setDatabaseType(databaseType);
 		FileReader file = getQueryFileReader(fileName);
@@ -252,15 +257,7 @@ public abstract class AbstractSQLQueryFormatter {
 		}		
 	}
 
-	/**
-	 * Create query from file
-	 *
-	 * @param  fileName		Name of file containing query
-	 * @param  args 		Argument list.
-	 * @param  databaseType DatabaseType
-	 *						Replaces %1 with args[1] etc
-	 *						NO SUPPORT FOR ESCAPING!
-	 */	
+	@Override
 	public void queryReplaceAll(String from, String to) {
 		int index = query.indexOf(from);
 		while (index != -1)
@@ -350,9 +347,10 @@ public abstract class AbstractSQLQueryFormatter {
 		return file;
 	}
 	
+	@Override
 	public void addQueryLine(
-		final int indentationLevel,
-		final String queryPhrase) {
+			final int indentationLevel,
+			final String queryPhrase) {
 		
 		addIndentation(indentationLevel);		
 		query.append(queryPhrase);
@@ -360,6 +358,7 @@ public abstract class AbstractSQLQueryFormatter {
 	
 	}
 
+	@Override
 	public void addUnderline() {
 		
 		query.append(" -- ");
@@ -369,15 +368,17 @@ public abstract class AbstractSQLQueryFormatter {
 		query.append(lineSeparator);
 	}
 	
+	@Override
 	public void addComment(
-		final String lineComment) {
+			final String lineComment) {
 		
 		query.append(" -- ");
 		query.append(lineComment);
 	}
 	
+	@Override
 	public void addCommentLine(
-		final String lineComment) {
+			final String lineComment) {
 			
 		query.append(" -- ");
 		query.append(lineComment);
@@ -394,16 +395,19 @@ public abstract class AbstractSQLQueryFormatter {
 		//query.append("\t");
 	}
 	
+	@Override
 	public void finishLine(
-		final String queryPhrase) {
+			final String queryPhrase) {
 		
 		query.append(queryPhrase + lineSeparator);
 	}
 	
+	@Override
 	public void finishLine() {
 		query.append(lineSeparator);
 	}
 	
+	@Override
 	public void padAndFinishLine() {
 		query.append(" " + lineSeparator);
 	}
@@ -413,6 +417,7 @@ public abstract class AbstractSQLQueryFormatter {
 	}
 	
 	
+	@Override
 	public String generateQuery() {
 		StringBuilder result = new StringBuilder();
 		result.append(query.toString());
@@ -424,13 +429,16 @@ public abstract class AbstractSQLQueryFormatter {
 		return result.toString();
 	}
 	
+	@Override
 	public void considerWritingSemiColon() {
 	}
 	
+	@Override
 	public boolean endWithSemiColon() {
 		return endWithSemiColon;
 	}
 	
+	@Override
 	public void setEndWithSemiColon(boolean endWithSemiColon) {
 		this.endWithSemiColon = endWithSemiColon;
 	}

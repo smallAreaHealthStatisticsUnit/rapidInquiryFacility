@@ -27,7 +27,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
@@ -982,7 +982,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 	
 	protected PreparedStatement createPreparedStatement(
 		final Connection connection,
-		final AbstractSQLQueryFormatter queryFormatter) 
+		final QueryFormatter queryFormatter)
 		throws SQLException {
 				
 		return MSSQLQueryUtility.createPreparedStatement(
@@ -1005,7 +1005,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 	protected void logSQLQuery(
 		final Writer logFileWriter,
 		final String queryName,
-		final AbstractSQLQueryFormatter queryFormatter,
+		final QueryFormatter queryFormatter,
 		final String... parameters) 
 		throws RIFServiceException {
 

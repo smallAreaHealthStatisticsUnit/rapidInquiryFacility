@@ -76,7 +76,7 @@ public final class SQLGeneralQueryFormatter
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	public void addQuery(final AbstractSQLQueryFormatter queryFormatter) {
+	public void addQuery(final QueryFormatter queryFormatter) {
 		StringBuilder query = getQueryBuilder();
 		query.append(queryFormatter.generateQuery());
 	}

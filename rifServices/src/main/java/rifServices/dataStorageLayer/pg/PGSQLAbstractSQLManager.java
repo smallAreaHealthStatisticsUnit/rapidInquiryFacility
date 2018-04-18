@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
@@ -65,7 +65,7 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 	}
 	
 	@Override
-	public void configureQueryFormatterForDB(final AbstractSQLQueryFormatter queryFormatter) {
+	public void configureQueryFormatterForDB(final QueryFormatter queryFormatter) {
 		
 		queryFormatter.setDatabaseType(
 			rifDatabaseProperties.getDatabaseType());
@@ -74,7 +74,7 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 	}
 	
 	public PreparedStatement createPreparedStatement(final Connection connection,
-			final AbstractSQLQueryFormatter queryFormatter) throws SQLException {
+			final QueryFormatter queryFormatter) throws SQLException {
 				
 		return PGSQLQueryUtility.createPreparedStatement(
 			connection,

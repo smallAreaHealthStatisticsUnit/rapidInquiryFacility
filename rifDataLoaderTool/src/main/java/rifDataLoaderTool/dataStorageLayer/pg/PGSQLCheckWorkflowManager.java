@@ -16,7 +16,7 @@ import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.Messages;
@@ -369,7 +369,7 @@ final public class PGSQLCheckWorkflowManager
 	private void addOptimiseFields(
 		final DataSetConfiguration dataSetConfiguration,
 		final int indentationLevel,
-		final AbstractSQLQueryFormatter queryFormatter) {
+		final QueryFormatter queryFormatter) {
 		
 		
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations

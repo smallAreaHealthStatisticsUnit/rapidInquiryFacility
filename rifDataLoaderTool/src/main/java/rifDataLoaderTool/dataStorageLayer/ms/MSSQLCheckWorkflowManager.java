@@ -16,7 +16,7 @@ import rifDataLoaderTool.businessConceptLayer.WorkflowState;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.system.Messages;
@@ -368,7 +368,7 @@ final public class MSSQLCheckWorkflowManager
 	private void addOptimiseFields(
 		final DataSetConfiguration dataSetConfiguration,
 		final int indentationLevel,
-		final AbstractSQLQueryFormatter queryFormatter) {
+		final QueryFormatter queryFormatter) {
 		
 		
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations

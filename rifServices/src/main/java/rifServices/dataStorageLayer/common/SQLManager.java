@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import com.sun.rowset.CachedRowSetImpl;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 
@@ -19,22 +19,22 @@ public interface SQLManager {
 	void setValidationPolicy(ValidationPolicy validationPolicy);
 	
 	void configureQueryFormatterForDB(
-			AbstractSQLQueryFormatter queryFormatter);
+			QueryFormatter queryFormatter);
 	
 	PreparedStatement createPreparedStatement(
 			Connection connection,
-			AbstractSQLQueryFormatter queryFormatter)
+			QueryFormatter queryFormatter)
 		throws SQLException;
 	
 	CachedRowSetImpl createCachedRowSet(
 			Connection connection,
-			AbstractSQLQueryFormatter queryFormatter,
+			QueryFormatter queryFormatter,
 			String queryName)
 				throws Exception;
 	
 	CachedRowSetImpl createCachedRowSet(
 			Connection connection,
-			AbstractSQLQueryFormatter queryFormatter,
+			QueryFormatter queryFormatter,
 			String queryName,
 			int[] params)
 				throws Exception;
@@ -67,7 +67,7 @@ public interface SQLManager {
 	
 	void logSQLQuery(
 			String queryName,
-			AbstractSQLQueryFormatter queryFormatter,
+			QueryFormatter queryFormatter,
 			String... parameters);
 	
 	void logSQLException(SQLException sqlException);

@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
@@ -224,7 +224,7 @@ public class PGSQLQueryUtility {
 	
 	public static PreparedStatement createPreparedStatement(
 		final Connection connection,
-		final AbstractSQLQueryFormatter queryFormatter) 
+		final QueryFormatter queryFormatter)
 		throws SQLException {
 
 		return connection.prepareStatement(

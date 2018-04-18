@@ -15,9 +15,9 @@ import java.util.Set;
 import com.sun.rowset.CachedRowSetImpl;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLFunctionCallerQueryFormatter;
@@ -102,7 +102,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	
 	@Override
 	public void configureQueryFormatterForDB(
-			final AbstractSQLQueryFormatter queryFormatter) {
+			final QueryFormatter queryFormatter) {
 		
 		queryFormatter.setDatabaseType(
 			rifDatabaseProperties.getDatabaseType());
@@ -112,7 +112,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	}
 	
 	@Override
-	public PreparedStatement createPreparedStatement(final Connection connection, final AbstractSQLQueryFormatter queryFormatter)
+	public PreparedStatement createPreparedStatement(final Connection connection, final QueryFormatter queryFormatter)
 			throws SQLException {
 				
 		return new SQLQueryUtility().createPreparedStatement(
@@ -133,7 +133,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	 */		
 	protected CachedRowSetImpl createCachedRowSet(
 			final Connection connection,
-			AbstractSQLQueryFormatter queryFormatter,
+			QueryFormatter queryFormatter,
 			final String queryName,
 			final String[] params)
 				throws Exception {
@@ -177,7 +177,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	@Override
 	public CachedRowSetImpl createCachedRowSet(
 			final Connection connection,
-			AbstractSQLQueryFormatter queryFormatter,
+			QueryFormatter queryFormatter,
 			final String queryName)
 				throws Exception {
 			
@@ -218,7 +218,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	@Override
 	public CachedRowSetImpl createCachedRowSet(
 			final Connection connection,
-			AbstractSQLQueryFormatter queryFormatter,
+			QueryFormatter queryFormatter,
 			final String queryName,
 			final int[] params)
 				throws Exception {
@@ -449,7 +449,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	}	
 	
 	@Override
-	public void logSQLQuery(final String queryName, final AbstractSQLQueryFormatter queryFormatter,
+	public void logSQLQuery(final String queryName, final QueryFormatter queryFormatter,
 			final String... parameters) {
 		
 		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
@@ -476,7 +476,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	
 	protected void logSQLQuery(
 		final String queryName,
-		final AbstractSQLQueryFormatter queryFormatter,
+		final QueryFormatter queryFormatter,
 		final int[] parameters) {
 		
 		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
@@ -504,7 +504,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	
 	protected void logSQLQuery(
 		final String queryName,
-		final AbstractSQLQueryFormatter queryFormatter) {
+		final QueryFormatter queryFormatter) {
 		
 		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
 			return;

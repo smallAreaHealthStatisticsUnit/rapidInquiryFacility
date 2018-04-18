@@ -10,8 +10,8 @@ import java.util.HashSet;
 import java.util.Properties;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.system.Messages;
@@ -77,7 +77,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 		return rifDatabaseProperties;
 	}
 	
-	public void configureQueryFormatterForDB(final AbstractSQLQueryFormatter queryFormatter) {
+	public void configureQueryFormatterForDB(final QueryFormatter queryFormatter) {
 		
 		queryFormatter.setDatabaseType(
 			rifDatabaseProperties.getDatabaseType());
@@ -88,7 +88,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 
 	@Override
 	public PreparedStatement createPreparedStatement(final Connection connection,
-			final AbstractSQLQueryFormatter queryFormatter) throws SQLException {
+			final QueryFormatter queryFormatter) throws SQLException {
 				
 		return MSSQLQueryUtility.createPreparedStatement(
 			connection,
@@ -108,7 +108,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 
 	}
 
-	public void logSQLQuery(final String queryName, final AbstractSQLQueryFormatter queryFormatter,
+	public void logSQLQuery(final String queryName, final QueryFormatter queryFormatter,
 			final String... parameters) {
 
 		if (queryLoggingIsDisabled(queryName)) {

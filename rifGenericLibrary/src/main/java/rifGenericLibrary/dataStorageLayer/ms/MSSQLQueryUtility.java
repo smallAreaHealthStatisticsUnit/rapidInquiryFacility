@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
@@ -150,7 +150,7 @@ public final class MSSQLQueryUtility {
 	
 	public static PreparedStatement createPreparedStatement(
 		final Connection connection,
-		final AbstractSQLQueryFormatter queryFormatter) 
+		final QueryFormatter queryFormatter)
 		throws SQLException {
 		
 		//holdability set at connection level, not statement level

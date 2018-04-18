@@ -14,7 +14,7 @@ import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
 import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLAddCommentQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateIndexQueryFormatter;
@@ -422,7 +422,7 @@ public class PostgreSQLDataLoadingScriptWriter {
 	}
 	
 	private void writeQuery(final FileWriter fileWriter,
-		final AbstractSQLQueryFormatter queryFormatter) 
+		final QueryFormatter queryFormatter)
 		throws Exception {
 				
 		fileWriter.write(queryFormatter.generateQuery());
