@@ -8,7 +8,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import com.sun.rowset.CachedRowSetImpl;
 
@@ -32,25 +34,31 @@ import rifServices.system.files.TomcatFile;
 
 public abstract class AbstractSQLManager implements SQLManager {
 	
-	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 	private static final String ABSTRACT_SQLMANAGER_PROPERTIES = "AbstractSQLManager.properties";
 	private static final int MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD = 5;
-	protected final HashSet<String> userIDsToBlock;
-	private final HashMap<String, Integer> suspiciousEventCounterFromUser;
+
+	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
+	protected static final Set<String> registeredUserIDs = new HashSet<>();;
+	protected static final Set<String> userIDsToBlock = new HashSet<>();;
+
 	/** The read connection from user. */
-	protected final HashMap<String, ConnectionQueue> readOnlyConnectionsFromUser;
+	protected static final Map<String, ConnectionQueue> readOnlyConnectionsFromUser
+			= new HashMap<>();
+
 	/** The write connection from user. */
-	protected final HashMap<String, ConnectionQueue> writeConnectionsFromUser;
-	protected final HashSet<String> registeredUserIDs;
-	
+	protected static final Map<String, ConnectionQueue> writeConnectionsFromUser = new HashMap<>();
+
+	private static final HashMap<String, Integer> suspiciousEventCounterFromUser = new HashMap<>();
+
 	protected RIFDatabaseProperties rifDatabaseProperties;
-	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
-	private boolean enableLogging = true;
+
 	private static Properties prop = null;
 	private static String lineSeparator = System.getProperty("line.separator");
-	
 	private static DatabaseType databaseType;
+
+	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
+	private boolean enableLogging = true;
 
 	/**
 	 * Instantiates a new abstract sql manager.
@@ -60,11 +68,6 @@ public abstract class AbstractSQLManager implements SQLManager {
 
 		this.rifDatabaseProperties = rifDatabaseProperties;
 		databaseType = this.rifDatabaseProperties.getDatabaseType();
-		userIDsToBlock = new HashSet<>();
-		suspiciousEventCounterFromUser = new HashMap<>();
-		readOnlyConnectionsFromUser = new HashMap<>();
-		writeConnectionsFromUser = new HashMap<>();
-		registeredUserIDs = new HashSet<>();
 	}
 
 	@Override
@@ -735,7 +738,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	@Override
 	public boolean isLoggedIn(
 			final String userID) {
-		
+
 		return registeredUserIDs.contains(userID);
 	}
 	

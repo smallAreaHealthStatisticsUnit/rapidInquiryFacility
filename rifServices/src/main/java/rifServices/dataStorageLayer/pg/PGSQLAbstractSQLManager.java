@@ -236,6 +236,7 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 			}
 			writeConnectionsFromUser.put(userID, writeOnlyConnectionQueue);
 			passwordHashList.put(userID, password);
+			registeredUserIDs.add(userID);
 			rifLogger.info(this.getClass(), "XXXXXXXXXXX P O S T G R E S Q L XXXXXXXXXX");
 		}
 		catch(ClassNotFoundException classNotFoundException) {

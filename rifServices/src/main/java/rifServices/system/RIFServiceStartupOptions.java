@@ -13,6 +13,8 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
+import rifServices.system.files.TomcatBase;
+import rifServices.system.files.TomcatFile;
 
 /**
  * Class that holds configuration settings for rif services.  These will appear
@@ -23,7 +25,6 @@ public class RIFServiceStartupOptions {
 
 	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
 
-	private int maximumMapAreasAllowedForSingleDisplay;
 	private RIFLogger rifLogger = RIFLogger.getLogger();
 
 	private boolean isWebDeployment;
@@ -45,25 +46,16 @@ public class RIFServiceStartupOptions {
 	private DatabaseType databaseType;
 	private boolean isDatabaseCaseSensitive;
 	private boolean sslSupported;
-	private boolean useSSLDebug;
-	private String trustStorePassword;
 
 	private String odbcDataSourceName;
 	
 	/** The server side cache directory. */
 	private File serverSideCacheDirectory;
-		
-	private String webApplicationDirectory;
 
-	private String rScriptDirectory;
-	
-	
 	private String extractDirectory;
 	
 	private String taxonomyServicesServer;
-	
-	private String extraExtractFilesDirectoryPath;
-	
+
 	private boolean useStrictValidationPolicy;
 
 	private final RIFServiceStartupProperties properties;
@@ -118,21 +110,18 @@ public class RIFServiceStartupOptions {
 			databaseDriverPrefix = properties.getDatabaseDriverPrefix();
 			host = properties.getHost();
 			port = properties.getPort();
-			webApplicationDirectory = properties.getWebApplicationDirectory();
 			databaseName = properties.getDatabaseName();
-			rScriptDirectory = properties.getRScriptDirectory();
 			odbcDataSourceName = properties.getODBCDataSourceName();
 			databaseType =  properties.getDatabaseType();
 			extractDirectory = properties.getExtractDirectoryName();
 			taxonomyServicesServer = properties.getTaxonomyServicesServer();
-			maximumMapAreasAllowedForSingleDisplay = properties.getMaximumMapAreasAllowedForSingleDisplay();
 			isDatabaseCaseSensitive = properties.isDatabaseCaseSensitive();
 			sslSupported = properties.isSSLSupported();
 
 			if (sslSupported) {
 				rifLogger.info(this.getClass(),
 						"RIFServicesStartupOptions -- using SSL debug");
-				useSSLDebug = properties.useSSLDebug();
+				final boolean useSSLDebug = properties.useSSLDebug();
 				if (useSSLDebug) {
 
 					System.setProperty("javax.net.debug", "ssl");
@@ -140,15 +129,11 @@ public class RIFServiceStartupOptions {
 
 				System.setProperty("javax.net.ssl.trustStore",
 						properties.getTrustStore());
-				trustStorePassword
-					= properties.getTrustStorePassword();
+				final String trustStorePassword = properties.getTrustStorePassword();
 
 				System.setProperty("javax.net.ssl.trustStorePassword",
-						trustStorePassword);
+				                   trustStorePassword);
 			}
-
-			extraExtractFilesDirectoryPath
-				= properties.getExtraDirectoryForExtractFiles();
 		}
 		catch(Exception exception) {
 			rifLogger.error(this.getClass(),
@@ -345,28 +330,7 @@ public class RIFServiceStartupOptions {
 
 		this.databaseName = databaseName;
 	}
-	
-	/**
-	 * Gets the server side cache directory.
-	 *
-	 * @return the server side cache directory
-	 */
-	public File getServerSideCacheDirectory() {
 
-		return serverSideCacheDirectory;
-	}
-	
-	/**
-	 * Sets the server side cache directory.
-	 *
-	 * @param serverSideCacheDirectory the new server side cache directory
-	 */
-	public void setServerSideCacheDirectory(
-		final File serverSideCacheDirectory) {
-
-		this.serverSideCacheDirectory = serverSideCacheDirectory;
-	}
-	
 	/**
 	 * Gets the record type.
 	 *
@@ -379,55 +343,26 @@ public class RIFServiceStartupOptions {
 
 	public String getRIFServiceResourcePath() {
 
-		StringBuilder path = new StringBuilder();
-
 		if (isWebDeployment) {
-			rifLogger.info(this.getClass(), "RIFServiceStartupOptions is web deployment");
-			Map<String, String> environmentalVariables = System.getenv();
 
-			String catalinaHome = environmentalVariables.get("CATALINA_HOME");
-			if (catalinaHome == null) {
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.INVALID_STARTUP_OPTIONS, 
-						"CATALINA_HOME not set in the environment");
-				rifLogger.error(this.getClass(), "RIFServiceStartupOptions error", rifServiceException);
-				throw new IllegalStateException(rifServiceException);
-			}
+			rifLogger.info(getClass(), "RIFServiceStartupOptions is web deployment");
 
-			String catalinaHomeDirectoryPath = environmentalVariables.get("CATALINA_HOME");
-			rifLogger.info(this.getClass(), "Get CATALINA_HOME="+catalinaHomeDirectoryPath);
-			catalinaHomeDirectoryPath = catalinaHomeDirectoryPath.replace("\\", "\\\\");
-			path.append(catalinaHomeDirectoryPath);
-			path.append("\\\\");
-			path.append("webapps");
-			path.append("\\\\");
-			path.append("rifServices");
-			path.append("\\\\");
-			path.append("WEB-INF");	
-			path.append("\\\\");
-			path.append("classes");		
-			
+			String path = new TomcatFile(new TomcatBase(), ".").pathToClassesDirectory().toString();
+			rifLogger.info(getClass(), "Returning path: " + path);
+
+			return path;
 		}
 		else {
 			rifLogger.info(this.getClass(), "RIFServiceStartupOptions is NOT web deployment");
-			path.append((new File(".")).getAbsolutePath());
-			path.append(File.separator);
-			path.append("target");
-			path.append(File.separator);
-			path.append("classes");			
+
+			return (new File(".")).getAbsolutePath()
+			       + File.separator
+			       + "target"
+			       + File.separator
+			       + "classes";
 		}
-				
-		return path.toString();
 	}
 
-	public void setMaximumMapAreasAllowedForSingleDisplay(
-		final int maximumMapAreasAllowedForSingleDisplay) {
-		
-		this.maximumMapAreasAllowedForSingleDisplay = maximumMapAreasAllowedForSingleDisplay;
-	}
-	
-	
 	public boolean useStrictValidationPolicy() {
 		return useStrictValidationPolicy;
 	}
