@@ -147,7 +147,7 @@ IF NOT EXIST %PGPASSWORDFILE% (
 	IF NOT DEFINED PGPASSWORD (
 		SET /P PGPASSWORD=Postgres password [postgres]: %=%	|| SET PGPASSWORD=postgres
 	)
-	SET RIF40PW=rif40%RANDOM%_%RANDOM%
+	SET RIF40PW=rif40_%RANDOM%_%RANDOM%
 	SET NEWPW=%NEWUSER%_%RANDOM%_%RANDOM%
 )
 
@@ -163,14 +163,7 @@ REM
 	SET LINE3=localhost:5432:*:%NEWUSER%:%NEWPW%
 )
 
-IF NOT EXIST %PGPASSWORDFILE% (
-	ECHO PGPASSWORD %PGPASSWORD%
-	ECHO RIF40PW %RIF40PW%
-	ECHO NEWDB %NEWDB%
-	ECHO LINE %LINE%
-	ECHO LINE2 %LINE2%
-	ECHO LINE3 %LINE3%
-	
+IF NOT EXIST %PGPASSWORDFILE% (	
 	ECHO %LINE%> %PGPASSWORDFILE%
 	IF NOT EXIST %PGPASSWORDFILE% (
 		ECHO Cannot create PGPASSWORDFILE %PGPASSWORDFILE%
@@ -179,6 +172,9 @@ IF NOT EXIST %PGPASSWORDFILE% (
  	)
 	ECHO %LINE2%>> %PGPASSWORDFILE%
 	ECHO %LINE3%>> %PGPASSWORDFILE%
+	(SET LINE=)
+	(SET LINE2=)
+	(SET LINE3=)
 )
 
 IF EXIST %PGPASSWORDFILE% (
@@ -220,10 +216,32 @@ IF NOT DEFINED PGPASSWORD (
 	SET /P PGPASSWORD=Postgres password [default postgres]: %=%	|| SET PGPASSWORD=postgres
 )
 IF NOT DEFINED RIF40PW (
-	SET /P RIF40PW=Schema [rif40] password [default rif40]: %=%	|| SET RIF40PW=rif40
+	SET ADD_RIF40PW=Y
+	SET RIF40PW=rif40_%RANDOM%_%RANDOM%
 )
 IF NOT DEFINED NEWPW (
-	SET /P NEWPW=New user password [default %NEWUSER%]: %=%	|| SET NEWPW=%NEWUSER%
+	SET ADD_NEWPW=Y
+	SET NEWPW=%NEWUSER%_%RANDOM%_%RANDOM%
+)
+
+IF DEFINED ADD_RIF40PW (
+	SET LINE2=localhost:5432:*:rif40:%RIF40PW%
+)
+IF DEFINED ADD_NEWPW (
+	SET LINE3=localhost:5432:*:%NEWUSER%:%NEWPW%
+)
+
+IF DEFINED ADD_RIF40PW (
+	ECHO Adding rif40 to PG password file: %PGPASSWORDFILE%
+	ECHO %LINE2%>> %PGPASSWORDFILE%
+	(SET ADD_RIF40PW=)
+	(SET LINE2=)
+)
+IF DEFINED ADD_NEWPW (
+	ECHO Adding %NEWUSER% to PG password file: %PGPASSWORDFILE%
+	ECHO %LINE3%>> %PGPASSWORDFILE%
+	(SET ADD_NEWPW=)
+	(SET LINE3=)
 )
 
 ECHO ##########################################################################################
@@ -267,7 +285,7 @@ if %errorlevel% neq 0 (
 REM
 REM This needs to be tested on a clean install
 REM
-	IF NOT EXIST %PGPASSFILE% IF EXIST pgpass.conf (
+	IF NOT EXIST pgpass.conf (
 		ECHO Copying generated pgpass.conf to %PGPASSFILE%
 		COPY pgpass.conf %PGPASSFILE%
 		if %errorlevel% neq 0 (
@@ -278,12 +296,15 @@ REM
 REM
 REM Run sahsuland.sql (which can be edited) if present; otherwise use pg_restore on the binary dump file
 REM	
-	IF EXIST sahsuland.sql (
-		CALL powershell -ExecutionPolicy ByPass -file run.ps1 pg_restore.rpt "%CD%" ^
-			psql -d %NEWDB% -U postgres -f sahsuland.sql
+	IF NOT EXIST sahsuland.dump (
+		ECHO Cannot find database dump sahsuland.dump
+		(SET NEWPW=)
+		(SET PGPASSWORD=)
+		(SET RIF40PW=)	
+		exit /b 1
 	) else (		
 		CALL powershell -ExecutionPolicy ByPass -file run.ps1 pg_restore.rpt "%CD%" ^
-			pg_restore -d %NEWDB% -U postgres sahsuland_dev.dump
+			pg_restore -d %NEWDB% -U postgres sahsuland.dump
 	)
 	if %errorlevel% neq 0 (
 		ECHO pg_restore/psql exiting with error code: %errorlevel%	
