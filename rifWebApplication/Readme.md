@@ -349,25 +349,6 @@ select properties; In options unset "quick edit mode", "insert mode", "filter cl
 
 Tomcat can be stopped using "control-C" if R has not been run or using stop_rif.bat.
 
-# 5. Running the RIF
-
-
-* Edit %CATALINA_HOME%/conf/logging.properties and change the default log level enable debugging 
-  (*ALL* not *DEBUG*!):
-  ```
-  ############################################################
-  # Facility specific properties.
-  # Provides extra control for each logger.
-  ############################################################
-  
-  # org.apache.catalina.core.ContainerBase.[Catalina].[localhost].level = INFO
-  org.apache.catalina.core.ContainerBase.[Catalina].[localhost].level = ALL
-  ```
-  
-* Restart Tomcat using the configure Tomcat application (tomcat8w) or the services panel.   
-  The *tomcat* output trace will appear in %CATALINA_HOME%/logs as:
-  *tomcat8-stderr.<date in format YYYY-MM-DD>* and also possibly *tomcat8-stdout.<date in format YYYY-MM-DD>*.
-  
 * When further instructions tell you to stop and start tomcat you will need to use the configure Tomcat application (tomcat8w) or the services panel
 
 ### 1.3.4 Middleware Logging (Log4j2) Introduction
@@ -559,11 +540,26 @@ java.util.logging.LogManager that uses Log4j.
 The configuration file is in *%CATALINA_HOME%/conf/log4j2.xml*. This configuration file completely replaces the 
 configuration in the previous section (which is a subset).
 
-RIF Tomcat logging configuration. This file must be placed in: *%CATALINA_HOME%\comf\log4j2.xml*
-and an example is found in: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml*
-   
-The source is in: *rapidInquiryFacility\rifGenericLibrary\src\main\resources\log4j2.xml*
-
+* The RIF Tomcat logging configuration file must be placed in: *%CATALINA_HOME%\comf\log4j2.xml*.
+  An example is found in: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml*.
+  The source is in: *rapidInquiryFacility\rifServices\src\main\resources\log4j2.xml*
+ 
+* Edit %CATALINA_HOME%/conf/logging.properties and change the default log level enable debugging 
+  (*ALL* not *DEBUG*!):
+  ```
+  ############################################################
+  # Facility specific properties.
+  # Provides extra control for each logger.
+  ############################################################
+  
+  # org.apache.catalina.core.ContainerBase.[Catalina].[localhost].level = INFO
+  org.apache.catalina.core.ContainerBase.[Catalina].[localhost].level = ALL
+  ```
+  
+* Restart Tomcat using the configure Tomcat application (tomcat8w) or the services panel.   
+  The *tomcat* output trace will appear in %CATALINA_HOME%/logs as:
+  *tomcat8-stderr.<date in format YYYY-MM-DD>* and also possibly *tomcat8-stdout.<date in format YYYY-MM-DD>*.
+  
 **To send  RIF output to the console uncomment: 
 ```<!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF middleware output on the console -->```**. 
 
@@ -1504,12 +1500,12 @@ The downloaded binary packages are in
 	(x86)\Skype\Phone\;C:/Program Files/R/R-3.4.0/library/rJava/jri;.
 	```
 	
-	**RESTART YOUR ADMINISTRATOR WINDOW TO PICK UP YOUR CHANGES** 
-	
-	**YOU CAN NOW START THE RIF (using the *start_rif.bat* script or by running *catalina.bat start* in the directory 
-	*%CATALOINA_HOME%\bin* as an Administrator.) AND LOGON**. See section 5 
-	[Running the RIF](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#5-running-the-rif) 
-	for logon instructions
+	* **RESTART YOUR ADMINISTRATOR WINDOW TO PICK UP YOUR CHANGES** 
+	* [You can now start the rif](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#133-running-tomcat-on-the-command-line) (using the *start_rif.bat* script or by running *catalina.bat start* in the directory 
+	  *%CATALOINA_HOME%\bin* as an Administrator.)
+	* Then you can logon. See section 5 
+	  [Running the RIF](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#5-running-the-rif) 
+	  for logon instructions
 	
 6. JRI Errors
 	
@@ -2648,6 +2644,7 @@ you will need to a) use 64bit Java! and b) set the *-Xmx* flag in  *%CATALINA_HO
 * Make sure you have restarted tomcat before attempting to run the RIF for the first time
 * In a non networked single machine environment (e.g. a laptop) the RIF is at: http://localhost:8080/RIF4
 * In a networked environment the RIF is at: ```http://<your domain>/RIF4```, e.g. *https://aepw-rif27.sm.med.ic.ac.uk/RIF4*
+* Test cases are provided in the *tests* folder of the SAHSU supplied bundle
 
 ## 5.1 Logging On
 
