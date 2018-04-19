@@ -39,7 +39,7 @@ RIF Web Application and Middleware Installation
 	 - [4.4.6 SQL Server TCP/IP Java Connection Errors](#446-sql-server-tcpip-java-connection-errors)
 	 - [4.4.7 Tomcat service will not start](#447-tomcat-service-will-not-start)
 	 - [4.4.8 OutOfMemoryError: Java heap space](#448-outofmemoryerror-java-heap-space)
-	 - [4.8.9 Study extracts but R does not run](#489-study-extracts-but-R-does-not-run)
+	 - [4.8.9 Study extracts but R does not run](#489-study-extracts-but-r-does-not-run)
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
@@ -1918,24 +1918,24 @@ This fixes the error : "R BYM sahsuland fault\R BYM sahsuland fault - no covaria
  
 * Tomcat log:
   ```
-2018-04-19 15:37:26,223 http-nio-8080-exec-9 DEBUG Now writing to C:\Program Files\Apache Software Foundation\Tomcat 8.5/log4j2/2018
--04/RIF_middleware.2018-04-19-1.log at 2018-04-19T15:37:26.223+0100
-Cannot find JRI native library!
-Please make sure that the JRI native library is in a directory listed in java.library.path.
+	2018-04-19 15:37:26,223 http-nio-8080-exec-9 DEBUG Now writing to C:\Program Files\Apache Software Foundation\Tomcat 8.5/log4j2/2018
+	-04/RIF_middleware.2018-04-19-1.log at 2018-04-19T15:37:26.223+0100
+	Cannot find JRI native library!
+	Please make sure that the JRI native library is in a directory listed in java.library.path.
 
-java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.4\library\rJava\jri\x64\jri.dll: Can't find dependent libraries
-        at java.lang.ClassLoader$NativeLibrary.load(Native Method)
-        at java.lang.ClassLoader.loadLibrary0(ClassLoader.java:1941)
-        at java.lang.ClassLoader.loadLibrary(ClassLoader.java:1857)
-        at java.lang.Runtime.loadLibrary0(Runtime.java:870)
-        at java.lang.System.loadLibrary(System.java:1122)
-        at org.rosuda.JRI.Rengine.<clinit>(Rengine.java:19)
-        at rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep.performStep(PGSQLSmoothResultsSubmissionStep.java:232)
-        at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.smoothResults(PGSQLRunStudyThread.java:314)
-        at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.run(PGSQLRunStudyThread.java:191)
-        at java.lang.Thread.run(Thread.java:748)
-        at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.submitStudy(PGSQLAbstractRIFStudySubmissionService
-.java:1078)
+	java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.4\library\rJava\jri\x64\jri.dll: Can't find dependent libraries
+			at java.lang.ClassLoader$NativeLibrary.load(Native Method)
+			at java.lang.ClassLoader.loadLibrary0(ClassLoader.java:1941)
+			at java.lang.ClassLoader.loadLibrary(ClassLoader.java:1857)
+			at java.lang.Runtime.loadLibrary0(Runtime.java:870)
+			at java.lang.System.loadLibrary(System.java:1122)
+			at org.rosuda.JRI.Rengine.<clinit>(Rengine.java:19)
+			at rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep.performStep(PGSQLSmoothResultsSubmissionStep.java:232)
+			at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.smoothResults(PGSQLRunStudyThread.java:314)
+			at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.run(PGSQLRunStudyThread.java:191)
+			at java.lang.Thread.run(Thread.java:748)
+			at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.submitStudy(PGSQLAbstractRIFStudySubmissionService
+	.java:1078)
   ```
 
 * RIF middleware log:
