@@ -2151,3 +2151,4 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 * Fix for incorrect denominator totals in report
 * 2nd round of Postgres port tests.
 * Added standalone documentation
+* Upgrade Postgres install script to same capability as SQL Server script (can define DB and user); added support for pgpass.conf 

@@ -40,7 +40,7 @@ Postgres is usually setup in one of four ways:
 
 The front and and middleware require username and password authentications; so method 4 must not be used.
   
-Postgres also can proxy users (see ident.conf examples in the bottom of the buuild notes. 
+Postgres also can proxy users (see ident.conf examples are in [Configuration File Examples](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#3-configuration-file-examples)
 Typically this is used to allow remote postgres administrator user authentication and to logon as the schema owner (rif40).
 
 The Postgres installer will ask for a password for Postgres; do **NOT** use internationalised characters, e.g. **£** as the 
@@ -135,15 +135,15 @@ The script will ask the user for:
 
 **ONLY USE LOWERCASE LETTERS, UNDERSCORE AND THE DIGITS 0-9; START WITH A LTTER**
 
-The script will create the user pgpass.conf (in C:\Users\%USERNAME%\AppData\Roaming\postgresql) and the 
-create the psqlrc psql logon script. If required it will:
+The script will create the user *pgpass.conf* (in *C:\Users\%USERNAME%\AppData\Roaming\postgresql*) and the 
+create the *psqlrc* psql logon script. If required it will:
 
 * Ask the user for the *postgres* databaase administrator password (set as part of the database install)
 * Set RIF40 user password (default: *rif40_&lt;randon digits&gt;_&lt;randon digits&gt;*)
 * The production RIF user password (default: *&lt;username&gt;_&lt;randon digits&gt;_&lt;randon digits&gt;*)
 
 The script runs *db_create.sql* to create the database and users and then restores the database from the
-supplied sahsuland.dump using *pg_restore*.
+supplied *sahsuland.dump* using *pg_restore*.
 
 ```
 C:\Users\support\Downloads\OneDrive-2018-04-18\Postgres>rif40_database_install.bat
@@ -160,7 +160,7 @@ Adding pch to PG password file: "C:\Users\support\AppData\Roaming\postgresql\pgp
 # Type control-C to abort.
 #
 # Test user pch; password pch_13958_373
-# Postgres password       Summ5r1609
+# Postgres password       XXXXXXXXXX
 # Schema (rif40) password rif4010669_20906
 # PG password directory
 # PG sysconfig directory  C:/PROGRA~1/POSTGR~1/9.6/etc
@@ -171,7 +171,7 @@ Log: db_create.rpt
 Working directory: C:\Users\support\Downloads\OneDrive-2018-04-18\Postgres
 Command: psql
 Arguments: -U postgres -d postgres -h localhost -w -e -P pager=off -v testuser=pch -v newdb=trumpton -v newpw=pch_13958_373 -v verbo
-sity=terse -v debug_level=1 -v echo=all -v postgres_password=Summ5r1609 -v rif40_password=rif4010669_20906 -v tablespace_dir= -v pgh
+sity=terse -v debug_level=1 -v echo=all -v postgres_password=XXXXXXXXXX -v rif40_password=rif4010669_20906 -v tablespace_dir= -v pgh
 ost=localhost -v os=Windows_NT -f db_create.sql
 You are connected to database "postgres" as user "postgres" on host "localhost" at port "5432".
 DO LANGUAGE plpgsql $$
@@ -228,7 +228,7 @@ psql:db_create.sql:229: INFO:  db_create.sql() rif40 password="<NULL>"
 psql:db_create.sql:229: INFO:  db_create.sql() rif40 needs to be created encrypted password will be ="<NULL>"
 psql:db_create.sql:229: INFO:  SQL> SET rif40.encrypted_rif40_password TO 'md515c55111bdb93bb7543f2480c7384531';
 psql:db_create.sql:229: INFO:  SQL> SET rif40.rif40_password TO 'rif4010669_20906';
-psql:db_create.sql:229: INFO:  db_create.sql() postgres password="Summ5r1609"
+psql:db_create.sql:229: INFO:  db_create.sql() postgres password="XXXXXXXXXX"
 psql:db_create.sql:229: INFO:  db_create.sql() postgres encrypted password="md588c29e12c569ac444b7381647f09e2e1"
 psql:db_create.sql:229: INFO:  SQL> SET rif40.encrypted_postgres_password TO 'md588c29e12c569ac444b7381647f09e2e1';
 DO
@@ -300,7 +300,7 @@ Tuples only is on.
 * Format is: hostname:port:database:username:password
 * An example is supplied in pgpass.conf in the current directory
 *****************************************************************************************************
- localhost:5432:*:postgres:summ5r1609
+ localhost:5432:*:postgres:XXXXXXXXXX
  localhost:5432:*:pch:pch_13958_373
  localhost:5432:*:rif40:rif4010669_20906
 
