@@ -1994,8 +1994,8 @@ Todo:
 
 #### 5th to 9th March
 
-* Wecome Martin McCallion
-* RIF deoplyment meeting with Hima
+* Welcome Martin McCallion
+* RIF deployment meeting with Hima
 * RIF team meeting 
 * Makefile improvements
 * Rounding control, improvements to range displays
@@ -2149,3 +2149,5 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 * Test covariate extracts and maps with and without additional covariate (SES); OK: issues is with the reports. First year is not being inserted (caused by Postgres EXPLAIN VERBOSE); fixed;
   Rechecked all counts in extract and map tables, all OK
 * Fix for incorrect denominator totals in report
+* 2nd round of Postgres port tests.
+* Added standalone documentation
