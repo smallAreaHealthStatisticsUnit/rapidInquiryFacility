@@ -8,9 +8,7 @@ import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
@@ -78,8 +76,9 @@ public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 
 			//Create query
 			Integer ageGroupID = null;
-			PGSQLSelectQueryFormatter getAgeIDQueryFormatter 
-				= new PGSQLSelectQueryFormatter();
+			SelectQueryFormatter getAgeIDQueryFormatter = SelectQueryFormatter.getInstance(
+					rifServiceStartupOptions.getRifDatabaseType(), false);
+
 			sqlRIFContextManager.configureQueryFormatterForDB(getAgeIDQueryFormatter);
 			getAgeIDQueryFormatter.addSelectField("age_group_id");
 			getAgeIDQueryFormatter.addFromTable("rif40.rif40_tables");
@@ -127,8 +126,8 @@ public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 			//"2" may represent age ranges that are broken down every 4 years
 			//After obtaining the list of age groups having the correct age group id
 			//sort them by low_age
-			SelectQueryFormatter getAgesForAgeGroupID
-				= new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter getAgesForAgeGroupID = SelectQueryFormatter.getInstance(
+					rifServiceStartupOptions.getRifDatabaseType(), false);
 			sqlRIFContextManager.configureQueryFormatterForDB(getAgesForAgeGroupID);
 
 			getAgesForAgeGroupID.addSelectField("age_group_id");
@@ -189,7 +188,7 @@ public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			sqlRIFContextManager.logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("ageGroup.error.unableToGetAgeGroups");
 
@@ -197,19 +196,17 @@ public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 				getClass(),
 				errorMessage, 
 				sqlException);
-						
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-			throw rifServiceException;
+
+			throw new RIFServiceException(
+				RIFServiceError.DATABASE_QUERY_FAILED,
+				errorMessage);
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(getAgeIDStatement);
-			PGSQLQueryUtility.close(getAgeIDResultSet);			
-			PGSQLQueryUtility.close(getAgesForAgeGroupStatement);
-			PGSQLQueryUtility.close(getAgesForAgeGroupResultSet);
+			SQLQueryUtility.close(getAgeIDStatement);
+			SQLQueryUtility.close(getAgeIDResultSet);
+			SQLQueryUtility.close(getAgesForAgeGroupStatement);
+			SQLQueryUtility.close(getAgesForAgeGroupResultSet);
 		}
 		return results;		
 	}
@@ -258,7 +255,8 @@ public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 		try {
 
 			//Create query
-			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
+					rifServiceStartupOptions.getRifDatabaseType(), false);
 			sqlRIFContextManager.configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("year_start");
 			queryFormatter.addSelectField("year_stop");
@@ -320,7 +318,7 @@ public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 
 			//Record original exception, throw sanitised, human-readable version			
 			sqlRIFContextManager.logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlAgeGenderYearManager.error.unableToGetStartEndYear",
@@ -337,8 +335,8 @@ public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 	}
 
@@ -406,8 +404,8 @@ public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 		try {
 
 			//Create query
-			PGSQLSelectQueryFormatter queryFormatter
-				= new PGSQLSelectQueryFormatter();
+			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
+					rifServiceStartupOptions.getRifDatabaseType(), false);
 			queryFormatter.setDatabaseSchemaName("rif40");
 			queryFormatter.addSelectField("fieldname");
 			queryFormatter.addFromTable("rif40_age_groups");
@@ -494,7 +492,7 @@ public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			sqlRIFContextManager.logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
@@ -504,27 +502,16 @@ public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 			rifLogger.error(
 				getClass(),
 				errorMessage, 
-				sqlException);										
-					
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
+				sqlException);
+
+			throw new RIFServiceException(
+				RIFServiceError.DATABASE_QUERY_FAILED,
+				errorMessage);
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}			
 	}
-	
-		
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

@@ -1,6 +1,24 @@
 package rifGenericLibrary.dataStorageLayer;
 
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+
 public interface SelectQueryFormatter extends QueryFormatter {
+
+	static SelectQueryFormatter getInstance(final DatabaseType type, final boolean useGoCommand) {
+
+		switch (type) {
+			case POSTGRESQL:
+				return new PGSQLSelectQueryFormatter();
+			case SQL_SERVER:
+				return new MSSQLSelectQueryFormatter(useGoCommand);
+			case UNKNOWN:
+			default:
+				throw new IllegalStateException("SelectQueryFormatter.getInstance: unknown "
+				                                + "database type");
+		}
+	}
+
 	/**
 	 * Sets the use distinct.
 	 *

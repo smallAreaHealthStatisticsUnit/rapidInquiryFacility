@@ -63,8 +63,8 @@ public class SQLQueryUtility {
 	 * @param resultSet the result set
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void close(
-		final ResultSet resultSet) 
+	public static void close(
+			final ResultSet resultSet)
 		throws RIFServiceException {
 		
 		if (resultSet == null) {
@@ -81,7 +81,7 @@ public class SQLQueryUtility {
 					"sqlConnectionManager.error.unableToCloseResource");
 			
 			rifLogger.error(
-				getClass(),
+				SQLQueryUtility.class,
 				errorMessage, 
 				sqlException);
 
@@ -97,8 +97,8 @@ public class SQLQueryUtility {
 	 * @param statement the statement
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void close(
-		final Statement statement) 
+	public static void close(
+			final Statement statement)
 		throws RIFServiceException {
 
 		if (statement == null) {
@@ -114,7 +114,7 @@ public class SQLQueryUtility {
 					"sqlConnectionManager.error.unableToCloseResource");
 			
 			rifLogger.error(
-				getClass(),
+				SQLQueryUtility.class,
 				errorMessage, 
 				sqlException);
 																		
@@ -202,7 +202,7 @@ public class SQLQueryUtility {
 		}		
 	}
 	
-	public void rollback(
+	public static void rollback(
 		final Connection connection ) 
 		throws RIFServiceException {
 		

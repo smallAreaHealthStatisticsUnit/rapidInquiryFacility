@@ -7,8 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
@@ -69,8 +69,9 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 
 			//Create query
 			Integer ageGroupID = null;
-			PGSQLSelectQueryFormatter getAgeIDQueryFormatter 
-				= new PGSQLSelectQueryFormatter();
+			SelectQueryFormatter getAgeIDQueryFormatter = SelectQueryFormatter.getInstance(
+					rifServiceStartupOptions.getRifDatabaseType(), false);
+
 			sqlRIFContextManager.configureQueryFormatterForDB(getAgeIDQueryFormatter);
 			getAgeIDQueryFormatter.addSelectField("age_group_id");
 			getAgeIDQueryFormatter.addFromTable("rif40_tables");
@@ -124,8 +125,8 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 			//"2" may represent age ranges that are broken down every 4 years
 			//After obtaining the list of age groups having the correct age group id
 			//sort them by low_age
-			PGSQLSelectQueryFormatter getAgesForAgeGroupID 
-				= new PGSQLSelectQueryFormatter();
+			SelectQueryFormatter getAgesForAgeGroupID = SelectQueryFormatter.getInstance(
+					rifServiceStartupOptions.getRifDatabaseType(), false);
 			sqlRIFContextManager.configureQueryFormatterForDB(getAgesForAgeGroupID);
 
 			getAgesForAgeGroupID.addSelectField("age_group_id");
@@ -138,24 +139,24 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 			if ((sortingOrder == null) ||
 				(sortingOrder == AgeGroupSortingOption.ASCENDING_LOWER_LIMIT)) {
 				getAgesForAgeGroupID.addOrderByCondition(
-					"low_age", 
-					PGSQLSelectQueryFormatter.SortOrder.ASCENDING);			
+					"low_age",
+					SelectQueryFormatter.SortOrder.ASCENDING);
 			}
 			else if (sortingOrder == AgeGroupSortingOption.DESCENDING_LOWER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
 					"low_age",
-					PGSQLSelectQueryFormatter.SortOrder.DESCENDING);
+					SelectQueryFormatter.SortOrder.DESCENDING);
 			}
 			else if (sortingOrder == AgeGroupSortingOption.ASCENDING_UPPER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
 					"high_age",
-					PGSQLSelectQueryFormatter.SortOrder.ASCENDING);		
+					SelectQueryFormatter.SortOrder.ASCENDING);
 			}
 			else {
 				//it must be descending lower limit.		
 				getAgesForAgeGroupID.addOrderByCondition(
 					"high_age",
-					PGSQLSelectQueryFormatter.SortOrder.DESCENDING);		
+					SelectQueryFormatter.SortOrder.DESCENDING);
 				assert sortingOrder == AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
 			}
 			
@@ -187,12 +188,12 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			sqlRIFContextManager.logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("ageGroup.error.unableToGetAgeGroups");
 
 			rifLogger.error(
-				PGSQLAgeGenderYearManager.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);
 			
@@ -202,10 +203,10 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(getAgeIDStatement);
-			PGSQLQueryUtility.close(getAgeIDResultSet);			
-			PGSQLQueryUtility.close(getAgesForAgeGroupStatement);
-			PGSQLQueryUtility.close(getAgesForAgeGroupResultSet);
+			SQLQueryUtility.close(getAgeIDStatement);
+			SQLQueryUtility.close(getAgeIDResultSet);
+			SQLQueryUtility.close(getAgesForAgeGroupStatement);
+			SQLQueryUtility.close(getAgesForAgeGroupResultSet);
 		}
 		return results;		
 	}
@@ -239,7 +240,8 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 		try {
 
 			//Create query
-			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
+					rifServiceStartupOptions.getRifDatabaseType(), false);
 			sqlRIFContextManager.configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("year_start");
 			queryFormatter.addSelectField("year_stop");
@@ -301,27 +303,25 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 
 			//Record original exception, throw sanitised, human-readable version			
 			sqlRIFContextManager.logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlAgeGenderYearManager.error.unableToGetStartEndYear",
 					ndPair.getDisplayName());
 			
 			rifLogger.error(
-				PGSQLAgeGenderYearManager.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);
-						
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
+
+			throw new RIFServiceException(
+				RIFServiceError.DATABASE_QUERY_FAILED,
+				errorMessage);
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 	}
 	
@@ -390,8 +390,8 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 		try {
 
 			//Create query
-			PGSQLSelectQueryFormatter queryFormatter
-				= new PGSQLSelectQueryFormatter();
+			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
+					rifServiceStartupOptions.getRifDatabaseType(), false);
 			queryFormatter.addSelectField("fieldname");
 			queryFormatter.addFromTable("rif40_age_groups");
 			queryFormatter.addFromTable("rif40_tables");
@@ -410,20 +410,7 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 			queryFormatter.addWhereParameter(
 				"rif40_age_groups", 
 				"fieldname");		
-			
-			
-			
-			/*
-			SQLRecordExistsQueryFormatter queryFormatter
-				= new SQLRecordExistsQueryFormatter();
-			configureQueryFormatterForDB(queryFormatter);
-			queryFormatter.setFromTable("rif40_age_groups");
 
-			queryFormatter.setLookupKeyFieldName("age_group_id");
-			queryFormatter.addWhereParameter("low_age");
-			queryFormatter.addWhereParameter("high_age");
-			*/
-			
 			String denominatorTableName
 				= ndPair.getDenominatorTableName();
 			sqlRIFContextManager.logSQLQuery(
@@ -452,7 +439,7 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 			*/
 			resultSet = statement.executeQuery();
 			
-			if (resultSet.next() == false) {
+			if (!resultSet.next()) {
 				//ERROR: no such age group exists
 				String recordType
 					= ageGroup.getRecordType();
@@ -477,7 +464,7 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			sqlRIFContextManager.logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
@@ -485,7 +472,7 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 					ageGroup.getDisplayName());
 
 			rifLogger.error(
-				PGSQLAgeGenderYearManager.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);
 			
@@ -495,17 +482,8 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}			
 	}
-	
-		
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }
