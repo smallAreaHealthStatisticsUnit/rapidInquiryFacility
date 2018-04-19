@@ -13,10 +13,6 @@ RIF Web Application and Middleware Installation
 	 - [1.3.4 Running Tomcat as a service](#134-running-tomcat-as-a-service)
 	 - [1.3.5 Middleware Logging (Log4j2) Introduction](#135-middleware-logging-log4j2-introduction)
 	 - [1.3.6 Tomcat Logging (Log4j2) Setup](#136-tomcat-logging-log4j2-setup) 
-	 - [1.3.7 Using JConsole with Tomcat](#137-using-jconsole-with-tomcat) 
-	 - [1.3.8 Front End Logging](#138-front-end-logging)
-	 - [1.3.9 Printing Defaults](#139-printing-defaults)
-	 - [1.3.10 Securing Tomcat](#1310-securing-tomcat)
   - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
    - [2.1 Building Using Make](#21-building-using-make)	
@@ -44,7 +40,10 @@ RIF Web Application and Middleware Installation
 	 - [4.4.5 RIF Services crash on logon](#445-rif-services-crash-on-logon)
 	 - [4.4.6 SQL Server TCP/IP Java Connection Errors](#446-sql-server-tcpip-java-connection-errors)
 	 - [4.4.7 Tomcat service will not start](#447-tomcat-service-will-not-start)
-	 [4.4.8 OutOfMemoryError: Java heap space](#448-outofmemoryerror-java-heap-space)
+	 - [4.4.8 OutOfMemoryError: Java heap space](#448-outofmemoryerror-java-heap-space)
+   - [4.5 Other Setup](#42-other-setup)
+	 - [4.5.1 Front End Logging](#451-front-end-logging)
+	 - [4.5.2 Printing Defaults](#453-printing-defaults)
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
@@ -56,8 +55,11 @@ RIF Web Application and Middleware Installation
    - [6.2 RIF Middleware](#62-rif-middleware)
    - [6.3 Tomcat](#63-tomcat)
    - [6.4 R](#64-r)
-- [ 7. Front End and Middleware Software Upgrades](#7-front-end-and-middleware-software-upgrades)
-   
+- [ 7. Front End and Middleware Software Upgrades](#7-front-end-and-middleware-software-upgrades) 
+- [ 8. Advanced Tomcat Setup](#8-advanced-tomcat-setup)
+  - [8.1 Using JConsole with Tomcat](#81-using-jconsole-with-tomcat) 
+  - [8.2 Securing Tomcat](#82-securing-tomcat)
+	 
 # 1. Installation Prerequisites
 
 These instructions are to install and setup the RIF middleware and web application (front end) and are for Windows Apache Tomcat. Linux Tomcat 
@@ -181,11 +183,18 @@ an updated ServerInfo.properties:
 
 ### 1.3.3 Running Tomcat on the command line
 
+Do this first, before you try to run the RIF as a service.
+
 Tomcat can be run from the command line. The advantage of this is all the output appears in the same place! To do this the tomcat server must be
 stopped (i.e. in the Windows services panel or via Linux runlevel scripts (/etc/init.d/tomcat*). Normally tomcat is run as a server (i.e. as a 
 daemon in Unix parlance).
 
 **Make sure you start a new command window (cmd) after setting any environment variables**. The new settings will *NOT* be picked up otherwise.
+
+**It is advisable at this point to install the WAR files in the %CATALINA_HOME\webapps directory before you start the RIF. This will get tomcat to 
+expand the WAR files and all the configuration and example files in this section will then appear. The RIF will not work until you configure it correctly in section 4.**
+
+See section 3. Normally these are pre-supplied
 
 cd to %CATALINA_HOME%\bin; run *catalina.bat* with the parameter *start* or *stop*. 
 
@@ -319,7 +328,8 @@ A successful start of the RIF looks like:
 12-Apr-2018 14:58:48.032 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in 21000 ms  
 ```
 
-  Two scripts are provided to start and stop the RIF from the command line:
+
+Two scripts (in the scripts directory) are provided to start and stop the RIF from the command line:
   
 * start_rif.bat
 * stop_rif.bat
@@ -859,7 +869,7 @@ Add the following files to *%CATALINA_HOME%\lib*:
 If you use Maven to build the Middleware, these files are in subdirectories below 
 *%USER%\.m2\repository\org\apache\logging\log4j\<log4j module>\2.9.0* where <log4j module is log4j-api etc.
 
-SAHSU will normally supply these JAR files (in the log4j directory) togther with the war files (in the tomcat webapps directory).
+SAHSU will normally supply these JAR files (in the log4j directory) together with the war files (in the tomcat webapps directory).
 
 Do NOT set the enviroment variables LOGGING_MANAGER or LOGGING_CONFIG.
 This script sets *CATALINA_OPTS* and *CLASSPATH* in the tomcat environment*:
@@ -874,459 +884,6 @@ Debugging:
 * Use catalina.bat run if there is no output from te script and the Java windows disappears immediately
 * Set the configuration status to **debug**
 
-### 1.3.7 Using JConsole with Tomcat
-
-The JConsole graphical user interface is a monitoring tool for Java applications. JConsole is composed of six tabs:
-
-* Overview: Displays overview information about the Java VM and monitored values.
-* Memory: Displays information about memory use.
-* Threads: Displays information about thread use.
-* Classes: Displays information about class loading.
-* VM: Displays information about the Java VM.
-* MBeans: Displays information about MBeans
-
-See: http://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html
-
-The Java Development Kit (JDK) must be installed.
-
-Set the following *CATALINA_OPTS* in *%CATALINA_HOME%\bin\setenv.bat*:
-
-```
--Dcom.sun.management.jmxremote
--Dcom.sun.management.jmxremote.port=9999
--Dcom.sun.management.jmxremote.authenticate=false
--Dcom.sun.management.jmxremote.ssl=false 
--Djava.rmi.server.hostname=localhost
-```
-
-Run Jconsole from *%JAVA_HOME%\bin* e.g. ```"%JAVA_HOME%\bin\Jconsole"```
-
- ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Jconsole.png?raw=true "Jconsole")
-
-### 1.3.8 Front End Logging
-
-Front end logging is enabled by default to the log file: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```; e.g.
- *FrontEndLogger.2017-11-27-1.log*.
- 
-To enable debugging in the front end, copy frontEndParameters.json5 from %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes. Coopy this file to *%CATALINA_HOME%\conf*.
-Set *debugEnabled* to *true*
-
-This file contains various parameter to help debug the front end web application; all should be false unless you are a front end developer. 
-You will need to check the code to see what they have:
-
-* usePouchDBCache:  DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
-* disableMapLocking:Disable disease map initial sync [You can re-enable it!]
-* disableSelectionLocking:  Disable selection locking [You can re-enable it!]
-* syncMapping2EventsDisabled: Disable syncMapping2Events handler [for leak testing]
-* rrDropLineRedrawDisabled: Disable rrDropLineRedraw handler [for leak testing]
-* rrchartWatchDisabled: Disable Angular $watch on rrchart<mapID> [for leak testing]	
-
-Aslo:
- 
-* mapLockingOptions: Map locking options (options for Leaflet.Sync())
-
-Other parameters:
-
-* You can define a *defaultLogin* do not do this in a production environment; for use on single user tests system only!
-* The parameter *userMethods* allows you to define your own methods for mapping.
-* The parameter *mappingDefaults* sets up the defaults for the three maps (viewermap, dismap1 and 1).
-
-Mapping parameters should be changed with extreme caution as they will break the RIF badly if you set them up incorrectly. 
-You must logout, restart tomcat and login again if you test any of the parameters.
-
-```json
-/**
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Peter Hambly
- * @author phambly
- * @version
- */
-
-// THIS FILE MUST BE VALID JSON5; can contain comments and line feeds!
-// http://json5.org/ or https://github.com/json5/json5
-
-/*
-The following is the exact list of additions to JSON’s syntax introduced by JSON5. All of these are optional, and all of these come from ES5.
-
-Objects:
-* Object keys can be unquoted if they’re valid identifiers. Yes, even reserved keywords (like default) are valid unquoted keys in ES5 [§11.1.5, §7.6]. (More info)
-  (TODO: Unicode characters and escape sequences aren’t yet supported in this implementation.)
-* Object keys can also be single-quoted.
-* Objects can have trailing commas.
-
-Arrays:
-* Arrays can have trailing commas.
-
-Strings:
-* Strings can be single-quoted.
-* Strings can be split across multiple lines; just prefix each newline with a backslash. [ES5 §7.8.4]
-
-Numbers:
-* Numbers can be hexadecimal (base 16).
-* Numbers can begin or end with a (leading or trailing) decimal point.
-* Numbers can include Infinity, -Infinity, NaN, and -NaN.
-* Numbers can begin with an explicit plus sign.
-
-Comments:
-* Both inline (single-line) and block (multi-line) comments are allowed.
-*/
-{
-	parameters: {
-		usePouchDBCache: 	false,			// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
-		debugEnabled:		false,			// Disable front end debugging
-		disableMapLocking:	false,			// Disable disease map initial sync [You can re-enable it!]
-		disableSelectionLocking: false,		// Disable selection locking [You can re-enable it!]
-		
-		syncMapping2EventsDisabled: false,	// Disable syncMapping2Events handler [for leak testing]
-		rrDropLineRedrawDisabled: false,	// Disable rrDropLineRedraw handler [for leak testing]
-		rrchartWatchDisabled: false,		// Disable Angular $watch on rrchart<mapID> [for leak testing]
-		
-		mapLockingOptions: {},				// Map locking options (for Leaflet.Sync())
-		
-		/*
-		 * For the Color Brewer names see: https://github.com/timothyrenner/ColorBrewer.jl
-		 * Derived from: http://colorbrewer2.org/
-		 */
-		mappingDefaults: {				
-			'diseasemap1': {
-					method: 	'quantile', 
-					feature:	'smoothed_smr',
-					intervals: 	9,
-					invert:		true,
-					brewerName:	"PuOr"
-			},
-			'diseasemap2': {
-					method: 	'AtlasProbability', 
-					feature:	'posterior_probability',
-					breaks: 	[0.0, 0.20, 0.81, 1.0],	
-					invert:		false,
-					brewerName:	"RdYlGn"
-			},
-			'viewermap': {
-					method: 	'AtlasRelativeRisk', 
-					feature:	'relative_risk',
-					breaks:		[-Infinity, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51, Infinity],
-					invert:		true,
-					brewerName: "PuOr"
-			}
-		},
-		defaultLogin: {						// DO NOT SET in a production environment; for use on single user tests system only!
-			username: 	"",
-			password:	""
-		},
-		userMethods: {
-			'AtlasRelativeRisk': {
-					description: 'Atlas Relative Risk',
-					breaks:		[-Infinity, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51, Infinity],
-					invert:		true,
-					brewerName: "PuOr",
-					invalidScales: ["Constant", "Dark2", "Accent", "Pastel2", "Set2"]
-			},
-			'AtlasProbability': {
-					description: 'Atlas Probability',
-					feature:	'posterior_probability',
-					breaks: 	[0.0, 0.20, 0.81, 1.0],	
-					invert:		false,
-					brewerName:	"RdYlGn",
-                    invalidScales: ["Constant"]
-			}
-		}
-	}
-}              		
-```
-
-Change the log level to debug in the log4j setup for *rifGenericLibrary.util.FrontEndLogger*:
-
-```xml
-    <!-- RIF FRont End logger: rifGenericLibrary.util.FrontEndLogger -->
-    <Logger name="rifGenericLibrary.util.FrontEndLogger"
-		level="debug" additivity="false"> <!-- Chnage to debug for more output -->
-      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
-      <AppenderRef ref="FRONTENDLOGGER"/>
-    </Logger>	
-```
-
-Example from: *FrontEndLogger.2017-11-27-1.log*:
-
-```
-13:06:23.479 [https-jsse-nio-8080-exec-10] ERROR rifGenericLibrary.util.FrontEndLogger : 
-userID:       peter
-browser type: Firefox; v57
-iP address:   0:0:0:0:0:0:0:1
-message:      Could not initialise the taxonomy service
-error stack>>>
-rifMessage@https://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:290:10
-$scope.showError@https://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:347:5
-handleInitialiseError@https://localhost:8080/RIF4/dashboards/login/controllers/rifc-login-login.js:120:33
-e/<@https://localhost:8080/RIF4/libs/standalone/angular.min.js:131:20
-$eval@https://localhost:8080/RIF4/libs/standalone/angular.min.js:145:343
-$digest@https://localhost:8080/RIF4/libs/standalone/angular.min.js:142:412
-$apply@https://localhost:8080/RIF4/libs/standalone/angular.min.js:146:111
-l@https://localhost:8080/RIF4/libs/standalone/angular.min.js:97:320
-J@https://localhost:8080/RIF4/libs/standalone/angular.min.js:102:34
-gg/</t.onload@https://localhost:8080/RIF4/libs/standalone/angular.min.js:103:4
-<<<
-actual time:  27/11/2017 13:06:23
-relative:     +28.5
-```
-
-### 1.3.9 Printing Defaults
-
-The RIF has implemented the Elsevier guidelines: https://www.elsevier.com/authors/author-schemas/artwork-and-media-instructions/artwork-sizing
- 
-Number of pixels versus resolution and print size, for bitmap images
-Image resolution, number of pixels and print size are related mathematically: Pixels = Resolution (DPI) × Print size (in inches); 300 DPI for halftone images; 500 DPI for combination art; 1000 DPI for line art. 72 Points in one inch.
-
-| TARGET SIZE                | Image width     | Pixels@300dpi | Pixels@500dpi | Pixels@1000dpi |
-|----------------------------|-----------------|:--------------|:--------------|:---------------|
-| Minimal size               | 30 mm (85 pt)   | 354           | 591           | 1181           | 
-| Single column              | 90 mm (255 pt)  | 1063          | 1772          | 3543           | 
-| 1.5 column                 | 140 mm (397 pt) | 1654          | 2756          | 5512           | 
-| Double column (full width) | 190 mm (539 pt) | 2244          | 3740          | 7480           | 
-
-The PlosOne guidelines are: http://journals.plos.org/plosone/s/figures 
-
-Figure File Requirements
-The list below is an abbreviated summary of the figure specifications. Read the full details of the requirements in the corresponding sections on this page.
-
-* File Format:			TIFF or EPS
-* Dimensions:			Width: 789 – 2250 pixels (at 300 dpi). Height maximum: 2625 pixels (at 300 dpi).
-* Resolution:			300 – 600 dpi
-* File Size:			<10 MB
-* Text within Figures: 	Arial, Times, or Symbol font only in 8-12 point
-* Figure Files: 		Fig1.tif, Fig2.eps, and so on. Match file name to caption label and citation.
-* Captions:				In the manuscript, not in the figure file.
-
-Printing defaults can be set system wide in *%CATALINA_HOME%\conf\RIFServiceStartupProperties.properties*
- 
-The RIF has the following defaults:
-
-* printingDPI = 1000 
-  100 dots per inch
-* denominatorPyramidWidthPixels = 3543
-  Single column 
-* mapWidthPixels = 7480
-  Double column (full width)
-* jpegQuality = 0.8
-  JPEG quality: between 0.75 and 1.0 (no loss)
-  Below 0.75 will result is visible artefacts
-* populationPyramidAspactRatio = 1.43
-  Allows you to change the population pyramid aspect ratio
-* copyrightInfo=null (not set)
-   Set this to appropriate text to define Copyright in map images (only GEOTIFF supported at present)
-   \u00A9 is the Unicode for the Copyright symbol (C)
-* enableMapGrids=true
-  This enables grid lines on the maps. This are to provide a scale
-* enableCoordinateDisplay=false
-  This is an experimental feature and add coordinates to the grids
- 
-Example from *RIFServiceStartupProperties.properties*
-```.properties
-#
-# Printing setup:
-#
-# Journal requirements:
-#
-# PlosOne: http://journals.plos.org/plosone/s/figures 
-#
-# Figure File Requirements
-# The list below is an abbreviated summary of the figure specifications. Read the full details of the requirements in the corresponding sections on this page.
-# File Format:			TIFF or EPS
-# Dimensions:			Width: 789 – 2250 pixels (at 300 dpi). Height maximum: 2625 pixels (at 300 dpi).
-# Resolution:			300 – 600 dpi
-# File Size:			<10 MB
-# Text within Figures: 	Arial, Times, or Symbol font only in 8-12 point
-# Figure Files: 		Fig1.tif, Fig2.eps, and so on. Match file name to caption label and citation.
-# Captions:				In the manuscript, not in the figure file.
-
-# Elsevier: https://www.elsevier.com/authors/author-schemas/artwork-and-media-instructions/artwork-sizing
-#
-# Number of pixels versus resolution and print size, for bitmap images
-# Image resolution, number of pixels and print size are related mathematically: Pixels = Resolution (DPI) × Print size (in inches); 300 DPI for halftone images; 500 DPI for combination art; 1000 DPI for line art. 72 Points in one inch.
-# TARGET SIZE                   Image width 	Pixels@300dpi 	Pixels@500dpi 	Pixels@1000dpi 	
-# Minimal size                   30 mm (85 pt)  354 	 		591 			1181 
-# Single column                  90 mm (255 pt) 1063 			1772 			3543 
-# 1.5 column 	                140 mm (397 pt) 1654 			2756 			5512 
-# Double column (full width)    190 mm (539 pt) 2244 			3740 			7480
-
-#
-# RIF default setup: 
-# denominator [population] Pyramid: 1000 dpi, 90mm width 
-#
-# 1000dpi = 39.370079 pixel/mm
-# 500dpi  = 16.685039 pixel/mm
-# 300dpi  = 11.811024 pixel/mm
-#
-# 1 inch = 25.4mm
-# 1000dpi => pixel/mm = dpi/25.4
-#
-printingDPI = 1000 
-denominatorPyramidWidthPixels = 3543
-mapWidthPixels = 7480
-#
-# JPEG quality: between 0.75 and 1.0 (no loss)
-# Below 0.75 will result is visible artefacts
-#
-jpegQuality = 0.8
-#
-# Population pyramid aspect ratio
-#
-populationPyramidAspactRatio = 1.43
-
-#
-# Set this to appropriate text to define Copyright in map images (only GEOTIFF supported at present)
-# \u00A9 is the Unicode for the Copyright symbol (C)
-#
-#copyrightInfo="(C) <enter your name here>"
-
-#
-# To disable the map grids
-#
-# enableMapGrids=false
-
-#
-# To enable Coordinate Display
-#
-# enableCoordinateDisplay=true
-
-#
-# To change to the level of rounding in the results; including quantiles etc.
-# 
-# roundDP=3
-```
-
-### 1.3.10 Securing Tomcat
-
-Injecting HTTP Response with the secure header can mitigate most of the web security vulnerabilities. These changes
-implement the necessary HTTP headers to comply with OWASP security standards.
-
-Having a secure header instructs the browser to do or not to do certain things and thence prevent certain security attacks.
-
-Tomcat 8 has added support for following HTTP response headers.
-
-* X-Frame-Options – to prevent clickjacking attack
-* X-XSS-Protection – to avoid cross-site scripting attack
-* X-Content-Type-Options – block content type sniffing
-* HSTS – add strict transport security
-
-As a best practice, take a backup of necessary configuration file before making changes or test in a non-production environment.
-
-In the *%CATALINA_HOME%/conf* folder under path where Tomcat is installed
-Uncomment the following filter (by default it is commented out):
-```xml
-    <filter>
-        <filter-name>httpHeaderSecurity</filter-name>
-        <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
-        <async-supported>true</async-supported>
-    </filter>
-```
-
-By uncommenting above, you instruct Tomcat to support HTTP Header Security filter.
-
-Add the following just after the above filter:
-
-```xml
-<filter-mapping>
-    <filter-name>httpHeaderSecurity</filter-name>
-    <url-pattern>/*</url-pattern>
-</filter-mapping>
-```
-
-By adding above you instruct Tomcat to inject the HTTP Header in all the application URL.
-
-Restart the Tomcat and access the application to verify the headers.
-
-Tomcat security defaults (default values are in square brackets):
-
-* hstsEnabled Should the HTTP Strict Transport Security (HSTS) header be added to the response? See RFC 6797 
-  for more information on HSTS. [true]
-* hstsMaxAgeSeconds The max age value that should be used in the HSTS header. Negative values will be treated
-  as zero. [0]                            
-* hstsIncludeSubDomains Should the includeSubDomains parameter be included in the HSTS header.  
-* antiClickJackingEnabled Should the anti click-jacking header X-Frame-Options be added to every response? [true]                                         -->
-* antiClickJackingOption What value should be used for the header. Must be one of DENY, SAMEORIGIN, ALLOW-FROM 
-  (case-insensitive). [DENY]
-* antiClickJackingUri IF ALLOW-FROM is used, what URI should be allowed? []  
-* blockContentTypeSniffingEnabled Should the header that blocks content type sniffing be added to every response? [true]
-
-#### Adding an expires filter
-
-ExpiresFilter is a Java Servlet API port of Apache mod_expires. This filter controls the setting of the 
-Expires HTTP header and the max-age directive of the Cache-Control HTTP header in server responses. The 
-expiration date can set to be relative to either the time the source file was last modified, or to the 
-time of the client access.
-
-These HTTP headers are an instruction to the client about the document's validity and persistence. If 
-cached, the document may be fetched from the cache rather than from the source until this time has passed. 
-After that, the cache copy is considered "expired" and invalid, and a new copy must be obtained from the
-source.
-
-```xml
-    <filter-mapping>
-        <filter-name>httpHeaderSecurity</filter-name>
-        <url-pattern>/*</url-pattern>
-        <dispatcher>REQUEST</dispatcher>
-    </filter-mapping>
-
-	<filter>
-	 <filter-name>ExpiresFilter</filter-name>
-	 <filter-class>org.apache.catalina.filters.ExpiresFilter</filter-class>
-	 <init-param>
-		<param-name>ExpiresByType image</param-name>
-		<param-value>access plus 10 minutes</param-value>
-	 </init-param>
-	 <init-param>
-		<param-name>ExpiresByType text/css</param-name>
-		<param-value>access plus 10 minutes</param-value>
-	 </init-param>
-	 <init-param>
-		<param-name>ExpiresByType application/javascript</param-name>
-		<param-value>access plus 10 minutes</param-value>
-	 </init-param>
-	</filter>
-
-	<filter-mapping>
-	 <filter-name>ExpiresFilter</filter-name>
-	 <url-pattern>/*</url-pattern>
-	 <dispatcher>REQUEST</dispatcher>
-	</filter-mapping>
-```
-	
 ## 1.4 R
 
 Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
@@ -2856,6 +2413,337 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
 In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M, 
 increase this to a much larger value less than the maximum, at least 2048M. Restart the tomcat service.
 
+## 4.5 Other Setup
+
+### 4.5.1 Front End Logging
+
+Front end logging is enabled by default to the log file: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```; e.g.
+ *FrontEndLogger.2017-11-27-1.log*.
+ 
+To enable debugging in the front end, copy frontEndParameters.json5 from %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes. Copy this file to *%CATALINA_HOME%\conf*.
+Set *debugEnabled* to *true*
+
+This file contains various parameter to help debug the front end web application; all should be false unless you are a front end developer. 
+You will need to check the code to see what they have:
+
+* usePouchDBCache:  DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
+* disableMapLocking:Disable disease map initial sync [You can re-enable it!]
+* disableSelectionLocking:  Disable selection locking [You can re-enable it!]
+* syncMapping2EventsDisabled: Disable syncMapping2Events handler [for leak testing]
+* rrDropLineRedrawDisabled: Disable rrDropLineRedraw handler [for leak testing]
+* rrchartWatchDisabled: Disable Angular $watch on rrchart<mapID> [for leak testing]	
+
+Aslo:
+ 
+* mapLockingOptions: Map locking options (options for Leaflet.Sync())
+
+Other parameters:
+
+* You can define a *defaultLogin* do not do this in a production environment; for use on single user tests system only!
+* The parameter *userMethods* allows you to define your own methods for mapping.
+* The parameter *mappingDefaults* sets up the defaults for the three maps (viewermap, dismap1 and 1).
+
+Mapping parameters should be changed with extreme caution as they will break the RIF badly if you set them up incorrectly. 
+You must logout, restart tomcat and login again if you test any of the parameters.
+
+```json
+/**
+ *
+ *
+ * <hr>
+ * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
+ * that rapidly addresses epidemiological and public health questions using 
+ * routinely collected health and population data and generates standardised 
+ * rates and relative risks for any given health outcome, for specified age 
+ * and year ranges, for any given geographical area.
+ *
+ * <p>
+ * Copyright 2017 Imperial College London, developed by the Small Area
+ * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
+ * is funded by the Public Health England as part of the MRC-PHE Centre for 
+ * Environment and Health. Funding for this project has also been received 
+ * from the United States Centers for Disease Control and Prevention.  
+ * </p>
+ *
+ * <pre> 
+ * This file is part of the Rapid Inquiry Facility (RIF) project.
+ * RIF is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RIF is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
+ * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
+ * Boston, MA 02110-1301 USA
+ * </pre>
+ *
+ * <hr>
+ * Peter Hambly
+ * @author phambly
+ * @version
+ */
+
+// THIS FILE MUST BE VALID JSON5; can contain comments and line feeds!
+// http://json5.org/ or https://github.com/json5/json5
+
+/*
+The following is the exact list of additions to JSON’s syntax introduced by JSON5. All of these are optional, and all of these come from ES5.
+
+Objects:
+* Object keys can be unquoted if they’re valid identifiers. Yes, even reserved keywords (like default) are valid unquoted keys in ES5 [§11.1.5, §7.6]. (More info)
+  (TODO: Unicode characters and escape sequences aren’t yet supported in this implementation.)
+* Object keys can also be single-quoted.
+* Objects can have trailing commas.
+
+Arrays:
+* Arrays can have trailing commas.
+
+Strings:
+* Strings can be single-quoted.
+* Strings can be split across multiple lines; just prefix each newline with a backslash. [ES5 §7.8.4]
+
+Numbers:
+* Numbers can be hexadecimal (base 16).
+* Numbers can begin or end with a (leading or trailing) decimal point.
+* Numbers can include Infinity, -Infinity, NaN, and -NaN.
+* Numbers can begin with an explicit plus sign.
+
+Comments:
+* Both inline (single-line) and block (multi-line) comments are allowed.
+*/
+{
+	parameters: {
+		usePouchDBCache: 	false,			// DO NOT Use PouchDB caching in TopoJSONGridLayer.js; it interacts with the diseasemap sync;
+		debugEnabled:		false,			// Disable front end debugging
+		disableMapLocking:	false,			// Disable disease map initial sync [You can re-enable it!]
+		disableSelectionLocking: false,		// Disable selection locking [You can re-enable it!]
+		
+		syncMapping2EventsDisabled: false,	// Disable syncMapping2Events handler [for leak testing]
+		rrDropLineRedrawDisabled: false,	// Disable rrDropLineRedraw handler [for leak testing]
+		rrchartWatchDisabled: false,		// Disable Angular $watch on rrchart<mapID> [for leak testing]
+		
+		mapLockingOptions: {},				// Map locking options (for Leaflet.Sync())
+		
+		/*
+		 * For the Color Brewer names see: https://github.com/timothyrenner/ColorBrewer.jl
+		 * Derived from: http://colorbrewer2.org/
+		 */
+		mappingDefaults: {				
+			'diseasemap1': {
+					method: 	'quantile', 
+					feature:	'smoothed_smr',
+					intervals: 	9,
+					invert:		true,
+					brewerName:	"PuOr"
+			},
+			'diseasemap2': {
+					method: 	'AtlasProbability', 
+					feature:	'posterior_probability',
+					breaks: 	[0.0, 0.20, 0.81, 1.0],	
+					invert:		false,
+					brewerName:	"RdYlGn"
+			},
+			'viewermap': {
+					method: 	'AtlasRelativeRisk', 
+					feature:	'relative_risk',
+					breaks:		[-Infinity, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51, Infinity],
+					invert:		true,
+					brewerName: "PuOr"
+			}
+		},
+		defaultLogin: {						// DO NOT SET in a production environment; for use on single user tests system only!
+			username: 	"",
+			password:	""
+		},
+		userMethods: {
+			'AtlasRelativeRisk': {
+					description: 'Atlas Relative Risk',
+					breaks:		[-Infinity, 0.68, 0.76, 0.86, 0.96, 1.07, 1.2, 1.35, 1.51, Infinity],
+					invert:		true,
+					brewerName: "PuOr",
+					invalidScales: ["Constant", "Dark2", "Accent", "Pastel2", "Set2"]
+			},
+			'AtlasProbability': {
+					description: 'Atlas Probability',
+					feature:	'posterior_probability',
+					breaks: 	[0.0, 0.20, 0.81, 1.0],	
+					invert:		false,
+					brewerName:	"RdYlGn",
+                    invalidScales: ["Constant"]
+			}
+		}
+	}
+}              		
+```
+
+Change the log level to debug in the log4j setup for *rifGenericLibrary.util.FrontEndLogger*:
+
+```xml
+    <!-- RIF FRont End logger: rifGenericLibrary.util.FrontEndLogger -->
+    <Logger name="rifGenericLibrary.util.FrontEndLogger"
+		level="debug" additivity="false"> <!-- Chnage to debug for more output -->
+      <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
+      <AppenderRef ref="FRONTENDLOGGER"/>
+    </Logger>	
+```
+
+Example from: *FrontEndLogger.2017-11-27-1.log*:
+
+```
+13:06:23.479 [https-jsse-nio-8080-exec-10] ERROR rifGenericLibrary.util.FrontEndLogger : 
+userID:       peter
+browser type: Firefox; v57
+iP address:   0:0:0:0:0:0:0:1
+message:      Could not initialise the taxonomy service
+error stack>>>
+rifMessage@https://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:290:10
+$scope.showError@https://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:347:5
+handleInitialiseError@https://localhost:8080/RIF4/dashboards/login/controllers/rifc-login-login.js:120:33
+e/<@https://localhost:8080/RIF4/libs/standalone/angular.min.js:131:20
+$eval@https://localhost:8080/RIF4/libs/standalone/angular.min.js:145:343
+$digest@https://localhost:8080/RIF4/libs/standalone/angular.min.js:142:412
+$apply@https://localhost:8080/RIF4/libs/standalone/angular.min.js:146:111
+l@https://localhost:8080/RIF4/libs/standalone/angular.min.js:97:320
+J@https://localhost:8080/RIF4/libs/standalone/angular.min.js:102:34
+gg/</t.onload@https://localhost:8080/RIF4/libs/standalone/angular.min.js:103:4
+<<<
+actual time:  27/11/2017 13:06:23
+relative:     +28.5
+```
+
+### 4.5.2 Printing Defaults
+
+The RIF has implemented the Elsevier guidelines: https://www.elsevier.com/authors/author-schemas/artwork-and-media-instructions/artwork-sizing
+ 
+Number of pixels versus resolution and print size, for bitmap images
+Image resolution, number of pixels and print size are related mathematically: Pixels = Resolution (DPI) × Print size (in inches); 300 DPI for halftone images; 500 DPI for combination art; 1000 DPI for line art. 72 Points in one inch.
+
+| TARGET SIZE                | Image width     | Pixels@300dpi | Pixels@500dpi | Pixels@1000dpi |
+|----------------------------|-----------------|:--------------|:--------------|:---------------|
+| Minimal size               | 30 mm (85 pt)   | 354           | 591           | 1181           | 
+| Single column              | 90 mm (255 pt)  | 1063          | 1772          | 3543           | 
+| 1.5 column                 | 140 mm (397 pt) | 1654          | 2756          | 5512           | 
+| Double column (full width) | 190 mm (539 pt) | 2244          | 3740          | 7480           | 
+
+The PlosOne guidelines are: http://journals.plos.org/plosone/s/figures 
+
+Figure File Requirements
+The list below is an abbreviated summary of the figure specifications. Read the full details of the requirements in the corresponding sections on this page.
+
+* File Format:			TIFF or EPS
+* Dimensions:			Width: 789 – 2250 pixels (at 300 dpi). Height maximum: 2625 pixels (at 300 dpi).
+* Resolution:			300 – 600 dpi
+* File Size:			<10 MB
+* Text within Figures: 	Arial, Times, or Symbol font only in 8-12 point
+* Figure Files: 		Fig1.tif, Fig2.eps, and so on. Match file name to caption label and citation.
+* Captions:				In the manuscript, not in the figure file.
+
+Printing defaults can be set system wide in *%CATALINA_HOME%\conf\RIFServiceStartupProperties.properties*. If you have not already moved it then save the 
+Java connector for the RifServices middleware: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*  
+to *%CATALINA_HOME%\conf\RIFServiceStartupProperties.properties*;
+  
+The RIF has the following defaults:
+
+* printingDPI = 1000 
+  100 dots per inch
+* denominatorPyramidWidthPixels = 3543
+  Single column 
+* mapWidthPixels = 7480
+  Double column (full width)
+* jpegQuality = 0.8
+  JPEG quality: between 0.75 and 1.0 (no loss)
+  Below 0.75 will result is visible artefacts
+* populationPyramidAspactRatio = 1.43
+  Allows you to change the population pyramid aspect ratio
+* copyrightInfo=null (not set)
+   Set this to appropriate text to define Copyright in map images (only GEOTIFF supported at present)
+   \u00A9 is the Unicode for the Copyright symbol (C)
+* enableMapGrids=true
+  This enables grid lines on the maps. This are to provide a scale
+* enableCoordinateDisplay=false
+  This is an experimental feature and add coordinates to the grids
+ 
+Example from *RIFServiceStartupProperties.properties*
+```.properties
+#
+# Printing setup:
+#
+# Journal requirements:
+#
+# PlosOne: http://journals.plos.org/plosone/s/figures 
+#
+# Figure File Requirements
+# The list below is an abbreviated summary of the figure specifications. Read the full details of the requirements in the corresponding sections on this page.
+# File Format:			TIFF or EPS
+# Dimensions:			Width: 789 – 2250 pixels (at 300 dpi). Height maximum: 2625 pixels (at 300 dpi).
+# Resolution:			300 – 600 dpi
+# File Size:			<10 MB
+# Text within Figures: 	Arial, Times, or Symbol font only in 8-12 point
+# Figure Files: 		Fig1.tif, Fig2.eps, and so on. Match file name to caption label and citation.
+# Captions:				In the manuscript, not in the figure file.
+
+# Elsevier: https://www.elsevier.com/authors/author-schemas/artwork-and-media-instructions/artwork-sizing
+#
+# Number of pixels versus resolution and print size, for bitmap images
+# Image resolution, number of pixels and print size are related mathematically: Pixels = Resolution (DPI) × Print size (in inches); 300 DPI for halftone images; 500 DPI for combination art; 1000 DPI for line art. 72 Points in one inch.
+# TARGET SIZE                   Image width 	Pixels@300dpi 	Pixels@500dpi 	Pixels@1000dpi 	
+# Minimal size                   30 mm (85 pt)  354 	 		591 			1181 
+# Single column                  90 mm (255 pt) 1063 			1772 			3543 
+# 1.5 column 	                140 mm (397 pt) 1654 			2756 			5512 
+# Double column (full width)    190 mm (539 pt) 2244 			3740 			7480
+
+#
+# RIF default setup: 
+# denominator [population] Pyramid: 1000 dpi, 90mm width 
+#
+# 1000dpi = 39.370079 pixel/mm
+# 500dpi  = 16.685039 pixel/mm
+# 300dpi  = 11.811024 pixel/mm
+#
+# 1 inch = 25.4mm
+# 1000dpi => pixel/mm = dpi/25.4
+#
+printingDPI = 1000 
+denominatorPyramidWidthPixels = 3543
+mapWidthPixels = 7480
+#
+# JPEG quality: between 0.75 and 1.0 (no loss)
+# Below 0.75 will result is visible artefacts
+#
+jpegQuality = 0.8
+#
+# Population pyramid aspect ratio
+#
+populationPyramidAspactRatio = 1.43
+
+#
+# Set this to appropriate text to define Copyright in map images (only GEOTIFF supported at present)
+# \u00A9 is the Unicode for the Copyright symbol (C)
+#
+#copyrightInfo="(C) <enter your name here>"
+
+#
+# To disable the map grids
+#
+# enableMapGrids=false
+
+#
+# To enable Coordinate Display
+#
+# enableCoordinateDisplay=true
+
+#
+# To change to the level of rounding in the results; including quantiles etc.
+# 
+# roundDP=3
+```
+
 # 5. Running the RIF
 
 * Make sure you have restarted tomcat before attempting to run the RIF for the first time
@@ -3062,4 +2950,132 @@ The RIF uses frozen in time the front end Java and libraries. The following upda
 
 Of these updates, Java, Jersey and JAckson are likely to create the most problems.
 
+# 8. Advanced Tomcat Setup
+
+## 8.1 Using JConsole with Tomcat
+
+The JConsole graphical user interface is a monitoring tool for Java applications. JConsole is composed of six tabs:
+
+* Overview: Displays overview information about the Java VM and monitored values.
+* Memory: Displays information about memory use.
+* Threads: Displays information about thread use.
+* Classes: Displays information about class loading.
+* VM: Displays information about the Java VM.
+* MBeans: Displays information about MBeans
+
+See: http://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html
+
+The Java Development Kit (JDK) must be installed.
+
+Set the following *CATALINA_OPTS* in *%CATALINA_HOME%\bin\setenv.bat*:
+
+```
+-Dcom.sun.management.jmxremote
+-Dcom.sun.management.jmxremote.port=9999
+-Dcom.sun.management.jmxremote.authenticate=false
+-Dcom.sun.management.jmxremote.ssl=false 
+-Djava.rmi.server.hostname=localhost
+```
+
+Run Jconsole from *%JAVA_HOME%\bin* e.g. ```"%JAVA_HOME%\bin\Jconsole"```
+
+ ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Jconsole.png?raw=true "Jconsole")
+
+## 8.2 Securing Tomcat
+
+Injecting HTTP Response with the secure header can mitigate most of the web security vulnerabilities. These changes
+implement the necessary HTTP headers to comply with OWASP security standards.
+
+Having a secure header instructs the browser to do or not to do certain things and thence prevent certain security attacks.
+
+Tomcat 8 has added support for following HTTP response headers.
+
+* X-Frame-Options – to prevent clickjacking attack
+* X-XSS-Protection – to avoid cross-site scripting attack
+* X-Content-Type-Options – block content type sniffing
+* HSTS – add strict transport security
+
+As a best practice, take a backup of necessary configuration file before making changes or test in a non-production environment.
+
+In the *%CATALINA_HOME%/conf* folder under path where Tomcat is installed
+Uncomment the following filter (by default it is commented out):
+```xml
+    <filter>
+        <filter-name>httpHeaderSecurity</filter-name>
+        <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
+        <async-supported>true</async-supported>
+    </filter>
+```
+
+By uncommenting above, you instruct Tomcat to support HTTP Header Security filter.
+
+Add the following just after the above filter:
+
+```xml
+<filter-mapping>
+    <filter-name>httpHeaderSecurity</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
+
+By adding above you instruct Tomcat to inject the HTTP Header in all the application URL.
+
+Restart the Tomcat and access the application to verify the headers.
+
+Tomcat security defaults (default values are in square brackets):
+
+* hstsEnabled Should the HTTP Strict Transport Security (HSTS) header be added to the response? See RFC 6797 
+  for more information on HSTS. [true]
+* hstsMaxAgeSeconds The max age value that should be used in the HSTS header. Negative values will be treated
+  as zero. [0]                            
+* hstsIncludeSubDomains Should the includeSubDomains parameter be included in the HSTS header.  
+* antiClickJackingEnabled Should the anti click-jacking header X-Frame-Options be added to every response? [true]                                         -->
+* antiClickJackingOption What value should be used for the header. Must be one of DENY, SAMEORIGIN, ALLOW-FROM 
+  (case-insensitive). [DENY]
+* antiClickJackingUri IF ALLOW-FROM is used, what URI should be allowed? []  
+* blockContentTypeSniffingEnabled Should the header that blocks content type sniffing be added to every response? [true]
+
+### Adding an expires filter
+
+ExpiresFilter is a Java Servlet API port of Apache mod_expires. This filter controls the setting of the 
+Expires HTTP header and the max-age directive of the Cache-Control HTTP header in server responses. The 
+expiration date can set to be relative to either the time the source file was last modified, or to the 
+time of the client access.
+
+These HTTP headers are an instruction to the client about the document's validity and persistence. If 
+cached, the document may be fetched from the cache rather than from the source until this time has passed. 
+After that, the cache copy is considered "expired" and invalid, and a new copy must be obtained from the
+source.
+
+```xml
+    <filter-mapping>
+        <filter-name>httpHeaderSecurity</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+
+	<filter>
+	 <filter-name>ExpiresFilter</filter-name>
+	 <filter-class>org.apache.catalina.filters.ExpiresFilter</filter-class>
+	 <init-param>
+		<param-name>ExpiresByType image</param-name>
+		<param-value>access plus 10 minutes</param-value>
+	 </init-param>
+	 <init-param>
+		<param-name>ExpiresByType text/css</param-name>
+		<param-value>access plus 10 minutes</param-value>
+	 </init-param>
+	 <init-param>
+		<param-name>ExpiresByType application/javascript</param-name>
+		<param-value>access plus 10 minutes</param-value>
+	 </init-param>
+	</filter>
+
+	<filter-mapping>
+	 <filter-name>ExpiresFilter</filter-name>
+	 <url-pattern>/*</url-pattern>
+	 <dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+```
+	
 Peter Hambly, 12th April 2017; revised 4th August 2017 and 12th April 2018
