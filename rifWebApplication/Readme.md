@@ -45,7 +45,7 @@ RIF Web Application and Middleware Installation
    - [5.3 R Issues](#53-r-issues)
      - [5.3.1 Cannot find JRI native library; jri.dll already loaded](#531-cannot-find-jri-native-library-jridll-already-loaded)
      - [5.3.2 R ERROR: argument is of length zero ; call stack: if scale.model](#532-r-error-argument-is-of-length-zero--call-stack-if-scalemodel)
-	 - [5.3.3 Cannot find JRI native library; jri.dll Cannot find dependent libraries](5.3.3 cannot-find-JRI-native-library-jridll-cannot-find-dependent-libraries)
+	 - [5.3.3 Cannot find JRI native library; jri.dll Cannot find dependent libraries](#533-cannot-find-JRI-native-library-jridll-cannot-find-dependent-libraries)
 - [ 6. Patching](#6-patching)
    - [6.1 RIF Web Application](#61-rif-web-application)
    - [6.2 RIF Middleware](#62-rif-middleware)
