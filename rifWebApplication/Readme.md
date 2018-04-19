@@ -39,13 +39,14 @@ RIF Web Application and Middleware Installation
 	 - [4.4.6 SQL Server TCP/IP Java Connection Errors](#446-sql-server-tcpip-java-connection-errors)
 	 - [4.4.7 Tomcat service will not start](#447-tomcat-service-will-not-start)
 	 - [4.4.8 OutOfMemoryError: Java heap space](#448-outofmemoryerror-java-heap-space)
+	 - [4.8.9 Study extracts but R does not run](#489-study-extracts-but-R-does-not-run)
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
    - [5.3 R Issues](#53-r-issues)
      - [5.3.1 Cannot find JRI native library; jri.dll already loaded](#531-cannot-find-jri-native-library-jridll-already-loaded)
      - [5.3.2 R ERROR: argument is of length zero ; call stack: if scale.model](#532-r-error-argument-is-of-length-zero--call-stack-if-scalemodel)
-	 - [5.3.3 Cannot find JRI native library; jri.dll Cannot find dependent libraries](#533-cannot-find-JRI-native-library-jridll-cannot-find-dependent-libraries)
+	 - [5.3.3 Cannot find JRI native library; jri.dll Cannot find dependent libraries](#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 - [ 6. Patching](#6-patching)
    - [6.1 RIF Web Application](#61-rif-web-application)
    - [6.2 RIF Middleware](#62-rif-middleware)
@@ -826,7 +827,8 @@ R is setup later in: [R setup](https://github.com/smallAreaHealthStatisticsUnit/
 As with Java, do NOT use the 32 bit only version unless you have to. These instructions assume you you the 64 
 bit version
 
-Add the 64 bit R executable to the path; e.g. *C:\Program Files\R\R-3.4.4\bin\x64*
+Add the 64 bit R executable to the path; e.g. *C:\Program Files\R\R-3.4.4\bin\x64*. Not: **C:\Program Files\R\R-3.4.4\bin** 
+or you will cause [jri.dll: Can't find dependent libraries](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 # 2. Building Web Services using Maven
 
@@ -1510,20 +1512,7 @@ The downloaded binary packages are in
 	* Then you can logon. See section 5 
 	  [Running the RIF](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#5-running-the-rif) 
 	  for logon instructions
-	
-6. JRI Errors
-	
-	``` 
-	=======getInvestigationID========2===
-	About to call next
-	called next
-	Investigation name==TEST 1001  ID==12==
-	Cannot find JRI native library!
-	Please make sure that the JRI native library is in a directory listed in java.library.path.
 
-	java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.0\library\rJava\jri\x64\jri.dll: Can't find dependent libraries
-	```
-   In this case, the directory *C:\Program Files\R\R-3.4.0\bin\x64* was missing from the path.
    
 ## 4.4 Common Setup Errors
 
@@ -1777,6 +1766,18 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
 In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M, 
 increase this to a much larger value less than the maximum, at least 2048M. Restart the tomcat service.
 
+### 4.8.9 Study extracts but R does not run
+
+* User gets study is now running, but nothing every happens;
+* The RIF is unresponsively; reloading the RIF fails with the server not responding: "Firefox csan't establish a connect to serfver at localhost:8080
+* Tomcat is not running
+
+Restarting the server using ```catalina.bat run``` and re-running the study results in an "Cannot find JRI native library" error
+
+See:
+
+* [jri.dll: Can't find dependent libraries](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
+   
 # 5. Running the RIF
 
 * Make sure you have restarted tomcat before attempting to run the RIF for the first time
@@ -1913,7 +1914,10 @@ This fixes the error : "R BYM sahsuland fault\R BYM sahsuland fault - no covaria
 
 ### 5.3.3 Cannot find JRI native library; jri.dll Cannot find dependent libraries
 
-```
+*  Tomcat server crashes 
+ 
+* Tomcat log:
+  ```
 2018-04-19 15:37:26,223 http-nio-8080-exec-9 DEBUG Now writing to C:\Program Files\Apache Software Foundation\Tomcat 8.5/log4j2/2018
 -04/RIF_middleware.2018-04-19-1.log at 2018-04-19T15:37:26.223+0100
 Cannot find JRI native library!
@@ -1932,8 +1936,18 @@ java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.4\library\rJava\jri\x64
         at java.lang.Thread.run(Thread.java:748)
         at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.submitStudy(PGSQLAbstractRIFStudySubmissionService
 .java:1078)
-```
+  ```
 
+* RIF middleware log:
+  ``` 
+	=======getInvestigationID========2===
+	About to call next
+	called next
+	Investigation name==TEST 1001  ID==12==
+  ```
+
+* Check: *C:\Program Files\R\R-3.4.4\bin\x64* is in the path and not *C:\Program Files\R\R-3.4.4\bin*
+   
 # 6. Patching 
 
 ## 6.1 RIF Web Application  
