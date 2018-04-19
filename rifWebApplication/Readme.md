@@ -43,8 +43,9 @@ RIF Web Application and Middleware Installation
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
    - [5.3 R Issues](#53-r-issues)
-     - [5.3.1 Cannot find JRI native library](#531-cannot-find-jri-native-library)
+     - [5.3.1 Cannot find JRI native library; jri.dll already loaded](#531-cannot-find-jri-native-library-jridll-already-loaded)
      - [5.3.2 R ERROR: argument is of length zero ; call stack: if scale.model](#532-r-error-argument-is-of-length-zero--call-stack-if-scalemodel)
+	 - [5.3.3 Cannot find JRI native library; jri.dll Cannot find dependent libraries](5.3.3 cannot-find-JRI-native-library-jridll-cannot-find-dependent-libraries)
 - [ 6. Patching](#6-patching)
    - [6.1 RIF Web Application](#61-rif-web-application)
    - [6.2 RIF Middleware](#62-rif-middleware)
@@ -1832,7 +1833,7 @@ The service address and port used should match what you setup up in *4.2 Setup N
 
 ## 5.3 R Issues
 
-### 5.3.1 Cannot find JRI native library
+### 5.3.1 Cannot find JRI native library; jri.dll already loaded
 
 The RIF uses Java R integration to access R directly from Java
 
@@ -1909,6 +1910,29 @@ See www.r-inla.org/contact-us for how to get help.
 ```
 
 This fixes the error : "R BYM sahsuland fault\R BYM sahsuland fault - no covariates.txt"
+
+### 5.3.3 Cannot find JRI native library; jri.dll Cannot find dependent libraries
+
+```
+2018-04-19 15:37:26,223 http-nio-8080-exec-9 DEBUG Now writing to C:\Program Files\Apache Software Foundation\Tomcat 8.5/log4j2/2018
+-04/RIF_middleware.2018-04-19-1.log at 2018-04-19T15:37:26.223+0100
+Cannot find JRI native library!
+Please make sure that the JRI native library is in a directory listed in java.library.path.
+
+java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.4\library\rJava\jri\x64\jri.dll: Can't find dependent libraries
+        at java.lang.ClassLoader$NativeLibrary.load(Native Method)
+        at java.lang.ClassLoader.loadLibrary0(ClassLoader.java:1941)
+        at java.lang.ClassLoader.loadLibrary(ClassLoader.java:1857)
+        at java.lang.Runtime.loadLibrary0(Runtime.java:870)
+        at java.lang.System.loadLibrary(System.java:1122)
+        at org.rosuda.JRI.Rengine.<clinit>(Rengine.java:19)
+        at rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep.performStep(PGSQLSmoothResultsSubmissionStep.java:232)
+        at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.smoothResults(PGSQLRunStudyThread.java:314)
+        at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.run(PGSQLRunStudyThread.java:191)
+        at java.lang.Thread.run(Thread.java:748)
+        at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.submitStudy(PGSQLAbstractRIFStudySubmissionService
+.java:1078)
+```
 
 # 6. Patching 
 
