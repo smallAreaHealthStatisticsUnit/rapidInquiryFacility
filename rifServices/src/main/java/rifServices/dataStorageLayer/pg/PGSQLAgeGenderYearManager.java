@@ -25,7 +25,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
+public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 		implements AgeGenderYearManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();

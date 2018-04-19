@@ -27,7 +27,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
+public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 		implements AgeGenderYearManager  {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
@@ -194,7 +194,7 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 				= RIFServiceMessages.getMessage("ageGroup.error.unableToGetAgeGroups");
 
 			rifLogger.error(
-				MSSQLAgeGenderYearManager.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);
 						
@@ -327,7 +327,7 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 					ndPair.getDisplayName());
 			
 			rifLogger.error(
-				MSSQLAgeGenderYearManager.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);
 			
@@ -502,7 +502,7 @@ final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 					ageGroup.getDisplayName());
 
 			rifLogger.error(
-				MSSQLAgeGenderYearManager.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);										
 					

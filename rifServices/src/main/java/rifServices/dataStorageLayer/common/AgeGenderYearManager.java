@@ -12,8 +12,28 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.ms.MSSQLAgeGenderYearManager;
+import rifServices.dataStorageLayer.pg.PGSQLAgeGenderYearManager;
+import rifServices.system.RIFServiceStartupOptions;
 
 public interface AgeGenderYearManager extends SQLManager {
+
+	static AgeGenderYearManager getInstance(final RIFContextManager contextManager,
+			final RIFServiceStartupOptions options) {
+
+		switch (options.getRifDatabaseType()) {
+
+			case POSTGRESQL:
+				return new PGSQLAgeGenderYearManager(contextManager, options);
+			case SQL_SERVER:
+				return new MSSQLAgeGenderYearManager(contextManager, options);
+			case UNKNOWN:
+			default:
+				throw new IllegalStateException("AgeGenderYearManager.getInstance: Unknown "
+				                                + "database type");
+		}
+	}
+
 	/**
 	 * Gets the age groups.
 	 *
