@@ -38,9 +38,9 @@ import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.dataStorageLayer.common.ServiceBundle;
 import rifServices.dataStorageLayer.common.ServiceResources;
-import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.fileFormats.RIFStudySubmissionXMLReader;
 import rifServices.fileFormats.RIFStudySubmissionXMLWriter;
 import rifServices.system.RIFServiceError;
@@ -896,12 +896,12 @@ public class WebService {
 			Locale locale = servletRequest.getLocale();
 			User user = createUser(servletRequest, userID);
 			
-			String tomcatHost=servletRequest.getLocalName();
-			if (tomcatHost.equals("0:0:0:0:0:0:0:1")) { // Windows 7 stupidity
-				tomcatHost="localhost";
+			String host=servletRequest.getLocalName();
+			if (host.equals("0:0:0:0:0:0:0:1")) { // Windows 7 stupidity
+				host="localhost";
 			}
-			String tomcatServer = servletRequest.getScheme() + "://" +
-				tomcatHost + ":" +
+			String url = servletRequest.getScheme() + "://" +
+				host + ":" +
 				servletRequest.getLocalPort();
 				
 			RIFStudySubmissionAPI studySubmissionService
@@ -912,7 +912,7 @@ public class WebService {
 					studyID,
 					zoomLevel,
 					locale,
-					tomcatServer);
+					url);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +
@@ -996,12 +996,12 @@ getParameter("p 1")     yes     c d
 				"; getServerName: " + servletRequest.getServerName() +
 				"; getServerPort: " + servletRequest.getServerPort());
 				
-			String tomcatHost=servletRequest.getLocalName();
-			if (tomcatHost.equals("0:0:0:0:0:0:0:1")) { // Windows 7 stupidity
-				tomcatHost="localhost";
+			String host=servletRequest.getLocalName();
+			if (host.equals("0:0:0:0:0:0:0:1")) { // Windows 7 stupidity
+				host="localhost";
 			}
-			String tomcatServer = servletRequest.getScheme() + "://" +
-				tomcatHost + ":" +
+			String url = servletRequest.getScheme() + "://" +
+				host + ":" +
 				servletRequest.getLocalPort();
 
 			RIFStudySubmissionAPI studySubmissionService
@@ -1011,7 +1011,7 @@ getParameter("p 1")     yes     c d
 					user,
 					studyID,
 					locale,
-					tomcatServer);
+					url);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifLogger.error(this.getClass(), getClass().getSimpleName() +

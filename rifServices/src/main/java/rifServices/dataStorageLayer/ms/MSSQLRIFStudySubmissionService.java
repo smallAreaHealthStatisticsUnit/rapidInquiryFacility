@@ -1241,7 +1241,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 	 * @param  _user 		Database username of logged on user.
 	 * @param  studyID 		Integer study identifier (database study_id field).
 	 * @param  locale 		locale
-	 * @param  tomcatServer e.g. http://localhost:8080.
+	 * @param  url e.g. http://localhost:8080.
 	 *
 	 * @return 				Textual JSON 
 	 *						NULL on exception or permission denied by sqlConnectionManager
@@ -1250,7 +1250,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 			final User _user,
 			final String studyID,
 			final Locale locale,
-			final String tomcatServer) 
+			final String url)
 					throws RIFServiceException {
 										
 		String result = null;
@@ -1316,7 +1316,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 					rifStudySubmission,
 					studyID,
 					locale,
-					tomcatServer);
+					url);
 
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -1342,10 +1342,10 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 	}						
 		
 	public void createStudyExtract(final User user, final String studyID, final String zoomLevel,
-			final Locale locale, final String tomcatServer) throws RIFServiceException {
+			final Locale locale, final String url) throws RIFServiceException {
 		
-		new StudyExtract(user, studyID, zoomLevel, locale, tomcatServer,
-				rifServiceResources).create();
+		new StudyExtract(user, studyID, zoomLevel, locale, url,
+		                 rifServiceResources).create();
 	}
 	
 	public String getStudyExtractFIleName(
