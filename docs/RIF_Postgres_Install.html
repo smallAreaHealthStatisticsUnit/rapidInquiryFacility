@@ -72,7 +72,7 @@
 <a id="user-content-contents" class="anchor" href="#contents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contents</h1>
 <ul>
 <li>
-<a href="#1-installation-prerequistes">1. Installation Prerequistes</a>
+<a href="#1-installation-prerequisites">1. Installation Prerequisites</a>
 <ul>
 <li>
 <a href="#11-postgres">1.1 Postgres</a>
@@ -86,12 +86,12 @@
 <li>
 <a href="#2-installing-a-production-database">2. Installing a production database</a>
 <ul>
-<li><a href="#21-Changing-the-postgres-database-adminstrator-password">2.1 Changing the postgres database adminstrator password</a></li>
+<li><a href="#21-Changing-the-postgres-database-administrator-password">2.1 Changing the postgres database administrator password</a></li>
 </ul>
 </li>
 </ul>
 <h1>
-<a id="user-content-1-installation-prerequistes" class="anchor" href="#1-installation-prerequistes" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1 Installation Prerequistes</h1>
+<a id="user-content-1-installation-prerequisites" class="anchor" href="#1-installation-prerequisites" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1 Installation Prerequisites</h1>
 <h2>
 <a id="user-content-11-postgres" class="anchor" href="#11-postgres" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1.1 Postgres</h2>
 <ul>
@@ -103,6 +103,8 @@
 This is standard PostGres as packaged by Enterprise DB and not their own Postgres based product EDB Postgres
 Enterprise/Standard/Developer. An installation guide is at:
 <a href="http://get.enterprisedb.com/docs/PostgreSQL_Installation_Guide_v9.6.pdf" rel="nofollow">http://get.enterprisedb.com/docs/PostgreSQL_Installation_Guide_v9.6.pdf</a></p>
+<p>The Postgres installer will ask for a password for Postgres; do <strong>NOT</strong> use internationalised characters, e.g. <strong>£</strong> as the
+database usually defaults to US ASCII!</p>
 <p>The Postgres installer then runs stack builder to download and install the additional packages.
 Choose the local port. The following additional packages need to be installed:</p>
 <ul>
@@ -120,12 +122,12 @@ Choose the local port. The following additional packages need to be installed:</
 <li>
 <p>The following should normally be set in your environment:</p>
 <ul>
-<li>PGDATABASE - sahusland</li>
-<li>PGHOST - localhost</li>
+<li>PGDATABASE - &lt;your database name&gt;</li>
 </ul>
 </li>
 <li>
-<p>Check you can logon as postgres</p>
+<p>Check you can logon as postgres. If you need to reset the password see
+<a href="https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#21-Changing-the-postgres-database-administrator-password">Changing the postgres database administrator password</a></p>
 <pre><code>C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin&gt;psql -U postgres -d postgres
 psql (9.5.0)
 Type "help" for help.
@@ -133,7 +135,7 @@ Type "help" for help.
 postgres=#  
 </code></pre>
 <ul>
-<li>If you get a code page error om Windows see 1.1.2 below.</li>
+<li>If you get a code page error on Windows see 1.1.2 below.</li>
 </ul>
 </li>
 </ul>
@@ -141,17 +143,18 @@ postgres=#
 <a id="user-content-111-postgres-user-setup" class="anchor" href="#111-postgres-user-setup" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1.1.1 Postgres User Setup</h3>
 <p>The following users are created by the install script (<em>rif40_database_install.bat</em>):</p>
 <ul>
-<li>postgres     - The database administrator. You will have set this password when you or the installer created
+<li>postgres     - The database administrator. You will have set this password when you created
 the Postgres cluster.</li>
-<li>rif40        - The schema owner. You choose this password (see ENCRYPTED_RIF40_PASSWORD below)</li>
+<li>rif40        - The schema owner.</li>
 <li>&lt;user login&gt; - Your user login. This must be in lowercase and without spaces.</li>
 </ul>
 <p>The install script (<em>rif40_database_install.bat</em>) will create your local .pgpass/pgpass.conf files
-(see Postgres documentation for its location on various OS).</p>
+(see Postgres documentation for its location on various OS) and create random passwords for <em>rif40</em>
+and <em>&lt;user login&gt;</em>.</p>
 <p>E.g. C:\Users\pch\AppData\Roaming\postgresql\pgpass.conf:</p>
-<pre><code>wpea-rif1:5432:*:postgres:&lt;password&gt;
-wpea-rif1:5432:*:pch:&lt;password&gt;
-wpea-rif1:5432:*:rif40:&lt;password&gt;
+<pre><code>localhost:5432:*:postgres:&lt;password&gt;
+localhost:5432:*:pch:&lt;password&gt;
+localhost:5432:*:rif40:&lt;password&gt;
 </code></pre>
 <h3>
 <a id="user-content-112-fixing-windows-code-page-errors" class="anchor" href="#112-fixing-windows-code-page-errors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1.1.2 Fixing Windows Code page errors</h3>
@@ -169,46 +172,54 @@ Type "help" for help.
 <pre><code>cmd.exe /c chcp 1252
 </code></pre>
 <ul>
-<li>Or: modify the cmd shortcut to run <em>cmd.exe /k chcp 1252</em>
+<li>Or: modify the cmd shortcut (find the cmd icon, right click, properties, shortcut panel) to run <em>cmd.exe /k chcp 1252</em>
 </li>
 </ul>
 <h1>
 <a id="user-content-2-installing-a-production-database" class="anchor" href="#2-installing-a-production-database" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2 Installing a production database</h1>
-<p>Run the datbase installer batch script as an adminstrator: rif40_database_install.bat.</p>
+<p>Run the database installer batch script as an administrator: rif40_database_install.bat.</p>
 <p>The script will ask the user for:</p>
 <ul>
 <li>The production RIF user name (default: <em>peter</em>)</li>
 <li>The database name (default: <em>sahsuland</em>)</li>
-<li>Postgres databaase adminstrator password (set as part of the database install)</li>
-<li>RIF40 user password (default: <em>rif40</em>)</li>
-<li>The production RIF user password (default: <em>peter</em>)</li>
 </ul>
+<p><strong>ONLY USE LOWERCASE LETTERS, UNDERSCORE AND THE DIGITS 0-9; START WITH A LTTER</strong></p>
 <p>The script will create the user pgpass.conf (in C:\Users%USERNAME%\AppData\Roaming\postgresql) and the
-create the psqlrc psql logon script.</p>
+create the psqlrc psql logon script. If required it will:</p>
+<ul>
+<li>Ask the user for the <em>postgres</em> databaase administrator password (set as part of the database install)</li>
+<li>Set RIF40 user password (default: <em>rif40_&lt;randon digits&gt;_&lt;randon digits&gt;</em>)</li>
+<li>The production RIF user password (default: <em>&lt;username&gt;<em>&lt;randon digits&gt;</em>&lt;randon digits&gt;</em>)</li>
+</ul>
 <p>The script runs <em>db_create.sql</em> to create the database and users and then restores the database from the
-supplied sahsuland_dev.dump using <em>pg_restore</em>.</p>
-<pre><code>C:\rifDemo\Postgres\production&gt;rif40_database_install.bat
+supplied sahsuland.dump using <em>pg_restore</em>.</p>
+<pre><code>C:\Users\support\Downloads\OneDrive-2018-04-18\Postgres&gt;rif40_database_install.bat
 Creating production RIF Postgres database
 PG_SYSCONFDIR=C:/PROGRA~1/POSTGR~1/9.6/etc
 Administrator PRIVILEGES Detected!
-operable program or batch file.
+New user [default peter]:       pch
+New RIF40 db [default sahsuland]:       trumpton
+Using previously created "C:\Users\support\AppData\Roaming\postgresql\pgpass.conf"
+Adding pch to PG password file: "C:\Users\support\AppData\Roaming\postgresql\pgpass.conf"
 ##########################################################################################
 #
-# WARNING! this script will the drop and create the RIF40 sahsuland Postgres database.
+# WARNING! this script will the drop and create the RIF40 trumpton Postgres database.
 # Type control-C to abort.
 #
-# Test user: peter; password: &lt;peter pw&gt;
-# Postgres password:       &lt;PGPASSWORD&gt;
-# Schema (rif40) password: &lt;rif40 pw&gt;
-# PG password directory:
-# PG sysconfig directory:  C:/PROGRA~1/POSTGR~1/9.6/etc
+# Test user pch; password pch_13958_373
+# Postgres password       Summ5r1609
+# Schema (rif40) password rif4010669_20906
+# PG password directory
+# PG sysconfig directory  C:/PROGRA~1/POSTGR~1/9.6/etc
 #
 ##########################################################################################
 Press any key to continue . . .
 Log: db_create.rpt
-Working directory: C:\rifDemo\Postgres\production
+Working directory: C:\Users\support\Downloads\OneDrive-2018-04-18\Postgres
 Command: psql
-Arguments: -U postgres -d postgres -h localhost -w -e -P pager=off -v testuser=peter -v newdb=sahsuland -v newpw=&lt;peter pw&gt; -v verbosity=terse -v debug_level=1 -v echo=all -v postgres_password=&lt;PGPASSWORD&gt; -v rif40_password=&lt;rif40 pw&gt; -v tablespace_dir= -v pghost=localhost -v os=Windows_NT -f db_create.sql
+Arguments: -U postgres -d postgres -h localhost -w -e -P pager=off -v testuser=pch -v newdb=trumpton -v newpw=pch_13958_373 -v verbo
+sity=terse -v debug_level=1 -v echo=all -v postgres_password=Summ5r1609 -v rif40_password=rif4010669_20906 -v tablespace_dir= -v pgh
+ost=localhost -v os=Windows_NT -f db_create.sql
 You are connected to database "postgres" as user "postgres" on host "localhost" at port "5432".
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -236,39 +247,43 @@ BEGIN
 -- Set a default path, schema to user
 --
         IF current_user = 'rif40' THEN
-                sql_stmt:='SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions';
+                sql_stmt:='SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, ri
+f40_partitions';
         ELSE
-                sql_stmt:='SET search_path TO '||USER||',rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions';
+                sql_stmt:='SET search_path TO '||USER||',rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_
+studies, rif40_partitions';
         END IF;
         RAISE INFO 'SQL&gt; %;', sql_stmt::VARCHAR;
         EXECUTE sql_stmt;
 END;
 $$;
 psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  RIF startup: not a RIF database
-psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  SQL&gt; SET search_path TO postgres,rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  SQL&gt; SET search_path TO postgres,rif40, public, topology, gis, pop, rif_d
+ata, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
 DO
 BEGIN
 DO
 SET
 SET
-psql:db_create.sql:129: INFO:  db_create.sql() test new database name="sahsuland" is OK
+psql:db_create.sql:129: INFO:  db_create.sql() test new database name="trumpton" is OK
 DO
-Creating sahsuland database if required
+Creating trumpton database if required
 SET
 SET
 psql:db_create.sql:229: INFO:  db_create.sql() User check: postgres
-psql:db_create.sql:229: INFO:  db_create.sql() rif40 password="&lt;rif40 pw&gt;"
-psql:db_create.sql:229: INFO:  db_create.sql() rif40 encrypted password="md5971757ca86c61e2d8f618fe7ab7a32a1"
-psql:db_create.sql:229: INFO:  SQL&gt; SET rif40.encrypted_rif40_password TO 'md5971757ca86c61e2d8f618fe7ab7a32a1';
-psql:db_create.sql:229: INFO:  SQL&gt; SET rif40.rif40_password TO '&lt;rif40 pw&gt;';
-psql:db_create.sql:229: INFO:  db_create.sql() postgres password="&lt;PGPASSWORD&gt;"
-psql:db_create.sql:229: INFO:  db_create.sql() postgres encrypted password="md51d8b49337a87cdc91f4946d42c5c72e8"
-psql:db_create.sql:229: INFO:  SQL&gt; SET rif40.encrypted_postgres_password TO 'md51d8b49337a87cdc91f4946d42c5c72e8';
+psql:db_create.sql:229: INFO:  db_create.sql() rif40 password="&lt;NULL&gt;"
+psql:db_create.sql:229: INFO:  db_create.sql() rif40 needs to be created encrypted password will be ="&lt;NULL&gt;"
+psql:db_create.sql:229: INFO:  SQL&gt; SET rif40.encrypted_rif40_password TO 'md515c55111bdb93bb7543f2480c7384531';
+psql:db_create.sql:229: INFO:  SQL&gt; SET rif40.rif40_password TO 'rif4010669_20906';
+psql:db_create.sql:229: INFO:  db_create.sql() postgres password="Summ5r1609"
+psql:db_create.sql:229: INFO:  db_create.sql() postgres encrypted password="md588c29e12c569ac444b7381647f09e2e1"
+psql:db_create.sql:229: INFO:  SQL&gt; SET rif40.encrypted_postgres_password TO 'md588c29e12c569ac444b7381647f09e2e1';
 DO
-psql:db_create.sql:283: INFO:  db_create.sql() RIF required Postgres version 9.3 or higher OK; current version: PostgreSQL 9.6.3, compiled by Visual C++ build 1800, 64-bit
+psql:db_create.sql:283: INFO:  db_create.sql() RIF required Postgres version 9.3 or higher OK; current version: PostgreSQL 9.6.8, co
+mpiled by Visual C++ build 1800, 64-bit
 DO
 psql:db_create.sql:315: INFO:  db_create.sql() RIF required extension: adminpack V1.0 is installable
-psql:db_create.sql:315: INFO:  db_create.sql() RIF required extension: postgis V2.3.3 is installable
+psql:db_create.sql:315: INFO:  db_create.sql() RIF required extension: postgis V2.3.7 is installable
 psql:db_create.sql:315: INFO:  db_create.sql() RIF required extension: sslinfo V1.2 is installable
 DO
 Create users and roles
@@ -283,9 +298,8 @@ psql:db_create.sql:526: INFO:  db_create.sql() RIF schema role rifupg34 exists
 psql:db_create.sql:526: INFO:  db_create.sql() Role rifupg34 is not a superuser
 psql:db_create.sql:526: INFO:  db_create.sql() RIF schema role rif_student exists
 psql:db_create.sql:526: INFO:  db_create.sql() Role rif_student is not a superuser
-psql:db_create.sql:526: INFO:  db_create.sql() privilege check OK for: rif40
-psql:db_create.sql:526: INFO:  db_create.sql() RIF schema user rif40 exists; changing password to encrypted
-psql:db_create.sql:526: INFO:  SQL&gt; ALTER USER rif40 ENCRYPTED PASSWORD  'md5971757ca86c61e2d8f618fe7ab7a32a1';
+psql:db_create.sql:526: INFO:  SQL&gt; CREATE ROLE rif40 NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASS
+WORD 'md515c55111bdb93bb7543f2480c7384531';
 psql:db_create.sql:526: INFO:  db_create.sql() privilege check OK for: gis
 psql:db_create.sql:526: INFO:  db_create.sql() RIF schema user gis exists; password is username
 psql:db_create.sql:526: INFO:  SQL&gt; ALTER USER gis PASSWORD  'gis';
@@ -313,12 +327,14 @@ SET
 SET
 SET
 SET
-psql:db_create.sql:660: INFO:  db_create.sql() test user account parameter="peter/&lt;peter pw&gt;" OK
-psql:db_create.sql:660: INFO:  db_create.sql() test user password parameter="peter"
-psql:db_create.sql:660: INFO:  db_create.sql() user account="peter" is a rif_user
-psql:db_create.sql:660: INFO:  SQL&gt; GRANT CONNECT ON DATABASE postgres to peter;
-psql:db_create.sql:660: INFO:  SQL&gt; GRANT rif_manager TO peter;
-psql:db_create.sql:660: INFO:  SQL&gt; GRANT rif_user TO peter;
+psql:db_create.sql:660: INFO:  db_create.sql() test user account parameter="pch/pch" OK
+psql:db_create.sql:660: INFO:  db_create.sql() test user password parameter="pch_13958_373"
+psql:db_create.sql:660: NOTICE:  db_create.sql() C209xx: User account does not exist: pch; creating
+psql:db_create.sql:660: INFO:  SQL&gt; CREATE ROLE pch NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD 'pch_13
+958_373';
+psql:db_create.sql:660: INFO:  SQL&gt; GRANT CONNECT ON DATABASE postgres to pch;
+psql:db_create.sql:660: INFO:  SQL&gt; GRANT rif_manager TO pch;
+psql:db_create.sql:660: INFO:  SQL&gt; GRANT rif_user TO pch;
 psql:db_create.sql:660: INFO:  SQL&gt; GRANT CONNECT ON DATABASE postgres to rif40;
 DO
 COMMIT
@@ -331,27 +347,21 @@ Tuples only is on.
 * Format is: hostname:port:database:username:password
 * An example is supplied in pgpass.conf in the current directory
 *****************************************************************************************************
- localhost:5432:*:peter:&lt;peter pw&gt;
- localhost:5432:*:postgres:&lt;PGPASSWORD&gt;
- localhost:5432:*:rif40:&lt;rif40 pw&gt;
+ localhost:5432:*:postgres:summ5r1609
+ localhost:5432:*:pch:pch_13958_373
+ localhost:5432:*:rif40:rif4010669_20906
 
 Tuples only is off.
 COPY 3
 DROP VIEW
-WARNING: Console code page (850) differs from Windows code page (1252)
-         8-bit characters might not work correctly. See psql reference
-         page "Notes for Windows users" for details.
-You are now connected to database "postgres" as user "peter".
-Connection as peter to postgres OK!
-            connected
----------------------------------
- Connected to: postgres AS peter
+You are now connected to database "postgres" as user "pch".
+Connection as pch to postgres OK!
+           connected
+-------------------------------
+ Connected to: postgres AS pch
 (1 row)
 
 Try to connect as rif40. This will fail if if the password file is not setup correctly
-WARNING: Console code page (850) differs from Windows code page (1252)
-         8-bit characters might not work correctly. See psql reference
-         page "Notes for Windows users" for details.
 You are now connected to database "postgres" as user "rif40".
 Connection as rif40 to postgres OK!
             connected
@@ -359,15 +369,12 @@ Connection as rif40 to postgres OK!
  Connected to: postgres AS rif40
 (1 row)
 
-WARNING: Console code page (850) differs from Windows code page (1252)
-         8-bit characters might not work correctly. See psql reference
-         page "Notes for Windows users" for details.
 You are now connected to database "postgres" as user "postgres".
 ************************************************************************************
 *
 * WARNING !!!
 *
-* This script will drop sahsuland, re-create it in () or DEFAULT
+* This script will drop trumpton, re-create it in () or DEFAULT
 *
 ************************************************************************************
 SET
@@ -379,7 +386,7 @@ DO
         param         |   value
 ----------------------+------------
  rif40.tablespace_dir |
- rif40.newdb          | sahsuland
+ rif40.newdb          | trumpton
  rif40.os             | windows_nt
 (3 rows)
 
@@ -393,9 +400,9 @@ CREATE VIEW
  --
  -- Rapid Enquiry Facility (RIF) - Database creation autogenerated temp script to create tablespace and databases
  --
- DROP DATABASE IF EXISTS sahsuland;
- CREATE DATABASE sahsuland WITH OWNER rif40 /* No sahsuland tablespace */;
- COMMENT ON DATABASE sahsuland IS 'RIF V4.0 PostGres sahsuland Example Database';
+ DROP DATABASE IF EXISTS trumpton;
+ CREATE DATABASE trumpton WITH OWNER rif40 /* No trumpton tablespace */;
+ COMMENT ON DATABASE trumpton IS 'RIF V4.0 PostGres trumpton Example Database';
  --
  -- Eof
 (12 rows)
@@ -411,20 +418,18 @@ DROP VIEW
 --
 -- Rapid Enquiry Facility (RIF) - Database creation autogenerated temp script to create tablespace and databases
 --
-DROP DATABASE IF EXISTS sahsuland;
+DROP DATABASE IF EXISTS trumpton;
+psql:recreate_sahsu_dev_tmp.sql:8: NOTICE:  database "trumpton" does not exist, skipping
 DROP DATABASE
-CREATE DATABASE sahsuland WITH OWNER rif40 /* No sahsuland tablespace */;
+CREATE DATABASE trumpton WITH OWNER rif40 /* No trumpton tablespace */;
 CREATE DATABASE
-COMMENT ON DATABASE sahsuland IS 'RIF V4.0 PostGres sahsuland Example Database';
+COMMENT ON DATABASE trumpton IS 'RIF V4.0 PostGres trumpton Example Database';
 COMMENT
 --
 -- Eof
 
 \c :newdb postgres :pghost
-WARNING: Console code page (850) differs from Windows code page (1252)
-         8-bit characters might not work correctly. See psql reference
-         page "Notes for Windows users" for details.
-You are now connected to database "sahsuland" as user "postgres".
+You are now connected to database "trumpton" as user "postgres".
 
 --
 -- Start transaction 2: :newdb build
@@ -437,14 +442,16 @@ BEGIN
 \set ECHO none
 SET
 SET
-psql:db_create.sql:911: INFO:  db_create.sql() User check: postgres
-psql:db_create.sql:911: INFO:  SQL&gt; CREATE EXTENSION IF NOT EXISTS postgis;
-psql:db_create.sql:911: INFO:  SQL&gt; CREATE EXTENSION IF NOT EXISTS adminpack;
-psql:db_create.sql:911: INFO:  SQL&gt; CREATE EXTENSION IF NOT EXISTS dblink;
-psql:db_create.sql:911: INFO:  SQL&gt; GRANT ALL ON DATABASE sahsuland to rif40;
-psql:db_create.sql:911: INFO:  SQL&gt; REVOKE CREATE ON SCHEMA public FROM rif40;
-psql:db_create.sql:911: INFO:  SQL&gt; GRANT CONNECT ON DATABASE sahsuland to peter;
-psql:db_create.sql:911: INFO:  SQL&gt; ALTER DATABASE sahsuland SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
+psql:db_create.sql:915: INFO:  db_create.sql() User check: postgres
+psql:db_create.sql:915: INFO:  SQL&gt; CREATE EXTENSION IF NOT EXISTS postgis;
+psql:db_create.sql:915: INFO:  SQL&gt; CREATE EXTENSION IF NOT EXISTS adminpack;
+psql:db_create.sql:915: INFO:  SQL&gt; CREATE EXTENSION IF NOT EXISTS dblink;
+psql:db_create.sql:915: INFO:  SQL&gt; GRANT ALL ON DATABASE trumpton to rif40;
+psql:db_create.sql:915: INFO:  SQL&gt; REVOKE CREATE ON SCHEMA public FROM rif40;
+psql:db_create.sql:915: INFO:  SQL&gt; GRANT CONNECT ON DATABASE trumpton to pch;
+psql:db_create.sql:915: INFO:  SQL&gt; CREATE SCHEMA IF NOT EXISTS pch AUTHORIZATION pch;
+psql:db_create.sql:915: INFO:  SQL&gt; ALTER DATABASE trumpton SET search_path TO rif40, public, topology, gis, pop, rif_data, data_loa
+d, rif40_sql_pkg, rif_studies, rif40_partitions;
 DO
 COMMIT
 ALTER ROLE
@@ -457,61 +464,33 @@ SET
 *****************************************************************************************************
 * Try to connect as test user and rif40
 *****************************************************************************************************
-WARNING: Console code page (850) differs from Windows code page (1252)
-         8-bit characters might not work correctly. See psql reference
-         page "Notes for Windows users" for details.
-You are now connected to database "sahsuland" as user "peter".
-Connection as peter to sahsuland OK!
-            connected
-----------------------------------
- Connected to: sahsuland AS peter
+You are now connected to database "trumpton" as user "pch".
+Connection as pch to trumpton OK!
+           connected
+-------------------------------
+ Connected to: trumpton AS pch
 (1 row)
 
 Try to connect as rif40. This will fail if if the password file is not setup correctly
-WARNING: Console code page (850) differs from Windows code page (1252)
-         8-bit characters might not work correctly. See psql reference
-         page "Notes for Windows users" for details.
-You are now connected to database "sahsuland" as user "rif40".
-Connection as rif40 to sahsuland OK!
+You are now connected to database "trumpton" as user "rif40".
+Connection as rif40 to trumpton OK!
             connected
-----------------------------------
- Connected to: sahsuland AS rif40
+---------------------------------
+ Connected to: trumpton AS rif40
 (1 row)
 
 Command psql ran OK.
-db_create.sql built sahsuland OK
-'EXIST' is not recognized as an internal or external command,
-operable program or batch file.
-Copying generated pgpass.conf to
-The file cannot be copied onto itself.
-        0 file(s) copied.
+db_create.sql built trumpton OK
 Log: pg_restore.rpt
-Working directory: C:\rifDemo\Postgres\production
+Working directory: C:\Users\support\Downloads\OneDrive-2018-04-18\Postgres
 Command: pg_restore
-Arguments: -d sahsuland -U postgres sahsuland_dev.dump
-pg_restore: WARNING:  database "sahsuland_dev" does not exist
-pg_restore: [archiver (db)] Error while PROCESSING TOC:
-pg_restore: [archiver (db)] Error from TOC entry 9; 2615 15640269 SCHEMA hugh hugh
-pg_restore: [archiver (db)] could not execute query: ERROR:  role "hugh" does not exist
-    Command was: ALTER SCHEMA hugh OWNER TO hugh;
-
-
-pg_restore: [archiver (db)] Error from TOC entry 4846; 0 0 ACL hugh hugh
-pg_restore: [archiver (db)] could not execute query: ERROR:  role "hugh" does not exist
-    Command was: REVOKE ALL ON SCHEMA hugh FROM PUBLIC;
-REVOKE ALL ON SCHEMA hugh FROM hugh;
-GRANT ALL ON SCHEMA hugh TO hugh;
-
-
-
-WARNING: errors ignored on restore: 2
-Error in command execution
-pg_restore exiting with error code: 1
-
-C:\rifDemo\Postgres\production&gt;
+Arguments: -d trumpton -U postgres sahsuland.dump
+pg_restore: WARNING:  database "sahsuland" does not exist
+Command pg_restore ran OK.
+pg_restore/psql restored trumpton OK
 </code></pre>
 <h2>
-<a id="user-content-21-changing-the-postgres-database-adminstrator-password" class="anchor" href="#21-changing-the-postgres-database-adminstrator-password" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2.1 Changing the postgres database adminstrator password</h2>
+<a id="user-content-21-changing-the-postgres-database-administrator-password" class="anchor" href="#21-changing-the-postgres-database-administrator-password" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2.1 Changing the postgres database administrator password</h2>
 <p>Check you can logon using psql as the database adminstrator account; <em>postgres</em>.</p>
 <pre><code>psql -d postgres -U postgres
 You are connected to database "postgres" as user "postgres" on host "wpea-rif1" at port "5432".
@@ -521,7 +500,7 @@ Type "help" for help.
 postgres=#
 </code></pre>
 <p>It is possible to login to postgres as postgres without a password using the administrator or
-root accounts. If you lock yourself out the hba.conf file will need the following line temporary
+root accounts. If you lock yourself out the <em>hba.conf</em> file will need the following line temporary
 added at the top of the file:</p>
 <pre><code>local  all   all   trust
 </code></pre>
