@@ -57,7 +57,7 @@ RIF Web Application and Middleware Installation
    - [8.3 Securing Tomcat](#83-securing-tomcat)
    - [8.4 Other Setup](#84-other-setup)
 	 - [8.4.1 Front End Logging](#841-front-end-logging)
-	 - [8.4.2 Printing Defaults](#482-printing-defaults)
+	 - [8.4.2 Printing Defaults](#842-printing-defaults)
      - [8.4.3 R Debugging](#843-r-debugging)
 	 - [8.4.4 R Memory Management](#844-r-memory-management)
 	 
@@ -2181,7 +2181,7 @@ source.
 	
 ## 8.4 Other Setup
 
-### 8.4.4 Front End Logging
+### 8.4.1 Front End Logging
 
 Front end logging is enabled by default to the log file: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/FrontEndLogger.log-<N>```; e.g.
  *FrontEndLogger.2017-11-27-1.log*.
