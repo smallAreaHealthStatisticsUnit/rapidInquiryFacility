@@ -31,12 +31,12 @@ WARNING: The RIF requires Postgres 9.3 or above to work. 9.1 and 9.2 will not wo
 
 Postgres is usually setup in one of four ways:
  
-* 1 Standalone mode on a Windows firewalled laptop. This uses local database MD5 passwords and no SSL and is not considered secure for network use.
-* 2 Secure mode on a Windows server. This uses remote database connections using SSL; with MD5 passwords for psql and Java connectivity.
-* 3 Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS 
-    connectivity) for psql and secure LDAP for Java connectivity.
-* 4 Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for 
-    psql and secure LDAP for Java connectivity.
+1. Standalone mode on a Windows firewalled laptop. This uses local database MD5 passwords and no SSL and is not considered secure for network use.
+2. Secure mode on a Windows server. This uses remote database connections using SSL; with MD5 passwords for psql and Java connectivity.
+3. Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS 
+   connectivity) for psql and secure LDAP for Java connectivity.
+4. Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for 
+   psql and secure LDAP for Java connectivity.
 
 The front and and middleware require username and password authentications; so method 4 must not be used.
   

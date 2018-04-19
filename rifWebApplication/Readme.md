@@ -29,8 +29,6 @@ RIF Web Application and Middleware Installation
    - [4.2 Setup Network](#42-setup-network)
      - [4.2.1 TLS](#421-tls)
    - [4.3 Setup R](#43-setup-r)
-     - [4.3.1 R Debugging](#431-r-debugging)
-	 - [4.3.2 R Memory Management](#432-r-memory-management)
    - [4.4 Common Setup Errors](#44-common-setup-errors)
      - [4.4.1 Logon RIF Service Call Incorrect](#441-logon-rif-service-call-incorrect)
      - [4.4.2 TLS Errors](#442-tls-errors)
@@ -43,6 +41,8 @@ RIF Web Application and Middleware Installation
    - [4.5 Other Setup](#45-other-setup)
 	 - [4.5.1 Front End Logging](#451-front-end-logging)
 	 - [4.5.2 Printing Defaults](#452-printing-defaults)
+     - [4.5.3 R Debugging](#453-r-debugging)
+	 - [4.5.4 R Memory Management](#454-r-memory-management)
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
@@ -56,9 +56,9 @@ RIF Web Application and Middleware Installation
    - [6.4 R](#64-r)
 - [ 7. Front End and Middleware Software Upgrades](#7-front-end-and-middleware-software-upgrades) 
 - [ 8. Advanced Tomcat Setup](#8-advanced-tomcat-setup)
-  - [8.1 Running Tomcat as a service](#134-running-tomcat-as-a-service)
-  - [8.2 Using JConsole with Tomcat](#81-using-jconsole-with-tomcat) 
-  - [8.3 Securing Tomcat](#82-securing-tomcat)
+  - [8.1 Running Tomcat as a service](#81-running-tomcat-as-a-service)
+  - [8.2 Using JConsole with Tomcat](#82-using-jconsole-with-tomcat) 
+  - [8.3 Securing Tomcat](#83-securing-tomcat)
 	 
 # 1. Installation Prerequisites
 
@@ -86,11 +86,13 @@ of this document and are not required for a simple RIF setup.
 ## 1.1 Apache Maven
 
 Apache Maven is required to build the RIF web application (War) files and the data loader tool from source. It is 
-not required if you are supplied with pre-built copies.
+not required if you are supplied with pre-built copies (in the *tomcat webaapps* directory).
 
 Download and install Apache Maven: https://maven.apache.org/download.cgi
 
 ## 1.2 Java Runtime Development
+
+Java is the software language the RIF middleware  code in and it must be installed on your machine.
 
 The Java Runtime Environment (JRE) can be used if the war files are pre-supplied and the OWASP requirement to remove the 
 version string from HTTP error messages by repacking  %CATALINA_HOME%/server/lib/catalina.jar with an updated 
@@ -124,7 +126,7 @@ be changed.
  
 ## 1.3 Apache Tomcat
 
-Apache Tomcat can be downloaded from: https://tomcat.apache.org/download-80.cgi
+Apache Tomcat in the Java web server that runs the RIF. Tomcat can be downloaded from: https://tomcat.apache.org/download-80.cgi
 
 Please use tomcat version 8, not 9 as we have not tested 9. The version tested was 8.5.13. It is advised to use the MSI
 version.
@@ -149,11 +151,11 @@ This makes tomcat Java upgrade proof; but this may have unintended effects if:
 ### 1.3.1 Apache Tomcat on a single host
 
 This is suitable for laptops and developers with no access from other machines. Download and install tomcat; make sure your firewall blocks 
-port 8080. You do **NOT** need to follow the OWASP guidelines or to configure TLS.
+port 8080. You do **NOT** need to follow the OWASP guidelines or to configure TLS as described in [Securing Tomcat](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#82-securing-tomcat).
 
 ### 1.3.2 Apache Tomcat for internet use
 
-The is the normal production use case. It is important that Apache Tomcat is installed securely.
+The is the normal production use case. It is important that Apache Tomcat is installed securely. It is *NOT* required for laptops.
 
 Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.owasp.org/index.php/Securing_tomcat#Sample_Configuration_-_Good_Security) for securing tomcat with good security.
 
@@ -183,7 +185,7 @@ an updated ServerInfo.properties:
 
 ### 1.3.3 Running Tomcat on the command line
 
-**Do this first, before you try to run the RIF as a service.**
+**Do this first, before you try to run the RIF as a service or configure the logging.**
 
 Tomcat can be run from the command line. The advantage of this is all the output appears in the same place! To do this the tomcat server must be
 stopped (i.e. in the Windows services panel or via Linux runlevel scripts (/etc/init.d/tomcat*). Normally tomcat is run as a server (i.e. as a 
@@ -372,13 +374,13 @@ Tomcat can be stopped using "control-C" if R has not been run or using stop_rif.
 
 This section introduces RIF logging. You do not need to do anything!
 
-The RIF middleware now uses Log4j version 2 for logging. The configuration file: 
-*%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up five loggers:
+The RIF middleware now uses Log4j version 2 for logging. The configuration file *log4j2.xml* (example in: 
+*%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml*) sets up five loggers:
   
   1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
-  2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the middleware: RIF_middleware.log
-  3. The taxonomy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the middleware: TaxonomyLogger.log
-  4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the middleware: FrontEndLogger.log
+  2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the *rifServices* middleware: RIF_middleware.log
+  3. The taxonomy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the *taxonomyServices* middleware: TaxonomyLogger.log
+  4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the *rifServices* front end logger: FrontEndLogger.log
   5. "Other" for all other logger output not the above: Other.log
 
 Log4j2 was chosen because it is easy to integrate with tomcat; it is however old and does not always rotate the logs well.
@@ -392,7 +394,7 @@ Logs go to STDOUT and ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/<Log name>.<YYYY>-<M
 * ```<N>``` is the log sequence number.
 
 Log4j has a bug in it where if more than one service logs to the same log source the log files will not rotate. Therefore if you have a RIF without (<13/4/2018)
-a TaxonomyLogger you must upgrade *log4j2.xml* to add the TaxonomyLogger.
+a separate *TaxonomyLogger* you must upgrade *log4j2.xml* to add the TaxonomyLogger.
 
 Log4j also tends to change the date one day in arrears; i..e it will start on the correct day and then be one day behind. Changing to SL4J, which is a much 
 more modern logger would probably fix these issues but Tomcat is built with log4j. This means to use log4j a custom Tomcat would be required with all the 
@@ -420,7 +422,7 @@ ORDER BY
 <<< End PGSQLAbstractSQLManager logSQLQuery
 ```
 	
-As an example a RIF middleware only configuration file (**DO NOT USE!**):
+As an example a stripped down RIF middleware only configuration file (**DO NOT USE!**):
 	
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -819,7 +821,7 @@ Debugging:
 
 Download and install R: https://cran.ma.imperial.ac.uk/bin/windows/base
 
-See: [R setup](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#43-setup-r)
+R is setup later in: [R setup](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#43-setup-r)
 
 As with Java, do NOT use the 32 bit only version unless you have to. These instructions assume you you the 64 
 bit version
@@ -828,7 +830,7 @@ Add the 64 bit R executable to the path; e.g. *C:\Program Files\R\R-3.4.4\bin\x6
 
 # 2. Building Web Services using Maven
 
-Normally users will be supplied with pre=built files:
+Normally users will be supplied with pre built files in the *tomcat webapps* folder:
 
 * RIF middleware: rifServices.war
 * Taxonomy service (ICD10): taxonomyServices.war
@@ -993,13 +995,13 @@ This method  does not build the *taxonomyServices* or the web application 7zip f
 * Copy *rifServices.war* from: *rapidInquiryFacility\rifServices\target*, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifServices\target*
   to: *%CATALINA_HOME%\webapps*, e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps*
 
+You do NOT need to do anything else (other than copy the file) if you are using Postgres without TLS (i.e. on a laptop).
+
 The *RIFServiceStartupProperties.properties* file contains the commented out parameter *taxonomyServicesServer*.
 This is the network location of the taxonomy services server, and is to be used when:
 
 * The taxonomy services is not running on the same server as rifServices
 * HTTPS is used
-
-You do NOT need to do anything if you are running without TLS (i.e. on a laptop)
 
 If *taxonomyServicesServer* is set to: *https://localhost:8080* as suggested then host validation is disabled;  
 otherwise you must set up JAVA TLS host verification with fully signed certificates; typical errors include:
@@ -1028,50 +1030,12 @@ This is code in `...rapidInquiryFacility\rifServices\src\main\java\rifServices\d
 
 ### 3.1.2 Taxonomy Services
 
-If SAHSU has supplied a taxonomyServices.war file skip to step 3.
+For a full ICD10 listing add the following SAHSU supplied files (in *Taxonomy services configuration files*) to: 
+*%CATALINA_HOME%\conf* and restart tomcat
 
-1) Get the Taxonomy Service XML file *ClaML.dtd*. This is stored in is stored in ...rifServices\src\main\resources. A complete ICD10 version 
-   is available from SAHSU for Organisations compliant with the WHO licence.
-   
-  For a full ICD10 listing add the following SAHSU supplied files to: 
-  %CATALINA_HOME%\conf and restart tomcat
-
-  * icdClaML2016ens.xml
-  * TaxonomyServicesConfiguration.xml
-  * ClaML.dtd
-
-2) Build the Taxonomy Service using *maven*.
-   Either: 
-   - if you have *make* installed, in the top level github directory type *make taxonomyservice" as per Maven build instructions or
-   - Change to the taxonomyServices directory. In local RIF tree, go to ...rapidInquiryFacility/taxonomyServices, 
-   e.g. C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\taxonomyServices and type:
-
-	```
-	mvn –Dmaven.test.skip=TRUE install
-	```
-
-	Log from a succsful web service deployment:
-	```
-	12-Apr-2017 17:44:56.103 INFO [localhost-startStop-2] org.apache.catalina.startup.HostConfig.deployWAR Deploying web application archive C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\taxonomyServices.war
-	12-Apr-2017 17:44:57.886 INFO [localhost-startStop-2] org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
-	12-Apr-2017 17:44:57.900 INFO [localhost-startStop-2] com.sun.jersey.server.impl.container.servlet.JerseyServletContainerInitializer
-	.addServletWithApplication Registering the Jersey servlet application, named taxonomyServices.RIFTaxonomyWebServiceApplication, at the servlet mapping, /taxonomyServices/*, with the Application class of the same name
-	12-Apr-2017 17:44:57.924 INFO [localhost-startStop-2] com.sun.jersey.api.core.servlet.WebAppResourceConfig.init Scanning for root re
-	source and provider classes in the Web app resource paths:	
-	  /WEB-INF/lib
-	  /WEB-INF/classes
-	12-Apr-2017 17:44:58.739 INFO [localhost-startStop-2] com.sun.jersey.api.core.ScanningResourceConfig.logClasses Root resource classes found:
-	  class taxonomyServices.RIFTaxonomyWebServiceResource
-	12-Apr-2017 17:44:58.740 INFO [localhost-startStop-2] com.sun.jersey.api.core.ScanningResourceConfig.logClasses Provider classes found:
-	  class org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider
-	  class org.codehaus.jackson.jaxrs.JacksonJsonProvider
-	  class org.codehaus.jackson.jaxrs.JsonMappingExceptionMapper
-	  class org.codehaus.jackson.jaxrs.JsonParseExceptionMapper
-	12-Apr-2017 17:44:58.877 INFO [localhost-startStop-2] com.sun.jersey.server.impl.application.WebApplicationImpl._initiate Initiating Jersey application, version 'Jersey: 1.19 02/11/2015 03:25 AM'
-	12-Apr-2017 17:45:00.002 INFO [localhost-startStop-2] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\taxonomyServices.war has finished in 3,899 ms
-	```
-
-3) Copy ‘taxonomyServices.war’ from the *target* directory into the Tomcat webapps folder as with rifServices. 
+* icdClaML2016ens.xml
+* TaxonomyServicesConfiguration.xml
+* ClaML.dtd
 
 ## 3.2 RIF Web Application
 
@@ -1087,50 +1051,42 @@ Create RIF4 in web-apps:
   to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4*
 * 7zip must be be installed.
 
-### Method 2: Using pre-supplied RIF4.7z
+### Method 2: Using pre-supplied RIF4.7z (in the *tomcat webapps* folder)
 
-If you are supplied with the *7-Zip* archive, *RIF4.7z* needs to be copied to: 
-*%CATALINA_HOME%\webapps\RIF4* and unpacked using the file manager *7-Zip* (right click -> 7-Zip -> Extract to "RIF4\"). Do not use the command line 
-(```"C:\Program Files\7-Zip\7z.exe" x RIF4.7z```) it does not work!
+If you are supplied with the *7-Zip* archive: 
 
-```
-C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4>"C:\Program Files\7-Zip\7z.exe" x RIF4.7z
+* *RIF4.7z* needs to be copied to: *%CATALINA_HOME%\webapps\RIF4.&z*
+* As an administrator create the directory *%CATALINA_HOME%\webapps\RIF*
+* If you are a power user, use adminstrator privileges to add your username with full control to the folder *%CATALINA_HOME%\webapps\RIF*
+* Unpack using the file manager *7-Zip* (right click -> 7-Zip -> Extract to "RIF4\"). Do not use the command line 
+  (```"C:\Program Files\7-Zip\7z.exe" x RIF4.7z```) it does not work!
+* Check that the *%CATALINA_HOME%\webapps\RIF* contains files:
+  ```
+	C:\Program Files\Apache Software Foundation\Tomcat 8.5>cd %CATALINA_HOME%\webapps\RIF4
 
-7-Zip [64] 16.04 : Copyright (c) 1999-2016 Igor Pavlov : 2016-10-04
+	C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4>dir
+	 Volume in drive C is OS
+	 Volume Serial Number is 76AD-DC24
 
-Scanning the drive for archives:
-1 file, 2242469 bytes (2190 KiB)
+	 Directory of C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4
 
-Extracting archive: RIF4.7z
---
-Path = RIF4.7z
-Type = 7z
-Physical Size = 2242469
-Headers Size = 3912
-Method = LZMA2:6m
-Solid = +
-Blocks = 1
+	13/04/2018  08:37    <DIR>          .
+	13/04/2018  08:37    <DIR>          ..
+	27/03/2018  21:03    <DIR>          backend
+	27/03/2018  21:03    <DIR>          css
+	27/03/2018  21:03    <DIR>          dashboards
+	27/03/2018  21:03             5,430 favicon.ico
+	27/03/2018  21:03    <DIR>          images
+	11/04/2018  14:54            12,034 index.html
+	11/04/2018  14:54    <DIR>          libs
+	27/03/2018  21:03    <DIR>          modules
+	27/03/2018  21:03               283 todo.js
+	27/03/2018  21:03    <DIR>          utils
+				   3 File(s)         17,747 bytes
+				   9 Dir(s)  295,976,181,760 bytes free
+  ```
 
-
-Would you like to replace the existing file:
-  Path:     .\backend\services\rifs-back-database.js
-  Size:     2160 bytes (3 KiB)
-  Modified: 2017-04-10 11:03:15
-with the file from archive:
-  Path:     backend\services\rifs-back-database.js
-  Size:     2168 bytes (3 KiB)
-  Modified: 2017-04-12 09:24:31
-? (Y)es / (N)o / (A)lways / (S)kip all / A(u)to rename all / (Q)uit? A
-
-Everything is Ok
-
-Folders: 35
-Files: 199
-Size:       4920556
-Compressed: 2242469
-```
-  
-**BEFORE YOU RUN THE RIF YOU MUST SETUP THE DATABASE AND NETWORKING IN TOMCAT FIRST**
+**BEFORE YOU RUN THE RIF YOU MUST SETUP THE DATABASE AND NETWORKING IN TOMCAT FIRST**. See the next section.
 
 Running the RIF and logging on is detailed in section 5. You must restart Tomcat when you create RIF4 for the first time, 
 it is not automatically spotted unlike the services *.war* files..
@@ -1141,6 +1097,8 @@ it is not automatically spotted unlike the services *.war* files..
 
 The Java connector for the RifServices middleware is setup in the file: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties*.
 This should be copied to *%CATALINA_HOME%\conf* so it is not overwritten by middleware upgrades.
+
+If you are running on a laptop and using Postgres you only need to copy the file.
 
 * If the folder rifServices does not exist; start tomcat and it will be expanded from the war file.
 * The default database is setup as follows:
@@ -1175,11 +1133,13 @@ database.databaseType=sqlServer
 
 ### 4.1.2 Postgres
 
+These are the defaults as supplied in the WAR file:
+
 ```java
 #POSTGRES
 database.driverClassName=org.postgresql.Driver
 database.jdbcDriverPrefix=jdbc:postgresql
-database.host=aepw-rif27
+database.host=localhost
 database.port=5432
 database.databaseName=sahsuland
 database.databaseType=postgresql
@@ -1404,6 +1364,8 @@ if (!require(INLA)) {
 ``` 
 
 * If R cannot be found, add it to the PATH and restart the administrator Window 
+* If R asks if you want to use a personal library you are not running as Administrator, do *NOT* accept this. 
+  The script will fail. These R libraries *NUST* be installed for all users.  
 * R will ask for the nearest CRAN (R code archive); select one geographically near you (e.g. same country).
 * R output (version numbers will be higher as you always get the latest version):
 
@@ -1514,10 +1476,11 @@ The downloaded binary packages are in
 	> system.file("jri",package="rJava")
 	[1] "C:/Program Files/R/R-3.4.4/library/rJava/jri"
 	```
-   from inside of R [command-line]. Above command will give you a path. You will be able to find the 64 bit *libjri.so*
+   from inside of R [command-line]. Above command will give you a path. If you look in this directory you will see *i386* 
+   and *x64* sub directories. In *x64* you will be able to find the 64 bit *libjri.so*
    which is the shared library JRI is looking for.
   
-   These directories with the 32 or 64 bit subdirectory appended needs to be added to the path: 
+   This 32 or 64 bit subdirectory appended needs to be added to the path: 
    *C:\Program Files\R\R-3.4.4\library\rJava\jri\x64*. This ensures that file "x64\jri.dll" 
    is in java.library.path. If you have 64bit Java (as instructed previous) you will need to use the 64 bit version.
    
@@ -1541,7 +1504,12 @@ The downloaded binary packages are in
 	(x86)\Skype\Phone\;C:/Program Files/R/R-3.4.0/library/rJava/jri;.
 	```
 	
-	**RESTART YOUR ADMINISTRATOR TO PICK UP YOUR CHANGES** 
+	**RESTART YOUR ADMINISTRATOR WINDOW TO PICK UP YOUR CHANGES** 
+	
+	**YOU CAN NOW START THE RIF (using the *start_rif.bat* script or by running *catalina.bat start* in the directory 
+	*%CATALOINA_HOME%\bin* as an Administrator.) AND LOGON**. See section 5 
+	[Running the RIF](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#5-running-the-rif) 
+	for logon instructions
 	
 6. JRI Errors
 	
@@ -1557,541 +1525,6 @@ The downloaded binary packages are in
 	```
    In this case, the directory *C:\Program Files\R\R-3.4.0\bin\x64* was missing from the path.
    
-### 4.3.1 R Debugging
-
-Since R now uses JRI, all errors appear in the tomcat logs.
-
-1. Beware of 32 bit Java errors
-
-```
-=======getInvestigationID========2===
-About to call next
-called next
-Investigation name==TEST 1001  ID==5==
-Cannot find JRI native library!
-Please make sure that the JRI native library is in a directory listed in java.library.path.
-
-java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.1\library\rJava\jri\x64\jri.dll: Can't load AMD 64-bit .dll on a IA 32-bit platform
-        at java.lang.ClassLoader$NativeLibrary.load(Native Method)
-        at java.lang.ClassLoader.loadLibrary0(Unknown Source)
-        at java.lang.ClassLoader.loadLibrary(Unknown Source)
-        at java.lang.Runtime.loadLibrary0(Unknown Source)
-        at java.lang.System.loadLibrary(Unknown Source)
-        at org.rosuda.JRI.Rengine.<clinit>(Rengine.java:19)
-        at rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep.performStep(PGSQLSmoothResultsSubmissionStep.java:193)
-```
-
-2. Typical errors for the JRI Middleware:
-
-   * *R_HOME* not setup: ```command==null\bin\x64\RScript```
-   * No scratchSpace directory: *c:\rifDemo\scratchSpace\* ```(The system cannot find the path specified)```
-   * R script errors
-   
-   If there are R script errors JRI the middleware will crash with an error. This will be saved in the *Study status* pane:
-   
-   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/study-status.png?raw=true "Study status")  
-
-   Clicking on the *trace* button will bring up the trace pane. 
-  
-   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/R-trace.png?raw=true "R Trace")  
-   
-   If there are R script errors JRI will log them to the middleware log: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>```:
-   
-```
-17:06:02.767 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
-Rengine Started
-17:06:02.787 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
-RIFServiceStartupOptions is web deployment
-17:06:02.787 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
-Get CATALINA_HOME=C:\Program Files\Apache Software Foundation\Tomcat 8.5
-17:06:02.788 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
-Source: Adj_Cov_Smooth_JRI="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth_JRI.R"
-17:06:04.418 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
-rFlushConsole[1] calls: 62, length: 1458, time period: PT1.892S
-
-R version 3.4.0 (2017-04-21) -- "You Stupid Darkness"
-Copyright (C) 2017 The R Foundation for Statistical Computing
-Platform: x86_64-w64-mingw32/x64 (64-bit)
-
-R is free software and comes with ABSOLUTELY NO WARRANTY.
-You are welcome to redistribute it under certain conditions.
-Type 'license()' or 'licence()' for distribution details.
-
-R is a collaborative project with many contributors.
-Type 'contributors()' for more information and
-'citation()' on how to cite R or R packages in publications.
-
-Type 'demo()' for some demos, 'help()' for on-line help, or
-'help.start()' for an HTML browser interface to help.
-Type 'q()' to quit R.
-
-[1] "C:/Program Files/R/R-3.4.0/library"
-R version 3.4.0 (2017-04-21)
-Platform: x86_64-w64-mingw32/x64 (64-bit)
-Running under: Windows 8.1 x64 (build 9600)
-
-Matrix products: default
-
-locale:
-[1] LC_COLLATE=English_United Kingdom.1252 
-[2] LC_CTYPE=English_United Kingdom.1252   
-[3] LC_MONETARY=English_United Kingdom.1252
-[4] LC_NUMERIC=C                           
-[5] LC_TIME=English_United Kingdom.1252    
-
-attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
-
-loaded via a namespace (and not attached):
-[1] compiler_3.4.0
-R Error/Warning/Notice: Loading required package: sp
-R Error/Warning/Notice: Loading required package: Matrix
-R Error/Warning/Notice: This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
-See www.r-inla.org/contact-us for how to get help.
-
-17:06:04.980 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
-Source: RIF_odbc="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\RIF_odbc.R"
-17:06:04.996 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
-Source: performSmoothingActivity="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\performSmoothingActivity.R"
-17:06:24.801 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
-rFlushConsole[2] calls: 8, length: 957, time period: PT20.382S
-
-R Error/Warning/Notice: Checking rgeos availability: FALSE
- 	Note: when rgeos is not available, polygon geometry 	computations in maptools depend on gpclib,
- 	which has a restricted licence. It is disabled by default;
- 	to enable gpclib, type gpclibPermit()
-Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\performSmoothingActivity.R  to:  c:\rifDemo\scratchSpace\s33\performSmoothingActivity.R 
-Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\Adj_Cov_Smooth_csv.R  to:  c:\rifDemo\scratchSpace\s33\Adj_Cov_Smooth_csv.R 
-Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\rif40_run_R.bat  to:  c:\rifDemo\scratchSpace\s33\rif40_run_R.bat 
-Create:  c:\rifDemo\scratchSpace\s33\rif40_run_R_env.bat 
-Connect to database: SQLServer11
-Performing basic stats and smoothing
-EXTRACT TABLE NAME: rif_studies.s33_extract
-17:06:24.816 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
-rFlushConsole[3] calls: 75, length: 2422, time period: PT59.244S
-
-
-Saving extract frame to: c:\rifDemo\scratchSpace\s33\tmp_s33_extract.csv
-rif_studies.s33_extract numberOfRows=433312==
-rif40_GetAdjacencyMatrix numberOfRows=1229==
-Saving adjacency matrix to: c:\rifDemo\scratchSpace\s33\tmp_s33_adjacency_matrix.csv
-Covariates: none
-Bayes smoothing with BYM model type no adjustment
-Stack tracer >>>
-
- .handleSimpleError(function (obj) 
-{
-    calls = sys.calls()
-    calls = ca <text>#1: INLA::f(area_order, model = "bym", graph = IM, adjust.for.con.com eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo inla.interpret.formula(formula, data.same.len = data.same.len, data = data, performSmoothingActivity.R#609: inla(formula, family = "poisson", E = EXP_U performSmoothingActivity(data, AdjRowset) Adj_Cov_Smooth_JRI.R#360: withVisible(expr) Adj_Cov_Smooth_JRI.R#360: withCallingHandlers(withVisible(expr), error = er withErrorTracing({
-    data = fetchExtractTable()
-    AdjRowset = getAdjace doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names, parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryCatch({
-    withErrorTracing({
-        data = fetchExtractTable()
-       eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) Adj_Cov_Smooth_JRI.R#381: capture.output({
-    tryCatch({
-        withError runRSmoothingFunctions() 
-<<< End of stack tracer.
-callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  if 
-callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  scale.model 
-callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
-    if (constr) 
-        rankdef = rankdef + 1
-    if (!empty.extraconstr(extraconstr)) 
-        rankdef = rankdef + dim(extraconstr$A)[1]
-} 
-callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
-    if (constr) 
-        rankdef = rankdef + 1
-    rankdef = rankdef + cc.n1
-    if (!empty.extraconstr(extraconstr)) 
-        rankdef = rankdef + dim(extraconstr$A)[1]
-} 
-callPerformSmoothingActivity exitValue: 1
-Closing database connection
-Adj_Cov_Smooth_JRI.R exitValue: 1; error tracer: 36
-
-17:06:24.817 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
-Rengine Stopped, exit value==1==
-```
-
-3. Tracing R script errors
-
-   You will almost certainly get no results in the data viewer; the extract R processing can be re-run manually using a batch 
-   file (*rif40_run_R.bat*) created in the R script scratch area: ```extractDirectory=c:\\rifDemo\\scratchSpace```
-   in the *<study id>\\data\\* sub directory.
-
-   e.g. *C:\rifDemo\scratchSpace\s33\data*
-
-   This contains the following files:
-
-   * *Adj_Cov_Smooth_csv.R* - CSV version of R script (the middleware uses Adj_Cov_Smooth_JRI.R)
-   * *performSmoothingActivity.R* - Smoothing module
-   * *rif40_run_R.bat* - Script to run R to redo smoothing
-   * *rif40_run_R_env.bat* - Study settings in use. Does *NOT* include the password!
-   * *tmp_s33_adjacency_matrix.csv* - adjacency matrix for extract
-   * *tmp_s33_extract.csv* - study data extract
-   
-```bat
-C:\rifDemo\scratchSpace\s33\data>rif40_run_R.bat
-New user [default peter]:
-##########################################################################################
-#
-# Run R script on a study extract.
-#
-# USERID=peter
-# DBNAME=sahsuland
-# DBHOST=localhost\SQLEXPRESS
-# DBPORT=1433
-# DB_DRIVER_PREFIX=jdbc:sqlserver
-# DB_DRIVER_CLASS_NAME=com.microsoft.sqlserver.jdbc.SQLServerDriver
-# STUDYID=33
-# INVESTIGATIONNAME=HELLO
-# INVESTIGATIONID=33
-# ODBCDATASOURCE=SQLServer11
-# MODEL=BYM
-# COVARIATENAME=none
-#
-##########################################################################################
-"C:\Program Files\R\R-3.4.0\bin\x64\RScript" Adj_Cov_Smooth_csv.R ^
---db_driver_prefix=jdbc:sqlserver --db_driver_class_name=com.microsoft.sqlserver.jdbc.SQLServerDriver --odbcDataSource=SQLServer11 ^
-
---dbHost=localhost\SQLEXPRESS --dbPort=1433 --dbName=sahsuland ^
---studyID=33 --investigationName=HELLO --investigationId=33 ^
---model=BYM --covariateName=none ^
---userID=peter --password=XXXXXXXXXXXXXXXXXXXXXX ^
---scratchspace=c:\rifDemo\scratchSpace\ --dumpframestocsv=FALSE
-Loading required package: sp
-Loading required package: methods
-Loading required package: Matrix
-This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
-See www.r-inla.org/contact-us for how to get help.
-Checking rgeos availability: FALSE
-        Note: when rgeos is not available, polygon geometry     computations in maptools depend on gpclib,
-        which has a restricted licence. It is disabled by default;
-        to enable gpclib, type gpclibPermit()
-CATALINA_HOME=C:\Program Files\Apache Software Foundation\Tomcat 8.5
-Source: C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\performSmoothingActivity.R
-13  arguments were supplied
-Parsing parameters
-                   name                                        value
-1      db_driver_prefix                               jdbc:sqlserver
-2  db_driver_class_name com.microsoft.sqlserver.jdbc.SQLServerDriver
-3        odbcDataSource                                  SQLServer11
-4                dbHost                        localhost\\SQLEXPRESS
-5                dbPort                                         1433
-6                dbName                                    sahsuland
-7               studyID                                           33
-8     investigationName                                        HELLO
-9       investigationId                                           33
-10                model                                          BYM
-11        covariateName                                         none
-12         scratchspace                  c:\\rifDemo\\scratchSpace\\
-13      dumpframestocsv                                        FALSE
-Performing basic stats and smoothing
-Covariates: NONE
-Bayes smoothing with BYM model type no adjustment
-Stack tracer >>>
-
- .handleSimpleError(function (obj)
-{
-    calls = sys.calls()
-    calls = ca INLA::f(area_order, model = "bym", graph = IM, adjust.for.con.comp = FALSE, eval(parse(text = gsub("^f\\(", "INLA::f(
-", terms[i])), envir = data, enclo eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo inla.interpret.formul
-a(formula, data.same.len = data.same.len, data = data, inla(formula, family = "poisson", E = EXP_UNADJ, data = data[whichrows, ],  p
-erformSmoothingActivity(data, AdjRowset) withVisible(expr) withCallingHandlers(withVisible(expr), error = errorTracer) withErrorTrac
-ing({
-    data = read.table(temporaryExtractFileName, header = doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names,
- parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handle
-r) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryC
-atch({
-    withErrorTracing({
-        data = read.table(temporaryExtrac eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) capture.output({
-    tryCatch({
-        withErrorTracing({
-            data runRSmoothingFunctions()
-<<< End of stack tracer.
-callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  if
-callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  scale.model
-callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
-    if (constr)
-        rankdef = rankdef + 1
-    if (!empty.extraconstr(extraconstr))
-        rankdef = rankdef + dim(extraconstr$A)[1]
-}
-callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
-    if (constr)
-        rankdef = rankdef + 1
-    rankdef = rankdef + cc.n1
-    if (!empty.extraconstr(extraconstr))
-        rankdef = rankdef + dim(extraconstr$A)[1]
-}
-callPerformSmoothingActivity exitValue: 1
-Adj_Cov_Smooth_JRI.R exitValue: 1; error tracer: 30
-R script had error >>>
-Covariates: NONE
-Bayes smoothing with BYM model type no adjustment
-Stack tracer >>>
-
- .handleSimpleError(function (obj)
-{
-    calls = sys.calls()
-    calls = ca INLA::f(area_order, model = "bym", graph = IM, adjust.for.con.comp = FALSE, eval(parse(text = gsub("^f\\(", "INLA::f(
-", terms[i])), envir = data, enclo eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo inla.interpret.formul
-a(formula, data.same.len = data.same.len, data = data, inla(formula, family = "poisson", E = EXP_UNADJ, data = data[whichrows, ],  p
-erformSmoothingActivity(data, AdjRowset) withVisible(expr) withCallingHandlers(withVisible(expr), error = errorTracer) withErrorTrac
-ing({
-    data = read.table(temporaryExtractFileName, header = doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names,
- parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handle
-r) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryC
-atch({
-    withErrorTracing({
-        data = read.table(temporaryExtrac eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) capture.output({
-    tryCatch({
-        withErrorTracing({
-            data runRSmoothingFunctions()
-<<< End of stack tracer.
-callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  if
-callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  scale.model
-callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
-    if (constr)
-        rankdef = rankdef + 1
-    if (!empty.extraconstr(extraconstr))
-        rankdef = rankdef + dim(extraconstr$A)[1]
-}
-callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
-    if (constr)
-        rankdef = rankdef + 1
-    rankdef = rankdef + cc.n1
-    if (!empty.extraconstr(extraconstr))
-        rankdef = rankdef + dim(extraconstr$A)[1]
-}
-callPerformSmoothingActivity exitValue: 1
-
-<<< End of error trace.
-Test study failed: Adj_Cov_Smooth_csv.R procedure had error for study: 33; investigation: 33
-```
-
-4. A JRI successful run:
-
-A typical JRI successful run looks like:
-
-```
-16:08:27.201 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
-Source: Adj_Cov_Smooth_JRI="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth_JRI.R"
-16:08:27.938 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
-rFlushConsole[1] calls: 61, length: 1320, time period: PT1.155S
-
-R version 3.4.0 (2017-04-21) -- "You Stupid Darkness"
-Copyright (C) 2017 The R Foundation for Statistical Computing
-Platform: x86_64-w64-mingw32/x64 (64-bit)
-
-R is free software and comes with ABSOLUTELY NO WARRANTY.
-You are welcome to redistribute it under certain conditions.
-Type 'license()' or 'licence()' for distribution details.
-
-R is a collaborative project with many contributors.
-Type 'contributors()' for more information and
-'citation()' on how to cite R or R packages in publications.
-
-Type 'demo()' for some demos, 'help()' for on-line help, or
-'help.start()' for an HTML browser interface to help.
-Type 'q()' to quit R.
-
-[1] "C:/Program Files/R/R-3.4.0/library"
-R version 3.4.0 (2017-04-21)
-Platform: x86_64-w64-mingw32/x64 (64-bit)
-Running under: Windows 8.1 x64 (build 9600)
-
-Matrix products: default
-
-locale:
-[1] LC_COLLATE=English_United Kingdom.1252 
-[2] LC_CTYPE=English_United Kingdom.1252   
-[3] LC_MONETARY=English_United Kingdom.1252
-[4] LC_NUMERIC=C                           
-[5] LC_TIME=English_United Kingdom.1252    
-
-attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
-
-loaded via a namespace (and not attached):
-[1] compiler_3.4.0
-R Error/Warning/Notice: Loading required package: sp
-R Error/Warning/Notice: Loading required package: Matrix
-
-16:08:28.980 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
-rFlushConsole[2] calls: 1, length: 139, time period: PT1.042S
-
-R Error/Warning/Notice: This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
-See www.r-inla.org/contact-us for how to get help.
-
-16:08:29.541 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
-Source: RIF_odbc="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\RIF_odbc.R"
-16:08:29.553 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
-Source: performSmoothingActivity="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\performSmoothingActivity.R"
-16:09:03.282 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
-rFlushConsole[3] calls: 10, length: 1093, time period: PT34.302S
-
-R Error/Warning/Notice: 
-Attaching package: 'INLA'
-
-R Error/Warning/Notice: The following object is masked from 'package:pryr':
-
-    f
-
-R Error/Warning/Notice: Checking rgeos availability: FALSE
- 	Note: when rgeos is not available, polygon geometry 	computations in maptools depend on gpclib,
- 	which has a restricted licence. It is disabled by default;
- 	to enable gpclib, type gpclibPermit()
-Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\performSmoothingActivity.R  to:  c:\rifDemo\scratchSpace\s49\performSmoothingActivity.R 
-Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\Adj_Cov_Smooth_csv.R  to:  c:\rifDemo\scratchSpace\s49\Adj_Cov_Smooth_csv.R 
-Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\rif40_run_R.bat  to:  c:\rifDemo\scratchSpace\s49\rif40_run_R.bat 
-Create:  c:\rifDemo\scratchSpace\s49\rif40_run_R_env.bat 
-Connect to database: SQLServer11
-Performing basic stats and smoothing
-EXTRACT TABLE NAME: rif_studies.s49_extract
-16:09:03.728 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
-rFlushConsole[4] calls: 108, length: 1830, time period: PT1M16.182S
-
-
-Saving extract frame to: c:\rifDemo\scratchSpace\s49\tmp_s49_extract.csv
-rif_studies.s49_extract numberOfRows=433312==
-rif40_GetAdjacencyMatrix numberOfRows=1229==
-Saving adjacency matrix to: c:\rifDemo\scratchSpace\s49\tmp_s49_adjacency_matrix.csv
-Covariates: none
-Bayes smoothing with HET model type no adjustment
-Posterior probability calculated
-callPerformSmoothingActivity exitValue: 0
-performSmoothingActivity() OK:  0 
-check.integer: 01.001.000100.1; as.numeric(str): 1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: FALSE; check.integer.Result: FALSE
-typeof(result$area_id[1]) ---->  integer ; check.integer(result$area_id[1]):  FALSE ; result$area_id[1]:  01.001.000100.1 
-check.integer: 01.001.000100.1; as.numeric(str): 1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: FALSE; check.integer.Result: FALSE
-Saving data frame to: c:\rifDemo\scratchSpace\s49\tmp_s49_map.csv
-Creating temporary table: peter.tmp_s49_map
-Creating study_id index on temporary table
-Creating area_id index on temporary table
-Creating genders index on temporary table
-Created indices on temporary table
-Updated map table: rif_studies.s49_map
-.Primitive("return")
-Dropping temporary table: peter.tmp_s49_map
-Closing database connection
-Total memory is use: 162554880
-Memory by object:
-AdjRowset: 304232
-area_id_is_integer: 48
-connDB: 3120
-data: 17413544
-errorTrace: 2384
-ototal: 48
-result: 746696
-R Error/Warning/Notice: Garbage collection 165 = 120R Error/Warning/Notice: +21R Error/Warning/Notice: +24R Error/Warning/Notice:  (level 2) ... R Error/Warning/Notice: 
-104.3 Mbytes of cons cells used (50%)
-R Error/Warning/Notice: 33.4 Mbytes of vectors used (26%)
-Free 18470072 memory; total memory is use: 144247440
-Memory by object:
-errorTrace: 2384
-Adj_Cov_Smooth_JRI.R exitValue: 0; error tracer: 20
-```
-
-### 4.3.2 R Memory Management
-
-R is run as a attached DLL from the first middleware worker thread that runs a study. The per thread memory usage is printed at the end 
-of each smoothing operation so that thread memory leakage can be detected:
-
-```
-16:09:03.744 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifGenericLibrary.util.RIFMemoryManager]:
-Thread list, 44 threads >>>
-Thread: Thread-5; ID : 56; state: TIMED_WAITING; memory: 24.1 KB
-Thread: Log4j2-TF-5-Scheduled-1; ID : 54; state: TIMED_WAITING; memory: 304 B
-Thread: Log4j2-TF-5-Scheduled-1; ID : 52; state: TIMED_WAITING; memory: 416 B
-Thread: ajp-nio-8009-AsyncTimeout; ID : 49; state: TIMED_WAITING; memory: 5.6 KB
-Thread: ajp-nio-8009-Acceptor-0; ID : 48; state: RUNNABLE; memory: 80 B
-Thread: ajp-nio-8009-ClientPoller-1; ID : 47; state: RUNNABLE; memory: 9.6 KB
-Thread: ajp-nio-8009-ClientPoller-0; ID : 46; state: RUNNABLE; memory: 9.6 KB
-Thread: ajp-nio-8009-exec-10; ID : 45; state: WAITING; memory: 32 B
-Thread: ajp-nio-8009-exec-9; ID : 44; state: WAITING; memory: 32 B
-Thread: ajp-nio-8009-exec-8; ID : 43; state: WAITING; memory: 32 B
-Thread: ajp-nio-8009-exec-7; ID : 42; state: WAITING; memory: 32 B
-Thread: ajp-nio-8009-exec-6; ID : 41; state: WAITING; memory: 32 B
-Thread: ajp-nio-8009-exec-5; ID : 40; state: WAITING; memory: 32 B
-Thread: ajp-nio-8009-exec-4; ID : 39; state: WAITING; memory: 32 B
-Thread: ajp-nio-8009-exec-3; ID : 38; state: WAITING; memory: 32 B
-Thread: ajp-nio-8009-exec-2; ID : 37; state: WAITING; memory: 32 B
-Thread: ajp-nio-8009-exec-1; ID : 36; state: WAITING; memory: 32 B
-Thread: http-nio-8080-AsyncTimeout; ID : 35; state: TIMED_WAITING; memory: 5.6 KB
-Thread: http-nio-8080-Acceptor-0; ID : 34; state: RUNNABLE; memory: 300.7 KB
-Thread: http-nio-8080-ClientPoller-1; ID : 33; state: RUNNABLE; memory: 29.1 KB
-Thread: http-nio-8080-ClientPoller-0; ID : 32; state: RUNNABLE; memory: 25.9 KB
-Thread: http-nio-8080-exec-10; ID : 31; state: WAITING; memory: 6.8 MB
-CURRENT thread: http-nio-8080-exec-9; ID : 30; state: RUNNABLE; memory: 34.6 MB
-Thread: http-nio-8080-exec-8; ID : 29; state: WAITING; memory: 112.1 MB
-Thread: http-nio-8080-exec-7; ID : 28; state: WAITING; memory: 41.0 MB
-Thread: http-nio-8080-exec-6; ID : 27; state: WAITING; memory: 187.9 MB
-Thread: http-nio-8080-exec-5; ID : 26; state: WAITING; memory: 9.6 MB
-Thread: http-nio-8080-exec-4; ID : 25; state: WAITING; memory: 38.6 MB
-Thread: http-nio-8080-exec-3; ID : 24; state: WAITING; memory: 7.2 MB
-Thread: http-nio-8080-exec-2; ID : 23; state: WAITING; memory: 11.5 MB
-Thread: http-nio-8080-exec-1; ID : 22; state: WAITING; memory: 39.2 MB
-Thread: ContainerBackgroundProcessor[StandardEngine[Catalina]]; ID : 21; state: TIMED_WAITING; memory: 618.6 KB
-Thread: NioBlockingSelector.BlockPoller-2; ID : 18; state: RUNNABLE; memory: 3.5 KB
-Thread: NioBlockingSelector.BlockPoller-1; ID : 17; state: RUNNABLE; memory: 24.2 KB
-Thread: GC Daemon; ID : 16; state: TIMED_WAITING; memory: 0 B
-Thread: RMI TCP Accept-0; ID : 15; state: RUNNABLE; memory: 616 B
-Thread: RMI TCP Accept-9999; ID : 14; state: RUNNABLE; memory: 616 B
-Thread: RMI TCP Accept-0; ID : 13; state: RUNNABLE; memory: 1.2 KB
-Thread: Log4j2-TF-5-Scheduled-1; ID : 12; state: TIMED_WAITING; memory: 928 B
-Thread: Attach Listener; ID : 5; state: RUNNABLE; memory: 0 B
-Thread: Signal Dispatcher; ID : 4; state: RUNNABLE; memory: 0 B
-Thread: Finalizer; ID : 3; state: WAITING; memory: 1.9 KB
-Thread: Reference Handler; ID : 2; state: WAITING; memory: 0 B
-Thread: main; ID : 1; state: RUNNABLE; memory: 61.0 MB
-<<<
-Total thread memory: 550.5 MB
-Memory: max: 3.5 GB, total: 601.5 MB, free: 495.5 MB, available: 2.9 GB; processors: 4
-```
-
-This does *NOT* trace the memory used by *R* or by the *inla* executable that performs the Bayesian smoothing. R prints the 
-memory is use just before the script exits; then releases the memory. *R* itself does *NOT* exit but stays running ready for the next 
-study. Only one study can be smoothed at a time with JRI.
-
-```
-Total memory is use: 162554880
-Memory by object:
-AdjRowset: 304232
-area_id_is_integer: 48
-connDB: 3120
-data: 17413544
-errorTrace: 2384
-ototal: 48
-result: 746696
-R Error/Warning/Notice: Garbage collection 165 = 120R Error/Warning/Notice: +21R Error/Warning/Notice: +24R Error/Warning/Notice:  (level 2) ... R Error/Warning/Notice: 
-104.3 Mbytes of cons cells used (50%)
-R Error/Warning/Notice: 33.4 Mbytes of vectors used (26%)
-Free 18470072 memory; total memory is use: 144247440
-```
-
-As Java cannot manage the memory used by *R* or *inla* the *R* script prints outs the process ID of the R processs. As R is attached as 
-a DLL this is the process id of *tomcat*. 
-
-[Process Explorer](https://docs.microsoft.com/en-gb/sysinternals/downloads/process-explorer) is a Windows tool that aloows the user to 
-see the hidden R thread and the *inla* sub process.
-
-R process ID tracer from the middleware log:
-
-```
-16:08:27.167 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
-Rengine Started; Rpid: 10644; JRI version: 266; thread ID: 30
-```
-
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/process-explorer-1.png?raw=true "Process explorer")
-
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/process-explorer-2.png?raw=true "Java Process details")
-
-R will be limited to the maximum private memory (resident set size) of Java, typically around 3.3GB on Windows 8.1. To go beyond this 
-you will need to a) use 64bit Java! and b) set the *-Xmx* flag in  *%CATALINA_HOME%\bin\setenv.bat*; e.g. add ```-Xmx6g``` to 
-*CATALINA_OPTS*
-
 ## 4.4 Common Setup Errors
 
 A errors are to be found in the $CATALINA_BASE/logs directory, e.g.: *C:\Program Files\Apache Software Foundation\Tomcat 8.5\logs\tomcat8-stderr.2017-04-10.log*
@@ -2674,6 +2107,541 @@ populationPyramidAspactRatio = 1.43
 # 
 # roundDP=3
 ```
+
+### 4.5.3 R Debugging
+
+Since R now uses JRI, all errors appear in the tomcat logs.
+
+1. Beware of 32 bit Java errors
+
+```
+=======getInvestigationID========2===
+About to call next
+called next
+Investigation name==TEST 1001  ID==5==
+Cannot find JRI native library!
+Please make sure that the JRI native library is in a directory listed in java.library.path.
+
+java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.1\library\rJava\jri\x64\jri.dll: Can't load AMD 64-bit .dll on a IA 32-bit platform
+        at java.lang.ClassLoader$NativeLibrary.load(Native Method)
+        at java.lang.ClassLoader.loadLibrary0(Unknown Source)
+        at java.lang.ClassLoader.loadLibrary(Unknown Source)
+        at java.lang.Runtime.loadLibrary0(Unknown Source)
+        at java.lang.System.loadLibrary(Unknown Source)
+        at org.rosuda.JRI.Rengine.<clinit>(Rengine.java:19)
+        at rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep.performStep(PGSQLSmoothResultsSubmissionStep.java:193)
+```
+
+2. Typical errors for the JRI Middleware:
+
+   * *R_HOME* not setup: ```command==null\bin\x64\RScript```
+   * No scratchSpace directory: *c:\rifDemo\scratchSpace\* ```(The system cannot find the path specified)```
+   * R script errors
+   
+   If there are R script errors JRI the middleware will crash with an error. This will be saved in the *Study status* pane:
+   
+   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/study-status.png?raw=true "Study status")  
+
+   Clicking on the *trace* button will bring up the trace pane. 
+  
+   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/R-trace.png?raw=true "R Trace")  
+   
+   If there are R script errors JRI will log them to the middleware log: ```%CATALINA_HOME%/log4j2/<YYYY>-<MM>/RIF_middleware.log-<N>```:
+   
+```
+17:06:02.767 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
+Rengine Started
+17:06:02.787 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
+RIFServiceStartupOptions is web deployment
+17:06:02.787 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
+Get CATALINA_HOME=C:\Program Files\Apache Software Foundation\Tomcat 8.5
+17:06:02.788 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
+Source: Adj_Cov_Smooth_JRI="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth_JRI.R"
+17:06:04.418 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
+rFlushConsole[1] calls: 62, length: 1458, time period: PT1.892S
+
+R version 3.4.0 (2017-04-21) -- "You Stupid Darkness"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[1] "C:/Program Files/R/R-3.4.0/library"
+R version 3.4.0 (2017-04-21)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 8.1 x64 (build 9600)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=English_United Kingdom.1252 
+[2] LC_CTYPE=English_United Kingdom.1252   
+[3] LC_MONETARY=English_United Kingdom.1252
+[4] LC_NUMERIC=C                           
+[5] LC_TIME=English_United Kingdom.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+loaded via a namespace (and not attached):
+[1] compiler_3.4.0
+R Error/Warning/Notice: Loading required package: sp
+R Error/Warning/Notice: Loading required package: Matrix
+R Error/Warning/Notice: This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
+See www.r-inla.org/contact-us for how to get help.
+
+17:06:04.980 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
+Source: RIF_odbc="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\RIF_odbc.R"
+17:06:04.996 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
+Source: performSmoothingActivity="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\performSmoothingActivity.R"
+17:06:24.801 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
+rFlushConsole[2] calls: 8, length: 957, time period: PT20.382S
+
+R Error/Warning/Notice: Checking rgeos availability: FALSE
+ 	Note: when rgeos is not available, polygon geometry 	computations in maptools depend on gpclib,
+ 	which has a restricted licence. It is disabled by default;
+ 	to enable gpclib, type gpclibPermit()
+Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\performSmoothingActivity.R  to:  c:\rifDemo\scratchSpace\s33\performSmoothingActivity.R 
+Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\Adj_Cov_Smooth_csv.R  to:  c:\rifDemo\scratchSpace\s33\Adj_Cov_Smooth_csv.R 
+Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\rif40_run_R.bat  to:  c:\rifDemo\scratchSpace\s33\rif40_run_R.bat 
+Create:  c:\rifDemo\scratchSpace\s33\rif40_run_R_env.bat 
+Connect to database: SQLServer11
+Performing basic stats and smoothing
+EXTRACT TABLE NAME: rif_studies.s33_extract
+17:06:24.816 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
+rFlushConsole[3] calls: 75, length: 2422, time period: PT59.244S
+
+
+Saving extract frame to: c:\rifDemo\scratchSpace\s33\tmp_s33_extract.csv
+rif_studies.s33_extract numberOfRows=433312==
+rif40_GetAdjacencyMatrix numberOfRows=1229==
+Saving adjacency matrix to: c:\rifDemo\scratchSpace\s33\tmp_s33_adjacency_matrix.csv
+Covariates: none
+Bayes smoothing with BYM model type no adjustment
+Stack tracer >>>
+
+ .handleSimpleError(function (obj) 
+{
+    calls = sys.calls()
+    calls = ca <text>#1: INLA::f(area_order, model = "bym", graph = IM, adjust.for.con.com eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo inla.interpret.formula(formula, data.same.len = data.same.len, data = data, performSmoothingActivity.R#609: inla(formula, family = "poisson", E = EXP_U performSmoothingActivity(data, AdjRowset) Adj_Cov_Smooth_JRI.R#360: withVisible(expr) Adj_Cov_Smooth_JRI.R#360: withCallingHandlers(withVisible(expr), error = er withErrorTracing({
+    data = fetchExtractTable()
+    AdjRowset = getAdjace doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names, parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryCatch({
+    withErrorTracing({
+        data = fetchExtractTable()
+       eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) Adj_Cov_Smooth_JRI.R#381: capture.output({
+    tryCatch({
+        withError runRSmoothingFunctions() 
+<<< End of stack tracer.
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  if 
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  scale.model 
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
+    if (constr) 
+        rankdef = rankdef + 1
+    if (!empty.extraconstr(extraconstr)) 
+        rankdef = rankdef + dim(extraconstr$A)[1]
+} 
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
+    if (constr) 
+        rankdef = rankdef + 1
+    rankdef = rankdef + cc.n1
+    if (!empty.extraconstr(extraconstr)) 
+        rankdef = rankdef + dim(extraconstr$A)[1]
+} 
+callPerformSmoothingActivity exitValue: 1
+Closing database connection
+Adj_Cov_Smooth_JRI.R exitValue: 1; error tracer: 36
+
+17:06:24.817 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
+Rengine Stopped, exit value==1==
+```
+
+3. Tracing R script errors
+
+   You will almost certainly get no results in the data viewer; the extract R processing can be re-run manually using a batch 
+   file (*rif40_run_R.bat*) created in the R script scratch area: ```extractDirectory=c:\\rifDemo\\scratchSpace```
+   in the *<study id>\\data\\* sub directory.
+
+   e.g. *C:\rifDemo\scratchSpace\s33\data*
+
+   This contains the following files:
+
+   * *Adj_Cov_Smooth_csv.R* - CSV version of R script (the middleware uses Adj_Cov_Smooth_JRI.R)
+   * *performSmoothingActivity.R* - Smoothing module
+   * *rif40_run_R.bat* - Script to run R to redo smoothing
+   * *rif40_run_R_env.bat* - Study settings in use. Does *NOT* include the password!
+   * *tmp_s33_adjacency_matrix.csv* - adjacency matrix for extract
+   * *tmp_s33_extract.csv* - study data extract
+   
+```bat
+C:\rifDemo\scratchSpace\s33\data>rif40_run_R.bat
+New user [default peter]:
+##########################################################################################
+#
+# Run R script on a study extract.
+#
+# USERID=peter
+# DBNAME=sahsuland
+# DBHOST=localhost\SQLEXPRESS
+# DBPORT=1433
+# DB_DRIVER_PREFIX=jdbc:sqlserver
+# DB_DRIVER_CLASS_NAME=com.microsoft.sqlserver.jdbc.SQLServerDriver
+# STUDYID=33
+# INVESTIGATIONNAME=HELLO
+# INVESTIGATIONID=33
+# ODBCDATASOURCE=SQLServer11
+# MODEL=BYM
+# COVARIATENAME=none
+#
+##########################################################################################
+"C:\Program Files\R\R-3.4.0\bin\x64\RScript" Adj_Cov_Smooth_csv.R ^
+--db_driver_prefix=jdbc:sqlserver --db_driver_class_name=com.microsoft.sqlserver.jdbc.SQLServerDriver --odbcDataSource=SQLServer11 ^
+
+--dbHost=localhost\SQLEXPRESS --dbPort=1433 --dbName=sahsuland ^
+--studyID=33 --investigationName=HELLO --investigationId=33 ^
+--model=BYM --covariateName=none ^
+--userID=peter --password=XXXXXXXXXXXXXXXXXXXXXX ^
+--scratchspace=c:\rifDemo\scratchSpace\ --dumpframestocsv=FALSE
+Loading required package: sp
+Loading required package: methods
+Loading required package: Matrix
+This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
+See www.r-inla.org/contact-us for how to get help.
+Checking rgeos availability: FALSE
+        Note: when rgeos is not available, polygon geometry     computations in maptools depend on gpclib,
+        which has a restricted licence. It is disabled by default;
+        to enable gpclib, type gpclibPermit()
+CATALINA_HOME=C:\Program Files\Apache Software Foundation\Tomcat 8.5
+Source: C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\performSmoothingActivity.R
+13  arguments were supplied
+Parsing parameters
+                   name                                        value
+1      db_driver_prefix                               jdbc:sqlserver
+2  db_driver_class_name com.microsoft.sqlserver.jdbc.SQLServerDriver
+3        odbcDataSource                                  SQLServer11
+4                dbHost                        localhost\\SQLEXPRESS
+5                dbPort                                         1433
+6                dbName                                    sahsuland
+7               studyID                                           33
+8     investigationName                                        HELLO
+9       investigationId                                           33
+10                model                                          BYM
+11        covariateName                                         none
+12         scratchspace                  c:\\rifDemo\\scratchSpace\\
+13      dumpframestocsv                                        FALSE
+Performing basic stats and smoothing
+Covariates: NONE
+Bayes smoothing with BYM model type no adjustment
+Stack tracer >>>
+
+ .handleSimpleError(function (obj)
+{
+    calls = sys.calls()
+    calls = ca INLA::f(area_order, model = "bym", graph = IM, adjust.for.con.comp = FALSE, eval(parse(text = gsub("^f\\(", "INLA::f(
+", terms[i])), envir = data, enclo eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo inla.interpret.formul
+a(formula, data.same.len = data.same.len, data = data, inla(formula, family = "poisson", E = EXP_UNADJ, data = data[whichrows, ],  p
+erformSmoothingActivity(data, AdjRowset) withVisible(expr) withCallingHandlers(withVisible(expr), error = errorTracer) withErrorTrac
+ing({
+    data = read.table(temporaryExtractFileName, header = doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names,
+ parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handle
+r) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryC
+atch({
+    withErrorTracing({
+        data = read.table(temporaryExtrac eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) capture.output({
+    tryCatch({
+        withErrorTracing({
+            data runRSmoothingFunctions()
+<<< End of stack tracer.
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  if
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  scale.model
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
+    if (constr)
+        rankdef = rankdef + 1
+    if (!empty.extraconstr(extraconstr))
+        rankdef = rankdef + dim(extraconstr$A)[1]
+}
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
+    if (constr)
+        rankdef = rankdef + 1
+    rankdef = rankdef + cc.n1
+    if (!empty.extraconstr(extraconstr))
+        rankdef = rankdef + dim(extraconstr$A)[1]
+}
+callPerformSmoothingActivity exitValue: 1
+Adj_Cov_Smooth_JRI.R exitValue: 1; error tracer: 30
+R script had error >>>
+Covariates: NONE
+Bayes smoothing with BYM model type no adjustment
+Stack tracer >>>
+
+ .handleSimpleError(function (obj)
+{
+    calls = sys.calls()
+    calls = ca INLA::f(area_order, model = "bym", graph = IM, adjust.for.con.comp = FALSE, eval(parse(text = gsub("^f\\(", "INLA::f(
+", terms[i])), envir = data, enclo eval(parse(text = gsub("^f\\(", "INLA::f(", terms[i])), envir = data, enclo inla.interpret.formul
+a(formula, data.same.len = data.same.len, data = data, inla(formula, family = "poisson", E = EXP_UNADJ, data = data[whichrows, ],  p
+erformSmoothingActivity(data, AdjRowset) withVisible(expr) withCallingHandlers(withVisible(expr), error = errorTracer) withErrorTrac
+ing({
+    data = read.table(temporaryExtractFileName, header = doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names,
+ parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handle
+r) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryC
+atch({
+    withErrorTracing({
+        data = read.table(temporaryExtrac eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) capture.output({
+    tryCatch({
+        withErrorTracing({
+            data runRSmoothingFunctions()
+<<< End of stack tracer.
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  if
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  scale.model
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
+    if (constr)
+        rankdef = rankdef + 1
+    if (!empty.extraconstr(extraconstr))
+        rankdef = rankdef + dim(extraconstr$A)[1]
+}
+callPerformSmoothingActivity() ERROR:  argument is of length zero ; call stack:  {
+    if (constr)
+        rankdef = rankdef + 1
+    rankdef = rankdef + cc.n1
+    if (!empty.extraconstr(extraconstr))
+        rankdef = rankdef + dim(extraconstr$A)[1]
+}
+callPerformSmoothingActivity exitValue: 1
+
+<<< End of error trace.
+Test study failed: Adj_Cov_Smooth_csv.R procedure had error for study: 33; investigation: 33
+```
+
+4. A JRI successful run:
+
+A typical JRI successful run looks like:
+
+```
+16:08:27.201 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
+Source: Adj_Cov_Smooth_JRI="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth_JRI.R"
+16:08:27.938 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
+rFlushConsole[1] calls: 61, length: 1320, time period: PT1.155S
+
+R version 3.4.0 (2017-04-21) -- "You Stupid Darkness"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[1] "C:/Program Files/R/R-3.4.0/library"
+R version 3.4.0 (2017-04-21)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 8.1 x64 (build 9600)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=English_United Kingdom.1252 
+[2] LC_CTYPE=English_United Kingdom.1252   
+[3] LC_MONETARY=English_United Kingdom.1252
+[4] LC_NUMERIC=C                           
+[5] LC_TIME=English_United Kingdom.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+loaded via a namespace (and not attached):
+[1] compiler_3.4.0
+R Error/Warning/Notice: Loading required package: sp
+R Error/Warning/Notice: Loading required package: Matrix
+
+16:08:28.980 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
+rFlushConsole[2] calls: 1, length: 139, time period: PT1.042S
+
+R Error/Warning/Notice: This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
+See www.r-inla.org/contact-us for how to get help.
+
+16:08:29.541 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
+Source: RIF_odbc="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\RIF_odbc.R"
+16:08:29.553 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
+Source: performSmoothingActivity="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\performSmoothingActivity.R"
+16:09:03.282 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
+rFlushConsole[3] calls: 10, length: 1093, time period: PT34.302S
+
+R Error/Warning/Notice: 
+Attaching package: 'INLA'
+
+R Error/Warning/Notice: The following object is masked from 'package:pryr':
+
+    f
+
+R Error/Warning/Notice: Checking rgeos availability: FALSE
+ 	Note: when rgeos is not available, polygon geometry 	computations in maptools depend on gpclib,
+ 	which has a restricted licence. It is disabled by default;
+ 	to enable gpclib, type gpclibPermit()
+Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\performSmoothingActivity.R  to:  c:\rifDemo\scratchSpace\s49\performSmoothingActivity.R 
+Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\Adj_Cov_Smooth_csv.R  to:  c:\rifDemo\scratchSpace\s49\Adj_Cov_Smooth_csv.R 
+Copy:  C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\rifServices\WEB-INF\classes\rif40_run_R.bat  to:  c:\rifDemo\scratchSpace\s49\rif40_run_R.bat 
+Create:  c:\rifDemo\scratchSpace\s49\rif40_run_R_env.bat 
+Connect to database: SQLServer11
+Performing basic stats and smoothing
+EXTRACT TABLE NAME: rif_studies.s49_extract
+16:09:03.728 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
+rFlushConsole[4] calls: 108, length: 1830, time period: PT1M16.182S
+
+
+Saving extract frame to: c:\rifDemo\scratchSpace\s49\tmp_s49_extract.csv
+rif_studies.s49_extract numberOfRows=433312==
+rif40_GetAdjacencyMatrix numberOfRows=1229==
+Saving adjacency matrix to: c:\rifDemo\scratchSpace\s49\tmp_s49_adjacency_matrix.csv
+Covariates: none
+Bayes smoothing with HET model type no adjustment
+Posterior probability calculated
+callPerformSmoothingActivity exitValue: 0
+performSmoothingActivity() OK:  0 
+check.integer: 01.001.000100.1; as.numeric(str): 1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: FALSE; check.integer.Result: FALSE
+typeof(result$area_id[1]) ---->  integer ; check.integer(result$area_id[1]):  FALSE ; result$area_id[1]:  01.001.000100.1 
+check.integer: 01.001.000100.1; as.numeric(str): 1; isNumeric: TRUE; isInteger: TRUE; isNotRounded: TRUE; isIntRegexp: FALSE; check.integer.Result: FALSE
+Saving data frame to: c:\rifDemo\scratchSpace\s49\tmp_s49_map.csv
+Creating temporary table: peter.tmp_s49_map
+Creating study_id index on temporary table
+Creating area_id index on temporary table
+Creating genders index on temporary table
+Created indices on temporary table
+Updated map table: rif_studies.s49_map
+.Primitive("return")
+Dropping temporary table: peter.tmp_s49_map
+Closing database connection
+Total memory is use: 162554880
+Memory by object:
+AdjRowset: 304232
+area_id_is_integer: 48
+connDB: 3120
+data: 17413544
+errorTrace: 2384
+ototal: 48
+result: 746696
+R Error/Warning/Notice: Garbage collection 165 = 120R Error/Warning/Notice: +21R Error/Warning/Notice: +24R Error/Warning/Notice:  (level 2) ... R Error/Warning/Notice: 
+104.3 Mbytes of cons cells used (50%)
+R Error/Warning/Notice: 33.4 Mbytes of vectors used (26%)
+Free 18470072 memory; total memory is use: 144247440
+Memory by object:
+errorTrace: 2384
+Adj_Cov_Smooth_JRI.R exitValue: 0; error tracer: 20
+```
+
+### 4.5.4 R Memory Management
+
+R is run as a attached DLL from the first middleware worker thread that runs a study. The per thread memory usage is printed at the end 
+of each smoothing operation so that thread memory leakage can be detected:
+
+```
+16:09:03.744 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifGenericLibrary.util.RIFMemoryManager]:
+Thread list, 44 threads >>>
+Thread: Thread-5; ID : 56; state: TIMED_WAITING; memory: 24.1 KB
+Thread: Log4j2-TF-5-Scheduled-1; ID : 54; state: TIMED_WAITING; memory: 304 B
+Thread: Log4j2-TF-5-Scheduled-1; ID : 52; state: TIMED_WAITING; memory: 416 B
+Thread: ajp-nio-8009-AsyncTimeout; ID : 49; state: TIMED_WAITING; memory: 5.6 KB
+Thread: ajp-nio-8009-Acceptor-0; ID : 48; state: RUNNABLE; memory: 80 B
+Thread: ajp-nio-8009-ClientPoller-1; ID : 47; state: RUNNABLE; memory: 9.6 KB
+Thread: ajp-nio-8009-ClientPoller-0; ID : 46; state: RUNNABLE; memory: 9.6 KB
+Thread: ajp-nio-8009-exec-10; ID : 45; state: WAITING; memory: 32 B
+Thread: ajp-nio-8009-exec-9; ID : 44; state: WAITING; memory: 32 B
+Thread: ajp-nio-8009-exec-8; ID : 43; state: WAITING; memory: 32 B
+Thread: ajp-nio-8009-exec-7; ID : 42; state: WAITING; memory: 32 B
+Thread: ajp-nio-8009-exec-6; ID : 41; state: WAITING; memory: 32 B
+Thread: ajp-nio-8009-exec-5; ID : 40; state: WAITING; memory: 32 B
+Thread: ajp-nio-8009-exec-4; ID : 39; state: WAITING; memory: 32 B
+Thread: ajp-nio-8009-exec-3; ID : 38; state: WAITING; memory: 32 B
+Thread: ajp-nio-8009-exec-2; ID : 37; state: WAITING; memory: 32 B
+Thread: ajp-nio-8009-exec-1; ID : 36; state: WAITING; memory: 32 B
+Thread: http-nio-8080-AsyncTimeout; ID : 35; state: TIMED_WAITING; memory: 5.6 KB
+Thread: http-nio-8080-Acceptor-0; ID : 34; state: RUNNABLE; memory: 300.7 KB
+Thread: http-nio-8080-ClientPoller-1; ID : 33; state: RUNNABLE; memory: 29.1 KB
+Thread: http-nio-8080-ClientPoller-0; ID : 32; state: RUNNABLE; memory: 25.9 KB
+Thread: http-nio-8080-exec-10; ID : 31; state: WAITING; memory: 6.8 MB
+CURRENT thread: http-nio-8080-exec-9; ID : 30; state: RUNNABLE; memory: 34.6 MB
+Thread: http-nio-8080-exec-8; ID : 29; state: WAITING; memory: 112.1 MB
+Thread: http-nio-8080-exec-7; ID : 28; state: WAITING; memory: 41.0 MB
+Thread: http-nio-8080-exec-6; ID : 27; state: WAITING; memory: 187.9 MB
+Thread: http-nio-8080-exec-5; ID : 26; state: WAITING; memory: 9.6 MB
+Thread: http-nio-8080-exec-4; ID : 25; state: WAITING; memory: 38.6 MB
+Thread: http-nio-8080-exec-3; ID : 24; state: WAITING; memory: 7.2 MB
+Thread: http-nio-8080-exec-2; ID : 23; state: WAITING; memory: 11.5 MB
+Thread: http-nio-8080-exec-1; ID : 22; state: WAITING; memory: 39.2 MB
+Thread: ContainerBackgroundProcessor[StandardEngine[Catalina]]; ID : 21; state: TIMED_WAITING; memory: 618.6 KB
+Thread: NioBlockingSelector.BlockPoller-2; ID : 18; state: RUNNABLE; memory: 3.5 KB
+Thread: NioBlockingSelector.BlockPoller-1; ID : 17; state: RUNNABLE; memory: 24.2 KB
+Thread: GC Daemon; ID : 16; state: TIMED_WAITING; memory: 0 B
+Thread: RMI TCP Accept-0; ID : 15; state: RUNNABLE; memory: 616 B
+Thread: RMI TCP Accept-9999; ID : 14; state: RUNNABLE; memory: 616 B
+Thread: RMI TCP Accept-0; ID : 13; state: RUNNABLE; memory: 1.2 KB
+Thread: Log4j2-TF-5-Scheduled-1; ID : 12; state: TIMED_WAITING; memory: 928 B
+Thread: Attach Listener; ID : 5; state: RUNNABLE; memory: 0 B
+Thread: Signal Dispatcher; ID : 4; state: RUNNABLE; memory: 0 B
+Thread: Finalizer; ID : 3; state: WAITING; memory: 1.9 KB
+Thread: Reference Handler; ID : 2; state: WAITING; memory: 0 B
+Thread: main; ID : 1; state: RUNNABLE; memory: 61.0 MB
+<<<
+Total thread memory: 550.5 MB
+Memory: max: 3.5 GB, total: 601.5 MB, free: 495.5 MB, available: 2.9 GB; processors: 4
+```
+
+This does *NOT* trace the memory used by *R* or by the *inla* executable that performs the Bayesian smoothing. R prints the 
+memory is use just before the script exits; then releases the memory. *R* itself does *NOT* exit but stays running ready for the next 
+study. Only one study can be smoothed at a time with JRI.
+
+```
+Total memory is use: 162554880
+Memory by object:
+AdjRowset: 304232
+area_id_is_integer: 48
+connDB: 3120
+data: 17413544
+errorTrace: 2384
+ototal: 48
+result: 746696
+R Error/Warning/Notice: Garbage collection 165 = 120R Error/Warning/Notice: +21R Error/Warning/Notice: +24R Error/Warning/Notice:  (level 2) ... R Error/Warning/Notice: 
+104.3 Mbytes of cons cells used (50%)
+R Error/Warning/Notice: 33.4 Mbytes of vectors used (26%)
+Free 18470072 memory; total memory is use: 144247440
+```
+
+As Java cannot manage the memory used by *R* or *inla* the *R* script prints outs the process ID of the R processs. As R is attached as 
+a DLL this is the process id of *tomcat*. 
+
+[Process Explorer](https://docs.microsoft.com/en-gb/sysinternals/downloads/process-explorer) is a Windows tool that aloows the user to 
+see the hidden R thread and the *inla* sub process.
+
+R process ID tracer from the middleware log:
+
+```
+16:08:27.167 [http-nio-8080-exec-9] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLSmoothResultsSubmissionStep]:
+Rengine Started; Rpid: 10644; JRI version: 266; thread ID: 30
+```
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/process-explorer-1.png?raw=true "Process explorer")
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/process-explorer-2.png?raw=true "Java Process details")
+
+R will be limited to the maximum private memory (resident set size) of Java, typically around 3.3GB on Windows 8.1. To go beyond this 
+you will need to a) use 64bit Java! and b) set the *-Xmx* flag in  *%CATALINA_HOME%\bin\setenv.bat*; e.g. add ```-Xmx6g``` to 
+*CATALINA_OPTS*
 
 # 5. Running the RIF
 
