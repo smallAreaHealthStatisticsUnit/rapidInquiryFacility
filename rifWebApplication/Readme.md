@@ -10,9 +10,8 @@ RIF Web Application and Middleware Installation
      - [1.3.1 Apache Tomcat on a single host](#131-apache-tomcat-on-a-single-host)	
      - [1.3.2 Apache Tomcat for internet use](#132-apache-tomcat-for-internet-use)	
 	 - [1.3.3 Running Tomcat on the command line](#133-running-tomcat-on-the-command-line)
-	 - [1.3.4 Running Tomcat as a service](#134-running-tomcat-as-a-service)
-	 - [1.3.5 Middleware Logging (Log4j2) Introduction](#135-middleware-logging-log4j2-introduction)
-	 - [1.3.6 Tomcat Logging (Log4j2) Setup](#136-tomcat-logging-log4j2-setup) 
+	 - [1.3.4 Middleware Logging (Log4j2) Introduction](#134-middleware-logging-log4j2-introduction)
+	 - [1.3.5 Tomcat Logging (Log4j2) Setup](#135-tomcat-logging-log4j2-setup) 
   - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
    - [2.1 Building Using Make](#21-building-using-make)	
@@ -41,9 +40,9 @@ RIF Web Application and Middleware Installation
 	 - [4.4.6 SQL Server TCP/IP Java Connection Errors](#446-sql-server-tcpip-java-connection-errors)
 	 - [4.4.7 Tomcat service will not start](#447-tomcat-service-will-not-start)
 	 - [4.4.8 OutOfMemoryError: Java heap space](#448-outofmemoryerror-java-heap-space)
-   - [4.5 Other Setup](#42-other-setup)
+   - [4.5 Other Setup](#45-other-setup)
 	 - [4.5.1 Front End Logging](#451-front-end-logging)
-	 - [4.5.2 Printing Defaults](#453-printing-defaults)
+	 - [4.5.2 Printing Defaults](#452-printing-defaults)
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
@@ -57,8 +56,9 @@ RIF Web Application and Middleware Installation
    - [6.4 R](#64-r)
 - [ 7. Front End and Middleware Software Upgrades](#7-front-end-and-middleware-software-upgrades) 
 - [ 8. Advanced Tomcat Setup](#8-advanced-tomcat-setup)
-  - [8.1 Using JConsole with Tomcat](#81-using-jconsole-with-tomcat) 
-  - [8.2 Securing Tomcat](#82-securing-tomcat)
+  - [8.1 Running Tomcat as a service](#134-running-tomcat-as-a-service)
+  - [8.2 Using JConsole with Tomcat](#81-using-jconsole-with-tomcat) 
+  - [8.3 Securing Tomcat](#82-securing-tomcat)
 	 
 # 1. Installation Prerequisites
 
@@ -183,7 +183,7 @@ an updated ServerInfo.properties:
 
 ### 1.3.3 Running Tomcat on the command line
 
-Do this first, before you try to run the RIF as a service.
+**Do this first, before you try to run the RIF as a service.**
 
 Tomcat can be run from the command line. The advantage of this is all the output appears in the same place! To do this the tomcat server must be
 stopped (i.e. in the Windows services panel or via Linux runlevel scripts (/etc/init.d/tomcat*). Normally tomcat is run as a server (i.e. as a 
@@ -191,10 +191,9 @@ daemon in Unix parlance).
 
 **Make sure you start a new command window (cmd) after setting any environment variables**. The new settings will *NOT* be picked up otherwise.
 
-**It is advisable at this point to install the WAR files in the %CATALINA_HOME\webapps directory before you start the RIF. This will get tomcat to 
-expand the WAR files and all the configuration and example files in this section will then appear. The RIF will not work until you configure it correctly in section 4.**
-
-See section 3. Normally these are pre-supplied
+**It is advisable at this point to install the WAR files in the %CATALINA_HOME\webapps directory before you start the RIF. See section 3. Normally 
+these are pre-supplied (in the *tomcat webapps* folder)This will get tomcat to expand the WAR files and all the configuration and example 
+files in this section will then appear. The RIF will not work until you configure it correctly in section 4.**
 
 cd to %CATALINA_HOME%\bin; run *catalina.bat* with the parameter *start* or *stop*. 
 
@@ -347,74 +346,6 @@ select properties; In options unset "quick edit mode", "insert mode", "filter cl
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat_console_properties.png?raw=true "Windows 10 Tomcat console window properties")
 
 Tomcat can be stopped using "control-C" if R has not been run or using stop_rif.bat.
-  
-### 1.3.4 Running Tomcat as a service
-  
-You only need to do this if you want tomcat to start when the server boots. This is not advised on a laptop as it uses 2GB of memory; stop and start tomcat manually.
-You can do this last!
-  
-* It is advised to reinstall the tomcat service as the tomcat installer usually messes it up! In the directory %CATALINA_HOME%/bin; see: 
-  [Windows service HOW-TO](http://tomcat.apache.org/tomcat-8.0-doc/windows-service-howto.html#Installing_services)
-
-	```
-	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>service.bat install
-	Installing the service 'Tomcat8' ...
-	Using CATALINA_HOME:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
-	Using CATALINA_BASE:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
-	Using JAVA_HOME:        "C:\Program Files\Java\jdk1.8.0_162"
-	Using JRE_HOME:         "C:\Program Files\Java\jdk1.8.0_162\jre"
-	Using JVM:              "C:\Program Files\Java\jdk1.8.0_162\jre\bin\server\jvm.dll"
-	Failed installing 'Tomcat8' service
-
-	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>service.bat remove
-	Removing the service 'Tomcat8' ...
-	Using CATALINA_BASE:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
-	The service 'Tomcat8' has been removed
-
-	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>service.bat install
-	Installing the service 'Tomcat8' ...
-	Using CATALINA_HOME:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
-	Using CATALINA_BASE:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
-	Using JAVA_HOME:        "C:\Program Files\Java\jdk1.8.0_162"
-	Using JRE_HOME:         "C:\Program Files\Java\jdk1.8.0_162\jre"
-	Using JVM:              "C:\Program Files\Java\jdk1.8.0_162\jre\bin\server\jvm.dll"
-	The service 'Tomcat8' has been installed. 
-	```
- 
-  Then use the configure Tomcat application (tomcat8w) to use the default Java installed on the machine. This prevents upgrades from breaking *tomcat*!
-
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
-
-  Note: on some desktop systems this may prevent tomcat running as a service if a 32bit Java was installed first, with the Windows event log having the cryptic message
-  ```
-  The Apache Tomcat 8.5 Tomcat8 service terminated with the following service-specific error: 
-  Incorrect function.
-  ```
-  Tomcat logs to: commons-daemon.<date e.g.,  2018-04-16>.log, tomcat8-stderr.<date e.g.,  2018-04-16>.log, tomcat8-stdout.<date e.g.,  2018-04-16>.log instead of to the console
-  
-* Use the configure Tomcat application (tomcat8w) to make the startup type automatic.
-
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_1.png?raw=true "Make the startup type automatic")
-
-* Use the configure Tomcat application (tomcat8w) to set the logging level to debug.
-
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_2.PNG?raw=true "Set the logging level to debug")
-  	
-* Check the memory available to your Java version:
-  ```
-	C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>java -XX:+PrintFlagsFinal -version | findstr HeapSize
-		uintx ErgoHeapSizeLimit                         = 0                                   {product}
-		uintx HeapSizePerGCThread                       = 87241520                            {product}
-		uintx InitialHeapSize                          := 199229440                           {product}
-		uintx LargePageHeapSizeThreshold                = 134217728                           {product}
-		uintx MaxHeapSize                              := 3187671040                          {product}
-	java version "1.8.0_162"
-	Java(TM) SE Runtime Environment (build 1.8.0_162-b12)
-	Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
-  ```	
-
-  In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M, 
-  increase this to a much larger value less than the maximum, at least 2048M.
 
 # 5. Running the RIF
 
@@ -437,7 +368,7 @@ You can do this last!
   
 * When further instructions tell you to stop and start tomcat you will need to use the configure Tomcat application (tomcat8w) or the services panel
 
-### 1.3.5 Middleware Logging (Log4j2) Introduction
+### 1.3.4 Middleware Logging (Log4j2) Introduction
 
 This section introduces RIF logging. You do not need to do anything!
 
@@ -618,7 +549,7 @@ getAgeIDQuery=false
 createStatusTable=true
 ```
 
-### 1.3.6 Tomcat Logging (Log4j2) Setup
+### 1.3.5 Tomcat Logging (Log4j2) Setup
 
 This uses the log4j JDK Logging Adapter. The JDK Logging Adapter is a custom implementation of 
 java.util.logging.LogManager that uses Log4j. 
@@ -2952,7 +2883,75 @@ Of these updates, Java, Jersey and JAckson are likely to create the most problem
 
 # 8. Advanced Tomcat Setup
 
-## 8.1 Using JConsole with Tomcat
+## 8.1 Running Tomcat as a service
+  
+You only need to do this if you want tomcat to start when the server boots. This is not advised on a laptop as it uses 2GB of memory; stop and start tomcat manually.
+You can do this last!
+  
+* It is advised to reinstall the tomcat service as the tomcat installer usually messes it up! In the directory %CATALINA_HOME%/bin; see: 
+  [Windows service HOW-TO](http://tomcat.apache.org/tomcat-8.0-doc/windows-service-howto.html#Installing_services)
+
+	```
+	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>service.bat install
+	Installing the service 'Tomcat8' ...
+	Using CATALINA_HOME:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
+	Using CATALINA_BASE:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
+	Using JAVA_HOME:        "C:\Program Files\Java\jdk1.8.0_162"
+	Using JRE_HOME:         "C:\Program Files\Java\jdk1.8.0_162\jre"
+	Using JVM:              "C:\Program Files\Java\jdk1.8.0_162\jre\bin\server\jvm.dll"
+	Failed installing 'Tomcat8' service
+
+	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>service.bat remove
+	Removing the service 'Tomcat8' ...
+	Using CATALINA_BASE:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
+	The service 'Tomcat8' has been removed
+
+	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>service.bat install
+	Installing the service 'Tomcat8' ...
+	Using CATALINA_HOME:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
+	Using CATALINA_BASE:    "C:\Program Files\Apache Software Foundation\Tomcat 8.5"
+	Using JAVA_HOME:        "C:\Program Files\Java\jdk1.8.0_162"
+	Using JRE_HOME:         "C:\Program Files\Java\jdk1.8.0_162\jre"
+	Using JVM:              "C:\Program Files\Java\jdk1.8.0_162\jre\bin\server\jvm.dll"
+	The service 'Tomcat8' has been installed. 
+	```
+ 
+  Then use the configure Tomcat application (tomcat8w) to use the default Java installed on the machine. This prevents upgrades from breaking *tomcat*!
+
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_3.PNG?raw=true "Setting Java version autodetect")
+
+  Note: on some desktop systems this may prevent tomcat running as a service if a 32bit Java was installed first, with the Windows event log having the cryptic message
+  ```
+  The Apache Tomcat 8.5 Tomcat8 service terminated with the following service-specific error: 
+  Incorrect function.
+  ```
+  Tomcat logs to: commons-daemon.<date e.g.,  2018-04-16>.log, tomcat8-stderr.<date e.g.,  2018-04-16>.log, tomcat8-stdout.<date e.g.,  2018-04-16>.log instead of to the console
+  
+* Use the configure Tomcat application (tomcat8w) to make the startup type automatic.
+
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_1.png?raw=true "Make the startup type automatic")
+
+* Use the configure Tomcat application (tomcat8w) to set the logging level to debug.
+
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/tomcat8_configuration_2.PNG?raw=true "Set the logging level to debug")
+  	
+* Check the memory available to your Java version:
+  ```
+	C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>java -XX:+PrintFlagsFinal -version | findstr HeapSize
+		uintx ErgoHeapSizeLimit                         = 0                                   {product}
+		uintx HeapSizePerGCThread                       = 87241520                            {product}
+		uintx InitialHeapSize                          := 199229440                           {product}
+		uintx LargePageHeapSizeThreshold                = 134217728                           {product}
+		uintx MaxHeapSize                              := 3187671040                          {product}
+	java version "1.8.0_162"
+	Java(TM) SE Runtime Environment (build 1.8.0_162-b12)
+	Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
+  ```	
+
+  In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M, 
+  increase this to a much larger value less than the maximum, at least 2048M.
+  
+## 8.2 Using JConsole with Tomcat
 
 The JConsole graphical user interface is a monitoring tool for Java applications. JConsole is composed of six tabs:
 
@@ -2981,7 +2980,7 @@ Run Jconsole from *%JAVA_HOME%\bin* e.g. ```"%JAVA_HOME%\bin\Jconsole"```
 
  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Jconsole.png?raw=true "Jconsole")
 
-## 8.2 Securing Tomcat
+## 8.3 Securing Tomcat
 
 Injecting HTTP Response with the secure header can mitigate most of the web security vulnerabilities. These changes
 implement the necessary HTTP headers to comply with OWASP security standards.
