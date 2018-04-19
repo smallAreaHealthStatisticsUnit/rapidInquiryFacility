@@ -1783,8 +1783,10 @@ See:
 * Make sure you have restarted tomcat before attempting to run the RIF for the first time
 * In a non networked single machine environment (e.g. a laptop) the RIF is at: http://localhost:8080/RIF4
 * In a networked environment the RIF is at: ```http://<your domain>/RIF4```, e.g. *https://aepw-rif27.sm.med.ic.ac.uk/RIF4*
-* Test cases are provided in the *tests* folder of the SAHSU supplied bundle
-
+* Test cases are provided in the *tests* folder of the SAHSU supplied bundle:
+  - *TEST 1002 LUNG CANCER HET 95_96.json typically takes around 85 seconds on a Postgres database;
+  - *TEST 1003 LUNG CANCER BYM ALL YEARS 89_16.json* typically takes around 160 seconds on a Postgres database
+  
 ## 5.1 Logging On
 
 * Use the *TESTUSER* created when the database was built. Do not attempt to logon as a server administrator (e.g. postgres) or the RIF 

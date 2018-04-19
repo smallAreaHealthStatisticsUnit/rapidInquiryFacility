@@ -139,6 +139,7 @@
 <li><a href="#446-sql-server-tcpip-java-connection-errors">4.4.6 SQL Server TCP/IP Java Connection Errors</a></li>
 <li><a href="#447-tomcat-service-will-not-start">4.4.7 Tomcat service will not start</a></li>
 <li><a href="#448-outofmemoryerror-java-heap-space">4.4.8 OutOfMemoryError: Java heap space</a></li>
+<li><a href="#489-study-extracts-but-r-does-not-run">4.8.9 Study extracts but R does not run</a></li>
 </ul>
 </li>
 </ul>
@@ -151,8 +152,9 @@
 <li>
 <a href="#53-r-issues">5.3 R Issues</a>
 <ul>
-<li><a href="#531-cannot-find-jri-native-library">5.3.1 Cannot find JRI native library</a></li>
+<li><a href="#531-cannot-find-jri-native-library-jridll-already-loaded">5.3.1 Cannot find JRI native library; jri.dll already loaded</a></li>
 <li><a href="#532-r-error-argument-is-of-length-zero--call-stack-if-scalemodel">5.3.2 R ERROR: argument is of length zero ; call stack: if scale.model</a></li>
+<li><a href="#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries">5.3.3 Cannot find JRI native library; jri.dll Cannot find dependent libraries</a></li>
 </ul>
 </li>
 </ul>
@@ -897,7 +899,8 @@ The <em>tomcat</em> output trace will appear in %CATALINA_HOME%/logs as:
 <p>R is setup later in: <a href="https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#43-setup-r">R setup</a></p>
 <p>As with Java, do NOT use the 32 bit only version unless you have to. These instructions assume you you the 64
 bit version</p>
-<p>Add the 64 bit R executable to the path; e.g. <em>C:\Program Files\R\R-3.4.4\bin\x64</em></p>
+<p>Add the 64 bit R executable to the path; e.g. <em>C:\Program Files\R\R-3.4.4\bin\x64</em>. Not: <strong>C:\Program Files\R\R-3.4.4\bin</strong>
+or you will cause <a href="https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries">jri.dll: Can't find dependent libraries</a></p>
 <h1>
 <a id="user-content-2-building-web-services-using-maven" class="anchor" href="#2-building-web-services-using-maven" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2. Building Web Services using Maven</h1>
 <p>Normally users will be supplied with pre built files in the <em>tomcat webapps</em> folder:</p>
@@ -1562,19 +1565,6 @@ am Files\nodejs\;C:\Program Files\Apache Software Foundation\apache-maven-3.3.9\
 for logon instructions</li>
 </ul>
 </li>
-<li>
-<p>JRI Errors</p>
-<pre><code>=======getInvestigationID========2===
-About to call next
-called next
-Investigation name==TEST 1001  ID==12==
-Cannot find JRI native library!
-Please make sure that the JRI native library is in a directory listed in java.library.path.
-
-java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.0\library\rJava\jri\x64\jri.dll: Can't find dependent libraries
-</code></pre>
-<p>In this case, the directory <em>C:\Program Files\R\R-3.4.0\bin\x64</em> was missing from the path.</p>
-</li>
 </ol>
 <h2>
 <a id="user-content-44-common-setup-errors" class="anchor" href="#44-common-setup-errors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4.4 Common Setup Errors</h2>
@@ -1790,6 +1780,18 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
 </code></pre>
 <p>In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M,
 increase this to a much larger value less than the maximum, at least 2048M. Restart the tomcat service.</p>
+<h3>
+<a id="user-content-489-study-extracts-but-r-does-not-run" class="anchor" href="#489-study-extracts-but-r-does-not-run" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4.8.9 Study extracts but R does not run</h3>
+<ul>
+<li>User gets study is now running, but nothing every happens;</li>
+<li>The RIF is unresponsively; reloading the RIF fails with the server not responding: "Firefox csan't establish a connect to serfver at localhost:8080</li>
+<li>Tomcat is not running</li>
+</ul>
+<p>Restarting the server using <code>catalina.bat run</code> and re-running the study results in an "Cannot find JRI native library" error</p>
+<p>See:</p>
+<ul>
+<li><a href="https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries">jri.dll: Can't find dependent libraries</a></li>
+</ul>
 <h1>
 <a id="user-content-5-running-the-rif" class="anchor" href="#5-running-the-rif" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>5. Running the RIF</h1>
 <ul>
@@ -1798,7 +1800,13 @@ increase this to a much larger value less than the maximum, at least 2048M. Rest
 </li>
 <li>In a networked environment the RIF is at: <code>http://&lt;your domain&gt;/RIF4</code>, e.g. <em><a href="https://aepw-rif27.sm.med.ic.ac.uk/RIF4" rel="nofollow">https://aepw-rif27.sm.med.ic.ac.uk/RIF4</a></em>
 </li>
-<li>Test cases are provided in the <em>tests</em> folder of the SAHSU supplied bundle</li>
+<li>Test cases are provided in the <em>tests</em> folder of the SAHSU supplied bundle:
+<ul>
+<li>*TEST 1002 LUNG CANCER HET 95_96.json typically takes around 85 seconds on a Postgres database;</li>
+<li>
+<em>TEST 1003 LUNG CANCER BYM ALL YEARS 89_16.json</em> typically takes around 160 seconds on a Postgres database</li>
+</ul>
+</li>
 </ul>
 <h2>
 <a id="user-content-51-logging-on" class="anchor" href="#51-logging-on" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>5.1 Logging On</h2>
@@ -1855,7 +1863,7 @@ software owner (rif40).</p>
 <h2>
 <a id="user-content-53-r-issues" class="anchor" href="#53-r-issues" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>5.3 R Issues</h2>
 <h3>
-<a id="user-content-531-cannot-find-jri-native-library" class="anchor" href="#531-cannot-find-jri-native-library" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>5.3.1 Cannot find JRI native library</h3>
+<a id="user-content-531-cannot-find-jri-native-library-jridll-already-loaded" class="anchor" href="#531-cannot-find-jri-native-library-jridll-already-loaded" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>5.3.1 Cannot find JRI native library; jri.dll already loaded</h3>
 <p>The RIF uses Java R integration to access R directly from Java</p>
 <ul>
 <li>
@@ -1925,6 +1933,46 @@ See www.r-inla.org/contact-us for how to get help.
 &gt;
 </code></pre>
 <p>This fixes the error : "R BYM sahsuland fault\R BYM sahsuland fault - no covariates.txt"</p>
+<h3>
+<a id="user-content-533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries" class="anchor" href="#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>5.3.3 Cannot find JRI native library; jri.dll Cannot find dependent libraries</h3>
+<ul>
+<li>
+<p>Tomcat server crashes</p>
+</li>
+<li>
+<p>Tomcat log:</p>
+<pre><code>  2018-04-19 15:37:26,223 http-nio-8080-exec-9 DEBUG Now writing to C:\Program Files\Apache Software Foundation\Tomcat 8.5/log4j2/2018
+  -04/RIF_middleware.2018-04-19-1.log at 2018-04-19T15:37:26.223+0100
+  Cannot find JRI native library!
+  Please make sure that the JRI native library is in a directory listed in java.library.path.
+
+  java.lang.UnsatisfiedLinkError: C:\Program Files\R\R-3.4.4\library\rJava\jri\x64\jri.dll: Can't find dependent libraries
+  		at java.lang.ClassLoader$NativeLibrary.load(Native Method)
+  		at java.lang.ClassLoader.loadLibrary0(ClassLoader.java:1941)
+  		at java.lang.ClassLoader.loadLibrary(ClassLoader.java:1857)
+  		at java.lang.Runtime.loadLibrary0(Runtime.java:870)
+  		at java.lang.System.loadLibrary(System.java:1122)
+  		at org.rosuda.JRI.Rengine.&lt;clinit&gt;(Rengine.java:19)
+  		at rifServices.dataStorageLayer.pg.PGSQLSmoothResultsSubmissionStep.performStep(PGSQLSmoothResultsSubmissionStep.java:232)
+  		at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.smoothResults(PGSQLRunStudyThread.java:314)
+  		at rifServices.dataStorageLayer.pg.PGSQLRunStudyThread.run(PGSQLRunStudyThread.java:191)
+  		at java.lang.Thread.run(Thread.java:748)
+  		at rifServices.dataStorageLayer.pg.PGSQLAbstractRIFStudySubmissionService.submitStudy(PGSQLAbstractRIFStudySubmissionService
+  .java:1078)
+</code></pre>
+</li>
+<li>
+<p>RIF middleware log:</p>
+<pre><code>  =======getInvestigationID========2===
+  About to call next
+  called next
+  Investigation name==TEST 1001  ID==12==
+</code></pre>
+</li>
+<li>
+<p>Check: <em>C:\Program Files\R\R-3.4.4\bin\x64</em> is in the path and not <em>C:\Program Files\R\R-3.4.4\bin</em></p>
+</li>
+</ul>
 <h1>
 <a id="user-content-6-patching" class="anchor" href="#6-patching" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>6. Patching</h1>
 <h2>

@@ -2152,3 +2152,8 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 * 2nd round of Postgres port tests.
 * Added standalone documentation
 * Upgrade Postgres install script to same capability as SQL Server script (can define DB and user); added support for pgpass.conf 
+* Configured tomcat on wsrifdb1;
+* wsrifdb1 is slow:
+  * Network speed is around 10-20Mb/s (slower than my home broadband in rural Norfolk);
+  * test 1002 took 120.7 compared to 83.1 on my desktop;
+  * test 1003 took 281.1 compared to 167.1 on my desktop;
