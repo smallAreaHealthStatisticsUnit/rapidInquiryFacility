@@ -12,6 +12,7 @@ RIF Web Application and Middleware Installation
 	 - [1.3.3 Running Tomcat on the command line](#133-running-tomcat-on-the-command-line)
 	 - [1.3.4 Middleware Logging (Log4j2) Introduction](#134-middleware-logging-log4j2-introduction)
 	 - [1.3.5 Tomcat Logging (Log4j2) Setup](#135-tomcat-logging-log4j2-setup) 
+	 - [1.3.6 Tomcat Logging File (Log4j2.xml)](#136-tomcat-logging-file-log4j2xml)
   - [1.4 R](#14-r)	
 - [2. Building Web Services using Maven](#2-building-web-services-using-maven)
    - [2.1 Building Using Make](#21-building-using-make)	
@@ -55,7 +56,7 @@ RIF Web Application and Middleware Installation
    - [6.3 Tomcat](#63-tomcat)
    - [6.4 R](#64-r)
 - [ 7. Front End and Middleware Software Upgrades](#7-front-end-and-middleware-software-upgrades) 
-- [ 8. Advanced Tomcat Setup](#8-advanced-tomcat-setup)
+- [ 8. Advanced Setup](#8-advanced-setup)
   - [8.1 Running Tomcat as a service](#81-running-tomcat-as-a-service)
   - [8.2 Using JConsole with Tomcat](#82-using-jconsole-with-tomcat) 
   - [8.3 Securing Tomcat](#83-securing-tomcat)
@@ -556,12 +557,72 @@ configuration in the previous section (which is a subset).
   org.apache.catalina.core.ContainerBase.[Catalina].[localhost].level = ALL
   ```
   
+* **To send  RIF output to the console uncomment the following line in *log4j2.xml*: 
+  ```<!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF middleware output on the console -->```**. 
+
+* Create an environment overrides file for catalina.bat as %CATALINA_HOME%\bin\setenv.bat. A copy is provided in:
+  %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes. Copy this file to *%CATALINA_HOME%\bin*.
+
+	```bat
+	REM Tomcat log4j2 setup
+	REM 
+	REM Add this script to %CATALINA_HOME%\bin
+	REM
+	REM A copy of this script is provided in %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\
+	REM
+	REM Do not set LOGGING_MANAGER to jul, tomcat will NOT sart
+	REM set LOGGING_MANAGER=org.apache.logging.log4j.jul.LogManager
+	REM
+	REM To enable Jconsole add %ENABLE_JMX% to CATALINA_OPTS. Set to run on port 9999 and only allow connections from localhost
+	REM
+	set ENABLE_JMX=-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=localhost
+	set CATALINA_OPTS=-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile="%CATALINA_HOME%\conf\log4j2.xml"
+
+	REM
+	REM Add -Dlog4j2.debug=true if tomcat exceptions/does not start 
+	REM (catalina.bat run is useful if no output)
+	REM
+	REM Default CLASSPATH; no need to be added
+	REM set CLASSPATH=%CATALINA_HOME%\bin\bootstrap.jar;%CATALINA_HOME%\bin\tomcat-juli.jar
+	REM
+	REM Added JUL and Log4j2 to tomcat CLASSAPATH
+	set CLASSPATH=%CATALINA_HOME%\lib\log4j-core-2.9.0.jar;%CATALINA_HOME%\lib\log4j-api-2.9.0.jar;%CATALINA_HOME%\lib\log4j-jul-2.9.0.jar
+	REM
+	REM Do not do this, use CATALINA_OPTS instead. This will work on Linux
+	REM
+	REM set LOGGING_CONFIG="-Dlog4j.configurationFile=%CATALINA_HOME%\conf\log4j2.xml"
+	REM
+	REM EOf
+	```
+
+* Add the following files to *%CATALINA_HOME%\lib*:
+  * log4j-api-2.9.0.jar
+  * log4j-core-2.9.0.jar
+  * log4j-jul-2.9.0.jar
+
+  If you use Maven to build the Middleware, these files are in subdirectories below 
+  *%USER%\.m2\repository\org\apache\logging\log4j\<log4j module>\2.9.0* where <log4j module is log4j-api etc.
+
+  SAHSU will normally supply these JAR files (in the log4j directory) together with the war files (in the tomcat webapps directory).
+
+  Do NOT set the enviroment variables LOGGING_MANAGER or LOGGING_CONFIG.
+  This script sets *CATALINA_OPTS* and *CLASSPATH* in the tomcat environment*:
+  ```
+  CATALINA_OPTS=-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile="%CATALINA_HOME%\conf\log4j2.xml"
+  CLASSPATH=%CATALINA_HOME%\lib\log4j-core-2.9.0.jar;%CATALINA_HOME%\lib\log4j-api-2.9.0.jar;%CATALINA_HOME%\lib\log4j-jul-2.9.CONSOLE0.jar
+  ```
+  
 * Restart Tomcat using the configure Tomcat application (tomcat8w) or the services panel.   
   The *tomcat* output trace will appear in %CATALINA_HOME%/logs as:
-  *tomcat8-stderr.<date in format YYYY-MM-DD>* and also possibly *tomcat8-stdout.<date in format YYYY-MM-DD>*.
+  *tomcat8-stderr.<date in format YYYY-MM-DD>* and also possibly *tomcat8-stdout.<date in format YYYY-MM-DD>*. 
   
-**To send  RIF output to the console uncomment: 
-```<!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF middleware output on the console -->```**. 
+Debugging logging faults:
+
+* Adding  -Dlog4j2.debug=true to the CATALINA_OPTS environment variable if tomcat exceptions/does not start 
+* Use ```catalina.bat run`` if there is no output from te script and the Java windows disappears immediately
+* Set the configuration status to **debug**
+
+### 1.3.6 Tomcat Logging File (Log4j2.xml)
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -754,64 +815,6 @@ configuration in the previous section (which is a subset).
   </Loggers>
 </Configuration>
 ```
-
-Create an environment overrides file for catalina.bat as %CATALINA_HOME%\bin\setenv.bat. A copy is provided in:
-%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes. Copy this file to *%CATALINA_HOME%\bin*.
-
-```bat
-REM Tomcat log4j2 setup
-REM 
-REM Add this script to %CATALINA_HOME%\bin
-REM
-REM A copy of this script is provided in %CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\
-REM
-REM Do not set LOGGING_MANAGER to jul, tomcat will NOT sart
-REM set LOGGING_MANAGER=org.apache.logging.log4j.jul.LogManager
-REM
-REM To enable Jconsole add %ENABLE_JMX% to CATALINA_OPTS. Set to run on port 9999 and only allow connections from localhost
-REM
-set ENABLE_JMX=-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9999 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=localhost
-set CATALINA_OPTS=-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile="%CATALINA_HOME%\conf\log4j2.xml"
-
-REM
-REM Add -Dlog4j2.debug=true if tomcat exceptions/does not start 
-REM (catalina.bat run is useful if no output)
-REM
-REM Default CLASSPATH; no need to be added
-REM set CLASSPATH=%CATALINA_HOME%\bin\bootstrap.jar;%CATALINA_HOME%\bin\tomcat-juli.jar
-REM
-REM Added JUL and Log4j2 to tomcat CLASSAPATH
-set CLASSPATH=%CATALINA_HOME%\lib\log4j-core-2.9.0.jar;%CATALINA_HOME%\lib\log4j-api-2.9.0.jar;%CATALINA_HOME%\lib\log4j-jul-2.9.0.jar
-REM
-REM Do not do this, use CATALINA_OPTS instead. This will work on Linux
-REM
-REM set LOGGING_CONFIG="-Dlog4j.configurationFile=%CATALINA_HOME%\conf\log4j2.xml"
-REM
-REM EOf
-```
-Add the following files to *%CATALINA_HOME%\lib*:
-
-* log4j-api-2.9.0.jar
-* log4j-core-2.9.0.jar
-* log4j-jul-2.9.0.jar
-
-If you use Maven to build the Middleware, these files are in subdirectories below 
-*%USER%\.m2\repository\org\apache\logging\log4j\<log4j module>\2.9.0* where <log4j module is log4j-api etc.
-
-SAHSU will normally supply these JAR files (in the log4j directory) together with the war files (in the tomcat webapps directory).
-
-Do NOT set the enviroment variables LOGGING_MANAGER or LOGGING_CONFIG.
-This script sets *CATALINA_OPTS* and *CLASSPATH* in the tomcat environment*:
-```
-CATALINA_OPTS=-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile="%CATALINA_HOME%\conf\log4j2.xml"
-CLASSPATH=%CATALINA_HOME%\lib\log4j-core-2.9.0.jar;%CATALINA_HOME%\lib\log4j-api-2.9.0.jar;%CATALINA_HOME%\lib\log4j-jul-2.9.CONSOLE0.jar
-```
-
-Debugging:
-
-* Adding  -Dlog4j2.debug=true to CATALINA_OPTS if tomcat exceptions/does not start 
-* Use catalina.bat run if there is no output from te script and the Java windows disappears immediately
-* Set the configuration status to **debug**
 
 ## 1.4 R
 
@@ -2846,7 +2849,7 @@ The RIF uses frozen in time the front end Java and libraries. The following upda
 
 Of these updates, Java, Jersey and JAckson are likely to create the most problems.
 
-# 8. Advanced Tomcat Setup
+# 8. Advanced Setup
 
 ## 8.1 Running Tomcat as a service
   
