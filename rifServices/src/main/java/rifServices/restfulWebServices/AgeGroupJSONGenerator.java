@@ -1,6 +1,7 @@
 package rifServices.restfulWebServices;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import rifServices.businessConceptLayer.AgeGroup;
 
@@ -87,7 +88,7 @@ final public class AgeGroupJSONGenerator {
 	// ==========================================
 
 	public String writeJSONMapAreas(
-		final ArrayList<AgeGroup> ageGroups) {
+		final List<AgeGroup> ageGroups) {
 		
 
 		StringBuilder result = new StringBuilder();

@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
@@ -225,7 +226,7 @@ public class PGSQLRIFStudySubmissionService extends CommonUserService
 
 
 
-	public ArrayList<AgeGroup> getAgeGroups(
+	public List<AgeGroup> getAgeGroups(
 			final User _user,
 			final Geography _geography,
 			final NumeratorDenominatorPair _ndPair,
@@ -244,7 +245,7 @@ public class PGSQLRIFStudySubmissionService extends CommonUserService
 		//no need to defensively copy sortingOrder because
 		//it is an enumerated type
 
-		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();
+		List<AgeGroup> results = new ArrayList<AgeGroup>();
 		Connection connection = null;
 		try {
 			//Check for empty parameters

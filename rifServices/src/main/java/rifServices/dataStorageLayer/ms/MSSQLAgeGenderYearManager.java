@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
@@ -26,7 +27,7 @@ import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
 public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
-		implements AgeGenderYearManager  {
+		implements AgeGenderYearManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	
@@ -56,7 +57,7 @@ public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 	 * @throws RIFServiceException the RIF service exception
 	 */
 	@Override
-	public ArrayList<AgeGroup> getAgeGroups(final User user, final Connection connection,
+	public List<AgeGroup> getAgeGroups(final User user, final Connection connection,
 			final Geography geography, final NumeratorDenominatorPair ndPair,
 			final AgeGroupSortingOption sortingOrder) throws RIFServiceException {
 				

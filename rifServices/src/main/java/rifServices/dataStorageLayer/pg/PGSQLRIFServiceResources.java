@@ -100,7 +100,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		sqlSmoothedResultManager
 				= new PGSQLSmoothedResultManager(rifServiceStartupOptions);
 		
-		sqlAgeGenderYearManager = new PGSQLAgeGenderYearManager(sqlRIFContextManager,
+		sqlAgeGenderYearManager = AgeGenderYearManager.getInstance(sqlRIFContextManager,
 				rifServiceStartupOptions);
 		sqlMapDataManager = new PGSQLMapDataManager(rifServiceStartupOptions, sqlRIFContextManager);
 		sqlCovariateManager = new PGSQLCovariateManager(rifServiceStartupOptions,

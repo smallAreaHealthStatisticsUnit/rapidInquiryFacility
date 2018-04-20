@@ -2,6 +2,7 @@ package rifServices.dataStorageLayer.common;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.List;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
@@ -44,7 +45,7 @@ public interface AgeGenderYearManager extends SQLManager {
 	 * @return the age groups
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	ArrayList<AgeGroup> getAgeGroups(User user, Connection connection, Geography geography,
+	List<AgeGroup> getAgeGroups(User user, Connection connection, Geography geography,
 			NumeratorDenominatorPair ndPair, AgeGroupSortingOption sortingOrder)
 			throws RIFServiceException;
 	

@@ -3,6 +3,7 @@ package rifServices.restfulWebServices.ms;
 import java.io.InputStream;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -817,7 +818,7 @@ public class MSSQLRIFStudySubmissionWebServiceResource extends WebService {
 					user, 
 					geography, 
 					numeratorTableName);
-			ArrayList<AgeGroup> ageGroups
+			List<AgeGroup> ageGroups
 				= studySubmissionService.getAgeGroups(
 					user, 
 					geography, 

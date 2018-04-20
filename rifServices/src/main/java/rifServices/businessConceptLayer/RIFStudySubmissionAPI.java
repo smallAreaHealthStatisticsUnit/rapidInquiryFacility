@@ -5,6 +5,7 @@ import rifGenericLibrary.system.RIFServiceException;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.io.*;
 
@@ -143,7 +144,7 @@ public interface RIFStudySubmissionAPI extends RIFStudyServiceAPI {
 	 * @return the age groups
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<AgeGroup> getAgeGroups(
+	List<AgeGroup> getAgeGroups(
 		final User user,
 		final Geography geography,
 		final NumeratorDenominatorPair ndPair,
