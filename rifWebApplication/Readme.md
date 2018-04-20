@@ -5,7 +5,7 @@ RIF Web Application and Middleware Installation
 
 - [1. Installation Prerequisites](#1-installation-prerequisites)
    - [1.1 Apache Maven](#11-apache-maven)	
-   - [1.2 Java Runtime Environment](#12-lava-runtime-environment)	
+   - [1.2 Java Runtime Environment](#12-java-runtime-environment)	
    - [1.3 Apache Tomcat](#13-apache-tomcat)	
      - [1.3.1 Apache Tomcat on a single host](#131-apache-tomcat-on-a-single-host)	
      - [1.3.2 Apache Tomcat for internet use](#132-apache-tomcat-for-internet-use)	

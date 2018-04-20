@@ -2157,3 +2157,4 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
   * Network speed is around 10-20Mb/s (slower than my home broadband in rural Norfolk);
   * test 1002 took 120.7 compared to 83.1 on my desktop;
   * test 1003 took 281.1 compared to 167.1 on my desktop;
+* SQL Server build and then install on wsrifdb2.
