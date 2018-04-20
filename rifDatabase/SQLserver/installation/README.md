@@ -2,7 +2,7 @@ SQL Server Development Database Installation
 ============================================
 
 # Contents
-- [1. Install SQL Server 2012 SP2](#1-install-sql-server-2012-sp2)
+- [1. Install SQL Server](#1-install-sql-server)
 - [2. Create Databases and Users](#2-create-databases-and-users)
    - [2.1 Network connection errors](#21-network-connection-errors)
    - [2.2 Power User Issues](#22-power-user-issues)
@@ -20,11 +20,31 @@ SQL Server Development Database Installation
 - [5. Script Notes](#5-script-notes)
   - [5.1 Script and documentation TODO](#51-script-and-documentation-todo)	
 	
-# 1. Install SQL Server 2012 SP2
+# 1. Install SQL Server
 
-Install SQL Server 2012 SP2 or higher (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
+Install SQL Server 2012 SP2 or 2016(Express for a test system/full version for production). **DO NOT INSTALL SQL Server 2008 or before**: 
 
-**DO NOT INSTALL SQL Server 2008 or before**
+* [SQL Server 2012](https://www.microsoft.com/en-gb/download/details.aspx?id=43351#)
+* [SQL Server 2016](https://www.microsoft.com/en-GB/evalcenter/evaluate-sql-server-2016)
+* [SQL Server 2016 developer edition](https://my.visualstudio.com/Downloads?q=SQL%20Server%202016%20Developer). Note this requires a My visual studio login. An 
+  installer may be downloaded from: http://go.microsoft.com/fwlink/?LinkID=799009
+
+SQL Server 2012 developer/evaluation edition databases are limited to 5G in size. This is a series limitation for the RIF. The SQL Server 2016 developer edition
+does not haves this limitation and is therefore recommended for RIF development. Note:
+
+* Use of development/evaluation edition is Usage is restricted – design, development, testing and 
+  demonstration of programs using the SQL database engine are all permitted, as long as the user has permanent access to the license owner’s internal network. 
+  Therefore, while you could demonstrate the RIF to a client, you could not let that client play around with it themselves afterwards. Using the license in 
+  any other way, such as to support a commercial software installation, would constitute a breach of the license terms
+
+* Microsoft gets access to your data – it is mandatory with any non-commercial installation of SQL Server that all your usage data covering performance, errors, 
+  feature use, IP addresses, device identifiers and more, is sent to Microsoft. There are no exceptions. This will cause issues with particularly sensitive data
+  and the developer edition may not work on the private network.
+
+See: https://www.matrix42.com/blog/2016/09/23/how-free-is-microsoft-sql-server-developer-edition-really/ 
+
+If you install SQL Server 2014+; make sure SQL Server Management Studio has been installed; 
+[SQL Server Management Studio](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-2017)
 
 Check the version of your database:
 ```
@@ -38,13 +58,26 @@ Microsoft SQL Server 2012 (SP2-GDR) (KB3194719) - 11.0.5388.0 (X64)
         Copyright (c) Microsoft Corporation
         Express Edition (64-bit) on Windows NT 6.1 <X64> (Build 7601: Service Pack 1)                 110
 ```
+
+or for SQL Server 2016
+
+```
+1> SELECT @@version AS version, compatibility_level FROM sys.databases Where DB_NAME() = name ;
+2> go
+version                                                                                              compatibility_level
+---------------------------------------------------------------------------------------------------- -------------------
+Microsoft SQL Server 2016 (SP1-GDR) (KB4019089) - 13.0.4206.0 (X64)
+        Jul  6 2017 07:55:03
+        Copyright (c) Microsoft Corporation
+        Developer Edition (64-bit) on Windows 10 Pro 6.3 <X64> (Build 16299: )
+```
+
 * The compatibility level should be *110* and the version *Microsoft SQL Server 2012 (SP2...*. If it is not then you have more 
   than one SQL Server database on your machine, see setting *SQLCMDSERVER* in the next section.
-* If you install SQL Server 2014+; make sure SQL Server Management Studio has been installed; [see this blog for further instructions](https://www.hanselman.com/blog/DownloadSQLServerExpress.aspx)
 
 # 2. Create Databases and Users
 
-**This section details the original method the script *rif40_development_creation.sql*. This section is useful to sort out connection 
+**This section details the original method using the script *rif40_development_creation.sql*. This section is useful to sort out connection 
 problems. The easier way to rebuild the RIF is to skip to section 4, and run  *rebuild_all.bat* which runs all the required scriipts 
 in sequence and prompts for the RIF user and user password.**
 
@@ -228,8 +261,10 @@ username, so change it on a networked system:
 	Terminate batch job (Y/N)? y
     ```
 
+Before you run *rebuild_all.bat* check the [BLUK INSERRT permissions](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md#41-bulk-insert-permission)
+
 **These scripts do NOT drop existing tables, the database must be rebuilt from scratch**.
-**You _must_ build sahusland_dev before sahusland**; as *sahsuland_dev* is exported as the basis for *sahsuland*.
+**You _must_ build sahusland_dev before sahsuland**; as *sahsuland_dev* is exported as the basis for *sahsuland*.
 
 The batch tests for Administrator or power user privilege; gets the settings as detailed above and then runs the following scripts 
 as Administrator:

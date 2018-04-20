@@ -17,9 +17,29 @@ SQL Server Production Database Installation
 
 # 1. Install SQL Server
 
-Install SQL Server 2012 SP2 or 2016(Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
+Install SQL Server 2012 SP2 or 2016(Express for a test system/full version for production). **DO NOT INSTALL SQL Server 2008 or before**: 
 
-**DO NOT INSTALL SQL Server 2008 or before**
+* [SQL Server 2012](https://www.microsoft.com/en-gb/download/details.aspx?id=43351#)
+* [SQL Server 2016](https://www.microsoft.com/en-GB/evalcenter/evaluate-sql-server-2016)
+* [SQL Server 2016 developer edition](https://my.visualstudio.com/Downloads?q=SQL%20Server%202016%20Developer). Note this requires a My visual studio login. An 
+  installer may be downloaded from: http://go.microsoft.com/fwlink/?LinkID=799009
+
+SQL Server 2012 developer/evaluation edition databases are limited to 5G in size. This is a series limitation for the RIF. The SQL Server 2016 developer edition
+does not haves this limitation and is therefore recommended for RIF development. Note:
+
+* Use of development/evaluation edition is Usage is restricted – design, development, testing and 
+  demonstration of programs using the SQL database engine are all permitted, as long as the user has permanent access to the license owner’s internal network. 
+  Therefore, while you could demonstrate the RIF to a client, you could not let that client play around with it themselves afterwards. Using the license in 
+  any other way, such as to support a commercial software installation, would constitute a breach of the license terms
+
+* Microsoft gets access to your data – it is mandatory with any non-commercial installation of SQL Server that all your usage data covering performance, errors, 
+  feature use, IP addresses, device identifiers and more, is sent to Microsoft. There are no exceptions. This will cause issues with particularly sensitive data
+  and the developer edition may not work on the private network.
+
+See: https://www.matrix42.com/blog/2016/09/23/how-free-is-microsoft-sql-server-developer-edition-really/ 
+
+If you install SQL Server 2014+; make sure SQL Server Management Studio has been installed; 
+[SQL Server Management Studio](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-2017)
 
 Check the version of your database:
 ```
@@ -49,8 +69,7 @@ Microsoft SQL Server 2016 (SP1-GDR) (KB4019089) - 13.0.4206.0 (X64)
 
 * The compatibility level should be *110* and the version *Microsoft SQL Server 2012 (SP2...*. If it is not then you have more 
   than one SQL Server database on your machine, see setting *SQLCMDSERVER* in the next section.
-* If you install SQL Server 2014+; make sure SQL Server Management Studio has been installed; [see this blog for further instructions](https://www.hanselman.com/blog/DownloadSQLServerExpress.aspx)
-
+  
 # 2. Installing the RIF
 
 A standalone script *rif40_database_install.bat* is provided to install the RIF. It is designed to run in a single directory, and is in
@@ -66,6 +85,10 @@ You will need to enter:
 
 The database name and user name should only contain lowercase letters, underscore (\_) and numbers and must start with a letter.
 The default password is the same as the username; change it on a production system connected to the internet!
+
+Before you run *rebuild_all.bat* check the [restore permissions](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/production/INSTALL.md#23-sql-server-restore)
+
+**THESE SCRIPTS DO DROP ALL EXISTING TABLES AND DATA**.
 
 This script runs:
 
