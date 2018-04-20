@@ -1,5 +1,6 @@
 package rifServices.dataStorageLayer.pg;
 
+import rifServices.dataStorageLayer.common.AbstractSQLManager;
 import rifServices.system.RIFServiceStartupOptions;
 
 /**
@@ -22,7 +23,7 @@ import rifServices.system.RIFServiceStartupOptions;
  *
  */
 
-public final class PGSQLConnectionManager extends PGSQLAbstractSQLManager {
+public final class PGSQLConnectionManager extends AbstractSQLManager {
 	
 	/**
 	 * Instantiates a new SQL connection manager.

@@ -25,13 +25,14 @@ import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.Project;
+import rifServices.dataStorageLayer.common.AbstractSQLManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class MSSQLDiseaseMappingStudyManager extends MSSQLAbstractSQLManager
+final class MSSQLDiseaseMappingStudyManager extends AbstractSQLManager
 		implements DiseaseMappingStudyManager {
 
 	private Messages GENERIC_MESSAGES = Messages.genericMessages();

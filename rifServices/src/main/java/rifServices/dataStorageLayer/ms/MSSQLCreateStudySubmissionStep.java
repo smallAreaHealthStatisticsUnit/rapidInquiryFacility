@@ -32,6 +32,7 @@ import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.AbstractSQLManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.MapDataManager;
 import rifServices.system.RIFServiceError;
@@ -101,8 +102,7 @@ import rifServices.system.RIFServiceStartupOptions;
  *
  */
 
-final class MSSQLCreateStudySubmissionStep 
-	extends MSSQLAbstractSQLManager {
+final class MSSQLCreateStudySubmissionStep extends AbstractSQLManager {
 
 	
 	// ==========================================

@@ -1,16 +1,17 @@
 package rifServices.dataStorageLayer.ms;
 
+import java.sql.Connection;
+import java.util.HashMap;
+
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.system.RIFServiceException;
+import rifServices.dataStorageLayer.common.AbstractSQLManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-import java.sql.Connection;
-import java.util.HashMap;
-
-public class MSSQLConnectionManager extends MSSQLAbstractSQLManager {
+public class MSSQLConnectionManager extends AbstractSQLManager {
 	
 	private static final int MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD = 5;
 	

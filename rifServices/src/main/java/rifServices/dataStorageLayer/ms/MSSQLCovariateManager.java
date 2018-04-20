@@ -21,13 +21,14 @@ import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Investigation;
+import rifServices.dataStorageLayer.common.AbstractSQLManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class MSSQLCovariateManager extends MSSQLAbstractSQLManager
+final class MSSQLCovariateManager extends AbstractSQLManager
 		implements CovariateManager {
 	/** The sql rif context manager. */
 	private RIFContextManager sqlRIFContextManager;

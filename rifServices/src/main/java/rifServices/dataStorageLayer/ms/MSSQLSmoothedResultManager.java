@@ -16,12 +16,13 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.Sex;
+import rifServices.dataStorageLayer.common.AbstractSQLManager;
 import rifServices.dataStorageLayer.common.SmoothedResultManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager
+public class MSSQLSmoothedResultManager extends AbstractSQLManager
 		implements SmoothedResultManager {
 	
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();

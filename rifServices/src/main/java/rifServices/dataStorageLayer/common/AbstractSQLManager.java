@@ -1,7 +1,9 @@
 package rifServices.dataStorageLayer.common;
 
 import java.io.IOException;
+import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -28,28 +30,31 @@ import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.files.TomcatBase;
 import rifServices.system.files.TomcatFile;
 
 public abstract class AbstractSQLManager implements SQLManager {
 	
-	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
+	protected static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 	private static final String ABSTRACT_SQLMANAGER_PROPERTIES = "AbstractSQLManager.properties";
 	private static final int MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD = 5;
+	private static final int POOLED_READ_ONLY_CONNECTIONS_PER_PERSON = 10;
+	private static final int POOLED_WRITE_CONNECTIONS_PER_PERSON = 5;
 
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
 	protected static final Set<String> registeredUserIDs = new HashSet<>();;
 	protected static final Set<String> userIDsToBlock = new HashSet<>();;
 
-	/** The read connection from user. */
 	protected static final Map<String, ConnectionQueue> readOnlyConnectionsFromUser
 			= new HashMap<>();
 
-	/** The write connection from user. */
 	protected static final Map<String, ConnectionQueue> writeConnectionsFromUser = new HashMap<>();
-
 	private static final HashMap<String, Integer> suspiciousEventCounterFromUser = new HashMap<>();
+	protected final RIFServiceStartupOptions rifServiceStartupOptions;
+	private final String initialisationQuery;
+	private final String databaseURL;
+	protected final HashMap<String, String> passwordHashList;
 
 	protected RIFDatabaseProperties rifDatabaseProperties;
 
@@ -60,14 +65,14 @@ public abstract class AbstractSQLManager implements SQLManager {
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
 	private boolean enableLogging = true;
 
-	/**
-	 * Instantiates a new abstract sql manager.
-	 */
-	public AbstractSQLManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+	public AbstractSQLManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
 
-		this.rifDatabaseProperties = rifDatabaseProperties;
+		rifDatabaseProperties = rifServiceStartupOptions.getRIFDatabaseProperties();
 		databaseType = this.rifDatabaseProperties.getDatabaseType();
+		this.rifServiceStartupOptions = rifServiceStartupOptions;
+		initialisationQuery = "EXEC rif40.rif40_startup ?";
+		passwordHashList = new HashMap<>();
+		databaseURL = generateURLText();
 	}
 
 	@Override
@@ -115,7 +120,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	public PreparedStatement createPreparedStatement(final Connection connection, final QueryFormatter queryFormatter)
 			throws SQLException {
 				
-		return new SQLQueryUtility().createPreparedStatement(
+		return SQLQueryUtility.createPreparedStatement(
 			connection,
 			queryFormatter);
 	}
@@ -224,7 +229,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 				throws Exception {
 			
 		CachedRowSetImpl cachedRowSet=null;	
-		ResultSet resultSet=null;
+		ResultSet resultSet;
 		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
 		try {
 			for (int i=0; i < params.length; i++) {
@@ -430,12 +435,11 @@ public abstract class AbstractSQLManager implements SQLManager {
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFServiceMessages.getMessage("abstractSQLManager.error.unableToEnableDatabaseDebugging");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_TO_MAINTAIN_DEBUG, 
-					errorMessage);
-			throw rifServiceException;
+				= SERVICE_MESSAGES.getMessage("abstractSQLManager.error.unableToEnableDatabaseDebugging");
+
+			throw new RIFServiceException(
+				RIFServiceError.DB_UNABLE_TO_MAINTAIN_DEBUG,
+				errorMessage);
 		}
 		finally {
 			closeStatement(setupLogStatement);
@@ -836,5 +840,252 @@ public abstract class AbstractSQLManager implements SQLManager {
 			statement.close();
 		}
 		catch(SQLException ignore) {}
+	}
+
+	/**
+	 * Register user.
+	 *
+	 * @param userID the user id
+	 * @param password the password
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public void login(
+		final String userID,
+		final String password)
+		throws RIFServiceException {
+
+		if (userIDsToBlock.contains(userID)) {
+			return;
+		}
+
+		/*
+		 * First, check whether person is already logged in.  We can do this
+		 * by checking whether
+		 */
+
+		if (userExists(userID)) {
+			return;
+		}
+
+		ConnectionQueue readOnlyConnectionQueue = new ConnectionQueue();
+		ConnectionQueue writeOnlyConnectionQueue = new ConnectionQueue();
+		try {
+			Class.forName(rifServiceStartupOptions.getDatabaseDriverClassName());
+
+			//note that in order to optimise the setup of connections,
+			//we call rif40_init(boolean no_checks).  The first time we call it
+			//for a user, we let the checks occur (set flag to false)
+			//for all other times, set the flag to true, to ignore checks
+
+			//Establish read-only connections
+			for (int i = 0; i < POOLED_READ_ONLY_CONNECTIONS_PER_PERSON; i++) {
+				boolean isFirstConnectionForUser = false;
+				if (i == 0) {
+					isFirstConnectionForUser = true;
+				}
+				Connection currentConnection
+					= createConnection(
+						userID,
+						password,
+						isFirstConnectionForUser,
+						true);
+				readOnlyConnectionQueue.addConnection(currentConnection);
+			}
+			readOnlyConnectionsFromUser.put(userID, readOnlyConnectionQueue);
+
+			//Establish write-only connections
+			for (int i = 0; i < POOLED_WRITE_CONNECTIONS_PER_PERSON; i++) {
+				Connection currentConnection
+					= createConnection(
+						userID,
+						password,
+						false,
+						false);
+				writeOnlyConnectionQueue.addConnection(currentConnection);
+			}
+			writeConnectionsFromUser.put(userID, writeOnlyConnectionQueue);
+
+			passwordHashList.put(userID, password);
+			registeredUserIDs.add(userID);
+
+		//	rifLogger.info(this.getClass(), "JAVA LIBRARY PATH >>>");
+		//	rifLogger.info(this.getClass(), System.getProperty("java.library.path"));
+
+			rifLogger.info(this.getClass(), "XXXXXXXXXXX M S S Q L S E R V E R XXXXXXXXXX");
+		}
+		catch(ClassNotFoundException classNotFoundException) {
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createUnableLoadDBDriver();
+		}
+		catch(SQLException sqlException) {
+			readOnlyConnectionQueue.closeAllConnections();
+			writeOnlyConnectionQueue.closeAllConnections();
+			String errorMessage = SERVICE_MESSAGES.getMessage(
+					"sqlConnectionManager.error.unableToRegisterUser",
+					userID);
+
+			rifLogger.error(
+					getClass(),
+				errorMessage,
+				sqlException);
+
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createUnableToRegisterUser(userID);
+		}
+
+	}
+
+	private Connection createConnection(
+		final String userID,
+		final String password,
+		final boolean isFirstConnectionForUser,
+		final boolean isReadOnly)
+		throws SQLException,
+		RIFServiceException {
+
+		Connection connection;
+		PreparedStatement statement = null;
+		try {
+
+			Properties databaseProperties = new Properties();
+			databaseProperties.setProperty("user", userID);
+			databaseProperties.setProperty("password", password);
+
+			if (rifServiceStartupOptions.getRIFDatabaseProperties().isSSLSupported()) {
+				databaseProperties.setProperty("ssl", "true");
+			}
+
+			databaseProperties.setProperty("prepareThreshold", "3");
+
+			connection = DriverManager.getConnection(databaseURL, databaseProperties);
+
+			//Execute RIF start-up function
+			//MSSQL > EXEC rif40.rif40_startup ?
+			//PGSQL > SELECT rif40_startup(?) AS rif40_init;
+
+			statement = SQLQueryUtility.createPreparedStatement(
+					connection,
+					initialisationQuery);
+
+			if (isFirstConnectionForUser) {
+				//perform checks
+				statement.setInt(1, 1);
+			}
+			else {
+				statement.setInt(1, 0);
+			}
+
+			statement.execute();
+			statement.close();
+
+			if (isReadOnly) {
+				connection.setReadOnly(true);
+			}
+			else {
+				connection.setReadOnly(false);
+			}
+			connection.setAutoCommit(false);
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+
+		return connection;
+	}
+
+	/**
+	 * Generate url text.
+	 *
+	 * @return the string
+	 */
+	private String generateURLText() {
+
+		return rifServiceStartupOptions.getDatabaseDriverPrefix()
+		       + ":"
+		       + "//"
+		       + rifServiceStartupOptions.getHost()
+		       + ":"
+		       + rifServiceStartupOptions.getPort()
+		       + ";"
+		       + "databaseName="
+		       + rifServiceStartupOptions.getDatabaseName();
+	}
+
+	public void deregisterAllUsers() throws RIFServiceException {
+
+		for (String registeredUserID : registeredUserIDs) {
+			closeConnectionsForUser(registeredUserID);
+		}
+
+		registeredUserIDs.clear();
+	}
+
+	public void reclaimPooledReadConnection(
+		final User user,
+		final Connection connection)
+		throws RIFServiceException {
+
+		try {
+
+			if (user == null) {
+				return;
+			}
+			if (connection == null) {
+				return;
+			}
+			String userID = user.getUserID();
+			ConnectionQueue availableReadConnections
+				= readOnlyConnectionsFromUser.get(userID);
+			availableReadConnections.reclaimConnection(connection);
+		}
+		catch(Exception exception) {
+			//Record original exception, throw sanitised, human-readable version
+			logException(exception);
+			String errorMessage
+				= SERVICE_MESSAGES.getMessage(
+					"sqlConnectionManager.error.unableToReclaimReadConnection");
+
+
+			rifLogger.error(
+				getClass(),
+				errorMessage,
+				exception);
+
+			throw new RIFServiceException(
+				RIFServiceError.DATABASE_QUERY_FAILED,
+				errorMessage);
+		}
+
+	}
+
+	/**
+	 * User password.
+	 *
+	 * @param user the user id
+	 * @return password String, if successful
+	 */
+	public String getUserPassword(
+			final User user) {
+
+		if (userExists(user.getUserID()) && !isUserBlocked(user)) {
+			return passwordHashList.get(user.getUserID());
+		}
+		else {
+			return null;
+		}
+	}
+
+	@Override
+	public CallableStatement createPreparedCall( // Use MSSQLQueryUtility
+			final Connection connection,
+			final String query)
+		throws SQLException {
+
+		return SQLQueryUtility.createPreparedCall(
+			connection,
+			query);
+
 	}
 }

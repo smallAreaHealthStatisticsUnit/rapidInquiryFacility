@@ -16,12 +16,13 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.Sex;
+import rifServices.dataStorageLayer.common.AbstractSQLManager;
 import rifServices.dataStorageLayer.common.SmoothedResultManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager
+public class PGSQLSmoothedResultManager extends AbstractSQLManager
 		implements SmoothedResultManager {
 
 	private static String lineSeparator = System.getProperty("line.separator");

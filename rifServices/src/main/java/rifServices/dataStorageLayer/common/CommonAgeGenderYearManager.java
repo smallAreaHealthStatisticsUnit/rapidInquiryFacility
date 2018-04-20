@@ -20,21 +20,18 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
-import rifServices.dataStorageLayer.common.AgeGenderYearManager;
-import rifServices.dataStorageLayer.common.RIFContextManager;
-import rifServices.dataStorageLayer.ms.MSSQLAbstractSQLManager;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-public final class CommonAgeGenderYearManager extends MSSQLAbstractSQLManager
+public final class CommonAgeGenderYearManager extends AbstractSQLManager
 		implements AgeGenderYearManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	public static final String SCHEMA_PREFIX_STRING = "rif40.";
+	private static final String SCHEMA_PREFIX_STRING = "rif40.";
 
 	/** The sql rif context manager. */
 	private RIFContextManager sqlRIFContextManager;
+	private final RIFServiceStartupOptions rifServiceStartupOptions;
 	private final boolean prefixSchemaName;
 	private final String tablesTableName;
 
@@ -49,6 +46,7 @@ public final class CommonAgeGenderYearManager extends MSSQLAbstractSQLManager
 
 		super(options);
 		this.sqlRIFContextManager = sqlRIFContextManager;
+		this.rifServiceStartupOptions = options;
 		prefixSchemaName  = includeSchemaPrefix;
 		tablesTableName = (prefixSchemaName() ? SCHEMA_PREFIX_STRING : "") + "rif40_tables";
 	}
@@ -83,7 +81,7 @@ public final class CommonAgeGenderYearManager extends MSSQLAbstractSQLManager
 		try {
 
 			//Create query
-			Integer ageGroupID = null;
+			Integer ageGroupID;
 			SelectQueryFormatter getAgeIDQueryFormatter = SelectQueryFormatter.getInstance(
 					rifServiceStartupOptions.getRifDatabaseType(), false);
 
@@ -112,7 +110,7 @@ public final class CommonAgeGenderYearManager extends MSSQLAbstractSQLManager
 			if (!getAgeIDResultSet.next()) {
 				//ERROR: No entry available
 				String errorMessage
-					= RIFServiceMessages.getMessage(
+					= SERVICE_MESSAGES.getMessage(
 						"sqlAgeGenderYearManager.error.noAgeGroupIDForNumeratorTable",
 						ndPair.getNumeratorTableDescription());
 				RIFServiceException rifServiceException
@@ -201,7 +199,7 @@ public final class CommonAgeGenderYearManager extends MSSQLAbstractSQLManager
 			sqlRIFContextManager.logSQLException(sqlException);
 			SQLQueryUtility.rollback(connection);
 			String errorMessage
-				= RIFServiceMessages.getMessage("ageGroup.error.unableToGetAgeGroups");
+				= SERVICE_MESSAGES.getMessage("ageGroup.error.unableToGetAgeGroups");
 
 			rifLogger.error(
 				getClass(),
@@ -226,12 +224,10 @@ public final class CommonAgeGenderYearManager extends MSSQLAbstractSQLManager
 	 * Gets the genders.
 	 *
 	 * @return the genders
-	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<Sex> getGenders()
-		throws RIFServiceException {
+	public ArrayList<Sex> getGenders() {
 		
-		ArrayList<Sex> results = new ArrayList<Sex>();
+		ArrayList<Sex> results = new ArrayList<>();
 		results.add(Sex.MALES);
 		results.add(Sex.FEMALES);
 		results.add(Sex.BOTH);
@@ -296,7 +292,7 @@ public final class CommonAgeGenderYearManager extends MSSQLAbstractSQLManager
 			if (!resultSet.next()) {
 				//no entry found in the rif40 tables
 				String errorMessage
-					= RIFServiceMessages.getMessage(
+					= SERVICE_MESSAGES.getMessage(
 						"sqlAgeGenderYearManager.error.noStartEndYearForNumeratorTable",
 						ndPair.getNumeratorTableDescription());
 				RIFServiceException rifServiceException
@@ -331,7 +327,7 @@ public final class CommonAgeGenderYearManager extends MSSQLAbstractSQLManager
 			sqlRIFContextManager.logSQLException(sqlException);
 			SQLQueryUtility.rollback(connection);
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= SERVICE_MESSAGES.getMessage(
 					"sqlAgeGenderYearManager.error.unableToGetStartEndYear",
 					ndPair.getDisplayName());
 			
@@ -473,7 +469,7 @@ public final class CommonAgeGenderYearManager extends MSSQLAbstractSQLManager
 				String recordType
 					= ageGroup.getRecordType();
 				String errorMessage
-					= RIFServiceMessages.getMessage(
+					= SERVICE_MESSAGES.getMessage(
 						"general.validation.nonExistentRecord",
 						recordType,
 						ageGroup.getDisplayName());
@@ -495,7 +491,7 @@ public final class CommonAgeGenderYearManager extends MSSQLAbstractSQLManager
 			sqlRIFContextManager.logSQLException(sqlException);
 			SQLQueryUtility.rollback(connection);
 			String errorMessage
-				= RIFServiceMessages.getMessage(
+				= SERVICE_MESSAGES.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
 					ageGroup.getRecordType(),
 					ageGroup.getDisplayName());

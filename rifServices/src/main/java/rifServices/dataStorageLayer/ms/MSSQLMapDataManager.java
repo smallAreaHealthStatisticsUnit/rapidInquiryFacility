@@ -17,26 +17,23 @@ import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.MapArea;
+import rifServices.dataStorageLayer.common.AbstractSQLManager;
 import rifServices.dataStorageLayer.common.MapDataManager;
-import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class MSSQLMapDataManager extends MSSQLAbstractSQLManager implements MapDataManager {
+final class MSSQLMapDataManager extends AbstractSQLManager implements MapDataManager {
 	
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	private static String lineSeparator = System.getProperty("line.separator");	
 
 	/**
 	 * Instantiates a new SQL map data manager.
 	 *
 	 * @param rifServiceStartupOptions the rif service startup options
-	 * @param sqlRIFContextManager the sql rif context manager
 	 */
 	public MSSQLMapDataManager(
-		final RIFServiceStartupOptions rifServiceStartupOptions,
-		final RIFContextManager sqlRIFContextManager) {
+			final RIFServiceStartupOptions rifServiceStartupOptions) {
 
 		super(rifServiceStartupOptions);
 	}

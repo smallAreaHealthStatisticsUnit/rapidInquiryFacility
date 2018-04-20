@@ -14,13 +14,13 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
+import rifServices.dataStorageLayer.common.AbstractSQLManager;
 import rifServices.dataStorageLayer.common.ResultsQueryManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager
-		implements ResultsQueryManager {
+final class PGSQLResultsQueryManager extends AbstractSQLManager implements ResultsQueryManager {
 
 	RIFLogger rifLogger = RIFLogger.getLogger();
 	

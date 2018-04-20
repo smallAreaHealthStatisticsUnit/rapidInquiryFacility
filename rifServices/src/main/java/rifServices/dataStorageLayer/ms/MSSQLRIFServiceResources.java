@@ -72,8 +72,8 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 				rifServiceStartupOptions);
 		sqlMapDataManager 
 			= new MSSQLMapDataManager(
-				rifServiceStartupOptions, 
-				sqlRIFContextManager);
+				rifServiceStartupOptions
+		);
 		sqlCovariateManager = new MSSQLCovariateManager(rifServiceStartupOptions,
 				sqlRIFContextManager);
 		
