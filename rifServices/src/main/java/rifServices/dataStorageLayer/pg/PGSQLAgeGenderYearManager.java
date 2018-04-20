@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
@@ -46,7 +47,7 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 	}
 
 	@Override
-	public ArrayList<AgeGroup> getAgeGroups(
+	public List<AgeGroup> getAgeGroups(
 			final User user,
 			final Connection connection,
 			final Geography geography,
