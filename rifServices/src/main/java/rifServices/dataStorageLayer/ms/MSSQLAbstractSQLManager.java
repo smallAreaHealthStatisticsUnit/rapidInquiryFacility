@@ -13,7 +13,7 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
@@ -87,22 +87,12 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 	}
 
 	@Override
-	public PreparedStatement createPreparedStatement(final Connection connection,
-			final QueryFormatter queryFormatter) throws SQLException {
-				
-		return MSSQLQueryUtility.createPreparedStatement(
-			connection,
-			queryFormatter);
-
-	}
-	
-	@Override
 	public CallableStatement createPreparedCall( // Use MSSQLQueryUtility
 			final Connection connection,
 			final String query)
 		throws SQLException {
 				
-		return MSSQLQueryUtility.createPreparedCall(
+		return SQLQueryUtility.createPreparedCall(
 			connection,
 			query);
 
@@ -244,7 +234,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 					userID);
 			
 			rifLogger.error(
-					MSSQLConnectionManager.class,
+					getClass(),
 				errorMessage,
 				sqlException);
 			
@@ -286,8 +276,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 			//MSSQL > EXEC rif40.rif40_startup ?
 			//PGSQL > SELECT rif40_startup(?) AS rif40_init;
 			
-			statement
-				= MSSQLQueryUtility.createPreparedStatement(
+			statement = SQLQueryUtility.createPreparedStatement(
 					connection,
 					initialisationQuery);
 			
@@ -311,7 +300,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 			connection.setAutoCommit(false);
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 
 		return connection;
@@ -362,7 +351,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 
 
 			rifLogger.error(
-				MSSQLConnectionManager.class,
+				getClass(),
 				errorMessage,
 				exception);
 

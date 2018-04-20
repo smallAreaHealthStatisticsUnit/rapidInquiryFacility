@@ -5,8 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
@@ -47,7 +47,6 @@ final class PGSQLGenerateResultsSubmissionStep {
 		String result = null;
 		PreparedStatement runStudyStatement = null;
 		PreparedStatement computeResultsStatement = null;
-		PGSQLQueryUtility query=new PGSQLQueryUtility();
 		ResultSet runStudyResultSet = null;
 		ResultSet computeResultSet = null;
 		Boolean resultBoolean = false;
@@ -80,10 +79,10 @@ final class PGSQLGenerateResultsSubmissionStep {
 			
 			result = String.valueOf(runStudyResultSet.getBoolean(1));
 			resultBoolean=runStudyResultSet.getBoolean(1);
+
+			SQLQueryUtility.printWarnings(runStudyStatement); // Print output from PL/PGSQL
 			
-			query.printWarnings(runStudyStatement); // Print output from PL/PGSQL
-			
-			PGSQLQueryUtility.commit(connection); 
+			SQLQueryUtility.commit(connection);
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
@@ -92,7 +91,7 @@ final class PGSQLGenerateResultsSubmissionStep {
 				result="NULL [EXCEPTION THROWN BY DB]";
 			}
 			
-			traceMessage=query.printWarnings(runStudyStatement); // Print output from PL/PGSQL
+			traceMessage = SQLQueryUtility.printWarnings(runStudyStatement); // Print output from PL/PGSQL
 			if (traceMessage == null) {
 				traceMessage="No trace from PL/PGSQL Statement.";
 			}	
@@ -100,7 +99,7 @@ final class PGSQLGenerateResultsSubmissionStep {
 			
 			manager.logSQLException(sqlException);
 		
-			PGSQLQueryUtility.commit(connection); 
+			SQLQueryUtility.commit(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToRunStudy",
@@ -121,10 +120,10 @@ final class PGSQLGenerateResultsSubmissionStep {
 		finally {
 			
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(runStudyStatement);
-			PGSQLQueryUtility.close(runStudyResultSet);
-			PGSQLQueryUtility.close(computeResultsStatement);
-			PGSQLQueryUtility.close(computeResultSet);
+			SQLQueryUtility.close(runStudyStatement);
+			SQLQueryUtility.close(runStudyResultSet);
+			SQLQueryUtility.close(computeResultsStatement);
+			SQLQueryUtility.close(computeResultSet);
 
 			if (result == null) {
 				RIFServiceException rifServiceException

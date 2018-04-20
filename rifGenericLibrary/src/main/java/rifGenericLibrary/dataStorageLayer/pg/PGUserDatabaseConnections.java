@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
@@ -172,7 +173,7 @@ public final class PGUserDatabaseConnections {
 						userID,
 						new String(password));
 				statement
-					= PGSQLQueryUtility.createPreparedStatement(
+					= SQLQueryUtility.createPreparedStatement(
 						currentConnection, 
 						initialisationQuery);
 				statement.execute();
@@ -190,7 +191,7 @@ public final class PGUserDatabaseConnections {
 						userID,
 						new String(password));
 				statement
-					= PGSQLQueryUtility.createPreparedStatement(
+					= SQLQueryUtility.createPreparedStatement(
 						currentConnection, 
 						initialisationQuery);
 				statement.execute();
@@ -241,7 +242,7 @@ public final class PGUserDatabaseConnections {
 			throw rifServiceException;		
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 				
 	}
@@ -255,14 +256,14 @@ public final class PGUserDatabaseConnections {
 			while (iterator.hasNext()) {
 				Connection currentConnection
 					= iterator.next();
-				PGSQLQueryUtility.close(currentConnection);
+				SQLQueryUtility.close(currentConnection);
 			}
 			
 			iterator = usedReadOnlyConnections.iterator();
 			while (iterator.hasNext()) {
 				Connection currentConnection
 					= iterator.next();
-				PGSQLQueryUtility.close(currentConnection);
+				SQLQueryUtility.close(currentConnection);
 			}			
 		}
 	}
@@ -276,14 +277,14 @@ public final class PGUserDatabaseConnections {
 			while (iterator.hasNext()) {
 				Connection currentConnection
 					= iterator.next();
-				PGSQLQueryUtility.close(currentConnection);
+				SQLQueryUtility.close(currentConnection);
 			}
 
 			iterator = usedWriteOnlyConnections.iterator();
 			while (iterator.hasNext()) {
 				Connection currentConnection
 					= iterator.next();
-				PGSQLQueryUtility.close(currentConnection);
+				SQLQueryUtility.close(currentConnection);
 			}			
 		}
 	}

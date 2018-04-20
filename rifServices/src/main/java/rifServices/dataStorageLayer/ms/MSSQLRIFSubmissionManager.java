@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AgeBand;
@@ -105,7 +105,7 @@ public class MSSQLRIFSubmissionManager extends MSSQLAbstractSQLManager
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);			
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToGetDiseaseMappingStudy",
@@ -176,8 +176,8 @@ public class MSSQLRIFSubmissionManager extends MSSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}		
 	}
 		
@@ -226,8 +226,8 @@ public class MSSQLRIFSubmissionManager extends MSSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 	}	
 	
@@ -277,8 +277,8 @@ public class MSSQLRIFSubmissionManager extends MSSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 	}
 	
@@ -393,8 +393,8 @@ public class MSSQLRIFSubmissionManager extends MSSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 	}
 		
@@ -448,8 +448,8 @@ public class MSSQLRIFSubmissionManager extends MSSQLAbstractSQLManager
 					resultSet.getString(3));		
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 		return result;
@@ -494,8 +494,8 @@ public class MSSQLRIFSubmissionManager extends MSSQLAbstractSQLManager
 			result.setDenominatorTableDescription(resultSet.getString(3));
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 		return result;

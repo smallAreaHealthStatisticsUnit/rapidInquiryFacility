@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
@@ -194,8 +194,8 @@ final class MSSQLMapDataManager extends MSSQLAbstractSQLManager implements MapDa
 			throw rifServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 	
 		return allRelevantMapAreas;
@@ -233,8 +233,8 @@ final class MSSQLMapDataManager extends MSSQLAbstractSQLManager implements MapDa
 			result = resultSet.getString(1);
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 		return result;
@@ -295,8 +295,8 @@ final class MSSQLMapDataManager extends MSSQLAbstractSQLManager implements MapDa
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);		
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 		return result;

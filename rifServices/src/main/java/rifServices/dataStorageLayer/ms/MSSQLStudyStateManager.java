@@ -10,8 +10,8 @@ import org.apache.commons.lang.StringEscapeUtils;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
@@ -77,7 +77,7 @@ final class MSSQLStudyStateManager extends MSSQLAbstractSQLManager implements St
 			throw rifServiceExeption;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -180,8 +180,8 @@ final class MSSQLStudyStateManager extends MSSQLAbstractSQLManager implements St
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(dbResultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}
 		
 		assert result != null;
@@ -336,7 +336,7 @@ final class MSSQLStudyStateManager extends MSSQLAbstractSQLManager implements St
 			throw rifServiceException;
 		}
 		finally {			
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 	}
 
@@ -539,7 +539,7 @@ final class MSSQLStudyStateManager extends MSSQLAbstractSQLManager implements St
 			}
 			catch(SQLException sqlException) {
 				logSQLException(sqlException);
-				MSSQLQueryUtility.rollback(connection);
+				SQLQueryUtility.rollback(connection);
 				String errorMessage
 					= RIFServiceMessages.getMessage(
 						"sqlStudyStateManager.error.unableToStatusForAllStudies", 
@@ -551,8 +551,8 @@ final class MSSQLStudyStateManager extends MSSQLAbstractSQLManager implements St
 				throw rifServiceException;
 			}
 			finally {
-				MSSQLQueryUtility.close(statement);
-				MSSQLQueryUtility.close(resultSet);			
+				SQLQueryUtility.close(statement);
+				SQLQueryUtility.close(resultSet);
 			}	
 			
 		}
@@ -610,8 +610,8 @@ final class MSSQLStudyStateManager extends MSSQLAbstractSQLManager implements St
 				return result;
 			}
 			finally {
-				MSSQLQueryUtility.close(statement);
-				MSSQLQueryUtility.close(resultSet);				
+				SQLQueryUtility.close(statement);
+				SQLQueryUtility.close(resultSet);
 			}
 					
 		}
@@ -666,7 +666,7 @@ final class MSSQLStudyStateManager extends MSSQLAbstractSQLManager implements St
 //			throw rifServiceException;			
 //		}
 //		finally {
-//			MSSQLQueryUtility.close(statement);	
+//			SQLQueryUtility.close(statement);
 //		}
 //		
 //	}
@@ -733,7 +733,7 @@ final class MSSQLStudyStateManager extends MSSQLAbstractSQLManager implements St
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("abstractStudy.label");			
 			String errorMessage
@@ -755,8 +755,8 @@ final class MSSQLStudyStateManager extends MSSQLAbstractSQLManager implements St
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}		
 	}
 	

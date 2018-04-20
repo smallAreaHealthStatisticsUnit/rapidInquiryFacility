@@ -8,8 +8,8 @@ import java.sql.SQLException;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
@@ -126,8 +126,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 	}
 	
@@ -255,11 +255,11 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 			
-			MSSQLQueryUtility.close(statement2);
-			MSSQLQueryUtility.close(resultSet2);
+			SQLQueryUtility.close(statement2);
+			SQLQueryUtility.close(resultSet2);
 		}			
 	}
 	
@@ -316,7 +316,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.unableToGetStudyName",
@@ -328,8 +328,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 			throw rifServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 	}

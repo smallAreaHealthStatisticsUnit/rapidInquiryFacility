@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
@@ -105,7 +105,7 @@ final class PGSQLCovariateManager extends PGSQLAbstractSQLManager implements Cov
 		}
 		catch(SQLException exception) {
 			logSQLException(exception);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"covariateManager.db.unableToGetCovariatesForInvestigation",
@@ -119,8 +119,8 @@ final class PGSQLCovariateManager extends PGSQLAbstractSQLManager implements Cov
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}	
 	}
 		
@@ -199,7 +199,7 @@ final class PGSQLCovariateManager extends PGSQLAbstractSQLManager implements Cov
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("covariateManager.db.unableToGetCovariates");
 
@@ -215,8 +215,8 @@ final class PGSQLCovariateManager extends PGSQLAbstractSQLManager implements Cov
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(dbResultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}		
 		return results;
 	}
@@ -340,8 +340,8 @@ final class PGSQLCovariateManager extends PGSQLAbstractSQLManager implements Cov
 							RIFServiceError.NON_EXISTENT_COVARIATE, 
 							errorMessage);
 			
-					PGSQLQueryUtility.close(statement);
-					PGSQLQueryUtility.close(resultSet);
+					SQLQueryUtility.close(statement);
+					SQLQueryUtility.close(resultSet);
 
 					connection.commit();
 					
@@ -356,7 +356,7 @@ final class PGSQLCovariateManager extends PGSQLAbstractSQLManager implements Cov
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
@@ -367,17 +367,15 @@ final class PGSQLCovariateManager extends PGSQLAbstractSQLManager implements Cov
 			rifLogger.error(
 				PGSQLCovariateManager.class, 
 				errorMessage, 
-				sqlException);										
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;			
+				sqlException);
+
+			throw new RIFServiceException(
+				RIFServiceError.DATABASE_QUERY_FAILED,
+				errorMessage);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 	}

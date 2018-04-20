@@ -7,8 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLAggregateValueQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
@@ -81,7 +81,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeographies");
 			
@@ -98,8 +98,8 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(dbResultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}		
 	}
 
@@ -156,7 +156,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetHealthThemes");
@@ -173,8 +173,8 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(dbResultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}		
 	}
 	
@@ -263,7 +263,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
@@ -282,8 +282,8 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(dbResultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}
 		
 	}
@@ -369,7 +369,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
@@ -388,8 +388,8 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(dbResultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}
 		
 		return results;
@@ -503,7 +503,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {		
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLRIFContextManager.class, 
@@ -513,10 +513,10 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(getMaxGeoLevelIDStatement);
-			PGSQLQueryUtility.close(getMaxGeoLevelIDResultSet);			
-			PGSQLQueryUtility.close(getGeoLevelSelectStatement);
-			PGSQLQueryUtility.close(getGeoLevelSelectResultSet);			
+			SQLQueryUtility.close(getMaxGeoLevelIDStatement);
+			SQLQueryUtility.close(getMaxGeoLevelIDResultSet);
+			SQLQueryUtility.close(getGeoLevelSelectStatement);
+			SQLQueryUtility.close(getGeoLevelSelectResultSet);
 		}		
 		return results;		
 	}
@@ -579,7 +579,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelSelect");
 
@@ -597,8 +597,8 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(dbResultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}		
 	}
 
@@ -714,7 +714,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLRIFContextManager.class, 
@@ -725,10 +725,10 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(lookupTableStatement);
-			PGSQLQueryUtility.close(lookupTableResultSet);				
-			PGSQLQueryUtility.close(geographicAreaStatement);
-			PGSQLQueryUtility.close(geographicAreaResultSet);			
+			SQLQueryUtility.close(lookupTableStatement);
+			SQLQueryUtility.close(lookupTableResultSet);
+			SQLQueryUtility.close(geographicAreaStatement);
+			SQLQueryUtility.close(geographicAreaResultSet);
 		}
 				
 		return results;		
@@ -838,7 +838,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLRIFContextManager.class, 
@@ -849,10 +849,10 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(geoLevelIDStatement);
-			PGSQLQueryUtility.close(geoLevelIDResultSet);			
-			PGSQLQueryUtility.close(geoLevelViewsStatement);
-			PGSQLQueryUtility.close(geoLevelViewsResultSet);			
+			SQLQueryUtility.close(geoLevelIDStatement);
+			SQLQueryUtility.close(geoLevelIDResultSet);
+			SQLQueryUtility.close(geoLevelViewsStatement);
+			SQLQueryUtility.close(geoLevelViewsResultSet);
 		}		
 	}
 					
@@ -954,7 +954,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {	
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("geography.label");
 			String errorMessage
@@ -977,8 +977,8 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(checkGeographyExistsStatement);
-			PGSQLQueryUtility.close(checkGeographyExistsResultSet);			
+			SQLQueryUtility.close(checkGeographyExistsStatement);
+			SQLQueryUtility.close(checkGeographyExistsResultSet);
 		}
 	}
 	
@@ -1047,7 +1047,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("geoLevelSelect.label");			
 			String errorMessage
@@ -1070,8 +1070,8 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(checkGeoLevelViewExistsStatement);
-			PGSQLQueryUtility.close(checkGeoLevelViewExistsResultSet);			
+			SQLQueryUtility.close(checkGeoLevelViewExistsStatement);
+			SQLQueryUtility.close(checkGeoLevelViewExistsResultSet);
 		}		
 	}
 		
@@ -1174,7 +1174,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLRIFContextManager.class, 
@@ -1184,10 +1184,10 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(getLookupTableStatement);
-			PGSQLQueryUtility.close(getLookupTableResultSet);			
-			PGSQLQueryUtility.close(getLookupTableStatement);
-			PGSQLQueryUtility.close(getLookupTableResultSet);			
+			SQLQueryUtility.close(getLookupTableStatement);
+			SQLQueryUtility.close(getLookupTableResultSet);
+			SQLQueryUtility.close(getLookupTableStatement);
+			SQLQueryUtility.close(getLookupTableResultSet);
 		}	
 		
 	}
@@ -1330,7 +1330,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLRIFContextManager.class, 
@@ -1341,10 +1341,10 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(geoLevelIDStatement);
-			PGSQLQueryUtility.close(geoLevelIDResultSet);			
-			PGSQLQueryUtility.close(geoLevelValueExistsStatement);
-			PGSQLQueryUtility.close(geoLevelValueExistsResultSet);			
+			SQLQueryUtility.close(geoLevelIDStatement);
+			SQLQueryUtility.close(geoLevelIDResultSet);
+			SQLQueryUtility.close(geoLevelValueExistsStatement);
+			SQLQueryUtility.close(geoLevelValueExistsResultSet);
 		}				
 	}
 
@@ -1445,7 +1445,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				PGSQLRIFContextManager.class, 
@@ -1456,8 +1456,8 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 	}
@@ -1515,7 +1515,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("healthTheme.label");
 			String errorMessage
@@ -1538,8 +1538,8 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(checkHealthThemeExistsStatement);
-			PGSQLQueryUtility.close(checkHealthThemeExistsResultSet);			
+			SQLQueryUtility.close(checkHealthThemeExistsStatement);
+			SQLQueryUtility.close(checkHealthThemeExistsResultSet);
 		}		
 	}	
 
@@ -1601,7 +1601,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);			
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
@@ -1622,8 +1622,8 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(getNDPairExistsStatement);
-			PGSQLQueryUtility.close(getNDPairExistsResultSet);						
+			SQLQueryUtility.close(getNDPairExistsStatement);
+			SQLQueryUtility.close(getNDPairExistsResultSet);
 		}		
 	}
 
@@ -1685,7 +1685,7 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);			
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("numeratorDenominatorPair.numerator.label");
 			String errorMessage
@@ -1708,8 +1708,8 @@ final class PGSQLRIFContextManager extends PGSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(getNDPairExistsStatement);
-			PGSQLQueryUtility.close(getNDPairExistsResultSet);						
+			SQLQueryUtility.close(getNDPairExistsStatement);
+			SQLQueryUtility.close(getNDPairExistsResultSet);
 		}		
 	}
 }

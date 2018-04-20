@@ -11,8 +11,8 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
@@ -72,15 +72,7 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 		queryFormatter.setCaseSensitive(
 			rifDatabaseProperties.isCaseSensitive());
 	}
-	
-	public PreparedStatement createPreparedStatement(final Connection connection,
-			final QueryFormatter queryFormatter) throws SQLException {
-				
-		return PGSQLQueryUtility.createPreparedStatement(
-			connection,
-			queryFormatter);
-	}
-	
+
 	@Override
 	public void enableDatabaseDebugMessages(
 			final Connection connection)
@@ -124,8 +116,8 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 				errorMessage);
 		}
 		finally {
-			PGSQLQueryUtility.close(setupLogStatement);
-			PGSQLQueryUtility.close(sendDebugToInfoStatement);	
+			SQLQueryUtility.close(setupLogStatement);
+			SQLQueryUtility.close(sendDebugToInfoStatement);
 		}		
 	}
 
@@ -322,7 +314,7 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 
 			databaseProperties.setProperty("prepareThreshold", "3");
 			connection = DriverManager.getConnection(databaseURL, databaseProperties);
-			statement = PGSQLQueryUtility.createPreparedStatement(connection, initialisationQuery);
+			statement = SQLQueryUtility.createPreparedStatement(connection, initialisationQuery);
 			
 			if (isFirstConnectionForUser) {
 
@@ -344,7 +336,7 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 			connection.setAutoCommit(false);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 
 		return connection;

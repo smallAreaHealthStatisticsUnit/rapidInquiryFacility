@@ -8,8 +8,8 @@ import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
@@ -177,7 +177,7 @@ final class PGSQLCreateStudySubmissionStep extends PGSQLAbstractSQLManager {
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
@@ -227,8 +227,8 @@ final class PGSQLCreateStudySubmissionStep extends PGSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 	}
@@ -397,8 +397,8 @@ final class PGSQLCreateStudySubmissionStep extends PGSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources	
-			PGSQLQueryUtility.close(studyShareStatement);
-			PGSQLQueryUtility.close(addStudyStatement);
+			SQLQueryUtility.close(studyShareStatement);
+			SQLQueryUtility.close(addStudyStatement);
 		}
 	}
 	
@@ -539,7 +539,7 @@ final class PGSQLCreateStudySubmissionStep extends PGSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 
 	}
@@ -596,7 +596,7 @@ final class PGSQLCreateStudySubmissionStep extends PGSQLAbstractSQLManager {
 			return resultSet.getInt(1);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 	}
 		
@@ -666,7 +666,7 @@ final class PGSQLCreateStudySubmissionStep extends PGSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}	
 	}
 	
@@ -715,7 +715,7 @@ final class PGSQLCreateStudySubmissionStep extends PGSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -821,7 +821,7 @@ final class PGSQLCreateStudySubmissionStep extends PGSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(addCovariateStatement);
+			SQLQueryUtility.close(addCovariateStatement);
 		}
 	}
 		
@@ -919,8 +919,8 @@ final class PGSQLCreateStudySubmissionStep extends PGSQLAbstractSQLManager {
 			}
 			finally {
 				//Cleanup database resources	
-				PGSQLQueryUtility.close(getOutcomeGroupNameStatement);
-				PGSQLQueryUtility.close(addHealthCodeStatement);
+				SQLQueryUtility.close(getOutcomeGroupNameStatement);
+				SQLQueryUtility.close(addHealthCodeStatement);
 			}		
 		}
 
@@ -1015,7 +1015,7 @@ final class PGSQLCreateStudySubmissionStep extends PGSQLAbstractSQLManager {
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("project.label");			
 			String errorMessage
@@ -1037,8 +1037,8 @@ final class PGSQLCreateStudySubmissionStep extends PGSQLAbstractSQLManager {
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(checkProjectExistsStatement);
-			PGSQLQueryUtility.close(checkProjectExistsResultSet);			
+			SQLQueryUtility.close(checkProjectExistsStatement);
+			SQLQueryUtility.close(checkProjectExistsResultSet);
 		}		
 	}
 	

@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
@@ -171,7 +172,7 @@ public final class MSUserDatabaseConnections {
 						userID,
 						new String(password));
 				statement
-					= MSSQLQueryUtility.createPreparedStatement(
+					= SQLQueryUtility.createPreparedStatement(
 						currentConnection, 
 						initialisationQuery);
 				statement.execute();
@@ -188,8 +189,7 @@ public final class MSUserDatabaseConnections {
 						writeOnlyDatabaseConnectionString,
 						userID,
 						new String(password));
-				statement
-					= MSSQLQueryUtility.createPreparedStatement(
+				statement = SQLQueryUtility.createPreparedStatement(
 						currentConnection, 
 						initialisationQuery);
 				statement.execute();
@@ -213,11 +213,9 @@ public final class MSUserDatabaseConnections {
 			String errorMessage
 				= GENERIC_MESSAGES.getMessage(
 					"db.error.unableToLoadDatabaseDriver");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.DB_UNABLE_TO_LOAD_DRIVER,
-					errorMessage);
-			throw rifServiceException;			
+			throw new RIFServiceException(
+				RIFGenericLibraryError.DB_UNABLE_TO_LOAD_DRIVER,
+				errorMessage);
 		}
 		catch(SQLException sqlException) {
 			rifLogger.error(callingClassName, "Jdb.error.unableToLoadDatabaseDriver ERROR", 
@@ -239,7 +237,7 @@ public final class MSUserDatabaseConnections {
 			throw rifServiceException;		
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 				
 	}
@@ -253,14 +251,14 @@ public final class MSUserDatabaseConnections {
 			while (iterator.hasNext()) {
 				Connection currentConnection
 					= iterator.next();
-				MSSQLQueryUtility.close(currentConnection);
+				SQLQueryUtility.close(currentConnection);
 			}
 			
 			iterator = usedReadOnlyConnections.iterator();
 			while (iterator.hasNext()) {
 				Connection currentConnection
 					= iterator.next();
-				MSSQLQueryUtility.close(currentConnection);
+				SQLQueryUtility.close(currentConnection);
 			}			
 		}
 	}
@@ -274,14 +272,14 @@ public final class MSUserDatabaseConnections {
 			while (iterator.hasNext()) {
 				Connection currentConnection
 					= iterator.next();
-				MSSQLQueryUtility.close(currentConnection);
+				SQLQueryUtility.close(currentConnection);
 			}
 
 			iterator = usedWriteOnlyConnections.iterator();
 			while (iterator.hasNext()) {
 				Connection currentConnection
 					= iterator.next();
-				MSSQLQueryUtility.close(currentConnection);
+				SQLQueryUtility.close(currentConnection);
 			}			
 		}
 	}

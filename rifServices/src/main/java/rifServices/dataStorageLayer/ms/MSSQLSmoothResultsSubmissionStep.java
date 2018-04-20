@@ -1,13 +1,13 @@
 package rifServices.dataStorageLayer.ms;
 
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.common.CommonRService;
 import rifServices.system.RIFServiceStartupOptions;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 
 import java.sql.*;
@@ -536,8 +536,8 @@ password=XXXXXXXX
 			investigationID = resultSet.getInt(1);
 		}
 		finally {
-			MSSQLQueryUtility.close(resultSet);			
-			MSSQLQueryUtility.close(statement);			
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 
 		return investigationID;

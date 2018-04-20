@@ -1,19 +1,23 @@
 package rifServices.dataStorageLayer.pg;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.common.ResultsQueryManager;
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceError;
 import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.GeoLevelSelect;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.dataStorageLayer.common.ResultsQueryManager;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
-
-import java.sql.*;
 
 final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager
 		implements ResultsQueryManager {
@@ -121,8 +125,8 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager
 			}
 			finally {
 				//Cleanup database resources
-				PGSQLQueryUtility.close(statement);
-				PGSQLQueryUtility.close(resultSet);
+				SQLQueryUtility.close(statement);
+				SQLQueryUtility.close(resultSet);
 			}			
 		}
 	
@@ -246,11 +250,11 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 			
-			PGSQLQueryUtility.close(statement2);
-			PGSQLQueryUtility.close(resultSet2);
+			SQLQueryUtility.close(statement2);
+			SQLQueryUtility.close(resultSet2);
 		}			
 	}
 				
@@ -308,7 +312,7 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.unableToGetStudyName",
@@ -320,8 +324,8 @@ final class PGSQLResultsQueryManager extends PGSQLAbstractSQLManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 	}

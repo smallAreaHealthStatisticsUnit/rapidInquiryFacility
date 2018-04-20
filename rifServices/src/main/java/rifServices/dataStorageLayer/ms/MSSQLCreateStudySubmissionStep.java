@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
@@ -186,7 +186,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
@@ -235,8 +235,8 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 	}
@@ -405,8 +405,8 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources	
-			MSSQLQueryUtility.close(studyShareStatement);
-			MSSQLQueryUtility.close(addStudyStatement);
+			SQLQueryUtility.close(studyShareStatement);
+			SQLQueryUtility.close(addStudyStatement);
 		}
 	}
 	
@@ -547,7 +547,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 
 	}
@@ -605,7 +605,7 @@ final class MSSQLCreateStudySubmissionStep
 			return resultSet.getInt(1);
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 	}
 		
@@ -675,7 +675,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}	
 	}
 	
@@ -724,7 +724,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -830,7 +830,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(addCovariateStatement);
+			SQLQueryUtility.close(addCovariateStatement);
 		}
 	}
 		
@@ -928,8 +928,8 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources	
-			MSSQLQueryUtility.close(getOutcomeGroupNameStatement);
-			MSSQLQueryUtility.close(addHealthCodeStatement);
+			SQLQueryUtility.close(getOutcomeGroupNameStatement);
+			SQLQueryUtility.close(addHealthCodeStatement);
 		}		
 	}
 
@@ -1023,7 +1023,7 @@ final class MSSQLCreateStudySubmissionStep
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("project.label");			
 			String errorMessage
@@ -1045,8 +1045,8 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(checkProjectExistsStatement);
-			MSSQLQueryUtility.close(checkProjectExistsResultSet);			
+			SQLQueryUtility.close(checkProjectExistsStatement);
+			SQLQueryUtility.close(checkProjectExistsResultSet);
 		}		
 	}
 	

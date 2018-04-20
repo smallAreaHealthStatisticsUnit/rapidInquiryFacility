@@ -30,8 +30,8 @@ import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSchemaCommentQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLUpdateQueryFormatter;
@@ -207,8 +207,8 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			return rifResultTable;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 	}
@@ -315,8 +315,8 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			throw RIFServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(resultSet);
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -389,7 +389,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 	}
 
@@ -540,7 +540,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			statement.executeUpdate();			
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -583,7 +583,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}			
 	}
 	
@@ -797,7 +797,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}		
 	}
 
@@ -880,7 +880,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 	}
 	
@@ -924,7 +924,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 
 	}
@@ -986,7 +986,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		final QueryFormatter queryFormatter)
 		throws SQLException {
 				
-		return MSSQLQueryUtility.createPreparedStatement(
+		return SQLQueryUtility.createPreparedStatement(
 			connection,
 			queryFormatter);
 	}
@@ -996,7 +996,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		final String query) 
 		throws SQLException {
 				
-		return MSSQLQueryUtility.createPreparedStatement(
+		return SQLQueryUtility.createPreparedStatement(
 			connection,
 			query);
 	}

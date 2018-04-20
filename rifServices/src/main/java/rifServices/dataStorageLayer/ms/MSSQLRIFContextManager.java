@@ -8,8 +8,8 @@ import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLAggregateValueQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
@@ -91,7 +91,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeographies");
 			
@@ -108,8 +108,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(dbResultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}		
 	}
 
@@ -173,7 +173,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetHealthThemes");
@@ -190,8 +190,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(dbResultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}		
 	}
 	
@@ -298,7 +298,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
@@ -317,8 +317,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(dbResultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}
 		
 	}
@@ -413,7 +413,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
@@ -432,8 +432,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(dbResultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}
 		
 		return results;
@@ -554,7 +554,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {		
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
@@ -564,10 +564,10 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(getMaxGeoLevelIDStatement);
-			MSSQLQueryUtility.close(getMaxGeoLevelIDResultSet);			
-			MSSQLQueryUtility.close(getGeoLevelSelectStatement);
-			MSSQLQueryUtility.close(getGeoLevelSelectResultSet);			
+			SQLQueryUtility.close(getMaxGeoLevelIDStatement);
+			SQLQueryUtility.close(getMaxGeoLevelIDResultSet);
+			SQLQueryUtility.close(getGeoLevelSelectStatement);
+			SQLQueryUtility.close(getGeoLevelSelectResultSet);
 		}		
 		return results;		
 	}
@@ -637,7 +637,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelSelect");
 
@@ -655,8 +655,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(dbResultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}		
 	}
 
@@ -780,7 +780,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
@@ -791,10 +791,10 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(lookupTableStatement);
-			MSSQLQueryUtility.close(lookupTableResultSet);				
-			MSSQLQueryUtility.close(geographicAreaStatement);
-			MSSQLQueryUtility.close(geographicAreaResultSet);			
+			SQLQueryUtility.close(lookupTableStatement);
+			SQLQueryUtility.close(lookupTableResultSet);
+			SQLQueryUtility.close(geographicAreaStatement);
+			SQLQueryUtility.close(geographicAreaResultSet);
 		}
 				
 		return results;		
@@ -912,7 +912,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
@@ -923,10 +923,10 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(geoLevelIDStatement);
-			MSSQLQueryUtility.close(geoLevelIDResultSet);			
-			MSSQLQueryUtility.close(geoLevelViewsStatement);
-			MSSQLQueryUtility.close(geoLevelViewsResultSet);			
+			SQLQueryUtility.close(geoLevelIDStatement);
+			SQLQueryUtility.close(geoLevelIDResultSet);
+			SQLQueryUtility.close(geoLevelViewsStatement);
+			SQLQueryUtility.close(geoLevelViewsResultSet);
 		}		
 	}
 					
@@ -1034,7 +1034,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {	
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("geography.label");
 			String errorMessage
@@ -1057,8 +1057,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(checkGeographyExistsStatement);
-			MSSQLQueryUtility.close(checkGeographyExistsResultSet);			
+			SQLQueryUtility.close(checkGeographyExistsStatement);
+			SQLQueryUtility.close(checkGeographyExistsResultSet);
 		}
 	}
 	
@@ -1134,7 +1134,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("geoLevelSelect.label");			
 			String errorMessage
@@ -1157,8 +1157,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(checkGeoLevelViewExistsStatement);
-			MSSQLQueryUtility.close(checkGeoLevelViewExistsResultSet);			
+			SQLQueryUtility.close(checkGeoLevelViewExistsStatement);
+			SQLQueryUtility.close(checkGeoLevelViewExistsResultSet);
 		}		
 	}
 		
@@ -1269,7 +1269,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
@@ -1279,10 +1279,10 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(getLookupTableStatement);
-			MSSQLQueryUtility.close(getLookupTableResultSet);			
-			MSSQLQueryUtility.close(getLookupTableStatement);
-			MSSQLQueryUtility.close(getLookupTableResultSet);			
+			SQLQueryUtility.close(getLookupTableStatement);
+			SQLQueryUtility.close(getLookupTableResultSet);
+			SQLQueryUtility.close(getLookupTableStatement);
+			SQLQueryUtility.close(getLookupTableResultSet);
 		}	
 		
 	}
@@ -1433,7 +1433,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
@@ -1444,10 +1444,10 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(geoLevelIDStatement);
-			MSSQLQueryUtility.close(geoLevelIDResultSet);			
-			MSSQLQueryUtility.close(geoLevelValueExistsStatement);
-			MSSQLQueryUtility.close(geoLevelValueExistsResultSet);			
+			SQLQueryUtility.close(geoLevelIDStatement);
+			SQLQueryUtility.close(geoLevelIDResultSet);
+			SQLQueryUtility.close(geoLevelValueExistsStatement);
+			SQLQueryUtility.close(geoLevelValueExistsResultSet);
 		}				
 	}
 
@@ -1556,7 +1556,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
@@ -1567,8 +1567,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 	}
@@ -1632,7 +1632,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("healthTheme.label");
 			String errorMessage
@@ -1655,8 +1655,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(checkHealthThemeExistsStatement);
-			MSSQLQueryUtility.close(checkHealthThemeExistsResultSet);			
+			SQLQueryUtility.close(checkHealthThemeExistsStatement);
+			SQLQueryUtility.close(checkHealthThemeExistsResultSet);
 		}		
 	}	
 
@@ -1722,7 +1722,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);			
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
@@ -1743,8 +1743,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(getNDPairExistsStatement);
-			MSSQLQueryUtility.close(getNDPairExistsResultSet);						
+			SQLQueryUtility.close(getNDPairExistsStatement);
+			SQLQueryUtility.close(getNDPairExistsResultSet);
 		}		
 	}
 
@@ -1815,7 +1815,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);			
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("numeratorDenominatorPair.numerator.label");
 			String errorMessage
@@ -1836,8 +1836,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(getNDPairExistsStatement);
-			MSSQLQueryUtility.close(getNDPairExistsResultSet);						
+			SQLQueryUtility.close(getNDPairExistsStatement);
+			SQLQueryUtility.close(getNDPairExistsResultSet);
 		}		
 	}
 }

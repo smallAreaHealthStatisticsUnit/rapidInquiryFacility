@@ -1,20 +1,22 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
-
-import java.sql.*;
-import java.io.*;
 
 /**
  * Manages code used to store and retrieve information about data sources that are
@@ -138,8 +140,8 @@ final public class PGSQLDataSetManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 	}
 
@@ -245,9 +247,9 @@ final public class PGSQLDataSetManager
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(addDataSetStatement);			
-			PGSQLQueryUtility.close(getIdentifierStatement);			
-			PGSQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(addDataSetStatement);
+			SQLQueryUtility.close(getIdentifierStatement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 		return result;
@@ -297,7 +299,7 @@ final public class PGSQLDataSetManager
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(deleteDataSetConfigurationStatement);
+			SQLQueryUtility.close(deleteDataSetConfigurationStatement);
 		}
 		
 	}
@@ -376,7 +378,7 @@ final public class PGSQLDataSetManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}		
 	}
 	
