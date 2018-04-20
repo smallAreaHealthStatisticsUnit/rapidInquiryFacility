@@ -22,7 +22,7 @@ SQL Server Development Database Installation
 	
 # 1. Install SQL Server 2012 SP2
 
-Install SQL Server 2012 SP2  (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
+Install SQL Server 2012 SP2 or higher (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
 
 **DO NOT INSTALL SQL Server 2008 or before**
 
@@ -56,7 +56,7 @@ sqlcmd -E -b -m-1 -e -i rif40_development_creation.sql
 Note:
 - **_This script will destroy all existing users and data_**;
 - This script will:
-  * Drops and creates the *sahsuland*, *sahsuland_dev* and *test* databasea and the *rif40*, *rifuser* and *rifmanager* user (logon) roles;   
+  * Drops and creates the *sahsuland*, *sahsuland_dev* and *test* database and the *rif40*, *rifuser* and *rifmanager* user (logon) roles;   
   * Creates *rif_user*, *rif_manager*, *rif_no_suppression*, *rif_student* and *notarifuser* non logon (i.e. group) roles;
   * The role *rif_user* allows users to create tables and views;
   * The role *rif_manager* allows users to additionally create procedures and functions;
@@ -64,7 +64,7 @@ Note:
   * The password for the rif40 login is random; this user is purely present to own objects;
   * The default database is *sahsuland_dev*;
 - The application is installed in the *rif40* schema and data is installed in the *rif_data* schema; both owned by the *rif40* role;
-- The test database is for building geosptial data. SQL Server express databases are limited to 10G in size; so to maximise the size of data that can be processed
+- The test database is for building geospatial data. SQL Server express databases are limited to 10G in size; so to maximise the size of data that can be processed
   a separate database is used.
 
 ## 2.1 Network connection errors
@@ -75,17 +75,17 @@ This is when the above command will not run.
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>sqlcmd -E -b -m-1 -e -r1 -i rif40_database_creation.sql
 Result 0x2, Level 16, State 1
 Named Pipes Provider: Could not open a connection to SQL Server [2].
-Mirosoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.
+Microsoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.
 Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
 ```
   * You may need to specify the instance name: e.g. `-S PETER-PC\SAHSU`, e.g.
 	```
 	sqlcmd -E -S PETER-PC\SAHSU -b -m-1 -e -r1 -i rif40_database_creation.sql
 	```  
-    If you set this it will ned to be set in the environment as *SQLCMDSERVER*. This is usually caused by 
+    If you set this it will need to be set in the environment as *SQLCMDSERVER*. This is usually caused by 
     multiple installations of SQL server on the machine in the past, i.e. the *DefaultLocalInstance* registry key is wrong.
-  * Check if remote access is enabled (it should be) using SQL Server Management Studio as adminstrator: https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx
-  * Check TCP access is enabled using SQL Server Configuration Manager as adminstrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
+  * Check if remote access is enabled (it should be) using SQL Server Management Studio as administrator: https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx
+  * Check TCP access is enabled using SQL Server Configuration Manager as administrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
   * Check your firewall permits access to TCP port 1433. **Be careful _not_ to allow Internet access unless you intend it.**
   * The following is more helpful than the official Microsoft manuals: https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/
 
@@ -109,8 +109,8 @@ The solution to this is to:
 
 * logon as *sa* using the password for the *sa* provided during the install;
 * Create a Windows authenticated user login as the domain user name (e.g. *IC\pch*);
-* Grant full database adminstration privileges (all of them!) to this user;
-* Check the user logon is now an Adminstrator (i.e. is dbo):
+* Grant full database administration privileges (all of them!) to this user;
+* Check the user logon is now an Administrator (i.e. is dbo):
 	```
 	sqlcmd -E
 	1> SELECT user_name();
@@ -181,7 +181,7 @@ Login failed for user 'peter'.
 Login failed for user 'peter'. Reason: An attempt to login using SQL authentication failed. Server is configured for Windows authentication only. [CLIENT: <local machine>]
 ```
 
-  The node also show how to enable the sa (system adminstrator) account. As with all relational database adminstration accounts as strong (12+ chacracter) password is recommended to defeat 
+  The node also show how to enable the sa (system administrator) account. As with all relational database adminstration accounts as strong (12+ chacracter) password is recommended to defeat 
   attacks by dictionary or all possible passwords.
 
   This is what a successful login looks like: `sqlcmd -U peter -P XXXXXXXXXXXXXXXX`
@@ -200,7 +200,7 @@ sahsuland_dev
  
 # 4. Installing the RIF Schema
 
-A script is proved to build everything and create an example study. Note that this user's password will be the 
+A script (*rapidInquiryFacility\rifDatabase\SQLserver\installation\rebuild_all.bat*) is provided to build everything and create an example study. Note that this user's password will be the 
 username, so change it on a networked system:
 
 * rebuild_all.bat (see note 4.1 below before you run this script)
@@ -231,10 +231,10 @@ username, so change it on a networked system:
 **These scripts do NOT drop existing tables, the database must be rebuilt from scratch**.
 **You _must_ build sahusland_dev before sahusland**; as *sahsuland_dev* is exported as the basis for *sahsuland*.
 
-The batch tests for Administrator or power user privilege; gets the seettings as detailed above and then runs the following scripts 
+The batch tests for Administrator or power user privilege; gets the settings as detailed above and then runs the following scripts 
 as Administrator:
 
-* rif40_development_creation.sql - creates the developement databases *sahsuland_dev* and *test*.
+* rif40_development_creation.sql - creates the development databases *sahsuland_dev* and *test*.
 * rif40_sahsuland_dev_install.bat - to create and export *sahsuland_dev* (see notes 4.1 and 4.3 below before you run this script)
 * rif40_sahsuland_install.bat - to create the *sahsuland* database and restore the *sahsuland_dev* backup into it 
   (see note 4.3 below before you run this script). This script also causes a pause before rebuilding *sahsuland*.
@@ -267,11 +267,21 @@ SQL Server needs access permission granted to the directories used to `BULK INSE
 server as in the *Postgres* *psql* ```\copy` command and the *Oracle* *sqlldr* command.
 
 SQL Server needs access to the relative directories: *..\..\GeospatialData\tileMaker* and *..\..\\DataLoaderData\SAHSULAND*. The simplest
-way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users).
+way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users or USERS depending on your Windows version).
+
+The following directories need to have read and execute permission granted to local users (and subdirectories):
+
+* *rapidInquiryFacility\rifDatabase\GeospatialData*
+* *rapidInquiryFacility\rifDatabase\DataLoaderData*
+* *rapidInquiryFacility\rifDatabase\SQLserver*
+
+The following directories need to have read, write, modify and execute permission granted to local users (and subdirectories):
+
+* *rapidInquiryFacility\rifDatabase\SQLserver\production*
 
 *DO NOT TRY TO RUN BULK INSERT FROM NETWORK DRIVES or CLOUD DRIVES (e.g. Google Drive).* Use a local directory which SQL Server has
-access to; e.g. somewhere on the C: drive. Note that SQL Server *BULK LOAD* behaves dirrently if you logon using Windows authentication (where it will use your credentials 
-to access the files) to using a username and password (where it will use the Server's credentials to acces the file).
+access to; e.g. somewhere on the C: drive. Note that SQL Server *BULK LOAD* behaves deterrently if you logon using Windows authentication (where it will use your credentials 
+to access the files) to using a username and password (where it will use the Server's credentials to access the file).
 
 ```
 BULK INSERT rif_data.lookup_sahsu_grd_level1
@@ -303,7 +313,7 @@ Msg 3621, Level 0, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 5
 The statement has been terminated.
 ```
 
-To resolve: delete the coariates. You must re-run rif40_sahsuland_data.bat afterwards.
+To resolve: delete the covariates. You must re-run rif40_sahsuland_data.bat afterwards.
 
 ```
 DELETE FROM rif40.rif40_covariates WHERE geography = 'SAHSULAND';
@@ -314,14 +324,14 @@ Re-load sahsuland example data with: rif40_sahsuland_data.bat
 
 ## 4.3 SQL Server Backup and Restore
 
-SQL Server needs access granted to the drectories used to `BACKUP` and to `RESTORE` files.
+SQL Server needs access granted to the directories used to `BACKUP` and to `RESTORE` files.
 
 SQL Server needs access to the relative directory: *..\production*. The simplest
 way is to allow full control to the local users group (e.g. PH-LAPTOP\Users).
 
 *DO NOT TRY TO `BACKUP` or `RESTORE` FROM NETWORK DRIVES or CLOUD DRIVES (e.g. Google Drive).* Use a local directory which SQL Server has
-access to; e.g. somewhere on the C: drive. Note that SQL Server *BACKUP* and *RESTORE* behaves dirrently if you logon using Windows authentication (where it will use your credentials 
-to access the files) to using a username and password (where it will use the Server's credentials to acces the file).
+access to; e.g. somewhere on the C: drive. Note that SQL Server *BACKUP* and *RESTORE* behaves differently if you logon using Windows authentication (where it will use your credentials 
+to access the files) to using a username and password (where it will use the Server's credentials to access the file).
 
 ```
 --
@@ -372,7 +382,7 @@ perl -i -p -e "s/\r//" <oldfilename >newfilename
 # 5. Script Notes
 
 * All scripts except database creation are now transactional, with a script of the same name usually in the source code directory; 
-  The T-SQL functions sp_addsrvrolemember() and sp_addrolemember() are not tranactional;
+  The T-SQL functions sp_addsrvrolemember() and sp_addrolemember() are not transactional;
 * The function rif40_sequence_current_value() is created earlier by the sequences SQL script and 
   cannot be recreated once tables have been created;
 * rif40_import_data.bat is now path independent. The SQL script (in this directory) will now delete all 
@@ -408,26 +418,10 @@ Cannot DROP FUNCTION 'rif40.rif40_sequence_current_value' because it is being re
 
 ## 5.1 Script and documentation TODO
 	
-Still to do:
+Still to do (low priority):
 
-* Search path notes - thjere isn't one!
+* Search path notes - there isn't one!
 * On logon trigger - Postgres *rif40_startup()* function and the *rif40_user_objects.sql* script
-* Run study procedure *rif40_run_study()*
-* Fix selected columns (done):
-
-| type    | column_name                                                 | nullable | data_type        | Notes                           |       
-|---------|-------------------------------------------------------------|----------|------------------|---------------------------------| 
-| Extra   | RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISON_POPULATION          | NULL     | numeric          |                                 |   
-| Extra   | RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMN_EXISTS               | NOT NULL | varchar          |                                 |   
-| Extra   | RIF40_PARAMETERS.DESCRIPTION                                | NOT NULL | varchar          |                                 |   
-| Extra   | T_RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISON_POPULATION        | NULL     | numeric          |                                 |  
-| Extra   | T_RIF40_INVESTIGATIONS.ROWID                                | NOT NULL | uniqueidentifier |                                 |                                          
-| Missing | RIF40_NUMERATOR_OUTCOME_COLUMNS.COLUMNN_EXISTS              | NULL     | bool             | Fix Postgres spelling           |                               | 
-| Missing | RIF40_PARAMETERS.PARAM_DESCRIPTION                          | NULL     | VARCHAR2(250)    | Resolve with Postgres           |                               |    
-| Missing | T_RIF40_CONTEXTUAL_STATS.TOTAL_COMPARISION_POPULATION       | NULL     | NUMBER(38,6)     | Fix Postgres spelling           |                                          | 
-
-* Fix NULL/NOT NULL issues in postgres_diff_report.txt
-* Check Postgres alter 1-8 for minor changes
 
 Peter Hambly
 2nd March 2017
