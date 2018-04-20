@@ -72,7 +72,7 @@ public final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
 		ResultSet getAgeIDResultSet = null;
 		PreparedStatement getAgesForAgeGroupStatement = null;
 		ResultSet getAgesForAgeGroupResultSet = null;
-		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();		
+		List<AgeGroup> results = new ArrayList<>();
 		try {
 
 			//Create query
