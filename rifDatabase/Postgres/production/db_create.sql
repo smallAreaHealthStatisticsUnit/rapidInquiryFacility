@@ -627,7 +627,7 @@ BEGIN
 				c2_rec.usename;	
 		ELSIF c4_rec.rolpassword != c4_rec.password THEN
 			RAISE INFO 'rolpassword: "%"', c4_rec.rolpassword;
-			RAISE INFO 'password:    "%"', c4_rec.password;
+			RAISE INFO 'password(%):    "%"', u_pass, c4_rec.password;
 			RAISE EXCEPTION 'db_create.sql() C209xx: User account: % password (%) would change; set password correctly', c2_rec.usename, u_pass;		
 		ELSE
 			RAISE NOTICE 'db_create.sql() C209xx: User account: % password is unchanged', 
@@ -891,27 +891,31 @@ BEGIN
 --
 -- RIF40 grants
 --	
-	sql_stmt:='GRANT ALL ON DATABASE sahsuland to rif40';
+	sql_stmt:='GRANT ALL ON DATABASE '||CURRENT_SETTING('rif40.newdb')||' to rif40';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
 	sql_stmt:='REVOKE CREATE ON SCHEMA public FROM rif40';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
 --
-	sql_stmt:='GRANT CONNECT ON DATABASE sahsuland to '||u_name;
+	sql_stmt:='GRANT CONNECT ON DATABASE '||CURRENT_SETTING('rif40.newdb')||' to '||u_name;
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
+
+	sql_stmt:='CREATE SCHEMA IF NOT EXISTS '||u_name||' AUTHORIZATION '||u_name;
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;	
 --
 -- Set default search pathname
 --
-	sql_stmt:='ALTER DATABASE sahsuland SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions';
+	sql_stmt:='ALTER DATABASE '||CURRENT_SETTING('rif40.newdb')||' SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions';
 	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
 	EXECUTE sql_stmt;
 END;
 $$;
 \set echo ALL
 --
--- End transaction 2: sahsuland build
+-- End transaction 2: newdb build
 --
 END;
 

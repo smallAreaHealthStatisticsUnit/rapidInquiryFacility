@@ -34,14 +34,14 @@ The new V4.0 RIF uses either Postgres or Microsoft SQL server as a database back
 WARNING: The RIF requires Postgres 9.3 or above to work. 9.1 and 9.2 will not work. In particular PL/pgsql GET STACKED DIAGNOSTICS is used which 
 is a post 9.2 option. It has *NOT* yet been tested on Postgres 10.
 
-It is possible to insstall Windows Postgres RIF using pg_dump and scripts. This could also be used for MacOS and Linux with shell scripts instead.
+It is possible to install Windows Postgres RIF using pg_dump and scripts. This could also be used for MacOS and Linux with shell scripts instead.
 
 * Uses *pg_dump* and Powershell
 * Does **NOT** need *make* or *Node.js* 
 
 See: [Windows Postgres Install using pg_dump and scripts](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/docs/windows_install_from_pg_dump.md)
 
-The database build creates the production database dumnp file ```sahsuland.sql``` is present in *rapidInquiryFacility\rifDatabase\Postgres\production* used to create production databases.
+The database build creates the production database dump file ```sahsuland.dump``` is present in *rapidInquiryFacility\rifDatabase\Postgres\production* used to create production databases.
 
 ## 1.1 Memory Requirements
  
@@ -53,7 +53,7 @@ Approximately:
 * The Middleware 2-3GB;
 * The front end 1-2GB.
  
-16GB recommanded. If you process large geographies using the Node.js tilemaker 48-64GB is recommended.
+16GB recommended. If you process large geographies using the Node.js tilemaker 48-64GB is recommended.
 
 # 2. Postgres Setup
 
@@ -66,9 +66,9 @@ Postgres is usually setup in one of four ways:
 * 4 Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for 
     psql and secure LDAP for Java connectivity.
 
-The front and and middleware requirew username and password authentications; so method 4 must not be used.
+The front and and middleware require username and password authentications; so method 4 must not be used.
   
-Postgres also can proxy users (see ident.conf examples in the bottom of the buuild notes. 
+Postgres also can proxy users (see ident.conf examples in the bottom of the build notes. 
 Typically this is used to allow remote postgres administrator user authentication and to logon as the schema owner (rif40).
 
 ## 2.1 Database Development Environment
@@ -767,6 +767,8 @@ findstr "#-" Makefile
  
 #### 2.3.2.4 Configuration File Examples
 
+If you are running locally only (e.g. on a laptop) you do *NOT* need to edit the configuration files.
+
 ##### 2.3.2.4.1 Postgres user password file
 
 Postgres user password files are located in:
@@ -791,7 +793,7 @@ wpea-rif1:5432:*:pch: XXXXXXX
 
 ##### 2.3.2.4.2 Authentication Setup (hba.conf)
 
-You **MUST** read the Postgres manuls before editing this file.
+You **MUST** read the Postgres manuals before editing this file.
 
 Fields separated by TAB.
 
@@ -959,7 +961,7 @@ hostssl	traffic		all	 	146.179.138. xxx	255.255.255.255	sspi
 
 ##### 2.3.2.4.3 Proxy User Setup (ident.conf)
 
-You **MUST** read the Postgres manuls before editing this file.
+You **MUST** read the Postgres manuals before editing this file.
 
 One line per per system user and map, fields separated by TAB in the order:
 
