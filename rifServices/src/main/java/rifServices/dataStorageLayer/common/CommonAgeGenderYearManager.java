@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer.pg;
+package rifServices.dataStorageLayer.common;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,41 +22,55 @@ import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
+import rifServices.dataStorageLayer.ms.MSSQLAbstractSQLManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
+public final class CommonAgeGenderYearManager extends MSSQLAbstractSQLManager
 		implements AgeGenderYearManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	
+	public static final String SCHEMA_PREFIX_STRING = "rif40.";
+
 	/** The sql rif context manager. */
 	private RIFContextManager sqlRIFContextManager;
+	private final boolean prefixSchemaName;
+	private final String tablesTableName;
 
 	/**
-	 * Instantiates a new SQL age gender year manager.
-	 *
 	 * @param sqlRIFContextManager the sql rif context manager
+	 * @param options the {@link RIFServiceStartupOptions}
+	 * @param includeSchemaPrefix whether or not the DB schema name should be prefixed to table
+	 * names, etc.
 	 */
-	public PGSQLAgeGenderYearManager(final RIFContextManager sqlRIFContextManager,
-			final RIFServiceStartupOptions options) {
-		
+	public CommonAgeGenderYearManager(final RIFContextManager sqlRIFContextManager,
+			final RIFServiceStartupOptions options, final boolean includeSchemaPrefix) {
+
 		super(options);
 		this.sqlRIFContextManager = sqlRIFContextManager;
+		prefixSchemaName  = includeSchemaPrefix;
+		tablesTableName = (prefixSchemaName() ? SCHEMA_PREFIX_STRING : "") + "rif40_tables";
 	}
 
+	/**
+	 * Gets the age groups.
+	 *
+	 * @param connection the connection
+	 * @param geography the geography
+	 * @param ndPair the nd pair
+	 * @param sortingOrder the sorting order
+	 * @return the age groups
+	 * @throws RIFServiceException the RIF service exception
+	 */
 	@Override
-	public List<AgeGroup> getAgeGroups(
-			final User user,
-			final Connection connection,
-			final Geography geography,
-			final NumeratorDenominatorPair ndPair,
-			final AgeGroupSortingOption sortingOrder)
-		throws RIFServiceException {
+	public List<AgeGroup> getAgeGroups(final User user, final Connection connection,
+			final Geography geography, final NumeratorDenominatorPair ndPair,
+			final AgeGroupSortingOption sortingOrder) throws RIFServiceException {
 				
 		//Validate parameters
-		validateCommonMethodParameters(user,
+		validateCommonMethodParameters(
+			user,
 			connection,
 			geography,
 			ndPair);
@@ -65,7 +79,7 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 		ResultSet getAgeIDResultSet = null;
 		PreparedStatement getAgesForAgeGroupStatement = null;
 		ResultSet getAgesForAgeGroupResultSet = null;
-		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();		
+		List<AgeGroup> results = new ArrayList<>();
 		try {
 
 			//Create query
@@ -75,7 +89,8 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 
 			sqlRIFContextManager.configureQueryFormatterForDB(getAgeIDQueryFormatter);
 			getAgeIDQueryFormatter.addSelectField("age_group_id");
-			getAgeIDQueryFormatter.addFromTable("rif40_tables");
+
+			getAgeIDQueryFormatter.addFromTable(tablesTableName);
 			getAgeIDQueryFormatter.addWhereParameter("table_name");
 			getAgeIDQueryFormatter.addWhereParameter("isnumerator");
 			
@@ -112,13 +127,7 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 			else {
 				ageGroupID = getAgeIDResultSet.getInt(1);
 			}
-			
-			if (ageGroupID == null) {
-				
-				connection.commit();
-				return results;
-			}
-		
+
 			//Step II: Obtain the list of age groups that are appropriate
 			//for the age group ID associated with the numerator table
 			//The age group id helps group together age groups based on different
@@ -134,30 +143,31 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 			getAgesForAgeGroupID.addSelectField("low_age");
 			getAgesForAgeGroupID.addSelectField("high_age");
 			getAgesForAgeGroupID.addSelectField("fieldname");
-			getAgesForAgeGroupID.addFromTable("rif40_age_groups");
+			String ageGroupsTableName =
+					(prefixSchemaName() ? SCHEMA_PREFIX_STRING : "") + "rif40_age_groups";
+			getAgesForAgeGroupID.addFromTable(ageGroupsTableName);
 			getAgesForAgeGroupID.addWhereParameter("age_group_id");
 		
 			if ((sortingOrder == null) ||
 				(sortingOrder == AgeGroupSortingOption.ASCENDING_LOWER_LIMIT)) {
 				getAgesForAgeGroupID.addOrderByCondition(
-					"low_age",
-					SelectQueryFormatter.SortOrder.ASCENDING);
+						"low_age", SelectQueryFormatter.SortOrder.ASCENDING);
 			}
 			else if (sortingOrder == AgeGroupSortingOption.DESCENDING_LOWER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
-					"low_age",
-					SelectQueryFormatter.SortOrder.DESCENDING);
+						"low_age",
+						SelectQueryFormatter.SortOrder.DESCENDING);
 			}
 			else if (sortingOrder == AgeGroupSortingOption.ASCENDING_UPPER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
-					"high_age",
-					SelectQueryFormatter.SortOrder.ASCENDING);
+						"high_age",
+						SelectQueryFormatter.SortOrder.ASCENDING);
 			}
 			else {
 				//it must be descending lower limit.		
 				getAgesForAgeGroupID.addOrderByCondition(
-					"high_age",
-					SelectQueryFormatter.SortOrder.DESCENDING);
+						"high_age",
+						SelectQueryFormatter.SortOrder.DESCENDING);
 				assert sortingOrder == AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
 			}
 			
@@ -197,7 +207,7 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 				getClass(),
 				errorMessage, 
 				sqlException);
-			
+
 			throw new RIFServiceException(
 				RIFServiceError.DATABASE_QUERY_FAILED,
 				errorMessage);
@@ -212,7 +222,12 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 		return results;		
 	}
 	
-	@Override
+	/**
+	 * Gets the genders.
+	 *
+	 * @return the genders
+	 * @throws RIFServiceException the RIF service exception
+	 */
 	public ArrayList<Sex> getGenders()
 		throws RIFServiceException {
 		
@@ -225,13 +240,23 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 	}
 	
 	
+	/**
+	 * Gets the year range.
+	 *
+	 * @param connection the connection
+	 * @param geography the geography
+	 * @param ndPair the nd pair
+	 * @return the year range
+	 * @throws RIFServiceException the RIF service exception
+	 */
 	@Override
 	public YearRange getYearRange(final User user, final Connection connection,
 			final Geography geography, final NumeratorDenominatorPair ndPair)
 			throws RIFServiceException {
 		
 		//Validate parameters
-		validateCommonMethodParameters(user,
+		validateCommonMethodParameters(
+			user,
 			connection,
 			geography,
 			ndPair);
@@ -246,7 +271,7 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 			sqlRIFContextManager.configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("year_start");
 			queryFormatter.addSelectField("year_stop");
-			queryFormatter.addFromTable("rif40_tables");
+			queryFormatter.addFromTable(tablesTableName);
 			queryFormatter.addWhereParameter("table_name");
 			
 			sqlRIFContextManager.logSQLQuery(
@@ -314,7 +339,7 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 				getClass(),
 				errorMessage, 
 				sqlException);
-
+			
 			throw new RIFServiceException(
 				RIFServiceError.DATABASE_QUERY_FAILED,
 				errorMessage);
@@ -325,7 +350,13 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 			SQLQueryUtility.close(resultSet);
 		}
 	}
-	
+
+	@Override
+	public boolean prefixSchemaName() {
+
+		return prefixSchemaName;
+	}
+
 	/**
 	 * Validate common method parameters.
 	 *
@@ -349,18 +380,14 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 		}
 		if (ndPair != null) {
 			ndPair.checkErrors(validationPolicy);
-			sqlRIFContextManager.checkNDPairExists(user,
-				connection, 
-				geography,
-				ndPair);			
+			sqlRIFContextManager.checkNDPairExists(user, connection, geography, ndPair);
 		}
 	}
 
-	@Override
 	public void checkNonExistentAgeGroups(
-			final Connection connection,
-			final NumeratorDenominatorPair ndPair,
-			final ArrayList<AgeBand> ageBands)
+		final Connection connection,
+		final NumeratorDenominatorPair ndPair,
+		final ArrayList<AgeBand> ageBands) 
 		throws RIFServiceException {
 			
 		for (AgeBand ageBand : ageBands) {
@@ -393,6 +420,7 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 			//Create query
 			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
 					rifServiceStartupOptions.getRifDatabaseType(), false);
+			queryFormatter.setDatabaseSchemaName("rif40");
 			queryFormatter.addSelectField("fieldname");
 			queryFormatter.addFromTable("rif40_age_groups");
 			queryFormatter.addFromTable("rif40_tables");
@@ -476,7 +504,7 @@ public final class PGSQLAgeGenderYearManager extends PGSQLAbstractSQLManager
 				getClass(),
 				errorMessage, 
 				sqlException);
-			
+
 			throw new RIFServiceException(
 				RIFServiceError.DATABASE_QUERY_FAILED,
 				errorMessage);

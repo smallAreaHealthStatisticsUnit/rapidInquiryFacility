@@ -13,8 +13,6 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
-import rifServices.dataStorageLayer.ms.MSSQLAgeGenderYearManager;
-import rifServices.dataStorageLayer.pg.PGSQLAgeGenderYearManager;
 import rifServices.system.RIFServiceStartupOptions;
 
 public interface AgeGenderYearManager extends SQLManager {
@@ -25,9 +23,9 @@ public interface AgeGenderYearManager extends SQLManager {
 		switch (options.getRifDatabaseType()) {
 
 			case POSTGRESQL:
-				return new PGSQLAgeGenderYearManager(contextManager, options);
+				return new CommonAgeGenderYearManager(contextManager, options, false);
 			case SQL_SERVER:
-				return new MSSQLAgeGenderYearManager(contextManager, options);
+				return new CommonAgeGenderYearManager(contextManager, options, true);
 			case UNKNOWN:
 			default:
 				throw new IllegalStateException("AgeGenderYearManager.getInstance: Unknown "
@@ -75,4 +73,11 @@ public interface AgeGenderYearManager extends SQLManager {
 			NumeratorDenominatorPair ndPair,
 			ArrayList<AgeBand> ageBands)
 			throws RIFServiceException;
+
+	/**
+	 * Indicates that the schema name should be prefixed to references to tables, etc.
+	 *
+	 * @return true if the schema should be prefixed
+	 */
+	boolean prefixSchemaName();
 }
