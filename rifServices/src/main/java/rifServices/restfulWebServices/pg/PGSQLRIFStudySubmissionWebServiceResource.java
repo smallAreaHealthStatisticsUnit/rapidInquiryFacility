@@ -35,7 +35,6 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.Sex;
-import rifServices.restfulWebServices.WebService;
 import rifServices.restfulWebServices.AgeGroupJSONGenerator;
 import rifServices.restfulWebServices.CalculationMethodProxy;
 import rifServices.restfulWebServices.CovariateProxy;
@@ -45,6 +44,7 @@ import rifServices.restfulWebServices.HealthThemeProxy;
 import rifServices.restfulWebServices.ParameterProxy;
 import rifServices.restfulWebServices.ProjectProxy;
 import rifServices.restfulWebServices.SexesProxy;
+import rifServices.restfulWebServices.WebService;
 import rifServices.restfulWebServices.WebServiceResponseGenerator;
 import rifServices.system.RIFServiceMessages;
 
