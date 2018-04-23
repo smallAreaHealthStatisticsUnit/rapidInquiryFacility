@@ -1337,19 +1337,28 @@ This setup will support:
    
 2. Create and test a system ODBC datasource 
 
-   * For Postgres if you did not install it using stackbuilder, install the latest driver from https://www.postgresql.org/ftp/odbc/versions/msi/
-   * Using "control panel", "administrative tools", "ODBC Data Sources(64 bit)", right click "run as ADminstrator" for the database in use; the default is:
-   * Create a ODBC system using using the "system" tab and "Add". The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=PostgreSQL35W```; so   
-     the name is *PostgreSQL35W*. For Postgres chose the Unicode driver and fill in the database, server, host, port, RIF username and password (the password is not used in  the R):
-	 
-     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_setup.png?raw=true "ODBC setup")
-	
-   * For Postgres, select the datasource tab and set *Max Varchar* and *Max Long Varchar* to 8190.
+   * Using "control panel", "administrative tools", "ODBC Data Sources(64 bit)", right click "run as Adminstrator" for the database in use
    
-     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_options.png?raw=true "ODBC options")
+     2.1 Postgres
+	 
+         * If you did not install it using stackbuilder, install the latest driver from https://www.postgresql.org/ftp/odbc/versions/msi/
+         * Create a ODBC system using using the "system" tab and "Add". The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=PostgreSQL35W```; so   
+           the name is *PostgreSQL35W*. For Postgres chose the Unicode driver and fill in the database, server, host, port, RIF username and password (the password is not used in  the R):
+	 
+           ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_setup.png?raw=true "ODBC setup")
+	
+         * Select the datasource tab and set *Max Varchar* and *Max Long Varchar* to 8190.
+   
+          ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_options.png?raw=true "ODBC options")
   
-   * For SQL Server use SQL Server Native Client version 11, 2011 version or later; 
-   * Test it!
+     2.2 Postgres SQL Server
+  
+         * For  use SQL Server Native Client version 11, 2011 version or later; 
+		 * If you get [SQL Server ODBC Connection Errors](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#4410-sql-server-odbc-conon-errors)
+           ; see: ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup")
+		 
+   * Make sure you test the ODBC connection using the RIF user username and password.!
+
 
 3. Start *R* in an Administrator command window and run the following script:
 
@@ -1766,7 +1775,7 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.162-b12, mixed mode)
 In the case the initial size is 192M and the maximum heap size is 3040M. In the tomcat configurator 8romcat8w* the maximum memory size on the Java pane is 256M, 
 increase this to a much larger value less than the maximum, at least 2048M. Restart the tomcat service.
 
-### 4.8.9 Study extracts but R does not run
+### 4.4.9 Study extracts but R does not run
 
 * User gets study is now running, but nothing every happens;
 * The RIF is unresponsively; reloading the RIF fails with the server not responding: "Firefox csan't establish a connect to serfver at localhost:8080
@@ -1777,7 +1786,19 @@ Restarting the server using ```catalina.bat run``` and re-running the study resu
 See:
 
 * [jri.dll: Can't find dependent libraries](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
-   
+
+### 4.4.10 SQL Server ODBC Connection Errors
+  
+Symptoms: when creating a SQL SErver ODBC connection:
+
+* No items in connections list - ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_list.png?raw=true "SQL Server ODBC No Connection List")
+* ODBC error in connection test - ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_error.png?raw=true "SQL Server ODBC Connection Error")
+
+Resolution:
+
+a) Check TCP/IP connections to the database are permitted
+b) Check your firewal/other security software is permitting access to ? port ?
+  
 # 5. Running the RIF
 
 * Make sure you have restarted tomcat before attempting to run the RIF for the first time
