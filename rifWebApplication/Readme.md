@@ -1136,6 +1136,12 @@ database.host=localhost\\SQLEXPRESS
 database.port=1433
 database.databaseName=sahsuland
 database.databaseType=sqlServer
+
+#
+# Set the ODBC data source. These are current for Postgres 9.4-6 and SQL Server 2016/7
+#odbcDataSourceName=PostgreSQL35W
+odbcDataSourceName=SQLServer13
+
 ```
 
 ### 4.1.2 Postgres
@@ -1150,6 +1156,11 @@ database.host=localhost
 database.port=5432
 database.databaseName=sahsuland
 database.databaseType=postgresql
+
+#
+# Set the ODBC data source. These are current for Postgres 9.4-6 and SQL Server 2016/7
+odbcDataSourceName=PostgreSQL35W
+#odbcDataSourceName=SQLServer13
 ```
 
 **BEWARE** Make sure you keep a copy of this file; a RIF services upgrade will overwrite it.
@@ -1362,9 +1373,27 @@ Create and test a system ODBC datasource
 
 2 SQL Server
 
-* Use SQL Server Native Client version 11, 2011 version or later; ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup")
-* If you cannot see and SQL Server databases in the list or get SQL SErver connection errors on test see:
-  [SQL Server ODBC Connection Errors](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#4410-sql-server-odbc-conon-errors)
+* Use SQL Server Native Client version 11, 2011 version or later; 
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup").
+  
+  The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=SQLServer13```; so   
+  the name is *SQLServer13*. 
+  
+  1. Choose server. Normally you have to type in the host name as discovery will be turned off by default. You may need append "tcp:" to the hostname to force the use of 
+     TCP/IP:
+  
+     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup.png?raw=true "SQL Server ODBC Setup 1").
+	
+  2. Set the connection type to SQL Server authentication using a login and password. Make sure you supply the login and password.
+	
+	 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup2.png?raw=true "SQL Server ODBC Setup 2").
+	
+  3. Change the database to your database name (e.g. *sahsuland*)
+  
+     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup3.png?raw=true "SQL Server ODBC Setup 3").
+
+* If you cannot see a SQL Server database list (you will get an error when SQL server tries to build a list) or get SQL Server connection errors on test see:
+  [SQL Server ODBC Connection Errors](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#4410-sql-server-odbc-connection-errors)
 	 
 * Make sure you test the ODBC connection using the RIF user username and password.!
 
@@ -1537,16 +1566,17 @@ The downloaded binary packages are in
    
 ## 4.4 Common Setup Errors
 
-A errors are to be found in the $CATALINA_BASE/logs directory, e.g.: *C:\Program Files\Apache Software Foundation\Tomcat 8.5\logs\tomcat8-stderr.2017-04-10.log*
+The RIF middleware now uses Log4j version 2 for logging. The configuration file *log4j2.xml* (example in: 
+*%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml*) sets up five loggers:
+  
+  1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
+  2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the *rifServices* middleware: RIF_middleware.log
+  3. The taxonomy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the *taxonomyServices* middleware: TaxonomyLogger.log
+  4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the *rifServices* front end logger: FrontEndLogger.log
+  5. "Other" for all other logger output not the above: Other.log
 
-```
-10-Apr-2017 13:45:12.240 SEVERE [main] org.apache.tomcat.util.net.SSLUtilBase.getStore Failed to load keystore type [JKS] with path [conf/localhost-rsa.jks] due to [C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks (The system cannot find the file specified)]
-```
-
-If the RIF is started as per these instructions, the *tomcat* output trace will appear in 
-*tomcat8-stdout.<date in format YYYY-MM-DD>*.
-
-If it does not, check the tomcat service setup.
+When run from catalina.bat all tomcat output appears in the console window. When run as a service tomcat logs to: 
+commons-daemon.<date e.g., 2018-04-16>.log, tomcat8-stderr.<date e.g., 2018-04-16>.log, tomcat8-stdout.<date e.g., 2018-04-16>.log instead of to the console
 
 ### 4.4.1 Logon RIF Service Call Incorrect
 
@@ -1800,16 +1830,70 @@ See:
 * [jri.dll: Can't find dependent libraries](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 ### 4.4.10 SQL Server ODBC Connection Errors
+
+Symptoms: when creating a SQL Server ODBC connection:
+
+* No items in database list.
+
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_databases.png?raw=true "SQL Server ODBC No database List")
   
-Symptoms: when creating a SQL SErver ODBC connection:
+* ODBC error in connection test. 
 
-* No items in connections list - ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_list.png?raw=true "SQL Server ODBC No Connection List")
-* ODBC error in connection test - ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_error.png?raw=true "SQL Server ODBC Connection Error")
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_error.png?raw=true "SQL Server ODBC Connection Error")
+  
+* No items in database list is a symptom of no discovery services and is not an error. Type in your *hostname* manually.
 
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_list.png?raw=true "SQL Server ODBC No connection List")
+  
+**Tip:** type *hostname* for your TCP/IP hostname. This is not normally a fully qualified domain name (i.e. will only work locally)
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>hostname
+DESKTOP-4P2SA80
+```
+  
 Resolution:
 
-a) Check TCP/IP connections to the database are permitted
-b) Check your firewal/other security software is permitting access to ? port ?
+a) Check TCP/IP connections to the database are permitted;
+b) Check your firewall/other security software is permitting access to your server host port 1433/1434.
+
+* Check if remote access is enabled (it should be) using SQL Server Management Studio as administrator: https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx
+* Check TCP access is enabled using SQL Server Configuration Manager as administrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
+  If when you open SQL Server Configuration Manager in SQL Server you get the following error: "Cannot connect to WMI provider. You do not have permission or the server is unreachable"; see:
+  (https://support.microsoft.com/en-us/help/956013/error-message-when-you-open-sql-server-configuration-manager-in-sql-se). Make sure you set number to the highest version present in the directory: 
+
+  ```mofcomp "%programfiles(x86)%\Microsoft SQL Server\**&lt;number&gt;**\Shared\sqlmgmproviderxpsp2up.mof"```
+  e.g.   
+  ```
+	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>mofcomp "%programfiles(x86)%\Microsoft SQL Server\140\Shared\sqlmgmprovid
+	erxpsp2up.mof"
+	Microsoft (R) MOF Compiler Version 6.3.9600.16384
+	Copyright (c) Microsoft Corp. 1997-2006. All rights reserved.
+	Parsing MOF file: C:\Program Files (x86)\Microsoft SQL Server\140\Shared\sqlmgmproviderxpsp2up.mof
+	MOF file has been successfully parsed
+	Storing data in the repository...
+	Done!
+  ```
+* Check the SQL server port (1433) is listening on TCP/IP for both localhost internal machine connections [::1 and 127.0.0.1:] and if required for network connections 
+  ```C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>netstat -an | findstr "143[34]"
+	  TCP    0.0.0.0:1433           0.0.0.0:0              LISTENING
+	  TCP    127.0.0.1:1434         0.0.0.0:0              LISTENING
+	  TCP    129.31.247.202:60396   129.31.247.202:1433    TIME_WAIT
+	  TCP    192.168.1.101:60392    192.168.1.101:1433     TIME_WAIT
+	  TCP    192.168.1.101:60397    192.168.1.101:1433     TIME_WAIT
+	  TCP    [::]:1433              [::]:0                 LISTENING
+	  TCP    [::1]:1434             [::]:0                 LISTENING
+	  TCP    [2001:0:4137:9e76:2464:202e:7ee0:835]:60398  [2001:0:4137:9e76:2464:202e:7ee0:835]:1433  TIME_WAIT
+	  TCP    [fe80::2464:202e:7ee0:835%3]:1433  [fe80::2464:202e:7ee0:835%3]:60395  ESTABLISHED
+	  TCP    [fe80::2464:202e:7ee0:835%3]:60395  [fe80::2464:202e:7ee0:835%3]:1433  ESTABLISHED
+  ```
+  If it is then the first two points have worked and you have a firewall issue!
+* Check your firewall permits access to TCP port 1433. **Be careful _not_ to allow Internet access unless you intend it.**
+* The following is more helpful than the official Microsoft manuals: https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/
+* Check you can connect using *sqlcmd -U **&lt;your username&gt;** -P **&lt;your password&gt;** -S tcp:**&lt;your hostname&gt;**```:
+  ```
+  C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>sqlcmd -U peter -P XXXXXXXXXXXX -S tcp:DESKTOP-4P2SA80
+  1>
+  ```
   
 # 5. Running the RIF
 

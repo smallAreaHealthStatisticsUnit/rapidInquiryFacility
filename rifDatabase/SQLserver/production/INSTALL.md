@@ -14,6 +14,7 @@ SQL Server Production Database Installation
    - [4.1 Creating The Database](#41-creating-the-database)
    - [4.2 Creating a New User](#42-creating-a-new-user)
    - [4.3 Testing The Database](#43-testing-the-database)
+- [5. Tuning](#5-tuning)   
 
 # 1. Install SQL Server
 
@@ -893,3 +894,6 @@ SAHSULAND                                          NUM_SAHSULAND_CANCER         
 1>
 ```
 
+# 5 Tuning
+
+To be added.
