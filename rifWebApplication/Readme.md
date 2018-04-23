@@ -1136,6 +1136,12 @@ database.host=localhost\\SQLEXPRESS
 database.port=1433
 database.databaseName=sahsuland
 database.databaseType=sqlServer
+
+#
+# Set the ODBC data source. These are current for Postgres 9.4-6 and SQL Server 2016/7
+#odbcDataSourceName=PostgreSQL35W
+odbcDataSourceName=SQLServer13
+
 ```
 
 ### 4.1.2 Postgres
@@ -1150,6 +1156,11 @@ database.host=localhost
 database.port=5432
 database.databaseName=sahsuland
 database.databaseType=postgresql
+
+#
+# Set the ODBC data source. These are current for Postgres 9.4-6 and SQL Server 2016/7
+odbcDataSourceName=PostgreSQL35W
+#odbcDataSourceName=SQLServer13
 ```
 
 **BEWARE** Make sure you keep a copy of this file; a RIF services upgrade will overwrite it.
@@ -1362,7 +1373,13 @@ Create and test a system ODBC datasource
 
 2 SQL Server
 
-* Use SQL Server Native Client version 11, 2011 version or later; ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup")
+* Use SQL Server Native Client version 11, 2011 version or later; 
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup").
+  The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=SQLServer13```; so   
+  the name is *SQLServer13*. 
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup.png?raw=true "SQL Server ODBC Setup 1").
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup2.png?raw=true "SQL Server ODBC Setup 2").
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup3.png?raw=true "SQL Server ODBC Setup 3").
 * If you cannot see and SQL Server databases in the list or get SQL SErver connection errors on test see:
   [SQL Server ODBC Connection Errors](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#4410-sql-server-odbc-conon-errors)
 	 
@@ -1810,8 +1827,8 @@ Symptoms: when creating a SQL SErver ODBC connection:
 
 Resolution:
 
-a) Check TCP/IP connections to the database are permitted
-b) Check your firewall/other security software is permitting access to your server host port 14332
+a) Check TCP/IP connections to the database are permitted;
+b) Check your firewall/other security software is permitting access to your server host port 1433/1434.
 
 * Check if remote access is enabled (it should be) using SQL Server Management Studio as administrator: https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx
 * Check TCP access is enabled using SQL Server Configuration Manager as administrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
@@ -1830,8 +1847,27 @@ b) Check your firewall/other security software is permitting access to your serv
 	Storing data in the repository...
 	Done!
   ```
+* Check the SQL server port (1433) is listening on TCP/IP for both localhost internal machine connections [::1 and 127.0.0.1:] and if required for network connections 
+  ```C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>netstat -an | findstr "143[34]"
+	  TCP    0.0.0.0:1433           0.0.0.0:0              LISTENING
+	  TCP    127.0.0.1:1434         0.0.0.0:0              LISTENING
+	  TCP    129.31.247.202:60396   129.31.247.202:1433    TIME_WAIT
+	  TCP    192.168.1.101:60392    192.168.1.101:1433     TIME_WAIT
+	  TCP    192.168.1.101:60397    192.168.1.101:1433     TIME_WAIT
+	  TCP    [::]:1433              [::]:0                 LISTENING
+	  TCP    [::1]:1434             [::]:0                 LISTENING
+	  TCP    [2001:0:4137:9e76:2464:202e:7ee0:835]:60398  [2001:0:4137:9e76:2464:202e:7ee0:835]:1433  TIME_WAIT
+	  TCP    [fe80::2464:202e:7ee0:835%3]:1433  [fe80::2464:202e:7ee0:835%3]:60395  ESTABLISHED
+	  TCP    [fe80::2464:202e:7ee0:835%3]:60395  [fe80::2464:202e:7ee0:835%3]:1433  ESTABLISHED
+  ```
+  If it is then the first two points have worked and you have a firewall issue!
 * Check your firewall permits access to TCP port 1433. **Be careful _not_ to allow Internet access unless you intend it.**
 * The following is more helpful than the official Microsoft manuals: https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/
+* Check you can connect using *sqlcmd -U **&lt;your username&gt;** -P **&lt;your password&gt;** -S tcp:**&lt;your hostname&gt;**```:
+  ```
+  C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>sqlcmd -U peter -P XXXXXXXXXXXX -S tcp:DESKTOP-4P2SA80
+  1>
+  ```
   
 # 5. Running the RIF
 
