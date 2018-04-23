@@ -1375,6 +1375,7 @@ Create and test a system ODBC datasource
 
 * Use SQL Server Native Client version 11, 2011 version or later; 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup").
+  
   The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=SQLServer13```; so   
   the name is *SQLServer13*. 
   
@@ -1392,7 +1393,7 @@ Create and test a system ODBC datasource
      ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup3.png?raw=true "SQL Server ODBC Setup 3").
 
 * If you cannot see a SQL Server database list (you will get an error when SQL server tries to build a list) or get SQL Server connection errors on test see:
-  [SQL Server ODBC Connection Errors](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#4410-sql-server-odbc-conon-errors)
+  [SQL Server ODBC Connection Errors](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#4410-sql-server-odbc-connection-errors)
 	 
 * Make sure you test the ODBC connection using the RIF user username and password.!
 
@@ -1833,8 +1834,10 @@ Symptoms: when creating a SQL Server ODBC connection:
 
 * No items in database list - 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_databases.png?raw=true "SQL Server ODBC No database List")
+  
 * ODBC error in connection test - 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_error.png?raw=true "SQL Server ODBC Connection Error")
+  
 * No items in database list is a symptom of no discovery services and is not an error. Type in your *hostname* manually.
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_list.png?raw=true "SQL Server ODBC No connection List")
   
