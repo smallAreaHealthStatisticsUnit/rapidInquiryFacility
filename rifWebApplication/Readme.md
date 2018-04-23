@@ -30,6 +30,10 @@ RIF Web Application and Middleware Installation
    - [4.2 Setup Network](#42-setup-network)
      - [4.2.1 TLS](#421-tls)
    - [4.3 Setup R](#43-setup-r)
+     - [4.3.1 R and Printing Output Directories](#431-r-and-printing-output-directories)
+     - [4.3.2 R ODBC](#432-r-odbc)
+     - [4.3.3 R Packages](#433-r-packages)
+     - [4.3.4 R Environment](#434-r-environment)
    - [4.4 Common Setup Errors](#44-common-setup-errors)
      - [4.4.1 Logon RIF Service Call Incorrect](#441-logon-rif-service-call-incorrect)
      - [4.4.2 TLS Errors](#442-tls-errors)
@@ -1327,40 +1331,48 @@ This setup will support:
 - Safari 7 and later
 
 ## 4.3 Setup R
+
+### 4.3.1 R and Printing Output Directories
   
-1. Create directories for extract (extractDirectory) and policies (extraDirectoryForExtractFiles). The defaults in *RIFServiceStartupProperties.properties* are:
+Create directories for extract (extractDirectory) and policies (extraDirectoryForExtractFiles). The defaults in *RIFServiceStartupProperties.properties* are:
 
-   * Extract: ```extractDirectory=c:\\rifDemo\\scratchSpace```
-   * Policies: ```extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies```
+* Extract: ```extractDirectory=c:\\rifDemo\\scratchSpace```
+* Policies: ```extraDirectoryForExtractFiles=C:\\rifDemo\\generalDataExtractPolicies```
 
-   Grant appropriate read, write and execute access to these directories for Tomcat and SQL Server. Both normally run as the local administrator group: Administrators 
-   (e.g. DESKTOP-4P2SA80\Administrators) so you do not need to do anything, it is advised to grant access to your local user if you are on a development system.
-   
-2. Create and test a system ODBC datasource 
+Grant appropriate read, write and execute access to these directories for Tomcat and SQL Server. Both normally run as the local administrator group: Administrators 
+(e.g. DESKTOP-4P2SA80\Administrators) so you do not need to do anything, it is advised to grant access to your local user if you are on a development system.
+  
+### 4.3.2 R ODBC
+  
+Create and test a system ODBC datasource 
 
-   * Using "control panel", "administrative tools", "ODBC Data Sources(64 bit)", right click "run as Adminstrator" for the database in use
-   
-     2.1 Postgres
+* Using "control panel", "administrative tools", "ODBC Data Sources(64 bit)", right click "run as Adminstrator" for the database in use
+
+1 Postgres
+ 
+* If you did not install it using stackbuilder, install the latest driver from https://www.postgresql.org/ftp/odbc/versions/msi/
+* Create a ODBC system using using the "system" tab and "Add". The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=PostgreSQL35W```; so   
+  the name is *PostgreSQL35W*. For Postgres chose the Unicode driver and fill in the database, server, host, port, RIF username and password (the password is not used in  the R):
+ 
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_setup.png?raw=true "ODBC setup")
+
+* Select the datasource tab and set *Max Varchar* and *Max Long Varchar* to 8190.
+
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_options.png?raw=true "ODBC options")
+
+2 SQL Server
+
+* For  use SQL Server Native Client version 11, 2011 version or later; 
+* If you get 
+  [SQL Server ODBC Connection Errors](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#4410-sql-server-odbc-conon-errors); 
+  see: 
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup")
 	 
-     * If you did not install it using stackbuilder, install the latest driver from https://www.postgresql.org/ftp/odbc/versions/msi/
-     * Create a ODBC system using using the "system" tab and "Add". The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=PostgreSQL35W```; so   
-       the name is *PostgreSQL35W*. For Postgres chose the Unicode driver and fill in the database, server, host, port, RIF username and password (the password is not used in  the R):
-	 
-       ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_setup.png?raw=true "ODBC setup")
-	
-     * Select the datasource tab and set *Max Varchar* and *Max Long Varchar* to 8190.
-   
-      ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/ODBC_options.png?raw=true "ODBC options")
-  
-     2.2 SQL Server
-  
-     * For  use SQL Server Native Client version 11, 2011 version or later; 
-     * If you get [SQL Server ODBC Connection Errors](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#4410-sql-server-odbc-conon-errors); 
-       see: ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup")
-		 
-   * Make sure you test the ODBC connection using the RIF user username and password.!
+* Make sure you test the ODBC connection using the RIF user username and password.!
 
-3. Start *R* in an Administrator command window and run the following script:
+### 4.3.3 R Packages
+
+Start *R* in an Administrator command window and run the following script:
 
 ```R
 # CHECK & AUTO INSTALL MISSING PACKAGES
@@ -1476,9 +1488,11 @@ The downloaded binary packages are in
         C:\Users\admin\AppData\Local\Temp\RtmpSkeuRW\downloaded_packages
 ```
 
-4. Add R_HOME, e.g. *C:\Program Files\R\R-3.4.4* to the environment
+### 4.3.4 R Environment
 
-5. Add the 64bit JRI native library location and the R_HOME bin\x64 directory to the path
+1. Add R_HOME, e.g. *C:\Program Files\R\R-3.4.4* to the environment
+
+2. Add the 64bit JRI native library location and the R_HOME bin\x64 directory to the path
 
    To use R from Tomcat Java you will need to install JRI. Fortunately, JRI is now a part of rJava and is installed with it.
    JRI will require its own native shared library which is already installed with rJava. To locate JRI installed with 
