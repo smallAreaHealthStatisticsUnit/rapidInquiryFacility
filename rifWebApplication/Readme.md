@@ -1566,16 +1566,17 @@ The downloaded binary packages are in
    
 ## 4.4 Common Setup Errors
 
-A errors are to be found in the $CATALINA_BASE/logs directory, e.g.: *C:\Program Files\Apache Software Foundation\Tomcat 8.5\logs\tomcat8-stderr.2017-04-10.log*
+The RIF middleware now uses Log4j version 2 for logging. The configuration file *log4j2.xml* (example in: 
+*%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml*) sets up five loggers:
+  
+  1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
+  2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the *rifServices* middleware: RIF_middleware.log
+  3. The taxonomy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the *taxonomyServices* middleware: TaxonomyLogger.log
+  4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the *rifServices* front end logger: FrontEndLogger.log
+  5. "Other" for all other logger output not the above: Other.log
 
-```
-10-Apr-2017 13:45:12.240 SEVERE [main] org.apache.tomcat.util.net.SSLUtilBase.getStore Failed to load keystore type [JKS] with path [conf/localhost-rsa.jks] due to [C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks (The system cannot find the file specified)]
-```
-
-If the RIF is started as per these instructions, the *tomcat* output trace will appear in 
-*tomcat8-stdout.<date in format YYYY-MM-DD>*.
-
-If it does not, check the tomcat service setup.
+When run from catalina.bat all tomcat output appears in the console window. When run as a service tomcat logs to: 
+commons-daemon.<date e.g., 2018-04-16>.log, tomcat8-stderr.<date e.g., 2018-04-16>.log, tomcat8-stdout.<date e.g., 2018-04-16>.log instead of to the console
 
 ### 4.4.1 Logon RIF Service Call Incorrect
 

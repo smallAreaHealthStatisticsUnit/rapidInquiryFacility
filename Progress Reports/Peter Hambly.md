@@ -2155,6 +2155,12 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 * Configured tomcat on wsrifdb1;
 * wsrifdb1 is slow:
   * Network speed is around 10-20Mb/s (slower than my home broadband in rural Norfolk);
-  * test 1002 took 120.7 compared to 83.1 on my desktop;
+  * test 1002 took 120.7 compared to 83.1/37.6 on my desktop;
   * test 1003 took 281.1 compared to 167.1 on my desktop;
+  [Note: no server memory tuning. SQL Server uses 20-100x more memory]
 * SQL Server build and then install on wsrifdb2.
+* ODBC setup issues - fully documented
+* SQL Server build sahsuland OK, issues with installer sahsuland (no projects listed).
+* XXE Security Vulnerability (prohibit external file parsing raised.
+  https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/f75b538058fd43dc124660ad1bdf9290a259f23f/taxonomyServices/src/main/java/taxonomyServices/ICD10TaxonomyTermParser.java#L156
+  https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#JAXP_DocumentBuilderFactory.2C_SAXParserFactory_and_DOM4J
