@@ -28,7 +28,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class MSSQLCovariateManager extends AbstractSQLManager
+public final class MSSQLCovariateManager extends AbstractSQLManager
 		implements CovariateManager {
 	/** The sql rif context manager. */
 	private RIFContextManager sqlRIFContextManager;
@@ -223,7 +223,7 @@ final class MSSQLCovariateManager extends AbstractSQLManager
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
-				MSSQLCovariateManager.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);
 			
@@ -375,7 +375,7 @@ final class MSSQLCovariateManager extends AbstractSQLManager
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
-				MSSQLCovariateManager.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);
 			

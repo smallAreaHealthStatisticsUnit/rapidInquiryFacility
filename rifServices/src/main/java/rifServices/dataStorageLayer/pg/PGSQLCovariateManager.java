@@ -28,7 +28,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class PGSQLCovariateManager extends AbstractSQLManager implements CovariateManager {
+public final class PGSQLCovariateManager extends AbstractSQLManager implements CovariateManager {
 	
 	/** The sql rif context manager. */
 	private RIFContextManager sqlRIFContextManager;
@@ -206,7 +206,7 @@ final class PGSQLCovariateManager extends AbstractSQLManager implements Covariat
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
-				PGSQLCovariateManager.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);
 			
@@ -366,7 +366,7 @@ final class PGSQLCovariateManager extends AbstractSQLManager implements Covariat
 
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
-				PGSQLCovariateManager.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);
 
@@ -380,12 +380,4 @@ final class PGSQLCovariateManager extends AbstractSQLManager implements Covariat
 		}
 		
 	}
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

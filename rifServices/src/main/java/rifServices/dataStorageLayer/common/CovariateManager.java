@@ -10,8 +10,28 @@ import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.Investigation;
+import rifServices.dataStorageLayer.ms.MSSQLCovariateManager;
+import rifServices.dataStorageLayer.pg.PGSQLCovariateManager;
+import rifServices.system.RIFServiceStartupOptions;
 
 public interface CovariateManager extends SQLManager {
+
+	public static CovariateManager getInstance(final RIFServiceStartupOptions options,
+			final RIFContextManager sqlRIFContextManager) {
+
+		switch (options.getRifDatabaseType()) {
+
+			case POSTGRESQL:
+				return new PGSQLCovariateManager(options, sqlRIFContextManager);
+			case SQL_SERVER:
+				return new MSSQLCovariateManager(options, sqlRIFContextManager);
+			case UNKNOWN:
+			default:
+				throw new IllegalStateException("Unknown database type in "
+				                                + CovariateManager.class.getName());
+		}
+	}
+
 	/**
 	 * Gets the covariates for investigation.
 	 *
