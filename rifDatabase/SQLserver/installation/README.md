@@ -119,6 +119,21 @@ Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
     multiple installations of SQL server on the machine in the past, i.e. the *DefaultLocalInstance* registry key is wrong.
   * Check if remote access is enabled (it should be) using SQL Server Management Studio as administrator: https://msdn.microsoft.com/en-gb/library/ms191464(v=sql.120).aspx
   * Check TCP access is enabled using SQL Server Configuration Manager as administrator: https://msdn.microsoft.com/en-us/library/ms189083.aspx
+    If when you open SQL Server Configuration Manager in SQL Server you get the following error: "Cannot connect to WMI provider. You do not have permission or the server is unreachable"; see:
+    (https://support.microsoft.com/en-us/help/956013/error-message-when-you-open-sql-server-configuration-manager-in-sql-se). Make sure you set number to the highest version present in the directory: 
+
+    ```mofcomp "%programfiles(x86)%\Microsoft SQL Server\**&lt;number&gt;**\Shared\sqlmgmproviderxpsp2up.mof"```
+    e.g.   
+   ```
+	C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>mofcomp "%programfiles(x86)%\Microsoft SQL Server\140\Shared\sqlmgmprovid
+	erxpsp2up.mof"
+	Microsoft (R) MOF Compiler Version 6.3.9600.16384
+	Copyright (c) Microsoft Corp. 1997-2006. All rights reserved.
+	Parsing MOF file: C:\Program Files (x86)\Microsoft SQL Server\140\Shared\sqlmgmproviderxpsp2up.mof
+	MOF file has been successfully parsed
+	Storing data in the repository...
+	Done!
+    ```
   * Check your firewall permits access to TCP port 1433. **Be careful _not_ to allow Internet access unless you intend it.**
   * The following is more helpful than the official Microsoft manuals: https://blogs.msdn.microsoft.com/walzenbach/2010/04/14/how-to-enable-remote-connections-in-sql-server-2008/
 
