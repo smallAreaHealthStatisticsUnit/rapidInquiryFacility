@@ -1833,12 +1833,15 @@ See:
 Symptoms: when creating a SQL Server ODBC connection:
 
 * No items in database list.
+
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_databases.png?raw=true "SQL Server ODBC No database List")
   
 * ODBC error in connection test. 
+
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_error.png?raw=true "SQL Server ODBC Connection Error")
   
 * No items in database list is a symptom of no discovery services and is not an error. Type in your *hostname* manually.
+
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_list.png?raw=true "SQL Server ODBC No connection List")
   
 **Tip:** type *hostname* for your TCP/IP hostname. This is not normally a fully qualified domain name (i.e. will only work locally)
