@@ -40,6 +40,7 @@ RIF Web Application and Middleware Installation
 	 - [4.4.7 Tomcat service will not start](#447-tomcat-service-will-not-start)
 	 - [4.4.8 OutOfMemoryError: Java heap space](#448-outofmemoryerror-java-heap-space)
 	 - [4.8.9 Study extracts but R does not run](#489-study-extracts-but-r-does-not-run)
+	 - [4.4.10 SQL Server ODBC Connection Errors](#4410-sql server-odbc-connection-errors)
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
@@ -1358,7 +1359,6 @@ This setup will support:
            ; see: ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup")
 		 
    * Make sure you test the ODBC connection using the RIF user username and password.!
-
 
 3. Start *R* in an Administrator command window and run the following script:
 
