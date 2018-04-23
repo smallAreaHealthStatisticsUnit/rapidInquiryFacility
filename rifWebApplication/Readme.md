@@ -44,7 +44,7 @@ RIF Web Application and Middleware Installation
 	 - [4.4.7 Tomcat service will not start](#447-tomcat-service-will-not-start)
 	 - [4.4.8 OutOfMemoryError: Java heap space](#448-outofmemoryerror-java-heap-space)
 	 - [4.8.9 Study extracts but R does not run](#489-study-extracts-but-r-does-not-run)
-     - [4.4.10 SQL Server ODBC Connection Errors](#4410-sql server-odbc-connection-errors)
+     - [4.4.10 SQL Server ODBC Connection Errors](#4410-sql-server-odbc-connection-errors)
 - [ 5. Running the RIF](#5-running-the-rif)
    - [5.1 Logging On](#51-logging-on)
    - [5.2 Logon troubleshooting](#52-logon-troubleshooting)
@@ -1362,11 +1362,9 @@ Create and test a system ODBC datasource
 
 2 SQL Server
 
-* For  use SQL Server Native Client version 11, 2011 version or later; 
-* If you get 
-  [SQL Server ODBC Connection Errors](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#4410-sql-server-odbc-conon-errors); 
-  see: 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup")
+* Use SQL Server Native Client version 11, 2011 version or later; ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup")
+* If you cannot see and SQL Server databases in the list or get SQL SErver connection errors on test see:
+  [SQL Server ODBC Connection Errors](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#4410-sql-server-odbc-conon-errors)
 	 
 * Make sure you test the ODBC connection using the RIF user username and password.!
 
