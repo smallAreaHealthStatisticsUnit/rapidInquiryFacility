@@ -35,15 +35,18 @@ import rifServices.system.files.TomcatBase;
 import rifServices.system.files.TomcatFile;
 
 public abstract class AbstractSQLManager implements SQLManager {
-	
-	protected static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
+
+	static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 	private static final String ABSTRACT_SQLMANAGER_PROPERTIES = "AbstractSQLManager.properties";
 	private static final int MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD = 5;
 	private static final int POOLED_READ_ONLY_CONNECTIONS_PER_PERSON = 10;
 	private static final int POOLED_WRITE_CONNECTIONS_PER_PERSON = 5;
+	private static final String POSTGRES_INITIALISATION_QUERY =
+			"SELECT rif40_startup(?) AS rif40_init;";
+	private static final String MS_SQL_INITIALISATION_QUERY = "EXEC rif40.rif40_startup ?";
 
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
-	protected static final Set<String> registeredUserIDs = new HashSet<>();;
+	protected static final Set<String> registeredUserIDs = new HashSet<>();
 	protected static final Set<String> userIDsToBlock = new HashSet<>();;
 
 	protected static final Map<String, ConnectionQueue> readOnlyConnectionsFromUser
@@ -54,7 +57,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	protected final RIFServiceStartupOptions rifServiceStartupOptions;
 	private final String initialisationQuery;
 	private final String databaseURL;
-	protected final HashMap<String, String> passwordHashList;
+	private final HashMap<String, String> passwordHashList;
 
 	protected RIFDatabaseProperties rifDatabaseProperties;
 
@@ -70,7 +73,9 @@ public abstract class AbstractSQLManager implements SQLManager {
 		rifDatabaseProperties = rifServiceStartupOptions.getRIFDatabaseProperties();
 		databaseType = this.rifDatabaseProperties.getDatabaseType();
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
-		initialisationQuery = "EXEC rif40.rif40_startup ?";
+		initialisationQuery =
+				rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER
+						? MS_SQL_INITIALISATION_QUERY : POSTGRES_INITIALISATION_QUERY;
 		passwordHashList = new HashMap<>();
 		databaseURL = generateURLText();
 	}
@@ -1008,8 +1013,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 		       + rifServiceStartupOptions.getHost()
 		       + ":"
 		       + rifServiceStartupOptions.getPort()
-		       + ";"
-		       + "databaseName="
+		       + "/"
 		       + rifServiceStartupOptions.getDatabaseName();
 	}
 

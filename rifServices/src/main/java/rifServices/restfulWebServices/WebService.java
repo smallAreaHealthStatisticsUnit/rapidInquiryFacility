@@ -135,7 +135,7 @@ public class WebService {
 		final String userID,
 		final String password) {
 
-		String result = "";
+		String result;
 		try {
 			rifStudyServiceBundle.login(userID, password);
 			String loginMessage
