@@ -1377,10 +1377,21 @@ Create and test a system ODBC datasource
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_sqlserver.png?raw=true "SQL Server ODBC Setup").
   The ODBC sytstem data source from *RIFServiceStartupProperties.properties* is: ```odbcDataSourceName=SQLServer13```; so   
   the name is *SQLServer13*. 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup.png?raw=true "SQL Server ODBC Setup 1").
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup2.png?raw=true "SQL Server ODBC Setup 2").
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup3.png?raw=true "SQL Server ODBC Setup 3").
-* If you cannot see and SQL Server databases in the list or get SQL SErver connection errors on test see:
+  
+  1. Choose server. Normally you have to type in the host name as discovery will be turned off by default. You may need append "tcp:" to the hostname to force the use of 
+     TCP/IP:
+  
+     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup.png?raw=true "SQL Server ODBC Setup 1").
+	
+  2. Set the connection type to SQL Server authentication using a login and password. Make sure you supply the login and password.
+	
+	 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup2.png?raw=true "SQL Server ODBC Setup 2").
+	
+  3. Change the database to your database name (e.g. *sahsuland*)
+  
+     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_setup3.png?raw=true "SQL Server ODBC Setup 3").
+
+* If you cannot see a SQL Server database list (you will get an error when SQL server tries to build a list) or get SQL Server connection errors on test see:
   [SQL Server ODBC Connection Errors](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#4410-sql-server-odbc-conon-errors)
 	 
 * Make sure you test the ODBC connection using the RIF user username and password.!
@@ -1817,14 +1828,22 @@ See:
 * [jri.dll: Can't find dependent libraries](https://github.com/smallareahealthstatisticsunit/rapidinquiryfacility/blob/master/rifwebapplication/readme.md#533-cannot-find-jri-native-library-jridll-cannot-find-dependent-libraries)
 
 ### 4.4.10 SQL Server ODBC Connection Errors
-  
-Symptoms: when creating a SQL SErver ODBC connection:
 
-* No items in connections list - 
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_list.png?raw=true "SQL Server ODBC No Connection List")
+Symptoms: when creating a SQL Server ODBC connection:
+
+* No items in database list - 
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_databases.png?raw=true "SQL Server ODBC No database List")
 * ODBC error in connection test - 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_error.png?raw=true "SQL Server ODBC Connection Error")
-
+* No items in database list is a symptom of no discovery services and is not an error. Type in your *hostname* manually.
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_list.png?raw=true "SQL Server ODBC No connection List")
+  
+**Tip:** type *hostname* for your TCP/IP hostname. This is not normally a fully qualified domain name (i.e. will only work locally)
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>hostname
+DESKTOP-4P2SA80
+```
+  
 Resolution:
 
 a) Check TCP/IP connections to the database are permitted;
