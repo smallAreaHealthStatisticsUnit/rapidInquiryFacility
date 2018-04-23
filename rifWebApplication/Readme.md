@@ -1832,10 +1832,10 @@ See:
 
 Symptoms: when creating a SQL Server ODBC connection:
 
-* No items in database list:
+* No items in database list.
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_no_databases.png?raw=true "SQL Server ODBC No database List")
   
-* ODBC error in connection test: 
+* ODBC error in connection test. 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/sql_server_odbc_connection_error.png?raw=true "SQL Server ODBC Connection Error")
   
 * No items in database list is a symptom of no discovery services and is not an error. Type in your *hostname* manually.
