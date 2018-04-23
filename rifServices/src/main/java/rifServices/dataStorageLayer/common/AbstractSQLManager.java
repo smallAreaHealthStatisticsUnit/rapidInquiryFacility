@@ -73,9 +73,11 @@ public abstract class AbstractSQLManager implements SQLManager {
 		rifDatabaseProperties = rifServiceStartupOptions.getRIFDatabaseProperties();
 		databaseType = this.rifDatabaseProperties.getDatabaseType();
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
+
 		initialisationQuery =
 				rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER
 						? MS_SQL_INITIALISATION_QUERY : POSTGRES_INITIALISATION_QUERY;
+
 		passwordHashList = new HashMap<>();
 		databaseURL = generateURLText();
 	}
@@ -679,8 +681,8 @@ public abstract class AbstractSQLManager implements SQLManager {
 			}
 
 			//connection.setAutoCommit(true);
-			ConnectionQueue writeOnlyConnectionQueue
-			= writeConnectionsFromUser.get(user.getUserID());
+			ConnectionQueue writeOnlyConnectionQueue =
+					writeConnectionsFromUser.get(user.getUserID());
 			writeOnlyConnectionQueue.reclaimConnection(connection);
 		}
 		catch(Exception exception) {
@@ -731,14 +733,12 @@ public abstract class AbstractSQLManager implements SQLManager {
 			final String userID)
 					throws RIFServiceException {
 
-		ConnectionQueue readOnlyConnectionQueue
-		= readOnlyConnectionsFromUser.get(userID);
+		ConnectionQueue readOnlyConnectionQueue = readOnlyConnectionsFromUser.get(userID);
 		if (readOnlyConnectionQueue != null) {
 			readOnlyConnectionQueue.closeAllConnections();
 		}
 
-		ConnectionQueue writeConnectionQueue
-		= writeConnectionsFromUser.get(userID);
+		ConnectionQueue writeConnectionQueue = writeConnectionsFromUser.get(userID);
 		if (writeConnectionQueue != null) {
 			writeConnectionQueue.closeAllConnections();
 		}
@@ -974,13 +974,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 					connection,
 					initialisationQuery);
 
-			if (isFirstConnectionForUser) {
-				//perform checks
-				statement.setInt(1, 1);
-			}
-			else {
-				statement.setInt(1, 0);
-			}
+			setDbSpecificStatementValues(statement, isFirstConnectionForUser);
 
 			statement.execute();
 			statement.close();
@@ -998,6 +992,27 @@ public abstract class AbstractSQLManager implements SQLManager {
 		}
 
 		return connection;
+	}
+
+	private void setDbSpecificStatementValues(
+			final PreparedStatement statement, final boolean isFirstConnectionForUser)
+			throws SQLException {
+
+		switch (rifDatabaseProperties.getDatabaseType()) {
+			case POSTGRESQL:
+				statement.setBoolean(1, isFirstConnectionForUser);
+				break;
+
+			case SQL_SERVER:
+				statement.setInt(1, isFirstConnectionForUser ? 1 : 0);
+				break;
+
+			case UNKNOWN:
+				// Shouldn't be possible.
+				break;
+		}
+
+
 	}
 
 	/**
