@@ -11,10 +11,11 @@ Windows Postgres Install using pg_dump and scripts
       - [1.1.2 Fixing Windows Code page errors](#112-fixing-windows-code-page-errors)
 - [2. Installing a production database](#2-installing-a-production-database)
   - [2.1 Changing the postgres database administrator password](#21-Changing-the-postgres-database-administrator-password)
-- [3 Configuration File Examples](#3-configuration-file-examples)
+- [3. Configuration File Examples](#3-configuration-file-examples)
   - [3.1 Postgres user password file](#31-postgres-user-password-file)
   - [3.2 Authentication Setup (hba.conf)](#32-authentication-setup-hbaconf)
   - [3.3 Proxy User Setup (ident.conf)](#33-proxy-user-setup-identconf)
+- [4. Tuning](#4-tuning)   
 
 # 1 Installation Prerequisites
 ## 1.1 Postgres
@@ -732,3 +733,7 @@ sahsuland_dev	pch			postgres
 #
 # Eof
 ```
+
+# 4 Tuning
+
+To be added.
