@@ -2,7 +2,7 @@ SQL Server Production Database Installation
 ===========================================
 
 # Contents
-- [1. Install SQL Server 2012 SP2](#1-install-sql-server-2012-sp2)
+- [1. Install SQL Server](#1-install-sql-server)
 - [2. Installing the RIF](#2-installing-the-rif)
    - [2.1 Network connection errors](#21-network-connection-errors)
    - [2.2 Logon errors](#22-logon-errors)
@@ -15,11 +15,31 @@ SQL Server Production Database Installation
    - [4.2 Creating a New User](#42-creating-a-new-user)
    - [4.3 Testing The Database](#43-testing-the-database)
 
-# 1. Install SQL Server 2012 SP2
+# 1. Install SQL Server
 
-Install SQL Server 2012 SP2  (Express for a test system/full version for production): https://www.microsoft.com/en-gb/download/details.aspx?id=43351# 
+Install SQL Server 2012 SP2 or 2016(Express for a test system/full version for production). **DO NOT INSTALL SQL Server 2008 or before**: 
 
-**DO NOT INSTALL SQL Server 2008 or before**
+* [SQL Server 2012](https://www.microsoft.com/en-gb/download/details.aspx?id=43351#)
+* [SQL Server 2016](https://www.microsoft.com/en-GB/evalcenter/evaluate-sql-server-2016)
+* [SQL Server 2016 developer edition](https://my.visualstudio.com/Downloads?q=SQL%20Server%202016%20Developer). Note this requires a My visual studio login. An 
+  installer may be downloaded from: http://go.microsoft.com/fwlink/?LinkID=799009
+
+SQL Server 2012 developer/evaluation edition databases are limited to 5G in size. This is a series limitation for the RIF. The SQL Server 2016 developer edition
+does not haves this limitation and is therefore recommended for RIF development. Note:
+
+* Use of development/evaluation edition is Usage is restricted – design, development, testing and 
+  demonstration of programs using the SQL database engine are all permitted, as long as the user has permanent access to the license owner’s internal network. 
+  Therefore, while you could demonstrate the RIF to a client, you could not let that client play around with it themselves afterwards. Using the license in 
+  any other way, such as to support a commercial software installation, would constitute a breach of the license terms
+
+* Microsoft gets access to your data – it is mandatory with any non-commercial installation of SQL Server that all your usage data covering performance, errors, 
+  feature use, IP addresses, device identifiers and more, is sent to Microsoft. There are no exceptions. This will cause issues with particularly sensitive data
+  and the developer edition may not work on the private network.
+
+See: https://www.matrix42.com/blog/2016/09/23/how-free-is-microsoft-sql-server-developer-edition-really/ 
+
+If you install SQL Server 2014+; make sure SQL Server Management Studio has been installed; 
+[SQL Server Management Studio](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-2017)
 
 Check the version of your database:
 ```
@@ -33,24 +53,29 @@ Microsoft SQL Server 2012 (SP2-GDR) (KB3194719) - 11.0.5388.0 (X64)
         Copyright (c) Microsoft Corporation
         Express Edition (64-bit) on Windows NT 6.1 <X64> (Build 7601: Service Pack 1)                 110
 ```
+
+or for SQL Server 2016
+
+```
+1> SELECT @@version AS version, compatibility_level FROM sys.databases Where DB_NAME() = name ;
+2> go
+version                                                                                              compatibility_level
+---------------------------------------------------------------------------------------------------- -------------------
+Microsoft SQL Server 2016 (SP1-GDR) (KB4019089) - 13.0.4206.0 (X64)
+        Jul  6 2017 07:55:03
+        Copyright (c) Microsoft Corporation
+        Developer Edition (64-bit) on Windows 10 Pro 6.3 <X64> (Build 16299: )
+```
+
 * The compatibility level should be *110* and the version *Microsoft SQL Server 2012 (SP2...*. If it is not then you have more 
   than one SQL Server database on your machine, see setting *SQLCMDSERVER* in the next section.
-* If you install SQL Server 2014+; make sure SQL Server Management Studio has been installed; [see this blog for further instructions](https://www.hanselman.com/blog/DownloadSQLServerExpress.aspx)
-
+  
 # 2. Installing the RIF
 
 A standalone script *rif40_database_install.bat* is provided to install the RIF. It is designed to run in a single directory, and is in
 *...rapidInquiryFacility\rifDatabase\SQLserver\production*. A backup of the *sahsuland_dev* database is required, as created by 
-*rebuild_all.bat* (see: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md) or supplied by SAHSU. 
-
-Either:
-
-1. Create *...rapidInquiryFacility\rifDatabase\SQLserver\production\sahsuland_dev.bak* using rebuild_all.bat
-
-or:
-
-2. Use a pre-built database dump provided by SAHSU. If you use the prebuilt version check that the
-   dump *sahsuland_dev.bak* is unZipped.
+*rebuild_all.bat* see: [SQL Server Development Database Installation](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/installation/README.md) or supplied by SAHSU. 
+If you use the pre-built version check that the dump *sahsuland_dev.bak* is unZipped.
    
 You will need to enter:
 
@@ -59,7 +84,11 @@ You will need to enter:
 * User password
 
 The database name and user name should only contain lowercase letters, underscore (\_) and numbers and must start with a letter.
-The default password is the same as the username; chnage it on a production system conntected to the internet!
+The default password is the same as the username; change it on a production system connected to the internet!
+
+Before you run *rebuild_all.bat* check the [restore permissions](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/production/INSTALL.md#23-sql-server-restore)
+
+**THESE SCRIPTS DO DROP ALL EXISTING TABLES AND DATA**.
 
 This script runs:
 
@@ -118,7 +147,7 @@ This is when the above command will not run.
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation>sqlcmd -E -d rif40 -b -m-1 -e -r1 -i rif40_production_creation.sql
 Result 0x2, Level 16, State 1
 Named Pipes Provider: Could not open a connection to SQL Server [2].
-Mirosoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.
+Microsoft SQL Server Native Client 10.0 : A network-related or instance-specific error has occurred while establishing a connection to SQL Server. Server is not found or not accessible. Check if instance name is correct and if SQL Server is configured to allow remote connections. For more information see SQL Server Books Online.
 Sqlcmd: Error: Microsoft SQL Server Native Client 10.0 : Login timeout expired.
 ```
   * You may need to specify the instance name: e.g. `-S PETER-PC\SAHSU`, e.g.
@@ -156,7 +185,7 @@ Login failed for user 'peter'.
 Login failed for user 'peter'. Reason: An attempt to login using SQL authentication failed. Server is configured for Windows authentication only. [CLIENT: <local machine>]
 ```
 
-  The node also show how to enable the sa (system adminstrator) account. As with all relational database adminstration accounts as strong (12+ chacracter) password is recommended to defeat 
+  The node also show how to enable the sa (system administrator) account. As with all relational database administration accounts as strong (12+ character) password is recommended to defeat 
   attacks by dictionary or all possible passwords.
 
   This is what a successful login looks like: `sqlcmd -U kevin -P XXXXXXXXXXXX`
@@ -178,19 +207,19 @@ will change the default database from *sahsuland_dev* to *$(NEWDB)*.
 
 ## 2.3 SQL Server Restore
 
-SQL Server needs access granted to the drectories used to the `RESTORE` file used to import the database.
+SQL Server needs access granted to the directories used to the `RESTORE` file used to import the database.
 
 SQL Server needs access to the current directory. The simplest
-way is to allow read/executre permission to the local users group (e.g. PH-LAPTOP\Users).
+way is to allow read and execute permission to the local users group (e.g. PH-LAPTOP\Users).
 
 *DO NOT TRY `RESTORE` FROM NETWORK DRIVES or CLOUD DRIVES (e.g. Google Drive).* Use a local directory which SQL Server has
-access to; e.g. somewhere on the C: drive. Note that SQL Server *RESTORE* behaves dirrently if you logon using Windows authentication (where it will use your credentials 
-to access the files) to using a username and password (where it will use the Server's credentials to acces the file).
+access to; e.g. somewhere on the C: drive. Note that SQL Server *RESTORE* behaves differently if you logon using Windows authentication (where it will use your credentials 
+to access the files) to using a username and password (where it will use the Server's credentials to access the file).
 
 ```
 --
 -- Export database to ../production/sahsuland_dev.bak
--- Grant local users full control to this directory
+-- Grant local users read and execute to this directory
 --
 BACKUP DATABASE [sahsuland_dev] TO DISK='C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\
 production\sahsuland_dev.bak';
@@ -224,8 +253,8 @@ The solution to this is to:
 
 * logon as *sa* using the password for the *sa* provided during the install;
 * Create a Windows authenticated user login as the domain user name (e.g. *IC\pch*);
-* Grant full database adminstration privileges (all of them!) to this user;
-* Check the user logon is now an Adminstrator (i.e. is dbo):
+* Grant full database administration privileges (all of them!) to this user;
+* Check the user logon is now an Administrator (i.e. is dbo):
 	```
 	sqlcmd -E
 	1> SELECT user_name();
@@ -252,7 +281,7 @@ sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser=kevin -v newpw=XXXX
 * User can use the sahsuland database;
 * Will fail to re-create a user if the user already has objects (tables, views etc);
 
-Test connection and object privilges:
+Test connection and object privileges:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U kevin -P XXXXXXXXXXXX
 1> SELECT db_name() AS db_name INTO test_table;
