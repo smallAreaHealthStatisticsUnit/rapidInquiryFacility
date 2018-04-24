@@ -123,7 +123,7 @@ public class ICDTaxonomyService
 		
 		try {
 			ICD10TaxonomyTermParser icd1011TaxonomyParser 
-				= new ICD10TaxonomyTermParser();			
+				= new ICD10TaxonomyTermParser();	// May need a separate ICD11 parser if the ClaML format is different		
 			
 			setTaxonomyServiceConfiguration(taxonomyServiceConfiguration);
 
