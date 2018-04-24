@@ -176,9 +176,9 @@ Download Apache Tomcat 8.5 and follow the [OWASP Tomcat guidelines](https://www.
 - Choose an administrator username (NOT admin) and a secure password that complies with your organisations password policy.
 - Complete tomcat installation, but do not start service.
 - Set *CATALINA_HOME* in the environment (e.g. *C:\Program Files\Apache Software Foundation\Tomcat 8.5*). If you do not do this the web 
-  services will not work [The web services will crash on user logon if it is not set]; see:
-  4.4.5 RIF Services crash on logon. If *CATALINA_HOME* is 
-  *C:\Program Files (x86)\Apache Software Foundation\Tomcat 8.5* you have installed the 32 bit version of Java.
+  services will not work [The web services will fail to start on the first user logon if it is not set]; see:
+  [4.4.5 RIF Services crash on logon](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#445-rif-services-crash-on-logon). 
+- If *CATALINA_HOME* is *C:\Program Files (x86)\Apache Software Foundation\Tomcat 8.5* you have installed the 32 bit version of Java.
   Remove tomcat and Java and re-install a 64 bit Java (unless you are on a really old 32 bit only Machine...)
   
 When accessed from the internet the RIF **must** be secured using TLS to protect the login details and any health data viewed.
@@ -1558,7 +1558,8 @@ The downloaded binary packages are in
 	
 	* **RESTART YOUR ADMINISTRATOR WINDOW TO PICK UP YOUR CHANGES** 
 	* [You can now start the rif](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#133-running-tomcat-on-the-command-line) (using the *start_rif.bat* script or by running *catalina.bat start* in the directory 
-	  *%CATALOINA_HOME%\bin* as an Administrator.)
+	  *%CATALOINA_HOME%\bin* as an Administrator.). The web services will fail to start on the first user logon if the R environment not setup correctly]; see:
+  [4.4.5 RIF Services crash on logon](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#445-rif-services-crash-on-logon). 
 	* Then you can logon. See section 5 
 	  [Running the RIF](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#5-running-the-rif) 
 	  for logon instructions
@@ -1651,16 +1652,109 @@ See *3.1.2 Taxonomy Service*, and *4.4.3 Unable to unpack war files*
 
 ### 4.4.5 RIF Services crash on logon  
 
-This is an unhandled exception; caused by CATALINA_HOME not being set in the environment (```C A T A L I N A  H O M E==null==```). This will be changed to a more obvious error.
+The rifServices startup the following checks are carried out to assist tracing installation faults:
 
+* CATALINA_HOME is set 
+* The R environment is setup correctly on rifServices start :
+  - R_HOME in PATH
+  - %R_HOME%/bin/x64 in PATH
+  - %R_HOME%/library/rJava/jri/x64 in PATH
+
+A typical failure:
 ```
+11:22:44.667 [http-nio-8080-exec-10] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
+RIFServiceStartupOptions error
+getMessage:          RIFServiceException: C:\Program Files\R\R-3.4.4\library\rJava\jri\x64 not in Path/PATH
+getRootCauseMessage: RIFServiceException: C:\Program Files\R\R-3.4.4\library\rJava\jri\x64 not in Path/PATH
+getThrowableCount:   1
+getRootCauseStackTrace >>>
+rifGenericLibrary.system.RIFServiceException: C:\Program Files\R\R-3.4.4\library\rJava\jri\x64 not in Path/PATH
+	at rifServices.system.RIFServiceStartupOptions.checkREnvironment(RIFServiceStartupOptions.java:544)
+	at rifServices.system.RIFServiceStartupOptions.getRIFServiceResourcePath(RIFServiceStartupOptions.java:596)
+	at rifServices.dataStorageLayer.ms.MSSQLHealthOutcomeManager.<init>(MSSQLHealthOutcomeManager.java:123)
+	at rifServices.dataStorageLayer.ms.MSSQLRIFServiceResources.<init>(MSSQLRIFServiceResources.java:125)
+	at rifServices.dataStorageLayer.ms.MSSQLRIFServiceResources.newInstance(MSSQLRIFServiceResources.java:217)
+	at rifServices.dataStorageLayer.ms.MSSQLAbstractStudyServiceBundle.initialise(MSSQLAbstractStudyServiceBundle.java:104)
+``` 
+
+A successful start looks like:
+```
+10:50:09.367 [http-nio-8080-exec-3] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
 RIFServiceStartupOptions is web deployment
-C A T A L I N A  H O M E==null==
-12-Apr-2017 15:12:33.627 SEVERE [http-nio-8080-exec-1] com.sun.jersey.spi.container.ContainerResponse.mapMappableContainerException
-The RuntimeException could not be mapped to a response, re-throwing to the HTTP container
- java.lang.NullPointerException
-        at rifServices.system.RIFServiceStartupOptions.getRIFServiceResourcePath(RIFServiceStartupOptions.java:488)
-        at rifServices.dataStorageLayer.pg.PGSQLHealthOutcomeManager.<init>(PGSQLHealthOutcomeManager.java:120)
+10:50:09.367 [http-nio-8080-exec-3] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
+Get CATALINA_HOME=C:\Program Files\Apache Software Foundation\Tomcat 8.5
+10:50:09.368 [http-nio-8080-exec-3] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
+Check R_HOME=C:\Program Files\R\R-3.4.4
+10:50:09.368 [http-nio-8080-exec-3] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
+Check Path/PATH for required R components:
+[0] C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\iCLS\;
+[1] C:\Program Files\Intel\Intel(R) Management Engine Components\iCLS\;
+[2] C:\Windows\system32;
+[3] C:\Windows;
+[4] C:\Windows\System32\Wbem;
+[5] C:\Windows\System32\WindowsPowerShell\v1.0\;
+[6] C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;
+[7] C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;
+[8] C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;
+[9] C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;
+[10] C:\Program Files\PostgreSQL\9.6\bin;
+[11] C:\Program Files\Java\jdk1.8.0_162\bin;
+[12] C:\Program Files\Apache Software Foundation\apache-maven-3.5.3\bin;
+[13] C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\;
+[14] C:\Program Files (x86)\Microsoft SQL Server\130\Tools\Binn\;
+[15] C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;
+[16] C:\Program Files\Microsoft SQL Server\130\DTS\Binn\;
+[17] C:\Program Files (x86)\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\;
+[18] C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\;
+[19] C:\Program Files (x86)\Microsoft SQL Server\140\DTS\Binn\;
+[20] C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\ManagementStudio\;
+[21] C:\Program Files\nodejs\;
+[22] C:\Program Files\dotnet\;
+[23] C:\MinGW\msys\1.0\bin;
+[24] C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin;
+R bin [25] C:\Program Files\R\R-3.4.4\bin\x64;
+JRI [26] C:\Program Files\R\R-3.4.4\library\rJava\jri\x64;
+[27] C:\Program Files\MiKTeX 2.9\miktex\bin\x64\;
+[28] C:\Python27;
+[29] C:\Users\admin\AppData\Local\Microsoft\WindowsApps;
+
+10:50:09.368 [http-nio-8080-exec-3] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
+Print java.library.path:
+[0] C:\Program Files\Java\jdk1.8.0_162\bin;
+[1] C:\Windows\Sun\Java\bin;
+[2] C:\Windows\system32;
+[3] C:\Windows;
+[4] C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\iCLS\;
+[5] C:\Program Files\Intel\Intel(R) Management Engine Components\iCLS\;
+[6] C:\Windows\system32;
+[7] C:\Windows;
+[8] C:\Windows\System32\Wbem;
+[9] C:\Windows\System32\WindowsPowerShell\v1.0\;
+[10] C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;
+[11] C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;
+[12] C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;
+[13] C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;
+[14] C:\Program Files\PostgreSQL\9.6\bin;
+[15] C:\Program Files\Java\jdk1.8.0_162\bin;
+[16] C:\Program Files\Apache Software Foundation\apache-maven-3.5.3\bin;
+[17] C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\;
+[18] C:\Program Files (x86)\Microsoft SQL Server\130\Tools\Binn\;
+[19] C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;
+[20] C:\Program Files\Microsoft SQL Server\130\DTS\Binn\;
+[21] C:\Program Files (x86)\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\;
+[22] C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\;
+[23] C:\Program Files (x86)\Microsoft SQL Server\140\DTS\Binn\;
+[24] C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\ManagementStudio\;
+[25] C:\Program Files\nodejs\;
+[26] C:\Program Files\dotnet\;
+[27] C:\MinGW\msys\1.0\bin;
+[28] C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin;
+[29] C:\Program Files\R\R-3.4.4\bin\x64;
+[30] C:\Program Files\R\R-3.4.4\library\rJava\jri\x64;
+[31] C:\Program Files\MiKTeX 2.9\miktex\bin\x64\;
+[32] C:\Python27;
+[33] C:\Users\admin\AppData\Local\Microsoft\WindowsApps;
+[34] .;
 ```
 
 ### 4.4.6 SQL Server TCP/IP Java Connection Errors
