@@ -24,7 +24,7 @@ import rifServices.businessConceptLayer.YearRange;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceStartupOptions;
 
-public final class AgeGenderYearManager extends AbstractSQLManager {
+public final class AgeGenderYearManager extends BaseSQLManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 

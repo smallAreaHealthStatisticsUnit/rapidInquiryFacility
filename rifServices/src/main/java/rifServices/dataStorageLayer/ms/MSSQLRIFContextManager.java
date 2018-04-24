@@ -22,13 +22,13 @@ import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.dataStorageLayer.common.AbstractSQLManager;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class MSSQLRIFContextManager extends AbstractSQLManager implements RIFContextManager {
+final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextManager {
 
 	/**
 	 * Instantiates a new SQLRIF context manager.

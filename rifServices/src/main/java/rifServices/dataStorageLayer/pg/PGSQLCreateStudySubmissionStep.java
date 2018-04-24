@@ -31,7 +31,7 @@ import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
-import rifServices.dataStorageLayer.common.AbstractSQLManager;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.MapDataManager;
 import rifServices.system.RIFServiceError;
@@ -101,7 +101,7 @@ import rifServices.system.RIFServiceStartupOptions;
  *
  */
 
-final class PGSQLCreateStudySubmissionStep extends AbstractSQLManager {
+final class PGSQLCreateStudySubmissionStep extends BaseSQLManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");

@@ -34,7 +34,7 @@ import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.files.TomcatBase;
 import rifServices.system.files.TomcatFile;
 
-public abstract class AbstractSQLManager implements SQLManager {
+public class BaseSQLManager implements SQLManager {
 
 	static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 	private static final String ABSTRACT_SQLMANAGER_PROPERTIES = "AbstractSQLManager.properties";
@@ -46,13 +46,13 @@ public abstract class AbstractSQLManager implements SQLManager {
 	private static final String MS_SQL_INITIALISATION_QUERY = "EXEC rif40.rif40_startup ?";
 
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
-	protected static final Set<String> registeredUserIDs = new HashSet<>();
-	protected static final Set<String> userIDsToBlock = new HashSet<>();;
+	private static final Set<String> registeredUserIDs = new HashSet<>();
+	private static final Set<String> userIDsToBlock = new HashSet<>();;
 
-	protected static final Map<String, ConnectionQueue> readOnlyConnectionsFromUser
+	private static final Map<String, ConnectionQueue> readOnlyConnectionsFromUser
 			= new HashMap<>();
 
-	protected static final Map<String, ConnectionQueue> writeConnectionsFromUser = new HashMap<>();
+	private static final Map<String, ConnectionQueue> writeConnectionsFromUser = new HashMap<>();
 	private static final HashMap<String, Integer> suspiciousEventCounterFromUser = new HashMap<>();
 	protected final RIFServiceStartupOptions rifServiceStartupOptions;
 	private final String initialisationQuery;
@@ -68,7 +68,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
 	private boolean enableLogging = true;
 
-	public AbstractSQLManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
+	public BaseSQLManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
 
 		rifDatabaseProperties = rifServiceStartupOptions.getRIFDatabaseProperties();
 		databaseType = this.rifDatabaseProperties.getDatabaseType();
@@ -479,9 +479,9 @@ public abstract class AbstractSQLManager implements SQLManager {
 		}
 		queryLog.append("SQL QUERY TEXT: ").append(lineSeparator);
 		queryLog.append(queryFormatter.generateQuery()).append(lineSeparator);
-		queryLog.append("<<< End AbstractSQLManager logSQLQuery").append(lineSeparator);
+		queryLog.append("<<< End BaseSQLManager logSQLQuery").append(lineSeparator);
 	
-		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
+		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" +
 			lineSeparator + queryLog.toString());
 	}
 	
@@ -506,9 +506,9 @@ public abstract class AbstractSQLManager implements SQLManager {
 		}
 		queryLog.append("SQL QUERY TEXT: ").append(lineSeparator);
 		queryLog.append(queryFormatter.generateQuery()).append(lineSeparator);
-		queryLog.append("<<< End AbstractSQLManager logSQLQuery").append(lineSeparator);
+		queryLog.append("<<< End BaseSQLManager logSQLQuery").append(lineSeparator);
 	
-		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
+		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" +
 			lineSeparator + queryLog.toString());	
 
 	}
@@ -525,19 +525,19 @@ public abstract class AbstractSQLManager implements SQLManager {
 		                  + "NO PARAMETERS." + lineSeparator
 		                  + "SQL QUERY TEXT: " + lineSeparator
 		                  + queryFormatter.generateQuery() + lineSeparator
-		                  + "<<< End AbstractSQLManager logSQLQuery" + lineSeparator;
-		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
+		                  + "<<< End BaseSQLManager logSQLQuery" + lineSeparator;
+		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" +
 		                                lineSeparator + queryLog);
 	}
 		
 	@Override
 	public void logSQLException(final SQLException sqlException) {
-		rifLogger.error(getClass(), "AbstractSQLManager.logSQLException error",
+		rifLogger.error(getClass(), "BaseSQLManager.logSQLException error",
 				sqlException);
 	}
 
 	protected void logException(final Exception exception) {
-		rifLogger.error(this.getClass(), "AbstractSQLManager.logException error",
+		rifLogger.error(this.getClass(), "BaseSQLManager.logException error",
 				 exception);
 	}
 
@@ -549,11 +549,11 @@ public abstract class AbstractSQLManager implements SQLManager {
 			try {
 				prop = new TomcatFile(
 						new TomcatBase(),
-						AbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES).properties();
+						BaseSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES).properties();
 			} catch (IOException e) {
 				rifLogger.warning(this.getClass(),
-						"AbstractSQLManager.checkIfQueryLoggingEnabled error for" +
-						AbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES, e);
+				                  "BaseSQLManager.checkIfQueryLoggingEnabled error for" +
+				                  BaseSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES, e);
 				return false;
 			}
 		}
@@ -561,39 +561,23 @@ public abstract class AbstractSQLManager implements SQLManager {
 		if (value != null) {
 			if (value.toLowerCase().equals("true")) {
 				rifLogger.debug(this.getClass(),
-						"AbstractSQLManager checkIfQueryLoggingEnabled=TRUE property: " +
+						"BaseSQLManager checkIfQueryLoggingEnabled=TRUE property: " +
 								queryName + "=" + value);
 				return false;
 			} else {
 				rifLogger.debug(this.getClass(),
-						"AbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
+						"BaseSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
 								queryName + "=" + value);
 				return true;
 			}
 		} else {
 			rifLogger.warning(this.getClass(),
-					"AbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
+					"BaseSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
 							queryName + " NOT FOUND");
 			return true;
 		}
 	}
-	
-	protected void setAutoCommitOn(
-		final Connection connection,
-		final boolean isAutoCommitOn)
-		throws RIFServiceException {
-		
-		try {
-			connection.setAutoCommit(isAutoCommitOn);			
-		}
-		catch(SQLException sqlException) {
-			RIFServiceExceptionFactory exceptionFactory
-				= new RIFServiceExceptionFactory();
-			throw exceptionFactory.createUnableToChangeDBCommitException();
-		}
-		
-	}
-	
+
 	@Override
 	public boolean isUserBlocked(
 			final User user) {
@@ -722,7 +706,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 		registeredUserIDs.remove(userID);
 		suspiciousEventCounterFromUser.remove(userID);
 	}
-	
+
 	/**
 	 * Deregister user.
 	 *
@@ -759,7 +743,6 @@ public abstract class AbstractSQLManager implements SQLManager {
 						= suspiciousEventCounterFromUser.get(userID);
 		return suspiciousEventCounter != null
 		       && suspiciousEventCounter >= MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD;
-		
 	}
 	
 	/**

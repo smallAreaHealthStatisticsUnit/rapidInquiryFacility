@@ -19,7 +19,7 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.dataStorageLayer.common.AbstractSQLManager;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.InvestigationManager;
@@ -28,7 +28,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class PGSQLInvestigationManager extends AbstractSQLManager implements InvestigationManager {
+final class PGSQLInvestigationManager extends BaseSQLManager implements InvestigationManager {
 
 	private RIFContextManager rifContextManager;
 	private AgeGenderYearManager ageGenderYearManager;

@@ -20,13 +20,13 @@ import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.dataStorageLayer.common.AbstractSQLManager;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class PGSQLRIFContextManager extends AbstractSQLManager implements RIFContextManager {
+final class PGSQLRIFContextManager extends BaseSQLManager implements RIFContextManager {
 
 	public PGSQLRIFContextManager(final RIFServiceStartupOptions options) {
 

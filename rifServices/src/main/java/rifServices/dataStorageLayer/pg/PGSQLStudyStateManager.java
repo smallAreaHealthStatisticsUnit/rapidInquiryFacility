@@ -16,13 +16,13 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.StudyState;
-import rifServices.dataStorageLayer.common.AbstractSQLManager;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class PGSQLStudyStateManager extends AbstractSQLManager implements StudyStateManager {
+final class PGSQLStudyStateManager extends BaseSQLManager implements StudyStateManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 

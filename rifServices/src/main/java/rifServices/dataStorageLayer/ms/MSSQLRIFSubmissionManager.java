@@ -22,7 +22,7 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
-import rifServices.dataStorageLayer.common.AbstractSQLManager;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.dataStorageLayer.common.SubmissionManager;
@@ -30,7 +30,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-public class MSSQLRIFSubmissionManager extends AbstractSQLManager
+public class MSSQLRIFSubmissionManager extends BaseSQLManager
 		implements SubmissionManager {
 
 	private StudyStateManager studyStateManager;

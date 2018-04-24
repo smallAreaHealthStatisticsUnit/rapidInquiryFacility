@@ -3,6 +3,7 @@ package rifServices.dataStorageLayer.ms;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
@@ -26,7 +27,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 	private CovariateManager sqlCovariateManager;
 	
 	/** The sql connection manager. */
-	private MSSQLConnectionManager sqlConnectionManager;
+	private BaseSQLManager sqlConnectionManager;
 	
 	/** The sql rif context manager. */
 	private RIFContextManager sqlRIFContextManager;
@@ -56,7 +57,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
-		sqlConnectionManager = new MSSQLConnectionManager(rifServiceStartupOptions);
+		sqlConnectionManager = new BaseSQLManager(rifServiceStartupOptions);
 		healthOutcomeManager = new MSSQLHealthOutcomeManager(rifServiceStartupOptions);
 
 		RIFDatabaseProperties rifDatabaseProperties
@@ -151,7 +152,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 	}
 	
 	@Override
-	public MSSQLConnectionManager getSqlConnectionManager() {
+	public BaseSQLManager getSqlConnectionManager() {
 		return sqlConnectionManager;
 	}
 	

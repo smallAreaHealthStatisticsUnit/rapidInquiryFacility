@@ -10,7 +10,7 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFStudySubmission;
-import rifServices.dataStorageLayer.common.AbstractSQLManager;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.GetStudyJSON;
 import rifServices.dataStorageLayer.common.RifZipFile;
 import rifServices.dataStorageLayer.common.StudyExtractManager;
@@ -20,7 +20,7 @@ import rifServices.system.RIFServiceStartupOptions;
 
 //import rifGenericLibrary.dataStorageLayer.common.SQLFunctionCallerQueryFormatter;
 
-public class PGSQLStudyExtractManager extends AbstractSQLManager implements StudyExtractManager {
+public class PGSQLStudyExtractManager extends BaseSQLManager implements StudyExtractManager {
 
 	private static String EXTRACT_DIRECTORY;
 	private static String TAXONOMY_SERVICES_SERVER;

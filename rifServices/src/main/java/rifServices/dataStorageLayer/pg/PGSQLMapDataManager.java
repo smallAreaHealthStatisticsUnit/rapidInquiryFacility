@@ -16,7 +16,7 @@ import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.MapArea;
-import rifServices.dataStorageLayer.common.AbstractSQLManager;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.MapDataManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
@@ -88,7 +88,7 @@ import rifServices.system.RIFServiceStartupOptions;
  *
  */
 
-final class PGSQLMapDataManager extends AbstractSQLManager implements MapDataManager {
+final class PGSQLMapDataManager extends BaseSQLManager implements MapDataManager {
 	
 	//TODO: (DM) class is full of unused methods
 

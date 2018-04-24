@@ -26,7 +26,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-public final class CovariateManager extends AbstractSQLManager {
+public final class CovariateManager extends BaseSQLManager {
 	/** The sql rif context manager. */
 	private RIFContextManager sqlRIFContextManager;
 	private String covariatesTableName;
