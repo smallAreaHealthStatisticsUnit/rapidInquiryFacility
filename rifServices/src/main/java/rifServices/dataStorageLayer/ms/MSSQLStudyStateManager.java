@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
@@ -692,7 +693,7 @@ final class MSSQLStudyStateManager extends AbstractSQLManager implements StudySt
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			MSSQLRecordExistsQueryFormatter queryFormatter
+			RecordExistsQueryFormatter queryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("study_id");

@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
@@ -320,7 +321,7 @@ final public class MSSQLDataSetManager
 		throws RIFServiceException {
 				
 		PreparedStatement statement = null;
-		MSSQLRecordExistsQueryFormatter queryFormatter
+		RecordExistsQueryFormatter queryFormatter
 			= new MSSQLRecordExistsQueryFormatter(false);
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");

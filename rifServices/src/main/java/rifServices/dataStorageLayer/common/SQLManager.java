@@ -13,7 +13,10 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 
 public interface SQLManager {
-	
+
+	String SCHEMA_NAME = "rif40";
+	String SCHEMA_PREFIX = SCHEMA_NAME + ".";
+
 	ValidationPolicy getValidationPolicy();
 	
 	void setValidationPolicy(ValidationPolicy validationPolicy);

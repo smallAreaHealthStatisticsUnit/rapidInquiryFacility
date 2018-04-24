@@ -15,6 +15,7 @@ import rifDataLoaderTool.businessConceptLayer.FieldChangeAuditLevel;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
@@ -899,7 +900,7 @@ final public class MSSQLChangeAuditManager
 		throws RIFServiceException {
 				
 		PreparedStatement statement = null;
-		MSSQLRecordExistsQueryFormatter queryFormatter
+		RecordExistsQueryFormatter queryFormatter
 			= new MSSQLRecordExistsQueryFormatter(false);
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");

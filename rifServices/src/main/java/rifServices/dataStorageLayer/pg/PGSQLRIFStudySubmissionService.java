@@ -34,13 +34,13 @@ import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.dataStorageLayer.common.StudyExtractManager;
 import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.files.TomcatBase;
 import rifServices.system.files.TomcatFile;
-import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 /**
  * Main implementation of the RIF middleware.
  * <p>

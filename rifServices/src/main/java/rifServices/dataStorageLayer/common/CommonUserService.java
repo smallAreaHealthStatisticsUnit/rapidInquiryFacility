@@ -20,16 +20,6 @@ import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.RIFServiceInformation;
 import rifServices.businessConceptLayer.YearRange;
-import rifServices.dataStorageLayer.common.AgeGenderYearManager;
-import rifServices.dataStorageLayer.common.CovariateManager;
-import rifServices.dataStorageLayer.common.ExceptionLog;
-import rifServices.dataStorageLayer.common.RIFContextManager;
-import rifServices.dataStorageLayer.common.ResultsQueryManager;
-import rifServices.dataStorageLayer.common.SQLManager;
-import rifServices.dataStorageLayer.common.ServiceResources;
-import rifServices.dataStorageLayer.common.SubmissionManager;
-import rifServices.dataStorageLayer.common.UserService;
-import rifServices.dataStorageLayer.common.ValidateUser;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceStartupOptions;
 

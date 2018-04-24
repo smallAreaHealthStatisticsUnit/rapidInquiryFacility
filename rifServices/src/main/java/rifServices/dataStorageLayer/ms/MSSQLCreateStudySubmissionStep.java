@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
@@ -976,7 +977,7 @@ final class MSSQLCreateStudySubmissionStep extends AbstractSQLManager {
 		ResultSet checkProjectExistsResultSet = null;
 		try {
 			//Create SQL query
-			MSSQLRecordExistsQueryFormatter queryFormatter
+			RecordExistsQueryFormatter queryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("project");

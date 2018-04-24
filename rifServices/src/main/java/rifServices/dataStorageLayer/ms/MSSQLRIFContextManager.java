@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLAggregateValueQueryFormatter;
@@ -991,7 +992,7 @@ final class MSSQLRIFContextManager extends AbstractSQLManager implements RIFCont
 		try {
 		
 			//Create SQL query
-			MSSQLRecordExistsQueryFormatter queryFormatter
+			RecordExistsQueryFormatter queryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setFromTable("rif40.rif40_geographies");
@@ -1082,7 +1083,7 @@ final class MSSQLRIFContextManager extends AbstractSQLManager implements RIFCont
 		try {
 
 			//Create SQL query
-			MSSQLRecordExistsQueryFormatter queryFormatter
+			RecordExistsQueryFormatter queryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("geolevel_name");
@@ -1227,7 +1228,7 @@ final class MSSQLRIFContextManager extends AbstractSQLManager implements RIFCont
 			}
 		
 			//Check whether the name exists
-			MSSQLRecordExistsQueryFormatter recordExistsQueryFormatter 
+			RecordExistsQueryFormatter recordExistsQueryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			recordExistsQueryFormatter.setFromTable(geoLevelSelectLookupTable);
 			recordExistsQueryFormatter.setLookupKeyFieldName("name");
@@ -1364,7 +1365,7 @@ final class MSSQLRIFContextManager extends AbstractSQLManager implements RIFCont
 				geoLevelID = geoLevelIDResultSet.getInt(1);
 			}
 			
-			MSSQLRecordExistsQueryFormatter geoLevelMapExistsQueryFormatter
+			RecordExistsQueryFormatter geoLevelMapExistsQueryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(geoLevelMapExistsQueryFormatter);		
 			geoLevelMapExistsQueryFormatter.setFromTable("rif40.rif40_geolevels");
@@ -1469,7 +1470,7 @@ final class MSSQLRIFContextManager extends AbstractSQLManager implements RIFCont
 		final boolean isToMapValue) 
 		throws RIFServiceException {
 
-		MSSQLRecordExistsQueryFormatter queryFormatter 
+		RecordExistsQueryFormatter queryFormatter
 			= new MSSQLRecordExistsQueryFormatter(false);
 		configureQueryFormatterForDB(queryFormatter);		
 		queryFormatter.setFromTable("rif40.rif40_geolevels");
@@ -1589,7 +1590,7 @@ final class MSSQLRIFContextManager extends AbstractSQLManager implements RIFCont
 		PreparedStatement checkHealthThemeExistsStatement = null;
 		ResultSet checkHealthThemeExistsResultSet = null;
 		try {
-			MSSQLRecordExistsQueryFormatter queryFormatter
+			RecordExistsQueryFormatter queryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.setLookupKeyFieldName("description");
@@ -1676,7 +1677,7 @@ final class MSSQLRIFContextManager extends AbstractSQLManager implements RIFCont
 		PreparedStatement getNDPairExistsStatement = null;
 		ResultSet getNDPairExistsResultSet = null;
 		try {
-			MSSQLRecordExistsQueryFormatter ndPairExistsQueryFormatter
+			RecordExistsQueryFormatter ndPairExistsQueryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(ndPairExistsQueryFormatter);		
 			ndPairExistsQueryFormatter.setFromTable(user.getUserID() + ".rif40_num_denom");
@@ -1769,7 +1770,7 @@ final class MSSQLRIFContextManager extends AbstractSQLManager implements RIFCont
 		PreparedStatement getNDPairExistsStatement = null;
 		ResultSet getNDPairExistsResultSet = null;
 		try {
-			MSSQLRecordExistsQueryFormatter queryFormatter
+			RecordExistsQueryFormatter queryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.setFromTable(user.getUserID() + ".rif40_num_denom"); 

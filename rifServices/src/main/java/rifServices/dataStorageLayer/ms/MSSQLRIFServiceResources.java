@@ -68,14 +68,14 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 		sqlSmoothedResultManager
 			= new MSSQLSmoothedResultManager(rifServiceStartupOptions);
 		
-		sqlAgeGenderYearManager = AgeGenderYearManager.getInstance(sqlRIFContextManager,
-				rifServiceStartupOptions);
+		sqlAgeGenderYearManager = new AgeGenderYearManager(
+				sqlRIFContextManager, rifServiceStartupOptions);
 		sqlMapDataManager 
 			= new MSSQLMapDataManager(
 				rifServiceStartupOptions
 		);
-		sqlCovariateManager = CovariateManager.getInstance(rifServiceStartupOptions,
-				sqlRIFContextManager);
+		sqlCovariateManager = new CovariateManager(rifServiceStartupOptions,
+		                                           sqlRIFContextManager);
 		
 		MSSQLInvestigationManager sqlInvestigationManager = new MSSQLInvestigationManager(
 				rifServiceStartupOptions,

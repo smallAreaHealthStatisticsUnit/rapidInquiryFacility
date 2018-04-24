@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
@@ -253,7 +254,7 @@ final class MSSQLDiseaseMappingStudyManager extends AbstractSQLManager
 		ResultSet resultSet = null;
 		try {
 
-			MSSQLRecordExistsQueryFormatter queryFormatter
+			RecordExistsQueryFormatter queryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setFromTable("rif40.rif40_studies");
