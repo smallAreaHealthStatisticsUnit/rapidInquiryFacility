@@ -4,14 +4,20 @@ Windows Postgres Install using pg_dump and scripts
 
 # Contents
 
-- [1. Installation Prerequistes](#1-installation-prerequistes)
+- [1. Installation Prerequisites](#1-installation-prerequisites)
    - [1.1 Postgres](#11-postgres)	
+      - [1.1.0 Memory Requirements](#110-memory-requirements)
       - [1.1.1 Postgres User Setup](#111-postgres-user-setup)
       - [1.1.2 Fixing Windows Code page errors](#112-fixing-windows-code-page-errors)
 - [2. Installing a production database](#2-installing-a-production-database)
-  - [2.1 Changing the postgres database adminstrator password](#21-Changing-the-postgres-database-adminstrator-password)
+  - [2.1 Changing the postgres database administrator password](#21-Changing-the-postgres-database-administrator-password)
+- [3. Configuration File Examples](#3-configuration-file-examples)
+  - [3.1 Postgres user password file](#31-postgres-user-password-file)
+  - [3.2 Authentication Setup (hba.conf)](#32-authentication-setup-hbaconf)
+  - [3.3 Proxy User Setup (ident.conf)](#33-proxy-user-setup-identconf)
+- [4. Tuning](#4-tuning)   
 
-# 1 Installation Prerequistes
+# 1 Installation Prerequisites
 ## 1.1 Postgres
  
 * Uses *pg_dump* and Powershell
@@ -21,6 +27,25 @@ Postgres is best downloaded from Enterprise DB: http://www.enterprisedb.com/prod
 This is standard PostGres as packaged by Enterprise DB and not their own Postgres based product EDB Postgres
 Enterprise/Standard/Developer. An installation guide is at: 
 http://get.enterprisedb.com/docs/PostgreSQL_Installation_Guide_v9.6.pdf
+
+WARNING: The RIF requires Postgres 9.3 or above to work. 9.1 and 9.2 will not work. It has *NOT* yet been tested on Postgres 10.
+
+Postgres is usually setup in one of four ways:
+ 
+1. Standalone mode on a Windows firewalled laptop. This uses local database MD5 passwords and no SSL and is not considered secure for network use.
+2. Secure mode on a Windows server. This uses remote database connections using SSL; with MD5 passwords for psql and Java connectivity.
+3. Secure mode on a Windows server and Active directory network. This uses remote database connections using SSL; with SSPI (Windows GSS 
+   connectivity) for psql and secure LDAP for Java connectivity.
+4. Secure mode on a Linux server and Active directory network. This uses remote database connections using SSL; with GSSAPI/Kerberos for 
+   psql and secure LDAP for Java connectivity.
+
+The front and and middleware require username and password authentications; so method 4 must not be used.
+  
+Postgres also can proxy users (see ident.conf examples are in [Configuration File Examples](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#3-configuration-file-examples)
+Typically this is used to allow remote postgres administrator user authentication and to logon as the schema owner (rif40).
+
+The Postgres installer will ask for a password for Postgres; do **NOT** use internationalised characters, e.g. **£** as the 
+database usually defaults to US ASCII!
 
 The Postgres installer then runs stack builder to download and install the additional packages. 
 Choose the local port. The following additional packages need to be installed:
@@ -37,10 +62,10 @@ Once the install is complete:
 * Add the Postgres bin directory (e.g. *C:\Program Files\PostgreSQL\9.5\bin*) to the path
 * The following should normally be set in your environment:
 
-  * PGDATABASE - sahusland
-  * PGHOST - localhost
+  * PGDATABASE - &lt;your database name&gt;
 
-* Check you can logon as postgres
+* Check you can logon as postgres. If you need to reset the password see 
+[Changing the postgres database administrator password](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#21-Changing-the-postgres-database-administrator-password)
 
   ```
   C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>psql -U postgres -d postgres
@@ -49,25 +74,38 @@ Once the install is complete:
 
   postgres=#  
   ```
-  * If you get a code page error om Windows see 1.1.2 below.
+  * If you get a code page error on Windows see 1.1.2 below.
+  
+### 1.1.0 Memory Requirements
+ 
+Approximately: 
+
+* Windows 10 seems to need 6-8GB to function in normal use; 
+* The database needs 1-2 GB (SQL server will automatically; Postgres will run in less); 
+* R needs 1-2 GB (depends on study size; may need more); 
+* The Middleware 2-3GB;
+* The front end 1-2GB.
+ 
+16GB recommended. If you process large geographies using the Node.js tilemaker 48-64GB is recommended.
 
 ### 1.1.1 Postgres User Setup
 
 The following users are created by the install script (*rif40_database_install.bat*):
 
-* postgres     - The database administrator. You will have set this password when you or the installer created 
+* postgres     - The database administrator. You will have set this password when you created 
                  the Postgres cluster.
-* rif40        - The schema owner. You choose this password (see ENCRYPTED_RIF40_PASSWORD below)
+* rif40        - The schema owner. 
 * &lt;user login&gt; - Your user login. This must be in lowercase and without spaces. 
 
 The install script (*rif40_database_install.bat*) will create your local .pgpass/pgpass.conf files 
-(see Postgres documentation for its location on various OS). 
+(see Postgres documentation for its location on various OS) and create random passwords for *rif40*
+and *&lt;user login&gt;*.
 
 E.g. C:\Users\pch\AppData\Roaming\postgresql\pgpass.conf:
 ```
-wpea-rif1:5432:*:postgres:<password>
-wpea-rif1:5432:*:pch:<password>
-wpea-rif1:5432:*:rif40:<password>
+localhost:5432:*:postgres:<password>
+localhost:5432:*:pch:<password>
+localhost:5432:*:rif40:<password>
 ```
 
 ### 1.1.2 Fixing Windows Code page errors
@@ -85,49 +123,57 @@ Type "help" for help.
 ```
 cmd.exe /c chcp 1252
 ```
-* Or: modify the cmd shortcut to run *cmd.exe /k chcp 1252*
+* Or: modify the cmd shortcut (find the cmd icon, right click, properties, shortcut panel) to run *cmd.exe /k chcp 1252*
 
 # 2 Installing a production database
 
-Run the datbase installer batch script as an adminstrator: rif40_database_install.bat.
+Run the database installer batch script as an administrator: rif40_database_install.bat.
 
 The script will ask the user for:
 
 * The production RIF user name (default: *peter*)
 * The database name (default: *sahsuland*)
-* Postgres databaase adminstrator password (set as part of the database install)
-* RIF40 user password (default: *rif40*)
-* The production RIF user password (default: *peter*)
 
-The script will create the user pgpass.conf (in C:\Users\%USERNAME%\AppData\Roaming\postgresql) and the 
-create the psqlrc psql logon script.
+**ONLY USE LOWERCASE LETTERS, UNDERSCORE AND THE DIGITS 0-9; START WITH A LTTER**
+
+The script will create the user *pgpass.conf* (in *C:\Users\%USERNAME%\AppData\Roaming\postgresql*) and the 
+create the *psqlrc* psql logon script. If required it will:
+
+* Ask the user for the *postgres* databaase administrator password (set as part of the database install)
+* Set RIF40 user password (default: *rif40_&lt;randon digits&gt;_&lt;randon digits&gt;*)
+* The production RIF user password (default: *&lt;username&gt;_&lt;randon digits&gt;_&lt;randon digits&gt;*)
 
 The script runs *db_create.sql* to create the database and users and then restores the database from the
-supplied sahsuland_dev.dump using *pg_restore*.
+supplied *sahsuland.dump* using *pg_restore*.
 
 ```
-C:\rifDemo\Postgres\production>rif40_database_install.bat
+C:\Users\support\Downloads\OneDrive-2018-04-18\Postgres>rif40_database_install.bat
 Creating production RIF Postgres database
 PG_SYSCONFDIR=C:/PROGRA~1/POSTGR~1/9.6/etc
 Administrator PRIVILEGES Detected!
-operable program or batch file.
+New user [default peter]:       pch
+New RIF40 db [default sahsuland]:       trumpton
+Using previously created "C:\Users\support\AppData\Roaming\postgresql\pgpass.conf"
+Adding pch to PG password file: "C:\Users\support\AppData\Roaming\postgresql\pgpass.conf"
 ##########################################################################################
 #
-# WARNING! this script will the drop and create the RIF40 sahsuland Postgres database.
+# WARNING! this script will the drop and create the RIF40 trumpton Postgres database.
 # Type control-C to abort.
 #
-# Test user: peter; password: <peter pw>
-# Postgres password:       <PGPASSWORD>
-# Schema (rif40) password: <rif40 pw>
-# PG password directory:
-# PG sysconfig directory:  C:/PROGRA~1/POSTGR~1/9.6/etc
+# Test user pch; password pch_13958_373
+# Postgres password       XXXXXXXXXX
+# Schema (rif40) password rif4010669_20906
+# PG password directory
+# PG sysconfig directory  C:/PROGRA~1/POSTGR~1/9.6/etc
 #
 ##########################################################################################
 Press any key to continue . . .
 Log: db_create.rpt
-Working directory: C:\rifDemo\Postgres\production
+Working directory: C:\Users\support\Downloads\OneDrive-2018-04-18\Postgres
 Command: psql
-Arguments: -U postgres -d postgres -h localhost -w -e -P pager=off -v testuser=peter -v newdb=sahsuland -v newpw=<peter pw> -v verbosity=terse -v debug_level=1 -v echo=all -v postgres_password=<PGPASSWORD> -v rif40_password=<rif40 pw> -v tablespace_dir= -v pghost=localhost -v os=Windows_NT -f db_create.sql
+Arguments: -U postgres -d postgres -h localhost -w -e -P pager=off -v testuser=pch -v newdb=trumpton -v newpw=pch_13958_373 -v verbo
+sity=terse -v debug_level=1 -v echo=all -v postgres_password=XXXXXXXXXX -v rif40_password=rif4010669_20906 -v tablespace_dir= -v pgh
+ost=localhost -v os=Windows_NT -f db_create.sql
 You are connected to database "postgres" as user "postgres" on host "localhost" at port "5432".
 DO LANGUAGE plpgsql $$
 DECLARE
@@ -155,39 +201,43 @@ BEGIN
 -- Set a default path, schema to user
 --
         IF current_user = 'rif40' THEN
-                sql_stmt:='SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions';
+                sql_stmt:='SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, ri
+f40_partitions';
         ELSE
-                sql_stmt:='SET search_path TO '||USER||',rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions';
+                sql_stmt:='SET search_path TO '||USER||',rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_
+studies, rif40_partitions';
         END IF;
         RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
         EXECUTE sql_stmt;
 END;
 $$;
 psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  RIF startup: not a RIF database
-psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  SQL> SET search_path TO postgres,rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  SQL> SET search_path TO postgres,rif40, public, topology, gis, pop, rif_d
+ata, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
 DO
 BEGIN
 DO
 SET
 SET
-psql:db_create.sql:129: INFO:  db_create.sql() test new database name="sahsuland" is OK
+psql:db_create.sql:129: INFO:  db_create.sql() test new database name="trumpton" is OK
 DO
-Creating sahsuland database if required
+Creating trumpton database if required
 SET
 SET
 psql:db_create.sql:229: INFO:  db_create.sql() User check: postgres
-psql:db_create.sql:229: INFO:  db_create.sql() rif40 password="<rif40 pw>"
-psql:db_create.sql:229: INFO:  db_create.sql() rif40 encrypted password="md5971757ca86c61e2d8f618fe7ab7a32a1"
-psql:db_create.sql:229: INFO:  SQL> SET rif40.encrypted_rif40_password TO 'md5971757ca86c61e2d8f618fe7ab7a32a1';
-psql:db_create.sql:229: INFO:  SQL> SET rif40.rif40_password TO '<rif40 pw>';
-psql:db_create.sql:229: INFO:  db_create.sql() postgres password="<PGPASSWORD>"
-psql:db_create.sql:229: INFO:  db_create.sql() postgres encrypted password="md51d8b49337a87cdc91f4946d42c5c72e8"
-psql:db_create.sql:229: INFO:  SQL> SET rif40.encrypted_postgres_password TO 'md51d8b49337a87cdc91f4946d42c5c72e8';
+psql:db_create.sql:229: INFO:  db_create.sql() rif40 password="<NULL>"
+psql:db_create.sql:229: INFO:  db_create.sql() rif40 needs to be created encrypted password will be ="<NULL>"
+psql:db_create.sql:229: INFO:  SQL> SET rif40.encrypted_rif40_password TO 'md515c55111bdb93bb7543f2480c7384531';
+psql:db_create.sql:229: INFO:  SQL> SET rif40.rif40_password TO 'rif4010669_20906';
+psql:db_create.sql:229: INFO:  db_create.sql() postgres password="XXXXXXXXXX"
+psql:db_create.sql:229: INFO:  db_create.sql() postgres encrypted password="md588c29e12c569ac444b7381647f09e2e1"
+psql:db_create.sql:229: INFO:  SQL> SET rif40.encrypted_postgres_password TO 'md588c29e12c569ac444b7381647f09e2e1';
 DO
-psql:db_create.sql:283: INFO:  db_create.sql() RIF required Postgres version 9.3 or higher OK; current version: PostgreSQL 9.6.3, compiled by Visual C++ build 1800, 64-bit
+psql:db_create.sql:283: INFO:  db_create.sql() RIF required Postgres version 9.3 or higher OK; current version: PostgreSQL 9.6.8, co
+mpiled by Visual C++ build 1800, 64-bit
 DO
 psql:db_create.sql:315: INFO:  db_create.sql() RIF required extension: adminpack V1.0 is installable
-psql:db_create.sql:315: INFO:  db_create.sql() RIF required extension: postgis V2.3.3 is installable
+psql:db_create.sql:315: INFO:  db_create.sql() RIF required extension: postgis V2.3.7 is installable
 psql:db_create.sql:315: INFO:  db_create.sql() RIF required extension: sslinfo V1.2 is installable
 DO
 Create users and roles
@@ -202,9 +252,8 @@ psql:db_create.sql:526: INFO:  db_create.sql() RIF schema role rifupg34 exists
 psql:db_create.sql:526: INFO:  db_create.sql() Role rifupg34 is not a superuser
 psql:db_create.sql:526: INFO:  db_create.sql() RIF schema role rif_student exists
 psql:db_create.sql:526: INFO:  db_create.sql() Role rif_student is not a superuser
-psql:db_create.sql:526: INFO:  db_create.sql() privilege check OK for: rif40
-psql:db_create.sql:526: INFO:  db_create.sql() RIF schema user rif40 exists; changing password to encrypted
-psql:db_create.sql:526: INFO:  SQL> ALTER USER rif40 ENCRYPTED PASSWORD  'md5971757ca86c61e2d8f618fe7ab7a32a1';
+psql:db_create.sql:526: INFO:  SQL> CREATE ROLE rif40 NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION ENCRYPTED PASS
+WORD 'md515c55111bdb93bb7543f2480c7384531';
 psql:db_create.sql:526: INFO:  db_create.sql() privilege check OK for: gis
 psql:db_create.sql:526: INFO:  db_create.sql() RIF schema user gis exists; password is username
 psql:db_create.sql:526: INFO:  SQL> ALTER USER gis PASSWORD  'gis';
@@ -232,12 +281,14 @@ SET
 SET
 SET
 SET
-psql:db_create.sql:660: INFO:  db_create.sql() test user account parameter="peter/<peter pw>" OK
-psql:db_create.sql:660: INFO:  db_create.sql() test user password parameter="peter"
-psql:db_create.sql:660: INFO:  db_create.sql() user account="peter" is a rif_user
-psql:db_create.sql:660: INFO:  SQL> GRANT CONNECT ON DATABASE postgres to peter;
-psql:db_create.sql:660: INFO:  SQL> GRANT rif_manager TO peter;
-psql:db_create.sql:660: INFO:  SQL> GRANT rif_user TO peter;
+psql:db_create.sql:660: INFO:  db_create.sql() test user account parameter="pch/pch" OK
+psql:db_create.sql:660: INFO:  db_create.sql() test user password parameter="pch_13958_373"
+psql:db_create.sql:660: NOTICE:  db_create.sql() C209xx: User account does not exist: pch; creating
+psql:db_create.sql:660: INFO:  SQL> CREATE ROLE pch NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD 'pch_13
+958_373';
+psql:db_create.sql:660: INFO:  SQL> GRANT CONNECT ON DATABASE postgres to pch;
+psql:db_create.sql:660: INFO:  SQL> GRANT rif_manager TO pch;
+psql:db_create.sql:660: INFO:  SQL> GRANT rif_user TO pch;
 psql:db_create.sql:660: INFO:  SQL> GRANT CONNECT ON DATABASE postgres to rif40;
 DO
 COMMIT
@@ -250,27 +301,21 @@ Tuples only is on.
 * Format is: hostname:port:database:username:password
 * An example is supplied in pgpass.conf in the current directory
 *****************************************************************************************************
- localhost:5432:*:peter:<peter pw>
- localhost:5432:*:postgres:<PGPASSWORD>
- localhost:5432:*:rif40:<rif40 pw>
+ localhost:5432:*:postgres:XXXXXXXXXX
+ localhost:5432:*:pch:pch_13958_373
+ localhost:5432:*:rif40:rif4010669_20906
 
 Tuples only is off.
 COPY 3
 DROP VIEW
-WARNING: Console code page (850) differs from Windows code page (1252)
-         8-bit characters might not work correctly. See psql reference
-         page "Notes for Windows users" for details.
-You are now connected to database "postgres" as user "peter".
-Connection as peter to postgres OK!
-            connected
----------------------------------
- Connected to: postgres AS peter
+You are now connected to database "postgres" as user "pch".
+Connection as pch to postgres OK!
+           connected
+-------------------------------
+ Connected to: postgres AS pch
 (1 row)
 
 Try to connect as rif40. This will fail if if the password file is not setup correctly
-WARNING: Console code page (850) differs from Windows code page (1252)
-         8-bit characters might not work correctly. See psql reference
-         page "Notes for Windows users" for details.
 You are now connected to database "postgres" as user "rif40".
 Connection as rif40 to postgres OK!
             connected
@@ -278,15 +323,12 @@ Connection as rif40 to postgres OK!
  Connected to: postgres AS rif40
 (1 row)
 
-WARNING: Console code page (850) differs from Windows code page (1252)
-         8-bit characters might not work correctly. See psql reference
-         page "Notes for Windows users" for details.
 You are now connected to database "postgres" as user "postgres".
 ************************************************************************************
 *
 * WARNING !!!
 *
-* This script will drop sahsuland, re-create it in () or DEFAULT
+* This script will drop trumpton, re-create it in () or DEFAULT
 *
 ************************************************************************************
 SET
@@ -298,7 +340,7 @@ DO
         param         |   value
 ----------------------+------------
  rif40.tablespace_dir |
- rif40.newdb          | sahsuland
+ rif40.newdb          | trumpton
  rif40.os             | windows_nt
 (3 rows)
 
@@ -312,9 +354,9 @@ CREATE VIEW
  --
  -- Rapid Enquiry Facility (RIF) - Database creation autogenerated temp script to create tablespace and databases
  --
- DROP DATABASE IF EXISTS sahsuland;
- CREATE DATABASE sahsuland WITH OWNER rif40 /* No sahsuland tablespace */;
- COMMENT ON DATABASE sahsuland IS 'RIF V4.0 PostGres sahsuland Example Database';
+ DROP DATABASE IF EXISTS trumpton;
+ CREATE DATABASE trumpton WITH OWNER rif40 /* No trumpton tablespace */;
+ COMMENT ON DATABASE trumpton IS 'RIF V4.0 PostGres trumpton Example Database';
  --
  -- Eof
 (12 rows)
@@ -330,20 +372,18 @@ DROP VIEW
 --
 -- Rapid Enquiry Facility (RIF) - Database creation autogenerated temp script to create tablespace and databases
 --
-DROP DATABASE IF EXISTS sahsuland;
+DROP DATABASE IF EXISTS trumpton;
+psql:recreate_sahsu_dev_tmp.sql:8: NOTICE:  database "trumpton" does not exist, skipping
 DROP DATABASE
-CREATE DATABASE sahsuland WITH OWNER rif40 /* No sahsuland tablespace */;
+CREATE DATABASE trumpton WITH OWNER rif40 /* No trumpton tablespace */;
 CREATE DATABASE
-COMMENT ON DATABASE sahsuland IS 'RIF V4.0 PostGres sahsuland Example Database';
+COMMENT ON DATABASE trumpton IS 'RIF V4.0 PostGres trumpton Example Database';
 COMMENT
 --
 -- Eof
 
 \c :newdb postgres :pghost
-WARNING: Console code page (850) differs from Windows code page (1252)
-         8-bit characters might not work correctly. See psql reference
-         page "Notes for Windows users" for details.
-You are now connected to database "sahsuland" as user "postgres".
+You are now connected to database "trumpton" as user "postgres".
 
 --
 -- Start transaction 2: :newdb build
@@ -356,14 +396,16 @@ BEGIN
 \set ECHO none
 SET
 SET
-psql:db_create.sql:911: INFO:  db_create.sql() User check: postgres
-psql:db_create.sql:911: INFO:  SQL> CREATE EXTENSION IF NOT EXISTS postgis;
-psql:db_create.sql:911: INFO:  SQL> CREATE EXTENSION IF NOT EXISTS adminpack;
-psql:db_create.sql:911: INFO:  SQL> CREATE EXTENSION IF NOT EXISTS dblink;
-psql:db_create.sql:911: INFO:  SQL> GRANT ALL ON DATABASE sahsuland to rif40;
-psql:db_create.sql:911: INFO:  SQL> REVOKE CREATE ON SCHEMA public FROM rif40;
-psql:db_create.sql:911: INFO:  SQL> GRANT CONNECT ON DATABASE sahsuland to peter;
-psql:db_create.sql:911: INFO:  SQL> ALTER DATABASE sahsuland SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
+psql:db_create.sql:915: INFO:  db_create.sql() User check: postgres
+psql:db_create.sql:915: INFO:  SQL> CREATE EXTENSION IF NOT EXISTS postgis;
+psql:db_create.sql:915: INFO:  SQL> CREATE EXTENSION IF NOT EXISTS adminpack;
+psql:db_create.sql:915: INFO:  SQL> CREATE EXTENSION IF NOT EXISTS dblink;
+psql:db_create.sql:915: INFO:  SQL> GRANT ALL ON DATABASE trumpton to rif40;
+psql:db_create.sql:915: INFO:  SQL> REVOKE CREATE ON SCHEMA public FROM rif40;
+psql:db_create.sql:915: INFO:  SQL> GRANT CONNECT ON DATABASE trumpton to pch;
+psql:db_create.sql:915: INFO:  SQL> CREATE SCHEMA IF NOT EXISTS pch AUTHORIZATION pch;
+psql:db_create.sql:915: INFO:  SQL> ALTER DATABASE trumpton SET search_path TO rif40, public, topology, gis, pop, rif_data, data_loa
+d, rif40_sql_pkg, rif_studies, rif40_partitions;
 DO
 COMMIT
 ALTER ROLE
@@ -376,61 +418,33 @@ SET
 *****************************************************************************************************
 * Try to connect as test user and rif40
 *****************************************************************************************************
-WARNING: Console code page (850) differs from Windows code page (1252)
-         8-bit characters might not work correctly. See psql reference
-         page "Notes for Windows users" for details.
-You are now connected to database "sahsuland" as user "peter".
-Connection as peter to sahsuland OK!
-            connected
-----------------------------------
- Connected to: sahsuland AS peter
+You are now connected to database "trumpton" as user "pch".
+Connection as pch to trumpton OK!
+           connected
+-------------------------------
+ Connected to: trumpton AS pch
 (1 row)
 
 Try to connect as rif40. This will fail if if the password file is not setup correctly
-WARNING: Console code page (850) differs from Windows code page (1252)
-         8-bit characters might not work correctly. See psql reference
-         page "Notes for Windows users" for details.
-You are now connected to database "sahsuland" as user "rif40".
-Connection as rif40 to sahsuland OK!
+You are now connected to database "trumpton" as user "rif40".
+Connection as rif40 to trumpton OK!
             connected
-----------------------------------
- Connected to: sahsuland AS rif40
+---------------------------------
+ Connected to: trumpton AS rif40
 (1 row)
 
 Command psql ran OK.
-db_create.sql built sahsuland OK
-'EXIST' is not recognized as an internal or external command,
-operable program or batch file.
-Copying generated pgpass.conf to
-The file cannot be copied onto itself.
-        0 file(s) copied.
+db_create.sql built trumpton OK
 Log: pg_restore.rpt
-Working directory: C:\rifDemo\Postgres\production
+Working directory: C:\Users\support\Downloads\OneDrive-2018-04-18\Postgres
 Command: pg_restore
-Arguments: -d sahsuland -U postgres sahsuland_dev.dump
-pg_restore: WARNING:  database "sahsuland_dev" does not exist
-pg_restore: [archiver (db)] Error while PROCESSING TOC:
-pg_restore: [archiver (db)] Error from TOC entry 9; 2615 15640269 SCHEMA hugh hugh
-pg_restore: [archiver (db)] could not execute query: ERROR:  role "hugh" does not exist
-    Command was: ALTER SCHEMA hugh OWNER TO hugh;
-
-
-pg_restore: [archiver (db)] Error from TOC entry 4846; 0 0 ACL hugh hugh
-pg_restore: [archiver (db)] could not execute query: ERROR:  role "hugh" does not exist
-    Command was: REVOKE ALL ON SCHEMA hugh FROM PUBLIC;
-REVOKE ALL ON SCHEMA hugh FROM hugh;
-GRANT ALL ON SCHEMA hugh TO hugh;
-
-
-
-WARNING: errors ignored on restore: 2
-Error in command execution
-pg_restore exiting with error code: 1
-
-C:\rifDemo\Postgres\production>
+Arguments: -d trumpton -U postgres sahsuland.dump
+pg_restore: WARNING:  database "sahsuland" does not exist
+Command pg_restore ran OK.
+pg_restore/psql restored trumpton OK
 ```
 
-## 2.1 Changing the postgres database adminstrator password
+## 2.1 Changing the postgres database administrator password
 
 Check you can logon using psql as the database adminstrator account; *postgres*.
 ```
@@ -443,7 +457,7 @@ postgres=#
 ```
 
 It is possible to login to postgres as postgres without a password using the administrator or 
-root accounts. If you lock yourself out the hba.conf file will need the following line temporary 
+root accounts. If you lock yourself out the *hba.conf* file will need the following line temporary 
 added at the top of the file:
 
 ```
@@ -458,3 +472,268 @@ host  all   all  127.0.0.1/32  trust
 psql -U postgres -d postgres
 ALTER USER postgres PASSWORD <new password>;
 ```
+# 3 Configuration File Examples
+
+If you are running locally only (e.g. on a laptop) you do *NOT* need to edit the configuration files.
+
+## 3.1 Postgres user password file
+
+Postgres user password files are located in:
+
+* Windows *%APPDATA%\Roaming\postgresql\pgpass.conf*, e.g. *C:\Users\pch\AppData\Roaming\postgresql\pgpass.conf*
+* Linux/MacOS: *~/.pgpass*
+
+One line per host, database and account. Fields separated by ":". Order is:
+
+* Host
+* Port
+* Database (usually *)
+* User
+* Password
+```
+localhost:5432:*:postgres:XXXXXXX
+localhost:5432:*:peterh: XXXXXXX
+wpea-pch:5432:*:peterh: XXXXXXX
+wpea-rif1:5432:*:postgres: XXXXXXX
+wpea-rif1:5432:*:pch: XXXXXXX
+```
+
+# 3.2 Authentication Setup (hba.conf)
+
+You **MUST** read the Postgres manuals before editing this file.
+
+Fields separated by TAB.
+
+* TYPE: Connection type:
+  * local: UDP
+  * host: TCP/IP
+  * hostssl: TCP/IP with TLS
+* DATABASE: Database name      
+* USER: Username           
+* ADDRESS: Host/address mask                
+* METHOD:
+  * Non mappable:
+	  * trust: Allow with authentication (useful if you have locked yourself out by chnaginbg hte password!
+	  * reject: disallow
+	  * md5: MD5 password authentication
+	  * password: plain text password (**INSECURE: DO NOT USE**)
+	  * krb5: Kerberos 5 (**OBSOLETED: use GSSAPI**)
+	  * ldap: directory services
+	  * radius: RADIUS authentication
+	  
+  * Mappable using ident.conf (i.e. support proxying):
+	  * ident: Identification Protocol as described in RFC 1413 (**INSECURE: DO NOT USE**)
+	  * peer: Peer authentication is only available on operating systems providing the getpeereid() function, 
+			  the SO_PEERCRED socket parameter, or similar mechanisms. Currently that includes Linux, most flavors 
+			  of BSD including OS X, and Solaris.
+	  * gss: GSSAPI/Kerberos			  
+	  * pam: Linux PAM (Pluggable authentication modules)  
+	  * sspi: Windows native autentiation (NTLM V2) 
+	  * cert: Uses SSL client certificates to perform authentication. It is therefore only available for SSL connections. 
+
+```
+# PostgreSQL Client Authentication Configuration File
+# ===================================================
+#
+# Refer to the "Client Authentication" section in the PostgreSQL
+# documentation for a complete description of this file.  A short
+# synopsis follows.
+#
+# This file controls: which hosts are allowed to connect, how clients
+# are authenticated, which PostgreSQL user names they can use, which
+# databases they can access.  Records take one of these forms:
+#
+# local      DATABASE  USER  METHOD  [OPTIONS]
+# host       DATABASE  USER  ADDRESS  METHOD  [OPTIONS]
+# hostssl    DATABASE  USER  ADDRESS  METHOD  [OPTIONS]
+# hostnossl  DATABASE  USER  ADDRESS  METHOD  [OPTIONS]
+#
+# (The uppercase items must be replaced by actual values.)
+#
+# The first field is the connection type: "local" is a Unix-domain
+# socket, "host" is either a plain or SSL-encrypted TCP/IP socket,
+# "hostssl" is an SSL-encrypted TCP/IP socket, and "hostnossl" is a
+# plain TCP/IP socket.
+#
+# DATABASE can be "all", "sameuser", "samerole", "replication", a
+# database name, or a comma-separated list thereof. The "all"
+# keyword does not match "replication". Access to replication
+# must be enabled in a separate record (see example below).
+#
+# USER can be "all", a user name, a group name prefixed with "+", or a
+# comma-separated list thereof.  In both the DATABASE and USER fields
+# you can also write a file name prefixed with "@" to include names
+# from a separate file.
+#
+# ADDRESS specifies the set of hosts the record matches.  It can be a
+# host name, or it is made up of an IP address and a CIDR mask that is
+# an integer (between 0 and 32 (IPv4) or 128 (IPv6) inclusive) that
+# specifies the number of significant bits in the mask.  A host name
+# that starts with a dot (.) matches a suffix of the actual host name.
+# Alternatively, you can write an IP address and netmask in separate
+# columns to specify the set of hosts.  Instead of a CIDR-address, you
+# can write "samehost" to match any of the server's own IP addresses,
+# or "samenet" to match any address in any subnet that the server is
+# directly connected to.
+#
+# METHOD can be "trust", "reject", "md5", "password", "gss", "sspi",
+# "krb5", "ident", "peer", "pam", "ldap", "radius" or "cert".  Note that
+# "password" sends passwords in clear text; "md5" is preferred since
+# it sends encrypted passwords.
+#
+# OPTIONS are a set of options for the authentication in the format
+# NAME=VALUE.  The available options depend on the different
+# authentication methods -- refer to the "Client Authentication"
+# section in the documentation for a list of which options are
+# available for which authentication methods.
+#
+# Database and user names containing spaces, commas, quotes and other
+# special characters must be quoted.  Quoting one of the keywords
+# "all", "sameuser", "samerole" or "replication" makes the name lose
+# its special character, and just match a database or username with
+# that name.
+#
+# This file is read on server startup and when the postmaster receives
+# a SIGHUP signal.  If you edit the file on a running system, you have
+# to SIGHUP the postmaster for the changes to take effect.  You can
+# use "pg_ctl reload" to do that.
+
+# Put your actual configuration here
+# ----------------------------------
+#
+# If you want to allow non-local connections, you need to add more
+# "host" records.  In that case you will also need to make PostgreSQL
+# listen on a non-local interface via the listen_addresses
+# configuration parameter, or via the -i or -h command line switches.
+
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# IPv4, IPv6 local connections:
+#
+host    all             postgres	127.0.0.1/32            md5
+host    all             postgres      ::1/128                 md5
+hostssl all		 postgres     146.179.138.xxx 	  255.255.255.255    md5
+#
+# Allow local connections as schema owner (usually use a proxy)
+# 
+#hostssl    sahsuland	   pop             127.0.0.1/32            md5
+#hostssl    sahsuland	   pop             ::1/128                 md5
+#hostssl    sahsuland	   gis             127.0.0.1/32            md5
+#hostssl    sahsuland	   gis             ::1/128                 md5
+#hostssl    sahsuland	   rif40           127.0.0.1/32            md5
+#hostssl    sahsuland	   rif40           ::1/128                 md5
+#
+# Active directory GSSAPI connections with pg_ident.conf maps for schema accounts
+#
+hostssl	sahsuland	all	 	127.0.0.1/32 		sspi 	map=sahsuland
+hostssl	sahsuland	all	 	::1/128 		sspi 	map=sahsuland
+hostssl	sahsuland_dev	all	 	127.0.0.1/32 		sspi 	map=sahsuland_dev
+hostssl	sahsuland_dev	all	 	::1/128 		sspi 	map=sahsuland_dev
+#
+# Allow remote access from specified IP addresses by:
+#
+# a) SSPI (Windows native GSS [Kerberos] machanism
+#
+hostssl	sahsuland	all	 	146.179.138. xxx	255.255.255.255	sspi 	map=sahsuland
+hostssl	sahsuland_dev	all	 	146.179.138. xxx	255.255.255.255	sspi 	map=sahsuland_dev
+#
+# b) LDAP (to be fixed – need to use different server
+#
+# hostssl	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapurl="ldaps:// xxx.ic.ac.uk/basedn;cn=;,o=Imperial College,c=GB" 
+# 
+# No LDAP URLs or username map on Windows
+#
+# 2014-03-12 13:44:24 GMT LOG: 00000: LDAP login failed for user "cn=pch,o=Imperial College,c=GB" on server " xxx.ic.ac.uk": Invalid Credentials 2014-03-12 13:44:24 GMT LOCATION: CheckLDAPAuth, src\backend\libpq\auth.c:2321 
+#
+#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix="uid=" ldapsuffix=",ou=phs,o=Imperial College,c=GB"	
+#
+# 2014-03-12 13:50:33 GMT LOG: 00000: LDAP login failed for user "pch@IC.AC.UK" on server " xxx.ic.ac.uk": Invalid DN Syntax 2014-03-12 13:50:33 GMT LOCATION: CheckLDAPAuth, src\backend\libpq\auth.c:2321 
+#
+#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix= ldapsuffix="@IC.AC.UK"	
+#host	sahsuland_dev	all	 	146.179.138.157 	255.255.255.255 ldap ldapserver= xxx.ic.ac.uk ldapprefix= ldapsuffix=",o=Imperial College,c=GB"	
+#
+# Other databases
+# 
+hostssl	traffic		all	 	127.0.0.1/32 		sspi
+hostssl	traffic		all	 	::1/128 		sspi
+hostssl	traffic		all	 	146.179.138. xxx	255.255.255.255	sspi
+#	
+#host    all             all             127.0.0.1/32            md5
+#host    all             all             ::1/128                 md5
+# Allow replication connections from localhost, by a user with the
+# replication privilege.
+#host    replication     postgres        127.0.0.1/32            md5
+#host    replication     postgres        ::1/128                 md5
+```
+
+# 3.3 Proxy User Setup (ident.conf)
+
+You **MUST** read the Postgres manuals before editing this file.
+
+One line per per system user and map, fields separated by TAB in the order:
+
+* MAPNAME: map name in hba.conf (not all authentication types can proxy - e.g. md5 cannot!)       
+* SYSTEM-USERNAME: account name to proxy for         
+* PG-USERNAME: account name to authenticate as
+
+```
+# PostgreSQL User Name Maps
+# =========================
+#
+# Refer to the PostgreSQL documentation, chapter "Client
+# Authentication" for a complete description.  A short synopsis
+# follows.
+#
+# This file controls PostgreSQL user name mapping.  It maps external
+# user names to their corresponding PostgreSQL user names.  Records
+# are of the form:
+#
+# MAPNAME  SYSTEM-USERNAME  PG-USERNAME
+#
+# (The uppercase quantities must be replaced by actual values.)
+#
+# MAPNAME is the (otherwise freely chosen) map name that was used in
+# pg_hba.conf.  SYSTEM-USERNAME is the detected user name of the
+# client.  PG-USERNAME is the requested PostgreSQL user name.  The
+# existence of a record specifies that SYSTEM-USERNAME may connect as
+# PG-USERNAME.
+#
+# If SYSTEM-USERNAME starts with a slash (/), it will be treated as a
+# regular expression.  Optionally this can contain a capture (a
+# parenthesized subexpression).  The substring matching the capture
+# will be substituted for \1 (backslash-one) if present in
+# PG-USERNAME.
+#
+# Multiple maps may be specified in this file and used by pg_hba.conf.
+#
+# No map names are defined in the default configuration.  If all
+# system user names and PostgreSQL user names are the same, you don't
+# need anything in this file.
+#
+# This file is read on server startup and when the postmaster receives
+# a SIGHUP signal.  If you edit the file on a running system, you have
+# to SIGHUP the postmaster for the changes to take effect.  You can
+# use "pg_ctl reload" to do that.
+
+# Put your actual configuration here
+# ----------------------------------
+
+# MAPNAME       SYSTEM-USERNAME         PG-USERNAME
+#
+sahsuland	pch			pop
+sahsuland	pch			gis
+sahsuland	pch			rif40
+sahsuland	pch			pch
+#
+sahsuland_dev	pch			pop
+sahsuland_dev	pch			gis
+sahsuland_dev	pch			rif40
+sahsuland_dev	pch			pch
+sahsuland_dev	pch			postgres
+#
+# Eof
+```
+
+# 4 Tuning
+
+To be added.

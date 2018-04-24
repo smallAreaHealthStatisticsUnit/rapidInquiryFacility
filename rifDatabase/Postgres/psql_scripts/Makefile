@@ -353,9 +353,9 @@ sahsuland.sql: ../production/sahsuland.sql
 sahsuland.dump: ../production/sahsuland.dump	
 # make dependent on completed target
 ../production/sahsuland.sql: 
-	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -v -C sahsuland > ../production/sahsuland.sql
+	pg_dump -U postgres -w -F plain -T '*x_uk*' -T '*.x_ew01*' -N $(TESTUSER) -v -C sahsuland > ../production/sahsuland.sql
 ../production/sahsuland.dump:	
-	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../production/sahsuland.dump	
+	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -N $(TESTUSER) -v sahsuland > ../production/sahsuland.dump	
 #- sahsuland_dev_dump: Dump sahsuland_dev database to plain SQL, excluding UK91, EW01 shapefile data from non dev dumps
 #-                     Used to create sahsuland
 sahsuland_dev_dump: ../production/sahsuland_dev.dump 
@@ -363,7 +363,7 @@ sahsuland_dev_dump: ../production/sahsuland_dev.dump
 	pg_dump -U postgres -w -F custom -Z 9 -T '*x_uk*' -T '*.x_ew01*' -v sahsuland_dev > ../production/sahsuland_dev.dump	
 #
 ../production/sahsuland.dump:
-	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -v sahsuland > ../production/sahsuland.dump		
+	pg_dump -U postgres -w -F custom -T '*x_uk*' -T '*.x_ew01*' -N $(TESTUSER) -v sahsuland > ../production/sahsuland.dump		
 	
 #-
 #- 4. test
@@ -449,7 +449,7 @@ endif
 #	$(MAKE) -C ../Node topojson_convert PGDATABASE=sahsuland
 	$(MAKE) clean v4_0_vacuum_analyse_dev PGDATABASE=sahsuland
 	$(MAKE) -C test_scripts clean all PGDATABASE=sahsuland	
-	$(MAKE) sahsuland.sql
+	$(MAKE) sahsuland.dump
 ifneq ($(OS),Windows_NT)
 ifneq ($(UNAME_S),Darwin)	
 	-$(MAKE) -C ../../ERD dbms_tools

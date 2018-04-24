@@ -51,13 +51,6 @@ GO
 SELECT geolevel_name, geolevel_id, description FROM rif40.rif40_geolevels WHERE geography = 'SAHSULAND';
 GO
 
-IF NOT EXISTS (SELECT project FROM rif40.t_rif40_projects WHERE project = 'TEST')
-INSERT INTO rif40.t_rif40_projects (project, description) VALUES ('TEST', 'Test project');
-GO
-IF NOT EXISTS (SELECT project FROM rif40.t_rif40_user_projects WHERE project = 'TEST')
-INSERT INTO rif40.t_rif40_user_projects (project, username) VALUES ('TEST', USER);
-GO
-
 SELECT * FROM rif40.rif40_projects;
 GO
 SELECT * FROM rif40.rif40_user_projects;

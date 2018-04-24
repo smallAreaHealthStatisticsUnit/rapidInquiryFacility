@@ -129,12 +129,12 @@ REM
 	exit /b 1
 ) else (
 REM
-REM Run a test study
+REM Run a test study (don't R/ODBC not setup yet!)
 REM
-	sqlcmd -U %NEWUSER% -P %NEWPW% -d %NEWDB% -b -m-1 -e -i rif40_run_study.sql
-	if %errorlevel% neq 0  (
-		ECHO Both %NEWDB% and sahsuland_dev built OK; test study failed
-	)	
+REM	sqlcmd -U %NEWUSER% -P %NEWPW% -d %NEWDB% -b -m-1 -e -i rif40_run_study.sql
+REM	if %errorlevel% neq 0  (
+REM		ECHO Both %NEWDB% and sahsuland_dev built OK; test study failed
+REM	)	
 REM
 REM Clear seetings
 REM

@@ -353,6 +353,34 @@ EXEC sys.sp_addextendedproperty @name=N'MS_Description',
 	@level2type=N'COLUMN',@level2name=N'auto_indirect_error'
 GO
 
+--
+-- Fix projects for user, creating if required and possible 
+-- Assumes that the first time it is run the install usder has rif_manager privilege
+--
+BEGIN
+	DECLARE @has_rif_manager INTEGER = IS_MEMBER('rif_manager');
+	DECLARE @username		 VARCHAR(240) = N'$(NEWUSER)'; 
+	IF @username = '$(NEWUSER)' SET @username = USER;
+	IF NOT EXISTS (SELECT project FROM rif40.t_rif40_projects WHERE project = 'TEST') 
+		BEGIN
+			IF @has_rif_manager = 1 OR @username = 'dbo'
+				BEGIN
+					INSERT INTO rif40.t_rif40_projects (project, description) VALUES ('TEST', 'Test project');
+					IF NOT EXISTS (SELECT project FROM rif40.t_rif40_user_projects WHERE project = 'TEST')
+						INSERT INTO rif40.t_rif40_user_projects (project, username) VALUES ('TEST', N'$(NEWUSER)');
+				END;
+			ELSE IF @has_rif_manager IS NULL
+				RAISERROR(N'RIF_MANAGER role does not exist', 16, 1);
+			ELSE 
+				RAISERROR(N'TEST project does not exist, user %s does not have the rif_manager role (%d) to create it.', 16, 1, @username, @has_rif_manager);
+		END;
+	ELSE IF NOT EXISTS (SELECT project FROM rif40.t_rif40_user_projects WHERE project = 'TEST')
+		INSERT INTO rif40.t_rif40_user_projects (project, username) VALUES ('TEST', @username);
+	ELSE
+		PRINT 'Project TEST is OK for ' + @username;	
+END;
+GO
+
 /*
 EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
 	@value=N'RIF numerator foreign data wrappers table create status: C (Created, no errors), E(Created, errors in test SELECT), N(Not created, errors).', 

@@ -1994,8 +1994,8 @@ Todo:
 
 #### 5th to 9th March
 
-* Wecome Martin McCallion
-* RIF deoplyment meeting with Hima
+* Welcome Martin McCallion
+* RIF deployment meeting with Hima
 * RIF team meeting 
 * Makefile improvements
 * Rounding control, improvements to range displays
@@ -2149,3 +2149,26 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 * Test covariate extracts and maps with and without additional covariate (SES); OK: issues is with the reports. First year is not being inserted (caused by Postgres EXPLAIN VERBOSE); fixed;
   Rechecked all counts in extract and map tables, all OK
 * Fix for incorrect denominator totals in report
+* 2nd round of Postgres port tests.
+* Added standalone documentation
+* Upgrade Postgres install script to same capability as SQL Server script (can define DB and user); added support for pgpass.conf 
+* Configured tomcat on wsrifdb1;
+* wsrifdb1 is slow:
+  * Network speed is around 10-20Mb/s (slower than my home broadband in rural Norfolk);
+  * test 1002 took 120.7 compared to 83.1/37.6 on my desktop;
+  * test 1003 took 281.1 compared to 167.1/82.5 on my desktop;
+  [Note: no server memory tuning. SQL Server uses 20-100x more memory]
+* SQL Server build and then install on wsrifdb2.
+  * test 1002 took 120.7 compared to 54.8/41.4 on my desktop;
+  * test 1003 took 281.1 compared to 108.6/92.7 on my desktop;
+* ODBC setup issues - fully documented
+* SQL Server build sahsuland OK, issues with installer sahsuland (no projects listed).
+* XXE Security Vulnerability (prohibit external file parsing raised. Fixed.
+  https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/f75b538058fd43dc124660ad1bdf9290a259f23f/taxonomyServices/src/main/java/taxonomyServices/ICD10TaxonomyTermParser.java#L156
+  https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#JAXP_DocumentBuilderFactory.2C_SAXParserFactory_and_DOM4J
+* Fix for missing rif40_projects/rif40_user_projects data
+* Check R environment is setup correctly on rifServices start to assist tracing installation faults:
+  - R_HOME in PATH
+  - %R_HOME%/bin/x64 in PATH
+  - %R_HOME%/library/rJava/jri/x64 in PATH
+  

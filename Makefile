@@ -46,6 +46,7 @@
 #
 
 OS?=Unknown
+GRIP=python -m grip
 ifeq ($(OS),Windows_NT)
 	MAVEN=mvn
 	7ZIP="C:\Program Files\7-Zip\7z.exe"
@@ -91,6 +92,18 @@ itgovernancetool:
 	$(MAVEN) --version
 	cd rifITGovernanceTool && $(MAVEN) $(MAVEN_FLAGS) install
 #	$(COPY) rifITGovernanceTool\target\rifITGovernanceTool-jar-with-dependencies.jar rifITGovernanceTool-jar-with-dependencies.jar
+	
+# docs: requires grip (https://github.com/joeyespo/grip) to be installed
+doc: 
+	$(GRIP) rifWebApplication\Readme.md --export docs\RIF_Web_Application_Installation.html
+	$(GRIP) rifDatabase\Postgres\production\windows_install_from_pg_dump.md --export docs\RIF_Postgres_Install.html
+	$(GRIP) rifDatabase\SQLserver\production\INSTALL.md --export docs\RIF_SQLserver_Install.html
+	$(GRIP) rifDatabase\DataLoaderData\DataLoading.md --export docs\RIF_manual_data_loading.html
+	$(COPY) "Documentation\RIF v4 0 Manual.pdf" "docs\RIF_v40_Manual.pdf"
+	$(COPY) "Documentation\RIF Data Loader Manual.pdf" "docs\RIF_Data_Loader_Manual.pdf"
+	$(GRIP) docs\README.md --export docs\index.html
+	$(7ZIP) a -r docs.7z "docs\\*"
+	$(7ZIP) l docs.7z
 	
 RIF4: 
 	cd rifWebApplication/src/main/webapp/WEB-INF && $(7ZIP) a -r ../../../../../RIF4.7z *
