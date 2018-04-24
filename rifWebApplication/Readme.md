@@ -1558,7 +1558,7 @@ The downloaded binary packages are in
 	
 	* **RESTART YOUR ADMINISTRATOR WINDOW TO PICK UP YOUR CHANGES** 
 	* [You can now start the rif](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#133-running-tomcat-on-the-command-line) (using the *start_rif.bat* script or by running *catalina.bat start* in the directory 
-	  *%CATALOINA_HOME%\bin* as an Administrator.). The web services will fail to start on the first user logon if the R environment not setup correctly]; see:
+	  *%CATALINA_HOME%\bin* as an Administrator.). The web services will fail to start on the first user logon if the R environment not setup correctly]; see:
   [4.4.5 RIF Services crash on logon](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#445-rif-services-crash-on-logon). 
 	* Then you can logon. See section 5 
 	  [Running the RIF](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#5-running-the-rif) 
@@ -1652,7 +1652,7 @@ See *3.1.2 Taxonomy Service*, and *4.4.3 Unable to unpack war files*
 
 ### 4.4.5 RIF Services crash on logon  
 
-The rifServices startup the following checks are carried out to assist tracing installation faults:
+On rifServices startup the following checks are carried out to assist tracing installation faults:
 
 * CATALINA_HOME is set 
 * The R environment is setup correctly on rifServices start :
