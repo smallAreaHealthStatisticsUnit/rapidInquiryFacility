@@ -2167,4 +2167,8 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
   https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/f75b538058fd43dc124660ad1bdf9290a259f23f/taxonomyServices/src/main/java/taxonomyServices/ICD10TaxonomyTermParser.java#L156
   https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#JAXP_DocumentBuilderFactory.2C_SAXParserFactory_and_DOM4J
 * Fix for missing rif40_projects/rif40_user_projects data
+* Check R environment is setup correctly on rifServices start to assist tracing installation faults:
+  - R_HOME in PATH
+  - %R_HOME%/bin/x64 in PATH
+  - %R_HOME%/library/rJava/jri/x64 in PATH
   
