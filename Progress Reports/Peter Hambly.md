@@ -2159,8 +2159,16 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
   * test 1003 took 281.1 compared to 167.1/82.5 on my desktop;
   [Note: no server memory tuning. SQL Server uses 20-100x more memory]
 * SQL Server build and then install on wsrifdb2.
+  * test 1002 took 120.7 compared to 54.8/41.4 on my desktop;
+  * test 1003 took 281.1 compared to 108.6/92.7 on my desktop;
 * ODBC setup issues - fully documented
 * SQL Server build sahsuland OK, issues with installer sahsuland (no projects listed).
-* XXE Security Vulnerability (prohibit external file parsing raised.
+* XXE Security Vulnerability (prohibit external file parsing raised. Fixed.
   https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/f75b538058fd43dc124660ad1bdf9290a259f23f/taxonomyServices/src/main/java/taxonomyServices/ICD10TaxonomyTermParser.java#L156
   https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#JAXP_DocumentBuilderFactory.2C_SAXParserFactory_and_DOM4J
+* Fix for missing rif40_projects/rif40_user_projects data
+* Check R environment is setup correctly on rifServices start to assist tracing installation faults:
+  - R_HOME in PATH
+  - %R_HOME%/bin/x64 in PATH
+  - %R_HOME%/library/rJava/jri/x64 in PATH
+  

@@ -140,9 +140,7 @@ public class ICD10ClaMLTaxonomyProviderTest {
 			actualRootTerm.getLabel(), 
 			"II");
 
-		assertEquals(
-			actualRootTerm.getDescription(), 
-			"Neoplasms");		
+		assertEquals("Neoplasms", actualRootTerm.getDescription().trim());
 	}
 	
 	/**

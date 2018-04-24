@@ -9,6 +9,8 @@ import rifGenericLibrary.taxonomyServices.AbstractTaxonomyService;
 import rifGenericLibrary.taxonomyServices.TaxonomyServiceConfiguration;
 import taxonomyServices.system.TaxonomyServiceError;
 
+import rifGenericLibrary.util.TaxonomyLogger;
+
 import java.io.File;
 
 /**
@@ -84,6 +86,8 @@ public class ICDTaxonomyService
 	// ==========================================
 	// Section Constants
 	// ==========================================
+	private static final TaxonomyLogger rifLogger = TaxonomyLogger.getLogger();
+	private static String lineSeparator = System.getProperty("line.separator");
 
 	// ==========================================
 	// Section Properties
@@ -113,9 +117,12 @@ public class ICDTaxonomyService
 		final String defaultResourceDirectoryPath,
 		final TaxonomyServiceConfiguration taxonomyServiceConfiguration) 
 		throws RIFServiceException {
+			
+		String name = "UNKNOWN";
+		String description = "UNKNOWN";
 		
 		try {
-			ICD10TaxonomyTermParser icd10TaxonomyParser 
+			ICD10TaxonomyTermParser icd1011TaxonomyParser 
 				= new ICD10TaxonomyTermParser();			
 			
 			setTaxonomyServiceConfiguration(taxonomyServiceConfiguration);
@@ -123,33 +130,53 @@ public class ICDTaxonomyService
 			ArrayList<Parameter> parameters
 				= taxonomyServiceConfiguration.getParameters();
 		
-			Parameter icd10FileParameter
-				= Parameter.getParameter("icd10_ClaML_file", parameters);
+			Parameter icd1011FileParameter = Parameter.getParameter("icd10_ClaML_file", parameters);
+			if (icd1011FileParameter == null) {
+				icd1011FileParameter = Parameter.getParameter("icd11_ClaML_file", parameters);
+			}
+			name = taxonomyServiceConfiguration.getName();
+			description = taxonomyServiceConfiguration.getDescription();
 			
-			if (icd10FileParameter == null) {
+			if (icd1011FileParameter == null) {
 				//ERROR: initialisation parameters are missing a required parameter value				
 				String errorMessage
-					= "ICD10 taxonomy service is missing a parameter for \"icd10_ClaML_file\"";
+					= "ICD10/11 taxonomy service: " + name + " is missing a parameter for \"icd10_ClaML_file\" or \"icd11_ClaML_file\"";
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
 						TaxonomyServiceError.HEALTH_CODE_TAXONOMY_SERVICE_ERROR,
 						errorMessage);
-				setServiceWorking(false);
 				throw rifServiceException;
 			}		
 		
-			StringBuilder icd10FileName = new StringBuilder();
-			icd10FileName.append(defaultResourceDirectoryPath);
-			icd10FileName.append(File.separator);
-			icd10FileName.append(icd10FileParameter.getValue());
+			StringBuilder icd1011FileName = new StringBuilder();
+			icd1011FileName.append(defaultResourceDirectoryPath);
+			icd1011FileName.append(File.separator);
+			icd1011FileName.append(icd1011FileParameter.getValue());
 			
-			File icd10File = new File(icd10FileName.toString());
-			
-			icd10TaxonomyParser.readFile(icd10File);
-			setTaxonomyTermManager(icd10TaxonomyParser.getTaxonomyTermManager());
-			setServiceWorking(true);
+			File icd1011File = new File(icd1011FileName.toString());
+			if (icd1011File.exists()) {		
+				icd1011TaxonomyParser.readFile(icd1011File);
+				rifLogger.info(this.getClass(), "icd101/1TaxonomyParser: " + name + " read: \"" + icd1011FileName + "\".");
+				setTaxonomyTermManager(icd1011TaxonomyParser.getTaxonomyTermManager());
+				setServiceWorking(true);
+				rifLogger.info(this.getClass(), "icd101/1TaxonomyParser: " + name + " initialised: " + description + ".");
+			}
+			else {
+				//ERROR: initialisation parameters are missing a required parameter value				
+				String errorMessage
+					= "ICD10/11 taxonomy service: " + name + " file: \"" + icd1011FileParameter + "\" not found.";
+				RIFServiceException rifServiceException
+					= new RIFServiceException(
+						TaxonomyServiceError.HEALTH_CODE_TAXONOMY_SERVICE_ERROR,
+						errorMessage);
+				throw rifServiceException;
+			}
 		}
 		catch(RIFServiceException rifServiceException) {
+			rifLogger.error(
+				this.getClass(), 
+				"ICD10/11 taxonomy service: " + name + " initialiseService() error", 
+				rifServiceException);
 			setServiceWorking(false);
 		}
 	}
