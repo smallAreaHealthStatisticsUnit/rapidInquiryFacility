@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import org.apache.commons.lang.SystemUtils;
+
 import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
@@ -348,10 +350,10 @@ public class RIFServiceStartupOptions {
 	 * - %R_HOME%/bin/x64 in PATH
 	 * - %R_HOME%/library/rJava/jri/x64 in PATH
 	 *
-	 * @param environmentalVariables map
-	 */	
-	private void checkREnvironment(Map<String, String> environmentalVariables) 
-		throws RIFServiceException {
+	 */
+	private void checkREnvironment() throws RIFServiceException {
+
+		Map<String, String> environmentalVariables = System.getenv();
 		String rHome = environmentalVariables.get("R_HOME");
 		
 		if (rHome == null) {
@@ -362,62 +364,72 @@ public class RIFServiceStartupOptions {
 			rifLogger.error(this.getClass(), "RIFServiceStartupOptions error", rifServiceException);
 			throw rifServiceException;
 		}
-		rifLogger.info(this.getClass(), "Check R_HOME=" + rHome);
-		String rBin = rHome + File.separator + "bin" + File.separator + "x64";
-		String jri = rHome + File.separator + "library" + File.separator + "rJava" + File.separator + "jri" + File.separator + "x64";
-		boolean rBinFound=false;
-		boolean jriFound=false;
-		String Path = environmentalVariables.get("Path"); 	// Windows
-		if (Path == null) {
-			Path = environmentalVariables.get("PATH"); 		// Linux
-			if (Path == null) {
+
+		// Do the following checks only on 64-bit Windows.
+		if (SystemUtils.IS_OS_WINDOWS && SystemUtils.OS_ARCH.equals("64")) {
+
+			rifLogger.info(this.getClass(), "Check R_HOME=" + rHome);
+			String rBin = rHome + File.separator + "bin" + File.separator + "x64";
+			String jri =
+					rHome + File.separator + "library" + File.separator + "rJava" + File.separator
+					+ "jri" + File.separator + "x64";
+			boolean rBinFound = false;
+			boolean jriFound = false;
+			String path = environmentalVariables.get("Path");    // Windows
+			if (path == null) {
+				path = environmentalVariables.get("PATH");        // Linux
+				if (path == null) {
+					RIFServiceException rifServiceException
+							= new RIFServiceException(
+							RIFServiceError.INVALID_STARTUP_OPTIONS,
+							"Path/PATH not set in the environment");
+					rifLogger.error(this.getClass(), "RIFServiceStartupOptions error",
+					                rifServiceException);
+					throw rifServiceException;
+				}
+			}
+
+			StringBuilder pathList = new StringBuilder();
+			String[] parts = path.split(File.pathSeparator);
+			for (int i = 0; i < parts.length; i++) {
+				if (parts[i].equals(rBin)) {
+					rBinFound = true;
+					pathList.append("R bin [" + i + "] " + parts[i] + ";" + lineSeparator);
+				} else if (parts[i].equals(jri)) {
+					jriFound = true;
+					pathList.append("JRI [" + i + "] " + parts[i] + ";" + lineSeparator);
+				} else {
+					pathList.append("[" + i + "] " + parts[i] + ";" + lineSeparator);
+				}
+			}
+			rifLogger.info(this.getClass(),
+			               "Check Path/PATH for required R components:" + lineSeparator
+			               + pathList.toString());
+			if (!rBinFound && !jriFound) {
 				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.INVALID_STARTUP_OPTIONS, 
-						"Path/PATH not set in the environment");
-				rifLogger.error(this.getClass(), "RIFServiceStartupOptions error", rifServiceException);
+						= new RIFServiceException(
+						RIFServiceError.INVALID_STARTUP_OPTIONS,
+						jri + " and " + rBin + " not in Path/PATH");
+				rifLogger.error(this.getClass(), "RIFServiceStartupOptions error",
+				                rifServiceException);
+				throw rifServiceException;
+			} else if (!jriFound) {
+				RIFServiceException rifServiceException
+						= new RIFServiceException(
+						RIFServiceError.INVALID_STARTUP_OPTIONS,
+						jri + " not in Path/PATH");
+				rifLogger.error(this.getClass(), "RIFServiceStartupOptions error",
+				                rifServiceException);
+				throw rifServiceException;
+			} else if (!rBinFound) {
+				RIFServiceException rifServiceException
+						= new RIFServiceException(
+						RIFServiceError.INVALID_STARTUP_OPTIONS,
+						rBin + " not in Path/PATH");
+				rifLogger.error(this.getClass(), "RIFServiceStartupOptions error",
+				                rifServiceException);
 				throw rifServiceException;
 			}
-		}
-		StringBuilder pathList = new StringBuilder();
-		String[] parts = Path.split(";");
-		for(int i=0; i < parts.length; i++) {
-			if (parts[i].equals(rBin)) {
-				rBinFound=true;
-				pathList.append("R bin [" + i + "] " + parts[i] + ";" + lineSeparator);
-			}
-			else if (parts[i].equals(jri)) {
-				jriFound=true;
-				pathList.append("JRI [" + i + "] " + parts[i] + ";" + lineSeparator);
-			}
-			else {
-				pathList.append("[" + i + "] " + parts[i] + ";" + lineSeparator);
-			}
-		}
-		rifLogger.info(this.getClass(), "Check Path/PATH for required R components:" + lineSeparator + pathList.toString());
-		if (!rBinFound && !jriFound) {
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.INVALID_STARTUP_OPTIONS, 
-					jri + " and " + rBin  + " not in Path/PATH");
-			rifLogger.error(this.getClass(), "RIFServiceStartupOptions error", rifServiceException);
-			throw rifServiceException;
-		}
-		else if (!jriFound) {
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.INVALID_STARTUP_OPTIONS, 
-					jri + " not in Path/PATH");
-			rifLogger.error(this.getClass(), "RIFServiceStartupOptions error", rifServiceException);
-			throw rifServiceException;
-		}
-		else if (!rBinFound) {
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.INVALID_STARTUP_OPTIONS, 
-					rBin + " not in Path/PATH");
-			rifLogger.error(this.getClass(), "RIFServiceStartupOptions error", rifServiceException);
-			throw rifServiceException;
 		}
 	}
 	
@@ -433,11 +445,14 @@ public class RIFServiceStartupOptions {
 		
 	}
 	
-	public String getRIFServiceResourcePath() {
+	public String getRIFServiceResourcePath() throws RIFServiceException {
 
 		if (isWebDeployment) {
 
 			rifLogger.info(getClass(), "RIFServiceStartupOptions is web deployment");
+
+			checkREnvironment(); // Check R environment is setup correctly
+			printJavaLibraryPath(); // Check java.library.path
 
 			String path = new TomcatFile(new TomcatBase(), ".").pathToClassesDirectory().toString();
 			rifLogger.info(getClass(), "Returning path: " + path);

@@ -2155,12 +2155,12 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 * Configured tomcat on wsrifdb1;
 * wsrifdb1 is slow:
   * Network speed is around 10-20Mb/s (slower than my home broadband in rural Norfolk);
-  * test 1002 took 120.7 compared to 83.1/37.6 on my desktop;
-  * test 1003 took 281.1 compared to 167.1/82.5 on my desktop;
-  [Note: no server memory tuning. SQL Server uses 20-100x more memory]
+  * test 1002 took 120.7 compared to 83.1/37.6 on my desktop/laptop;
+  * test 1003 took 281.1 compared to 167.1/82.5 on my desktop/laptop;
 * SQL Server build and then install on wsrifdb2.
-  * test 1002 took 120.7 compared to 54.8/41.4 on my desktop;
-  * test 1003 took 281.1 compared to 108.6/92.7 on my desktop;
+  * test 1002 took 54.8 compared to 41.4.6 on my desktop;
+  * test 1003 took 108.6 compared to 92.7 on my desktop;
+  [Note: no server memory tuning. SQL Server uses 20-100x more memory]
 * ODBC setup issues - fully documented
 * SQL Server build sahsuland OK, issues with installer sahsuland (no projects listed).
 * XXE Security Vulnerability (prohibit external file parsing raised. Fixed.
@@ -2171,4 +2171,4 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
   - R_HOME in PATH
   - %R_HOME%/bin/x64 in PATH
   - %R_HOME%/library/rJava/jri/x64 in PATH
-  
+* Added ICD 11 support. Requires ClaML file from WHO, expected June 2018. Tested with duplicate of ICD 10  

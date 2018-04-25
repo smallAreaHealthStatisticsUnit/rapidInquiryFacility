@@ -119,8 +119,13 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 
 		healthCodeProviders = new ArrayList<HealthCodeProviderInterface>();
 
-		String targetPathValue
-			= rifServiceStartupOptions.getRIFServiceResourcePath();
+		String targetPathValue;
+		try {
+			targetPathValue = rifServiceStartupOptions.getRIFServiceResourcePath();
+		} catch (RIFServiceException e) {
+			throw new IllegalStateException("MSSQLHealthOutcomeManager: problem getting startup "
+			                                + "options", e);
+		}
 		if (targetPathValue == null) {
 			targetPathValue = ClassFileLocator.getClassRootLocation("rifServices");
 		}

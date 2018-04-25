@@ -118,7 +118,13 @@ final class PGSQLHealthOutcomeManager implements HealthOutcomeManager {
 	public PGSQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
 		healthCodeProviders = new ArrayList<>();
 
-		String targetPathValue = rifServiceStartupOptions.getRIFServiceResourcePath();
+		String targetPathValue;
+		try {
+			targetPathValue = rifServiceStartupOptions.getRIFServiceResourcePath();
+		} catch (RIFServiceException e) {
+			throw new IllegalStateException("PGSQLHealthOutcomeManager: problem getting startup "
+			                                + "options", e);
+		}
 		if (targetPathValue == null) {
 			targetPathValue = ClassFileLocator.getClassRootLocation("rifServices");
 		}
