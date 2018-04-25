@@ -31,10 +31,6 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 	private static String lineSeparator = System.getProperty("line.separator");
 	/** The rif service startup options. */
 	protected final RIFServiceStartupOptions rifServiceStartupOptions;
-	/** The read connection from user. */
-	final HashMap<String, ConnectionQueue> readOnlyConnectionsFromUser;
-	/** The write connection from user. */
-	final HashMap<String, ConnectionQueue> writeConnectionsFromUser;
 	/** The initialisation query. */
 	private final String initialisationQuery;
 	/** The database url. */
@@ -52,9 +48,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 		
 		userIDsToBlock = new HashSet<>();
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
-		writeConnectionsFromUser = new HashMap<>();
 		passwordHashList = new HashMap<>();
-		readOnlyConnectionsFromUser = new HashMap<>();
 		initialisationQuery = "EXEC rif40.rif40_startup ?";
 		databaseURL = generateURLText();
 	}
