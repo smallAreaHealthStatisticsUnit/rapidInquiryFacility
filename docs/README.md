@@ -10,64 +10,6 @@ RIF Standalone documentation
 
 **Note: images are still referenced using github. This documentation will not work on a private (air gapped) network.**
 
-# Builds the docs directory
-
-Use ```make doc```; e.g.:
-
-```
-C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>make doc
-python -m grip rifWebApplication\Readme.md --export docs\RIF_Web_Application_Installation.html
-Exporting to docs\RIF_Web_Application_Installation.html
-python -m grip rifDatabase\Postgres\production\windows_install_from_pg_dump.md --export docs\RIF_Postgres_Install.html
-Exporting to docs\RIF_Postgres_Install.html
-python -m grip rifDatabase\SQLserver\production\INSTALL.md --export docs\RIF_SQLserver_Install.html
-Exporting to docs\RIF_SQLserver_Install.html
-python -m grip docs\README.md --export docs\index.html
-Exporting to docs\index.html
-"C:\Program Files\7-Zip\7z.exe" a -r docs.7z "docs\\*"
-
-7-Zip 18.01 (x64) : Copyright (c) 1999-2018 Igor Pavlov : 2018-01-28
-
-Scanning the drive:
-5 files, 2632290 bytes (2571 KiB)
-
-Creating archive: docs.7z
-
-Add new data to archive: 5 files, 2632290 bytes (2571 KiB)
-
-
-Files read from disk: 5
-Archive size: 139160 bytes (136 KiB)
-Everything is Ok
-"C:\Program Files\7-Zip\7z.exe" l docs.7z
-
-7-Zip 18.01 (x64) : Copyright (c) 1999-2018 Igor Pavlov : 2018-01-28
-
-Scanning the drive for archives:
-1 file, 139160 bytes (136 KiB)
-
-Listing archive: docs.7z
-
---
-Path = docs.7z
-Type = 7z
-Physical Size = 139160
-Headers Size = 304
-Method = LZMA2:3m
-Solid = +
-Blocks = 1
-
-   Date      Time    Attr         Size   Compressed  Name
-------------------- ----- ------------ ------------  ------------------------
-2018-04-18 11:34:38 ....A       573158       138856  docs\index.html
-2018-04-18 11:24:43 ....A         4533               docs\README.md
-2018-04-18 11:34:35 ....A       591286               docs\RIF_Postgres_Install.html
-2018-04-18 11:34:37 ....A       657294               docs\RIF_SQLserver_Install.html
-2018-04-18 11:34:34 ....A       806019               docs\RIF_Web_Application_Installation.html
-------------------- ----- ------------ ------------  ------------------------
-2018-04-18 11:34:38            2632290       138856  5 files
-```
-
 # Printing documents direct from GitHub
 
 The HTML version of this github markdown was created using *grip*. Python 2.7 (for Node.js) needs to be installed and on your path. You can then point your web browser at: *http://localhost:6419/* (or wherever else grip chooses)
@@ -127,3 +69,62 @@ error: [Errno 10054] An existing connection was forcibly closed by the remote ho
 127.0.0.1 - - [13/Apr/2018 14:32:14] "GET /__/grip/static/octicons/octicons.woff2?ef21c39f0ca9b1b5116e5eb7ac5eabe6 HTTP/1.1" 200 -
  * Shutting down...
 ```
+
+# Build the docs directory
+
+Use ```make doc```; e.g.:
+
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>make doc
+python -m grip rifWebApplication\Readme.md --export docs\RIF_Web_Application_Installation.html
+Exporting to docs\RIF_Web_Application_Installation.html
+python -m grip rifDatabase\Postgres\production\windows_install_from_pg_dump.md --export docs\RIF_Postgres_Install.html
+Exporting to docs\RIF_Postgres_Install.html
+python -m grip rifDatabase\SQLserver\production\INSTALL.md --export docs\RIF_SQLserver_Install.html
+Exporting to docs\RIF_SQLserver_Install.html
+python -m grip docs\README.md --export docs\index.html
+Exporting to docs\index.html
+"C:\Program Files\7-Zip\7z.exe" a -r docs.7z "docs\\*"
+
+7-Zip 18.01 (x64) : Copyright (c) 1999-2018 Igor Pavlov : 2018-01-28
+
+Scanning the drive:
+5 files, 2632290 bytes (2571 KiB)
+
+Creating archive: docs.7z
+
+Add new data to archive: 5 files, 2632290 bytes (2571 KiB)
+
+
+Files read from disk: 5
+Archive size: 139160 bytes (136 KiB)
+Everything is Ok
+"C:\Program Files\7-Zip\7z.exe" l docs.7z
+
+7-Zip 18.01 (x64) : Copyright (c) 1999-2018 Igor Pavlov : 2018-01-28
+
+Scanning the drive for archives:
+1 file, 139160 bytes (136 KiB)
+
+Listing archive: docs.7z
+
+--
+Path = docs.7z
+Type = 7z
+Physical Size = 139160
+Headers Size = 304
+Method = LZMA2:3m
+Solid = +
+Blocks = 1
+
+   Date      Time    Attr         Size   Compressed  Name
+------------------- ----- ------------ ------------  ------------------------
+2018-04-18 11:34:38 ....A       573158       138856  docs\index.html
+2018-04-18 11:24:43 ....A         4533               docs\README.md
+2018-04-18 11:34:35 ....A       591286               docs\RIF_Postgres_Install.html
+2018-04-18 11:34:37 ....A       657294               docs\RIF_SQLserver_Install.html
+2018-04-18 11:34:34 ....A       806019               docs\RIF_Web_Application_Installation.html
+------------------- ----- ------------ ------------  ------------------------
+2018-04-18 11:34:38            2632290       138856  5 files
+```
+
