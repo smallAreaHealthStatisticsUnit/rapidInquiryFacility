@@ -16,7 +16,8 @@ import java.util.logging.Logger;
 import java.util.logging.LogManager;
 import java.io.*;
 
-import org.rosuda.JRI.*;
+import org.rosuda.JRI.REXP;
+import org.rosuda.JRI.Rengine;
 
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.util.RIFMemoryManager;
@@ -232,7 +233,9 @@ public class MSSQLSmoothResultsSubmissionStep extends CommonRService {
 				//Create an R engine with JRI
 				rengine = Rengine.getMainEngine();
 				if (rengine == null) {
-					rengine = new Rengine(new String[] {"--vanilla"}, 	// Args
+					String[] rArgs={"--vanilla"};
+					rengine = new Rengine(
+						rArgs,											// Args
 						false, 											// runMainLoop
 						new LoggingConsole(log)); 						// RMainLoopCallbacks implementaton
 																		// Logger log not used - uses RIFLogger					
@@ -346,12 +349,9 @@ password=XXXXXXXX
 				performSmoothingActivity.append(rifScriptPath);
 				performSmoothingActivity.append("performSmoothingActivity.R");
 				
-				rifLogger.info(this.getClass(), "Source: Adj_Cov_Smooth_JRI=\""+Adj_Cov_Smooth_JRI+"\"");
-				rengine.eval("source(\"" + Adj_Cov_Smooth_JRI + "\")");
-				rifLogger.info(this.getClass(), "Source: RIF_odbc=\""+RIF_odbc+"\"");
-				rengine.eval("source(\"" + RIF_odbc + "\")");
-				rifLogger.info(this.getClass(), "Source: performSmoothingActivity=\""+performSmoothingActivity+"\"");
-				rengine.eval("source(\"" + performSmoothingActivity + "\")");
+				sourceRScript(rengine, Adj_Cov_Smooth_JRI.toString());
+				sourceRScript(rengine, RIF_odbc.toString());
+				sourceRScript(rengine, performSmoothingActivity.toString());
 
 				//RUN the actual smoothing
 				//REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");

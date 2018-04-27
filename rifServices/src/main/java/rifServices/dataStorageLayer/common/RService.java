@@ -14,6 +14,8 @@ import rifServices.businessConceptLayer.CalculationMethod;
 
 public interface RService {
 
+	void sourceRScript(Rengine rengine, String scriptName) throws Exception;
+	
 	void addParameter(String name, String value);
 
 	void addParameters(ArrayList<Parameter> _parameters);
