@@ -821,8 +821,8 @@ public final class TestInvestigation
 	}
 
 	/**
-	 * An investigation is invalid if it has no list of covariates specified.
-	 */
+	 * An investigation is valid if it has no list of covariates specified.
+	 *
 	@Test
 	public void rejectEmptyCovariateList_ERROR() {
 		try {
@@ -871,7 +871,7 @@ public final class TestInvestigation
 				1);
 		}
 		
-	}
+	} */
 
 	/**
 	 * Tests whether the investigation can sort its age bands and

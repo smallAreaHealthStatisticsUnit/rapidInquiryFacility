@@ -1311,26 +1311,20 @@ public class Investigation
 		}
 		
 		if (covariates == null || fieldValidationUtility.isEmpty(covariates)) {
-			rifLogger.info(this.getClass(), "Investigation " + title + " has no convariates");
-			String covariatesFieldName
+			rifLogger.info(this.getClass(), "Investigation " + title + " has no covariates");
+/*			String covariatesFieldName
 				= RIFServiceMessages.getMessage("investigation.covariates.label");
 			String errorMessage
 				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					covariatesFieldName);
-			errorMessages.add(errorMessage);
+			errorMessages.add(errorMessage); */
 		} else {
 			for (AbstractCovariate covariate : covariates) {
 				if (covariate == null) {
-					String covariateRecordType
-						= RIFServiceMessages.getMessage("covariate.label");
-					String errorMessage
-						= RIFServiceMessages.getMessage(
-							"general.validation.nullListItem",
-							getRecordType(),
-							covariateRecordType);
-					errorMessages.add(errorMessage);
+					rifLogger.info(this.getClass(), "Investigation " + title + " has null covariates");
+					// Do nothing - they can be
 				} else {
 					try {
 						covariate.checkErrors(validationPolicy);
