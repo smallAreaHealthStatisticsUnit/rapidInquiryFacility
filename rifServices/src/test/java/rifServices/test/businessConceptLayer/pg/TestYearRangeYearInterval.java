@@ -1,23 +1,22 @@
 package rifServices.test.businessConceptLayer.pg;
 
-
-import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyServiceBundle;
-import rifServices.system.*;
-import rifServices.test.AbstractRIFTestCase;
-
-
-
-
-
-
 import java.util.ArrayList;
 
-import static org.junit.Assert.*;
-
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.businessConceptLayer.YearInterval;
+import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyRetrievalService;
+import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyServiceBundle;
+import rifServices.system.RIFServiceError;
+import rifServices.test.AbstractRIFTestCase;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -155,17 +154,15 @@ public final class TestYearRangeYearInterval
 	
 	/** The master interval959697. */
 	private YearInterval masterInterval959697;
-		
-	// ==========================================
-	// Section Construction
-	// ==========================================
+
+	@Mock
+	RIFStudySubmissionAPI submission;
 
 	/**
 	 * Instantiates a new test year range year interval.
 	 */
 	public TestYearRangeYearInterval() {
 		
-
 		masterInterval91 = YearInterval.newInstance("1991", "1991");
 		masterInterval92 = YearInterval.newInstance("1992", "1992");
 		masterInterval93 = YearInterval.newInstance("1993", "1993");
@@ -187,32 +184,28 @@ public final class TestYearRangeYearInterval
 		masterInterval939495 = YearInterval.newInstance("1993", "1995");
 		masterInterval949596 = YearInterval.newInstance("1994", "1996");
 		masterInterval959697 = YearInterval.newInstance("1995", "1997");
+	}
 
+	@Before
+	public void setup() {
+
+		// Make sure the mocks defined in the parent are created before we try to use them.
+		super.setup();
 		try {
-			rifStudyServiceBundle
-				= new PGSQLTestRIFStudyServiceBundle();
-			RIFServiceStartupOptions startupOptions
-				= RIFServiceStartupOptions.newInstance(false, true);
-			rifStudyServiceBundle.initialise(startupOptions);
-		
-			service
-				= rifStudyServiceBundle.getRIFStudySubmissionService();
+			rifStudyServiceBundle = new PGSQLTestRIFStudyServiceBundle(
+					resources,
+					submission,
+					new PGSQLTestRIFStudyRetrievalService());
+
+			service = rifStudyServiceBundle.getRIFStudySubmissionService();
 			rifStudyServiceBundle.login(
-				"kgarwood", 
-				"kgarwood");			
+					"kgarwood",
+					"kgarwood");
 		}
-		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
+		catch(RIFServiceException e) {
+			throw new RuntimeException(e);
 		}
 	}
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	/**
 	 * Valid year range n1.

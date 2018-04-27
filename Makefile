@@ -46,7 +46,6 @@
 #
 
 OS?=Unknown
-MAVEN_FLAGS=-Dmaven.test.skip=true
 GRIP=python -m grip
 ifeq ($(OS),Windows_NT)
 	MAVEN=mvn

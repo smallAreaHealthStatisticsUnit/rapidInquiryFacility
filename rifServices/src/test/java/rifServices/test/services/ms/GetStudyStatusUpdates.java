@@ -5,10 +5,11 @@ import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
+import rifServices.test.services.CommonRIFServiceTestCase;
+
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -71,8 +72,9 @@ import org.junit.Test;
  *
  */
 
-public final class GetStudyStatusUpdates 
-	extends AbstractRIFServiceTestCase {
+@Ignore
+public final class GetStudyStatusUpdates
+		extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants

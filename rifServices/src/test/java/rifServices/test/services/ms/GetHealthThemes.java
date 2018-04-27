@@ -6,12 +6,17 @@ import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.system.RIFServiceError;
+import rifServices.test.services.CommonRIFServiceTestCase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 
+import org.junit.Ignore;
 import org.junit.Test;
+
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -73,8 +78,8 @@ import org.junit.Test;
  *
  */
 
-public final class GetHealthThemes 
-	extends AbstractRIFServiceTestCase {
+public final class GetHealthThemes
+		extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -100,6 +105,7 @@ public final class GetHealthThemes
 	// Section Errors and Validation
 	// ==========================================
 	@Test
+	@Ignore
 	public void getHealthThemes_COMMON1() {
 		try {
 			User validUser = cloneValidUser();
@@ -141,6 +147,7 @@ public final class GetHealthThemes
 	}
 
 	@Test
+	@Ignore
 	public void getHealthThemes_EMPTY2() {
 		try {
 			User validUser = cloneValidUser();
@@ -175,7 +182,7 @@ public final class GetHealthThemes
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}
@@ -194,7 +201,7 @@ public final class GetHealthThemes
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 	}
@@ -220,6 +227,7 @@ public final class GetHealthThemes
 	}
 	
 	@Test
+	@Ignore
 	public void getHealthThemes_NONEXISTENT2() {
 	
 		try {

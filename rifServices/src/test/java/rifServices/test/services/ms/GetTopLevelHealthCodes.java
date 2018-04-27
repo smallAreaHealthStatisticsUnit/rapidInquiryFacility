@@ -1,18 +1,22 @@
 package rifServices.test.services.ms;
 
+import java.util.ArrayList;
+
+import org.junit.Ignore;
+import org.junit.Test;
+
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.system.RIFServiceError;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifServices.test.services.CommonHealthCodeProviderTestCase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-
-import org.junit.Test;
-
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -74,8 +78,7 @@ import org.junit.Test;
  *
  */
 
-public final class GetTopLevelHealthCodes 
-	extends AbstractHealthCodeProviderTestCase {
+public final class GetTopLevelHealthCodes extends CommonHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -103,6 +106,7 @@ public final class GetTopLevelHealthCodes
 	// ==========================================
 
 	@Test
+	@Ignore
 	public void getTopLevelHealthCodes_COMMON1() {
 		try {			
 			User validUser = cloneValidUser();
@@ -152,13 +156,14 @@ public final class GetTopLevelHealthCodes
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 	}
 	
 	
 	@Test
+	@Ignore
 	public void getTopLevelCode_EMPTY2() {
 		try {			
 			User validUser = cloneValidUser();
@@ -189,7 +194,7 @@ public final class GetTopLevelHealthCodes
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 	}
@@ -215,6 +220,7 @@ public final class GetTopLevelHealthCodes
 	}
 	
 	@Test
+	@Ignore
 	public void getTopLevelCode_NONEXISTENT2() {
 		try {			
 			User validUser = cloneValidUser();

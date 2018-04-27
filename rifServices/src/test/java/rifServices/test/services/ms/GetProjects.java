@@ -2,16 +2,19 @@ package rifServices.test.services.ms;
 
 
 import rifServices.businessConceptLayer.Project;
-import rifServices.system.RIFServiceError;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifServices.test.services.CommonRIFServiceTestCase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
 import java.util.ArrayList;
+
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -73,8 +76,8 @@ import java.util.ArrayList;
  *
  */
 
-public final class GetProjects 
-	extends AbstractRIFServiceTestCase {
+public final class GetProjects
+		extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -134,7 +137,7 @@ public final class GetProjects
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 	}

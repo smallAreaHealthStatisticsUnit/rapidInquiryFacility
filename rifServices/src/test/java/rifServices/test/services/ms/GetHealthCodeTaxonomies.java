@@ -1,16 +1,20 @@
 package rifServices.test.services.ms;
 
+import java.util.ArrayList;
+
+import org.junit.Ignore;
+import org.junit.Test;
+
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
-import rifServices.system.RIFServiceError;
+import rifServices.test.services.CommonHealthCodeProviderTestCase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-
-import org.junit.Test;
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -72,8 +76,7 @@ import org.junit.Test;
  *
  */
 
-public final class GetHealthCodeTaxonomies 
-	extends AbstractHealthCodeProviderTestCase {
+public final class GetHealthCodeTaxonomies extends CommonHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -100,6 +103,7 @@ public final class GetHealthCodeTaxonomies
 	// ==========================================
 	
 	@Test
+	@Ignore
 	public void getHealthCodeTaxonomies_COMMON1() {
 		try {
 			User validUser = cloneValidUser();
@@ -136,7 +140,7 @@ public final class GetHealthCodeTaxonomies
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 	}

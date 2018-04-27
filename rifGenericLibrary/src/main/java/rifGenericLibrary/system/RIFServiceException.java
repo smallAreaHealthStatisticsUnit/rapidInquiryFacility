@@ -16,90 +16,73 @@ import rifGenericLibrary.util.RIFLogger;
  * methods that appear in the business concept layer classes.  The 
  * enumerated error object is used in the automated test suites
  * so they can be precise in identifying the kind of exception that may be expected
- * by test cases that are excercising scenarios with errors.
- * 
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
+ * by test cases that are exercising scenarios with errors.
  */
 
-public class RIFServiceException 
-	extends Exception {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
+public class RIFServiceException extends Exception {
 
 	private static final long serialVersionUID = 609449213280772202L;
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
-	// ==========================================
-	// Section Properties
-	// ==========================================
 	/** The error. */
 	private Object error;
 	
 	/** The error messages. */
 	private ArrayList<String> errorMessages;
+
+	/** The cause of this exception, if any */
+	private Throwable cause;
+
+	/**
+	 * Instantiates a new RIF service exception.
+	 *
+	 * @param error the error
+	 * @param errorMessage the error message
+	 * @param cause the Throwable that caused this Exception
+	 */
+	public RIFServiceException(final Object error, final String errorMessage,
+			final Throwable cause) {
+		
+		super(errorMessage, cause);
+		
+		this.error = error;
+		this.cause = cause;
+		errorMessages = new ArrayList<>();
+		errorMessages.add(errorMessage);
+	}
 	
-	// ==========================================
-	// Section Construction
-	// ==========================================
+	public RIFServiceException(final String errorMessage, Throwable cause) {
+			
+		super(errorMessage, cause);
+		this.cause = cause;
+			
+		errorMessages = new ArrayList<>();
+		errorMessages.add(errorMessage);
+	}
+
+	/**
+	 * Instantiates a new RIF service exception.
+	 *
+	 * @param error the error
+	 * @param errorMessages the error messages
+	 */
+	public RIFServiceException(final Object error, final ArrayList<String> errorMessages,
+			Throwable cause) {
+
+		super(cause);
+		this.cause = cause;
+		this.error = error;
+		this.errorMessages = new ArrayList<>();
+		this.errorMessages.addAll(errorMessages);
+	}
+
+	public RIFServiceException(final ArrayList<String> errorMessages, Throwable cause) {
+
+		super(cause);
+		this.cause = cause;
+		this.errorMessages = new ArrayList<>();
+		this.errorMessages.addAll(errorMessages);
+	}	
 
 	/**
 	 * Instantiates a new RIF service exception.
@@ -108,25 +91,24 @@ public class RIFServiceException
 	 * @param errorMessage the error message
 	 */
 	public RIFServiceException(
-		final Object error,
-		final String errorMessage) {
-		
+			final Object error,
+			final String errorMessage) {
+
 		super(errorMessage);
-		
+
 		this.error = error;
-		errorMessages = new ArrayList<String>();
+		errorMessages = new ArrayList<>();
 		errorMessages.add(errorMessage);
 	}
-	
+
 	public RIFServiceException(
-		final String errorMessage) {
-			
+			final String errorMessage) {
+
 		super(errorMessage);
-			
-		errorMessages = new ArrayList<String>();
+
+		errorMessages = new ArrayList<>();
 		errorMessages.add(errorMessage);
 	}
-	
 
 	/**
 	 * Instantiates a new RIF service exception.
@@ -135,25 +117,21 @@ public class RIFServiceException
 	 * @param errorMessages the error messages
 	 */
 	public RIFServiceException(
-		final Object error,
-		final ArrayList<String> errorMessages) {
-		
+			final Object error,
+			final ArrayList<String> errorMessages) {
+
 		this.error = error;
-		this.errorMessages = new ArrayList<String>();
+		this.errorMessages = new ArrayList<>();
 		this.errorMessages.addAll(errorMessages);
 	}
 
 	public RIFServiceException(
-		final ArrayList<String> errorMessages) {
-			
-		this.errorMessages = new ArrayList<String>();
+			final ArrayList<String> errorMessages) {
+
+		this.errorMessages = new ArrayList<>();
 		this.errorMessages.addAll(errorMessages);
-	}	
-	
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
+	}
+
 	/**
 	 * Gets the error.
 	 *
@@ -163,7 +141,7 @@ public class RIFServiceException
 
 		return error;
 	}
-	
+
 	/**
 	 * Gets the error messages.
 	 *
@@ -173,7 +151,7 @@ public class RIFServiceException
 
 		return errorMessages;
 	}
-	
+
 	/**
 	 * Gets the error message count.
 	 *
@@ -183,22 +161,48 @@ public class RIFServiceException
 
 		return errorMessages.size();
 	}
-	
-	
+
 	public void printErrors() {
 		for (String errorMessage : errorMessages) {
 			rifLogger.error(this.getClass(), (errorMessage));
 		}
 	}
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
+	@Override
+	public String toString() {
 
-	// ==========================================
-	// Section Override
-	// ==========================================
+		String msg = "%d error(s). Error code is '%s'. Message list is: %s";
+		StringBuilder msgs = new StringBuilder();
+
+		for (String s : getErrorMessages()) {
+
+			msgs.append("'").append(s).append("'").append(" | ");
+		}
+
+		// The regex below strips the last divider off the end of the messages list
+		String detail =  String.format(msg, getErrorMessageCount(), getError(),
+		                     msgs.toString().replaceAll(" \\| $", ""));
+
+		if (cause == null) {
+
+			return detail;
+		} else {
+
+			StringBuilder builder = new StringBuilder(detail)
+					                        .append("\n\n")
+					                        .append("=============================================")
+					                        .append("\n")
+					                        .append("Stack trace of cause follows")
+					                        .append("\n")
+					                        .append("=============================================")
+					                        .append("\n");
+
+			for (StackTraceElement element : cause.getStackTrace()) {
+
+				builder.append(element.toString()).append("\n");
+			}
+
+			return builder.toString();
+		}
+	}
 }

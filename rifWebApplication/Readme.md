@@ -946,11 +946,11 @@ root of the github repository, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquir
 ```
 mvn --version
 cd rifGenericLibrary
-mvn -Dmaven.test.skip=true install
+mvn install
 cd ..\rapidInquiryFacility
-mvn -Dmaven.test.skip=true install
+mvn install
 cd ..\rifServices
-mvn -Dmaven.test.skip=true install
+mvn install
 ```
 
 Maven produces a lot of output:
@@ -963,7 +963,7 @@ Java version: 1.8.0_111, vendor: Oracle Corporation
 Java home: c:\Program Files\Java\jdk1.8.0_111\jre
 Default locale: en_GB, platform encoding: Cp1252
 OS name: "windows 8.1", version: "6.3", arch: "amd64", family: "dos"
-cd rifGenericLibrary; mvn -Dmaven.test.skip=true install
+cd rifGenericLibrary; mvn install
 [INFO] Scanning for projects...
 [INFO]
 [INFO] ------------------------------------------------------------------------
@@ -989,7 +989,7 @@ development team.
 
 The order is important; the directories must be built in the order: rifGenericLibrary, rapidInquiryFacility, rifServices. It is always
 assumed you build taxonomyServices later. If you get a build failure try a *mvn clean* in each directory first; then retry with a 
-*mvn  -Dmaven.test.skip=true install*.
+*mvn install*.
 
 This method  does not build the *taxonomyServices* or the web application 7zip file.
 
@@ -1040,9 +1040,48 @@ This is code in `...rapidInquiryFacility\rifServices\src\main\java\rifServices\d
 For a full ICD10 listing add the following SAHSU supplied files (in *Taxonomy services configuration files*) to: 
 *%CATALINA_HOME%\conf* and restart tomcat
 
+<<<<<<< HEAD
+  * icdClaML2016ens.xml
+  * TaxonomyServicesConfiguration.xml
+  * ClaML.dtd
+
+2) Build the Taxonomy Service using *maven*.
+   Either: 
+   - if you have *make* installed, in the top level github directory type *make taxonomyservice" as per Maven build instructions or
+   - Change to the taxonomyServices directory. In local RIF tree, go to ...rapidInquiryFacility/taxonomyServices, 
+   e.g. C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\taxonomyServices and type:
+
+	```
+	mvn install
+	```
+
+	Log from a succsful web service deployment:
+	```
+	12-Apr-2017 17:44:56.103 INFO [localhost-startStop-2] org.apache.catalina.startup.HostConfig.deployWAR Deploying web application archive C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\taxonomyServices.war
+	12-Apr-2017 17:44:57.886 INFO [localhost-startStop-2] org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+	12-Apr-2017 17:44:57.900 INFO [localhost-startStop-2] com.sun.jersey.server.impl.container.servlet.JerseyServletContainerInitializer
+	.addServletWithApplication Registering the Jersey servlet application, named taxonomyServices.RIFTaxonomyWebServiceApplication, at the servlet mapping, /taxonomyServices/*, with the Application class of the same name
+	12-Apr-2017 17:44:57.924 INFO [localhost-startStop-2] com.sun.jersey.api.core.servlet.WebAppResourceConfig.init Scanning for root re
+	source and provider classes in the Web app resource paths:	
+	  /WEB-INF/lib
+	  /WEB-INF/classes
+	12-Apr-2017 17:44:58.739 INFO [localhost-startStop-2] com.sun.jersey.api.core.ScanningResourceConfig.logClasses Root resource classes found:
+	  class taxonomyServices.RIFTaxonomyWebServiceResource
+	12-Apr-2017 17:44:58.740 INFO [localhost-startStop-2] com.sun.jersey.api.core.ScanningResourceConfig.logClasses Provider classes found:
+	  class org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider
+	  class org.codehaus.jackson.jaxrs.JacksonJsonProvider
+	  class org.codehaus.jackson.jaxrs.JsonMappingExceptionMapper
+	  class org.codehaus.jackson.jaxrs.JsonParseExceptionMapper
+	12-Apr-2017 17:44:58.877 INFO [localhost-startStop-2] com.sun.jersey.server.impl.application.WebApplicationImpl._initiate Initiating Jersey application, version 'Jersey: 1.19 02/11/2015 03:25 AM'
+	12-Apr-2017 17:45:00.002 INFO [localhost-startStop-2] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\taxonomyServices.war has finished in 3,899 ms
+	```
+
+3) Copy ‘taxonomyServices.war’ from the *target* directory into the Tomcat webapps folder as with rifServices. 
+=======
 * icdClaML2016ens.xml
 * TaxonomyServicesConfiguration.xml
 * ClaML.dtd
+>>>>>>> master
 
 ## 3.2 RIF Web Application
 

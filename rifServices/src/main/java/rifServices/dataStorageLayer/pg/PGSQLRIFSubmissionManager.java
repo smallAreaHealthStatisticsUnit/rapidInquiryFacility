@@ -1,130 +1,55 @@
 package rifServices.dataStorageLayer.pg;
 
-import rifServices.businessConceptLayer.*;
-import rifServices.system.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.*;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.AbstractStudy;
+import rifServices.businessConceptLayer.AgeBand;
+import rifServices.businessConceptLayer.AgeGroup;
+import rifServices.businessConceptLayer.ComparisonArea;
+import rifServices.businessConceptLayer.DiseaseMappingStudy;
+import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
+import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.Investigation;
+import rifServices.businessConceptLayer.MapArea;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.StudyStateManager;
+import rifServices.dataStorageLayer.common.SubmissionManager;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 
-import java.sql.*;
-
-
-/**
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-final class PGSQLRIFSubmissionManager 
-	extends PGSQLAbstractSQLManager {
-
+final class PGSQLRIFSubmissionManager extends PGSQLAbstractSQLManager
+		implements SubmissionManager {
 	
-	public static void main(String[] args) {
+	private StudyStateManager studyStateManager;
 
-		
-	}
-	
-	
-	// ==========================================
-	// Section Constants
-	// ==========================================
-	
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
-	private PGSQLStudyStateManager studyStateManager;
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
+	PGSQLRIFSubmissionManager(final RIFServiceStartupOptions options,
+			final StudyStateManager studyStateManager) {
 
-	/**
-	 * Instantiates a new SQLRIF submission manager.
-	 */
-	public PGSQLRIFSubmissionManager(
-		final RIFDatabaseProperties rifDatabaseProperties,
-		final PGSQLRIFContextManager rifContextManager,
-		final PGSQLAgeGenderYearManager ageGenderYearManager,
-		final PGSQLCovariateManager covariateManager,
-		final PGSQLDiseaseMappingStudyManager diseaseMappingStudyManager,
-		final PGSQLMapDataManager mapDataManager,
-		final PGSQLStudyStateManager studyStateManager) {
-
-		super(rifDatabaseProperties);		
+		super(options);
 		this.studyStateManager = studyStateManager;
 		
 		setEnableLogging(false);
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-		
+	@Override
 	public String deleteStudy(
-		final Connection connection,
-		final String studyID)
+			final Connection connection,
+			final String studyID)
 		throws RIFServiceException {
 		
 		
@@ -188,10 +113,11 @@ final class PGSQLRIFSubmissionManager
 	}
 	
 
+	@Override
 	public void deleteStudy(
-		final Connection connection,
-		final User user,
-		final AbstractStudy study)
+			final Connection connection,
+			final User user,
+			final AbstractStudy study)
 		throws RIFServiceException {
 		
 		
@@ -248,14 +174,14 @@ final class PGSQLRIFSubmissionManager
 	
 	
 	
+	@Override
 	public RIFStudySubmission getRIFStudySubmission(
-		final Connection connection,
-		final User user,
-		final String studyID)
+			final Connection connection,
+			final User user,
+			final String studyID)
 		throws RIFServiceException {
 		
-		PGSQLSampleTestObjectGenerator testDataGenerator
-			= new PGSQLSampleTestObjectGenerator();
+		SampleTestObjectGenerator testDataGenerator = new SampleTestObjectGenerator();
 		RIFStudySubmission rifStudySubmission
 			= testDataGenerator.createSampleRIFJobSubmission();
 		DiseaseMappingStudy diseaseMappingStudy
@@ -272,10 +198,11 @@ final class PGSQLRIFSubmissionManager
 	/*
 	 * Methods below are for retrieving a study
 	 */
+	@Override
 	public DiseaseMappingStudy getDiseaseMappingStudy(
-		final Connection connection,
-		final User user,
-		final String studyID) 
+			final Connection connection,
+			final User user,
+			final String studyID)
 		throws RIFServiceException {
 				
 		//check for non-existent study given id

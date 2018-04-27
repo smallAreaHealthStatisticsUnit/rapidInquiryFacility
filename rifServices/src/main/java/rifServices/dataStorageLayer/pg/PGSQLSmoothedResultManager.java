@@ -1,109 +1,40 @@
 package rifServices.dataStorageLayer.pg;
 
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceError;
-import rifServices.businessConceptLayer.Sex;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
+
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCountTableRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
-import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.dataStorageLayer.common.SmoothedResultManager;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
-import java.sql.*;
-import java.util.Hashtable;
-import java.util.ArrayList;
-import java.util.HashSet;
+public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager
+		implements SmoothedResultManager {
 
-
-
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- */
-
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
 	private static String lineSeparator = System.getProperty("line.separator");
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
 
 	private ArrayList<String> allAttributeColumnNames;
 	private Hashtable<String, String> columnDescriptionFromName;
 	private HashSet<String> numericColumns;
 	private HashSet<String> doublePrecisionColumns;
 
-	// ==========================================
-	// Section Construction
-	// ==========================================
+	public PGSQLSmoothedResultManager(final RIFServiceStartupOptions options) {
 
-	public PGSQLSmoothedResultManager(
-			final RIFDatabaseProperties rifDatabaseProperties) {
-
-		super(rifDatabaseProperties);
+		super(options);
 
 		numericColumns = new HashSet<String>();
 		doublePrecisionColumns = new HashSet<String>();
@@ -180,6 +111,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 	// Section Accessors and Mutators
 	// ==========================================
 
+	@Override
 	public ArrayList<Sex> getSexes(
 			final Connection connection,
 			final String studyID) 
@@ -239,6 +171,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		return results;
 	}
 
+	@Override
 	public ArrayList<Integer> getYears(
 			final Connection connection,
 			final String studyID) 
@@ -284,6 +217,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		return results;
 	}
 
+	@Override
 	public String[] getColumnNameDescriptions(final String[] columnNames) {
 		String[] results = new String[columnNames.length];
 		for (int i = 0; i < columnNames.length; i++) {
@@ -294,6 +228,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 	}
 
 
+	@Override
 	public String[] getGeographyAndLevelForStudy(
 			final Connection connection,
 			final String studyID) 
@@ -333,6 +268,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		return results;			
 	}	
 
+	@Override
 	public String[] getDetailsForProcessedStudy(
 			final Connection connection,
 			final String studyID) 
@@ -418,6 +354,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 	}
 
 	//TODO: to SQLserver
+	@Override
 	public String[] getHealthCodesForProcessedStudy(
 			final Connection connection,
 			final String studyID) 
@@ -442,8 +379,10 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		PreparedStatement statement = null;
 		PreparedStatement countTableRowsStatement = null;
 		ResultSet resultSet = null;
-		ResultSet totalRowCountResultSet = null;;		int numberOfRows = 0;
-		String[] results = null;;
+		ResultSet totalRowCountResultSet = null;;
+		int numberOfRows = 0;
+
+		String[] results = null;;
 
 		try {
 			connection.setAutoCommit(false);
@@ -481,8 +420,9 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		return results;			
 	}
 
+	@Override
 	public RIFResultTable getStudyTableForProcessedStudy(
-			final Connection connection, 
+			final Connection connection,
 			final String studyID,
 			final String type,
 			final String stt,
@@ -663,6 +603,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 		}
 	}
 
+	@Override
 	public RIFResultTable getSmoothedResults(
 			final Connection connection,
 			final String studyID,
@@ -676,6 +617,7 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 				sex);
 	}
 
+	@Override
 	public RIFResultTable getSmoothedResultsForAttributes(
 			final Connection connection,
 			final ArrayList<String> smoothedAttributesToInclude,
@@ -1003,8 +945,9 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager {
 	}
 
 
+	@Override
 	public RIFResultTable getPopulationPyramidData(
-			final Connection connection, 
+			final Connection connection,
 			final String studyID,
 			final Integer year) 
 					throws RIFServiceException {

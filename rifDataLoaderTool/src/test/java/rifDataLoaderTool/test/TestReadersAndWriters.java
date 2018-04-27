@@ -7,6 +7,7 @@ import rifDataLoaderTool.fileFormats.LinearWorkflowWriter;
 import rifGenericLibrary.system.RIFServiceException;
 import static org.junit.Assert.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import java.io.File;
 import java.util.ArrayList;
@@ -81,79 +82,49 @@ public class TestReadersAndWriters {
 	}
 
 	@Test
-	public void test1() {
+	@Ignore
+	public void test1() throws RIFServiceException {
 		SampleDataGenerator sampleDataGenerator
 			= new SampleDataGenerator();
 		LinearWorkflow numeratorWorkflow
 			= sampleDataGenerator.createSahsulandNumeratorWorkflow();
-		try {			
-			
-			File outputFile 
-				= new File("C://rif_scripts//test_data//cancer_numerator_data.xml");
-			LinearWorkflowWriter writer1 = new LinearWorkflowWriter();
-			ArrayList<LinearWorkflow> linearWorkflows1
-				= new ArrayList<LinearWorkflow>();
-			linearWorkflows1.add(numeratorWorkflow);
-			writer1.write(linearWorkflows1, outputFile);
-			
-			LinearWorkflowReader reader1 = new LinearWorkflowReader();
-			reader1.readFile(outputFile);
-			
-			ArrayList<LinearWorkflow> numeratorWorkflow2
-				= reader1.getLinearWorkflows();
-			
-			File outputFile2 
-				= new File("C://rif_scripts//test_data//cancer_numerator_data2.xml");
-			LinearWorkflowWriter writer2 = new LinearWorkflowWriter();
-			writer2.write(numeratorWorkflow2, outputFile2);
-			
-			
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
-			fail();
-		}		
+
+		File outputFile
+			= new File("C://rif_scripts//test_data//cancer_numerator_data.xml");
+		LinearWorkflowWriter writer1 = new LinearWorkflowWriter();
+		ArrayList<LinearWorkflow> linearWorkflows1
+			= new ArrayList<LinearWorkflow>();
+		linearWorkflows1.add(numeratorWorkflow);
+		writer1.write(linearWorkflows1, outputFile);
+
+		LinearWorkflowReader reader1 = new LinearWorkflowReader();
+		reader1.readFile(outputFile);
+
+		ArrayList<LinearWorkflow> numeratorWorkflow2
+			= reader1.getLinearWorkflows();
+
+		File outputFile2
+			= new File("C://rif_scripts//test_data//cancer_numerator_data2.xml");
+		LinearWorkflowWriter writer2 = new LinearWorkflowWriter();
+		writer2.write(numeratorWorkflow2, outputFile2);
 	}
 
 	@Test
-	public void test2() {
+	@Ignore
+	public void test2() throws RIFServiceException {
 		SampleDataGenerator sampleDataGenerator
 			= new SampleDataGenerator();
 		LinearWorkflow minimalLinearWorkflow
 			= sampleDataGenerator.createMinimalLinearWorkflow();
-		try {			
-			
-			File outputFile 
-				= new File("C://rif_scripts//test_data//minimal_linear_workflow.xml");
-			LinearWorkflowWriter writer = new LinearWorkflowWriter();
-			ArrayList<LinearWorkflow> linearWorkflows1
-				= new ArrayList<LinearWorkflow>();
-			linearWorkflows1.add(minimalLinearWorkflow);			
-			writer.write(linearWorkflows1, outputFile);
-		}
-		catch(RIFServiceException rifServiceException) {
-			rifServiceException.printErrors();
-			fail();
-		}		
+
+		File outputFile
+			= new File("C://rif_scripts//test_data//minimal_linear_workflow.xml");
+		LinearWorkflowWriter writer = new LinearWorkflowWriter();
+		ArrayList<LinearWorkflow> linearWorkflows1
+			= new ArrayList<LinearWorkflow>();
+		linearWorkflows1.add(minimalLinearWorkflow);
+		writer.write(linearWorkflows1, outputFile);
 	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
-
 }
 
 

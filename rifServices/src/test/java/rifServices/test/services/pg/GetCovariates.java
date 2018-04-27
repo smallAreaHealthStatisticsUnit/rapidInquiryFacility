@@ -1,18 +1,23 @@
 package rifServices.test.services.pg;
 
-
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifServices.businessConceptLayer.*;
-import rifServices.system.*;
-
 import java.util.ArrayList;
 
-import static org.junit.Assert.*;
-
+import org.junit.Ignore;
 import org.junit.Test;
 
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.AbstractCovariate;
+import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.system.RIFServiceError;
+import rifServices.test.services.CommonRIFServiceTestCase;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -78,8 +83,7 @@ import org.junit.Test;
  *
  */
 
-public final class GetCovariates 
-	extends AbstractRIFServiceTestCase {
+public final class GetCovariates extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -109,32 +113,27 @@ public final class GetCovariates
 	// ==========================================
 
 	@Test
-	public void getCovariates_COMMON1() {
-		try {
-			
-			User validUser = cloneValidUser();
-			Geography validGeography = cloneValidGeography();
-			GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
+	@Ignore
+	public void getCovariates_COMMON1() throws RIFServiceException {
 
-			ArrayList<AbstractCovariate> results
-				= rifStudySubmissionService.getCovariates(
-					validUser, 
-					validGeography,
-					validGeoLevelToMap);
-			assertEquals(4, results.size());
-						
-			AbstractCovariate firstCovariate
-				= results.get(0);
-			assertEquals("AREATRI1KM", firstCovariate.getName());
-			
-			AbstractCovariate lastCovariate
-				= results.get(results.size() - 1);
-			assertEquals("TRI_1KM", lastCovariate.getName());	
+		User validUser = cloneValidUser();
+		Geography validGeography = cloneValidGeography();
+		GeoLevelToMap validGeoLevelToMap = cloneValidGeoLevelToMap();
 
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}		
+		ArrayList<AbstractCovariate> results
+			= rifStudySubmissionService.getCovariates(
+				validUser,
+				validGeography,
+				validGeoLevelToMap);
+		assertEquals(4, results.size());
+
+		AbstractCovariate firstCovariate
+			= results.get(0);
+		assertEquals("AREATRI1KM", firstCovariate.getName());
+
+		AbstractCovariate lastCovariate
+			= results.get(results.size() - 1);
+		assertEquals("TRI_1KM", lastCovariate.getName());
 	}
 
 	@Test
@@ -152,7 +151,7 @@ public final class GetCovariates
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 		
@@ -198,13 +197,14 @@ public final class GetCovariates
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 
 	}
 	
 	@Test
+	@Ignore
 	public void getCovariates_EMPTY2() {
 	
 		try {
@@ -221,7 +221,7 @@ public final class GetCovariates
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.INVALID_GEOGRAPHY, 
+				RIFServiceError.INVALID_GEOGRAPHY,
 				1);
 		}		
 
@@ -244,12 +244,13 @@ public final class GetCovariates
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}			
 	}
 		
 	@Test
+	@Ignore
 	public void getCovariates_EMPTY3() {
 					
 		try {
@@ -294,6 +295,7 @@ public final class GetCovariates
 	}
 	
 	@Test
+	@Ignore
 	public void getCovariates_NONEXISTENT2() {
 		
 		try {
@@ -317,6 +319,7 @@ public final class GetCovariates
 	
 		
 	@Test
+	@Ignore
 	public void getCovariates_NONEXISTENT3() {
 		
 		try {

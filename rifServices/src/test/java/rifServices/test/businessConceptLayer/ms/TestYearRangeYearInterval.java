@@ -1,103 +1,30 @@
 package rifServices.test.businessConceptLayer.ms;
 
-
-import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
-import rifServices.system.*;
-import rifServices.test.AbstractRIFTestCase;
-
-
-
-
-
-
 import java.util.ArrayList;
 
-import static org.junit.Assert.*;
-
+import org.junit.Ignore;
 import org.junit.Test;
 
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.businessConceptLayer.YearInterval;
+import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
+import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
+import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
+import rifServices.system.RIFServiceError;
+import rifServices.test.AbstractRIFTestCase;
 
-/**
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-public final class TestYearRangeYearInterval 
+@Ignore
+public final class TestYearRangeYearInterval
 	extends AbstractRIFTestCase {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	/** The service. */
-	
 	private MSSQLTestRIFStudyServiceBundle rifStudyServiceBundle;
 	private RIFStudySubmissionAPI service;
 
-	
 	/** The master interval91. */
 	private YearInterval masterInterval91;
 	
@@ -156,15 +83,10 @@ public final class TestYearRangeYearInterval
 	/** The master interval959697. */
 	private YearInterval masterInterval959697;
 		
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
 	/**
 	 * Instantiates a new test year range year interval.
 	 */
-	public TestYearRangeYearInterval() {
-		
+	public TestYearRangeYearInterval() throws RIFServiceException {
 
 		masterInterval91 = YearInterval.newInstance("1991", "1991");
 		masterInterval92 = YearInterval.newInstance("1992", "1992");
@@ -188,31 +110,17 @@ public final class TestYearRangeYearInterval
 		masterInterval949596 = YearInterval.newInstance("1994", "1996");
 		masterInterval959697 = YearInterval.newInstance("1995", "1997");
 
-		try {
-			rifStudyServiceBundle
-				= new MSSQLTestRIFStudyServiceBundle();
-			RIFServiceStartupOptions startupOptions
-				= RIFServiceStartupOptions.newInstance(false, true);
-			rifStudyServiceBundle.initialise(startupOptions);
-		
-			service
-				= rifStudyServiceBundle.getRIFStudySubmissionService();
-			rifStudyServiceBundle.login(
-				"kgarwood", 
-				"kgarwood");			
-		}
-		catch(RIFServiceException exception) {
-			exception.printStackTrace(System.out);
-		}
+		rifStudyServiceBundle = new MSSQLTestRIFStudyServiceBundle(
+				resources,
+				new MSSQLRIFStudySubmissionService(),
+				new MSSQLTestRIFStudyRetrievalService());
+
+		service
+			= rifStudyServiceBundle.getRIFStudySubmissionService();
+		rifStudyServiceBundle.login(
+			"kgarwood",
+			"kgarwood");
 	}
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
 	/**
 	 * Valid year range n1.

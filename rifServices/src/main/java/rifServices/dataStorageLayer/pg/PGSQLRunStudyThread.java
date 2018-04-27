@@ -9,6 +9,8 @@ import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.StudyState;
 import rifServices.businessConceptLayer.StudyStateMachine;
+import rifServices.dataStorageLayer.common.ServiceResources;
+import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
@@ -93,7 +95,7 @@ public class PGSQLRunStudyThread
 	
 	private StudyStateMachine studyStateMachine;
 	
-	private PGSQLStudyStateManager studyStateManager;
+	private StudyStateManager studyStateManager;
 	private PGSQLCreateStudySubmissionStep createStudySubmissionStep;
 	private PGSQLGenerateResultsSubmissionStep generateResultsSubmissionStep;
 	private PGSQLSmoothResultsSubmissionStep smoothResultsSubmissionStep;
@@ -116,7 +118,7 @@ public class PGSQLRunStudyThread
 		final String password,
 		final RIFStudySubmission studySubmission,
 		final RIFServiceStartupOptions rifServiceStartupOptions,
-		final PGSQLRIFServiceResources rifServiceResources) {
+		final ServiceResources rifServiceResources) {
 		
 		
 		this.connection = connection;
@@ -127,16 +129,16 @@ public class PGSQLRunStudyThread
 		RIFDatabaseProperties rifDatabaseProperties 
 			= rifServiceStartupOptions.getRIFDatabaseProperties();
 		
-		studyStateManager = new PGSQLStudyStateManager(rifDatabaseProperties);
+		studyStateManager = new PGSQLStudyStateManager(rifServiceStartupOptions);
 		
 		createStudySubmissionStep 
 			= new PGSQLCreateStudySubmissionStep(
-				rifDatabaseProperties,
+				rifServiceStartupOptions,
 				rifServiceResources.getSqlDiseaseMappingStudyManager(),
 				rifServiceResources.getSQLMapDataManager());
 
 		generateResultsSubmissionStep
-			= new PGSQLGenerateResultsSubmissionStep(rifDatabaseProperties);
+			= new PGSQLGenerateResultsSubmissionStep(studyStateManager);
 		
 		//KLG: @TODO - we need a facility to feed password to this.
 		smoothResultsSubmissionStep = new PGSQLSmoothResultsSubmissionStep();

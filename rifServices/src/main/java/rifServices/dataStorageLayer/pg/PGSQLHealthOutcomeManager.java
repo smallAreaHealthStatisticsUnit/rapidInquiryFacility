@@ -20,6 +20,7 @@ import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Investigation;
+import rifServices.dataStorageLayer.common.HealthOutcomeManager;
 import rifServices.ontologyServices.HealthCodeProviderInterface;
 import rifServices.ontologyServices.ICD10ClaMLTaxonomyProvider;
 import rifServices.ontologyServices.RIFXMLTaxonomyProvider;
@@ -90,7 +91,7 @@ import rifServices.system.RIFServiceStartupOptions;
  *
  */
 
-final class PGSQLHealthOutcomeManager {
+final class PGSQLHealthOutcomeManager implements HealthOutcomeManager {
 
 	// ==========================================
 	// Section Constants
@@ -114,17 +115,20 @@ final class PGSQLHealthOutcomeManager {
 	/**
 	 * Instantiates a new SQL health outcome manager.
 	 */
-	public PGSQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) 
-		throws RIFServiceException {
-		healthCodeProviders = new ArrayList<HealthCodeProviderInterface>();
-		
-		
-		String targetPathValue
-			= rifServiceStartupOptions.getRIFServiceResourcePath();
+	public PGSQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
+		healthCodeProviders = new ArrayList<>();
+
+		String targetPathValue;
+		try {
+			targetPathValue = rifServiceStartupOptions.getRIFServiceResourcePath();
+		} catch (RIFServiceException e) {
+			throw new IllegalStateException("PGSQLHealthOutcomeManager: problem getting startup "
+			                                + "options", e);
+		}
 		if (targetPathValue == null) {
 			targetPathValue = ClassFileLocator.getClassRootLocation("rifServices");
 		}
-		rifLogger.info(this.getClass(), "HealthOutcomeManager init targetPathValue=="+targetPathValue+"==");
+//		rifLogger.info(this.getClass(), "HealthOutcomeManager init targetPathValue=="+targetPathValue+"==");
 		
 		//initialise each health code provider
 		try {			
@@ -229,16 +233,8 @@ final class PGSQLHealthOutcomeManager {
 		*/		
 	}
 
-	/**
-	 * Initialise taxonomies.
-	 *
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public void initialiseTaxomies() 
-		throws RIFServiceException {
-
-		
-	}
+	@Override
+	public void initialiseTaxomies() {}
 	
 	// ==========================================
 	// Section Accessors and Mutators
@@ -247,44 +243,29 @@ final class PGSQLHealthOutcomeManager {
 	/*
 	 * Method used for testing purposes
 	 */
-	/**
-	 * Clear health code providers.
-	 */
+	@Override
 	public void clearHealthCodeProviders() {
 		
 		healthCodeProviders.clear();
 	}
 	
-	/**
-	 * Adds the health code provider.
-	 *
-	 * @param healthCodeProvider the health code provider
-	 */
+	@Override
 	public void addHealthCodeProvider(
-		final HealthCodeProviderInterface healthCodeProvider) {
+			final HealthCodeProviderInterface healthCodeProvider) {
 
 		healthCodeProviders.add(healthCodeProvider);
 	}
 	
-	/**
-	 * Clear health code providers.
-	 *
-	 * @param healthCodeProvider the health code provider
-	 */
+	@Override
 	public void clearHealthCodeProviders(
-		final HealthCodeProviderInterface healthCodeProvider) {
+			final HealthCodeProviderInterface healthCodeProvider) {
 
 		healthCodeProviders.clear();	
 	}
 	
-	/**
-	 * Gets the health code taxonomies.
-	 *
-	 * @return the health code taxonomies
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public HealthCodeTaxonomy getHealthCodeTaxonomyFromNameSpace(
-		final String healthCodeTaxonomyNameSpace)
+			final String healthCodeTaxonomyNameSpace)
 		throws RIFServiceException {
 
 
@@ -308,13 +289,8 @@ final class PGSQLHealthOutcomeManager {
 		}
 	}
 	
-	/**
-	 * Gets the health code taxonomies.
-	 *
-	 * @return the health code taxonomies
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public ArrayList<HealthCodeTaxonomy> getHealthCodeTaxonomies() 
+	@Override
+	public ArrayList<HealthCodeTaxonomy> getHealthCodeTaxonomies()
 		throws RIFServiceException {
 		
 		ArrayList<HealthCodeTaxonomy> healthCodeTaxonomies
@@ -327,21 +303,12 @@ final class PGSQLHealthOutcomeManager {
 	}
 		
 	
-	/**
-	 * Gets the health codes for investigation.
-	 *
-	 * @param connection the connection
-	 * @param user the user
-	 * @param diseaseMappingStudy the disease mapping study
-	 * @param investigation the investigation
-	 * @return the health codes for investigation
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public ArrayList<HealthCode> getHealthCodesForInvestigation(
-		final Connection connection,
-		final User user,
-		final DiseaseMappingStudy diseaseMappingStudy,
-		final Investigation investigation) 
+			final Connection connection,
+			final User user,
+			final DiseaseMappingStudy diseaseMappingStudy,
+			final Investigation investigation)
 		throws RIFServiceException {
 			
 		PGSQLSelectQueryFormatter queryFormatter 
@@ -407,16 +374,9 @@ final class PGSQLHealthOutcomeManager {
 		return results;
 	}
 	
-	/**
-	 * Gets the top level codes.
-	 *
-	 * @param connection the connection
-	 * @param healthCodeTaxonomy the health code taxonomy
-	 * @return the top level codes
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public ArrayList<HealthCode> getTopLevelCodes(
-		final HealthCodeTaxonomy healthCodeTaxonomy) 
+			final HealthCodeTaxonomy healthCodeTaxonomy)
 		throws RIFServiceException {
 
 		//Validate Parameters
@@ -427,16 +387,9 @@ final class PGSQLHealthOutcomeManager {
 		return healthCodeProvider.getTopLevelCodes();
 	}
 	
-	/**
-	 * Gets the immediate subterms.
-	 *
-	 * @param connection the connection
-	 * @param parentHealthCode the parent health code
-	 * @return the immediate subterms
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public ArrayList<HealthCode> getImmediateSubterms(
-		final HealthCode parentHealthCode) 
+			final HealthCode parentHealthCode)
 		throws RIFServiceException {
 		
 		//Validate Parameters
@@ -447,9 +400,10 @@ final class PGSQLHealthOutcomeManager {
 		return healthCodeProvider.getImmediateSubterms(parentHealthCode);		
 	}
 	
+	@Override
 	public HealthCode getHealthCode(
-		final String code,
-		final String nameSpace)
+			final String code,
+			final String nameSpace)
 		throws RIFServiceException {
 		
 		
@@ -470,16 +424,9 @@ final class PGSQLHealthOutcomeManager {
 		return healthCodeProvider.getHealthCode(code, nameSpace);
 	}
 		
-	/**
-	 * Gets the parent health code.
-	 *
-	 * @param connection the connection
-	 * @param childHealthCode the child health code
-	 * @return the parent health code
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public HealthCode getParentHealthCode(
-		final HealthCode childHealthCode) 
+			final HealthCode childHealthCode)
 		throws RIFServiceException {
 				
 		//Validate Parameters
@@ -571,19 +518,11 @@ final class PGSQLHealthOutcomeManager {
 		return relevantHealthCodeProvider;
 	}
 
-	/**
-	 * Gets the health codes.
-	 *
-	 * @param connection the connection
-	 * @param healthCodeTaxonomy the health code taxonomy
-	 * @param searchText the search text
-	 * @return the health codes
-	 * @throws RIFServiceException the RIF service exception
-	 */
+	@Override
 	public ArrayList<HealthCode> getHealthCodes(
-		final HealthCodeTaxonomy healthCodeTaxonomy,
-		final String searchText,
-		final boolean isCaseSensitive) 
+			final HealthCodeTaxonomy healthCodeTaxonomy,
+			final String searchText,
+			final boolean isCaseSensitive)
 		throws RIFServiceException {
 		
 		

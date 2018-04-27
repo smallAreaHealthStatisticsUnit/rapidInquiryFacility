@@ -1,15 +1,17 @@
 package rifServices.test.services.pg;
 
 import rifServices.businessConceptLayer.Sex;
-import rifServices.system.RIFServiceError;
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifServices.test.services.CommonRIFServiceTestCase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -73,8 +75,7 @@ import org.junit.Test;
  *
  */
 
-public final class GetSexes 
-	extends AbstractRIFServiceTestCase {
+public final class GetSexes extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -108,16 +109,13 @@ public final class GetSexes
 	 * @return the genders accept valid inputs
 	 */
 	@Test
-	public void getSexes_COMMON1() {
-		try {
-			User validUser = cloneValidUser();
-			ArrayList<Sex> sexs
-				= rifStudySubmissionService.getSexes(validUser);
-			assertEquals(3, sexs.size());
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}
+	@Ignore
+	public void getSexes_COMMON1() throws RIFServiceException {
+
+		User validUser = cloneValidUser();
+		ArrayList<Sex> sexs
+			= rifStudySubmissionService.getSexes(validUser);
+		assertEquals(3, sexs.size());
 	}
 
 	@Test
@@ -129,7 +127,7 @@ public final class GetSexes
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}

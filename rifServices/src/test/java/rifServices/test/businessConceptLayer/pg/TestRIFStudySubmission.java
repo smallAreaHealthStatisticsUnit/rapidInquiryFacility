@@ -1,20 +1,24 @@
 package rifServices.test.businessConceptLayer.pg;
 
+import java.util.ArrayList;
+import java.util.Date;
 
+import org.junit.Test;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.pg.PGSQLSampleTestObjectGenerator;
+import rifServices.businessConceptLayer.AbstractStudy;
+import rifServices.businessConceptLayer.CalculationMethod;
+import rifServices.businessConceptLayer.DiseaseMappingStudy;
+import rifServices.businessConceptLayer.Project;
+import rifServices.businessConceptLayer.RIFOutputOption;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 import rifServices.test.AbstractRIFTestCase;
-import static org.junit.Assert.*;
 
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Date;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -91,7 +95,7 @@ public final class TestRIFStudySubmission
 	// Section Properties
 	// ==========================================
 	/** The generator. */
-	private PGSQLSampleTestObjectGenerator generator;
+	private SampleTestObjectGenerator generator;
 	
 	/** The master rif job submission. */
 	private RIFStudySubmission masterRIFStudySubmission;
@@ -104,7 +108,7 @@ public final class TestRIFStudySubmission
 	 * Instantiates a new test rif job submission.
 	 */
 	public TestRIFStudySubmission() {
-		generator = new PGSQLSampleTestObjectGenerator();
+		generator = new SampleTestObjectGenerator();
 		masterRIFStudySubmission
 			= RIFStudySubmission.newInstance();
 		masterRIFStudySubmission.addCalculationMethod(generator.createSampleHETMethod());
@@ -191,8 +195,8 @@ public final class TestRIFStudySubmission
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
 			
-			PGSQLSampleTestObjectGenerator generator 
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator generator
+				= new SampleTestObjectGenerator();
 			DiseaseMappingStudy invalidDiseaseMappingStudy
 				= generator.createSampleDiseaseMappingStudy();
 			invalidDiseaseMappingStudy.setName(null);
@@ -219,8 +223,8 @@ public final class TestRIFStudySubmission
 		try {
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);	
-			PGSQLSampleTestObjectGenerator generator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator generator
+				= new SampleTestObjectGenerator();
 			CalculationMethod invalidCalculationMethod
 				= generator.createSampleCalculationMethod("Blah");
 			invalidCalculationMethod.setPrior(null);			
@@ -238,8 +242,8 @@ public final class TestRIFStudySubmission
 		try {
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);	
-			PGSQLSampleTestObjectGenerator generator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator generator
+				= new SampleTestObjectGenerator();
 			rifStudySubmission.addCalculationMethod(null);
 			rifStudySubmission.checkErrors(getValidationPolicy());
 			fail();	
