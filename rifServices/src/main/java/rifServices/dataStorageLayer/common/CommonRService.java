@@ -1,13 +1,19 @@
 package rifServices.dataStorageLayer.common;
 
 import java.util.ArrayList;
+import java.io.File;
+
+import org.rosuda.JRI.Rengine;
 
 import rifGenericLibrary.businessConceptLayer.Parameter;
+import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.CalculationMethod;
 import rifServices.dataStorageLayer.common.RService;
 
 public abstract class CommonRService implements RService {
 
+	private static final RIFLogger rifLogger = RIFLogger.getLogger();
+		
 	private String odbcDataSourceName;
 	private String userID;
 	private String password;
@@ -84,5 +90,28 @@ public abstract class CommonRService implements RService {
 		addParameter("password", password);
 		
 		return(parameters);
+	}
+	
+	// Source R script
+	@Override
+	public void sourceRScript(Rengine rengine, String scriptName) 
+		throws Exception {
+			
+		File rScript=new File(scriptName);
+		if (rScript.exists()) {
+			String nScriptName=scriptName;
+			if (File.separatorChar == '\\') { // Windooze!!! R path strings need to be escaped; they must go through a shell 
+											  // like runtime at some point
+				nScriptName=scriptName.replace("\\","\\\\");
+				rifLogger.info(this.getClass(), "Source(" + File.separator + "): '" + nScriptName + "'");
+			}
+			else {
+				rifLogger.info(this.getClass(), "Source: '" + nScriptName + "'");
+			}
+			rengine.eval("source('" + nScriptName + "')");
+		}
+		else {
+			throw new Exception("Cannot find R script: '" + scriptName + "'");
+		}
 	}
 }

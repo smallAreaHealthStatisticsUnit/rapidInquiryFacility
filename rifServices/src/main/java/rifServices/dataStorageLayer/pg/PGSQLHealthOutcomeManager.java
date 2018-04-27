@@ -128,7 +128,7 @@ final class PGSQLHealthOutcomeManager implements HealthOutcomeManager {
 		if (targetPathValue == null) {
 			targetPathValue = ClassFileLocator.getClassRootLocation("rifServices");
 		}
-		rifLogger.info(this.getClass(), "HealthOutcomeManager init targetPathValue=="+targetPathValue+"==");
+//		rifLogger.info(this.getClass(), "HealthOutcomeManager init targetPathValue=="+targetPathValue+"==");
 		
 		//initialise each health code provider
 		try {			

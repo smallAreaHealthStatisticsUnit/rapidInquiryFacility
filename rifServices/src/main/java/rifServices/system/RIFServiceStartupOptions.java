@@ -49,6 +49,7 @@ public class RIFServiceStartupOptions {
 	private DatabaseType databaseType;
 	private boolean isDatabaseCaseSensitive;
 	private boolean sslSupported;
+	static private boolean RChecked=false;
 
 	private String odbcDataSourceName;
 	
@@ -449,14 +450,16 @@ public class RIFServiceStartupOptions {
 
 		if (isWebDeployment) {
 
-			rifLogger.info(getClass(), "RIFServiceStartupOptions is web deployment");
-
-			checkREnvironment(); // Check R environment is setup correctly
-			printJavaLibraryPath(); // Check java.library.path
-
 			String path = new TomcatFile(new TomcatBase(), ".").pathToClassesDirectory().toString();
-			rifLogger.info(getClass(), "Returning path: " + path);
+			if (!RChecked) {
+				rifLogger.info(getClass(), "RIFServiceStartupOptions is web deployment");
 
+				checkREnvironment(); // Check R environment is setup correctly
+				printJavaLibraryPath(); // Check java.library.path
+				rifLogger.info(getClass(), "Returning path: " + path);
+				RChecked=true;
+			}
+			
 			return path;
 		}
 		else {
