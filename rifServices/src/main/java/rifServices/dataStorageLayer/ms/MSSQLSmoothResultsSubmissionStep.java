@@ -340,7 +340,6 @@ password=XXXXXXXX
 				
 				rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
 				rifScriptPath.append(File.separator);
-				rifScriptPath.append(File.separator);
 				
 				Adj_Cov_Smooth_JRI.append(rifScriptPath);
 				Adj_Cov_Smooth_JRI.append("Adj_Cov_Smooth_JRI.R");
