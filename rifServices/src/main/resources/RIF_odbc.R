@@ -335,14 +335,17 @@ dbConnect <- function() {
             exitValue <<- 1
         },
 		finally={
-			odbcSetAutoCommit(connDB, autoCommit = FALSE)
-			cat(odbcGetInfo(connDB), "\n", sep="")
+			if (!is.na(connDB)) {
+				cat(paste0("Connected to database: ", odbcDataSource, " as ", userID, "\n"), sep="")
+				odbcSetAutoCommit(connDB, autoCommit = FALSE)
+				cat(odbcGetInfo(connDB), "\n", sep="")
 #
 # Run rif40_startup() procedure on Postgres
 #
-			if (db_driver_prefix == "jdbc:postgresql") {
-				sql <- "SELECT rif40_sql_pkg.rif40_startup()"
-				doSQLQuery(sql)
+				if (db_driver_prefix == "jdbc:postgresql") {
+					sql <- "SELECT rif40_sql_pkg.rif40_startup()"
+					doSQLQuery(sql)
+				}
 			}
 		}) # End of tryCatch
 	})

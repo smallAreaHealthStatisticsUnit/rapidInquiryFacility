@@ -383,9 +383,27 @@ withErrorTracing = function(expr, silentSuccess=FALSE) {
 ##================================================================================
 runRSmoothingFunctions <- function() {
 	establishTableNames(studyID)
-	connDB=dbConnect()
+	errorTrace<-capture.output({
+		tryCatch({
+			connDB=dbConnect()
+		},
+		warning=function(w) {		
+			cat(paste("dbConnect() WARNING: ", w, "\n"), sep="")
+			exitValue <<- 1
+		},
+		error=function(e) {
+			e <<- e
+			cat(paste("dbConnect() ERROR: ", e$message, 
+				"; call stack: ", e$call, "\n"), sep="")
+			exitValue <<- 1
+		},
+		finally={
+			cat(paste0("dbConnect exitValue: ", exitValue, "\n"), sep="")
+		})
+	})
+		
 
-	if (exitValue == 0) {  
+	if (exitValue == 0 && !is.na(connDB)) {  
 		cat("Performing basic stats and smoothing\n")	
 		errorTrace<-capture.output({
 			# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
@@ -402,7 +420,6 @@ runRSmoothingFunctions <- function() {
 # Get Adjacency matrix
 #  	
 						AdjRowset=getAdjacencyMatrix()
-
 #
 # Call: performSmoothingActivity()
 #						
@@ -450,6 +467,10 @@ runRSmoothingFunctions <- function() {
 				}
 			) # End of tryCatch
 		})
+	}
+	else {
+		cat("Could not connect to database\n")	
+		return(list(exitValue=exitValue, errorTrace=errorTrace))
 	}
 
 	# Print trace
