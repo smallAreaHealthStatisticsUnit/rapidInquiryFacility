@@ -271,7 +271,6 @@ public class MSSQLSmoothResultsSubmissionStep extends CommonRService {
 					
 					if (name == "password") {
 						str.append(name + "=XXXXXXXX"  + lineSeparator); // Hide password
-						rifLogger.info(this.getClass(), "R password: " + value + lineSeparator);
 						rengine.assign(name, value);
 					}
 					else {

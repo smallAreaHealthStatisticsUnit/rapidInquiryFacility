@@ -32,7 +32,7 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 	private final String initialisationQuery;
 	/** The database url. */
 	private final String databaseURL;
-	private final HashMap<String, String> passwordHashList;
+	private static HashMap<String, String> passwordHashList;
 	
 	/**
 	 * Instantiates a new abstract sql manager.
@@ -235,7 +235,9 @@ public abstract class PGSQLAbstractSQLManager extends AbstractSQLManager {
 				writeOnlyConnectionQueue.addConnection(currentConnection);
 			}
 			writeConnectionsFromUser.put(userID, writeOnlyConnectionQueue);
-			passwordHashList.put(userID, password);
+			if (passwordHashList == null) {
+				passwordHashList = new HashMap<>();
+			}
 			registeredUserIDs.add(userID);
 			rifLogger.info(this.getClass(), "XXXXXXXXXXX P O S T G R E S Q L XXXXXXXXXX");
 		}

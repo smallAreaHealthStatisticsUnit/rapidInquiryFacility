@@ -35,7 +35,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 	private final String initialisationQuery;
 	/** The database url. */
 	private final String databaseURL;
-	private final HashMap<String, String> passwordHashList;
+	private static HashMap<String, String> passwordHashList = null;
 	final HashSet<String> userIDsToBlock;
 	
 
@@ -48,7 +48,9 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 		
 		userIDsToBlock = new HashSet<>();
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
-		passwordHashList = new HashMap<>();
+		if (passwordHashList == null) {
+			passwordHashList = new HashMap<>();
+		}
 		initialisationQuery = "EXEC rif40.rif40_startup ?";
 		databaseURL = generateURLText();
 	}
@@ -384,7 +386,7 @@ public abstract class MSSQLAbstractSQLManager extends AbstractSQLManager {
 	public String getUserPassword(
 			final User user) {
 
-		if (userExists(user.getUserID()) && !isUserBlocked(user)) {
+		if (userExists(user.getUserID()) && !isUserBlocked(user)) {	
 			return passwordHashList.get(user.getUserID());
 		}
 		else {
