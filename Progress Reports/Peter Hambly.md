@@ -2161,6 +2161,9 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
   * test 1002 took 54.8 compared to 41.4.6 on my desktop;
   * test 1003 took 108.6 compared to 92.7 on my desktop;
   [Note: no server memory tuning. SQL Server uses 20-100x more memory]
+   
+#### 23rd to 27th April
+ 
 * ODBC setup issues - fully documented
 * SQL Server build sahsuland OK, issues with installer sahsuland (no projects listed).
 * XXE Security Vulnerability (prohibit external file parsing raised. Fixed.
@@ -2171,4 +2174,27 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
   - R_HOME in PATH
   - %R_HOME%/bin/x64 in PATH
   - %R_HOME%/library/rJava/jri/x64 in PATH
-* Added ICD 11 support. Requires ClaML file from WHO, expected June 2018. Tested with duplicate of ICD 10  
+* Added ICD 11 support. Requires ClaML file from WHO, expected June 2018. Tested with duplicate of ICD 10. Will work if CLaML format is the same
+* RIF meeting
+* Test install on Fred's laptop. Issues with Postgres installer crashes:
+  * Run as administrator needs to be clearer
+  * How to edit the Windows environment
+  * Postgres installer crashed caused by Windows 81./10 upgrade issue; needed to create a new Administrator account
+* Patch demo laptop. Java upgrade had failed and Java needed to be installed;
+* Test then merge rationalise_api into master.
+  - Fixed R file separator escaping issue
+  - Tidy logs
+  - Put back covariate fix
+  - Password is null; R does not handle this well
+* Front end issues
+  - Package front end as WAR
+  - Login screen: focus on user name field
+  - Able to load, save and run risk analysis studies
+* Urgent database:
+  - Fix predefined_groiup name issues - should be length 30 in t_rif40_inv_conditions
+  - Save risk analysis bands as geojson in the database and the save file. Circle may need conversion to geojson (as a polygon of many, many short, linestrings).
+  - Save selection options (study and comparison resolution and selection geolevels, geolevels selected.
+  
+#### 30th April to 4th May
+
+* Fix for null R passwords; improved ODBC connect handler in R
