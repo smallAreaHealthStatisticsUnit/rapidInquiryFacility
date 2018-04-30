@@ -1,117 +1,47 @@
 package rifServices.dataStorageLayer.ms;
 
-import rifServices.system.RIFServiceMessages;
-import rifServices.system.RIFServiceError;
-import rifServices.businessConceptLayer.Sex;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
+
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCountTableRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
-import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.dataStorageLayer.common.SmoothedResultManager;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
-import java.sql.*;
-import java.util.Hashtable;
-import java.util.ArrayList;
-import java.util.HashSet;
-
-
-
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- */
-
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
+public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager
+		implements SmoothedResultManager {
 	
-	// ==========================================
-	// Section Constants
-	// ==========================================
-	private static String lineSeparator = System.getProperty("line.separator");
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
 	
 	private ArrayList<String> allAttributeColumnNames;
 	private Hashtable<String, String> columnDescriptionFromName;
 	private HashSet<String> numericColumns;
 	private HashSet<String> doublePrecisionColumns;
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
 
-	public MSSQLSmoothedResultManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+	public MSSQLSmoothedResultManager(final RIFServiceStartupOptions options) {
 
-		super(rifDatabaseProperties);
+		super(options);
 				
-		numericColumns = new HashSet<String>();
-		doublePrecisionColumns = new HashSet<String>();
+		numericColumns = new HashSet<>();
+		doublePrecisionColumns = new HashSet<>();
 		
 		//initialise the list of attributes columns that the clients can
 		//use to construct queries
-		allAttributeColumnNames = new ArrayList<String>();
-		columnDescriptionFromName = new Hashtable<String, String>();
+		allAttributeColumnNames = new ArrayList<>();
+		columnDescriptionFromName = new Hashtable<>();
 		
 		//Below, we are trying to register all the possible fields we would see in the smoothed result file.
 		//Note that the second parameter is a property name for tool tip help text that could help comment
@@ -175,70 +105,67 @@ public class MSSQLSmoothedResultManager extends MSSQLAbstractSQLManager {
 		columnDescriptionFromName.put(columnName, message);				
 	}
 
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	
+	@Override
 	public ArrayList<Sex> getSexes(
 			final Connection connection,
 			final String studyID) 
 			throws RIFServiceException {
 			
-			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+		
+		queryFormatter.setDatabaseSchemaName("rif40");
+		queryFormatter.addSelectField("genders");
+		queryFormatter.addFromTable("rif40_investigations");
+		queryFormatter.addWhereParameter("study_id");
+		
+		logSQLQuery(
+			"getSexes",
+			queryFormatter,
+			studyID);
+		
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		ArrayList<Sex> results = new ArrayList<Sex>();
+		try {
 			
-			queryFormatter.setDatabaseSchemaName("rif40");
-			queryFormatter.addSelectField("genders");
-			queryFormatter.addFromTable("rif40_investigations");
-			queryFormatter.addWhereParameter("study_id");
-				
-			logSQLQuery(
-				"getSexes",
-				queryFormatter,
-				studyID);
+			statement = connection.prepareStatement(queryFormatter.generateQuery());
+			statement.setInt(1, Integer.valueOf(studyID));
+			resultSet = statement.executeQuery();
+			resultSet.next();
 			
-			PreparedStatement statement = null;
-			ResultSet resultSet = null;
-			ArrayList<Sex> results = new ArrayList<Sex>();
-			try {
-				
-				statement = connection.prepareStatement(queryFormatter.generateQuery());
-				statement.setInt(1, Integer.valueOf(studyID));
-				resultSet = statement.executeQuery();
-				resultSet.next();	
-				
-				int sexID = resultSet.getInt(1);				
+			int sexID = resultSet.getInt(1);
 
-				if (sexID == 3) {
-					//BOTH
-					results.add(Sex.getSexFromCode(1));
-					results.add(Sex.getSexFromCode(2));
-					results.add(Sex.getSexFromCode(3));
-				} else {
-					//M or F
-					results.add(Sex.getSexFromCode(sexID));
-				}
+			if (sexID == 3) {
+				//BOTH
+				results.add(Sex.getSexFromCode(1));
+				results.add(Sex.getSexFromCode(2));
+				results.add(Sex.getSexFromCode(3));
+			} else {
+				//M or F
+				results.add(Sex.getSexFromCode(sexID));
 			}
-			catch(SQLException sqlException) {
-				logSQLException(sqlException);
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"smoothedResultsManager.error.unableToGetSexesForStudy",
-						studyID);
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.DATABASE_QUERY_FAILED, 
-						errorMessage);
-				throw rifServiceException;
-			}
-			finally {
-				PGSQLQueryUtility.close(statement);
-				PGSQLQueryUtility.close(resultSet);
-			}		
-			
-			return results;
+		}
+		catch(SQLException sqlException) {
+			logSQLException(sqlException);
+			String errorMessage
+				= RIFServiceMessages.getMessage(
+					"smoothedResultsManager.error.unableToGetSexesForStudy",
+					studyID);
+			RIFServiceException rifServiceException
+				= new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+			throw rifServiceException;
+		}
+		finally {
+			PGSQLQueryUtility.close(statement);
+			PGSQLQueryUtility.close(resultSet);
 		}
 		
+		return results;
+	}
+
+	@Override
 	public ArrayList<Integer> getYears(
 		final Connection connection,
 		final String studyID) 

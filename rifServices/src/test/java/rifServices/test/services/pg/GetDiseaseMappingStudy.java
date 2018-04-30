@@ -1,19 +1,29 @@
 package rifServices.test.services.pg;
 
-import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.pg.PGSQLSampleTestObjectGenerator;
-import rifServices.system.RIFServiceError;
-import rifServices.fileFormats.RIFZipFileWriter;
-
 import java.io.File;
 import java.util.ArrayList;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
+import rifServices.businessConceptLayer.AgeBand;
+import rifServices.businessConceptLayer.AgeGroup;
+import rifServices.businessConceptLayer.ComparisonArea;
+import rifServices.businessConceptLayer.DiseaseMappingStudy;
+import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
+import rifServices.businessConceptLayer.Investigation;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
+import rifServices.fileFormats.RIFZipFileWriter;
+import rifServices.system.RIFServiceError;
+import rifServices.test.services.CommonRIFServiceTestCase;
+
 import static org.junit.Assert.fail;
 
-import org.junit.Test;
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -75,8 +85,7 @@ import org.junit.Test;
  *
  */
 
-public final class GetDiseaseMappingStudy 
-	extends AbstractRIFServiceTestCase {
+public final class GetDiseaseMappingStudy extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -111,8 +120,8 @@ public final class GetDiseaseMappingStudy
 	
 	private void populateDatabaseWithValidStudy() {
 
-		PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-			= new PGSQLSampleTestObjectGenerator();
+		SampleTestObjectGenerator sampleTestObjectGenerator
+			= new SampleTestObjectGenerator();
 		RIFStudySubmission studySubmission
 			= sampleTestObjectGenerator.createSampleRIFJobSubmission();		
 		
@@ -120,101 +129,73 @@ public final class GetDiseaseMappingStudy
 	}
 	
 	@Test
-	public void getDiseaseMappingStudy_COMMON1() {
+	@Ignore
+	public void getDiseaseMappingStudy_COMMON1() throws RIFServiceException {
 
-		try {
-			User validUser = cloneValidUser();
-			
-			populateDatabaseWithValidStudy();			
-			
-			//use an example rif submission from the sample data
-			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
-			RIFStudySubmission studySubmission
-				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+		User validUser = cloneValidUser();
 
-			DiseaseMappingStudy diseaseMappingStudy
-				= rifStudySubmissionService.getDiseaseMappingStudy(
-					validUser, 
-					validStudyID);
-			
-			RIFStudySubmission submission
-				= RIFStudySubmission.newInstance();
-			submission.setStudy(diseaseMappingStudy);
-			
-			RIFZipFileWriter writer = new RIFZipFileWriter();
-			User user = User.newInstance("kgarwood", "xxx");
-			File targetFile = new File("C://rif_scripts/result.zip");
-			writer.writeZipFile(user, targetFile, submission);
-			
-			
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();			
-		}
+		populateDatabaseWithValidStudy();
+
+		//use an example rif submission from the sample data
+		//generator we have
+		SampleTestObjectGenerator sampleTestObjectGenerator
+			= new SampleTestObjectGenerator();
+		RIFStudySubmission studySubmission
+			= sampleTestObjectGenerator.createSampleRIFJobSubmission();
+
+		DiseaseMappingStudy diseaseMappingStudy
+			= rifStudySubmissionService.getDiseaseMappingStudy(
+				validUser,
+				validStudyID);
+
+		RIFStudySubmission submission
+			= RIFStudySubmission.newInstance();
+		submission.setStudy(diseaseMappingStudy);
+
+		RIFZipFileWriter writer = new RIFZipFileWriter();
+		User user = User.newInstance("kgarwood", "xxx");
+		File targetFile = new File("C://rif_scripts/result.zip");
+		writer.writeZipFile(user, targetFile, submission);
 	}
 	
 	
 	@Test
-	public void getDiseaseMappingStudy_EMPTY1() {
+	public void getDiseaseMappingStudy_EMPTY1() throws RIFServiceException {
 
-		try {
-			User validUser = cloneValidUser();
-			
-			populateDatabaseWithValidStudy();			
-			
-			//use an example rif submission from the sample data
-			//generator we have
+		User validUser = cloneValidUser();
+
+		populateDatabaseWithValidStudy();
+
+		//use an example rif submission from the sample data
+		//generator we have
 
 
-			DiseaseMappingStudy diseaseMappingStudy
-				= rifStudySubmissionService.getDiseaseMappingStudy(
-					validUser, 
-					validStudyID);
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();			
-		}
-		
-		
-		
-		
+		DiseaseMappingStudy diseaseMappingStudy
+			= rifStudySubmissionService.getDiseaseMappingStudy(
+				validUser,
+				validStudyID);
 	}
 	
 	@Test
-	public void submitStudy_EMPTY1() {
+	public void submitStudy_EMPTY1() throws RIFServiceException {
 
-		try {
-			User validUser = cloneValidUser();
-			
-			//use an example rif submission from the sample data
-			//generator we have
+		User validUser = cloneValidUser();
+
+		//use an example rif submission from the sample data
+		//generator we have
 
 
-			DiseaseMappingStudy diseaseMappingStudy
-				= rifStudySubmissionService.getDiseaseMappingStudy(
-					validUser, 
-					validStudyID);
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();			
-		}
+		DiseaseMappingStudy diseaseMappingStudy
+			= rifStudySubmissionService.getDiseaseMappingStudy(
+				validUser,
+				validStudyID);
 	}
 
-	@Test
-	public void getDiseaseMappingStudy_NULL1() {
-
-		
-
-		
-		
-	}
-
-	@Test
 	/**
 	 * Ensure empty checks are being done in Investigations
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_EMPTY2() {
 
 		File validOutputFile = null;
@@ -223,8 +204,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -256,10 +237,11 @@ public final class GetDiseaseMappingStudy
 		}
 	}
 
-	@Test
 	/**
 	 * Ensure empty checks are being done in Project
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_EMPTY3() {
 
 		File validOutputFile = null;
@@ -268,8 +250,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			emptyStudySubmission.setProject(cloneEmptyProject());
@@ -293,10 +275,11 @@ public final class GetDiseaseMappingStudy
 		}
 	}
 	
-	@Test
 	/**
 	 * Ensure empty checks are being done in Comparison Area
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_EMPTY4() {
 
 		File validOutputFile = null;
@@ -305,8 +288,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy
@@ -332,9 +315,7 @@ public final class GetDiseaseMappingStudy
 			validOutputFile.delete();
 		}
 	}
-	
-	
-	
+
 	@Test
 	public void submitStudy_NULL2() {
 		File validOutputFile = null;
@@ -342,8 +323,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			validOutputFile
 				= sampleTestObjectGenerator.generateSampleOutputFile();
 			rifStudySubmissionService.submitStudy(
@@ -355,7 +336,7 @@ public final class GetDiseaseMappingStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 		finally {
@@ -364,14 +345,15 @@ public final class GetDiseaseMappingStudy
 	}
 	
 	@Test
+	@Ignore
 	public void submitStudy_NULL3() {
 		try {
 			User validUser = cloneValidUser();
 
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission validStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			rifStudySubmissionService.submitStudy(
@@ -383,24 +365,25 @@ public final class GetDiseaseMappingStudy
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException,
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER,
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}
 	}
 
-	@Test
 	/**
 	 * make sure a null value somewhere deep within the RIF Study Submission
 	 * object tree is detected
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_NULL4() {
 		try {
 			User validUser = cloneValidUser();
 
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy
@@ -436,8 +419,8 @@ public final class GetDiseaseMappingStudy
 			
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission validStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			validOutputFile
@@ -463,6 +446,7 @@ public final class GetDiseaseMappingStudy
 	 * check non-existent geography
 	 */
 	@Test
+	@Ignore
 	public void submitStudy_NONEXISTENT2() {
 		File validOutputFile = null;
 		
@@ -470,8 +454,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -500,10 +484,11 @@ public final class GetDiseaseMappingStudy
 		}		
 	}
 
-	@Test
 	/**
 	 * check whether non-existent items are being checked in study area
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_NONEXISTENT3() {
 		File validOutputFile = null;
 		
@@ -511,8 +496,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -544,10 +529,11 @@ public final class GetDiseaseMappingStudy
 	}
 
 	
-	@Test
 	/**
 	 * check whether non-existent map areas are being checked
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_NONEXISTENT4() {
 		File validOutputFile = null;
 		
@@ -555,8 +541,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -587,10 +573,11 @@ public final class GetDiseaseMappingStudy
 		}		
 	}
 
-	@Test
 	/**
 	 * check whether non-existent items are being checked in investigations
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_NONEXISTENT5() {
 		File validOutputFile = null;
 		
@@ -598,8 +585,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -632,10 +619,11 @@ public final class GetDiseaseMappingStudy
 		}		
 	}
 
-	@Test
 	/**
 	 * check whether non-existent project is done
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_NONEXISTENT6() {
 		File validOutputFile = null;
 		
@@ -643,8 +631,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission nonExistentStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -685,8 +673,8 @@ public final class GetDiseaseMappingStudy
 			
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission validStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			validOutputFile
@@ -721,8 +709,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			maliciousStudySubmission.setProject(cloneMaliciousProject());
@@ -758,8 +746,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy 
@@ -799,8 +787,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy 
@@ -840,8 +828,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy 
@@ -871,10 +859,11 @@ public final class GetDiseaseMappingStudy
 		}
 	}
 	
-	@Test
 	/**
 	 * ensure malicious code checks are happening in the study
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_MALICIOUS6() {
 
 		File validOutputFile = null;
@@ -883,8 +872,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			PGSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new PGSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			
@@ -910,20 +899,4 @@ public final class GetDiseaseMappingStudy
 			validOutputFile.delete();
 		}
 	}
-	
-	@Test
-	/**
-	 * tests whether file has write permissions enabled
-	 */
-	public void submitStudy_FILE_PERMISSIONS() {
-		fail();
-	}
-	
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

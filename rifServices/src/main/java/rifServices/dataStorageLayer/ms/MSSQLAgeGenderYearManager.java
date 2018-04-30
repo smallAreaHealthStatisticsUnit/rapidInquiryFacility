@@ -1,127 +1,50 @@
 package rifServices.dataStorageLayer.ms;
 
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.RIFLogger;
-import rifGenericLibrary.businessConceptLayer.User;
-import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.businessConceptLayer.AgeGroup;
-import rifServices.businessConceptLayer.AgeBand;
-import rifServices.businessConceptLayer.Geography;
-import rifServices.businessConceptLayer.AgeGroupSortingOption;
-import rifServices.businessConceptLayer.NumeratorDenominatorPair;
-import rifServices.businessConceptLayer.Sex;
-import rifServices.businessConceptLayer.YearRange;
-import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.businessConceptLayer.AgeBand;
+import rifServices.businessConceptLayer.AgeGroup;
+import rifServices.businessConceptLayer.AgeGroupSortingOption;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.RIFContextManager;
+import rifServices.system.RIFServiceError;
+import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 
+final class MSSQLAgeGenderYearManager extends MSSQLAbstractSQLManager
+		implements AgeGenderYearManager  {
 
-/**
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-final class MSSQLAgeGenderYearManager 
-	extends MSSQLAbstractSQLManager {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	private static String lineSeparator = System.getProperty("line.separator");
 	
-	// ==========================================
-	// Section Properties
-	// ==========================================
 	/** The sql rif context manager. */
-	private MSSQLRIFContextManager sqlRIFContextManager;
-	// ==========================================
-	// Section Construction
-	// ==========================================
+	private RIFContextManager sqlRIFContextManager;
 
 	/**
 	 * Instantiates a new SQL age gender year manager.
 	 *
 	 * @param sqlRIFContextManager the sql rif context manager
 	 */
-	public MSSQLAgeGenderYearManager(
-		final RIFDatabaseProperties rifDatabaseProperties,
-		final MSSQLRIFContextManager sqlRIFContextManager) {
+	public MSSQLAgeGenderYearManager(final RIFContextManager sqlRIFContextManager,
+			final RIFServiceStartupOptions options) {
 
-		super(rifDatabaseProperties);
+		super(options);
 		this.sqlRIFContextManager = sqlRIFContextManager;
 	}
-
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
 
 	/**
 	 * Gets the age groups.
@@ -133,13 +56,10 @@ final class MSSQLAgeGenderYearManager
 	 * @return the age groups
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<AgeGroup> getAgeGroups(
-		final User user,
-		final Connection connection,
-		final Geography geography,
-		final NumeratorDenominatorPair ndPair,
-		final AgeGroupSortingOption sortingOrder)
-		throws RIFServiceException {
+	@Override
+	public ArrayList<AgeGroup> getAgeGroups(final User user, final Connection connection,
+			final Geography geography, final NumeratorDenominatorPair ndPair,
+			final AgeGroupSortingOption sortingOrder) throws RIFServiceException {
 				
 		//Validate parameters
 		validateCommonMethodParameters(
@@ -159,20 +79,20 @@ final class MSSQLAgeGenderYearManager
 			Integer ageGroupID = null;
 			PGSQLSelectQueryFormatter getAgeIDQueryFormatter 
 				= new PGSQLSelectQueryFormatter();
-			configureQueryFormatterForDB(getAgeIDQueryFormatter);
+			sqlRIFContextManager.configureQueryFormatterForDB(getAgeIDQueryFormatter);
 			getAgeIDQueryFormatter.addSelectField("age_group_id");
 			getAgeIDQueryFormatter.addFromTable("rif40.rif40_tables");
 			getAgeIDQueryFormatter.addWhereParameter("table_name");
 			getAgeIDQueryFormatter.addWhereParameter("isnumerator");
-				
-			logSQLQuery(
+			
+			sqlRIFContextManager.logSQLQuery(
 				"getAgeIDQuery",
 				getAgeIDQueryFormatter,
 				ndPair.getNumeratorTableName(),
 				String.valueOf(1));
 		
 			getAgeIDStatement
-				= createPreparedStatement(
+				= sqlRIFContextManager.createPreparedStatement(
 					connection, 
 					getAgeIDQueryFormatter);
 			getAgeIDStatement.setString(1, ndPair.getNumeratorTableName());
@@ -180,7 +100,7 @@ final class MSSQLAgeGenderYearManager
 			getAgeIDStatement.setInt(2, 1);
 			getAgeIDResultSet = getAgeIDStatement.executeQuery();
 			
-			if (getAgeIDResultSet.next() == false) {
+			if (!getAgeIDResultSet.next()) {
 				//ERROR: No entry available
 				String errorMessage
 					= RIFServiceMessages.getMessage(
@@ -198,13 +118,7 @@ final class MSSQLAgeGenderYearManager
 			else {
 				ageGroupID = getAgeIDResultSet.getInt(1);
 			}
-			
-			if (ageGroupID == null) {
-				
-				connection.commit();
-				return results;
-			}
-		
+
 			//Step II: Obtain the list of age groups that are appropriate
 			//for the age group ID associated with the numerator table
 			//The age group id helps group together age groups based on different
@@ -212,9 +126,9 @@ final class MSSQLAgeGenderYearManager
 			//"2" may represent age ranges that are broken down every 4 years
 			//After obtaining the list of age groups having the correct age group id
 			//sort them by low_age
-			PGSQLSelectQueryFormatter getAgesForAgeGroupID 
-				= new PGSQLSelectQueryFormatter();
-			configureQueryFormatterForDB(getAgesForAgeGroupID);
+			MSSQLSelectQueryFormatter getAgesForAgeGroupID
+				= new MSSQLSelectQueryFormatter(false);
+			sqlRIFContextManager.configureQueryFormatterForDB(getAgesForAgeGroupID);
 
 			getAgesForAgeGroupID.addSelectField("age_group_id");
 			getAgesForAgeGroupID.addSelectField("low_age");
@@ -226,35 +140,34 @@ final class MSSQLAgeGenderYearManager
 			if ((sortingOrder == null) ||
 				(sortingOrder == AgeGroupSortingOption.ASCENDING_LOWER_LIMIT)) {
 				getAgesForAgeGroupID.addOrderByCondition(
-					"low_age", 
-					PGSQLSelectQueryFormatter.SortOrder.ASCENDING);			
+					"low_age", MSSQLSelectQueryFormatter.SortOrder.ASCENDING);
 			}
 			else if (sortingOrder == AgeGroupSortingOption.DESCENDING_LOWER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
 					"low_age",
-					PGSQLSelectQueryFormatter.SortOrder.DESCENDING);
+					MSSQLSelectQueryFormatter.SortOrder.DESCENDING);
 			}
 			else if (sortingOrder == AgeGroupSortingOption.ASCENDING_UPPER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
 					"high_age",
-					PGSQLSelectQueryFormatter.SortOrder.ASCENDING);		
+					MSSQLSelectQueryFormatter.SortOrder.ASCENDING);
 			}
 			else {
 				//it must be descending lower limit.		
 				getAgesForAgeGroupID.addOrderByCondition(
 					"high_age",
-					PGSQLSelectQueryFormatter.SortOrder.DESCENDING);		
+					MSSQLSelectQueryFormatter.SortOrder.DESCENDING);
 				assert sortingOrder == AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
 			}
-
-			logSQLQuery(
+			
+			sqlRIFContextManager.logSQLQuery(
 				"getAgesForAgeGroupIDQuery",
 				getAgesForAgeGroupID,
 				String.valueOf(ageGroupID));
 				
 			//Execute query and generate results
 			getAgesForAgeGroupStatement
-				= createPreparedStatement(
+				= sqlRIFContextManager.createPreparedStatement(
 					connection, 
 					getAgesForAgeGroupID);				
 			getAgesForAgeGroupStatement.setInt(1, ageGroupID);
@@ -274,7 +187,7 @@ final class MSSQLAgeGenderYearManager
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
+			sqlRIFContextManager.logSQLException(sqlException);
 			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("ageGroup.error.unableToGetAgeGroups");
@@ -327,12 +240,10 @@ final class MSSQLAgeGenderYearManager
 	 * @return the year range
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public YearRange getYearRange(
-		final User user,
-		final Connection connection,
-		final Geography geography,
-		final NumeratorDenominatorPair ndPair) 
-		throws RIFServiceException {
+	@Override
+	public YearRange getYearRange(final User user, final Connection connection,
+			final Geography geography, final NumeratorDenominatorPair ndPair)
+			throws RIFServiceException {
 		
 		//Validate parameters
 		validateCommonMethodParameters(
@@ -347,19 +258,19 @@ final class MSSQLAgeGenderYearManager
 
 			//Create query
 			PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
-			configureQueryFormatterForDB(queryFormatter);
+			sqlRIFContextManager.configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("year_start");
 			queryFormatter.addSelectField("year_stop");
 			queryFormatter.addFromTable("rif40.rif40_tables");
 			queryFormatter.addWhereParameter("table_name");
-
-			logSQLQuery(
+			
+			sqlRIFContextManager.logSQLQuery(
 				"getYearRange",
 				queryFormatter,
 				ndPair.getNumeratorTableName());
 				
 			statement 
-				= createPreparedStatement(
+				= sqlRIFContextManager.createPreparedStatement(
 					connection, 
 					queryFormatter);
 						
@@ -372,7 +283,7 @@ final class MSSQLAgeGenderYearManager
 			statement.setString(1, ndPair.getNumeratorTableName());
 			resultSet = statement.executeQuery();
 			//there should be exactly one result
-			if (resultSet.next() == false) {
+			if (!resultSet.next()) {
 				//no entry found in the rif40 tables
 				String errorMessage
 					= RIFServiceMessages.getMessage(
@@ -407,7 +318,7 @@ final class MSSQLAgeGenderYearManager
 			 */
 
 			//Record original exception, throw sanitised, human-readable version			
-			logSQLException(sqlException);
+			sqlRIFContextManager.logSQLException(sqlException);
 			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -418,12 +329,10 @@ final class MSSQLAgeGenderYearManager
 				MSSQLAgeGenderYearManager.class, 
 				errorMessage, 
 				sqlException);
-						
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
+			
+			throw new RIFServiceException(
+				RIFServiceError.DATABASE_QUERY_FAILED,
+				errorMessage);
 		}
 		finally {
 			//Cleanup database resources
@@ -431,11 +340,7 @@ final class MSSQLAgeGenderYearManager
 			PGSQLQueryUtility.close(resultSet);			
 		}
 	}
-	
-	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
+
 	/**
 	 * Validate common method parameters.
 	 *
@@ -451,7 +356,7 @@ final class MSSQLAgeGenderYearManager
 		final NumeratorDenominatorPair ndPair) 
 		throws RIFServiceException {
 
-		ValidationPolicy validationPolicy = getValidationPolicy();
+		ValidationPolicy validationPolicy = sqlRIFContextManager.getValidationPolicy();
 		
 		if (geography != null) {
 			geography.checkErrors(validationPolicy);
@@ -462,11 +367,7 @@ final class MSSQLAgeGenderYearManager
 		}
 		if (ndPair != null) {
 			ndPair.checkErrors(validationPolicy);
-			sqlRIFContextManager.checkNDPairExists(
-				user,
-				connection, 
-				geography,
-				ndPair);			
+			sqlRIFContextManager.checkNDPairExists(user, connection, geography, ndPair);
 		}
 	}
 
@@ -540,8 +441,8 @@ final class MSSQLAgeGenderYearManager
 			*/
 			
 			String denominatorTableName
-				= ndPair.getDenominatorTableName();			
-			logSQLQuery(
+				= ndPair.getDenominatorTableName();
+			sqlRIFContextManager.logSQLQuery(
 				"checkNonExistentAgeGroup",
 				queryFormatter,
 				"0",
@@ -550,7 +451,7 @@ final class MSSQLAgeGenderYearManager
 							
 			//Execute query and generate results
 			statement 
-				= createPreparedStatement(
+				= sqlRIFContextManager.createPreparedStatement(
 					connection, 
 					queryFormatter);
 			
@@ -591,7 +492,7 @@ final class MSSQLAgeGenderYearManager
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
-			logSQLException(sqlException);
+			sqlRIFContextManager.logSQLException(sqlException);
 			PGSQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(

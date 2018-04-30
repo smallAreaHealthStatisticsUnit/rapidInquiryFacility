@@ -206,7 +206,7 @@ public abstract class AbstractRIFConcept
 		FieldValidationUtility fieldValidationUtility
 			= new FieldValidationUtility();
 		
-		fieldValidationUtility.countErrors(
+		fieldValidationUtility.throwExceptionIfErrorsFound(
 			rifServiceError, 
 			errorMessages);
 	}

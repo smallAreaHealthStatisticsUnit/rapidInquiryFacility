@@ -1,16 +1,16 @@
 package rifServices.test.businessConceptLayer.pg;
 
+import org.junit.Test;
 
 import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.CalculationMethod;
-import rifServices.dataStorageLayer.pg.PGSQLSampleTestObjectGenerator;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
-import rifServices.test.*;
-import static org.junit.Assert.*;
+import rifServices.test.AbstractRIFTestCase;
 
-import org.junit.Test;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -97,8 +97,8 @@ public final class TestCalculationMethod
 	 * Instantiates a new test calculation method.
 	 */
 	public TestCalculationMethod() {
-		PGSQLSampleTestObjectGenerator generator
-			= new PGSQLSampleTestObjectGenerator();
+		SampleTestObjectGenerator generator
+			= new SampleTestObjectGenerator();
 		masterCalculationMethod 
 			= generator.createSampleBYMMethod();
 	}

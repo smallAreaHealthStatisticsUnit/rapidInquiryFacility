@@ -12,9 +12,9 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFComparisonUtility;
+import rifGenericLibrary.util.RIFLogger;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
-import rifGenericLibrary.util.RIFLogger;
 
 /**
  *
@@ -1311,7 +1311,7 @@ public class Investigation
 		}
 		
 		if (covariates == null || fieldValidationUtility.isEmpty(covariates)) {
-			rifLogger.info(this.getClass(), "Investigation " + title + " has no convariates");
+			rifLogger.info(this.getClass(), "Investigation " + title + " has no covariates");
 /*			String covariatesFieldName
 				= RIFServiceMessages.getMessage("investigation.covariates.label");
 			String errorMessage
@@ -1319,18 +1319,16 @@ public class Investigation
 					"general.validation.emptyRequiredRecordField",
 					recordType,
 					covariatesFieldName);
-			errorMessages.add(errorMessage);		*/	
-		}
-		else {
+			errorMessages.add(errorMessage); */
+		} else {
 			for (AbstractCovariate covariate : covariates) {
 				if (covariate == null) {
-					// Do nothings - they can be!
-				}
-				else {
+					rifLogger.info(this.getClass(), "Investigation " + title + " has null covariates");
+					// Do nothing - they can be
+				} else {
 					try {
 						covariate.checkErrors(validationPolicy);
-					}
-					catch(RIFServiceException rifServiceException) {
+					} catch(RIFServiceException rifServiceException) {
 						rifLogger.info(this.getClass(), "Covariate.checkErrors(): " + 
 							rifServiceException.getErrorMessages().size());
 						errorMessages.addAll(rifServiceException.getErrorMessages());					
@@ -1338,12 +1336,6 @@ public class Investigation
 				}
 			}			
 		}
-
-		//else if (covariates.isEmpty()) {
-		//	String errorMessage
-		//		= RIFServiceMessages.getMessage("investigation.error.noCovariatesSpecified");
-		//	errorMessages.add(errorMessage);			
-		//}
 
 		if (errorMessages.size() > 0) {
 			rifLogger.info(this.getClass(), "Investigation.checkErrors(): " + 

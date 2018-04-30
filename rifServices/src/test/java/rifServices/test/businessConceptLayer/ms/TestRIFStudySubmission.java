@@ -6,7 +6,7 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.ms.MSSQLSampleTestObjectGenerator;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 import rifServices.test.AbstractRIFTestCase;
 import static org.junit.Assert.*;
@@ -91,7 +91,7 @@ public final class TestRIFStudySubmission
 	// Section Properties
 	// ==========================================
 	/** The generator. */
-	private MSSQLSampleTestObjectGenerator generator;
+	private SampleTestObjectGenerator generator;
 	
 	/** The master rif job submission. */
 	private RIFStudySubmission masterRIFStudySubmission;
@@ -104,7 +104,7 @@ public final class TestRIFStudySubmission
 	 * Instantiates a new test rif job submission.
 	 */
 	public TestRIFStudySubmission() {
-		generator = new MSSQLSampleTestObjectGenerator();
+		generator = new SampleTestObjectGenerator();
 		masterRIFStudySubmission
 			= RIFStudySubmission.newInstance();
 		masterRIFStudySubmission.addCalculationMethod(generator.createSampleHETMethod());
@@ -191,8 +191,8 @@ public final class TestRIFStudySubmission
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);
 			
-			MSSQLSampleTestObjectGenerator generator 
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator generator
+				= new SampleTestObjectGenerator();
 			DiseaseMappingStudy invalidDiseaseMappingStudy
 				= generator.createSampleDiseaseMappingStudy();
 			invalidDiseaseMappingStudy.setName(null);
@@ -219,8 +219,8 @@ public final class TestRIFStudySubmission
 		try {
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);	
-			MSSQLSampleTestObjectGenerator generator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator generator
+				= new SampleTestObjectGenerator();
 			CalculationMethod invalidCalculationMethod
 				= generator.createSampleCalculationMethod("Blah");
 			invalidCalculationMethod.setPrior(null);			
@@ -238,8 +238,8 @@ public final class TestRIFStudySubmission
 		try {
 			RIFStudySubmission rifStudySubmission
 				= RIFStudySubmission.createCopy(masterRIFStudySubmission);	
-			MSSQLSampleTestObjectGenerator generator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator generator
+				= new SampleTestObjectGenerator();
 			rifStudySubmission.addCalculationMethod(null);
 			rifStudySubmission.checkErrors(getValidationPolicy());
 			fail();	

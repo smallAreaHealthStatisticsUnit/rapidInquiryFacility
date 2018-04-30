@@ -23,7 +23,8 @@ public class TomcatFile {
 	private static final String WEB_INF_DIRECTORY = "WEB-INF";
 	private static final String CLASSES_DIRECTORY = "classes";
 
-	private Path file;
+	private final Path file;
+	private final Path classesPath;
 	private Properties props;
 	private BufferedReader reader;
 
@@ -34,19 +35,26 @@ public class TomcatFile {
 
 	private TomcatFile(final Path baseDir, final String fileName) {
 
-		Path dir1 = baseDir.resolve(CONF_DIRECTORY);
-		Path dir2 = baseDir.resolve(WEBAPPS_DIRECTORY).resolve(RIF_SERVICES_DIRECTORY)
+		Path confPath = baseDir.resolve(CONF_DIRECTORY);
+		classesPath = baseDir.resolve(WEBAPPS_DIRECTORY).resolve(RIF_SERVICES_DIRECTORY)
 				.resolve(WEB_INF_DIRECTORY).resolve(CLASSES_DIRECTORY);
-		file = dir1.resolve(fileName);
-		if (!file.toFile().exists()) {
+		Path tempPath = confPath.resolve(fileName);
+		if (!tempPath.toFile().exists()) {
 
-			file = dir2.resolve(fileName);
+			tempPath = classesPath.resolve(fileName);
 		}
+
+		file = tempPath;
 	}
 
 	public Path path() {
 
 		return file;
+	}
+
+	public Path pathToClassesDirectory() {
+
+		return classesPath;
 	}
 
 	public BufferedReader reader() throws IOException {
@@ -75,5 +83,4 @@ public class TomcatFile {
 
 		return file.toFile().toURI().toURL();
 	}
-
 }

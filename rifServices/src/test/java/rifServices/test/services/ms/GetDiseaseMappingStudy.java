@@ -4,15 +4,17 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.ms.MSSQLSampleTestObjectGenerator;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 import rifServices.fileFormats.RIFZipFileWriter;
+import rifServices.test.services.CommonRIFServiceTestCase;
 
 import java.io.File;
 import java.util.ArrayList;
 
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -75,8 +77,8 @@ import org.junit.Test;
  *
  */
 
-public final class GetDiseaseMappingStudy 
-	extends AbstractRIFServiceTestCase {
+public final class GetDiseaseMappingStudy
+		extends CommonRIFServiceTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -111,8 +113,8 @@ public final class GetDiseaseMappingStudy
 	
 	private void populateDatabaseWithValidStudy() {
 
-		MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-			= new MSSQLSampleTestObjectGenerator();
+		SampleTestObjectGenerator sampleTestObjectGenerator
+			= new SampleTestObjectGenerator();
 		RIFStudySubmission studySubmission
 			= sampleTestObjectGenerator.createSampleRIFJobSubmission();		
 		
@@ -120,6 +122,7 @@ public final class GetDiseaseMappingStudy
 	}
 	
 	@Test
+	@Ignore
 	public void getDiseaseMappingStudy_COMMON1() {
 
 		try {
@@ -129,8 +132,8 @@ public final class GetDiseaseMappingStudy
 			
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission studySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 
@@ -211,10 +214,11 @@ public final class GetDiseaseMappingStudy
 		
 	}
 
-	@Test
 	/**
 	 * Ensure empty checks are being done in Investigations
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_EMPTY2() {
 
 		File validOutputFile = null;
@@ -223,8 +227,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -256,10 +260,11 @@ public final class GetDiseaseMappingStudy
 		}
 	}
 
-	@Test
 	/**
 	 * Ensure empty checks are being done in Project
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_EMPTY3() {
 
 		File validOutputFile = null;
@@ -268,8 +273,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			emptyStudySubmission.setProject(cloneEmptyProject());
@@ -293,10 +298,11 @@ public final class GetDiseaseMappingStudy
 		}
 	}
 	
-	@Test
 	/**
 	 * Ensure empty checks are being done in Comparison Area
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_EMPTY4() {
 
 		File validOutputFile = null;
@@ -305,8 +311,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy
@@ -336,14 +342,15 @@ public final class GetDiseaseMappingStudy
 	
 	
 	@Test
+	@Ignore
 	public void submitStudy_NULL2() {
 		File validOutputFile = null;
 		try {
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			validOutputFile
 				= sampleTestObjectGenerator.generateSampleOutputFile();
 			rifStudySubmissionService.submitStudy(
@@ -364,14 +371,15 @@ public final class GetDiseaseMappingStudy
 	}
 	
 	@Test
+	@Ignore
 	public void submitStudy_NULL3() {
 		try {
 			User validUser = cloneValidUser();
 
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission validStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			rifStudySubmissionService.submitStudy(
@@ -388,19 +396,20 @@ public final class GetDiseaseMappingStudy
 		}
 	}
 
-	@Test
 	/**
 	 * make sure a null value somewhere deep within the RIF Study Submission
 	 * object tree is detected
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_NULL4() {
 		try {
 			User validUser = cloneValidUser();
 
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy
@@ -436,8 +445,8 @@ public final class GetDiseaseMappingStudy
 			
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission validStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			validOutputFile
@@ -463,6 +472,7 @@ public final class GetDiseaseMappingStudy
 	 * check non-existent geography
 	 */
 	@Test
+	@Ignore
 	public void submitStudy_NONEXISTENT2() {
 		File validOutputFile = null;
 		
@@ -470,8 +480,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -500,10 +510,11 @@ public final class GetDiseaseMappingStudy
 		}		
 	}
 
-	@Test
 	/**
 	 * check whether non-existent items are being checked in study area
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_NONEXISTENT3() {
 		File validOutputFile = null;
 		
@@ -511,8 +522,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -544,10 +555,11 @@ public final class GetDiseaseMappingStudy
 	}
 
 	
-	@Test
 	/**
 	 * check whether non-existent map areas are being checked
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_NONEXISTENT4() {
 		File validOutputFile = null;
 		
@@ -555,8 +567,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -587,10 +599,11 @@ public final class GetDiseaseMappingStudy
 		}		
 	}
 
-	@Test
 	/**
 	 * check whether non-existent items are being checked in investigations
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_NONEXISTENT5() {
 		File validOutputFile = null;
 		
@@ -598,8 +611,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission emptyStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -632,10 +645,11 @@ public final class GetDiseaseMappingStudy
 		}		
 	}
 
-	@Test
 	/**
 	 * check whether non-existent project is done
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_NONEXISTENT6() {
 		File validOutputFile = null;
 		
@@ -643,8 +657,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission nonExistentStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			//randomly insert an empty value into the field of some
@@ -685,8 +699,8 @@ public final class GetDiseaseMappingStudy
 			
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission validStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			validOutputFile
@@ -721,8 +735,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			maliciousStudySubmission.setProject(cloneMaliciousProject());
@@ -758,8 +772,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy 
@@ -799,8 +813,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy 
@@ -840,8 +854,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy 
@@ -883,8 +897,8 @@ public final class GetDiseaseMappingStudy
 			User validUser = cloneValidUser();
 			//use an example rif submission from the sample data
 			//generator we have
-			MSSQLSampleTestObjectGenerator sampleTestObjectGenerator
-				= new MSSQLSampleTestObjectGenerator();
+			SampleTestObjectGenerator sampleTestObjectGenerator
+				= new SampleTestObjectGenerator();
 			RIFStudySubmission maliciousStudySubmission
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			
@@ -911,10 +925,11 @@ public final class GetDiseaseMappingStudy
 		}
 	}
 	
-	@Test
 	/**
 	 * tests whether file has write permissions enabled
 	 */
+	@Test
+	@Ignore
 	public void submitStudy_FILE_PERMISSIONS() {
 		fail();
 	}

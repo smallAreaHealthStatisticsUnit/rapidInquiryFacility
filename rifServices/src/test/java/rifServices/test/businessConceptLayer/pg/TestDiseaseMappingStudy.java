@@ -1,15 +1,28 @@
 package rifServices.test.businessConceptLayer.pg;
 
+import org.junit.Test;
 
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.businessConceptLayer.*;
-import rifServices.dataStorageLayer.pg.PGSQLSampleTestObjectGenerator;
+import rifServices.businessConceptLayer.AdjustableCovariate;
+import rifServices.businessConceptLayer.ComparisonArea;
+import rifServices.businessConceptLayer.CovariateType;
+import rifServices.businessConceptLayer.DiseaseMappingStudy;
+import rifServices.businessConceptLayer.DiseaseMappingStudyArea;
+import rifServices.businessConceptLayer.GeoLevelArea;
+import rifServices.businessConceptLayer.GeoLevelSelect;
+import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.businessConceptLayer.GeoLevelView;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.businessConceptLayer.Investigation;
+import rifServices.businessConceptLayer.MapArea;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
 import rifServices.test.AbstractRIFTestCase;
-import static org.junit.Assert.*;
 
-import org.junit.Test;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -86,7 +99,7 @@ public final class TestDiseaseMappingStudy
 	// Section Properties
 	// ==========================================
 	/** The master disease mapping study. */
-	private PGSQLSampleTestObjectGenerator generator;
+	private SampleTestObjectGenerator generator;
 	private DiseaseMappingStudy masterDiseaseMappingStudy;
 
 	private AdjustableCovariate masterNearDistCovariate;
@@ -102,7 +115,7 @@ public final class TestDiseaseMappingStudy
 	 */
 	public TestDiseaseMappingStudy() {
 		generator
-			= new PGSQLSampleTestObjectGenerator();
+			= new SampleTestObjectGenerator();
 		masterDiseaseMappingStudy 
 			= generator.createSampleDiseaseMappingStudy();
 
@@ -150,9 +163,10 @@ public final class TestDiseaseMappingStudy
 			DiseaseMappingStudy diseaseMappingStudy
 				= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 			diseaseMappingStudy.checkErrors(getValidationPolicy());
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
+
+		} catch(RIFServiceException e) {
+
+			fail(e.toString());
 		}
 	}
 	
@@ -360,8 +374,8 @@ public final class TestDiseaseMappingStudy
 	 * A disease mapping study is invalid if it has an invalid investigation
 	 */	
 	public void rejectInvalidInvestigation_ERROR() {
-		PGSQLSampleTestObjectGenerator generator 
-			= new PGSQLSampleTestObjectGenerator();
+		SampleTestObjectGenerator generator
+			= new SampleTestObjectGenerator();
 		Investigation invalidInvestigation
 			= generator.createSampleInvestigation("This is an invalid investigation");
 		HealthCode invalidHealthCode 
@@ -392,8 +406,8 @@ public final class TestDiseaseMappingStudy
 			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
 		diseaseMappingStudy.clearInvestigations();
 		
-		PGSQLSampleTestObjectGenerator generator 
-			= new PGSQLSampleTestObjectGenerator();
+		SampleTestObjectGenerator generator
+			= new SampleTestObjectGenerator();
 		Investigation investigation1
 			= generator.createSampleInvestigation("Investigation 1");
 		NumeratorDenominatorPair ndPair1

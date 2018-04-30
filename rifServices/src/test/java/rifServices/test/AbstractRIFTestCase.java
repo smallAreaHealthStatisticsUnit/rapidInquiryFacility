@@ -1,107 +1,88 @@
 package rifServices.test;
 
+import java.util.ArrayList;
 
+import org.junit.Before;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-
-import java.util.ArrayList;
+import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
+import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
+import rifServices.dataStorageLayer.common.HealthOutcomeManager;
+import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.dataStorageLayer.common.ServiceBundle;
+import rifServices.dataStorageLayer.common.ServiceResources;
+import rifServices.dataStorageLayer.common.StudyExtractManager;
+import rifServices.dataStorageLayer.common.SubmissionManager;
+import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
+import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
+import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
+import rifServices.system.RIFServiceStartupOptions;
 
 import static org.junit.Assert.assertEquals;
-
-
-/**
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
- */
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
+import static org.mockito.Mockito.when;
 
 public class AbstractRIFTestCase {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
+	@Mock
+	public ServiceResources resources;
 
-	// ==========================================
-	// Section Properties
-	// ==========================================
+	@Mock
+	private SQLManager sqlMgr;
+
+	@Mock
+	private SubmissionManager subMgr;
+
+	@Mock
+	protected StudyExtractManager extractMgr;
+
+	@Mock
+	HealthOutcomeManager healthOutcomeManager;
+
+	@Mock
+	RIFServiceStartupOptions options;
+
+	protected RIFStudySubmissionAPI rifStudySubmissionService;
+	protected RIFStudyResultRetrievalAPI rifStudyRetrievalService;
+	/** The test user. */
+	protected User validUser;
+	protected ServiceBundle rifServiceBundle;
 	/** The test malicious field value. */
 	private String testMaliciousFieldValue;
 	
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
-	// ==========================================
-	// Section Construction
-	// ==========================================
 
 	/**
 	 * Instantiates a new abstract rif test case.
 	 */
 	public AbstractRIFTestCase() {
 		FieldValidationUtility fieldValidationUtility
-			= new FieldValidationUtility();
+				= new FieldValidationUtility();
 		testMaliciousFieldValue = fieldValidationUtility.getTestMaliciousFieldValue();
+		validUser = User.newInstance("kgarwood", "11.111.11.228");
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
+	@Before
+	public void setup() {
+
+		MockitoAnnotations.initMocks(this);
+
+		when(resources.getSqlConnectionManager()).thenReturn(sqlMgr);
+		when(sqlMgr.userExists(validUser.getUserID())).thenReturn(true);
+		when(resources.getRIFSubmissionManager()).thenReturn(subMgr);
+		when(resources.getSQLStudyExtractManager()).thenReturn(extractMgr);
+		when(resources.getHealthOutcomeManager()).thenReturn(healthOutcomeManager);
+		when(resources.getRIFServiceStartupOptions()).thenReturn(options);
+		when(options.getRifDatabaseType()).thenReturn(DatabaseType.POSTGRESQL); // Shouldn't matter.
+
+		initialiseService(resources);
+		rifServiceBundle = ServiceBundle.getInstance(resources);
+	}
 
 	public ValidationPolicy getValidationPolicy() {
 		return validationPolicy;
@@ -152,15 +133,15 @@ public class AbstractRIFTestCase {
 	public String getTestMaliciousValue() {
 		return testMaliciousFieldValue;
 	}
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
+	protected void initialiseService(ServiceResources resources) {
 
-	// ==========================================
-	// Section Override
-	// ==========================================
+		rifServiceBundle = new MSSQLTestRIFStudyServiceBundle(
+				resources,
+				new MSSQLRIFStudySubmissionService(),
+				new MSSQLTestRIFStudyRetrievalService());
+		this.resources = resources;
+		rifStudySubmissionService = rifServiceBundle.getRIFStudySubmissionService();
+		rifStudyRetrievalService = rifServiceBundle.getRIFStudyRetrievalService();
+	}
 }

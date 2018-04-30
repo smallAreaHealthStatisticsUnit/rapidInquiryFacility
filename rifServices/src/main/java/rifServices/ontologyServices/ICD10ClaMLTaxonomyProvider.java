@@ -149,7 +149,7 @@ public final class ICD10ClaMLTaxonomyProvider implements HealthCodeProviderInter
 			RIFServiceException rifServiceException
 				= new RIFServiceException(
 					RIFServiceError.HEALTH_CODE_TAXONOMY_SERVICE_ERROR,
-					errorMessage);
+					errorMessage, exception);
 			throw rifServiceException;
 		}
 

@@ -47,12 +47,12 @@ ECHO ON
 SET PWD=%CD%
 call mvn --version
 
-call mvn -Dmaven.test.skip=true clean
+call mvn clean
 if %errorlevel% neq 0  (
 	cd %PWD%	
 	exit /b 1
 )
-call mvn -Dmaven.test.skip=true install
+call mvn install
 if %errorlevel% neq 0  (
 	cd %PWD%		
 	exit /b 1

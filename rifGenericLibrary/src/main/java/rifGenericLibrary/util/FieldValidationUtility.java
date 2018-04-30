@@ -14,9 +14,8 @@ import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 
-
 /**
- * Provides commmon validation methods used by most of the business classes.
+ * Provides common validation methods used by most of the business classes.
  * Also contains examples of regular expressions for detecting a variety of 
  * malicious attacks such as SQL injection errors and cross scripting errors.
  * The regular expressions have been taken from the following link:
@@ -26,61 +25,14 @@ import rifGenericLibrary.system.RIFServiceSecurityException;
  * Copyright 2017 Imperial College London, developed by the Small Area
  * Health Statistics Unit. 
  *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
-
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF.  If not, see <http://www.gnu.org/licenses/>.
- * </pre>
- *
- * <hr>
  * Kevin Garwood
  * @author kgarwood
  */
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
 public final class FieldValidationUtility {
 	
-	// ==========================================
-	// Section Constants
-	// ==========================================
-	
 	private Messages GENERIC_MESSAGES = Messages.genericMessages();
-	
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
+
 	/** The Constant testCaseMaliciousFieldValue. */
 	private static final String testCaseMaliciousFieldValue
 		= "test_case_malicious_code_pattern";
@@ -88,17 +40,12 @@ public final class FieldValidationUtility {
 	/** The malicious code pattern from string. */
 	private HashMap<String, Pattern> maliciousCodePatternFromString;
 	
-	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
 	/**
 	 * Instantiates a new field validation utility.
 	 */
 	public FieldValidationUtility() {
 		
-		maliciousCodePatternFromString = new HashMap<String, Pattern>();
+		maliciousCodePatternFromString = new HashMap<>();
 		Pattern testPattern = Pattern.compile(testCaseMaliciousFieldValue);
 		maliciousCodePatternFromString.put(testCaseMaliciousFieldValue, testPattern);
 		initialisePatterns();
@@ -112,27 +59,6 @@ public final class FieldValidationUtility {
 		
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-		
-	/**
-	 * Sets the malicious code patterns.
-	 *
-	 * @param maliciousCodePatternPhrases the new malicious code patterns
-	 */
-	public void setMaliciousCodePatterns(
-		final ArrayList<String> maliciousCodePatternPhrases) {
-		
-		for (String maliciousCodePatternPhrase : maliciousCodePatternPhrases) {
-			if (maliciousCodePatternFromString.get(maliciousCodePatternPhrase) == null) {			
-				Pattern pattern
-					= Pattern.compile(maliciousCodePatternPhrase);
-				maliciousCodePatternFromString.put(maliciousCodePatternPhrase, pattern);			
-			}
-		}
-	}
-		
 	/**
 	 * Gets the test malicious field value.
 	 *
@@ -143,9 +69,6 @@ public final class FieldValidationUtility {
 		return testCaseMaliciousFieldValue;
 	}
 	
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 	/**
 	 * Check null method parameter.
 	 *
@@ -166,38 +89,28 @@ public final class FieldValidationUtility {
 					"general.validation.nullMethodParameter",
 					methodName,
 					parameterName);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER,
-					errorMessage);
-			throw rifServiceException;		
+			throw new RIFServiceException(
+				RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER,
+				errorMessage);
 		}
 		else {
 			if (parameterValue instanceof String) {
 				String parameterValuePhrase
 					= (String) parameterValue;
-				if (isEmpty(parameterValuePhrase) == true) {
+				if (isEmpty(parameterValuePhrase)) {
 					String errorMessage
 						= GENERIC_MESSAGES.getMessage(
 							"general.validation.nullMethodParameter",
 							methodName,
 							parameterName);
-					RIFServiceException rifServiceException
-						= new RIFServiceException(
-							RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER,
-							errorMessage);
-					throw rifServiceException;		
+					throw new RIFServiceException(
+						RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER,
+						errorMessage);
 				}
 			}
-			
-			
-			
-			
 		}
 	}
-	
-	
-	
+
 	/**
 	 * Check malicious method parameter.
 	 *
@@ -212,7 +125,6 @@ public final class FieldValidationUtility {
 		final String parameterValue) 
 		throws RIFServiceSecurityException {
 
-		//TOUR_SECURITY
 		/*
 		 * Some service API methods have parameters which are just String objects.  In this case,
 		 * we want the utility to scan that value and indicate an appropriate error message.
@@ -222,21 +134,19 @@ public final class FieldValidationUtility {
 		if (parameterValue == null) {
 			return;
 		}
-		
-		ArrayList<Pattern> maliciousCodePatterns = new ArrayList<Pattern>();
-		maliciousCodePatterns.addAll(maliciousCodePatternFromString.values());
+
+		ArrayList<Pattern> maliciousCodePatterns = new ArrayList<>(
+				maliciousCodePatternFromString.values());
 		for (Pattern maliciousCodePattern : maliciousCodePatterns) {
 			Matcher matcher = maliciousCodePattern.matcher(parameterValue);
 			if (matcher.find()) {
 				String errorMessage
 					= GENERIC_MESSAGES.getMessage(
-						"genaral.validation.maliciousMethodParameterDetected",
+						"general.validation.maliciousMethodParameterDetected",
 						methodName,
 						parameterName,
 						parameterValue);
-				RIFServiceSecurityException rifServiceSecurityException
-					= new RIFServiceSecurityException(errorMessage);
-				throw rifServiceSecurityException;
+				throw new RIFServiceSecurityException(errorMessage);
 			}
 		}
 	}
@@ -247,7 +157,7 @@ public final class FieldValidationUtility {
 	 *
 	 * @param methodName the method name
 	 * @param parameterName the parameter name
-	 * @param parameterValue the parameter value
+	 * @param parameterValues the parameter value
 	 * @throws RIFServiceSecurityException the RIF service security exception
 	 */
 	public void checkMaliciousMethodParameter(
@@ -263,9 +173,9 @@ public final class FieldValidationUtility {
 		if (parameterValues.length == 0) {
 			return;
 		}
-		
-		ArrayList<Pattern> maliciousCodePatterns = new ArrayList<Pattern>();
-		maliciousCodePatterns.addAll(maliciousCodePatternFromString.values());
+
+		ArrayList<Pattern> maliciousCodePatterns = new ArrayList<>(
+				maliciousCodePatternFromString.values());
 		
 		for (String parameterValue : parameterValues) {		
 			for (Pattern maliciousCodePattern : maliciousCodePatterns) {
@@ -273,80 +183,15 @@ public final class FieldValidationUtility {
 				if (matcher.find()) {
 					String errorMessage
 						= GENERIC_MESSAGES.getMessage(
-							"genaral.validation.maliciousMethodParameterDetected",
+							"general.validation.maliciousMethodParameterDetected",
 							methodName,
 							parameterName,
 							parameterValue);
-					RIFServiceSecurityException rifServiceSecurityException
-						= new RIFServiceSecurityException(errorMessage);
-					throw rifServiceSecurityException;
+					throw new RIFServiceSecurityException(errorMessage);
 				}
 			}		
 		}
 	}
-	
-	/**
-	 * Check malicious method parameter.
-	 *
-	 * @param methodName the method name
-	 * @param parameterName the parameter name
-	 * @param parameterValue the parameter value
-	 * @throws RIFServiceSecurityException the RIF service security exception
-	 */
-	public void checkMaliciousPasswordValue(
-		final String methodName,
-		final String parameterName,
-		final char[] password) 
-		throws RIFServiceSecurityException {
-
-		if (password == null) {
-			return;
-		}
-		
-		ArrayList<Pattern> maliciousCodePatterns = new ArrayList<Pattern>();
-		maliciousCodePatterns.addAll(maliciousCodePatternFromString.values());
-		for (Pattern maliciousCodePattern : maliciousCodePatterns) {
-			Matcher matcher = maliciousCodePattern.matcher(new String(password));
-			if (matcher.find()) {
-				String errorMessage
-					= GENERIC_MESSAGES.getMessage(
-						"genaral.validation.maliciousMethodParameterDetected",
-						methodName,
-						parameterName,
-						new String(password));
-				RIFServiceSecurityException rifServiceSecurityException
-					= new RIFServiceSecurityException(errorMessage);
-				throw rifServiceSecurityException;
-			}
-		}
-	}
-
-	
-	/**
-	 * Returns true if the field value is either null or empty string.
-	 *
-	 * @param fieldName the field name
-	 * @param fieldValue the field value
-	 * @throws RIFServiceException the RIF service exception
-	 */
-	public void checkEmptyRequiredParameterValue(
-		final String fieldName, 
-		final String fieldValue) 
-		throws RIFServiceException {
-		
-		if (isEmpty(fieldValue)) {
-			String errorMessage
-				= GENERIC_MESSAGES.getMessage(
-					"general.validation.emptyRequiredParameter", 
-					fieldName);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER,
-					errorMessage);
-			throw rifServiceException;			
-		}		
-	}
-	
 
 	public void checkValidIntegerMethodParameterValue(
 		final String methodName, 
@@ -365,11 +210,9 @@ public final class FieldValidationUtility {
 					methodName,
 					fieldValue,
 					fieldName);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.INVALID_INTEGER_API_METHOD_PARAMETER,
-					errorMessage);
-			throw rifServiceException;
+			throw new RIFServiceException(
+				RIFGenericLibraryError.INVALID_INTEGER_API_METHOD_PARAMETER,
+				errorMessage);
 		}
 	}	
 
@@ -388,34 +231,19 @@ public final class FieldValidationUtility {
 		}
 		
 		Collator collator = GENERIC_MESSAGES.getCollator();
-		if (collator.equals(fieldValue, "")) {
-			return true;
-		}
-		
-		return false;
+		return collator.equals(fieldValue, "");
 	}
 	
-	public boolean isEmpty(Collection<? extends Object> collection) {
+	public boolean isEmpty(Collection<?> collection) {
 		
 		return collection.isEmpty();
-	}
-	
-	/**
-	 * Assumes that the spaces have all been replaced by 
-	 * @param candidateDatabaseTableName
-	 * @return
-	 */
-	public boolean isValidDatabaseTableName(String candidateDatabaseTableName) {
-		Pattern pattern = Pattern.compile("^[A-Za-z][A-Za-z0-9_]*$");
-		Matcher matcher = pattern.matcher(candidateDatabaseTableName);
-		return matcher.matches();
 	}
 
 	/**
 	 * replaces all spaces with underscores and then converts all letters to 
 	 * upper case.
-	 * @param candidateTableName
-	 * @return
+	 * @param candidateTableName the table name to convert
+	 * @return the converted name
 	 */
 	public String convertToDatabaseTableName(final String candidateTableName) {
 		
@@ -447,21 +275,19 @@ public final class FieldValidationUtility {
 		if (fieldValue == null) {
 			return;
 		}
-		
-		ArrayList<Pattern> maliciousCodePatterns = new ArrayList<Pattern>();
-		maliciousCodePatterns.addAll(maliciousCodePatternFromString.values());
+
+		ArrayList<Pattern> maliciousCodePatterns = new ArrayList<>(
+				maliciousCodePatternFromString.values());
 		for (Pattern maliciousCodePattern : maliciousCodePatterns) {
 			Matcher matcher = maliciousCodePattern.matcher(fieldValue);
 			if (matcher.find()) {
 				String errorMessage
 					= GENERIC_MESSAGES.getMessage(
-						"genaral.validation.maliciousRecordFieldDetected",
+						"general.validation.maliciousRecordFieldDetected",
 						recordName,
 						fieldName,
 						fieldValue);
-				RIFServiceSecurityException rifServiceSecurityException
-					= new RIFServiceSecurityException(errorMessage);
-				throw rifServiceSecurityException;
+				throw new RIFServiceSecurityException(errorMessage);
 			}
 		}				
 	}	
@@ -477,14 +303,10 @@ public final class FieldValidationUtility {
 	public static boolean hasDifferentNullity(
 		final Object fieldValueA, 
 		final Object fieldValueB) {
-	
-		if ( ((fieldValueA == null) && (fieldValueB != null)) ||
-		     ((fieldValueA != null) && (fieldValueB == null))) {		
-			//reject if one is null and the other is not
-			return true;
-		}
-		
-		return false;		
+
+		return ((fieldValueA == null) && (fieldValueB != null)) ||
+		       ((fieldValueA != null) && (fieldValueB == null));
+
 	}
 	
 	public static String generateUniqueListItemName(
@@ -519,11 +341,9 @@ public final class FieldValidationUtility {
 				= GENERIC_MESSAGES.getMessage(
 					"listItemNameUtility.duplicateFieldName",
 					candidateItem);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFGenericLibraryError.DUPLICATE_LIST_ITEM_NAME,
-					errorMessage);
-			throw rifServiceException;
+			throw new RIFServiceException(
+				RIFGenericLibraryError.DUPLICATE_LIST_ITEM_NAME,
+				errorMessage);
 		}	
 	}
 	
@@ -536,12 +356,11 @@ public final class FieldValidationUtility {
 			return true;
 		}
 		
-		if ((firstList == null) && (secondList != null) ||
-			(firstList != null) && (secondList == null)) {
+		if (firstList == null || secondList == null) {
 			
 			return false;
 		}
-		
+
 		int numberOfFirstListItems = firstList.size();
 		int numberOfSecondListItems = secondList.size();
 		
@@ -553,30 +372,25 @@ public final class FieldValidationUtility {
 			for (int i = 0; i < numberOfFirstListItems; i++) {
 				String currentFirstListItem = firstList.get(i);
 				String currentSecondListItem = secondList.get(i);
-				if (Objects.deepEquals(
-					currentFirstListItem, 
-					currentSecondListItem) == false) {
+				if (!Objects.deepEquals(
+						currentFirstListItem,
+						currentSecondListItem)) {
 					
 					return false;
 				}			
 			}
-		}
-		else {
-			ArrayList<String> listA = new ArrayList<String>();
-			listA.addAll(firstList);
-			Collections.sort(listA);
-			ArrayList<String> listB = new ArrayList<String>();
-			listB.addAll(secondList);
-			Collections.sort(listB);
+		} else {
+			Collections.sort(firstList);
+			Collections.sort(secondList);
 			
 			for (String firstListItem : firstList) {
-				if (secondList.contains(firstListItem) == false) {
+				if (!secondList.contains(firstListItem)) {
 					return false;
 				}
 			}
 
 			for (String secondListItem : secondList) {
-				if (firstList.contains(secondListItem) == false) {
+				if (!firstList.contains(secondListItem)) {
 					return false;
 				}
 			}
@@ -588,28 +402,16 @@ public final class FieldValidationUtility {
 	/**
 	 * Count errors.
 	 *
-	 * @param rifServiceError the rif service error
+	 * @param rifErrorEnumeration the rif service errors
 	 * @param errorMessages the error messages
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void countErrors(
-		final Object rifErrorEnumeration,
-		final ArrayList<String> errorMessages) 
-		throws RIFServiceException {
+	public void throwExceptionIfErrorsFound(final Object rifErrorEnumeration,
+			final ArrayList<String> errorMessages) throws RIFServiceException {
 
 		if (errorMessages.size() > 0) {
-			RIFServiceException rifServiceException
-				= new RIFServiceException(rifErrorEnumeration, errorMessages);
-			throw rifServiceException;
+
+			throw new RIFServiceException(rifErrorEnumeration, errorMessages);
 		}		
 	}
-	
-	
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

@@ -1,24 +1,31 @@
 package rifServices.dataStorageLayer.pg;
 
-import rifServices.businessConceptLayer.*;
-import rifServices.system.RIFServiceStartupOptions;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.system.RIFServiceExceptionFactory;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
+import org.rosuda.JRI.REXP;
+import org.rosuda.JRI.Rengine;
+
 import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.logging.Logger;
-import java.util.logging.LogManager;
-import java.io.*;
-
-import org.rosuda.JRI.*;
-
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.util.RIFMemoryManager;
+import rifServices.businessConceptLayer.AbstractCovariate;
+import rifServices.businessConceptLayer.AbstractStudy;
+import rifServices.businessConceptLayer.Investigation;
+import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.dataStorageLayer.common.CommonRService;
+import rifServices.system.RIFServiceStartupOptions;
 
 /**
  *
@@ -80,7 +87,7 @@ import rifGenericLibrary.util.RIFMemoryManager;
  *
  */
 
-public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
+public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 
 	// ==========================================
 	// Section Constants
@@ -231,7 +238,9 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 				//Create an R engine with JRI
 				rengine = Rengine.getMainEngine();
 				if (rengine == null) {
-					rengine = new Rengine(new String[] {"--vanilla"}, 	// Args
+					String[] rArgs={"--vanilla"};
+					rengine = new Rengine(
+						rArgs,											// Args
 						false, 											// runMainLoop
 						loggingConsole); 								// RMainLoopCallbacks implementaton
 																		// Logger log not used - uses RIFLogger
@@ -246,6 +255,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 				rifLogger.info(this.getClass(), "Rengine Started" +
 					"; Rpid: " + Rpid.asInt() +
 					"; JRI version: " + rengine.getVersion() + 
+					"; R_HOME: " + System.getenv("R_HOME") + 
 //					"; RNI binary version: " + rengine.rniGetVersion() + // Same as getVersion()
 					"; thread ID: " + rengine.currentThread().getId());
 						// Is current thread
@@ -321,8 +331,7 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 				
 				rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
 				rifScriptPath.append(File.separator);
-				rifScriptPath.append(File.separator);
-				
+
 				Adj_Cov_Smooth_JRI.append(rifScriptPath);
 				Adj_Cov_Smooth_JRI.append("Adj_Cov_Smooth_JRI.R");
 				RIF_odbc.append(rifScriptPath);
@@ -330,12 +339,9 @@ public class PGSQLSmoothResultsSubmissionStep extends PGSQLAbstractRService {
 				performSmoothingActivity.append(rifScriptPath);
 				performSmoothingActivity.append("performSmoothingActivity.R");
 				
-				rifLogger.info(this.getClass(), "Source: Adj_Cov_Smooth_JRI=\""+Adj_Cov_Smooth_JRI+"\"");
-				rengine.eval("source(\"" + Adj_Cov_Smooth_JRI + "\")");
-				rifLogger.info(this.getClass(), "Source: RIF_odbc=\""+RIF_odbc+"\"");
-				rengine.eval("source(\"" + RIF_odbc + "\")");
-				rifLogger.info(this.getClass(), "Source: performSmoothingActivity=\""+performSmoothingActivity+"\"");
-				rengine.eval("source(\"" + performSmoothingActivity + "\")");
+				sourceRScript(rengine, Adj_Cov_Smooth_JRI.toString());
+				sourceRScript(rengine, RIF_odbc.toString());
+				sourceRScript(rengine, performSmoothingActivity.toString());
 
 				//RUN the actual smoothing
 				//REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");

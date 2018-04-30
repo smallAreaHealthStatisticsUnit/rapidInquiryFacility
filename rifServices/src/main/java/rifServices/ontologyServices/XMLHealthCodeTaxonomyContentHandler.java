@@ -157,11 +157,10 @@ final class XMLHealthCodeTaxonomyContentHandler
 				= RIFServiceMessages.getMessage(
 					"io.error.problemReadingHealthCodes",
 					healthCodeListFile.getName());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.XML_PROBLEM_READING_HEALTH_CODE_TAXONOMY, 
-					errorMessage);
-			throw rifServiceException;
+			throw new RIFServiceException(
+				RIFServiceError.XML_PROBLEM_READING_HEALTH_CODE_TAXONOMY,
+				errorMessage,
+				exception);
 		}
 	}
 	

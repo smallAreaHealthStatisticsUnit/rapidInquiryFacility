@@ -20,6 +20,7 @@ import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Investigation;
+import rifServices.dataStorageLayer.common.HealthOutcomeManager;
 import rifServices.ontologyServices.HealthCodeProviderInterface;
 import rifServices.ontologyServices.ICD10ClaMLTaxonomyProvider;
 import rifServices.ontologyServices.RIFXMLTaxonomyProvider;
@@ -90,7 +91,7 @@ import rifServices.system.RIFServiceStartupOptions;
  *
  */
 
-final class MSSQLHealthOutcomeManager {
+final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 
 	// ==========================================
 	// Section Constants
@@ -114,17 +115,21 @@ final class MSSQLHealthOutcomeManager {
 	/**
 	 * Instantiates a new SQL health outcome manager.
 	 */
-	public MSSQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) 
-		throws RIFServiceException {
+	public MSSQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
+
 		healthCodeProviders = new ArrayList<HealthCodeProviderInterface>();
-		
-		
-		String targetPathValue
-			= rifServiceStartupOptions.getRIFServiceResourcePath();
+
+		String targetPathValue;
+		try {
+			targetPathValue = rifServiceStartupOptions.getRIFServiceResourcePath();
+		} catch (RIFServiceException e) {
+			throw new IllegalStateException("MSSQLHealthOutcomeManager: problem getting startup "
+			                                + "options", e);
+		}
 		if (targetPathValue == null) {
 			targetPathValue = ClassFileLocator.getClassRootLocation("rifServices");
 		}
-		rifLogger.info(this.getClass(), "HealthOutcomeManager init targetPathValue=="+targetPathValue+"==");
+//		rifLogger.info(this.getClass(), "HealthOutcomeManager init targetPathValue=="+targetPathValue+"==");
 		
 		//initialise each health code provider
 		try {			
@@ -232,10 +237,8 @@ final class MSSQLHealthOutcomeManager {
 	/**
 	 * Initialise taxonomies.
 	 *
-	 * @throws RIFServiceException the RIF service exception
 	 */
-	public void initialiseTaxomies() 
-		throws RIFServiceException {
+	public void initialiseTaxomies() {
 
 		
 	}

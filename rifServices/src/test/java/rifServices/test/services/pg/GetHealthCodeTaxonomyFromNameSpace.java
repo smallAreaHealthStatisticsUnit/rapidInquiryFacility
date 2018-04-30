@@ -1,15 +1,19 @@
 package rifServices.test.services.pg;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.system.RIFServiceError;
+import rifServices.test.services.CommonHealthCodeProviderTestCase;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.junit.Test;
-
+import static rifGenericLibrary.system.RIFGenericLibraryError.EMPTY_API_METHOD_PARAMETER;
 
 /**
  *
@@ -71,8 +75,7 @@ import org.junit.Test;
  *
  */
 
-public final class GetHealthCodeTaxonomyFromNameSpace 
-	extends AbstractHealthCodeProviderTestCase {
+public final class GetHealthCodeTaxonomyFromNameSpace extends CommonHealthCodeProviderTestCase {
 
 	// ==========================================
 	// Section Constants
@@ -100,18 +103,15 @@ public final class GetHealthCodeTaxonomyFromNameSpace
 
 	
 	@Test
-	public void getHealthCodeTaxonomyFromNameSpace_COMMON1() {
-		try {
-			User validUser = cloneValidUser();
-			HealthCodeTaxonomy healthCodeTaxonomy
-				= rifStudySubmissionService.getHealthCodeTaxonomyFromNameSpace(
-					validUser, 
-					getValidNameSpace());
-			assertEquals("OurICD10Provider", healthCodeTaxonomy.getName());
-		}
-		catch(RIFServiceException rifServiceException) {
-			fail();
-		}		
+	@Ignore
+	public void getHealthCodeTaxonomyFromNameSpace_COMMON1() throws RIFServiceException {
+
+		User validUser = cloneValidUser();
+		HealthCodeTaxonomy healthCodeTaxonomy
+			= rifStudySubmissionService.getHealthCodeTaxonomyFromNameSpace(
+				validUser,
+				getValidNameSpace());
+		assertEquals("OurICD10Provider", healthCodeTaxonomy.getName());
 	}
 
 	@Test
@@ -142,7 +142,7 @@ public final class GetHealthCodeTaxonomyFromNameSpace
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 	}
@@ -159,7 +159,7 @@ public final class GetHealthCodeTaxonomyFromNameSpace
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 	}
@@ -176,7 +176,7 @@ public final class GetHealthCodeTaxonomyFromNameSpace
 		catch(RIFServiceException rifServiceException) {
 			checkErrorType(
 				rifServiceException, 
-				RIFServiceError.EMPTY_API_METHOD_PARAMETER, 
+				EMPTY_API_METHOD_PARAMETER,
 				1);
 		}		
 	}
@@ -199,6 +199,7 @@ public final class GetHealthCodeTaxonomyFromNameSpace
 	}
 
 	@Test
+	@Ignore
 	public void getHealthCodeTaxonomyFromNameSpace_NONEXISTENT2() {
 		try {
 			User validUser = cloneValidUser();
