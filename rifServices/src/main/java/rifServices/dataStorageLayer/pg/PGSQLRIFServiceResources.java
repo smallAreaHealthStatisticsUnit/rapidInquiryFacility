@@ -2,8 +2,8 @@ package rifServices.dataStorageLayer.pg;
 
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
@@ -55,7 +55,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 	/**
 	 * The disease mapping study manager.
 	 */
-	private PGSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager;
+	private DiseaseMappingStudyManager sqlDiseaseMappingStudyManager;
 	
 	private SubmissionManager sqlRIFSubmissionManager;
 	
@@ -106,10 +106,12 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		sqlCovariateManager = new CovariateManager(rifServiceStartupOptions,
 		                                           sqlRIFContextManager);
 		
-		InvestigationManager sqlInvestigationManager = new PGSQLInvestigationManager(rifServiceStartupOptions, sqlRIFContextManager,
-				sqlAgeGenderYearManager, sqlCovariateManager);
+		InvestigationManager sqlInvestigationManager =
+				InvestigationManager.getInstance(rifDatabaseProperties.getDatabaseType(),
+				                                 rifServiceStartupOptions, sqlRIFContextManager,
+				                                 sqlAgeGenderYearManager, sqlCovariateManager);
 		
-		sqlDiseaseMappingStudyManager = new PGSQLDiseaseMappingStudyManager(rifServiceStartupOptions,
+		sqlDiseaseMappingStudyManager = new DiseaseMappingStudyManager(rifServiceStartupOptions,
 				sqlRIFContextManager, sqlInvestigationManager);
 		
 		sqlStudyStateManager

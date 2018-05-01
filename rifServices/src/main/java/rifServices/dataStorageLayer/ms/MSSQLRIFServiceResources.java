@@ -8,6 +8,7 @@ import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
+import rifServices.dataStorageLayer.common.InvestigationManager;
 import rifServices.dataStorageLayer.common.MapDataManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.dataStorageLayer.common.ResultsQueryManager;
@@ -78,14 +79,15 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 		sqlCovariateManager = new CovariateManager(rifServiceStartupOptions,
 		                                           sqlRIFContextManager);
 		
-		MSSQLInvestigationManager sqlInvestigationManager = new MSSQLInvestigationManager(
+		InvestigationManager sqlInvestigationManager = InvestigationManager.getInstance(
+				rifDatabaseProperties.getDatabaseType(),
 				rifServiceStartupOptions,
 				sqlRIFContextManager,
 				sqlAgeGenderYearManager,
 				sqlCovariateManager);
 		
 		sqlDiseaseMappingStudyManager 
-			= new MSSQLDiseaseMappingStudyManager(
+			= new DiseaseMappingStudyManager(
 				rifServiceStartupOptions,
 				sqlRIFContextManager,
 				sqlInvestigationManager);
