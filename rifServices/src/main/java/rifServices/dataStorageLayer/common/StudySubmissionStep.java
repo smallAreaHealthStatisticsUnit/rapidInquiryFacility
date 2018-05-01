@@ -7,11 +7,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.InsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
@@ -31,9 +31,6 @@ import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
-import rifServices.dataStorageLayer.common.BaseSQLManager;
-import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
-import rifServices.dataStorageLayer.common.MapDataManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
@@ -158,8 +155,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		try {
 
 			//add information about who can share the study
-			MSSQLInsertQueryFormatter studyQueryFormatter
-					= new MSSQLInsertQueryFormatter(false);
+			InsertQueryFormatter studyQueryFormatter = InsertQueryFormatter.getInstance(
+					rifDatabaseProperties.getDatabaseType());
 			studyQueryFormatter.setIntoTable("rif40.rif40_studies");
 			studyQueryFormatter.addInsertField("geography");
 			studyQueryFormatter.addInsertField("project");
@@ -250,8 +247,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			addStudyStatement.executeUpdate();
 
 			//add information about who can share the study
-			MSSQLInsertQueryFormatter studyShareQueryFormatter
-					= new MSSQLInsertQueryFormatter(false);
+			InsertQueryFormatter studyShareQueryFormatter = InsertQueryFormatter.getInstance(
+					rifDatabaseProperties.getDatabaseType());
 			studyShareQueryFormatter.setIntoTable("rif40.rif40_study_shares");
 			studyShareQueryFormatter.addInsertField("grantee_username");
 
@@ -285,7 +282,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 				return;
 			}
 
-			MSSQLInsertQueryFormatter queryFormatter = new MSSQLInsertQueryFormatter(false);
+			InsertQueryFormatter queryFormatter = InsertQueryFormatter.getInstance(
+					rifDatabaseProperties.getDatabaseType());
 			queryFormatter.setIntoTable("rif40.rif40_investigations");
 			queryFormatter.addInsertField("inv_name");
 			queryFormatter.addInsertField("inv_description");
@@ -472,8 +470,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 					geography,
 					diseaseMappingStudyArea);
 
-			MSSQLInsertQueryFormatter queryFormatter
-					= new MSSQLInsertQueryFormatter(false);
+			InsertQueryFormatter queryFormatter = InsertQueryFormatter.getInstance(
+					rifDatabaseProperties.getDatabaseType());
 			queryFormatter.setIntoTable("rif40.rif40_study_areas");
 			queryFormatter.addInsertField("area_id");
 			queryFormatter.addInsertField("band_id");
@@ -510,8 +508,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 
 		PreparedStatement statement = null;
 		try {
-			MSSQLInsertQueryFormatter queryFormatter
-					= new MSSQLInsertQueryFormatter(false);
+			InsertQueryFormatter queryFormatter = InsertQueryFormatter.getInstance(
+					rifDatabaseProperties.getDatabaseType());
 			queryFormatter.setIntoTable("rif40.rif40_comparison_areas");
 			queryFormatter.addInsertField("area_id");
 
@@ -571,8 +569,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			getMinMaxCovariateValuesQueryFormatter.addWhereParameter("geolevel_name");
 			getMinMaxCovariateValuesQueryFormatter.addWhereParameter("covariate_name");
 
-			MSSQLInsertQueryFormatter addCovariateQueryFormatter
-					= new MSSQLInsertQueryFormatter(false);
+			InsertQueryFormatter addCovariateQueryFormatter = InsertQueryFormatter.getInstance(
+					rifDatabaseProperties.getDatabaseType());
 			addCovariateQueryFormatter.setIntoTable("rif40.rif40_inv_covariates");
 			addCovariateQueryFormatter.addInsertField("geography");
 			addCovariateQueryFormatter.addInsertField("covariate_name");
@@ -707,8 +705,8 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			//TODO: (DM) if multiple conditions supplied in currentHealthCode.getCode() 
 			if (totalHealthCodes > 0) {
 
-				MSSQLInsertQueryFormatter addHealthOutcomeQueryFormatter
-						= new MSSQLInsertQueryFormatter(false);
+				InsertQueryFormatter addHealthOutcomeQueryFormatter =
+						InsertQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
 
 				addHealthOutcomeQueryFormatter.setIntoTable("rif40.rif40_inv_conditions");
 				addHealthOutcomeQueryFormatter.addInsertField("outcome_group_name");

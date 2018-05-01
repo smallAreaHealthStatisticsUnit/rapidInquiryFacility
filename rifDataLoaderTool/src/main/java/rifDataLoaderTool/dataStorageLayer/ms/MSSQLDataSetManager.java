@@ -9,12 +9,13 @@ import java.sql.SQLException;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.dataStorageLayer.InsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFGenericLibraryError;
@@ -199,8 +200,8 @@ final public class MSSQLDataSetManager
 		PreparedStatement getIdentifierStatement = null;		
 		PreparedStatement addDataSetStatement = null;
 		ResultSet resultSet = null;
-		MSSQLInsertQueryFormatter addDataSetQueryFormatter
-			= new MSSQLInsertQueryFormatter(false);		
+		InsertQueryFormatter addDataSetQueryFormatter =
+				InsertQueryFormatter.getInstance(DatabaseType.SQL_SERVER);
 		
 		SQLGeneralQueryFormatter getIdentifierQueryFormatter
 			= new SQLGeneralQueryFormatter();
