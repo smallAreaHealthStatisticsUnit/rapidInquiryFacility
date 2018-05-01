@@ -118,3 +118,5 @@ docs/RIF_Web_Application_Installation.html
 =======
 rifServices/${sys:catalina.base}/
 >>>>>>> rationalise_api
+.RData
+.Rhistory
