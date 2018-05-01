@@ -316,7 +316,7 @@ public class RifZipFile {
      * @param String zoomLevel (required)
      * @param String studyID (required)
      * @param Locale locale (required)
-     * @param String tomcatServer [deduced from calling URL] (required)
+     * @param String url [deduced from calling URL] (required)
      * @param String taxonomyServicesServer [parameter] (required)
      * @return JSONObject [front end saves as JSON5 file]
      */
@@ -327,7 +327,7 @@ public class RifZipFile {
 			final String zoomLevel,
 			final String studyID,
 			final Locale locale,
-			final String tomcatServer,
+			final String url,
 			final String taxonomyServicesServer)
 					throws RIFServiceException {
 
@@ -410,7 +410,7 @@ public class RifZipFile {
 				addJsonFile(
 						temporaryDirectory,
 						submissionZipOutputStream,
-						connection, user, studyID, locale, tomcatServer);
+						connection, user, studyID, locale, url);
 
 				addCssFile(
 						temporaryDirectory,
@@ -438,7 +438,7 @@ public class RifZipFile {
 				addHtmlFile(
 						temporaryDirectory,
 						submissionZipOutputStream,
-						connection, user, studyID, locale, tomcatServer, taxonomyServicesServer, 
+						connection, user, studyID, locale, url, taxonomyServicesServer,
 						denominatorHTML, numeratorHTML, mapHTML);
 						
 				//write the study the user made when they first submitted their query
@@ -642,7 +642,7 @@ public class RifZipFile {
 			final User user,
 			final String studyID,
 			final Locale locale,
-			final String tomcatServer,
+			final String url,
 			final String taxonomyServicesServer,
 			final String denominatorHTML,
 			final String numeratorHTML,
@@ -694,7 +694,7 @@ public class RifZipFile {
 			null  	/* GROUP BY */,
 			null  	/* ORDER BY */,
 			"1"		/* Expected rows */,
-			true	/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
+			true	/* Rotate */, 1 /* headerLevel */, locale, url);
 
 		addTableToHtmlReport(htmlFileText, connection, studyID,
 			"rif40", // Owner
@@ -706,7 +706,7 @@ public class RifZipFile {
 			null  	/* GROUP BY */,
 			"ith_update"    	/* ORDER BY */,
 			"1+"		/* Expected rows 0+ */,
-			false		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
+			false		/* Rotate */, 1 /* headerLevel */, locale, url);
 			
 		addTableToHtmlReport(htmlFileText, connection, studyID,
 			"rif40", // Owner
@@ -742,7 +742,7 @@ public class RifZipFile {
 			null  	/* GROUP BY */,
 			"t.inv_id"  	/* ORDER BY */,
 			"1+"		/* Expected rows 1+ */,
-			true		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
+			true		/* Rotate */, 1 /* headerLevel */, locale, url);
 			
 		addTableToHtmlReport(htmlFileText, connection, studyID,
 			"rif40", // Owner
@@ -754,17 +754,17 @@ public class RifZipFile {
 			null  	/* GROUP BY */,
 			"inv_id,covariate_name"    	/* ORDER BY */,
 			"0+"		/* Expected rows 0+ */,
-			false		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
+			false		/* Rotate */, 1 /* headerLevel */, locale, url);
 	
 		addInvConditions(htmlFileText, connection, studyID,
 			"rif40", // Owner
 			"rif40", // Schema
-			getStudyJSON, locale, 1 /* headerLevel */, tomcatServer, taxonomyServicesServer);
+			getStudyJSON, locale, 1 /* headerLevel */, url, taxonomyServicesServer);
 			
 		addStudyAndComparisonAreas(htmlFileText, connection, studyID,
 			"rif40", // Owner
 			"rif40", // Schema
-			getStudyJSON, locale, tomcatServer);
+			getStudyJSON, locale, url);
 		
 		htmlFileText.append(denominatorHTML);
 		htmlFileText.append(numeratorHTML);
@@ -1193,7 +1193,7 @@ public class RifZipFile {
 			final String schemaName,
 			final GetStudyJSON getStudyJSON,
 			final Locale locale,
-			final String tomcatServer)
+			final String url)
 			throws Exception {
 		SQLGeneralQueryFormatter studyAndComparisonReportQueryFormatter = new SQLGeneralQueryFormatter();		
 		
@@ -1234,7 +1234,7 @@ public class RifZipFile {
 					null  	/* GROUP BY */,
 					"2, 1"    	/* ORDER BY */,
 					"1+"		/* Expected rows 0+ */,
-					false		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
+					false		/* Rotate */, 1 /* headerLevel */, locale, url);
 	
 				addTableToHtmlReport(htmlFileText, connection, studyID,
 					ownerName,
@@ -1250,7 +1250,7 @@ public class RifZipFile {
 					null  	/* GROUP BY */,
 					"1"    	/* ORDER BY */,
 					"1+"		/* Expected rows 0+ */,
-					false		/* Rotate */, 1 /* headerLevel */, locale, tomcatServer); 
+					false		/* Rotate */, 1 /* headerLevel */, locale, url);
 			}		
 		}
 		catch (Exception exception) {
@@ -1332,7 +1332,7 @@ public class RifZipFile {
 			final GetStudyJSON getStudyJSON,
 			final Locale locale,
 			final int headerLevel,
-			final String tomcatServer,
+			final String url,
 			final String taxonomyServicesServer)
 			throws Exception {
 			
@@ -1404,14 +1404,14 @@ public class RifZipFile {
 						
 						if (name.equals("min_condition")) {
 							if (!value.equals("&nbsp;")) {
-								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(tomcatServer, taxonomyServicesServer, value);
+								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(url, taxonomyServicesServer, value);
 								minCondition=taxonomyObject.getString("description");
 							}
 						}
 						else if (name.equals("max_condition")) {
 							if (!value.equals("&nbsp;")) {
 								// Add: please run again in 5 minutes support
-								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(tomcatServer, taxonomyServicesServer, value);
+								JSONObject taxonomyObject = getStudyJSON.getHealthCodeDesription(url, taxonomyServicesServer, value);
 								maxCondition=taxonomyObject.getString("description");
 							}
 						}						
@@ -1612,7 +1612,7 @@ public class RifZipFile {
 			final boolean rotate,
 			final int headerLevel,
 			final Locale locale,
-			final String tomcatServer)
+			final String url)
 			throws Exception {
 		
 		String tableHeader=tableName.replace("rif40_", "");
@@ -1658,7 +1658,7 @@ public class RifZipFile {
 		String defaultTitle="Report: " + tableName + " for study: " + studyID;
 		
 		executeHTmlReport(htmlFileText, connection, htmlReportQueryFormatter, expectedRows,
-			rotate, studyID, schemaName, tableName, valueLavel, defaultTitle, locale, tomcatServer);
+			rotate, studyID, schemaName, tableName, valueLavel, defaultTitle, locale, url);
 	}
 
 	private void addTableToHtmlReport(
@@ -1675,7 +1675,7 @@ public class RifZipFile {
 			final boolean rotate,
 			final int headerLevel,
 			final Locale locale,
-			final String tomcatServer)
+			final String url)
 			throws Exception {
 		
 		String tableHeader=tableName.replace("rif40_", "");
@@ -1700,7 +1700,7 @@ public class RifZipFile {
 		htmlReportQueryFormatter.createQueryFromFile(queryFileName, queryArgs, databaseType);
 		
 		executeHTmlReport(htmlFileText, connection, htmlReportQueryFormatter, expectedRows,
-			rotate, studyID, schemaName, tableName, valueLavel, title, locale, tomcatServer);
+			rotate, studyID, schemaName, tableName, valueLavel, title, locale, url);
 	}
 		
 	private void executeHTmlReport(
@@ -1715,7 +1715,7 @@ public class RifZipFile {
 			final String valueLavel,
 			final String defaultTitle,
 			final Locale locale,
-			final String tomcatServer) 
+			final String url)
 				throws Exception {	
 
 		if (locale == null) {
@@ -1921,13 +1921,13 @@ public class RifZipFile {
 			final User user,
 			final String studyID,
 			final Locale locale,
-			final String tomcatServer) 
+			final String url)
 			throws Exception {
 				
 		JSONObject json=new JSONObject();
 		GetStudyJSON getStudyJSON = new GetStudyJSON(manager);
 		JSONObject rif_job_submission=getStudyJSON.addRifStudiesJson(connection, 
-			studyID, locale, tomcatServer, null);
+			studyID, locale, url, null);
 		rif_job_submission.put("created_by", user.getUserID());
 		json.put("rif_job_submission", rif_job_submission);
 		

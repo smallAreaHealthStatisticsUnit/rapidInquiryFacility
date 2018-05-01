@@ -7,7 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
@@ -16,26 +17,23 @@ import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.MapArea;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.MapDataManager;
-import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class MSSQLMapDataManager extends MSSQLAbstractSQLManager implements MapDataManager {
+final class MSSQLMapDataManager extends BaseSQLManager implements MapDataManager {
 	
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-	private static String lineSeparator = System.getProperty("line.separator");	
 
 	/**
 	 * Instantiates a new SQL map data manager.
 	 *
 	 * @param rifServiceStartupOptions the rif service startup options
-	 * @param sqlRIFContextManager the sql rif context manager
 	 */
 	public MSSQLMapDataManager(
-		final RIFServiceStartupOptions rifServiceStartupOptions,
-		final RIFContextManager sqlRIFContextManager) {
+			final RIFServiceStartupOptions rifServiceStartupOptions) {
 
 		super(rifServiceStartupOptions);
 	}
@@ -193,8 +191,8 @@ final class MSSQLMapDataManager extends MSSQLAbstractSQLManager implements MapDa
 			throw rifServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 	
 		return allRelevantMapAreas;
@@ -208,7 +206,7 @@ final class MSSQLMapDataManager extends MSSQLAbstractSQLManager implements MapDa
 				
 		String result = "";
 				
-		MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+		SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 		queryFormatter.addSelectField("hierarchytable");
 		queryFormatter.addFromTable("rif40.rif40_geographies");
 		queryFormatter.addWhereParameter("geography");
@@ -232,8 +230,8 @@ final class MSSQLMapDataManager extends MSSQLAbstractSQLManager implements MapDa
 			result = resultSet.getString(1);
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 		return result;
@@ -260,7 +258,7 @@ final class MSSQLMapDataManager extends MSSQLAbstractSQLManager implements MapDa
 		String result = null;
 		try {
 		
-			MSSQLSelectQueryFormatter queryFormatter 
+			SelectQueryFormatter queryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("lookup_table");
@@ -294,8 +292,8 @@ final class MSSQLMapDataManager extends MSSQLAbstractSQLManager implements MapDa
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);		
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 		return result;

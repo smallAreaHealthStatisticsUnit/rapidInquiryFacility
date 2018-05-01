@@ -273,7 +273,7 @@ public interface StudyExtractManager extends SQLManager {
 	}
 }
 	 * @param  locale 		locale
-	 * @param  tomcatServer e.g. http://localhost:8080.
+	 * @param  url e.g. http://localhost:8080.
 	 *
 	 * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
 	 */
@@ -283,7 +283,7 @@ public interface StudyExtractManager extends SQLManager {
 			RIFStudySubmission rifStudySubmission,
 			String studyID,
 			Locale locale,
-			String tomcatServer)
+			String url)
 					throws RIFServiceException;
 	
 	/**
@@ -295,7 +295,7 @@ public interface StudyExtractManager extends SQLManager {
      * @param String zoomLevel (required)
      * @param String studyID (required)
      * @param Locale locale (required)
-     * @param String tomcatServer [deduced from calling URL] (required)
+     * @param String url [deduced from calling URL] (required)
      * @return JSONObject [front end saves as JSON5 file]
      */
 	void createStudyExtract(
@@ -305,7 +305,7 @@ public interface StudyExtractManager extends SQLManager {
 			String zoomLevel,
 			String studyID,
 			Locale locale,
-			String tomcatServer)
+			String url)
 					throws RIFServiceException;
 	
 	String getRif40StudyState(

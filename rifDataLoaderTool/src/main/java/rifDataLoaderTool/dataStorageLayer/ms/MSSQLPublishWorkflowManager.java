@@ -23,7 +23,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -212,7 +212,7 @@ final class MSSQLPublishWorkflowManager
 			statement.executeUpdate();
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);			
+			SQLQueryUtility.close(statement);
 		}
 	}
 	

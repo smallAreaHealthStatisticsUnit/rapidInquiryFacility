@@ -1,21 +1,25 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
-import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import java.io.FileWriter;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCountQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-
-import java.io.*;
-import java.sql.*;
 
 /**
  * manages database calls related to cleaning a data source.
@@ -123,7 +127,7 @@ final public class PGSQLCleanWorkflowManager
 				sqlException);
 		}
 		finally {
-			PGSQLQueryUtility.close(connection);
+			SQLQueryUtility.close(connection);
 		}
 		return resultTable;
 	}
@@ -335,9 +339,9 @@ final public class PGSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(searchReplaceStatement);
-			PGSQLQueryUtility.close(validationStatement);
-			PGSQLQueryUtility.close(castingStatement);
+			SQLQueryUtility.close(searchReplaceStatement);
+			SQLQueryUtility.close(validationStatement);
+			SQLQueryUtility.close(castingStatement);
 		}
 		
 	}
@@ -393,8 +397,8 @@ final public class PGSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 		
 		return result;
@@ -449,8 +453,8 @@ final public class PGSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 		
 		return result;
@@ -505,8 +509,8 @@ final public class PGSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 		
 		return result;
@@ -568,8 +572,8 @@ final public class PGSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 		
 		return result;
@@ -632,8 +636,8 @@ final public class PGSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}		
 		
 		return result;
@@ -695,8 +699,8 @@ final public class PGSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}		
 		
 		return result;

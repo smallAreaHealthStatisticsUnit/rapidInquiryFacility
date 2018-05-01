@@ -1,21 +1,26 @@
 package rifDataLoaderTool.dataStorageLayer.ms;
 
-import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import java.io.FileWriter;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLCountQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
-
-import java.io.*;
-import java.sql.*;
 
 /**
  * manages database calls related to cleaning a data source.
@@ -123,7 +128,7 @@ final public class MSSQLCleanWorkflowManager
 				sqlException);
 		}
 		finally {
-			MSSQLQueryUtility.close(connection);
+			SQLQueryUtility.close(connection);
 		}
 		return resultTable;
 	}
@@ -330,9 +335,9 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(searchReplaceStatement);
-			MSSQLQueryUtility.close(validationStatement);
-			MSSQLQueryUtility.close(castingStatement);
+			SQLQueryUtility.close(searchReplaceStatement);
+			SQLQueryUtility.close(validationStatement);
+			SQLQueryUtility.close(castingStatement);
 		}
 		
 	}
@@ -391,8 +396,8 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(resultSet);
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 		
 		return result;
@@ -450,8 +455,8 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(resultSet);
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 		
 		return result;
@@ -509,8 +514,8 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(resultSet);
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 		
 		return result;
@@ -524,7 +529,7 @@ final public class MSSQLCleanWorkflowManager
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 				
-		MSSQLSelectQueryFormatter queryFormatter 
+		SelectQueryFormatter queryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
@@ -575,8 +580,8 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(resultSet);
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 		
 		return result;
@@ -590,7 +595,7 @@ final public class MSSQLCleanWorkflowManager
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 	
-		MSSQLSelectQueryFormatter queryFormatter 
+		SelectQueryFormatter queryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
@@ -642,8 +647,8 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(resultSet);
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}		
 		
 		return result;
@@ -658,7 +663,7 @@ final public class MSSQLCleanWorkflowManager
 		final String targetBaseFieldName)
 		throws RIFServiceException {
 		
-		MSSQLSelectQueryFormatter queryFormatter 
+		SelectQueryFormatter queryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
@@ -708,8 +713,8 @@ final public class MSSQLCleanWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(resultSet);
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}		
 		
 		return result;

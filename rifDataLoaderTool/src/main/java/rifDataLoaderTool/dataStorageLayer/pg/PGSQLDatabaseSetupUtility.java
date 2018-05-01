@@ -1,25 +1,27 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
-import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateDatabaseQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDropDatabaseQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.system.RIFServiceExceptionFactory;
-
-import rifGenericLibrary.system.ClassFileLocator;
-
-
-import java.io.*;
-import java.sql.*;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.ArrayList;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
+import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateDatabaseQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDropDatabaseQueryFormatter;
+import rifGenericLibrary.system.ClassFileLocator;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
 /**
  * This is a mostly undeveloped class. Its intent was to help RIF managers
@@ -184,8 +186,8 @@ public class PGSQLDatabaseSetupUtility {
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(doesDatabaseExistStatement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(doesDatabaseExistStatement);
+			SQLQueryUtility.close(resultSet);
 		}		
 	}
 	
@@ -227,7 +229,7 @@ public class PGSQLDatabaseSetupUtility {
 			exception.printStackTrace(System.out);
 		}
 		finally {
-			PGSQLQueryUtility.close(connection);
+			SQLQueryUtility.close(connection);
 		}
 	}
 	
@@ -265,9 +267,9 @@ public class PGSQLDatabaseSetupUtility {
 			createDatabaseStatement.executeUpdate();
 		}
 		finally {
-			PGSQLQueryUtility.close(createDatabaseStatement);
-			PGSQLQueryUtility.close(dropDatabaseStatement);
-			PGSQLQueryUtility.close(connection);
+			SQLQueryUtility.close(createDatabaseStatement);
+			SQLQueryUtility.close(dropDatabaseStatement);
+			SQLQueryUtility.close(connection);
 		}
 	}
 
@@ -321,7 +323,7 @@ public class PGSQLDatabaseSetupUtility {
 			statement.executeUpdate();
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);			
+			SQLQueryUtility.close(statement);
 		}		
 	}
 	
@@ -412,7 +414,7 @@ public class PGSQLDatabaseSetupUtility {
 			statement.executeUpdate();
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);			
+			SQLQueryUtility.close(statement);
 		}				
 	}
 */
@@ -452,7 +454,7 @@ public class PGSQLDatabaseSetupUtility {
 			}			
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 	}
 */	

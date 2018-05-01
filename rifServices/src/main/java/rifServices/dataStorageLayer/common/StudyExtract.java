@@ -25,18 +25,18 @@ public class StudyExtract {
 	private String studyID;
 	private String zoomLevel;
 	private Locale locale;
-	private String tomcatServer;
+	private String url;
 	private ServiceResources rifServiceResources;
 	private Connection connection;
 	
 	public StudyExtract(User user, String studyID, String zoomLevel, Locale locale,
-			String tomcatServer, ServiceResources rifServiceResources) {
+			String url, ServiceResources rifServiceResources) {
 		
 		this.user = user;
 		this.studyID = studyID;
 		this.zoomLevel = zoomLevel;
 		this.locale = locale;
-		this.tomcatServer = tomcatServer;
+		this.url = url;
 		this.rifServiceResources = rifServiceResources;
 	}
 	
@@ -79,7 +79,7 @@ public class StudyExtract {
 			StudyExtractManager studyExtractManager =
 					rifServiceResources.getSQLStudyExtractManager();
 			studyExtractManager.createStudyExtract(connection, user, rifStudySubmission, zoomLevel,
-					studyID, locale, tomcatServer);
+			                                       studyID, locale, url);
 			rifLogger.info(getClass(), "Create ZIP file completed OK");
 
 		} catch(RIFServiceException rifServiceException) {

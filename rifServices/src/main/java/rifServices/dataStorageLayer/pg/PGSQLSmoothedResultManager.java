@@ -10,18 +10,19 @@ import java.util.Hashtable;
 
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCountTableRowsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.Sex;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.SmoothedResultManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager
+public class PGSQLSmoothedResultManager extends BaseSQLManager
 		implements SmoothedResultManager {
 
 	private static String lineSeparator = System.getProperty("line.separator");
@@ -164,8 +165,8 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}		
 
 		return results;
@@ -210,8 +211,8 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}		
 
 		return results;
@@ -259,8 +260,8 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager
 				"PGSQLSmoothedResultManager.getGeographyAndLevelForStudy error", exception);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		//		String[] results = new String[2];
 		//		results[0] = "SAHSU";
@@ -325,8 +326,8 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager
 				"PGSQLSmoothedResultManager.getDetailsForProcessedStudy error", exception);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		return results;			
 	}	
@@ -412,10 +413,10 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager
 				"PGSQLSmoothedResultManager.getHealthCodesForProcessedStudy error", exception);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(countTableRowsStatement);
-			PGSQLQueryUtility.close(totalRowCountResultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(countTableRowsStatement);
+			SQLQueryUtility.close(totalRowCountResultSet);
 		}
 		return results;			
 	}
@@ -596,10 +597,10 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(mainResultsStatement);
-			PGSQLQueryUtility.close(mainResultSet);		
-			PGSQLQueryUtility.close(resultCounterStatement);
-			PGSQLQueryUtility.close(resultCounterSet);	
+			SQLQueryUtility.close(mainResultsStatement);
+			SQLQueryUtility.close(mainResultSet);
+			SQLQueryUtility.close(resultCounterStatement);
+			SQLQueryUtility.close(resultCounterSet);
 		}
 	}
 
@@ -871,10 +872,10 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(totalRowCountResultSet);
-			PGSQLQueryUtility.close(smoothedResultSet);
-			PGSQLQueryUtility.close(countTableRowsStatement);
-			PGSQLQueryUtility.close(retrieveDataStatement);
+			SQLQueryUtility.close(totalRowCountResultSet);
+			SQLQueryUtility.close(smoothedResultSet);
+			SQLQueryUtility.close(countTableRowsStatement);
+			SQLQueryUtility.close(retrieveDataStatement);
 		}
 
 	}
@@ -1064,11 +1065,11 @@ public class PGSQLSmoothedResultManager extends PGSQLAbstractSQLManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultCounterStatement);
-			PGSQLQueryUtility.close(resultCounterSet);			
+			SQLQueryUtility.close(resultCounterStatement);
+			SQLQueryUtility.close(resultCounterSet);
 
-			PGSQLQueryUtility.close(mainResultsStatement);
-			PGSQLQueryUtility.close(mainResultSet);		
+			SQLQueryUtility.close(mainResultsStatement);
+			SQLQueryUtility.close(mainResultSet);
 		}
 	}
 

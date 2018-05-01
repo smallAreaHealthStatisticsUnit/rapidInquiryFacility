@@ -7,9 +7,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
@@ -31,6 +33,7 @@ import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.MapDataManager;
 import rifServices.system.RIFServiceError;
@@ -100,8 +103,7 @@ import rifServices.system.RIFServiceStartupOptions;
  *
  */
 
-final class MSSQLCreateStudySubmissionStep 
-	extends MSSQLAbstractSQLManager {
+final class MSSQLCreateStudySubmissionStep extends BaseSQLManager {
 
 	
 	// ==========================================
@@ -185,7 +187,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToAddStudySubmission",
@@ -234,8 +236,8 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 	}
@@ -404,8 +406,8 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources	
-			MSSQLQueryUtility.close(studyShareStatement);
-			MSSQLQueryUtility.close(addStudyStatement);
+			SQLQueryUtility.close(studyShareStatement);
+			SQLQueryUtility.close(addStudyStatement);
 		}
 	}
 	
@@ -546,7 +548,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 
 	}
@@ -561,7 +563,7 @@ final class MSSQLCreateStudySubmissionStep
 		throws SQLException,
 		RIFServiceException {
 		
-		MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+		SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.addSelectField("\"offset\"");
@@ -604,7 +606,7 @@ final class MSSQLCreateStudySubmissionStep
 			return resultSet.getInt(1);
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 	}
 		
@@ -674,7 +676,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}	
 	}
 	
@@ -723,7 +725,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -739,7 +741,7 @@ final class MSSQLCreateStudySubmissionStep
 		PreparedStatement addCovariateStatement = null;
 		try {
 		
-			MSSQLSelectQueryFormatter getMinMaxCovariateValuesQueryFormatter
+			SelectQueryFormatter getMinMaxCovariateValuesQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			getMinMaxCovariateValuesQueryFormatter.addSelectField("min");
 			getMinMaxCovariateValuesQueryFormatter.addSelectField("max");
@@ -829,7 +831,7 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(addCovariateStatement);
+			SQLQueryUtility.close(addCovariateStatement);
 		}
 	}
 		
@@ -845,7 +847,7 @@ final class MSSQLCreateStudySubmissionStep
 		PreparedStatement addHealthCodeStatement = null;
 		try {
 						
-			MSSQLSelectQueryFormatter getOutcomeGroupNameQueryFormatter
+			SelectQueryFormatter getOutcomeGroupNameQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			getOutcomeGroupNameQueryFormatter.addSelectField("outcome_group_name");
 			getOutcomeGroupNameQueryFormatter.addSelectField("field_name");			
@@ -927,8 +929,8 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources	
-			MSSQLQueryUtility.close(getOutcomeGroupNameStatement);
-			MSSQLQueryUtility.close(addHealthCodeStatement);
+			SQLQueryUtility.close(getOutcomeGroupNameStatement);
+			SQLQueryUtility.close(addHealthCodeStatement);
 		}		
 	}
 
@@ -975,7 +977,7 @@ final class MSSQLCreateStudySubmissionStep
 		ResultSet checkProjectExistsResultSet = null;
 		try {
 			//Create SQL query
-			MSSQLRecordExistsQueryFormatter queryFormatter
+			RecordExistsQueryFormatter queryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("project");
@@ -1022,7 +1024,7 @@ final class MSSQLCreateStudySubmissionStep
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("project.label");			
 			String errorMessage
@@ -1044,8 +1046,8 @@ final class MSSQLCreateStudySubmissionStep
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(checkProjectExistsStatement);
-			MSSQLQueryUtility.close(checkProjectExistsResultSet);			
+			SQLQueryUtility.close(checkProjectExistsStatement);
+			SQLQueryUtility.close(checkProjectExistsResultSet);
 		}		
 	}
 	

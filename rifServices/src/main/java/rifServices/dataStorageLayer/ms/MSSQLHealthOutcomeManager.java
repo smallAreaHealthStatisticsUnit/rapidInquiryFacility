@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.ClassFileLocator;
 import rifGenericLibrary.system.Messages;
@@ -360,7 +360,7 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 		ResultSet resultSet = null;
 		try {
 			statement 
-				= PGSQLQueryUtility.createPreparedStatement(
+				= SQLQueryUtility.createPreparedStatement(
 					connection, 
 					queryFormatter);
 			Integer investigationID
@@ -403,8 +403,8 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}	
 		
 		return results;

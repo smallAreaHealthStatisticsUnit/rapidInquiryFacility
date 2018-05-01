@@ -7,20 +7,21 @@ import java.sql.SQLException;
 
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.ResultsQueryManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
-		implements ResultsQueryManager {
+final class MSSQLResultsQueryManager extends BaseSQLManager implements ResultsQueryManager {
 
 	RIFLogger rifLogger = RIFLogger.getLogger();
 	
@@ -45,7 +46,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 			final GeoLevelSelect geoLevelSelect)
 			throws RIFServiceException {
 								
-		MSSQLSelectQueryFormatter getMapTileTableQueryFormatter
+		SelectQueryFormatter getMapTileTableQueryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 			
 		getMapTileTableQueryFormatter.setDatabaseSchemaName("rif_data");
@@ -125,8 +126,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 	}
 	
@@ -152,7 +153,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 		WHERE geography = 'SAHSULAND';
 		*/
 							
-		MSSQLSelectQueryFormatter getMapTileTableQueryFormatter
+		SelectQueryFormatter getMapTileTableQueryFormatter
 			= new MSSQLSelectQueryFormatter(false);		
 			
 		getMapTileTableQueryFormatter.setDatabaseSchemaName("rif40");
@@ -184,7 +185,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 			//This is the tile table name for this geography
 			String myTileTable = "rif_data." + resultSet.getString(1);
 					
-			MSSQLSelectQueryFormatter getMapTilesQueryFormatter
+			SelectQueryFormatter getMapTilesQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 				
 			//STEP 2: get the tiles	
@@ -254,11 +255,11 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 			
-			MSSQLQueryUtility.close(statement2);
-			MSSQLQueryUtility.close(resultSet2);
+			SQLQueryUtility.close(statement2);
+			SQLQueryUtility.close(resultSet2);
 		}			
 	}
 	
@@ -272,7 +273,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 		ResultSet resultSet = null;
 		try {
 		
-			MSSQLSelectQueryFormatter queryFormatter
+			SelectQueryFormatter queryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("study_name");
@@ -315,7 +316,7 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlResultsQueryManager.unableToGetStudyName",
@@ -327,8 +328,8 @@ final class MSSQLResultsQueryManager extends MSSQLAbstractSQLManager
 			throw rifServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 	}

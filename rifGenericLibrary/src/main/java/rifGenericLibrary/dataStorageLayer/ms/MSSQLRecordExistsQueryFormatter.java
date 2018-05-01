@@ -77,7 +77,8 @@ import java.util.ArrayList;
  */
 
 public final class MSSQLRecordExistsQueryFormatter 
-	extends AbstractMSSQLQueryFormatter {
+	extends AbstractMSSQLQueryFormatter implements
+	                                    rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -111,35 +112,23 @@ public final class MSSQLRecordExistsQueryFormatter
 	// ==========================================
 	// Section Accessors and Mutators
 	// ==========================================
-	/**
-	 * Sets the from table.
-	 *
-	 * @param fromTableName the new from table
-	 */
+	@Override
 	public void setFromTable(
-		final String fromTableName) {
+			final String fromTableName) {
 
 		this.fromTableName = fromTableName;
 	}
 	
-	/**
-	 * Sets the lookup key field name.
-	 *
-	 * @param lookupKeyFieldName the new lookup key field name
-	 */
+	@Override
 	public void setLookupKeyFieldName(
-		final String lookupKeyFieldName) {
+			final String lookupKeyFieldName) {
 
 		this.lookupKeyFieldName = lookupKeyFieldName;
 	}
 	
-	/**
-	 * Adds the where parameter.
-	 *
-	 * @param fieldName the field name
-	 */
+	@Override
 	public void addWhereParameter(
-		final String fieldName) {
+			final String fieldName) {
 		
 		StringBuilder whereCondition = new StringBuilder();
 		whereCondition.append(fieldName);
@@ -148,15 +137,10 @@ public final class MSSQLRecordExistsQueryFormatter
 		whereConditions.add(whereCondition.toString());
 	}
 	
-	/**
-	 * Adds the where parameter with operator.
-	 *
-	 * @param fieldName the field name
-	 * @param operator the operator
-	 */
+	@Override
 	public void addWhereParameterWithOperator(
-		final String fieldName,
-		final String operator) {
+			final String fieldName,
+			final String operator) {
 
 		StringBuilder whereCondition = new StringBuilder();
 		whereCondition.append(fieldName);

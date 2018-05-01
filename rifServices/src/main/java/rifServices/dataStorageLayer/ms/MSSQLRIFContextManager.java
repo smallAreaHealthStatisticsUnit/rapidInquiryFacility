@@ -7,8 +7,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLAggregateValueQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
@@ -20,12 +22,13 @@ import rifServices.businessConceptLayer.GeoLevelView;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RIFContextManager {
+final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextManager {
 
 	/**
 	 * Instantiates a new SQLRIF context manager.
@@ -56,7 +59,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 		
 			//Create SQL query		
-			MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("geography");
@@ -90,7 +93,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeographies");
 			
@@ -107,8 +110,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(dbResultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}		
 	}
 
@@ -139,7 +142,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 		
 			//Create SQL query		
-			MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("theme");
@@ -172,7 +175,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetHealthThemes");
@@ -189,8 +192,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(dbResultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}		
 	}
 	
@@ -236,7 +239,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 		
 			//Create SQL query		
-			MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("numerator_description");
@@ -297,7 +300,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
@@ -316,8 +319,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(dbResultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}
 		
 	}
@@ -354,7 +357,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 			//Create SQL query		
 			String userID = user.getUserID(); 
 			
-			MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("numerator_table");
@@ -412,7 +415,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFContextManager.error.unableToGetNumeratorDenominatorPair");
@@ -431,8 +434,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(dbResultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}
 		
 		return results;
@@ -511,7 +514,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 			}
 		
 			//Create SQL query		
-			MSSQLSelectQueryFormatter getGeoLevelSelectValuesQueryFormatter 
+			SelectQueryFormatter getGeoLevelSelectValuesQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(getGeoLevelSelectValuesQueryFormatter);
 			getGeoLevelSelectValuesQueryFormatter.addSelectField("geolevel_name");
@@ -553,7 +556,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {		
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
@@ -563,10 +566,10 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(getMaxGeoLevelIDStatement);
-			MSSQLQueryUtility.close(getMaxGeoLevelIDResultSet);			
-			MSSQLQueryUtility.close(getGeoLevelSelectStatement);
-			MSSQLQueryUtility.close(getGeoLevelSelectResultSet);			
+			SQLQueryUtility.close(getMaxGeoLevelIDStatement);
+			SQLQueryUtility.close(getMaxGeoLevelIDResultSet);
+			SQLQueryUtility.close(getGeoLevelSelectStatement);
+			SQLQueryUtility.close(getGeoLevelSelectResultSet);
 		}		
 		return results;		
 	}
@@ -597,7 +600,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 		
 			//Create SQL query		
-			MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("defaultcomparea");
 			queryFormatter.addFromTable("rif40.rif40_geographies");
@@ -636,7 +639,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelSelect");
 
@@ -654,8 +657,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(dbResultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}		
 	}
 
@@ -685,7 +688,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 
 		//First, obtain the name of the table that will contain the names of 
 		//areas		
-		MSSQLSelectQueryFormatter lookupTableQueryFormatter 
+		SelectQueryFormatter lookupTableQueryFormatter
 			= new MSSQLSelectQueryFormatter(false);
 		configureQueryFormatterForDB(lookupTableQueryFormatter);
 		lookupTableQueryFormatter.addSelectField("lookup_table");
@@ -737,7 +740,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 			}
 
 			//Given the lookup table name, retrieve the areas
-			MSSQLSelectQueryFormatter geographicAreaQueryFormatter
+			SelectQueryFormatter geographicAreaQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(geographicAreaQueryFormatter);
 			geographicAreaQueryFormatter.addSelectField(geoLevelSelect.getName());		
@@ -779,7 +782,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
@@ -790,10 +793,10 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(lookupTableStatement);
-			MSSQLQueryUtility.close(lookupTableResultSet);				
-			MSSQLQueryUtility.close(geographicAreaStatement);
-			MSSQLQueryUtility.close(geographicAreaResultSet);			
+			SQLQueryUtility.close(lookupTableStatement);
+			SQLQueryUtility.close(lookupTableResultSet);
+			SQLQueryUtility.close(geographicAreaStatement);
+			SQLQueryUtility.close(geographicAreaResultSet);
 		}
 				
 		return results;		
@@ -837,7 +840,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 			
 			//Create SQL query		
-			MSSQLSelectQueryFormatter geoLevelIDQueryFormatter 
+			SelectQueryFormatter geoLevelIDQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(geoLevelIDQueryFormatter);
 			geoLevelIDQueryFormatter.addSelectField("geolevel_id");
@@ -873,7 +876,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 				throw rifServiceException;
 			}
 		
-			MSSQLSelectQueryFormatter geoLevelViewsQueryFormatter 
+			SelectQueryFormatter geoLevelViewsQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(geoLevelViewsQueryFormatter);
 			geoLevelViewsQueryFormatter.addSelectField("geolevel_name");
@@ -911,7 +914,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
@@ -922,10 +925,10 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(geoLevelIDStatement);
-			MSSQLQueryUtility.close(geoLevelIDResultSet);			
-			MSSQLQueryUtility.close(geoLevelViewsStatement);
-			MSSQLQueryUtility.close(geoLevelViewsResultSet);			
+			SQLQueryUtility.close(geoLevelIDStatement);
+			SQLQueryUtility.close(geoLevelIDResultSet);
+			SQLQueryUtility.close(geoLevelViewsStatement);
+			SQLQueryUtility.close(geoLevelViewsResultSet);
 		}		
 	}
 					
@@ -989,7 +992,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 		
 			//Create SQL query
-			MSSQLRecordExistsQueryFormatter queryFormatter
+			RecordExistsQueryFormatter queryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setFromTable("rif40.rif40_geographies");
@@ -1033,7 +1036,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {	
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("geography.label");
 			String errorMessage
@@ -1056,8 +1059,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(checkGeographyExistsStatement);
-			MSSQLQueryUtility.close(checkGeographyExistsResultSet);			
+			SQLQueryUtility.close(checkGeographyExistsStatement);
+			SQLQueryUtility.close(checkGeographyExistsResultSet);
 		}
 	}
 	
@@ -1080,7 +1083,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 
 			//Create SQL query
-			MSSQLRecordExistsQueryFormatter queryFormatter
+			RecordExistsQueryFormatter queryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("geolevel_name");
@@ -1133,7 +1136,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("geoLevelSelect.label");			
 			String errorMessage
@@ -1156,8 +1159,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(checkGeoLevelViewExistsStatement);
-			MSSQLQueryUtility.close(checkGeoLevelViewExistsResultSet);			
+			SQLQueryUtility.close(checkGeoLevelViewExistsStatement);
+			SQLQueryUtility.close(checkGeoLevelViewExistsResultSet);
 		}		
 	}
 		
@@ -1192,7 +1195,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		ResultSet geoLevelAreaExistsResultSet = null;
 		ResultSet getLookupTableResultSet = null;
 		try {
-			MSSQLSelectQueryFormatter lookupTableQueryQueryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter lookupTableQueryQueryFormatter = new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(lookupTableQueryQueryFormatter);
 			lookupTableQueryQueryFormatter.addSelectField("lookup_table");
 			lookupTableQueryQueryFormatter.addFromTable("rif40.rif40_geolevels");
@@ -1225,7 +1228,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 			}
 		
 			//Check whether the name exists
-			MSSQLRecordExistsQueryFormatter recordExistsQueryFormatter 
+			RecordExistsQueryFormatter recordExistsQueryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			recordExistsQueryFormatter.setFromTable(geoLevelSelectLookupTable);
 			recordExistsQueryFormatter.setLookupKeyFieldName("name");
@@ -1268,7 +1271,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
@@ -1278,10 +1281,10 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(getLookupTableStatement);
-			MSSQLQueryUtility.close(getLookupTableResultSet);			
-			MSSQLQueryUtility.close(getLookupTableStatement);
-			MSSQLQueryUtility.close(getLookupTableResultSet);			
+			SQLQueryUtility.close(getLookupTableStatement);
+			SQLQueryUtility.close(getLookupTableResultSet);
+			SQLQueryUtility.close(getLookupTableStatement);
+			SQLQueryUtility.close(getLookupTableResultSet);
 		}	
 		
 	}
@@ -1330,7 +1333,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		try {
 		
 			//Obtain the minimimum geolevel ID that the geoLevelMap needs to have
-			MSSQLSelectQueryFormatter geoLevelIDQueryFormatter 
+			SelectQueryFormatter geoLevelIDQueryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			configureQueryFormatterForDB(geoLevelIDQueryFormatter);		
 			geoLevelIDQueryFormatter.addSelectField("geolevel_id");
@@ -1362,7 +1365,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 				geoLevelID = geoLevelIDResultSet.getInt(1);
 			}
 			
-			MSSQLRecordExistsQueryFormatter geoLevelMapExistsQueryFormatter
+			RecordExistsQueryFormatter geoLevelMapExistsQueryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(geoLevelMapExistsQueryFormatter);		
 			geoLevelMapExistsQueryFormatter.setFromTable("rif40.rif40_geolevels");
@@ -1432,7 +1435,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
@@ -1443,10 +1446,10 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(geoLevelIDStatement);
-			MSSQLQueryUtility.close(geoLevelIDResultSet);			
-			MSSQLQueryUtility.close(geoLevelValueExistsStatement);
-			MSSQLQueryUtility.close(geoLevelValueExistsResultSet);			
+			SQLQueryUtility.close(geoLevelIDStatement);
+			SQLQueryUtility.close(geoLevelIDResultSet);
+			SQLQueryUtility.close(geoLevelValueExistsStatement);
+			SQLQueryUtility.close(geoLevelValueExistsResultSet);
 		}				
 	}
 
@@ -1467,7 +1470,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		final boolean isToMapValue) 
 		throws RIFServiceException {
 
-		MSSQLRecordExistsQueryFormatter queryFormatter 
+		RecordExistsQueryFormatter queryFormatter
 			= new MSSQLRecordExistsQueryFormatter(false);
 		configureQueryFormatterForDB(queryFormatter);		
 		queryFormatter.setFromTable("rif40.rif40_geolevels");
@@ -1555,7 +1558,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			RIFLogger rifLogger = RIFLogger.getLogger();
 			rifLogger.error(
 				MSSQLRIFContextManager.class, 
@@ -1566,8 +1569,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources			
-			MSSQLQueryUtility.close(statement);
-			MSSQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 	}
@@ -1587,7 +1590,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		PreparedStatement checkHealthThemeExistsStatement = null;
 		ResultSet checkHealthThemeExistsResultSet = null;
 		try {
-			MSSQLRecordExistsQueryFormatter queryFormatter
+			RecordExistsQueryFormatter queryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.setLookupKeyFieldName("description");
@@ -1631,7 +1634,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("healthTheme.label");
 			String errorMessage
@@ -1654,8 +1657,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(checkHealthThemeExistsStatement);
-			MSSQLQueryUtility.close(checkHealthThemeExistsResultSet);			
+			SQLQueryUtility.close(checkHealthThemeExistsStatement);
+			SQLQueryUtility.close(checkHealthThemeExistsResultSet);
 		}		
 	}	
 
@@ -1674,7 +1677,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		PreparedStatement getNDPairExistsStatement = null;
 		ResultSet getNDPairExistsResultSet = null;
 		try {
-			MSSQLRecordExistsQueryFormatter ndPairExistsQueryFormatter
+			RecordExistsQueryFormatter ndPairExistsQueryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(ndPairExistsQueryFormatter);		
 			ndPairExistsQueryFormatter.setFromTable(user.getUserID() + ".rif40_num_denom");
@@ -1721,7 +1724,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);			
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
@@ -1742,8 +1745,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(getNDPairExistsStatement);
-			MSSQLQueryUtility.close(getNDPairExistsResultSet);						
+			SQLQueryUtility.close(getNDPairExistsStatement);
+			SQLQueryUtility.close(getNDPairExistsResultSet);
 		}		
 	}
 
@@ -1767,7 +1770,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		PreparedStatement getNDPairExistsStatement = null;
 		ResultSet getNDPairExistsResultSet = null;
 		try {
-			MSSQLRecordExistsQueryFormatter queryFormatter
+			RecordExistsQueryFormatter queryFormatter
 				= new MSSQLRecordExistsQueryFormatter(false);
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.setFromTable(user.getUserID() + ".rif40_num_denom"); 
@@ -1814,7 +1817,7 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			MSSQLQueryUtility.rollback(connection);			
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("numeratorDenominatorPair.numerator.label");
 			String errorMessage
@@ -1835,8 +1838,8 @@ final class MSSQLRIFContextManager extends MSSQLAbstractSQLManager implements RI
 		}
 		finally {
 			//Cleanup database resources
-			MSSQLQueryUtility.close(getNDPairExistsStatement);
-			MSSQLQueryUtility.close(getNDPairExistsResultSet);						
+			SQLQueryUtility.close(getNDPairExistsStatement);
+			SQLQueryUtility.close(getNDPairExistsResultSet);
 		}		
 	}
 }

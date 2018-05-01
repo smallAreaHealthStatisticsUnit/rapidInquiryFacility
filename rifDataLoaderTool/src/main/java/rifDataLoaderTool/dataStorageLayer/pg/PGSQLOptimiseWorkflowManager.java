@@ -14,9 +14,9 @@ import rifDataLoaderTool.businessConceptLayer.WorkflowValidator;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateIndexQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteIndexQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -215,7 +215,7 @@ final class PGSQLOptimiseWorkflowManager
 							queryFormatter);
 					statement.executeUpdate();
 				
-					PGSQLQueryUtility.close(statement);				
+					SQLQueryUtility.close(statement);
 				
 				}
 			}
@@ -237,7 +237,7 @@ final class PGSQLOptimiseWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -298,7 +298,7 @@ final class PGSQLOptimiseWorkflowManager
 							queryFormatter);
 					statement.executeUpdate();
 				
-					PGSQLQueryUtility.close(statement);			
+					SQLQueryUtility.close(statement);
 				}
 			}
 						

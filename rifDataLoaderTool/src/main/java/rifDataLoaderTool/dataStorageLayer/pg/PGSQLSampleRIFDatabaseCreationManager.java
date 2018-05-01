@@ -1,17 +1,5 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
-import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifGenericLibrary.system.RIFServiceException;
-
 import java.io.File;
 import java.io.FileReader;
 import java.sql.Connection;
@@ -19,6 +7,18 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.PropertyResourceBundle;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
+import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
 
 
 
@@ -162,8 +162,8 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(connection);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(connection);
 		}
 		
 	}
@@ -210,8 +210,8 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(connection);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(connection);
 		}
 		
 	}
@@ -252,7 +252,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 				false);
 		
 			statement
-				= PGSQLQueryUtility.createPreparedStatement(
+				= SQLQueryUtility.createPreparedStatement(
 					connection, 
 					createCovariateTableQueryFormatter);
 		
@@ -270,7 +270,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 			
 		}
 	}
@@ -295,7 +295,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 				0, 
 				"CREATE SEQUENCE data_set_sequence;");
 			createIDSequenceStatement
-				= PGSQLQueryUtility.createPreparedStatement(
+				= SQLQueryUtility.createPreparedStatement(
 						connection, 
 						createIDSequenceQueryFormatter);
 			createIDSequenceStatement.executeUpdate();
@@ -316,7 +316,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 				false);
 			
 			createDataSetConfigurationTableStatement
-				= PGSQLQueryUtility.createPreparedStatement(
+				= SQLQueryUtility.createPreparedStatement(
 					connection, 
 					createDataSetConfigurationsTableFormatter);
 			
@@ -337,7 +337,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			sequenceOwnershipQueryFormatter.addQueryPhrase("OWNED BY ");
 			sequenceOwnershipQueryFormatter.addQueryPhrase("data_set_configurations.id;");
 			sequenceOwnershipStatement
-				= PGSQLQueryUtility.createPreparedStatement(
+				= SQLQueryUtility.createPreparedStatement(
 					connection, 
 					sequenceOwnershipQueryFormatter);
 			sequenceOwnershipStatement.executeUpdate();			
@@ -354,9 +354,9 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(createIDSequenceStatement);
-			PGSQLQueryUtility.close(createDataSetConfigurationTableStatement);
-			PGSQLQueryUtility.close(sequenceOwnershipStatement);		
+			SQLQueryUtility.close(createIDSequenceStatement);
+			SQLQueryUtility.close(createDataSetConfigurationTableStatement);
+			SQLQueryUtility.close(sequenceOwnershipStatement);
 		}	
 		
 	}
@@ -398,7 +398,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 		
 			queryFormatter.addCreationTimestampField("time_stamp");
 			statement
-				= PGSQLQueryUtility.createPreparedStatement(
+				= SQLQueryUtility.createPreparedStatement(
 				connection, 
 				queryFormatter);
 			statement.executeUpdate();
@@ -447,7 +447,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 		
 			queryFormatter.addCreationTimestampField("time_stamp");
 			statement
-				= PGSQLQueryUtility.createPreparedStatement(
+				= SQLQueryUtility.createPreparedStatement(
 				connection, 
 				queryFormatter);
 			statement.executeUpdate();
@@ -476,7 +476,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			deleteCovariateTableQueryFormatter.setTableToDelete("rif40_covariates");
 
 			deleteCovariateTableStatement
-				= PGSQLQueryUtility.createPreparedStatement(
+				= SQLQueryUtility.createPreparedStatement(
 					connection, 
 					deleteCovariateTableQueryFormatter);
 			
@@ -494,7 +494,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(deleteCovariateTableStatement);
+			SQLQueryUtility.close(deleteCovariateTableStatement);
 		}	
 	}
 	

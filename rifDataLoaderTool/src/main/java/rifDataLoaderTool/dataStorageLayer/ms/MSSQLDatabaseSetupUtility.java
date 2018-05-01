@@ -1,19 +1,24 @@
 package rifDataLoaderTool.dataStorageLayer.ms;
 
-import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
-import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreateDatabaseQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLDropDatabaseQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
-import rifGenericLibrary.system.RIFServiceExceptionFactory;
-
-import java.io.*;
-import java.sql.*;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.ArrayList;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolSettings;
+import rifDataLoaderTool.businessConceptLayer.DatabaseConnectionsConfiguration;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreateDatabaseQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.ms.MSSQLDropDatabaseQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
 /**
  * This is a mostly undeveloped class. Its intent was to help RIF managers
@@ -165,9 +170,9 @@ public class MSSQLDatabaseSetupUtility {
 			createDatabaseStatement.executeUpdate();	
 		}
 		finally {
-			MSSQLQueryUtility.close(createDatabaseStatement);
-			MSSQLQueryUtility.close(dropDatabaseStatement);
-			MSSQLQueryUtility.close(connection);
+			SQLQueryUtility.close(createDatabaseStatement);
+			SQLQueryUtility.close(dropDatabaseStatement);
+			SQLQueryUtility.close(connection);
 		}
 	}
 	
@@ -252,7 +257,7 @@ public class MSSQLDatabaseSetupUtility {
 			statement.executeUpdate();
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);			
+			SQLQueryUtility.close(statement);
 		}		
 	}
 	
@@ -314,7 +319,7 @@ public class MSSQLDatabaseSetupUtility {
 			statement.executeUpdate();
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);			
+			SQLQueryUtility.close(statement);
 		}				
 	}
 	
@@ -352,7 +357,7 @@ public class MSSQLDatabaseSetupUtility {
 			}			
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 	}
 	

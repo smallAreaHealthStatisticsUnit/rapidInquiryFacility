@@ -1,8 +1,8 @@
 package rifServices.dataStorageLayer.pg;
 
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
-import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
@@ -33,7 +33,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 	/**
 	 * The sql connection manager.
 	 */
-	private PGSQLConnectionManager sqlConnectionManager;
+	private BaseSQLManager sqlConnectionManager;
 	
 	/**
 	 * The sql rif context manager.
@@ -84,11 +84,11 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		return new PGSQLRIFServiceResources(rifServiceStartupOptions);
 	}
 	
-	public PGSQLRIFServiceResources(final RIFServiceStartupOptions rifServiceStartupOptions) {
+	private PGSQLRIFServiceResources(final RIFServiceStartupOptions rifServiceStartupOptions) {
 		
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
-		sqlConnectionManager = new PGSQLConnectionManager(rifServiceStartupOptions);
+		sqlConnectionManager = new BaseSQLManager(rifServiceStartupOptions);
 		healthOutcomeManager = new PGSQLHealthOutcomeManager(rifServiceStartupOptions);
 		
 		RIFDatabaseProperties rifDatabaseProperties
@@ -100,11 +100,11 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		sqlSmoothedResultManager
 				= new PGSQLSmoothedResultManager(rifServiceStartupOptions);
 		
-		sqlAgeGenderYearManager = new PGSQLAgeGenderYearManager(sqlRIFContextManager,
-				rifServiceStartupOptions);
+		sqlAgeGenderYearManager = new AgeGenderYearManager(
+				sqlRIFContextManager, rifServiceStartupOptions);
 		sqlMapDataManager = new PGSQLMapDataManager(rifServiceStartupOptions, sqlRIFContextManager);
-		sqlCovariateManager = new PGSQLCovariateManager(rifServiceStartupOptions,
-				sqlRIFContextManager);
+		sqlCovariateManager = new CovariateManager(rifServiceStartupOptions,
+		                                           sqlRIFContextManager);
 		
 		InvestigationManager sqlInvestigationManager = new PGSQLInvestigationManager(rifServiceStartupOptions, sqlRIFContextManager,
 				sqlAgeGenderYearManager, sqlCovariateManager);
@@ -154,7 +154,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 	}
 	
 	@Override
-	public PGSQLConnectionManager getSqlConnectionManager() {
+	public BaseSQLManager getSqlConnectionManager() {
 		
 		return sqlConnectionManager;
 	}

@@ -10,6 +10,7 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFStudySubmission;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.GetStudyJSON;
 import rifServices.dataStorageLayer.common.RifZipFile;
 import rifServices.dataStorageLayer.common.StudyExtractManager;
@@ -17,8 +18,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
-		implements StudyExtractManager {
+public class MSSQLStudyExtractManager extends BaseSQLManager implements StudyExtractManager {
 
 	private static String EXTRACT_DIRECTORY;
 	private static String TAXONOMY_SERVICES_SERVER;
@@ -338,7 +338,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 	}
 }
 	 * @param  locale 		locale
-	 * @param  tomcatServer e.g. http://localhost:8080.
+	 * @param  url e.g. http://localhost:8080.
 	 * 
 	 * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
 	 */
@@ -349,7 +349,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 			final RIFStudySubmission rifStudySubmission,
 			final String studyID,
 			final Locale locale,
-			final String tomcatServer)
+			final String url)
 					throws RIFServiceException {
 		String result;
 
@@ -357,7 +357,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 			JSONObject json = new JSONObject();
 			GetStudyJSON getStudyJSON = new GetStudyJSON(this);
 			JSONObject rif_job_submission=getStudyJSON.addRifStudiesJson(connection, 
-				studyID, locale, tomcatServer, TAXONOMY_SERVICES_SERVER);
+				studyID, locale, url, TAXONOMY_SERVICES_SERVER);
 			rif_job_submission.put("created_by", user.getUserID());
 			json.put("rif_job_submission", rif_job_submission);
 			result=json.toString();
@@ -388,7 +388,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
      * @param zoomLevel (required)
      * @param studyID (required)
      * @param locale (required)
-     * @param tomcatServer [deduced from calling URL] (required)
+     * @param url [deduced from calling URL] (required)
      * @return JSONObject [front end saves as JSON5 file]
      */		
 	@Override
@@ -399,7 +399,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 			final String zoomLevel,
 			final String studyID,
 			final Locale locale,
-			final String tomcatServer)
+			final String url)
 					throws RIFServiceException {
 						
 		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions, this);
@@ -409,7 +409,7 @@ public class MSSQLStudyExtractManager extends MSSQLAbstractSQLManager
 			zoomLevel,
 			studyID,
 			locale,
-			tomcatServer,
+			url,
 			TAXONOMY_SERVICES_SERVER);
 
 	}

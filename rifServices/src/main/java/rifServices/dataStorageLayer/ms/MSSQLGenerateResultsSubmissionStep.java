@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
@@ -48,7 +48,6 @@ final class MSSQLGenerateResultsSubmissionStep {
 		String result = null;
 		CallableStatement runStudyStatement = null;
 		PreparedStatement computeResultsStatement = null;
-		PGSQLQueryUtility query=new PGSQLQueryUtility();
 		ResultSet runStudyResultSet = null;
 		ResultSet computeResultSet = null;
 		boolean res;
@@ -92,9 +91,9 @@ final class MSSQLGenerateResultsSubmissionStep {
 		
 			result = String.valueOf(rval);	
 			
-			query.printWarnings(runStudyStatement); // Print output from T-SQL
+			SQLQueryUtility.printWarnings(runStudyStatement); // Print output from T-SQL
 			
-			PGSQLQueryUtility.commit(connection); 	
+			SQLQueryUtility.commit(connection);
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version, print warning dialogs
@@ -104,14 +103,15 @@ final class MSSQLGenerateResultsSubmissionStep {
 				rval=-3;
 			}
 			
-			traceMessage=query.printWarnings(runStudyStatement); // Print output from T-SQL
+			traceMessage = SQLQueryUtility.printWarnings(runStudyStatement); // Print output from
+			// T-SQL
 			if (traceMessage == null) {
 				traceMessage="No trace from T-SQL Statement.";
 			}	
 			traceMessage = sqlException.getMessage() + lineSeparator + traceMessage;
 			
 			manager.logSQLException(sqlException);
-			PGSQLQueryUtility.commit(connection);
+			SQLQueryUtility.commit(connection);
 			
 			String errorMessage
 				= RIFServiceMessages.getMessage(
@@ -132,10 +132,10 @@ final class MSSQLGenerateResultsSubmissionStep {
 		finally {
 		
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(runStudyStatement);
-			PGSQLQueryUtility.close(runStudyResultSet);
-			PGSQLQueryUtility.close(computeResultsStatement);
-			PGSQLQueryUtility.close(computeResultSet);
+			SQLQueryUtility.close(runStudyStatement);
+			SQLQueryUtility.close(runStudyResultSet);
+			SQLQueryUtility.close(computeResultsStatement);
+			SQLQueryUtility.close(computeResultSet);
 					
 			if (result == null) {
 				RIFServiceException rifServiceException
