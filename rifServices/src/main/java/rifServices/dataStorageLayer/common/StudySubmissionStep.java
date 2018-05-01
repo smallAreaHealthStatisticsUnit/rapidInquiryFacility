@@ -123,7 +123,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			queryFormatter.addQueryLine(0, "SELECT");
 			queryFormatter.addQueryLine(
 					1,
-					"rif40.rif40_sequence_current_value('rif40.rif40_study_id_seq')");
+					rifDatabaseProperties.studyIdQuery());
 
 			logSQLQuery("getCurrentStudyID", queryFormatter);
 
