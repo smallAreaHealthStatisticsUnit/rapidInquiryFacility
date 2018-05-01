@@ -57,7 +57,7 @@ public class BaseSQLManager implements SQLManager {
 	protected final RIFServiceStartupOptions rifServiceStartupOptions;
 	private final String initialisationQuery;
 	private final String databaseURL;
-	private final HashMap<String, String> passwordHashList;
+	private static HashMap<String, String> passwordHashList = null;
 
 	protected RIFDatabaseProperties rifDatabaseProperties;
 
@@ -78,7 +78,9 @@ public class BaseSQLManager implements SQLManager {
 				rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER
 						? MS_SQL_INITIALISATION_QUERY : POSTGRES_INITIALISATION_QUERY;
 
-		passwordHashList = new HashMap<>();
+		if (passwordHashList == null) {
+			passwordHashList = new HashMap<>();
+		}
 		databaseURL = generateURLText();
 	}
 
