@@ -6,12 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.RIFLogger;
-import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.AgeBand;
 import rifServices.businessConceptLayer.AgeGroup;
 import rifServices.businessConceptLayer.ComparisonArea;
@@ -25,15 +22,15 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.Sex;
 import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 
-final class PGSQLRIFSubmissionManager extends PGSQLAbstractSQLManager
-		implements SubmissionManager {
+final class PGSQLRIFSubmissionManager extends BaseSQLManager implements SubmissionManager {
 	
 	private StudyStateManager studyStateManager;
 
@@ -46,134 +43,6 @@ final class PGSQLRIFSubmissionManager extends PGSQLAbstractSQLManager
 		setEnableLogging(false);
 	}
 
-	@Override
-	public String deleteStudy(
-			final Connection connection,
-			final String studyID)
-		throws RIFServiceException {
-		
-		
-		String result = null;
-		PreparedStatement statement = null;
-		ResultSet resultSet = null;
-		
-		try {
-			
-			PGSQLFunctionCallerQueryFormatter queryFormatter = new PGSQLFunctionCallerQueryFormatter();
-			queryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
-			queryFormatter.setFunctionName("rif40_delete_study");
-			queryFormatter.setNumberOfFunctionParameters(1);
-
-			logSQLQuery(
-				"deleteStudy", 
-				queryFormatter,
-				studyID);
-			
-			statement
-				= createPreparedStatement(
-					connection,
-					queryFormatter);
-			statement.setInt(1, Integer.valueOf(studyID));
-			resultSet
-				= statement.executeQuery();
-			resultSet.next();
-			
-			result = String.valueOf(resultSet.getBoolean(1));	
-			
-			connection.commit();
-			
-			return result;
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToDeleteStudy",
-					studyID);
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				PGSQLRIFSubmissionManager.class, 
-				errorMessage, 
-				sqlException);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
-		}
-	}
-	
-
-	@Override
-	public void deleteStudy(
-			final Connection connection,
-			final User user,
-			final AbstractStudy study)
-		throws RIFServiceException {
-		
-		
-		String studyID 
-			= study.getIdentifier();
-		studyStateManager.checkNonExistentStudyID(
-			connection,
-			user,
-			studyID);
-		
-		PreparedStatement statement = null;
-		try {
-			PGSQLFunctionCallerQueryFormatter queryFormatter 
-				= new PGSQLFunctionCallerQueryFormatter();
-			queryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
-			queryFormatter.setFunctionName("rif40_delete_study");
-			queryFormatter.setNumberOfFunctionParameters(1);
-		
-			statement 
-				= createPreparedStatement(
-					connection,
-					queryFormatter);
-			statement.setString(1, study.getIdentifier());
-			statement.executeUpdate();
-			
-			connection.commit();
-		}
-		catch(SQLException sqlException) {
-			//Record original exception, throw sanitised, human-readable version
-			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
-			String errorMessage
-				= RIFServiceMessages.getMessage(
-					"sqlRIFSubmissionManager.error.unableToDeleteStudy",
-					study.getName());
-
-			RIFLogger rifLogger = RIFLogger.getLogger();
-			rifLogger.error(
-				PGSQLAgeGenderYearManager.class, 
-				errorMessage, 
-				sqlException);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
-		}
-		finally {
-			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-		}	
-	}
-	
-	
-	
 	@Override
 	public RIFStudySubmission getRIFStudySubmission(
 			final Connection connection,
@@ -237,7 +106,7 @@ final class PGSQLRIFSubmissionManager extends PGSQLAbstractSQLManager
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);			
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToGetDiseaseMappingStudy",
@@ -308,8 +177,8 @@ final class PGSQLRIFSubmissionManager extends PGSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}		
 	}
 		
@@ -358,8 +227,8 @@ final class PGSQLRIFSubmissionManager extends PGSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 	}	
 	
@@ -409,8 +278,8 @@ final class PGSQLRIFSubmissionManager extends PGSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 	}
 	
@@ -523,8 +392,8 @@ final class PGSQLRIFSubmissionManager extends PGSQLAbstractSQLManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 	}
 		
@@ -578,8 +447,8 @@ final class PGSQLRIFSubmissionManager extends PGSQLAbstractSQLManager
 					resultSet.getString(3));		
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 		return result;
@@ -623,8 +492,8 @@ final class PGSQLRIFSubmissionManager extends PGSQLAbstractSQLManager
 			result.setDenominatorTableDescription(resultSet.getString(3));
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 		return result;

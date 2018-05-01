@@ -1,14 +1,15 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
-import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-
-import java.sql.*;
-import java.util.ArrayList;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  * Performs a number of utility operations that involve getting various 
@@ -243,8 +244,8 @@ public class PGSQLDatabaseSchemaInformationManager {
 		}
 		catch(SQLException sqlException) {
 			sqlException.printStackTrace(System.out);
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 		
 		return results.toArray(new String[0]);

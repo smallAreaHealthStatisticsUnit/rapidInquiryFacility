@@ -1,23 +1,27 @@
 package rifServices.dataStorageLayer.pg;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
-import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractGeographicalArea;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.GeoLevelToMap;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.MapArea;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.MapDataManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
-
-import java.sql.*;
-import java.util.ArrayList;
 
 
 /**
@@ -84,8 +88,7 @@ import java.util.ArrayList;
  *
  */
 
-final class PGSQLMapDataManager 
-	extends PGSQLAbstractSQLManager implements MapDataManager {
+final class PGSQLMapDataManager extends BaseSQLManager implements MapDataManager {
 	
 	//TODO: (DM) class is full of unused methods
 
@@ -274,8 +277,8 @@ final class PGSQLMapDataManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 	
 		return allRelevantMapAreas;
@@ -313,8 +316,8 @@ final class PGSQLMapDataManager
 			result = resultSet.getString(1);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 		return result;
@@ -375,8 +378,8 @@ final class PGSQLMapDataManager
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);		
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 		return result;

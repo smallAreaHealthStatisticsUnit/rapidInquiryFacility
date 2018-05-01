@@ -3,7 +3,7 @@ package rifGenericLibrary.dataStorageLayer.pg;
 import java.util.ArrayList;
 
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-
+import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 
 /**
  * Class designed to create a template for queries that resemble this example:
@@ -79,8 +79,8 @@ import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
  *
  */
 
-public final class PGSQLRecordExistsQueryFormatter 
-	extends AbstractSQLQueryFormatter {
+public final class PGSQLRecordExistsQueryFormatter extends AbstractSQLQueryFormatter
+		implements RecordExistsQueryFormatter {
 
 	// ==========================================
 	// Section Constants

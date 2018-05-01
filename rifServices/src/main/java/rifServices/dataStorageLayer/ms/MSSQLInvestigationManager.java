@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
@@ -19,6 +19,7 @@ import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
 import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
@@ -26,8 +27,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class MSSQLInvestigationManager
-	extends MSSQLAbstractSQLManager {
+final class MSSQLInvestigationManager extends BaseSQLManager {
 
 	private RIFContextManager rifContextManager;
 	private AgeGenderYearManager ageGenderYearManager;
@@ -147,7 +147,7 @@ final class MSSQLInvestigationManager
 		catch(SQLException sqlException) {			
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
@@ -165,8 +165,8 @@ final class MSSQLInvestigationManager
 				errorMessage);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 	}

@@ -9,20 +9,20 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.StudyState;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class PGSQLStudyStateManager extends PGSQLAbstractSQLManager implements StudyStateManager {
+final class PGSQLStudyStateManager extends BaseSQLManager implements StudyStateManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
@@ -79,7 +79,7 @@ final class PGSQLStudyStateManager extends PGSQLAbstractSQLManager implements St
 			throw rifServiceExeption;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -175,8 +175,8 @@ final class PGSQLStudyStateManager extends PGSQLAbstractSQLManager implements St
 		}
 		finally {
 			//Cleanup database resources			
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(dbResultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(dbResultSet);
 		}
 		
 		assert result != null;
@@ -324,7 +324,7 @@ final class PGSQLStudyStateManager extends PGSQLAbstractSQLManager implements St
 			throw rifServiceException;
 		}
 		finally {			
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 	}
 		
@@ -532,7 +532,7 @@ final class PGSQLStudyStateManager extends PGSQLAbstractSQLManager implements St
 		}
 		catch(SQLException sqlException) {
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"sqlStudyStateManager.error.unableToStatusForAllStudies", 
@@ -544,8 +544,8 @@ final class PGSQLStudyStateManager extends PGSQLAbstractSQLManager implements St
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}	
 		
 	}
@@ -605,8 +605,8 @@ final class PGSQLStudyStateManager extends PGSQLAbstractSQLManager implements St
 			return result;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);				
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 				
 	}
@@ -661,7 +661,7 @@ final class PGSQLStudyStateManager extends PGSQLAbstractSQLManager implements St
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);	
+			SQLQueryUtility.close(statement);
 		}
 		
 	} */
@@ -732,7 +732,7 @@ final class PGSQLStudyStateManager extends PGSQLAbstractSQLManager implements St
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String recordType
 				= RIFServiceMessages.getMessage("abstractStudy.label");			
 			String errorMessage
@@ -754,8 +754,8 @@ final class PGSQLStudyStateManager extends PGSQLAbstractSQLManager implements St
 		}
 		finally {
 			//Cleanup database resources
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}		
 	}
 	

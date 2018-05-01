@@ -1,11 +1,26 @@
 package rifServices.test.services.ms;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
-import rifServices.businessConceptLayer.*;
+import rifServices.businessConceptLayer.AbstractCovariate;
+import rifServices.businessConceptLayer.AgeGroup;
+import rifServices.businessConceptLayer.AgeGroupSortingOption;
+import rifServices.businessConceptLayer.GeoLevelArea;
+import rifServices.businessConceptLayer.GeoLevelSelect;
+import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.businessConceptLayer.GeoLevelView;
+import rifServices.businessConceptLayer.Geography;
+import rifServices.businessConceptLayer.HealthCode;
+import rifServices.businessConceptLayer.HealthCodeTaxonomy;
+import rifServices.businessConceptLayer.HealthTheme;
+import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.businessConceptLayer.Sex;
+import rifServices.businessConceptLayer.YearInterval;
+import rifServices.businessConceptLayer.YearRange;
 import rifServices.test.services.CommonRIFServiceTestCase;
-
-import java.util.ArrayList;
 
 public final class TestGUIScenario
 		extends CommonRIFServiceTestCase {
@@ -102,7 +117,7 @@ public final class TestGUIScenario
 			
 			System.out.println();
 			System.out.println("Get Age groups for the ND pair=="+cancerNDPair.getDisplayName()+"==");
-			ArrayList<AgeGroup> ageGroups
+			List<AgeGroup> ageGroups
 				= rifStudySubmissionService.getAgeGroups(
 					testUser, 
 					sahsuGeography, 

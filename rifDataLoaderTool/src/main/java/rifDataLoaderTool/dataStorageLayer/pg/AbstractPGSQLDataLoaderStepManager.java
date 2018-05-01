@@ -29,11 +29,11 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLExportTableToCSVQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSchemaCommentQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLUpdateQueryFormatter;
@@ -194,8 +194,8 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			return rifResultTable;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 				
 	}
@@ -300,8 +300,8 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -371,7 +371,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			throw rifServiceException;			
 		}		
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 	}
 
@@ -520,7 +520,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			statement.executeUpdate();			
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -563,7 +563,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}			
 	}
 	
@@ -690,7 +690,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}		
 	}
 
@@ -732,7 +732,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 	}
 	
@@ -778,7 +778,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 
 	}
@@ -834,10 +834,10 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 	
 	protected PreparedStatement createPreparedStatement(
 		final Connection connection,
-		final AbstractSQLQueryFormatter queryFormatter) 
+		final QueryFormatter queryFormatter)
 		throws SQLException {
 				
-		return PGSQLQueryUtility.createPreparedStatement(
+		return SQLQueryUtility.createPreparedStatement(
 			connection,
 			queryFormatter);
 
@@ -848,7 +848,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 		final String query) 
 		throws SQLException {
 				
-		return PGSQLQueryUtility.createPreparedStatement(
+		return SQLQueryUtility.createPreparedStatement(
 			connection,
 			query);
 	}
@@ -858,7 +858,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 	protected void logSQLQuery(
 		final Writer logFileWriter,
 		final String queryName,
-		final AbstractSQLQueryFormatter queryFormatter,
+		final QueryFormatter queryFormatter,
 		final String... parameters) 
 		throws RIFServiceException {
 

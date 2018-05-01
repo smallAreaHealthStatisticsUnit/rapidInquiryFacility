@@ -1,20 +1,24 @@
 package rifDataLoaderTool.dataStorageLayer.ms;
 
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
-
-import java.sql.*;
-import java.io.*;
 
 /**
  * Manages code used to store and retrieve information about data sources that are
@@ -100,7 +104,7 @@ final public class MSSQLDataSetManager
 		ResultSet resultSet = null;
 		PreparedStatement statement = null;
 		try {
-			MSSQLSelectQueryFormatter queryFormatter 
+			SelectQueryFormatter queryFormatter
 				= new MSSQLSelectQueryFormatter(false);
 			//KLG_SCHEMA
 			//queryFormatter.setDatabaseSchemaName("dbo");
@@ -141,8 +145,8 @@ final public class MSSQLDataSetManager
 			throw rifServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(resultSet);
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 	}
 
@@ -251,9 +255,9 @@ final public class MSSQLDataSetManager
 			throw rifServiceException;			
 		}
 		finally {
-			MSSQLQueryUtility.close(addDataSetStatement);			
-			MSSQLQueryUtility.close(getIdentifierStatement);			
-			MSSQLQueryUtility.close(resultSet);			
+			SQLQueryUtility.close(addDataSetStatement);
+			SQLQueryUtility.close(getIdentifierStatement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 		return result;
@@ -305,7 +309,7 @@ final public class MSSQLDataSetManager
 			throw rifServiceException;			
 		}
 		finally {
-			MSSQLQueryUtility.close(deleteDataSetConfigurationStatement);
+			SQLQueryUtility.close(deleteDataSetConfigurationStatement);
 		}
 		
 	}
@@ -317,7 +321,7 @@ final public class MSSQLDataSetManager
 		throws RIFServiceException {
 				
 		PreparedStatement statement = null;
-		MSSQLRecordExistsQueryFormatter queryFormatter
+		RecordExistsQueryFormatter queryFormatter
 			= new MSSQLRecordExistsQueryFormatter(false);
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
@@ -389,7 +393,7 @@ final public class MSSQLDataSetManager
 			throw RIFServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}		
 	}
 	

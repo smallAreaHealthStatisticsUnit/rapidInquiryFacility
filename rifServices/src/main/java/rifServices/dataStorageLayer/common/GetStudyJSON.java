@@ -41,7 +41,7 @@ public class GetStudyJSON {
 	private final SQLManager manager;
 	private Connection connection;
 	private String studyID;
-	private String tomcatServer;
+	private String url;
 	private boolean taxonomyInitialiseError=false;
 	private Exception otherTaxonomyError=null;
 	
@@ -63,7 +63,7 @@ public class GetStudyJSON {
      * @param connection (required)
      * @param studyID (required)
      * @param locale (required)
-     * @param tomcatServer [deduced from calling URL] (required)
+     * @param url [deduced from calling URL] (required)
      * @param taxonomyServicesServer [from RIFServiceStartupProperties.java parameter] (required; may be NULL)
      * @return JSONObject [front end saves as JSON5 file]
      */
@@ -71,16 +71,16 @@ public class GetStudyJSON {
 			final Connection connection, 
 			final String studyID, 
 			final Locale locale,
-			final String tomcatServer,
+			final String url,
 			final String taxonomyServicesServer) 
 					throws Exception {
 		this.connection=connection;
 		this.studyID=studyID;
 		if (taxonomyServicesServer != null && !taxonomyServicesServer.equals("")) {
-			this.tomcatServer=taxonomyServicesServer;
+			this.url =taxonomyServicesServer;
 		}
-		else if (tomcatServer != null && !tomcatServer.equals("")) {
-			this.tomcatServer=tomcatServer;
+		else if (url != null && !url.equals("")) {
+			this.url =url;
 		}
 		else {
 			throw new Exception("addRifStudiesJson(): cannot deduce tomcat server from RIF services request or RIFServiceStartup.properties");
@@ -682,21 +682,21 @@ public class GetStudyJSON {
 	/**
 	 * Get health code description from taxonomy service [public version]
 	 *
-     * @param tomcatServer (required)
+     * @param url (required)
      * @param taxonomyServicesServer (required)
      * @param code (required)
 	 * @return health code description string
      */	
 	public JSONObject getHealthCodeDesription(
-			final String tomcatServer,
+			final String url,
 			final String taxonomyServicesServer,
 			final String code) 
 					throws Exception { // Will get from taxonomy service
 		if (taxonomyServicesServer != null && !taxonomyServicesServer.equals("")) {
-			this.tomcatServer=taxonomyServicesServer;
+			this.url =taxonomyServicesServer;
 		}
-		else if (tomcatServer != null && !tomcatServer.equals("")) {
-			this.tomcatServer=tomcatServer;
+		else if (url != null && !url.equals("")) {
+			this.url =url;
 		}
 		else {
 			throw new Exception("getHealthCodeDesription(): cannot deduce tomcat server from RIF services request or RIFServiceStartup.properties");
@@ -788,13 +788,13 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 		
 		WebResource webResource=null;
 		try {		
-			if (tomcatServer.equals("https://localhost:8080")) {
+			if (url.equals("https://localhost:8080")) {
 				client=hostIgnoringClient();
 			}
 			else {	
 				client=Client.create();
 			}
-			String URI=tomcatServer + "/taxonomyServices/taxonomyServices/getMatchingTerms";
+			String URI= url + "/taxonomyServices/taxonomyServices/getMatchingTerms";
 			webResource = client.resource(URI);
 			if (webResource == null) {
 				throw new Exception("Null WebResource returned by rest client, URI: " + URI);

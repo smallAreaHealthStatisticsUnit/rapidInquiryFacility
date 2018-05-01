@@ -14,9 +14,9 @@ import rifDataLoaderTool.businessConceptLayer.WorkflowValidator;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreateIndexQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteIndexQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.system.Messages;
 import rifGenericLibrary.system.RIFServiceException;
 
@@ -215,7 +215,7 @@ final class MSSQLOptimiseWorkflowManager
 							queryFormatter);
 					statement.executeUpdate();
 				
-					MSSQLQueryUtility.close(statement);				
+					SQLQueryUtility.close(statement);
 				
 				}
 			}
@@ -237,7 +237,7 @@ final class MSSQLOptimiseWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -300,7 +300,7 @@ final class MSSQLOptimiseWorkflowManager
 							queryFormatter);
 					statement.executeUpdate();
 				
-					MSSQLQueryUtility.close(statement);			
+					SQLQueryUtility.close(statement);
 				}
 			}
 						

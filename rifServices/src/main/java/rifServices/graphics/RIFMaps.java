@@ -6,8 +6,6 @@ import rifGenericLibrary.util.RIFLogger;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 
-import rifServices.dataStorageLayer.common.AbstractSQLManager;
-
 import rifServices.dataStorageLayer.common.RifFeatureCollection;
 import rifServices.dataStorageLayer.common.RifCoordinateReferenceSystem;
 import rifServices.dataStorageLayer.common.RifLocale;

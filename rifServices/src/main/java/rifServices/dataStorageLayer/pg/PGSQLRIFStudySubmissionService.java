@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
@@ -33,13 +34,13 @@ import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.dataStorageLayer.common.SQLManager;
+import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.dataStorageLayer.common.StudyExtractManager;
 import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.files.TomcatBase;
 import rifServices.system.files.TomcatFile;
-import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 /**
  * Main implementation of the RIF middleware.
  * <p>
@@ -225,7 +226,7 @@ public class PGSQLRIFStudySubmissionService extends CommonUserService
 
 
 
-	public ArrayList<AgeGroup> getAgeGroups(
+	public List<AgeGroup> getAgeGroups(
 			final User _user,
 			final Geography _geography,
 			final NumeratorDenominatorPair _ndPair,
@@ -244,7 +245,7 @@ public class PGSQLRIFStudySubmissionService extends CommonUserService
 		//no need to defensively copy sortingOrder because
 		//it is an enumerated type
 
-		ArrayList<AgeGroup> results = new ArrayList<AgeGroup>();
+		List<AgeGroup> results = new ArrayList<AgeGroup>();
 		Connection connection = null;
 		try {
 			//Check for empty parameters
@@ -1227,7 +1228,7 @@ public class PGSQLRIFStudySubmissionService extends CommonUserService
 	 * @param  _user 		Database username of logged on user.
 	 * @param  studyID 		Integer study identifier (database study_id field).
 	 * @param  locale 		locale
-	 * @param  tomcatServer e.g. http://localhost:8080.
+	 * @param  url e.g. http://localhost:8080.
 	 *
 	 * @return 				Textual JSON
 	 *						NULL on exception or permission denied by sqlConnectionManager
@@ -1236,7 +1237,7 @@ public class PGSQLRIFStudySubmissionService extends CommonUserService
 			final User _user,
 			final String studyID,
 			final Locale locale,
-			final String tomcatServer)
+			final String url)
 			throws RIFServiceException {
 
 		String result = null;
@@ -1303,7 +1304,7 @@ public class PGSQLRIFStudySubmissionService extends CommonUserService
 					rifStudySubmission,
 					studyID,
 					locale,
-					tomcatServer);
+					url);
 
 		}
 		catch(RIFServiceException rifServiceException) {
@@ -1333,7 +1334,7 @@ public class PGSQLRIFStudySubmissionService extends CommonUserService
 			final String studyID,
 			final String zoomLevel,
 			final Locale locale,
-			final String tomcatServer)
+			final String url)
 			throws RIFServiceException {
 
 
@@ -1406,7 +1407,7 @@ public class PGSQLRIFStudySubmissionService extends CommonUserService
 					zoomLevel,
 					studyID,
 					locale,
-					tomcatServer);
+					url);
 
 		}
 		catch(RIFServiceException rifServiceException) {

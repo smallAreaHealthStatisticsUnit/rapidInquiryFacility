@@ -9,9 +9,6 @@ import rifGenericLibrary.util.FieldValidationUtility;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.dataStorageLayer.common.SQLManager;
-import rifServices.dataStorageLayer.common.ServiceBundle;
-import rifServices.dataStorageLayer.common.ServiceResources;
 
 public class StudyServiceBundle implements ServiceBundle {
 

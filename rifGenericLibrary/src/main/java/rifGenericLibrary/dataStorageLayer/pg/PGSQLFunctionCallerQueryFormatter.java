@@ -3,8 +3,8 @@ package rifGenericLibrary.dataStorageLayer.pg;
 import java.util.ArrayList;
 
 import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter.SortOrder;
-
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter.SortOrder;
 
 /**
  * Convenience class used to help format typical SELECT FROM WHERE clauses.

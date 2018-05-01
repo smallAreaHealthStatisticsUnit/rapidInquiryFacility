@@ -1,27 +1,26 @@
 package rifDataLoaderTool.dataStorageLayer.ms;
 
-import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
 import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
 import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLCreateTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteTableQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
-
-import org.postgresql.copy.CopyManager;
-import org.postgresql.core.BaseConnection;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.io.*;
 
 /**
  *
@@ -125,7 +124,7 @@ final class MSSQLExtractWorkflowManager
 				sqlException);
 		}
 		finally {
-			MSSQLQueryUtility.close(connection);
+			SQLQueryUtility.close(connection);
 		}
 		return resultTable;
 	}
@@ -243,7 +242,7 @@ final class MSSQLExtractWorkflowManager
 			throw rifServiceException;
 		}
 		finally {			
-			MSSQLQueryUtility.close(createExtractTableStatement);
+			SQLQueryUtility.close(createExtractTableStatement);
 		}	
 	}
 	
@@ -349,7 +348,7 @@ final class MSSQLExtractWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}		
 		
 		
@@ -399,7 +398,7 @@ final class MSSQLExtractWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}		
 	}
 	public void addExtractTableData(
@@ -451,7 +450,7 @@ final class MSSQLExtractWorkflowManager
 				sqlException);
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -497,7 +496,7 @@ final class MSSQLExtractWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			MSSQLQueryUtility.close(statement);			
+			SQLQueryUtility.close(statement);
 		}	
 	}
 		

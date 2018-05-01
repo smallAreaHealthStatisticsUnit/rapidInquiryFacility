@@ -14,7 +14,7 @@ import org.rosuda.JRI.REXP;
 import org.rosuda.JRI.Rengine;
 
 import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
@@ -523,8 +523,8 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 			investigationID = resultSet.getInt(1);
 		}
 		finally {
-			PGSQLQueryUtility.close(resultSet);			
-			PGSQLQueryUtility.close(statement);			
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 
 		return investigationID;

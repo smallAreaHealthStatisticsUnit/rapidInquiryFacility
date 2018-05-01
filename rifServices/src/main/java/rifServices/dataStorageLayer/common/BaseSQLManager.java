@@ -1,7 +1,9 @@
 package rifServices.dataStorageLayer.common;
 
 import java.io.IOException;
+import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -15,9 +17,9 @@ import java.util.Set;
 import com.sun.rowset.CachedRowSetImpl;
 
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ConnectionQueue;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLFunctionCallerQueryFormatter;
@@ -28,28 +30,34 @@ import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.system.RIFServiceError;
-import rifServices.system.RIFServiceMessages;
+import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.files.TomcatBase;
 import rifServices.system.files.TomcatFile;
 
-public abstract class AbstractSQLManager implements SQLManager {
-	
-	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
+public class BaseSQLManager implements SQLManager {
+
+	static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 	private static final String ABSTRACT_SQLMANAGER_PROPERTIES = "AbstractSQLManager.properties";
 	private static final int MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD = 5;
+	private static final int POOLED_READ_ONLY_CONNECTIONS_PER_PERSON = 10;
+	private static final int POOLED_WRITE_CONNECTIONS_PER_PERSON = 5;
+	private static final String POSTGRES_INITIALISATION_QUERY =
+			"SELECT rif40_startup(?) AS rif40_init;";
+	private static final String MS_SQL_INITIALISATION_QUERY = "EXEC rif40.rif40_startup ?";
 
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
-	protected static final Set<String> registeredUserIDs = new HashSet<>();;
-	protected static final Set<String> userIDsToBlock = new HashSet<>();;
+	private static final Set<String> registeredUserIDs = new HashSet<>();
+	private static final Set<String> userIDsToBlock = new HashSet<>();;
 
-	/** The read connection from user. */
-	protected static final Map<String, ConnectionQueue> readOnlyConnectionsFromUser
+	private static final Map<String, ConnectionQueue> readOnlyConnectionsFromUser
 			= new HashMap<>();
 
-	/** The write connection from user. */
-	protected static final Map<String, ConnectionQueue> writeConnectionsFromUser = new HashMap<>();
-
+	private static final Map<String, ConnectionQueue> writeConnectionsFromUser = new HashMap<>();
 	private static final HashMap<String, Integer> suspiciousEventCounterFromUser = new HashMap<>();
+	protected final RIFServiceStartupOptions rifServiceStartupOptions;
+	private final String initialisationQuery;
+	private final String databaseURL;
+	private static HashMap<String, String> passwordHashList = null;
 
 	protected RIFDatabaseProperties rifDatabaseProperties;
 
@@ -60,14 +68,20 @@ public abstract class AbstractSQLManager implements SQLManager {
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
 	private boolean enableLogging = true;
 
-	/**
-	 * Instantiates a new abstract sql manager.
-	 */
-	public AbstractSQLManager(
-		final RIFDatabaseProperties rifDatabaseProperties) {
+	public BaseSQLManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
 
-		this.rifDatabaseProperties = rifDatabaseProperties;
+		rifDatabaseProperties = rifServiceStartupOptions.getRIFDatabaseProperties();
 		databaseType = this.rifDatabaseProperties.getDatabaseType();
+		this.rifServiceStartupOptions = rifServiceStartupOptions;
+
+		initialisationQuery =
+				rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER
+						? MS_SQL_INITIALISATION_QUERY : POSTGRES_INITIALISATION_QUERY;
+
+		if (passwordHashList == null) {
+			passwordHashList = new HashMap<>();
+		}
+		databaseURL = generateURLText();
 	}
 
 	@Override
@@ -102,7 +116,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	
 	@Override
 	public void configureQueryFormatterForDB(
-			final AbstractSQLQueryFormatter queryFormatter) {
+			final QueryFormatter queryFormatter) {
 		
 		queryFormatter.setDatabaseType(
 			rifDatabaseProperties.getDatabaseType());
@@ -112,10 +126,10 @@ public abstract class AbstractSQLManager implements SQLManager {
 	}
 	
 	@Override
-	public PreparedStatement createPreparedStatement(final Connection connection, final AbstractSQLQueryFormatter queryFormatter)
+	public PreparedStatement createPreparedStatement(final Connection connection, final QueryFormatter queryFormatter)
 			throws SQLException {
 				
-		return new SQLQueryUtility().createPreparedStatement(
+		return SQLQueryUtility.createPreparedStatement(
 			connection,
 			queryFormatter);
 	}
@@ -133,7 +147,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	 */		
 	protected CachedRowSetImpl createCachedRowSet(
 			final Connection connection,
-			AbstractSQLQueryFormatter queryFormatter,
+			QueryFormatter queryFormatter,
 			final String queryName,
 			final String[] params)
 				throws Exception {
@@ -177,7 +191,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	@Override
 	public CachedRowSetImpl createCachedRowSet(
 			final Connection connection,
-			AbstractSQLQueryFormatter queryFormatter,
+			QueryFormatter queryFormatter,
 			final String queryName)
 				throws Exception {
 			
@@ -218,13 +232,13 @@ public abstract class AbstractSQLManager implements SQLManager {
 	@Override
 	public CachedRowSetImpl createCachedRowSet(
 			final Connection connection,
-			AbstractSQLQueryFormatter queryFormatter,
+			QueryFormatter queryFormatter,
 			final String queryName,
 			final int[] params)
 				throws Exception {
 			
 		CachedRowSetImpl cachedRowSet=null;	
-		ResultSet resultSet=null;
+		ResultSet resultSet;
 		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
 		try {
 			for (int i=0; i < params.length; i++) {
@@ -430,12 +444,11 @@ public abstract class AbstractSQLManager implements SQLManager {
 		}
 		catch(SQLException sqlException) {
 			String errorMessage
-				= RIFServiceMessages.getMessage("abstractSQLManager.error.unableToEnableDatabaseDebugging");
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DB_UNABLE_TO_MAINTAIN_DEBUG, 
-					errorMessage);
-			throw rifServiceException;
+				= SERVICE_MESSAGES.getMessage("abstractSQLManager.error.unableToEnableDatabaseDebugging");
+
+			throw new RIFServiceException(
+				RIFServiceError.DB_UNABLE_TO_MAINTAIN_DEBUG,
+				errorMessage);
 		}
 		finally {
 			closeStatement(setupLogStatement);
@@ -449,7 +462,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 	}	
 	
 	@Override
-	public void logSQLQuery(final String queryName, final AbstractSQLQueryFormatter queryFormatter,
+	public void logSQLQuery(final String queryName, final QueryFormatter queryFormatter,
 			final String... parameters) {
 		
 		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
@@ -468,15 +481,15 @@ public abstract class AbstractSQLManager implements SQLManager {
 		}
 		queryLog.append("SQL QUERY TEXT: ").append(lineSeparator);
 		queryLog.append(queryFormatter.generateQuery()).append(lineSeparator);
-		queryLog.append("<<< End AbstractSQLManager logSQLQuery").append(lineSeparator);
+		queryLog.append("<<< End BaseSQLManager logSQLQuery").append(lineSeparator);
 	
-		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
+		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" +
 			lineSeparator + queryLog.toString());
 	}
 	
 	protected void logSQLQuery(
 		final String queryName,
-		final AbstractSQLQueryFormatter queryFormatter,
+		final QueryFormatter queryFormatter,
 		final int[] parameters) {
 		
 		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
@@ -495,16 +508,16 @@ public abstract class AbstractSQLManager implements SQLManager {
 		}
 		queryLog.append("SQL QUERY TEXT: ").append(lineSeparator);
 		queryLog.append(queryFormatter.generateQuery()).append(lineSeparator);
-		queryLog.append("<<< End AbstractSQLManager logSQLQuery").append(lineSeparator);
+		queryLog.append("<<< End BaseSQLManager logSQLQuery").append(lineSeparator);
 	
-		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
+		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" +
 			lineSeparator + queryLog.toString());	
 
 	}
 	
 	protected void logSQLQuery(
 		final String queryName,
-		final AbstractSQLQueryFormatter queryFormatter) {
+		final QueryFormatter queryFormatter) {
 		
 		if (!enableLogging || queryLoggingIsDisabled(queryName)) {
 			return;
@@ -514,19 +527,19 @@ public abstract class AbstractSQLManager implements SQLManager {
 		                  + "NO PARAMETERS." + lineSeparator
 		                  + "SQL QUERY TEXT: " + lineSeparator
 		                  + queryFormatter.generateQuery() + lineSeparator
-		                  + "<<< End AbstractSQLManager logSQLQuery" + lineSeparator;
-		rifLogger.info(this.getClass(), "AbstractSQLManager logSQLQuery >>>" +
+		                  + "<<< End BaseSQLManager logSQLQuery" + lineSeparator;
+		rifLogger.info(this.getClass(), "BaseSQLManager logSQLQuery >>>" +
 		                                lineSeparator + queryLog);
 	}
 		
 	@Override
 	public void logSQLException(final SQLException sqlException) {
-		rifLogger.error(getClass(), "AbstractSQLManager.logSQLException error",
+		rifLogger.error(getClass(), "BaseSQLManager.logSQLException error",
 				sqlException);
 	}
 
 	protected void logException(final Exception exception) {
-		rifLogger.error(this.getClass(), "AbstractSQLManager.logException error",
+		rifLogger.error(this.getClass(), "BaseSQLManager.logException error",
 				 exception);
 	}
 
@@ -538,11 +551,11 @@ public abstract class AbstractSQLManager implements SQLManager {
 			try {
 				prop = new TomcatFile(
 						new TomcatBase(),
-						AbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES).properties();
+						BaseSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES).properties();
 			} catch (IOException e) {
 				rifLogger.warning(this.getClass(),
-						"AbstractSQLManager.checkIfQueryLoggingEnabled error for" +
-						AbstractSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES, e);
+				                  "BaseSQLManager.checkIfQueryLoggingEnabled error for" +
+				                  BaseSQLManager.ABSTRACT_SQLMANAGER_PROPERTIES, e);
 				return false;
 			}
 		}
@@ -550,39 +563,23 @@ public abstract class AbstractSQLManager implements SQLManager {
 		if (value != null) {
 			if (value.toLowerCase().equals("true")) {
 				rifLogger.debug(this.getClass(),
-						"AbstractSQLManager checkIfQueryLoggingEnabled=TRUE property: " +
+						"BaseSQLManager checkIfQueryLoggingEnabled=TRUE property: " +
 								queryName + "=" + value);
 				return false;
 			} else {
 				rifLogger.debug(this.getClass(),
-						"AbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
+						"BaseSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
 								queryName + "=" + value);
 				return true;
 			}
 		} else {
 			rifLogger.warning(this.getClass(),
-					"AbstractSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
+					"BaseSQLManager checkIfQueryLoggingEnabled=FALSE property: " +
 							queryName + " NOT FOUND");
 			return true;
 		}
 	}
-	
-	protected void setAutoCommitOn(
-		final Connection connection,
-		final boolean isAutoCommitOn)
-		throws RIFServiceException {
-		
-		try {
-			connection.setAutoCommit(isAutoCommitOn);			
-		}
-		catch(SQLException sqlException) {
-			RIFServiceExceptionFactory exceptionFactory
-				= new RIFServiceExceptionFactory();
-			throw exceptionFactory.createUnableToChangeDBCommitException();
-		}
-		
-	}
-	
+
 	@Override
 	public boolean isUserBlocked(
 			final User user) {
@@ -670,8 +667,8 @@ public abstract class AbstractSQLManager implements SQLManager {
 			}
 
 			//connection.setAutoCommit(true);
-			ConnectionQueue writeOnlyConnectionQueue
-			= writeConnectionsFromUser.get(user.getUserID());
+			ConnectionQueue writeOnlyConnectionQueue =
+					writeConnectionsFromUser.get(user.getUserID());
 			writeOnlyConnectionQueue.reclaimConnection(connection);
 		}
 		catch(Exception exception) {
@@ -711,7 +708,7 @@ public abstract class AbstractSQLManager implements SQLManager {
 		registeredUserIDs.remove(userID);
 		suspiciousEventCounterFromUser.remove(userID);
 	}
-	
+
 	/**
 	 * Deregister user.
 	 *
@@ -722,14 +719,12 @@ public abstract class AbstractSQLManager implements SQLManager {
 			final String userID)
 					throws RIFServiceException {
 
-		ConnectionQueue readOnlyConnectionQueue
-		= readOnlyConnectionsFromUser.get(userID);
+		ConnectionQueue readOnlyConnectionQueue = readOnlyConnectionsFromUser.get(userID);
 		if (readOnlyConnectionQueue != null) {
 			readOnlyConnectionQueue.closeAllConnections();
 		}
 
-		ConnectionQueue writeConnectionQueue
-		= writeConnectionsFromUser.get(userID);
+		ConnectionQueue writeConnectionQueue = writeConnectionsFromUser.get(userID);
 		if (writeConnectionQueue != null) {
 			writeConnectionQueue.closeAllConnections();
 		}
@@ -750,7 +745,6 @@ public abstract class AbstractSQLManager implements SQLManager {
 						= suspiciousEventCounterFromUser.get(userID);
 		return suspiciousEventCounter != null
 		       && suspiciousEventCounter >= MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD;
-		
 	}
 	
 	/**
@@ -836,5 +830,266 @@ public abstract class AbstractSQLManager implements SQLManager {
 			statement.close();
 		}
 		catch(SQLException ignore) {}
+	}
+
+	/**
+	 * Register user.
+	 *
+	 * @param userID the user id
+	 * @param password the password
+	 * @throws RIFServiceException the RIF service exception
+	 */
+	public void login(
+		final String userID,
+		final String password)
+		throws RIFServiceException {
+
+		if (userIDsToBlock.contains(userID)) {
+			return;
+		}
+
+		/*
+		 * First, check whether person is already logged in.  We can do this
+		 * by checking whether
+		 */
+
+		if (userExists(userID)) {
+			return;
+		}
+
+		ConnectionQueue readOnlyConnectionQueue = new ConnectionQueue();
+		ConnectionQueue writeOnlyConnectionQueue = new ConnectionQueue();
+		try {
+			Class.forName(rifServiceStartupOptions.getDatabaseDriverClassName());
+
+			//note that in order to optimise the setup of connections,
+			//we call rif40_init(boolean no_checks).  The first time we call it
+			//for a user, we let the checks occur (set flag to false)
+			//for all other times, set the flag to true, to ignore checks
+
+			//Establish read-only connections
+			for (int i = 0; i < POOLED_READ_ONLY_CONNECTIONS_PER_PERSON; i++) {
+				boolean isFirstConnectionForUser = false;
+				if (i == 0) {
+					isFirstConnectionForUser = true;
+				}
+				Connection currentConnection
+					= createConnection(
+						userID,
+						password,
+						isFirstConnectionForUser,
+						true);
+				readOnlyConnectionQueue.addConnection(currentConnection);
+			}
+			readOnlyConnectionsFromUser.put(userID, readOnlyConnectionQueue);
+
+			//Establish write-only connections
+			for (int i = 0; i < POOLED_WRITE_CONNECTIONS_PER_PERSON; i++) {
+				Connection currentConnection
+					= createConnection(
+						userID,
+						password,
+						false,
+						false);
+				writeOnlyConnectionQueue.addConnection(currentConnection);
+			}
+			writeConnectionsFromUser.put(userID, writeOnlyConnectionQueue);
+
+			passwordHashList.put(userID, password);
+			registeredUserIDs.add(userID);
+
+		//	rifLogger.info(this.getClass(), "JAVA LIBRARY PATH >>>");
+		//	rifLogger.info(this.getClass(), System.getProperty("java.library.path"));
+
+			rifLogger.info(this.getClass(), "XXXXXXXXXXX M S S Q L S E R V E R XXXXXXXXXX");
+		}
+		catch(ClassNotFoundException classNotFoundException) {
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createUnableLoadDBDriver();
+		}
+		catch(SQLException sqlException) {
+			readOnlyConnectionQueue.closeAllConnections();
+			writeOnlyConnectionQueue.closeAllConnections();
+			String errorMessage = SERVICE_MESSAGES.getMessage(
+					"sqlConnectionManager.error.unableToRegisterUser",
+					userID);
+
+			rifLogger.error(
+					getClass(),
+				errorMessage,
+				sqlException);
+
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createUnableToRegisterUser(userID);
+		}
+
+	}
+
+	private Connection createConnection(
+		final String userID,
+		final String password,
+		final boolean isFirstConnectionForUser,
+		final boolean isReadOnly)
+		throws SQLException,
+		RIFServiceException {
+
+		Connection connection;
+		PreparedStatement statement = null;
+		try {
+
+			Properties databaseProperties = new Properties();
+			databaseProperties.setProperty("user", userID);
+			databaseProperties.setProperty("password", password);
+
+			if (rifServiceStartupOptions.getRIFDatabaseProperties().isSSLSupported()) {
+				databaseProperties.setProperty("ssl", "true");
+			}
+
+			databaseProperties.setProperty("prepareThreshold", "3");
+
+			connection = DriverManager.getConnection(databaseURL, databaseProperties);
+
+			//Execute RIF start-up function
+			//MSSQL > EXEC rif40.rif40_startup ?
+			//PGSQL > SELECT rif40_startup(?) AS rif40_init;
+
+			statement = SQLQueryUtility.createPreparedStatement(
+					connection,
+					initialisationQuery);
+
+			setDbSpecificStatementValues(statement, isFirstConnectionForUser);
+
+			statement.execute();
+			statement.close();
+
+			if (isReadOnly) {
+				connection.setReadOnly(true);
+			}
+			else {
+				connection.setReadOnly(false);
+			}
+			connection.setAutoCommit(false);
+		}
+		finally {
+			SQLQueryUtility.close(statement);
+		}
+
+		return connection;
+	}
+
+	private void setDbSpecificStatementValues(
+			final PreparedStatement statement, final boolean isFirstConnectionForUser)
+			throws SQLException {
+
+		switch (rifDatabaseProperties.getDatabaseType()) {
+			case POSTGRESQL:
+				statement.setBoolean(1, isFirstConnectionForUser);
+				break;
+
+			case SQL_SERVER:
+				statement.setInt(1, isFirstConnectionForUser ? 1 : 0);
+				break;
+
+			case UNKNOWN:
+				// Shouldn't be possible.
+				break;
+		}
+
+
+	}
+
+	/**
+	 * Generate url text.
+	 *
+	 * @return the string
+	 */
+	private String generateURLText() {
+
+		return rifServiceStartupOptions.getDatabaseDriverPrefix()
+		       + ":"
+		       + "//"
+		       + rifServiceStartupOptions.getHost()
+		       + ":"
+		       + rifServiceStartupOptions.getPort()
+		       + "/"
+		       + rifServiceStartupOptions.getDatabaseName();
+	}
+
+	public void deregisterAllUsers() throws RIFServiceException {
+
+		for (String registeredUserID : registeredUserIDs) {
+			closeConnectionsForUser(registeredUserID);
+		}
+
+		registeredUserIDs.clear();
+	}
+
+	public void reclaimPooledReadConnection(
+		final User user,
+		final Connection connection)
+		throws RIFServiceException {
+
+		try {
+
+			if (user == null) {
+				return;
+			}
+			if (connection == null) {
+				return;
+			}
+			String userID = user.getUserID();
+			ConnectionQueue availableReadConnections
+				= readOnlyConnectionsFromUser.get(userID);
+			availableReadConnections.reclaimConnection(connection);
+		}
+		catch(Exception exception) {
+			//Record original exception, throw sanitised, human-readable version
+			logException(exception);
+			String errorMessage
+				= SERVICE_MESSAGES.getMessage(
+					"sqlConnectionManager.error.unableToReclaimReadConnection");
+
+
+			rifLogger.error(
+				getClass(),
+				errorMessage,
+				exception);
+
+			throw new RIFServiceException(
+				RIFServiceError.DATABASE_QUERY_FAILED,
+				errorMessage);
+		}
+
+	}
+
+	/**
+	 * User password.
+	 *
+	 * @param user the user id
+	 * @return password String, if successful
+	 */
+	public String getUserPassword(
+			final User user) {
+
+		if (userExists(user.getUserID()) && !isUserBlocked(user)) {
+			return passwordHashList.get(user.getUserID());
+		}
+		else {
+			return null;
+		}
+	}
+
+	@Override
+	public CallableStatement createPreparedCall( // Use MSSQLQueryUtility
+			final Connection connection,
+			final String query)
+		throws SQLException {
+
+		return SQLQueryUtility.createPreparedCall(
+			connection,
+			query);
+
 	}
 }

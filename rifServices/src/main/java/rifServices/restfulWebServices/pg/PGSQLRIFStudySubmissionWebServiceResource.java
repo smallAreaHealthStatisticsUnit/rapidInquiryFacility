@@ -3,6 +3,7 @@ package rifServices.restfulWebServices.pg;
 import java.io.InputStream;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -34,7 +35,6 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.Sex;
-import rifServices.restfulWebServices.WebService;
 import rifServices.restfulWebServices.AgeGroupJSONGenerator;
 import rifServices.restfulWebServices.CalculationMethodProxy;
 import rifServices.restfulWebServices.CovariateProxy;
@@ -44,6 +44,7 @@ import rifServices.restfulWebServices.HealthThemeProxy;
 import rifServices.restfulWebServices.ParameterProxy;
 import rifServices.restfulWebServices.ProjectProxy;
 import rifServices.restfulWebServices.SexesProxy;
+import rifServices.restfulWebServices.WebService;
 import rifServices.restfulWebServices.WebServiceResponseGenerator;
 import rifServices.system.RIFServiceMessages;
 
@@ -804,7 +805,7 @@ public class PGSQLRIFStudySubmissionWebServiceResource extends WebService {
 					user, 
 					geography, 
 					numeratorTableName);
-			ArrayList<AgeGroup> ageGroups
+			List<AgeGroup> ageGroups
 				= studySubmissionService.getAgeGroups(
 					user, 
 					geography, 

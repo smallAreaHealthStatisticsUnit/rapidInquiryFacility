@@ -51,8 +51,8 @@ public final class AgeGenderYearManagerTest extends CommonRIFServiceTestCase {
 		when(options.getRIFDatabaseProperties().getDatabaseType())
 				.thenReturn(DatabaseType.SQL_SERVER);
 		when(databaseProps.getDatabaseType()).thenReturn(DatabaseType.SQL_SERVER);
-		manager = new MSSQLAgeGenderYearManager(contextManager,
-		                                        resources.getRIFServiceStartupOptions());
+		manager = new AgeGenderYearManager(
+				contextManager, resources.getRIFServiceStartupOptions());
 
 		// This is a bit weird: we're telling a mock to return a real object. But I suppose
 		// it should work.

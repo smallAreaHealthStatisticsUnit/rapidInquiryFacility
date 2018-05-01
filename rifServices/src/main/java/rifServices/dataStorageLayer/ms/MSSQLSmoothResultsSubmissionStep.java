@@ -1,12 +1,13 @@
 package rifServices.dataStorageLayer.ms;
 
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.common.CommonRService;
 import rifServices.system.RIFServiceStartupOptions;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.businessConceptLayer.Parameter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 
 import java.sql.*;
@@ -503,7 +504,7 @@ password=XXXXXXXX
 
 		rifLogger.info(this.getClass(), "SQLSmoothedResultsSubmissionStep getInvestigationID studyID=="+studyID+"==investigation_name=="+investigation.getTitle()+"==inv_description=="+investigation.getDescription()+"==");
 
-		MSSQLSelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+		SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.addFromTable("rif40_investigations");
 		queryFormatter.addSelectField("inv_id");
@@ -534,8 +535,8 @@ password=XXXXXXXX
 			investigationID = resultSet.getInt(1);
 		}
 		finally {
-			MSSQLQueryUtility.close(resultSet);			
-			MSSQLQueryUtility.close(statement);			
+			SQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
 		}
 
 		return investigationID;

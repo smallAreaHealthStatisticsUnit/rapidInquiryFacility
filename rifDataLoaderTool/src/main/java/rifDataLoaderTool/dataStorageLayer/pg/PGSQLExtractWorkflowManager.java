@@ -1,28 +1,31 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
-
-import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
-import rifDataLoaderTool.system.RIFDataLoaderToolError;
-import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
-import rifDataLoaderTool.businessConceptLayer.WorkflowState;
-import rifGenericLibrary.businessConceptLayer.RIFResultTable;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
-import rifGenericLibrary.system.RIFGenericLibraryError;
-import rifGenericLibrary.system.RIFServiceException;
+import java.io.File;
+import java.io.FileReader;
+import java.io.Writer;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.io.*;
+import rifDataLoaderTool.businessConceptLayer.DataLoadingResultTheme;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.WorkflowState;
+import rifDataLoaderTool.system.RIFDataLoaderToolError;
+import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
+import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifGenericLibrary.businessConceptLayer.RIFResultTable;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLCreateTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
+import rifGenericLibrary.system.RIFGenericLibraryError;
+import rifGenericLibrary.system.RIFServiceException;
 
 /**
  *
@@ -126,7 +129,7 @@ final class PGSQLExtractWorkflowManager
 				sqlException);
 		}
 		finally {
-			PGSQLQueryUtility.close(connection);
+			SQLQueryUtility.close(connection);
 		}
 		return resultTable;
 	}
@@ -242,7 +245,7 @@ final class PGSQLExtractWorkflowManager
 			throw rifServiceException;
 		}
 		finally {			
-			PGSQLQueryUtility.close(createExtractTableStatement);
+			SQLQueryUtility.close(createExtractTableStatement);
 		}	
 	}
 	
@@ -324,7 +327,7 @@ final class PGSQLExtractWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}		
 		
 		
@@ -373,7 +376,7 @@ final class PGSQLExtractWorkflowManager
 			throw rifServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}		
 	}
 	public void addExtractTableData(
@@ -425,7 +428,7 @@ final class PGSQLExtractWorkflowManager
 				sqlException);
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
+			SQLQueryUtility.close(statement);
 		}
 		
 	}
@@ -471,7 +474,7 @@ final class PGSQLExtractWorkflowManager
 			throw RIFServiceException;
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);			
+			SQLQueryUtility.close(statement);
 		}	
 	}
 		

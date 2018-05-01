@@ -1,18 +1,25 @@
 package rifServices.dataStorageLayer.pg;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLQueryUtility;
+import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
+import rifServices.businessConceptLayer.AbstractCovariate;
 import rifServices.businessConceptLayer.AbstractStudy;
 import rifServices.businessConceptLayer.AgeBand;
-import rifServices.businessConceptLayer.Investigation;
-import rifServices.businessConceptLayer.AbstractCovariate;
-import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.GeoLevelToMap;
+import rifServices.businessConceptLayer.Geography;
 import rifServices.businessConceptLayer.HealthTheme;
+import rifServices.businessConceptLayer.Investigation;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.InvestigationManager;
@@ -21,11 +28,7 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-import java.sql.*;
-import java.util.ArrayList;
-
-final class PGSQLInvestigationManager extends PGSQLAbstractSQLManager
-		implements InvestigationManager {
+final class PGSQLInvestigationManager extends BaseSQLManager implements InvestigationManager {
 
 	private RIFContextManager rifContextManager;
 	private AgeGenderYearManager ageGenderYearManager;
@@ -148,7 +151,7 @@ final class PGSQLInvestigationManager extends PGSQLAbstractSQLManager
 		catch(SQLException sqlException) {			
 			//Record original exception, throw sanitised, human-readable version			
 			logSQLException(sqlException);
-			PGSQLQueryUtility.rollback(connection);
+			SQLQueryUtility.rollback(connection);
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"general.validation.unableCheckNonExistentRecord",
@@ -168,8 +171,8 @@ final class PGSQLInvestigationManager extends PGSQLAbstractSQLManager
 			throw rifServiceException;			
 		}
 		finally {
-			PGSQLQueryUtility.close(statement);
-			PGSQLQueryUtility.close(resultSet);
+			SQLQueryUtility.close(statement);
+			SQLQueryUtility.close(resultSet);
 		}
 		
 	}
