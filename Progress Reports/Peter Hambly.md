@@ -2197,4 +2197,6 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
   
 #### 30th April to 4th May
 
-* Fix for null R passwords; improved ODBC connect handler in R
+* Fix for null R passwords; improved ODBC connect handler in R;
+* Merge "Crossing the database streams". Tested on PG/SQl Server. R null password patch was missed;
+* Finish Taxonomy services documentation
