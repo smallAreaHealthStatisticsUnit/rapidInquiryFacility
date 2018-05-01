@@ -11,6 +11,7 @@ import rifServices.businessConceptLayer.StudyState;
 import rifServices.businessConceptLayer.StudyStateMachine;
 import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.StudyStateManager;
+import rifServices.dataStorageLayer.common.StudySubmissionStep;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
@@ -96,7 +97,7 @@ public class PGSQLRunStudyThread
 	private StudyStateMachine studyStateMachine;
 	
 	private StudyStateManager studyStateManager;
-	private PGSQLCreateStudySubmissionStep createStudySubmissionStep;
+	private StudySubmissionStep createStudySubmissionStep;
 	private PGSQLGenerateResultsSubmissionStep generateResultsSubmissionStep;
 	private PGSQLSmoothResultsSubmissionStep smoothResultsSubmissionStep;
 	
@@ -132,7 +133,7 @@ public class PGSQLRunStudyThread
 		studyStateManager = new PGSQLStudyStateManager(rifServiceStartupOptions);
 		
 		createStudySubmissionStep 
-			= new PGSQLCreateStudySubmissionStep(
+			= new StudySubmissionStep(
 				rifServiceStartupOptions,
 				rifServiceResources.getSqlDiseaseMappingStudyManager(),
 				rifServiceResources.getSQLMapDataManager());

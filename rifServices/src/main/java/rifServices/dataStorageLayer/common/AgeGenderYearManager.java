@@ -79,7 +79,7 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 			//Create query
 			Integer ageGroupID;
 			SelectQueryFormatter getAgeIDQueryFormatter = SelectQueryFormatter.getInstance(
-					rifServiceStartupOptions.getRifDatabaseType(), false);
+					rifServiceStartupOptions.getRifDatabaseType());
 
 			sqlRIFContextManager.configureQueryFormatterForDB(getAgeIDQueryFormatter);
 			getAgeIDQueryFormatter.addSelectField("age_group_id");
@@ -130,7 +130,7 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 			//After obtaining the list of age groups having the correct age group id
 			//sort them by low_age
 			SelectQueryFormatter getAgesForAgeGroupID = SelectQueryFormatter.getInstance(
-					rifServiceStartupOptions.getRifDatabaseType(), false);
+					rifServiceStartupOptions.getRifDatabaseType());
 			sqlRIFContextManager.configureQueryFormatterForDB(getAgesForAgeGroupID);
 
 			getAgesForAgeGroupID.addSelectField("age_group_id");
@@ -258,7 +258,7 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 
 			//Create query
 			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
-					rifServiceStartupOptions.getRifDatabaseType(), false);
+					rifServiceStartupOptions.getRifDatabaseType());
 			sqlRIFContextManager.configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("year_start");
 			queryFormatter.addSelectField("year_stop");
@@ -404,7 +404,7 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 
 			//Create query
 			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
-					rifServiceStartupOptions.getRifDatabaseType(), false);
+					rifServiceStartupOptions.getRifDatabaseType());
 			queryFormatter.setDatabaseSchemaName("rif40");
 			queryFormatter.addSelectField("fieldname");
 			queryFormatter.addFromTable("rif40_age_groups");

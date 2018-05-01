@@ -1082,7 +1082,7 @@ public class BaseSQLManager implements SQLManager {
 	}
 
 	@Override
-	public CallableStatement createPreparedCall( // Use MSSQLQueryUtility
+	public CallableStatement createPreparedCall( // Use MSSQLQueryUtilty
 			final Connection connection,
 			final String query)
 		throws SQLException {
