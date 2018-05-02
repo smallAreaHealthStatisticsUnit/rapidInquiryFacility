@@ -5,6 +5,8 @@ RIF Standalone documentation
 - [Windows Postgres Install using pg_dump and scripts](RIF_Postgres_Install.html)
 - [SQL Server Production Database Installation](RIF_SQLserver_Install.html)
 - [RIF Manual Data Loading](RIF_manual_data_loading.html)
+- [Tile maker Manual](tileMaker.html)
+- [Database Management Manual](databaseManagementManual.html)
 - [RIF Data Loader Manual](RIF_Data_Loader_Manual.pdf)
 - [RIF v4 0 Manual](RIF_v40_Manual.pdf)
 
