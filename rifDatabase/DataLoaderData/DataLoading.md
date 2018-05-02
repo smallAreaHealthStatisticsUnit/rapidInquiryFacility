@@ -15,6 +15,7 @@ RIF Data Loading
      - [2.3.2 Denominator](#232-denominator)
      - [2.3.3 Covariates](#233-covariates)
      - [2.3.4 Administrative Geography](#234-administrative-geography)
+	 - [2.3.5 Health Themes](#235-health-themes)
 - [3. Load Processing](#3-load-processing)
   - [3.1 Numerator](#31-numerator)
   - [3.2 Denominator](#32-denominator)
@@ -25,8 +26,10 @@ RIF Data Loading
 - [5. Flexible Configuration Support](#5-flexible-configuration-support)
   - [5.1 Age Groups](#51-age-groups)
   - [5.2 ICD field Name](#52-icd-field-name)
+  - [5.3 Automatic Numerator Denominator Pairs](#53-automatic-numerator-denominator-pairs)
 - [6. Quality Control](#6-quality-control)
   - [6.1 Extract Warnings](61-extract-warnings)
+  - [6.2 Numerator Denominator Pair Errors](#62-numerator-denominator-pair-errors)
   
 # 1. Overview
 
@@ -79,7 +82,7 @@ Limitations in the current RIF
 * No support form covariates embedded in numerator or denominator data. Data must be extracted into a separate
   covariate table. Covariates must be merged into a single table and disaggregated (if required) by year. It is not planned to remove these
   restrictions which were in the previous RIF.
-* Covariates must be quantilised. Support discrete value covariates (i.e. on the fly quantilisation) may be added in future releases.
+* Covariates must be quantilised. Support for continuous variable covariates (i.e. on the fly quantilisation) may be added in future releases.
 * Denominator data is always used in indirect standardisation. There is no support currently in the RIF for
   direct standardisation using standard populations. This was supported in previous versions of the RIF and will be put
   back if required;
@@ -198,6 +201,17 @@ Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryF
 
 ## 2.3 Data Structure
 
+All RIF data tables are located in the *rif_data* schema. They must be located in *rif_data* because SQL Server does not have the concept of a schema search 
+path; the search paths have been hard coded. Tables may be located in any tablespace.
+
+The RIF also support views for numerator and denominator tables. This allows for considerable flexibility in configuration as:
+
+* Tables can be UNIONed together;
+* Views can aggregate and join data;
+* Field can be renamed and data types coerced;
+* Tables can be located in different schemas;
+* Impose Information Governance restrictions
+
 ### 2.3.1 Numerator
 
 The example numerator table is *num_sahsuland_cancer*:
@@ -217,11 +231,57 @@ The *num_sahsuland_cancer* table is aggregated to the highest geographic resolut
 (e.g. SAHSU cancer incidence data). Numerator table must have the following fields:
 
 * *YEAR*. This must be an integer;
-* *AGE_SEX_GROUP*. This contains an age sex group field name, e.g. ```M5_9```. See: ???;
-* *&lt;outcome groups field name&gt;* e.g. ```icd``` for the OUTCOME_GROUP_NAME **SAHSULAND_ICD**. See: ???;
-* *&lt;one geolevel field name for each geography geolevel&gt;* e.g. ```sahsu_grd_level1```. See: ???;
+* *AGE_SEX_GROUP*. This contains an age sex group field name, e.g. ```M5_9```. See: [Age groups](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#51-age-groups);
+* *&lt;outcome groups field name&gt;* e.g. ```icd``` for the OUTCOME_GROUP_NAME **SAHSULAND_ICD**. See: [ICD field name](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#52-icd-field-name);
+* *&lt;one geolevel field name for each geography geolevel&gt;* e.g. ```sahsu_grd_level1```. See: [Administrative geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#34-administrative-geography);
 * *&lt;total field name&gt;* e.g. ```total```. If this is null, the &lt;outcome groups field name&gt; e.g. ```icd``` is **COUNT**ed (i.e. the table is disaggregated). 
   If not null, the &lt;total field name&gt; is summed.
+
+To add a numerator table to the RIF if must be added to:
+
+* *rif40_tables*:
+
+  |       column_name        |                                                                                                                                                                                                                                                                 description                                                                                                                                                                                                                                                                  |          data_type          |
+  |--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------|
+  | theme                    | Health Study theme. Link to RIF40_HEALTH_STUDY_THEMES. See: [Health theme](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#235-health-themes);                                                                                                                                                                                                                                                                                                                   | varchar(30)                 |
+  | table_name               | RIF table name. Normally the schema owner will not be able to see the health data tables, so no error is raised if the table cannot be resolved to an acceisble object. The schema owner must have access to automatic indirect standardisation denominators.                                                                                                                                                                                                                                                                                | varchar(30)                 |
+  | description              | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | varchar(250)                |
+  | year_start               | Year table starts                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | smallint                    |
+  | year_stop                | Year table stops                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | smallint                    |
+  | total_field              | Total field (when used aggregated tables)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | varchar(30)                 |
+  | isindirectdenominator    | Is table a denominator to be used in indirect standardisation (0/1). Must **ALWAYS** be 1 for denominators.                                                                                                                                                                                                                                                                                                                                                                                                                                  | smallint                    |
+  | isdirectdenominator      | Is table a denominator to be used in direct standardisation (0/1). E.g. POP_WORLD, POP_EUROPE. Must **ALWAYS** be 0.                                                                                                                                                                                                                                                                                                                                                                                                                         | smallint                    |
+  | isnumerator              | Is table a numerator  (0/1)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | smallint                    |
+  | automatic                | Able to be used in automatic RIF40_NUM_DENOM (0/1, default 0). Cannot be applied to a direct standardisation denominator. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having &gt;1 pair per numerator. This restriction is actually enforced in RIF40_NUM_DENOM because of the &quot;ORA-04091: table RIF40.RIF40_TABLES is mutating, trigger/function may not see it&quot; error. A user specific T_RIF40_NUM_DENOM is supplied for other combinations. The default is 0 because of the restrictions | smallint                    |
+  | sex_field_name           | Name of SEX field. No default. AGE_GROUP_FIELD_NAME must be set, AGE_SEX_GROUP_FIELD_NAME must not be set. Not currently used.                                                                                                                                                                                                                                                                                                                                                                                                               | varchar(30)                 |
+  | age_group_field_name     | Name of AGE_GROUP field. No default. SEX_FIELD_NAME must be set, AGE_SEX_GROUP_FIELD_NAME must not be set. Not currently used.                                                                                                                                                                                                                                                                                                                                                                                                               | varchar(30)                 |
+  | age_sex_group_field_name | Name of AGE_SEX_GROUP field. Default: AGE_SEX_GROUP; AGE_GROUP_FIELD_NAME and SEX_FIELD_NAME must not be set.                                                                                                                                                                                                                                                                                                                                                                                                                                | varchar(30)                 |  
+  | age_group_id             | Type of RIF age group in use. Link to RIF40_AGE_GROUP_NAMES. No default. See: [Age groups](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#51-age-groups);                                                                                                                                                                                                                                                                                                       | smallint                    | 
+  | validation_date          | Date table contents were validated OK. Availabel for use by quality control programs                                                                                                                                                                                                                                                                                                                                                                                                                                                         | timestamp without time zone |
+ 
+  |  theme  |      table_name      |      description       | year_start | year_stop | total_field | isindirectdenominator | isdirectdenominator | isnumerator | automatic | age_sex_group_field_name | age_group_id |
+  |---------|----------------------|------------------------|------------|-----------|-------------|-----------------------|---------------------|-------------|-----------|--------------------------|--------------|
+  | cancers | NUM_SAHSULAND_CANCER | cancer numerator       |       1989 |      2016 | TOTAL       |                     0 |                   0 |           1 |         1 | AGE_SEX_GROUP            |            1 |
+
+  So, for the example numerator table *num_sahsuland_cancer*:
+
+  * The *theme* is a reference to *RIF40_HEALTH_STUDY_THEMES.THEME*. See: 
+    [Health theme](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#235-health-themes);
+  * The table name **MUST** be in upper case. Do not add the schema owner;
+  * Year stop and start refer to the first and last years of numerator data;
+  * The *total* field, if not null, **MUST** be in upper case;
+  * *isindirectdenominator*, *isdirectdenominator* are 0; *isnumerator* is 1;
+  * *automatic* is normally one unless you have >1 denominator for the geography.
+    See: [Automatic numerator denominator pairs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#53-automatic-numerator-denominator-pairs);
+  * *age_sex_group_field_name* **MUST** be *AGE_SEX_GROUP*;
+  * The *age_group_id* refers to **rif40.rif40_age_group_names**. The standard 21 age groups used by SAHSU is 1. 
+    See: [Age groups](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#51-age-groups);
+
+* *rif40.rif40_table_outcomes**: see: [ICD field name](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#52-icd-field-name);
+
+| outcome_group_name |      numer_tab       | current_version_start_year |
+|--------------------|----------------------|----------------------------|
+| SAHSULAND_ICD      | NUM_SAHSULAND_CANCER |                       1989 |
 
 ### 2.3.2 Denominator
 
@@ -241,20 +301,42 @@ The *pop_sahsuand_pop* table is aggregated to the highest geographic resolution.
 Denominator table must have the following fields:
 
 * *YEAR*. This must be an integer;
-* *AGE_SEX_GROUP*. This contains an age sex group field name, e.g. ```M5_9```. See: ???;
-* *&lt;one geolevel field name for each geography geolevel&gt;* e.g. ```sahsu_grd_level1```. See: ???;
-* *&lt;total field name&gt;* e.g. ```total```. This is summed.
+* *AGE_SEX_GROUP*. This contains an age sex group field name, e.g. ```M5_9```. See: [Age groups](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#51-age-groups);
+* *&lt;one geolevel field name for each geography geolevel&gt;* e.g. ```sahsu_grd_level1```. See: [Administrative geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#34-administrative-geography);
+* *&lt;total field name&gt;* e.g. ```total```. This field is summed.
+
+To add a denominator table to the RIF if must be added to:
+
+* *rif40_tables*:
+ 
+|  theme  |      table_name      |      description       | year_start | year_stop | total_field | isindirectdenominator | isdirectdenominator | isnumerator | automatic | age_sex_group_field_name | age_group_id | 
+|---------|----------------------|------------------------|------------|-----------|-------------|-----------------------|---------------------|-------------|-----------|--------------------------|--------------|
+| cancers | POP_SAHSULAND_POP    | population health file |       1989 |      2016 | TOTAL       |                     1 |                   0 |           0 |         1 | AGE_SEX_GROUP            |            1 | 
+ 
+So, for the example denominator table *pop_sahsuand_pop*:
+
+* The *theme* is a reference to *RIF40_HEALTH_STUDY_THEMES.THEME*. See: 
+  [Health theme](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#235-health-themes);
+* The table name **MUST** be in upper case. Do not add the schema owner;
+* Year stop and start refer to the first and last years of denominator data;
+* The *total* field, if not null, **MUST** be in upper case;
+* *isindirectdenominator* is 1, *isdirectdenominator* and *isnumerator* are 0;
+* *automatic* is normally one unless you have >1 denominator for the geography.  
+  See: [Automatic numerator denominator pairs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#53-automatic-numerator-denominator-pairs);
+* *age_sex_group_field_name* **MUST** be *AGE_SEX_GROUP*;
+* The *age_group_id* refers to **rif40.rif40_age_group_names**. The standard 21 age groups used by SAHUS is 1. 
+  See: [Age groups](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#51-age-groups);
   
 ### 2.3.3 Covariates
 
 The example covariates tables are *covar_sahsuland_covariates3*: 
 
-|   column_name    |              description               |  data_type
-|------------------|----------------------------------------|-------------
-| year             | year field                             | integer
-| sahsu_grd_level3 | third level of geographical resolution | varchar(20)
-| ses              | socio-economic status                  | integer
-| ethnicity        | ethnicity                              | integer
+|   column_name    |              description               |  data_type  |
+|------------------|----------------------------------------|-------------|
+| year             | year field                             | integer     |
+| sahsu_grd_level3 | third level of geographical resolution | varchar(20) |
+| ses              | socio-economic status                  | integer     |
+| ethnicity        | ethnicity                              | integer     |
  
 And *covar_sahsuland_covariates4*: 
 
@@ -266,7 +348,16 @@ And *covar_sahsuland_covariates4*:
 | areatri1km       | area tri 1 km covariate              | integer     |
 | near_dist        | near distance covariate              | numeric     |
  
+Covariates tables are always aggregated   must have the following fields:
+
+* *YEAR*. This must be an integer;
+* *&lt;geolevel field name&gt;* e.g. ```sahsu_grd_level4```. 
+  See: [Administrative geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#34-administrative-geography);
+* One or more *&lt;covariate name&gt;* fields e.g. ```ses```. These can be either an integer or a numeric. Currently only quantilised fields are supported; continuous variables are not supported.
+
 ### 2.3.4 Administrative Geography
+
+### 2.3.5 Health Themes
 
 # 3. Load Processing
 
@@ -388,6 +479,8 @@ This is configured using the tables:
 | ICD          | SAHSULAND_ICD           | Single ICD                                                           | ICD           |                    0 |
 | BIRTHWEIGHT  | BIRTHWEIGHT             | Birthweight (e.g. low <2500g)                                        | BIRTHWEIGHT   |                    0 |
 
+## 5.3 Automatic Numerator Denominator Pairs
+
 # 6. Quality Control
 
 ## 6.1 Extract Warnings  
@@ -400,6 +493,8 @@ by extract or R scripts. Traps will be added for:
 * Males/females not present when requested in numerator or denominator; 
 * ICD codes not present when requested in numerator;
 * Mal-join detection
+
+## 6.2 Numerator Denominator Pair Errors
 
 Peter Hambly
 May 2018
