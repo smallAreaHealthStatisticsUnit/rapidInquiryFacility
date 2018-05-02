@@ -1,6 +1,7 @@
 package rifDataLoaderTool.targetDBScriptGenerator.ms;
 
 import rifDataLoaderTool.businessConceptLayer.*;
+import rifGenericLibrary.dataStorageLayer.DeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.*;
 
 import java.util.ArrayList;
@@ -172,8 +173,8 @@ public class MSDeletionUtility {
 		
 		String themeToDelete = healthTheme.getName();
 		
-		MSSQLDeleteRowsQueryFormatter queryFormatter
-			= new MSSQLDeleteRowsQueryFormatter(true);
+		DeleteRowsQueryFormatter queryFormatter
+			= new DeleteRowsQueryFormatter(true);
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setFromTable("rif40_health_study_themes");
 		queryFormatter.addWhereParameterWithLiteralValue(
@@ -261,8 +262,8 @@ public class MSDeletionUtility {
 		for (DataSetFieldConfiguration covariateField : covariateFields) {
 			String covariateName = covariateField.getCleanFieldName().toUpperCase();
 			
-			MSSQLDeleteRowsQueryFormatter queryFormatter
-				= new MSSQLDeleteRowsQueryFormatter(true);
+			DeleteRowsQueryFormatter queryFormatter
+				= new DeleteRowsQueryFormatter(true);
 			queryFormatter.setDatabaseSchemaName("rif40");
 			queryFormatter.setFromTable("rif40_covariates");
 			queryFormatter.addWhereParameterWithLiteralValue(
@@ -286,8 +287,8 @@ public class MSDeletionUtility {
 
 		String tableToDelete
 			= dataSetConfiguration.getPublishedTableName().toUpperCase();
-		MSSQLDeleteRowsQueryFormatter queryFormatter
-			= new MSSQLDeleteRowsQueryFormatter(true);
+		DeleteRowsQueryFormatter queryFormatter
+			= new DeleteRowsQueryFormatter(true);
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setFromTable("rif40_tables");
 		queryFormatter.addWhereParameterWithLiteralValue(
@@ -304,8 +305,8 @@ public class MSDeletionUtility {
 				
 		String tableToDelete
 			= numerator.getPublishedTableName().toUpperCase();
-		MSSQLDeleteRowsQueryFormatter queryFormatter
-			= new MSSQLDeleteRowsQueryFormatter(true);
+		DeleteRowsQueryFormatter queryFormatter
+			= new DeleteRowsQueryFormatter(true);
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setFromTable("rif40_table_outcomes");
 		queryFormatter.addWhereParameterWithLiteralValue(

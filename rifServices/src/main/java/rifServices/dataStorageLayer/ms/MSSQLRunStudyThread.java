@@ -9,9 +9,9 @@ import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.StudyState;
 import rifServices.businessConceptLayer.StudyStateMachine;
+import rifServices.dataStorageLayer.common.CommonStudyStateManager;
 import rifServices.dataStorageLayer.common.GenerateResultsSubmissionStep;
 import rifServices.dataStorageLayer.common.ServiceResources;
-import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.dataStorageLayer.common.StudySubmissionStep;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
@@ -31,7 +31,7 @@ public class MSSQLRunStudyThread implements Runnable {
 	
 	private StudyStateMachine studyStateMachine;
 	
-	private StudyStateManager studyStateManager;
+	private rifServices.dataStorageLayer.common.StudyStateManager studyStateManager;
 	private StudySubmissionStep createStudySubmissionStep;
 	private GenerateResultsSubmissionStep generateResultsSubmissionStep;
 	private MSSQLSmoothResultsSubmissionStep smoothResultsSubmissionStep;
@@ -57,7 +57,7 @@ public class MSSQLRunStudyThread implements Runnable {
 		RIFDatabaseProperties rifDatabaseProperties 
 			= rifServiceStartupOptions.getRIFDatabaseProperties();
 		
-		studyStateManager = new MSSQLStudyStateManager(rifServiceStartupOptions);
+		studyStateManager = new CommonStudyStateManager(rifServiceStartupOptions);
 		
 		createStudySubmissionStep 
 			= new StudySubmissionStep(
@@ -81,7 +81,7 @@ public class MSSQLRunStudyThread implements Runnable {
 
 			establishCurrentStudyState();
 
-			while (studyStateMachine.isFinished() == false) {
+			while (!studyStateMachine.isFinished()) {
 
 				StudyState currentState
 					= studyStateMachine.getCurrentStudyState();
@@ -119,21 +119,18 @@ public class MSSQLRunStudyThread implements Runnable {
 				else {
 					String errorMessage = "Study: " + studyID + 
 							"; unexpected state: " + studyStateMachine.getCurrentStudyState().getName();
-					RIFServiceException rifServiceException
-						= new RIFServiceException(
-							RIFServiceError.STATE_MACHINE_ERROR, 
-							errorMessage);
-					throw rifServiceException; 
+
+					throw new RIFServiceException(
+						RIFServiceError.STATE_MACHINE_ERROR,
+						errorMessage);
 				}
 						
 				if (newState.getName().equals(currentState.getName())) {
 					String errorMessage = "Study: " + studyID + 
 							"; no change in state: " + currentState.getName();
-					RIFServiceException rifServiceException
-						= new RIFServiceException(
-							RIFServiceError.STATE_MACHINE_ERROR, 
-							errorMessage);
-					throw rifServiceException; 
+					throw new RIFServiceException(
+						RIFServiceError.STATE_MACHINE_ERROR,
+						errorMessage);
 				}
 				Thread.sleep(SLEEP_TIME);
 			} // End of while loop
@@ -142,15 +139,12 @@ public class MSSQLRunStudyThread implements Runnable {
 			
 		}
 		catch(InterruptedException interruptedException) {
-			rifLogger.error(this.getClass(), "MSSQLRunStudyThread ERROR", interruptedException);
+			rifLogger.error(this.getClass(), getClass().getSimpleName() + " ERROR",
+			                interruptedException);
 
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
-		}
-		finally {
-			
-			
 		}
 	}
 	
@@ -209,7 +203,7 @@ public class MSSQLRunStudyThread implements Runnable {
 				connection, 
 				studyID);
 			StudyState currentStudyState = studyStateMachine.next(); // Advance to next state
-			
+
 // Done by DB procedure - will generate duplicate PK
 //			String statusMessage
 //				= RIFServiceMessages.getMessage(

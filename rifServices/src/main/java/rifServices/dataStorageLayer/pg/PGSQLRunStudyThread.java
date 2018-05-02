@@ -9,6 +9,7 @@ import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.StudyState;
 import rifServices.businessConceptLayer.StudyStateMachine;
+import rifServices.dataStorageLayer.common.CommonStudyStateManager;
 import rifServices.dataStorageLayer.common.GenerateResultsSubmissionStep;
 import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.StudyStateManager;
@@ -17,79 +18,13 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- */
-
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
 public class PGSQLRunStudyThread 
 	implements Runnable {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
 	private static final int SLEEP_TIME = 200;
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
-	// ==========================================
-	// Section Properties
-	// ==========================================
 	private Connection connection;
 	private User user;
 	private RIFStudySubmission studySubmission;
@@ -102,18 +37,11 @@ public class PGSQLRunStudyThread
 	private GenerateResultsSubmissionStep generateResultsSubmissionStep;
 	private PGSQLSmoothResultsSubmissionStep smoothResultsSubmissionStep;
 	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
 	public PGSQLRunStudyThread() {
 		studyStateMachine = new StudyStateMachine();
 		studyStateMachine.initialiseState();
 	}
 	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
 	public void initialise(
 		final Connection connection,
 		final User user,
@@ -131,7 +59,7 @@ public class PGSQLRunStudyThread
 		RIFDatabaseProperties rifDatabaseProperties 
 			= rifServiceStartupOptions.getRIFDatabaseProperties();
 		
-		studyStateManager = new PGSQLStudyStateManager(rifServiceStartupOptions);
+		studyStateManager = new CommonStudyStateManager(rifServiceStartupOptions);
 		
 		createStudySubmissionStep 
 			= new StudySubmissionStep(
@@ -150,20 +78,13 @@ public class PGSQLRunStudyThread
 			rifServiceStartupOptions);
 			
 	}
-		
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
 
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
 	public void run() {
 		try {
 
 			establishCurrentStudyState();
 
-			while (studyStateMachine.isFinished() == false) {
+			while (!studyStateMachine.isFinished()) {
 
 				StudyState currentState
 					= studyStateMachine.getCurrentStudyState();
@@ -224,15 +145,12 @@ public class PGSQLRunStudyThread
 			
 		}
 		catch(InterruptedException interruptedException) {
-			rifLogger.error(this.getClass(), "PGSQLRunStudyThread ERROR", interruptedException);
+			rifLogger.error(this.getClass(), getClass().getSimpleName() + " ERROR",
+			                interruptedException);
 
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
-		}
-		finally {
-			
-			
 		}
 	}
 	
@@ -395,8 +313,4 @@ public class PGSQLRunStudyThread
 		studyStateManager.rollbackStudy(
 			connection, studyID);
 	}	
-	
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

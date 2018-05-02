@@ -19,7 +19,7 @@ import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.DeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
@@ -115,14 +115,14 @@ final public class MSSQLChangeAuditManager
 		final Writer logFileWriter)
 		throws RIFServiceException {
 
-		MSSQLDeleteRowsQueryFormatter clearChangeLogQueryFormatter
-			= new MSSQLDeleteRowsQueryFormatter(false);
+		DeleteRowsQueryFormatter clearChangeLogQueryFormatter
+			= new DeleteRowsQueryFormatter(false);
 		//KLG_SCHEMA
 		//clearChangeLogQueryFormatter.setDatabaseSchemaName("dbo");
 		clearChangeLogQueryFormatter.setFromTable("rif_change_log");		
 
-		MSSQLDeleteRowsQueryFormatter clearValidationFailuresLogQueryFormatter
-			= new MSSQLDeleteRowsQueryFormatter(false);
+		DeleteRowsQueryFormatter clearValidationFailuresLogQueryFormatter
+			= new DeleteRowsQueryFormatter(false);
 		//KLG_SCHEMA
 		//clearValidationFailuresLogQueryFormatter.setDatabaseSchemaName("dbo");
 		clearValidationFailuresLogQueryFormatter.setFromTable("rif_failed_val_log");			
@@ -852,8 +852,8 @@ final public class MSSQLChangeAuditManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 	
-		MSSQLDeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter 
-			= new MSSQLDeleteRowsQueryFormatter(false);
+		DeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter
+			= new DeleteRowsQueryFormatter(false);
 		//KLG_SCHEMA
 		//deleteDataSetStatementQueryFormatter.setDatabaseSchemaName("dbo");
 		deleteDataSetStatementQueryFormatter.setFromTable("data_set_configurations");
@@ -948,8 +948,8 @@ final public class MSSQLChangeAuditManager
 		throws RIFServiceException {
 
 		//Create SQL query
-		MSSQLDeleteRowsQueryFormatter queryFormatter 
-			= new MSSQLDeleteRowsQueryFormatter(false);
+		rifGenericLibrary.dataStorageLayer.DeleteRowsQueryFormatter queryFormatter
+			= new DeleteRowsQueryFormatter(false);
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setFromTable("data_set_configurations");

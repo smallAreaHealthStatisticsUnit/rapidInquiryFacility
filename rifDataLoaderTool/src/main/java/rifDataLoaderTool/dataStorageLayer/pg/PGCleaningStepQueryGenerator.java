@@ -1,13 +1,19 @@
 package rifDataLoaderTool.dataStorageLayer.pg;
 
-import rifDataLoaderTool.businessConceptLayer.*;
+import java.util.ArrayList;
+
+import rifDataLoaderTool.businessConceptLayer.CleaningRule;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.FieldActionPolicy;
+import rifDataLoaderTool.businessConceptLayer.RIFDataType;
+import rifDataLoaderTool.businessConceptLayer.RIFDataTypeFactory;
+import rifDataLoaderTool.businessConceptLayer.ValidationRule;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifGenericLibrary.dataStorageLayer.DeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
-
-import java.util.ArrayList;
 
 /**
  * Contains methods that generate Postgres-specific SQL code that supports
@@ -510,7 +516,7 @@ public final class PGCleaningStepQueryGenerator {
 		 * WHERE
 		 *    data_set_id=?;
 		 */
-		PGSQLDeleteRowsQueryFormatter queryFormatter = new PGSQLDeleteRowsQueryFormatter();
+		DeleteRowsQueryFormatter queryFormatter = new DeleteRowsQueryFormatter(false);
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.deleteAuditsQuery.comment1");		
 		queryFormatter.addCommentLine(queryCommentLine1);

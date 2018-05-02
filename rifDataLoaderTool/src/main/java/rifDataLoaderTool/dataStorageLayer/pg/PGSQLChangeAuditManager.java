@@ -15,9 +15,9 @@ import rifDataLoaderTool.businessConceptLayer.FieldChangeAuditLevel;
 import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
+import rifGenericLibrary.dataStorageLayer.DeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
@@ -113,12 +113,12 @@ final public class PGSQLChangeAuditManager
 		final Writer logFileWriter)
 		throws RIFServiceException {
 
-		PGSQLDeleteRowsQueryFormatter clearChangeLogQueryFormatter
-			= new PGSQLDeleteRowsQueryFormatter();
+		DeleteRowsQueryFormatter clearChangeLogQueryFormatter
+			= new DeleteRowsQueryFormatter(false);
 		clearChangeLogQueryFormatter.setFromTable("rif_change_log");		
 
-		PGSQLDeleteRowsQueryFormatter clearValidationFailuresLogQueryFormatter
-			= new PGSQLDeleteRowsQueryFormatter();
+		DeleteRowsQueryFormatter clearValidationFailuresLogQueryFormatter
+			= new DeleteRowsQueryFormatter(false);
 		clearValidationFailuresLogQueryFormatter.setFromTable("rif_failed_val_log");			
 		
 		PreparedStatement clearChangeLogStatement = null;
@@ -814,8 +814,8 @@ final public class PGSQLChangeAuditManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 	
-		PGSQLDeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter 
-			= new PGSQLDeleteRowsQueryFormatter();
+		DeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter
+			= new DeleteRowsQueryFormatter(false);
 		deleteDataSetStatementQueryFormatter.setFromTable("data_set_configurations");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("core_data_set_name");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("version");
@@ -906,7 +906,7 @@ final public class PGSQLChangeAuditManager
 		throws RIFServiceException {
 
 		//Create SQL query
-		PGSQLDeleteRowsQueryFormatter queryFormatter = new PGSQLDeleteRowsQueryFormatter();
+		DeleteRowsQueryFormatter queryFormatter = new DeleteRowsQueryFormatter(false);
 		queryFormatter.setFromTable("data_set_configurations");
 
 		PreparedStatement statement = null;

@@ -4,6 +4,7 @@ import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.BaseSQLManager;
+import rifServices.dataStorageLayer.common.CommonStudyStateManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
@@ -115,7 +116,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 				sqlRIFContextManager, sqlInvestigationManager);
 		
 		sqlStudyStateManager
-				= new PGSQLStudyStateManager(rifServiceStartupOptions);
+				= new CommonStudyStateManager(rifServiceStartupOptions);
 		
 		sqlRIFSubmissionManager = new PGSQLRIFSubmissionManager(rifServiceStartupOptions,
 				sqlStudyStateManager);

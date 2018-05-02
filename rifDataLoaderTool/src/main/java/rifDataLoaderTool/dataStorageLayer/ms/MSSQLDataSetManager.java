@@ -15,7 +15,7 @@ import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.DeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFGenericLibraryError;
@@ -270,8 +270,8 @@ final public class MSSQLDataSetManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 	
-		MSSQLDeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter 
-			= new MSSQLDeleteRowsQueryFormatter(false);
+		DeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter
+			= new DeleteRowsQueryFormatter(false);
 		//KLG_SCHEMA
 		//deleteDataSetStatementQueryFormatter.setDatabaseSchemaName("");
 		deleteDataSetStatementQueryFormatter.setFromTable("data_set_configurations");
@@ -370,8 +370,8 @@ final public class MSSQLDataSetManager
 		throws RIFServiceException {
 
 		//Create SQL query
-		MSSQLDeleteRowsQueryFormatter queryFormatter 
-			= new MSSQLDeleteRowsQueryFormatter(false);
+		rifGenericLibrary.dataStorageLayer.DeleteRowsQueryFormatter queryFormatter
+			= new DeleteRowsQueryFormatter(false);
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setFromTable("data_set_configurations");

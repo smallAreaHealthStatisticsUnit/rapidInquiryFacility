@@ -4,7 +4,7 @@ import rifDataLoaderTool.businessConceptLayer.*;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifDataLoaderTool.system.RIFTemporaryTablePrefixes;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.DeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteTableQueryFormatter;
 
 import java.util.ArrayList;
@@ -514,8 +514,8 @@ public final class MSCleaningStepQueryGenerator {
 		 * WHERE
 		 *    data_set_id=?;
 		 */
-		MSSQLDeleteRowsQueryFormatter queryFormatter 
-			= new MSSQLDeleteRowsQueryFormatter(false);
+		DeleteRowsQueryFormatter queryFormatter
+			= new DeleteRowsQueryFormatter(false);
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.deleteAuditsQuery.comment1");		
 		queryFormatter.addCommentLine(queryCommentLine1);

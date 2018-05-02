@@ -5,6 +5,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.CommonStudyStateManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
@@ -15,7 +16,6 @@ import rifServices.dataStorageLayer.common.ResultsQueryManager;
 import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.SmoothedResultManager;
 import rifServices.dataStorageLayer.common.StudyExtractManager;
-import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.system.RIFServiceStartupOptions;
 
@@ -50,7 +50,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 	
 	private ResultsQueryManager sqlResultsQueryManager;
 	
-	private StudyStateManager sqlStudyStateManager;
+	private rifServices.dataStorageLayer.common.StudyStateManager sqlStudyStateManager;
 	
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	
@@ -93,7 +93,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 				sqlInvestigationManager);
 				
 		sqlStudyStateManager
-			= new MSSQLStudyStateManager(rifServiceStartupOptions);
+			= new CommonStudyStateManager(rifServiceStartupOptions);
 		
 		sqlRIFSubmissionManager 
 			= new MSSQLRIFSubmissionManager(
@@ -194,7 +194,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 	}
 	
 	@Override
-	public StudyStateManager getStudyStateManager() {
+	public rifServices.dataStorageLayer.common.StudyStateManager getStudyStateManager() {
 		return sqlStudyStateManager;
 	}
 	
