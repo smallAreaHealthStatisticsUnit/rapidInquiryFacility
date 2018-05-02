@@ -2179,19 +2179,20 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 * Test install on Fred's laptop. Issues with Postgres installer crashes:
   * Run as administrator needs to be clearer
   * How to edit the Windows environment
-  * Postgres installer crashed caused by Windows 81./10 upgrade issue; needed to create a new Administrator account
+  * Postgres installer crashed caused by Windows 8.1/10 upgrade issue; needed to create a new Administrator account
 * Patch demo laptop. Java upgrade had failed and Java needed to be installed;
 * Test then merge rationalise_api into master.
   - Fixed R file separator escaping issue
   - Tidy logs
   - Put back covariate fix
   - Password is null; R does not handle this well
-* Front end issues
+* Front end issues:
   - Package front end as WAR
-  - Login screen: focus on user name field
+  - Login screen: focus on user name field: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/22
   - Able to load, save and run risk analysis studies
+  - Able to choose continuous covariate variables (not currently supported) https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/20
 * Urgent database:
-  - Fix predefined_groiup name issues - should be length 30 in t_rif40_inv_conditions
+  - Fix predefined_groiup name issues - should be length 30 in t_rif40_inv_conditions: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/21
   - Save risk analysis bands as geojson in the database and the save file. Circle may need conversion to geojson (as a polygon of many, many short, linestrings).
   - Save selection options (study and comparison resolution and selection geolevels, geolevels selected.
   
@@ -2199,4 +2200,6 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 
 * Fix for null R passwords; improved ODBC connect handler in R;
 * Merge "Crossing the database streams". Tested on PG/SQl Server. R null password patch was missed;
-* Finish Taxonomy services documentation
+* Finish Taxonomy services documentation;
+* Dataloading documentation;
+* Update TODO;

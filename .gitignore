@@ -114,10 +114,9 @@ docs/RIF_manual_data_loading.html
 docs/RIF_Postgres_Install.html
 docs/RIF_SQLserver_Install.html
 docs/RIF_Web_Application_Installation.html
-<<<<<<< HEAD
-=======
 rifServices/${sys:catalina.base}/
->>>>>>> rationalise_api
 .RData
 .Rhistory
 rifDemo
+docs/databaseManagementManual.html
+docs/tileMaker.html
