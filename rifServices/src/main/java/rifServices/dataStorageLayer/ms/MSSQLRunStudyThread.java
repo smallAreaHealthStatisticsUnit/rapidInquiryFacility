@@ -9,14 +9,15 @@ import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.StudyState;
 import rifServices.businessConceptLayer.StudyStateMachine;
+import rifServices.dataStorageLayer.common.GenerateResultsSubmissionStep;
 import rifServices.dataStorageLayer.common.ServiceResources;
+import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.dataStorageLayer.common.StudySubmissionStep;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-public class MSSQLRunStudyThread
-	implements Runnable {
+public class MSSQLRunStudyThread implements Runnable {
 
 	private static final int SLEEP_TIME = 200;
 
@@ -30,9 +31,9 @@ public class MSSQLRunStudyThread
 	
 	private StudyStateMachine studyStateMachine;
 	
-	private MSSQLStudyStateManager studyStateManager;
+	private StudyStateManager studyStateManager;
 	private StudySubmissionStep createStudySubmissionStep;
-	private MSSQLGenerateResultsSubmissionStep generateResultsSubmissionStep;
+	private GenerateResultsSubmissionStep generateResultsSubmissionStep;
 	private MSSQLSmoothResultsSubmissionStep smoothResultsSubmissionStep;
 	
 	public MSSQLRunStudyThread() {
@@ -64,8 +65,8 @@ public class MSSQLRunStudyThread
 				rifServiceResources.getSqlDiseaseMappingStudyManager(),
 				rifServiceResources.getSQLMapDataManager());
 
-		generateResultsSubmissionStep
-			= new MSSQLGenerateResultsSubmissionStep(studyStateManager);
+		generateResultsSubmissionStep = GenerateResultsSubmissionStep.getInstance(
+				studyStateManager, rifDatabaseProperties.getDatabaseType());
 		
 		//KLG: @TODO - we need a facility to feed password to this.
 		smoothResultsSubmissionStep = new MSSQLSmoothResultsSubmissionStep();

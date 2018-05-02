@@ -13,8 +13,6 @@ public class RIFDatabaseProperties {
 	private DatabaseType databaseType;
 	private boolean isCaseSensitive;
 	private boolean isSSLSupported;
-	private final String initialisationQuery;
-	private final String studyIdQuery;
 
 	private RIFDatabaseProperties(final DatabaseType databaseType, final boolean isCaseSensitive,
 			final boolean isSSLSupported) {
@@ -22,21 +20,6 @@ public class RIFDatabaseProperties {
 		this.databaseType = databaseType;
 		this.isCaseSensitive = isCaseSensitive;
 		this.isSSLSupported = isSSLSupported;
-
-		switch (databaseType) {
-			case POSTGRESQL:
-				initialisationQuery = POSTGRES_INITIALISATION_QUERY;
-				studyIdQuery = POSTGRES_STUDY_ID_QUERY_STRING;
-				break;
-			case SQL_SERVER:
-				initialisationQuery = MS_SQL_INITIALISATION_QUERY;
-				studyIdQuery = MS_SQL_STUDY_ID_QUERY_STRING;
-				break;
-			case UNKNOWN:
-			default:
-				throw new IllegalStateException("Unknown database type in RIFDatabaseProperties "
-				                                + "initialisation");
-		}
 	}
 
 	public static RIFDatabaseProperties newInstance(final DatabaseType databaseType,
@@ -56,15 +39,4 @@ public class RIFDatabaseProperties {
 	public DatabaseType getDatabaseType() {
 		return databaseType;
 	}
-
-	public String initialisationQuery() {
-
-		return initialisationQuery;
-	}
-
-	public String studyIdQuery() {
-
-		return studyIdQuery;
-	}
-	
 }

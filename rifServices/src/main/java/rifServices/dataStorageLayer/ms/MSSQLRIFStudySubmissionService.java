@@ -105,7 +105,7 @@ import rifServices.system.files.TomcatFile;
  */
 
 public class MSSQLRIFStudySubmissionService extends CommonUserService
-				implements RIFStudySubmissionAPI {
+		implements RIFStudySubmissionAPI {
 
 	private static String lineSeparator = System.getProperty("line.separator");
 		

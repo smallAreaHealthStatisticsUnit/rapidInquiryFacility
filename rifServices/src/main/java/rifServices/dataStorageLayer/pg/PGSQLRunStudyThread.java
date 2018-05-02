@@ -9,6 +9,7 @@ import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.businessConceptLayer.StudyState;
 import rifServices.businessConceptLayer.StudyStateMachine;
+import rifServices.dataStorageLayer.common.GenerateResultsSubmissionStep;
 import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.dataStorageLayer.common.StudySubmissionStep;
@@ -98,7 +99,7 @@ public class PGSQLRunStudyThread
 	
 	private StudyStateManager studyStateManager;
 	private StudySubmissionStep createStudySubmissionStep;
-	private PGSQLGenerateResultsSubmissionStep generateResultsSubmissionStep;
+	private GenerateResultsSubmissionStep generateResultsSubmissionStep;
 	private PGSQLSmoothResultsSubmissionStep smoothResultsSubmissionStep;
 	
 	// ==========================================
@@ -138,8 +139,8 @@ public class PGSQLRunStudyThread
 				rifServiceResources.getSqlDiseaseMappingStudyManager(),
 				rifServiceResources.getSQLMapDataManager());
 
-		generateResultsSubmissionStep
-			= new PGSQLGenerateResultsSubmissionStep(studyStateManager);
+		generateResultsSubmissionStep = GenerateResultsSubmissionStep.getInstance(
+				studyStateManager, rifDatabaseProperties.getDatabaseType());
 		
 		//KLG: @TODO - we need a facility to feed password to this.
 		smoothResultsSubmissionStep = new PGSQLSmoothResultsSubmissionStep();

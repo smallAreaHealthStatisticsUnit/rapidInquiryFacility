@@ -1050,14 +1050,16 @@ public class PGSQLRIFStudySubmissionService extends CommonUserService
 		try (BufferedReader reader = tcFile.reader()) {
 
 			rifLogger.info(this.getClass(),
-			               "MSSQLRIFStudySubmissionService.getFrontEndParameters: using: " + tcFile.absolutePath());
+			               "PGSQLRIFStudySubmissionService.getFrontEndParameters: using: " +
+			               tcFile.absolutePath());
 			// Read and string escape JSON
 			jsonFromFile = "{\"file\": \"" + StringEscapeUtils.escapeJavaScript(tcFile.absolutePath()) + "\", \"frontEndParameters\": \"" +
 			               StringEscapeUtils.escapeJavaScript(reader.lines().parallel().collect(Collectors.joining(lineSeparator))) +
 			               "\"}";
 		} catch (IOException e) {
 			rifLogger.warning(this.getClass(),
-			                  "MSSQLRIFStudySubmissionService.getFrontEndParameters error for file: " +
+			                  "PGSQLRIFStudySubmissionService.getFrontEndParameters error for "
+			                  + "file: " +
 			                  tcFile.absolutePath(), e);
 			return defaultJson;
 		}

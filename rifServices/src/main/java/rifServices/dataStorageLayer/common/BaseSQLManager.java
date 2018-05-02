@@ -949,7 +949,7 @@ public class BaseSQLManager implements SQLManager {
 
 			statement = SQLQueryUtility.createPreparedStatement(
 					connection,
-					rifDatabaseProperties.initialisationQuery());
+					rifDatabaseProperties.getDatabaseType().initialisationQuery());
 
 			setDbSpecificStatementValues(statement, isFirstConnectionForUser);
 
