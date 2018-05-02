@@ -114,7 +114,7 @@ temporarySmoothedResultsTableName <- ""
 
 #File names for smoothed (temporarySmoothedResultsFileName) and extract data frames (temporaryExtractFileName)
 #Variable to control dumping franes (dumpFramesToCsv)
-defaultScratchSpace <- "c:\\rifDemo\\scratchSpace\\"
+defaultScratchSpace <- file.path("rifDemo", "scratchSpace")
 defaultDumpFramesToCsv <- FALSE
 scratchSpace <- ""
 dumpFramesToCsv <- ""
@@ -151,7 +151,7 @@ establishTableNames <-function(vstudyID) {
 #performance on Windows Tomcat servers 
 	centile <- as.integer(vstudyID) %/% 100 # 1273 = 12
 	# Number directory: d1201-1300\
-	numberDir <- paste0("d", (centile*100)+1, "-", (centile+1)*100, '\\')
+	numberDir <- file.path("d", (centile*100)+1, "-", (centile+1)*100)
 	
 #The name of the skeleton table created by the RIF middleware to hold smoothed results
 #for a given study.  Initially the values for smoothed columns will be empty.  It is 
@@ -163,7 +163,7 @@ establishTableNames <-function(vstudyID) {
 
 	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
 	# Typically: c:\rifDemo\scratchSpace\d1201-1300\s1273\data
-		scratchSpace <<- paste0(defaultScratchSpace, numberDir, "s", vstudyID, "\\data\\")
+		scratchSpace <<- file.path(defaultScratchSpace, numberDir, "s", vstudyID, "data")
 	}
 
 	if (exists("dumpFramesToCsv") == FALSE || dumpFramesToCsv == "") {
@@ -515,7 +515,7 @@ processCommandLineArguments <- function() {
 hasperformSmoothingActivityScript<-FALSE
 if (exists("catalina_home")) {
 	cat("CATALINA_HOME=", catalina_home, "\n", sep="")
-	performSmoothingActivityScript<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\performSmoothingActivity.R")
+	performSmoothingActivityScript<-file.path((catalina_home, "webapps", "rifServices", "WEB-INF", "classes", "performSmoothingActivity.R")
 	
 	if (file.exists(performSmoothingActivityScript)) {
 		hasperformSmoothingActivityScript<-TRUE
