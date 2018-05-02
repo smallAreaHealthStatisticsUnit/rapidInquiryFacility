@@ -120,3 +120,5 @@ rifServices/${sys:catalina.base}/
 >>>>>>> rationalise_api
 .RData
 .Rhistory
+docs/databaseManagementManual.html
+docs/tileMaker.html
