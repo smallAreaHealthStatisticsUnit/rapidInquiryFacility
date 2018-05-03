@@ -5,6 +5,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.CommonHealthOutcomeManager;
 import rifServices.dataStorageLayer.common.CommonStudyStateManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
@@ -59,7 +60,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		sqlConnectionManager = new BaseSQLManager(rifServiceStartupOptions);
-		healthOutcomeManager = new MSSQLHealthOutcomeManager(rifServiceStartupOptions);
+		healthOutcomeManager = new CommonHealthOutcomeManager(rifServiceStartupOptions);
 
 		RIFDatabaseProperties rifDatabaseProperties
 			= rifServiceStartupOptions.getRIFDatabaseProperties();
@@ -125,8 +126,6 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 		sqlResultsQueryManager.setValidationPolicy(validationPolicy);
 		sqlRIFContextManager.setValidationPolicy(validationPolicy);
 		sqlInvestigationManager.setValidationPolicy(validationPolicy);
-			
-		healthOutcomeManager.initialiseTaxomies();	
 	}
 	
 	public static MSSQLRIFServiceResources newInstance(

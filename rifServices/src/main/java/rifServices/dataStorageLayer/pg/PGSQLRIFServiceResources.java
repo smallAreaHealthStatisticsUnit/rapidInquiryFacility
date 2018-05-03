@@ -4,6 +4,7 @@ import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.BaseSQLManager;
+import rifServices.dataStorageLayer.common.CommonHealthOutcomeManager;
 import rifServices.dataStorageLayer.common.CommonStudyStateManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
@@ -90,7 +91,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		sqlConnectionManager = new BaseSQLManager(rifServiceStartupOptions);
-		healthOutcomeManager = new PGSQLHealthOutcomeManager(rifServiceStartupOptions);
+		healthOutcomeManager = new CommonHealthOutcomeManager(rifServiceStartupOptions);
 		
 		RIFDatabaseProperties rifDatabaseProperties
 				= rifServiceStartupOptions.getRIFDatabaseProperties();
@@ -146,8 +147,6 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		sqlResultsQueryManager.setValidationPolicy(validationPolicy);
 		sqlRIFContextManager.setValidationPolicy(validationPolicy);
 		sqlInvestigationManager.setValidationPolicy(validationPolicy);
-		
-		healthOutcomeManager.initialiseTaxomies();
 	}
 	
 	@Override
