@@ -19,11 +19,11 @@ RIF Data Loading
        - [2.3.4.2 Geolevels](#2342-geolevels)
        - [2.3.4.3 Lookup tables](#2343-lookup-tables)
        - [2.3.4.4 Tile tables](#2344-tile-tables])
-       - [2.3.4.5 Geometry tables](#2349-geometry-tables)
-       - [2.3.4.6 Adjacency tables](#2349-adjacency-tables)
-       - [2.3.4.7 Centroids tables](#2349-centroids-tables)
-       - [2.3.4.8 Shapefile, shapefile tables](#2349-shapefile-shapefile-tables)
-       - [2.3.4.9 Covariate tables](#2349-covariate-tables)
+       - [2.3.4.5 Geometry tables](#2345-geometry-tables)
+       - [2.3.4.6 Adjacency tables](#2346-adjacency-tables)
+       - [2.3.4.7 Hierarchy tables](#2347-hierarchy-tables)	
+       - [2.3.4.8 Shapefile, shapefile tables](#2348-shapefile-shapefile-tables)
+       - [2.3.4.8 Centroids tables](#2349-centroids-tables) 
 	 - [2.3.5 Health Themes](#235-health-themes)
 - [3. Load Processing](#3-load-processing)
   - [3.1 Numerator](#31-numerator)
@@ -346,7 +346,18 @@ So, for the example denominator table *pop_sahsuand_pop*:
   
 ### 2.3.3 Covariates
 
-The example covariates tables are *covar_sahsuland_covariates3*: 
+The covariate tables with one table per geolevel for additional covariates within a geography (e.g. social exclusion scores).
+The table is defined in *rif40_geolevels.covariate_table*.
+
+Covariate tables must contain the following fields (as in the *covar_sahsuland_covariates3* example below):
+ 
+* Year this should cover the range of the associated denominator and must be an integer; 
+* *&lt;geolevel field name&gt;* e.g. ```sahsu_grd_level4```. 
+  See: [Administrative geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#234-administrative-geography);
+* One or more *&lt;covariate name&gt;* fields e.g. ```ses```. These can be either an integer or a numeric. Currently only quantilised fields are supported; continuous variables are not supported.
+
+Unlike other administrative geography tables; RIF managers **MUST** create these tables for themselves. A full range of all possible values **MUST** be provided,
+even if the covariate data is null. So in the example below
 
 |   column_name    |              description               |  data_type  |
 |------------------|----------------------------------------|-------------|
@@ -355,44 +366,43 @@ The example covariates tables are *covar_sahsuland_covariates3*:
 | ses              | socio-economic status                  | integer     |
 | ethnicity        | ethnicity                              | integer     |
  
-And *covar_sahsuland_covariates4*: 
-
-|   column_name    |             description              |  data_type  |
-|------------------|--------------------------------------|-------------|
-| year             | year field                           | integer     |
-| sahsu_grd_level4 | fourth level geographical resolution | varchar(20) |
-| ses              | socio-economic status                | integer     |
-| areatri1km       | area tri 1 km covariate              | integer     |
-| near_dist        | near distance covariate              | numeric     |
+As an example the covariate table *covar_sahsuland_covariates3* contains (with rows truncated):
  
-Covariates tables are always aggregated and must have the following fields:
-
-* *YEAR*. This must be an integer;
-* *&lt;geolevel field name&gt;* e.g. ```sahsu_grd_level4```. 
-  See: [Administrative geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#234-administrative-geography);
-* One or more *&lt;covariate name&gt;* fields e.g. ```ses```. These can be either an integer or a numeric. Currently only quantilised fields are supported; continuous variables are not supported.
+| year | sahsu_grd_level3 | ses | ethnicity |
+|------|----------|-------|-----|-----------|
+| 1989 | 01.001.000100    |   4 |         1 |
+| 1989 | 01.001.000200    |   5 |         1 |
+| 1989 | 01.001.000300    |   5 |         3 |
+| 1989 | 01.002.000300    |   2 |         2 |
+| 1989 | 01.002.000400    |   5 |         3 |
+| 1989 | 01.002.000500    |   5 |         3 |
+| 1989 | 01.002.000600    |   4 |         3 |
+| 1989 | 01.002.000700    |   5 |         3 |
+| 1989 | 01.002.000800    |   4 |         3 |
+| 1989 | 01.002.000900    |   1 |         2 |
+| ...  | ...              | ... | ...       |
 
 ### 2.3.4 Administrative Geography
 
 RIF administrative geography has nine components:
 
-* Geography: name of the administrative geography;
-* Geolevels: a hierarchy of administrative areas that define a geography where each higher resolution contains one or more areas that fit exactly within the lower resolution;
-* Lookup tables: for the names of the administrative area id codes within a geolevel;
-* Tile tables: the WGS84 topoJSON and geoJSON tiles for a geography used by the RIF front end and extract utilities to display administrative geography geolevels;
-* Adjacency tables: a list of adjacent areas for each geolevel and area id in a geography used in BAtesian smoothing;
-* Covariate tables: one table per geolevel for additional covariates within a geography (e.g. social exclusion scores).
+* [Geography](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2341-geography): name of the administrative geography;
+* [Geolevels](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2342-geolevels): a hierarchy of administrative areas that define a geography where each higher resolution contains one or more areas that fit exactly within the lower resolution;
+* [Lookup tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2343-lookup-tables): for the names of the administrative area id codes within a geolevel;
+* [Tile tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2344-tile-tables): the WGS84 topoJSON and geoJSON tiles for a geography used by the RIF front end and extract utilities to display administrative geography geolevels;
+* [Adjacency tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2346-adjacency-tables): a list of adjacent areas for each geolevel and area id in a geography used in BAtesian smoothing;
+* [Hierarchy tables](): one table per administrative geography; contains a hierarchy of higher resolution of one or more areas that fit exactly within the lower resolution
 
 The following components are used by the administrative geography preprocessing (tile maker):
 
-* Geometry tables: geometric data for a geography to allow the database to perform spatial queries with the administrative geometry;
-* Shapefile, shapefile tables: Storage for the original shapefile data and name used as part of the administrative geography preprocessing (tile maker); 
+* [Geometry tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2345-geometry-tables): geometric data for a geography to allow the database to perform spatial queries with the administrative geometry;
+* [Shapefile, shapefile tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2348-shapefile-shapefile-tables): Storage for the original shapefile data and name used as part of the administrative geography preprocessing (tile maker); 
 
 The final component is in the TODO list for future additions:
 
 * Centroids tables: tables of centroids tables. Used to import population weighted or spatially processed (centroid pulled to within the centroid boundary) centroids into an administrative geography;
 
-All components are created by the administrative geography preprocessing (tile maker) and loaded by a SQL Server *sqlcmd* or Postgres *psql* script.
+**All components are created by the administrative geography preprocessing (tile maker) and loaded by a SQL Server ```sqlcmd``` or Postgres ```psql``` script.**
 
 #### 2.3.4.1 Geography
 
@@ -484,7 +494,7 @@ The field *geolevel_id* is used to order the geolevels by resolution. The highes
 
 Lookup tables contain the names of the administrative area id codes within a geolevel and must have:
 
-* The area id column relevant to the geolevel. It must be named the same ans the &lt'geolevel_name&gt;;
+* The area id column relevant to the geolevel. It must be named the same as the &lt'geolevel_name&gt;;
 * A unique *gid* field;
 * A descriptive field defined in *rif40_geolevels.lookup_desc_column*. 
 * A geographic centroid in GEoJSON format, SGS84 geometry;
@@ -525,7 +535,7 @@ As an example the lookup table *lookup_sahsu_grd_level2* contains:
 The tile tables and views contain WGS84 topoJSON and geoJSON tiles for a geography used by the RIF front end and extract utilities to display administrative geography geolevels
 The view is defined in *rif40_geolevels.tiletable* and adds valid empty tiles for the whole planet. The view uses the table which only contains tiles with data. The view is efficient.
 
-Tiles tables must contains the following fields (*t_tiles_sahsuland* example):
+Tiles tables must contain the following fields (*t_tiles_sahsuland* example):
 
 |    column_name     |                                                        description                                                                                        |  data_type   |
 |--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
@@ -564,7 +574,9 @@ WITH a AS (
          SELECT generate_series(0, 11, 1) AS zoomlevel
 ), ex AS (
          SELECT d.zoomlevel,
-                generate_series(0, power(2::double precision, d.zoomlevel::double precision)::integer - 1, 1) AS xy_series
+                generate_series(0, 
+						power(2::double precision, d.zoomlevel::double precision)::integer - 1, 
+						1) AS xy_series
            FROM d
 ), ey AS (
          SELECT c.geolevel_name,
@@ -596,7 +608,9 @@ SELECT z.geography,
        z.x,
        z.y,
        z.zoomlevel,
-       COALESCE(h1.optimised_topojson, h2.optimised_topojson, '{"type": "FeatureCollection","features":[]}'::json) AS optimised_topojson
+       COALESCE(h1.optimised_topojson, 
+			h2.optimised_topojson, 
+			'{"type": "FeatureCollection","features":[]}'::json) AS optimised_topojson
   FROM (
      SELECT ey.geolevel_name,
             ey.areaid_count,
@@ -609,9 +623,16 @@ SELECT z.geography,
             ex
       WHERE ex.zoomlevel = ey.zoomlevel) z
      LEFT JOIN t_tiles_sahsuland h1 ON 
-			z.areaid_count > 1 AND z.zoomlevel = h1.zoomlevel AND z.x = h1.x AND z.y = h1.y AND z.geolevel_id = h1.geolevel_id
+			z.areaid_count > 1 AND 
+			z.zoomlevel = h1.zoomlevel AND 
+			z.x = h1.x AND z.y = h1.y AND 
+			z.geolevel_id = h1.geolevel_id
      LEFT JOIN t_tiles_sahsuland h2 ON 
-			z.areaid_count = 1 AND h2.zoomlevel = 0 AND h2.x = 0 AND h2.y = 0 AND h2.geolevel_id = 1;
+			z.areaid_count = 1 AND 
+			h2.zoomlevel = 0 AND 
+			h2.x = 0 AND 
+			h2.y = 0 AND 
+			h2.geolevel_id = 1;
 ```
 
 #### 2.3.4.5 Geometry tables
@@ -619,27 +640,97 @@ SELECT z.geography,
 The geometry tables contains geometric data for a geography to allow the database to perform spatial queries with the administrative geometry
 The table is defined in *rif40_geolevels.geometrytable*. 
 
+Geometry tables must contain the following fields (*geometry_sahsuland* example):
+
+| column_name |                                                               description                                                                                 |  data_type   |
+|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
+| geolevel_id | ID for ordering (1=lowest resolution). Up to 99 supported.                                                                                                | integer      |
+| areaid      | Area ID.                                                                                                                                                  | varchar(200) |
+| zoomlevel   | Zoom level: 0 to 11. Number of tiles is 2&ast;&ast;&lt;zoom level&gt; &ast; 2&ast;&ast;&lt;zoom level&gt;; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11 | integer      |
+| geom        | Geometry data in SRID 4326 (WGS84).                                                                                                                       | geometry     |
+| wkt         | Well known text                                                                                                                                           | Text         |
+ 
+Geometry tables are partitioned on Postgres ports.
+ 
 #### 2.3.4.6 Adjacency tables
 
 The adjacency tables are a list of adjacent areas for each geolevel and area id in a geography used in BAtesian smoothing;
 The table is defined in *rif40_geolevels.adjacencytable*. 
 
-#### 2.3.4.7 Centroids tables
+Adjacency tables must contain the following fields (*adjacency_sahsuland* example):
 
-Centroids tables are used to import population weighted or spatially processed (centroid pulled to within the centroid boundary) centroids into an administrative geography. 
-Centroids tables are not currently supported. The table is defined in *rif40_geolevels.centroids_table*. 
-This is in the TODO list for future additions  
+|   column_name   |                        description                         |   data_type   |
+|-----------------|------------------------------------------------------------|---------------|
+| geolevel_id     | ID for ordering (1=lowest resolution). Up to 99 supported. | integer       |
+| areaid          | Area Id                                                    | varchar(200)  |
+| num_adjacencies | Number of adjacencies                                      | integer       |
+| adjacency_list  | Adjacent area Ids                                          | varchar(8000) |
+ 
+As an example the adjacency table *adjacency_sahsuland* contains (with rows truncated):
+
+| geolevel_id | areaid          | num_adjacencies |              adjacency_list                                                                       |
+|-------------|-----------------|-----------------|---------------------------------------------------------------------------------------------------|
+|           2 | 01.001          |               3 | 01.002,01.004,01.005                                                                              |
+|           2 | 01.002          |               3 | 01.001,01.003,01.004                                                                              |
+|           2 | 01.003          |               3 | 01.002,01.004,01.008                                                                              |
+|           2 | 01.004          |               6 | 01.001,01.002,01.003,01.005,01.008,01.009                                                         |
+|           2 | 01.005          |               4 | 01.001,01.004,01.006,01.009                                                                       |
+| ...         | ...             | ...             | ...                                                                                               |
+|           3 | 01.001.000200   |               3 | 01.001.000100,01.001.000300,01.005.002400                                                         |
+|           3 | 01.001.000300   |               1 | 01.001.000200                                                                                     |
+|           3 | 01.002.000300   |               4 | 01.002.000400,01.002.000500,01.002.000600,01.002.001900                                           |
+|           3 | 01.002.000400   |               4 | 01.002.000300,01.002.001600,01.002.001700,01.002.001900                                           |
+|           3 | 01.002.000500   |               3 | 01.001.000100,01.002.000300,01.002.000600                                                         |
+|           3 | 01.002.000600   |               7 | 01.001.000100,01.002.000300,01.002.000500,01.002.000700,01.002.000800,01.002.001100,01.002.001900 |
+|           3 | 01.002.000700   |               3 | 01.001.000100,01.002.000600,01.002.000800                                                         |
+| ...         | ...             | ...             | ...                                                                                               |
+|           4 | 01.002.001300.2 |               4 | 01.002.001200.3,01.002.001200.7,01.002.001300.1,01.002.001300.4                                   |
+|           4 | 01.002.001300.3 |               6 | 01.002.001200.5,01.002.001200.6,01.002.001200.7,01.002.001300.4,01.002.001300.9,01.002.001400.2   |
+|           4 | 01.002.001300.4 |               6 | 01.002.001200.7,01.002.001300.1,01.002.001300.2,01.002.001300.3,01.002.001300.5,01.002.001300.9   |
+|           4 | 01.002.001300.5 |               6 | 01.001.000100.1,01.002.001300.1,01.002.001300.4,01.002.001300.8,01.002.001300.9,01.002.001500.2   |
+|           4 | 01.002.001300.6 |               4 | 01.002.001300.7,01.002.001300.9,01.002.001400.5,01.002.001400.7                                   |
+| ...         | ...             | ...             | ...                                                                                               |
+		   
+#### 2.3.4.7 Hierarchy tables
+
+Hierarchy tables have one table per administrative geography; contains a hierarchy of higher resolution of one or more areas that fit exactly within the lower resolution
+The table is defined in *rif40_geographies*.hierarchytable*.
   
+Hierarchy tables must contain the following fields (as in the *hierarchy_sahsuland* example below):
+  
+* Area id columns relevant to each geolevel in the geography. They must be named the same as the &lt'geolevel_name&gt;;
+
+|   column_name    |               description                |  data_type   |
+|------------------|------------------------------------------|--------------|
+| sahsu_grd_level1 | Hierarchy lookup for Level 1 (top level) | varchar(100) |
+| sahsu_grd_level2 | Hierarchy lookup for Level 2             | varchar(100) |
+| sahsu_grd_level3 | Hierarchy lookup for Level 3             | varchar(100) |
+| sahsu_grd_level4 | Hierarchy lookup for Level 4             | varchar(100) |
+ 
+As an example the hierarchy table *hierarchy_sahsuland* contains (with rows truncated):
+
+| sahsu_grd_level1 | sahsu_grd_level2 | sahsu_grd_level3 | sahsu_grd_level4 |
+|------------------|------------------|------------------|------------------|
+| 01               | 01.001           | 01.001.000100    | 01.001.000100.1  |
+| 01               | 01.001           | 01.001.000100    | 01.001.000100.2  |
+| 01               | 01.001           | 01.001.000200    | 01.001.000200.1  |
+| 01               | 01.001           | 01.001.000300    | 01.001.000300.1  |
+| 01               | 01.002           | 01.002.000300    | 01.002.000300.1  |
+| 01               | 01.002           | 01.002.000300    | 01.002.000300.2  |
+| 01               | 01.002           | 01.002.000300    | 01.002.000300.3  |
+| ...              | ...              | ...              | ...              |
+ 
 #### 2.3.4.8 Shapefile, shapefile tables
 
 The Shapefile, shapefile tables contain the names of the original shapefile and the data in geoJSON format. They are used as part of the administrative geography preprocessing (tile maker)
 The shapefile is defined in *rif40_geolevels.shapefile*.
 The table is defined in *rif40_geolevels.shapefile_table*.
+ 
+#### 2.3.4.9 Centroids tables
 
-#### 2.3.4.9 Covariate tables
-
-The covariate tables with one table per geolevel for additional covariates within a geography (e.g. social exclusion scores).
-The table is defined in *rif40_geolevels.covariate_table*.
+Centroids tables are used to import population weighted or spatially processed (centroid pulled to within the centroid boundary) centroids into an administrative geography. 
+Centroids tables are not currently supported. The table is defined in *rif40_geolevels.centroids_table*. 
+This is in the TODO list for future additions  
 
 ### 2.3.5 Health Themes
 
