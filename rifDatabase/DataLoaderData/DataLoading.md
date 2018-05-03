@@ -18,10 +18,10 @@ RIF Data Loading
        - [2.3.4.1 Geography](#2341-geography)
        - [2.3.4.2 Geolevels](#2342-geolevels)
        - [2.3.4.3 Lookup tables](#2343-lookup-tables)
-       - [2.3.4.4 Tile tables](#2344-tile-tables])
-       - [2.3.4.5 Geometry tables](#2345-geometry-tables)
-       - [2.3.4.6 Adjacency tables](#2346-adjacency-tables)
-       - [2.3.4.7 Hierarchy tables](#2347-hierarchy-tables)	
+       - [2.3.4.4 Tile tables](#2344-tile-tables)
+       - [2.3.4.5 Adjacency tables](#2345-adjacency-tables)
+       - [2.3.4.6 Hierarchy tables](#2346-hierarchy-tables)	
+       - [2.3.4.7 Geometry tables](#2347-geometry-tables)
        - [2.3.4.8 Shapefile, shapefile tables](#2348-shapefile-shapefile-tables)
        - [2.3.4.8 Centroids tables](#2349-centroids-tables) 
 	 - [2.3.5 Health Themes](#235-health-themes)
@@ -390,17 +390,17 @@ RIF administrative geography has nine components:
 * [Geolevels](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2342-geolevels): a hierarchy of administrative areas that define a geography where each higher resolution contains one or more areas that fit exactly within the lower resolution;
 * [Lookup tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2343-lookup-tables): for the names of the administrative area id codes within a geolevel;
 * [Tile tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2344-tile-tables): the WGS84 topoJSON and geoJSON tiles for a geography used by the RIF front end and extract utilities to display administrative geography geolevels;
-* [Adjacency tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2346-adjacency-tables): a list of adjacent areas for each geolevel and area id in a geography used in BAtesian smoothing;
-* [Hierarchy tables](): one table per administrative geography; contains a hierarchy of higher resolution of one or more areas that fit exactly within the lower resolution
+* [Adjacency tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2345-adjacency-tables): a list of adjacent areas for each geolevel and area id in a geography used in BAtesian smoothing;
+* [Hierarchy tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2346-hierarchy-tables): one table per administrative geography; contains a hierarchy of higher resolution of one or more areas that fit exactly within the lower resolution
 
 The following components are used by the administrative geography preprocessing (tile maker):
 
-* [Geometry tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2345-geometry-tables): geometric data for a geography to allow the database to perform spatial queries with the administrative geometry;
+* [Geometry tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2347-geometry-tables): geometric data for a geography to allow the database to perform spatial queries with the administrative geometry;
 * [Shapefile, shapefile tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2348-shapefile-shapefile-tables): Storage for the original shapefile data and name used as part of the administrative geography preprocessing (tile maker); 
 
 The final component is in the TODO list for future additions:
 
-* Centroids tables: tables of centroids tables. Used to import population weighted or spatially processed (centroid pulled to within the centroid boundary) centroids into an administrative geography;
+* [Centroids tables](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#2349-centroids-tables): tables of centroids tables. Used to import population weighted or spatially processed (centroid pulled to within the centroid boundary) centroids into an administrative geography;
 
 **All components are created by the administrative geography preprocessing (tile maker) and loaded by a SQL Server ```sqlcmd``` or Postgres ```psql``` script.**
 
@@ -634,25 +634,8 @@ SELECT z.geography,
 			h2.y = 0 AND 
 			h2.geolevel_id = 1;
 ```
-
-#### 2.3.4.5 Geometry tables
-
-The geometry tables contains geometric data for a geography to allow the database to perform spatial queries with the administrative geometry
-The table is defined in *rif40_geolevels.geometrytable*. 
-
-Geometry tables must contain the following fields (*geometry_sahsuland* example):
-
-| column_name |                                                               description                                                                                 |  data_type   |
-|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
-| geolevel_id | ID for ordering (1=lowest resolution). Up to 99 supported.                                                                                                | integer      |
-| areaid      | Area ID.                                                                                                                                                  | varchar(200) |
-| zoomlevel   | Zoom level: 0 to 11. Number of tiles is 2&ast;&ast;&lt;zoom level&gt; &ast; 2&ast;&ast;&lt;zoom level&gt;; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11 | integer      |
-| geom        | Geometry data in SRID 4326 (WGS84).                                                                                                                       | geometry     |
-| wkt         | Well known text                                                                                                                                           | Text         |
  
-Geometry tables are partitioned on Postgres ports.
- 
-#### 2.3.4.6 Adjacency tables
+#### 2.3.4.5 Adjacency tables
 
 The adjacency tables are a list of adjacent areas for each geolevel and area id in a geography used in BAtesian smoothing;
 The table is defined in *rif40_geolevels.adjacencytable*. 
@@ -691,7 +674,7 @@ As an example the adjacency table *adjacency_sahsuland* contains (with rows trun
 |           4 | 01.002.001300.6 |               4 | 01.002.001300.7,01.002.001300.9,01.002.001400.5,01.002.001400.7                                   |
 | ...         | ...             | ...             | ...                                                                                               |
 		   
-#### 2.3.4.7 Hierarchy tables
+#### 2.3.4.6 Hierarchy tables
 
 Hierarchy tables have one table per administrative geography; contains a hierarchy of higher resolution of one or more areas that fit exactly within the lower resolution
 The table is defined in *rif40_geographies*.hierarchytable*.
@@ -720,6 +703,23 @@ As an example the hierarchy table *hierarchy_sahsuland* contains (with rows trun
 | 01               | 01.002           | 01.002.000300    | 01.002.000300.3  |
 | ...              | ...              | ...              | ...              |
  
+#### 2.3.4.7 Geometry tables
+
+The geometry tables contains geometric data for a geography to allow the database to perform spatial queries with the administrative geometry
+The table is defined in *rif40_geolevels.geometrytable*. 
+
+Geometry tables must contain the following fields (*geometry_sahsuland* example):
+
+| column_name |                                                               description                                                                                 |  data_type   |
+|-------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
+| geolevel_id | ID for ordering (1=lowest resolution). Up to 99 supported.                                                                                                | integer      |
+| areaid      | Area ID.                                                                                                                                                  | varchar(200) |
+| zoomlevel   | Zoom level: 0 to 11. Number of tiles is 2&ast;&ast;&lt;zoom level&gt; &ast; 2&ast;&ast;&lt;zoom level&gt;; i.e. 1, 2x2, 4x4 ... 2048x2048 at zoomlevel 11 | integer      |
+| geom        | Geometry data in SRID 4326 (WGS84).                                                                                                                       | geometry     |
+| wkt         | Well known text                                                                                                                                           | Text         |
+ 
+Geometry tables are partitioned on Postgres ports.
+
 #### 2.3.4.8 Shapefile, shapefile tables
 
 The Shapefile, shapefile tables contain the names of the original shapefile and the data in geoJSON format. They are used as part of the administrative geography preprocessing (tile maker)
