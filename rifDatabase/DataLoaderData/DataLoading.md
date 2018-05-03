@@ -26,10 +26,10 @@ RIF Data Loading
        - [2.3.4.8 Centroids tables](#2349-centroids-tables) 
 	 - [2.3.5 Health Themes](#235-health-themes)
 - [3. Load Processing](#3-load-processing)
-  - [3.1 Numerator](#31-numerator)
-  - [3.2 Denominator](#32-denominator)
-  - [3.3 Covariates](#33-covariates)
-  - [3.4 Administrative Geography](#34-administrative-geography)
+  - [3.1 Administrative Geography](#31-administrative-geography)
+  - [3.2 Numerator](#32-numerator)
+  - [3.3 Denominator](#33-denominator)
+  - [3.4 Covariates](#34-covariates)
 - [4. Information Governance](#4-information-governance)
   - [4.1 Auditing](#41-auditing)
 - [5. Flexible Configuration Support](#5-flexible-configuration-support)
@@ -753,19 +753,49 @@ An example theme is provided:
  
 # 3. Load Processing
 
-## 3.1 Numerator
+* Always load the administrative geography first:
 
-## 3.2 Denominator
+## 3.1 Administrative Geography
 
-## 3.3 Covariates
+The *SAHSULAND* example geography is supplied as part of the RIF. To load the SEER test dataset:
 
-## 3.4 Administrative Geography
+To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\Tile maker USA&gt;
+
+* ```cd C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\Tile maker USA```;
+
+For Postgres: 
+
+* ```psql -U rif40 -d sahsuland -w -e -f rif_pg_usa_2014.sql```;
+
+For SQL Server:
+
+* ``sqlcmd -U rif40 -P XXXXXXXX -d sahsuland -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql -v pwd="%cd%"```;
+  Where ```XXXXXXXX``` is the rif40 account password.
+  To change SQL server password:
+  ```SQL
+  ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
+  GO
+  ```
+
+## 3.2 Numerator
+
+## 3.3 Denominator
+
+## 3.4 Covariates
+
 
 # 4. Information Governance
 
 ## 4.1 Auditing
 
 # 5. Flexible Configuration Support
+
+RIF 4.0 has a number of options for more flexible configuration:
+
+* Configurable [age groups](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#51-age-groups)
+* Configurable [ICD field Name](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#52-icd-field-name)
+* [Automatic Numerator Denominator Pairs](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#53-automatic-numerator-denominator-pairs). 
+  If a single denominator is used for a geography then numerator-denominator pairs can be automatically created.
 
 ## 5.1 Age Groups 
 
@@ -829,6 +859,19 @@ This is configured using the tables:
 
 ## 5.2 ICD field Name
 
+Numerators are currently limited to ICD 10 coding only and a single ICD field. Support will be added for:
+
+* ICD 9;
+* ICD 11 (subject to the release of the 11th Edition in June 2018).
+  
+In the longer term it is expected that support will be added for:
+
+* Multiple ICD fields;  
+* ICD oncology O(ICD-O-1);
+* UK HES oper and A+E codes;
+* User specified conditions (pre defined groups), e.g. Low birthweight, complex groups of ICD codes, the all record condition (the 
+  *1=1* ad-hoc SQL filter in the previous RIF). 
+	
 This is configured using the tables:
 
 * **rif40.rif40_table_outcomes**: This binds numerator tables to the outcome group name (e.g. ICD field name) for the table. The default outcome group name for the RIF
