@@ -73,10 +73,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 		
 		sqlAgeGenderYearManager = new AgeGenderYearManager(
 				sqlRIFContextManager, rifServiceStartupOptions);
-		sqlMapDataManager 
-			= new MSSQLMapDataManager(
-				rifServiceStartupOptions
-		);
+		sqlMapDataManager = MapDataManager.getInstance(rifServiceStartupOptions);
 		sqlCovariateManager = new CovariateManager(rifServiceStartupOptions,
 		                                           sqlRIFContextManager);
 		

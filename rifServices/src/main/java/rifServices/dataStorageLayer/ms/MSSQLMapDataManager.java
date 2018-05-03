@@ -23,15 +23,10 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class MSSQLMapDataManager extends BaseSQLManager implements MapDataManager {
+public final class MSSQLMapDataManager extends BaseSQLManager implements MapDataManager {
 	
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
-	/**
-	 * Instantiates a new SQL map data manager.
-	 *
-	 * @param rifServiceStartupOptions the rif service startup options
-	 */
 	public MSSQLMapDataManager(
 			final RIFServiceStartupOptions rifServiceStartupOptions) {
 
@@ -204,9 +199,10 @@ final class MSSQLMapDataManager extends BaseSQLManager implements MapDataManager
 		throws SQLException,
 		RIFServiceException {
 				
-		String result = "";
+		String result;
 				
-		SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+		SelectQueryFormatter queryFormatter =
+				SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
 		queryFormatter.addSelectField("hierarchytable");
 		queryFormatter.addFromTable("rif40.rif40_geographies");
 		queryFormatter.addWhereParameter("geography");
@@ -257,9 +253,9 @@ final class MSSQLMapDataManager extends BaseSQLManager implements MapDataManager
 		ResultSet resultSet = null;
 		String result = null;
 		try {
-		
-			SelectQueryFormatter queryFormatter
-				= new MSSQLSelectQueryFormatter(false);
+
+			SelectQueryFormatter queryFormatter =
+					SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("lookup_table");
 			queryFormatter.addFromTable("rif40.rif40_geolevels");
@@ -272,23 +268,17 @@ final class MSSQLMapDataManager extends BaseSQLManager implements MapDataManager
 				geography.getName(),
 				resolutionLevel);
 		
-			statement 
-				= createPreparedStatement(
-					connection, 
-					queryFormatter);
+			statement = createPreparedStatement(connection, queryFormatter);
 			statement.setString(1, geography.getName());
 			statement.setString(2, resolutionLevel);
 			resultSet = statement.executeQuery();
 			connection.commit();
+
+			// This method assumes that geoLevelSelect is valid
+			// Therefore, it must be associated with a lookup table
+			resultSet.next();
 			
-			if (resultSet.next() == false) {
-				//this method assumes that geoLevelSelect is valid
-				//Therefore, it must be associated with a lookup table
-				assert false;
-			}		
-			
-			result
-				= useAppropriateTableNameCase(resultSet.getString(1));
+			result = useAppropriateTableNameCase(resultSet.getString(1));
 		}
 		finally {
 			//Cleanup database resources			
