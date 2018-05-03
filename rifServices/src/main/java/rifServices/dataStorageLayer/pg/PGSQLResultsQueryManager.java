@@ -7,8 +7,8 @@ import java.sql.SQLException;
 
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.FunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.GeoLevelSelect;
@@ -26,7 +26,7 @@ final class PGSQLResultsQueryManager extends BaseSQLManager implements ResultsQu
 		
 		super(startupOptions);
 		
-		PGSQLFunctionCallerQueryFormatter getTilesQueryFormatter = new PGSQLFunctionCallerQueryFormatter();
+		FunctionCallerQueryFormatter getTilesQueryFormatter = new FunctionCallerQueryFormatter();
 		configureQueryFormatterForDB(getTilesQueryFormatter);
 		getTilesQueryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		getTilesQueryFormatter.setFunctionName("rif40_get_geojson_tiles");

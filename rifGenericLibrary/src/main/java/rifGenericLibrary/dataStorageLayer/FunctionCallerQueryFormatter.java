@@ -1,15 +1,8 @@
-package rifGenericLibrary.dataStorageLayer.pg;
+package rifGenericLibrary.dataStorageLayer;
 
 import java.util.ArrayList;
 
-import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.FunctionCallerQueryFormatter;
-
-/**
- * Convenience class used to help format typical queries which call functions
- */
-public final class PGSQLFunctionCallerQueryFormatter extends AbstractSQLQueryFormatter
-		implements FunctionCallerQueryFormatter {
+public class FunctionCallerQueryFormatter extends AbstractSQLQueryFormatter {
 
 	private boolean useDistinct;
 	private String functionName;
@@ -17,77 +10,50 @@ public final class PGSQLFunctionCallerQueryFormatter extends AbstractSQLQueryFor
 	private ArrayList<String> selectFields;
 	private ArrayList<String> whereConditions;
 	private ArrayList<String> orderByConditions;
-	
-	public PGSQLFunctionCallerQueryFormatter() {
+
+	public FunctionCallerQueryFormatter() {
 		useDistinct = false;
 		selectFields = new ArrayList<>();
 		whereConditions = new ArrayList<>();
 		orderByConditions = new ArrayList<>();
 	}
 
-	@Override
 	public String getFunctionName() {
 		return functionName;
 	}
 
-	@Override
 	public void setFunctionName(final String functionName) {
 		this.functionName = functionName;
 	}
 
-	@Override
 	public void setNumberOfFunctionParameters(final int numberOfFunctionParameters) {
 		this.numberOfFunctionParameters = numberOfFunctionParameters;
 	}
 
-	/**
-	 * Adds the select field.
-	 *
-	 * @param selectField the select field
-	 */
-	@Override
-	public void addSelectField(final String selectField) {
+	public void addSelectField(
+			final String selectField) {
 
-		selectFields.add(selectField);		
-	}	
-	
-	/**
-	 * Adds the where parameter.
-	 *
-	 * @param fieldName the field name
-	 */
-	@Override
-	public void addWhereParameter(final String fieldName) {
+		selectFields.add(selectField);
+	}
+
+	public void addWhereParameter(
+			final String fieldName) {
 
 		final String whereCondition = fieldName
 		                              + "=?";
 		whereConditions.add(whereCondition);
 	}
-	
-	/**
-	 * Adds the order by condition.
-	 *
-	 * @param fieldName the field name
-	 */
-	@Override
-	public void addOrderByCondition(final String fieldName) {
-			
-		addOrderByCondition(null, fieldName, SortOrder.ASCENDING);
-	}	
 
-	/**
-	 * Adds the order by condition.
-	 *
-	 * @param tableName the table name
-	 * @param fieldName the field name
-	 * @param sortOrder the sort order
-	 */
-	@Override
-	public void addOrderByCondition(final String tableName, final String fieldName,
-			final SortOrder sortOrder) {
-			
+	public void addOrderByCondition(final String fieldName) {
+
+		addOrderByCondition(null, fieldName, SortOrder.ASCENDING);
+	}
+
+	public void addOrderByCondition(
+			final String tableName, final String fieldName, final SortOrder sortOrder) {
+
 		StringBuilder orderByCondition = new StringBuilder();
-			
+
 		if (tableName != null) {
 			orderByCondition.append(tableName);
 			orderByCondition.append(".");
@@ -97,22 +63,13 @@ public final class PGSQLFunctionCallerQueryFormatter extends AbstractSQLQueryFor
 		orderByCondition.append(sortOrder.sqlForm());
 		orderByConditions.add(orderByCondition.toString());
 	}
-	
-	/**
-	 * Sets the use distinct.
-	 *
-	 * @param useDistinct the new use distinct
-	 */
-	@Override
+
 	public void setUseDistinct(
-		final boolean useDistinct) {
-		
+			final boolean useDistinct) {
+
 		this.useDistinct = useDistinct;
 	}
-	
-	/*
-	 * @see rifServices.dataStorageLayer.SQLQueryFormatter#generateQuery()
-	 */
+
 	@Override
 	public String generateQuery() {
 		resetAccumulatedQueryExpression();
@@ -121,7 +78,7 @@ public final class PGSQLFunctionCallerQueryFormatter extends AbstractSQLQueryFor
 			addQueryPhrase("DISTINCT");
 		}
 		padAndFinishLine();
-		
+
 		int numberOfSelectFields = selectFields.size();
 		if (numberOfSelectFields == 0) {
 			addQueryPhrase(1, "*");
@@ -137,18 +94,18 @@ public final class PGSQLFunctionCallerQueryFormatter extends AbstractSQLQueryFor
 			}
 		}
 		padAndFinishLine();
-		
+
 		addQueryPhrase(0, "FROM");
 		padAndFinishLine();
-		
+
 		String databaseSchemaName = getDatabaseSchemaName();
 		if (databaseSchemaName != null) {
 			addQueryPhrase(1, databaseSchemaName);
-			addQueryPhrase(".");			
+			addQueryPhrase(".");
 		}
 		addQueryPhrase(functionName);
 		addQueryPhrase("(");
-		
+
 		for (int i = 0; i < numberOfFunctionParameters; i++) {
 			if (i != 0) {
 				addQueryPhrase(",");
@@ -156,16 +113,16 @@ public final class PGSQLFunctionCallerQueryFormatter extends AbstractSQLQueryFor
 			addQueryPhrase("?");
 		}
 		addQueryPhrase(")");
-		
+
 		int numberOfWhereConditions = whereConditions.size();
-		if (numberOfWhereConditions > 0) {			
+		if (numberOfWhereConditions > 0) {
 			padAndFinishLine();
 			addQueryPhrase(0, "WHERE");
 			padAndFinishLine();
 			for (int i = 0; i < numberOfWhereConditions; i++) {
 				if (i > 0) {
 					addQueryPhrase(" AND");
-					padAndFinishLine();					
+					padAndFinishLine();
 				}
 				addQueryPhrase(1, convertCase(whereConditions.get(i)));
 			}
@@ -183,10 +140,12 @@ public final class PGSQLFunctionCallerQueryFormatter extends AbstractSQLQueryFor
 				addQueryPhrase(convertCase(orderByConditions.get(i)));
 			}
 		}
-		
-		addQueryPhrase(";");
-		finishLine();
-				
+
+		if (endWithSemiColon()) {
+			addQueryPhrase(";");
+			finishLine();
+		}
+
 		return super.generateQuery();
 	}
 }

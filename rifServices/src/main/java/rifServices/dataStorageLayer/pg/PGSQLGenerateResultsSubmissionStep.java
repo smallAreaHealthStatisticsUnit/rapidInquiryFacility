@@ -5,8 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import rifGenericLibrary.dataStorageLayer.FunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.dataStorageLayer.common.GenerateResultsSubmissionStep;
@@ -45,8 +45,7 @@ public final class PGSQLGenerateResultsSubmissionStep implements GenerateResults
 			
 			manager.enableDatabaseDebugMessages(connection);
 			
-			PGSQLFunctionCallerQueryFormatter runStudyQueryFormatter =
-					new PGSQLFunctionCallerQueryFormatter();
+			FunctionCallerQueryFormatter runStudyQueryFormatter = new FunctionCallerQueryFormatter();
 			runStudyQueryFormatter.setDatabaseSchemaName("rif40_sm_pkg");
 			runStudyQueryFormatter.setFunctionName("rif40_run_study");
 			runStudyQueryFormatter.setNumberOfFunctionParameters(2);
