@@ -3,8 +3,8 @@ package rifServices.dataStorageLayer.ms;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.CommonHealthOutcomeManager;
 import rifServices.dataStorageLayer.common.CommonStudyStateManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
@@ -80,8 +80,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 		sqlCovariateManager = new CovariateManager(rifServiceStartupOptions,
 		                                           sqlRIFContextManager);
 		
-		InvestigationManager sqlInvestigationManager = InvestigationManager.getInstance(
-				rifDatabaseProperties.getDatabaseType(),
+		InvestigationManager sqlInvestigationManager = new InvestigationManager(
 				rifServiceStartupOptions,
 				sqlRIFContextManager,
 				sqlAgeGenderYearManager,

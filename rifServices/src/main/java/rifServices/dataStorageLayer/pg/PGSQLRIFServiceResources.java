@@ -109,9 +109,8 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		                                           sqlRIFContextManager);
 		
 		InvestigationManager sqlInvestigationManager =
-				InvestigationManager.getInstance(rifDatabaseProperties.getDatabaseType(),
-				                                 rifServiceStartupOptions, sqlRIFContextManager,
-				                                 sqlAgeGenderYearManager, sqlCovariateManager);
+				new InvestigationManager(rifServiceStartupOptions, sqlRIFContextManager,
+				                         sqlAgeGenderYearManager, sqlCovariateManager);
 		
 		sqlDiseaseMappingStudyManager = new DiseaseMappingStudyManager(rifServiceStartupOptions,
 				sqlRIFContextManager, sqlInvestigationManager);
