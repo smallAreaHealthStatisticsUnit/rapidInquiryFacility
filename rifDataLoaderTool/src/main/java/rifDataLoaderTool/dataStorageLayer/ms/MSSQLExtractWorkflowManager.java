@@ -158,7 +158,7 @@ final class MSSQLExtractWorkflowManager
 			//drop the table if it already exists so we can recreate it
 			//without raising a 'table already exists' exception
 			MSSQLCreateTableQueryFormatter createExtractTableQueryFormatter
-				 = new MSSQLCreateTableQueryFormatter(false);
+				 = new MSSQLCreateTableQueryFormatter();
 			//KLG_SCHEMA
 			//createExtractTableQueryFormatter.setDatabaseSchemaName("dbo");
 			createExtractTableQueryFormatter.setTextFieldLength(TEXT_FIELD_WIDTH);
@@ -413,7 +413,7 @@ final class MSSQLExtractWorkflowManager
 					dataSetConfiguration.getName());		
 		
 		MSSQLInsertQueryFormatter queryFormatter 
-			= new MSSQLInsertQueryFormatter(false);
+			= new MSSQLInsertQueryFormatter();
 		queryFormatter.setIntoTable(loadTableName);
 		queryFormatter.addInsertField("data_source_id");
 		ArrayList<DataSetFieldConfiguration> fieldConfigurations
@@ -475,7 +475,7 @@ final class MSSQLExtractWorkflowManager
 			 * supported differently in SQL Server
 			 */				
 			MSSQLDeleteTableQueryFormatter deleteExtractTableQueryFormatter
-				= new MSSQLDeleteTableQueryFormatter(false);
+				= new MSSQLDeleteTableQueryFormatter();
 			deleteExtractTableQueryFormatter.setTableToDelete(tableToDelete);
 
 			statement 

@@ -350,13 +350,7 @@ public final class PGSQLSelectQueryFormatter extends AbstractSQLQueryFormatter
 		}
 		orderByCondition.append(fieldName);
 		orderByCondition.append(" ");
-		if (sortOrder == SortOrder.ASCENDING) {
-			orderByCondition.append("ASC");
-		}
-		else {
-			orderByCondition.append("DESC");			
-		}
-		
+		orderByCondition.append(sortOrder.sqlForm());
 		orderByConditions.add(orderByCondition.toString());
 	}
 	

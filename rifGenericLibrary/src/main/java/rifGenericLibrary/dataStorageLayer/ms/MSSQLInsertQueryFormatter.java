@@ -2,9 +2,10 @@ package rifGenericLibrary.dataStorageLayer.ms;
 
 import java.util.ArrayList;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.InsertQueryFormatter;
 
-public final class MSSQLInsertQueryFormatter extends AbstractMSSQLQueryFormatter
+public final class MSSQLInsertQueryFormatter extends AbstractSQLQueryFormatter
 		implements InsertQueryFormatter {
 
 	/** The into table. */
@@ -18,10 +19,9 @@ public final class MSSQLInsertQueryFormatter extends AbstractMSSQLQueryFormatter
 	/**
 	 * Instantiates a new SQL insert query formatter.
 	 */
-	public MSSQLInsertQueryFormatter(final boolean useGoCommand) {
-		super(useGoCommand);
-		insertFields = new ArrayList<String>();
-		useQuotesForLiteral = new ArrayList<Boolean>();		
+	public MSSQLInsertQueryFormatter() {
+		insertFields = new ArrayList<>();
+		useQuotesForLiteral = new ArrayList<>();
 	}
 
 	@Override

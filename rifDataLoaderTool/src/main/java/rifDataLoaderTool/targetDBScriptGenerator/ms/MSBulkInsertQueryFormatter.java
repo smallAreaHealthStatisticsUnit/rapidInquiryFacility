@@ -1,15 +1,18 @@
 package rifDataLoaderTool.targetDBScriptGenerator.ms;
 
-import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
-import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
-import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
-
-import rifGenericLibrary.system.*;
-import rifGenericLibrary.dataStorageLayer.ms.AbstractMSSQLQueryFormatter;
-
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.RIFSchemaArea;
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.system.RIFServiceException;
+import rifGenericLibrary.system.RIFServiceExceptionFactory;
 
 /**
  *
@@ -61,8 +64,7 @@ import java.util.ArrayList;
  *
  */
 
-public class MSBulkInsertQueryFormatter extends
-	AbstractMSSQLQueryFormatter {
+public class MSBulkInsertQueryFormatter extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -78,8 +80,7 @@ public class MSBulkInsertQueryFormatter extends
 	// Section Construction
 	// ==========================================
 
-	public MSBulkInsertQueryFormatter(final boolean useGoCommand) {
-		super(useGoCommand);
+	public MSBulkInsertQueryFormatter() {
 		path = "$(pwd)";
 		this.setEndWithSemiColon(false);
 	}

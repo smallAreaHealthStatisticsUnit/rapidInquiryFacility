@@ -262,7 +262,7 @@ final public class PGSQLDataSetManager
 		throws RIFServiceException {
 	
 		DeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter
-			= new DeleteRowsQueryFormatter(false);
+			= new DeleteRowsQueryFormatter();
 		deleteDataSetStatementQueryFormatter.setFromTable("data_set_configurations");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("core_data_set_name");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("version");
@@ -357,7 +357,7 @@ final public class PGSQLDataSetManager
 		throws RIFServiceException {
 
 		//Create SQL query
-		DeleteRowsQueryFormatter queryFormatter = new DeleteRowsQueryFormatter(false);
+		DeleteRowsQueryFormatter queryFormatter = new DeleteRowsQueryFormatter();
 		queryFormatter.setFromTable("data_set_configurations");
 
 		PreparedStatement statement = null;

@@ -11,7 +11,6 @@ import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.dataStorageLayer.common.BaseSQLManager;
@@ -22,8 +21,6 @@ import rifServices.system.RIFServiceStartupOptions;
 
 final class PGSQLResultsQueryManager extends BaseSQLManager implements ResultsQueryManager {
 
-	RIFLogger rifLogger = RIFLogger.getLogger();
-	
 	public PGSQLResultsQueryManager(
 			final RIFServiceStartupOptions startupOptions) {
 		
@@ -34,7 +31,6 @@ final class PGSQLResultsQueryManager extends BaseSQLManager implements ResultsQu
 		getTilesQueryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		getTilesQueryFormatter.setFunctionName("rif40_get_geojson_tiles");
 		getTilesQueryFormatter.setNumberOfFunctionParameters(9);		
-		
 	}
 
 	@Override
@@ -117,11 +113,9 @@ final class PGSQLResultsQueryManager extends BaseSQLManager implements ResultsQu
 						"sqlResultsQueryManager.unableToGetCentroids",
 						geoLevelSelect.getDisplayName(),
 						geography.getDisplayName());
-				RIFServiceException rifServiceException
-					= new RIFServiceException(
-						RIFServiceError.DATABASE_QUERY_FAILED,
-						errorMessage);
-				throw rifServiceException;
+				throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
 			}
 			finally {
 				//Cleanup database resources
@@ -140,14 +134,9 @@ final class PGSQLResultsQueryManager extends BaseSQLManager implements ResultsQu
 			final Integer x,
 			final Integer y)
 		throws RIFServiceException {
-		
-		/*
-		 * http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL2&zoomlevel={z}&x={x}&y={y}
-		 */
-		
+
 		//STEP 1: get the tile table name
-		//SELECT tiletable FROM rif40.rif40_geographies WHERE geography = 'SAHSULAND' 
-							
+
 		PGSQLSelectQueryFormatter getMapTileTableQueryFormatter
 			= new PGSQLSelectQueryFormatter();		
 			
@@ -182,22 +171,8 @@ final class PGSQLResultsQueryManager extends BaseSQLManager implements ResultsQu
 					
 			PGSQLSelectQueryFormatter getMapTilesQueryFormatter
 				= new PGSQLSelectQueryFormatter();
-				
-			//STEP 2: get the tiles	
-			/*
-				SELECT 
-				   TILES_SAHSULAND.optimised_topojson
-				FROM 
-				   TILES_SAHSULAND,
-				   rif40_geolevels 
-				WHERE
-				   TILES_SAHSULAND.geolevel_id = rif40_geolevels.geolevel_id AND
-				   rif40_geolevels.geolevel_name='SAHSU_GRD_LEVEL2' AND
-				   TILES_SAHSULAND.zoomlevel=10 AND 
-				   TILES_SAHSULAND.x=490 AND 
-				   TILES_SAHSULAND.y=324
-			*/
-				
+
+			//STEP 2: get the tiles
 			getMapTilesQueryFormatter.addSelectField(myTileTable,"optimised_topojson");
 			getMapTilesQueryFormatter.addFromTable(myTileTable);
 			getMapTilesQueryFormatter.addFromTable("rif40_geolevels");	
@@ -242,11 +217,9 @@ final class PGSQLResultsQueryManager extends BaseSQLManager implements ResultsQu
 					"sqlResultsQueryManager.unableToGetTiles",
 					geoLevelSelect.getDisplayName(),
 					geography.getDisplayName());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-			throw rifServiceException;
+			throw new RIFServiceException(
+				RIFServiceError.DATABASE_QUERY_FAILED,
+				errorMessage);
 		}
 		finally {
 			//Cleanup database resources

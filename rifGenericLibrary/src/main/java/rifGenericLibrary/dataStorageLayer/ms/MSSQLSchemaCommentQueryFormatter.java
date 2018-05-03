@@ -1,5 +1,7 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+
 /**
  * Convenience class used to help comment part of a schema
  *
@@ -63,8 +65,7 @@ package rifGenericLibrary.dataStorageLayer.ms;
  *
  */
 
-public final class MSSQLSchemaCommentQueryFormatter 
-	extends AbstractMSSQLQueryFormatter {
+public final class MSSQLSchemaCommentQueryFormatter extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -82,8 +83,7 @@ public final class MSSQLSchemaCommentQueryFormatter
 	// ==========================================
 	// Section Construction
 	// ==========================================
-	public MSSQLSchemaCommentQueryFormatter(final boolean useGoCommand) {
-		super(useGoCommand);
+	public MSSQLSchemaCommentQueryFormatter() {
 		setEndWithSemiColon(false);
 	}
 	

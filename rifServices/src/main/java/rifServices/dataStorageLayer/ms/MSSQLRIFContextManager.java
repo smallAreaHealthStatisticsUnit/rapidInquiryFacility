@@ -59,7 +59,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		try {
 		
 			//Create SQL query		
-			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("geography");
@@ -142,7 +142,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		try {
 		
 			//Create SQL query		
-			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("theme");
@@ -239,7 +239,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		try {
 		
 			//Create SQL query		
-			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("numerator_description");
@@ -357,7 +357,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 			//Create SQL query		
 			String userID = user.getUserID(); 
 			
-			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setUseDistinct(true);
 			queryFormatter.addSelectField("numerator_table");
@@ -485,7 +485,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 			//Obtain the maximum value for geolevel_id. We need to return
 			//all geolevel choices which have a priority less than this
 			MSSQLAggregateValueQueryFormatter maximumGeoLevelIDQueryFormatter
-				= new MSSQLAggregateValueQueryFormatter(false, MSSQLAggregateValueQueryFormatter.OperationType.MAX);
+				= new MSSQLAggregateValueQueryFormatter(MSSQLAggregateValueQueryFormatter.OperationType.MAX);
 			configureQueryFormatterForDB(maximumGeoLevelIDQueryFormatter);
 			maximumGeoLevelIDQueryFormatter.setCountableFieldName("geolevel_id");
 			maximumGeoLevelIDQueryFormatter.setFromTable("rif40.rif40_geolevels");
@@ -515,7 +515,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		
 			//Create SQL query		
 			SelectQueryFormatter getGeoLevelSelectValuesQueryFormatter
-				= new MSSQLSelectQueryFormatter(false);
+				= new MSSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(getGeoLevelSelectValuesQueryFormatter);
 			getGeoLevelSelectValuesQueryFormatter.addSelectField("geolevel_name");
 			getGeoLevelSelectValuesQueryFormatter.addFromTable("rif40.rif40_geolevels");
@@ -600,7 +600,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		try {
 		
 			//Create SQL query		
-			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("defaultcomparea");
 			queryFormatter.addFromTable("rif40.rif40_geographies");
@@ -689,7 +689,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		//First, obtain the name of the table that will contain the names of 
 		//areas		
 		SelectQueryFormatter lookupTableQueryFormatter
-			= new MSSQLSelectQueryFormatter(false);
+			= new MSSQLSelectQueryFormatter();
 		configureQueryFormatterForDB(lookupTableQueryFormatter);
 		lookupTableQueryFormatter.addSelectField("lookup_table");
 		lookupTableQueryFormatter.addFromTable("rif40.rif40_geolevels");
@@ -741,7 +741,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 
 			//Given the lookup table name, retrieve the areas
 			SelectQueryFormatter geographicAreaQueryFormatter
-				= new MSSQLSelectQueryFormatter(false);
+				= new MSSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(geographicAreaQueryFormatter);
 			geographicAreaQueryFormatter.addSelectField(geoLevelSelect.getName());		
 			geographicAreaQueryFormatter.addSelectField("name");
@@ -841,7 +841,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 			
 			//Create SQL query		
 			SelectQueryFormatter geoLevelIDQueryFormatter
-				= new MSSQLSelectQueryFormatter(false);
+				= new MSSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(geoLevelIDQueryFormatter);
 			geoLevelIDQueryFormatter.addSelectField("geolevel_id");
 			geoLevelIDQueryFormatter.addFromTable("rif40.rif40_geolevels");
@@ -877,7 +877,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 			}
 		
 			SelectQueryFormatter geoLevelViewsQueryFormatter
-				= new MSSQLSelectQueryFormatter(false);
+				= new MSSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(geoLevelViewsQueryFormatter);
 			geoLevelViewsQueryFormatter.addSelectField("geolevel_name");
 			geoLevelViewsQueryFormatter.addFromTable("rif40.rif40_geolevels");
@@ -992,8 +992,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		try {
 		
 			//Create SQL query
-			RecordExistsQueryFormatter queryFormatter
-				= new MSSQLRecordExistsQueryFormatter(false);
+			RecordExistsQueryFormatter queryFormatter = new MSSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setFromTable("rif40.rif40_geographies");
 			queryFormatter.setLookupKeyFieldName("geography");
@@ -1083,8 +1082,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		try {
 
 			//Create SQL query
-			RecordExistsQueryFormatter queryFormatter
-				= new MSSQLRecordExistsQueryFormatter(false);
+			RecordExistsQueryFormatter queryFormatter = new MSSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("geolevel_name");
 			queryFormatter.setFromTable("rif40.rif40_geolevels");
@@ -1195,7 +1193,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		ResultSet geoLevelAreaExistsResultSet = null;
 		ResultSet getLookupTableResultSet = null;
 		try {
-			SelectQueryFormatter lookupTableQueryQueryFormatter = new MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter lookupTableQueryQueryFormatter = new MSSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(lookupTableQueryQueryFormatter);
 			lookupTableQueryQueryFormatter.addSelectField("lookup_table");
 			lookupTableQueryQueryFormatter.addFromTable("rif40.rif40_geolevels");
@@ -1228,8 +1226,8 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 			}
 		
 			//Check whether the name exists
-			RecordExistsQueryFormatter recordExistsQueryFormatter
-				= new MSSQLRecordExistsQueryFormatter(false);
+			RecordExistsQueryFormatter recordExistsQueryFormatter =
+					new MSSQLRecordExistsQueryFormatter();
 			recordExistsQueryFormatter.setFromTable(geoLevelSelectLookupTable);
 			recordExistsQueryFormatter.setLookupKeyFieldName("name");
 		
@@ -1245,7 +1243,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 			geoLevelAreaExistsStatement.setString(1, geoLevelAreaName);
 			geoLevelAreaExistsResultSet
 				= geoLevelAreaExistsStatement.executeQuery();
-			if (geoLevelAreaExistsResultSet.next() == false) {
+			if (!geoLevelAreaExistsResultSet.next()) {
 				String recordType
 					= RIFServiceMessages.getMessage("geoLevelArea.label");			
 				//No such geolevel area exists
@@ -1334,7 +1332,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		
 			//Obtain the minimimum geolevel ID that the geoLevelMap needs to have
 			SelectQueryFormatter geoLevelIDQueryFormatter
-				= new MSSQLSelectQueryFormatter(false);
+				= new MSSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(geoLevelIDQueryFormatter);		
 			geoLevelIDQueryFormatter.addSelectField("geolevel_id");
 			geoLevelIDQueryFormatter.addFromTable("rif40.rif40_geolevels");
@@ -1354,7 +1352,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 			geoLevelIDStatement.setString(1, geographyName);
 			geoLevelIDStatement.setString(2, geoLevelSelectName);
 			geoLevelIDResultSet = geoLevelIDStatement.executeQuery();	
-			if (geoLevelIDResultSet.next() == false) {
+			if (!geoLevelIDResultSet.next()) {
 				//ERROR: no views available
 				
 				connection.commit();
@@ -1365,8 +1363,8 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 				geoLevelID = geoLevelIDResultSet.getInt(1);
 			}
 			
-			RecordExistsQueryFormatter geoLevelMapExistsQueryFormatter
-				= new MSSQLRecordExistsQueryFormatter(false);
+			RecordExistsQueryFormatter geoLevelMapExistsQueryFormatter =
+					new MSSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(geoLevelMapExistsQueryFormatter);		
 			geoLevelMapExistsQueryFormatter.setFromTable("rif40.rif40_geolevels");
 			geoLevelMapExistsQueryFormatter.addWhereParameter("geography");
@@ -1389,9 +1387,9 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 
 			geoLevelValueExistsResultSet 
 				= geoLevelValueExistsStatement.executeQuery();
-			if (geoLevelValueExistsResultSet.next() == false) {
+			if (!geoLevelValueExistsResultSet.next()) {
 				//No such geolevel map exists
-				if (isToMapValue == true) {
+				if (isToMapValue) {
 					String recordType
 						= RIFServiceMessages.getMessage("geoLevelToMap.label");
 					String errorMessage
@@ -1470,8 +1468,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		final boolean isToMapValue) 
 		throws RIFServiceException {
 
-		RecordExistsQueryFormatter queryFormatter
-			= new MSSQLRecordExistsQueryFormatter(false);
+		RecordExistsQueryFormatter queryFormatter = new MSSQLRecordExistsQueryFormatter();
 		configureQueryFormatterForDB(queryFormatter);		
 		queryFormatter.setFromTable("rif40.rif40_geolevels");
 		queryFormatter.addWhereParameter("geography");
@@ -1491,7 +1488,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 			= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelToMap");
 		String unableToGetGeoLevelView
 			= RIFServiceMessages.getMessage("sqlRIFContextManager.error.unableToGetGeoLevelView");
-		if (isToMapValue == true) {
+		if (isToMapValue) {
 			unableToCheckValueExistsException
 				= new RIFServiceException(
 					RIFServiceError.GET_GEOLEVEL_TO_MAP_VALUES,
@@ -1514,11 +1511,11 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 			
 			resultSet = statement.executeQuery();
 			connection.commit();
-			if (resultSet.next() == false) {
+			if (!resultSet.next()) {
 
 				connection.commit();
 				
-				if (isToMapValue == true) {
+				if (isToMapValue) {
 					String recordType = RIFServiceMessages.getMessage("geoLevelToMap.label");
 
 					String errorMessage
@@ -1590,8 +1587,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		PreparedStatement checkHealthThemeExistsStatement = null;
 		ResultSet checkHealthThemeExistsResultSet = null;
 		try {
-			RecordExistsQueryFormatter queryFormatter
-				= new MSSQLRecordExistsQueryFormatter(false);
+			RecordExistsQueryFormatter queryFormatter = new MSSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.setLookupKeyFieldName("description");
 			queryFormatter.setFromTable("rif40.rif40_health_study_themes");
@@ -1608,7 +1604,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 			checkHealthThemeExistsStatement.setString(1, healthThemeDescription);
 			checkHealthThemeExistsResultSet 
 				= checkHealthThemeExistsStatement.executeQuery();
-			if (checkHealthThemeExistsResultSet.next() == false) {
+			if (!checkHealthThemeExistsResultSet.next()) {
 				//ERROR: no such health theme exists
 				String recordType = 
 					RIFServiceMessages.getMessage("healthTheme.label");
@@ -1677,8 +1673,8 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		PreparedStatement getNDPairExistsStatement = null;
 		ResultSet getNDPairExistsResultSet = null;
 		try {
-			RecordExistsQueryFormatter ndPairExistsQueryFormatter
-				= new MSSQLRecordExistsQueryFormatter(false);
+			RecordExistsQueryFormatter ndPairExistsQueryFormatter =
+					new MSSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(ndPairExistsQueryFormatter);		
 			ndPairExistsQueryFormatter.setFromTable(user.getUserID() + ".rif40_num_denom");
 			ndPairExistsQueryFormatter.addWhereParameter("geography");
@@ -1770,8 +1766,7 @@ final class MSSQLRIFContextManager extends BaseSQLManager implements RIFContextM
 		PreparedStatement getNDPairExistsStatement = null;
 		ResultSet getNDPairExistsResultSet = null;
 		try {
-			RecordExistsQueryFormatter queryFormatter
-				= new MSSQLRecordExistsQueryFormatter(false);
+			RecordExistsQueryFormatter queryFormatter = new MSSQLRecordExistsQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.setFromTable(user.getUserID() + ".rif40_num_denom"); 
 			queryFormatter.addWhereParameter("geography");

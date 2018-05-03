@@ -116,13 +116,13 @@ final public class MSSQLChangeAuditManager
 		throws RIFServiceException {
 
 		DeleteRowsQueryFormatter clearChangeLogQueryFormatter
-			= new DeleteRowsQueryFormatter(false);
+			= new DeleteRowsQueryFormatter();
 		//KLG_SCHEMA
 		//clearChangeLogQueryFormatter.setDatabaseSchemaName("dbo");
 		clearChangeLogQueryFormatter.setFromTable("rif_change_log");		
 
 		DeleteRowsQueryFormatter clearValidationFailuresLogQueryFormatter
-			= new DeleteRowsQueryFormatter(false);
+			= new DeleteRowsQueryFormatter();
 		//KLG_SCHEMA
 		//clearValidationFailuresLogQueryFormatter.setDatabaseSchemaName("dbo");
 		clearValidationFailuresLogQueryFormatter.setFromTable("rif_failed_val_log");			
@@ -286,7 +286,7 @@ final public class MSSQLChangeAuditManager
 		String cleanFieldName = dataSetFieldConfiguration.getCleanFieldName();
 		
 		SelectQueryFormatter queryFormatter
-			= new MSSQLSelectQueryFormatter(false);
+			= new MSSQLSelectQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addSelectField(searchReplaceTableName, "data_set_id");
 		queryFormatter.addSelectField(searchReplaceTableName, "row_number");
@@ -603,7 +603,7 @@ final public class MSSQLChangeAuditManager
 			= auditableField.getCleanFieldName();
 		
 		SelectQueryFormatter queryFormatter
-			= new MSSQLSelectQueryFormatter(false);
+			= new MSSQLSelectQueryFormatter();
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setEndWithSemiColon(false);
@@ -656,7 +656,7 @@ final public class MSSQLChangeAuditManager
 			= auditableField.getCleanFieldName();
 		
 		SelectQueryFormatter queryFormatter
-			= new MSSQLSelectQueryFormatter(false);
+			= new MSSQLSelectQueryFormatter();
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setEndWithSemiColon(false);
@@ -712,7 +712,7 @@ final public class MSSQLChangeAuditManager
 		PreparedStatement statement = null;
 		try {
 			SelectQueryFormatter queryFormatter
-				= new MSSQLSelectQueryFormatter(false);
+				= new MSSQLSelectQueryFormatter();
 			queryFormatter.addSelectField("id");
 			queryFormatter.addFromTable("data_set_configurations");
 			queryFormatter.addWhereParameter("core_data_set_name");
@@ -784,7 +784,7 @@ final public class MSSQLChangeAuditManager
 		PreparedStatement addDataSetStatement = null;
 		ResultSet resultSet = null;
 		MSSQLInsertQueryFormatter addDataSetQueryFormatter
-			= new MSSQLInsertQueryFormatter(false);		
+			= new MSSQLInsertQueryFormatter();
 		
 		SQLGeneralQueryFormatter getIdentifierQueryFormatter
 			= new SQLGeneralQueryFormatter();
@@ -853,7 +853,7 @@ final public class MSSQLChangeAuditManager
 		throws RIFServiceException {
 	
 		DeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter
-			= new DeleteRowsQueryFormatter(false);
+			= new DeleteRowsQueryFormatter();
 		//KLG_SCHEMA
 		//deleteDataSetStatementQueryFormatter.setDatabaseSchemaName("dbo");
 		deleteDataSetStatementQueryFormatter.setFromTable("data_set_configurations");
@@ -901,7 +901,7 @@ final public class MSSQLChangeAuditManager
 				
 		PreparedStatement statement = null;
 		RecordExistsQueryFormatter queryFormatter
-			= new MSSQLRecordExistsQueryFormatter(false);
+			= new MSSQLRecordExistsQueryFormatter();
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setFromTable("data_set_configurations");
@@ -949,7 +949,7 @@ final public class MSSQLChangeAuditManager
 
 		//Create SQL query
 		rifGenericLibrary.dataStorageLayer.DeleteRowsQueryFormatter queryFormatter
-			= new DeleteRowsQueryFormatter(false);
+			= new DeleteRowsQueryFormatter();
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setFromTable("data_set_configurations");

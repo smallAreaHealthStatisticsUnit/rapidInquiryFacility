@@ -2,6 +2,7 @@ package rifGenericLibrary.dataStorageLayer.ms;
 
 import java.util.ArrayList;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 
 /**
  *
@@ -67,8 +68,7 @@ import java.util.ArrayList;
  *
  */
 
-public final class MSSQLCreateTableQueryFormatter 
-	extends AbstractMSSQLQueryFormatter {
+public final class MSSQLCreateTableQueryFormatter extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -84,7 +84,7 @@ public final class MSSQLCreateTableQueryFormatter
 	private String tableToCreate;
 	
 	/** The insert fields. */
-	private ArrayList<String> fieldDeclarations;
+	private ArrayList<String> fieldDeclarations = new ArrayList<>();
 	
 	private boolean isTemporaryTable;
 	private static final String DEFAULT_VAR_CHAR_LENGTH = "200";
@@ -92,14 +92,6 @@ public final class MSSQLCreateTableQueryFormatter
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
-	/**
-	 * Instantiates a new SQL insert query formatter.
-	 */
-	public MSSQLCreateTableQueryFormatter(final boolean useGoCommand) {
-		super(useGoCommand);
-		fieldDeclarations = new ArrayList<String>();
-	}
 
 	// ==========================================
 	// Section Accessors and Mutators

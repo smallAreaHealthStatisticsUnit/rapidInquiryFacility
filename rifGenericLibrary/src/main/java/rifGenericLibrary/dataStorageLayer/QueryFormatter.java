@@ -1,6 +1,26 @@
 package rifGenericLibrary.dataStorageLayer;
 
 public interface QueryFormatter {
+
+	/**
+	 * The Enum SortOrder.
+	 */
+	enum SortOrder {
+		ASCENDING("ASC"),
+		DESCENDING("DESC");
+
+		private String sql;
+
+		SortOrder(String sqlForm) {
+
+			this.sql = sqlForm;
+		}
+
+		public String sqlForm() {
+			return sql;
+		}
+	}
+
 	void setDatabaseSchemaName(String databaseSchemaName);
 
 	String getDatabaseSchemaName();
@@ -88,4 +108,5 @@ public interface QueryFormatter {
 	boolean endWithSemiColon();
 
 	void setEndWithSemiColon(boolean endWithSemiColon);
+
 }

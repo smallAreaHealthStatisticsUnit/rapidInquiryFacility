@@ -516,7 +516,7 @@ public final class PGCleaningStepQueryGenerator {
 		 * WHERE
 		 *    data_set_id=?;
 		 */
-		DeleteRowsQueryFormatter queryFormatter = new DeleteRowsQueryFormatter(false);
+		DeleteRowsQueryFormatter queryFormatter = new DeleteRowsQueryFormatter();
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.deleteAuditsQuery.comment1");		
 		queryFormatter.addCommentLine(queryCommentLine1);

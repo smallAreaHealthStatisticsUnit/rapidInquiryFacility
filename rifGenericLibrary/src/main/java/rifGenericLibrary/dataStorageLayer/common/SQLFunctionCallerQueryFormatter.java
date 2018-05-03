@@ -188,13 +188,7 @@ public final class SQLFunctionCallerQueryFormatter
 		}
 		orderByCondition.append(fieldName);
 		orderByCondition.append(" ");
-		if (sortOrder == SortOrder.ASCENDING) {
-			orderByCondition.append("ASC");
-		}
-		else {
-			orderByCondition.append("DESC");			
-		}
-		
+		orderByCondition.append(sortOrder.sqlForm());
 		orderByConditions.add(orderByCondition.toString());
 	}
 	

@@ -488,7 +488,7 @@ public final class MSCleaningStepQueryGenerator {
 		final DataSetConfiguration dataSetConfiguration) {
 
 		MSSQLDeleteTableQueryFormatter queryFormatter
-			= new MSSQLDeleteTableQueryFormatter(false);
+			= new MSSQLDeleteTableQueryFormatter();
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.dropValidationQuery.comment1");		
 		queryFormatter.addCommentLine(queryCommentLine1);
@@ -515,7 +515,7 @@ public final class MSCleaningStepQueryGenerator {
 		 *    data_set_id=?;
 		 */
 		DeleteRowsQueryFormatter queryFormatter
-			= new DeleteRowsQueryFormatter(false);
+			= new DeleteRowsQueryFormatter();
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.deleteAuditsQuery.comment1");		
 		queryFormatter.addCommentLine(queryCommentLine1);
@@ -1092,7 +1092,7 @@ public final class MSCleaningStepQueryGenerator {
 		final DataSetConfiguration dataSetConfiguration) {
 
 		MSSQLDeleteTableQueryFormatter queryFormatter 
-			= new MSSQLDeleteTableQueryFormatter(false);
+			= new MSSQLDeleteTableQueryFormatter();
 		String queryCommentLine
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.dropSearchReplaceQuery.comments1");
 		queryFormatter.addCommentLine(queryCommentLine);
@@ -1317,7 +1317,7 @@ public final class MSCleaningStepQueryGenerator {
 		final DataSetConfiguration dataSetConfiguration) {
 
 		MSSQLDeleteTableQueryFormatter queryFormatter
-			= new MSSQLDeleteTableQueryFormatter(false);
+			= new MSSQLDeleteTableQueryFormatter();
 		String queryCommentLine
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.dropCastQuery.comment1");
 		queryFormatter.addCommentLine(queryCommentLine);

@@ -2,6 +2,9 @@ package rifGenericLibrary.dataStorageLayer.ms;
 
 import java.util.ArrayList;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
+
 /**
  * Class designed to create a template for queries that resemble this example:
  * <code> 
@@ -76,9 +79,8 @@ import java.util.ArrayList;
  *
  */
 
-public final class MSSQLRecordExistsQueryFormatter 
-	extends AbstractMSSQLQueryFormatter implements
-	                                    rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter {
+public final class MSSQLRecordExistsQueryFormatter extends AbstractSQLQueryFormatter
+		implements RecordExistsQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -94,20 +96,12 @@ public final class MSSQLRecordExistsQueryFormatter
 	private String lookupKeyFieldName;
 	
 	/** The where conditions. */
-	private ArrayList<String> whereConditions;
+	private ArrayList<String> whereConditions = new ArrayList<>();
 
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
-	/**
-	 * Instantiates a new SQL record exists query formatter.
-	 */
-	public MSSQLRecordExistsQueryFormatter(final boolean useGoCommand) {
-		super(useGoCommand);
-		whereConditions = new ArrayList<String>();
-	}
 
 	// ==========================================
 	// Section Accessors and Mutators

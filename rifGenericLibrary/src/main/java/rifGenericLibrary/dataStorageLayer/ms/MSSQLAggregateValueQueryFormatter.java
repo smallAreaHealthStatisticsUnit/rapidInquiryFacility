@@ -2,6 +2,7 @@ package rifGenericLibrary.dataStorageLayer.ms;
 
 import java.util.ArrayList;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 
 /**
  * A query formatter class that is designed to handle simple MIN, MAX, AVG and SUM
@@ -77,8 +78,7 @@ import java.util.ArrayList;
  *
  */
 
-public final class MSSQLAggregateValueQueryFormatter 
-	extends AbstractMSSQLQueryFormatter {
+public final class MSSQLAggregateValueQueryFormatter extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -122,10 +122,8 @@ public final class MSSQLAggregateValueQueryFormatter
 	 * @param operationType the operation type
 	 */
 	public MSSQLAggregateValueQueryFormatter(
-		final boolean useGoCommand,
-		final OperationType operationType) {
+			final OperationType operationType) {
 		
-		super(useGoCommand);
 		this.operationType = operationType;
 		whereConditions = new ArrayList<String>();
 	}

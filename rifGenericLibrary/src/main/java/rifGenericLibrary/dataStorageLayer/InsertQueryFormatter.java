@@ -9,7 +9,7 @@ public interface InsertQueryFormatter extends QueryFormatter {
 
 		switch (type) {
 			case SQL_SERVER:
-				return new MSSQLInsertQueryFormatter(true);
+				return new MSSQLInsertQueryFormatter();
 			case POSTGRESQL:
 				return new PGSQLInsertQueryFormatter();
 			case UNKNOWN:

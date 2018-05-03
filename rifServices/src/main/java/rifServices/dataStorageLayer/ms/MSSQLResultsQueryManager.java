@@ -12,7 +12,6 @@ import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLFunctionCallerQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.ms.MSSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
-import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.GeoLevelSelect;
 import rifServices.businessConceptLayer.Geography;
 import rifServices.dataStorageLayer.common.BaseSQLManager;
@@ -23,14 +22,12 @@ import rifServices.system.RIFServiceStartupOptions;
 
 final class MSSQLResultsQueryManager extends BaseSQLManager implements ResultsQueryManager {
 
-	RIFLogger rifLogger = RIFLogger.getLogger();
-	
 	public MSSQLResultsQueryManager(
 		final RIFServiceStartupOptions options) {
 		
 		super(options);
 		
-		MSSQLFunctionCallerQueryFormatter getTilesQueryFormatter = new MSSQLFunctionCallerQueryFormatter(false);
+		MSSQLFunctionCallerQueryFormatter getTilesQueryFormatter = new MSSQLFunctionCallerQueryFormatter();
 		configureQueryFormatterForDB(getTilesQueryFormatter);
 		getTilesQueryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		getTilesQueryFormatter.setFunctionName("rif40_get_geojson_tiles");
@@ -47,7 +44,7 @@ final class MSSQLResultsQueryManager extends BaseSQLManager implements ResultsQu
 			throws RIFServiceException {
 								
 		SelectQueryFormatter getMapTileTableQueryFormatter
-			= new MSSQLSelectQueryFormatter(false);
+			= new MSSQLSelectQueryFormatter();
 			
 		getMapTileTableQueryFormatter.setDatabaseSchemaName("rif_data");
 		getMapTileTableQueryFormatter.addSelectField(geoLevelSelect.getName());
@@ -154,7 +151,7 @@ final class MSSQLResultsQueryManager extends BaseSQLManager implements ResultsQu
 		*/
 							
 		SelectQueryFormatter getMapTileTableQueryFormatter
-			= new MSSQLSelectQueryFormatter(false);		
+			= new MSSQLSelectQueryFormatter();
 			
 		getMapTileTableQueryFormatter.setDatabaseSchemaName("rif40");
 		getMapTileTableQueryFormatter.addSelectField("rif40_geographies", "tiletable");
@@ -186,7 +183,7 @@ final class MSSQLResultsQueryManager extends BaseSQLManager implements ResultsQu
 			String myTileTable = "rif_data." + resultSet.getString(1);
 					
 			SelectQueryFormatter getMapTilesQueryFormatter
-				= new MSSQLSelectQueryFormatter(false);
+				= new MSSQLSelectQueryFormatter();
 				
 			//STEP 2: get the tiles	
 			/*
@@ -274,7 +271,7 @@ final class MSSQLResultsQueryManager extends BaseSQLManager implements ResultsQu
 		try {
 		
 			SelectQueryFormatter queryFormatter
-				= new MSSQLSelectQueryFormatter(false);
+				= new MSSQLSelectQueryFormatter();
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("study_name");
 			queryFormatter.addFromTable("rif40_studies");
@@ -333,16 +330,4 @@ final class MSSQLResultsQueryManager extends BaseSQLManager implements ResultsQu
 		}
 		
 	}
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-	
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

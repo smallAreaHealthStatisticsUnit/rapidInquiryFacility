@@ -2,23 +2,13 @@ package rifGenericLibrary.dataStorageLayer;
 
 import java.util.ArrayList;
 
-import rifGenericLibrary.dataStorageLayer.ms.AbstractMSSQLQueryFormatter;
-
-public final class DeleteRowsQueryFormatter extends AbstractMSSQLQueryFormatter {
+public final class DeleteRowsQueryFormatter extends AbstractSQLQueryFormatter {
 
 	/** The from table. */
 	private String fromTable;
 	
 	/** The where conditions. */
-	private ArrayList<String> whereConditions;
-
-	/**
-	 * Instantiates a new SQL delete query formatter.
-	 */
-	public DeleteRowsQueryFormatter(final boolean useGoCommand) {
-		super(useGoCommand);
-		whereConditions = new ArrayList<>();
-	}
+	private ArrayList<String> whereConditions = new ArrayList<>();
 
 	public void setFromTable(
 			final String fromTable) {

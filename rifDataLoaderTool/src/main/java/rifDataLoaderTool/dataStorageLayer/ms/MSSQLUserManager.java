@@ -95,7 +95,7 @@ final class MSSQLUserManager {
 		throws RIFServiceException {
 
 		MSSQLFunctionCallerQueryFormatter queryFormatter
-			= new MSSQLFunctionCallerQueryFormatter(false);
+			= new MSSQLFunctionCallerQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_add_user");
 		queryFormatter.setNumberOfFunctionParameters(4);
@@ -150,7 +150,7 @@ final class MSSQLUserManager {
 		throws RIFServiceException {
 		
 		MSSQLFunctionCallerQueryFormatter queryFormatter
-			= new MSSQLFunctionCallerQueryFormatter(false);
+			= new MSSQLFunctionCallerQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_alter_user");
 		queryFormatter.setNumberOfFunctionParameters(4);
@@ -202,7 +202,7 @@ final class MSSQLUserManager {
 		throws RIFServiceException {
 					
 		MSSQLFunctionCallerQueryFormatter queryFormatter
-			= new MSSQLFunctionCallerQueryFormatter(false);
+			= new MSSQLFunctionCallerQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40_xml_pkg");
 		queryFormatter.setFunctionName("rif40_delete_user");
 		queryFormatter.setNumberOfFunctionParameters(1);

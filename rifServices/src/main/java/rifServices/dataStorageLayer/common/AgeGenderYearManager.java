@@ -9,6 +9,7 @@ import java.util.List;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
@@ -145,23 +146,23 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 			if ((sortingOrder == null) ||
 				(sortingOrder == AgeGroupSortingOption.ASCENDING_LOWER_LIMIT)) {
 				getAgesForAgeGroupID.addOrderByCondition(
-						"low_age", SelectQueryFormatter.SortOrder.ASCENDING);
+						"low_age", QueryFormatter.SortOrder.ASCENDING);
 			}
 			else if (sortingOrder == AgeGroupSortingOption.DESCENDING_LOWER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
 						"low_age",
-						SelectQueryFormatter.SortOrder.DESCENDING);
+						QueryFormatter.SortOrder.DESCENDING);
 			}
 			else if (sortingOrder == AgeGroupSortingOption.ASCENDING_UPPER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
 						"high_age",
-						SelectQueryFormatter.SortOrder.ASCENDING);
+						QueryFormatter.SortOrder.ASCENDING);
 			}
 			else {
 				//it must be descending lower limit.		
 				getAgesForAgeGroupID.addOrderByCondition(
 						"high_age",
-						SelectQueryFormatter.SortOrder.DESCENDING);
+						QueryFormatter.SortOrder.DESCENDING);
 				assert sortingOrder == AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
 			}
 			

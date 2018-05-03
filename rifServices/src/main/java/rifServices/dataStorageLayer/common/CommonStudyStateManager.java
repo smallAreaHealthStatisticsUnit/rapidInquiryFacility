@@ -45,8 +45,7 @@ public final class CommonStudyStateManager extends BaseSQLManager implements Stu
 				
 		String statusTableName = deriveStatusTableName(user.getUserID());
 				
-		DeleteRowsQueryFormatter queryFormatter
-			= new DeleteRowsQueryFormatter(false);
+		DeleteRowsQueryFormatter queryFormatter = new DeleteRowsQueryFormatter();
 		queryFormatter.setFromTable(statusTableName);
 		queryFormatter.addWhereParameter("study_id");
 		logSQLQuery(

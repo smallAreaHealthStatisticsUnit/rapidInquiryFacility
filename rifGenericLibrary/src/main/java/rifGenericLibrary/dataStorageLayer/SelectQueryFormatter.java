@@ -11,7 +11,7 @@ public interface SelectQueryFormatter extends QueryFormatter {
 			case POSTGRESQL:
 				return new PGSQLSelectQueryFormatter();
 			case SQL_SERVER:
-				return new MSSQLSelectQueryFormatter(true);
+				return new MSSQLSelectQueryFormatter();
 			case UNKNOWN:
 			default:
 				throw new IllegalStateException("SelectQueryFormatter.getInstance: unknown "
@@ -197,12 +197,4 @@ public interface SelectQueryFormatter extends QueryFormatter {
 	@Override
 	String generateQuery();
 
-	/**
-	 * The Enum SortOrder.
-	 */
-	enum SortOrder {
-		/** The ascending. */
-		ASCENDING,
-		/** The descending. */
-		DESCENDING}
 }

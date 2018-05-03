@@ -1,5 +1,7 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+
 /**
  *
  *
@@ -63,8 +65,7 @@ package rifGenericLibrary.dataStorageLayer.ms;
  *
  */
 
-public final class MSSQLDeleteIndexQueryFormatter 
-	extends AbstractMSSQLQueryFormatter {
+public final class MSSQLDeleteIndexQueryFormatter extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -80,13 +81,6 @@ public final class MSSQLDeleteIndexQueryFormatter
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
-	/**
-	 * Instantiates a new SQL delete table query formatter.
-	 */
-	public MSSQLDeleteIndexQueryFormatter(final boolean useGoCommand) {
-		super(useGoCommand);
-	}
 
 	// ==========================================
 	// Section Accessors and Mutators

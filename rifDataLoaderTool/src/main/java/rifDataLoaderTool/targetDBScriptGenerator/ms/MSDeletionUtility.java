@@ -174,7 +174,7 @@ public class MSDeletionUtility {
 		String themeToDelete = healthTheme.getName();
 		
 		DeleteRowsQueryFormatter queryFormatter
-			= new DeleteRowsQueryFormatter(true);
+			= new DeleteRowsQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setFromTable("rif40_health_study_themes");
 		queryFormatter.addWhereParameterWithLiteralValue(
@@ -239,7 +239,7 @@ public class MSDeletionUtility {
 		String tableToDelete 
 			= dataSetConfiguration.getPublishedTableName().toUpperCase();
 		MSSQLDeleteTableQueryFormatter queryFormatter
-			= new MSSQLDeleteTableQueryFormatter(true);
+			= new MSSQLDeleteTableQueryFormatter();
 		queryFormatter.setDatabaseSchemaName(databaseSchemaName);
 		queryFormatter.setTableToDelete(tableToDelete);
 		
@@ -263,7 +263,7 @@ public class MSDeletionUtility {
 			String covariateName = covariateField.getCleanFieldName().toUpperCase();
 			
 			DeleteRowsQueryFormatter queryFormatter
-				= new DeleteRowsQueryFormatter(true);
+				= new DeleteRowsQueryFormatter();
 			queryFormatter.setDatabaseSchemaName("rif40");
 			queryFormatter.setFromTable("rif40_covariates");
 			queryFormatter.addWhereParameterWithLiteralValue(
@@ -288,7 +288,7 @@ public class MSDeletionUtility {
 		String tableToDelete
 			= dataSetConfiguration.getPublishedTableName().toUpperCase();
 		DeleteRowsQueryFormatter queryFormatter
-			= new DeleteRowsQueryFormatter(true);
+			= new DeleteRowsQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setFromTable("rif40_tables");
 		queryFormatter.addWhereParameterWithLiteralValue(
@@ -306,7 +306,7 @@ public class MSDeletionUtility {
 		String tableToDelete
 			= numerator.getPublishedTableName().toUpperCase();
 		DeleteRowsQueryFormatter queryFormatter
-			= new DeleteRowsQueryFormatter(true);
+			= new DeleteRowsQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setFromTable("rif40_table_outcomes");
 		queryFormatter.addWhereParameterWithLiteralValue(

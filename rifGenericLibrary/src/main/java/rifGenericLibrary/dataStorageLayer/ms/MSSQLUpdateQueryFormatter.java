@@ -2,6 +2,8 @@ package rifGenericLibrary.dataStorageLayer.ms;
 
 import java.util.ArrayList;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+
 /**
  *
  *
@@ -66,8 +68,7 @@ import java.util.ArrayList;
  *
  */
 
-public final class MSSQLUpdateQueryFormatter 
-	extends AbstractMSSQLQueryFormatter {
+public final class MSSQLUpdateQueryFormatter extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -98,8 +99,8 @@ public final class MSSQLUpdateQueryFormatter
 	/**
 	 * Instantiates a new SQL insert query formatter.
 	 */
-	public MSSQLUpdateQueryFormatter(final boolean useGoCommand) {
-		super(useGoCommand);
+	public MSSQLUpdateQueryFormatter() {
+
 		orAllWhereConditions = false;
 		updateFields = new ArrayList<String>();		
 		whereConditions = new ArrayList<String>();

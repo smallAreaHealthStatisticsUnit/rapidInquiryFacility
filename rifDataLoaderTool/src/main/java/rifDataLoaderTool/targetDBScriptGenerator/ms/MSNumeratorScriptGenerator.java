@@ -140,7 +140,7 @@ public class MSNumeratorScriptGenerator
 	
 		//Make a create table statement 
 		MSSQLCreateTableQueryFormatter createTableQueryFormatter
-			= new MSSQLCreateTableQueryFormatter(true);
+			= new MSSQLCreateTableQueryFormatter();
 
 		//Field properties that will help us construct the 
 		//create and copy into statements
@@ -269,7 +269,7 @@ public class MSNumeratorScriptGenerator
 		literalParameterValues[5] = denominator.getDescription();
 		
 		MSSQLInsertQueryFormatter insertQueryFormatter
-			= new MSSQLInsertQueryFormatter(true);
+			= new MSSQLInsertQueryFormatter();
 		insertQueryFormatter.setDatabaseSchemaName("rif40");
 		insertQueryFormatter.setIntoTable("rif_num_denom");
 		insertQueryFormatter.addInsertField("geography", true);

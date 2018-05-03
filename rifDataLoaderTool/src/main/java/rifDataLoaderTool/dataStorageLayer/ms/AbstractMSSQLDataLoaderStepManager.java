@@ -133,7 +133,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		RIFServiceException {
 				
 		SelectQueryFormatter queryFormatter
-			= new MSSQLSelectQueryFormatter(false);
+			= new MSSQLSelectQueryFormatter();
 		//queryFormatter.setDatabaseSchemaName("dbo");//KLG_SCHEMA
 		//SELECT field1, field2, fields3...
 		for (String fieldName : fieldNames) {
@@ -333,7 +333,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		try {
 
 			MSSQLSchemaCommentQueryFormatter queryFormatter
-				= new MSSQLSchemaCommentQueryFormatter(false);
+				= new MSSQLSchemaCommentQueryFormatter();
 			queryFormatter.setTableComment(
 				targetTable,
 				dataSetConfiguration.getDescription());
@@ -520,7 +520,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 			//could become year)
 			
 			MSSQLSchemaCommentQueryFormatter queryFormatter
-				= new MSSQLSchemaCommentQueryFormatter(false);
+				= new MSSQLSchemaCommentQueryFormatter();
 			//KLG_SCHEMA
 			queryFormatter.setDatabaseSchemaName("dbo");
 			queryFormatter.setTableColumnComment(
@@ -639,7 +639,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		try {
 			
 			cname = new FileWriter(exportFileName.toString());
-			SelectQueryFormatter selFormatter = new  MSSQLSelectQueryFormatter(false);
+			SelectQueryFormatter selFormatter = new  MSSQLSelectQueryFormatter();
 			selFormatter.addSelectField("*");
 			selFormatter.addFromTable(tableName);
 			statement = createPreparedStatement(connection, selFormatter);
@@ -766,7 +766,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		System.out.println("deleteTable 2");
 		
 		MSSQLDeleteTableQueryFormatter queryFormatter 
-			= new MSSQLDeleteTableQueryFormatter(false);
+			= new MSSQLDeleteTableQueryFormatter();
 		//KLG_SCHEMA
 		queryFormatter.setDatabaseSchemaName("dbo");
 		System.out.println("TAble name=="+ targetTableName + "==");
@@ -937,7 +937,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		throws RIFServiceException {
 				
 		MSSQLUpdateQueryFormatter queryFormatter 
-			= new MSSQLUpdateQueryFormatter(false);
+			= new MSSQLUpdateQueryFormatter();
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
 		PreparedStatement statement = null;

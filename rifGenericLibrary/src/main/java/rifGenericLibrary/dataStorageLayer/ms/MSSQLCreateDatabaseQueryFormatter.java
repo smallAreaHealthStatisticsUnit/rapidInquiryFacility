@@ -1,5 +1,7 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+
 /**
  * Convenience class to generate query that drops a database
  *
@@ -63,8 +65,7 @@ package rifGenericLibrary.dataStorageLayer.ms;
  *
  */
 
-public final class MSSQLCreateDatabaseQueryFormatter 
-	extends AbstractMSSQLQueryFormatter {
+public final class MSSQLCreateDatabaseQueryFormatter extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -81,15 +82,6 @@ public final class MSSQLCreateDatabaseQueryFormatter
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
-	/**
-	 * Instantiates a new SQL count query formatter.
-	 */
-	public MSSQLCreateDatabaseQueryFormatter(
-		final boolean useGoCommand) {
-
-		super(useGoCommand);
-	}
 
 	// ==========================================
 	// Section Accessors and Mutators

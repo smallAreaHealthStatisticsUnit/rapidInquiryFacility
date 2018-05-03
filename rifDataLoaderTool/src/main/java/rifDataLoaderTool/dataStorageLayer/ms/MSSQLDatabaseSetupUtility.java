@@ -152,7 +152,7 @@ public class MSSQLDatabaseSetupUtility {
 			}
 			
 			MSSQLDropDatabaseQueryFormatter dropDatabaseQueryFormatter
-				= new MSSQLDropDatabaseQueryFormatter(false);
+				= new MSSQLDropDatabaseQueryFormatter();
 			dropDatabaseQueryFormatter.setDatabaseName(dbParameters.getDatabaseName());
 			System.out.println(dropDatabaseQueryFormatter.generateQuery());
 			dropDatabaseStatement 
@@ -161,7 +161,7 @@ public class MSSQLDatabaseSetupUtility {
 			dropDatabaseStatement.executeUpdate();
 
 			MSSQLCreateDatabaseQueryFormatter createDatabaseQueryFormatter
-				= new MSSQLCreateDatabaseQueryFormatter(false);
+				= new MSSQLCreateDatabaseQueryFormatter();
 			createDatabaseQueryFormatter.setDatabaseName(dbParameters.getDatabaseName());
 			System.out.println(createDatabaseQueryFormatter.generateQuery());
 			createDatabaseStatement
@@ -400,39 +400,18 @@ public class MSSQLDatabaseSetupUtility {
 		 * issue.
 		 */		
 		MSSQLDropDatabaseQueryFormatter dropDatabaseQueryFormatter
-			= new MSSQLDropDatabaseQueryFormatter(false);
+			= new MSSQLDropDatabaseQueryFormatter();
 		dropDatabaseQueryFormatter.setDatabaseName(dbParameters.getDatabaseName());
 
 		MSSQLCreateDatabaseQueryFormatter createDatabaseQueryFormatter
-			= new MSSQLCreateDatabaseQueryFormatter(false);
+			= new MSSQLCreateDatabaseQueryFormatter();
 		createDatabaseQueryFormatter.setDatabaseName(dbParameters.getDatabaseName());
 
-		PreparedStatement dropDatabaseStatement = null;
-		PreparedStatement createDatabaseStatement = null;
-		try {
-			dropDatabaseStatement 
-				= connection.prepareStatement(
-					dropDatabaseQueryFormatter.generateQuery());
+		try (PreparedStatement dropDatabaseStatement = connection.prepareStatement(
+				dropDatabaseQueryFormatter.generateQuery())) {
 			dropDatabaseStatement.executeQuery();
-			createDatabaseStatement
-				= connection.prepareStatement(
-					createDatabaseQueryFormatter.generateQuery());
-			dropDatabaseStatement.executeQuery();					
+			dropDatabaseStatement.executeQuery();
 		}
-		finally {
-			createDatabaseStatement.close();
-		}
-				
-		/*
-		String databaseName = dbParameters.getDatabaseName();
-		StringBuilder dropDatabaseQueryText = new StringBuilder();
-		dropDatabaseQueryText.append("DROP DATABASE IF EXISTS ");
-		dropDatabaseQueryText.append(dbParameters.getDatabaseName());
-		dropDatabaseQueryText.append(";");
-		
-		StringBuilder createDatabaseQueryText = new StringBuilder();
-		*/
-		
 	}
 	
 	

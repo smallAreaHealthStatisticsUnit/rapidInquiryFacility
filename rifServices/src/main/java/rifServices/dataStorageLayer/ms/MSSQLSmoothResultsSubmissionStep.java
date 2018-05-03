@@ -504,7 +504,7 @@ password=XXXXXXXX
 
 		rifLogger.info(this.getClass(), "SQLSmoothedResultsSubmissionStep getInvestigationID studyID=="+studyID+"==investigation_name=="+investigation.getTitle()+"==inv_description=="+investigation.getDescription()+"==");
 
-		SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter(false);
+		SelectQueryFormatter queryFormatter = new MSSQLSelectQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.addFromTable("rif40_investigations");
 		queryFormatter.addSelectField("inv_id");
