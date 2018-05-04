@@ -163,7 +163,7 @@ public final class CovariateManager extends BaseSQLManager {
 		try {
 			//Create SQL query		
 			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
-					rifDatabaseProperties.getDatabaseType(), true);
+					rifDatabaseProperties.getDatabaseType(), false /* useGoCommand */);
 			configureQueryFormatterForDB(queryFormatter);		
 			queryFormatter.addSelectField("covariate_name");
 			queryFormatter.addSelectField("min");

@@ -62,6 +62,14 @@ else
 	DELETE=rm -f
 $(error 7ZIP unsupported: $(7ZIP))
 endif
+# 
+# Uncomment if you are having problems with the tests
+#
+#MAVEN_FLAGS=-Dmaven.test.skip=true
+MAVEN_FLAGS=
+# or use:
+# make <target> MAVEN_FLAGS='-Dmaven.test.skip=true'
+#
 
 all: RIF4
 	$(MAVEN) --version
