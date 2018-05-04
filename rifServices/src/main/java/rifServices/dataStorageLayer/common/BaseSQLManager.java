@@ -52,7 +52,7 @@ public class BaseSQLManager implements SQLManager {
 	private static final Map<String, ConnectionQueue> writeConnectionsFromUser = new HashMap<>();
 	private static final HashMap<String, Integer> suspiciousEventCounterFromUser = new HashMap<>();
 	protected final RIFServiceStartupOptions rifServiceStartupOptions;
-	protected final boolean prefixSchemaName;
+	private final boolean prefixSchemaName;
 	private final String databaseURL;
 	private static HashMap<String, String> passwordHashList = null;
 
@@ -128,51 +128,7 @@ public class BaseSQLManager implements SQLManager {
 			queryFormatter);
 	}
 
-	/** 
-	 * Create cached row set from AbstractSQLQueryFormatter.
-	 * No checks 0,1 or 1+ rows returned
-	 * 
-	 * @param connection an SQL connection
-	 * @param queryFormatter  the Formatter
-	 * @param queryName the name
-	 * @param params the query parameters
-	 *
-	 * @return CachedRowSetImpl cached row set
-	 */		
-	protected CachedRowSetImpl createCachedRowSet(
-			final Connection connection,
-			QueryFormatter queryFormatter,
-			final String queryName,
-			final String[] params)
-				throws Exception {
-			
-		CachedRowSetImpl cachedRowSet=null;	
-		ResultSet resultSet=null;
-		PreparedStatement statement = createPreparedStatement(connection, queryFormatter);		
-		try {
-			for (int i=0; i < params.length; i++) {
-				statement.setString((i+1), params[i]);	
-			}
-			logSQLQuery(queryName, queryFormatter, params);	
-			resultSet = statement.executeQuery();
-			 // create CachedRowSet and populate
-			cachedRowSet = new CachedRowSetImpl();
-			cachedRowSet.populate(resultSet);
-		}
-		catch (Exception exception) {
-			rifLogger.error(this.getClass(), "Error in SQL Statement: >>> " + 
-				lineSeparator + queryFormatter.generateQuery(),
-				exception);
-			throw exception;
-		}
-		finally {
-			closeStatement(statement);
-		}
-		
-		return cachedRowSet;			
-	}
-
-	/** 
+	/**
 	 * Create cached row set from AbstractSQLQueryFormatter.
 	 * No checks 0,1 or 1+ rows returned
 	 * 
@@ -1085,5 +1041,10 @@ public class BaseSQLManager implements SQLManager {
 			connection,
 			query);
 
+	}
+
+	String applySchemaPrefixIfNeeded(String dbItemName) {
+
+		return (prefixSchemaName ? SCHEMA_PREFIX : "") + dbItemName;
 	}
 }

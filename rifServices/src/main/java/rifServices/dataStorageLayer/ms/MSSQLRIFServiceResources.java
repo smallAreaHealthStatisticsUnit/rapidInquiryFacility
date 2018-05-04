@@ -62,11 +62,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 		sqlConnectionManager = new BaseSQLManager(rifServiceStartupOptions);
 		healthOutcomeManager = new CommonHealthOutcomeManager(rifServiceStartupOptions);
 
-		RIFDatabaseProperties rifDatabaseProperties
-			= rifServiceStartupOptions.getRIFDatabaseProperties();
-		
-		sqlRIFContextManager 
-			= new MSSQLRIFContextManager(rifServiceStartupOptions);
+		sqlRIFContextManager = new RIFContextManager(rifServiceStartupOptions);
 		
 		sqlSmoothedResultManager
 			= new MSSQLSmoothedResultManager(rifServiceStartupOptions);

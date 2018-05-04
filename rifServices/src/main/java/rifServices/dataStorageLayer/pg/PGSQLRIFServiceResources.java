@@ -92,12 +92,9 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		
 		sqlConnectionManager = new BaseSQLManager(rifServiceStartupOptions);
 		healthOutcomeManager = new CommonHealthOutcomeManager(rifServiceStartupOptions);
-		
-		RIFDatabaseProperties rifDatabaseProperties
-				= rifServiceStartupOptions.getRIFDatabaseProperties();
-		
+
 		sqlRIFContextManager
-				= new PGSQLRIFContextManager(rifServiceStartupOptions);
+				= new RIFContextManager(rifServiceStartupOptions);
 		
 		sqlSmoothedResultManager
 				= new PGSQLSmoothedResultManager(rifServiceStartupOptions);
