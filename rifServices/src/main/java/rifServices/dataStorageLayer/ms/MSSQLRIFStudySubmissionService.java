@@ -33,6 +33,7 @@ import rifServices.dataStorageLayer.common.CommonUserService;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
+import rifServices.dataStorageLayer.common.RunStudyThread;
 import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.dataStorageLayer.common.StudyExtract;
@@ -150,7 +151,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 			//Delegate operation to a specialised manager class			
 			RIFServiceStartupOptions rifServiceStartupOptions
 				= getRIFServiceStartupOptions();			
-			MSSQLRunStudyThread runStudyThread = new MSSQLRunStudyThread();
+			RunStudyThread runStudyThread = new RunStudyThread();
 			runStudyThread.initialise(
 				connection, 
 				user, 
@@ -998,7 +999,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 			//Delegate operation to a specialised manager class			
 			RIFServiceStartupOptions rifServiceStartupOptions
 				= getRIFServiceStartupOptions();			
-			MSSQLRunStudyThread runStudyThread = new MSSQLRunStudyThread();
+			RunStudyThread runStudyThread = new RunStudyThread();
 			runStudyThread.initialise(
 				connection, 
 				user, 

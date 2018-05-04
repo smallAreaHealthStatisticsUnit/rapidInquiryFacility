@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer.ms;
+package rifServices.dataStorageLayer.common;
 
 import java.sql.Connection;
 
@@ -12,12 +12,13 @@ import rifServices.businessConceptLayer.StudyStateMachine;
 import rifServices.dataStorageLayer.common.CommonStudyStateManager;
 import rifServices.dataStorageLayer.common.GenerateResultsSubmissionStep;
 import rifServices.dataStorageLayer.common.ServiceResources;
+import rifServices.dataStorageLayer.common.SmoothResultsSubmissionStep;
 import rifServices.dataStorageLayer.common.StudySubmissionStep;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-public class MSSQLRunStudyThread implements Runnable {
+public class RunStudyThread implements Runnable {
 
 	private static final int SLEEP_TIME = 200;
 
@@ -34,9 +35,9 @@ public class MSSQLRunStudyThread implements Runnable {
 	private rifServices.dataStorageLayer.common.StudyStateManager studyStateManager;
 	private StudySubmissionStep createStudySubmissionStep;
 	private GenerateResultsSubmissionStep generateResultsSubmissionStep;
-	private MSSQLSmoothResultsSubmissionStep smoothResultsSubmissionStep;
+	private SmoothResultsSubmissionStep smoothResultsSubmissionStep;
 	
-	public MSSQLRunStudyThread() {
+	public RunStudyThread() {
 		studyStateMachine = new StudyStateMachine();
 		studyStateMachine.initialiseState();
 	}
@@ -69,7 +70,7 @@ public class MSSQLRunStudyThread implements Runnable {
 				studyStateManager, rifDatabaseProperties.getDatabaseType());
 		
 		//KLG: @TODO - we need a facility to feed password to this.
-		smoothResultsSubmissionStep = new MSSQLSmoothResultsSubmissionStep();
+		smoothResultsSubmissionStep = new SmoothResultsSubmissionStep();
 		smoothResultsSubmissionStep.initialise(
 			user.getUserID(), 
 			password, 
@@ -204,17 +205,11 @@ public class MSSQLRunStudyThread implements Runnable {
 				studyID);
 			StudyState currentStudyState = studyStateMachine.next(); // Advance to next state
 
-// Done by DB procedure - will generate duplicate PK
-//			String statusMessage
-//				= RIFServiceMessages.getMessage(
-//					"studyState.studyExtracted.description");
-//			updateStudyStatusState(statusMessage);	
-		}	
+		}
 		catch (RIFServiceException rifServiceException) {
 			// because this is a database procedure that failed the transaction must be rolled back
 			rollbackStudy();
 
-// Done by DB procedure - will generate duplicate PK	
 			StudyState errorStudyState = studyStateMachine.ExtractFailure();
 			String statusMessage
 				= RIFServiceMessages.getMessage(
@@ -247,25 +242,7 @@ public class MSSQLRunStudyThread implements Runnable {
 		}
 
 	}
-	
-//	private void advertiseDataSet() 
-//		throws RIFServiceException {
-//		
-//		//This is where we should save the study to a ZIP file
-//		publishResultsSubmissionStep.performStep(
-//			connection, 
-//			user, 
-//			studySubmission, 
-//			studyID);
-//
-//		String statusMessage
-//			= RIFServiceMessages.getMessage(
-//				"studyState.readyForUse");
-//		updateStudyStatusState(statusMessage);
-//
-//		rifLogger.info(this.getClass(), "RIF study should be FINISHED!!");
-//	}
-	
+
 	// Normal state transition
 	private void updateStudyStatusState(final String statusMessage) 
 		throws RIFServiceException {
@@ -290,7 +267,7 @@ public class MSSQLRunStudyThread implements Runnable {
 				
 		StringBuilder errorString = new StringBuilder();
 		for (String errorMessage : rifServiceException.getErrorMessages()) {
-			errorString.append(errorMessage + lineSeparator);
+			errorString.append(errorMessage).append(lineSeparator);
 		}
 					
 		studyStateManager.updateStudyStatus(

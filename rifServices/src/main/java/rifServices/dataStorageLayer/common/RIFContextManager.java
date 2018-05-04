@@ -6,10 +6,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import javax.xml.crypto.Data;
+
 import org.apache.commons.lang3.StringUtils;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.AggregateValueQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
@@ -1844,10 +1847,10 @@ public class RIFContextManager extends BaseSQLManager {
 	private String numeratorDenominatorTableName(User user) {
 
 		String baseName = "rif40_num_denom";
-		if (user == null || StringUtils.isEmpty(user.getUserID())) {
-			return baseName;
-		} else {
+		if (rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER) {
 			return user.getUserID() + "." + baseName;
+		} else {
+			return baseName;
 		}
 	}
 }

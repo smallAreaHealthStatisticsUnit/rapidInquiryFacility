@@ -37,6 +37,7 @@ import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.dataStorageLayer.common.StudyExtractManager;
 import rifServices.dataStorageLayer.common.SubmissionManager;
+import rifServices.dataStorageLayer.common.RunStudyThread;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 import rifServices.system.files.TomcatBase;
@@ -144,7 +145,7 @@ public class PGSQLRIFStudySubmissionService extends CommonUserService
 			//Delegate operation to a specialised manager class
 			RIFServiceStartupOptions rifServiceStartupOptions
 					= getRIFServiceStartupOptions();
-			PGSQLRunStudyThread runStudyThread = new PGSQLRunStudyThread();
+			RunStudyThread runStudyThread = new RunStudyThread();
 			runStudyThread.initialise(
 					connection,
 					user,
@@ -993,7 +994,7 @@ public class PGSQLRIFStudySubmissionService extends CommonUserService
 			//Delegate operation to a specialised manager class
 			RIFServiceStartupOptions rifServiceStartupOptions
 					= getRIFServiceStartupOptions();
-			PGSQLRunStudyThread runStudyThread = new PGSQLRunStudyThread();
+			RunStudyThread runStudyThread = new RunStudyThread();
 			runStudyThread.initialise(
 					connection,
 					user,

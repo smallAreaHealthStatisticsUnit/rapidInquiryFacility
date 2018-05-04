@@ -18,7 +18,8 @@ public interface ServiceResources {
 
 			case UNKNOWN:
 			default:
-				throw new IllegalStateException("Unknown database type: " + options.getRifDatabaseType());
+				throw new IllegalStateException("Unknown database type in ServiceResources: "
+				                                + options.getRifDatabaseType());
 		}
 	}
 

@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer.pg;
+package rifServices.dataStorageLayer.common;
 
 import java.io.File;
 import java.sql.Connection;
@@ -14,8 +14,8 @@ import org.rosuda.JRI.REXP;
 import org.rosuda.JRI.Rengine;
 
 import rifGenericLibrary.businessConceptLayer.Parameter;
+import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceExceptionFactory;
 import rifGenericLibrary.util.RIFLogger;
@@ -27,91 +27,19 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
 import rifServices.dataStorageLayer.common.CommonRService;
 import rifServices.system.RIFServiceStartupOptions;
 
-/**
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- */
-
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
+public class SmoothResultsSubmissionStep extends CommonRService {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static final RIFMemoryManager rifMemoryManager = RIFMemoryManager.getMemoryManager();
-	private static String lineSeparator = System.getProperty("line.separator");	
+	private static String lineSeparator = System.getProperty("line.separator");
 
-	// Logging for JRI	
+	// Logging for JRI
 	private static LogManager logManager;
 	private Logger log;	// Not used - uses RIFLogger
 	private LoggingConsole loggingConsole;
-	
-	// ==========================================
-	// Section Properties
-	// ==========================================	
 	private RIFServiceStartupOptions rifStartupOptions;
 
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	public PGSQLSmoothResultsSubmissionStep() {
+	public SmoothResultsSubmissionStep() {
 		String logManagerName=System.getProperty("java.util.logging.manager");
 		if (logManagerName == null || !logManagerName.equals("java.util.logging.manager")) {
 			System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
@@ -138,9 +66,6 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 		rifLogger.printLoggers();
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
 	public void initialise(
 			final String userID,
 			final String password,
@@ -163,19 +88,16 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 		addParameterToVerify(startupOptionParameterNames);
 
 	}
-			
-	public void performStep(
-			final Connection connection,
-			final RIFStudySubmission studySubmission, 
-			final String studyID) 
-					throws RIFServiceException {
+	
+	public void performStep(final Connection connection, final RIFStudySubmission studySubmission,
+			final String studyID) throws RIFServiceException {
 		
-		StringBuilder rifScriptPath = new StringBuilder();	
-		StringBuilder Adj_Cov_Smooth_JRI = new StringBuilder();
-		StringBuilder RIF_odbc = new StringBuilder();
+		StringBuilder rifScriptPath = new StringBuilder();
+		StringBuilder adjCovSmoothJri = new StringBuilder();
+		StringBuilder rifOdbc = new StringBuilder();
 		StringBuilder performSmoothingActivity = new StringBuilder();
-		String RerrorTrace="No R error tracer (see Tomcat log)";
-			
+		String rErrorTrace="No R error tracer (see Tomcat log)";
+
 		try {		
 			addParameterToVerify("studyID");		
 
@@ -187,36 +109,24 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 			//table that the R program will need to know about.  Note that specifying a single
 			//investigation name assumes that eventually we will make a study have one investigation
 			//rather than multiple investigations.
-			Investigation firstInvestigation
-			= studySubmission.getStudy().getInvestigations().get(0);
+			Investigation firstInvestigation = studySubmission.getStudy().getInvestigations().get(0);
 
-			addParameter(
-					"investigationName", 
-					createDatabaseFriendlyInvestigationName(firstInvestigation.getTitle()));
+			addParameter("investigationName",
+			             createDatabaseFriendlyInvestigationName(firstInvestigation.getTitle()));
 			addParameterToVerify("investigationName");
 
 			String covariateName = getCovariateName(studySubmission);
-			addParameter(
-					"covariate_name", 
-					covariateName);
+			addParameter("covariate_name", covariateName);
 
-			Integer investigationID
-			= getInvestigationID(
-					connection,
-					studyID, 
-					firstInvestigation);
+			Integer investigationID = getInvestigationID(connection, studyID, firstInvestigation);
 					
 			String studyName=studySubmission.getStudy().getName();
 			addParameterToVerify("studyName");
-			addParameter(
-					"studyName", 
-					studyName);
+			addParameter("studyName", studyName);
 					
 			String studyDescription=studySubmission.getStudy().getDescription();
 			addParameterToVerify("studyDescription");
-			addParameter(
-					"studyDescription", 
-					studyDescription);
+			addParameter("studyDescription", studyDescription);
 					
 			rifLogger.info(this.getClass(), "Study id: " + studyID + 
 				"; Study name: " + studyName + 
@@ -225,15 +135,14 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 				"; ID: "+ investigationID);
 
 			addParameterToVerify("investigationId");
-			addParameter(
-					"investigationId", 
-					String.valueOf(investigationID));
+			addParameter("investigationId", String.valueOf(investigationID));
 
 			setCalculationMethod(studySubmission.getCalculationMethods().get(0));
 
 			int exitValue = 0;
 
 			Rengine rengine = null;
+
 			try {	
 				//Create an R engine with JRI
 				rengine = Rengine.getMainEngine();
@@ -242,8 +151,8 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 					rengine = new Rengine(
 						rArgs,											// Args
 						false, 											// runMainLoop
-						loggingConsole); 								// RMainLoopCallbacks implementaton
-																		// Logger log not used - uses RIFLogger
+						new LoggingConsole(log)); 						// RMainLoopCallbacks implementaton
+																		// Logger log not used - uses RIFLogger					
 				}
 
 				if (!rengine.waitForR()) {
@@ -253,15 +162,12 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 				rengine.eval("Rpid<-Sys.getpid()");
 				REXP Rpid = rengine.eval("Rpid");
 				rifLogger.info(this.getClass(), "Rengine Started" +
-					"; Rpid: " + Rpid.asInt() +
-					"; JRI version: " + rengine.getVersion() + 
-					"; R_HOME: " + System.getenv("R_HOME") + 
-//					"; RNI binary version: " + rengine.rniGetVersion() + // Same as getVersion()
-					"; thread ID: " + rengine.currentThread().getId());
-						// Is current thread
+				                                "; Rpid: " + Rpid.asInt() +
+				                                "; JRI version: " + Rengine.getVersion() +
+                                                "; thread ID: " + Thread.currentThread().getId());
 
 				//Start R operations
-
+				
 				//Check library path
 				rengine.eval("rm(list=ls())"); //just in case!
 				rengine.eval("print(.libPaths())");
@@ -275,19 +181,19 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 					String name=parameter.getName();
 					String value=parameter.getValue();
 					
-					if (name == "password") {
-						str.append(name + "=XXXXXXXX"  + lineSeparator); // Hide password
+					if (name.equals("password")) {
+						str.append(name).append("=XXXXXXXX").append(lineSeparator); // Hide password
 						rengine.assign(name, value);
 					}
 					else {
-						if (name == "covariate_name") {
-							str.append("names.adj.1=" + value + lineSeparator);
+						if (name.equals("covariate_name")) {
+							str.append("names.adj.1=").append(value).append(lineSeparator);
 							rengine.assign("names.adj.1", value);
-							str.append("adj.1=" + getRAdjust(value) + lineSeparator);
+							str.append("adj.1=").append(getRAdjust(value)).append(lineSeparator);
 							rengine.assign("adj.1", getRAdjust(value));
 						}
 						else {
-							str.append(name + "=" + value + lineSeparator);
+							str.append(name).append("=").append(value).append(lineSeparator);
 							rengine.assign(name, value);
 						}
 					}
@@ -309,6 +215,21 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 		10		"odbcDataSource", //PostgreSQL30
 		11		"dwmorley", //userID
 		12		"*******" //password
+		
+db_driver_prefix=jdbc:postgresql
+db_host=localhost
+db_port=5432
+db_name=sahsuland
+db_driver_class_name=org.postgresql.Driver
+study_id=327
+investigation_name=TEST_1001
+covariate_name=NONE
+study_name=R Test exception
+investigation_id=325
+r_model=het_r_procedure
+odbcDataSource=PostgreSQL35W
+userID=peter
+password=XXXXXXXX
 		 */
 /*
 				rengine.assign("userID", parameters[13]);
@@ -327,20 +248,20 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 				rengine.assign("names.adj.1", parameters[7]);			
 				rengine.assign("adj.1", getRAdjust(parameters[7]));
  */
-				//RUN "Adj_Cov_Smooth_JRI.R"
+				//RUN "adjCovSmoothJri.R"
 				
 				rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
 				rifScriptPath.append(File.separator);
-
-				Adj_Cov_Smooth_JRI.append(rifScriptPath);
-				Adj_Cov_Smooth_JRI.append("Adj_Cov_Smooth_JRI.R");
-				RIF_odbc.append(rifScriptPath);
-				RIF_odbc.append("RIF_odbc.R");
+				
+				adjCovSmoothJri.append(rifScriptPath);
+				adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
+				rifOdbc.append(rifScriptPath);
+				rifOdbc.append("RIF_odbc.R");
 				performSmoothingActivity.append(rifScriptPath);
 				performSmoothingActivity.append("performSmoothingActivity.R");
 				
-				sourceRScript(rengine, Adj_Cov_Smooth_JRI.toString());
-				sourceRScript(rengine, RIF_odbc.toString());
+				sourceRScript(rengine, adjCovSmoothJri.toString());
+				sourceRScript(rengine, rifOdbc.toString());
 				sourceRScript(rengine, performSmoothingActivity.toString());
 
 				//RUN the actual smoothing
@@ -358,19 +279,19 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 				if (errorTraceFromR != null) {
 					String[] strArr=errorTraceFromR.asStringArray();
 					StringBuilder strBuilder = new StringBuilder();
-					for (int i = 0; i < strArr.length; i++) {
-					   strBuilder.append(strArr[i] + lineSeparator);
+					for (final String aStrArr : strArr) {
+						strBuilder.append(aStrArr).append(lineSeparator);
 					}
 					int index = -1;
 					String toReplace="'";
 					while ((index = strBuilder.lastIndexOf(toReplace)) != -1) {
 						strBuilder.replace(index, index + toReplace.length(), "\""); // Replace ' with " to reduce JSON parse errors
 					}
-					RerrorTrace = strBuilder.toString();
+					rErrorTrace = strBuilder.toString();
 				}
 				else {
 					rifLogger.warning(this.getClass(), "JRI R ERROR: errorTraceFromR is NULL");
-				}				
+				}	
 			}
 			catch(Exception error) {
 				try {
@@ -405,13 +326,14 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 						}
 						finally {
 							rifLogger.info(this.getClass(), "Rengine Stopped, exit value=="+ exitValue +"==");
-						}	
-						
+							
+						}				
+
 						RIFServiceExceptionFactory rifServiceExceptionFactory
 						= new RIFServiceExceptionFactory();
-						RIFServiceException rifServiceException = 
-							rifServiceExceptionFactory.createRScriptException(RerrorTrace);
-						throw rifServiceException;					
+						RIFServiceException rifServiceException =
+							rifServiceExceptionFactory.createRScriptException(rErrorTrace);
+						throw rifServiceException;
 					}
 					else {	
 						try {
@@ -427,6 +349,7 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 					}
 				}
 			}
+
 		}
 		catch (RIFServiceException rifServiceException) {
 			rifLogger.error(this.getClass(), "JRI R script exception", rifServiceException);
@@ -436,9 +359,7 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 			rifLogger.error(this.getClass(), "JRI R engine exception", rException);		
 			RIFServiceExceptionFactory rifServiceExceptionFactory
 			= new RIFServiceExceptionFactory();
-			RIFServiceException rifServiceException = 
-				rifServiceExceptionFactory.createREngineException(rifScriptPath.toString());
-			throw rifServiceException;
+			throw rifServiceExceptionFactory.createREngineException(rifScriptPath.toString());
 		}		
 	}
 
@@ -471,9 +392,7 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 			return "NONE";
 		}
 
-		String covariateName
-		= covariates.get(0).getName();
-		return covariateName;
+		return covariates.get(0).getName();
 	}
 
 
@@ -482,9 +401,9 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 	}
 
 
-	public Integer getInvestigationID(
+	private Integer getInvestigationID(
 			final Connection connection,
-			final String studyID, 
+			final String studyID,
 			final Investigation investigation) 
 					throws SQLException,
 					RIFServiceException {
@@ -492,7 +411,8 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 
 		rifLogger.info(this.getClass(), "SQLSmoothedResultsSubmissionStep getInvestigationID studyID=="+studyID+"==investigation_name=="+investigation.getTitle()+"==inv_description=="+investigation.getDescription()+"==");
 
-		PGSQLSelectQueryFormatter queryFormatter = new PGSQLSelectQueryFormatter();
+		SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
+     				rifStartupOptions.getRifDatabaseType());
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.addFromTable("rif40_investigations");
 		queryFormatter.addSelectField("inv_id");
@@ -529,17 +449,4 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 
 		return investigationID;
 	}
-
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }
