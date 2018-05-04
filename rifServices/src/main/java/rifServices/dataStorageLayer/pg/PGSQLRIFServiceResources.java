@@ -125,8 +125,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 				= new PGSQLStudyExtractManager(
 				rifServiceStartupOptions);
 		
-		sqlResultsQueryManager
-				= new PGSQLResultsQueryManager(rifServiceStartupOptions);
+		sqlResultsQueryManager = new ResultsQueryManager(rifServiceStartupOptions);
 		
 		ValidationPolicy validationPolicy;
 		if (rifServiceStartupOptions.useStrictValidationPolicy()) {

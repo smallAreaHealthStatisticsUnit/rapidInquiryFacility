@@ -52,6 +52,7 @@ public class BaseSQLManager implements SQLManager {
 	private static final Map<String, ConnectionQueue> writeConnectionsFromUser = new HashMap<>();
 	private static final HashMap<String, Integer> suspiciousEventCounterFromUser = new HashMap<>();
 	protected final RIFServiceStartupOptions rifServiceStartupOptions;
+	protected final boolean prefixSchemaName;
 	private final String databaseURL;
 	private static HashMap<String, String> passwordHashList = null;
 
@@ -74,6 +75,7 @@ public class BaseSQLManager implements SQLManager {
 			passwordHashList = new HashMap<>();
 		}
 		databaseURL = generateURLText();
+		prefixSchemaName  = rifServiceStartupOptions.getRifDatabaseType() == DatabaseType.SQL_SERVER;
 	}
 
 	@Override

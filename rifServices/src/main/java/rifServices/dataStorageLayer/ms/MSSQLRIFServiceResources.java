@@ -101,7 +101,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 			= new MSSQLStudyExtractManager(
 				rifServiceStartupOptions);
 		
-		sqlResultsQueryManager = new MSSQLResultsQueryManager(rifServiceStartupOptions);
+		sqlResultsQueryManager = new ResultsQueryManager(rifServiceStartupOptions);
 
 		ValidationPolicy validationPolicy = null;
 		if (rifServiceStartupOptions.useStrictValidationPolicy()) {

@@ -32,7 +32,6 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 	/** The sql rif context manager. */
 	private RIFContextManager sqlRIFContextManager;
 	private final RIFServiceStartupOptions rifServiceStartupOptions;
-	private final boolean prefixSchemaName;
 	private final String tablesTableName;
 
 	/**
@@ -45,7 +44,6 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 		super(options);
 		this.sqlRIFContextManager = sqlRIFContextManager;
 		this.rifServiceStartupOptions = options;
-		prefixSchemaName  = options.getRifDatabaseType() == DatabaseType.SQL_SERVER;
 		tablesTableName = (prefixSchemaName ? SCHEMA_PREFIX : "") + "rif40_tables";
 	}
 
