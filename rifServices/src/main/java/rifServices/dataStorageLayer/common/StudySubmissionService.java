@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer.ms;
+package rifServices.dataStorageLayer.common;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -105,15 +105,14 @@ import rifServices.system.files.TomcatFile;
  * @author kgarwood
  */
 
-public class MSSQLRIFStudySubmissionService extends CommonUserService
-		implements RIFStudySubmissionAPI {
+public class StudySubmissionService extends CommonUserService implements RIFStudySubmissionAPI {
 
 	private static String lineSeparator = System.getProperty("line.separator");
 		
 	/**
 	 * Instantiates a new production rif job submission service.
 	 */
-	public MSSQLRIFStudySubmissionService() {
+	public StudySubmissionService() {
 
 		String serviceName
 			= RIFServiceMessages.getMessage("rifStudySubmissionService.name");
@@ -188,7 +187,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 
@@ -333,7 +332,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 		User user = User.createCopy(_user);		
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		
@@ -398,7 +397,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 		User user = User.createCopy(_user);		
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 	
@@ -474,7 +473,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 		User user = User.createCopy(_user);		
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		HealthCode parentHealthCode = HealthCode.createCopy(_parentHealthCode);
@@ -537,7 +536,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 		User user = User.createCopy(_user);		
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		HealthCode childHealthCode = HealthCode.createCopy(_childHealthCode);
@@ -603,7 +602,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 		User user = User.createCopy(_user);		
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		HealthCodeTaxonomy healthCodeTaxonomy
@@ -689,7 +688,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 		User user = User.createCopy(_user);		
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();				
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		Geography geography = Geography.createCopy(_geography);
@@ -870,7 +869,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();	
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 		
@@ -936,17 +935,15 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 		final User _user,
 		final RIFStudySubmission _rifStudySubmission,
 		final File _outputFile) throws RIFServiceException {
-		
-		
-		
+
 		//Defensively copy parameters and guard against blocked users
 		User user = User.createCopy(_user);
 		SQLManager sqlConnectionManager
 			= rifServiceResources.getSqlConnectionManager();	
 		
 		String result = null;
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
-			return result;
+		if (sqlConnectionManager.isUserBlocked(user)) {
+			return null;
 		}
 		RIFStudySubmission rifStudySubmission
 			= RIFStudySubmission.createCopy(_rifStudySubmission);
@@ -1062,7 +1059,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 		try (BufferedReader reader = tcFile.reader()) {
 
 				rifLogger.info(getClass(),
-					"MSSQLRIFStudySubmissionService.getFrontEndParameters: using: "
+					"StudySubmissionService.getFrontEndParameters: using: "
 							+ tcFile.absolutePath());
 
 				// Read and string escape JSON
@@ -1074,7 +1071,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 										.joining(lineSeparator))) +"\"}";
 		} catch (IOException ioException2) {
 				rifLogger.warning(this.getClass(),
-					"MSSQLRIFStudySubmissionService.getFrontEndParameters error for file: " +
+					"StudySubmissionService.getFrontEndParameters error for file: " +
 						tcFile.absolutePath(), ioException2);
 				return defaultJson;
 		}
@@ -1157,7 +1154,7 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 		SQLManager sqlConnectionManager
 		= rifServiceResources.getSqlConnectionManager();			
 		
-		if (sqlConnectionManager.isUserBlocked(user) == true) {
+		if (sqlConnectionManager.isUserBlocked(user)) {
 			return null;
 		}
 
@@ -1197,37 +1194,29 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 			connection
 			= sqlConnectionManager.assignPooledWriteConnection(user);
 
-			SubmissionManager sqlRIFSubmissionManager
-			= rifServiceResources.getRIFSubmissionManager();
-			RIFStudySubmission rifStudySubmission
-			= sqlRIFSubmissionManager.getRIFStudySubmission(
-					connection, 
+			SubmissionManager sqlRIFSubmissionManager =
+					rifServiceResources.getRIFSubmissionManager();
+			RIFStudySubmission rifStudySubmission = sqlRIFSubmissionManager.getRIFStudySubmission(
+					connection,
 					user, 
 					studyID);
 
-			StudyExtractManager studyExtractManager
-			= rifServiceResources.getSQLStudyExtractManager();
+			StudyExtractManager studyExtractManager =
+					rifServiceResources.getSQLStudyExtractManager();
 			result=studyExtractManager.getExtractStatus(
-					connection, 
-					user, 
-					rifStudySubmission,
-					studyID);
+					connection, user, rifStudySubmission, studyID);
 
 		}
 		catch(RIFServiceException rifServiceException) {
 			//Audit failure of operation
-			logException(
-					user,
-					"getExtractStatus",
-					rifServiceException);	
+			logException(user, "getExtractStatus", rifServiceException);
 			// Effectively return NULL
 		}
 		finally {
-			rifLogger.info(getClass(), "get ZIP file extract status, study: " + studyID + ": " + result);
+			rifLogger.info(getClass(), "get ZIP file extract status, study: " + studyID
+			                           + ": " + result);
 			//Reclaim pooled connection
-			sqlConnectionManager.reclaimPooledWriteConnection(
-					user, 
-					connection);			
+			sqlConnectionManager.reclaimPooledWriteConnection(user, connection);
 		}	
 		
 		return result;
@@ -1646,5 +1635,4 @@ public class MSSQLRIFStudySubmissionService extends CommonUserService
 	
 		return results;
 	}
-	
 }

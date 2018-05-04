@@ -9,7 +9,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
-import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
+import rifServices.dataStorageLayer.common.StudySubmissionService;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
 import rifServices.system.RIFServiceError;
@@ -112,7 +112,7 @@ public final class TestYearRangeYearInterval
 
 		rifStudyServiceBundle = new MSSQLTestRIFStudyServiceBundle(
 				resources,
-				new MSSQLRIFStudySubmissionService(),
+				new StudySubmissionService(),
 				new MSSQLTestRIFStudyRetrievalService());
 
 		service

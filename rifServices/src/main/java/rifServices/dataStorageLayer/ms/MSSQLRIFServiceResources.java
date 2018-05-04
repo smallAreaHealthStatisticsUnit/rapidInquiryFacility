@@ -1,6 +1,5 @@
 package rifServices.dataStorageLayer.ms;
 
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
