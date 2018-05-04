@@ -32,6 +32,8 @@ RIF Data Loading
   - [3.4 Covariates](#34-covariates)
 - [4. Information Governance](#4-information-governance)
   - [4.1 Auditing](#41-auditing)
+     - [4.1.1 Postgres](#411-postgres)
+     - [4.1.2 SQL Server](#412-sql-server)
 - [5. Flexible Configuration Support](#5-flexible-configuration-support)
   - [5.1 Age Groups](#51-age-groups)
   - [5.2 ICD field Name](#52-icd-field-name)
@@ -810,7 +812,7 @@ move the data directory to a solid state disk, mine is: * E:\Postgres\data*! Che
 If you are using CSV log files set:
 
 * ```logging_collector = TRUE```;
-* ```log_filename = postgresql-%Y-%m-%d.csv``` and log_rotation_age = 1440``` (in minutes) to provide a consistent, predictable naming scheme for your log files. This lets you predict what the file name will be and know 
+* ```log_filename = postgresql-%Y-%m-%d.csv``` and ```log_rotation_age = 1440``` (in minutes) to provide a consistent, predictable naming scheme for your log files. This lets you predict what the file name will be and know 
   when an individual log file is complete and therefore ready to be imported. The log filename is in [strftime()](http://www.cplusplus.com/reference/ctime/strftime/) format; 
 * ```log_rotation_size = 0``` to disable size-based log rotation, as it makes the log file name difficult to predict;
 * ```log_truncate_on_rotation = TRUE``` to on so that old log data isn't mixed with the new in the same file.
