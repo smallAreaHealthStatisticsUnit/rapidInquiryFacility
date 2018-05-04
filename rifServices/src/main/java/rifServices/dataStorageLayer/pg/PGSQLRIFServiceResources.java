@@ -96,8 +96,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		sqlRIFContextManager
 				= new RIFContextManager(rifServiceStartupOptions);
 		
-		sqlSmoothedResultManager
-				= new PGSQLSmoothedResultManager(rifServiceStartupOptions);
+		sqlSmoothedResultManager = new SmoothedResultManager(rifServiceStartupOptions);
 		
 		sqlAgeGenderYearManager = new AgeGenderYearManager(
 				sqlRIFContextManager, rifServiceStartupOptions);

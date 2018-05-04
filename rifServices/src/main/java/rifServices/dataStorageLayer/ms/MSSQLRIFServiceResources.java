@@ -63,8 +63,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 
 		sqlRIFContextManager = new RIFContextManager(rifServiceStartupOptions);
 		
-		sqlSmoothedResultManager
-			= new MSSQLSmoothedResultManager(rifServiceStartupOptions);
+		sqlSmoothedResultManager = new SmoothedResultManager(rifServiceStartupOptions);
 		
 		sqlAgeGenderYearManager = new AgeGenderYearManager(
 				sqlRIFContextManager, rifServiceStartupOptions);
