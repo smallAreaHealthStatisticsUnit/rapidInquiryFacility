@@ -902,6 +902,11 @@ public class BaseSQLManager implements SQLManager {
 				= new RIFServiceExceptionFactory();
 			throw exceptionFactory.createUnableLoadDBDriver();
 		}
+		catch (RIFServiceException rifServiceException) {
+			readOnlyConnectionQueue.closeAllConnections();
+			writeOnlyConnectionQueue.closeAllConnections();
+			throw rifServiceException;
+		}
 		catch(SQLException sqlException) {
 			readOnlyConnectionQueue.closeAllConnections();
 			writeOnlyConnectionQueue.closeAllConnections();
@@ -934,9 +939,13 @@ public class BaseSQLManager implements SQLManager {
 		try {
 
 			Properties databaseProperties = new Properties();
+			
+			// See: generateURLText() for JDBC connection string rules
+			if (rifServiceStartupOptions.getDatabaseDriverPrefix().equals("jdbc:sqlserver")) {
+				databaseProperties.setProperty("database", rifServiceStartupOptions.getDatabaseName());
+			}
 			databaseProperties.setProperty("user", userID);
 			databaseProperties.setProperty("password", password);
-
 			if (rifServiceStartupOptions.getRIFDatabaseProperties().isSSLSupported()) {
 				databaseProperties.setProperty("ssl", "true");
 			}
@@ -965,6 +974,17 @@ public class BaseSQLManager implements SQLManager {
 				connection.setReadOnly(false);
 			}
 			connection.setAutoCommit(false);
+		}
+		catch (Exception exception) {
+
+			rifLogger.error(
+				getClass(),
+				"Unable to create connection, URL: " + databaseURL,
+				exception);
+
+			RIFServiceExceptionFactory exceptionFactory
+				= new RIFServiceExceptionFactory();
+			throw exceptionFactory.createUnableToRegisterUser(userID);
 		}
 		finally {
 			SQLQueryUtility.close(statement);
@@ -995,20 +1015,46 @@ public class BaseSQLManager implements SQLManager {
 	}
 
 	/**
-	 * Generate url text.
+	 * Generate url text in the form:
+	 *
+	 * jdbc:sqlserver://[serverName[\instanceName][:portNumber]][;property=value[;property=value]]
+	 * or 
+	 * jdbc:postgresql://host:port/database
+	 *
+	 * e.g. jdbc:sqlserver://localhost\SQLEXPRESS:1433
+	 *      jdbc:postgresql://host:port/database
 	 *
 	 * @return the string
 	 */
 	private String generateURLText() {
 
-		return rifServiceStartupOptions.getDatabaseDriverPrefix()
-		       + ":"
-		       + "//"
-		       + rifServiceStartupOptions.getHost()
-		       + ":"
-		       + rifServiceStartupOptions.getPort()
-		       + "/"
-		       + rifServiceStartupOptions.getDatabaseName();
+		String databaseDriverPrefix = rifServiceStartupOptions.getDatabaseDriverPrefix();
+		
+		if (databaseDriverPrefix.equals("jdbc:sqlserver")) {
+			return rifServiceStartupOptions.getDatabaseDriverPrefix()
+				   + ":"
+				   + "//"
+				   + rifServiceStartupOptions.getHost()
+				   + ":"
+				   + rifServiceStartupOptions.getPort();
+		}
+		else if (databaseDriverPrefix.equals("jdbc:postgresql")) {
+			return rifServiceStartupOptions.getDatabaseDriverPrefix()
+				   + ":"
+				   + "//"
+				   + rifServiceStartupOptions.getHost()
+				   + ":"
+				   + rifServiceStartupOptions.getPort()
+				   + "/"
+				   + rifServiceStartupOptions.getDatabaseName();
+		}
+		else {
+			rifLogger.error(
+				getClass(), 
+				"Unsupported database driver: " + 
+				databaseDriverPrefix);
+			return null;
+		}
 	}
 
 	public void deregisterAllUsers() throws RIFServiceException {
