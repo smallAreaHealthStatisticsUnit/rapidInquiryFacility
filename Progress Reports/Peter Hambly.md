@@ -2212,5 +2212,11 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
   getAgeGroups_MALICIOUS1(rifServices.dataStorageLayer.ms.AgeGenderYearManagerTest)
   getAgeGroups_MALICIOUS2(rifServices.dataStorageLayer.ms.AgeGenderYearManagerTest)
   getAgeGroups_MALICIOUS3(rifServices.dataStorageLayer.ms.AgeGenderYearManagerTest)
-  
+* Tested pull 26: *Replaced use of hard-coded Windows paths in R with file.path #26*  
+  Tried to create:  rifDemo/scratchSpace/d/401/-/500/s/409/datarif40_run_R_env.bat on Windows; caused extract to fail:
+  ```
+  R temporary directory: c:\rifDemo\scratchSpace\d401-500\s409 was not created by Adj_Cov_Smooth_JRI.R
+  ```
+  Actually created: ```C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin\rifDemo\scratchSpace\d\401\-\500\s\409```
+
   
