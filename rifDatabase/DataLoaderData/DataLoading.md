@@ -752,7 +752,8 @@ An example theme is provided:
  
 # 3. Load Processing
 
-* Always load the administrative geography first:
+* **Always load the administrative geography first**. This is produced by the 
+  [Tile maker](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md):
 
 ## 3.1 Administrative Geography
 
@@ -770,7 +771,7 @@ For SQL Server:
 
 * ``sqlcmd -U rif40 -P XXXXXXXX -d sahsuland -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql -v pwd="%cd%"```;
   Where ```XXXXXXXX``` is the rif40 account password.
-  To change SQL server password:
+  To change a SQL server password:
   ```SQL
   ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
   GO
