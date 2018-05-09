@@ -2179,19 +2179,20 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 * Test install on Fred's laptop. Issues with Postgres installer crashes:
   * Run as administrator needs to be clearer
   * How to edit the Windows environment
-  * Postgres installer crashed caused by Windows 81./10 upgrade issue; needed to create a new Administrator account
+  * Postgres installer crashed caused by Windows 8.1/10 upgrade issue; needed to create a new Administrator account
 * Patch demo laptop. Java upgrade had failed and Java needed to be installed;
 * Test then merge rationalise_api into master.
   - Fixed R file separator escaping issue
   - Tidy logs
   - Put back covariate fix
   - Password is null; R does not handle this well
-* Front end issues
+* Front end issues:
   - Package front end as WAR
-  - Login screen: focus on user name field
+  - Login screen: focus on user name field: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/22
   - Able to load, save and run risk analysis studies
+  - Able to choose continuous covariate variables (not currently supported) https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/20
 * Urgent database:
-  - Fix predefined_groiup name issues - should be length 30 in t_rif40_inv_conditions
+  - Fix predefined_groiup name issues - should be length 30 in t_rif40_inv_conditions: https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/issues/21
   - Save risk analysis bands as geojson in the database and the save file. Circle may need conversion to geojson (as a polygon of many, many short, linestrings).
   - Save selection options (study and comparison resolution and selection geolevels, geolevels selected.
   
@@ -2199,4 +2200,26 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 
 * Fix for null R passwords; improved ODBC connect handler in R;
 * Merge "Crossing the database streams". Tested on PG/SQl Server. R null password patch was missed;
-* Finish Taxonomy services documentation
+* Finish Taxonomy services documentation;
+* Dataloading documentation;
+* Update TODO;
+* Fix for PG/MSSQL JDBC driver incompatibilities;
+* Build issue: Tests in error:
+  getAgeGroups_EMPTY1(rifServices.dataStorageLayer.ms.AgeGenderYearManagerTest)
+  getAgeGroups_EMPTY2(rifServices.dataStorageLayer.ms.AgeGenderYearManagerTest)
+  getAgeGroups_EMPTY3(rifServices.dataStorageLayer.ms.AgeGenderYearManagerTest)
+  getAgeGroups_NONEXISTENT1(rifServices.dataStorageLayer.ms.AgeGenderYearManagerTest)
+  getAgeGroups_MALICIOUS1(rifServices.dataStorageLayer.ms.AgeGenderYearManagerTest)
+  getAgeGroups_MALICIOUS2(rifServices.dataStorageLayer.ms.AgeGenderYearManagerTest)
+  getAgeGroups_MALICIOUS3(rifServices.dataStorageLayer.ms.AgeGenderYearManagerTest)
+* Tested pull 26: *Replaced use of hard-coded Windows paths in R with file.path 
+  Tried to create:  rifDemo/scratchSpace/d/401/-/500/s/409/datarif40_run_R_env.bat on Windows; caused extract to fail:
+  ```
+  R temporary directory: c:\rifDemo\scratchSpace\d401-500\s409 was not created by Adj_Cov_Smooth_JRI.R
+  ```
+  Actually created: ```C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin\rifDemo\scratchSpace\d\401\-\500\s\409```
+* Tested pull 30: Some more database-specific classes made common 
+  - Added fix for PG/MSSQL JDBC driver incompatibilities;
+  - Same basic problems as pull 26 with R directory paths on Windows;
+  - Added NPE handler for issues coming from R directory path issue.
+  

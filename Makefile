@@ -62,6 +62,14 @@ else
 	DELETE=rm -f
 $(error 7ZIP unsupported: $(7ZIP))
 endif
+# 
+# Uncomment if you are having problems with the tests
+#
+#MAVEN_FLAGS=-Dmaven.test.skip=true
+MAVEN_FLAGS=
+# or use:
+# make <target> MAVEN_FLAGS='-Dmaven.test.skip=true'
+#
 
 all: RIF4
 	$(MAVEN) --version
@@ -99,6 +107,8 @@ doc:
 	$(GRIP) rifDatabase\Postgres\production\windows_install_from_pg_dump.md --export docs\RIF_Postgres_Install.html
 	$(GRIP) rifDatabase\SQLserver\production\INSTALL.md --export docs\RIF_SQLserver_Install.html
 	$(GRIP) rifDatabase\DataLoaderData\DataLoading.md --export docs\RIF_manual_data_loading.html
+	$(GRIP) rifDatabase\databaseManagementManual.md --export docs\databaseManagementManual.html
+	$(GRIP) rifNodeServices\tileMaker.md --export docs\tileMaker.html
 	$(COPY) "Documentation\RIF v4 0 Manual.pdf" "docs\RIF_v40_Manual.pdf"
 	$(COPY) "Documentation\RIF Data Loader Manual.pdf" "docs\RIF_Data_Loader_Manual.pdf"
 	$(GRIP) docs\README.md --export docs\index.html

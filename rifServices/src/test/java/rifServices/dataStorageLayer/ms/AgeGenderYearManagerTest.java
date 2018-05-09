@@ -50,6 +50,7 @@ public final class AgeGenderYearManagerTest extends CommonRIFServiceTestCase {
 		when(options.getRifDatabaseType()).thenReturn(DatabaseType.SQL_SERVER);
 		when(options.getRIFDatabaseProperties().getDatabaseType())
 				.thenReturn(DatabaseType.SQL_SERVER);
+		when(options.getDatabaseDriverPrefix()).thenReturn("??");
 		when(databaseProps.getDatabaseType()).thenReturn(DatabaseType.SQL_SERVER);
 		manager = new AgeGenderYearManager(
 				contextManager, resources.getRIFServiceStartupOptions());

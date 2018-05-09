@@ -75,7 +75,7 @@ public class AbstractMSSQLQueryFormatter
 		init(useGoCommand);
 	}
 	
-	private void init(final boolean useGoCommand) {
+	private void init(final boolean useGoCommand) { // DO NOT USE GO WITH JDBC!!!!!!
 		this.useGoCommand = useGoCommand;
 		setEndWithSemiColon(false);		
 		//KLG_SCHEMA
@@ -97,12 +97,12 @@ public class AbstractMSSQLQueryFormatter
 		else {
 			result.append("\n");
 	    }
-		if (useGoCommand) {
-			result.append("GO");
-		}
-		else {
+//		if (useGoCommand) { // DO NOT USE GO WITH JDBC!!!!!!
+//			result.append("GO");
+//		}
+//		else {
 			result.append("\n");			
-		}
+//		}
 		result.append("\n");
 		
 		return result.toString();
