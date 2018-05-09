@@ -101,7 +101,7 @@ Notes:
 To change a Postgres password:
 ```SQL
 ALTER ROLE rif40 WITH PASSWORD 'XXXXXXXX';
-``
+```
 
 ### 2.2.2 SQL Server
 

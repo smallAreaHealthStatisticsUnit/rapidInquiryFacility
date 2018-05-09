@@ -760,8 +760,29 @@ An example theme is provided:
  
 # 3. Load Processing
 
-* **Always load the administrative geography first**. This is produced by the 
+Generally load processing requires three steps:
+
+* Create and load the Administrative geography. **Always load the administrative geography first**. This is produced by the 
   [Tile maker](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md):
+* Pre-process the data from flat files, process and unloaded back into flat files that can be loaded into either Postgres or SQL Server. 
+  Typically this is done as a normal user on any database. Do **not** use the schema *rif40* or  administrative accounts (*postgres* or *administrator*)
+* Load the processed data as a schema owner (e.g. *rif40*)into a target database.
+ 
+Example scripts: 
+
+| Action                              | Postgres                            | SQL Server                          |
+|-------------------------------------|-------------------------------------|-------------------------------------|
+| Load the Administrative geography   | *rif_pg_usa_2014.sql*               | *rif_mssql_usa_2014.sql*            |
+| Pre-process the SEER data           | *pg_load_seer.sql*                  | **TO FOLLOW**                       |
+| * Pre-process numerator data        | *pg_load_seer_cancer.sql*           | **TO FOLLOW**                       |
+| * Pre-process denominator data      | *pg_load_seer_population.sql*       | **TO FOLLOW**                       |
+| * Pre-process covariates data       | *pg_load_seer_covariates.sql*       | **TO FOLLOW**                       |
+| Load the processed SEER data        | *pg_rif40_load_seer.sql*            | *ms_rif40_load_seer.sql*            |
+| * Load numerator data               | *pg_rif40_load_seer_cancer.sql*     | *ms_rif40_load_seer_cancer.sql*     |
+| * Load denominator data             | *pg_rif40_load_seer_population.sql* | *ms_rif40_load_seer_population.sql* |
+| * Load covariates data              | *pg_rif40_load_seer_covariates.sql* | *ms_rif40_load_seer_covariates.sql* |
+
+To install, change to the &lt;SEER Data directory, e.g. C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\&gt;
 
 ## 3.1 Administrative Geography
 
@@ -796,17 +817,23 @@ GO
 
 ## 3.2.1 Postgres
 
+
+
 ## 3.1.2 SQL Server
 
 ## 3.3 Denominator
 
 ## 3.3.1 Postgres
 
+
 ## 3.3.2 SQL Server
+
 
 ## 3.4 Covariates
 
 ## 3.4.1 Postgres
+
+
 
 ## 3.4.2 SQL Server
 
