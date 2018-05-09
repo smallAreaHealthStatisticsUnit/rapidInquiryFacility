@@ -831,103 +831,130 @@ GO
 
 ## 3.4.2 Load Processing
 
-* Remove covariate setup data and tables: 
-  ```SQL
-  DROP TABLE IF EXISTS rif_data.cov_cb_2014_us_county_500k;
-  DROP TABLE IF EXISTS rif_data.cov_cb_2014_us_state_500k;
+* Remove covariate setup data and tables;
+  - Postgres:  
+    ```SQL
+    DROP TABLE IF EXISTS rif_data.cov_cb_2014_us_county_500k;
+    DROP TABLE IF EXISTS rif_data.cov_cb_2014_us_state_500k;
 
-  DELETE FROM rif40_covariates
-   WHERE geography = 'USA_2014';
-  ```
-* Create table: 
+    DELETE FROM rif40_covariates
+     WHERE geography = 'USA_2014';
+    ```
+  - SQL Server:
+    ```SQL
+	```
+* Create table;
+  - Postgres:  
   ```SQL
-  CREATE TABLE rif_data.cov_cb_2014_us_county_500k (
-	year											INTEGER NOT NULL, -- Year
-	cb_2014_us_county_500k 							CHARACTER VARYING(30) NOT NULL, -- Geolevel name
-	areaname					 					CHARACTER VARYING(200),
-	total_poverty_all_ages							INTEGER,
-	pct_poverty_all_ages							NUMERIC,
-	pct_poverty_0_17								NUMERIC,
-	pct_poverty_related_5_17						NUMERIC,
-	median_household_income							NUMERIC,
-	median_hh_income_quin							INTEGER,
-	med_pct_not_in_pov_quin							INTEGER,
-	med_pct_not_in_pov_0_17_quin					INTEGER,
-	med_pct_not_in_pov_5_17r_quin					INTEGER,
-	pct_white_quintile								INTEGER,
-	pct_black_quintile								INTEGER,
-	CONSTRAINT cov_cb_2014_us_county_500k_pkey PRIMARY KEY (year, cb_2014_us_county_500k)
-  );
-  ```
+    CREATE TABLE rif_data.cov_cb_2014_us_county_500k (
+		year											INTEGER NOT NULL, -- Year
+		cb_2014_us_county_500k 							CHARACTER VARYING(30) NOT NULL, -- Geolevel name
+		areaname					 					CHARACTER VARYING(200),
+		total_poverty_all_ages							INTEGER,
+		pct_poverty_all_ages							NUMERIC,
+		pct_poverty_0_17								NUMERIC,
+		pct_poverty_related_5_17						NUMERIC,
+		median_household_income							NUMERIC,
+		median_hh_income_quin							INTEGER,
+		med_pct_not_in_pov_quin							INTEGER,
+		med_pct_not_in_pov_0_17_quin					INTEGER,
+		med_pct_not_in_pov_5_17r_quin					INTEGER,
+		pct_white_quintile								INTEGER,
+		pct_black_quintile								INTEGER,
+		CONSTRAINT cov_cb_2014_us_county_500k_pkey PRIMARY KEY (year, cb_2014_us_county_500k)
+    );
+    ```
+  - SQL Server:
+    ```SQL
+	```
 
-* Load CSV data into table: 
-  ```SQL
-  \copy cov_cb_2014_us_county_500k FROM 'cov_cb_2014_us_county_500k.csv' WITH CSV HEADER;
-  ```
-
-* Check all table data has been loaded: 
-  ```SQL 
-  --
-  -- Check rowcount
-  --
-  SELECT COUNT(*) AS total FROM cov_cb_2014_us_county_500k;
+* Load CSV data into table;
+  - Postgres: 
+    ```SQL
+    \copy cov_cb_2014_us_county_500k FROM 'cov_cb_2014_us_county_500k.csv' WITH CSV HEADER;
+    ```
+  - SQL Server:
+    ```SQL
+	```
+* Check all table data has been loaded;
+  - Postgres:  
+    ```SQL 
+    --
+    -- Check rowcount
+    --
+    SELECT COUNT(*) AS total FROM cov_cb_2014_us_county_500k;
   
-  DO LANGUAGE plpgsql $$
-  DECLARE
+    DO LANGUAGE plpgsql $$
+    DECLARE
 		c1 CURSOR FOR
 			SELECT COUNT(*) AS total
 			  FROM cov_cb_2014_us_county_500k;
 		c1_rec RECORD;
-  BEGIN
+    BEGIN
 		OPEN c1;
 		FETCH c1 INTO c1_rec;
 		CLOSE c1;
-  --
-	IF c1_rec.total = 132553 THEN
-		RAISE INFO 'Table: cov_cb_2014_us_county_500k has % rows', c1_rec.total;
-	ELSE
-		RAISE EXCEPTION 'Table: cov_cb_2014_us_county_500k has % rows; expecting 132553', c1_rec.total;
-	END IF;
-  END;
-  $$;
-  ```
+    --
+		IF c1_rec.total = 132553 THEN
+			RAISE INFO 'Table: cov_cb_2014_us_county_500k has % rows', c1_rec.total;
+		ELSE
+			RAISE EXCEPTION 'Table: cov_cb_2014_us_county_500k has % rows; expecting 132553', c1_rec.total;
+		END IF;
+    END;
+    $$;
+    ```
+  - SQL Server:
+    ```SQL
+	```
 
-* Convert to index organised table: 
-  ```SQL  
+* Convert to index organised table;
+  - Postgres: 
+    ```SQL  
 	--
 	-- Convert to index organised table
 	--
 	CLUSTER rif_data.cov_cb_2014_us_county_500k USING cov_cb_2014_us_county_500k_pkey;
-  ```
+    ```
+  - SQL Server:
+    ```SQL
+	```
 
-* Comment table: 
-  ```SQL  
-  COMMENT ON TABLE rif_data.cov_cb_2014_us_county_500k
-	IS 'Example covariate table for: The County at a scale of 1:500,000';
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.year IS 'Year';
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.cb_2014_us_county_500k IS 'County FIPS code (geolevel id)';
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.areaname IS 'Area (county) name';
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.total_poverty_all_ages IS 'Estimate of people of all ages in poverty';
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_poverty_all_ages IS 'Estimate percent of people of all ages in poverty';
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.median_household_income IS 'Estimate of median household income';
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_white_quintile IS '% White quintile (1=least white, 5=most)'; 
-  COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_black_quintile IS '% Black quintile (1=least black, 5=most)';
-  ```
+* Comment table;
+  - Postgres:  
+    ```SQL  
+    COMMENT ON TABLE rif_data.cov_cb_2014_us_county_500k
+		IS 'Example covariate table for: The County at a scale of 1:500,000';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.year IS 'Year';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.cb_2014_us_county_500k IS 'County FIPS code (geolevel id)';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.areaname IS 'Area (county) name';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.total_poverty_all_ages IS 'Estimate of people of all ages in poverty';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_poverty_all_ages IS 'Estimate percent of people of all ages in poverty';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.median_household_income IS 'Estimate of median household income';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_white_quintile IS '% White quintile (1=least white, 5=most)'; 
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_black_quintile IS '% Black quintile (1=least black, 5=most)';
+    ```
+  - SQL Server:
+    ```SQL
+	```
 
-* Grant grant access on tables and views to an appropriate role: 
-  ```SQL 
-  --
-  -- Grant
-  -- * The role SEER_USER needs to be created by an administrator
-  --
-  GRANT SELECT ON rif_data.cov_cb_2014_us_county_500k TO seer_user;  
-  ```
+* Grant grant access on tables and views to an appropriate role;
+  - Postgres:  
+    ```SQL 
+    --
+    -- Grant
+    -- * The role SEER_USER needs to be created by an administrator
+    --
+    GRANT SELECT ON rif_data.cov_cb_2014_us_county_500k TO seer_user;  
+    ```
+  - SQL Server:
+    ```SQL
+	```
 
 # 4. Information Governance
 
