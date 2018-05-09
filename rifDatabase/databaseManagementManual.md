@@ -70,6 +70,34 @@ Use of special characters]: ```\/&%``` is not advised as command line users will
 
 ### 2.2.1 Postgres
 
+The file .pgpass in a user's home directory or the file referenced by PGPASSFILE can contain passwords to be used if the connection requires a password 
+(and no password has been specified otherwise). On Microsoft Windows the file is named %APPDATA%\postgresql\pgpass.conf (where %APPDATA% refers to the 
+Application Data subdirectory in the user's profile).
+
+This file should contain lines of the following format:
+
+```
+hostname:port:database:username:password
+```
+
+You can add a comment to the file by preceding the line with #. Each of the first four fields can be a literal value, or *, which matches anything. The password field from the first line 
+that matches the current connection parameters will be used. (Therefore, put more-specific entries first when you are using wildcards.) 
+If an entry needs to contain : or \, escape this character with \. A host name of localhost matches both TCP (host name localhost) and Unix domain socket 
+(pghost empty or the default socket directory) connections coming from the local machine. 
+
+On Unix systems, the permissions on .pgpass must disallow any access to world or group; achieve this by the command chmod 0600 ~/.pgpass. If the permissions are less strict 
+than this, the file will be ignored. On Microsoft Windows, it is assumed that the file is stored in a directory that is secure, so no special permissions check is made.
+
+If you change a users password and you use the user from the command line (typically *postgres*, *rif40* and the test username) change it in the *&lt;pgpass&gt;* file.
+
+Notes: 
+
+* Your normal user and the administrator account will have separate *&lt;pgpass&gt;* files;
+* The *postgres* account password is set by the Postgres (EnterpriseDB) installler. This password is not set in the Administrator *&lt;pgpass&gt;* file.;
+* The *rif40* and the test username are both set by the database install script to &lt;username&gt;_&lt;5 digit random number&gt;_&lt;5 digit random number&gt;. 
+  These passwords are set in the Administrator *&lt;pgpass&gt;* file.;
+* No passwords are set in the normal user *&lt;pgpass&gt;* file;
+
 To change a Postgres password:
 ```SQL
 ALTER ROLE rif40 WITH PASSWORD 'XXXXXXXX';
@@ -199,10 +227,6 @@ If you are using CSV log files set:
 
 Alter scripts are numbered sequentially and have the same functionality in both ports, e.g. ```v4_0_alter_10.sql```. Scripts are safe to run more than once.
 
-## 6.1 Postgres
-
-Scripts are in the standard bundle in the directory *Database alter scripts\Postgres* or in github in *rapidInquiryFacility\rifDatabase\Postgres\psql_scripts\alter_scripts*
-
 Pre-built databases are supplied patched up to date.
 
 Scripts must be applied as follows:
@@ -210,6 +234,11 @@ Scripts must be applied as follows:
 | Date            | Script            | Description                         |
 |-----------------|-------------------|-------------------------------------|
 | 30th June  2018 | v4_0_alter_10.sql | To be added (risk analysis changes) |
+
+## 6.1 Postgres
+
+Scripts are in the standard bundle in the directory *Database alter scripts\Postgres* or in github in *rapidInquiryFacility\rifDatabase\Postgres\psql_scripts\alter_scripts*
+
 ```
 psql -U rif40 -d <your database name> -w -e -P pager=off -v verbosity=terse -v debug_level=0 -v use_plr=N -v pghost=localhost -v echo=none -f alter_scripts/<alter script name>
 ```

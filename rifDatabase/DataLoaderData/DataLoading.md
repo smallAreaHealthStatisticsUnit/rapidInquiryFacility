@@ -27,9 +27,17 @@ RIF Data Loading
 	 - [2.3.5 Health Themes](#235-health-themes)
 - [3. Load Processing](#3-load-processing)
   - [3.1 Administrative Geography](#31-administrative-geography)
+     - [3.1.1 Postgres](#311-postgres)
+     - [3.1.2 SQL Server](#312-sql-server)
   - [3.2 Numerator](#32-numerator)
+     - [3.2.1 Postgres](#321-postgres)
+     - [3.2.2 SQL Server](#322-sql-server)
   - [3.3 Denominator](#33-denominator)
+     - [3.3.1 Postgres](#331-postgres)
+     - [3.3.2 SQL Server](#332-sql-server)
   - [3.4 Covariates](#34-covariates)
+     - [3.4.1 Postgres](#341-postgres)
+     - [3.4.2 SQL Server](#342-sql-server)
 - [4. Information Governance](#4-information-governance)
 - [5. Flexible Configuration Support](#5-flexible-configuration-support)
   - [5.1 Age Groups](#51-age-groups)
@@ -757,31 +765,50 @@ An example theme is provided:
 
 ## 3.1 Administrative Geography
 
-The *SAHSULAND* example geography is supplied as part of the RIF. To load the SEER test dataset:
+The *SAHSULAND* example geography is supplied as part of the RIF. To load the SEER test dataset you first need to load the USA County level administrative geography:
 
 To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\Tile maker USA&gt;
 
 * ```cd C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\Tile maker USA```;
 
-For Postgres: 
+## 3.1.1 Postgres
 
-* ```psql -U rif40 -d sahsuland -w -e -f rif_pg_usa_2014.sql```;
+```SQL
+psql -U rif40 -d sahsuland -w -e -f rif_pg_usa_2014.sql
+```
 
-For SQL Server:
+## 3.1.2 SQL Server
 
-* ``sqlcmd -U rif40 -P XXXXXXXX -d sahsuland -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql -v pwd="%cd%"```;
-  Where ```XXXXXXXX``` is the rif40 account password.
-  To change a SQL server password:
-  ```SQL
-  ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
-  GO
-  ```
+```SQL
+sqlcmd -U rif40 -P XXXXXXXX -d sahsuland -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql -v pwd="%cd%";
+```
 
+Where ```XXXXXXXX``` is the rif40 account password.
+
+By default on SQL server the*rif40* password is set to random characters, to change the SQL server *rif40* password:
+
+```SQL
+ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
+GO
+```
+ 
 ## 3.2 Numerator
+
+## 3.2.1 Postgres
+
+## 3.1.2 SQL Server
 
 ## 3.3 Denominator
 
+## 3.3.1 Postgres
+
+## 3.3.2 SQL Server
+
 ## 3.4 Covariates
+
+## 3.4.1 Postgres
+
+## 3.4.2 SQL Server
 
 # 4. Information Governance
 
