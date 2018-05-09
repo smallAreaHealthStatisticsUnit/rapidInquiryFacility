@@ -91,6 +91,9 @@ if (names.adj.1 == "NONE") {
 #CATALINA_HOME
 catalina_home<-Sys.getenv("CATALINA_HOME")
 
+# Set the working directory based on the value from the Java class
+setwd(working_dir)
+
 ##==========================================================================
 #FUNCTION: establishTableNames
 #DESCRIPTION: uses the study_id number to determine the names of

@@ -31,9 +31,6 @@ RIF Data Loading
   - [3.3 Denominator](#33-denominator)
   - [3.4 Covariates](#34-covariates)
 - [4. Information Governance](#4-information-governance)
-  - [4.1 Auditing](#41-auditing)
-     - [4.1.1 Postgres](#411-postgres)
-     - [4.1.2 SQL Server](#412-sql-server)
 - [5. Flexible Configuration Support](#5-flexible-configuration-support)
   - [5.1 Age Groups](#51-age-groups)
   - [5.2 ICD field Name](#52-icd-field-name)
@@ -785,40 +782,9 @@ For SQL Server:
 
 ## 3.4 Covariates
 
-
 # 4. Information Governance
 
-## 4.1 Auditing
-
-### 4.1.1 Postgres
-
-Basic statement logging can be provided by the standard logging facility with the configuration parameter ```log_statement = all```. 
-Postgres has an extension [pgAudit](https://github.com/pgaudit/pgaudit) which provides much more auditing, however the Enterprise DB installer does not include Postgres 
-extensions (apart from PostGIS). EnterpiseDB Postgres has its own auditing subsystem (*edb_audit), but this is is paid for item. To use pgAudit pgAudit must be compile from source
-
-To configure Postgres server [error reporting and logging](https://www.postgresql.org/docs/9.6/static/runtime-config-logging.html) set:
-
-* ```log_statement = all```. The default is 'none';
-* ```Set log_min_error_statement = ERROR``` [default] or lower;
-* ```log_error_verbosity = VERBOSE```;
-* ```log_connections = TRUE```;
-* ```log_disconnections = TRUE```;
-* ```log_destinstion = stderr, eventlog, csvlog```. Other choices are *csvlog* or syslog*
-
-Parameters can be set in the *postgresql.conf* file or on the server command line. This is stored in the database cluster's data directory, e.g. *C:\Program Files\PostgreSQL\9.6\data*. Beware, you can 
-move the data directory to a solid state disk, mine is: * E:\Postgres\data*! Check the startup parameters in the Windows services app for the *"-D"* flag: 
-```"C:\Program Files\PostgreSQL\9.6\bin\pg_ctl.exe" runservice -N "postgresql-x64-9.6" -D "E:\Postgres\data" -w```
-
-If you are using CSV log files set:
-
-* ```logging_collector = TRUE```;
-* ```log_filename = postgresql-%Y-%m-%d.csv``` and ```log_rotation_age = 1440``` (in minutes) to provide a consistent, predictable naming scheme for your log files. This lets you predict what the file name will be and know 
-  when an individual log file is complete and therefore ready to be imported. The log filename is in [strftime()](http://www.cplusplus.com/reference/ctime/strftime/) format; 
-* ```log_rotation_size = 0``` to disable size-based log rotation, as it makes the log file name difficult to predict;
-* ```log_truncate_on_rotation = TRUE``` to on so that old log data isn't mixed with the new in the same file.
-
- 
-### 4.1.2 SQL Server
+See [Database management manual - Information Governance](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#4-information-governance)
 
 # 5. Flexible Configuration Support
 

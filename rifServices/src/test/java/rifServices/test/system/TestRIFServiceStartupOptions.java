@@ -134,7 +134,7 @@ public final class TestRIFServiceStartupOptions
 				rifServiceException,
 				RIFServiceError.INVALID_STARTUP_OPTIONS,
 				1);
-		}
+		} 
 
 		rifServiceStartupOptions =
 				RIFServiceStartupOptions.newInstance(
