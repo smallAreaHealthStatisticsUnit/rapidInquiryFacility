@@ -46,7 +46,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 	
 	private SubmissionManager sqlRIFSubmissionManager;
 	
-	private StudyExtractManager sqlStudyExtractManager;
+	private rifServices.dataStorageLayer.common.StudyExtractManager sqlStudyExtractManager;
 	
 	private ResultsQueryManager sqlResultsQueryManager;
 	
@@ -92,7 +92,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 				sqlStudyStateManager);
 
 		sqlStudyExtractManager
-			= new MSSQLStudyExtractManager(
+			= new StudyExtractManager(
 				rifServiceStartupOptions);
 		
 		sqlResultsQueryManager = new ResultsQueryManager(rifServiceStartupOptions);
@@ -193,7 +193,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 	}
 	
 	@Override
-	public StudyExtractManager getSQLStudyExtractManager() {
+	public rifServices.dataStorageLayer.common.StudyExtractManager getSQLStudyExtractManager() {
 		return sqlStudyExtractManager;		
 	}
 	

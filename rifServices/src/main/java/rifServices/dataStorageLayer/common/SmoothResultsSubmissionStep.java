@@ -197,7 +197,10 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 							rengine.assign(name, value);
 						}
 					}
-				}	
+				}
+
+				rengine.assign("working_dir", rifStartupOptions.getExtractDirectory());
+				
 				rifLogger.info(this.getClass(), "R parameters: " + lineSeparator + str.toString());	
 
 		//same order of args as in the old batch file

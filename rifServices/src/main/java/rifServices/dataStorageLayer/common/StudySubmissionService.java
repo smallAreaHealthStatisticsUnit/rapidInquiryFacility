@@ -1132,7 +1132,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 	 * </il>
 	 * </p>
 	 * <p>
-	 * Calls MSSQLStudyExtractManager.getExtractStatus()
+	 * Calls StudyExtractManager.getExtractStatus()
 	 * </p>
 	 *
 	 * @param  _user 		Database username of logged on user.

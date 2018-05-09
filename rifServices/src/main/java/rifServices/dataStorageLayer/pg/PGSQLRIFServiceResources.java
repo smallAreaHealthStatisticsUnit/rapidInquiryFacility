@@ -1,6 +1,5 @@
 package rifServices.dataStorageLayer.pg;
 
-import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
 import rifServices.dataStorageLayer.common.BaseSQLManager;
@@ -117,9 +116,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		sqlRIFSubmissionManager = new PGSQLRIFSubmissionManager(rifServiceStartupOptions,
 				sqlStudyStateManager);
 		
-		sqlStudyExtractManager
-				= new PGSQLStudyExtractManager(
-				rifServiceStartupOptions);
+		sqlStudyExtractManager = new StudyExtractManager(rifServiceStartupOptions);
 		
 		sqlResultsQueryManager = new ResultsQueryManager(rifServiceStartupOptions);
 		
