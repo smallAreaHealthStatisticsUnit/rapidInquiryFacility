@@ -1,10 +1,16 @@
 package rifDataLoaderTool.targetDBScriptGenerator.pg;
 
-import rifDataLoaderTool.businessConceptLayer.*;
-import rifGenericLibrary.dataStorageLayer.pg.*;
-import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
-
 import java.util.ArrayList;
+
+import rifDataLoaderTool.businessConceptLayer.DataLoaderToolConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfiguration;
+import rifDataLoaderTool.businessConceptLayer.DataSetConfigurationUtility;
+import rifDataLoaderTool.businessConceptLayer.DataSetFieldConfiguration;
+import rifDataLoaderTool.businessConceptLayer.Geography;
+import rifDataLoaderTool.businessConceptLayer.HealthTheme;
+import rifGenericLibrary.dataStorageLayer.DeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteTableQueryFormatter;
 
 /**
  * This class attempts to encapsulate the details associated with removing tables and
@@ -250,8 +256,8 @@ public class PGDeletionUtility {
 		
 		String themeToDelete = healthTheme.getName();
 		
-		PGSQLDeleteRowsQueryFormatter queryFormatter
-			= new PGSQLDeleteRowsQueryFormatter();
+		DeleteRowsQueryFormatter queryFormatter
+			= new DeleteRowsQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setFromTable("rif40_health_study_themes");
 		queryFormatter.addWhereParameterWithLiteralValue(
@@ -339,8 +345,8 @@ public class PGDeletionUtility {
 		for (DataSetFieldConfiguration covariateField : covariateFields) {
 			String covariateName = covariateField.getCleanFieldName().toUpperCase();
 			
-			PGSQLDeleteRowsQueryFormatter queryFormatter
-				= new PGSQLDeleteRowsQueryFormatter();
+			DeleteRowsQueryFormatter queryFormatter
+				= new DeleteRowsQueryFormatter();
 			queryFormatter.setDatabaseSchemaName("rif40");
 			queryFormatter.setFromTable("rif40_covariates");
 			queryFormatter.addWhereParameterWithLiteralValue(
@@ -364,8 +370,8 @@ public class PGDeletionUtility {
 
 		String tableToDelete
 			= dataSetConfiguration.getPublishedTableName().toUpperCase();
-		PGSQLDeleteRowsQueryFormatter queryFormatter
-			= new PGSQLDeleteRowsQueryFormatter();
+		DeleteRowsQueryFormatter queryFormatter
+			= new DeleteRowsQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setFromTable("rif40_tables");
 		queryFormatter.addWhereParameterWithLiteralValue(
@@ -382,8 +388,8 @@ public class PGDeletionUtility {
 				
 		String tableToDelete
 			= numerator.getPublishedTableName().toUpperCase();
-		PGSQLDeleteRowsQueryFormatter queryFormatter
-			= new PGSQLDeleteRowsQueryFormatter();
+		DeleteRowsQueryFormatter queryFormatter
+			= new DeleteRowsQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif40");
 		queryFormatter.setFromTable("rif40_table_outcomes");
 		queryFormatter.addWhereParameterWithLiteralValue(

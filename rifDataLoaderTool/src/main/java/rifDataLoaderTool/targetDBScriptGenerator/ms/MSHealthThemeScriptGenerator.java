@@ -77,7 +77,7 @@ public class MSHealthThemeScriptGenerator {
 	final String generateScript(final HealthTheme healthTheme) {
 		
 		MSSQLInsertQueryFormatter queryFormatter
-			= new MSSQLInsertQueryFormatter(true);
+			= new MSSQLInsertQueryFormatter();
 		queryFormatter.addInsertField("theme", true);
 		queryFormatter.addInsertField("description", true);
 		queryFormatter.setDatabaseSchemaName("rif40");
@@ -86,8 +86,8 @@ public class MSHealthThemeScriptGenerator {
 		String[] parameterValues = new String[2];
 		parameterValues[0] = healthTheme.getName();
 		parameterValues[1] = healthTheme.getDescription();
-			
-		String query 
+
+		String query
 			= queryFormatter.generateQueryWithLiterals(parameterValues);
 		return query;
 	}

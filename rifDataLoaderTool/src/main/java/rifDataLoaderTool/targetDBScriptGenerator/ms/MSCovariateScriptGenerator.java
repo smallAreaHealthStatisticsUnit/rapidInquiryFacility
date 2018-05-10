@@ -135,7 +135,7 @@ public class MSCovariateScriptGenerator
 		
 		//Create an empty table that will be the target of the import
 		MSSQLCreateTableQueryFormatter createTableQueryFormatter
-			= new MSSQLCreateTableQueryFormatter(true);
+			= new MSSQLCreateTableQueryFormatter();
 		createTableQueryFormatter.setDatabaseSchemaName("rif_data");
 		createTableQueryFormatter.setTableName(publishedCovariateTableName);
 		createTableQueryFormatter.addIntegerFieldDeclaration(

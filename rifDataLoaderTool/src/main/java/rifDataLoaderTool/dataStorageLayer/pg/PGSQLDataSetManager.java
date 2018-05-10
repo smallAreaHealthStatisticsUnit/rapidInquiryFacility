@@ -11,7 +11,7 @@ import rifDataLoaderTool.system.RIFDataLoaderToolError;
 import rifDataLoaderTool.system.RIFDataLoaderToolMessages;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.pg.PGSQLDeleteRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.DeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLInsertQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
@@ -261,8 +261,8 @@ final public class PGSQLDataSetManager
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
 	
-		PGSQLDeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter 
-			= new PGSQLDeleteRowsQueryFormatter();
+		DeleteRowsQueryFormatter deleteDataSetStatementQueryFormatter
+			= new DeleteRowsQueryFormatter();
 		deleteDataSetStatementQueryFormatter.setFromTable("data_set_configurations");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("core_data_set_name");
 		deleteDataSetStatementQueryFormatter.addWhereParameter("version");
@@ -357,7 +357,7 @@ final public class PGSQLDataSetManager
 		throws RIFServiceException {
 
 		//Create SQL query
-		PGSQLDeleteRowsQueryFormatter queryFormatter = new PGSQLDeleteRowsQueryFormatter();
+		DeleteRowsQueryFormatter queryFormatter = new DeleteRowsQueryFormatter();
 		queryFormatter.setFromTable("data_set_configurations");
 
 		PreparedStatement statement = null;

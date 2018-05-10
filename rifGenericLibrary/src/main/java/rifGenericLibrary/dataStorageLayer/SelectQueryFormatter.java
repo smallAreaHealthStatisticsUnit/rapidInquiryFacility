@@ -5,13 +5,13 @@ import rifGenericLibrary.dataStorageLayer.pg.PGSQLSelectQueryFormatter;
 
 public interface SelectQueryFormatter extends QueryFormatter {
 
-	static SelectQueryFormatter getInstance(final DatabaseType type, final boolean useGoCommand) {
+	static SelectQueryFormatter getInstance(final DatabaseType type) {
 
 		switch (type) {
 			case POSTGRESQL:
 				return new PGSQLSelectQueryFormatter();
 			case SQL_SERVER:
-				return new MSSQLSelectQueryFormatter(useGoCommand);
+				return new MSSQLSelectQueryFormatter();
 			case UNKNOWN:
 			default:
 				throw new IllegalStateException("SelectQueryFormatter.getInstance: unknown "
@@ -197,12 +197,4 @@ public interface SelectQueryFormatter extends QueryFormatter {
 	@Override
 	String generateQuery();
 
-	/**
-	 * The Enum SortOrder.
-	 */
-	enum SortOrder {
-		/** The ascending. */
-		ASCENDING,
-		/** The descending. */
-		DESCENDING}
 }

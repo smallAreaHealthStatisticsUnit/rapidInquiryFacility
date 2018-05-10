@@ -3,6 +3,8 @@ package rifGenericLibrary.dataStorageLayer.ms;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
+
 /**
  *
  *
@@ -53,7 +55,7 @@ import java.sql.SQLException;
  *
  */
 
-public class MSSQLAddCommentQueryFormatter extends AbstractMSSQLQueryFormatter {
+public class MSSQLAddCommentQueryFormatter extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -64,16 +66,11 @@ public class MSSQLAddCommentQueryFormatter extends AbstractMSSQLQueryFormatter {
 	// ==========================================
 	private String tableName;
 	private String fieldName;
-	private String comment;
+	private String comment = "";
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
-	public MSSQLAddCommentQueryFormatter(final boolean useGoCommand) {
-		super(useGoCommand);
-		comment = "";		
-	}
 
 	// ==========================================
 	// Section Accessors and Mutators

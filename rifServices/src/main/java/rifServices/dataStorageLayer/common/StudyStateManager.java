@@ -8,6 +8,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.StudyState;
 
 public interface StudyStateManager extends SQLManager {
+
 	void clearStudyStatusUpdates(
 			Connection connection,
 			User user,

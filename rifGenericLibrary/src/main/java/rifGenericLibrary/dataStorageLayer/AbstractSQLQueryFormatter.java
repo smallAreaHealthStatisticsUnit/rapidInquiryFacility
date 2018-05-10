@@ -212,9 +212,7 @@ public class AbstractSQLQueryFormatter implements QueryFormatter {
 		if (databaseType == null) {
 			throw new Exception("getQueryFileReader: databaseType not set"); 
 		}
-		if (databaseType.getShortName() == null) {
-			throw new Exception("getQueryFileReader: databaseType.getShortName() returns null"); 
-		}
+
 		String basePath1;
 		String basePath2;
 		if (catalinaHome != null) {

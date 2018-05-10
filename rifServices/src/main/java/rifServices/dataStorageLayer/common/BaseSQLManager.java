@@ -41,9 +41,6 @@ public class BaseSQLManager implements SQLManager {
 	private static final int MAXIMUM_SUSPICIOUS_EVENTS_THRESHOLD = 5;
 	private static final int POOLED_READ_ONLY_CONNECTIONS_PER_PERSON = 10;
 	private static final int POOLED_WRITE_CONNECTIONS_PER_PERSON = 5;
-	private static final String POSTGRES_INITIALISATION_QUERY =
-			"SELECT rif40_startup(?) AS rif40_init;";
-	private static final String MS_SQL_INITIALISATION_QUERY = "EXEC rif40.rif40_startup ?";
 
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static final Set<String> registeredUserIDs = new HashSet<>();
@@ -55,7 +52,7 @@ public class BaseSQLManager implements SQLManager {
 	private static final Map<String, ConnectionQueue> writeConnectionsFromUser = new HashMap<>();
 	private static final HashMap<String, Integer> suspiciousEventCounterFromUser = new HashMap<>();
 	protected final RIFServiceStartupOptions rifServiceStartupOptions;
-	private final String initialisationQuery;
+	protected final boolean prefixSchemaName;
 	private final String databaseURL;
 	private static HashMap<String, String> passwordHashList = null;
 
@@ -74,14 +71,11 @@ public class BaseSQLManager implements SQLManager {
 		databaseType = this.rifDatabaseProperties.getDatabaseType();
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 
-		initialisationQuery =
-				rifDatabaseProperties.getDatabaseType() == DatabaseType.SQL_SERVER
-						? MS_SQL_INITIALISATION_QUERY : POSTGRES_INITIALISATION_QUERY;
-
 		if (passwordHashList == null) {
 			passwordHashList = new HashMap<>();
 		}
 		databaseURL = generateURLText();
+		prefixSchemaName  = rifServiceStartupOptions.getRifDatabaseType() == DatabaseType.SQL_SERVER;
 	}
 
 	@Override
@@ -966,7 +960,7 @@ public class BaseSQLManager implements SQLManager {
 
 			statement = SQLQueryUtility.createPreparedStatement(
 					connection,
-					initialisationQuery);
+					rifDatabaseProperties.getDatabaseType().initialisationQuery());
 
 			setDbSpecificStatementValues(statement, isFirstConnectionForUser);
 
@@ -1128,7 +1122,7 @@ public class BaseSQLManager implements SQLManager {
 	}
 
 	@Override
-	public CallableStatement createPreparedCall( // Use MSSQLQueryUtility
+	public CallableStatement createPreparedCall( // Use MSSQLQueryUtilty
 			final Connection connection,
 			final String query)
 		throws SQLException {

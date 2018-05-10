@@ -147,7 +147,7 @@ public class MSSQLDataTypeValidationUtility {
 		
 		//delete any version of the same table
 		MSSQLDeleteTableQueryFormatter deleteQueryFormatter
-			= new MSSQLDeleteTableQueryFormatter(false);
+			= new MSSQLDeleteTableQueryFormatter();
 		deleteQueryFormatter.setTableToDelete(cleanValidationTableName);
 		queryFormatter.addQueryPhrase(deleteQueryFormatter.generateQuery());
 		queryFormatter.finishLine();
@@ -173,7 +173,7 @@ public class MSSQLDataTypeValidationUtility {
 				
 		//Add primary key statement
 		MSSQLCreatePrimaryKeyQueryFormatter createPrimaryKeyQueryFormatter
-			= new MSSQLCreatePrimaryKeyQueryFormatter(false);
+			= new MSSQLCreatePrimaryKeyQueryFormatter();
 		createPrimaryKeyQueryFormatter.setTable(cleanValidationTableName);
 		createPrimaryKeyQueryFormatter.setPrimaryKeyPhrase("data_set_id, row_number");
 		queryFormatter.addQuery(createPrimaryKeyQueryFormatter);

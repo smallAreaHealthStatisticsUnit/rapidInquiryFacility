@@ -196,9 +196,9 @@ final class MSSQLOptimiseWorkflowManager
 				 * It is likely that SQL Server will have at least a slightly
 				 * different syntax for importing CSV files than PostgreSQL.
 				 */								
-				if (excludeFromIndexableFields(indexFieldName) == false) {					
-					MSSQLCreateIndexQueryFormatter queryFormatter
-						= new MSSQLCreateIndexQueryFormatter(false);
+				if (!excludeFromIndexableFields(indexFieldName)) {
+					MSSQLCreateIndexQueryFormatter queryFormatter =
+							new MSSQLCreateIndexQueryFormatter();
 					queryFormatter.setIndexTable(targetTable);				
 					queryFormatter.setIndexTableField(indexFieldName);
 
@@ -252,11 +252,10 @@ final class MSSQLOptimiseWorkflowManager
 		else if (collator.equals(fieldName, "age")) {
 			return true;
 		}
-		else {
+		else
+			{
 			return false;
-		}
-	}
-	
+		}	}
 	public void deleteIndices(
 		final Connection connection,
 		final Writer logFileWriter,
@@ -277,14 +276,14 @@ final class MSSQLOptimiseWorkflowManager
 
 			for (String indexFieldName : indexFieldNames) {
 				currentFieldName = indexFieldName;
+
+				if (!excludeFromIndexableFields(indexFieldName)) {
 			
-				if (excludeFromIndexableFields(indexFieldName) == false) {					
-			
-					MSSQLDeleteIndexQueryFormatter queryFormatter
-						= new MSSQLDeleteIndexQueryFormatter(false);
+					MSSQLDeleteIndexQueryFormatter queryFormatter =
+							new MSSQLDeleteIndexQueryFormatter();
 					//KLG_SCHEMA
-					//queryFormatter.setDatabaseSchemaName("dbo");
-					queryFormatter.setIndexTable(targetTable);				
+					//queryFormatter.setDatabaseSchemaName("dbo");query
+					// Formatter.setIndexTable(target);
 					queryFormatter.setIndexTableField(indexFieldName);
 
 					logSQLQuery(

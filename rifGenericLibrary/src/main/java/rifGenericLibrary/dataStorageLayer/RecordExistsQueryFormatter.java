@@ -11,7 +11,7 @@ public interface RecordExistsQueryFormatter extends QueryFormatter {
 			case POSTGRESQL:
 				return new PGSQLRecordExistsQueryFormatter();
 			case SQL_SERVER:
-				return new MSSQLRecordExistsQueryFormatter(true);
+				return new MSSQLRecordExistsQueryFormatter();
 			case UNKNOWN:
 			default:
 				throw new IllegalStateException(

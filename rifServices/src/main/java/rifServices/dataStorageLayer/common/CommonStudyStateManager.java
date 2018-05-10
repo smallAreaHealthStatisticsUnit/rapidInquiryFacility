@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer.ms;
+package rifServices.dataStorageLayer.common;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,21 +9,18 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.businessConceptLayer.User;
+import rifGenericLibrary.dataStorageLayer.DeleteRowsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.RecordExistsQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLDeleteRowsQueryFormatter;
-import rifGenericLibrary.dataStorageLayer.ms.MSSQLRecordExistsQueryFormatter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.businessConceptLayer.StudyState;
-import rifServices.dataStorageLayer.common.BaseSQLManager;
-import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-final class MSSQLStudyStateManager extends BaseSQLManager implements StudyStateManager {
+public final class CommonStudyStateManager extends BaseSQLManager implements StudyStateManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
@@ -32,7 +29,7 @@ final class MSSQLStudyStateManager extends BaseSQLManager implements StudyStateM
 	 *
 	 * @param sqlRIFContextManager the sql rif context manager
 	 */
-	public MSSQLStudyStateManager(
+	public CommonStudyStateManager(
 		final RIFServiceStartupOptions options) {
 		
 		super(options);
@@ -48,8 +45,7 @@ final class MSSQLStudyStateManager extends BaseSQLManager implements StudyStateM
 				
 		String statusTableName = deriveStatusTableName(user.getUserID());
 				
-		MSSQLDeleteRowsQueryFormatter queryFormatter
-			= new MSSQLDeleteRowsQueryFormatter(false);
+		DeleteRowsQueryFormatter queryFormatter = new DeleteRowsQueryFormatter();
 		queryFormatter.setFromTable(statusTableName);
 		queryFormatter.addWhereParameter("study_id");
 		logSQLQuery(
@@ -170,15 +166,13 @@ final class MSSQLStudyStateManager extends BaseSQLManager implements StudyStateM
 					studyID);
 
 			rifLogger.error(
-				MSSQLStudyStateManager.class, 
+				getClass(),
 				errorMessage, 
 				sqlException);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.UNABLE_TO_GET_STUDY_STATE, 
-					errorMessage);
-			throw rifServiceException;
+
+			throw new RIFServiceException(
+				RIFServiceError.UNABLE_TO_GET_STUDY_STATE,
+				errorMessage);
 		}
 		finally {
 			//Cleanup database resources			
@@ -239,7 +233,8 @@ final class MSSQLStudyStateManager extends BaseSQLManager implements StudyStateM
 		throws RIFServiceException {
 		try {
 			connection.rollback();
-			rifLogger.info(this.getClass(), "MSSQLStudyStateManager: study_id: " + studyID + "; ROLLBACK");
+			rifLogger.info(this.getClass(), getClass().getSimpleName() + ": study_id: "
+			                                + studyID + "; ROLLBACK");
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
@@ -307,9 +302,10 @@ final class MSSQLStudyStateManager extends BaseSQLManager implements StudyStateM
 		}		
 		PreparedStatement statement = null;
 		try {
-			rifLogger.info(this.getClass(), "MSSQLStudyStateManager updateStudyStatus: study_id: " + studyID +
-				"; state: " + studyState.getCode() + 
-				"; statusMessage: " + statusMessage);
+			rifLogger.info(
+					getClass(), getClass().getSimpleName()
+					            + " updateStudyStatus: study_id: " + studyID + "; state: "
+					            + studyState.getCode() + "; statusMessage: " + statusMessage);
 			statement = connection.prepareStatement(queryFormatter.generateQuery());
 			statement.setInt(1, Integer.valueOf(studyID));
 			statement.setString(2, studyState.getCode());
@@ -320,7 +316,8 @@ final class MSSQLStudyStateManager extends BaseSQLManager implements StudyStateM
 			}			
 			statement.executeUpdate();
 			connection.commit();
-			rifLogger.info(this.getClass(), "MSSQLStudyStateManager: study_id: " + studyID + "; COMMIT");
+			rifLogger.info(this.getClass(), getClass().getSimpleName() + ": study_id: " +
+			                                studyID + "; COMMIT");
 		}
 		catch(SQLException sqlException) {
 			//Record original exception, throw sanitised, human-readable version						
@@ -418,7 +415,9 @@ final class MSSQLStudyStateManager extends BaseSQLManager implements StudyStateM
 			queryFormatter.addQueryLine(1, "(SELECT ");		
 			queryFormatter.addQueryLine(2, "study_id,");
 			queryFormatter.addQueryLine(2, "study_state,");
-			queryFormatter.addQueryLine(2, "convert(VARCHAR(20), creation_date, 13) AS creation_date,");
+			queryFormatter.addQueryLine(2,
+			                            rifDatabaseProperties.getDatabaseType()
+					                            .convertDateToString() + " AS creation_date,");
 			queryFormatter.addQueryLine(2, "row_number() OVER(PARTITION BY study_id ORDER BY ith_update DESC) AS update_number,");
 			queryFormatter.addQueryLine(1, "message,");		
 			queryFormatter.addQueryLine(1, "trace");
@@ -617,70 +616,11 @@ final class MSSQLStudyStateManager extends BaseSQLManager implements StudyStateM
 			}
 					
 		}
-	
-	
-	/*
-	 * Creates a status table for a given study, stored
-	 * in the schema of the user
-	 */
-//	private void createStatusTable(
-//		final Connection connection,
-//		final User user)
-//		throws SQLException, 
-//		RIFServiceException {
-//		
-//		String userID = user.getUserID();
-//		String statusTableName
-//			= deriveStatusTableName(
-//				userID);
-//	
-//		MSSQLCreateTableQueryFormatter queryFormatter
-//			= new MSSQLCreateTableQueryFormatter(false);
-//	//	queryFormatter.setUseIfExists(true);
-//		queryFormatter.setTableName(statusTableName);
-//		queryFormatter.addIntegerFieldDeclaration("study_id", false);
-//		queryFormatter.addTextFieldDeclaration("study_state", false);
-//	//	queryFormatter.addTimeStampFieldDeclaration("creation_date", false);
-//	//	queryFormatter.addAutoIncrementFieldDeclaration("ith_update");
-//		queryFormatter.addTextFieldDeclaration("message", 255, true);
-//
-//		logSQLQuery(
-//			"createStatusTable", 
-//			queryFormatter, 
-//			"user");
-//		
-//		PreparedStatement statement = null;
-//		try {
-//			statement = connection.prepareStatement(queryFormatter.generateQuery());
-//			statement.executeUpdate();
-//			connection.commit();
-//		}
-//		catch(SQLException sqlException) {
-//			logSQLException(sqlException);
-//			String errorMessage
-//				= RIFServiceMessages.getMessage(
-//					"sqlStudyStateManager.error.unableToCreateUserStudyStatusTable",
-//					user.getUserID());
-//			RIFServiceException rifServiceException
-//				= new RIFServiceException(
-//					RIFServiceError.DATABASE_QUERY_FAILED, 
-//					errorMessage);
-//			throw rifServiceException;			
-//		}
-//		finally {
-//			SQLQueryUtility.close(statement);
-//		}
-//		
-//	}
-	
+
 	private String deriveStatusTableName(
 		final String userID) {
-				
-		StringBuilder statusTableName = new StringBuilder();
-//		statusTableName.append(userID);
-		statusTableName.append("rif40.rif40_study_status");
-		
-		return statusTableName.toString();
+
+		return "rif40.rif40_study_status";
 	}
 		
 	@Override
@@ -693,8 +633,8 @@ final class MSSQLStudyStateManager extends BaseSQLManager implements StudyStateM
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			RecordExistsQueryFormatter queryFormatter
-				= new MSSQLRecordExistsQueryFormatter(false);
+			RecordExistsQueryFormatter queryFormatter =
+					RecordExistsQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
 			configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.setLookupKeyFieldName("study_id");
 			queryFormatter.setFromTable("rif40.rif40_studies");		
@@ -710,7 +650,7 @@ final class MSSQLStudyStateManager extends BaseSQLManager implements StudyStateM
 			statement.setInt(1, Integer.valueOf(studyID));
 			resultSet = statement.executeQuery();
 
-			if (resultSet.next() == false) {
+			if (!resultSet.next()) {
 				//ERROR: no such study exists
 				String recordType
 					= RIFServiceMessages.getMessage("abstractStudy.label");
@@ -745,15 +685,13 @@ final class MSSQLStudyStateManager extends BaseSQLManager implements StudyStateM
 					studyID);
 
 			rifLogger.error(
-				MSSQLStudyStateManager.class,
+				getClass(),
 				errorMessage, 
-				sqlException);										
-					
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED, 
-					errorMessage);
-			throw rifServiceException;
+				sqlException);
+
+			throw new RIFServiceException(
+				RIFServiceError.DATABASE_QUERY_FAILED,
+				errorMessage);
 		}
 		finally {
 			//Cleanup database resources
@@ -761,14 +699,4 @@ final class MSSQLStudyStateManager extends BaseSQLManager implements StudyStateM
 			SQLQueryUtility.close(resultSet);
 		}		
 	}
-	
-
-	
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }

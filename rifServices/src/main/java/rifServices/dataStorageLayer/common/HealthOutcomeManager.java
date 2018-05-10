@@ -12,12 +12,7 @@ import rifServices.businessConceptLayer.Investigation;
 import rifServices.ontologyServices.HealthCodeProviderInterface;
 
 public interface HealthOutcomeManager {
-	/**
-	 * Initialise taxonomies.
-	 *
-	 */
-	void initialiseTaxomies();
-	
+
 	/**
 	 * Clear health code providers.
 	 */

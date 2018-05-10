@@ -2,8 +2,10 @@ package rifServices.dataStorageLayer.pg;
 
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
+import rifServices.dataStorageLayer.common.CommonHealthOutcomeManager;
+import rifServices.dataStorageLayer.common.CommonStudyStateManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
@@ -55,7 +57,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 	/**
 	 * The disease mapping study manager.
 	 */
-	private PGSQLDiseaseMappingStudyManager sqlDiseaseMappingStudyManager;
+	private DiseaseMappingStudyManager sqlDiseaseMappingStudyManager;
 	
 	private SubmissionManager sqlRIFSubmissionManager;
 	
@@ -89,7 +91,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		sqlConnectionManager = new BaseSQLManager(rifServiceStartupOptions);
-		healthOutcomeManager = new PGSQLHealthOutcomeManager(rifServiceStartupOptions);
+		healthOutcomeManager = new CommonHealthOutcomeManager(rifServiceStartupOptions);
 		
 		RIFDatabaseProperties rifDatabaseProperties
 				= rifServiceStartupOptions.getRIFDatabaseProperties();
@@ -102,18 +104,19 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		
 		sqlAgeGenderYearManager = new AgeGenderYearManager(
 				sqlRIFContextManager, rifServiceStartupOptions);
-		sqlMapDataManager = new PGSQLMapDataManager(rifServiceStartupOptions, sqlRIFContextManager);
+		sqlMapDataManager = MapDataManager.getInstance(rifServiceStartupOptions);
 		sqlCovariateManager = new CovariateManager(rifServiceStartupOptions,
 		                                           sqlRIFContextManager);
 		
-		InvestigationManager sqlInvestigationManager = new PGSQLInvestigationManager(rifServiceStartupOptions, sqlRIFContextManager,
-				sqlAgeGenderYearManager, sqlCovariateManager);
+		InvestigationManager sqlInvestigationManager =
+				new InvestigationManager(rifServiceStartupOptions, sqlRIFContextManager,
+				                         sqlAgeGenderYearManager, sqlCovariateManager);
 		
-		sqlDiseaseMappingStudyManager = new PGSQLDiseaseMappingStudyManager(rifServiceStartupOptions,
+		sqlDiseaseMappingStudyManager = new DiseaseMappingStudyManager(rifServiceStartupOptions,
 				sqlRIFContextManager, sqlInvestigationManager);
 		
 		sqlStudyStateManager
-				= new PGSQLStudyStateManager(rifServiceStartupOptions);
+				= new CommonStudyStateManager(rifServiceStartupOptions);
 		
 		sqlRIFSubmissionManager = new PGSQLRIFSubmissionManager(rifServiceStartupOptions,
 				sqlStudyStateManager);
@@ -122,8 +125,7 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 				= new PGSQLStudyExtractManager(
 				rifServiceStartupOptions);
 		
-		sqlResultsQueryManager
-				= new PGSQLResultsQueryManager(rifServiceStartupOptions);
+		sqlResultsQueryManager = new ResultsQueryManager(rifServiceStartupOptions);
 		
 		ValidationPolicy validationPolicy;
 		if (rifServiceStartupOptions.useStrictValidationPolicy()) {
@@ -143,8 +145,6 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		sqlResultsQueryManager.setValidationPolicy(validationPolicy);
 		sqlRIFContextManager.setValidationPolicy(validationPolicy);
 		sqlInvestigationManager.setValidationPolicy(validationPolicy);
-		
-		healthOutcomeManager.initialiseTaxomies();
 	}
 	
 	@Override

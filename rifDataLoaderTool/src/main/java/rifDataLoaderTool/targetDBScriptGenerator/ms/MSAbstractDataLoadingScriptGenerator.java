@@ -94,7 +94,7 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 		throws RIFServiceException {
 		
 		MSBulkInsertQueryFormatter queryFormatter
-			= new MSBulkInsertQueryFormatter(true);
+			= new MSBulkInsertQueryFormatter();
 		queryFormatter.setDatabaseSchemaName(databaseSchemaName);
 		
 		//first, write out the *.fmt file that is needed by
@@ -152,7 +152,7 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 		final String comment) {
 		
 		MSSQLSchemaCommentQueryFormatter queryFormatter 
-			= new MSSQLSchemaCommentQueryFormatter(true);
+			= new MSSQLSchemaCommentQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif_data");
 		
 		queryFormatter.setTableComment(
@@ -168,7 +168,7 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 		final String comment) {
 			
 		MSSQLSchemaCommentQueryFormatter queryFormatter 
-			= new MSSQLSchemaCommentQueryFormatter(true);
+			= new MSSQLSchemaCommentQueryFormatter();
 		queryFormatter.setDatabaseSchemaName("rif_data");
 		queryFormatter.setTableColumnComment(
 			tableName.toUpperCase(), 

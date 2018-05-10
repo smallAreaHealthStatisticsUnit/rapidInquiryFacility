@@ -149,7 +149,7 @@ public class MSSQLDataTypeSearchReplaceUtility {
 		
 		//delete any version of the same table
 		MSSQLDeleteTableQueryFormatter deleteQueryFormatter
-			= new MSSQLDeleteTableQueryFormatter(false);
+			= new MSSQLDeleteTableQueryFormatter();
 		//KLG_SCHEMA
 		//deleteQueryFormatter.setDatabaseSchemaName("dbo");
 		deleteQueryFormatter.setTableToDelete(cleanSearchReplaceTableName);
@@ -179,7 +179,7 @@ public class MSSQLDataTypeSearchReplaceUtility {
 				
 		//Add primary key statement
 		MSSQLCreatePrimaryKeyQueryFormatter createPrimaryKeyQueryFormatter
-			= new MSSQLCreatePrimaryKeyQueryFormatter(false);
+			= new MSSQLCreatePrimaryKeyQueryFormatter();
 		createPrimaryKeyQueryFormatter.setTable(cleanSearchReplaceTableName);
 		createPrimaryKeyQueryFormatter.setPrimaryKeyPhrase("data_set_id, row_number");
 		queryFormatter.addQuery(createPrimaryKeyQueryFormatter);

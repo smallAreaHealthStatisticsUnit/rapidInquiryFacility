@@ -9,6 +9,7 @@ import java.util.List;
 
 import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.dataStorageLayer.DatabaseType;
+import rifGenericLibrary.dataStorageLayer.QueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
 import rifGenericLibrary.system.RIFServiceException;
@@ -31,7 +32,6 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 	/** The sql rif context manager. */
 	private RIFContextManager sqlRIFContextManager;
 	private final RIFServiceStartupOptions rifServiceStartupOptions;
-	private final boolean prefixSchemaName;
 	private final String tablesTableName;
 
 	/**
@@ -44,7 +44,6 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 		super(options);
 		this.sqlRIFContextManager = sqlRIFContextManager;
 		this.rifServiceStartupOptions = options;
-		prefixSchemaName  = options.getRifDatabaseType() == DatabaseType.SQL_SERVER;
 		tablesTableName = (prefixSchemaName ? SCHEMA_PREFIX : "") + "rif40_tables";
 	}
 
@@ -79,7 +78,7 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 			//Create query
 			Integer ageGroupID;
 			SelectQueryFormatter getAgeIDQueryFormatter = SelectQueryFormatter.getInstance(
-					rifServiceStartupOptions.getRifDatabaseType(), false);
+					rifServiceStartupOptions.getRifDatabaseType());
 
 			sqlRIFContextManager.configureQueryFormatterForDB(getAgeIDQueryFormatter);
 			getAgeIDQueryFormatter.addSelectField("age_group_id");
@@ -130,7 +129,7 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 			//After obtaining the list of age groups having the correct age group id
 			//sort them by low_age
 			SelectQueryFormatter getAgesForAgeGroupID = SelectQueryFormatter.getInstance(
-					rifServiceStartupOptions.getRifDatabaseType(), false);
+					rifServiceStartupOptions.getRifDatabaseType());
 			sqlRIFContextManager.configureQueryFormatterForDB(getAgesForAgeGroupID);
 
 			getAgesForAgeGroupID.addSelectField("age_group_id");
@@ -145,23 +144,23 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 			if ((sortingOrder == null) ||
 				(sortingOrder == AgeGroupSortingOption.ASCENDING_LOWER_LIMIT)) {
 				getAgesForAgeGroupID.addOrderByCondition(
-						"low_age", SelectQueryFormatter.SortOrder.ASCENDING);
+						"low_age", QueryFormatter.SortOrder.ASCENDING);
 			}
 			else if (sortingOrder == AgeGroupSortingOption.DESCENDING_LOWER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
 						"low_age",
-						SelectQueryFormatter.SortOrder.DESCENDING);
+						QueryFormatter.SortOrder.DESCENDING);
 			}
 			else if (sortingOrder == AgeGroupSortingOption.ASCENDING_UPPER_LIMIT) {
 				getAgesForAgeGroupID.addOrderByCondition(
 						"high_age",
-						SelectQueryFormatter.SortOrder.ASCENDING);
+						QueryFormatter.SortOrder.ASCENDING);
 			}
 			else {
 				//it must be descending lower limit.		
 				getAgesForAgeGroupID.addOrderByCondition(
 						"high_age",
-						SelectQueryFormatter.SortOrder.DESCENDING);
+						QueryFormatter.SortOrder.DESCENDING);
 				assert sortingOrder == AgeGroupSortingOption.DESCENDING_UPPER_LIMIT;			
 			}
 			
@@ -258,7 +257,7 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 
 			//Create query
 			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
-					rifServiceStartupOptions.getRifDatabaseType(), false);
+					rifServiceStartupOptions.getRifDatabaseType());
 			sqlRIFContextManager.configureQueryFormatterForDB(queryFormatter);
 			queryFormatter.addSelectField("year_start");
 			queryFormatter.addSelectField("year_stop");
@@ -404,7 +403,7 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 
 			//Create query
 			SelectQueryFormatter queryFormatter = SelectQueryFormatter.getInstance(
-					rifServiceStartupOptions.getRifDatabaseType(), false);
+					rifServiceStartupOptions.getRifDatabaseType());
 			queryFormatter.setDatabaseSchemaName("rif40");
 			queryFormatter.addSelectField("fieldname");
 			queryFormatter.addFromTable("rif40_age_groups");

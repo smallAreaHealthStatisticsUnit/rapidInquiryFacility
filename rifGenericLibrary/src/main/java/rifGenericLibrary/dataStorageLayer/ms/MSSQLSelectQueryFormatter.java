@@ -2,6 +2,7 @@ package rifGenericLibrary.dataStorageLayer.ms;
 
 import java.util.ArrayList;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 
 /**
@@ -10,7 +11,7 @@ import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
  * the utility class is meant to help format the text and alignment of SQL
  * queries, and to reduce the risk of having syntax problems occur.
  */
-public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
+public final class MSSQLSelectQueryFormatter extends AbstractSQLQueryFormatter
 		implements SelectQueryFormatter {
 
 	/** The use distinct. */
@@ -39,16 +40,16 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 	/**
 	 * Instantiates a new SQL select query formatter.
 	 */
-	public MSSQLSelectQueryFormatter(final boolean useGoCommand) {
-		super(useGoCommand);
+	public MSSQLSelectQueryFormatter() {
+
 		useDistinct = false;
 		orAllWhereConditions = false;
-		selectFields = new ArrayList<String>();
-		fromTables = new ArrayList<String>();
-		whereConditions = new ArrayList<String>();
-		orderByConditions = new ArrayList<String>();
+		selectFields = new ArrayList<>();
+		fromTables = new ArrayList<>();
+		whereConditions = new ArrayList<>();
+		orderByConditions = new ArrayList<>();
 		ctasTable = null;
-		whereLikeFieldNames = new ArrayList<String>();
+		whereLikeFieldNames = new ArrayList<>();
 	}
 
 	@Override
@@ -267,13 +268,7 @@ public final class MSSQLSelectQueryFormatter extends AbstractMSSQLQueryFormatter
 		}
 		orderByCondition.append(fieldName);
 		orderByCondition.append(" ");
-		if (sortOrder == SortOrder.ASCENDING) {
-			orderByCondition.append("ASC");
-		}
-		else {
-			orderByCondition.append("DESC");			
-		}
-		
+		orderByCondition.append(sortOrder.sqlForm());
 		orderByConditions.add(orderByCondition.toString());
 	}
 	

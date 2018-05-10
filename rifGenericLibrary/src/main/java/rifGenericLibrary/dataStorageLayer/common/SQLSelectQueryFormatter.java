@@ -630,7 +630,7 @@ public final class SQLSelectQueryFormatter
 			}
 		}
 
-		if (endWithSemiColon() == true) {			
+		if (endWithSemiColon()) {
 			addQueryPhrase(";");
 			finishLine();
 			addBlankLine();

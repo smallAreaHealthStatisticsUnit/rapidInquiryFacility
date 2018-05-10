@@ -4,9 +4,7 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.dataStorageLayer.ms.MSSQLProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
-import rifServices.dataStorageLayer.pg.PGSQLProductionRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.pg.PGSQLRIFStudySubmissionService;
 
 public interface ServiceBundle {
@@ -18,18 +16,12 @@ public interface ServiceBundle {
 		switch (resources.getRIFServiceStartupOptions().getRifDatabaseType()) {
 
 			case POSTGRESQL:
-				RIFStudySubmissionAPI pgSubmission =
-						new PGSQLRIFStudySubmissionService();
-				return new PGSQLProductionRIFStudyServiceBundle(
-						resources,
-						pgSubmission,
-						retrieval);
+				return new StudyServiceBundle(
+						resources, new PGSQLRIFStudySubmissionService(), retrieval);
 
 			case SQL_SERVER:
-				RIFStudySubmissionAPI msSubmission =
-						new MSSQLRIFStudySubmissionService();
-				return new MSSQLProductionRIFStudyServiceBundle(
-						resources, msSubmission, retrieval);
+				return new StudyServiceBundle(
+						resources, new MSSQLRIFStudySubmissionService(), retrieval);
 
 			case UNKNOWN:
 			default:

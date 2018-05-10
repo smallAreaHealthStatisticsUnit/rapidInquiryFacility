@@ -1,4 +1,4 @@
-package rifServices.dataStorageLayer.ms;
+package rifServices.dataStorageLayer.common;
 
 import java.io.File;
 import java.sql.Connection;
@@ -28,165 +28,84 @@ import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceMessages;
 import rifServices.system.RIFServiceStartupOptions;
 
-/**
- *
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- */
-
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
+public final class CommonHealthOutcomeManager implements HealthOutcomeManager {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private Messages GENERIC_MESSAGES = Messages.genericMessages();
 	
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
 	/** The health code providers. */
 	private ArrayList<HealthCodeProviderInterface> healthCodeProviders;
 	
 	private ValidationPolicy validationPolicy = ValidationPolicy.STRICT;
-	// ==========================================
-	// Section Construction
-	// ==========================================
 
 	/**
 	 * Instantiates a new SQL health outcome manager.
 	 */
-	public MSSQLHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
+	public CommonHealthOutcomeManager(final RIFServiceStartupOptions rifServiceStartupOptions) {
 
-		healthCodeProviders = new ArrayList<HealthCodeProviderInterface>();
+		healthCodeProviders = new ArrayList<>();
 
 		String targetPathValue;
 		try {
 			targetPathValue = rifServiceStartupOptions.getRIFServiceResourcePath();
 		} catch (RIFServiceException e) {
-			throw new IllegalStateException("MSSQLHealthOutcomeManager: problem getting startup "
-			                                + "options", e);
+			throw new IllegalStateException(getClass().getSimpleName() + ": problem getting "
+			                                + "startup options", e);
 		}
 		if (targetPathValue == null) {
 			targetPathValue = ClassFileLocator.getClassRootLocation("rifServices");
 		}
-//		rifLogger.info(this.getClass(), "HealthOutcomeManager init targetPathValue=="+targetPathValue+"==");
-		
-		//initialise each health code provider
-		try {			
-			StringBuilder icd9CodesFileLocation = new StringBuilder();
-			icd9CodesFileLocation.append(targetPathValue);
-			icd9CodesFileLocation.append(File.separator);
-			icd9CodesFileLocation.append("ExampleICD9Codes.xml");
 
+		//initialise each health code provider
+		try {
 			RIFXMLTaxonomyProvider icd9TaxonomyProvider = new RIFXMLTaxonomyProvider();
-			ArrayList<Parameter> parameters = new ArrayList<Parameter>();
+			ArrayList<Parameter> parameters = new ArrayList<>();
 			Parameter inputFileParameter = Parameter.newInstance();
-			inputFileParameter.setName("input_file");		
-			inputFileParameter.setValue(icd9CodesFileLocation.toString());
+			inputFileParameter.setName("input_file");
+			final String icd9CodesFileLocation = targetPathValue
+			                                     + File.separator
+			                                     + "ExampleICD9Codes.xml";
+			inputFileParameter.setValue(icd9CodesFileLocation);
 			parameters.add(inputFileParameter);
 			icd9TaxonomyProvider.initialise(parameters);
 			healthCodeProviders.add(icd9TaxonomyProvider);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifLogger.error(
-				MSSQLHealthOutcomeManager.class, 
+				getClass(),
 				"constructor", 
 				rifServiceException);
 		}
 				
-		try {			
-			StringBuilder icd10CodesFileLocation = new StringBuilder();
-			icd10CodesFileLocation.append(targetPathValue);
-			icd10CodesFileLocation.append(File.separator);
-			icd10CodesFileLocation.append("ExampleICD10Codes.xml");
-			
+		try {
 			RIFXMLTaxonomyProvider icd10TaxonomyProvider = new RIFXMLTaxonomyProvider();
-			ArrayList<Parameter> parameters = new ArrayList<Parameter>();
+			ArrayList<Parameter> parameters = new ArrayList<>();
 			Parameter inputFileParameter = Parameter.newInstance();
-			inputFileParameter.setName("input_file");		
-			inputFileParameter.setValue(icd10CodesFileLocation.toString());
+			inputFileParameter.setName("input_file");
+			final String icd10CodesFileLocation = targetPathValue
+			                                      + File.separator
+			                                      + "ExampleICD10Codes.xml";
+			inputFileParameter.setValue(icd10CodesFileLocation);
 			parameters.add(inputFileParameter);
 			icd10TaxonomyProvider.initialise(parameters);
 			healthCodeProviders.add(icd10TaxonomyProvider);
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifLogger.error(
-				MSSQLHealthOutcomeManager.class, 
+				getClass(),
 				"constructor", 
 				rifServiceException);
 		}
 		
-		try {			
-			StringBuilder opcsCodesFileLocation = new StringBuilder();
-			opcsCodesFileLocation.append(targetPathValue);
-			opcsCodesFileLocation.append(File.separator);
-			opcsCodesFileLocation.append("ExampleOPCSCodes.xml");
-	
+		try {
 			RIFXMLTaxonomyProvider opcsCodeProvider = new RIFXMLTaxonomyProvider();
-			ArrayList<Parameter> parameters2 = new ArrayList<Parameter>();
+			ArrayList<Parameter> parameters2 = new ArrayList<>();
 			Parameter inputFileParameter2 = Parameter.newInstance();
 			inputFileParameter2.setName("input_file");
-			inputFileParameter2.setValue(opcsCodesFileLocation.toString());
+			final String opcsCodesFileLocation = targetPathValue
+			                                     + File.separator
+			                                     + "ExampleOPCSCodes.xml";
+			inputFileParameter2.setValue(opcsCodesFileLocation);
 			parameters2.add(inputFileParameter2);
 	
 			opcsCodeProvider.initialise(parameters2);
@@ -194,23 +113,21 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifLogger.error(
-				MSSQLHealthOutcomeManager.class, 
+				getClass(),
 				"constructor", 
 				rifServiceException);
 		}
 
 		//Add by Nan Lin 15/07/2015.
-		try {			
-			StringBuilder icd10ClaMLCodesFileLocation = new StringBuilder();
-			icd10ClaMLCodesFileLocation.append(targetPathValue);
-			icd10ClaMLCodesFileLocation.append(File.separator);
-			icd10ClaMLCodesFileLocation.append("ExampleClaMLICD10Codes.xml");
-	
+		try {
 			ICD10ClaMLTaxonomyProvider icd10ClaMLCodeProvider = new ICD10ClaMLTaxonomyProvider();
-			ArrayList<Parameter> paras = new ArrayList<Parameter>();
+			ArrayList<Parameter> paras = new ArrayList<>();
 			Parameter inputFilePara = Parameter.newInstance();
 			inputFilePara.setName("icd10_ClaML_file");
-			inputFilePara.setValue(icd10ClaMLCodesFileLocation.toString());
+			final String icd10ClaMLCodesFileLocation = targetPathValue
+			                                           + File.separator
+			                                           + "ExampleClaMLICD10Codes.xml";
+			inputFilePara.setValue(icd10ClaMLCodesFileLocation);
 			paras.add(inputFilePara);
 	
 			icd10ClaMLCodeProvider.initialise(paras);
@@ -218,41 +135,18 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifLogger.error(
-				MSSQLHealthOutcomeManager.class, 
+				getClass(),
 				"constructor", 
 				rifServiceException);
 		}
-		
-		/*
-		ICD9TaxonomyProvider icd9TaxonomyProvider 
-			= new ICD9TaxonomyProvider();
-		healthCodeProviders.add(icd9TaxonomyProvider);		
-		
-		ICD10TaxonomyProvider icd10TaxonomyProvider 
-			= new ICD10TaxonomyProvider();
-		healthCodeProviders.add(icd10TaxonomyProvider);		
-		*/		
 	}
-
-	/**
-	 * Initialise taxonomies.
-	 *
-	 */
-	public void initialiseTaxomies() {
-
-		
-	}
-	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	
 	/*
 	 * Method used for testing purposes
 	 */
 	/**
 	 * Clear health code providers.
 	 */
+	@Override
 	public void clearHealthCodeProviders() {
 		
 		healthCodeProviders.clear();
@@ -263,6 +157,7 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 	 *
 	 * @param healthCodeProvider the health code provider
 	 */
+	@Override
 	public void addHealthCodeProvider(
 		final HealthCodeProviderInterface healthCodeProvider) {
 
@@ -274,6 +169,7 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 	 *
 	 * @param healthCodeProvider the health code provider
 	 */
+	@Override
 	public void clearHealthCodeProviders(
 		final HealthCodeProviderInterface healthCodeProvider) {
 
@@ -286,6 +182,7 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 	 * @return the health code taxonomies
 	 * @throws RIFServiceException the RIF service exception
 	 */
+	@Override
 	public HealthCodeTaxonomy getHealthCodeTaxonomyFromNameSpace(
 		final String healthCodeTaxonomyNameSpace)
 		throws RIFServiceException {
@@ -300,11 +197,9 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 				= RIFServiceMessages.getMessage(
 					"healthOutcomeManager.error.noHealthCodeTaxonomyForNameSpace",
 					healthCodeTaxonomyNameSpace);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.NO_HEALTH_TAXONOMY_FOR_NAMESPACE, 
-					errorMessage);
-			throw rifServiceException;
+			throw new RIFServiceException(
+				RIFServiceError.NO_HEALTH_TAXONOMY_FOR_NAMESPACE,
+				errorMessage);
 		}
 		else {
 			return healthCodeProvider.getHealthCodeTaxonomy();
@@ -317,7 +212,8 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 	 * @return the health code taxonomies
 	 * @throws RIFServiceException the RIF service exception
 	 */
-	public ArrayList<HealthCodeTaxonomy> getHealthCodeTaxonomies() 
+	@Override
+	public ArrayList<HealthCodeTaxonomy> getHealthCodeTaxonomies()
 		throws RIFServiceException {
 		
 		ArrayList<HealthCodeTaxonomy> healthCodeTaxonomies
@@ -340,6 +236,7 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 	 * @return the health codes for investigation
 	 * @throws RIFServiceException the RIF service exception
 	 */
+	@Override
 	public ArrayList<HealthCode> getHealthCodesForInvestigation(
 		final Connection connection,
 		final User user,
@@ -391,15 +288,13 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 					investigation.getDisplayName());
 			
 			rifLogger.error(
-				MSSQLHealthOutcomeManager.class, 
+				getClass(),
 				errorMessage, 
 				exception);
-			
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.GET_HEALTH_OUTCOMES_FOR_INVESTIGATION, 
-					errorMessage);
-			throw rifServiceException;
+
+			throw new RIFServiceException(
+				RIFServiceError.GET_HEALTH_OUTCOMES_FOR_INVESTIGATION,
+				errorMessage);
 		}
 		finally {
 			//Cleanup database resources			
@@ -418,6 +313,7 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 	 * @return the top level codes
 	 * @throws RIFServiceException the RIF service exception
 	 */
+	@Override
 	public ArrayList<HealthCode> getTopLevelCodes(
 		final HealthCodeTaxonomy healthCodeTaxonomy) 
 		throws RIFServiceException {
@@ -438,6 +334,7 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 	 * @return the immediate subterms
 	 * @throws RIFServiceException the RIF service exception
 	 */
+	@Override
 	public ArrayList<HealthCode> getImmediateSubterms(
 		final HealthCode parentHealthCode) 
 		throws RIFServiceException {
@@ -449,7 +346,8 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 			= getRelevantHealthCodeProvider(parentHealthCode);		
 		return healthCodeProvider.getImmediateSubterms(parentHealthCode);		
 	}
-	
+
+	@Override
 	public HealthCode getHealthCode(
 		final String code,
 		final String nameSpace)
@@ -463,11 +361,9 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 				= RIFServiceMessages.getMessage(
 					"healthOutcomeManager.error.noHealthCodeTaxonomyForNameSpace",
 					nameSpace);
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.NO_HEALTH_TAXONOMY_FOR_NAMESPACE, 
-					errorMessage);
-			throw rifServiceException;
+			throw new RIFServiceException(
+				RIFServiceError.NO_HEALTH_TAXONOMY_FOR_NAMESPACE,
+				errorMessage);
 		}
 		
 		return healthCodeProvider.getHealthCode(code, nameSpace);
@@ -481,6 +377,7 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 	 * @return the parent health code
 	 * @throws RIFServiceException the RIF service exception
 	 */
+	@Override
 	public HealthCode getParentHealthCode(
 		final HealthCode childHealthCode) 
 		throws RIFServiceException {
@@ -517,9 +414,8 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 				= RIFServiceMessages.getMessage(
 					"healthCodeProvider.error.nonExistentHealthCodeProvider",
 					healthCode.getNameSpace());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(RIFServiceError.NON_EXISTENT_HEALTH_CODE_PROVIDER, errorMessage);
-			throw rifServiceException;					
+			throw new RIFServiceException(
+					RIFServiceError.NON_EXISTENT_HEALTH_CODE_PROVIDER, errorMessage);
 		}
 		
 		return relevantHealthCodeProvider;
@@ -566,9 +462,8 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 				= RIFServiceMessages.getMessage(
 					"healthCodeProvider.error.nonExistentHealthCodeProvider",
 					healthCodeTaxonomy.getNameSpace());
-			RIFServiceException rifServiceException
-				= new RIFServiceException(RIFServiceError.NON_EXISTENT_HEALTH_CODE_PROVIDER, errorMessage);
-			throw rifServiceException;					
+			throw new RIFServiceException(
+					RIFServiceError.NON_EXISTENT_HEALTH_CODE_PROVIDER, errorMessage);
 		}
 			
 		return relevantHealthCodeProvider;
@@ -583,6 +478,7 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 	 * @return the health codes
 	 * @throws RIFServiceException the RIF service exception
 	 */
+	@Override
 	public ArrayList<HealthCode> getHealthCodes(
 		final HealthCodeTaxonomy healthCodeTaxonomy,
 		final String searchText,
@@ -598,80 +494,6 @@ final class MSSQLHealthOutcomeManager implements HealthOutcomeManager {
 			isCaseSensitive);
 		
 	}
-
-	// ==========================================
-	// Section Errors and Validation
-	// ==========================================
-
-	/**
-	 * for each health code this routine tries to determine whether the health
-	 * code exists in the health code provider described by the name space.  For
-	 * example, suppose a HealthCode describes an ICD10 term.  It will search for
-	 * the code in whatever health code provider is associated with the namespace
-	 * "icd10".
-	 * 
-	 * @param healthCodes
-	 * @throws RIFServiceException
-	 */
-	
-	/*
-	public void checkNonExistentHealthCodes(
-		final ArrayList<HealthCode> healthCodes) 
-		throws RIFServiceException {
-		
-		ArrayList<String> errorMessages = new ArrayList<String>();
-		
-		for (HealthCode healthCode : healthCodes) {
-			HealthCodeTaxonomy healthCodeTaxonomy
-				= getHealthCodeTaxonomyFromNameSpace(healthCode.getNameSpace());
-			if (healthCodeTaxonomy == null) {
-				String errorMessage
-					= RIFServiceMessages.getMessage(
-						"healthOutcomeManager.error.noHealthCodeTaxonomyForNameSpace",
-						healthCode.getNameSpace());
-				errorMessages.add(errorMessage);
-			}
-			else {
-				HealthCodeProviderInterface healthCodeProvider
-					= getRelevantHealthCodeProvider(healthCodeTaxonomy);
-				if (healthCodeProvider == null) {
-					String errorMessage
-						= RIFServiceMessages.getMessage(
-							"healthOutcomeManager.error.noProviderForHealthCodeTaxonomy",
-							healthCode.getCode(),
-							healthCodeTaxonomy.getDisplayName());
-					errorMessages.add(errorMessage);
-				}
-				else if (healthCodeProvider.healthCodeExists(healthCode) == false) {
-					String errorMessage
-						= RIFServiceMessages.getMessage(
-							"healthOutcomeManager.error.nonExistentHealthCode",
-							healthCode.getCode(),
-							healthCodeTaxonomy.getDisplayName());
-					errorMessages.add(errorMessage);
-				}
-			}
-		}
-
-		if (errorMessages.size() > 0) {
-			RIFServiceException rifServiceException
-				= new RIFServiceException(
-					RIFServiceError.NON_EXISTENT_HEALTH_CODE, 
-					errorMessages);
-			
-			throw rifServiceException;
-		}
-	}
-	*/	
-	
-	
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
 }
 
 

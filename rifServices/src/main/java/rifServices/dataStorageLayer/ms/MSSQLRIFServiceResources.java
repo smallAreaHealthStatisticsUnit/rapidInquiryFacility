@@ -3,18 +3,20 @@ package rifServices.dataStorageLayer.ms;
 import rifGenericLibrary.dataStorageLayer.RIFDatabaseProperties;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.AbstractRIFConcept.ValidationPolicy;
-import rifServices.dataStorageLayer.common.BaseSQLManager;
 import rifServices.dataStorageLayer.common.AgeGenderYearManager;
+import rifServices.dataStorageLayer.common.BaseSQLManager;
+import rifServices.dataStorageLayer.common.CommonHealthOutcomeManager;
+import rifServices.dataStorageLayer.common.CommonStudyStateManager;
 import rifServices.dataStorageLayer.common.CovariateManager;
 import rifServices.dataStorageLayer.common.DiseaseMappingStudyManager;
 import rifServices.dataStorageLayer.common.HealthOutcomeManager;
+import rifServices.dataStorageLayer.common.InvestigationManager;
 import rifServices.dataStorageLayer.common.MapDataManager;
 import rifServices.dataStorageLayer.common.RIFContextManager;
 import rifServices.dataStorageLayer.common.ResultsQueryManager;
 import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.SmoothedResultManager;
 import rifServices.dataStorageLayer.common.StudyExtractManager;
-import rifServices.dataStorageLayer.common.StudyStateManager;
 import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.system.RIFServiceStartupOptions;
 
@@ -49,7 +51,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 	
 	private ResultsQueryManager sqlResultsQueryManager;
 	
-	private StudyStateManager sqlStudyStateManager;
+	private rifServices.dataStorageLayer.common.StudyStateManager sqlStudyStateManager;
 	
 	private RIFServiceStartupOptions rifServiceStartupOptions;
 	
@@ -58,7 +60,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 		this.rifServiceStartupOptions = rifServiceStartupOptions;
 		
 		sqlConnectionManager = new BaseSQLManager(rifServiceStartupOptions);
-		healthOutcomeManager = new MSSQLHealthOutcomeManager(rifServiceStartupOptions);
+		healthOutcomeManager = new CommonHealthOutcomeManager(rifServiceStartupOptions);
 
 		RIFDatabaseProperties rifDatabaseProperties
 			= rifServiceStartupOptions.getRIFDatabaseProperties();
@@ -71,27 +73,24 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 		
 		sqlAgeGenderYearManager = new AgeGenderYearManager(
 				sqlRIFContextManager, rifServiceStartupOptions);
-		sqlMapDataManager 
-			= new MSSQLMapDataManager(
-				rifServiceStartupOptions
-		);
+		sqlMapDataManager = MapDataManager.getInstance(rifServiceStartupOptions);
 		sqlCovariateManager = new CovariateManager(rifServiceStartupOptions,
 		                                           sqlRIFContextManager);
 		
-		MSSQLInvestigationManager sqlInvestigationManager = new MSSQLInvestigationManager(
+		InvestigationManager sqlInvestigationManager = new InvestigationManager(
 				rifServiceStartupOptions,
 				sqlRIFContextManager,
 				sqlAgeGenderYearManager,
 				sqlCovariateManager);
 		
 		sqlDiseaseMappingStudyManager 
-			= new MSSQLDiseaseMappingStudyManager(
+			= new DiseaseMappingStudyManager(
 				rifServiceStartupOptions,
 				sqlRIFContextManager,
 				sqlInvestigationManager);
 				
 		sqlStudyStateManager
-			= new MSSQLStudyStateManager(rifServiceStartupOptions);
+			= new CommonStudyStateManager(rifServiceStartupOptions);
 		
 		sqlRIFSubmissionManager 
 			= new MSSQLRIFSubmissionManager(
@@ -102,7 +101,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 			= new MSSQLStudyExtractManager(
 				rifServiceStartupOptions);
 		
-		sqlResultsQueryManager = new MSSQLResultsQueryManager(rifServiceStartupOptions);
+		sqlResultsQueryManager = new ResultsQueryManager(rifServiceStartupOptions);
 
 		ValidationPolicy validationPolicy = null;
 		if (rifServiceStartupOptions.useStrictValidationPolicy()) {
@@ -123,8 +122,6 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 		sqlResultsQueryManager.setValidationPolicy(validationPolicy);
 		sqlRIFContextManager.setValidationPolicy(validationPolicy);
 		sqlInvestigationManager.setValidationPolicy(validationPolicy);
-			
-		healthOutcomeManager.initialiseTaxomies();	
 	}
 	
 	public static MSSQLRIFServiceResources newInstance(
@@ -192,7 +189,7 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 	}
 	
 	@Override
-	public StudyStateManager getStudyStateManager() {
+	public rifServices.dataStorageLayer.common.StudyStateManager getStudyStateManager() {
 		return sqlStudyStateManager;
 	}
 	

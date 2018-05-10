@@ -2,6 +2,7 @@ package rifGenericLibrary.dataStorageLayer.ms;
 
 import java.util.ArrayList;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 
 /**
  * Convenience class used to help format typical SELECT FROM WHERE clauses.
@@ -71,8 +72,7 @@ import java.util.ArrayList;
 
 // needs to remove all the order by nonsense -- this is a simple count with no group by!
 
-public final class MSSQLCountQueryFormatter 
-	extends AbstractMSSQLQueryFormatter {
+public final class MSSQLCountQueryFormatter extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -103,13 +103,11 @@ public final class MSSQLCountQueryFormatter
 	/**
 	 * Instantiates a new SQL count query formatter.
 	 */
-	public MSSQLCountQueryFormatter(
-		final boolean useGoCommand) {
+	public MSSQLCountQueryFormatter() {
 
-		super(useGoCommand);
 		useDistinct = false;
-		fromTables = new ArrayList<String>();
-		whereConditions = new ArrayList<String>();
+		fromTables = new ArrayList<>();
+		whereConditions = new ArrayList<>();
 	}
 
 	// ==========================================

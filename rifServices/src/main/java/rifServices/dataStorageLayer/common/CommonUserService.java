@@ -942,7 +942,6 @@ public class CommonUserService implements UserService {
 				result
 					= sqlResultsQueryManager.getTileMakerCentroids(
 						connection,
-						user,
 						geography,
 						geoLevelSelect);
 			} 
@@ -1059,7 +1058,6 @@ public class CommonUserService implements UserService {
 			result
 				= sqlResultsQueryManager.getTileMakerTiles(
 					connection,
-					user,
 					geography,
 					geoLevelSelect,
 					zoomlevel,

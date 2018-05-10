@@ -486,9 +486,13 @@ public class RifZipFile {
 						user.getUserID(),
 						submissionZipFile.getAbsolutePath());
 			try {
-				submissionZipOutputStream.flush();
-				submissionZipOutputStream.close();
-				submissionZipSavFile.delete();
+				if (submissionZipOutputStream != null) {
+					submissionZipOutputStream.flush();
+					submissionZipOutputStream.close();
+				}
+				if (submissionZipSavFile != null) {
+					submissionZipSavFile.delete();
+				}
 			}
 			catch(Exception err) {
 				rifLogger.warning(this.getClass(), 
@@ -512,30 +516,44 @@ public class RifZipFile {
 			throw rifServiceExeption;						
 		}
 		catch(Exception exception) {
-			rifLogger.error(this.getClass(), "createStudyExtract() ERROR", exception);
 			String errorMessage = null;
-			if (exception.getMessage() != null &&
-			    exception.getMessage().
-				equals("Taxonomy service still initialising; please run again in 5 minutes")) {
-				errorMessage
-					= RIFServiceMessages.getMessage(
-						"sqlStudyStateManager.error.taxonomyInitialiseError",
-						user.getUserID(),
-						submissionZipFile.getAbsolutePath());	
+			try {
+				rifLogger.error(this.getClass(), "createStudyExtract() ERROR", exception);
+				String submissionZipFilePath = "[unable to deduce file name]";
+				if (submissionZipFile != null) {
+					submissionZipFilePath=submissionZipFile.getAbsolutePath();
+				}
+				if (exception.getMessage() != null &&
+					exception.getMessage().
+					equals("Taxonomy service still initialising; please run again in 5 minutes")) {
+					errorMessage
+						= RIFServiceMessages.getMessage(
+							"sqlStudyStateManager.error.taxonomyInitialiseError",
+							user.getUserID(),
+							submissionZipFilePath);	
+				}
+				else {		
+					errorMessage
+						= RIFServiceMessages.getMessage(
+							"sqlStudyStateManager.error.unableToCreateStudyExtract",
+							user.getUserID(),
+							submissionZipFilePath);
+				}
 			}
-			else {		
-				errorMessage
-					= RIFServiceMessages.getMessage(
-						"sqlStudyStateManager.error.unableToCreateStudyExtract",
-						user.getUserID(),
-						submissionZipFile.getAbsolutePath());
+			catch (NullPointerException nullPointerException) {
+				rifLogger.error(this.getClass(), "createStudyExtract() NullPointerException", 
+					nullPointerException);	
 			}
 //			temporaryDirectory.delete();
 				
 			try {
-				submissionZipOutputStream.flush();
-				submissionZipOutputStream.close();
-				submissionZipSavFile.delete();
+				if (submissionZipOutputStream != null) {
+					submissionZipOutputStream.flush();
+					submissionZipOutputStream.close();
+				}
+				if (submissionZipSavFile != null) {
+					submissionZipSavFile.delete();
+				}
 			}
 			catch(Exception err) {
 				rifLogger.warning(this.getClass(), 

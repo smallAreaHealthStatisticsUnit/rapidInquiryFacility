@@ -172,7 +172,7 @@ public final class MSSQLCastingUtility {
 			
 		//delete any version of the same table
 		MSSQLDeleteTableQueryFormatter deleteQueryFormatter
-			= new MSSQLDeleteTableQueryFormatter(false);
+			= new MSSQLDeleteTableQueryFormatter();
 		//KLG_SCHEMA
 		//deleteQueryFormatter.setDatabaseSchemaName("dbo");
 		deleteQueryFormatter.setTableToDelete(castingTableName);
@@ -199,7 +199,7 @@ public final class MSSQLCastingUtility {
 				
 		//Add primary key statement
 		MSSQLCreatePrimaryKeyQueryFormatter createPrimaryKeyQueryFormatter
-			= new MSSQLCreatePrimaryKeyQueryFormatter(false);
+			= new MSSQLCreatePrimaryKeyQueryFormatter();
 		//KLG_SCHEMA
 		//createPrimaryKeyQueryFormatter.setDatabaseSchemaName("dbo");
 		createPrimaryKeyQueryFormatter.setTable(castingTableName);

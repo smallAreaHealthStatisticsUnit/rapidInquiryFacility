@@ -349,7 +349,7 @@ final public class MSSQLCleanWorkflowManager
 		throws RIFServiceException {
 		
 		MSSQLCountQueryFormatter queryFormatter 
-			= new MSSQLCountQueryFormatter(false);
+			= new MSSQLCountQueryFormatter();
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setCountField("data_source_id");
@@ -411,7 +411,7 @@ final public class MSSQLCleanWorkflowManager
 		throws RIFServiceException {
 		
 		MSSQLCountQueryFormatter queryFormatter 
-			= new MSSQLCountQueryFormatter(false);
+			= new MSSQLCountQueryFormatter();
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setCountField("data_source_id");
@@ -469,7 +469,7 @@ final public class MSSQLCleanWorkflowManager
 		throws RIFServiceException {
 	
 		MSSQLCountQueryFormatter queryFormatter 
-			= new MSSQLCountQueryFormatter(false);
+			= new MSSQLCountQueryFormatter();
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.setCountField("data_source_id");
@@ -530,7 +530,7 @@ final public class MSSQLCleanWorkflowManager
 		throws RIFServiceException {
 				
 		SelectQueryFormatter queryFormatter
-			= new MSSQLSelectQueryFormatter(false);
+			= new MSSQLSelectQueryFormatter();
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.addSelectField("data_source_id");
@@ -596,7 +596,7 @@ final public class MSSQLCleanWorkflowManager
 		throws RIFServiceException {
 	
 		SelectQueryFormatter queryFormatter
-			= new MSSQLSelectQueryFormatter(false);
+			= new MSSQLSelectQueryFormatter();
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.addSelectField("data_source_id");
@@ -664,7 +664,7 @@ final public class MSSQLCleanWorkflowManager
 		throws RIFServiceException {
 		
 		SelectQueryFormatter queryFormatter
-			= new MSSQLSelectQueryFormatter(false);
+			= new MSSQLSelectQueryFormatter();
 		//KLG_SCHEMA
 		//queryFormatter.setDatabaseSchemaName("dbo");
 		queryFormatter.addSelectField("data_source_id");

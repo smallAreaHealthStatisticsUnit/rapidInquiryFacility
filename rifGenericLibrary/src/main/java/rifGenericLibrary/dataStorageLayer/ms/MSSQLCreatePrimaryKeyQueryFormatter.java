@@ -1,5 +1,6 @@
 package rifGenericLibrary.dataStorageLayer.ms;
 
+import rifGenericLibrary.dataStorageLayer.AbstractSQLQueryFormatter;
 
 /**
  *
@@ -64,8 +65,7 @@ package rifGenericLibrary.dataStorageLayer.ms;
  *
  */
 
-public final class MSSQLCreatePrimaryKeyQueryFormatter 
-	extends AbstractMSSQLQueryFormatter {
+public final class MSSQLCreatePrimaryKeyQueryFormatter extends AbstractSQLQueryFormatter {
 
 	// ==========================================
 	// Section Constants
@@ -76,19 +76,11 @@ public final class MSSQLCreatePrimaryKeyQueryFormatter
 	// ==========================================
 	/** The table that will be deleted */
 	private String tableName;
-	private String primaryKeyFieldPhrase;
+	private String primaryKeyFieldPhrase = "";
 	
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
-	/**
-	 * Instantiates a new SQL delete table query formatter.
-	 */
-	public MSSQLCreatePrimaryKeyQueryFormatter(final boolean useGoCommand) {
-		super(useGoCommand);
-		primaryKeyFieldPhrase = "";
-	}
 
 	// ==========================================
 	// Section Accessors and Mutators
