@@ -1093,4 +1093,9 @@ public class BaseSQLManager implements SQLManager {
 
 		return (prefixSchemaName ? SCHEMA_PREFIX : "") + dbItemName;
 	}
+
+	String applySchemaDataPrefixIfNeeded(String dbItemName) {
+
+		return (prefixSchemaName ? SCHEMA_DATA_PREFIX : "") + dbItemName;
+	}
 }

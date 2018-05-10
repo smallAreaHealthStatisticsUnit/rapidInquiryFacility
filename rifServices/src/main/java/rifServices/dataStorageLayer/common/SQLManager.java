@@ -16,6 +16,8 @@ public interface SQLManager {
 
 	String SCHEMA_NAME = "rif40";
 	String SCHEMA_PREFIX = SCHEMA_NAME + ".";
+	String SCHEMA_DATA_NAME = "rif_data";
+	String SCHEMA_DATA_PREFIX = SCHEMA_DATA_NAME + ".";
 
 	ValidationPolicy getValidationPolicy();
 	
