@@ -795,34 +795,37 @@ To install, change to the &lt;SEER Data directory, e.g. C:\Users\phamb\OneDrive\
 
 To run a script: 
 
-- Postgres: ```psql -U rif40 -d &lt;database name&gt; -w -e -f &lt;script name&gt;```
+- Postgres: ```psql -U rif40 -d <database name> -w -e -f <script name>```
   Flags:
   * ```-U rif40```: connect as user *rif40*
-  * ```-d &lt;database name&gt;```: connect to database &lt;database name&gt;
+  * ```-d <database name>```: connect to database &lt;database name&gt;
   * ```-w```: never issue a password prompt. If the server requires password authentication and a password is not available by other means 
     such as a .pgpass file, the connection attempt will fail;
   * ```-e```: copy all SQL commands sent to the server to standard output as well;
-  * ```-f &lt;script name&gt;```: run SQL script &lt;script name&gt;
+  * ```-f <script name>```: run SQL script &lt;script name&gt;
   
-- SQL Server: ```sqlcmd -U rif40 -P XXXXXXXX -d sahsuland -b -m-1 -e -r1 -i &lt;script name&gt; -v pwd="%cd%"```
+  For information on [Postgres passwords](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#221-postgres)
+  
+- SQL Server: ```sqlcmd -U rif40 -P <password> -d <database name> -b -m-1 -e -r1 -i <script name> -v pwd="%cd%"```
   Flags:
   * ```-U rif40```: connect as user *rif40*;
-  * ```-P XXXXXXXX```: the password for user *rif40*;
-  * ```-d &lt;database name&gt;```: connect to database &lt;database name&gt;;
+  * ```-P <password>```: the &lt;password&gt; for user *rif40*;
+  * ```-d <database name>```: connect to database &lt;database name&gt;;
   * ```-b```: terminate batch job if there is an error;
   * ```-m-1```: all messages including informational messages, are sent to stdout;
   * ```-e```: echo input;
   * ```-r1```: redirects the error message output to stderr;
-  * ```-i &lt;script name&gt;```: run SQL script &lt;script name&gt;;
+  * ```-i <script name>```: run SQL script &lt;script name&gt;;
   * ```-v pwd="%cd%"```: set script variable pwd to %cd% (current working directory). So bulk 
     load can find the CSV files.
 
-By default on SQL server the*rif40* password is set to random characters, to change the SQL server *rif40* password:
+  By default on SQL server the*rif40* password is set to random characters, to change the SQL server *rif40* 
+  password:
 
-```SQL
-ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
-GO
-```
+  ```SQL
+  ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
+  GO
+  ```
 
 ## 3.1 Administrative Geography
 
@@ -987,16 +990,18 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 		 WHERE geography = 'USA_2014';
 	END;
 	GO
-	IF OBJECT_ID('rif_data.cov_cb_2014_us_state_500k', 'U') IS NOT NULL DROP TABLE rif_data.cov_cb_2014_us_state_500k;
+	IF OBJECT_ID('rif_data.cov_cb_2014_us_state_500k', 'U') IS NOT NULL BEGIN
+		DROP TABLE rif_data.cov_cb_2014_us_state_500k;
+	END;
 	GO	
 	```
 * Create covariate table;
   - Postgres:  
   ```SQL
     CREATE TABLE rif_data.cov_cb_2014_us_county_500k (
-		year											INTEGER NOT NULL, -- Year
+		year								INTEGER NOT NULL, -- Year
 		cb_2014_us_county_500k 							CHARACTER VARYING(30) NOT NULL, -- Geolevel name
-		areaname					 					CHARACTER VARYING(200),
+		areaname								CHARACTER VARYING(200),
 		total_poverty_all_ages							INTEGER,
 		pct_poverty_all_ages							NUMERIC,
 		pct_poverty_0_17								NUMERIC,
@@ -1004,8 +1009,8 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 		median_household_income							NUMERIC,
 		median_hh_income_quin							INTEGER,
 		med_pct_not_in_pov_quin							INTEGER,
-		med_pct_not_in_pov_0_17_quin					INTEGER,
-		med_pct_not_in_pov_5_17r_quin					INTEGER,
+		med_pct_not_in_pov_0_17_quin								INTEGER,
+		med_pct_not_in_pov_5_17r_quin								INTEGER,
 		pct_white_quintile								INTEGER,
 		pct_black_quintile								INTEGER,
 		CONSTRAINT cov_cb_2014_us_county_500k_pkey PRIMARY KEY (year, cb_2014_us_county_500k)
@@ -1013,20 +1018,19 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
     ```
   - SQL Server:
     ```SQL
-	CREATE TABLE rif_data.cov_cb_2014_us_county_500k
-	(
-	  year 												integer NOT NULL, 
+	CREATE TABLE rif_data.cov_cb_2014_us_county_500k (
+	  year								INTEGER NOT NULL, 
 	  cb_2014_us_county_500k 							VARCHAR(30) NOT NULL,
-	  areaname					 						VARCHAR(200),
+	  areaname								VARCHAR(200),
 	  total_poverty_all_ages							INTEGER,
 	  pct_poverty_all_ages								NUMERIC,
-	  pct_poverty_0_17									NUMERIC,
+	  pct_poverty_0_17								NUMERIC,
 	  pct_poverty_related_5_17							NUMERIC,
 	  median_household_income							NUMERIC,
 	  median_hh_income_quin								INTEGER,
 	  med_pct_not_in_pov_quin							INTEGER,
-	  med_pct_not_in_pov_0_17_quin						INTEGER,
-	  med_pct_not_in_pov_5_17r_quin						INTEGER,
+	  med_pct_not_in_pov_0_17_quin								INTEGER,
+	  med_pct_not_in_pov_5_17r_quin								INTEGER,
 	  pct_white_quintile								INTEGER,
 	  pct_black_quintile								INTEGER,
 	  CONSTRAINT cov_cb_2014_us_county_500k_pkey PRIMARY KEY (year, cb_2014_us_county_500k)
