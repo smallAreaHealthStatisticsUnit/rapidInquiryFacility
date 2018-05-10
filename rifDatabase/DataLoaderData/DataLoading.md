@@ -766,9 +766,18 @@ Generally load processing requires three steps:
   [Tile maker](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md):
 * Pre-process the data from flat files, process and unloaded back into flat files that can be loaded into either Postgres or SQL Server. 
   Typically this is done as a normal user on any database. Do **not** use the schema *rif40* or  administrative accounts (*postgres* or *administrator*)
-* Load the processed data as a schema owner (e.g. *rif40*)into a target database.
+* Load the processed data as a schema owner (e.g. *rif40*)into a target database:
+  * Remove setup data, views and tables;
+  * Create table;
+  * Create views;
+  * Load CSV data into table;
+  * Check all table data has been loaded;
+  * Add indexes to table;
+  * Comment table and columns;
+  * Grant grant access on tables and views to an appropriate role;
+
  
-Example scripts: 
+The following scripts are used in the examples: 
 
 | Action                                    | Postgres                            | SQL Server                          |
 |-------------------------------------------|-------------------------------------|-------------------------------------|
@@ -784,6 +793,37 @@ Example scripts:
 
 To install, change to the &lt;SEER Data directory, e.g. C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\&gt;
 
+To run a script: 
+
+- Postgres: ```psql -U rif40 -d &lt;database name&gt; -w -e -f &lt;script name&gt;```
+  Flags:
+  * ```-U rif40```: connect as user *rif40*
+  * ```-d &lt;database name&gt;```: connect to database &lt;database name&gt;
+  * ```-w```: never issue a password prompt. If the server requires password authentication and a password is not available by other means 
+    such as a .pgpass file, the connection attempt will fail;
+  * ```-e```: copy all SQL commands sent to the server to standard output as well;
+  * ```-f &lt;script name&gt;```: run SQL script &lt;script name&gt;
+  
+- SQL Server: ```sqlcmd -U rif40 -P XXXXXXXX -d sahsuland -b -m-1 -e -r1 -i &lt;script name&gt; -v pwd="%cd%"```
+  Flags:
+  * ```-U rif40```: connect as user *rif40*;
+  * ```-P XXXXXXXX```: the password for user *rif40*;
+  * ```-d &lt;database name&gt;```: connect to database &lt;database name&gt;;
+  * ```-b```: terminate batch job if there is an error;
+  * ```-m-1```: all messages including informational messages, are sent to stdout;
+  * ```-e```: echo input;
+  * ```-r1```: redirects the error message output to stderr;
+  * ```-i &lt;script name&gt;```: run SQL script &lt;script name&gt;;
+  * ```-v pwd="%cd%"```: set script variable pwd to %cd% (current working directory). So bulk 
+    load can find the CSV files.
+
+By default on SQL server the*rif40* password is set to random characters, to change the SQL server *rif40* password:
+
+```SQL
+ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
+GO
+```
+
 ## 3.1 Administrative Geography
 
 The *SAHSULAND* example geography is supplied as part of the RIF. To load the SEER test dataset you first need to load the USA County level administrative geography:
@@ -794,24 +834,9 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 
 ## 3.1.1 Postgres
 
-```SQL
-psql -U rif40 -d sahsuland -w -e -f rif_pg_usa_2014.sql
-```
 
 ## 3.1.2 SQL Server
 
-```SQL
-sqlcmd -U rif40 -P XXXXXXXX -d sahsuland -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql -v pwd="%cd%";
-```
-
-Where ```XXXXXXXX``` is the rif40 account password.
-
-By default on SQL server the*rif40* password is set to random characters, to change the SQL server *rif40* password:
-
-```SQL
-ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
-GO
-```
  
 ## 3.2 Numerator
 
@@ -819,11 +844,125 @@ GO
 
 ## 3.1.2 Load Processing
 
+* Remove numerator setup data, views and tables;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Create numerator table;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Create numerator views;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Load CSV data into numerator table;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Check all numerator table data has been loaded;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Add indexes to numerator table;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Comment numerator table and columns;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Grant grant access on numerator tables and views to an appropriate role;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+
 ## 3.3 Denominator
 
 ## 3.3.1 Pre Processing
 
 ## 3.3.2 Load Processing
+
+* Remove denominator setup data and tables;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Create denominator table;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Load CSV data into denominator table;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Check all denominator table data has been loaded;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Convert denominator table to index organised table;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Add additional indexes to denominator table;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Comment denominator table and columns;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
+* Grant grant access on denominator tables and views to an appropriate role;
+  - Postgres:  
+    ```SQL
+    ```
+  - SQL Server:
+    ```SQL
+    ```
 
 ## 3.4 Covariates
 
@@ -842,8 +981,16 @@ GO
     ```
   - SQL Server:
     ```SQL
+	IF OBJECT_ID('rif_data.cov_cb_2014_us_county_500k', 'U') IS NOT NULL BEGIN
+		DROP TABLE rif_data.cov_cb_2014_us_county_500k;
+		DELETE FROM rif40_covariates
+		 WHERE geography = 'USA_2014';
+	END;
+	GO
+	IF OBJECT_ID('rif_data.cov_cb_2014_us_state_500k', 'U') IS NOT NULL DROP TABLE rif_data.cov_cb_2014_us_state_500k;
+	GO	
 	```
-* Create table;
+* Create covariate table;
   - Postgres:  
   ```SQL
     CREATE TABLE rif_data.cov_cb_2014_us_county_500k (
@@ -866,17 +1013,45 @@ GO
     ```
   - SQL Server:
     ```SQL
+	CREATE TABLE rif_data.cov_cb_2014_us_county_500k
+	(
+	  year 												integer NOT NULL, 
+	  cb_2014_us_county_500k 							VARCHAR(30) NOT NULL,
+	  areaname					 						VARCHAR(200),
+	  total_poverty_all_ages							INTEGER,
+	  pct_poverty_all_ages								NUMERIC,
+	  pct_poverty_0_17									NUMERIC,
+	  pct_poverty_related_5_17							NUMERIC,
+	  median_household_income							NUMERIC,
+	  median_hh_income_quin								INTEGER,
+	  med_pct_not_in_pov_quin							INTEGER,
+	  med_pct_not_in_pov_0_17_quin						INTEGER,
+	  med_pct_not_in_pov_5_17r_quin						INTEGER,
+	  pct_white_quintile								INTEGER,
+	  pct_black_quintile								INTEGER,
+	  CONSTRAINT cov_cb_2014_us_county_500k_pkey PRIMARY KEY (year, cb_2014_us_county_500k)
+	);
+	GO	
 	```
 
-* Load CSV data into table;
+* Load CSV data into covariate table;
   - Postgres: 
     ```SQL
     \copy cov_cb_2014_us_county_500k FROM 'cov_cb_2014_us_county_500k.csv' WITH CSV HEADER;
     ```
   - SQL Server:
     ```SQL
+	BULK INSERT rif_data.cov_cb_2014_us_county_500k
+	FROM '$(pwd)/cov_cb_2014_us_county_500k.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+	WITH
+	(
+		FIRSTROW = 2,
+		FORMATFILE = '$(pwd)/cov_cb_2014_us_county_500k.fmt',		-- Use a format file
+		TABLOCK					-- Table lock
+	);
+	GO	
 	```
-* Check all table data has been loaded;
+* Check all covariate table data has been loaded;
   - Postgres:  
     ```SQL 
     --
@@ -905,9 +1080,25 @@ GO
     ```
   - SQL Server:
     ```SQL
+    --
+    -- Check rowcount
+    --
+	SELECT COUNT(*) AS total FROM rif_data.cov_cb_2014_us_county_500k;
+	DECLARE c1 CURSOR FOR 
+		SELECT COUNT(*) AS total FROM rif_data.cov_cb_2014_us_county_500k;
+	DECLARE @c1_total AS INTEGER;
+	OPEN c1;
+	FETCH NEXT FROM c1 INTO @c1_total;
+	IF @c1_total = 132553
+		PRINT 'Table: cov_cb_2014_us_county_500k has 132553 rows';
+	ELSE
+		RAISERROR('Table: cov_cb_2014_us_county_500k has %i rows; expecting 132553', 16, 1, @c1_total);
+	CLOSE c1;
+	DEALLOCATE c1;
+	GO	
 	```
 
-* Convert to index organised table;
+* Convert covariate table to index organised table;
   - Postgres: 
     ```SQL  
 	--
@@ -915,11 +1106,9 @@ GO
 	--
 	CLUSTER rif_data.cov_cb_2014_us_county_500k USING cov_cb_2014_us_county_500k_pkey;
     ```
-  - SQL Server:
-    ```SQL
-	```
+  - SQL Server: not needed; automatically created as an index organised table
 
-* Comment table;
+* Comment covariate table and columns;
   - Postgres:  
     ```SQL  
     COMMENT ON TABLE rif_data.cov_cb_2014_us_county_500k
@@ -941,20 +1130,121 @@ GO
     ```
   - SQL Server:
     ```SQL
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Example covariate table for: The County at a scale of 1:500,000', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k';
+	GO
+
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Year', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'year';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'County FIPS code (geolevel id)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'cb_2014_us_county_500k';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Area (county) name', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'areaname';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Estimate of people of all ages in poverty', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'total_poverty_all_ages';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Estimate percent of people of all ages in poverty', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'pct_poverty_all_ages';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Estimated percent of people age 0-17 in poverty', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'pct_poverty_0_17';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Estimated percent of related children age 5-17 in families in poverty', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'pct_poverty_related_5_17';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Estimate of median household income', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'median_household_income';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Quintile: estimate of median household income (1=most deprived, 5=least)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'median_hh_income_quin';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'med_pct_not_in_pov_quin';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'med_pct_not_in_pov_0_17_quin';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'med_pct_not_in_pov_5_17r_quin';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'% White quintile (1=least white, 5=most)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'pct_white_quintile';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'% Black quintile (1=least black, 5=most)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
+		@level2type = N'Column', @level2name = 'pct_black_quintile';
+	GO	
 	```
 
-* Grant grant access on tables and views to an appropriate role;
-  - Postgres:  
-    ```SQL 
-    --
-    -- Grant
-    -- * The role SEER_USER needs to be created by an administrator
-    --
-    GRANT SELECT ON rif_data.cov_cb_2014_us_county_500k TO seer_user;  
-    ```
-  - SQL Server:
-    ```SQL
-	```
+* Grant grant access on covariate tables and views to an appropriate role:
+  ```SQL 
+  --
+  -- Grant
+  -- * The role SEER_USER needs to be created by an administrator
+  --
+  GRANT SELECT ON rif_data.cov_cb_2014_us_county_500k TO seer_user;  
+  ```
 
 # 4. Information Governance
 
