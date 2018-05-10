@@ -980,6 +980,7 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 	```
 * Convert numerator fixed length string into new numerator load table with the correct columns and datatypes:
   - Postgres:  
+    ```SQL
 	--
 	-- Convert datatypes
 	--
