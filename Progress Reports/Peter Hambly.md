@@ -2223,3 +2223,9 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
   - Same basic problems as pull 26 with R directory paths on Windows;
   - Added NPE handler for issues coming from R directory path issue.
   
+#### 7th to 11th May
+
+* Data loading documentation; 
+* Database administration manual;
+* Merge R fixes;
+* RIF meeting;
