@@ -14,27 +14,6 @@ import rifServices.ontologyServices.HealthCodeProviderInterface;
 public interface HealthOutcomeManager {
 
 	/**
-	 * Clear health code providers.
-	 */
-	void clearHealthCodeProviders();
-	
-	/**
-	 * Adds the health code provider.
-	 *
-	 * @param healthCodeProvider the health code provider
-	 */
-	void addHealthCodeProvider(
-			HealthCodeProviderInterface healthCodeProvider);
-	
-	/**
-	 * Clear health code providers.
-	 *
-	 * @param healthCodeProvider the health code provider
-	 */
-	void clearHealthCodeProviders(
-			HealthCodeProviderInterface healthCodeProvider);
-	
-	/**
 	 * Gets the health code taxonomies.
 	 *
 	 * @return the health code taxonomies

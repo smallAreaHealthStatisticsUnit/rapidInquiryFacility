@@ -20,7 +20,6 @@ import rifServices.businessConceptLayer.DiseaseMappingStudy;
 import rifServices.businessConceptLayer.HealthCode;
 import rifServices.businessConceptLayer.HealthCodeTaxonomy;
 import rifServices.businessConceptLayer.Investigation;
-import rifServices.dataStorageLayer.common.HealthOutcomeManager;
 import rifServices.ontologyServices.HealthCodeProviderInterface;
 import rifServices.ontologyServices.ICD10ClaMLTaxonomyProvider;
 import rifServices.ontologyServices.RIFXMLTaxonomyProvider;
@@ -143,39 +142,7 @@ public final class CommonHealthOutcomeManager implements HealthOutcomeManager {
 	/*
 	 * Method used for testing purposes
 	 */
-	/**
-	 * Clear health code providers.
-	 */
-	@Override
-	public void clearHealthCodeProviders() {
-		
-		healthCodeProviders.clear();
-	}
-	
-	/**
-	 * Adds the health code provider.
-	 *
-	 * @param healthCodeProvider the health code provider
-	 */
-	@Override
-	public void addHealthCodeProvider(
-		final HealthCodeProviderInterface healthCodeProvider) {
 
-		healthCodeProviders.add(healthCodeProvider);
-	}
-	
-	/**
-	 * Clear health code providers.
-	 *
-	 * @param healthCodeProvider the health code provider
-	 */
-	@Override
-	public void clearHealthCodeProviders(
-		final HealthCodeProviderInterface healthCodeProvider) {
-
-		healthCodeProviders.clear();	
-	}
-	
 	/**
 	 * Gets the health code taxonomies.
 	 *
@@ -495,6 +462,3 @@ public final class CommonHealthOutcomeManager implements HealthOutcomeManager {
 		
 	}
 }
-
-
-

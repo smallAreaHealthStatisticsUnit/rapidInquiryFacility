@@ -36,7 +36,7 @@ public final class CovariateManager extends BaseSQLManager {
 	 *
 	 * @param sqlRIFContextManager the sql rif context manager
 	 */
-	public CovariateManager(final RIFServiceStartupOptions options,
+	CovariateManager(final RIFServiceStartupOptions options,
 			final RIFContextManager sqlRIFContextManager) {
 		
 		super(options);

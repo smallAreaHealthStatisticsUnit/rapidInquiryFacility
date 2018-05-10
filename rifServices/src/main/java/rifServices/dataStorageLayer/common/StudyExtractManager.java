@@ -26,7 +26,7 @@ public class StudyExtractManager extends BaseSQLManager {
 		TAXONOMY_SERVICES_SERVER = this.rifServiceStartupOptions.getTaxonomyServicesServer();
 	}
 
-	public String getStudyExtractFIleName(final User user, final String studyID) {
+	String getStudyExtractFIleName(final User user, final String studyID) {
 
 		return user.getUserID()
 		       + "_"
@@ -47,7 +47,7 @@ public class StudyExtractManager extends BaseSQLManager {
 	 *
 	 * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
 	 */
-	public FileInputStream getStudyExtract(
+	FileInputStream getStudyExtract(
 			final Connection connection,
 			final User user,
 			final RIFStudySubmission rifStudySubmission,
@@ -110,7 +110,7 @@ public class StudyExtractManager extends BaseSQLManager {
 	 *
 	 * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
 	 */
-	public String getExtractStatus(
+	String getExtractStatus(
 			final Connection connection,
 			final User user,
 			final RIFStudySubmission rifStudySubmission,
@@ -135,7 +135,7 @@ public class StudyExtractManager extends BaseSQLManager {
 	 * @return 				Textual extract status as exscaped JSON, e.g. {status: STUDY_NOT_FOUND}
 	 * @exception  			RIFServiceException		Catches all exceptions, logs, and re-throws as RIFServiceException
 	 */
-	public String getJsonFile(
+	String getJsonFile(
 			final Connection connection,
 			final User user,
 			final RIFStudySubmission rifStudySubmission,
@@ -176,9 +176,8 @@ public class StudyExtractManager extends BaseSQLManager {
 	 * @param studyID (required)
 	 * @param locale (required)
 	 * @param url [deduced from calling URL] (required)
-	 * @return JSONObject [front end saves as JSON5 file]
 	 */
-	public void createStudyExtract(
+	void createStudyExtract(
 			final Connection connection,
 			final User user,
 			final RIFStudySubmission rifStudySubmission,
@@ -197,14 +196,5 @@ public class StudyExtractManager extends BaseSQLManager {
 		                              locale,
 		                              url,
 		                              TAXONOMY_SERVICES_SERVER);
-	}
-
-	public String getRif40StudyState(final Connection connection, final String studyID)
-			throws Exception {
-		String studyState;
-		RifZipFile rifZipFile = new RifZipFile(rifServiceStartupOptions, this);
-		studyState = rifZipFile.getRif40StudyState(connection, studyID);
-
-		return studyState;
 	}
 }

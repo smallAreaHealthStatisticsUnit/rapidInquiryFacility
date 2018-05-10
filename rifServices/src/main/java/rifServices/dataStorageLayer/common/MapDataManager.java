@@ -30,7 +30,7 @@ public final class MapDataManager extends BaseSQLManager {
 		super(rifServiceStartupOptions);
 	}
 
-	public ArrayList<MapArea> getAllRelevantMapAreas(
+	ArrayList<MapArea> getAllRelevantMapAreas(
 			final Connection connection,
 			final Geography geography,
 			final AbstractGeographicalArea geographicalArea)

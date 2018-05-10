@@ -33,8 +33,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 	private static final RIFMemoryManager rifMemoryManager = RIFMemoryManager.getMemoryManager();
 	private static String lineSeparator = System.getProperty("line.separator");
 
-	// Logging for JRI
-	private static LogManager logManager;
 	private Logger log;	// Not used - uses RIFLogger
 	private LoggingConsole loggingConsole;
 	private RIFServiceStartupOptions rifStartupOptions;
@@ -46,7 +44,8 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 			rifLogger.info(this.getClass(), "Set java.util.logging.manager=" +
 				System.getProperty("java.util.logging.manager"));
 		}
-		logManager = LogManager.getLogManager();
+		// Logging for JRI
+		final LogManager logManager = LogManager.getLogManager();
 		log=Logger.getLogger("rifGenericLibrary.util.RIFLogger");
 		loggingConsole=new LoggingConsole(log);
 		Enumeration<String> loggerNames = logManager.getLoggerNames();

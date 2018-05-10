@@ -35,7 +35,7 @@ public class SubmissionManager extends BaseSQLManager {
 	/**
 	 * Instantiates a new SQLRIF submission manager.
 	 */
-	public SubmissionManager(final RIFServiceStartupOptions options,
+	SubmissionManager(final RIFServiceStartupOptions options,
 			final StudyStateManager studyStateManager) {
 
 		super(options);
@@ -43,7 +43,7 @@ public class SubmissionManager extends BaseSQLManager {
 		setEnableLogging(false);
 	}
 
-	public RIFStudySubmission getRIFStudySubmission(
+	RIFStudySubmission getRIFStudySubmission(
 			final Connection connection,
 			final User user,
 			final String studyID)
@@ -104,11 +104,9 @@ public class SubmissionManager extends BaseSQLManager {
 					= RIFServiceMessages.getMessage(
 					"sqlRIFSubmissionManager.error.unableToGetDiseaseMappingStudy",
 					studyID);
-			RIFServiceException rifServiceException
-					= new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					errorMessage);
-			throw rifServiceException;
+			throw new RIFServiceException(
+			RIFServiceError.DATABASE_QUERY_FAILED,
+			errorMessage);
 		}
 	}
 
