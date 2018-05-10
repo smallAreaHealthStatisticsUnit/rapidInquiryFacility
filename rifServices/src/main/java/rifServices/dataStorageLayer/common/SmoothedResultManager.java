@@ -10,6 +10,7 @@ import java.util.Hashtable;
 
 import rifGenericLibrary.businessConceptLayer.RIFResultTable;
 import rifGenericLibrary.dataStorageLayer.CountTableRowsQueryFormatter;
+import rifGenericLibrary.dataStorageLayer.DatabaseType;
 import rifGenericLibrary.dataStorageLayer.SQLGeneralQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.SelectQueryFormatter;
 import rifGenericLibrary.dataStorageLayer.common.SQLQueryUtility;
@@ -882,13 +883,17 @@ public class SmoothedResultManager extends BaseSQLManager {
 
 		if (doublePrecisionColumns.contains(columnName)) {
 
-			final String sqlRoundingFragment = "ROUND("
-			                                   + tableName
-			                                   + "."
-			                                   + columnName
-			                                   + ", 3) AS "
-			                                   + columnName;
-			queryFormatter.addQueryPhrase(indentationLevel, sqlRoundingFragment);
+			final StringBuilder sqlRoundingFragment = new StringBuilder();
+			sqlRoundingFragment.append("ROUND(").append(tableName).append(".").append(columnName);
+
+			// Need a special cast for Postgres, because the round function is not overloaded
+			// with a double-precision first parameter. See
+			// https://stackoverflow.com/questions/13113096/how-to-round-an-average-to-2-decimal-places-in-postgresql#13113623
+			if (rifDatabaseProperties.getDatabaseType() == DatabaseType.POSTGRESQL) {
+				sqlRoundingFragment.append("::numeric");
+			}
+			sqlRoundingFragment.append( ", 3) AS ").append(columnName);
+			queryFormatter.addQueryPhrase(indentationLevel, sqlRoundingFragment.toString());
 		}
 		else {
 			queryFormatter.addQueryPhrase(indentationLevel, tableName + "." + columnName);
