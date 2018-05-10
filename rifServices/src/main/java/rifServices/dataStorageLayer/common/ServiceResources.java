@@ -76,11 +76,6 @@ public class ServiceResources {
 		sqlInvestigationManager.setValidationPolicy(validationPolicy);
 	}
 
-	static ServiceResources getInstance(RIFServiceStartupOptions options) {
-
-		return ServiceResources.newInstance(options);
-	}
-
 	public static ServiceResources newInstance(final RIFServiceStartupOptions rifStartupOptions) {
 
 		return new ServiceResources(rifStartupOptions);
@@ -101,7 +96,7 @@ public class ServiceResources {
 		return rifServiceStartupOptions;
 	}
 
-	public BaseSQLManager getSqlConnectionManager() {
+	public SQLManager getSqlConnectionManager() {
 		return sqlConnectionManager;
 	}
 

@@ -65,7 +65,7 @@ public class WebService {
 				RIFServiceStartupOptions.newInstance(true, false);
 
 		rifStudyServiceBundle = ServiceBundle.getInstance(
-				ServiceResources.getInstance(rifServiceStartupOptions));
+				ServiceResources.newInstance(rifServiceStartupOptions));
 	}
 	
 	protected Response rifFrontEndLogger(
