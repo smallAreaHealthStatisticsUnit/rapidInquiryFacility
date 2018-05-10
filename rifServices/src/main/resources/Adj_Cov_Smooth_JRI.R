@@ -91,6 +91,9 @@ if (names.adj.1 == "NONE") {
 #CATALINA_HOME
 catalina_home<-Sys.getenv("CATALINA_HOME")
 
+# Set the working directory based on the value from the Java class
+setwd(working_dir)
+
 ##==========================================================================
 #FUNCTION: establishTableNames
 #DESCRIPTION: uses the study_id number to determine the names of
@@ -113,7 +116,7 @@ establishTableNames <-function(vstudyID) {
 #performance on Windows Tomcat servers 
 	centile <- as.integer(vstudyID) %/% 100 # 1273 = 12
 	# Number directory: d1201-1300\
-	numberDir <- paste0("d", (centile*100)+1, "-", (centile+1)*100, '\\')
+	numberDir <- file.path("d", (centile*100)+1, "-", (centile+1)*100)
 	
 #The name of the skeleton table created by the RIF middleware to hold smoothed results
 #for a given study.  Initially the values for smoothed columns will be empty.  It is 
@@ -124,10 +127,10 @@ establishTableNames <-function(vstudyID) {
 # This needs to be passed in via interface
 
 	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
-		scratchSpace <<- "c:\\rifDemo\\scratchSpace\\"
+		scratchSpace <<- file.path("rifDemo", "scratchSpace")
 	}
 	# Typically: c:\rifDemo\scratchSpace\d1201-1300\s1273\data
-	scratchSpace <<- paste0(scratchSpace, numberDir, "s", vstudyID, "\\data\\")
+	scratchSpace <<- file.path(scratchSpace, numberDir, "s", vstudyID, "data")
 		
 	tryCatch({
 			#Put all scratch files in sub directory s<study_id>
@@ -161,8 +164,8 @@ establishTableNames <-function(vstudyID) {
 # Install scripts required to re-run study
 #
 	if (exists("catalina_home")) {
-		performSmoothingActivityScriptA<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\performSmoothingActivity.R") # Source
-		performSmoothingActivityScriptB<-paste0(scratchSpace, "performSmoothingActivity.R") # Target
+		performSmoothingActivityScriptA<-file.path(catalina_home, "webapps", "rifServices", "WEB-INF", "classes", "performSmoothingActivity.R") # Source
+		performSmoothingActivityScriptB<-file.path(scratchSpace, "performSmoothingActivity.R") # Target
 		if (!file.exists(performSmoothingActivityScriptB)) {
 			cat(paste("Copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, "\n"), sep="")	
 
@@ -182,8 +185,8 @@ establishTableNames <-function(vstudyID) {
 			cat(paste("WARNING! No need to copy: ", performSmoothingActivityScriptA, " to: ", performSmoothingActivityScriptB, "\n"), sep="")
 		}
 		
-		Adj_Cov_Smooth_csvA<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth_csv.R") # Source
-		Adj_Cov_Smooth_csvB<-paste0(scratchSpace, "Adj_Cov_Smooth_csv.R") # Target
+		Adj_Cov_Smooth_csvA<-file.path(catalina_home, "webapps", "rifServices", "WEB-INF", "classes", "Adj_Cov_Smooth_csv.R") # Source
+		Adj_Cov_Smooth_csvB<-file.path(scratchSpace, "Adj_Cov_Smooth_csv.R") # Target
 		if (!file.exists(Adj_Cov_Smooth_csvB)) {
 			cat(paste("Copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, "\n"), sep="")	
 
@@ -203,8 +206,8 @@ establishTableNames <-function(vstudyID) {
 			cat(paste("WARNING! No need to copy: ", Adj_Cov_Smooth_csvA, " to: ", Adj_Cov_Smooth_csvB, "\n"), sep="")
 		}
 				
-		rif40_run_RA<-paste0(catalina_home, "\\webapps\\rifServices\\WEB-INF\\classes\\rif40_run_R.bat") # Source
-		rif40_run_RB<-paste0(scratchSpace, "rif40_run_R.bat") # Target
+		rif40_run_RA<-file.path(catalina_home, "webapps", "rifServices", "WEB-INF", "classes", "rif40_run_R.bat") # Source
+		rif40_run_RB<-file.path(scratchSpace, "rif40_run_R.bat") # Target
 		if (!file.exists(rif40_run_RB)) {
 			cat(paste("Copy: ", rif40_run_RA, " to: ", rif40_run_RB, "\n"), sep="")	
 

@@ -105,7 +105,7 @@ temporarySmoothedResultsTableName <- ""
 
 #File names for smoothed (temporarySmoothedResultsFileName) and extract data frames (temporaryExtractFileName)
 #Variable to control dumping franes (dumpFramesToCsv)
-defaultScratchSpace <- "c:\\rifDemo\\scratchSpace\\"
+defaultScratchSpace <- file.path("rifDemo", "scratchSpace")
 defaultDumpFramesToCsv <- TRUE
 scratchSpace <- ""
 dumpFramesToCsv <- ""
@@ -277,8 +277,8 @@ establishTableNames <-function(vstudyID) {
 
 # Name of Rdata CSV file for debugging results save
 # This needs to be passed in via interface
-  temporarySmoothedResultsFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_map.csv", sep="")
-  temporaryExtractFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_extract.csv", sep="")
+  temporarySmoothedResultsFileName <<-file.path(scratchSpace, "tmp_s", vstudyID, "_map.csv")
+  temporaryExtractFileName <<-file.path(scratchSpace, "tmp_s", vstudyID, "_extract.csv")
   
   mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")
 }

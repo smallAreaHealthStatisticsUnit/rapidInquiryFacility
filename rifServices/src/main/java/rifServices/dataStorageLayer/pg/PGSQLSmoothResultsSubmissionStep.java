@@ -6,10 +6,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.rosuda.JRI.REXP;
 import org.rosuda.JRI.Rengine;
 
@@ -291,7 +293,9 @@ public class PGSQLSmoothResultsSubmissionStep extends CommonRService {
 							rengine.assign(name, value);
 						}
 					}
-				}	
+				}
+				rengine.assign("working_dir", rifStartupOptions.getExtractDirectory());
+
 				rifLogger.info(this.getClass(), "R parameters: " + lineSeparator + str.toString());	
 
 		//same order of args as in the old batch file
