@@ -113,8 +113,8 @@ public final class PGSQLRIFServiceResources implements ServiceResources {
 		sqlStudyStateManager
 				= new CommonStudyStateManager(rifServiceStartupOptions);
 		
-		sqlRIFSubmissionManager = new PGSQLRIFSubmissionManager(rifServiceStartupOptions,
-				sqlStudyStateManager);
+		sqlRIFSubmissionManager = new SubmissionManager(rifServiceStartupOptions,
+		                                                sqlStudyStateManager);
 		
 		sqlStudyExtractManager = new StudyExtractManager(rifServiceStartupOptions);
 		

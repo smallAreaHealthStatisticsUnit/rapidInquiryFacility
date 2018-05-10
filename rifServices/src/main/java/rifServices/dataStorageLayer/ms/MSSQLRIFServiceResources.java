@@ -86,10 +86,8 @@ public class MSSQLRIFServiceResources implements ServiceResources {
 		sqlStudyStateManager
 			= new CommonStudyStateManager(rifServiceStartupOptions);
 		
-		sqlRIFSubmissionManager 
-			= new MSSQLRIFSubmissionManager(
-				rifServiceStartupOptions,
-				sqlStudyStateManager);
+		sqlRIFSubmissionManager = new SubmissionManager(rifServiceStartupOptions,
+		                                                sqlStudyStateManager);
 
 		sqlStudyExtractManager
 			= new StudyExtractManager(
