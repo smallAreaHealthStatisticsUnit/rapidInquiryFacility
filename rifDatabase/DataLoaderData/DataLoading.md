@@ -27,9 +27,17 @@ RIF Data Loading
 	 - [2.3.5 Health Themes](#235-health-themes)
 - [3. Load Processing](#3-load-processing)
   - [3.1 Administrative Geography](#31-administrative-geography)
+     - [3.1.1 Postgres](#311-postgres)
+     - [3.1.2 SQL Server](#312-sql-server)
   - [3.2 Numerator](#32-numerator)
+     - [3.2.1 Pre Processing](#321-pre-processing)
+     - [3.2.2 Load Processing](#322-load-processing)
   - [3.3 Denominator](#33-denominator)
+     - [3.3.1 Pre Processing](#331-pre-processing)
+     - [3.3.2 Load Processing](#332-load-processing)
   - [3.4 Covariates](#34-covariates)
+     - [3.4.1 Pre Processing](#341-pre-processing)
+     - [3.4.2 Load Processing](#342-load-processing)
 - [4. Information Governance](#4-information-governance)
 - [5. Flexible Configuration Support](#5-flexible-configuration-support)
   - [5.1 Age Groups](#51-age-groups)
@@ -752,35 +760,201 @@ An example theme is provided:
  
 # 3. Load Processing
 
-* Always load the administrative geography first:
+Generally load processing requires three steps:
+
+* Create and load the Administrative geography. **Always load the administrative geography first**. This is produced by the 
+  [Tile maker](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md):
+* Pre-process the data from flat files, process and unloaded back into flat files that can be loaded into either Postgres or SQL Server. 
+  Typically this is done as a normal user on any database. Do **not** use the schema *rif40* or  administrative accounts (*postgres* or *administrator*)
+* Load the processed data as a schema owner (e.g. *rif40*)into a target database.
+ 
+Example scripts: 
+
+| Action                                    | Postgres                            | SQL Server                          |
+|-------------------------------------------|-------------------------------------|-------------------------------------|
+| Load the Administrative geography         | *rif_pg_usa_2014.sql*               | *rif_mssql_usa_2014.sql*            |
+| Pre-process the SEER data                 | *pg_load_seer.sql*                  | **TO FOLLOW**                       |
+| &nbsp;&bull; Pre-process numerator data   | *pg_load_seer_cancer.sql*           | **TO FOLLOW**                       |
+| &nbsp;&bull; Pre-process denominator data | *pg_load_seer_population.sql*       | **TO FOLLOW**                       |
+| &nbsp;&bull; Pre-process covariates data  | *pg_load_seer_covariates.sql*       | **TO FOLLOW**                       |
+| Load the processed SEER data              | *pg_rif40_load_seer.sql*            | *ms_rif40_load_seer.sql*            |
+| &nbsp;&bull; Load numerator data          | *pg_rif40_load_seer_cancer.sql*     | *ms_rif40_load_seer_cancer.sql*     |
+| &nbsp;&bull; Load denominator data        | *pg_rif40_load_seer_population.sql* | *ms_rif40_load_seer_population.sql* |
+| &nbsp;&bull; Load covariate data          | *pg_rif40_load_seer_covariates.sql* | *ms_rif40_load_seer_covariates.sql* |
+
+To install, change to the &lt;SEER Data directory, e.g. C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\&gt;
 
 ## 3.1 Administrative Geography
 
-The *SAHSULAND* example geography is supplied as part of the RIF. To load the SEER test dataset:
+The *SAHSULAND* example geography is supplied as part of the RIF. To load the SEER test dataset you first need to load the USA County level administrative geography:
 
 To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\Tile maker USA&gt;
 
 * ```cd C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\Tile maker USA```;
 
-For Postgres: 
+## 3.1.1 Postgres
 
-* ```psql -U rif40 -d sahsuland -w -e -f rif_pg_usa_2014.sql```;
+```SQL
+psql -U rif40 -d sahsuland -w -e -f rif_pg_usa_2014.sql
+```
 
-For SQL Server:
+## 3.1.2 SQL Server
 
-* ``sqlcmd -U rif40 -P XXXXXXXX -d sahsuland -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql -v pwd="%cd%"```;
-  Where ```XXXXXXXX``` is the rif40 account password.
-  To change SQL server password:
-  ```SQL
-  ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
-  GO
-  ```
+```SQL
+sqlcmd -U rif40 -P XXXXXXXX -d sahsuland -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql -v pwd="%cd%";
+```
 
+Where ```XXXXXXXX``` is the rif40 account password.
+
+By default on SQL server the*rif40* password is set to random characters, to change the SQL server *rif40* password:
+
+```SQL
+ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
+GO
+```
+ 
 ## 3.2 Numerator
+
+## 3.2.1 Pre Processing
+
+## 3.1.2 Load Processing
 
 ## 3.3 Denominator
 
+## 3.3.1 Pre Processing
+
+## 3.3.2 Load Processing
+
 ## 3.4 Covariates
+
+## 3.4.1 Pre Processing
+
+## 3.4.2 Load Processing
+
+* Remove covariate setup data and tables;
+  - Postgres:  
+    ```SQL
+    DROP TABLE IF EXISTS rif_data.cov_cb_2014_us_county_500k;
+    DROP TABLE IF EXISTS rif_data.cov_cb_2014_us_state_500k;
+
+    DELETE FROM rif40_covariates
+     WHERE geography = 'USA_2014';
+    ```
+  - SQL Server:
+    ```SQL
+	```
+* Create table;
+  - Postgres:  
+  ```SQL
+    CREATE TABLE rif_data.cov_cb_2014_us_county_500k (
+		year											INTEGER NOT NULL, -- Year
+		cb_2014_us_county_500k 							CHARACTER VARYING(30) NOT NULL, -- Geolevel name
+		areaname					 					CHARACTER VARYING(200),
+		total_poverty_all_ages							INTEGER,
+		pct_poverty_all_ages							NUMERIC,
+		pct_poverty_0_17								NUMERIC,
+		pct_poverty_related_5_17						NUMERIC,
+		median_household_income							NUMERIC,
+		median_hh_income_quin							INTEGER,
+		med_pct_not_in_pov_quin							INTEGER,
+		med_pct_not_in_pov_0_17_quin					INTEGER,
+		med_pct_not_in_pov_5_17r_quin					INTEGER,
+		pct_white_quintile								INTEGER,
+		pct_black_quintile								INTEGER,
+		CONSTRAINT cov_cb_2014_us_county_500k_pkey PRIMARY KEY (year, cb_2014_us_county_500k)
+    );
+    ```
+  - SQL Server:
+    ```SQL
+	```
+
+* Load CSV data into table;
+  - Postgres: 
+    ```SQL
+    \copy cov_cb_2014_us_county_500k FROM 'cov_cb_2014_us_county_500k.csv' WITH CSV HEADER;
+    ```
+  - SQL Server:
+    ```SQL
+	```
+* Check all table data has been loaded;
+  - Postgres:  
+    ```SQL 
+    --
+    -- Check rowcount
+    --
+    SELECT COUNT(*) AS total FROM cov_cb_2014_us_county_500k;
+  
+    DO LANGUAGE plpgsql $$
+    DECLARE
+		c1 CURSOR FOR
+			SELECT COUNT(*) AS total
+			  FROM cov_cb_2014_us_county_500k;
+		c1_rec RECORD;
+    BEGIN
+		OPEN c1;
+		FETCH c1 INTO c1_rec;
+		CLOSE c1;
+    --
+		IF c1_rec.total = 132553 THEN
+			RAISE INFO 'Table: cov_cb_2014_us_county_500k has % rows', c1_rec.total;
+		ELSE
+			RAISE EXCEPTION 'Table: cov_cb_2014_us_county_500k has % rows; expecting 132553', c1_rec.total;
+		END IF;
+    END;
+    $$;
+    ```
+  - SQL Server:
+    ```SQL
+	```
+
+* Convert to index organised table;
+  - Postgres: 
+    ```SQL  
+	--
+	-- Convert to index organised table
+	--
+	CLUSTER rif_data.cov_cb_2014_us_county_500k USING cov_cb_2014_us_county_500k_pkey;
+    ```
+  - SQL Server:
+    ```SQL
+	```
+
+* Comment table;
+  - Postgres:  
+    ```SQL  
+    COMMENT ON TABLE rif_data.cov_cb_2014_us_county_500k
+		IS 'Example covariate table for: The County at a scale of 1:500,000';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.year IS 'Year';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.cb_2014_us_county_500k IS 'County FIPS code (geolevel id)';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.areaname IS 'Area (county) name';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.total_poverty_all_ages IS 'Estimate of people of all ages in poverty';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_poverty_all_ages IS 'Estimate percent of people of all ages in poverty';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.median_household_income IS 'Estimate of median household income';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_white_quintile IS '% White quintile (1=least white, 5=most)'; 
+    COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_black_quintile IS '% Black quintile (1=least black, 5=most)';
+    ```
+  - SQL Server:
+    ```SQL
+	```
+
+* Grant grant access on tables and views to an appropriate role;
+  - Postgres:  
+    ```SQL 
+    --
+    -- Grant
+    -- * The role SEER_USER needs to be created by an administrator
+    --
+    GRANT SELECT ON rif_data.cov_cb_2014_us_county_500k TO seer_user;  
+    ```
+  - SQL Server:
+    ```SQL
+	```
 
 # 4. Information Governance
 

@@ -39,6 +39,9 @@ Database Management Manual
 - [6. Patching](#6-patching)
    - [6.1 Postgres](#61-postgres)
    - [6.2 SQL Server](#62-sql-server)
+- [7. Tuning](#7-tuning)
+   - [7.1 Postgres](#71-postgres)
+   - [7.2 SQL Server](#72-sql-server)
 	 
 # 1. Overview
 
@@ -53,16 +56,61 @@ This manual details how to manage RIF databases. See also the:
  
 ## 2.1 Creating new users
 
+New users must be created in lower case, start with a letter, and only contain the characters: ```[A-Z][a-z][0-9]_```
+
 ### 2.1.1 Postgres
 
 ### 2.1.2 SQL Server
 
 ## 2.2 Changing passwords
 
+Valid characters for passwords have been tested as: ```[A-Z][a-z][0-9]!@$^~_-```. Passwords must be up to 30 characters long; longer passwords may be supported. The following are definitely **NOT** 
+valid: [SQL Server/ODBC special characters](http://msdn.microsoft.com/en-us/library/windows/desktop/ms715433%28v=vs.85%29.aspx): ```[]{}(),;?*=!@```.
+Use of special characters]: ```\/&%``` is not advised as command line users will need to use an escaping URI to connect.
+
 ### 2.2.1 Postgres
+
+The file .pgpass in a user's home directory or the file referenced by PGPASSFILE can contain passwords to be used if the connection requires a password 
+(and no password has been specified otherwise). On Microsoft Windows the file is named %APPDATA%\postgresql\pgpass.conf (where %APPDATA% refers to the 
+Application Data subdirectory in the user's profile).
+
+This file should contain lines of the following format:
+
+```
+hostname:port:database:username:password
+```
+
+You can add a comment to the file by preceding the line with #. Each of the first four fields can be a literal value, or *, which matches anything. The password field from the first line 
+that matches the current connection parameters will be used. (Therefore, put more-specific entries first when you are using wildcards.) 
+If an entry needs to contain : or \, escape this character with \. A host name of localhost matches both TCP (host name localhost) and Unix domain socket 
+(pghost empty or the default socket directory) connections coming from the local machine. 
+
+On Unix systems, the permissions on .pgpass must disallow any access to world or group; achieve this by the command chmod 0600 ~/.pgpass. If the permissions are less strict 
+than this, the file will be ignored. On Microsoft Windows, it is assumed that the file is stored in a directory that is secure, so no special permissions check is made.
+
+If you change a users password and you use the user from the command line (typically *postgres*, *rif40* and the test username) change it in the *&lt;pgpass&gt;* file.
+
+Notes: 
+
+* Your normal user and the administrator account will have separate *&lt;pgpass&gt;* files;
+* The *postgres* account password is set by the Postgres (EnterpriseDB) installler. This password is not set in the Administrator *&lt;pgpass&gt;* file.;
+* The *rif40* and the test username are both set by the database install script to &lt;username&gt;_&lt;5 digit random number&gt;_&lt;5 digit random number&gt;. 
+  These passwords are set in the Administrator *&lt;pgpass&gt;* file.;
+* No passwords are set in the normal user *&lt;pgpass&gt;* file;
+
+To change a Postgres password:
+```SQL
+ALTER ROLE rif40 WITH PASSWORD 'XXXXXXXX';
+```
 
 ### 2.2.2 SQL Server
 
+To change a SQL server password:
+```SQL
+ALTER LOGIN rif40 WITH PASSWORD = 'XXXXXXXX';
+GO
+```
+  
 ## 2.3 Proxy accounts
 
 ## 2.4 Granting permission
@@ -95,9 +143,45 @@ This manual details how to manage RIF databases. See also the:
 
 ## 3.4 Granting permission
 
+Tables or views may be granted directly to the user or indirectly via a role. Good administration proactive is to grant via a role.
+
+To grant via a role, you must first create a role. for example create and GRANT seer_user role to a user *peter*:
+
 ### 3.4.1 Postgres
 
+Logon as the Postgres saperuser *postgres" or other role with the *superuser* privilege.
+
+```SQL
+psql -U postgres -d postgres
+CREATE ROLE seer_user;
+GRANT seer_user TO peter;
+```
+
+There is no *CREATE ROLE IF NOT EXIST*.
+```SQL
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'seer_user') THEN
+        CREATE ROLE seer_user;
+    END IF;
+END
+$$;
+```
+
+To view all roles: ```SELECT * FROM pg_roles;```
+
 ### 3.4.2 SQL Server
+
+```SQL
+sqlcmd -E
+USE sahsuland;
+IF DATABASE_PRINCIPAL_ID('seer_user') IS NULL
+	CREATE ROLE [seer_user];
+ALTER ROLE [seer_user] ADD MEMBER [peter];
+GO
+```
+
+To view all roles: ```SELECT name, type_desc FROM sys.database_principals WHERE name LIKE '%seer_user%';```
 
 # 4. Information Governance
 
@@ -141,9 +225,37 @@ If you are using CSV log files set:
 
 # 6. Patching  
 
+Alter scripts are numbered sequentially and have the same functionality in both ports, e.g. ```v4_0_alter_10.sql```. Scripts are safe to run more than once.
+
+Pre-built databases are supplied patched up to date.
+
+Scripts must be applied as follows:
+
+| Date            | Script            | Description                         |
+|-----------------|-------------------|-------------------------------------|
+| 30th June  2018 | v4_0_alter_10.sql | To be added (risk analysis changes) |
+
 ## 6.1 Postgres
 
+Scripts are in the standard bundle in the directory *Database alter scripts\Postgres* or in github in *rapidInquiryFacility\rifDatabase\Postgres\psql_scripts\alter_scripts*
+
+```
+psql -U rif40 -d <your database name> -w -e -P pager=off -v verbosity=terse -v debug_level=0 -v use_plr=N -v pghost=localhost -v echo=none -f alter_scripts/<alter script name>
+```
+
 ## 6.2 SQL Server
+
+Scripts are in the standard bundle in the directory *Database alter scripts\SQL Server* or in github in *rapidInquiryFacility\rifDatabase\SQLserver\sahsuland_dev\alter_scripts*
+
+```
+sqlcmd -U rif40 -P <rif40 password> -d <your database name> -b -m-1 -e -r1 -i <alter script name>
+```
+
+# 7. Tuning  
+
+## 7.1 Postgres
+
+## 7.2 SQL Server
 
 Peter Hambly
 Many 2018
