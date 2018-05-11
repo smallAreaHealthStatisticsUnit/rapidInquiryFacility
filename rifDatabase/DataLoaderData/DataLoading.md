@@ -853,16 +853,341 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 
 ## 3.2.1 Pre Processing
 
+* Create numerator load tables to load data from CSV or Text files. Fixed length (mainframe) record files have to be loaded as a single string 
+  and then chopped converted into the relevant fields in stage four:
+  - Postgres:  
+    ```SQL
+	CREATE TABLE seer9_yr1973_2013_fixed_length (
+		record_value VARCHAR(358)
+	);
+	```
+  - SQL Server:  
+    ```SQL
+	```
+* Load numerator tables from CSV or Text files:
+  - Postgres:  
+    ```SQL
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2005.lo_2nd_half\BREAST.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2005.lo_2nd_half\COLRECT.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2005.lo_2nd_half\DIGOTHR.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2005.lo_2nd_half\FEMGEN.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2005.lo_2nd_half\LYMYLEUK.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2005.lo_2nd_half\MALEGEN.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2005.lo_2nd_half\OTHER.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2005.lo_2nd_half\RESPIR.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2005.lo_2nd_half\URINARY.TXT' WITH CSV;
+
+	/*
+	C:\Users\Peter\Documents\Local data loading\SEER_1973_2013_TEXTDATA\incidence\yr1992_2013.sj_la_rg_ak>wc -l *.TXT
+	   190126 BREAST.TXT
+	   112982 COLRECT.TXT
+		98671 DIGOTHR.TXT
+		84681 FEMGEN.TXT
+		93322 LYMYLEUK.TXT
+	   161911 MALEGEN.TXT
+	   193120 OTHER.TXT
+	   122381 RESPIR.TXT
+		70599 URINARY.TXT
+	  1127793 total
+	 */
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1992_2013.sj_la_rg_ak\BREAST.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1992_2013.sj_la_rg_ak\COLRECT.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1992_2013.sj_la_rg_ak\DIGOTHR.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1992_2013.sj_la_rg_ak\FEMGEN.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1992_2013.sj_la_rg_ak\LYMYLEUK.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1992_2013.sj_la_rg_ak\MALEGEN.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1992_2013.sj_la_rg_ak\OTHER.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1992_2013.sj_la_rg_ak\RESPIR.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1992_2013.sj_la_rg_ak\URINARY.TXT' WITH CSV;
+	 
+	/*
+	C:\Users\Peter\Documents\Local data loading>wc -l SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9*.TXT
+		769261 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/BREAST.TXT
+		528452 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/COLRECT.TXT
+		364018 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/DIGOTHR.TXT
+		434960 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/FEMGEN.TXT
+		381579 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/LYMYLEUK.TXT
+		636118 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/MALEGEN.TXT
+		784697 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/OTHER.TXT
+		643924 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/RESPIR.TXT
+		320405 SEER_1973_2013_TEXTDATA/incidence/yr1973_2013.seer9/URINARY.TXT
+	   4863414 total
+	 */
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\BREAST.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\COLRECT.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\DIGOTHR.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\FEMGEN.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\LYMYLEUK.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\MALEGEN.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\OTHER.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\RESPIR.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr1973_2013.seer9\URINARY.TXT' WITH CSV;
+
+	/*
+	C:\Users\Peter\Documents\Local data loading\SEER_1973_2013_TEXTDATA\incidence\yr2000_2013.ca_ky_lo_nj_ga>wc -l *.TXT
+		505731 BREAST.TXT
+		301745 COLRECT.TXT
+		239579 DIGOTHR.TXT
+		174656 FEMGEN.TXT
+		247252 LYMYLEUK.TXT
+		428840 MALEGEN.TXT
+		618807 OTHER.TXT
+		431674 RESPIR.TXT
+		226912 URINARY.TXT
+	   3175196 total
+	 */
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2000_2013.ca_ky_lo_nj_ga\BREAST.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2000_2013.ca_ky_lo_nj_ga\COLRECT.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2000_2013.ca_ky_lo_nj_ga\DIGOTHR.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2000_2013.ca_ky_lo_nj_ga\FEMGEN.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2000_2013.ca_ky_lo_nj_ga\LYMYLEUK.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2000_2013.ca_ky_lo_nj_ga\MALEGEN.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2000_2013.ca_ky_lo_nj_ga\OTHER.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2000_2013.ca_ky_lo_nj_ga\RESPIR.TXT' WITH CSV;
+	\copy seer9_yr1973_2013_fixed_length FROM 'SEER_1973_2013_TEXTDATA\incidence\yr2000_2013.ca_ky_lo_nj_ga\URINARY.TXT' WITH CSV;
+	```
+  - SQL Server:  
+    ```SQL
+	```
+* Check all numerator table data has been loaded:
+  - Postgres:  
+    ```SQL
+	--
+	-- Check rowcount
+	--
+	SELECT COUNT(*) AS total FROM seer9_yr1973_2013_fixed_length;
+	DO LANGUAGE plpgsql $$
+	DECLARE
+		c1 CURSOR FOR
+			SELECT COUNT(*) AS total
+			  FROM seer9_yr1973_2013_fixed_length;
+		c1_rec RECORD;
+	BEGIN
+		OPEN c1;
+		FETCH c1 INTO c1_rec;
+		CLOSE c1;
+	--
+		IF c1_rec.total = 9176963 THEN
+			RAISE INFO 'Table: seer9_yr1973_2013_fixed_length has % rows', c1_rec.total;
+		ELSE
+			RAISE EXCEPTION 'Table: seer9_yr1973_2013_fixed_length has % rows; expecting 9176963', c1_rec.total;
+		END IF;
+	END;
+	$$;
+	```
+  - SQL Server:  
+    ```SQL
+	```
+* Convert numerator fixed length string into new numerator load table with the correct columns and datatypes:
+  - Postgres:  
+    ```SQL
+	--
+	-- Convert datatypes
+	--
+	CREATE TABLE seer9_yr1973_2013
+	AS
+	SELECT SUBSTRING(record_value FROM 39 FOR 4)::INTEGER AS year_dx,	/* Year of diagnosis */
+		   SUBSTRING(record_value FROM 24 FOR 1)::INTEGER AS sex,		/* Sex */
+		   SUBSTRING(record_value FROM 25 FOR 3)::INTEGER AS age_dx, 	/* Age at diagnosis */
+		   SUBSTRING(record_value FROM 246 FOR 2)::Text AS state_fips_code,	 /* State FIPS code */
+		   SUBSTRING(record_value FROM 248 FOR 3)::Text AS county_fips_code, /* County FIPS code */ 
+		   SUBSTRING(record_value FROM 208 FOR 4)::Text AS icdot10v, 	/* Recode ICD-O-2 to 10 */
+		   SUBSTRING(record_value FROM 1 FOR 8)::INTEGER AS pubcsnum,	/* Patient ID */
+		   SUBSTRING(record_value FROM 35 FOR 2)::INTEGER AS seq_num,  	/* Sequence number */
+		   SUBSTRING(record_value FROM 53 FOR 4)::Text AS histo3v,		/* Histologic Type ICD-O-3 */
+		   SUBSTRING(record_value FROM 57 FOR 1)::Text AS beho3v,		/* Behavior code ICD-O-3 */
+		   SUBSTRING(record_value FROM 233 FOR 1)::INTEGER AS rac_reca,	/* Race recode A (WHITE, BLACK, OTHER) */
+		   SUBSTRING(record_value FROM 234 FOR 1)::INTEGER AS rac_recy,	/* Race recode Y (W, B, AI, API) */	  
+		   SUBSTRING(record_value FROM 235 FOR 1)::INTEGER AS origrecb,	/* Origin Recode NHIA (HISPANIC, NON-HISP) */	 
+		   SUBSTRING(record_value FROM 255 FOR 5)::Text AS codpub,	  	/* Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html) */
+		   SUBSTRING(record_value FROM 9 FOR 10)::INTEGER AS reg		/* SEER registry */   
+	  FROM seer9_yr1973_2013_fixed_length;	
+    ```SQL
+	```
+  - SQL Server:  
+    ```SQL
+	```
+* Create numerator table from load table:
+  - Postgres:  
+    ```SQL
+	/* Cancer registry codes:
+
+	Code			Description (first year of data)
+	0000001501		San Francisco-Oakland SMSA (1973)
+	0000001502		Connecticut (1973)
+	0000001520		Metropolitan Detroit (1973)
+	0000001521		Hawaii (1973)
+	0000001522		Iowa (1973)
+	0000001523		New Mexico (1973)
+	0000001525		Seattle (Puget Sound) (1974)
+	0000001526		Utah (1973)
+	0000001527		Metropolitan Atlanta (1975)
+	0000001529		Alaska*
+	0000001531		San Jose-Monterey*
+	0000001535		Los Angeles*
+	0000001537		Rural Georgia*
+	0000001541		Greater California (excluding SF, Los Angeles & SJ)**
+	0000001542		Kentucky**
+	0000001543		Louisiana**
+	0000001544		New Jersey**
+	0000001547		Greater Georgia (excluding AT and RG)**
+	(Year in parentheses refers to first diagnosis year data reported to SEER)
+
+	*Note: The incidence/yr1992_2013.sj_la_rg_ak directory files contain cases for Alaska, San Jose-Monterey, Los Angeles and 
+		   Rural Georgia registries beginning in 1992. Cases have been collected by SEER for these registries prior to 1992 but have 
+		   been excluded from the SEER Research Data file.
+	**Note: The incidence/yr2000_2013.ca_ky_lo_nj_ga directory files contain cases for Greater California, Kentucky, Louisiana, 
+			New Jersey and Greater Georgia registries beginning in 2000. For the year 2005, only January through June diagnoses are
+			included for Louisiana. The July through December incidence cases can be found in the yr2005.lo_2nd_half directory.
+	*/  
+
+	--
+	-- Extract cancer
+	-- * Convert age, sex to RIF age_sex_group 1
+	-- * Convert FIPS codes to the geographic Names Information System (GNIS) codes used by the RIF
+	-- * Enforce primary key (Patient ID, Sequence number)
+	-- * Check AGE_SEX_GROUP, handle uncoded age
+	-- * Convert unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g.
+	--   900 series to represent county/independent city combinations in Virginia.
+	-- * Use icdot10v (ICD 10 site code - recoded from ICD-O-2 to 10) as the ICD field
+	--
+	DROP TABLE IF EXISTS :USER.seer_cancer;  
+	CREATE TABLE seer_cancer
+	AS  
+	SELECT a.year_dx AS year, 
+		   'US'::Text AS cb_2014_us_nation_5m,
+		   d.statens AS cb_2014_us_state_500k, 
+		   COALESCE(c.countyns, 'UNKNOWN: '||a.county_fips_code) AS cb_2014_us_county_500k,
+		   (a.sex*100)+
+				CASE WHEN a.age_dx = 999 THEN 99
+				ELSE                     b.offset END AS age_sex_group, 
+		   a.icdot10v,		/* ICD 10 site code - recoded from ICD-O-2 to 10 */
+		   a.pubcsnum,		/* Patient ID */
+		   a.seq_num,		/* Sequence number */
+		   a.histo3v,		/* Histologic Type ICD-O-3 */
+		   a.beho3v,		/* Behavior code ICD-O-3 */
+		   a.rac_reca,		/* Race recode A (WHITE, BLACK, OTHER) */
+		   a.rac_recy,		/* Race recode Y (W, B, AI, API) */	   
+		   a.origrecb,		/* Origin Recode NHIA (HISPANIC, NON-HISP) */
+		   a.codpub,	  	/* Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html) */
+		   a.reg-1500 AS reg		/* SEER registry (minus 1500 so same as population file) */   	   
+	  FROM seer9_yr1973_2013 a
+			LEFT OUTER JOIN rif40_age_groups b ON (b.age_group_id = 1 AND a.age_dx BETWEEN b.low_age AND b.high_age /* limit 255! */)
+			LEFT OUTER JOIN cb_2014_us_county_500k c ON (a.state_fips_code = c.statefp AND a.county_fips_code = c.countyfp)
+			LEFT OUTER JOIN cb_2014_us_state_500k d ON (a.state_fips_code = d.statefp)
+	 ORDER BY a.pubcsnum, a.seq_num;	
+	```
+  - SQL Server:  
+    ```SQL
+	```
+* Comment numerator load table:
+  - Postgres:  
+    ```SQL
+	COMMENT ON TABLE seer_cancer IS 'SEER Cancer data 1973-2013. 9 States in total';
+	COMMENT ON COLUMN seer_cancer.year IS 'Year';
+	COMMENT ON COLUMN seer_cancer.cb_2014_us_nation_5m IS 'United States to county level including territories';
+	COMMENT ON COLUMN seer_cancer.cb_2014_us_state_500k IS 'State geographic Names Information System (GNIS) code';
+	COMMENT ON COLUMN seer_cancer.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
+	COMMENT ON COLUMN seer_cancer.age_sex_group IS 'RIF age_sex_group 1 (21 bands)';
+	COMMENT ON COLUMN seer_cancer.icdot10v IS 'ICD 10 site code - recoded from ICD-O-2 to 10';
+	COMMENT ON COLUMN seer_cancer.pubcsnum IS 'Patient ID';
+	COMMENT ON COLUMN seer_cancer.seq_num IS 'Sequence number';
+	COMMENT ON COLUMN seer_cancer.histo3v IS 'Histologic Type ICD-O-3';
+	COMMENT ON COLUMN seer_cancer.beho3v IS 'Behavior code ICD-O-3';
+	COMMENT ON COLUMN seer_cancer.rac_reca IS 'Race recode A (WHITE, BLACK, OTHER)';
+	COMMENT ON COLUMN seer_cancer.rac_recy IS 'Race recode Y (W, B, AI, API)';
+	COMMENT ON COLUMN seer_cancer.origrecb IS 'Origin Recode NHIA (HISPANIC, NON-HISP)';
+	COMMENT ON COLUMN seer_cancer.codpub IS 'Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html)';
+	COMMENT ON COLUMN seer_cancer.reg IS 'SEER registry (minus 1500 so same as population file)';	
+	```
+  - SQL Server:  
+    ```SQL
+	```
+* Check rowcount:
+  - Postgres:  
+    ```SQL
+	SELECT COUNT(*) AS total FROM seer_cancer;
+	DO LANGUAGE plpgsql $$
+	DECLARE
+		c1 CURSOR FOR
+			SELECT COUNT(*) AS total
+			  FROM seer_cancer;
+		c1_rec RECORD;
+	BEGIN
+		OPEN c1;
+		FETCH c1 INTO c1_rec;
+		CLOSE c1;
+	--
+		IF c1_rec.total = 9176963 THEN
+			RAISE INFO 'Table: seer_cancer has % rows', c1_rec.total;
+		ELSE
+			RAISE EXCEPTION 'Table: seer_cancer has % rows; expecting 9176963', c1_rec.total;
+		END IF;
+	END;
+	$$;	
+	```
+  - SQL Server:  
+    ```SQL
+	```
+* Add constraints:
+  - Postgres:  
+    ```SQL
+	ALTER TABLE seer_cancer ALTER COLUMN year SET NOT NULL;
+	ALTER TABLE seer_cancer ALTER COLUMN cb_2014_us_state_500k SET NOT NULL;
+	ALTER TABLE seer_cancer ALTER COLUMN cb_2014_us_county_500k SET NOT NULL;
+
+	ALTER TABLE seer_cancer ADD CONSTRAINT seer_cancer_asg_ck 
+		CHECK (age_sex_group BETWEEN 100 AND 121 OR age_sex_group BETWEEN 200 AND 221 OR age_sex_group IN (199, 299) /* No age coded */);
+		
+	ALTER TABLE seer_cancer ALTER COLUMN age_sex_group SET NOT NULL;	
+	```
+  - SQL Server:  
+    ```SQL
+	```
+* Add constraints:
+  - Postgres:  
+    ```SQL
+	ALTER TABLE seer_cancer ADD CONSTRAINT seer_cancer_pk 
+		PRIMARY KEY (pubcsnum, seq_num);	
+	CREATE INDEX seer_cancer_year ON seer_cancer (year);
+	CREATE INDEX seer_cancer_cb_2014_us_nation_5m ON seer_cancer(cb_2014_us_nation_5m);
+	CREATE INDEX seer_cancer_cb_2014_us_state_500k ON seer_cancer(cb_2014_us_state_500k);
+	CREATE INDEX seer_cancer_cb_2014_us_county_500k ON seer_cancer(cb_2014_us_county_500k);
+	CREATE INDEX seer_cancer_age_sex_group ON seer_cancer(age_sex_group);
+	CREATE INDEX seer_cancer_icdot10v ON seer_cancer(icdot10v);	
+	CREATE INDEX seer_cancer_reg ON seer_cancer(reg);	
+	```
+  - SQL Server:  
+    ```SQL
+	```
+* Unload table:
+  - Postgres:  
+    ```SQL
+	\copy seer_cancer TO 'seer_cancer.csv' WITH CSV HEADER
+	```
+  - SQL Server:  
+    ```SQL
+	```
+	
 ## 3.1.2 Load Processing
 
 * Remove numerator setup data, views and tables;
   - Postgres:  
     ```SQL
+	DROP TABLE IF EXISTS rif_data.t_seer_cancer;
+	DROP VIEW IF EXISTS rif_data.seer_cancer;
+
+	DELETE FROM rif40.rif40_table_outcomes 
+	 WHERE numer_tab='SEER_CANCER';
+	 
+	DELETE FROM rif40.rif40_tables 
+	 WHERE table_name='SEER_CANCER';	
     ```
   - SQL Server:
     ```SQL
-	IF OBJECT_ID('rif_data.seer_cancer', 'U') IS NOT NULL BEGIN
-		DROP TABLE rif_data.seer_cancer;
+	IF OBJECT_ID('rif_data.t_seer_cancer', 'U') IS NOT NULL BEGIN
+		DROP TABLE rif_data.t_seer_cancer;
+		DROP VIEW rif_data.seer_cancer;
 		DELETE FROM rif40.rif40_table_outcomes 
 		 WHERE numer_tab='SEER_CANCER';
 		DECLARE c1 CURSOR FOR 
@@ -889,10 +1214,34 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 * Create numerator table;
   - Postgres:  
     ```SQL
+	CREATE TABLE rif_data.t_seer_cancer
+	(
+	  year integer NOT NULL, -- Year
+	  cb_2014_us_nation_5m text, -- United States to county level including territories
+	  cb_2014_us_state_500k text NOT NULL, -- State geographic Names Information System (GNIS) code
+	  cb_2014_us_county_500k text NOT NULL, -- County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.
+	  age_sex_group integer NOT NULL, -- RIF age_sex_group 1 (21 bands)
+	  icdot10v text, -- ICD 10 site code - recoded from ICD-O-2 to 10
+	  pubcsnum integer NOT NULL, -- Patient ID
+	  seq_num integer NOT NULL, -- Sequence number
+	  histo3v text, -- Histologic Type ICD-O-3
+	  beho3v text, -- Behavior code ICD-O-3
+	  rac_reca integer, -- Race recode A (WHITE, BLACK, OTHER)
+	  rac_recy integer, -- Race recode Y (W, B, AI, API)
+	  origrecb integer, -- Origin Recode NHIA (HISPANIC, NON-HISP)
+	  codpub text, -- Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html)
+	  reg integer, -- SEER registry (minus 1500 so same as population file)
+	  CONSTRAINT seer_cancer_pk PRIMARY KEY (pubcsnum, seq_num),
+	  CONSTRAINT seer_cancer_asg_ck CHECK (
+			(age_sex_group >= 100 AND age_sex_group <= 121) OR 
+			(age_sex_group >= 200 AND age_sex_group <= 221) OR 
+			(age_sex_group IN (199, 299))
+		)
+	);	
     ```
   - SQL Server:
     ```SQL
-	CREATE TABLE rif_data.seer_cancer
+	CREATE TABLE rif_data.t_seer_cancer
 	(
 	  year integer NOT NULL, /* Year */
 	  cb_2014_us_nation_5m VARCHAR(200), /* United States to county level including territories */
@@ -910,24 +1259,30 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 	  codpub VARCHAR(200), /* Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html) */
 	  reg integer, /* SEER registry (minus 1500 so same as population file) */
 	  CONSTRAINT seer_cancer_pk PRIMARY KEY (pubcsnum, seq_num),
-	  CONSTRAINT seer_cancer_asg_ck CHECK (age_sex_group >= 100 AND age_sex_group <= 121 OR age_sex_group >= 200 AND age_sex_group <= 221 OR 
-			(age_sex_group IN (199, 299)))
+	  CONSTRAINT seer_cancer_asg_ck CHECK (
+			(age_sex_group >= 100 AND age_sex_group <= 121) OR 
+			(age_sex_group >= 200 AND age_sex_group <= 221) OR 
+			(age_sex_group IN (199, 299))
+		)
 	);	
+	GO
     ```
-* Create numerator views;
-  - Postgres:  
-    ```SQL
-    ```
-  - SQL Server:
-    ```SQL
-    ```
+* Create numerator views:  
+  ```SQL
+  --
+  -- Create a test view
+  --
+  CREATE OR REPLACE VIEW rif_data.seer_cancer AS 
+  SELECT * FROM rif_data.t_seer_cancer;
+  ```
 * Load CSV data into numerator table;
   - Postgres:  
     ```SQL
+	\copy rif_data.t_seer_cancer FROM 'seer_cancer.csv' WITH CSV HEADER;
     ```
   - SQL Server:
     ```SQL
-	BULK INSERT rif_data.seer_cancer
+	BULK INSERT rif_data.t_seer_cancer
 	FROM '$(pwd)/seer_cancer.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
 	WITH
 	(
@@ -940,67 +1295,110 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 * Check all numerator table data has been loaded;
   - Postgres:  
     ```SQL
+	SELECT COUNT(*) AS total FROM t_seer_cancer;
+	DO LANGUAGE plpgsql $$
+	DECLARE
+		c1 CURSOR FOR
+			SELECT COUNT(*) AS total
+			  FROM t_seer_cancer;
+		c1_rec RECORD;
+	BEGIN
+		OPEN c1;
+		FETCH c1 INTO c1_rec;
+		CLOSE c1;
+	--
+		IF c1_rec.total = 9176963 THEN
+			RAISE INFO 'Table: t_seer_cancer has % rows', c1_rec.total;
+		ELSE
+			RAISE EXCEPTION 'Table: t_seer_cancer has % rows; expecting 9176963', c1_rec.total;
+		END IF;
+	END;
+	$$;		
     ```
   - SQL Server:
     ```SQL
-	SELECT COUNT(*) AS total FROM rif_data.seer_cancer;
+	SELECT COUNT(*) AS total FROM rif_data.t_seer_cancer;
 	DECLARE c1 CURSOR FOR 
-		SELECT COUNT(*) AS total FROM rif_data.seer_cancer;
+		SELECT COUNT(*) AS total FROM rif_data.t_seer_cancer;
 	DECLARE @c1_total AS INTEGER;
 	OPEN c1;
 	FETCH NEXT FROM c1 INTO @c1_total;
 	IF @c1_total = 9176963
-		PRINT 'Table: seer_cancer has 9176963 rows';
+		PRINT 'Table: t_seer_cancer has 9176963 rows';
 	ELSE
-		RAISERROR('Table: seer_cancer has %i rows; expecting 9176963', 16, 1, @c1_total);
+		RAISERROR('Table: t_seer_cancer has %i rows; expecting 9176963', 16, 1, @c1_total);
 	CLOSE c1;
 	DEALLOCATE c1;
 	GO	
     ```
-* Add indexes to numerator table;
-  - Postgres:  
-    ```SQL
-    ```
-  - SQL Server:
-    ```SQL
+* Add indexes to numerator table:  
+  ```SQL
 	CREATE INDEX seer_cancer_age_sex_group
-	  ON rif_data.seer_cancer
+	  ON rif_data.t_seer_cancer
 	  (age_sex_group);
-	GO
 
 	CREATE INDEX seer_cancer_cb_2014_us_county_500k
-	  ON rif_data.seer_cancer
+	  ON rif_data.t_seer_cancer
 	  (cb_2014_us_county_500k);
-	GO
 	  
 	CREATE INDEX seer_cancer_cb_2014_us_nation_5m
-	  ON rif_data.seer_cancer
+	  ON rif_data.t_seer_cancer
 	  (cb_2014_us_nation_5m);
-	GO
 
 	CREATE INDEX seer_cancer_cb_2014_us_state_500k
-	  ON rif_data.seer_cancer
+	  ON rif_data.t_seer_cancer
 	  (cb_2014_us_state_500k);
-	GO
 
 	CREATE INDEX seer_cancer_icdot10v
-	  ON rif_data.seer_cancer
+	  ON rif_data.t_seer_cancer
 	  (icdot10v);
-	GO
 
 	CREATE INDEX seer_cancer_reg
-	  ON rif_data.seer_cancer
+	  ON rif_data.t_seer_cancer
 	  (reg);
-	GO
 
 	CREATE INDEX seer_cancer_year
-	  ON rif_data.seer_cancer
+	  ON rif_data.t_seer_cancer
 	  (year);
-	GO	
-    ```
+  ```
 * Comment numerator table and columns;
   - Postgres:  
     ```SQL
+	COMMENT ON TABLE rif_data.t_seer_cancer
+	  IS 'SEER Cancer data 1973-2013. 9 States in total';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.year IS 'Year';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.cb_2014_us_nation_5m IS 'United States to county level including territories';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.cb_2014_us_state_500k IS 'State geographic Names Information System (GNIS) code';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.age_sex_group IS 'RIF age_sex_group 1 (21 bands)';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.icdot10v IS 'ICD 10 site code - recoded from ICD-O-2 to 10';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.pubcsnum IS 'Patient ID';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.seq_num IS 'Sequence number';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.histo3v IS 'Histologic Type ICD-O-3';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.beho3v IS 'Behavior code ICD-O-3';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.rac_reca IS 'Race recode A (WHITE, BLACK, OTHER)';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.rac_recy IS 'Race recode Y (W, B, AI, API)';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.origrecb IS 'Origin Recode NHIA (HISPANIC, NON-HISP)';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.codpub IS 'Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html)';
+	COMMENT ON COLUMN rif_data.t_seer_cancer.reg IS 'SEER registry (minus 1500 so same as population file)';
+	 
+	COMMENT ON VIEW rif_data.seer_cancer
+	  IS 'SEER Cancer data 1973-2013 view test. 9 States in total';
+	COMMENT ON COLUMN rif_data.seer_cancer.year IS 'Year';
+	COMMENT ON COLUMN rif_data.seer_cancer.cb_2014_us_nation_5m IS 'United States to county level including territories';
+	COMMENT ON COLUMN rif_data.seer_cancer.cb_2014_us_state_500k IS 'State geographic Names Information System (GNIS) code';
+	COMMENT ON COLUMN rif_data.seer_cancer.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
+	COMMENT ON COLUMN rif_data.seer_cancer.age_sex_group IS 'RIF age_sex_group 1 (21 bands)';
+	COMMENT ON COLUMN rif_data.seer_cancer.icdot10v IS 'ICD 10 site code - recoded from ICD-O-2 to 10';
+	COMMENT ON COLUMN rif_data.seer_cancer.pubcsnum IS 'Patient ID';
+	COMMENT ON COLUMN rif_data.seer_cancer.seq_num IS 'Sequence number';
+	COMMENT ON COLUMN rif_data.seer_cancer.histo3v IS 'Histologic Type ICD-O-3';
+	COMMENT ON COLUMN rif_data.seer_cancer.beho3v IS 'Behavior code ICD-O-3';
+	COMMENT ON COLUMN rif_data.seer_cancer.rac_reca IS 'Race recode A (WHITE, BLACK, OTHER)';
+	COMMENT ON COLUMN rif_data.seer_cancer.rac_recy IS 'Race recode Y (W, B, AI, API)';
+	COMMENT ON COLUMN rif_data.seer_cancer.origrecb IS 'Origin Recode NHIA (HISPANIC, NON-HISP)';
+	COMMENT ON COLUMN rif_data.seer_cancer.codpub IS 'Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html)';
+	COMMENT ON COLUMN rif_data.seer_cancer.reg IS 'SEER registry (minus 1500 so same as population file)';
     ```
   - SQL Server:
     ```SQL
@@ -1008,126 +1406,235 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 		@name = N'MS_Description',   
 		@value = N'SEER Cancer data 1973-2013. 9 States in total', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer';
+		@level1type = N'Table', @level1name = 't_seer_cancer';
 	GO
 
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'Year', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'year';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'United States to county level including territories', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'cb_2014_us_nation_5m';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'State geographic Names Information System (GNIS) code', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'cb_2014_us_state_500k';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'cb_2014_us_county_500k';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'RIF age_sex_group 1 (21 bands)', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'age_sex_group';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'ICD 10 site code - recoded from ICD-O-2 to 10', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'icdot10v';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'Patient ID', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'pubcsnum';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'Sequence number', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'seq_num';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'Histologic Type ICD-O-3', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'histo3v';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'Behavior code ICD-O-3', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'beho3v';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'Race recode A (WHITE, BLACK, OTHER)', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'rac_reca';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'Race recode Y (W, B, AI, API)', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'rac_recy';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'Origin Recode NHIA (HISPANIC, NON-HISP)', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'origrecb';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html)', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'codpub';
 	GO
 	EXECUTE sp_addextendedproperty
 		@name = N'MS_Description',   
 		@value = N'SEER registry (minus 1500 so same as population file)', 
 		@level0type = N'Schema', @level0name = 'rif_data',  
-		@level1type = N'Table', @level1name = 'seer_cancer',
+		@level1type = N'Table', @level1name = 't_seer_cancer',
 		@level2type = N'Column', @level2name = 'reg';
-	GO	
+	GO
+
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'SEER Cancer data 1973-2013 test view. 9 States in total', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer';
+	GO
+
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Year', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'year';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'United States to county level including territories', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'cb_2014_us_nation_5m';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'State geographic Names Information System (GNIS) code', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'cb_2014_us_state_500k';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'cb_2014_us_county_500k';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'RIF age_sex_group 1 (21 bands)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'age_sex_group';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'ICD 10 site code - recoded from ICD-O-2 to 10', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'icdot10v';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Patient ID', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'pubcsnum';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Sequence number', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'seq_num';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Histologic Type ICD-O-3', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'histo3v';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Behavior code ICD-O-3', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'beho3v';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Race recode A (WHITE, BLACK, OTHER)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'rac_reca';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Race recode Y (W, B, AI, API)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'rac_recy';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Origin Recode NHIA (HISPANIC, NON-HISP)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'origrecb';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'codpub';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'SEER registry (minus 1500 so same as population file)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'View', @level1name = 'seer_cancer',
+		@level2type = N'Column', @level2name = 'reg';
+	GO
     ```
 * Grant grant access on numerator tables and views to an appropriate role;
     ```SQL
     GRANT SELECT ON rif_data.seer_cancer TO seer_user;
     ```
-* Setup numerator tables and views;
-  - Postgres:  
-    ```SQL
-    ```
-  - SQL Server:
-    ```SQL
-	INSERT INTO rif40.rif40_tables (
+* Setup numerator tables and views:
+  ```SQL
+  INSERT INTO rif40.rif40_tables (
 	   theme,
 	   table_name,
 	   description,
@@ -1158,7 +1665,6 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 	   'AGE_SEX_GROUP',		/* age_sex_group_field_name */
 	   1					/* age_group_id */
 	  FROM rif_data.seer_cancer;
-	GO
 
 	--
 	-- Setup ICD field (SEER_ICDOT10V) 
@@ -1173,7 +1679,6 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 	   'ICDOT10V' AS field_name,
 	   0 AS multiple_field_count
 	WHERE NOT EXISTS (SELECT outcome_group_name FROM  rif40.rif40_outcome_groups WHERE outcome_group_name = 'SEER_ICDOT10V');
-	GO
 
 	INSERT INTO rif40.rif40_table_outcomes (
 	   outcome_group_name,
@@ -1184,8 +1689,7 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 	   'SEER_CANCER',
 	   MIN(year) 
 	FROM rif_data.seer_cancer;
-	GO
-    ```
+  ```
 	
 ## 3.3 Denominator
 
@@ -1196,6 +1700,10 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 * Remove denominator setup data and tables;
   - Postgres:  
     ```SQL
+	DROP TABLE IF EXISTS rif_data.seer_population;
+
+	DELETE FROM rif40.rif40_tables 
+	WHERE table_name='SEER_POPULATION';	
     ```
   - SQL Server:
     ```SQL
@@ -1214,6 +1722,17 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 * Create denominator table;
   - Postgres:  
     ```SQL
+	CREATE TABLE rif_data.seer_population
+	(
+	  year integer NOT NULL, -- Year
+	  cb_2014_us_nation_5m text NOT NULL, -- United States to county level including territories
+	  cb_2014_us_state_500k text NOT NULL, -- State geographic Names Information System (GNIS) code
+	  cb_2014_us_county_500k text NOT NULL, -- County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.
+	  age_sex_group integer NOT NULL, -- RIF age_sex_group 1 (21 bands)
+	  population numeric, -- Population
+	  CONSTRAINT seer_population_pk PRIMARY KEY (year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group),
+	  CONSTRAINT seer_population_asg_ck CHECK (age_sex_group >= 100 AND age_sex_group <= 121 OR age_sex_group >= 200 AND age_sex_group <= 221)
+	);	
     ```
   - SQL Server:
     ```SQL
@@ -1234,6 +1753,7 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 * Load CSV data into denominator table;
   - Postgres:  
     ```SQL
+	\copy rif_data.seer_population FROM 'seer_population.csv' WITH CSV HEADER;
     ```
   - SQL Server:
     ```SQL
@@ -1250,19 +1770,38 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 * Check all denominator table data has been loaded;
   - Postgres:  
     ```SQL
+		SELECT COUNT(*) AS total FROM seer_population;
+	DO LANGUAGE plpgsql $$
+	DECLARE
+		c1 CURSOR FOR
+			SELECT COUNT(*) AS total
+			  FROM seer_population;
+		c1_rec RECORD;
+	BEGIN
+		OPEN c1;
+		FETCH c1 INTO c1_rec;
+		CLOSE c1;
+	--
+		IF c1_rec.total = 614360 THEN
+			RAISE INFO 'Table: seer_population has % rows', c1_rec.total;
+		ELSE
+			RAISE EXCEPTION 'Table: seer_population has % rows; expecting 614360', c1_rec.total;
+		END IF;
+	END;
+	$$;
     ```
   - SQL Server:
     ```SQL
-	SELECT COUNT(*) AS total FROM rif_data.cov_cb_2014_us_state_500k;
+	SELECT COUNT(*) AS total FROM rif_data.seer_population;
 	DECLARE c1 CURSOR FOR 
-		SELECT COUNT(*) AS total FROM rif_data.cov_cb_2014_us_state_500k;
+		SELECT COUNT(*) AS total FROM rif_data.seer_population;
 	DECLARE @c1_total AS INTEGER;
 	OPEN c1;
 	FETCH NEXT FROM c1 INTO @c1_total;
-	IF @c1_total = 2296
-		PRINT 'Table: cov_cb_2014_us_state_500k has 2296 rows';
+	IF @c1_total = 614360
+		PRINT 'Table: seer_population has 614360 rows';
 	ELSE
-		RAISERROR('Table: cov_cb_2014_us_state_500k has %i rows; expecting 2296', 16, 1, @c1_total);
+		RAISERROR('Table: seer_population has %i rows; expecting 614360', 16, 1, @c1_total);
 	CLOSE c1;
 	DEALLOCATE c1;
 	GO	
@@ -1270,44 +1809,42 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 * Convert denominator table to index organised table;
   - Postgres:  
     ```SQL
+	CLUSTER rif_data.seer_population USING seer_population_pk;
     ```
-  - SQL Server:
-    ```SQL
-    ```
-* Add additional indexes to denominator table;
-  - Postgres:  
-    ```SQL
-    ```
-  - SQL Server:
-    ```SQL
-	CREATE INDEX seer_population_age_sex_group
+  - SQL Server: not needed; automatically created as an index organised table
+* Add additional indexes to denominator table:
+  ```SQL
+  CREATE INDEX seer_population_age_sex_group
 	  ON rif_data.seer_population
 	  (age_sex_group);
-	GO
 
-	CREATE INDEX seer_population_cb_2014_us_county_500k
+  CREATE INDEX seer_population_cb_2014_us_county_500k
 	  ON rif_data.seer_population
 	  (cb_2014_us_county_500k);
-	GO
 
-	CREATE INDEX seer_population_cb_2014_us_nation_5m
+  CREATE INDEX seer_population_cb_2014_us_nation_5m
 	  ON rif_data.seer_population
 	  (cb_2014_us_nation_5m);
-	GO
 
-	CREATE INDEX seer_population_cb_2014_us_state_500k
+  CREATE INDEX seer_population_cb_2014_us_state_500k
 	  ON rif_data.seer_population
 	  (cb_2014_us_state_500k);
-	GO
 
-	CREATE INDEX seer_population_year
+  CREATE INDEX seer_population_year
 	  ON rif_data.seer_population
 	  (year);
-	GO	
-    ```
+  ```
 * Comment denominator table and columns;
   - Postgres:  
     ```SQL
+	COMMENT ON TABLE rif_data.seer_population
+	  IS 'SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States in total';
+	COMMENT ON COLUMN rif_data.seer_population.year IS 'Year';
+	COMMENT ON COLUMN rif_data.seer_population.cb_2014_us_nation_5m IS 'United States to county level including territories';
+	COMMENT ON COLUMN rif_data.seer_population.cb_2014_us_state_500k IS 'State geographic Names Information System (GNIS) code';
+	COMMENT ON COLUMN rif_data.seer_population.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
+	COMMENT ON COLUMN rif_data.seer_population.age_sex_group IS 'RIF age_sex_group 1 (21 bands)';
+	COMMENT ON COLUMN rif_data.seer_population.population IS 'Population';	
     ```
   - SQL Server:
     ```SQL
@@ -1358,13 +1895,9 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
   ```SQL
   GRANT SELECT ON rif_data.seer_population TO seer_user;
   ```
-* Setup denominator tables and views;
-  - Postgres:  
-    ```SQL
-    ```
-  - SQL Server:
-    ```SQL
-	INSERT INTO rif40.rif40_tables (
+* Setup denominator tables and views:
+  ```SQL
+  INSERT INTO rif40.rif40_tables (
 	   theme,
 	   table_name,
 	   description,
@@ -1394,9 +1927,8 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 	   NULL,			/* age_group_field_name */
 	   'AGE_SEX_GROUP',	/* age_sex_group_field_name */
 	   1				/* age_group_id */
-	FROM rif_data.seer_population;
-	GO	
-    ```
+	FROM rif_data.seer_population;	
+  ```
 
 ## 3.4 Covariates
 
@@ -1446,6 +1978,21 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 		pct_black_quintile								INTEGER,
 		CONSTRAINT cov_cb_2014_us_county_500k_pkey PRIMARY KEY (year, cb_2014_us_county_500k)
     );
+	CREATE TABLE rif_data.cov_cb_2014_us_state_500k (
+	  year integer NOT NULL, -- Year
+	  cb_2014_us_state_500k character varying(30) NOT NULL, -- Geolevel name
+	  areaname					 						character varying(200),
+	  total_poverty_all_ages							INTEGER,
+	  pct_poverty_all_ages								NUMERIC,
+	  pct_poverty_0_17									NUMERIC,
+	  pct_poverty_related_5_17							NUMERIC,
+	  median_household_income							NUMERIC,
+	  median_hh_income_quin								INTEGER,
+	  med_pct_not_in_pov_quin							INTEGER,
+	  med_pct_not_in_pov_0_17_quin						INTEGER,
+	  med_pct_not_in_pov_5_17r_quin						INTEGER,
+	  CONSTRAINT cov_cb_2014_us_state_500k_pkey PRIMARY KEY (year, cb_2014_us_state_500k)
+	);	
     ```
   - SQL Server:
     ```SQL
@@ -1467,12 +2014,29 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 	  CONSTRAINT cov_cb_2014_us_county_500k_pkey PRIMARY KEY (year, cb_2014_us_county_500k)
 	);
 	GO	
+	CREATE TABLE rif_data.cov_cb_2014_us_state_500k (
+	  year integer NOT NULL,
+	  cb_2014_us_state_500k VARCHAR(30) NOT NULL, 
+	  areaname					 						VARCHAR(200),
+	  total_poverty_all_ages							NUMERIC,
+	  pct_poverty_all_ages								NUMERIC,
+	  pct_poverty_0_17									NUMERIC,
+	  pct_poverty_related_5_17							NUMERIC,
+	  median_household_income							NUMERIC,
+	  median_hh_income_quin								INTEGER,
+	  med_pct_not_in_pov_quin							INTEGER,
+	  med_pct_not_in_pov_0_17_quin						INTEGER,
+	  med_pct_not_in_pov_5_17r_quin						INTEGER,
+	  CONSTRAINT cov_cb_2014_us_state_500k_pkey PRIMARY KEY (year, cb_2014_us_state_500k)
+	);
+	GO	
 	```
 
 * Load CSV data into covariate table;
   - Postgres: 
     ```SQL
     \copy cov_cb_2014_us_county_500k FROM 'cov_cb_2014_us_county_500k.csv' WITH CSV HEADER;
+	\copy cov_cb_2014_us_state_500k FROM 'cov_cb_2014_us_state_500k.csv' WITH CSV HEADER;
     ```
   - SQL Server:
     ```SQL
@@ -1485,6 +2049,15 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 		TABLOCK					-- Table lock
 	);
 	GO	
+	BULK INSERT rif_data.cov_cb_2014_us_state_500k
+	FROM '$(pwd)/cov_cb_2014_us_state_500k.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+	WITH
+	(
+		FIRSTROW = 2,
+		FORMATFILE = '$(pwd)/cov_cb_2014_us_state_500k.fmt',		-- Use a format file
+		TABLOCK					-- Table lock
+	);
+	GO
 	```
 * Check all covariate table data has been loaded;
   - Postgres:  
@@ -1512,6 +2085,27 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 		END IF;
     END;
     $$;
+	
+	SELECT COUNT(*) AS total FROM cov_cb_2014_us_state_500k;
+	
+	DO LANGUAGE plpgsql $$
+	DECLARE
+		c1 CURSOR FOR
+			SELECT COUNT(*) AS total
+			  FROM cov_cb_2014_us_state_500k;
+		c1_rec RECORD;
+	BEGIN
+		OPEN c1;
+		FETCH c1 INTO c1_rec;
+		CLOSE c1;
+	--
+		IF c1_rec.total = 2296 THEN
+			RAISE INFO 'Table: cov_cb_2014_us_state_500k has % rows', c1_rec.total;
+		ELSE
+			RAISE EXCEPTION 'Table: cov_cb_2014_us_state_500k has % rows; expecting 2296', c1_rec.total;
+		END IF;
+	END;
+	$$;
     ```
   - SQL Server:
     ```SQL
@@ -1519,6 +2113,7 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
     -- Check rowcount
     --
 	SELECT COUNT(*) AS total FROM rif_data.cov_cb_2014_us_county_500k;
+	
 	DECLARE c1 CURSOR FOR 
 		SELECT COUNT(*) AS total FROM rif_data.cov_cb_2014_us_county_500k;
 	DECLARE @c1_total AS INTEGER;
@@ -1528,6 +2123,21 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 		PRINT 'Table: cov_cb_2014_us_county_500k has 132553 rows';
 	ELSE
 		RAISERROR('Table: cov_cb_2014_us_county_500k has %i rows; expecting 132553', 16, 1, @c1_total);
+	CLOSE c1;
+	DEALLOCATE c1;
+	GO
+	
+	SELECT COUNT(*) AS total FROM rif_data.cov_cb_2014_us_state_500k;
+	
+	DECLARE c1 CURSOR FOR 
+		SELECT COUNT(*) AS total FROM rif_data.cov_cb_2014_us_state_500k;
+	DECLARE @c1_total AS INTEGER;
+	OPEN c1;
+	FETCH NEXT FROM c1 INTO @c1_total;
+	IF @c1_total = 2296
+		PRINT 'Table: cov_cb_2014_us_state_500k has 2296 rows';
+	ELSE
+		RAISERROR('Table: cov_cb_2014_us_state_500k has %i rows; expecting 2296', 16, 1, @c1_total);
 	CLOSE c1;
 	DEALLOCATE c1;
 	GO	
@@ -1540,6 +2150,7 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 	-- Convert to index organised table
 	--
 	CLUSTER rif_data.cov_cb_2014_us_county_500k USING cov_cb_2014_us_county_500k_pkey;
+	CLUSTER rif_data.cov_cb_2014_us_state_500k USING cov_cb_2014_us_state_500k_pkey;
     ```
   - SQL Server: not needed; automatically created as an index organised table
 
@@ -1562,6 +2173,20 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
     COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
     COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_white_quintile IS '% White quintile (1=least white, 5=most)'; 
     COMMENT ON COLUMN rif_data.cov_cb_2014_us_county_500k.pct_black_quintile IS '% Black quintile (1=least black, 5=most)';
+
+	COMMENT ON TABLE rif_data.cov_cb_2014_us_state_500k
+	  IS 'Example covariate table for: The State at a scale of 1:500,000';
+	COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.year IS 'Year';
+	COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.cb_2014_us_state_500k IS 'State geographic Names Information System (GNIS) code';
+	COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.total_poverty_all_ages IS 'Estimate of people of all ages in poverty';
+	COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.pct_poverty_all_ages IS 'Estimate percent of people of all ages in poverty';
+	COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
+	COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
+	COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.median_household_income IS 'Estimate of median household income';
+	COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
+	COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
+	COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
+	COMMENT ON COLUMN rif_data.cov_cb_2014_us_state_500k.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)'; 
     ```
   - SQL Server:
     ```SQL
@@ -1670,6 +2295,98 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 		@level1type = N'Table', @level1name = 'cov_cb_2014_us_county_500k',
 		@level2type = N'Column', @level2name = 'pct_black_quintile';
 	GO	
+	
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Example covariate table for: The State at a scale of 1:500,000', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_state_500k';
+	GO
+
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Year', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_state_500k',
+		@level2type = N'Column', @level2name = 'year';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'State geographic Names Information System (GNIS) code', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_state_500k',
+		@level2type = N'Column', @level2name = 'cb_2014_us_state_500k';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Area (county) name', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_state_500k',
+		@level2type = N'Column', @level2name = 'areaname';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Estimate of people of all ages in poverty', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_state_500k',
+		@level2type = N'Column', @level2name = 'total_poverty_all_ages';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Estimate percent of people of all ages in poverty', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_state_500k',
+		@level2type = N'Column', @level2name = 'pct_poverty_all_ages';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Estimated percent of people age 0-17 in poverty', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_state_500k',
+		@level2type = N'Column', @level2name = 'pct_poverty_0_17';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Estimated percent of related children age 5-17 in families in poverty', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_state_500k',
+		@level2type = N'Column', @level2name = 'pct_poverty_related_5_17';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Estimate of median household income', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_state_500k',
+		@level2type = N'Column', @level2name = 'median_household_income';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Quintile: estimate of median household income (1=most deprived, 5=least)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_state_500k',
+		@level2type = N'Column', @level2name = 'median_hh_income_quin';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_state_500k',
+		@level2type = N'Column', @level2name = 'med_pct_not_in_pov_quin';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_state_500k',
+		@level2type = N'Column', @level2name = 'med_pct_not_in_pov_0_17_quin';
+	GO
+	EXECUTE sp_addextendedproperty
+		@name = N'MS_Description',   
+		@value = N'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)', 
+		@level0type = N'Schema', @level0name = 'rif_data',  
+		@level1type = N'Table', @level1name = 'cov_cb_2014_us_state_500k',
+		@level2type = N'Column', @level2name = 'med_pct_not_in_pov_5_17r_quin';
+	GO	
 	```
 
 * Grant grant access on covariate tables and views to an appropriate role:
@@ -1679,6 +2396,7 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
   -- * The role SEER_USER needs to be created by an administrator
   --
   GRANT SELECT ON rif_data.cov_cb_2014_us_county_500k TO seer_user;  
+  GRANT SELECT ON rif_data.cov_cb_2014_us_state_500k TO seer_user;
   ```
 
 # 4. Information Governance

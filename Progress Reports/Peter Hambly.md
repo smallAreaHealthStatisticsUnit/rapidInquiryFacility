@@ -2228,4 +2228,11 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 * Data loading documentation; 
 * Database administration manual;
 * Merge R fixes;
-* RIF meeting;
+* RIF meeting:
+  * Will complete data loading manual and partial database administration guide [sections 2 and 3, PG 4]; then start on tile-maker;
+  * Auto setup of R/tomcat environment and path to be added later;
+  * Fixing risk analysis front end issues is a priority. Shapefile functionality needs to be investigated.
+    Circles to not be saved as geojson; arbitary shapes and plumes probably will. Which shapefle reading
+    library has been used (Mike Bostock's?) needs to be determined. Method for determining geographic centroids
+	(hopefully the ones built-in to the geoJSON)
+  * Need for population weighted centroids: test on England data in 6-8 weeks time;
