@@ -2,11 +2,7 @@ package rifServices.test.services;
 
 import java.util.ArrayList;
 
-import org.junit.After;
-import org.junit.Before;
-
 import rifGenericLibrary.businessConceptLayer.User;
-import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.util.FieldValidationUtility;
 import rifServices.businessConceptLayer.GeoLevelArea;
 import rifServices.businessConceptLayer.GeoLevelAttributeSource;
@@ -20,8 +16,7 @@ import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.businessConceptLayer.Project;
 import rifServices.businessConceptLayer.StudyResultRetrievalContext;
 import rifServices.businessConceptLayer.StudySummary;
-import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
-import rifServices.test.AbstractRIFTestCase;
+import rifServices.dataStorageLayer.common.AbstractRIFTestCase;
 
 public class CommonRIFServiceTestCase extends AbstractRIFTestCase {
 

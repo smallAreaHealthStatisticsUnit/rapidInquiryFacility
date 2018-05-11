@@ -6,7 +6,7 @@ import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.AdjustableCovariate;
 import rifServices.businessConceptLayer.CovariateType;
 import rifServices.system.RIFServiceError;
-import rifServices.test.AbstractRIFTestCase;
+import rifServices.dataStorageLayer.common.AbstractRIFTestCase;
 import static org.junit.Assert.*;
 
 import org.junit.Test;

@@ -11,9 +11,9 @@ import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
 import rifServices.dataStorageLayer.common.StudySubmissionService;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
-import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
+import rifServices.dataStorageLayer.common.TestRIFStudyServiceBundle;
 import rifServices.system.RIFServiceError;
-import rifServices.test.AbstractRIFTestCase;
+import rifServices.dataStorageLayer.common.AbstractRIFTestCase;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -22,7 +22,7 @@ import static org.junit.Assert.fail;
 public final class TestYearRangeYearInterval
 	extends AbstractRIFTestCase {
 
-	private MSSQLTestRIFStudyServiceBundle rifStudyServiceBundle;
+	private TestRIFStudyServiceBundle rifStudyServiceBundle;
 	private RIFStudySubmissionAPI service;
 
 	/** The master interval91. */
@@ -110,7 +110,7 @@ public final class TestYearRangeYearInterval
 		masterInterval949596 = YearInterval.newInstance("1994", "1996");
 		masterInterval959697 = YearInterval.newInstance("1995", "1997");
 
-		rifStudyServiceBundle = new MSSQLTestRIFStudyServiceBundle(
+		rifStudyServiceBundle = new TestRIFStudyServiceBundle(
 				resources,
 				new StudySubmissionService(),
 				new MSSQLTestRIFStudyRetrievalService());

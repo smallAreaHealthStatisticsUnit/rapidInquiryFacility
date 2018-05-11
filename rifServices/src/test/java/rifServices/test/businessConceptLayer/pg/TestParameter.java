@@ -5,7 +5,7 @@ import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.system.RIFGenericLibraryError;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
-import rifServices.test.AbstractRIFTestCase;
+import rifServices.dataStorageLayer.common.AbstractRIFTestCase;
 
 
 import static org.junit.Assert.*;

@@ -4,7 +4,7 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
 import rifServices.system.RIFServiceStartupOptions;
-import rifServices.test.AbstractRIFTestCase;
+import rifServices.dataStorageLayer.common.AbstractRIFTestCase;
 
 
 import static org.junit.Assert.*;
@@ -12,7 +12,6 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import rifServices.test.util.Bundle;
 
-import java.util.ListResourceBundle;
 import java.util.ResourceBundle;
 
 

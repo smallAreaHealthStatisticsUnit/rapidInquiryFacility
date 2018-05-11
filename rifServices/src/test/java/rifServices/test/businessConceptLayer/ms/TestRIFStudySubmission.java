@@ -2,13 +2,12 @@ package rifServices.test.businessConceptLayer.ms;
 
 
 
-import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.*;
 import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
-import rifServices.test.AbstractRIFTestCase;
+import rifServices.dataStorageLayer.common.AbstractRIFTestCase;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -110,8 +109,6 @@ public final class TestRIFStudySubmission
 		masterRIFStudySubmission.addCalculationMethod(generator.createSampleHETMethod());
 		masterRIFStudySubmission.addCalculationMethod(generator.createSampleBYMMethod());	
 		masterRIFStudySubmission.setJobSubmissionTime(new Date());
-		
-		User testUser = User.newInstance("kgarwood", "11.111.11.228");
 		
 		DiseaseMappingStudy diseaseMappingStudy
 			= generator.createSampleDiseaseMappingStudy();

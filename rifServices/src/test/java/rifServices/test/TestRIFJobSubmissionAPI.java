@@ -2,7 +2,7 @@ package rifServices.test;
 
 import org.junit.Test;
 
-
+import rifServices.dataStorageLayer.common.AbstractRIFTestCase;
 
 /**
  *

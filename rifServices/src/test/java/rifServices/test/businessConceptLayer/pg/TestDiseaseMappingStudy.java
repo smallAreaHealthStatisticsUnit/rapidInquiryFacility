@@ -20,7 +20,7 @@ import rifServices.businessConceptLayer.MapArea;
 import rifServices.businessConceptLayer.NumeratorDenominatorPair;
 import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
-import rifServices.test.AbstractRIFTestCase;
+import rifServices.dataStorageLayer.common.AbstractRIFTestCase;
 
 import static org.junit.Assert.fail;
 

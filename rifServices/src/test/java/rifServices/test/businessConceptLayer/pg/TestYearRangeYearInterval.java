@@ -10,10 +10,10 @@ import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
 import rifServices.businessConceptLayer.YearInterval;
 import rifServices.businessConceptLayer.YearRange;
+import rifServices.dataStorageLayer.common.TestRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyRetrievalService;
-import rifServices.dataStorageLayer.pg.PGSQLTestRIFStudyServiceBundle;
 import rifServices.system.RIFServiceError;
-import rifServices.test.AbstractRIFTestCase;
+import rifServices.dataStorageLayer.common.AbstractRIFTestCase;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -93,7 +93,7 @@ public final class TestYearRangeYearInterval
 	// ==========================================
 	/** The service. */
 	
-	private PGSQLTestRIFStudyServiceBundle rifStudyServiceBundle;
+	private TestRIFStudyServiceBundle rifStudyServiceBundle;
 	private RIFStudySubmissionAPI service;
 
 	
@@ -187,12 +187,12 @@ public final class TestYearRangeYearInterval
 	}
 
 	@Before
-	public void setup() {
+	public void setup() throws RIFServiceException {
 
 		// Make sure the mocks defined in the parent are created before we try to use them.
 		super.setup();
 		try {
-			rifStudyServiceBundle = new PGSQLTestRIFStudyServiceBundle(
+			rifStudyServiceBundle = new TestRIFStudyServiceBundle(
 					resources,
 					submission,
 					new PGSQLTestRIFStudyRetrievalService());

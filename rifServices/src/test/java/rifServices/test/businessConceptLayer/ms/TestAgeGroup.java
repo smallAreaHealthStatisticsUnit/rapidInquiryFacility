@@ -3,7 +3,7 @@ package rifServices.test.businessConceptLayer.ms;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.system.RIFServiceError;
-import rifServices.test.AbstractRIFTestCase;
+import rifServices.dataStorageLayer.common.AbstractRIFTestCase;
 import rifServices.businessConceptLayer.AgeGroup;
 import static org.junit.Assert.*;
 

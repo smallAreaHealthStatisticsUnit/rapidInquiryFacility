@@ -5,9 +5,10 @@ import rifGenericLibrary.businessConceptLayer.Parameter;
 import rifGenericLibrary.system.RIFServiceException;
 import rifGenericLibrary.system.RIFServiceSecurityException;
 import rifServices.businessConceptLayer.CalculationMethod;
+import rifServices.dataStorageLayer.common.AbstractRIFTestCase;
 import rifServices.dataStorageLayer.common.SampleTestObjectGenerator;
 import rifServices.system.RIFServiceError;
-import rifServices.test.*;
+
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -77,8 +78,8 @@ import org.junit.Test;
  *
  */
 
-public final class TestCalculationMethod 
-	extends AbstractRIFTestCase {
+public final class TestCalculationMethod
+		extends AbstractRIFTestCase {
 
 	// ==========================================
 	// Section Constants

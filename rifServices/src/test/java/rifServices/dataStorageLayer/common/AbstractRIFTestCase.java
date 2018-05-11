@@ -1,4 +1,4 @@
-package rifServices.test;
+package rifServices.dataStorageLayer.common;
 
 import java.util.ArrayList;
 
@@ -18,11 +18,13 @@ import rifServices.dataStorageLayer.common.SQLManager;
 import rifServices.dataStorageLayer.common.ServiceBundle;
 import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.StudyExtractManager;
-import rifServices.dataStorageLayer.common.SubmissionManager;
 import rifServices.dataStorageLayer.common.StudySubmissionService;
+import rifServices.dataStorageLayer.common.SubmissionManager;
+import rifServices.dataStorageLayer.common.TestRIFStudyServiceBundle;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
-import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
 import rifServices.system.RIFServiceStartupOptions;
+import rifServices.test.util.Bundle;
+import rifServices.test.util.MockSqlManager;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
@@ -45,7 +47,10 @@ public class AbstractRIFTestCase {
 	HealthOutcomeManager healthOutcomeManager;
 
 	@Mock
-	RIFServiceStartupOptions options;
+	private RIFServiceStartupOptions options;
+
+	@Mock
+	RIFContextManager contextManager;
 
 	protected RIFStudySubmissionAPI rifStudySubmissionService;
 	protected RIFStudyResultRetrievalAPI rifStudyRetrievalService;
@@ -68,9 +73,15 @@ public class AbstractRIFTestCase {
 	}
 
 	@Before
-	public void setup() {
+	public void setup() throws RIFServiceException {
 
 		MockitoAnnotations.initMocks(this);
+
+		// resources = ServiceResources.newInstance(RIFServiceStartupOptions.newInstance(
+		// 		false, false, new Bundle()));
+		// sqlMgr = resources.getSqlConnectionManager();
+		// sqlMgr = new MockSqlManager(options);
+		// sqlMgr.login("kgarwood", "");
 
 		when(resources.getSqlConnectionManager()).thenReturn(sqlMgr);
 		when(sqlMgr.userExists(validUser.getUserID())).thenReturn(true);
@@ -78,6 +89,7 @@ public class AbstractRIFTestCase {
 		when(resources.getSQLStudyExtractManager()).thenReturn(extractMgr);
 		when(resources.getHealthOutcomeManager()).thenReturn(healthOutcomeManager);
 		when(resources.getRIFServiceStartupOptions()).thenReturn(options);
+		when(resources.getSQLRIFContextManager()).thenReturn(contextManager);
 		when(options.getRifDatabaseType()).thenReturn(DatabaseType.POSTGRESQL); // Shouldn't matter.
 
 		initialiseService(resources);
@@ -136,7 +148,7 @@ public class AbstractRIFTestCase {
 
 	protected void initialiseService(ServiceResources resources) {
 
-		rifServiceBundle = new MSSQLTestRIFStudyServiceBundle(
+		rifServiceBundle = new TestRIFStudyServiceBundle(
 				resources,
 				new StudySubmissionService(),
 				new MSSQLTestRIFStudyRetrievalService());

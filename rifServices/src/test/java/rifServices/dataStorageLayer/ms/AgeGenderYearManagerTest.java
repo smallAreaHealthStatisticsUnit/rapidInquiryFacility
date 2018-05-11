@@ -42,7 +42,7 @@ public final class AgeGenderYearManagerTest extends CommonRIFServiceTestCase {
 	}
 
 	@Before
-	public void setup() {
+	public void setup() throws RIFServiceException {
 
 		super.setup();
 		when(resources.getRIFServiceStartupOptions()).thenReturn(options);
