@@ -23,7 +23,7 @@ public final class GetGeographies
 	}
 
 	@Test
-	// @Ignore
+	@Ignore
 	public void getGeographies_COMMON1() throws RIFServiceException {
 
 		//test check

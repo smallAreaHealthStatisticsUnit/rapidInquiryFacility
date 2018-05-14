@@ -608,7 +608,7 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 		HealthCodeTaxonomy healthCodeTaxonomy
 			= HealthCodeTaxonomy.createCopy(_healthCodeTaxonomy);
 
-		ArrayList<HealthCode> results = new ArrayList<HealthCode>(); 
+		ArrayList<HealthCode> results = new ArrayList<>();
 		Connection connection = null;
 		try {
 			//Part II: Check for empty parameter values
