@@ -33,11 +33,10 @@
 
 /*
  * SERVICE for all requests to the middleware
- * Note that when the middleware is refactored the DatabaseService.getDatabase() should not be needed in the URLS
  */
 angular.module("RIF")
-        .service('user', ['$http', 'DatabaseService', 'servicesConfig', 
-            function ($http, DatabaseService, servicesConfig) {
+        .service('user', ['$http', 'servicesConfig', 
+            function ($http, servicesConfig) {
 
                 var self = this;
                 self.currentUser = "";
@@ -87,11 +86,6 @@ angular.module("RIF")
                     //http://localhost:8080/rifServices/studySubmission/isLoggedIn?userID=kgarwood
                     //[{"result":"true"}]
                     return $http.get(servicesConfig.studySubmissionURL + 'isLoggedIn?userID=' + username);
-                };
-                self.getDatabaseType = function (username) {
-                    //http://localhost:8080/rifServices/studySubmission/ms/getDatabaseType?userID=peter
-                    //jdbc:sqlserver
-                    return $http.get(servicesConfig.studySubmissionURL + 'ms/' + 'getDatabaseType?userID=' + username);
                 };
                 self.getFrontEndParameters = function (username) {
                     //http://localhost:8080/rifServices/studySubmission/ms/getFrontEndParameters?userID=peter
@@ -185,53 +179,53 @@ angular.module("RIF")
                 self.getCurrentStatusAllStudies = function (username) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/getCurrentStatusAllStudies?userID=kgarwood              
                     //{"smoothed_results_header":["study_id","study_name","study_description","study_state","message","date"]
-                    return $http.get(servicesConfig.studyResultRetrievalURL + DatabaseService.getDatabase() + 'getCurrentStatusAllStudies?userID=' + username, config);
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getCurrentStatusAllStudies?userID=' + username, config);
                 };
                 //results for viewer
                 self.getSmoothedResults = function (username, studyID, sex) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/getSmoothedResults?userID=kgarwood&studyID=1&sex=1
                     //{"smoothed_results_header":["area_id","band_id","genders","observed","...
-                    return $http.get(servicesConfig.studyResultRetrievalURL + DatabaseService.getDatabase() + 'getSmoothedResults?userID=' + username + '&studyID=' + studyID + '&sex=' + sex, config);
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getSmoothedResults?userID=' + username + '&studyID=' + studyID + '&sex=' + sex, config);
                 };
                 self.getAllPopulationPyramidData = function (username, studyID, year) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/getAllPopulationPyramidData?userID=kgarwood&studyID=1&year=1990
                     //{smoothed_results_header:{population_label,males,females}smoothed_results:{{population_la...
-                    return $http.get(servicesConfig.studyResultRetrievalURL + DatabaseService.getDatabase() + 'getAllPopulationPyramidData?userID=' + username + '&studyID=' + studyID + '&year=' + year, config);
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getAllPopulationPyramidData?userID=' + username + '&studyID=' + studyID + '&year=' + year, config);
                 };
                 //get info on a completed study
                 self.getYearsForStudy = function (username, studyID, leaflet) {
                     config.leaflet = leaflet;
                     //http://localhost:8080/rifServices/studyResultRetrieval/getYearsForStudy?userID=kgarwood&study_id=1
                     //{"years{":["1989","1990","1991","1992","1993","1994","1995","1996"]}
-                    return $http.get(servicesConfig.studyResultRetrievalURL + DatabaseService.getDatabase() + 'getYearsForStudy?userID=' + username + '&study_id=' + studyID, config);
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getYearsForStudy?userID=' + username + '&study_id=' + studyID, config);
                 };
                 self.getSexesForStudy = function (username, studyID, leaflet) {
                     config.leaflet = leaflet;
                     //http://localhost:8080/rifServices/studyResultRetrieval/getSexesForStudy?userID=kgarwood&study_id=1
                     //[{"names":["Males","Females","Both"]}]
-                    return $http.get(servicesConfig.studyResultRetrievalURL + DatabaseService.getDatabase() + 'getSexesForStudy?userID=' + username + '&study_id=' + studyID, config);
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getSexesForStudy?userID=' + username + '&study_id=' + studyID, config);
                 };
                 self.getGeographyAndLevelForStudy = function (username, studyID) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/getGeographyAndLevelForStudy?userID=kgarwood&studyID=239
                     //[["SAHSU","LEVEL3"]]
-                    return $http.get(servicesConfig.studyResultRetrievalURL + DatabaseService.getDatabase() + 'getGeographyAndLevelForStudy?userID=' + username + '&studyID=' + studyID);
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getGeographyAndLevelForStudy?userID=' + username + '&studyID=' + studyID);
                 };
                 //get the map tiles from Tile-Maker
                 //returns a string not a promise, is resolved in Leaflet GridLayer
                 self.getTileMakerTiles = function (username, geography, geoLevel) {
                     //'http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerTiles?userID=kgarwood&geographyName=SAHSU&geoLevelSelectName=LEVEL2&zoomlevel={z}&x={x}&y={y}';
-                    return (servicesConfig.studyResultRetrievalURL + DatabaseService.getDatabase() + 'getTileMakerTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
+                    return (servicesConfig.studyResultRetrievalURL + 'getTileMakerTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
                             '&zoomlevel={z}&x={x}&y={y}');
                 };
                 //get 'global' geography for attribute table
                 self.getTileMakerTilesAttributes = function (username, geography, geoLevel) {
-                    return $http.get(servicesConfig.studyResultRetrievalURL + DatabaseService.getDatabase() + 'getTileMakerTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getTileMakerTiles?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel +
                             '&zoomlevel=1&x=0&y=0', config);
                 };
                 //get all the centroids for the current geolevel
                 self.getTileMakerCentroids = function (username, geography, geoLevel) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/pg/getTileMakerCentroids?userID=dwmorley&geographyName=SAHSULAND&geoLevelSelectName=SAHSU_GRD_LEVEL4
-                    return $http.get(servicesConfig.studyResultRetrievalURL + DatabaseService.getDatabase() + 'getTileMakerCentroids?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel);
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getTileMakerCentroids?userID=' + username + '&geographyName=' + geography + '&geoLevelSelectName=' + geoLevel);
                 };
 
                 //get areas used in a completed study (recycled faulty KG method)
@@ -242,17 +236,17 @@ angular.module("RIF")
                 //get details of a completed study
                 self.getDetailsForProcessedStudy = function (username, studyID) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/pg/getDetailsForProcessedStudy?userID=dwmorley&studyID=35
-                    return $http.get(servicesConfig.studyResultRetrievalURL + DatabaseService.getDatabase() + 'getDetailsForProcessedStudy?userID=' + username + '&studyID=' + studyID);
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getDetailsForProcessedStudy?userID=' + username + '&studyID=' + studyID);
                 };
                 //get health codes used in a completed study
                 self.getHealthCodesForProcessedStudy = function (username, studyID) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/pg/getHealthCodesForProcessedStudy?userID=dwmorley&studyID=35
-                    return $http.get(servicesConfig.studyResultRetrievalURL + DatabaseService.getDatabase() + 'getHealthCodesForProcessedStudy?userID=' + username + '&studyID=' + studyID);
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getHealthCodesForProcessedStudy?userID=' + username + '&studyID=' + studyID);
                 };
                 //get map or extract table preview of a completed study
                 self.getStudyTableForProcessedStudy = function (username, studyID, type, stt, stp) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/pg/getStudyTableForProcessedStudy?userID=dwmorley&studyID=35&type=extract&stt=2&stp=100
-                    return $http.get(servicesConfig.studyResultRetrievalURL + DatabaseService.getDatabase() + 'getStudyTableForProcessedStudy?userID=' + username + '&studyID=' + studyID + 
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getStudyTableForProcessedStudy?userID=' + username + '&studyID=' + studyID + 
                             '&type=' + type + '&stt=' + stt + '&stp=' + stp);
                 };
 

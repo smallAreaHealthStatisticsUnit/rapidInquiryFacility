@@ -1,4 +1,4 @@
-package rifServices.restfulWebServices.pg;
+package rifServices.restfulWebServices;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
@@ -9,10 +9,10 @@ import java.util.HashSet;
 import rifGenericLibrary.util.RIFLogger;
 import rifServices.restfulWebServices.StudyResultRetrievalServiceResource;
 
-@ApplicationPath("/studyResultRetrieval/pg")
-public class PGSQLRIFStudyResultRetrievalWebServiceApplication extends Application {
+@ApplicationPath("/studyResultRetrieval")
+public class StudyResultRetrievalService extends Application {
 
-	public PGSQLRIFStudyResultRetrievalWebServiceApplication() {
+	public StudyResultRetrievalService() {
 		final RIFLogger rifLogger = RIFLogger.getLogger();
 		rifLogger.info(this.getClass(), "!!!!!!!!!!!!!!!!!!!!! "
 		                                + getClass().getSimpleName() + " !!!!!!");
