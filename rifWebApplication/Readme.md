@@ -368,7 +368,7 @@ The RIF middleware now uses Log4j version 2 for logging. The configuration file 
   
   1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
   2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the *rifServices* middleware: RIF_middleware.log
-  3. The taxonomy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the *taxonomyServices* middleware: TaxonomyLogger.log
+  3. The taxonomy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the *taxonomyservices* middleware: TaxonomyLogger.log
   4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the *rifServices* front end logger: FrontEndLogger.log
   5. "Other" for all other logger output not the above: Other.log
 
@@ -840,7 +840,7 @@ or you will cause [jri.dll: Can't find dependent libraries](https://github.com/s
 Normally users will be supplied with pre built files in the *tomcat webapps* folder:
 
 * RIF middleware: rifServices.war
-* Taxonomy service (ICD10): taxonomyServices.war
+* Taxonomy service (ICD10): taxonomyservices.war
 * Front end: RIF4.7zip
 
 ## 2.1 Building Using Make
@@ -856,13 +856,13 @@ The following make targets are provided:
 * *all*: build targets
 * *install*: clean then all
 * *rifservice*: build rifServices.war target
-* *taxonomyService*: build taxonomyServices.war target
+* *taxonomyService*: build taxonomyservices.war target
 * *RIF4*: build RIF4.7z target
 
 To run a make target type *make <target>;e.g. *make install*.
 
 The following files are then built and copied into the rapidInquiryFacility directory: 
-*taxonomyServices.war*, *rifServices.war*, *RIF4.7z*
+*taxonomyservices.war*, *rifServices.war*, *RIF4.7z*
 
 **Make currently only works on Windows and requires the Mingw development kit and 7zip to be installed.**
 
@@ -871,7 +871,7 @@ The following files are then built and copied into the rapidInquiryFacility dire
 This method requires 7zip to be installed in *C:\Program Files\7-Zip\7z.exe*
 
 Run *java_build.bat* from the root of the github repository, 
-e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*. The files *taxonomyServices.war*, 
+e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*. The files *taxonomyservices.war*,
 *rifServices.war*, *RIF4.7z* are the end product.
 
 ```
@@ -988,10 +988,10 @@ uiryFacility\rifServices\0.0.1-SNAPSHOT\rifServices-0.0.1-SNAPSHOT.pom
 development team. 
 
 The order is important; the directories must be built in the order: rifGenericLibrary, rapidInquiryFacility, rifServices. It is always
-assumed you build taxonomyServices later. If you get a build failure try a *mvn clean* in each directory first; then retry with a 
+assumed you build taxonomyservices later. If you get a build failure try a *mvn clean* in each directory first; then retry with a
 *mvn install*.
 
-This method  does not build the *taxonomyServices* or the web application 7zip file.
+This method  does not build the *taxonomyservices* or the web application 7zip file.
 
 # 3. Installing Web Services in Tomcat
 
@@ -1048,7 +1048,7 @@ For a full ICD10 listing add the following SAHSU supplied files (in *Taxonomy se
 2) Build the Taxonomy Service using *maven*.
    Either: 
    - if you have *make* installed, in the top level github directory type *make taxonomyservice" as per Maven build instructions or
-   - Change to the taxonomyServices directory. In local RIF tree, go to ...rapidInquiryFacility/taxonomyServices, 
+   - Change to the taxonomyservices directory. In local RIF tree, go to ...rapidInquiryFacility/taxonomyservices,
    e.g. C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\taxonomyServices and type:
 
 	```
@@ -1076,7 +1076,7 @@ For a full ICD10 listing add the following SAHSU supplied files (in *Taxonomy se
 	12-Apr-2017 17:45:00.002 INFO [localhost-startStop-2] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\taxonomyServices.war has finished in 3,899 ms
 	```
 
-3) Copy ‘taxonomyServices.war’ from the *target* directory into the Tomcat webapps folder as with rifServices. 
+3) Copy ‘taxonomyservices.war’ from the *target* directory into the Tomcat webapps folder as with rifServices.
 =======
 * icdClaML2016ens.xml
 * TaxonomyServicesConfiguration.xml
@@ -1613,7 +1613,7 @@ The RIF middleware now uses Log4j version 2 for logging. The configuration file 
   
   1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
   2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the *rifServices* middleware: RIF_middleware.log
-  3. The taxonomy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the *taxonomyServices* middleware: TaxonomyLogger.log
+  3. The taxonomy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the *taxonomyservices* middleware: TaxonomyLogger.log
   4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the *rifServices* front end logger: FrontEndLogger.log
   5. "Other" for all other logger output not the above: Other.log
 
@@ -2220,10 +2220,10 @@ This fixes the error : "R BYM sahsuland fault\R BYM sahsuland fault - no covaria
 * If you have not already moved it then save the Java connector for the RifServices middleware: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties* 
   to *%CATALINA_HOME%\conf\RIFServiceStartupProperties.properties*;
 * Stop Tomcat;
-* Change directory to *%CATALINA_HOME%\webapps*; rename the .WAR files to .WAR.OLD; rename the rifServices and taxonomyServices trees to .old;
+* Change directory to *%CATALINA_HOME%\webapps*; rename the .WAR files to .WAR.OLD; rename the rifServices and taxonomyservices trees to .old;
 * Follow the instructions in 
 [section 3.1 for installing the web services](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#311-rif-services);
-* Start tomcat, check rifServices and taxonomyServices are unpacked and check they are running in the logs;
+* Start tomcat, check rifServices and taxonomyservices are unpacked and check they are running in the logs;
 * Restart tomcat;
 * When you are satisfied with the patch remove the .old files and directories in *%CATALINA_HOME%\webapps*.
 
