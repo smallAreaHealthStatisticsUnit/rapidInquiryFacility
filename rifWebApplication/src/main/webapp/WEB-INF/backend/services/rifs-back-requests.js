@@ -90,7 +90,7 @@ angular.module("RIF")
                 self.getFrontEndParameters = function (username) {
                     //http://localhost:8080/rifServices/studySubmission/ms/getFrontEndParameters?userID=peter
                     //JSON
-                    return $http.get(servicesConfig.studySubmissionURL + 'ms/' + 'getFrontEndParameters?userID=' + username);
+                    return $http.get(servicesConfig.studySubmissionURL + 'getFrontEndParameters?userID=' + username);
                 };
                 //Taxonomy services              
                 self.initialiseService = function () {
@@ -173,8 +173,8 @@ angular.module("RIF")
                 self.getAvailableCalculationMethods = function (username) {
                     //http://localhost:8080/rifServices/studySubmission/getAvailableCalculationMethods?userID=kgarwood
                     //[{"codeRoutineName":"car_r_procedure","prior":"Standard deviation","description":"Applies ...
-                };
                     return $http.get(servicesConfig.studySubmissionURL + 'getAvailableCalculationMethods?userID=' + username, config);
+                };
                 //status
                 self.getCurrentStatusAllStudies = function (username) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/getCurrentStatusAllStudies?userID=kgarwood              
@@ -246,7 +246,7 @@ angular.module("RIF")
                 //get map or extract table preview of a completed study
                 self.getStudyTableForProcessedStudy = function (username, studyID, type, stt, stp) {
                     //http://localhost:8080/rifServices/studyResultRetrieval/pg/getStudyTableForProcessedStudy?userID=dwmorley&studyID=35&type=extract&stt=2&stp=100
-                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getStudyTableForProcessedStudy?userID=' + username + '&studyID=' + studyID + 
+                    return $http.get(servicesConfig.studyResultRetrievalURL + 'getStudyTableForProcessedStudy?userID=' + username + '&studyID=' + studyID +
                             '&type=' + type + '&stt=' + stt + '&stp=' + stp);
                 };
 
@@ -264,12 +264,12 @@ angular.module("RIF")
 				//Get Extract Status - can Zip file be created/fetched
                self.getExtractStatus = function (username, studyID) {
                     //http://localhost:8080/rifServices/studySubmission/pg/getExtractStatus?userID=dwmorley&studyID=46
-                    return $http.get(servicesConfig.studySubmissionURL 'getExtractStatus?userID=' + username + '&studyID=' + studyID);
+                    return $http.get(servicesConfig.studySubmissionURL + 'getExtractStatus?userID=' + username + '&studyID=' + studyID);
                 };
 				// Get JSON study setup file
 				self.getJsonFile = function (username, studyID) {
                     //http://localhost:8080/rifServices/studySubmission/pg/getJsonFile?userID=dwmorley&studyID=46
-                    return $http.get(servicesConfig.studySubmissionURL 'getJsonFile?userID=' + username + '&studyID=' + studyID);
+                    return $http.get(servicesConfig.studySubmissionURL + 'getJsonFile?userID=' + username + '&studyID=' + studyID);
                 };     
 				
 				//Middleware logger for front end
@@ -283,7 +283,7 @@ angular.module("RIF")
 					actualTime,
 					relativeTime) {
                     //http://localhost:8080/rifServices/studySubmission/pg/rifFrontEndLogger?userID=dwmorley&messageType=INFO&browserType=XXX&message=Hello
-					var uri=servicesConfig.studySubmissionURL 'rifFrontEndLogger?userID=' + username +
+					var uri=servicesConfig.studySubmissionURL + 'rifFrontEndLogger?userID=' + username +
 						'&messageType=' + messageType + 
 						'&browserType=' + browserType + 
 						'&message=' + encodeURIComponent((message || "NO MESSAGE!"));
