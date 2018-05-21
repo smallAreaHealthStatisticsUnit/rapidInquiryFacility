@@ -193,13 +193,14 @@ Basic statement logging can be provided by the standard logging facility with th
 Postgres has an extension [pgAudit](https://github.com/pgaudit/pgaudit) which provides much more auditing, however the Enterprise DB installer does not include Postgres 
 extensions (apart from PostGIS). EnterpiseDB Postgres has its own auditing subsystem (*edb_audit), but this is is paid for item. To use pgAudit pgAudit must be compile from source
 
-To configure Postgres server [error reporting and logging](https://www.postgresql.org/docs/9.6/static/runtime-config-logging.html) set:
+To configure Postgres server [error reporting and logging](https://www.postgresql.org/docs/9.6/static/runtime-config-logging.html) set the following Postgres system parameters see
+[Postgres tuning](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#71-postgres) for details on how to set parameters:
 
 * ```log_statement = all```. The default is 'none';
-* ```Set log_min_error_statement = ERROR``` [default] or lower;
-* ```log_error_verbosity = VERBOSE```;
-* ```log_connections = TRUE```;
-* ```log_disconnections = TRUE```;
+* ```Set log_min_error_statement = error``` [default] or lower;
+* ```log_error_verbosity = verbose```;
+* ```log_connections = on```;
+* ```log_disconnections = on```;
 * ```log_destinstion = stderr, eventlog, csvlog```. Other choices are *csvlog* or syslog*
 
 Parameters can be set in the *postgresql.conf* file or on the server command line. This is stored in the database cluster's data directory, e.g. *C:\Program Files\PostgreSQL\9.6\data*. Beware, you can 
@@ -208,13 +209,57 @@ move the data directory to a solid state disk, mine is: * E:\Postgres\data*! Che
 
 If you are using CSV log files set:
 
-* ```logging_collector = TRUE```;
-* ```log_filename = postgresql-%Y-%m-%d.csv``` and ```log_rotation_age = 1440``` (in minutes) to provide a consistent, predictable naming scheme for your log files. This lets you predict what the file name will be and know 
+* ```logging_collector = on```;
+* ```log_filename = postgresql-%Y-%m-%d.log``` and ```log_rotation_age = 1440``` (in minutes) to provide a consistent, predictable naming scheme for your log files. This lets you predict what the file name will be and know 
   when an individual log file is complete and therefore ready to be imported. The log filename is in [strftime()](http://www.cplusplus.com/reference/ctime/strftime/) format; 
 * ```log_rotation_size = 0``` to disable size-based log rotation, as it makes the log file name difficult to predict;
-* ```log_truncate_on_rotation = TRUE``` to on so that old log data isn't mixed with the new in the same file.
+* ```log_truncate_on_rotation = on``` to on so that old log data isn't mixed with the new in the same file.
 
+Create a Postgres event log custom view, create a [custom event view](https://technet.microsoft.com/en-us/library/gg131917.aspx) in the Event Viewer. 
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/conf/postgres_event_filter_setup.png?raw=true "Postgres event log custom view")
+
+An XML setup file [postgres_event_log_custom_view.xml](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/conf/postgres_event_log_custom_view.xml) is also provided:
+```xml
+<ViewerConfig>
+	<QueryConfig>
+		<QueryParams>
+			<Simple>
+				<Channel>Application</Channel>
+				<RelativeTimeInfo>0</RelativeTimeInfo>
+				<Source>PostgreSQL</Source>
+				<BySource>True</BySource>
+			</Simple>
+		</QueryParams>
+		<QueryNode>
+			<Name>PostgreSQL</Name>
+			<Description>Postgres DB</Description>
+			<QueryList>
+				<Query Id="0" Path="Application">
+					<Select Path="Application">*[System[Provider[@Name='PostgreSQL']]]</Select>
+				</Query>
+			</QueryList>
+		</QueryNode>
+	</QueryConfig>
+</ViewerConfig>
+```
+
+An log file extract (postgresql-2018-05-21.log):
+```log
+2018-05-21 16:20:39 BST LOG:  00000: statement: select * from rif40_num_denom;
+2018-05-21 16:20:39 BST LOCATION:  exec_simple_query, postgres.c:927
+```
+
+Equivalent CSV file entry (postgresql-2018-05-21.csv):
+```csv
+2018-05-21 16:20:39.261 BST,"peter","sahsuland",9900,"::1:62022",5b02e3be.26ac,4,"",2018-05-21 16:20:30 BST,2/237,0,LOG,00000,"statement: select * from rif40_num_denom;",,,,,,,,"exec_simple_query, postgres.c:927","RIF (psql)"
+2
+```
  
+ 
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/conf/postgres_event_viewer_log.png?raw=true "Equivalent PostgreSQL Windows log entry entry")
+
+
 ### 4.1.2 SQL Server
   
 # 5. Backup and recovery  
