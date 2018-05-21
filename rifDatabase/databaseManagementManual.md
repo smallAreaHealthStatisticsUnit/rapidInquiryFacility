@@ -257,6 +257,7 @@ Equivalent CSV file entry (postgresql-2018-05-21.csv):
 ```
 
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_viewer_log.png?raw=true "Equivalent PostgreSQL Windows log entry entry")
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_viewer_log2.png?raw=true "Equivalent PostgreSQL Windows log entry entry")
 
 
 ### 4.1.2 SQL Server
