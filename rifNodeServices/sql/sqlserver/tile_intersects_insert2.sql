@@ -116,27 +116,27 @@ BEGIN
 				 WHERE @zoomlevel = b.zoomlevel
 			), x AS (
 				SELECT zoomlevel, z.IntValue AS x_series
-				  FROM a CROSS APPLY $(USERNAME).generate_series(x_mintile, x_maxtile, 1) z
+				  FROM a CROSS APPLY $(SQLCMDUSER).generate_series(x_mintile, x_maxtile, 1) z
 			), y AS (	 
 				SELECT zoomlevel, z.IntValue AS y_series	
-				  FROM a CROSS APPLY $(USERNAME).generate_series(y_mintile, y_maxtile, 1) z       
+				  FROM a CROSS APPLY $(SQLCMDUSER).generate_series(y_mintile, y_maxtile, 1) z       
 			), b AS (
 				SELECT x.zoomlevel, 
 					   x.x_series AS x, 
 					   y.y_series AS y,      
-					   $(USERNAME).tileMaker_tile2longitude(x.x_series, x.zoomlevel) AS xmin, 
-					   $(USERNAME).tileMaker_tile2latitude(y.y_series, x.zoomlevel) AS ymin,
-					   $(USERNAME).tileMaker_tile2longitude(x.x_series+1, x.zoomlevel) AS xmax, 
-					   $(USERNAME).tileMaker_tile2latitude(y.y_series+1, x.zoomlevel) AS ymax
+					   $(SQLCMDUSER).tileMaker_tile2longitude(x.x_series, x.zoomlevel) AS xmin, 
+					   $(SQLCMDUSER).tileMaker_tile2latitude(y.y_series, x.zoomlevel) AS ymin,
+					   $(SQLCMDUSER).tileMaker_tile2longitude(x.x_series+1, x.zoomlevel) AS xmax, 
+					   $(SQLCMDUSER).tileMaker_tile2latitude(y.y_series+1, x.zoomlevel) AS ymax
 				  FROM x, y /* Explicit cross join */
 				 WHERE x.zoomlevel = y.zoomlevel
 			) /* Calculate bounding box, parent X/Y min */
 			SELECT b.zoomlevel, 
 				   b.x,
 				   b.y, 
-				   $(USERNAME).tileMaker_STMakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326) AS bbox,
-				   $(USERNAME).tileMaker_latitude2tile(b.ymin, b.zoomlevel-1) AS parent_ymin,
-				   $(USERNAME).tileMaker_longitude2tile(b.xmin, b.zoomlevel-1) AS parent_xmin
+				   $(SQLCMDUSER).tileMaker_STMakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326) AS bbox,
+				   $(SQLCMDUSER).tileMaker_latitude2tile(b.ymin, b.zoomlevel-1) AS parent_ymin,
+				   $(SQLCMDUSER).tileMaker_longitude2tile(b.xmin, b.zoomlevel-1) AS parent_xmin
 			  INTO #temp2
 			  FROM b
 			 ORDER BY b.zoomlevel, b.x, b.y;
@@ -256,10 +256,10 @@ BEGIN
 				SELECT @zoomlevel AS zoomlevel, 
 					   b.geolevel_id, 
 					   b.areaid,
-					   $(USERNAME).tileMaker_latitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(1).STY  /* Ymin */, @zoomlevel) AS y_mintile,
-					   $(USERNAME).tileMaker_longitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(1).STX /* Xmin */, @zoomlevel) AS x_mintile,
-					   $(USERNAME).tileMaker_latitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(3).STY  /* Ymax */, @zoomlevel) AS y_maxtile,
-					   $(USERNAME).tileMaker_longitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(3).STX /* Xmax */, @zoomlevel) AS x_maxtile
+					   $(SQLCMDUSER).tileMaker_latitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(1).STY  /* Ymin */, @zoomlevel) AS y_mintile,
+					   $(SQLCMDUSER).tileMaker_longitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(1).STX /* Xmin */, @zoomlevel) AS x_mintile,
+					   $(SQLCMDUSER).tileMaker_latitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(3).STY  /* Ymax */, @zoomlevel) AS y_maxtile,
+					   $(SQLCMDUSER).tileMaker_longitude2tile(geometry::EnvelopeAggregate(bbox).STPointN(3).STX /* Xmax */, @zoomlevel) AS x_maxtile
 				   FROM b
 				  GROUP BY b.geolevel_id, 
 					   b.areaid
@@ -279,23 +279,23 @@ BEGIN
 					   c.geolevel_id, 
 					   c.areaid,
 					   z.IntValue AS x_series
-				  FROM c CROSS APPLY $(USERNAME).generate_series(x_mintile, x_maxtile, 1) z 
+				  FROM c CROSS APPLY $(SQLCMDUSER).generate_series(x_mintile, x_maxtile, 1) z 
 			), y AS (	 
 				SELECT c.zoomlevel, 
 					   c.geolevel_id, 
 					   c.areaid,
 					   z.IntValue AS y_series	
-				  FROM c CROSS APPLY $(USERNAME).generate_series(y_mintile, y_maxtile, 1) z 
+				  FROM c CROSS APPLY $(SQLCMDUSER).generate_series(y_mintile, y_maxtile, 1) z 
 			), d AS (
 				SELECT x.zoomlevel, 
 					   x.geolevel_id, 
 					   x.areaid,
 					   x.x_series AS x, 
 					   y.y_series AS y,      
-					   $(USERNAME).tileMaker_tile2longitude(x.x_series, x.zoomlevel) AS xmin, 
-					   $(USERNAME).tileMaker_tile2latitude(y.y_series, x.zoomlevel) AS ymin,
-					   $(USERNAME).tileMaker_tile2longitude(x.x_series+1, x.zoomlevel) AS xmax, 
-					   $(USERNAME).tileMaker_tile2latitude(y.y_series+1, x.zoomlevel) AS ymax
+					   $(SQLCMDUSER).tileMaker_tile2longitude(x.x_series, x.zoomlevel) AS xmin, 
+					   $(SQLCMDUSER).tileMaker_tile2latitude(y.y_series, x.zoomlevel) AS ymin,
+					   $(SQLCMDUSER).tileMaker_tile2longitude(x.x_series+1, x.zoomlevel) AS xmax, 
+					   $(SQLCMDUSER).tileMaker_tile2latitude(y.y_series+1, x.zoomlevel) AS ymax
 				  FROM x, y
 				 WHERE x.zoomlevel   = y.zoomlevel	
 				   AND x.geolevel_id = y.geolevel_id
@@ -306,7 +306,7 @@ BEGIN
 					   d.areaid,
 					   d.x,
 					   d.y, 
-					   $(USERNAME).tileMaker_STMakeEnvelope(d.xmin, d.ymin, d.xmax, d.ymax, 4326) AS bbox
+					   $(SQLCMDUSER).tileMaker_STMakeEnvelope(d.xmin, d.ymin, d.xmax, d.ymax, 4326) AS bbox
 				  FROM d
 			), f1 AS (
 				SELECT DISTINCT e.zoomlevel, 

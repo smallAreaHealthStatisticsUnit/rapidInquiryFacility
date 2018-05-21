@@ -8,7 +8,7 @@
  *						4: tiles table; e.g. t_tiles_cb_2014_us_500k
  *  					5: Max zoomlevel; e.g. 11
  *						6: Data schema; e.g. rif_data. or ""
- *						7: RIF or user schema; e.g. $(USERNAME) or rif40
+ *						7: RIF or user schema; e.g. $(SQLCMDUSER) or rif40
  *						8: Geography; e.g. USA_2014
  *
  * Description:			Create tiles view
@@ -34,7 +34,7 @@ WITH a AS (
 		   AND b.geography   = b2.geography
 ), d AS (
         SELECT z.IntValue AS zoomlevel
-		  FROM %7generate_series(0, %5, 1) z /* RIF or user schema; e.g. $(USERNAME) or rif40 */
+		  FROM %7generate_series(0, %5, 1) z /* RIF or user schema; e.g. $(SQLCMDUSER) or rif40 */
 ), ex AS (
         SELECT d.zoomlevel, z.IntValue AS xy_series
           FROM d CROSS APPLY %7generate_series(0, CAST(POWER(2, d.zoomlevel) AS INTEGER) - 1, 1) z
