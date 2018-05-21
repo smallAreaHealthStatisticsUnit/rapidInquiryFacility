@@ -371,6 +371,37 @@ sqlcmd -U rif40 -P <rif40 password> -d <your database name> -b -m-1 -e -r1 -i <a
 
 ## 7.1 Postgres
 
+The best source for Postgres tuning information is at the [Postgres Performance Optimization Wiki](https://wiki.postgresql.org/wiki/Performance_Optimization). This references
+[Tuning Your PostgreSQL Server](https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server)
+
+Parameters can be set in the *postgresql.conf* file or on the server command line. This is stored in the database cluster's data directory, e.g. *C:\Program Files\PostgreSQL\9.6\data*. Beware, you can 
+move the data directory to a solid state disk, mine is: * E:\Postgres\data*! Check the startup parameters in the Windows services app for the *"-D"* flag: 
+```"C:\Program Files\PostgreSQL\9.6\bin\pg_ctl.exe" runservice -N "postgresql-x64-9.6" -D "E:\Postgres\data" -w```
+
+An example [postgresql.conf](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgresql.conf) is supplied. 
+The principal tuning changes are:
+
+* Shared buffers: 1GB
+* Temporary buffers: 256MB
+* Work memory: 256MB
+* Try to use huge pages - this is called large page support in Windows. This is to reduce the process memory footprint 
+  [translation lookaside buffer](https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938) size.
+
+  ```conf
+  shared_buffers = 1024MB	# min 128kB; default 128 MB (9.6)
+  	  						# (change requires restart)
+  temp_buffers = 256MB		# min 800kB; default 8M
+  
+  huge_pages = try			# on, off, or try
+							# (change requires restart
+  work_mem = 256MB		    # min 64kB; default 4MB
+  ```
+
+On Windows, I modified the *postgresql.conf* rather than use SQL at the server command line. This is because the server command line needs to be in the units of the parameters, 
+so shared buffers of 1G is 131072 8KB pages. This is not very intuitive compared to using MB/GB etc.
+ 
+The amount of memory given to Postgres should allow room for *tomcat* if installed together with the application server; shared memory should generally not exceed a quarter of the available RAM.
+
 ## 7.2 SQL Server
 
 Peter Hambly
