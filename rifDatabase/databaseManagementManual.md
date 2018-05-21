@@ -298,31 +298,33 @@ sahsuland=> SELECT * FROM postgres_log WHERE user_name = USER AND message LIKE '
 
 Formatted the CSV log entry is:
 
-Log field name         | Value                                     |
------------------------+-------------------------------------------|
-log_time               | 2018-05-21 16:20:39.261+01                | 
-user_name              | peter                                     |
-database_name          | sahsuland                                 |
-process_id             | 9900                                      |
-connection_from        | ::1:62022                                 |
-session_id             | 5b02e3be.26ac                             |
-session_line_num       | 4                                         |
-command_tag            |                                           |
-session_start_time     | 2018-05-21 16:20:30+01                    |
-virtual_transaction_id | 2/237                                     |
-transaction_id         | 0                                         |
-error_severity         | LOG                                       |
-sql_state_code         | 00000                                     |
-message                | statement: select * from rif40_num_denom; |
-detail                 |                                           |
-hint                   |                                           |
-internal_query         |                                           |
-internal_query_pos     |                                           |
-context                |                                           |
-query                  |                                           |
-query_pos              |                                           |
-location               | exec_simple_query, postgres.c:927         | 
-application_name       | RIF (psql)                                |
+| Log field name         | Value                                     |
+|------------------------|-------------------------------------------|
+| log_time               | 2018-05-21 16:20:39.261+01                | 
+| user_name              | peter                                     |
+| database_name          | sahsuland                                 |
+| process_id             | 9900                                      |
+| connection_from        | ::1:62022                                 |
+| session_id             | 5b02e3be.26ac                             |
+| session_line_num       | 4                                         |
+| command_tag            |                                           |
+| session_start_time     | 2018-05-21 16:20:30+01                    |
+| virtual_transaction_id | 2/237                                     |
+| transaction_id         | 0                                         |
+| error_severity         | LOG                                       |
+| sql_state_code         | 00000                                     |
+| message                | statement: select * from rif40_num_denom; |
+| detail                 |                                           |
+| hint                   |                                           |
+| internal_query         |                                           |
+| internal_query_pos     |                                           |
+| context                |                                           |
+| query                  |                                           |
+| query_pos              |                                           |
+| location               | exec_simple_query, postgres.c:927         | 
+| application_name       | RIF (psql)                                |
+ 
+The equivalent PostgreSQL Windows log entry entry is:
  
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_viewer_log.png?raw=true "Equivalent PostgreSQL Windows log entry entry")
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_viewer_log2.png?raw=true "Equivalent PostgreSQL Windows log entry entry")
