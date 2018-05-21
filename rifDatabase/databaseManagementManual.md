@@ -387,15 +387,16 @@ The principal tuning changes are:
 * Try to use huge pages - this is called large page support in Windows. This is to reduce the process memory footprint 
   [translation lookaside buffer](https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938) size.
 
-  ```conf
-  shared_buffers = 1024MB	# min 128kB; default 128 MB (9.6)
-  	  						# (change requires restart)
-  temp_buffers = 256MB		# min 800kB; default 8M
-  
-  huge_pages = try			# on, off, or try
-							# (change requires restart
-  work_mem = 256MB		    # min 64kB; default 4MB
-  ```
+  Example parameter entries from *postgresql.conf*:
+```conf
+shared_buffers = 1024MB     # min 128kB; default 128 MB (9.6)
+                            # (change requires restart)
+temp_buffers = 256MB        # min 800kB; default 8M
+
+huge_pages = try            # on, off, or try
+                            # (change requires restart
+work_mem = 256MB            # min 64kB; default 4MB
+```
 
 On Windows, I modified the *postgresql.conf* rather than use SQL at the server command line. This is because the server command line needs to be in the units of the parameters, 
 so shared buffers of 1G is 131072 8KB pages. This is not very intuitive compared to using MB/GB etc.
