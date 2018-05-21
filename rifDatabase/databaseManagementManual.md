@@ -244,20 +244,89 @@ An XML setup file [postgres_event_log_custom_view.xml](https://github.com/smallA
 </ViewerConfig>
 ```
 
-An log file extract (postgresql-2018-05-21.log):
+An example log file extract (postgresql-2018-05-21.log):
 ```log
 2018-05-21 16:20:39 BST LOG:  00000: statement: select * from rif40_num_denom;
 2018-05-21 16:20:39 BST LOCATION:  exec_simple_query, postgres.c:927
 ```
 
-Equivalent CSV file entry (postgresql-2018-05-21.csv):
+The equivalent CSV file entry (postgresql-2018-05-21.csv) is far more detailed:
 ```csv
 2018-05-21 16:20:39.261 BST,"peter","sahsuland",9900,"::1:62022",5b02e3be.26ac,4,"",2018-05-21 16:20:30 BST,2/237,0,LOG,00000,"statement: select * from rif40_num_denom;",,,,,,,,"exec_simple_query, postgres.c:927","RIF (psql)"
 2
 ```
 
+By loading the CSV log in to a table it can then be queried:
+
+```sql
+CREATE TABLE postgres_log
+(
+  log_time timestamp(3) with time zone,
+  user_name text,
+  database_name text,
+  process_id integer,
+  connection_from text,
+  session_id text,
+  session_line_num bigint,
+  command_tag text,
+  session_start_time timestamp with time zone,
+  virtual_transaction_id text,
+  transaction_id bigint,
+  error_severity text,
+  sql_state_code text,
+  message text,
+  detail text,
+  hint text,
+  internal_query text,
+  internal_query_pos integer,
+  context text,
+  query text,
+  query_pos integer,
+  location text,
+  application_name text,
+  PRIMARY KEY (session_id, session_line_num)
+);
+CREATE TABLE
+\copy postgres_log FROM 'E:\Postgres\data\pg_log\postgresql-2018-05-21.csv' WITH csv;
+COPY 25
+sahsuland=> SELECT * FROM postgres_log WHERE user_name = USER AND message LIKE '%select * from rif40_num_denom;';
+          log_time          | user_name | database_name | process_id | connection_from |  session_id   | session_line_num | command_tag |   session_start_time   | virtual_transaction_id | transaction_id | error_severity | sql_state_code |                  message                  | detail | hint | internal_query | internal_query_pos | context | query | query_pos |             location              | application_name
+----------------------------+-----------+---------------+------------+-----------------+---------------+------------------+-------------+------------------------+------------------------+----------------+----------------+----------------+-------------------------------------------+--------+------+----------------+--------------------+---------+-------+-----------+-----------------------------------+------------------
+ 2018-05-21 16:20:39.261+01 | peter     | sahsuland     |       9900 | ::1:62022       | 5b02e3be.26ac |                4 |             | 2018-05-21 16:20:30+01 | 2/237                  |              0 | LOG            | 00000          | statement: select * from rif40_num_denom; |        |      |                |                    |         |       |           | exec_simple_query, postgres.c:927 | RIF (psql)
+(1 row)
+```
+
+Formatted the CSV log entry is:
+
+Log field name         | Value                                     |
+-----------------------+-------------------------------------------|
+log_time               | 2018-05-21 16:20:39.261+01                | 
+user_name              | peter                                     |
+database_name          | sahsuland                                 |
+process_id             | 9900                                      |
+connection_from        | ::1:62022                                 |
+session_id             | 5b02e3be.26ac                             |
+session_line_num       | 4                                         |
+command_tag            |                                           |
+session_start_time     | 2018-05-21 16:20:30+01                    |
+virtual_transaction_id | 2/237                                     |
+transaction_id         | 0                                         |
+error_severity         | LOG                                       |
+sql_state_code         | 00000                                     |
+message                | statement: select * from rif40_num_denom; |
+detail                 |                                           |
+hint                   |                                           |
+internal_query         |                                           |
+internal_query_pos     |                                           |
+context                |                                           |
+query                  |                                           |
+query_pos              |                                           |
+location               | exec_simple_query, postgres.c:927         | 
+application_name       | RIF (psql)                                |
+ 
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_viewer_log.png?raw=true "Equivalent PostgreSQL Windows log entry entry")
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_viewer_log2.png?raw=true "Equivalent PostgreSQL Windows log entry entry")
+
 
 
 ### 4.1.2 SQL Server
