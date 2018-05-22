@@ -2236,3 +2236,15 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
     library has been used (Mike Bostock's?) needs to be determined. Method for determining geographic centroids
 	(hopefully the ones built-in to the geoJSON)
   * Need for population weighted centroids: test on England data in 6-8 weeks time;
+<<<<<<< HEAD
+=======
+  
+#### 14th to 18th May
+
+* On holiday
+
+#### 21st to 25th May
+
+* Tilemaker fix when OS username != tilemaker user username;
+* Test USA tilemaker;
+>>>>>>> master

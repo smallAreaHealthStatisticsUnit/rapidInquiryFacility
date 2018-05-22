@@ -11,7 +11,7 @@
  */
 WITH a AS (
 	SELECT z.IntValue AS zoomlevel
-	  FROM $(USERNAME).generate_series(0, %3, 1) z
+	  FROM $(SQLCMDUSER).generate_series(0, %3, 1) z
 ), b AS ( /* Get bounds of geography */
         SELECT a.zoomlevel,
 			   geometry::EnvelopeAggregate(b.geom).STPointN(1).STX AS Xmin,
@@ -37,13 +37,13 @@ WITH a AS (
 			   COALESCE(b.Xmax, c.Xmax) AS x_max, 
 			   COALESCE(b.Ymin, c.Ymin) AS y_min, 
 			   COALESCE(b.Ymax, c.Ymax) AS y_max,
-               $(USERNAME).tileMaker_latitude2tile(COALESCE(b.Ymax, c.Ymax), b.zoomlevel) AS Y_mintile,
-               $(USERNAME).tileMaker_latitude2tile(COALESCE(b.Ymin, c.Ymin), b.zoomlevel) AS Y_maxtile,
-               $(USERNAME).tileMaker_longitude2tile(COALESCE(b.Xmin, c.Xmin), b.zoomlevel) AS X_mintile,
-               $(USERNAME).tileMaker_longitude2tile(COALESCE(b.Xmax, c.Xmax), b.zoomlevel) AS X_maxtile
+               $(SQLCMDUSER).tileMaker_latitude2tile(COALESCE(b.Ymax, c.Ymax), b.zoomlevel) AS Y_mintile,
+               $(SQLCMDUSER).tileMaker_latitude2tile(COALESCE(b.Ymin, c.Ymin), b.zoomlevel) AS Y_maxtile,
+               $(SQLCMDUSER).tileMaker_longitude2tile(COALESCE(b.Xmin, c.Xmin), b.zoomlevel) AS X_mintile,
+               $(SQLCMDUSER).tileMaker_longitude2tile(COALESCE(b.Xmax, c.Xmax), b.zoomlevel) AS X_maxtile
       FROM b, c
 )
 SELECT d.*,
-       $(USERNAME).tileMaker_STMakeEnvelope(d.x_min, d.y_min, d.x_max, d.y_max, 4326) AS bbox
+       $(SQLCMDUSER).tileMaker_STMakeEnvelope(d.x_min, d.y_min, d.x_max, d.y_max, 4326) AS bbox
   INTO %1
   FROM d
