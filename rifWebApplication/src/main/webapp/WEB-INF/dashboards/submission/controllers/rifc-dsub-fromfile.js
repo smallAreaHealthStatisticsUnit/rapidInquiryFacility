@@ -40,6 +40,9 @@ angular.module("RIF")
             function ($q, user, $scope, $uibModal,
                     StudyAreaStateService, CompAreaStateService, SubmissionStateService, StatsStateService, ParameterStateService) {
 
+                // Magic number for the always-included first method (see rifp-dsub-stats.html).
+                const FIXED_NO_SMOOTHING_METHOD_POSITION  = -1;
+
                 var rifJob;
                 var studyType = "disease_mapping_study";
                 var studyAreaType = "disease_mapping_study_area";
@@ -253,19 +256,25 @@ angular.module("RIF")
                 }
 
                 function uploadStats() {
-					try {	
-						if (rifJob.calculation_methods == undefined) {
-							return "No rif_job_submission.calculation_methods defined, unable to check calculation method";
-						}	
-						else if (rifJob.calculation_methods.calculation_method == undefined) {
-							return "No rif_job_submission.calculation_methods.calculation_method defined, unable to check calculation method";
+					try {
+						if (rifJob.calculation_methods == undefined
+						    || rifJob.calculation_methods.calculation_method == undefined) {
+							return true;
 						}
+
 						tmpMethod = rifJob.calculation_methods.calculation_method;
 						if (angular.isUndefined(tmpMethod.code_routine_name)) {
 							//method not yet selected by the user
 							return true;
 						}
-						//check method is actually availble to user
+
+						// Special case for "No Bayesian Smoothing"
+						if (tmpMethod.name === "NONE" || tmpMethod.name === "") {
+						    tmpChecked = FIXED_NO_SMOOTHING_METHOD_POSITION;
+						    return true;
+						}
+
+						//check method is actually available to user
 						//currently, it always will be
 						var statErr = user.getAvailableCalculationMethods(user.currentUser).then(uploadHandleAvailableCalculationMethods, fromFileError);
 
@@ -291,7 +300,7 @@ angular.module("RIF")
 								}
 							}
 							if (!bFound) {
-								$scope.consoleDebug("[rifc-dsub-fromfile.js] Statistical Method not found error: " + 
+								$scope.consoleDebug("[rifc-dsub-fromfile.js] Statistical Method not found error: " +
 									JSON.stringify(tmpMethod) + "; valid methods: " + JSON.stringify(res.data, null, 2));
 								return "Statistical Method '" + tmpMethod.description + "' not found in database, or has incomplete description";
 							} else {
@@ -471,7 +480,7 @@ angular.module("RIF")
 
 						//Stats
 						StatsStateService.getState().checked = tmpChecked;
-						if (tmpChecked >= 0) {
+						if (tmpChecked >= FIXED_NO_SMOOTHING_METHOD_POSITION) {
 							for (var i = 0; i < tmpMethod.parameters.parameter.length; i++) {
 								StatsStateService.getState().model[tmpChecked][i] = tmpMethod.parameters.parameter[i].value;
 							}
