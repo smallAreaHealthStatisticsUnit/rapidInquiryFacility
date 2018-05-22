@@ -202,14 +202,17 @@ function main() {
 			winston.log("error", err.message, err);			
 			process.exit(1);		
 		}
-		tileMakerConfig.setXmlConfig(data);
-
-//		console.error("Parsed: " + tileMakerConfig.xmlConfig.xmlFileDir + "/" + tileMakerConfig.xmlConfig.xmlFileName + "\n" +
-//			JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
-										
-		// Create Postgres client;
-		pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], argv['zoomlevel'], argv['blocks'],
-			tileMakerConfig, winston);	
+		tileMakerConfig.setXmlConfig(data, (err) => { // callback
+			if (!err) {
+				
+		//		console.error("Parsed: " + tileMakerConfig.xmlConfig.xmlFileDir + "/" + tileMakerConfig.xmlConfig.xmlFileName + "\n" +
+		//			JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
+												
+				// Create Postgres client;
+				pg_db_connect(pg, argv["hostname"] , argv["database"], argv["username"], argv["port"], argv["pngfile"], argv['zoomlevel'], argv['blocks'],
+					tileMakerConfig, winston);	
+			}
+		});
 	});
 } /* End of main */
 
@@ -294,42 +297,48 @@ function pg_db_connect(p_pg, p_hostname, p_database, p_user, p_port, p_pngfile, 
 	var DEBUG = (typeof v8debug === 'undefined' ? 'undefined' : _typeof(v8debug)) === 'object' || process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
 	
 // Use PGHOST, native authentication (i.e. same as psql)
-	client1 = new p_pg.Client(conString);
-// Connect to Postgres database
-	client1.connect(function(err) {
-		if (err) {
-			winston.log("error", 'Could not connect to postgres client using: ' + conString, err);
-			if (p_hostname === 'localhost') {
-				
-// If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaddrinfo() in Windows
-// when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
-// You do need entries for ::1 in pgpass			
+	try {
+		client1 = new p_pg.Client(conString);
+	// Connect to Postgres database
+		client1.connect(function(err) {
+			if (err) {
+				winston.log("error", 'Could not connect to postgres client using: ' + conString, err);
+				if (p_hostname === 'localhost') {
+					
+	// If host = localhost, use IPv6 numeric notation. This prevent ENOENT errors from getaddrinfo() in Windows
+	// when Wireless is disconnected. This is a Windows DNS issue. psql avoids this somehow.
+	// You do need entries for ::1 in pgpass			
 
-				winston.log("info", 'Attempt 2 (127.0.0.1 instead of localhost) to connect to Postgres using: ' + conString);
-				conString = 'postgres://' + p_user + '@' + '[127.0.0.1]' + ':' + p_port + '/' + p_database + '?application_name=db_test_harness';
-				client1 = new p_pg.Client(conString);
-// Connect to Postgres database
-				client1.connect(function(err) {
-					if (err) {
-						winston.log("error", 'Could not connect [2nd attempt] to postgres client using: ' + conString, err);
-						process.exit(1);	
-					}
-					else {
-// Call pgTileMaker()...
-						winston.log("error", 'Connected to Postgres [2nd attempt] using: ' + conString + "; log level: " + winston.winston.level);		
-						tileMaker.dbTileMaker(p_pg, client1,  p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, blocks, winston);
-					} // End of else connected OK 
-				}); // End of connect						
+					winston.log("info", 'Attempt 2 (127.0.0.1 instead of localhost) to connect to Postgres using: ' + conString);
+					conString = 'postgres://' + p_user + '@' + '[127.0.0.1]' + ':' + p_port + '/' + p_database + '?application_name=db_test_harness';
+					client1 = new p_pg.Client(conString);
+	// Connect to Postgres database
+					client1.connect(function(err) {
+						if (err) {
+							winston.log("error", 'Could not connect [2nd attempt] to postgres client using: ' + conString, err);
+							process.exit(1);	
+						}
+						else {
+	// Call pgTileMaker()...
+							winston.log("error", 'Connected to Postgres [2nd attempt] using: ' + conString + "; log level: " + winston.winston.level);		
+							tileMaker.dbTileMaker(p_pg, client1,  p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, blocks, winston);
+						} // End of else connected OK 
+					}); // End of connect						
+				}
 			}
-		}
-		else {			
-// Call pgTileMaker()...
+			else {			
+	// Call pgTileMaker()...
 
-			winston.log("info", 'Connected to Postgres using: ' + conString + "; log level: " + winston.winston.level);	
-			tileMaker.dbTileMaker(p_pg, client1, p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, blocks, winston);
-		} // End of else connected OK 
-	}); // End of connect		
-
+				winston.log("info", 'Connected to Postgres using: ' + conString + "; log level: " + winston.winston.level);	
+				tileMaker.dbTileMaker(p_pg, client1, p_pngfile, tileMakerConfig, "PostGres", endCallBack, maxZoomlevel, blocks, winston);
+			} // End of else connected OK 
+		}); // End of connect		
+	}	
+	catch(err) {
+		winston.log("error", 'Exception connecting to Postgres client using: %s\nError: %s\nStack: %s', conString, err.message, err.stack);
+		process.exit(1);	
+	}
+	
 	// Notice message event processors
 	client1.on('notice', function(msg) {
 		  winston.log("info", 'PG: ' + msg);
