@@ -116,7 +116,7 @@ establishTableNames <-function(vstudyID) {
 #performance on Windows Tomcat servers 
 	centile <- as.integer(vstudyID) %/% 100 # 1273 = 12
 	# Number directory: d1201-1300\
-	numberDir <- file.path("d", (centile*100)+1, "-", (centile+1)*100)
+	numberDir <- paste0("d", (centile*100)+1, "-", (centile+1)*100)
 	
 #The name of the skeleton table created by the RIF middleware to hold smoothed results
 #for a given study.  Initially the values for smoothed columns will be empty.  It is 
@@ -127,10 +127,10 @@ establishTableNames <-function(vstudyID) {
 # This needs to be passed in via interface
 
 	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
-		scratchSpace <<- file.path("rifDemo", "scratchSpace")
+		scratchSpace <<- file.path("scratchSpace")
 	}
 	# Typically: c:\rifDemo\scratchSpace\d1201-1300\s1273\data
-	scratchSpace <<- file.path(scratchSpace, numberDir, "s", vstudyID, "data")
+	scratchSpace <<- file.path(scratchSpace, numberDir, paste0("s", vstudyID), "data")
 		
 	tryCatch({
 			#Put all scratch files in sub directory s<study_id>

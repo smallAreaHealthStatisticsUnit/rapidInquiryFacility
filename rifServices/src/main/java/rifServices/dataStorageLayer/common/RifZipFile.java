@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -120,32 +122,25 @@ public class RifZipFile {
 					throws RIFServiceException {
 		//Validate parameters
 		String temporaryDirectoryPath = null;
-		File temporaryDirectory = null;
 		File submissionZipFile = null;
 		FileInputStream fileInputStream = null;
 		
 		try {
 			//Establish the phrase that will be used to help name the main zip
 			//file and data files within its directories
-			String baseStudyName 
-			= createBaseStudyFileName(rifStudySubmission, studyID);
+			String baseStudyName = createBaseStudyFileName(rifStudySubmission, studyID);
 
-			temporaryDirectoryPath = 
-					createTemporaryDirectoryPath(
-							user, 
-							studyID);
-			temporaryDirectory = new File(temporaryDirectoryPath);
-			if (temporaryDirectory.exists()) {
-				rifLogger.info(this.getClass(), "Found R temporary directory: "  + 
-					temporaryDirectory.getAbsolutePath());
+			Path temporaryDirectory = createTemporaryDirectoryPath(studyID);
+			if (temporaryDirectory.toFile().exists()) {
+				rifLogger.info(this.getClass(), "Found R temporary directory: "
+				                                + temporaryDirectory.toString());
 			}
 			else {
 				throw new Exception("R temporary directory: "  + 
-					temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
+					temporaryDirectory.toString() + " was not created by Adj_Cov_Smooth_JRI.R");
 			}
 			
-			submissionZipFile 
-			= createSubmissionZipFile(
+			submissionZipFile = createSubmissionZipFile(
 					user,
 					baseStudyName);
 					
@@ -332,8 +327,6 @@ public class RifZipFile {
 					throws RIFServiceException {
 
 		//Validate parameters
-		String temporaryDirectoryPath = null;
-		File temporaryDirectory = null;
 		File submissionZipFile = null;
 		ZipOutputStream submissionZipOutputStream = null;
 		File submissionZipSavFile = null;
@@ -342,21 +335,16 @@ public class RifZipFile {
 		try {
 			//Establish the phrase that will be used to help name the main zip
 			//file and data files within its directories
-			String baseStudyName 
-			= createBaseStudyFileName(rifStudySubmission, studyID);
+			String baseStudyName = createBaseStudyFileName(rifStudySubmission, studyID);
 
-			temporaryDirectoryPath = 
-					createTemporaryDirectoryPath(
-							user, 
-							studyID);
-			temporaryDirectory = new File(temporaryDirectoryPath);
-			if (temporaryDirectory.exists()) {
-				rifLogger.info(this.getClass(), "Found R temporary directory: "  + 
-					temporaryDirectory.getAbsolutePath());
+			Path temporaryDirectoryPath = createTemporaryDirectoryPath(studyID);
+			if (temporaryDirectoryPath.toFile().exists()) {
+				rifLogger.info(this.getClass(), "Found R temporary directory: "
+				                                + temporaryDirectoryPath.toString());
 			}
 			else {
 				throw new Exception("R temporary directory: "  + 
-					temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
+					temporaryDirectoryPath.toString() + " was not created by Adj_Cov_Smooth_JRI.R");
 			}
 				
 			submissionZipSavFile = createSubmissionZipFile(
@@ -393,7 +381,7 @@ public class RifZipFile {
 				String denominatorHTML=addDenominator(
 					user,
 					connection, 
-					temporaryDirectory,
+					temporaryDirectoryPath.toFile(),
 					studyID,
 					1 /* Header level */,
 					locale,
@@ -401,24 +389,24 @@ public class RifZipFile {
 				String numeratorHTML=addNumerator(
 					user,
 					connection, 
-					temporaryDirectory,
+					temporaryDirectoryPath.toFile(),
 					studyID,
 					1 /* Header level */,
 					locale,
 					rif40Studies);	
 					
 				addJsonFile(
-						temporaryDirectory,
+						temporaryDirectoryPath.toFile(),
 						submissionZipOutputStream,
 						connection, user, studyID, locale, url);
 
 				addCssFile(
-						temporaryDirectory,
+						temporaryDirectoryPath.toFile(),
 						submissionZipOutputStream,
 						studyID,
 						"RIFStudyHeader.css");
 				addCssFile(
-						temporaryDirectory,
+						temporaryDirectoryPath.toFile(),
 						submissionZipOutputStream,
 						studyID,
 						"RIFPopulationPyramid.css");
@@ -427,7 +415,7 @@ public class RifZipFile {
 					new RifGeospatialOutputs(rifServiceStartupOptions, manager);
 				String mapHTML=rifGeospatialOutputs.writeGeospatialFiles(
 						connection,
-						temporaryDirectory,
+						temporaryDirectoryPath.toFile(),
 						baseStudyName,
 						zoomLevel,
 						rifStudySubmission,
@@ -436,7 +424,7 @@ public class RifZipFile {
 						locale);
 						
 				addHtmlFile(
-						temporaryDirectory,
+						temporaryDirectoryPath.toFile(),
 						submissionZipOutputStream,
 						connection, user, studyID, locale, url, taxonomyServicesServer,
 						denominatorHTML, numeratorHTML, mapHTML);
@@ -449,7 +437,7 @@ public class RifZipFile {
 						rifStudySubmission);
 						
 				addAllFilesToZip(
-					temporaryDirectory,
+					temporaryDirectoryPath.toFile(),
 					submissionZipOutputStream,
 					null);
 
@@ -1986,15 +1974,11 @@ public class RifZipFile {
 		final String studyID,
 		final String dirName) throws Exception {
 		
-		String temporaryDirectoryPath = 
-				createTemporaryDirectoryPath(
-						user, 
-						studyID);
-		File temporaryDirectory = new File(temporaryDirectoryPath);
-		File newDirectory = null;
-		
-		if (temporaryDirectory.exists()) {
-			newDirectory = new File(temporaryDirectoryPath + File.separator + dirName);
+		Path temporaryDirectoryPath = createTemporaryDirectoryPath(studyID);
+		File newDirectory;
+
+		if (temporaryDirectoryPath.toFile().exists()) {
+			newDirectory = temporaryDirectoryPath.resolve(dirName).toFile();
 			if (newDirectory.exists()) {
 				rifLogger.info(this.getClass(), 
 					"Found directory: " + newDirectory.getAbsolutePath());
@@ -2006,8 +1990,8 @@ public class RifZipFile {
 			}
 		}
 		else {
-			throw new Exception("R temporary directory: "  + 
-				temporaryDirectory.getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
+			throw new Exception("R temporary directory: " +
+			                    temporaryDirectoryPath.toFile().getAbsolutePath() + " was not created by Adj_Cov_Smooth_JRI.R");
 		}
 		
 		return newDirectory.getAbsolutePath();
@@ -2052,25 +2036,18 @@ public class RifZipFile {
 		return name;
 	}
 	
-	private String createTemporaryDirectoryPath(
-		final User user,
-		final String studyID) {
-		
-		StringBuilder fileName = new StringBuilder();
-		fileName.append(EXTRACT_DIRECTORY);
-		
+	private Path createTemporaryDirectoryPath(final String studyID) {
+
+		Path path = FileSystems.getDefault().getPath(EXTRACT_DIRECTORY, "scratchspace");
+
 		// Numbered directory support (1-100 etc) to reduce the number of files/directories per directory to 100. This is to improve filesystem 
 		// performance on Windows Tomcat servers 	
 		Integer centile=Integer.parseInt(studyID) / 100; // 1273 = 12
+
 		// Number directory: d1201-1300
 		String numberDir = "d" + ((centile*100)+1) + "-" + (centile+1)*100;
-		fileName.append(File.separator);
-		fileName.append(numberDir);
-		
-		fileName.append(File.separator);
-		fileName.append("s" + studyID);
-	
-		return fileName.toString();
+
+		return path.resolve(numberDir).resolve("s" + studyID);
 	}
 	
 	private void writeQueryFile(
