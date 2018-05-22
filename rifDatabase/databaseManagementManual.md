@@ -193,13 +193,14 @@ Basic statement logging can be provided by the standard logging facility with th
 Postgres has an extension [pgAudit](https://github.com/pgaudit/pgaudit) which provides much more auditing, however the Enterprise DB installer does not include Postgres 
 extensions (apart from PostGIS). EnterpiseDB Postgres has its own auditing subsystem (*edb_audit), but this is is paid for item. To use pgAudit pgAudit must be compile from source
 
-To configure Postgres server [error reporting and logging](https://www.postgresql.org/docs/9.6/static/runtime-config-logging.html) set:
+To configure Postgres server [error reporting and logging](https://www.postgresql.org/docs/9.6/static/runtime-config-logging.html) set the following Postgres system parameters see
+[Postgres tuning](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#71-postgres) for details on how to set parameters:
 
 * ```log_statement = all```. The default is 'none';
-* ```Set log_min_error_statement = ERROR``` [default] or lower;
-* ```log_error_verbosity = VERBOSE```;
-* ```log_connections = TRUE```;
-* ```log_disconnections = TRUE```;
+* ```Set log_min_error_statement = error``` [default] or lower;
+* ```log_error_verbosity = verbose```;
+* ```log_connections = on```;
+* ```log_disconnections = on```;
 * ```log_destinstion = stderr, eventlog, csvlog```. Other choices are *csvlog* or syslog*
 
 Parameters can be set in the *postgresql.conf* file or on the server command line. This is stored in the database cluster's data directory, e.g. *C:\Program Files\PostgreSQL\9.6\data*. Beware, you can 
@@ -208,13 +209,128 @@ move the data directory to a solid state disk, mine is: * E:\Postgres\data*! Che
 
 If you are using CSV log files set:
 
-* ```logging_collector = TRUE```;
-* ```log_filename = postgresql-%Y-%m-%d.csv``` and ```log_rotation_age = 1440``` (in minutes) to provide a consistent, predictable naming scheme for your log files. This lets you predict what the file name will be and know 
+* ```logging_collector = on```;
+* ```log_filename = postgresql-%Y-%m-%d.log``` and ```log_rotation_age = 1440``` (in minutes) to provide a consistent, predictable naming scheme for your log files. This lets you predict what the file name will be and know 
   when an individual log file is complete and therefore ready to be imported. The log filename is in [strftime()](http://www.cplusplus.com/reference/ctime/strftime/) format; 
 * ```log_rotation_size = 0``` to disable size-based log rotation, as it makes the log file name difficult to predict;
-* ```log_truncate_on_rotation = TRUE``` to on so that old log data isn't mixed with the new in the same file.
+* ```log_truncate_on_rotation = on``` to on so that old log data isn't mixed with the new in the same file.
 
+Create a Postgres event log custom view, create a [custom event view](https://technet.microsoft.com/en-us/library/gg131917.aspx) in the Event Viewer. 
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_filter_setup.png?raw=true "Postgres event log custom view")
+
+An XML setup file [postgres_event_log_custom_view.xml](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/conf/postgres_event_log_custom_view.xml) is also provided:
+```xml
+<ViewerConfig>
+	<QueryConfig>
+		<QueryParams>
+			<Simple>
+				<Channel>Application</Channel>
+				<RelativeTimeInfo>0</RelativeTimeInfo>
+				<Source>PostgreSQL</Source>
+				<BySource>True</BySource>
+			</Simple>
+		</QueryParams>
+		<QueryNode>
+			<Name>PostgreSQL</Name>
+			<Description>Postgres DB</Description>
+			<QueryList>
+				<Query Id="0" Path="Application">
+					<Select Path="Application">*[System[Provider[@Name='PostgreSQL']]]</Select>
+				</Query>
+			</QueryList>
+		</QueryNode>
+	</QueryConfig>
+</ViewerConfig>
+```
+
+An example log file extract (postgresql-2018-05-21.log):
+```log
+2018-05-21 16:20:39 BST LOG:  00000: statement: select * from rif40_num_denom;
+2018-05-21 16:20:39 BST LOCATION:  exec_simple_query, postgres.c:927
+```
+
+The equivalent CSV file entry (postgresql-2018-05-21.csv) is far more detailed:
+```csv
+2018-05-21 16:20:39.261 BST,"peter","sahsuland",9900,"::1:62022",5b02e3be.26ac,4,"",2018-05-21 16:20:30 BST,2/237,0,LOG,00000,"statement: select * from rif40_num_denom;",,,,,,,,"exec_simple_query, postgres.c:927","RIF (psql)"
+2
+```
+
+By loading the CSV log in to a table it can then be queried:
+
+```sql
+CREATE TABLE postgres_log
+(
+  log_time timestamp(3) with time zone,
+  user_name text,
+  database_name text,
+  process_id integer,
+  connection_from text,
+  session_id text,
+  session_line_num bigint,
+  command_tag text,
+  session_start_time timestamp with time zone,
+  virtual_transaction_id text,
+  transaction_id bigint,
+  error_severity text,
+  sql_state_code text,
+  message text,
+  detail text,
+  hint text,
+  internal_query text,
+  internal_query_pos integer,
+  context text,
+  query text,
+  query_pos integer,
+  location text,
+  application_name text,
+  PRIMARY KEY (session_id, session_line_num)
+);
+CREATE TABLE
+\copy postgres_log FROM 'E:\Postgres\data\pg_log\postgresql-2018-05-21.csv' WITH csv;
+COPY 25
+sahsuland=> SELECT * FROM postgres_log WHERE user_name = USER AND message LIKE '%select * from rif40_num_denom;';
+          log_time          | user_name | database_name | process_id | connection_from |  session_id   | session_line_num | command_tag |   session_start_time   | virtual_transaction_id | transaction_id | error_severity | sql_state_code |                  message                  | detail | hint | internal_query | internal_query_pos | context | query | query_pos |             location              | application_name
+----------------------------+-----------+---------------+------------+-----------------+---------------+------------------+-------------+------------------------+------------------------+----------------+----------------+----------------+-------------------------------------------+--------+------+----------------+--------------------+---------+-------+-----------+-----------------------------------+------------------
+ 2018-05-21 16:20:39.261+01 | peter     | sahsuland     |       9900 | ::1:62022       | 5b02e3be.26ac |                4 |             | 2018-05-21 16:20:30+01 | 2/237                  |              0 | LOG            | 00000          | statement: select * from rif40_num_denom; |        |      |                |                    |         |       |           | exec_simple_query, postgres.c:927 | RIF (psql)
+(1 row)
+```
+
+Formatted the CSV log entry is:
+
+| Log field name         | Value                                     |
+|------------------------|-------------------------------------------|
+| log_time               | 2018-05-21 16:20:39.261+01                | 
+| user_name              | peter                                     |
+| database_name          | sahsuland                                 |
+| process_id             | 9900                                      |
+| connection_from        | ::1:62022                                 |
+| session_id             | 5b02e3be.26ac                             |
+| session_line_num       | 4                                         |
+| command_tag            |                                           |
+| session_start_time     | 2018-05-21 16:20:30+01                    |
+| virtual_transaction_id | 2/237                                     |
+| transaction_id         | 0                                         |
+| error_severity         | LOG                                       |
+| sql_state_code         | 00000                                     |
+| message                | statement: select * from rif40_num_denom; |
+| detail                 |                                           |
+| hint                   |                                           |
+| internal_query         |                                           |
+| internal_query_pos     |                                           |
+| context                |                                           |
+| query                  |                                           |
+| query_pos              |                                           |
+| location               | exec_simple_query, postgres.c:927         | 
+| application_name       | RIF (psql)                                |
  
+The equivalent PostgreSQL Windows log entry entry is:
+ 
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_viewer_log.png?raw=true "Equivalent PostgreSQL Windows log entry entry")
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_viewer_log2.png?raw=true "Equivalent PostgreSQL Windows log entry entry")
+
+
+
 ### 4.1.2 SQL Server
   
 # 5. Backup and recovery  
@@ -254,6 +370,38 @@ sqlcmd -U rif40 -P <rif40 password> -d <your database name> -b -m-1 -e -r1 -i <a
 # 7. Tuning  
 
 ## 7.1 Postgres
+
+The best source for Postgres tuning information is at the [Postgres Performance Optimization Wiki](https://wiki.postgresql.org/wiki/Performance_Optimization). This references
+[Tuning Your PostgreSQL Server](https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server)
+
+Parameters can be set in the *postgresql.conf* file or on the server command line. This is stored in the database cluster's data directory, e.g. *C:\Program Files\PostgreSQL\9.6\data*. Beware, you can 
+move the data directory to a solid state disk, mine is: * E:\Postgres\data*! Check the startup parameters in the Windows services app for the *"-D"* flag: 
+```"C:\Program Files\PostgreSQL\9.6\bin\pg_ctl.exe" runservice -N "postgresql-x64-9.6" -D "E:\Postgres\data" -w```
+
+An example [postgresql.conf](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgresql.conf) is supplied. 
+The principal tuning changes are:
+
+* Shared buffers: 1GB
+* Temporary buffers: 256MB
+* Work memory: 256MB
+* Try to use huge pages - this is called large page support in Windows. This is to reduce the process memory footprint 
+  [translation lookaside buffer](https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938) size.
+
+  Example parameter entries from *postgresql.conf*:
+```conf
+shared_buffers = 1024MB     # min 128kB; default 128 MB (9.6)
+                            # (change requires restart)
+temp_buffers = 256MB        # min 800kB; default 8M
+
+huge_pages = try            # on, off, or try
+                            # (change requires restart
+work_mem = 256MB            # min 64kB; default 4MB
+```
+
+On Windows, I modified the *postgresql.conf* rather than use SQL at the server command line. This is because the server command line needs to be in the units of the parameters, 
+so shared buffers of 1G is 131072 8KB pages. This is not very intuitive compared to using MB/GB etc.
+ 
+The amount of memory given to Postgres should allow room for *tomcat* if installed together with the application server; shared memory should generally not exceed a quarter of the available RAM.
 
 ## 7.2 SQL Server
 

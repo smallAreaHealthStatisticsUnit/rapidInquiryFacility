@@ -2236,3 +2236,68 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
     library has been used (Mike Bostock's?) needs to be determined. Method for determining geographic centroids
 	(hopefully the ones built-in to the geoJSON)
   * Need for population weighted centroids: test on England data in 6-8 weeks time;
+  
+#### 14th to 18th May
+
+* On holiday
+
+#### 21st to 25th May
+
+* Tilemaker fix when OS username != tilemaker user username;
+* Tuning and performance for Postgrss in database management manual;
+* Test USA tilemaker;
+ - Fixes for unhandled file/directory errors causing hangs
+ - Fix for xmlFileDir not longer exiting; use current working directory instead;
+ - Made FMT file creation SQL Server only;
+ - Support for latest node mssql library (breaking changes in recordSet structure). Should be backwards compatible; 
+ - SQL server connect error caused by mssql/msnodesqlv8 version mismatch; 
+   ```
+   C:\Users\phamb\OneDrive\SEER Data\Tile maker USA>node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password retep
+	Created info log file: mssqlTileMaker.log
+	About to connected to SQL server using: {
+		"driver": "msnodesqlv8",
+		"server": "localhost",
+		"options": {
+			"trustedConnection": false,
+			"useUTC": true,
+			"appName": "mssqlTileMaker.js"
+		},
+		"user": "peter",
+		"password": "retep"
+	}
+	error [mssqlTileMaker:212:mssql_db_connect()] Could not connect to SQL server client using: {
+		"driver": "msnodesqlv8",
+		"server": "localhost",
+		"options": {
+			"trustedConnection": false,
+			"useUTC": true,
+			"appName": "mssqlTileMaker.js"
+		},
+		"user": "peter",
+		"password": "retep",
+		"port": 1433,
+		"stream": false,
+		"parseJSON": false
+	}
+	Error: None of the binaries loaded successfully. Is your node version either >= 0.12.7 or >= 4.2.x or >= 5.1.1 or >= 6.1.0
+   ```
+   Check you have [Visual Studio 2015/2017](https://www.visualstudio.com/downloads/) installed; launch it and logon to the Microsoft DEveloper network so the developer license is active;
+   Remove *mssql* and *msnodesqlv8* from *package.json*;
+   re-run: ```npm install msnodesqlv8 --save```:
+   ```
+   C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices>npm install msnodesqlv8 --save
+	npm WARN optional SKIPPING OPTIONAL DEPENDENCY: fsevents@1.2.4 (node_modules\fsevents):
+	npm WARN notsup SKIPPING OPTIONAL DEPENDENCY: Unsupported platform for fsevents@1.2.4: wanted {"os":"darwin","arch":"any"} (current: {"os":"win32","arch":"x64"})
+
+	+ msnodesqlv8@0.1.46
+	updated 1 package in 10.388s   
+   ```
+   re-run: ```npm install mssql --save```:
+   ```
+   C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices>npm install mssql --save
+	npm WARN optional SKIPPING OPTIONAL DEPENDENCY: fsevents@1.2.4 (node_modules\fsevents):
+	npm WARN notsup SKIPPING OPTIONAL DEPENDENCY: Unsupported platform for fsevents@1.2.4: wanted {"os":"darwin","arch":"any"} (current: {"os":"win32","arch":"x64"})
+
+	+ mssql@4.1.0
+	added 12 packages in 11.196s
+   ```

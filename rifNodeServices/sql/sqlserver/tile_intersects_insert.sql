@@ -15,29 +15,29 @@ WITH a AS (
 	 WHERE zoomlevel = 0
 ), x AS (
 	SELECT zoomlevel, z.IntValue AS x_series
-	  FROM a CROSS APPLY $(USERNAME).generate_series(x_mintile, x_maxtile, 1) z
+	  FROM a CROSS APPLY $(SQLCMDUSER).generate_series(x_mintile, x_maxtile, 1) z
 ), y AS (	 
 	SELECT zoomlevel, z.IntValue AS y_series	
-	  FROM a CROSS APPLY $(USERNAME).generate_series(y_mintile, y_maxtile, 1) z      
+	  FROM a CROSS APPLY $(SQLCMDUSER).generate_series(y_mintile, y_maxtile, 1) z      
 ), b AS (
 	SELECT x.zoomlevel, 
 	       x.x_series AS x, 
 	       y.y_series AS y,      
-	       $(USERNAME).tileMaker_tile2longitude(x.x_series, x.zoomlevel) AS xmin, 
-		   $(USERNAME).tileMaker_tile2latitude(y.y_series, x.zoomlevel) AS ymin,
-		   $(USERNAME).tileMaker_tile2longitude(x.x_series+1, x.zoomlevel) AS xmax, 
-		   $(USERNAME).tileMaker_tile2latitude(y.y_series+1, x.zoomlevel) AS ymax
+	       $(SQLCMDUSER).tileMaker_tile2longitude(x.x_series, x.zoomlevel) AS xmin, 
+		   $(SQLCMDUSER).tileMaker_tile2latitude(y.y_series, x.zoomlevel) AS ymin,
+		   $(SQLCMDUSER).tileMaker_tile2longitude(x.x_series+1, x.zoomlevel) AS xmax, 
+		   $(SQLCMDUSER).tileMaker_tile2latitude(y.y_series+1, x.zoomlevel) AS ymax
       FROM x, y
 	 WHERE x.zoomlevel = y.zoomlevel
 ), c AS (
 	SELECT b.zoomlevel, b.x, b.y, 
-		   $(USERNAME).tileMaker_STMakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326) AS bbox,
+		   $(SQLCMDUSER).tileMaker_STMakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326) AS bbox,
 		   c.geolevel_id,
 		   c.areaid,
 		   c.geom
 	  FROM b, %3 c
 	 WHERE c.zoomlevel = 6
-	   AND $(USERNAME).tileMaker_STMakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326).STIntersects(c.geom) = 1 /* intersects */
+	   AND $(SQLCMDUSER).tileMaker_STMakeEnvelope(b.xmin, b.ymin, b.xmax, b.ymax, 4326).STIntersects(c.geom) = 1 /* intersects */
 ), tile_intersects_temp AS (
 	SELECT c.geolevel_id,
 		   c.zoomlevel, 
