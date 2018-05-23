@@ -164,23 +164,23 @@
 	  <AppenderRef ref="CONSOLE"/>
     </Logger>
 
-      <!-- RIF middleware logger: RIFLogger -->
+      <!-- RIF middleware logger: org.sahsu.rif.generic.util.RIFLogger -->
     <Logger name="org.sahsu.rif.generic.util.RIFLogger"
 		level="info" additivity="false">
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF middleware output on the console -->
       <AppenderRef ref="RIF_MIDDLEWARE"/>
     </Logger>
-      <!-- RIF FRont End logger: FrontEndLogger -->
+      <!-- RIF FRont End logger: org.sahsu.rif.generic.util.FrontEndLogger -->
     <Logger name="org.sahsu.rif.generic.util.FrontEndLogger"
-		level="info" additivity="false"> <!-- Chnage to debug for more output -->
+		level="info" additivity="false"> <!-- Change to debug for more output -->
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
       <AppenderRef ref="FRONTENDLOGGER"/>
     </Logger>
-      <!-- RIF FRont End logger: TaxonomyLogger -->
+      <!-- RIF FRont End logger: org.sahsu.rif.generic.util.TaxonomyLogger -->
     <Logger name="org.sahsu.rif.generic.util.TaxonomyLogger"
-		level="info" additivity="false"> <!-- Chnage to debug for more output -->
+		level="info" additivity="false"> <!-- Change to debug for more output -->
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
       <AppenderRef ref="TAXONOMYLOGGER"/>
-    </Logger>		
+    </Logger>			
   </Loggers>
 </Configuration>
