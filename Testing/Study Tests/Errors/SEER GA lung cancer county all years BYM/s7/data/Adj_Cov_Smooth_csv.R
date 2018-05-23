@@ -72,6 +72,9 @@ errorCount <- 0	# Smoothing error count
 #CATALINA_HOME
 catalina_home<-Sys.getenv("CATALINA_HOME")
 
+# Set the working directory based on the value from the Java class
+setwd(working_dir)
+
 ##====================================================================
 # SCRIPT VARIABLES
 ##====================================================================
@@ -114,7 +117,7 @@ temporarySmoothedResultsTableName <- ""
 
 #File names for smoothed (temporarySmoothedResultsFileName) and extract data frames (temporaryExtractFileName)
 #Variable to control dumping franes (dumpFramesToCsv)
-defaultScratchSpace <- file.path("rifDemo", "scratchSpace")
+defaultScratchSpace <- file.path("scratchSpace")
 defaultDumpFramesToCsv <- FALSE
 scratchSpace <- ""
 dumpFramesToCsv <- ""
@@ -150,7 +153,7 @@ establishTableNames <-function(vstudyID) {
 #performance on Windows Tomcat servers 
 	centile <- as.integer(vstudyID) %/% 100 # 1273 = 12
 	# Number directory: d1201-1300\
-	numberDir <- file.path("d", (centile*100)+1, "-", (centile+1)*100)
+	numberDir <- paste0("d", (centile*100)+1, "-", (centile+1)*100)
 	
 #The name of the skeleton table created by the RIF middleware to hold smoothed results
 #for a given study.  Initially the values for smoothed columns will be empty.  It is 
@@ -162,7 +165,7 @@ establishTableNames <-function(vstudyID) {
 
 	if (exists("scratchSpace") == FALSE  || scratchSpace == "") {
 	# Typically: c:\rifDemo\scratchSpace\d1201-1300\s1273\data
-		scratchSpace <<- file.path(defaultScratchSpace, numberDir, "s", vstudyID, "data")
+		scratchSpace <<- file.path(defaultScratchSpace, numberDir, paste0("s", vstudyID), "data")
 	}
 
 	if (exists("dumpFramesToCsv") == FALSE || dumpFramesToCsv == "") {

@@ -48,8 +48,8 @@ SELECT b.geography,
 	   CAST(b.geom_envelope.STPointN(3).STX AS numeric(8,5)) AS Xmax,
 	   CAST(b.geom_envelope.STPointN(1).STY AS numeric(8,5)) AS Ymin,
 	   CAST(b.geom_envelope.STPointN(3).STY AS numeric(8,5)) AS Ymax,
-	   $(USERNAME).tileMaker_latitude2tile(b.geom_envelope.STPointN(1).STY, zoomlevel) AS Y_mintile,
-	   $(USERNAME).tileMaker_latitude2tile(b.geom_envelope.STPointN(3).STY, zoomlevel) AS Y_maxtile,
-	   $(USERNAME).tileMaker_longitude2tile(b.geom_envelope.STPointN(1).STX, zoomlevel) AS X_mintile,
-	   $(USERNAME).tileMaker_longitude2tile(b.geom_envelope.STPointN(3).STX, zoomlevel) AS X_maxtile
+	   $(SQLCMDUSER).tileMaker_latitude2tile(b.geom_envelope.STPointN(1).STY, zoomlevel) AS Y_mintile,
+	   $(SQLCMDUSER).tileMaker_latitude2tile(b.geom_envelope.STPointN(3).STY, zoomlevel) AS Y_maxtile,
+	   $(SQLCMDUSER).tileMaker_longitude2tile(b.geom_envelope.STPointN(1).STX, zoomlevel) AS X_mintile,
+	   $(SQLCMDUSER).tileMaker_longitude2tile(b.geom_envelope.STPointN(3).STX, zoomlevel) AS X_maxtile
   FROM b
