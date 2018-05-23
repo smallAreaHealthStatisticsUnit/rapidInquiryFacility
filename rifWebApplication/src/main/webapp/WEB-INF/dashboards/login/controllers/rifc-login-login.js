@@ -36,10 +36,10 @@
  */
 
 angular.module("RIF")
-        .controller('LoginCtrl', ['$scope', 'user', '$injector', 'DatabaseService',
+        .controller('LoginCtrl', ['$scope', 'user', '$injector',
             'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ExportStateService',
             'ParameterStateService', 'StatsStateService', 'ViewerStateService', 'MappingStateService', 'ParametersService',
-            function ($scope, user, $injector, DatabaseService,
+            function ($scope, user, $injector,
                     SubmissionStateService, StudyAreaStateService, CompAreaStateService, ExportStateService,
                     ParameterStateService, StatsStateService, ViewerStateService, MappingStateService, ParametersService) {
 						
@@ -142,23 +142,11 @@ angular.module("RIF")
                     if (!$scope.showSpinner) {
                         $scope.showSpinner = true;
 
-                        //which database is being used PG or MS?
-                        //May not be needed after middleware refactoring
-                        user.getDatabaseType($scope.username).then(function (res) {   
-                            if (res.data[0].result === "jdbc:sqlserver") {
-                                DatabaseService.setDatabase("ms");
-                            } else if (res.data[0].result === "jdbc:postgresql") {
-                                DatabaseService.setDatabase("pg");
-                            } else {
-                                $scope.showError('Could not determine if database is PGSQL or MSSQL');
-                            }
-        
-                            //check if already logged on
-                            user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
-                           
-                            //In development, this bypasses password)                           
-                            //user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
-                        }, handleServerError);       
+                        //check if already logged on
+                        user.isLoggedIn($scope.username).then(handleLoginCheck, handleServerError);
+
+                        //In development, this bypasses password)
+                        //user.login($scope.username, $scope.password).then(handleLogin, handleServerError);
 
 						setFrontEndParameters($scope.username);
                     }

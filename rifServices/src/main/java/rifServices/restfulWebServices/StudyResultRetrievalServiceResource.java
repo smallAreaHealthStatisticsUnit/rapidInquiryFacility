@@ -1,4 +1,4 @@
-package rifServices.restfulWebServices.pg;
+package rifServices.restfulWebServices;
 
 import java.util.ArrayList;
 
@@ -40,97 +40,21 @@ import rifServices.restfulWebServices.WebServiceResponseGenerator;
  * </ul>
  * 
  * <p>
- * 
- * 
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
  */
-
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
 @Path("/")
-public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
+public class StudyResultRetrievalServiceResource extends WebService {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
-	public PGSQLRIFStudyResultRetrievalWebServiceResource() {
+	public StudyResultRetrievalServiceResource() {
 
 	}
 
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-
-	//KLG: 
-
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getCurrentStatusAllStudies")
 	public Response getCurrentStatusAllStudies(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID) {
 
 		String result = "";
@@ -141,65 +65,65 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-			= getRIFStudyResultRetrievalService();
+					= getRIFStudyResultRetrievalService();
 			RIFResultTable resultTable
-			= studyResultRetrievalService.getCurrentStatusAllStudies(user);
+					= studyResultRetrievalService.getCurrentStatusAllStudies(user);
 			RIFResultTableJSONGenerator rifResultTableJSONGenerator
-			= new RIFResultTableJSONGenerator();
-			result = rifResultTableJSONGenerator.writeResultTable(resultTable);			
+					= new RIFResultTableJSONGenerator();
+			result = rifResultTableJSONGenerator.writeResultTable(resultTable);
 		}
-		catch(Exception exception) {		
+		catch(Exception exception) {
 			rifLogger.error(
-				this.getClass(), 
-				"GET /getCurrentStatusAllStudies method failed: ", 
-				exception);	
+					this.getClass(),
+					"GET /getCurrentStatusAllStudies method failed: ",
+					exception);
 			//Convert exceptions to support JSON
-			result 
-			= serialiseException(
+			result
+					= serialiseException(
 					servletRequest,
-					exception);			
+					exception);
 		}
 
 		WebServiceResponseGenerator webServiceResponseGenerator
-		= getWebServiceResponseGenerator();
+				= getWebServiceResponseGenerator();
 		return webServiceResponseGenerator.generateWebServiceResponse(
 				servletRequest,
 				result);
 	}
 
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getGeographies")
 	public Response getGeographies(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID) {
 
-		return 
+		return
 				super.getGeographies(
 						servletRequest,
 						userID);
 	}
 
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getGeoLevelSelectValues")
 	public Response getGeographicalLevelSelectValues(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("geographyName") String geographyName) {
 
 		return super.getGeographicalLevelSelectValues(
 				servletRequest,
-				userID, 
+				userID,
 				geographyName);
-	}	
+	}
 
 
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getDefaultGeoLevelSelectValue")
 	public Response getDefaultGeoLevelSelectValue(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("geographyName") String geographyName) {
 
@@ -207,47 +131,47 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 				servletRequest,
 				userID,
 				geographyName);
-	}	
+	}
 
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getGeoLevelAreaValues")
 	public Response getGeoLevelAreaValues(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("geographyName") String geographyName,
 			@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
 
 		return super.getGeoLevelAreaValues(
 				servletRequest,
-				userID, 
-				geographyName, 
+				userID,
+				geographyName,
 				geoLevelSelectName);
-	}	
+	}
 
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getGeoLevelViews")
 	public Response getGeoLevelViewValues(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("geographyName") String geographyName,
 			@QueryParam("geoLevelSelectName") String geoLevelSelectName) {
 
 		return super.getGeoLevelViewValues(
 				servletRequest,
-				userID, 
-				geographyName, 
+				userID,
+				geographyName,
 				geoLevelSelectName);
 	}
 
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getNumerator")
 	public Response getNumerator(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
-			@QueryParam("geographyName") String geographyName,		
+			@QueryParam("geographyName") String geographyName,
 			@QueryParam("healthThemeDescription") String healthThemeDescription) {
 
 
@@ -256,15 +180,15 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 				userID,
 				geographyName,
 				healthThemeDescription);
-	}	
+	}
 
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getDenominator")
 	public Response getDenominator(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
-			@QueryParam("geographyName") String geographyName,		
+			@QueryParam("geographyName") String geographyName,
 			@QueryParam("healthThemeDescription") String healthThemeDescription) {
 
 		return super.getDenominator(
@@ -275,19 +199,19 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 	}
 
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getYearRange")
 	public Response getYearRange(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
-			@QueryParam("geographyName") String geographyName,	
+			@QueryParam("geographyName") String geographyName,
 			@QueryParam("numeratorTableName") String numeratorTableName) {
 
 		return super.getYearRange(
 				servletRequest,
-				userID, 
-				geographyName, 
-				numeratorTableName);		
+				userID,
+				geographyName,
+				numeratorTableName);
 	}
 
 
@@ -297,10 +221,10 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 	 * @return
 	 */
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getYearsForStudy")
 	public Response getYearsForStudy(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("study_id") String studyID) {
 
@@ -311,37 +235,37 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-			= getRIFStudyResultRetrievalService();
+					= getRIFStudyResultRetrievalService();
 			ArrayList<Integer> years
-			= studyResultRetrievalService.getYearsForStudy(
-					user, 
+					= studyResultRetrievalService.getYearsForStudy(
+					user,
 					studyID);
 			ArrayList<String> yearsAsStrings = new ArrayList<String>();
 			for (Integer year : years) {
 				yearsAsStrings.add(String.valueOf(year));
 			}
 
-			result 
-			= serialiseNamedArray("years", yearsAsStrings);
+			result
+					= serialiseNamedArray("years", yearsAsStrings);
 		}
 		catch(Exception exception) {
 			rifLogger.error(
-				this.getClass(), 
-				"GET /getYearsForStudy method failed: ", 
-				exception);	
+					this.getClass(),
+					"GET /getYearsForStudy method failed: ",
+					exception);
 			//Convert exceptions to support JSON
-			result 
-			= serialiseException(
+			result
+					= serialiseException(
 					servletRequest,
-					exception);			
+					exception);
 		}
 
 		WebServiceResponseGenerator webServiceResponseGenerator
-		= getWebServiceResponseGenerator();
+				= getWebServiceResponseGenerator();
 		return webServiceResponseGenerator.generateWebServiceResponse(
 				servletRequest,
-				result);		
-	}	
+				result);
+	}
 
 
 	/**
@@ -350,10 +274,10 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 	 * @return
 	 */
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getSexesForStudy")
 	public Response getSexesForStudy(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("study_id") String studyID) {
 
@@ -364,11 +288,11 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-			= getRIFStudyResultRetrievalService();
+					= getRIFStudyResultRetrievalService();
 
 			ArrayList<Sex> sexes
-			= studyResultRetrievalService.getSexesForStudy(
-					user, 
+					= studyResultRetrievalService.getSexesForStudy(
+					user,
 					studyID);
 			String[] sexNames = new String[sexes.size()];
 			for (int i = 0; i < sexNames.length; i++) {
@@ -378,29 +302,29 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 			SexesProxy sexesProxy = new SexesProxy();
 			sexesProxy.setNames(sexNames);
 
-			result 
-			= serialiseSingleItemAsArrayResult(
+			result
+					= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					sexesProxy);
 		}
 		catch(Exception exception) {
 			rifLogger.error(
-				this.getClass(), 
-				"GET /getSexesForStudy method failed: ", 
-				exception);	
+					this.getClass(),
+					"GET /getSexesForStudy method failed: ",
+					exception);
 			//Convert exceptions to support JSON
-			result 
-			= serialiseException(
+			result
+					= serialiseException(
 					servletRequest,
-					exception);			
+					exception);
 		}
 
 		WebServiceResponseGenerator webServiceResponseGenerator
-		= getWebServiceResponseGenerator();
+				= getWebServiceResponseGenerator();
 		return webServiceResponseGenerator.generateWebServiceResponse(
 				servletRequest,
-				result);		
-	}	
+				result);
+	}
 
 
 	/**
@@ -412,10 +336,10 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 	 * @return
 	 */
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getSmoothedResults")
 	public String getSmoothedResults(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("studyID") String studyID,
 			@QueryParam("sex") String sex) {
@@ -427,38 +351,38 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-			= getRIFStudyResultRetrievalService();
+					= getRIFStudyResultRetrievalService();
 			RIFResultTable resultTable
-			= studyResultRetrievalService.getSmoothedResults(
-					user, 
+					= studyResultRetrievalService.getSmoothedResults(
+					user,
 					studyID,
 					sex);
 
 			RIFResultTableJSONGenerator rifResultTableJSONGenerator
-			= new RIFResultTableJSONGenerator();
+					= new RIFResultTableJSONGenerator();
 			result = rifResultTableJSONGenerator.writeResultTable(resultTable);
 
 		}
 		catch(Exception exception) {
 			rifLogger.error(
-				this.getClass(), 
-				"GET /getSmoothedResults method failed: ", 
-				exception);	
+					this.getClass(),
+					"GET /getSmoothedResults method failed: ",
+					exception);
 			//Convert exceptions to support JSON
-			result 
-			= serialiseException(
+			result
+					= serialiseException(
 					servletRequest,
-					exception);			
+					exception);
 		}
 
 		return result;
-	}	
+	}
 
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getAllPopulationPyramidData")
 	public String getAllPopulationPyramidData(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("studyID") String studyID,
 			@QueryParam("year") String year) {
@@ -470,159 +394,144 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-			= getRIFStudyResultRetrievalService();
+					= getRIFStudyResultRetrievalService();
 			RIFResultTable resultTable
-			= studyResultRetrievalService.getPopulationPyramidData(
-					user, 
+					= studyResultRetrievalService.getPopulationPyramidData(
+					user,
 					studyID,
 					year);
 
 			RIFResultTableJSONGenerator rifResultTableJSONGenerator
-			= new RIFResultTableJSONGenerator();
-			result = rifResultTableJSONGenerator.writeResultTable(resultTable);				
+					= new RIFResultTableJSONGenerator();
+			result = rifResultTableJSONGenerator.writeResultTable(resultTable);
 		}
 		catch(Exception exception) {
 			rifLogger.error(
-				this.getClass(), 
-				"GET /getAllPopulationPyramidData method failed: ", 
-				exception);	
+					this.getClass(),
+					"GET /getAllPopulationPyramidData method failed: ",
+					exception);
 			//Convert exceptions to support JSON
-			result 
-			= serialiseException(
+			result
+					= serialiseException(
 					servletRequest,
-					exception);			
+					exception);
 		}
 
 		return result;
-	}	
+	}
+
 
 	@GET
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getTileMakerTiles")
 	public Response getTileMakerTiles(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("geographyName") String geographyName, //SAHSU
 			@QueryParam("geoLevelSelectName") String geoLevelSelectName, //LEVEL2
-			@QueryParam("zoomlevel") Integer zoomlevel,	//3	
+			@QueryParam("zoomlevel") Integer zoomlevel,	//3
 			@QueryParam("x") Integer x, //3
 			@QueryParam("y") Integer y) { //2
 
 		return super.getTileMakerTiles(
-				servletRequest, 
-				userID, 
-				geographyName, 
-				geoLevelSelectName, 
-				zoomlevel, 
-				x, 
-				y);	
+				servletRequest,
+				userID,
+				geographyName,
+				geoLevelSelectName,
+				zoomlevel,
+				x,
+				y);
 	}
 
 	@GET
-	@Produces({"application/json"})	
-	@Path("/getTileMakerCentroids")
-	public Response getTileMakerCentroids(
-			@Context HttpServletRequest servletRequest,	
-			@QueryParam("userID") String userID,
-			@QueryParam("geographyName") String geographyName, //SAHSU
-			@QueryParam("geoLevelSelectName") String geoLevelSelectName ) { //LEVEL2
-
-		return super.getTileMakerCentroids(
-				servletRequest, 
-				userID, 
-				geographyName, 
-				geoLevelSelectName);	
-	}
-
-	@GET	
-	@Produces({"application/json"})	
+	@Produces({"application/json"})
 	@Path("/getGeographyAndLevelForStudy")
 	public String getGeographyAndLevelForStudy(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("studyID") String studyID) {
 
 		String result = "";
 
 		try {
-			//Convert URL parameters to RIF service API parameters			
+			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-			= getRIFStudyResultRetrievalService();
+					= getRIFStudyResultRetrievalService();
 			String[] results
-			= studyResultRetrievalService.getGeographyAndLevelForStudy(user, studyID);
+					= studyResultRetrievalService.getGeographyAndLevelForStudy(user, studyID);
 
 			//Convert results to support JSON
-			result 
-			= serialiseSingleItemAsArrayResult(
+			result
+					= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					results);
 		}
 		catch(Exception exception) {
 			rifLogger.error(
-				this.getClass(), 
-				"GET /getGeographyAndLevelForStudy method failed: ", 
-				exception);	
+					this.getClass(),
+					"GET /getTileMakerTiles method failed: ",
+					exception);
 			//Convert exceptions to support JSON
-			result 
-			= serialiseException(
+			result
+					= serialiseException(
 					servletRequest,
-					exception);			
+					exception);
 		}
 
 		return result;
 
-	}	
+	}
 
-	@GET	
-	@Produces({"application/json"})	
+	@GET
+	@Produces({"application/json"})
 	@Path("/getDetailsForProcessedStudy")
 	public String getDetailsForProcessedStudy(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("studyID") String studyID) {
 
 		String result = "";
 
 		try {
-			//Convert URL parameters to RIF service API parameters			
+			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-			= getRIFStudyResultRetrievalService();
+					= getRIFStudyResultRetrievalService();
 			String[] results
-			= studyResultRetrievalService.getDetailsForProcessedStudy(user, studyID);
+					= studyResultRetrievalService.getDetailsForProcessedStudy(user, studyID);
 
 			//Convert results to support JSON
-			result 
-			= serialiseSingleItemAsArrayResult(
+			result
+					= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					results);
 		}
 		catch(Exception exception) {
 			rifLogger.error(
-				this.getClass(), 
-				"GET /getDetailsForProcessedStudy method failed: ", 
-				exception);
+					this.getClass(),
+					"GET /getDetailsForProcessedStudy method failed: ",
+					exception);
 			//Convert exceptions to support JSON
-			result 
-			= serialiseException(
+			result
+					= serialiseException(
 					servletRequest,
-					exception);			
+					exception);
 		}
 
 		return result;
 
-	}	
+	}
 
-	@GET	
-	@Produces({"application/json"})	
+	@GET
+	@Produces({"application/json"})
 	@Path("/getStudyTableForProcessedStudy")
 	public String getStudyTableForProcessedStudy(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("studyID") String studyID,
 			@QueryParam("type") String type,
@@ -632,85 +541,77 @@ public class PGSQLRIFStudyResultRetrievalWebServiceResource extends WebService {
 		String result = "";
 
 		try {
-			//Convert URL parameters to RIF service API parameters			
+			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-			= getRIFStudyResultRetrievalService();
+					= getRIFStudyResultRetrievalService();
 
 			RIFResultTable rifResultTable
-			= studyResultRetrievalService.getStudyTableForProcessedStudy(user, studyID, type, stt, stp);
+					= studyResultRetrievalService.getStudyTableForProcessedStudy(user, studyID, type, stt, stp);
 
 			//Convert results to support JSON
-			result 
-			= serialiseSingleItemAsArrayResult(
+			result
+					= serialiseSingleItemAsArrayResult(
 					servletRequest,
-					rifResultTable);	
+					rifResultTable);
 		}
 		catch(Exception exception) {
 			rifLogger.error(
-				this.getClass(), 
-				"GET /getStudyTableForProcessedStudy method failed: ", 
-				exception);
+					this.getClass(),
+					"GET /getStudyTableForProcessedStudy method failed: ",
+					exception);
 			//Convert exceptions to support JSON
-			result 
-			= serialiseException(
+			result
+					= serialiseException(
 					servletRequest,
-					exception);			
+					exception);
 		}
 
 		return result;
 
-	}	
+	}
 
-	@GET	
-	@Produces({"application/json"})	
+	@GET
+	@Produces({"application/json"})
 	@Path("/getHealthCodesForProcessedStudy")
 	public String getHealthCodesForProcessedStudy(
-			@Context HttpServletRequest servletRequest,	
+			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("studyID") String studyID) {
 
 		String result = "";
 
 		try {
-			//Convert URL parameters to RIF service API parameters			
+			//Convert URL parameters to RIF service API parameters
 			User user = createUser(servletRequest, userID);
 
 			//Call service API
 			RIFStudyResultRetrievalAPI studyResultRetrievalService
-			= getRIFStudyResultRetrievalService();
+					= getRIFStudyResultRetrievalService();
 			String[] results
-			= studyResultRetrievalService.getHealthCodesForProcessedStudy(user, studyID);
+					= studyResultRetrievalService.getHealthCodesForProcessedStudy(user, studyID);
 
 			//Convert results to support JSON
-			result 
-			= serialiseSingleItemAsArrayResult(
+			result
+					= serialiseSingleItemAsArrayResult(
 					servletRequest,
 					results);
 		}
 		catch(Exception exception) {
 			rifLogger.error(
-				this.getClass(), 
-				"GET /getHealthCodesForProcessedStudy method failed: ", 
-				exception);
+					this.getClass(),
+					"GET /getHealthCodesForProcessedStudy method failed: ",
+					exception);
 			//Convert exceptions to support JSON
-			result 
-			= serialiseException(
+			result
+					= serialiseException(
 					servletRequest,
-					exception);			
+					exception);
 		}
 
 		return result;
 
-	}	
-
-	// ==========================================
-	// Section Interfaces
-	// ==========================================
-
-	// ==========================================
-	// Section Override
-	// ==========================================
+	}
 }
