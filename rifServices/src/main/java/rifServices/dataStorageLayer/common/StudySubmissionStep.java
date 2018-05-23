@@ -54,7 +54,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		setEnableLogging(true);
 	}
 
-	public String performStep(
+	String performStep(
 			final Connection connection, final User user, final RIFStudySubmission studySubmission)
 			throws RIFServiceException {
 

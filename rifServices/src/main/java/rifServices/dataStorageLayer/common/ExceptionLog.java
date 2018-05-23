@@ -13,7 +13,7 @@ public class ExceptionLog {
 	private ServiceResources rifServiceResources;
 	private RIFLogger rifLogger;
 	
-	public ExceptionLog(User user, String methodName, RIFServiceException rifServiceException,
+	ExceptionLog(User user, String methodName, RIFServiceException rifServiceException,
 			ServiceResources rifServiceResources, RIFLogger rifLogger) {
 		
 		this.user = user;

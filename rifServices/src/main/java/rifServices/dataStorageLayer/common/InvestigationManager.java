@@ -20,7 +20,7 @@ public class InvestigationManager extends BaseSQLManager {
 	private AgeGenderYearManager ageGenderYearManager;
 	private CovariateManager covariateManager;
 
-	public InvestigationManager(
+	InvestigationManager(
 			final RIFServiceStartupOptions startupOptions,
 			final RIFContextManager rifContextManager,
 			final AgeGenderYearManager ageGenderYearManager,

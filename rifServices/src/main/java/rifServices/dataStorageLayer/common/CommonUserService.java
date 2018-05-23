@@ -28,7 +28,7 @@ public class CommonUserService implements UserService {
 	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 
 	protected static final RIFLogger rifLogger = RIFLogger.getLogger();
-	protected ServiceResources rifServiceResources;
+	ServiceResources rifServiceResources;
 	private String serviceName;
 	private String serviceDescription;
 	private String serviceContactEmail;

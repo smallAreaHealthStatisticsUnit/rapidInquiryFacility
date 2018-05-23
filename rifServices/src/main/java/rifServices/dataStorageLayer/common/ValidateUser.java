@@ -9,7 +9,7 @@ import rifGenericLibrary.system.RIFServiceSecurityException;
  * Checks a user's validity.
  *
  * <p>This code was originally extracted from
- * {@link rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService}, in the interests of
+ * {@link StudySubmissionService}, in the interests of
  * creating smaller, more testable classes.
  * </p>
  */

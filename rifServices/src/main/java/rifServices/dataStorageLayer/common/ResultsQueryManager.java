@@ -182,8 +182,8 @@ public class ResultsQueryManager extends BaseSQLManager {
 			getMapTilesQueryFormatter.addFromTable("rif40.rif40_geolevels");
 			getMapTilesQueryFormatter.addWhereJoinCondition(myTileTable, "geolevel_id", "rif40.rif40_geolevels", "geolevel_id");
 			getMapTilesQueryFormatter.addWhereParameter(
-					(prefixSchemaName ? SCHEMA_PREFIX : "") +
-					"rif40_geolevels", "geolevel_name");
+					applySchemaPrefixIfNeeded("rif40_geolevels"),
+					"geolevel_name");
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "zoomlevel");
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "x");
 			getMapTilesQueryFormatter.addWhereParameter(myTileTable, "y");

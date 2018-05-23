@@ -14,7 +14,7 @@ import rifServices.businessConceptLayer.RIFStudySubmission;
  * Creates a study extract.
  *
  * <p>This code was extracted from
- * {@link rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService}.
+ * {@link StudySubmissionService}.
  * </p>
  */
 public class StudyExtract {

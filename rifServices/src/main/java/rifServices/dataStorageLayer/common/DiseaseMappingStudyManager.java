@@ -38,10 +38,10 @@ public final class DiseaseMappingStudyManager extends BaseSQLManager {
 	/**
 	 * Instantiates a new SQL disease mapping study manager.
 	 */
-	public DiseaseMappingStudyManager(
-		final RIFServiceStartupOptions options,
-		final RIFContextManager rifContextManager,
-		final InvestigationManager investigationManager) {
+	DiseaseMappingStudyManager(
+			final RIFServiceStartupOptions options,
+			final RIFContextManager rifContextManager,
+			final InvestigationManager investigationManager) {
 
 		super(options);
 		this.rifContextManager = rifContextManager;

@@ -44,7 +44,7 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 		super(options);
 		this.sqlRIFContextManager = sqlRIFContextManager;
 		this.rifServiceStartupOptions = options;
-		tablesTableName = (prefixSchemaName ? SCHEMA_PREFIX : "") + "rif40_tables";
+		tablesTableName = applySchemaPrefixIfNeeded("rif40_tables");
 	}
 
 	/**
@@ -136,8 +136,7 @@ public final class AgeGenderYearManager extends BaseSQLManager {
 			getAgesForAgeGroupID.addSelectField("low_age");
 			getAgesForAgeGroupID.addSelectField("high_age");
 			getAgesForAgeGroupID.addSelectField("fieldname");
-			String ageGroupsTableName =
-					(prefixSchemaName ? SCHEMA_PREFIX : "") + "rif40_age_groups";
+			String ageGroupsTableName = applySchemaPrefixIfNeeded("rif40_age_groups");
 			getAgesForAgeGroupID.addFromTable(ageGroupsTableName);
 			getAgesForAgeGroupID.addWhereParameter("age_group_id");
 		

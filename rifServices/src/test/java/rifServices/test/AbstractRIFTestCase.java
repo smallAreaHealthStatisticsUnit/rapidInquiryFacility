@@ -19,7 +19,7 @@ import rifServices.dataStorageLayer.common.ServiceBundle;
 import rifServices.dataStorageLayer.common.ServiceResources;
 import rifServices.dataStorageLayer.common.StudyExtractManager;
 import rifServices.dataStorageLayer.common.SubmissionManager;
-import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
+import rifServices.dataStorageLayer.common.StudySubmissionService;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyRetrievalService;
 import rifServices.dataStorageLayer.ms.MSSQLTestRIFStudyServiceBundle;
 import rifServices.system.RIFServiceStartupOptions;
@@ -138,7 +138,7 @@ public class AbstractRIFTestCase {
 
 		rifServiceBundle = new MSSQLTestRIFStudyServiceBundle(
 				resources,
-				new MSSQLRIFStudySubmissionService(),
+				new StudySubmissionService(),
 				new MSSQLTestRIFStudyRetrievalService());
 		this.resources = resources;
 		rifStudySubmissionService = rifServiceBundle.getRIFStudySubmissionService();

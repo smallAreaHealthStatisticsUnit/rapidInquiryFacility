@@ -4,31 +4,13 @@ import rifGenericLibrary.businessConceptLayer.User;
 import rifGenericLibrary.system.RIFServiceException;
 import rifServices.businessConceptLayer.RIFStudyResultRetrievalAPI;
 import rifServices.businessConceptLayer.RIFStudySubmissionAPI;
-import rifServices.dataStorageLayer.ms.MSSQLRIFStudySubmissionService;
-import rifServices.dataStorageLayer.pg.PGSQLRIFStudySubmissionService;
 
 public interface ServiceBundle {
 
 	static ServiceBundle getInstance(final ServiceResources resources) {
 
-		RIFStudyResultRetrievalAPI retrieval = new ProductionStudyRetrievalService();
-
-		switch (resources.getRIFServiceStartupOptions().getRifDatabaseType()) {
-
-			case POSTGRESQL:
-				return new StudyServiceBundle(
-						resources, new PGSQLRIFStudySubmissionService(), retrieval);
-
-			case SQL_SERVER:
-				return new StudyServiceBundle(
-						resources, new MSSQLRIFStudySubmissionService(), retrieval);
-
-			case UNKNOWN:
-			default:
-				throw new IllegalStateException(
-						"Unknown database type: "
-						+ resources.getRIFServiceStartupOptions().getRifDatabaseType());
-		}
+		return new StudyServiceBundle(
+				resources, new StudySubmissionService(), new ProductionStudyRetrievalService());
 	}
 
 	RIFStudyResultRetrievalAPI getRIFStudyRetrievalService();
