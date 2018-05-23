@@ -1033,16 +1033,26 @@ REFERENCE (from shapefile) {
 			});	
 		}
 		else if (dbType == "MSSQLServer") {	// Not supported in SQL server. Default schema must be User_name()
-			var sql="SELECT SCHEMA_NAME() AS default_schema, user_name() AS username";
+			var sql="SELECT SCHEMA_NAME() AS default_schema, user_name() AS username;";
 			var request = new dbSql.Request();
 			request.query(sql, function setSearchPath(err, recordset) {
 				if (err) {
 					dbErrorHandler(err, sql);
 				}
 				else {
-					if (recordset[0].default_schema.toLowerCase() == recordset[0].username.toLowerCase()) {
+					if (recordset && recordset[0] && recordset[0].default_schema.toLowerCase() == recordset[0].username.toLowerCase()) {
 						winston.log("info", "SQL Server path OK");
 						addUserToPathCallback();
+					}
+					else if (recordset && recordset.recordset && recordset.recordset[0] && recordset.recordset[0].default_schema.toLowerCase() == recordset.recordset[0].username.toLowerCase()) {
+						winston.log("info", "SQL Server path OK");
+						addUserToPathCallback();
+					}
+					else if (!recordset) {
+						dbErrorHandler(new Error("addUserToPath(): no recordset returned"), sql);
+					}
+					else if (recordset && !recordset[0]) {
+						dbErrorHandler(new Error("addUserToPath(): no rows returned; recordset: " + JSON.stringify(recordset, null, 4)), sql);
 					}
 					else {
 						dbErrorHandler(new Error("addUserToPath(): default schema (" +
@@ -1084,10 +1094,17 @@ REFERENCE (from shapefile) {
 					geographyTableData=result.rows[0];
 				}		
 				else if (dbType == "MSSQLServer") {	
-					if (result.length != 1) {
-						dbErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + result.rows.length + ")"), sql);
+					var record;
+					if (result.recordset) {
+						record=result.recordset;
 					}
-					geographyTableData=result[0];
+					else {
+						record=result;
+					}
+					if (record.length != 1) {
+						dbErrorHandler(new Error("getNumGeolevelsZoomlevels() geography table: " + geographyTable + " fetch rows !=1 (" + record.rows.length + ")"), sql);
+					}
+					geographyTableData=record[0];
 				}
 				
 				sql="TRUNCATE TABLE t_tiles_" + geographyTableData.geography.toLowerCase();
@@ -1110,8 +1127,15 @@ REFERENCE (from shapefile) {
 								numGeolevels=result.rows[0].max_geolevel_id;
 							}		
 							else if (dbType == "MSSQLServer") {	
-								numZoomlevels=result[0].max_zoomlevel;
-								numGeolevels=result[0].max_geolevel_id;
+								var record;
+								if (result.recordset) {
+									record=result.recordset;
+								}
+								else {
+									record=result;
+								}
+								numZoomlevels=record[0].max_zoomlevel;
+								numGeolevels=record[0].max_geolevel_id;
 							}
 							
 							if (numZoomlevels > maxZoomlevel) { // CLI overide
@@ -1261,7 +1285,13 @@ REFERENCE (from shapefile) {
 					duplicateTileData=result.rows;
 				}		
 				else if (dbType == "MSSQLServer") {	
-					duplicateTileData=result;
+				
+					if (result.recordset) {
+						duplicateTileData=result.recordset;
+					}
+					else {
+						duplicateTileData=result;
+					}
 				}	
 				
 				for (var i=0; i<duplicateTileData.length; i++) {
@@ -1311,7 +1341,12 @@ REFERENCE (from shapefile) {
 				geolvelTableData=result.rows;
 			}		
 			else if (dbType == "MSSQLServer") {	
-				geolvelTableData=result;
+				if (result.recordset) {
+					geolvelTableData=result.recordset;
+				}
+				else {
+					geolvelTableData=result;
+				}
 			}		  
 			if (geolvelTableData.length < 1) {
 				dbErrorHandler(new Error("tileIntersectsProcessingGeolevelLoop() geolevelsTable table: " + geolevelsTable + 
@@ -1559,7 +1594,14 @@ REFERENCE (from shapefile) {
 			fileNoext="mssql_t_tiles_" + geolevelName.toLowerCase();	
 		}
 		
-		var csvFileName=(xmlFileDir + "/data/" + fileNoext + ".csv");		
+		var csvFileName;		
+		if (fs.existsSync(xmlFileDir + "/data")) {
+			csvFileName=(xmlFileDir + "/data/" + fileNoext + ".csv");
+		}
+		else {
+			csvFileName=(xmlFileDir + "/" + fileNoext + ".csv");
+		}
+			
 		try { // Create tiles CSV files for each geolevel
 			var tilesCsvStream = fs.createWriteStream(csvFileName, { flags : 'w' });
 			winston.log("info", "Creating tile CSV file: " + csvFileName);	
@@ -1567,7 +1609,8 @@ REFERENCE (from shapefile) {
 				winston.log("verbose", "Tile csvStreamClose(): " + csvFileName);
 			});		
 			tilesCsvStream.on('error', function csvStreamError(e) {
-				winston.log("error", "Exception in CSV write to file: " + csvFileName, e.message);										
+				winston.log("error", "Exception in CSV write to file: " + csvFileName, e.message);		
+				geolevelProcessingCallback(e);				
 			});
 		}
 		catch (e) {
@@ -1656,6 +1699,12 @@ REFERENCE (from shapefile) {
 						pgInsertSql);
 					
 				}
+				else if (result.rowCount == undefined && expectedRows > 0) {
+					dbErrorHandler(
+						new Error("pgTilesInsert() tile INSERT: result.rowCoun undefined != expected: " + expectedRows), 
+						pgInsertSql);
+					
+				}
 				else if (expectedRows != result.rowCount) {
 					dbErrorHandler(
 						new Error("pgTilesInsert() tile INSERT: " + result.rowCount + " != expected: " + expectedRows), 
@@ -1704,7 +1753,8 @@ REFERENCE (from shapefile) {
 						areaid_count: 		tileArray[i].insertArray[6]
 					};					
 					var query=request.query(insertSql, 
-						function mssqlTileInsertSeries(err, recordset, rowCount) {
+						function mssqlTileInsertSeries(err, recordset) {
+							var rowCount=recordset.rowsAffected;
 							if (err && err.state == "HY104") { // Problem with NVarChar(MAX) and small (<4K) strings; redo as textual sql
 //										winston.log("debug", "[" + data.tile_id + "] INSERT SQL> " + insertSql + "\noptimised_topojson(" + data.optimised_topojson.length + 
 //										"): " + data.optimised_topojson.substring(0, 2500));
@@ -1719,9 +1769,10 @@ REFERENCE (from shapefile) {
 							else if (err && err.state != "HY104") {
 								dbErrorHandler(err, insertSql, mssqlTileInsertCallback);
 							}
-							else if (rowCount == undefined) {
+							else if (rowCount == undefined && expectedRows > 0) {
 								dbErrorHandler(
-									new Error("mssqlTilesInsert() [" + data.tile_id + "] tile INSERT: rowCount undefined != expected: " + expectedRows), 
+									new Error("mssqlTilesInsert() [" + data.tile_id + "] tile INSERT: rowCount undefined != expected: " + expectedRows + 
+										"; recordset: " + JSON.stringify(recordset, null, 4)), 
 									insertSql, mssqlTileInsertCallback);	
 							}
 							else if (1 != rowCount) {
@@ -1802,7 +1853,15 @@ REFERENCE (from shapefile) {
 		 */
 		function tileIntersectsProcessingEnd(rowCount, rowsProcessed, resultRows, 
 			dbType, tilesCsvStream, block, numBlocks, getBlockCallback) {
-			
+				
+			scopeChecker(__file, __line, {
+				dbType: dbType,
+				tilesCsvStream: tilesCsvStream,
+				block: block,
+				numBlocks: numBlocks,
+				callback: getBlockCallback
+			});
+		
 			var end = new Date().getTime();
 			var elapsedTime=(end - zstart)/1000; // in S
 			var tElapsedTime=(end - lstart)/1000; // in S
@@ -1917,6 +1976,18 @@ REFERENCE (from shapefile) {
 		 * Descrioption: Process a block of geolevel/zoomlevel data
 		 */
 		function blockProcessing(sql, zoomlevel, geolevel_id, block, numBlocks, geolevelName, getBlockCallback) {
+					
+			scopeChecker(__file, __line, {
+				tilesCsvStream: tilesCsvStream,
+				block: block,
+				numBlocks: numBlocks,
+				zoomlevel: zoomlevel,
+				geolevel_id: geolevel_id,
+				geolevelName: geolevelName,
+				sql: sql,
+				callback: getBlockCallback
+			});
+			
 			winston.log("debug", "Block: " + block + "/" + numBlocks + "; geolevel_id: " + 
 				geolevel_id + "; zoomlevel: " + zoomlevel + 
 				"\nSQL> " + sql);
@@ -1976,12 +2047,23 @@ REFERENCE (from shapefile) {
 							tile_id: nresultRows[0].tile_id,
 							areaid_count: 1,
 							optimised_topojson: '{"type": "FeatureCollection","features":[]}'});
-						dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", "t_tiles_" + geolevelName.toLowerCase(), rows, 
-							function tileIntersectsProcessingEndCallback(err) {							
-								sql=undefined;
-								tileIntersectsProcessingEnd(nresultRows.length, rowsProcessed, nresultRows, 
-									dbType, tilesCsvStream, block, numBlocks, getBlockCallback);
-							});
+							
+						if (fs.existsSync(xmlFileDir + "/data")) {
+							dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", "t_tiles_" + geolevelName.toLowerCase(), rows, 
+								function tileIntersectsProcessingEndCallback(err) {							
+									sql=undefined;
+									tileIntersectsProcessingEnd(nresultRows.length, rowsProcessed, nresultRows, 
+										dbType, tilesCsvStream, block, numBlocks, getBlockCallback);
+								});
+						}
+						else {
+							dbLoad.createSqlServerFmtFile(xmlFileDir, "t_tiles_" + geolevelName.toLowerCase(), rows, 
+								function tileIntersectsProcessingEndCallback(err) {							
+									sql=undefined;
+									tileIntersectsProcessingEnd(nresultRows.length, rowsProcessed, nresultRows, 
+										dbType, tilesCsvStream, block, numBlocks, getBlockCallback);
+								});
+						}
 					}	
 					else {
 						tileIntersectsProcessingEnd(nresultRows.length, rowsProcessed, nresultRows, 
@@ -2032,7 +2114,12 @@ REFERENCE (from shapefile) {
 					boundData=result.rows;
 				}		
 				else if (dbType == "MSSQLServer") {	
-					boundData=result;
+					if (result.recordset) {
+						boundData=result.recordset;
+					}
+					else {
+						boundData=result;
+					}
 				}		  
 				if (boundData.length < 1) {
 					if (geolevel_id == 1 && zoomlevel > 0) {
@@ -2115,11 +2202,22 @@ REFERENCE (from shapefile) {
 		var sql="SELECT geolevel_id, areaid, num_adjacencies, adjacency_list\n" +
 				"  FROM " + adjacencyTable + " ORDER BY geolevel_id, areaid";
 		if (dbType == "PostGres") {
-			csvFileName=xmlFileDir + "/data/pg_" + adjacencyTable + ".csv";
+			if (fs.existsSync(xmlFileDir + "/data")) {
+				csvFileName=xmlFileDir + "/data/pg_" + adjacencyTable + ".csv";
+			}
+			else {
+				csvFileName=xmlFileDir + "/pg_" + adjacencyTable + ".csv";
+			}
 			request=client;
 		}		
 		else if (dbType == "MSSQLServer") {	
-			csvFileName=xmlFileDir + "/data/mssql_" + adjacencyTable + ".csv";
+		
+			if (fs.existsSync(xmlFileDir + "/data")) {
+				csvFileName=xmlFileDir + "/data/mssql_" + adjacencyTable + ".csv";
+			}
+			else {
+				csvFileName=xmlFileDir + "/mssql_" + adjacencyTable + ".csv";
+			}
 			request=new dbSql.Request();
 		}					
 
@@ -2131,7 +2229,8 @@ REFERENCE (from shapefile) {
 				winston.log("verbose", "adjacency csvStreamClose(): " + csvFileName);
 			});		
 			adjacencyCsvStream.on('error', function csvStreamError(e) {
-				winston.log("error", "Exception in adjacency CSV write to file: " + csvFileName, e.message);										
+				winston.log("error", "Exception in adjacency CSV write to file: " + csvFileName, e.message);			
+				dbTileMakerCallback(e);											
 			});
 		}
 		catch (e) {
@@ -2150,7 +2249,12 @@ REFERENCE (from shapefile) {
 					record=recordSet.rows;
 				}
 				else if (dbType == "MSSQLServer") {	
-					record=recordSet;
+					if (recordSet.recordset) {
+						record=recordSet.recordset;
+					}
+					else {
+						record=recordSet;
+					}
 				}			
 				var rowsAffected=record.length;
 				if (rowsAffected == undefined || rowsAffected == 0) {
@@ -2175,7 +2279,18 @@ REFERENCE (from shapefile) {
 					}
 					else {
 						adjacencyCsvStream.end();
-						dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", adjacencyTable, record, adjacencyProcessingCallback);	
+						
+						if (dbType == "MSSQLServer") {	
+							if (fs.existsSync(xmlFileDir + "/data")) {
+								dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", adjacencyTable, record, adjacencyProcessingCallback);	
+							}
+							else {
+								dbLoad.createSqlServerFmtFile(xmlFileDir, adjacencyTable, record, adjacencyProcessingCallback);	
+							}
+						}
+						else {
+							adjacencyProcessingCallback();
+						}
 					}
 					
 				});
@@ -2208,14 +2323,24 @@ REFERENCE (from shapefile) {
 					var request;
 					var shapefileTable=geoLevel[i].shapeFileTable.toString().toLowerCase();
 					var sql;
-					if (dbType == "PostGres") {
-						csvFileName=xmlFileDir + "/data/pg_" + lookupTable + ".csv";
+					if (dbType == "PostGres") {	
+						if (fs.existsSync(xmlFileDir + "/data")) {
+							csvFileName=xmlFileDir + "/data/pg_" + lookupTable + ".csv";
+						}
+						else {
+							csvFileName=xmlFileDir + "/pg_" + lookupTable + ".csv";
+						}
 						request=client;
 						sql="SELECT " + shapefileTable + ", areaname, gid, geographic_centroid::Text AS geographic_centroid\n" +
 							"  FROM " + lookupTable + " ORDER BY gid";
 					}		
 					else if (dbType == "MSSQLServer") {	
-						csvFileName=xmlFileDir + "/data/mssql_" + lookupTable + ".csv";
+						if (fs.existsSync(xmlFileDir + "/data")) {
+							csvFileName=xmlFileDir + "/data/mssql_" + lookupTable + ".csv";
+						}
+						else {
+							csvFileName=xmlFileDir + "/mssql_" + lookupTable + ".csv";
+						}
 						request=new dbSql.Request();
 						sql="SELECT " + shapefileTable + ", areaname, gid, geographic_centroid\n" +
 							"  FROM " + lookupTable + " ORDER BY gid";
@@ -2229,7 +2354,8 @@ REFERENCE (from shapefile) {
 							winston.log("verbose", "lookup csvStreamClose(): " + csvFileName);
 						});		
 						lookupCsvStream.on('error', function csvStreamError(e) {
-							winston.log("error", "Exception in lookup CSV write to file: " + csvFileName, e.message);										
+							winston.log("error", "Exception in lookup CSV write to file: " + csvFileName, e.message);		
+							dbTileMakerCallback(e);												
 						});
 					}
 					catch (e) {
@@ -2248,7 +2374,12 @@ REFERENCE (from shapefile) {
 								record=recordSet.rows;
 							}
 							else if (dbType == "MSSQLServer") {	
-								record=recordSet;
+								if (recordSet.recordset) {
+									record=recordSet.recordset;
+								}
+								else {
+									record=recordSet;
+								}
 							}			
 							var rowsAffected=record.length;
 							if (rowsAffected == undefined || rowsAffected == 0) {
@@ -2273,7 +2404,18 @@ REFERENCE (from shapefile) {
 								}
 								else {
 									lookupCsvStream.end();
-									dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", lookupTable, record,	geoLevelCallback);	
+									
+									if (dbType == "MSSQLServer") {	
+										if (fs.existsSync(xmlFileDir + "/data")) {
+											dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", lookupTable, record, geoLevelCallback);	
+										}
+										else {
+											dbLoad.createSqlServerFmtFile(xmlFileDir, lookupTable, record, geoLevelCallback);	
+										}
+									}
+									else {
+										geoLevelCallback();
+									}
 								}
 								
 							});
@@ -2309,11 +2451,21 @@ REFERENCE (from shapefile) {
 		
 		var request;
 		if (dbType == "PostGres") {
-			csvFileName=xmlFileDir + "/data/pg_" + hierarchyTable + ".csv";
+			if (fs.existsSync(xmlFileDir + "/data")) {
+				csvFileName=xmlFileDir + "/data/pg_" + hierarchyTable + ".csv";
+			}
+			else {
+				csvFileName=xmlFileDir + "/pg_" + hierarchyTable + ".csv";
+			}
 			request=client;
 		}		
 		else if (dbType == "MSSQLServer") {	
-			csvFileName=xmlFileDir + "/data/mssql_" + hierarchyTable + ".csv";
+			if (fs.existsSync(xmlFileDir + "/data")) {
+				csvFileName=xmlFileDir + "/data/mssql_" + hierarchyTable + ".csv";
+			}
+			else {
+				csvFileName=xmlFileDir + "/mssql_" + hierarchyTable + ".csv";
+			}
 			request=new dbSql.Request();
 		}
 		var sql="SELECT * FROM " + hierarchyTable;
@@ -2335,7 +2487,8 @@ REFERENCE (from shapefile) {
 				winston.log("verbose", "hierarchy csvStreamClose(): " + csvFileName);
 			});		
 			hierarchyCsvStream.on('error', function csvStreamError(e) {
-				winston.log("error", "Exception in hierarchy CSV write to file: " + csvFileName, e.message);										
+				winston.log("error", "Exception in hierarchy CSV write to file: " + csvFileName, e.message);	
+				dbTileMakerCallback(e);				
 			});
 		}
 		catch (e) {
@@ -2354,7 +2507,12 @@ REFERENCE (from shapefile) {
 					record=recordSet.rows;
 				}
 				else if (dbType == "MSSQLServer") {	
-					record=recordSet;
+					if (recordSet.recordset) {
+						record=recordSet.recordset;
+					}
+					else {
+						record=recordSet;
+					}
 				}			
 				var rowsAffected=record.length;
 				if (rowsAffected == undefined || rowsAffected == 0) {
@@ -2379,7 +2537,18 @@ REFERENCE (from shapefile) {
 					}
 					else {
 						hierarchyCsvStream.end();
-						dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", hierarchyTable, record,	hierarchyProcessingCallback);			
+						
+						if (dbType == "MSSQLServer") {	
+							if (fs.existsSync(xmlFileDir + "/data")) {
+								dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", hierarchyTable, record,	hierarchyProcessingCallback);
+							}
+							else {							
+								dbLoad.createSqlServerFmtFile(xmlFileDir, hierarchyTable, record,	hierarchyProcessingCallback);	
+							}
+						}
+						else {
+							hierarchyProcessingCallback();
+						}
 					}
 				});
 			}
@@ -2409,12 +2578,22 @@ REFERENCE (from shapefile) {
 		var request;
 		var sql;
 		if (dbType == "PostGres") {
-			csvFileName=xmlFileDir + "/data/pg_" + geometryTable + ".csv";	
+			if (fs.existsSync(xmlFileDir + "/data")) {
+				csvFileName=xmlFileDir + "/data/pg_" + geometryTable + ".csv";	
+			}
+			else {
+				csvFileName=xmlFileDir + "/pg_" + geometryTable + ".csv";	
+			}
 			sql="SELECT geolevel_id, areaid, zoomlevel, ST_AsText(geom) AS wkt FROM " + geometryTable /* geometry table */;
 			request=client;
 		}		
 		else if (dbType == "MSSQLServer") {	
-			csvFileName=xmlFileDir + "/data/mssql_" + geometryTable + ".csv";	
+			if (fs.existsSync(xmlFileDir + "/data")) {
+				csvFileName=xmlFileDir + "/data/mssql_" + geometryTable + ".csv";
+			}
+			else {
+				csvFileName=xmlFileDir + "/mssql_" + geometryTable + ".csv";	
+			}
 			sql="SELECT geolevel_id, areaid, zoomlevel, geom.STAsText() AS wkt FROM " + geometryTable /* geometry table */;
 			request=new dbSql.Request();
 		}
@@ -2448,7 +2627,12 @@ REFERENCE (from shapefile) {
 					record=recordSet.rows;
 				}
 				else if (dbType == "MSSQLServer") {	
-					record=recordSet;
+					if (recordSet.recordset) {
+						record=recordSet.recordset;
+					}
+					else {
+						record=recordSet;
+					}
 				}			
 				var rowsAffected=record.length;
 				if (rowsAffected == undefined || rowsAffected == 0) {
@@ -2509,8 +2693,20 @@ REFERENCE (from shapefile) {
 											geographyName, geographyTable, geographyTableDescription, 
 											xmlFileDir, tileProcessingCallback); // Call tileProcessing
 									}
-									dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", geometryTable, record,
-										geographyTableProcessingCallback);	
+									
+									if (dbType == "MSSQLServer") {	
+										if (fs.existsSync(xmlFileDir + "/data")) {
+											dbLoad.createSqlServerFmtFile(xmlFileDir + "/data", geometryTable, record,
+												geographyTableProcessingCallback);	
+										}
+										else {
+											dbLoad.createSqlServerFmtFile(xmlFileDir, geometryTable, record,
+												geographyTableProcessingCallback);	
+										}
+									}
+									else {
+										geographyTableProcessingCallback();
+									}
 								} // End of tmssqlTileGeometryEnd()		
 							); // End of async.forEachOfSeries()
 						}			
@@ -2619,8 +2815,13 @@ REFERENCE (from shapefile) {
 						if (dbType == "PostGres") {
 							value.results=recordSet.rows;
 						}
-						else if (dbType == "MSSQLServer") {	
-							value.results=recordSet;
+						else if (dbType == "MSSQLServer") {
+							if (recordSet.recordset) {
+								value.results=recordSet.recordset;
+							}
+							else {
+								value.results=recordSet;
+							}
 						}			
 						var rowsAffected=(value.results || value.results.length);
 						if (rowsAffected == undefined || rowsAffected == 0) {
@@ -2636,18 +2837,18 @@ REFERENCE (from shapefile) {
 							var hdr2="";
 							var padStr="                    ";
 							var padStr2="--------------------";
-							for (var k=0; k<value.results.length; k++) {
+							for (var k=0; (k<value.results.length && k < 20); k++) {
 								keys=Object.keys(value.results[k]);
 								for (var j=0; j<keys.length; j++) {
 									if (k == 0) {
 										hdr+=(padStr + keys[j]).slice(-20) + " ";
 										hdr2+=(padStr2).slice(-20) +" ";
 									}
-									str+=(padStr + (results[k][keys[j]]||"")).slice(-20) + " ";
+									str+=(padStr + (value.results[k][keys[j]]||"")).slice(-20) + " ";
 								}
 								str+="\n";
 							}
-							winston.log("warn", "Test [" + (i+1) + "] failed: " + value.description + "\n" +
+							winston.log("warn", "Test [" + (i+1) + "] failed: " + value.description + " (first 20 rows)\n" +
 								(hdr||"") + "\n" + (hdr2||"") + "\n" + str);
 						}
 						tileTestsCallback();
@@ -2745,7 +2946,12 @@ sql+="	  FROM t_tiles_" + geographyTable.toLowerCase() + "\n" +
 								results=recordSet.rows;
 							}
 							else if (dbType == "MSSQLServer") {	
-								results=recordSet;
+								if (recordSet.recordset) {
+									results=recordSet.recordset;
+								}
+								else {
+									record=recordSet;
+								}
 							}			
 							var rowsAffected=(results || results.length);
 							var str="";

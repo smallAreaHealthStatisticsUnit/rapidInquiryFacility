@@ -63,6 +63,9 @@ rm(list=ls())
 connDB <- ""
 options(error=function() { traceback(2); if (!is.null(connDB)) odbcClose(connDB); quit("no", 1, FALSE)})
 
+# Set the working directory based on the value from the Java class
+setwd(working_dir)
+
 ##====================================================================
 # SCRIPT VARIABLES
 ##====================================================================
@@ -105,7 +108,7 @@ temporarySmoothedResultsTableName <- ""
 
 #File names for smoothed (temporarySmoothedResultsFileName) and extract data frames (temporaryExtractFileName)
 #Variable to control dumping franes (dumpFramesToCsv)
-defaultScratchSpace <- file.path("rifDemo", "scratchSpace")
+defaultScratchSpace <- file.path("scratchSpace")
 defaultDumpFramesToCsv <- TRUE
 scratchSpace <- ""
 dumpFramesToCsv <- ""
@@ -278,7 +281,7 @@ establishTableNames <-function(vstudyID) {
 # Name of Rdata CSV file for debugging results save
 # This needs to be passed in via interface
   temporarySmoothedResultsFileName <<-file.path(scratchSpace, "tmp_s", vstudyID, "_map.csv")
-  temporaryExtractFileName <<-file.path(scratchSpace, "tmp_s", vstudyID, "_extract.csv")
+  temporaryExtractFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_extract.csv"))
   
   mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")
 }
