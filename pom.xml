@@ -1,62 +1,61 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>rapidInquiryFacility</groupId>
-  <artifactId>rifGeneral</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <name>General RIF Tool Suite Settings</name>
-  <description>This project contains the general project settings that are shared by the family of applications in the RIF Tool Suite</description>
-  <properties>
-    <maven-war-plugin.version>2.4</maven-war-plugin.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-  </properties>
-  
-  <modules>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>rapidInquiryFacility</groupId>
+	<artifactId>rifGeneral</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>General RIF Tool Suite Settings</name>
+	<description>This project contains the general project settings that are shared by the family of applications in the RIF Tool Suite</description>
+	<properties>
+		<maven-war-plugin.version>2.4</maven-war-plugin.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+	
+	<modules>
  	<module>./rifGenericLibrary</module>
  	<module>./rifServices</module>
 	<module>./taxonomyServices</module> 
-	<!--	
- 	<module>../rifStudySubmissionTool</module> 
- 	-->
  	<module>./rifDataLoaderTool</module>
-	<module>./rifITGovernanceTool</module> 	
-  </modules>
-  
-  
-  <dependencies>
-  	<dependency>
-  		<groupId>junit</groupId>
-  		<artifactId>junit</artifactId>
-  		<version>4.11</version>
-  	</dependency>	
+	<module>./rifITGovernanceTool</module>
+	<module>./rifWebApplication</module>
+
+	</modules>
+	
+	
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+		</dependency>	
 	
 	<!-- Removed - replaced with Log4j as requested by CDC PH 11/9/2017
-  	<dependency>
-  		<groupId>org.slf4j</groupId>
-  		<artifactId>log4j-over-slf4j</artifactId>
-  		<version>1.7.5</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.slf4j</groupId>
-  		<artifactId>slf4j-log4j13</artifactId>
-  		<version>1.0.1</version>
-  	</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j13</artifactId>
+			<version>1.0.1</version>
+		</dependency>
 	-->
-  	
+		
 	<dependency>
-    	<groupId>com.microsoft.sqlserver</groupId>
-    	<artifactId>mssql-jdbc</artifactId>
-    	<version>6.1.0.jre8</version>
+			<groupId>com.microsoft.sqlserver</groupId>
+			<artifactId>mssql-jdbc</artifactId>
+			<version>6.1.0.jre8</version>
 	</dependency>
 
 	<dependency>
-    	<groupId>org.postgresql</groupId>
-    	<artifactId>postgresql</artifactId>
-    	<version>9.3-1102-jdbc3</version>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>9.3-1102-jdbc3</version>
 	</dependency>
 		
  	
-  </dependencies>
+	</dependencies>
 </project>
