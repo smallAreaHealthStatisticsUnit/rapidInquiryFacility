@@ -2301,3 +2301,12 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 	+ mssql@4.1.0
 	added 12 packages in 11.196s
    ```
+* Test SEER pre-processing and load scripts;
+* Test and merge pull requests #32, #33. Issues with #34;
+* Basic Tile Maker documentation;
+* More work on data loading documentation
+* Need to remove check:
+  ```
+  Msg 51147, Level 16, State 1, Server DESKTOP-4P2SA80, Procedure tr_rif40_tables_checks, Line 45
+  Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
+  ```
