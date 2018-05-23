@@ -2301,3 +2301,7 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 	+ mssql@4.1.0
 	added 12 packages in 11.196s
    ```
+* Test SEER pre-processing and load scripts;
+* Test and merge pull requests #32, #33. Issues with #34;
+* Basic Tile Maker documentation;
+* More work on data loading documentation
