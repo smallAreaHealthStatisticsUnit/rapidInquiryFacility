@@ -763,7 +763,8 @@ An example theme is provided:
 Generally load processing requires three steps:
 
 * Create and load the Administrative geography. **Always load the administrative geography first**. This is produced by the 
-  [Tile maker](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md):
+  [Tile maker](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md). See
+  [Example of Post Front End Processing](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#244-example-of-post-front-end-processing)
 * Pre-process the data from flat files, process and unloaded back into flat files that can be loaded into either Postgres or SQL Server. 
   Typically this is done as a normal user on any database. Do **not** use the schema *rif40* or  administrative accounts (*postgres* or *administrator*)
 * Load the processed data as a schema owner (e.g. *rif40*)into a target database:
@@ -781,7 +782,8 @@ Generally load processing requires three steps:
 	  see: [ICD field name](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#52-icd-field-name);
     - Covariate table names are predfined, see: 
       [Covariates](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#233-covariates);
-
+  The RIF load scripts only require the administrative geography; and not the tilemaker pre-processing tables.
+  
 The following scripts are used in the examples: 
 
 | Action                                    | Postgres                            | SQL Server                          |
@@ -798,6 +800,21 @@ The following scripts are used in the examples:
 
 To install, change to the &lt;SEER Data directory, e.g. C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\ &gt;;
 
+The SEER pre-processing script *pg_load_seer_covariates.sql* has a dependency on the *cb_2014_us_nation_5m*, *cb_2014_us_state_500k* and *cb_2014_us_county_500l* that are part of the 
+tilemaker pre-processing. The FIPS code is required to make the join and this field is not in the standard lookup tables. For this reason it is necessary to build 
+the covariates table on *sahsuland_dev*. In the longer term the FIPS codes should be added to the lookup tables. 
+  
+SQL Server pre-processing scripts have not been created due to the lack of an unload facility in *sqlcmd*. There are three basic options to resolve this problem without recourse 
+to C# or the many GUI wizards available:
+
+* Use [bcp](https://docs.microsoft.com/en-us/sql/relational-databases/import-export/import-and-export-bulk-data-by-using-the-bcp-utility-sql-server?view=sql-server-2017)
+* USe *sqlcmd* [SQL SERVER – Export Data AS CSV from Database Using SQLCMD](https://blog.sqlauthority.com/2013/11/25/sql-server-export-data-as-csv-from-database-using-sqlcmd/)
+
+Other useful references:
+
+* [Bulk Import and Export of Data (SQL Server)](https://docs.microsoft.com/en-us/sql/relational-databases/import-export/bulk-import-and-export-of-data-sql-server?view=sql-server-2017)
+* [8 Ways to Export SQL Results To a Text File](http://www.sqlservercentral.com/articles/Export/147145/)
+  
 To run a script: 
 
 - Postgres: ```psql -U rif40 -d <database name> -w -e -f <script name>```
@@ -2546,5 +2563,20 @@ by extract or R scripts. Traps will be added for:
 
 ## 6.2 Numerator Denominator Pair Errors
 
+```
+sahsuland=> select * from rif40_num_denom;
+ geography |   numerator_table    | numerator_description |         theme_description         | denominator_table | denominator_description | automatic
+-----------+----------------------+-----------------------+-----------------------------------+-------------------+-------------------------+-----------
+ SAHSULAND | NUM_SAHSULAND_CANCER | cancer numerator      | covering various types of cancers | POP_SAHSULAND_POP | population health file  |         1
+(1 row)
+
+
+sahsuland=> select * from rif40_num_denom_errors;
+ geography | numerator_owner |   numerator_table    | is_numerator_resolvable | n_num_denom_validated | numerator_description | denominator_owner | denominator_table | is_denominator_resolvable | d_num_denom_validated | denominator_description | automatic | auto_indirect_error_flag | auto_indirect_error | n_fdw_create_status | n_fdw_error_message | n_fdw_date_created | n_fdw_rowtest_passed
+-----------+-----------------+----------------------+-------------------------+-----------------------+-----------------------+-------------------+-------------------+---------------------------+-----------------------+-------------------------+-----------+--------------------------+---------------------+---------------------+---------------------+--------------------+----------------------
+ SAHSULAND | rif_data        | NUM_SAHSULAND_CANCER |                       1 |                     1 | cancer numerator      | rif_data          | POP_SAHSULAND_POP |                         1 |                     1 | population health file  |         1 |                        0 |                     |                     |                     |                    |
+ USA_2014  | rif_data        | NUM_SAHSULAND_CANCER |                       1 |                     0 | cancer numerator      | rif_data          | POP_SAHSULAND_POP |                         1 |                     0 | population health file  |         1 |                        0 |                     |                     |                     |                    |
+(2 rows)
+```
 Peter Hambly
 May 2018
