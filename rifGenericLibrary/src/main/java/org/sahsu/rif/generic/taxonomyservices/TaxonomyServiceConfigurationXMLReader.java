@@ -11,7 +11,7 @@ import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-// import java.lang.NoClassDefFoundError;
+import java.lang.NoClassDefFoundError;
 
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFGenericLibraryError;
@@ -210,7 +210,7 @@ public final class TaxonomyServiceConfigurationXMLReader {
 					taxonomyServices.add(taxonomyService);
 					
 				}	
-/*				catch(NoClassDefFoundError noClassDefFoundError) {
+				catch(NoClassDefFoundError noClassDefFoundError) {
 					taxonomyLogger.error(this.getClass(), "Unable to load taxonomyService: " + 
 						ontologyServiceClassName, 
 						noClassDefFoundError);
@@ -225,7 +225,7 @@ public final class TaxonomyServiceConfigurationXMLReader {
 							RIFGenericLibraryError.TAXONOMY_SERVICE_INITIALISATION_FAILURE,
 							errorMessages);
 					throw rifServiceException;
-				} */
+				} 
 				catch(Exception exception) {
 					taxonomyLogger.error(this.getClass(), "Exception initializing taxonomyService: " + 
 						ontologyServiceClassName, 
