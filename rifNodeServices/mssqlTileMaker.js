@@ -203,14 +203,18 @@ function main() {
 			winston.log("error", err.message, err);			
 			process.exit(1);		
 		}
-		tileMakerConfig.setXmlConfig(data);
+		tileMakerConfig.setXmlConfig(data, (err) => { // callback
+			if (!err) {		
 
-//		console.error("Parsed: " + tileMakerConfig.xmlConfig.xmlFileDir + "/" + tileMakerConfig.xmlConfig.xmlFileName + "\n" +
-//			JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
-//		console.error("argv: " + JSON.stringify(argv, null, 4));							
-		// Create Postgres client;
-		mssql_db_connect(mssql, argv["hostname"] , argv["database"], argv["username"], argv["password"], argv["pngfile"], argv['zoomlevel'], argv['blocks'],
-			tileMakerConfig, winston);	
+		//		console.error("Parsed: " + tileMakerConfig.xmlConfig.xmlFileDir + "/" + tileMakerConfig.xmlConfig.xmlFileName + "\n" +
+		//			JSON.stringify(tileMakerConfig.xmlConfig, null, 4));
+		//		console.error("argv: " + JSON.stringify(argv, null, 4));							
+				// Create Postgres client;
+				mssql_db_connect(mssql, argv["hostname"] , argv["database"], argv["username"], argv["password"], argv["pngfile"], argv['zoomlevel'], argv['blocks'],
+					tileMakerConfig, winston);		
+			}
+		});
+
 	});
 			
 } /* End of main */
@@ -290,7 +294,8 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 		options: {
 			trustedConnection: false,
 			useUTC: true,
-			appName: 'mssqlTileMaker.js'
+			appName: 'mssqlTileMaker.js',
+			encrypt: true
 		}
 	};
 	if (p_database != "") {
@@ -313,19 +318,25 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 	winston.log("info", 'About to connected to SQL server using: ' + JSON.stringify(config, null, 4));
 	
 // Connect to SQL server database
-	var client1=p_mssql.connect(config, function(err) {
-		if (err) {
-			winston.log("error", 'Could not connect to SQL server client using: %s\nError: %s', JSON.stringify(config, null, 4), err.message, err);
-			process.exit(1);	
-		}
-		else {				
-			var DEBUG = (typeof v8debug === 'undefined' ? 'undefined' : _typeof(v8debug)) === 'object' || process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
-			winston.log("info", 'Connected to SQL server using: ' + JSON.stringify(config, null, 4) + "; log level: " + winston.winston.level);
+	try {
+		var client1=p_mssql.connect(config, function(err) {
+			if (err) {
+				winston.log("error", 'Could not connect to SQL server client using: %s\nError: %s\nStack: %s', JSON.stringify(config, null, 4), err.message, err.stack);
+				process.exit(1);	
+			}
+			else {				
+				var DEBUG = (typeof v8debug === 'undefined' ? 'undefined' : _typeof(v8debug)) === 'object' || process.env.DEBUG === 'true' || process.env.VERBOSE === 'true';
+				winston.log("info", 'Connected to SQL server using: ' + JSON.stringify(config, null, 4) + "; log level: " + winston.winston.level);
 
-// Call mssqlTileMaker()...
-			tileMaker.dbTileMaker(p_mssql, client1, p_pngfile, tileMakerConfig, "MSSQLServer", endCallBack, maxZoomlevel, blocks, winston);
-		} // End of else connected OK  hy
-	}); // End of connect		
+	// Call mssqlTileMaker()...
+				tileMaker.dbTileMaker(p_mssql, client1, p_pngfile, tileMakerConfig, "MSSQLServer", endCallBack, maxZoomlevel, blocks, winston);
+			} // End of else connected OK  hy
+		}); // End of connect	
+	}	
+	catch(err) {
+		winston.log("error", 'Exception connecting to SQL server client using: %s\nError: %s\nStack: %s', JSON.stringify(config, null, 4), err.message, err.stack);
+		process.exit(1);	
+	}
 
 	// Notice message event processors
 //	client1.on('notice', function(msg) {
