@@ -66,14 +66,39 @@ TileMakerConfig.prototype = { // Add methods
 			
 		fs.writeFileSync(this.xmlConfig.xmlFileDir + "/" + this.xmlConfig.xmlFileName, xmlDoc);		
 	}, // End of writeConfig()
-	setXmlConfig: function(config) {
+	setXmlConfig: function(config, callback) {
 		this.xmlConfig=config;
-		if (this.winston) {
-			winston.info("Parsed XML config file: " + this.xmlConfig.xmlFileDir + "/" + this.xmlConfig.xmlFileName);
-		}
-		else {
-			console.error("Parsed XML config file: " + this.xmlConfig.xmlFileDir + "/" + this.xmlConfig.xmlFileName);
-		}
+		// Check this.xmlConfig.xmlFileDir 
+		// Check if the file exists in the current directory and is readable
+		fs.access(""+this.xmlConfig.xmlFileDir, fs.constants.F_OK, (err) => { // callback
+			if (err) {
+				if (this.winston) {
+					winston.info("XML Directory " + this.xmlConfig.xmlFileDir + " does not exist: " + err.code + "; using : " + process.cwd());
+				}
+				else {
+					console.error("XML Directory " + this.xmlConfig.xmlFileDir + " does not exist: " + err.code + "; using : " + process.cwd());
+				}
+				this.xmlConfig.xmlFileDir=process.cwd();
+			}// Check if the file is readable.
+			fs.access(""+this.xmlConfig.xmlFileDir, fs.constants.R_OK, (err) => { // callback
+				if (this.winston) {
+					winston.info("XML Directory " + this.xmlConfig.xmlFileDir + ` ${err ? 'is not readable' : 'is readable'}`);
+				}
+				else {
+					console.log("XML Directory " + this.xmlConfig.xmlFileDir + ` ${err ? 'is not readable' : 'is readable'}`);
+				}
+				
+				if (!err) {
+					if (this.winston) {
+						winston.info("Parsed XML config file: " + this.xmlConfig.xmlFileDir + "/" + this.xmlConfig.xmlFileName);
+					}
+					else {
+						console.error("Parsed XML config file: " + this.xmlConfig.xmlFileDir + "/" + this.xmlConfig.xmlFileName);
+					}
+				}
+				callback(err);
+			})
+		});
 	},
 	parseConfig: function(callback) {
 		var parser = new xml2js.Parser({async: false});
