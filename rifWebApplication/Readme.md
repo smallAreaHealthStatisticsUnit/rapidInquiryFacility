@@ -1040,7 +1040,8 @@ This is code in `...rapidInquiryFacility\rifServices\src\main\java\rifServices\d
 For a full ICD10 listing add the following SAHSU supplied files (in *Taxonomy services configuration files*) to: 
 *%CATALINA_HOME%\conf* and restart tomcat
 
-<<<<<<< HEAD
+1) ?????
+
   * icdClaML2016ens.xml
   * TaxonomyServicesConfiguration.xml
   * ClaML.dtd
@@ -1077,11 +1078,10 @@ For a full ICD10 listing add the following SAHSU supplied files (in *Taxonomy se
 	```
 
 3) Copy ‘taxonomyservices.war’ from the *target* directory into the Tomcat webapps folder as with rifServices.
-=======
+
 * icdClaML2016ens.xml
 * TaxonomyServicesConfiguration.xml
 * ClaML.dtd
->>>>>>> master
 
 ## 3.2 RIF Web Application
 
@@ -1103,7 +1103,7 @@ If you are supplied with the *7-Zip* archive:
 
 * *RIF4.7z* needs to be copied to: *%CATALINA_HOME%\webapps\RIF4.&z*
 * As an administrator create the directory *%CATALINA_HOME%\webapps\RIF*
-* If you are a power user, use adminstrator privileges to add your username with full control to the folder *%CATALINA_HOME%\webapps\RIF*
+* If you are a power user, use administrator privileges to add your username with full control to the folder *%CATALINA_HOME%\webapps\RIF*
 * Unpack using the file manager *7-Zip* (right click -> 7-Zip -> Extract to "RIF4\"). Do not use the command line 
   (```"C:\Program Files\7-Zip\7z.exe" x RIF4.7z```) it does not work!
 * Check that the *%CATALINA_HOME%\webapps\RIF* contains files:
