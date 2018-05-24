@@ -1,14 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>rapidInquiryFacility</groupId>
 	<artifactId>rifWebApplication</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>4.0.0-SNAPSHOT</version>
 
 	<packaging>jar</packaging>
 
 	<name>RIF Web Application</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility</url>
 
 	<build>
 		<finalName>RIF40</finalName>
@@ -40,5 +39,12 @@
 		</plugins>
 
 	</build>
+
+	<parent>
+		<groupId>org.sahsu.rif</groupId>
+		<artifactId>rifGeneral</artifactId>
+		<version>4.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
 </project>

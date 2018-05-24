@@ -1,398 +1,218 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  
-  <artifactId>rifServices</artifactId>
-  
-
-  <packaging>war</packaging>
-
-  
-  <!--
-  <packaging>jar</packaging>
-   -->
-  
-  <name>RIF Middleware</name>
-  <url>https://localhost:8443</url>
-  <description>Contains the code for the middleware used by the tools of the RIF Tool Suite</description>
-  <dependencies>
-
-	<dependency>
-    	<groupId>javax.mail</groupId>
-    	<artifactId>mail</artifactId>
-    	<version>1.4</version>
-	</dependency>
-
-	<dependency>
-    	<groupId>org.apache.commons</groupId>
-    	<artifactId>commons-lang3</artifactId>
-    	<version>3.3.1</version>
-	</dependency>
-
-	<dependency>
-    	<groupId>org.codehaus.jackson</groupId>
-    	<artifactId>jackson-core-asl</artifactId>
-    	<version>1.9.2</version>
-	</dependency>
-
-
-	<dependency>
-    	<groupId>org.codehaus.jackson</groupId>
-    	<artifactId>jackson-jaxrs</artifactId>
-    	<version>1.9.2</version>
-	</dependency>
-  	
-	<dependency>
-    	<groupId>org.codehaus.jackson</groupId>
-    	<artifactId>jackson-mapper-asl</artifactId>
-    	<version>1.9.2</version>
-	</dependency> 	
-  	
- 	<dependency>
-    	<groupId>org.codehaus.jackson</groupId>
-    	<artifactId>jackson-xc</artifactId>
-    	<version>1.9.2</version>
-	</dependency> 	
-  	
-	<dependency>
-    	<groupId>javax.servlet</groupId>
-    	<artifactId>javax.servlet-api</artifactId>
-    	<version>3.0.1</version>
-	</dependency>  	
-  	
-	 <dependency>
-    	<groupId>com.sun.jersey</groupId>
-    	<artifactId>jersey-client</artifactId>
-    	<version>1.19.1</version>
-	</dependency> 	
- 
-	<dependency>
-    	<groupId>com.sun.jersey</groupId>
-    	<artifactId>jersey-core</artifactId>
-    	<version>1.19.1</version>
-	</dependency> 
-  	
-	<dependency>
-    	<groupId>com.sun.jersey</groupId>
-    	<artifactId>jersey-json</artifactId>
-    	<version>1.19.1</version>
-	</dependency>  	
-  	
-	<dependency>
-    	<groupId>com.sun.jersey.contribs</groupId>
-    	<artifactId>jersey-multipart</artifactId>
-    	<version>1.19.1</version>
-	</dependency>  	
-  	
-	<dependency>
-    	<groupId>com.sun.jersey</groupId>
-    	<artifactId>jersey-server</artifactId>
-    	<version>1.19.1</version>
-	</dependency>
- 
-	<dependency>
-    	<groupId>com.sun.jersey</groupId>
-    	<artifactId>jersey-servlet</artifactId>
-    	<version>1.19.1</version>
-	</dependency>  	
-  	
-	<dependency>
-    	<groupId>org.codehaus.jettison</groupId>
-    	<artifactId>jettison</artifactId>
-    	<version>1.1</version>
-	</dependency>  	
-  	
-	<dependency>
-    	<groupId>org.json</groupId>
-    	<artifactId>json</artifactId>
-    	<version>20140107</version>
-	</dependency>  	
-  	
-	<!-- https://mvnrepository.com/artifact/javax.ws.rs/javax.ws.rs-api -->
-	<dependency>
-		<groupId>javax.ws.rs</groupId>
-    	<artifactId>jsr311-api</artifactId>
-    	<version>1.1.1</version>
-	</dependency>  
-	<!-- Requires Jersey upgrade
-	<dependency>
-		<groupId>javax.ws.rs</groupId>
-		<artifactId>javax.ws.rs-api</artifactId>
-		<version>2.1</version>
-	</dependency> 	
-  	-->
-	<dependency>
-    	<groupId>org.jvnet.mimepull</groupId>
-    	<artifactId>mimepull</artifactId>
-    	<version>1.9.3</version>
-	</dependency>  	
-  	
-  	<!--
-	<dependency>
-    	<groupId>org.postgresql</groupId>
-    	<artifactId>postgresql</artifactId>
-    	<version>9.3-1102-jdbc3</version>
-	</dependency>  	
-	-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 	
-  	<dependency>
-  		<groupId>rapidInquiryFacility</groupId>
-  		<artifactId>rifGenericLibrary</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>  		
-  	</dependency>
+	<artifactId>rifServices</artifactId>
 
-	<dependency>
-    	<groupId>org.nuiton.thirdparty</groupId>
-    	<artifactId>JRI</artifactId>
-    	<version>0.8-4</version>
-	</dependency>
+	<packaging>war</packaging>
 
-	<!-- does not work!!! transcoder exception caused by missing library
-	java.lang.NullPointerException
-	at org.apache.batik.transcoder.image.JPEGTranscoder.writeImage(Unknown Source)
-    [wrapped] org.apache.batik.transcoder.TranscoderException: null
- 
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>fop</artifactId>
-            <version>2.0</version>
-            <exclusions>
-                <exclusion>                  
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>xmlgraphics-commons</artifactId>
-                </exclusion>  
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-svg-dom</artifactId>
-                </exclusion>  
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-bridge</artifactId>
-                </exclusion>  
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-awt-util</artifactId>
-                </exclusion>  
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-gvt</artifactId>
-                </exclusion>  
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-transcoder</artifactId>
-                </exclusion>  
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-extension</artifactId>
-                </exclusion>  
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>batik-ext</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>xmlgraphics-commons</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-svg-dom</artifactId>
-            <version>1.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-bridge</artifactId>
-            <version>1.8</version>
-        </dependency>    
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-awt-util</artifactId>
-            <version>1.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-gvt</artifactId>
-            <version>1.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-transcoder</artifactId>
-            <version>1.8</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.xmlgraphics</groupId>
-                    <artifactId>fop</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-extension</artifactId>
-            <version>1.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-codec</artifactId>
-            <version>1.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-ext</artifactId>
-            <version>1.8</version>
-        </dependency> -->
-	
-	<!-- https://mvnrepository.com/artifact/org.apache.xmlgraphics/batik-all -->
-	<dependency>
-		<groupId>org.apache.xmlgraphics</groupId>
-		<artifactId>batik-all</artifactId>
-		<version>1.9.1</version>
-		<type>pom</type>
-	</dependency>
-	
-	<!-- https://mvnrepository.com/artifact/org.apache.xmlgraphics/fop -->
-	<dependency>
-		<groupId>org.apache.xmlgraphics</groupId>
-		<artifactId>fop</artifactId>
-		<version>2.2</version>
-	</dependency>
-	
-	<!-- https://mvnrepository.com/artifact/org.jfree/jfreechart -->
-	<dependency>
-		<groupId>org.jfree</groupId>
-		<artifactId>jfreechart</artifactId>
-		<version>1.5.0</version>
-	</dependency>
-	
-	<!-- https://mvnrepository.com/artifact/org.geotools/gt-geojson -->
-	<dependency>
-		<groupId>org.geotools</groupId>
-		<artifactId>gt-geojson</artifactId>
-		<version>18.2</version>
-	</dependency>
+	<name>RIF Middleware</name>
+	<description>Contains the code for the middleware used by the tools of the RIF Tool Suite</description>
 
-	<!-- https://mvnrepository.com/artifact/org.geotools/gt-shapefile -->
-	<dependency>
-		<groupId>org.geotools</groupId>
-		<artifactId>gt-shapefile</artifactId>
-		<version>18.2</version>
-	</dependency>
+	<dependencies>
 
-	<!-- https://mvnrepository.com/artifact/org.geotools/gt-render -->
-	<dependency>
-		<groupId>org.geotools</groupId>
-		<artifactId>gt-render</artifactId>
-		<version>18.2</version>
-	</dependency>
-	<!-- https://mvnrepository.com/artifact/org.geotools/gt-wms -->
-	<dependency>
-		<groupId>org.geotools</groupId>
-		<artifactId>gt-wms</artifactId>
-		<version>18.2</version>
-	</dependency>
-	<!-- https://mvnrepository.com/artifact/org.geotools/gt-grid -->
-	<dependency>
-		<groupId>org.geotools</groupId>
-		<artifactId>gt-grid</artifactId>
-		<version>18.2</version>
-	</dependency>
-	<!-- https://mvnrepository.com/artifact/org.geotools/gt-brewer -->
-	<dependency>
-		<groupId>org.geotools</groupId>
-		<artifactId>gt-brewer</artifactId>
-		<version>18.2</version>
-	</dependency>
-	<!-- https://mvnrepository.com/artifact/org.geotools/gt-svg -->
-	<dependency>
-		<groupId>org.geotools</groupId>
-		<artifactId>gt-svg</artifactId>
-		<version>18.2</version>
-	</dependency>
+		<dependency>
+			<groupId>org.sahsu.rif</groupId>
+			<artifactId>rifGenericLibrary</artifactId>
+			<version>4.0.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-core-asl</artifactId>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-jaxrs</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+		</dependency>
+
+	    <dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-xc</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+		</dependency>
+
+		 <dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-client</artifactId>
+			<version>1.19.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-json</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey.contribs</groupId>
+			<artifactId>jersey-multipart</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-server</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-servlet</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.jettison</groupId>
+			<artifactId>jettison</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+				<artifactId>jsr311-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jvnet.mimepull</groupId>
+			<artifactId>mimepull</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.nuiton.thirdparty</groupId>
+			<artifactId>JRI</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-all</artifactId>
+			<type>pom</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>fop</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jfree</groupId>
+			<artifactId>jfreechart</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-geojson</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-shapefile</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-render</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-wms</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-grid</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-brewer</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-svg</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>it.geosolutions.imageio-ext</groupId>
+			<artifactId>imageio-ext-tiff</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.gdal</groupId>
+			<artifactId>gdal</artifactId>
+			<type>pom</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-geotiff</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+		</dependency>
+
+	</dependencies>
+
+	<repositories>
+				<repository>
+						<id>maven2-repository.dev.java.net</id>
+						<name>Java.net repository</name>
+						<url>http://download.java.net/maven/2</url>
+				</repository>
+				<repository>
+						<id>osgeo</id>
+						<name>Open Source Geospatial Foundation Repository</name>
+						<url>http://download.osgeo.org/webdav/geotools/</url>
+				</repository>
+				<repository>
+					<snapshots>
+						<enabled>true</enabled>
+					</snapshots>
+					<id>boundless</id>
+					<name>Boundless Maven Repository</name>
+					<url>http://repo.boundlessgeo.com/main</url>
+				</repository>
+	</repositories>
 	
-	<!-- https://mvnrepository.com/artifact/it.geosolutions.imageio-ext/imageio-ext-tiff -->
-	<dependency>
-		<groupId>it.geosolutions.imageio-ext</groupId>
-		<artifactId>imageio-ext-tiff</artifactId>
-		<version>1.1.20</version>
-	</dependency>
+	<build>
+		<finalName>rifServices</finalName>
+	</build>
 	
-	<!-- https://mvnrepository.com/artifact/org.gdal/gdal -->
-	<dependency>
-		<groupId>org.gdal</groupId>
-		<artifactId>gdal</artifactId>
-		<version>2.2.0</version>
-		<type>pom</type>
-	</dependency>
-	
-	<dependency>
-	  <groupId>org.geotools</groupId>
-	  <artifactId>gt-geotiff</artifactId>
-	  <version>18.2</version>
-	</dependency>
+	<parent>
+		<groupId>org.sahsu.rif</groupId>
+		<artifactId>rifGeneral</artifactId>
+		<version>4.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
-	<!-- Use local file in predictable RIF locations
-	<dependency>
-		<groupId>org.geotools</groupId>
-		<artifactId>gt-referencing</artifactId>
-		<version>18.2</version>
-	</dependency>
-	<dependency>
-		<groupId>org.geotools</groupId>
-		<artifactId>gt-epsg-wkt</artifactId>
-		<version>18.2</version>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
-		<groupId>org.geotools</groupId>
-		<artifactId>gt-epsg-extension</artifactId>
-		<version>18.2</version>
-		<scope>test</scope>
-	</dependency>
-	-->
-
-	  <dependency>
-		  <groupId>org.mockito</groupId>
-		  <artifactId>mockito-core</artifactId>
-		  <version>2.16.0</version>
-		  <scope>test</scope>
-	  </dependency>
-  </dependencies>
-
-  <dependencyManagement>
-  	<dependencies>
-
-  	</dependencies>
-  </dependencyManagement>
- 			
-  <repositories>
-        <repository>
-            <id>maven2-repository.dev.java.net</id>
-            <name>Java.net repository</name>
-            <url>http://download.java.net/maven/2</url>
-        </repository>
-        <repository>
-            <id>osgeo</id>
-            <name>Open Source Geospatial Foundation Repository</name>
-            <url>http://download.osgeo.org/webdav/geotools/</url>
-        </repository>
-        <repository>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-          <id>boundless</id>
-          <name>Boundless Maven Repository</name>
-          <url>http://repo.boundlessgeo.com/main</url>
-        </repository>
-  </repositories>
-	
-  <build>
-  <finalName>rifServices</finalName>
-  </build>
-  
-  <parent>
-  	<groupId>rapidInquiryFacility</groupId>
-  	<artifactId>rifGeneral</artifactId>
-  	<version>0.0.1-SNAPSHOT</version>
-  	<relativePath>../pom.xml</relativePath>
-  </parent>
 </project>
