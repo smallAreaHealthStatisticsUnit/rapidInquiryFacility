@@ -12,6 +12,8 @@ Database Management Manual
      - [2.2.1 Postgres](#221-postgres)
      - [2.2.2 SQL Server](#222-sql-server)
   - [2.3 Proxy accounts](#23-proxy-accounts)
+     - [2.3.1 Postgres](#231-postgres)
+     - [2.3.2 SQL Server](#232-sql-server)
   - [2.4 Granting permission](#24-granting-permission)
      - [2.4.1 Postgres](#241-postgres)
      - [2.4.2 SQL Server](#242-sql-server)
@@ -26,6 +28,8 @@ Database Management Manual
      - [3.2.1 Postgres](#321-postgres)
      - [3.2.2 SQL Server](#322-sql-server)
   - [3.3 Partitioning](#33-partitioning)
+     - [3.3.1 Postgres](#331-postgres)
+     - [3.3.2 SQL Server](#332-sql-server)
   - [3.4 Granting permission](#34-granting-permission)
      - [3.4.1 Postgres](#341-postgres)
      - [3.4.2 SQL Server](#342-sql-server)
@@ -60,7 +64,11 @@ New users must be created in lower case, start with a letter, and only contain t
 
 ### 2.1.1 Postgres
 
+TO BE ADDED
+
 ### 2.1.2 SQL Server
+
+TO BE ADDED
 
 ## 2.2 Changing passwords
 
@@ -113,13 +121,63 @@ GO
   
 ## 2.3 Proxy accounts
 
+### 2.3.1 Postgres
+
+Postgres proxy accounts are controlled by *pg_ident.conf* in the Postgres data directory. <ADD PG manual>
+An example is provided at: <ADD>
+
+```
+# MAPNAME       SYSTEM-USERNAME         PG-USERNAME
+
+The *map name* 
+### 2.3.2 SQL Server
+
+TO BE ADDED
+
 ## 2.4 Granting permission
 
+The RIF is setup so that three roles control access to the application:
+
+* *rif_user*: User level access to the application with full access to data at the highest resolution. 
+  No ability to change the RIF configuration or to add more data;
+* * rif_manager*: Manager level access to the application with full access to data at the highest resolution. 
+  Ability to change the RIF configuration. No ability by default to add data to the RIF. Data is normally added 
+  using the schema owner account (rif40); see the above section on proxying to access the schema account user 
+  a manager accounts credentials.
+* *rif_student*. Restricted access to the application with controlled access to data at the higher resolutions. 
+  No ability to change the RIF configuration or to add more data; 
+
+Access to data is controlled by the permissions granted to that data and not by the RIF.
+
+* In the *SAHSULAND* example database data access is granted to *rif_user*, *rif_manager* and *rif_student*.
+* In the *SEER* dataset data access is granted to *seer_user*.
+ 
 ### 2.4.1 Postgres
+
+To create the SEER_USER role and grant it to a user (peter) logon as the administrator (postgres):
+```
+psql -U postgres -d postgres
+CREATE ROLE seer_user;
+GRANT seer_user TO peter;
+```
 
 ### 2.4.2 SQL Server
 
+To create the SEER_USER role and grant it to a user (peter) logon as the administrator in an Administrator 
+*cmd* window:
+```
+sqlcmd -E
+USE sahsuland;
+IF DATABASE_PRINCIPAL_ID('seer_user') IS NULL
+	CREATE ROLE [seer_user];
+SELECT name, type_desc FROM sys.database_principals WHERE name LIKE '%seer_user%';
+ALTER ROLE [seer_user] ADD MEMBER [peter];
+GO
+```
+
 ## 2.5 Viewing your user setup
+
+TO BE ADDED
 
 ### 2.5.1 Postgres
 
@@ -129,17 +187,35 @@ GO
  
 ## 3.1 Creating new schemas
 
+TO BE ADDED
+
 ### 3.1.1 Postgres
 
 ### 3.1.2 SQL Server
 
 ## 3.2 Tablespaces
 
+TO BE ADDED
+
 ### 3.2.1 Postgres
 
 ### 3.2.2 SQL Server
 
 ## 3.3 Partitioning
+
+### 3.3.1 Postgres
+
+Currently only the geometry tables, e.g. *rif_data.geometry_sahsuland* are partitioned.
+
+TO BE ADDED: Postgres 10 partitioning.
+
+See [Postgres Patching](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/databaseManagementManual#61-postgres)
+for a description of historic Postgres partitioning. The partitioning on the geometry tables uses the range 
+partitioning schema but generates the code directly. This functionality is part of the tile maker.
+
+### 3.3.2 SQL Server
+
+TO BE ADDED: SQL Server partitioning and licensing conditions.
 
 ## 3.4 Granting permission
 
@@ -329,15 +405,19 @@ The equivalent PostgreSQL Windows log entry entry is:
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_viewer_log.png?raw=true "Equivalent PostgreSQL Windows log entry entry")
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgres_event_viewer_log2.png?raw=true "Equivalent PostgreSQL Windows log entry entry")
 
-
-
 ### 4.1.2 SQL Server
+
+TO BE ADDED
   
 # 5. Backup and recovery  
 
 ## 5.1 Postgres
 
+TO BE ADDED: Using pg_dump/restore
+
 ## 5.2 SQL Server
+
+TO BE ADDED
 
 # 6. Patching  
 
@@ -352,6 +432,33 @@ Scripts must be applied as follows:
 | 30th June  2018 | v4_0_alter_10.sql | To be added (risk analysis changes) |
 
 ## 6.1 Postgres
+
+Alter scripts *v4_0_alter_1.sql* to *v4_0_alter_9.sql* related to be original database development on Postgres
+and were not created on SQL Server. The scripts *v4_0_alter_3.sql* and *v4_0_alter_4.sql* enable partitioning on```
+ranges (data with year fields) and hashes (study_id) respectively. Alter script 4 must go after 7. Alter 
+script 7 provides:
+- Support for  ontologies (e.g. ICD9, 10); removed previous table based support.
+- Modify t_rif40_inv_conditions to remove SQL injection risk
+
+This is because alter script 7 was written before the partitioning was enabled and does not support it.
+
+Partitioning was removed as it is supported natively in Postgres 10. Support for hash partitioning is
+in alter 4 is incomplete:
+
+- Partition movement is not supported; 
+- The hashing function *rif40_sql_pkg._rif40_hash* has not been added to the code so hash partition elimination 
+  will not occur. Range partition elimination does work.
+  ```
+  CREATE OR REPLACE FUNCTION rif40_sql_pkg._rif40_hash(l_value VARCHAR, l_bucket INTEGER)
+  RETURNS INTEGER
+  AS 'SELECT (ABS(hashtext(l_value))%l_bucket)+1;' LANGUAGE sql IMMUTABLE STRICT;
+  ```
+
+The actual partitioning is carried out by: *v4_0_study_id_partitions.sql* and *v4_0_year_partitions.sql* and
+the *rif40_sql_pkg.rif40_hash_partition* and *rif40_sql_pkg.rif40_range_partition* packages.
+
+**This code has not been used since early 2018 and is supplied as is with testing since that date. RIF users
+are strongly advised to use the native Postgres 10 functionality.**
 
 Scripts are in the standard bundle in the directory *Database alter scripts\Postgres* or in github in *rapidInquiryFacility\rifDatabase\Postgres\psql_scripts\alter_scripts*
 
@@ -404,6 +511,8 @@ so shared buffers of 1G is 131072 8KB pages. This is not very intuitive compared
 The amount of memory given to Postgres should allow room for *tomcat* if installed together with the application server; shared memory should generally not exceed a quarter of the available RAM.
 
 ## 7.2 SQL Server
+
+TO BE ADDED
 
 Peter Hambly
 Many 2018
