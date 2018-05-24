@@ -35,9 +35,9 @@
   *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\log4j2.xml* sets up five loggers:
   
   1. The tomcat logger: *org.apache.catalina.core.ContainerBase.[Catalina].[localhost]* used by the middleware: tomcat.log
-  2. The middleware logger: *rifGenericLibrary.util.RIFLogger* used by the middleware: RIF_middleware.log
-  3. The taxonmy services logger: *rifGenericLibrary.util.TaxonomyLogger* used by the middleware: TaxonomyLogger.log
-  4. The front end (RIF web application) logger: *rifGenericLibrary.util.FrontEndLogger* used by the middleware: FrontEndLogger.log
+  2. The middleware logger: *RIFLogger* used by the middleware: RIF_middleware.log
+  3. The taxonmy services logger: *TaxonomyLogger* used by the middleware: TaxonomyLogger.log
+  4. The front end (RIF web application) logger: *FrontEndLogger* used by the middleware: FrontEndLogger.log
   5. "Other" for all other logger output not the above: Other.log
 
   Log4j2 was chosen because it is easy to integrate with tomcat; it is however old and does not always rotate the logs well.
@@ -51,17 +51,17 @@
   * ```<N>``` is the log sequence number.
 
   Other messages go to the console. RIF middleware message **DO NOT** go to the console so we can find
-  messages not using *rifGenericLibrary.util.RIFLogger*. You can change this.
+  messages not using *RIFLogger*. You can change this.
   
   Logs go to STDOUT and ${sys:catalina.base}/log4j2/<YYYY>-<MM>/ and %CATALINA_HOME/log4j2/<YYYY>-<MM>/
   Other messages go to the console. RIF middleware message DO NOT go to the console so we can find
-  messages not using rifGenericLibrary.util.RIFLogger
+  messages not using RIFLogger
   
   Logs are rotated everyday or every 100 MB in the year/month specific directory
   
   Typical log entry: 
   
-	14:29:37.812 [http-nio-8080-exec-5] INFO  rifGenericLibrary.util.RIFLogger: [rifServices.dataStorageLayer.pg.PGSQLRIFContextManager]:
+	14:29:37.812 [http-nio-8080-exec-5] INFO  RIFLogger: [rifServices.datastorage.pg.PGSQLRIFContextManager]:
 	PGSQLAbstractSQLManager logSQLQuery >>>
 	QUERY NAME: getGeographies
 	PARAMETERS:
@@ -164,23 +164,23 @@
 	  <AppenderRef ref="CONSOLE"/>
     </Logger>
 
-      <!-- RIF middleware logger: rifGenericLibrary.util.RIFLogger -->
-    <Logger name="rifGenericLibrary.util.RIFLogger"
+      <!-- RIF middleware logger: org.sahsu.rif.generic.util.RIFLogger -->
+    <Logger name="org.sahsu.rif.generic.util.RIFLogger"
 		level="info" additivity="false">
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF middleware output on the console -->
       <AppenderRef ref="RIF_MIDDLEWARE"/>
     </Logger>
-      <!-- RIF FRont End logger: rifGenericLibrary.util.FrontEndLogger -->
-    <Logger name="rifGenericLibrary.util.FrontEndLogger"
-		level="info" additivity="false"> <!-- Chnage to debug for more output -->
+      <!-- RIF FRont End logger: org.sahsu.rif.generic.util.FrontEndLogger -->
+    <Logger name="org.sahsu.rif.generic.util.FrontEndLogger"
+		level="info" additivity="false"> <!-- Change to debug for more output -->
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
       <AppenderRef ref="FRONTENDLOGGER"/>
     </Logger>
-      <!-- RIF FRont End logger: rifGenericLibrary.util.TaxonomyLogger -->
-    <Logger name="rifGenericLibrary.util.TaxonomyLogger"
-		level="info" additivity="false"> <!-- Chnage to debug for more output -->
+      <!-- RIF FRont End logger: org.sahsu.rif.generic.util.TaxonomyLogger -->
+    <Logger name="org.sahsu.rif.generic.util.TaxonomyLogger"
+		level="info" additivity="false"> <!-- Change to debug for more output -->
       <!-- <AppenderRef ref="CONSOLE"/> uncomment to see RIF Front End console logging on the Tomcat console -->
       <AppenderRef ref="TAXONOMYLOGGER"/>
-    </Logger>		
+    </Logger>			
   </Loggers>
 </Configuration>

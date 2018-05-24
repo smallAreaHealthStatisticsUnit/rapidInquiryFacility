@@ -7,7 +7,7 @@
 <description>ICD 10 is a classification of diseases.</description>
 <version>1.0</version>
 <ontology_service_class_name>
-rifGenericLibrary.taxonomyServices.DefaultXMLTaxonomyService
+DefaultXMLTaxonomyService
 </ontology_service_class_name>
 
 <parameters>

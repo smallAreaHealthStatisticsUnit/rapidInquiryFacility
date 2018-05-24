@@ -20,7 +20,7 @@ The project is managed by maven, which uses the latest version of Jersey and Jac
 
 
 #### July
-Convert the prototype code developed last month into ICD10ClaMLTaxonomyProvider class in rifServices.taxonomyServices package, which implements RIF HealthCodeProviderInterface. This class provides an interpretation of ICD 10 code service and then save results into an internal HashMap container. As a result:
+Convert the prototype code developed last month into ICD10ClaMLTaxonomyProvider class in rifServices.taxonomyservices package, which implements RIF HealthCodeProviderInterface. This class provides an interpretation of ICD 10 code service and then save results into an internal HashMap container. As a result:
 - The tree structure of the ICD 10 code is exposed: the class can return the parent and immediate children of a health code.
 - Use the label of health code as the key, the HashMap container can quickly return the corresponding taxonomy term when users provide an ICD 10 code label.
 - It provides a utility method that can transform a taxonomy term into the corresponding health code.

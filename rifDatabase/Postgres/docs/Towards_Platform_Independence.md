@@ -24,7 +24,7 @@ Rather than trying to emulate the Windows `java_build.bat` script, I just did th
 mvn clean install -Dmaven.test.skip=true
 ```
 
-in the root gives us `rifServices.war` and `taxonomyServices.war`. For the webapp you currently have to run the same command in the `rifWebApplication` directory, and it doesn't create a complete WAR file. But more on that later.
+in the root gives us `rifServices.war` and `taxonomyservices.war`. For the webapp you currently have to run the same command in the `rifWebApplication` directory, and it doesn't create a complete WAR file. But more on that later.
 
 I installed the two WAR files using the Tomcat Manager application. I had to increase the maximum allowed size of WAR file in Tomcat, as `rifServices.war` is bigger than the default maximum, and so wouldn't deploy. This means editing `web.xml` in the manager app. I doubled the maximum from 50 to 100MB.
 

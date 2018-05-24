@@ -1,12 +1,12 @@
-17:06:02.767 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.SmoothResultsSubmissionStep]:
+17:06:02.767 [http-nio-8080-exec-7] INFO  RIFLogger : [rifServices.dataStorageLayer.common.SmoothResultsSubmissionStep]:
 Rengine Started
-17:06:02.787 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
+17:06:02.787 [http-nio-8080-exec-7] INFO  RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
 RIFServiceStartupOptions is web deployment
-17:06:02.787 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
+17:06:02.787 [http-nio-8080-exec-7] INFO  RIFLogger : [rifServices.system.RIFServiceStartupOptions]:
 Get CATALINA_HOME=C:\Program Files\Apache Software Foundation\Tomcat 8.5
-17:06:02.788 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.SmoothResultsSubmissionStep]:
+17:06:02.788 [http-nio-8080-exec-7] INFO  RIFLogger : [rifServices.dataStorageLayer.common.SmoothResultsSubmissionStep]:
 Source: Adj_Cov_Smooth_JRI="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\Adj_Cov_Smooth_JRI.R"
-17:06:04.418 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
+17:06:04.418 [http-nio-8080-exec-7] INFO  RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
 rFlushConsole[1] calls: 62, length: 1458, time period: PT1.892S
 
 R version 3.4.0 (2017-04-21) -- "You Stupid Darkness"
@@ -49,11 +49,11 @@ R Error/Warning/Notice: Loading required package: Matrix
 R Error/Warning/Notice: This is INLA 0.0-1485844051, dated 2017-01-31 (09:14:12+0300).
 See www.r-inla.org/contact-us for how to get help.
 
-17:06:04.980 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.SmoothResultsSubmissionStep]:
+17:06:04.980 [http-nio-8080-exec-7] INFO  RIFLogger : [rifServices.dataStorageLayer.common.SmoothResultsSubmissionStep]:
 Source: RIF_odbc="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\RIF_odbc.R"
-17:06:04.996 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.SmoothResultsSubmissionStep]:
+17:06:04.996 [http-nio-8080-exec-7] INFO  RIFLogger : [rifServices.dataStorageLayer.common.SmoothResultsSubmissionStep]:
 Source: performSmoothingActivity="C:\\Program Files\\Apache Software Foundation\\Tomcat 8.5\\webapps\\rifServices\\WEB-INF\\classes\\performSmoothingActivity.R"
-17:06:24.801 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
+17:06:24.801 [http-nio-8080-exec-7] INFO  RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
 rFlushConsole[2] calls: 8, length: 957, time period: PT20.382S
 
 R Error/Warning/Notice: Checking rgeos availability: FALSE
@@ -67,7 +67,7 @@ Create:  c:\rifDemo\scratchSpace\s33\rif40_run_R_env.bat
 Connect to database: SQLServer11
 Performing basic stats and smoothing
 EXTRACT TABLE NAME: rif_studies.s33_extract
-17:06:24.816 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
+17:06:24.816 [http-nio-8080-exec-7] INFO  RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLAbstractRService$LoggingConsole]:
 rFlushConsole[3] calls: 75, length: 2422, time period: PT59.244S
 
 
@@ -110,5 +110,5 @@ callPerformSmoothingActivity exitValue: 1
 Closing database connection
 Adj_Cov_Smooth_JRI.R exitValue: 1; error tracer: 36
 
-17:06:24.817 [http-nio-8080-exec-7] INFO  rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.common.SmoothResultsSubmissionStep]:
+17:06:24.817 [http-nio-8080-exec-7] INFO  RIFLogger : [rifServices.dataStorageLayer.common.SmoothResultsSubmissionStep]:
 Rengine Stopped, exit value==1==

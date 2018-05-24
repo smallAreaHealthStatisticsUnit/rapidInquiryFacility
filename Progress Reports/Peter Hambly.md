@@ -2066,7 +2066,7 @@ Todo:
 
 * Review and test Postgres database build instructions; merging in Windows specific instructions and build README.md comments
 * Review and test RIF Web Application and Middleware Installation instructions
-* Fix log4j logging hangs (added separate taxonomyServices logger to avoid thread clash bug inm log4j)
+* Fix log4j logging hangs (added separate taxonomyservices logger to avoid thread clash bug inm log4j)
 * Fix for whitespace in properties file causing crashes
 * Text VPN connection
 * Download sample ICD9 codes: from https://raw.githubusercontent.com/drobbins/ICD9/master/icd9.txt; reformatted 
@@ -2140,11 +2140,11 @@ getRootCauseStackTrace >>>
 java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:5432;databaseName=sahsuland
 	at java.sql.DriverManager.getConnection(DriverManager.java:689)
 	at java.sql.DriverManager.getConnection(DriverManager.java:208)
-	at rifServices.dataStorageLayer.ms.MSSQLAbstractSQLManager.createConnection(MSSQLAbstractSQLManager.java:297)
-	at rifServices.dataStorageLayer.ms.MSSQLAbstractSQLManager.login(MSSQLAbstractSQLManager.java:213)
-	at rifServices.dataStorageLayer.ms.MSSQLAbstractStudyServiceBundle.login(MSSQLAbstractStudyServiceBundle.java:113)
-	at rifServices.dataStorageLayer.ms.MSSQLProductionRIFStudyServiceBundle.login(MSSQLProductionRIFStudyServiceBundle.java:63)
-	at rifServices.restfulWebServices.WebService.login(WebService.java:148)
+	at rifServices.datastorage.ms.MSSQLAbstractSQLManager.createConnection(MSSQLAbstractSQLManager.java:297)
+	at rifServices.datastorage.ms.MSSQLAbstractSQLManager.login(MSSQLAbstractSQLManager.java:213)
+	at rifServices.datastorage.ms.MSSQLAbstractStudyServiceBundle.login(MSSQLAbstractStudyServiceBundle.java:113)
+	at rifServices.datastorage.ms.MSSQLProductionRIFStudyServiceBundle.login(MSSQLProductionRIFStudyServiceBundle.java:63)
+	at rifServices.rest.WebService.login(WebService.java:148)
   ```
 * Test covariate extracts and maps with and without additional covariate (SES); OK: issues is with the reports. First year is not being inserted (caused by Postgres EXPLAIN VERBOSE); fixed;
   Rechecked all counts in extract and map tables, all OK
