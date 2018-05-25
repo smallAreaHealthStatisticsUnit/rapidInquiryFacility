@@ -81,7 +81,7 @@ import java.io.File;
  *
  */
 
-public class ICDTaxonomyService 
+public class claMLTaxonomyService 
 	extends AbstractTaxonomyService 
 	implements TaxonomyServiceAPI {
 

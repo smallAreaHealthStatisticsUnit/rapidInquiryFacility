@@ -41,7 +41,7 @@ public class GetStudyJSON {
 	private final SQLManager manager;
 	private Connection connection;
 	private String studyID;
-	private String url;
+	private String url=null;
 	private boolean taxonomyInitialiseError=false;
 	private Exception otherTaxonomyError=null;
 	
@@ -76,14 +76,20 @@ public class GetStudyJSON {
 					throws Exception {
 		this.connection=connection;
 		this.studyID=studyID;
-		if (taxonomyServicesServer != null && !taxonomyServicesServer.equals("")) {
-			this.url =taxonomyServicesServer;
-		}
-		else if (url != null && !url.equals("")) {
-			this.url =url;
-		}
-		else {
-			throw new Exception("addRifStudiesJson(): cannot deduce tomcat server from RIF services request or RIFServiceStartup.properties");
+		if (this.url == null) {
+			if (taxonomyServicesServer != null && !taxonomyServicesServer.equals("")) {
+				rifLogger.info(this.getClass(), "Using taxonomyServicesServer parameter for base URL: " + 
+					taxonomyServicesServer);
+				this.url =taxonomyServicesServer;
+			}
+			else if (url != null && !url.equals("")) {
+				rifLogger.info(this.getClass(), "Using url parameter for base URL: " + 
+					url);
+				this.url =url;
+			}
+			else {
+				throw new Exception("addRifStudiesJson(): cannot deduce tomcat server from RIF services request or RIFServiceStartup.properties");
+			}
 		}
 		
 		SQLGeneralQueryFormatter rifStudiesQueryFormatter = new SQLGeneralQueryFormatter();		
@@ -794,7 +800,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 			else {	
 				client=Client.create();
 			}
-			String URI= url + "/taxonomyservices/taxonomyservices/getMatchingTerms";
+			String URI= url + "/taxonomyServices/taxonomyServices/getMatchingTerms";
 			webResource = client.resource(URI);
 			if (webResource == null) {
 				throw new Exception("Null WebResource returned by rest client, URI: " + URI);
@@ -806,7 +812,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
                 .get(ClientResponse.class);
 
 			if (response.getStatus() != 200) {
-			   throw new Exception("Failed : HTTP error code : "
+			   throw new Exception(URI + " failed: HTTP error code : "
 					+ response.getStatus());
 			}
 /*
