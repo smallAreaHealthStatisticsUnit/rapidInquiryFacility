@@ -7,8 +7,9 @@ Database Management Manual
 - [2. User Management](#2-user-management)
   - [2.1 Creating new users](#21-creating-new-users)
      - [2.1.1 Postgres](#211-postgres)
+	   - [2.1.1.1 Manually creating a new user](#2111-manually-creating-a-new-user)
      - [2.1.2 SQL Server](#212-sql-server)
-	   -[2.1.2.1 Manually creating a new user](#2121-manually-creating-a-new-user)
+	   - [2.1.2.1 Manually creating a new user](#2121-manually-creating-a-new-user)
   - [2.2 Changing passwords](#22-changing-passwords)
      - [2.2.1 Postgres](#221-postgres)
      - [2.2.2 SQL Server](#222-sql-server)
@@ -126,6 +127,138 @@ sahsuland=> \q
 C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>
 ```
 
+#### 2.1.1.1 Manually creating a new user
+
+These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER* and *NEWDB* from the CMD environment.
+
+* Change "mydatabasename" to the name of your database, e.g. *sahsuland*;
+* Change "mydatabasenuser" to the name of your user, e.g. *peter*;
+* Change "mydatabasepassword" to the name of your users password;
+
+1. Validate the RIF user; connect as user *postgres* on the database *postgres*:
+```SQL
+DO LANGUAGE plpgsql $$
+BEGIN
+	IF current_user != 'postgres' OR current_database() != 'postgres' THEN
+		RAISE EXCEPTION 'rif40_production_user.sql() current_user: % and current database: % must both be postgres', current_user, current_database();
+	END IF;
+END;
+$$;
+
+```
+
+2. Create Login; connect as user *postgres* on the database *mydatabasename* (.e.g. sahsuland):
+```SQL
+DO LANGUAGE plpgsql $$
+DECLARE
+	c2 CURSOR(l_usename VARCHAR) FOR 
+		SELECT * FROM pg_user WHERE usename = l_usename;
+	c3 CURSOR FOR 
+		SELECT CURRENT_SETTING('rif40.nnewpw') AS nnewpw,
+		       CURRENT_SETTING('rif40.newpw') AS newpw;
+	c4 CURSOR(l_name VARCHAR, l_pass VARCHAR) FOR
+		SELECT rolpassword::Text AS rolpassword, 
+		       'md5'||md5(l_pass||l_name)::Text AS password
+	  	  FROM pg_authid
+	     WHERE rolname = l_name;
+	c1_rec RECORD;
+	c2_rec RECORD;
+	c3_rec RECORD;
+	c4_rec RECORD;
+--
+	sql_stmt VARCHAR;
+	u_name	VARCHAR;
+	u_pass	VARCHAR;
+	u_database VARCHAR;
+BEGIN
+	u_name:='mydatabasenuser';
+	u_pass:='mydatabasepassword';
+	u_database:='mydatabasename';
+--
+-- Test account exists
+--
+	OPEN c2(u_name);
+	FETCH c2 INTO c2_rec;
+	CLOSE c2;
+	IF c2_rec.usename IS NULL THEN
+		RAISE NOTICE 'C209xx: User account does not exist: %; creating', u_name;	
+		sql_stmt:='CREATE ROLE '||u_name||
+			' NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT LOGIN NOREPLICATION PASSWORD '''||
+				CURRENT_SETTING('rif40.newpw')||'''';
+		RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+		EXECUTE sql_stmt;
+	ELSE
+--	
+		OPEN c4(u_name, u_pass);
+		FETCH c4 INTO c4_rec;
+		CLOSE c4;
+		IF c4_rec.rolpassword IS NULL THEN
+			RAISE EXCEPTION 'C209xx: User account: % has a NULL password', 
+				c2_rec.usename;	
+		ELSIF c4_rec.rolpassword != c4_rec.password THEN
+			RAISE INFO 'rolpassword: "%"', c4_rec.rolpassword;
+			RAISE INFO 'password(%):    "%"', u_pass, c4_rec.password;
+			RAISE EXCEPTION 'C209xx: User account: % password (%) would change; set password correctly', c2_rec.usename, u_pass;		
+		ELSE
+			RAISE NOTICE 'C209xx: User account: % password is unchanged', 
+				c2_rec.usename;
+		END IF;
+--
+		IF pg_has_role(c2_rec.usename, 'rif_user', 'MEMBER') THEN
+			RAISE INFO 'rif40_production_user.sql() user account="%" is a rif_user', c2_rec.usename;
+		ELSIF pg_has_role(c2_rec.usename, 'rif_manager', 'MEMBER') THEN
+			RAISE INFO 'rif40_production_user.sql() user account="%" is a rif manager', c2_rec.usename;
+		ELSE
+			RAISE EXCEPTION 'C209xx: User account: % is not a rif_user or rif_manager', c2_rec.usename;	
+		END IF;
+	END IF;	
+--
+	sql_stmt:='GRANT CONNECT ON DATABASE '||u_database||' to '||u_name;
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;
+	sql_stmt:='GRANT rif_manager TO '||u_name;
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;
+	sql_stmt:='GRANT rif_user TO '||u_name;
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;
+END;
+$$;
+```
+
+3. Create user and grant roles
+```SQL
+DO LANGUAGE plpgsql $$
+DECLARE	
+	sql_stmt VARCHAR;
+	u_name	VARCHAR;
+	u_database	VARCHAR;
+BEGIN
+	u_name:='mydatabasenuser';
+	u_database:='mydatabasename';
+	IF user = 'postgres' AND current_database() = u_database THEN
+		RAISE INFO 'User check: %', user;	
+	ELSE
+		RAISE EXCEPTION 'C209xx: User check failed: % is not postgres on % database (%)', 
+			user, u_database, current_database();	
+	END IF;	
+
+--
+	sql_stmt:='GRANT CONNECT ON DATABASE '||u_database||' to '||u_name;
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;
+
+	sql_stmt:='CREATE SCHEMA IF NOT EXISTS '||u_name||' AUTHORIZATION '||u_name;
+	RAISE INFO 'SQL> %;', sql_stmt::VARCHAR;
+	EXECUTE sql_stmt;	
+END;
+$$;
+```
+* **Change the password**. The password is set to *mydatabasepassword*.
+
+The user specific object views: *rif40_num_denom*, *rif40_num_denom_errors* are automatically created. These must be created as the user so they run with the users 
+privileges and therefore only return RIF data tables to which the user has been granted access permission.
+
 ### 2.1.2 SQL Server
 
 Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* with password *%newpw%* in database *%newdb%* from the command environment. 
@@ -232,7 +365,7 @@ GO
 ```
 * **Change the password**. The password is set to *mydatabasepassword*.
 
-4. Create user pecific object views: *rif40_num_denom*, *rif40_num_denom_errors*. These must be created as the user so they run with the users privileges and therefore only return
+4. Create user specific object views: *rif40_num_denom*, *rif40_num_denom_errors*. These must be created as the user so they run with the users privileges and therefore only return
    RIF data tables to which the user has been granted access permission.
 
 ```SQL
@@ -1015,4 +1148,4 @@ The amount of memory given to Postgres should allow room for *tomcat* if install
 TO BE ADDED
 
 Peter Hambly
-Many 2018
+May 2018
