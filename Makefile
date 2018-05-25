@@ -49,7 +49,6 @@ OS?=Unknown
 GRIP=python -m grip
 ifeq ($(OS),Windows_NT)
 	MAVEN=mvn
-	7ZIP="C:\Program Files\7-Zip\7z.exe"
 	COPY=cp
 	DELETE=rm -f
 else
@@ -57,10 +56,8 @@ else
 # Linux macos support []
 #
 	MAVEN=mvn
-	7ZIP="C:\Program Files\7-Zip\7z.exe"
 	COPY=cp
 	DELETE=rm -f
-$(error 7ZIP unsupported: $(7ZIP))
 endif
 # 
 # Uncomment if you are having problems with the tests
@@ -71,11 +68,12 @@ MAVEN_FLAGS=
 # make <target> MAVEN_FLAGS='-Dmaven.test.skip=true'
 #
 
-all: RIF4
+all:
 	$(MAVEN) --version
 	$(MAVEN) $(MAVEN_FLAGS) install
 	$(COPY) taxonomyServices/target/taxonomyServices.war .
 	$(COPY) rifServices/target/rifServices.war .
+	$(COPY) rifWebApplication/target/RIF40.war .
 	$(COPY) rifDataLoaderTool\target\rifDataLoaderTool-jar-with-dependencies.jar rifDataLoaderTool-jar-with-dependencies.jar
 #	$(COPY) rifITGovernanceTool\target\rifITGovernanceTool-jar-with-dependencies.jar rifITGovernanceTool-jar-with-dependencies.jar
 
@@ -87,6 +85,11 @@ rifservice:
 	cd rifGenericLibrary && $(MAVEN) $(MAVEN_FLAGS) install
 	cd rifServices && $(MAVEN) $(MAVEN_FLAGS) install
 	$(COPY) rifServices/target/rifServices.war .
+	
+RIF40: 
+	$(MAVEN) --version
+	cd rifWebApplication && $(MAVEN) $(MAVEN_FLAGS) install
+	$(COPY) rifWebApplication/target/RIF40.war .
 	
 dataloader: 
 	$(MAVEN) --version
@@ -115,10 +118,6 @@ doc:
 	$(7ZIP) a -r docs.7z "docs\\*"
 	$(7ZIP) l docs.7z
 	
-RIF4: 
-	cd rifWebApplication/src/main/webapp/WEB-INF && $(7ZIP) a -r ../../../../../RIF4.7z *
-	$(7ZIP) l RIF4.7z
-	
 taxonomyservice:	
 	$(MAVEN) --version
 	cd rifGenericLibrary && $(MAVEN) $(MAVEN_FLAGS) install
@@ -135,6 +134,7 @@ install: clean all
 clean: 
 	$(MAVEN) --version
 	$(MAVEN) clean
-	$(DELETE) taxonomyServices.war rifServices.war RIF4.7z
+	$(DELETE) taxonomyServices.war rifServices.war RIF40.war RIF4.7z
+	
 #
 # Eof

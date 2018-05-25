@@ -841,14 +841,12 @@ Normally users will be supplied with pre built files in the *tomcat webapps* fol
 
 * RIF middleware: rifServices.war
 * Taxonomy service (ICD10): taxonomyservices.war
-* Front end: RIF4.7zip
+* Front end: RIF40.war
 
 ## 2.1 Building Using Make
 
 If you have installed make (i.e. you are building the Postgres port from Scratch), run make from the 
 root of the github repository, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*
-
-This method requires 7zip to be installed in *C:\Program Files\7-Zip\7z.exe*
 
 The following make targets are provided:
 
@@ -857,12 +855,12 @@ The following make targets are provided:
 * *install*: clean then all
 * *rifservice*: build rifServices.war target
 * *taxonomyService*: build taxonomyservices.war target
-* *RIF4*: build RIF4.7z target
+* *RIF40*: build RIF40.war target
 
 To run a make target type *make <target>;e.g. *make install*.
 
 The following files are then built and copied into the rapidInquiryFacility directory: 
-*taxonomyservices.war*, *rifServices.war*, *RIF4.7z*
+*taxonomyservices.war*, *rifServices.war*, *RIF40.war*
 
 **Make currently only works on Windows and requires the Mingw development kit and 7zip to be installed.**
 
@@ -872,7 +870,7 @@ This method requires 7zip to be installed in *C:\Program Files\7-Zip\7z.exe*
 
 Run *java_build.bat* from the root of the github repository, 
 e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*. The files *taxonomyservices.war*,
-*rifServices.war*, *RIF4.7z* are the end product.
+*rifServices.war*, *RIF40.war* are the end product.
 
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility>java_build.bat
@@ -1053,32 +1051,25 @@ Normally method 2 is used.
 
 ### Method 1: manual
 
-Create RIF4 in web-apps:
+Create RIF40 in web-apps:
 
 * Change directory to *%CATALINA_HOME%\webapps*; e,g, *cd "C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps"*
-* Create the directory *RIF4*
+* Create the directory *RIF40*
 * Copy all files and directories from the directory: *"C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifWebApplication\src\main\webapp\WEB-INF"* 
-  to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4*
-* 7zip must be be installed.
+  to *C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF40*
 
-### Method 2: Using pre-supplied RIF4.7z (in the *tomcat webapps* folder)
+### Method 2: Using pre-supplied RIF40.war (in the *tomcat webapps* folder)
 
-If you are supplied with the *7-Zip* archive: 
-
-* *RIF4.7z* needs to be copied to: *%CATALINA_HOME%\webapps\RIF4.&z*
-* As an administrator create the directory *%CATALINA_HOME%\webapps\RIF*
-* If you are a power user, use administrator privileges to add your username with full control to the folder *%CATALINA_HOME%\webapps\RIF*
-* Unpack using the file manager *7-Zip* (right click -> 7-Zip -> Extract to "RIF4\"). Do not use the command line 
-  (```"C:\Program Files\7-Zip\7z.exe" x RIF4.7z```) it does not work!
-* Check that the *%CATALINA_HOME%\webapps\RIF* contains files:
+* *RIF40.war* needs to be copied to: *%CATALINA_HOME%\webapps\RIF40.war*
+* Once you have started tomcat check that the *%CATALINA_HOME%\webapps\RIF* contains files:
   ```
-	C:\Program Files\Apache Software Foundation\Tomcat 8.5>cd %CATALINA_HOME%\webapps\RIF4
+	C:\Program Files\Apache Software Foundation\Tomcat 8.5>cd %CATALINA_HOME%\webapps\RIF40
 
-	C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4>dir
+	C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF40>dir
 	 Volume in drive C is OS
 	 Volume Serial Number is 76AD-DC24
 
-	 Directory of C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4
+	 Directory of C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF40
 
 	13/04/2018  08:37    <DIR>          .
 	13/04/2018  08:37    <DIR>          ..
@@ -1098,8 +1089,8 @@ If you are supplied with the *7-Zip* archive:
 
 **BEFORE YOU RUN THE RIF YOU MUST SETUP THE DATABASE AND NETWORKING IN TOMCAT FIRST**. See the next section.
 
-Running the RIF and logging on is detailed in section 5. You must restart Tomcat when you create RIF4 for the first time, 
-it is not automatically spotted unlike the services *.war* files..
+Running the RIF and logging on is detailed in section 5. You must restart Tomcat to create RIF40 for 
+the first time, it is now automatically updated (after 20/5/2018) using the *RIF40.war* file.
 
 # 4 RIF Setup
 
@@ -1194,7 +1185,8 @@ C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>netstat -ba
  [Tomcat8.exe]
 ```
 
-The RIF web application file RIF4\backend\services\rifs-back-urls.js (e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4\backend\services\rifs-back-urls.js)
+The RIF web application file RIF40\backend\services\rifs-back-urls.js (e.g. 
+C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF40\backend\services\rifs-back-urls.js)
 define the URLs for the services.
 
 ```javascript
@@ -1590,7 +1582,8 @@ Use developer mode in the browser to bring up the console log:
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/caching_error.png?raw=true "Logon RIF Service Call Incorrect")
 
-In this example the RIF web application file RIF4\backend\services\rifs-back-urls.js (e.g. C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF4\backend\services\rifs-back-urls.js)
+In this example the RIF web application file RIF40\backend\services\rifs-back-urls.js (e.g. 
+C:\Program Files\Apache Software Foundation\Tomcat 8.5\webapps\RIF40\backend\services\rifs-back-urls.js)
 is set to use http://localhost:8080; but the browser, usually Chrome, used https://localhost:8080.
 
 * Should have used: https://localhost:8080/rifServices/studySubmission/pg/login?userID=peter&password=XXXXXXXXXX
@@ -1612,24 +1605,24 @@ Firefox console log example:
 
 ```
 17:05:09.245 Error: res.data is null
-loggedIn@https://localhost:8080/RIF4/backend/services/rifs-back-interceptor.js:48:69
-e/<@https://localhost:8080/RIF4/libs/standalone/angular.min.js:131:20
-vf/this.$get</m.prototype.$eval@https://localhost:8080/RIF4/libs/standalone/angular.min.js:145:343
-vf/this.$get</m.prototype.$digest@https://localhost:8080/RIF4/libs/standalone/angular.min.js:142:412
-vf/this.$get</m.prototype.$apply@https://localhost:8080/RIF4/libs/standalone/angular.min.js:146:111
-l@https://localhost:8080/RIF4/libs/standalone/angular.min.js:97:320
-J@https://localhost:8080/RIF4/libs/standalone/angular.min.js:102:34
-gg/</e@https://localhost:8080/RIF4/libs/standalone/angular.min.js:103:55
+loggedIn@https://localhost:8080/RIF40/backend/services/rifs-back-interceptor.js:48:69
+e/<@https://localhost:8080/RIF40/libs/standalone/angular.min.js:131:20
+vf/this.$get</m.prototype.$eval@https://localhost:8080/RIF40/libs/standalone/angular.min.js:145:343
+vf/this.$get</m.prototype.$digest@https://localhost:8080/RIF40/libs/standalone/angular.min.js:142:412
+vf/this.$get</m.prototype.$apply@https://localhost:8080/RIF40/libs/standalone/angular.min.js:146:111
+l@https://localhost:8080/RIF40/libs/standalone/angular.min.js:97:320
+J@https://localhost:8080/RIF40/libs/standalone/angular.min.js:102:34
+gg/</e@https://localhost:8080/RIF40/libs/standalone/angular.min.js:103:55
  1 angular.min.js:118:8
-	e/< https://localhost:8080/RIF4/libs/standalone/angular.min.js:118:8
-	hf/this.$get</< https://localhost:8080/RIF4/libs/standalone/angular.min.js:90:220
-	e/< https://localhost:8080/RIF4/libs/standalone/angular.min.js:131:103
-	vf/this.$get</m.prototype.$eval https://localhost:8080/RIF4/libs/standalone/angular.min.js:145:343
-	vf/this.$get</m.prototype.$digest https://localhost:8080/RIF4/libs/standalone/angular.min.js:142:412
-	vf/this.$get</m.prototype.$apply https://localhost:8080/RIF4/libs/standalone/angular.min.js:146:111
-	l https://localhost:8080/RIF4/libs/standalone/angular.min.js:97:320
-	J https://localhost:8080/RIF4/libs/standalone/angular.min.js:102:34
-	gg/</e https://localhost:8080/RIF4/libs/standalone/angular.min.js:103:55
+	e/< https://localhost:8080/RIF40/libs/standalone/angular.min.js:118:8
+	hf/this.$get</< https://localhost:8080/RIF40/libs/standalone/angular.min.js:90:220
+	e/< https://localhost:8080/RIF40/libs/standalone/angular.min.js:131:103
+	vf/this.$get</m.prototype.$eval https://localhost:8080/RIF40/libs/standalone/angular.min.js:145:343
+	vf/this.$get</m.prototype.$digest https://localhost:8080/RIF40/libs/standalone/angular.min.js:142:412
+	vf/this.$get</m.prototype.$apply https://localhost:8080/RIF40/libs/standalone/angular.min.js:146:111
+	l https://localhost:8080/RIF40/libs/standalone/angular.min.js:97:320
+	J https://localhost:8080/RIF40/libs/standalone/angular.min.js:102:34
+	gg/</e https://localhost:8080/RIF40/libs/standalone/angular.min.js:103:55
 ```
 
 ### 4.4.2 TLS Errors
@@ -1997,8 +1990,8 @@ b) Check your firewall/other security software is permitting access to your serv
 # 5. Running the RIF
 
 * Make sure you have restarted tomcat before attempting to run the RIF for the first time
-* In a non networked single machine environment (e.g. a laptop) the RIF is at: http://localhost:8080/RIF4
-* In a networked environment the RIF is at: ```http://<your domain>/RIF4```, e.g. *https://aepw-rif27.sm.med.ic.ac.uk/RIF4*
+* In a non networked single machine environment (e.g. a laptop) the RIF is at: http://localhost:8080/RIF40
+* In a networked environment the RIF is at: ```http://<your domain>/RIF40```, e.g. *https://aepw-rif27.sm.med.ic.ac.uk/RIF40*
 * Test cases are provided in the *tests* folder of the SAHSU supplied bundle:
   - *TEST 1002 LUNG CANCER HET 95_96.json typically takes around 85 seconds on a Postgres database;
   - *TEST 1003 LUNG CANCER BYM ALL YEARS 89_16.json* typically takes around 160 seconds on a Postgres database
@@ -2021,7 +2014,7 @@ b) Check your firewall/other security software is permitting access to your serv
 
 1. Call the web service directly in a browser window, setting the username and password as appropriate.
 
-	http://localhost:8080/rifServices/studySubmission/pg/login?userID=peterh&password=XXXXXXXXXXXXXXX
+	http://localhost:8080/rifServices/studysubmission/login?userID=peterh&password=XXXXXXXXXXXXXXX
 
 	* A successful logon returns:
 
@@ -2170,28 +2163,34 @@ This fixes the error : "R BYM sahsuland fault\R BYM sahsuland fault - no covaria
 
 ## 6.1 RIF Web Application  
 
-* Save the RIF web application file *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-urls.js* outside of the tomcat tree; 
+Be aware that the RIF war file is versioned (it creates a directory *RIF40*) and this will modify the 
+instructions if it is updated say to *RIF41*.
+
+* IF you have modified it (you normally do not need to) save the RIF web application file 
+  *%CATALINA_HOME%\webapps\RIF40\backend\services\rifs-back-urls.js* outside of the tomcat tree; 
 * Stop Tomcat;
-* Change directory to *%CATALINA_HOME%\webapps*; rename RIF4 to RIF4.old;
+* Change directory to *%CATALINA_HOME%\webapps*; rename RIF40 to RIF40.old;
 * Follow the instructions in 
-[section 3.2 for installing the RIF Web Application](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#32-rif-web-application)
-* Restore *%CATALINA_HOME%\webapps\RIF4\backend\services\rifs-back-urls.js* if you have modified it;
-* Start tomcat;
-* When you are satisfied with the patch remove the RIF4.old directory in *%CATALINA_HOME%\webapps*.
+  [section 3.2 for installing the RIF Web Application](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#32-rif-web-application)
+  i.e. copy the replacement *RIF40.war* file into the *%CATALINA_HOME%\webapps\* directory;
+* Restore *%CATALINA_HOME%\webapps\RIF40\backend\services\rifs-back-urls.js* if you have modified it;
+* When you are satisfied with the patch remove the RIF40.old directory in *%CATALINA_HOME%\webapps*.
 
 ## 6.2 RIF Middleware
 
 * If you have not already moved it then save the Java connector for the RifServices middleware: *%CATALINA_HOME%\webapps\rifServices\WEB-INF\classes\RIFServiceStartupProperties.properties* 
   to *%CATALINA_HOME%\conf\RIFServiceStartupProperties.properties*;
 * Stop Tomcat;
-* Change directory to *%CATALINA_HOME%\webapps*; rename the .WAR files to .WAR.OLD; rename the rifServices and taxonomyservices trees to .old;
+* Change directory to *%CATALINA_HOME%\webapps*; rename the .WAR files to .WAR.OLD; rename the rifServices 
+  and taxonomyServices trees to .old;
 * Follow the instructions in 
-[section 3.1 for installing the web services](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#311-rif-services);
+  [section 3.1 for installing the web services](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/Readme.md#311-rif-services).
+  i.e. copy replacement *taxonomyServices.war and rifServices.war* files into the *%CATALINA_HOME%\webapps\* directory;
 * Start tomcat, check rifServices and taxonomyservices are unpacked and check they are running in the logs;
 * Restart tomcat;
 * When you are satisfied with the patch remove the .old files and directories in *%CATALINA_HOME%\webapps*.
 
-Do **NOT** attempt to warm upgrade the RIF middleware. It wil fail if any of the following are true:
+Do **NOT** attempt to warm upgrade the RIF middleware. It will fail if any of the following are true:
 
 * You have run a study (R does not shutdown correctly);
 * You have not copied the optional logging properties files to *%CATALINA_HOME%\conf* and they are in use;
