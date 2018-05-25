@@ -1,21 +1,44 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>rapidInquiryFacility</groupId>
-  <artifactId>rifWebApplication</artifactId>
-  <packaging>war</packaging>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>rifWebApplication Maven Webapp</name>
-  <url>http://maven.apache.org</url>
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-  <build>
-    <finalName>rifWebApplication</finalName>
-  </build>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>rapidInquiryFacility</groupId>
+	<artifactId>rifWebApplication</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<packaging>jar</packaging>
+
+	<name>RIF Web Application</name>
+	<url>http://maven.apache.org</url>
+
+	<build>
+		<finalName>RIF40</finalName>
+
+		<plugins>
+			<plugin>
+				<!-- This plugin lets us create a jar file, as per the <packaging> element above,
+				     and rename it to a war file so Tomcat will automatically expand it.
+				     Note that we deliberately do not use war packaging, as that requires a
+				     particular directory structure and presupposes that servlets are involved,
+				     which they are not for our web app. -->
+				<groupId>com.coderplus.maven.plugins</groupId>
+				<artifactId>copy-rename-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>rename-file</id>
+						<phase>install</phase>
+						<goals>
+							<goal>rename</goal>
+						</goals>
+						<configuration>
+							<sourceFile>target/RIF40.jar</sourceFile>
+							<destinationFile>target/RIF40.war</destinationFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+	</build>
+
 </project>
