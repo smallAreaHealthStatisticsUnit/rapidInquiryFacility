@@ -8,6 +8,7 @@ Database Management Manual
   - [2.1 Creating new users](#21-creating-new-users)
      - [2.1.1 Postgres](#211-postgres)
      - [2.1.2 SQL Server](#212-sql-server)
+	   -[2.1.2.1 Manually creating a new user](#2121-manually-creating-a-new-user)
   - [2.2 Changing passwords](#22-changing-passwords)
      - [2.2.1 Postgres](#221-postgres)
      - [2.2.2 SQL Server](#222-sql-server)
@@ -97,14 +98,327 @@ rif40
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>
 ```
 
-# 4. Installation By Hand
+#### 2.1.2.1 Manually creating a new user
 
-This assumes that your database team will not run the *rif40_database_install.bat* script as an Administrator, so they will have to run: 
-*rif40_production_creation.sql* as a database administrator or run the commands manually in it, and then do the same for 
-*rif40_production_user.sql* to create a user, also as an administrator. The RIF must have a *rif40* schema account; although the password can be set to gibberish. 
-There are no restrictions as to the database name (other than it being valid).
+These instructions are based on *rif40_production_user.sql*. This uses *NEWUSER* and *NEWDB* from the CMD environment.
 
-All commands are assumed to be run by an administrator.
+* Change "mydatabasename" to the name of your database, e.g. *sahsuland*;
+* Change "mydatabasenuser" to the name of your user, e.g. *peter*;
+* Change "mydatabasepassword" to the name of your users password;
+
+1. Validate the RIF user
+```SQL
+USE [master];
+GO
+DECLARE @newuser VARCHAR(MAX)='mydatabaseuser';
+DECLARE @invalid_chars INTEGER;
+DECLARE @first_char VARCHAR(1);
+SET @invalid_chars=PATINDEX('%[^0-9a-z_]%', @newuser);
+SET @first_char=SUBSTRING(@newuser, 1, 1);
+IF @invalid_chars IS NULL
+	RAISERROR('New username is null', 16, 1, @newuser);
+ELSE IF @invalid_chars > 0
+	RAISERROR('New username: %s contains invalid character(s) starting at position: %i.', 16, 1, 
+		@newuser, @invalid_chars);
+ELSE IF (LEN(@newuser) > 30) 
+	RAISERROR('New username: %s is too long (30 characters max).', 16, 1, @newuser);
+ELSE IF ISNUMERIC(@first_char) = 1
+	RAISERROR('First character in username: %s is numeric: %s.', 16, 1, @newuser, @first_char);
+ELSE 
+	PRINT 'New username: ' + @newuser + ' OK';	
+GO
+```
+
+2. Create Login
+```SQL
+USE [master];
+GO
+IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'mydatabaseuser')
+CREATE LOGIN [mydatabaseuser] WITH PASSWORD='mydatabasepassword', CHECK_POLICY = OFF;
+GO
+
+ALTER LOGIN [mydatabaseuser] WITH DEFAULT_DATABASE = [mydatabasename];
+GO	
+```
+
+3. Creare user and grant roles
+```SQL
+USE mydatabasename;
+GO
+BEGIN
+	IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'mydatabaseuser')
+	CREATE USER [mydatabaseuser] FOR LOGIN [mydatabaseuser] WITH DEFAULT_SCHEMA=[dbo]
+	ELSE ALTER USER [mydatabaseuser] WITH LOGIN=[mydatabasepassword];
+	
+--
+-- Object privilege grants
+--
+	GRANT CREATE TABLE TO [mydatabaseuser];
+	GRANT CREATE VIEW TO [mydatabaseuser];
+--
+	IF NOT EXISTS (SELECT name FROM sys.schemas WHERE name = N'mydatabaseuser')
+		EXEC('CREATE SCHEMA [mydatabaseuser] AUTHORIZATION [mydatabasepassword]');
+	ALTER USER [mydatabaseuser] WITH DEFAULT_SCHEMA=[mydatabaseuser];
+	ALTER ROLE rif_user ADD MEMBER [mydatabaseuser];
+	ALTER ROLE rif_manager ADD MEMBER [mydatabaseuser];	
+END;
+GO
+```
+* **Change the password**. The password is set to *mydatabasepassword*.
+
+4. Create user pecific object views: *rif40_num_denom*, *rif40_num_denom_errors*. These must be created as the user so they run with the users privileges and therefore only return
+   RIF data tables to which the user has been granted access permission.
+
+```SQL
+USE mydatabasename;
+GO
+--
+-- RIF40 num_denom, rif40_num_denom_errors
+--
+-- needs functions:
+--	rif40_is_object_resolvable
+--	rif40_num_denom_validate
+--	rif40_auto_indirect_checks
+--
+
+IF EXISTS (SELECT * FROM sys.objects 
+WHERE object_id = OBJECT_ID(N'[mydatabaseuser].[rif40_num_denom]') AND type in (N'V'))
+BEGIN
+	DROP VIEW [mydatabaseuser].[rif40_num_denom]
+END
+GO
+
+CREATE VIEW [mydatabaseuser].[rif40_num_denom] AS 
+ WITH n AS (
+         SELECT n1.geography,
+            n1.numerator_table,
+            n1.numerator_description,
+            n1.automatic,
+            n1.theme_description
+           FROM ( SELECT g.geography,
+                    n_1.table_name AS numerator_table,
+                    n_1.description AS numerator_description,
+                    n_1.automatic,
+                    t.description AS theme_description
+                   FROM [rif40].[rif40_geographies] g,
+                        [rif40].[rif40_tables] n_1,
+                        [rif40].[rif40_health_study_themes] t
+                  WHERE n_1.isnumerator = 1 AND n_1.automatic = 1
+  				    AND [rif40].[rif40_is_object_resolvable](n_1.table_name) = 1
+					AND n_1.theme = t.theme) n1
+          WHERE [rif40].[rif40_num_denom_validate](n1.geography, n1.numerator_table) = 1
+        ), d AS (
+         SELECT d1.geography,
+            d1.denominator_table,
+            d1.denominator_description
+           FROM ( SELECT g.geography,
+                    d_1.table_name AS denominator_table,
+                    d_1.description AS denominator_description
+                   FROM [rif40].[rif40_geographies] g,
+                        [rif40].[rif40_tables] d_1
+                  WHERE d_1.isindirectdenominator = 1
+  				    AND d_1.automatic = 1
+					AND [rif40].[rif40_is_object_resolvable](d_1.table_name) = 1) d1
+          WHERE [rif40].[rif40_num_denom_validate](d1.geography, d1.denominator_table) = 1 
+		    AND [rif40].[rif40_auto_indirect_checks](d1.denominator_table) IS NULL
+        )
+ SELECT n.geography,
+    n.numerator_table,
+    n.numerator_description,
+    n.theme_description,
+    d.denominator_table,
+    d.denominator_description,
+    n.automatic
+   FROM n,
+    d
+  WHERE n.geography = d.geography
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator and indirect standardisation denominator pairs. Use RIF40_NUM_DENOM_ERROR if your numerator and denominator table pair is missing. You must have your own copy of RIF40_NUM_DENOM or you will only see the tables RIF40 has access to. Tables not rejected if the user does not have access or the table does not contain the correct geography geolevel fields.' , 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Geography', 
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'geography'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator table', 
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'numerator_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator table description', 
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'numerator_description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator table health study theme description', 
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'theme_description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Denominator table', 
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'denominator_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Denominator table description', 
+	@level0type=N'SCHEMA', @level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'denominator_description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.' , 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW', @level1name=N'rif40_num_denom', 
+	@level2type=N'COLUMN',@level2name=N'automatic'
+GO
+
+IF EXISTS (SELECT * FROM sys.objects 
+WHERE object_id = OBJECT_ID(N'[mydatabaseuser].[rif40_num_denom_errors]') AND type in (N'V'))
+BEGIN
+	DROP VIEW [mydatabaseuser].[rif40_num_denom_errors]
+END
+GO
+
+CREATE VIEW [mydatabaseuser].[rif40_num_denom_errors] AS 
+ WITH n AS (
+         SELECT n1.geography,
+            n1.numerator_table,
+            n1.numerator_description,
+            n1.automatic,
+            n1.is_object_resolvable,
+            n1.n_num_denom_validated,
+            n1.numerator_owner
+           FROM ( SELECT g.geography,
+                    n_1.table_name AS numerator_table,
+                    n_1.description AS numerator_description,
+                    n_1.automatic,
+                    [rif40].[rif40_is_object_resolvable](n_1.table_name) AS is_object_resolvable,
+                    [rif40].[rif40_num_denom_validate](g.geography, n_1.table_name) AS n_num_denom_validated,
+                    [rif40].[rif40_object_resolve](n_1.table_name) AS numerator_owner
+                   FROM [rif40].[rif40_geographies] g,
+                    [rif40].[rif40_tables] n_1
+                  WHERE n_1.isnumerator = 1 AND n_1.automatic = 1) n1
+        ), d AS (
+         SELECT d1.geography,
+            d1.denominator_table,
+            d1.denominator_description,
+            d1.is_object_resolvable,
+            d1.d_num_denom_validated,
+            d1.denominator_owner,
+            [rif40].[rif40_auto_indirect_checks](d1.denominator_table) AS auto_indirect_error
+           FROM ( SELECT g.geography,
+                    d_1.table_name AS denominator_table,
+                    d_1.description AS denominator_description,
+                    [rif40].[rif40_is_object_resolvable](d_1.table_name) AS is_object_resolvable,
+                    [rif40].[rif40_num_denom_validate](g.geography, d_1.table_name) AS d_num_denom_validated,
+                    [rif40].[rif40_object_resolve](d_1.table_name) AS denominator_owner
+                   FROM [rif40].[rif40_geographies] g,
+                    [rif40].[rif40_tables] d_1
+                  WHERE d_1.isindirectdenominator = 1 AND d_1.automatic = 1) d1
+        )
+ SELECT n.geography,
+    n.numerator_owner,
+    n.numerator_table,
+    n.is_object_resolvable AS is_numerator_resolvable,
+    n.n_num_denom_validated,
+    n.numerator_description,
+    d.denominator_owner,
+    d.denominator_table,
+    d.is_object_resolvable AS is_denominator_resolvable,
+    d.d_num_denom_validated,
+    d.denominator_description,
+    n.automatic,
+        CASE
+            WHEN d.auto_indirect_error IS NULL THEN 0
+            ELSE 1
+        END AS auto_indirect_error_flag,
+    d.auto_indirect_error /*,
+    f.create_status AS n_fdw_create_status,
+    f.error_message AS n_fdw_error_message,
+    f.date_created AS n_fdw_date_created,
+    f.rowtest_passed AS n_fdw_rowtest_passed */
+   FROM d,
+    n
+  WHERE n.geography = d.geography;
+GO
+
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'All possible numerator and indirect standardisation denominator pairs with error diagnostic fields. As this is a CROSS JOIN the will be a lot of output as tables are not rejected on the basis of user access or containing the correct geography geolevel fields.' , 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Geography', 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'geography'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator table owner' , 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'numerator_owner'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator table' , 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'numerator_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Is the numerator table resolvable and accessible (0/1)' , 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'is_numerator_resolvable'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Is the numerator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.', 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'n_num_denom_validated'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Numerator table description', 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'numerator_description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Denominator table owner', 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'denominator_owner'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Denominator table', 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'denominator_table'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Is the denominator table resolvable and accessible (0/1)', 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'is_denominator_resolvable'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Is the denominator valid for this geography (0/1). If N_NUM_DENOM_VALIDATED and D_NUM_DENOM_VALIDATED are both 1 then the pair will appear in RIF40_NUM_DENOM.', 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'd_num_denom_validated'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Denominator table description', 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'denominator_description'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Is the pair automatic (0/1). Cannot be applied to direct standardisation denominator. Restricted to 1 denominator per geography. The default in RIF40_TABLES is 0 because of the restrictions.', 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'automatic'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Error flag 0/1. Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator.', 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'auto_indirect_error_flag'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+	@value=N'Denominator table with automatic set to "1" that fails the RIF40_CHECKS.RIF40_AUTO_INDIRECT_CHECKS test. Restricted to 1 denominator per geography to prevent the automatic RIF40_NUM_DENOM having >1 pair per numerator. List of geographies and tables in error.', 
+	@level0type=N'SCHEMA',@level0name=N'mydatabaseuser', @level1type=N'VIEW',@level1name=N'rif40_num_denom_errors', 
+	@level2type=N'COLUMN',@level2name=N'auto_indirect_error'
+GO
+```
 
 ## 2.2 Changing passwords
 
@@ -173,9 +487,7 @@ This permits user name and password authentication; *ldap* does not support prox
 to allow schema access. See Postgres [LDAP Authentication](https://www.postgresql.org/docs/9.6/static/auth-methods.html#AUTH-LDAP)
 
 Postgres proxy accounts are controlled by *pg_ident.conf* in the Postgres data directory. See 
-[Postgres Client Authentication](https://www.postgresql.org/docs/9.6/static/client-authentication.htmlnt Authenticastion](https://www.postgresql.org/docs/9.6/static/client-authentication.html)
-
-# MAPNAME       SYSTEM-USERNAME         PG-USERNAME
+[Postgres Client Authentication](https://www.postgresql.org/docs/9.6/static/client-authentication.html)
 
 The *map name* must be one of following mappable methods from *hba.conf* (i.e. that support proxying):
 
@@ -189,7 +501,7 @@ The *map name* must be one of following mappable methods from *hba.conf* (i.e. t
 The Windows installer guide for Postgres has examples:
 
 * [Authentication Setup - hba.conf](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#32-authentication-setup-hbaconf)
-* [Proxy user setup - ident.conf]ttps://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#33-proxy-user-setup-identconf)
+* [Proxy user setup - ident.conf](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#33-proxy-user-setup-identconf)
 
 So, if I setup SSPI as per the examples to use *SSPI* in *hba.conf*:
 ```
@@ -202,7 +514,7 @@ hostssl	sahsuland_dev	all	 	127.0.0.1/32 		sspi 	map=sahsuland_dev
 hostssl	sahsuland_dev	all	 	::1/128 		sspi 	map=sahsuland_dev
 ```
 
-With maps in ident.conf:
+With the maps *sahsuland* and *sahsuland_dev* defined in ident.conf:
 ```
 # MAPNAME       SYSTEM-USERNAME         PG-USERNAME
 #
@@ -249,9 +561,12 @@ Type "help" for help.
 
 sahsuland=>
 ```
+
 ### 2.3.2 SQL Server
 
-TO BE ADDED
+This needs to be investigated as it is not cetain SQL SErver has the correct functionality.
+
+TO BE ADDED. See: [Create a SQL Server Agent Proxy](https://docs.microsoft.com/en-us/sql/ssms/agent/create-a-sql-server-agent-proxy?view=sql-server-2017) as an example.
 
 ## 2.4 Granting permission
 
