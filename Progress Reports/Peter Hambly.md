@@ -2236,11 +2236,6 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
     library has been used (Mike Bostock's?) needs to be determined. Method for determining geographic centroids
 	(hopefully the ones built-in to the geoJSON)
   * Need for population weighted centroids: test on England data in 6-8 weeks time;
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> master
   
 #### 14th to 18th May
 
@@ -2304,6 +2299,7 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 	npm WARN notsup SKIPPING OPTIONAL DEPENDENCY: Unsupported platform for fsevents@1.2.4: wanted {"os":"darwin","arch":"any"} (current: {"os":"win32","arch":"x64"})
 
 	+ mssql@4.1.0
+	added 12 packages in 11.196s
    ```
 * Test SEER pre-processing and load scripts;
 * Test and merge pull requests #32, #33. Issues with #34;
@@ -2314,7 +2310,7 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
   Msg 51147, Level 16, State 1, Server DESKTOP-4P2SA80, Procedure tr_rif40_tables_checks, Line 45
   Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
   ```
-* RIF meeting. Need to discuss instsallation with CDC;
+* RIF meeting. Need to discuss installation with CDC;
 * Test and merge pull #34 rename all packages to follow Java conventions
   - Whilst resolving issues (malformed lowercase URL - http://localhost:8080/taxonomyservices/taxonomyservices/getMatchingTerms)
     It was found that getJsonFile() was calling the *taxonomyservices* using *wpea-rif1* which it was not obtaining from 
@@ -2356,3 +2352,5 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 	actual time:  24/05/2018 11:18:36
 	relative:     +135.4
 	```
+* Test and merge pull #37: Creating the web application as a war file, pull #36 error loading a saved 
+  study with no Bayesian Smoothing
