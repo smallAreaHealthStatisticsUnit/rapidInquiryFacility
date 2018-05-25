@@ -1290,6 +1290,9 @@ public class StudySubmissionService extends CommonUserService implements RIFStud
 
 			StudyExtractManager studyExtractManager
 			= rifServiceResources.getSQLStudyExtractManager();
+			
+			rifLogger.info(this.getClass(), "Call getJsonFile() using URL: " + 
+				url);
 			result=studyExtractManager.getJsonFile(
 					connection, 
 					user, 

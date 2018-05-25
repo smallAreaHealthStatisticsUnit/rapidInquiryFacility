@@ -11,13 +11,15 @@ import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import java.lang.NoClassDefFoundError;
+
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFGenericLibraryError;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
 import org.xml.sax.InputSource;
 
-import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.generic.util.TaxonomyLogger;
 
 /**
  *
@@ -98,7 +100,7 @@ public final class TaxonomyServiceConfigurationXMLReader {
 	
 	private ArrayList<TaxonomyServiceAPI> taxonomyServices;
 	
-	private RIFLogger rifLogger = RIFLogger.getLogger();
+	private TaxonomyLogger taxonomyLogger = TaxonomyLogger.getLogger();
 	
 // ==========================================
 // Section Construction
@@ -139,7 +141,7 @@ public final class TaxonomyServiceConfigurationXMLReader {
 				= new RIFServiceException(
 					"taxonomyServices.error.initialisationFailure",  
 					"CATALINA_HOME not set in the environment");
-			rifLogger.error(this.getClass(), "TaxonomyServiceConfigurationXMLReader error", rifServiceException);
+			taxonomyLogger.error(this.getClass(), "TaxonomyServiceConfigurationXMLReader error", rifServiceException);
 			throw rifServiceException;
 		}
 		filePath.append(catalinaHome);
@@ -151,7 +153,7 @@ public final class TaxonomyServiceConfigurationXMLReader {
 			= new File(filePath.toString());
 		if (taxonomyServiceConfigurationFile.exists()) {
 			resourceDirectoryPath = catalinaHome + File.separator + "conf";
-			rifLogger.info(this.getClass(), "TaxonomyService configuration file: " + filePath.toString());
+			taxonomyLogger.info(this.getClass(), "TaxonomyService configuration file: " + filePath.toString());
 		}
 		else {
 			filePath2.append(defaultResourceDirectoryPath);
@@ -160,14 +162,14 @@ public final class TaxonomyServiceConfigurationXMLReader {
 			taxonomyServiceConfigurationFile
 				= new File(filePath2.toString());
 			if (taxonomyServiceConfigurationFile.exists()) {
-				rifLogger.info(this.getClass(), "TaxonomyService configuration file: " + filePath2.toString());
+				taxonomyLogger.info(this.getClass(), "TaxonomyService configuration file: " + filePath2.toString());
 			}
 			else {
 				RIFServiceException rifServiceException
 					= new RIFServiceException(
 						"taxonomyServices.error.initialisationFailure", 
 						"Cannot find TaxonomyService configuration file: TaxonomyServicesConfiguration.xml");
-				rifLogger.error(this.getClass(), "TaxonomyServiceConfigurationXMLReader error", rifServiceException);
+				taxonomyLogger.error(this.getClass(), "TaxonomyServiceConfigurationXMLReader error", rifServiceException);
 				throw rifServiceException;
 			}
 		}
@@ -185,11 +187,17 @@ public final class TaxonomyServiceConfigurationXMLReader {
 			ArrayList<TaxonomyServiceConfiguration> currentServiceConfigurations
 				= taxonomyServiceContentHandler.getTaxonomyServiceConfigurations();
 			for (TaxonomyServiceConfiguration currentServiceConfiguration : currentServiceConfigurations) {
+				String ontologyServiceClassName = null;
 				try {
 					
-					String ontologyServiceClassName
-						= currentServiceConfiguration.getOntologyServiceClassName().trim();
+					ontologyServiceClassName = currentServiceConfiguration.getOntologyServiceClassName().trim();
 					
+					/*
+					 * Load the class in to memory, if it is not loaded - which means creating in-memory 
+					 * representation of the class from the .class file so that an instance can be created out of it. This includes initializing static variables (resolving of that class)
+					 *
+					 * create an instance of that class and store the reference to the variable.
+					 */
 					Class taxonomyServiceClass
 						= Class.forName(ontologyServiceClassName);
 					TaxonomyServiceAPI taxonomyService
@@ -201,9 +209,27 @@ public final class TaxonomyServiceConfigurationXMLReader {
 					
 					taxonomyServices.add(taxonomyService);
 					
-				}
+				}	
+				catch(NoClassDefFoundError noClassDefFoundError) {
+					taxonomyLogger.error(this.getClass(), "Unable to load taxonomyService: " + 
+						ontologyServiceClassName, 
+						noClassDefFoundError);
+
+					String errorMessage
+						= GENERIC_MESSAGES.getMessage(
+							"taxonomyServices.error.initialisationFailure", 
+							currentServiceConfiguration.getName());				
+					errorMessages.add(errorMessage);
+					RIFServiceException rifServiceException
+						= new RIFServiceException(
+							RIFGenericLibraryError.TAXONOMY_SERVICE_INITIALISATION_FAILURE,
+							errorMessages);
+					throw rifServiceException;
+				} 
 				catch(Exception exception) {
-					exception.printStackTrace(System.out);
+					taxonomyLogger.error(this.getClass(), "Exception initializing taxonomyService: " + 
+						ontologyServiceClassName, 
+						exception);
 					String errorMessage
 						= GENERIC_MESSAGES.getMessage(
 							"taxonomyServices.error.initialisationFailure", 
@@ -218,7 +244,9 @@ public final class TaxonomyServiceConfigurationXMLReader {
 			}
 		}
 		catch(Exception exception) {
-			exception.printStackTrace(System.out);
+			taxonomyLogger.error(this.getClass(), "Exception processing TaxonomyService Configuration: " + 
+				taxonomyServiceConfigurationFile.getName(), 
+				exception);
 			RIFServiceExceptionFactory exceptionFactory
 				= new RIFServiceExceptionFactory();
 			throw exceptionFactory.createFileReadingProblemException(

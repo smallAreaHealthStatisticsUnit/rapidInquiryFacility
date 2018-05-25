@@ -62,6 +62,11 @@ if %errorlevel% neq 0  (
 	cd %PWD%		
 	exit /b 1
 )
+COPY rifWebApplication\target\RIF40.war RIF40.war
+if %errorlevel% neq 0  (
+	cd %PWD%		
+	exit /b 1
+)
 COPY taxonomyServices\target\taxonomyServices.war taxonomyServices.war
 if %errorlevel% neq 0  (	
 	cd %PWD%	
@@ -72,18 +77,7 @@ if %errorlevel% neq 0  (
 	cd %PWD%	
 	exit /b 1
 )
-cd rifWebApplication\src\main\webapp\WEB-INF
-"C:\Program Files\7-Zip\7z.exe" a -r ..\..\..\..\..\RIF4.7z *
-if %errorlevel% neq 0  (
-	cd %PWD%		
-	exit /b 1
-)
-cd %PWD%
-"C:\Program Files\7-Zip\7z.exe" l RIF4.7z
-if %errorlevel% neq 0  (	
-	cd %PWD%	
-	exit /b 1
-)
+
 
 REM
 REM Eof
