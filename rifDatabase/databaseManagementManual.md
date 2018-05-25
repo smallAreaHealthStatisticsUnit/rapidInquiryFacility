@@ -61,26 +61,85 @@ This manual details how to manage RIF databases. See also the:
  
 ## 2.1 Creating new users
 
-New users must be created in lower case, start with a letter, and only contain the characters: ```[A-Z][a-z][0-9]_```
+New users must be created in lower case, start with a letter, and only contain the characters: ```[a-z][0-9]_```. **Do not use mixed case, upper case, dashes, space or non 
+ASCII e.g. UTF8) characters**. Beware; the database stores user names internally in upper case. This is because of the RIF's Oracle heritage. 
 
 ### 2.1.1 Postgres
 
-TO BE ADDED
-
-### 2.1.2 SQL Server
-
-Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
-the -v newuser=<my new user>  and -v newpw=<my new password> parameters. Run as Administrator:
+Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* with password *%newpw%* in database *%newdb%* from the command environment. 
+This is set from the command line using the -v newuser=<my new user> -v newpw=<my new password> and -v newdb=<my database> parameters. Run as a normal user or an 
+Administrator, using the *postgres* account:
 
 ```
-sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser=kevin -v newpw=XXXXXXXXXXXX
+psql  -U postgres -d postgres -w -e -f rif40_production_user.sql -v newuser=kevin -v newpw=nivek -v newdb=sahsuland
 ```
 
 * User is created with the *rif_user* (can create tables and views) and *rif_manager* roles (can also create procedures and functions);
 * User can use the sahsuland database;
 * Will fail to re-create a user if the user already has objects (tables, views etc);
 
-Test connection and object privileges:
+Test connection and object privileges, access to RIF numerators and denominators:
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>psql -U kevin
+Password for user kevin:
+You are connected to database "sahsuland" as user "kevin" on host "localhost" at port "5432".
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  rif40_log_setup() DEFAULTED send DEBUG to INFO: off; debug function list: []
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.03s  rif40_startup(): SQL> SET search_path TO kevin,rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions,rif_studies;
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.06s  rif40_startup(): SQL> DROP FUNCTION IF EXISTS kevin.rif40_run_study(INTEGER, INTEGER);
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: NOTICE:  function kevin.rif40_run_study(pg_catalog.int4,pg_catalog.int4) does not exist, skipping
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.14s  rif40_startup(): Created temporary table: g_rif40_study_areas
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.16s  rif40_startup(): Created temporary table: g_rif40_comparison_areas
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00001.00s  rif40_startup(): PostGIS extension V2.3.5 (POSTGIS="2.3.5 r16110" GEOS="3.6.2-CAPI-1.10.2 4d2925d" PROJ="Rel. 4.9.3, 15 August 2016" GDAL="GDAL 2.2.2, released 2017/09/15" LIBXML="2.7.8" LIBJSON="0.12" RASTER)
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00001.02s  rif40_startup(): FDW functionality disabled - FDWServerName, FDWServerType, FDWDBServer RIF parameters not set.
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00001.03s  rif40_startup(): V$Revision: 1.11 $ rif40_geographies, rif40_tables, rif40_health_study_themes exist for user: kevin
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00001.03s  rif40_startup(): VIEW rif40_user_version not found; rebuild forced
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00001.03s  rif40_startup(): search_path: rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions, rif_studies, reset: rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  analyzing "kevin.t_rif40_num_denom"
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  "t_rif40_num_denom": scanned 0 of 0 pages, containing 0 live rows and 0 dead rows; 0 rows in sample, 0 estimated total rows
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00001.15s  rif40_startup(): Created table: t_rif40_num_denom
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00001.29s  rif40_startup(): Created view: rif40_num_denom_errors
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00001.34s  rif40_startup(): Created view: rif40_num_denom
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00001.34s  rif40_startup(): V$Revision: 1.11 $ Creating view: rif40_user_version
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00001.36s  rif40_startup(): Deleted 0, created 6 tables/views/foreign data wrapper tables
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  SQL> SET search_path TO kevin,rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
+DO
+psql (9.6.8)
+Type "help" for help.
+
+sahsuland=> SELECT current_database() AS db_name INTO test_table;
+SELECT 1
+sahsuland=> SELECT * FROM test_table;
+  db_name
+-----------
+ sahsuland
+(1 row)
+
+
+sahsuland=> SELECT * FROM rif40_num_denom;
+ geography |   numerator_table    |             numerator_description             |         theme_description         | denominator_table |                                 denominator_description                                  | automatic
+-----------+----------------------+-----------------------------------------------+-----------------------------------+-------------------+------------------------------------------------------------------------------------------+-----------
+ SAHSULAND | NUM_SAHSULAND_CANCER | cancer numerator                              | covering various types of cancers | POP_SAHSULAND_POP | population health file                                                                   |         1
+(1 row)
+
+sahsuland=> \q
+
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>
+```
+
+### 2.1.2 SQL Server
+
+Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* with password *%newpw%* in database *%newdb%* from the command environment. 
+This is set from the command line using the -v newuser=<my new user> -v newpw=<my new password> and -v newdb=<my database> parameters. Run as *Administrator*:
+
+```
+sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser=kevin -v newpw=XXXXXXXXXXXX -v newdb=sahsuland
+```
+
+* User is created with the *rif_user* (can create tables and views) and *rif_manager* roles (can also create procedures and functions);
+* User can use the sahsuland database;
+* Will fail to re-create a user if the user already has objects (tables, views etc);
+
+Test connection and object privileges, access to RIF numerators and denominators:
 ```
 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U kevin -P XXXXXXXXXXXX
 1> SELECT db_name() AS db_name INTO test_table;
@@ -91,6 +150,13 @@ C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_s
 db_name
 --------------------------------------------------------------------------------------------------------------------------------
 rif40
+
+(1 rows affected)
+1> SELECT * FROM rif40_num_denom;
+2> go
+geography                                          numerator_table                numerator_description                                                                                                                                                                                                                                      theme_description                                                                                                                                                                                        denominator_table              denominator_description                                                                                                                                                                                                                                    automatic
+-------------------------------------------------- ------------------------------ ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ------------------------------ ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ---------
+SAHSULAND                                          NUM_SAHSULAND_CANCER           cancer numerator                                                                                                                                                                                                                                           covering various types of cancers                                                                                                                                                                        POP_SAHSULAND_POP              population health file                                                                                                                                                                                                                                             1
 
 (1 rows affected)
 1> quit
