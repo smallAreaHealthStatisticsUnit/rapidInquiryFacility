@@ -862,11 +862,7 @@ To run a make target type *make <target>;e.g. *make install*.
 The following files are then built and copied into the rapidInquiryFacility directory: 
 *taxonomyservices.war*, *rifServices.war*, *RIF40.war*
 
-**Make currently only works on Windows and requires the Mingw development kit and 7zip to be installed.**
-
 ## 2.2 Building Using a Windows Batch File
-
-This method requires 7zip to be installed in *C:\Program Files\7-Zip\7z.exe*
 
 Run *java_build.bat* from the root of the github repository, 
 e.g. *C:\Users\Peter\Documents\GitHub\rapidInquiryFacility*. The files *taxonomyservices.war*,
