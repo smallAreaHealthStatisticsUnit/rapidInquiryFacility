@@ -68,7 +68,43 @@ TO BE ADDED
 
 ### 2.1.2 SQL Server
 
-TO BE ADDED
+Run the optional script *rif40_production_user.sql*. This creates a default user *%newuser%* from the command environment. This is set from the command line using 
+the -v newuser=<my new user>  and -v newpw=<my new password> parameters. Run as Administrator:
+
+```
+sqlcmd -E -b -m-1 -e -i rif40_production_user.sql -v newuser=kevin -v newpw=XXXXXXXXXXXX
+```
+
+* User is created with the *rif_user* (can create tables and views) and *rif_manager* roles (can also create procedures and functions);
+* User can use the sahsuland database;
+* Will fail to re-create a user if the user already has objects (tables, views etc);
+
+Test connection and object privileges:
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>sqlcmd -U kevin -P XXXXXXXXXXXX
+1> SELECT db_name() AS db_name INTO test_table;
+2> SELECT * FROM test_table;
+3> go
+
+(1 rows affected)
+db_name
+--------------------------------------------------------------------------------------------------------------------------------
+rif40
+
+(1 rows affected)
+1> quit
+
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\Postgres\psql_scripts>
+```
+
+# 4. Installation By Hand
+
+This assumes that your database team will not run the *rif40_database_install.bat* script as an Administrator, so they will have to run: 
+*rif40_production_creation.sql* as a database administrator or run the commands manually in it, and then do the same for 
+*rif40_production_user.sql* to create a user, also as an administrator. The RIF must have a *rif40* schema account; although the password can be set to gibberish. 
+There are no restrictions as to the database name (other than it being valid).
+
+All commands are assumed to be run by an administrator.
 
 ## 2.2 Changing passwords
 
@@ -121,15 +157,98 @@ GO
   
 ## 2.3 Proxy accounts
 
+Proxy accounts are of use to the RIF as it can allow a normal user to login as a schema owner. Good practice is not the set the schema owner passwords (e.g. *rif40*) as these tend to be known by 
+several people and tend to get written down as these accounts are infrequently used. Proxy accounts allow for privilege minimisation. Importantly the use proxy accounts is fully audited and privilege 
+escalation (i.e. use of the proxy)  
+ 
+The RIF front end application and middleware use user name and passwords to authenticate. Therefore federated mechanism such as [Kerberos](https://en.wikipedia.org/wiki/Kerberos_(protocol)) and 
+[SSPI](https://en.wikipedia.org/wiki/Security_Support_Provider_Interface) (Windows authentication) will not work; and would require 
+a [GSSAPI](https://en.wikipedia.org/wiki/Generic_Security_Services_Application_Program_Interface) implementation in the middleware. Invariably substantial browser and server key 
+set-up is required and this is very difficult to set up (some years ago the SAHSU private network used this for five years).
+  
 ### 2.3.1 Postgres
 
-Postgres proxy accounts are controlled by *pg_ident.conf* in the Postgres data directory. <ADD PG manual>
-An example is provided at: <ADD>
+If you need to integrate into you Active Directory or authentication services you are advised to use [LDAP](https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol). 
+This permits user name and password authentication; *ldap* does not support proxying. Login to the database using the command lines can then use *SSPI* and this can then be proxied 
+to allow schema access. See Postgres [LDAP Authentication](https://www.postgresql.org/docs/9.6/static/auth-methods.html#AUTH-LDAP)
 
-```
+Postgres proxy accounts are controlled by *pg_ident.conf* in the Postgres data directory. See 
+[Postgres Client Authentication](https://www.postgresql.org/docs/9.6/static/client-authentication.htmlnt Authenticastion](https://www.postgresql.org/docs/9.6/static/client-authentication.html)
+
 # MAPNAME       SYSTEM-USERNAME         PG-USERNAME
 
-The *map name* 
+The *map name* must be one of following mappable methods from *hba.conf* (i.e. that support proxying):
+
+* ident: Identification Protocol as described in RFC 1413 (INSECURE: DO NOT USE)
+* peer: Peer authentication is only available on operating systems providing the getpeereid() function, the SO_PEERCRED socket parameter, or similar mechanisms. Currently that includes Linux, most flavors of BSD including OS X, and Solaris.
+* gss: GSSAPI/Kerberos
+* pam: Linux PAM (Pluggable authentication modules)
+* sspi: Windows native autentiation (NTLM V2)
+* cert: Uses SSL client certificates to perform authentication. It is therefore only available for SSL connections.
+
+The Windows installer guide for Postgres has examples:
+
+* [Authentication Setup - hba.conf](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#32-authentication-setup-hbaconf)
+* [Proxy user setup - ident.conf]ttps://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#33-proxy-user-setup-identconf)
+
+So, if I setup SSPI as per the examples to use *SSPI* in *hba.conf*:
+```
+#
+# Active directory GSSAPI connections with pg_ident.conf maps for schema accounts
+#
+hostssl	sahsuland	all	 	127.0.0.1/32 		sspi 	map=sahsuland
+hostssl	sahsuland	all	 	::1/128 		sspi 	map=sahsuland
+hostssl	sahsuland_dev	all	 	127.0.0.1/32 		sspi 	map=sahsuland_dev
+hostssl	sahsuland_dev	all	 	::1/128 		sspi 	map=sahsuland_dev
+```
+
+With maps in ident.conf:
+```
+# MAPNAME       SYSTEM-USERNAME         PG-USERNAME
+#
+sahsuland	pch			pop
+sahsuland	pch			gis
+sahsuland	pch			rif40
+sahsuland	pch			pch
+#
+sahsuland_dev	pch			pop
+sahsuland_dev	pch			gis
+sahsuland_dev	pch			rif40
+sahsuland_dev	pch			pch
+sahsuland_dev	pch			postgres
+```
+
+Set the RIF40 password to an impossible value:
+
+```ALTER ROLE rif40 WITH PASSWORD 'md5ac4bbe016b8XXXXXXXXXX6981f240dcae';```
+
+Finally, optioanlly add the passwords to the 
+[Pgpass](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/production/windows_install_from_pg_dump.md#31-postgres-user-password-file)
+
+I can then logon as rif40 using SSPI:
+
+```
+C:\Users\phamb\OneDrive\SEER Data>psql -U rif40
+You are connected to database "sahsuland" as user "rif40" on host "localhost" at port "5432".
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  rif40_log_setup() DEFAULTED send DEBUG to INFO: off; debug function list: []
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.01s  rif40_startup(): search_path not set for: rif40
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.01s  rif40_startup(): SQL> DROP FUNCTION IF EXISTS rif40.rif40_run_study(INTEGER, INTEGER);
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: NOTICE:  function rif40.rif40_run_study(pg_catalog.int4,pg_catalog.int4) does not exist, skipping
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.06s  rif40_startup(): Created temporary table: g_rif40_study_areas
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.08s  rif40_startup(): Created temporary table: g_rif40_comparison_areas
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.15s  rif40_startup(): PostGIS extension V2.3.5 (POSTGIS="2.3.5 r16110" GEOS="3.6.2-CAPI-1.10.2 4d2925d" PROJ="Rel. 4.9.3, 15 August 2016" GDAL="GDAL 2.2.2, released 2017/09/15" LIBXML="2.7.8" LIBJSON="0.12" RASTER)
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.15s  rif40_startup(): FDW functionality disabled - FDWServerName, FDWServerType, FDWDBServer RIF parameters not set.
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.15s  rif40_startup(): V$Revision: 1.11 $ DB version $Revision: 1.11 $ matches
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.15s  rif40_startup(): V$Revision: 1.11 $ rif40_geographies, rif40_tables, rif40_health_study_themes exist for user: rif40
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.15s  rif40_startup(): search_path: public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions, reset: rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.16s  rif40_startup(): Deleted 0, created 2 tables/views/foreign data wrapper tables
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  SQL> SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
+DO
+psql (9.6.8)
+Type "help" for help.
+
+sahsuland=>
+```
 ### 2.3.2 SQL Server
 
 TO BE ADDED
