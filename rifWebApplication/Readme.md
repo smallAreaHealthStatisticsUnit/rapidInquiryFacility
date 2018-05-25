@@ -943,11 +943,24 @@ root of the github repository, e.g. *C:\Users\Peter\Documents\GitHub\rapidInquir
 
 ```
 mvn --version
+mvn clean
+mvn install
+```
+
+This method also build the *taxonomyServices.war* or the web application *RIF40.war* file.
+
+Or, using subdirectries for *rifServices* only:
+
+```
+mvn --version
 cd rifGenericLibrary
+mvn clean
 mvn install
 cd ..\rapidInquiryFacility
+mvn clean
 mvn install
 cd ..\rifServices
+mvn clean
 mvn install
 ```
 
@@ -985,11 +998,10 @@ uiryFacility\rifServices\0.0.1-SNAPSHOT\rifServices-0.0.1-SNAPSHOT.pom
 *Any message other than **[INFO] BUILD SUCCESS** indicates a build error. Do not install the output war files and report the fault to the 
 development team. 
 
-The order is important; the directories must be built in the order: rifGenericLibrary, rapidInquiryFacility, rifServices. It is always
-assumed you build taxonomyservices later. If you get a build failure try a *mvn clean* in each directory first; then retry with a
-*mvn install*.
-
-This method  does not build the *taxonomyservices* or the web application 7zip file.
+The order is important when building using the sub-directories; the directories must be built in the order: 
+*rifGenericLibrary*, *rapidInquiryFacility*, *rifServices*. It is always assumed you build *RIF40.war and
+*taxonomyServices.war* later. If you get a build failure try a *mvn clean* in each directory first; 
+then retry with a *mvn install*.
 
 # 3. Installing Web Services in Tomcat
 
