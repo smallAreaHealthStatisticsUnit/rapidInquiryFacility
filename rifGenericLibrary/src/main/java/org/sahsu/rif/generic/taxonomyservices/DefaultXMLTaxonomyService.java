@@ -1,7 +1,7 @@
 
 package org.sahsu.rif.generic.taxonomyservices;
 
-import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.generic.util.TaxonomyLogger;
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
@@ -88,7 +88,7 @@ final class DefaultXMLTaxonomyService
 // Section Properties
 // ==========================================
 	
-	private RIFLogger rifLogger = RIFLogger.getLogger();
+	private TaxonomyLogger taxonomyLogger = TaxonomyLogger.getLogger();
 	
 // ==========================================
 // Section Construction
@@ -165,7 +165,7 @@ final class DefaultXMLTaxonomyService
 				= new RIFServiceException(
 					"taxonomyServices.error.initialisationFailure",  
 					"CATALINA_HOME not set in the environment");
-			rifLogger.error(this.getClass(), "DefaultXMLTaxonomyService error", rifServiceException);
+			taxonomyLogger.error(this.getClass(), "DefaultXMLTaxonomyService error", rifServiceException);
 			throw rifServiceException;
 		}
 		
@@ -196,11 +196,11 @@ final class DefaultXMLTaxonomyService
 					throw exceptionFactory.createNonExistentFile(fileName);
 				}
 				else {
-					rifLogger.info(this.getClass(), "TaxonomyService term file: " + filePath.toString());
+					taxonomyLogger.info(this.getClass(), "TaxonomyService term file: " + filePath.toString());
 				}
 			}
 			else {
-				rifLogger.info(this.getClass(), "TaxonomyService term file: " + filePath.toString());
+				taxonomyLogger.info(this.getClass(), "TaxonomyService term file: " + filePath.toString());
 			}
 	
 			DefaultXMLTaxonomyTermReader taxonomyTermReader

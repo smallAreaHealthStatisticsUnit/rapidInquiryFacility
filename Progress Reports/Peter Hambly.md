@@ -2236,8 +2236,6 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
     library has been used (Mike Bostock's?) needs to be determined. Method for determining geographic centroids
 	(hopefully the ones built-in to the geoJSON)
   * Need for population weighted centroids: test on England data in 6-8 weeks time;
-<<<<<<< HEAD
-=======
   
 #### 14th to 18th May
 
@@ -2246,10 +2244,6 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 #### 21st to 25th May
 
 * Tilemaker fix when OS username != tilemaker user username;
-<<<<<<< HEAD
-* Test USA tilemaker;
->>>>>>> master
-=======
 * Tuning and performance for Postgrss in database management manual;
 * Test USA tilemaker;
  - Fixes for unhandled file/directory errors causing hangs
@@ -2307,4 +2301,55 @@ java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:
 	+ mssql@4.1.0
 	added 12 packages in 11.196s
    ```
->>>>>>> master
+* Test SEER pre-processing and load scripts;
+* Test and merge pull requests #32, #33. Issues with #34;
+* Basic Tile Maker documentation;
+* More work on data loading documentation
+* Need to remove check:
+  ```
+  Msg 51147, Level 16, State 1, Server DESKTOP-4P2SA80, Procedure tr_rif40_tables_checks, Line 45
+  Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
+  ```
+* RIF meeting. Need to discuss instsallation with CDC;
+* Test and merge pull #34 rename all packages to follow Java conventions
+  - Whilst resolving issues (malformed lowercase URL - http://localhost:8080/taxonomyservices/taxonomyservices/getMatchingTerms)
+    It was found that getJsonFile() was calling the *taxonomyservices* using *wpea-rif1* which it was not obtaining from 
+    the configs but the calling URL hostname. This is suspected to be a Windows bug, but it is difficult to 
+    re-create. The workaround is set the parameter *taxonomyServicesServer* to *http://localhost:8080*;
+    Middleware:	
+	```
+	Call getJsonFile() using URL: http://wpea-rif1:8080
+    13:09:31.774 [http-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.RIFLogger : [org.sahsu.rif.services.datastorage.common.GetStudyJSON]:
+    Using taxonomyServicesServer parameter for base URL: http://localhost:8080
+	```
+	Front end:
+	```
+	11:18:36.779 [http-nio-8080-exec-7] WARN  org.sahsu.rif.generic.util.FrontEndLogger : 
+	userID:       peter
+	browser type: Firefox; v60
+	iP address:   0:0:0:0:0:0:0:1
+	message:      RIF services to taxonomy services link had error; please see logs
+	error stack>>>
+	rifMessage@http://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:293:10
+	$scope.showWarning@http://localhost:8080/RIF4/utils/controllers/rifc-util-alert.js:366:5
+	$scope.getBlobJob/$scope.extractStatus<@http://localhost:8080/RIF4/dashboards/export/controllers/rifc-expt-save.js:76:9
+	e/<@http://localhost:8080/RIF4/libs/standalone/angular.min.js:131:20
+	$eval@http://localhost:8080/RIF4/libs/standalone/angular.min.js:145:343
+	$digest@http://localhost:8080/RIF4/libs/standalone/angular.min.js:142:412
+	$apply@http://localhost:8080/RIF4/libs/standalone/angular.min.js:146:111
+	l@http://localhost:8080/RIF4/libs/standalone/angular.min.js:97:320
+	J@http://localhost:8080/RIF4/libs/standalone/angular.min.js:102:34
+	gg/</t.onload@http://localhost:8080/RIF4/libs/standalone/angular.min.js:103:4
+	<<<
+	actual time:  24/05/2018 11:18:36
+	relative:     +135.4
+
+	11:18:36.801 [http-nio-8080-exec-7] INFO  org.sahsu.rif.generic.util.FrontEndLogger : 
+	userID:       peter
+	browser type: Firefox; v60
+	iP address:   0:0:0:0:0:0:0:1
+	message:      Taxonomy services error message: http://wpea-rif1:8080/taxonomyservices/taxonomyservices/getMatchingTerms failed: HTTP error code : 404
+	actual time:  24/05/2018 11:18:36
+	relative:     +135.4
+	```
+* Test and merge pull #37: Creating the web application as a war file 
