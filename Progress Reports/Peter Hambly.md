@@ -2132,12 +2132,12 @@ Todo:
 * Test of fixing test 3 branch fails with:
   ```
   11:38:15.412 [http-nio-8080-exec-21] ERROR rifGenericLibrary.util.RIFLogger : [rifServices.dataStorageLayer.ms.MSSQLConnectionManager]:
-Unable to register user peter.
-getMessage:          SQLException: No suitable driver found for jdbc:postgresql://localhost:5432;databaseName=sahsuland
-getRootCauseMessage: SQLException: No suitable driver found for jdbc:postgresql://localhost:5432;databaseName=sahsuland
-getThrowableCount:   1
-getRootCauseStackTrace >>>
-java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:5432;databaseName=sahsuland
+  Unable to register user peter.
+  getMessage:          SQLException: No suitable driver found for jdbc:postgresql://localhost:5432;databaseName=sahsuland
+  getRootCauseMessage: SQLException: No suitable driver found for jdbc:postgresql://localhost:5432;databaseName=sahsuland
+  getThrowableCount:   1
+  getRootCauseStackTrace >>>
+  java.sql.SQLException: No suitable driver found for jdbc:postgresql://localhost:5432;databaseName=sahsuland
 	at java.sql.DriverManager.getConnection(DriverManager.java:689)
 	at java.sql.DriverManager.getConnection(DriverManager.java:208)
 	at rifServices.datastorage.ms.MSSQLAbstractSQLManager.createConnection(MSSQLAbstractSQLManager.java:297)
