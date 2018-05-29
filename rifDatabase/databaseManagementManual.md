@@ -1250,6 +1250,12 @@ sqlcmd -U rif40 -P <rif40 password> -d <your database name> -b -m-1 -e -r1 -i <a
 
 # 7. Tuning  
 
+The following aspects of tuning are covered:
+
+* Server memory allocation
+* Huge/large page support
+* RIF application tuning
+
 ## 7.1 Postgres
 
 The best source for Postgres tuning information is at the [Postgres Performance Optimization Wiki](https://wiki.postgresql.org/wiki/Performance_Optimization). This references
@@ -1284,9 +1290,27 @@ so shared buffers of 1G is 131072 8KB pages. This is not very intuitive compared
  
 The amount of memory given to Postgres should allow room for *tomcat* if installed together with the application server; shared memory should generally not exceed a quarter of the available RAM.
 
+On Postgres the extract queries all do an ```EXPLAIN PLAN VERBOSE``` to the log:
+
 ## 7.2 SQL Server
 
-TO BE ADDED
+SQL Server automatically allocates memory as needed by the server up to the limit of 2,147,483,647MB! In practice you may wish to reduce this figure to 40% of the available RAM.
 
+By default SQL Server is not using *largepages* (the names for *huge_pages* in SQL Server):
+
+```
+1> SELECT large_page_allocations_kb FROM sys.dm_os_process_memory;
+2> go
+large_page_allocations_kb
+-------------------------
+                        0
+```
+
+To enable *largepages* you need to [Enable the Lock Pages in Memory Option](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/enable-the-lock-pages-in-memory-option-windows?view=sql-server-2017).
+This will have consequences for the automated tuning which unless limited in size will remove the ability of Windows to free up SQL Server memory for other applications (and Windows itself). You need to be on a 
+big server and make sure your memory set-up is stable before enabling it.  
+				
+The [SQL Server profiler](https://docs.microsoft.com/en-us/sql/tools/sql-server-profiler/sql-server-profiler?view=sql-server-2017) needs to be used to trace RIF application tuning.
+				
 Peter Hambly
 May 2018
