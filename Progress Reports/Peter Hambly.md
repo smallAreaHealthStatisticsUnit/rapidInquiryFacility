@@ -2303,6 +2303,12 @@ Todo:
 	+ mssql@4.1.0
 	added 12 packages in 11.196s
    ```
+<<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> master
+=======
+=======
+>>>>>>> master
 * Test SEER pre-processing and load scripts;
 * Test and merge pull requests #32, #33. Issues with #34;
 * Basic Tile Maker documentation;
@@ -2312,7 +2318,14 @@ Todo:
   Msg 51147, Level 16, State 1, Server DESKTOP-4P2SA80, Procedure tr_rif40_tables_checks, Line 45
   Table name: [rif40].[rif40_tables], Cannot DELETE from RIF40_TABLES
   ```
+<<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> master
+=======
+* RIF meeting. Need to discuss instsallation with CDC;
+=======
 * RIF meeting. Need to discuss installation with CDC;
+>>>>>>> master
 * Test and merge pull #34 rename all packages to follow Java conventions
   - Whilst resolving issues (malformed lowercase URL - http://localhost:8080/taxonomyservices/taxonomyservices/getMatchingTerms)
     It was found that getJsonFile() was calling the *taxonomyservices* using *wpea-rif1* which it was not obtaining from 
@@ -2354,5 +2367,9 @@ Todo:
 	actual time:  24/05/2018 11:18:36
 	relative:     +135.4
 	```
+<<<<<<< HEAD
+>>>>>>> master
+=======
 * Test and merge pull #37: Creating the web application as a war file, pull #36 error loading a saved 
   study with no Bayesian Smoothing
+>>>>>>> master

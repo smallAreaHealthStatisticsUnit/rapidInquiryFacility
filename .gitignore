@@ -120,3 +120,4 @@ rifServices/${sys:catalina.base}/
 rifDemo
 docs/databaseManagementManual.html
 docs/tileMaker.html
+**/buildNumber.properties

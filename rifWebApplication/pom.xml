@@ -1,19 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>rapidInquiryFacility</groupId>
 	<artifactId>rifWebApplication</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>4.0.0-SNAPSHOT</version>
 
 	<packaging>jar</packaging>
 
 	<name>RIF Web Application</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility</url>
 
 	<build>
-		<finalName>RIF40</finalName>
 
 		<plugins>
+
 			<plugin>
 				<!-- This plugin lets us create a jar file, as per the <packaging> element above,
 				     and rename it to a war file so Tomcat will automatically expand it.
@@ -32,13 +31,70 @@
 						</goals>
 						<configuration>
 							<sourceFile>target/RIF40.jar</sourceFile>
-							<destinationFile>target/RIF40.war</destinationFile>
+							<destinationFile>
+								target/RIF40.war
+							</destinationFile>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
+
+				<configuration>
+
+					<doCheck>false</doCheck>
+					<doUpdate>false</doUpdate>
+
+					<format>Git commit ID {0}. Built at {1,time} on {1,date}</format>
+					<items>
+						<item>scmVersion</item>
+						<item>timestamp</item>
+					</items>
+
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.1</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+						<manifestEntries>
+							<Build-OS>${os.name} ${os.version}</Build-OS>
+							<Build-Details>${buildNumber}</Build-Details>
+							<Build-Branch>${scmBranch}</Build-Branch>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+
 		</plugins>
 
+		<finalName>RIF40</finalName>
+
 	</build>
+
+	<parent>
+		<groupId>org.sahsu.rif</groupId>
+		<artifactId>rifGeneral</artifactId>
+		<version>4.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
 
 </project>
