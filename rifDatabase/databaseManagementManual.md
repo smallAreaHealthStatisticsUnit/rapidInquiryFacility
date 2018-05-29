@@ -1055,7 +1055,7 @@ sahsuland=> show search_path;
 (1 row)
 ```
  
-**THEREFORE BEWARE OF CREATING OBJECTS WITH THE SDAME NAME AS A RIF OBJECT** on Postgres. It will be used in preference to the *RIF40* schema object!
+**THEREFORE BEWARE OF CREATING OBJECTS WITH THE SDAME NAME AS A RIF OBJECT** on Postgres. They will be used in preference to the *RIF40* schema object!
 
 ### 3.1.2 SQL Server
 
@@ -1063,11 +1063,22 @@ SQL Server does not have a search path or SYNONYNs so all schemas are hard coded
 
 ## 3.2 Tablespaces
 
-TO BE ADDED
-
 ### 3.2.1 Postgres
 
+Tablespaces in PostgreSQL allow database administrators to define locations in the file system where the files representing database objects can be stored. Once created, a 
+tablespace can be referred to by name when creating database objects.
+
+By using tablespaces, an administrator can control the disk layout of a PostgreSQL installation. This is useful in at least two ways. First, if the partition or volume on 
+which the cluster was initialized runs out of space and cannot be extended, a tablespace can be created on a different partition and used until the system can be reconfigured.
+
+Second, tablespaces allow an administrator to use knowledge of the usage pattern of database objects to optimize performance. For example, an index which is very heavily used
+can be placed on a very fast, highly available disk, such as an expensive solid state device. At the same time a table storing archived data which is rarely used or not performance critical could be stored on a less expensive, slower disk system.
+
+See: [Tablespaces](https://www.postgresql.org/docs/9.6/static/manage-ag-tablespaces.html)
+
 ### 3.2.2 SQL Server
+
+SQL Server does not have the concept of tablespaces.
 
 ## 3.3 Partitioning
 
