@@ -42,10 +42,10 @@ Database Management Manual
 - [5. Backup and recovery](#5-backup-and-recovery)
    - [5.1 Postgres](#51-postgres)
      - [5.1.1 Logical Backups](#511-logical-backups)
-     - [5.1.2 Continuous Archiving and Point-in-Time Recovery(#512-continuous-archiving-and-point-in-time-recovery)
+     - [5.1.2 Continuous Archiving and Point-in-Time Recovery](#512-continuous-archiving-and-point-in-time-recovery)
    - [5.2 SQL Server](#52-sql-server)
      - [5.2.1 Logical Backups](#521-logical-backups)
-     - [5.2.2 Continuous Archiving and Point-in-Time Recovery(#522-continuous-archiving-and-point-in-time-recovery)
+     - [5.2.2 Continuous Archiving and Point-in-Time Recovery](#522-continuous-archiving-and-point-in-time-recovery)
 - [6. Patching](#6-patching)
    - [6.1 Postgres](#61-postgres)
    - [6.2 SQL Server](#62-sql-server)
@@ -846,9 +846,18 @@ TO BE ADDED
 
 ### 3.3.1 Postgres
 
-Currently only the geometry tables, e.g. *rif_data.geometry_sahsuland* are partitioned.
+Currently only the geometry tables, e.g. *rif_data.geometry_sahsuland* are partitioned using inheritance and custom triggers. Postgres 10 has native support for partitioning, see: 
+[Postgres 10 partitioning](https://www.postgresql.org/docs/10/static/ddl-partitioning. html). The implementation is still incomplete and the 
+following limitations apply to partitioned tables:
 
-TO BE ADDED: Postgres 10 partitioning.
+* There is no facility available to create the matching indexes on all partitions automatically. Indexes must be added to each partition with separate commands. This also means that 
+  there is no way to create a primary key, unique constraint, or exclusion constraint spanning all partitions; it is only possible to constrain each leaf partition individually.
+* Since primary keys are not supported on partitioned tables, foreign keys referencing partitioned tables are not supported, nor are foreign key references from a partitioned table 
+  to some other table.
+* Using the ON CONFLICT clause with partitioned tables will cause an error, because unique or exclusion constraints can only be created on individual partitions. There is no support 
+  for enforcing uniqueness (or an exclusion constraint) across an entire partitioning hierarchy.
+* An UPDATE that causes a row to move from one partition to another fails, because the new value of the row fails to satisfy the implicit partition constraint of the original partition.
+* Row triggers, if necessary, must be defined on individual partitions, not the partitioned table.
 
 See [Postgres Patching](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/databaseManagementManual#61-postgres)
 for a description of historic Postgres partitioning. The partitioning on the geometry tables uses the range 
@@ -856,7 +865,9 @@ partitioning schema but generates the code directly. This functionality is part 
 
 ### 3.3.2 SQL Server
 
-TO BE ADDED: SQL Server partitioning and licensing conditions.
+SQL Server supports table and index partitioning, see [Partitioned Tables and Indexes](https://docs.microsoft.com/en-us/sql/relational-databases/partitions/partitioned-tables-and-indexes?view=sql-server-2017)
+Beware of the [SQL Server partitioning and licensing conditions](https://download.microsoft.com/download/9/C/6/9C6EB70A-8D52-48F4-9F04-08970411B7A3/SQL_Server_2016_Licensing_Guide_EN_US.pdf); 
+you may need a full enterprise license.
 
 ## 3.4 Granting permission
 
@@ -1048,8 +1059,21 @@ The equivalent PostgreSQL Windows log entry entry is:
 
 ### 4.1.2 SQL Server
 
-TO BE ADDED
-  
+See: 
+
+[Creating a successful auditing strategy for your SQL Server databases](https://www.sqlshack.com/creating-successful-auditing-strategy-sql-server-databases/)
+[SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-2017)
+[Create a Server Audit and Database Audit Specification](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/create-a-server-audit-and-database-audit-specification?view=sql-server-2017) 
+ 
+To setup *(Common criteria compliance*:
+
+* Use the SQL Server management studio server properties pane: 
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/auditing.PNG?raw=true "SQL Server auditing setup");
+* Also check audit failed and successful logins;  
+* Restart SQL Server;
+
+TO BE ADDED: auditing DDL and DML (without using triggers!)
+
 # 5. Backup and recovery  
 
 As with all relational databases; cold backups are recommended as a baselines and should be carried out using your enterprise backup tools with the database down. Two further backup solutions are
