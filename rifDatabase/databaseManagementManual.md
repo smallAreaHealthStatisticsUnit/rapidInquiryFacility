@@ -886,7 +886,7 @@ Where the access privileges (*+* is a line continuation character):
 
 To view roles, as an administrator ```sqlcmd -E -d sahsuland```:
 
-```
+```SQL
 SELECT name, type_desc, default_schema_name, authentication_type_desc
   FROM sys.database_principals;
 GO
@@ -920,7 +920,7 @@ db_denydatawriter                                                               
 ```
 To view server roles, as an administrator ```sqlcmd -E -d sahsuland```:
 
-```
+```SQL
 SELECT sys.server_role_members.role_principal_id, role.name AS RoleName,   
     sys.server_role_members.member_principal_id, member.name AS MemberName  
 FROM sys.server_role_members  
@@ -946,7 +946,7 @@ role_principal_id RoleName      member_principal_id MemberName
 
 To view role membership, as an administrator ```sqlcmd -E -d sahsuland```:
 
-```
+```SQL
 SELECT DP1.name AS DatabaseRoleName, isnull (DP2.name, 'No members') AS DatabaseUserName
   FROM sys.database_role_members AS DRM
 		RIGHT OUTER JOIN sys.database_principals AS DP1
@@ -1029,11 +1029,37 @@ rif_studies            s5_map               peter      rif40      Grant       Up
  
 ## 3.1 Creating new schemas
 
-TO BE ADDED
+The RIF install scripts create all the schemas required by the RIF. SQL Server does not have a search path or SYNONYNs so all schemas are hard coded. 
 
 ### 3.1.1 Postgres
 
+See: [CREATE SCHEMA](https://www.postgresql.org/docs/9.3/static/sql-createschema.html). Normally schema schema is owned by a role (e.g. *rif40*) and then 
+access is granted as required to other roles. New schemas will needs to be added to the default search path either for the roles or possibly at the system level.
+Care needs to be taken **NOT* to break the RIF. The default search path for a RIF database isL:
+
+```
+ALTER DATABASE sahsuland SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
+```
+
+**DO NOT MOVE** RIF objects into the following schemas without extensive testing for hard coded schemas:
+
+* rif40, rif_data, rif40_sql_pkg, rif_studies
+
+The users schema is prepended to the search path on login:
+
+```
+sahsuland=> show search_path;
+                                                 search_path
+-------------------------------------------------------------------------------------------------------------
+ peter, rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions
+(1 row)
+```
+ 
+**THEREFORE BEWARE OF CREATING OBJECTS WITH THE SDAME NAME AS A RIF OBJECT** on Postgres. It will be used in preference to the *RIF40* schema object!
+
 ### 3.1.2 SQL Server
+
+SQL Server does not have a search path or SYNONYNs so all schemas are hard coded and should **NOT** be changed.
 
 ## 3.2 Tablespaces
 
