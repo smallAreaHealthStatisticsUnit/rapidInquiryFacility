@@ -41,7 +41,11 @@ Database Management Manual
      - [4.1.2 SQL Server](#412-sql-server)
 - [5. Backup and recovery](#5-backup-and-recovery)
    - [5.1 Postgres](#51-postgres)
+     - [5.1.1 Logical Backups](#511-logical-backups)
+     - [5.1.2 Continuous Archiving and Point-in-Time Recovery(#512-continuous-archiving-and-point-in-time-recovery)
    - [5.2 SQL Server](#52-sql-server)
+     - [5.2.1 Logical Backups](#521-logical-backups)
+     - [5.2.2 Continuous Archiving and Point-in-Time Recovery(#522-continuous-archiving-and-point-in-time-recovery)
 - [6. Patching](#6-patching)
    - [6.1 Postgres](#61-postgres)
    - [6.2 SQL Server](#62-sql-server)
@@ -671,19 +675,22 @@ GO
 ## 2.3 Proxy accounts
 
 Proxy accounts are of use to the RIF as it can allow a normal user to login as a schema owner. Good practice is not the set the schema owner passwords (e.g. *rif40*) as these tend to be known by 
-several people and tend to get written down as these accounts are infrequently used. Proxy accounts allow for privilege minimisation. Importantly the use proxy accounts is fully audited and privilege 
-escalation (i.e. use of the proxy)  
+several people and tend to get written down as these accounts are infrequently used. Proxy accounts allow for privilege minimisation. Importantly the use proxy accounts is fully audited, in 
+particular the privilege escalation (i.e. use of the proxy).
+
+The SAHSU Private network uses proxying for these reasons.  
  
 The RIF front end application and middleware use user name and passwords to authenticate. Therefore federated mechanism such as [Kerberos](https://en.wikipedia.org/wiki/Kerberos_(protocol)) and 
 [SSPI](https://en.wikipedia.org/wiki/Security_Support_Provider_Interface) (Windows authentication) will not work; and would require 
 a [GSSAPI](https://en.wikipedia.org/wiki/Generic_Security_Services_Application_Program_Interface) implementation in the middleware. Invariably substantial browser and server key 
-set-up is required and this is very difficult to set up (some years ago the SAHSU private network used this for five years).
+set-up is required and this is very difficult to set up (some years ago the SAHSU private network used this for five years; the experiment was not repeated).
   
 ### 2.3.1 Postgres
 
 If you need to integrate into you Active Directory or authentication services you are advised to use [LDAP](https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol). 
 This permits user name and password authentication; *ldap* does not support proxying. Login to the database using the command lines can then use *SSPI* and this can then be proxied 
-to allow schema access. See Postgres [LDAP Authentication](https://www.postgresql.org/docs/9.6/static/auth-methods.html#AUTH-LDAP)
+to allow schema access. See Postgres [LDAP Authentication](https://www.postgresql.org/docs/9.6/static/auth-methods.html#AUTH-LDAP) and 
+[LDAP Authentication against AD](https://wiki.postgresql.org/wiki/LDAP_Authentication_against_AD)
 
 Postgres proxy accounts are controlled by *pg_ident.conf* in the Postgres data directory. See 
 [Postgres Client Authentication](https://www.postgresql.org/docs/9.6/static/client-authentication.html)
@@ -763,9 +770,10 @@ sahsuland=>
 
 ### 2.3.2 SQL Server
 
-This needs to be investigated as it is not cetain SQL SErver has the correct functionality.
+This needs to be investigated as it is not certain SQL Server has the correct functionality and the setup would need to be trialled. See:
 
-TO BE ADDED. See: [Create a SQL Server Agent Proxy](https://docs.microsoft.com/en-us/sql/ssms/agent/create-a-sql-server-agent-proxy?view=sql-server-2017) as an example.
+* [Create a SQL Server Agent Proxy](https://docs.microsoft.com/en-us/sql/ssms/agent/create-a-sql-server-agent-proxy?view=sql-server-2017);
+* [Creating an LDAP user authentication environment (MSSQL)](http://dcx.sap.com/sa160/en/dbusage/ug-ldap-setup-sql.html)
 
 ## 2.4 Granting permission
 
@@ -1044,13 +1052,122 @@ TO BE ADDED
   
 # 5. Backup and recovery  
 
+As with all relational databases; cold backups are recommended as a baselines and should be carried out using your enterprise backup tools with the database down. Two further backup solutions are
+suggested:
+
+* Logical backups (recommended given the likely size of most RIF databses);
+* Continuous archiving and point-in-time recovery (PITR) for more advanced sites;
+
+Because of the fully transactional nature of both Postgres and SQL Server consistent logical backups can be run with users logged on, the database does not need to be put into a quiescent state.
+
+Please bear in mind that continuous archiving and point-in-time recovery greatly expands the recovery options allowing for corruption repair and recovery from
+object deletion incidents.
+
+Replication is invariably very complex and is beyond the scope of this manual. It is recommended for very large sites with Postgres because of Postgres' poor support for corruption 
+detection and repair. 
+
 ## 5.1 Postgres
 
-TO BE ADDED: Using pg_dump/restore
+### 5.1.1 Logical Backups
 
+Postgres logical backup and recovery uses *pg_dump* and *pg_restore*. pg_dump only dumps a single database. To backup global objects that are common to all databases in a cluster, such as roles and tablespaces, 
+use *pg_dumpall*.
+
+Two basic formats: 1) a SQL script to recreate the database using *psql* and 2) a binary dump file to restore using *pg_restore*.
+
+1. SQL Script: ```pg_dump -U postgres -w -F plain -v -C sahsuland > sahsuland.sql```	
+2. Binary dump file: ```pg_dump -U postgres -w -F custom -v sahsuland > sahsuland.dump```
+
+Where the database name is *sahsuland*
+	
+Flags:
+
+* *-U postgres*:
+* "-F &lt;format%gt;*: Format: plain (SQL), custom or directory (pg_restore);
+* *-w*: Do not prompt for a password;
+* *-v*: Be verbose;
+ 
+To restore a custom or directory pg_dump* file: ```pg_restore -d sahsuland -U postgres -v sahsuland.dump```. This is the method uses to create the example database *sahsuland* 
+from the development database *sahsuland_dev*.
+
+See: 
+
+* [pd_dump](https://www.postgresql.org/docs/9.6/static/app-pgdump.html)
+* [pg_restore](https://www.postgresql.org/docs/9.6/static/app-pgrestore.html)
+ 
+### 5.1.2 Continuous Archiving and Point-in-Time Recovery 
+
+Postgres supports continuous archiving and point-in-time recovery (PITR).
+
+See: 
+
+* [Continuous Archiving and Point-in-Time Recovery](https://www.postgresql.org/docs/9.6/static/continuous-archiving.html)
+* [Postgres Corruption WIKI](https://wiki.postgresql.org/wiki/Corruption)
+* [Postgres replication](https://www.postgresql.org/docs/9.6/static/different-replication-solutions.html)
+ 
 ## 5.2 SQL Server
 
-TO BE ADDED
+### 5.2.1 Logical Backups
+
+SQL Server logical backup and restore are SQL commands entered using ```sqlcmd```. See:
+
+* [Back Up and Restore of SQL Server Databases](https://docs.microsoft.com/en-us/sql/relational-databases/backup-restore/back-up-and-restore-of-sql-server-databases?view=sql-server-2017)
+* [Create a full database backup](https://docs.microsoft.com/en-us/sql/relational-databases/backup-restore/create-a-full-database-backup-sql-server?view=sql-server-2017)
+* [BACKUP command](https://docs.microsoft.com/en-us/sql/t-sql/statements/backup-transact-sql?view=sql-server-2017)
+* [RESTORE command](https://docs.microsoft.com/en-us/sql/t-sql/statements/restore-statements-transact-sql?view=sql-server-2017)
+
+```
+BACKUP DATABASE [sahsuland] TO DISK='C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\production\sahsuland.bak' 
+  WITH COPY_ONLY, INIT;
+GO
+Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 6
+Processed 42040 pages for database 'sahsuland_dev', file 'sahsuland_dev' on file 54.
+Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 6
+Processed 2 pages for database 'sahsuland_dev', file 'sahsuland_dev_log' on file 54.
+Msg 3014, Level 0, State 1, Server PETER-PC\SAHSU, Line 6
+BACKUP DATABASE successfully processed 42042 pages in 3.940 seconds (83.363 MB/sec).
+```
+
+To restore a backup:
+
+```
+RESTORE DATABASE [sahsuland]
+        FROM DISK='C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifDatabase\SQLserver\installation\..\production\sahsuland.bak'
+        WITH REPLACE;
+Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+Processed 45648 pages for database 'sahsuland', file 'sahsuland' on file 1.
+Msg 4035, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+Processed 14 pages for database 'sahsuland', file 'sahsuland_log' on file 1.
+Msg 3014, Level 0, State 1, Server PETER-PC\SAHSU, Line 1
+RESTORE DATABASE successfully processed 45662 pages in 5.130 seconds (69.538 MB/sec).
+```
+
+See the script *rif40_production_creation.sql* if you want to rename the database, its files or to move the files.
+ 
+### 5.2.2 Continuous Archiving and Point-in-Time Recovery 
+
+This requires a transaction log backup, i.e. not the copy only version created in the previous section. You will need to do a full backup, followed by differential backups:
+
+```
+-- Create a full database backup first.  
+BACKUP DATABASE sahsuland   
+   TO sahsuland   
+   WITH INIT;  
+GO  
+-- Time elapses.  
+-- Create a differential database backup, appending the backup  
+-- to the backup device containing the full database backup.  
+BACKUP DATABASE sahsuland  
+   TO sahsuland  
+   WITH DIFFERENTIAL;  
+GO 
+```
+
+Log backups require the database to be in the full recovery model, not the default simple recovery model. See:
+[Back Up a Transaction Log](https://docs.microsoft.com/en-us/sql/relational-databases/backup-restore/back-up-a-transaction-log-sql-server?view=sql-server-2017)
+
+For restoration see:  
+[Restore a SQL Server Database to a Point in Time (Full Recovery Model](https://docs.microsoft.com/en-us/sql/relational-databases/backup-restore/restore-a-sql-server-database-to-a-point-in-time-full-recovery-model?view=sql-server-2017)
 
 # 6. Patching  
 
