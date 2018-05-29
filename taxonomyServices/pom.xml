@@ -131,13 +131,16 @@
 					</execution>
 				</executions>
 				<configuration>
-					<doCheck>false</doCheck>
-					<doUpdate>true</doUpdate>
 
-					<format>{0,number}</format>
+					<doCheck>false</doCheck>
+					<doUpdate>false</doUpdate>
+
+					<format>Git commit ID {0}. Built at {1,time} on {1,date}</format>
 					<items>
-						<item>buildNumber0</item>
+						<item>scmVersion</item>
+						<item>timestamp</item>
 					</items>
+
 				</configuration>
 			</plugin>
 
@@ -151,9 +154,9 @@
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
 						<manifestEntries>
-							<Implementation-Build>
-								${project.artifactId}-${project.version}-${buildNumber}
-							</Implementation-Build>
+							<Build-OS>${os.name} ${os.version}</Build-OS>
+							<Build-Details>${buildNumber}</Build-Details>
+							<Build-Branch>${scmBranch}</Build-Branch>
 						</manifestEntries>
 					</archive>
 				</configuration>
