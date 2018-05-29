@@ -1,145 +1,168 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>rapidInquiryFacility</groupId>
-  <artifactId>taxonomyServices</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>war</packaging>
-  
-  <parent>
-    <groupId>rapidInquiryFacility</groupId>
-    <artifactId>rifGeneral</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  
-  </parent>  
-  
-  <dependencies>
-  	<dependency>
-  		<groupId>rapidInquiryFacility</groupId>
-  		<artifactId>rifGenericLibrary</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>  		
-  	</dependency>   
-  	
 
-	<dependency>
-    	<groupId>javax.mail</groupId>
-    	<artifactId>mail</artifactId>
-    	<version>1.4</version>
-	</dependency>
+	<modelVersion>4.0.0</modelVersion>
 
-	<dependency>
-    	<groupId>org.apache.commons</groupId>
-    	<artifactId>commons-lang3</artifactId>
-    	<version>3.3.1</version>
-	</dependency>
+	<artifactId>taxonomyServices</artifactId>
+	<packaging>war</packaging>
+	
+	<parent>
+		<groupId>org.sahsu.rif</groupId>
+		<artifactId>rifGeneral</artifactId>
+		<version>4.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	
+	</parent>	
+	
+	<dependencies>
 
-	<dependency>
-    	<groupId>org.codehaus.jackson</groupId>
-    	<artifactId>jackson-core-asl</artifactId>
-    	<version>1.9.2</version>
-	</dependency>
+		<dependency>
+			<groupId>org.sahsu.rif</groupId>
+			<artifactId>rifGenericLibrary</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-core-asl</artifactId>
+		</dependency>
 
 
-	<dependency>
-    	<groupId>org.codehaus.jackson</groupId>
-    	<artifactId>jackson-jaxrs</artifactId>
-    	<version>1.9.2</version>
-	</dependency>
-  	
-	<dependency>
-    	<groupId>org.codehaus.jackson</groupId>
-    	<artifactId>jackson-mapper-asl</artifactId>
-    	<version>1.9.2</version>
-	</dependency> 	
-  	
- 	<dependency>
-    	<groupId>org.codehaus.jackson</groupId>
-    	<artifactId>jackson-xc</artifactId>
-    	<version>1.9.2</version>
-	</dependency> 	
-  	
-	<dependency>
-    	<groupId>javax.servlet</groupId>
-    	<artifactId>javax.servlet-api</artifactId>
-    	<version>3.0.1</version>
-	</dependency>  	
-  	
-	 <dependency>
-    	<groupId>com.sun.jersey</groupId>
-    	<artifactId>jersey-client</artifactId>
-    	<version>1.19</version>
-	</dependency> 	
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-jaxrs</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+		</dependency>
+		
+ 	    <dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-xc</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+		</dependency>
+		
+	    <dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-client</artifactId>
+			<version>1.19</version>
+		</dependency>
  
-	<dependency>
-    	<groupId>com.sun.jersey</groupId>
-    	<artifactId>jersey-core</artifactId>
-    	<version>1.19</version>
-	</dependency> 
-  	
-	<dependency>
-    	<groupId>com.sun.jersey</groupId>
-    	<artifactId>jersey-json</artifactId>
-    	<version>1.19</version>
-	</dependency>  	
-  	
-	<dependency>
-    	<groupId>com.sun.jersey.contribs</groupId>
-    	<artifactId>jersey-multipart</artifactId>
-    	<version>1.19</version>
-	</dependency>  	
-  	
-	<dependency>
-    	<groupId>com.sun.jersey</groupId>
-    	<artifactId>jersey-server</artifactId>
-    	<version>1.19</version>
-	</dependency>
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-core</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-json</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.sun.jersey.contribs</groupId>
+			<artifactId>jersey-multipart</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-server</artifactId>
+		</dependency>
  
-	<dependency>
-    	<groupId>com.sun.jersey</groupId>
-    	<artifactId>jersey-servlet</artifactId>
-    	<version>1.19</version>
-	</dependency>  	
-  	
-	<dependency>
-    	<groupId>org.codehaus.jettison</groupId>
-    	<artifactId>jettison</artifactId>
-    	<version>1.1</version>
-	</dependency>  	
-  	
-	<dependency>
-    	<groupId>org.json</groupId>
-    	<artifactId>json</artifactId>
-    	<version>20140107</version>
-	</dependency>  	
-  	
-	<dependency>
-    	<groupId>javax.ws.rs</groupId>
-    	<artifactId>jsr311-api</artifactId>
-    	<version>1.1.1</version>
-	</dependency>  	
-  	
-	<dependency>
-    	<groupId>org.jvnet.mimepull</groupId>
-    	<artifactId>mimepull</artifactId>
-    	<version>1.9.3</version>
-	</dependency>  	
-  	
-	<dependency>
-    	<groupId>org.postgresql</groupId>
-    	<artifactId>postgresql</artifactId>
-    	<version>9.3-1102-jdbc3</version>
-	</dependency>  	
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-servlet</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.codehaus.jettison</groupId>
+			<artifactId>jettison</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>jsr311-api</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.jvnet.mimepull</groupId>
+			<artifactId>mimepull</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
 
-  	<dependency>
-  		<groupId>rapidInquiryFacility</groupId>
-  		<artifactId>rifGenericLibrary</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>  		
-  	</dependency>  	
-  	 
-  </dependencies>
-  
-  <build>
-  	<finalName>taxonomyServices</finalName>
-  </build>
-  
+	</dependencies>
+	
+	<build>
+
+		<plugins>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<doCheck>false</doCheck>
+					<doUpdate>true</doUpdate>
+
+					<format>{0,number}</format>
+					<items>
+						<item>buildNumber0</item>
+					</items>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.0.2</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+						<manifestEntries>
+							<Implementation-Build>
+								${project.artifactId}-${project.version}-${buildNumber}
+							</Implementation-Build>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+
+		</plugins>
+
+		<finalName>${project.artifactId}</finalName>
+
+	</build>
+	
 </project>
