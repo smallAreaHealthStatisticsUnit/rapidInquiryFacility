@@ -818,12 +818,213 @@ GO
 
 ## 2.5 Viewing your user setup
 
-TO BE ADDED
-
 ### 2.5.1 Postgres
 
+To view roles, privileges and role membership:
+
+```
+C:\Users\phamb\OneDrive\SEER Data>psql -U postgres -d sahsuland
+You are connected to database "sahsuland" as user "postgres" on host "localhost" at port "5432".
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  +00000.12s  rif40_startup(): disabled - user postgres is not or has rif_user or rif_manager role
+psql:C:/Program Files/PostgreSQL/9.6/etc/psqlrc:48: INFO:  SQL> SET search_path TO postgres,rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
+DO
+psql (9.6.8)
+Type "help" for help.
+
+sahsuland-# \du
+                                                      List of roles
+        Role name        |                         Attributes                         |            Member of
+-------------------------+------------------------------------------------------------+----------------------------------
+ gis                     |                                                            | {}
+ kevin                   |                                                            | {rif_manager,rif_user}
+ notarifuser             |                                                            | {}
+ peter                   |                                                            | {rif_manager,rif_user,seer_user}
+ pop                     |                                                            | {}
+ postgres                | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+ rif40                   |                                                            | {}
+ rif_manager             | Cannot login                                               | {}
+ rif_no_suppression      | Cannot login                                               | {}
+ rif_student             | Cannot login                                               | {}
+ rif_user                | Cannot login                                               | {}
+ rifupg34                | Cannot login                                               | {}
+ seer_user               | Cannot login                                               | {}
+ test_rif_manager        |                                                            | {rif_manager}
+ test_rif_no_suppression |                                                            | {rif_no_suppression}
+ test_rif_student        |                                                            | {rif_student}
+ test_rif_user           |                                                            | {rif_user}
+```
+ 
+To view roles and permissions granted to an object:
+
+```
+sahsuland-# \dp rif40_tables
+                                   Access privileges
+ Schema |     Name     | Type  |   Access privileges    | Column privileges | Policies
+--------+--------------+-------+------------------------+-------------------+----------
+ rif40  | rif40_tables | table | rif40=arwdDxt/rif40   +|                   |
+        |              |       | rif_manager=arwd/rif40+|                   |
+        |              |       | =rx/rif40              |                   |
+(1 row)
+```
+ 
+Where the access privileges (*+* is a line continuation character):
+
+* r: SELECT ("read")
+* w: UPDATE ("write")
+* a: INSERT ("append")
+* d: DELETE
+* D: TRUNCATE
+* x: REFERENCES
+* t: TRIGGER
+* X: EXECUTE
+* U: USAGE
+* C: CREATE
+* c: CONNECT
+* T: TEMPORARY
+		
 ### 2.5.2 SQL Server
 
+To view roles, as an administrator ```sqlcmd -E -d sahsuland```:
+
+```
+SELECT name, type_desc, default_schema_name, authentication_type_desc
+  FROM sys.database_principals;
+GO
+
+name                                                                                                                             type_desc                                                    default_schema_name                                                                                                              authentication_type_desc
+-------------------------------------------------------------------------------------------------------------------------------- ------------------------------------------------------------ -------------------------------------------------------------------------------------------------------------------------------- ------------------------------------------------------------
+public                                                                                                                           DATABASE_ROLE                                                NULL                                                                                                                             NONE
+dbo                                                                                                                              WINDOWS_USER                                                 dbo                                                                                                                              WINDOWS
+guest                                                                                                                            SQL_USER                                                     guest                                                                                                                            NONE
+INFORMATION_SCHEMA                                                                                                               SQL_USER                                                     NULL                                                                                                                             NONE
+sys                                                                                                                              SQL_USER                                                     NULL                                                                                                                             NONE
+rif40                                                                                                                            SQL_USER                                                     rif40                                                                                                                            INSTANCE
+rif_manager                                                                                                                      DATABASE_ROLE                                                NULL                                                                                                                             NONE
+rif_user                                                                                                                         DATABASE_ROLE                                                NULL                                                                                                                             NONE
+rif_student                                                                                                                      DATABASE_ROLE                                                NULL                                                                                                                             NONE
+rif_no_suppression                                                                                                               DATABASE_ROLE                                                NULL                                                                                                                             NONE
+notarifuser                                                                                                                      DATABASE_ROLE                                                NULL                                                                                                                             NONE
+peter                                                                                                                            SQL_USER                                                     peter                                                                                                                            INSTANCE
+seer_user                                                                                                                        DATABASE_ROLE                                                NULL                                                                                                                             NONE
+db_owner                                                                                                                         DATABASE_ROLE                                                NULL                                                                                                                             NONE
+db_accessadmin                                                                                                                   DATABASE_ROLE                                                NULL                                                                                                                             NONE
+db_securityadmin                                                                                                                 DATABASE_ROLE                                                NULL                                                                                                                             NONE
+db_ddladmin                                                                                                                      DATABASE_ROLE                                                NULL                                                                                                                             NONE
+db_backupoperator                                                                                                                DATABASE_ROLE                                                NULL                                                                                                                             NONE
+db_datareader                                                                                                                    DATABASE_ROLE                                                NULL                                                                                                                             NONE
+db_datawriter                                                                                                                    DATABASE_ROLE                                                NULL                                                                                                                             NONE
+db_denydatareader                                                                                                                DATABASE_ROLE                                                NULL                                                                                                                             NONE
+db_denydatawriter                                                                                                                DATABASE_ROLE                                                NULL                                                                                                                             NONE
+
+(22 rows affected)  
+```
+To view server roles, as an administrator ```sqlcmd -E -d sahsuland```:
+
+```
+SELECT sys.server_role_members.role_principal_id, role.name AS RoleName,   
+    sys.server_role_members.member_principal_id, member.name AS MemberName  
+FROM sys.server_role_members  
+JOIN sys.server_principals AS role  
+    ON sys.server_role_members.role_principal_id = role.principal_id  
+JOIN sys.server_principals AS member  
+    ON sys.server_role_members.member_principal_id = member.principal_id;  
+GO
+
+role_principal_id RoleName      member_principal_id MemberName                                                            
+----------------- ------------- ------------------- --------------------------------------------------------------------------------------------------------------------------------
+                3 sysadmin       1                   sa                                                                    
+                3 sysadmin       259                 DESKTOP-4P2SA80\admin                                                 
+                3 sysadmin       260                 NT SERVICE\SQLWriter                                                  
+                3 sysadmin       261                 NT SERVICE\Winmgmt                                                    
+                3 sysadmin       262                 NT Service\MSSQLSERVER                                                
+                3 sysadmin       264                 NT SERVICE\SQLSERVERAGENT                                             
+               10 bulkadmin      286                 rif40                                                                 
+               10 bulkadmin      287                 peter                                                                 
+
+(8 rows affected)
+```
+
+To view role membership, as an administrator ```sqlcmd -E -d sahsuland```:
+
+```
+SELECT DP1.name AS DatabaseRoleName, isnull (DP2.name, 'No members') AS DatabaseUserName
+  FROM sys.database_role_members AS DRM
+		RIGHT OUTER JOIN sys.database_principals AS DP1
+			ON DRM.role_principal_id = DP1.principal_id
+		LEFT OUTER JOIN sys.database_principals AS DP2
+			ON DRM.member_principal_id = DP2.principal_id
+ WHERE DP1.type = 'R'
+ ORDER BY DP1.name;
+
+DatabaseRoleName                                                                                                                 DatabaseUserName  
+-------------------------------------------------------------------------------------------------------------------------------- -----------------
+db_accessadmin                                                                                                                   No members                                                                                                  
+db_backupoperator                                                                                                                No members                                                                                                  
+db_datareader                                                                                                                    No members                                                                                                  
+db_datawriter                                                                                                                    No members                                                                                                  
+db_ddladmin                                                                                                                      No members                                                                                                  
+db_denydatareader                                                                                                                No members                                                                                                  
+db_denydatawriter                                                                                                                No members                                                                                                  
+db_owner                                                                                                                         dbo                                                                                                         
+db_securityadmin                                                                                                                 No members                                                                                                  
+notarifuser                                                                                                                      No members                                                                                                  
+public                                                                                                                           No members                                                                                                  
+rif_manager                                                                                                                      peter                                                                                                       
+rif_no_suppression                                                                                                               No members                                                                                                  
+rif_student                                                                                                                      No members                                                                                                  
+rif_user                                                                                                                         peter                                                                                                       
+seer_user                                                                                                                        peter                                                                                                       
+
+(16 rows affected)
+```
+
+To view roles and permissions granted to an object, as an administrator ```sqlcmd -E -d sahsuland```:
+
+```
+sp_helprotect @username = 'peter'
+GO
+
+Owner                  Object               Grantee    Grantor    ProtectType Action                           Column
+---------------------- -------------------- ---------- ---------- ----------- -------------------------------- ------------------
+rif_studies            s1_extract           peter      rif40      Grant       Delete                           .
+rif_studies            s1_extract           peter      rif40      Grant       Insert                           .
+rif_studies            s1_extract           peter      rif40      Grant       Select                           (All+New)
+rif_studies            s1_map               peter      rif40      Grant       Insert                           .
+rif_studies            s1_map               peter      rif40      Grant       Select                           (All+New)
+rif_studies            s1_map               peter      rif40      Grant       Update                           (All+New)
+rif_studies            s2_extract           peter      rif40      Grant       Delete                           .
+rif_studies            s2_extract           peter      rif40      Grant       Insert                           .
+rif_studies            s2_extract           peter      rif40      Grant       Select                           (All+New)
+rif_studies            s2_map               peter      rif40      Grant       Insert                           .
+rif_studies            s2_map               peter      rif40      Grant       Select                           (All+New)
+rif_studies            s2_map               peter      rif40      Grant       Update                           (All+New)
+rif_studies            s3_extract           peter      rif40      Grant       Delete                           .
+rif_studies            s3_extract           peter      rif40      Grant       Insert                           .
+rif_studies            s3_extract           peter      rif40      Grant       Select                           (All+New)
+rif_studies            s3_map               peter      rif40      Grant       Insert                           .
+rif_studies            s3_map               peter      rif40      Grant       Select                           (All+New)
+rif_studies            s3_map               peter      rif40      Grant       Update                           (All+New)
+rif_studies            s4_extract           peter      rif40      Grant       Delete                           .
+rif_studies            s4_extract           peter      rif40      Grant       Insert                           .
+rif_studies            s4_extract           peter      rif40      Grant       Select                           (All+New)
+rif_studies            s4_map               peter      rif40      Grant       Insert                           .
+rif_studies            s4_map               peter      rif40      Grant       Select                           (All+New)
+rif_studies            s4_map               peter      rif40      Grant       Update                           (All+New)
+rif_studies            s5_extract           peter      rif40      Grant       Delete                           .
+rif_studies            s5_extract           peter      rif40      Grant       Insert                           .
+rif_studies            s5_extract           peter      rif40      Grant       Select                           (All+New)
+rif_studies            s5_map               peter      rif40      Grant       Insert                           .
+rif_studies            s5_map               peter      rif40      Grant       Select                           (All+New)
+rif_studies            s5_map               peter      rif40      Grant       Update                           (All+New)
+.                      .                    peter      dbo        Grant       CONNECT                          .
+.                      .                    peter      dbo        Grant       Create Function                  .
+.                      .                    peter      dbo        Grant       Create Procedure                 .
+.                      .                    peter      dbo        Grant       Create Table                     .
+.                      .                    peter      dbo        Grant       Create View                      .
+.                      .                    peter      dbo        Grant       SHOWPLAN                         .
+
+(36 rows affected)
+```
 # 3. Data Management
  
 ## 3.1 Creating new schemas
@@ -1453,153 +1654,6 @@ Insert on rif_studies.s416_extract  (cost=19943.90..21263.53 rows=52785 width=58
                           ->  CTE Scan on n1  (cost=0.00..59.02 rows=2951 width=532)
                                 Output: n1.inv_414_test_1002, n1.area_id, n1.year, n1.n_age_sex_group
 +00038.28s  rif40_execute_insert_statement(): [56605] Study 416: Study extract insert 1995 (EXPLAIN) OK, took: 00:00:00.061771
-+00039.82s  rif40_execute_insert_statement(): [56605] Study 416: Study extract insert 1996 OK, inserted 54120 rows, took: 00:00:01.067706
-+00039.82s  rif40_execute_insert_statement(): [56605] Study 416: Comparison area insert OK, inserted 1 rows, took: 00:00:00.001336
-+00040.18s  [DEBUG1] rif40_execute_insert_statement(): [56005] SQL> EXPLAIN (VERBOSE, FORMAT text)
-INSERT INTO s416_extract (
-	year,study_or_comparison,study_id,area_id,band_id,sex,age_group,test_1002,total_pop) /* 1 numerator(s) */
-WITH n1 AS (	/* NUM_SAHSULAND_CANCER - cancer numerator */
-	SELECT s.area_id		/* Study or comparision resolution */,
-	       c.year,
-	       c.age_sex_group AS n_age_sex_group,
-	       SUM(CASE 		/* Numerators - can overlap */
-			WHEN ((	/* Investigation 1 ICD filters */
-				    icd LIKE 'C33%' /* Value filter */ /* Filter 1 */
-				 OR icd LIKE 'C340%' /* Value filter */ /* Filter 2 */
-				 OR icd LIKE 'C341%' /* Value filter */ /* Filter 3 */
-				 OR icd LIKE 'C342%' /* Value filter */ /* Filter 4 */
-				 OR icd LIKE 'C343%' /* Value filter */ /* Filter 5 */
-				 OR icd LIKE 'C348%' /* Value filter */ /* Filter 6 */
-				 OR icd LIKE 'C349%' /* Value filter */ /* Filter 7 */) /* 7 lines of conditions: study: 416, inv: 414 */
-			AND (1=1
-			   AND  c.year BETWEEN 1995 AND 1996/* Investigation 1 year filter */
-				        /* No genders filter required for investigation 1 */
-				        /* No age group filter required for investigation 1 */)
-			) THEN total
-			ELSE 0
-	       END) inv_414_test_1002	/* Investigation 1 -  */ 
-	  FROM rif40_comparison_areas s,	/* Numerator study or comparison area to be extracted */
-	       num_sahsuland_cancer c	/* cancer numerator */
-	 WHERE c.sahsu_grd_level1 = s.area_id 	/* Comparison selection */
-	   AND (
-				    icd LIKE 'C33%' /* Value filter */ /* Filter 1 */
-				 OR icd LIKE 'C340%' /* Value filter */ /* Filter 2 */
-				 OR icd LIKE 'C341%' /* Value filter */ /* Filter 3 */
-				 OR icd LIKE 'C342%' /* Value filter */ /* Filter 4 */
-				 OR icd LIKE 'C343%' /* Value filter */ /* Filter 5 */
-				 OR icd LIKE 'C348%' /* Value filter */ /* Filter 6 */
-				 OR icd LIKE 'C349%' /* Value filter */ /* Filter 7 */)
-				        /* No genders filter required for numerator (only one gender used) */
-	       /* No age group filter required for numerator */
-	   AND s.study_id = 416		/* Current study ID */
-	   AND c.year = 1995		/* Numerator (INSERT) year filter */
-	 GROUP BY c.year, s.area_id,
-	          c.age_sex_group
-) /* NUM_SAHSULAND_CANCER - cancer numerator */
-, d AS (
-	SELECT d1.year, s.area_id, NULL::INTEGER AS band_id, d1.age_sex_group,
-	       SUM(COALESCE(d1.total, 0)) AS total_pop
-	  FROM rif40_comparison_areas s, pop_sahsuland_pop d1 	/* Denominator study or comparison area to be extracted */
-	 WHERE d1.year = 1995		/* Denominator (INSERT) year filter */
-	   AND s.area_id  = d1.sahsu_grd_level1	/* Comparison geolevel join */
-	   AND s.area_id  IS NOT NULL	/* Exclude NULL geolevel */
-	   AND s.study_id = 416		/* Current study ID */
-	       /* No age group filter required for denominator */
-	 GROUP BY d1.year, s.area_id,
-	          d1.age_sex_group
-) /* End of denominator */
-SELECT d.year,
-       'C' AS study_or_comparison,
-       416 AS study_id,
-       d.area_id,
-       d.band_id,
-       TRUNC(d.age_sex_group/100) AS sex,
-       MOD(d.age_sex_group, 100) AS age_group,
-       COALESCE(n1.inv_414_test_1002, 0) AS inv_414_test_1002, 
-       d.total_pop
-  FROM d			/* Denominator - population health file */
-	LEFT OUTER JOIN n1 ON ( 	/* NUM_SAHSULAND_CANCER - cancer numerator */
-		    d.area_id		 = n1.area_id
-		AND d.year		 = n1.year
-		AND d.age_sex_group	 = n1.n_age_sex_group
-		)
- ORDER BY 1, 2, 3, 4, 5, 6, 7;
-+00040.40s  [DEBUG1] rif40_execute_insert_statement(): [56602] Study ID 416, statement: 18
-Description: Comparison extract insert 1995 (EXPLAIN)
- query plan:
-Insert on rif_studies.s416_extract  (cost=4290.84..4291.92 rows=43 width=588)
-  ->  Subquery Scan on "*SELECT*"  (cost=4290.84..4291.92 rows=43 width=588)
-        Output: "*SELECT*".year, "*SELECT*".study_or_comparison, "*SELECT*".study_id, "*SELECT*".area_id, "*SELECT*".band_id, "*SELECT*".sex, "*SELECT*".age_group, "*SELECT*".inv_414_test_1002, "*SELECT*".total_pop
-        ->  Sort  (cost=4290.84..4290.95 rows=43 width=544)
-              Output: d.year, ('C'::text), (416), d.area_id, d.band_id, (trunc(((d.age_sex_group / 100))::double precision)), (mod(d.age_sex_group, 100)), (COALESCE(n1.inv_414_test_1002, '0'::bigint)), d.total_pop
-              Sort Key: d.year, d.area_id, d.band_id, (trunc(((d.age_sex_group / 100))::double precision)), (mod(d.age_sex_group, 100))
-              CTE n1
-                ->  HashAggregate  (cost=701.68..701.76 rows=8 width=19)
-                      Output: c_1.area_id, c.year, c.age_sex_group, sum(CASE WHEN ((((c.icd)::text ~~ 'C33%'::text) OR ((c.icd)::text ~~ 'C340%'::text) OR ((c.icd)::text ~~ 'C341%'::text) OR ((c.icd)::text ~~ 'C342%'::text) OR ((c.icd)::text ~~ 'C343%'::text) OR ((c.icd)::text ~~ 'C348%'::text) OR ((c.icd)::text ~~ 'C349%'::text)) AND (c.year >= 1995) AND (c.year <= 1996)) THEN c.total ELSE 0 END)
-                      Group Key: c.year, c_1.area_id, c.age_sex_group
-                      ->  Nested Loop  (cost=22.98..607.14 rows=2909 width=19)
-                            Output: c_1.area_id, c.year, c.age_sex_group, c.icd, c.total
-                            Join Filter: ((c_1.area_id)::text = (c.sahsu_grd_level1)::text)
-                            ->  Sort  (cost=22.56..22.56 rows=1 width=9)
-                                  Output: c_1.username, (NULL::integer), c_1.area_id
-                                  Sort Key: c_1.username
-                                  InitPlan 1 (returns $0)
-                                    ->  Seq Scan on pg_catalog.pg_authid a  (cost=0.00..6.23 rows=1 width=64)
-                                          Output: upper(((a.rolname)::information_schema.sql_identifier)::text)
-                                          Filter: (pg_has_role(a.oid, 'USAGE'::text) AND (upper(((a.rolname)::information_schema.sql_identifier)::text) = 'RIF_MANAGER'::text))
-                                  ->  Nested Loop Left Join  (cost=0.27..16.32 rows=1 width=9)
-                                        Output: c_1.username, NULL::integer, c_1.area_id
-                                        Join Filter: (c_1.study_id = s.study_id)
-                                        Filter: (((c_1.username)::name = "current_user"()) OR ('RIF_MANAGER'::text = $0) OR ((s.grantee_username IS NOT NULL) AND ((s.grantee_username)::text <> ''::text)))
-                                        ->  Seq Scan on rif40.t_rif40_comparison_areas c_1  (cost=0.00..8.00 rows=1 width=13)
-                                              Output: c_1.username, c_1.study_id, c_1.area_id
-                                              Filter: (c_1.study_id = 416)
-                                        ->  Index Only Scan using rif40_study_shares_pk on rif40.rif40_study_shares s  (cost=0.27..8.30 rows=1 width=10)
-                                              Output: s.study_id, s.grantee_username
-                                              Index Cond: (s.study_id = 416)
-                                              Filter: ((s.grantee_username)::name = "current_user"())
-                            ->  Index Scan using num_sahsuland_cancer_year on rif_data.num_sahsuland_cancer c  (cost=0.42..548.20 rows=2909 width=19)
-                                  Output: c.year, c.age_sex_group, c.sahsu_grd_level1, c.sahsu_grd_level2, c.sahsu_grd_level3, c.sahsu_grd_level4, c.icd, c.total
-                                  Index Cond: (c.year = 1995)
-                                  Filter: (((c.icd)::text ~~ 'C33%'::text) OR ((c.icd)::text ~~ 'C340%'::text) OR ((c.icd)::text ~~ 'C341%'::text) OR ((c.icd)::text ~~ 'C342%'::text) OR ((c.icd)::text ~~ 'C343%'::text) OR ((c.icd)::text ~~ 'C348%'::text) OR ((c.icd)::text ~~ 'C349%'::text))
-              CTE d
-                ->  HashAggregate  (cost=3585.40..3585.83 rows=43 width=15)
-                      Output: d1.year, c_2.area_id, NULL::integer, d1.age_sex_group, sum(COALESCE(d1.total, 0))
-                      Group Key: d1.year, c_2.area_id, d1.age_sex_group
-                      ->  Nested Loop  (cost=22.98..3057.55 rows=52785 width=15)
-                            Output: c_2.area_id, d1.year, d1.age_sex_group, d1.total
-                            Join Filter: ((c_2.area_id)::text = (d1.sahsu_grd_level1)::text)
-                            ->  Sort  (cost=22.56..22.56 rows=1 width=9)
-                                  Output: c_2.username, (NULL::integer), c_2.area_id
-                                  Sort Key: c_2.username
-                                  InitPlan 3 (returns $2)
-                                    ->  Seq Scan on pg_catalog.pg_authid a_1  (cost=0.00..6.23 rows=1 width=64)
-                                          Output: upper(((a_1.rolname)::information_schema.sql_identifier)::text)
-                                          Filter: (pg_has_role(a_1.oid, 'USAGE'::text) AND (upper(((a_1.rolname)::information_schema.sql_identifier)::text) = 'RIF_MANAGER'::text))
-                                  ->  Nested Loop Left Join  (cost=0.27..16.32 rows=1 width=9)
-                                        Output: c_2.username, NULL::integer, c_2.area_id
-                                        Join Filter: (c_2.study_id = s_1.study_id)
-                                        Filter: (((c_2.username)::name = "current_user"()) OR ('RIF_MANAGER'::text = $2) OR ((s_1.grantee_username IS NOT NULL) AND ((s_1.grantee_username)::text <> ''::text)))
-                                        ->  Seq Scan on rif40.t_rif40_comparison_areas c_2  (cost=0.00..8.00 rows=1 width=13)
-                                              Output: c_2.username, c_2.study_id, c_2.area_id
-                                              Filter: ((c_2.area_id IS NOT NULL) AND (c_2.study_id = 416))
-                                        ->  Index Only Scan using rif40_study_shares_pk on rif40.rif40_study_shares s_1  (cost=0.27..8.30 rows=1 width=10)
-                                              Output: s_1.study_id, s_1.grantee_username
-                                              Index Cond: (s_1.study_id = 416)
-                                              Filter: ((s_1.grantee_username)::name = "current_user"())
-                            ->  Index Scan using pop_sahsuland_pop_year on rif_data.pop_sahsuland_pop d1  (cost=0.43..2375.17 rows=52785 width=15)
-                                  Output: d1.year, d1.age_sex_group, d1.sahsu_grd_level1, d1.sahsu_grd_level2, d1.sahsu_grd_level3, d1.sahsu_grd_level4, d1.total
-                                  Index Cond: (d1.year = 1995)
-              ->  Hash Left Join  (cost=0.30..2.08 rows=43 width=544)
-                    Output: d.year, 'C'::text, 416, d.area_id, d.band_id, trunc(((d.age_sex_group / 100))::double precision), mod(d.age_sex_group, 100), COALESCE(n1.inv_414_test_1002, '0'::bigint), d.total_pop
-                    Hash Cond: (((d.area_id)::text = (n1.area_id)::text) AND (d.year = n1.year) AND (d.age_sex_group = n1.n_age_sex_group))
-                    ->  CTE Scan on d  (cost=0.00..0.86 rows=43 width=536)
-                          Output: d.year, d.area_id, d.band_id, d.age_sex_group, d.total_pop
-                    ->  Hash  (cost=0.16..0.16 rows=8 width=532)
-                          Output: n1.inv_414_test_1002, n1.area_id, n1.year, n1.n_age_sex_group
-                          ->  CTE Scan on n1  (cost=0.00..0.16 rows=8 width=532)
-                                Output: n1.inv_414_test_1002, n1.area_id, n1.year, n1.n_age_sex_group
-+00040.83s  rif40_execute_insert_statement(): [56605] Study 416: Comparison extract insert 1995 (EXPLAIN) OK, took: 00:00:00.004237
 ```
 
 ## 7.2 SQL Server
