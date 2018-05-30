@@ -26,6 +26,7 @@ RIF Data Loading
        - [2.3.4.8 Centroids tables](#2349-centroids-tables) 
 	 - [2.3.5 Health Themes](#235-health-themes)
 - [3. Load Processing](#3-load-processing)
+     - [3.0.1 Generate Series](#301-generate-series)
   - [3.1 Administrative Geography](#31-administrative-geography)
      - [3.1.1 Postgres](#311-postgres)
      - [3.1.2 SQL Server](#312-sql-server)
@@ -838,7 +839,19 @@ Generally load processing requires three steps:
   [Tile maker](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md). See
   [Example of Post Front End Processing](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#244-example-of-post-front-end-processing)
 * Pre-process the data from flat files, process and unloaded back into flat files that can be loaded into either Postgres or SQL Server. 
-  Typically this is done as a normal user on any database. Do **not** use the schema *rif40* or  administrative accounts (*postgres* or *administrator*)
+  Typically this is done as a normal user on any database. Do **not** use the schema *rif40* or  administrative accounts (*postgres* or *administrator*):
+  * Create numerator/denominator/covariate load tables to load data from CSV or Text files. Fixed length (mainframe) record files have to be loaded as a single string 
+    and then chopped converted into the relevant fields in stage four;
+  * Load numerator/denominator/covariate tables from CSV or Text files;
+  * Check all numerator/denominator/covariate table data has been loaded;
+  * Convert numerator/denominator/covariate fixed length string into new numerator/denominator/covariate load table with the correct columns and datatypes;
+  * Create numerator/denominator/covariate table from load table. For denominator and covariate tables additional rows may need to be added to cope with holes in the data; e.g. re-use a later 
+    year of population or covariate data to replace missing earlier years. RIF covariates require annual data, if you do not have annual data you can use a view and the ```generate_series``` 
+	function to add the years; see: [3.0.1 Generate series](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#301-generate_series);
+  * Add constraints to numerator/denominator/covariate table;
+  * Add indexes to numerator/denominator/covariate table;
+  * Comment numerator/denominator/covariate table and columns;
+  * Unload numerator/denominator/covariate table for load processing.
 * Load the processed data as a schema owner (e.g. *rif40*)into a target database:
   * Remove setup data, views and tables;
   * Create table;
@@ -942,6 +955,9 @@ sahsuland=> select * from rif40_num_denom;
 
 ``` 
 If your dsata does not appear; see [Numerator Denominator Pair Errors](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#62-numerator-denominator-pair-errors)
+
+### 3.0.1 Generate Series
+
 
 ## 3.1 Administrative Geography
 
