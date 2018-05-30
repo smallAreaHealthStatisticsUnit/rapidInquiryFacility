@@ -3553,12 +3553,26 @@ numerator and denominator pair. A further view *rif40_num_denom_errors* is provi
  
 ```SQL 
 sahsuland=> select * from rif40_num_denom_errors;
+- geography | numerator_owner |   numerator_table    | is_numerator_resolvable | n_num_denom_validated | numerator_description | denominator_owner | denominator_table | is_denominator_resolvable | d_num_denom_validated | denominator_description | automatic | auto_indirect_error_flag | auto_indirect_error | n_fdw_create_status | n_fdw_error_message | n_fdw_date_created | n_fdw_rowtest_passed
+-----------+-----------------+----------------------+-------------------------+-----------------------+-----------------------+-------------------+-------------------+---------------------------+-----------------------+-------------------------+-----------+--------------------------+---------------------+---------------------+---------------------+--------------------+----------------------
+ SAHSULAND | rif_data        | NUM_SAHSULAND_CANCER |                       1 |                     1 | cancer numerator      | rif_data          | POP_SAHSULAND_POP |                         1 |                     1 | population health file  |         1 |                        0 |                     |                     |                     |                    |
+ USA_2014  | rif_data        | NUM_SAHSULAND_CANCER |                       1 |                     0 | cancer numerator      | rif_data          | POP_SAHSULAND_POP |                         1 |                     0 | population health file  |         1 |                        0 |                     |                     |                     |                    |
+(2 rows)
 ```
+
+In this case the error is not an error as *n_num_denom_validated* and *d_num_denom_validated* are both 0 so the denominator and numerator valid for this geography:
 
 | geography | numerator_owner |   numerator_table    | is_numerator_resolvable | n_num_denom_validated | numerator_description | denominator_owner | denominator_table | is_denominator_resolvable | d_num_denom_validated | denominator_description | automatic | auto_indirect_error_flag | auto_indirect_error | 
 |-----------|-----------------|----------------------|-------------------------|-----------------------|-----------------------|-------------------|-------------------|---------------------------|-----------------------|-------------------------|-----------|--------------------------|---------------------|
 | SAHSULAND | rif_data        | NUM_SAHSULAND_CANCER |                       1 |                     1 | cancer numerator      | rif_data          | POP_SAHSULAND_POP |                         1 |                     1 | population health file  |         1 |                        0 |                     |         
 | USA_2014  | rif_data        | NUM_SAHSULAND_CANCER |                       1 |                     0 | cancer numerator      | rif_data          | POP_SAHSULAND_POP |                         1 |                     0 | population health file  |         1 |                        0 |                     |         
- 
+
+* If *d_num_denom_validated*=1 and *is_denominator_resolvable*=0, the denominator but the table itself (rif_data.pop_sahsuland_pop) is not resolvable and/or not accessible;
+* If *n_num_denom_validated*=1 and *is_numerator_resolvable*=0, the numerator but the table itself (rif_data.num_sahsuland_cancer) is not resolvable and/or not accessible;
+
+In both these case you need to check the grants on the tables: [Viewing your user setup](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#25-viewing-your-user-setup)
+
+
+
 Peter Hambly
 May 2018
