@@ -997,6 +997,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	```
   - SQL Server:  
     ```SQL
+	TO BE ADDED
 	```
 * Load numerator tables from CSV or Text files:
   - Postgres:  
@@ -1082,6 +1083,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	```
   - SQL Server:  
     ```SQL
+	TO BE ADDED
 	```
 * Check all numerator table data has been loaded:
   - Postgres:  
@@ -1111,6 +1113,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	```
   - SQL Server:  
     ```SQL
+	TO BE ADDED
 	```
 * Convert numerator fixed length string into new numerator load table with the correct columns and datatypes:
   - Postgres:  
@@ -1137,9 +1140,11 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 		   SUBSTRING(record_value FROM 9 FOR 10)::INTEGER AS reg		/* SEER registry */   
 	  FROM seer9_yr1973_2013_fixed_length;	
     ```SQL
+	TO BE ADDED
 	```
   - SQL Server:  
     ```SQL
+	TO BE ADDED
 	```
 * Create numerator table from load table:
   - Postgres:  
@@ -1213,6 +1218,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	```
   - SQL Server:  
     ```SQL
+	TO BE ADDED
 	```
 * Comment numerator load table:
   - Postgres:  
@@ -1236,6 +1242,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	```
   - SQL Server:  
     ```SQL
+	TO BE ADDED
 	```
 * Check rowcount:
   - Postgres:  
@@ -1262,6 +1269,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	```
   - SQL Server:  
     ```SQL
+	TO BE ADDED
 	```
 * Add constraints:
   - Postgres:  
@@ -1277,8 +1285,9 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	```
   - SQL Server:  
     ```SQL
+	TO BE ADDED
 	```
-* Add constraints:
+* Add indexes:
   - Postgres:  
     ```SQL
 	ALTER TABLE seer_cancer ADD CONSTRAINT seer_cancer_pk 
@@ -1293,6 +1302,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	```
   - SQL Server:  
     ```SQL
+	TO BE ADDED
 	```
 * Unload table:
   - Postgres:  
@@ -1301,6 +1311,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	```
   - SQL Server:  
     ```SQL
+	TO BE ADDED
 	```
 	
 ## 3.1.2 Load Processing
@@ -1829,6 +1840,215 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 
 ## 3.3.1 Pre Processing
 
+* Create denominator load tables:
+  - Postgres:  
+    ```SQL	
+	DROP TABLE IF EXISTS :USER.seer_wbo_single_ages_fixed_length;
+	DROP TABLE IF EXISTS :USER.seer_wbo_single_ages;
+
+	--
+	-- Load singleages.txt as a fixed length record
+	--
+	CREATE TABLE seer_wbo_single_ages_fixed_length (
+		record_value VARCHAR(28)
+	);
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Load singleages.txt as a fixed length record:
+  - Postgres:  
+    ```SQL	
+	\copy seer_wbo_single_ages_fixed_length FROM 'SEER_1973_2013_TEXTDATA\populations\white_black_other\yr1973_2013.seer9\singleages.txt' WITH CSV;
+	\copy seer_wbo_single_ages_fixed_length FROM 'SEER_1973_2013_TEXTDATA\populations\expanded.race.by.hispanic\yr1992_2013.seer9.plus.sj_la_rg_ak\singleages.txt' WITH CSV;
+	\copy seer_wbo_single_ages_fixed_length FROM 'SEER_1973_2013_TEXTDATA\populations\expanded.race.by.hispanic\yr2000_2013.ca_ky_lo_nj_ga\singleages.txt' WITH CSV;
+	\copy seer_wbo_single_ages_fixed_length FROM 'SEER_1973_2013_TEXTDATA\populations\expanded.race.by.hispanic\yr2005.lo_2nd_half\singleages.txt' WITH CSV;
+    ```
+  - SQL Server: 
+	TO BE ADDED
+    ```SQL	
+    ```
+* Check all denominator table data has been loaded:
+  - Postgres:  
+    ```SQL	
+	SELECT COUNT(*) AS total FROM seer_wbo_single_ages_fixed_length;
+	DO LANGUAGE plpgsql $$
+	DECLARE
+		c1 CURSOR FOR
+			SELECT COUNT(*) AS total
+			  FROM seer_wbo_single_ages_fixed_length;
+		c1_rec RECORD;
+	BEGIN
+		OPEN c1;
+		FETCH c1 INTO c1_rec;
+		CLOSE c1;
+	--
+		IF c1_rec.total = 10234237 THEN
+			RAISE INFO 'Table: seer_wbo_single_ages_fixed_length has % rows', c1_rec.total;
+		ELSE
+			RAISE EXCEPTION 'Table: seer_wbo_single_ages_fixed_length has % rows; expecting 10234237', c1_rec.total;
+		END IF;
+	END;
+	$$;	
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Convert denominator fixed length string into new numerator load table with the correct columns and datatypes:
+  - Postgres:  
+    ```SQL	
+	CREATE TABLE seer_wbo_single_ages
+	AS
+	SELECT SUBSTRING(record_value FROM 1 FOR 4)::INTEGER AS year,
+		   SUBSTRING(record_value FROM 5 FOR 2) AS state_postal_abbreviation,
+		   SUBSTRING(record_value FROM 7 FOR 2)::Text AS state_fips_code,
+		   SUBSTRING(record_value FROM 9 FOR 3)::Text AS county_fips_code,
+		   SUBSTRING(record_value FROM 12 FOR 2)::INTEGER AS registry,
+		   SUBSTRING(record_value FROM 14 FOR 1)::INTEGER AS race,
+		   SUBSTRING(record_value FROM 15 FOR 1)::INTEGER AS origin,
+		   SUBSTRING(record_value FROM 16 FOR 1)::INTEGER AS sex,
+		   SUBSTRING(record_value FROM 17 FOR 2)::INTEGER AS age,
+		   SUBSTRING(record_value FROM 19 FOR 10)::NUMERIC AS population
+	  FROM seer_wbo_single_ages_fixed_length;
+	/* 
+	 * Registry codes:
+	 *
+		01 = San Francisco-Oakland SMSA
+		02 = Connecticut
+		20 = Detroit (Metropolitan)
+		21 = Hawaii
+		22 = Iowa
+		23 = New Mexico
+		25 = Seattle (Puget Sound)
+		26 = Utah
+		27 = Atlanta (Metropolitan)
+		29 = Alaska Natives
+		31 = San Jose-Monterey
+		35 = Los Angeles
+		37 = Rural Georgia
+		41 = California excluding SF/SJM/LA
+		42 = Kentucky
+		43 = Louisiana
+		44 = New Jersey
+		47 = Greater Georgia
+	 */	
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Create denominator table from load table:
+  - Postgres:  
+    ```SQL	
+	--
+	-- Extract population
+	-- * Convert age, sex to RIF age_sex_group 1
+	-- * Convert FIPS codes to the geographic Names Information System (GNIS) codes used by the RIF
+	-- * Enforce primary key
+	-- * Check AGE_SEX_GROUP
+	-- * Convert unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g.
+	--   900 series to represent county/independent city combinations in Virginia.
+	--
+	DROP TABLE IF EXISTS :USER.seer_population;  
+	CREATE TABLE seer_population
+	AS  
+	SELECT a.year, 
+		   'US'::Text AS cb_2014_us_nation_5m,
+		   d.statens AS cb_2014_us_state_500k, 
+		   COALESCE(c.countyns, 'UNKNOWN: '||a.county_fips_code) AS cb_2014_us_county_500k,
+		   (a.sex*100)+b.offset AS age_sex_group, 
+		   SUM(a.population) AS population
+	  FROM seer_wbo_single_ages a
+			LEFT OUTER JOIN rif40_age_groups b ON (b.age_group_id = 1 AND a.age BETWEEN b.low_age AND b.high_age)
+			LEFT OUTER JOIN cb_2014_us_county_500k c ON (a.state_fips_code = c.statefp AND a.county_fips_code = c.countyfp)
+			LEFT OUTER JOIN cb_2014_us_state_500k d ON (a.state_fips_code = d.statefp)
+	 GROUP BY a.year, d.statens, COALESCE(c.countyns, 'UNKNOWN: '||a.county_fips_code), a.sex, b.offset
+	 ORDER BY 1,2,3,4,5;	
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Comment numerator load table:
+  - Postgres:  
+    ```SQL	
+	COMMENT ON TABLE seer_population IS 'SEER Population 1972-2013. Georgia starts in 1975, Washington in 1974. 9 States in total';
+	COMMENT ON COLUMN seer_population.year IS 'Year';
+	COMMENT ON COLUMN seer_population.cb_2014_us_nation_5m IS 'United States to county level including territories';
+	COMMENT ON COLUMN seer_population.cb_2014_us_state_500k IS 'State geographic Names Information System (GNIS) code';
+	COMMENT ON COLUMN seer_population.cb_2014_us_county_500k IS 'County geographic Names Information System (GNIS) code. Unjoined county FIPS codes to "UNKNOWN: " + county FIPS code; e.g. the 900 series to represent county/independent city combinations in Virginia.';
+	COMMENT ON COLUMN seer_population.age_sex_group IS 'RIF age_sex_group 1 (21 bands)';
+	COMMENT ON COLUMN seer_population.population IS 'Population';
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Check rowcount:
+  - Postgres:  
+    ```SQL	
+	SELECT COUNT(*) AS total FROM seer_population;
+	DO LANGUAGE plpgsql $$
+	DECLARE
+		c1 CURSOR FOR
+			SELECT COUNT(*) AS total
+			  FROM seer_population;
+		c1_rec RECORD;
+	BEGIN
+		OPEN c1;
+		FETCH c1 INTO c1_rec;
+		CLOSE c1;
+	--
+		IF c1_rec.total = 614360 THEN
+			RAISE INFO 'Table: seer_population has % rows', c1_rec.total;
+		ELSE
+			RAISE EXCEPTION 'Table: seer_population has % rows; expecting 614360', c1_rec.total;
+		END IF;
+	END;
+	$$;
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Add constraints:
+  - Postgres:  
+    ```SQL	
+	ALTER TABLE seer_population ADD CONSTRAINT seer_population_pk 
+		PRIMARY KEY (year, cb_2014_us_nation_5m, cb_2014_us_state_500k, cb_2014_us_county_500k, age_sex_group);	
+	ALTER TABLE seer_population ADD CONSTRAINT seer_population_asg_ck 
+		CHECK (age_sex_group BETWEEN 100 AND 121 OR age_sex_group BETWEEN 200 AND 221);
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Add indexes:
+  - Postgres:  
+    ```SQL	
+	CLUSTER seer_population USING seer_population_pk;
+	CREATE INDEX seer_population_year ON seer_population (year);
+	CREATE INDEX seer_population_cb_2014_us_nation_5m ON seer_population(cb_2014_us_nation_5m);
+	CREATE INDEX seer_population_cb_2014_us_state_500k ON seer_population(cb_2014_us_state_500k);
+	CREATE INDEX seer_population_cb_2014_us_county_500k ON seer_population(cb_2014_us_county_500k);
+	CREATE INDEX seer_population_age_sex_group ON seer_population(age_sex_group);
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Unload table:
+  - Postgres:  
+    ```SQL	
+	\copy seer_population TO 'seer_population.csv' WITH CSV HEADER;
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+
 ## 3.3.2 Load Processing
 
 * Remove denominator setup data and tables;
@@ -2068,6 +2288,354 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 
 ## 3.4.1 Pre Processing
 
+* Create covariate load tables:
+  - Postgres:  
+    ```SQL	
+	DROP TABLE IF EXISTS :USER.saipe_state_county_yr1989_2015_fixed_length;
+	DROP TABLE IF EXISTS :USER.saipe_state_county_yr1989_2015;
+	
+	CREATE TABLE saipe_state_county_yr1989_2015_fixed_length (
+		record_value VARCHAR(265),
+		year INTEGER
+	);
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Load US_census_county_poverty_estimates/est&lt;year&gt;ALL.txt as a fixed length record:
+  - Postgres:  
+    ```SQL	
+	/*
+	wc -l US_census_county_poverty_estimates/est*.txt
+		3192 US_census_county_poverty_estimates/est00ALL.txt
+		3193 US_census_county_poverty_estimates/est01ALL.txt
+		3193 US_census_county_poverty_estimates/est02ALL.txt
+		3193 US_census_county_poverty_estimates/est03ALL.txt
+		3193 US_census_county_poverty_estimates/est04ALL.txt
+		3193 US_census_county_poverty_estimates/est05ALL.txt
+		3193 US_census_county_poverty_estimates/est06ALL.txt
+		3193 US_census_county_poverty_estimates/est07ALL.txt
+		3194 US_census_county_poverty_estimates/est08ALL.txt
+		3195 US_census_county_poverty_estimates/est09ALL.txt
+		3195 US_census_county_poverty_estimates/est10ALL.txt
+		3195 US_census_county_poverty_estimates/est11all.txt
+		3195 US_census_county_poverty_estimates/est12ALL.txt
+		3195 US_census_county_poverty_estimates/est13ALL.txt
+		3194 US_census_county_poverty_estimates/est14ALL.txt
+		3194 US_census_county_poverty_estimates/est15ALL.txt
+		3193 US_census_county_poverty_estimates/est89ALL.txt
+		3195 US_census_county_poverty_estimates/est93ALL.txt
+		3194 US_census_county_poverty_estimates/est95ALL.txt
+		3193 US_census_county_poverty_estimates/est97ALL.txt
+		3193 US_census_county_poverty_estimates/est98ALL.txt
+		3193 US_census_county_poverty_estimates/est99ALL.txt
+	   70261 total
+	 */
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est15all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2015 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est14all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2014 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est13all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2013 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est12all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2012 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est11all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2011 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est10all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2010 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est09all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2009 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est08all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2008 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est07all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2007 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est06all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2006 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est05all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2005 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est04all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2004 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est03all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2003 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est02all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2002 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est01all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2001 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est00all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 2000 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est99all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 1999 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est98all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 1998 WHERE year IS NULL;
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est97all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 1997 WHERE year IS NULL;
+	-- No county level 96 data
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est95all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 1995 WHERE year IS NULL;
+	-- No county level 94 data
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est93all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 1993 WHERE year IS NULL;
+	-- No county level 90-92 data
+	\copy saipe_state_county_yr1989_2015_fixed_length(record_value) FROM 'US_census_county_poverty_estimates\est89all.txt' WITH CSV;
+	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 1989 WHERE year IS NULL;	
+    ```
+  - SQL Server: 
+	TO BE ADDED
+    ```SQL	
+    ```
+* Check all covariate table data has been loaded:
+  - Postgres:  
+    ```SQL	
+	SELECT COUNT(*) AS total FROM saipe_state_county_yr1989_2015_fixed_length;
+	DO LANGUAGE plpgsql $$
+	DECLARE
+		c1 CURSOR FOR
+			SELECT COUNT(*) AS total
+			  FROM saipe_state_county_yr1989_2015_fixed_length;
+		c1_rec RECORD;
+	BEGIN
+		OPEN c1;
+		FETCH c1 INTO c1_rec;
+		CLOSE c1;
+	--
+		IF c1_rec.total = 70261 THEN
+			RAISE INFO 'Table: saipe_state_county_yr1989_2015_fixed_length has % rows', c1_rec.total;
+		ELSE
+			RAISE EXCEPTION 'Table: saipe_state_county_yr1989_2015_fixed_length has % rows; expecting 70261', c1_rec.total;
+		END IF;
+	END;
+	$$;
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Convert covariate fixed length string into new covariate load table with the correct columns and datatypes:
+  - Postgres:  
+    ```SQL	
+	CREATE TABLE saipe_state_county_yr1989_2015
+	AS
+	SELECT LPAD(LTRIM(SUBSTRING(record_value FROM 1 FOR 2)), 2, '0')::Text AS state_fips_code,	 	/* State FIPS code (00 for US record) */
+		   LPAD(LTRIM(SUBSTRING(record_value FROM 4 FOR 3)), 3, '0')::Text AS county_fips_code, 	/* County FIPS code ( 0 for US or state level records) */ 
+		   CASE 
+				WHEN LTRIM(SUBSTRING(record_value FROM 8 FOR 8)) IN ('.', '') THEN NULL::INTEGER
+				ELSE LTRIM(SUBSTRING(record_value FROM 8 FOR 8))::INTEGER
+		   END AS total_poverty_all_ages, 	/* Estimate of people of all ages in poverty */ 
+		   CASE 
+				WHEN LTRIM(SUBSTRING(record_value FROM 35 FOR 4)) IN ('. ', '') THEN NULL::NUMERIC
+				ELSE LTRIM(SUBSTRING(record_value FROM 35 FOR 4))::NUMERIC
+		   END AS pct_poverty_all_ages, 	/* Estimate percent of people of all ages in poverty */ 
+		   CASE 
+				WHEN LTRIM(SUBSTRING(record_value FROM 77 FOR 4)) IN ('. ', '') THEN NULL::NUMERIC
+				ELSE LTRIM(SUBSTRING(record_value FROM 77 FOR 4))::NUMERIC
+		   END AS pct_poverty_0_17, 	/* Estimated percent of people age 0-17 in poverty */
+		   CASE 
+				WHEN LTRIM(SUBSTRING(record_value FROM 119 FOR 4)) IN ('. ', '') THEN NULL::NUMERIC
+				ELSE LTRIM(SUBSTRING(record_value FROM 119 FOR 4))::NUMERIC
+		   END AS pct_poverty_related_5_17, 	/* Estimated percent of related children age 5-17 in families in poverty */
+		   CASE 
+				WHEN LTRIM(SUBSTRING(record_value FROM 134 FOR 6)) IN ('.', '') THEN NULL::INTEGER
+				ELSE LTRIM(SUBSTRING(record_value FROM 134 FOR 6))::INTEGER
+		   END AS median_household_income, 	/* Estimate of median household income */	   
+		   SUBSTRING(record_value FROM 243 FOR 12) AS file_name,
+		   CASE 
+				WHEN SUBSTRING(record_value FROM 246 FOR 2) = '' THEN NULL::INTEGER
+				ELSE SUBSTRING(record_value FROM 246 FOR 2)::INTEGER
+		   END AS yr,
+		   year
+  FROM saipe_state_county_yr1989_2015_fixed_length;
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Create covariate table from load table:
+  - Postgres:  
+    ```SQL	
+	DROP TABLE IF EXISTS :USER.saipe_state_poverty_1989_2015;  
+	CREATE TABLE saipe_state_poverty_1989_2015
+	AS  
+	WITH a AS (
+		SELECT CASE 
+					WHEN yr IS NULL THEN year
+					WHEN yr < 50 THEN 2000+yr 
+					ELSE 1900+yr
+			   END AS year, 
+			   'US'::Text AS cb_2014_us_nation_5m,
+			   d.statens AS cb_2014_us_state_500k, 
+			   total_poverty_all_ages,
+			   pct_poverty_all_ages,
+			   pct_poverty_0_17,
+			   pct_poverty_related_5_17,
+			   median_household_income
+		  FROM saipe_state_county_yr1989_2015 a
+				LEFT OUTER JOIN cb_2014_us_state_500k d ON (a.state_fips_code = d.statefp)
+		 WHERE a.county_fips_code = '000'
+		   AND a.state_fips_code  != '00'
+	)
+	SELECT a.year, a.cb_2014_us_nation_5m, a.cb_2014_us_state_500k, 
+		   a.total_poverty_all_ages,
+		   a.pct_poverty_all_ages,
+		   a.pct_poverty_0_17,
+		   a.pct_poverty_related_5_17,
+		   a.median_household_income,
+		   CASE WHEN a.median_household_income IS NOT NULL THEN NTILE(5) 
+				OVER (PARTITION BY a.year ORDER BY a.median_household_income) 
+				ELSE NULL END AS median_hh_income_quin,
+		   CASE WHEN a.pct_poverty_0_17 IS NOT NULL THEN NTILE(5) 
+				OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_0_17) 
+				ELSE NULL END AS med_pct_not_in_pov_0_17_quin,
+		   CASE WHEN a.pct_poverty_related_5_17 IS NOT NULL THEN NTILE(5) 
+				OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_related_5_17) 
+				ELSE NULL END AS med_pct_not_in_pov_5_17r_quin,
+		   CASE WHEN a.pct_poverty_all_ages IS NOT NULL THEN NTILE(5) 
+				OVER (PARTITION BY a.year ORDER BY 100-a.pct_poverty_all_ages) 
+				ELSE NULL END AS med_pct_not_in_pov_quin
+	  FROM a
+	 ORDER BY 1,2,3;
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Comment covariate load table:
+  - Postgres:  
+    ```SQL
+	COMMENT ON TABLE saipe_state_poverty_1989_2015 IS 'US Census Small Area Income and Poverty Estimates 1989-2015 by county';
+	COMMENT ON COLUMN saipe_state_poverty_1989_2015.year IS 'Year';
+	COMMENT ON COLUMN saipe_state_poverty_1989_2015.cb_2014_us_nation_5m IS 'United States to county level including territories';
+	COMMENT ON COLUMN saipe_state_poverty_1989_2015.cb_2014_us_state_500k IS 'State geographic Names Information System (GNIS) code';
+	COMMENT ON COLUMN saipe_state_poverty_1989_2015.total_poverty_all_ages IS 'Estimate of people of all ages in poverty';
+	COMMENT ON COLUMN saipe_state_poverty_1989_2015.pct_poverty_all_ages IS 'Estimate percent of people of all ages in poverty';
+	COMMENT ON COLUMN saipe_state_poverty_1989_2015.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
+	COMMENT ON COLUMN saipe_state_poverty_1989_2015.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
+	COMMENT ON COLUMN saipe_state_poverty_1989_2015.median_household_income IS 'Estimate of median household income';
+	COMMENT ON COLUMN saipe_state_poverty_1989_2015.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
+	COMMENT ON COLUMN saipe_state_poverty_1989_2015.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
+	COMMENT ON COLUMN saipe_state_poverty_1989_2015.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
+	COMMENT ON COLUMN saipe_state_poverty_1989_2015.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Check rowcount:
+  - Postgres:  
+    ```SQL	
+	SELECT COUNT(*) AS total FROM saipe_state_poverty_1989_2015;
+	DO LANGUAGE plpgsql $$
+	DECLARE
+		c1 CURSOR FOR
+			SELECT COUNT(*) AS total
+			  FROM saipe_state_poverty_1989_2015;
+		c1_rec RECORD;
+	BEGIN
+		OPEN c1;
+		FETCH c1 INTO c1_rec;
+		CLOSE c1;
+	--
+		IF c1_rec.total = 1122 THEN
+			RAISE INFO 'Table: saipe_state_poverty_1989_2015 has % rows', c1_rec.total;
+		ELSE
+			RAISE EXCEPTION 'Table: saipe_state_poverty_1989_2015 has % rows; expecting 1122', c1_rec.total;
+		END IF;
+	END;
+	$$;
+    ```
+* Cope with holes:
+  - No county/state level 96 data; use 95 data
+  - No county/state level 94 data; use 93 data
+  - No county/state level 90-92 data; use 89 data
+  
+  - Postgres:  
+    ```SQL	
+	INSERT INTO saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+		pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+		median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
+	SELECT 1996 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+		pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+		median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
+	  FROM saipe_state_poverty_1989_2015 WHERE year = 1995;
+	INSERT INTO saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+		pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+		median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
+	SELECT 1994 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+		pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+		median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
+	  FROM saipe_state_poverty_1989_2015 WHERE year = 1993;
+	INSERT INTO saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+		pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+		median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
+	SELECT 1992 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+		pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+		median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
+	  FROM saipe_state_poverty_1989_2015 WHERE year = 1989;
+	INSERT INTO saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+		pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+		median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
+	SELECT 1991 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+		pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+		median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
+	  FROM saipe_state_poverty_1989_2015 WHERE year = 1989;
+	INSERT INTO saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+		pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+		median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin)
+	SELECT 1990 AS year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
+		pct_poverty_all_ages, pct_poverty_0_17, pct_poverty_related_5_17, median_household_income, 
+		median_hh_income_quin, med_pct_not_in_pov_0_17_quin, med_pct_not_in_pov_5_17r_quin, med_pct_not_in_pov_quin
+	  FROM saipe_state_poverty_1989_2015 WHERE year = 1989;	
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Add constraints:
+  - Postgres:  
+    ```SQL	
+	ALTER TABLE saipe_state_poverty_1989_2015 ADD CONSTRAINT saipe_state_poverty_1989_2015_pk 
+		PRIMARY KEY (year, cb_2014_us_state_500k);	
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Add indexes:
+  - Postgres:  
+    ```SQL	
+	CREATE INDEX saipe_state_poverty_1989_2015_year ON saipe_state_poverty_1989_2015 (year);
+	CREATE INDEX saipe_state_poverty_1989_2015_cb_2014_us_nation_5m ON saipe_state_poverty_1989_2015(cb_2014_us_nation_5m);
+	CREATE INDEX saipe_state_poverty_1989_2015_cb_2014_us_state_500k ON saipe_state_poverty_1989_2015(cb_2014_us_state_500k);
+
+	CLUSTER saipe_state_poverty_1989_2015 USING saipe_state_poverty_1989_2015_pk;
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Unload table:
+  - Postgres:  
+    ```SQL	
+		
+	\copy saipe_state_poverty_1989_2015 TO 'saipe_state_poverty_1989_2015.csv' WITH CSV HEADER;	
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+
+This process is then repeated for all other covariates:
+
+* saipe_county_poverty_1989_2015
+* seer_wbo_ethnicity
+
+We can now create the production covariate tables for both county and state level from:
+
+* saipe_state_poverty_1989_2015
+* saipe_county_poverty_1989_2015
+* seer_wbo_ethnicity
+
+	
 ## 3.4.2 Load Processing
 
 * Remove covariate setup data and tables;
