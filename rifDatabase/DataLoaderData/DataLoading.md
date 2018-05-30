@@ -3572,7 +3572,5 @@ In this case the error is not an error as *n_num_denom_validated* and *d_num_den
 
 In both these case you need to check the grants on the tables: [Viewing your user setup](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#25-viewing-your-user-setup)
 
-
-
 Peter Hambly
 May 2018
