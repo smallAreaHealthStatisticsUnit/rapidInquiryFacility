@@ -2813,7 +2813,7 @@ E.g:
 	```
 * Create covariate table;
   - Postgres:  
-  ```SQL
+    ```SQL
     CREATE TABLE rif_data.cov_cb_2014_us_county_500k (
 		year								INTEGER NOT NULL, -- Year
 		cb_2014_us_county_500k 							CHARACTER VARYING(30) NOT NULL, -- Geolevel name
