@@ -1139,8 +1139,6 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 		   SUBSTRING(record_value FROM 255 FOR 5)::Text AS codpub,	  	/* Cause of death to SEER site recode (see: https://seer.cancer.gov/codrecode/1969+_d09172004/index.html) */
 		   SUBSTRING(record_value FROM 9 FOR 10)::INTEGER AS reg		/* SEER registry */   
 	  FROM seer9_yr1973_2013_fixed_length;	
-    ```SQL
-	TO BE ADDED
 	```
   - SQL Server:  
     ```SQL
@@ -1866,8 +1864,8 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	\copy seer_wbo_single_ages_fixed_length FROM 'SEER_1973_2013_TEXTDATA\populations\expanded.race.by.hispanic\yr2005.lo_2nd_half\singleages.txt' WITH CSV;
     ```
   - SQL Server: 
-	TO BE ADDED
     ```SQL	
+	TO BE ADDED
     ```
 * Check all denominator table data has been loaded:
   - Postgres:  
@@ -2381,8 +2379,8 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 	UPDATE saipe_state_county_yr1989_2015_fixed_length SET year = 1989 WHERE year IS NULL;	
     ```
   - SQL Server: 
-	TO BE ADDED
     ```SQL	
+	TO BE ADDED
     ```
 * Check all covariate table data has been loaded:
   - Postgres:  
@@ -2444,7 +2442,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
 				ELSE SUBSTRING(record_value FROM 246 FOR 2)::INTEGER
 		   END AS yr,
 		   year
-  FROM saipe_state_county_yr1989_2015_fixed_length;
+	  FROM saipe_state_county_yr1989_2015_fixed_length;
     ```
   - SQL Server: 
     ```SQL	
@@ -2547,7 +2545,7 @@ Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.
   - No county/state level 96 data; use 95 data
   - No county/state level 94 data; use 93 data
   - No county/state level 90-92 data; use 89 data
-  
+  E.g.:
   - Postgres:  
     ```SQL	
 	INSERT INTO saipe_state_poverty_1989_2015(year, cb_2014_us_nation_5m, cb_2014_us_state_500k, total_poverty_all_ages,
@@ -2634,6 +2632,8 @@ We can now create the production covariate tables for both county and state leve
 * saipe_state_poverty_1989_2015
 * saipe_county_poverty_1989_2015
 * seer_wbo_ethnicity
+
+E.g:
 
 * Create production covariate table from covariate tables:
   - Postgres:  
