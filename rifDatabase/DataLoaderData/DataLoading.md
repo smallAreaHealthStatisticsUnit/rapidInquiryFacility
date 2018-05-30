@@ -95,7 +95,7 @@ may potentially be added in future releases:
 
 Limitations in the current RIF
 
-* No support form covariates embedded in numerator or denominator data. Data must be extracted into a separate
+* No support for covariates embedded in numerator or denominator data. Data must be extracted into a separate
   covariate table. Covariates must be merged into a single table and disaggregated (if required) by year. It is not planned to remove these
   restrictions which were in the previous RIF.
 * Covariates must be quantilised. Support for continuous variable covariates (i.e. on the fly quantilisation) may be added in future releases.
@@ -118,10 +118,6 @@ Limitations in the current RIF
 
 * Single ICD field name. Unlike the old RIF the field name is configurable; 	
 * The RIF currently lacks complex support for Information Governance beyond having strong role based permissions.
-
-  **This document will detail how to audit access to the data.**. This is envisaged as being part of a separate
-  information governance tool. When this tool is operation the RIF will allow users to extract more complex
-  data than just the extraction required to calculate the results;
 * No support for population weighted centroids.
 
 It is planned to remove the following restrictions progressively in future releases:
@@ -190,18 +186,19 @@ The following are restrictions on the naming of columns:
 Postgres uses the *\copy* command to load and unload data. *\copy* cannot handle fixed length data; this
 is loaded as a fixed length string and parsed using SQL.
 
-The SEER data required USA load phase data pg_USQ_2014.sql to be loaded as a RIF user (not rif40) and
+The SEER data load requires USA load phase data pg_USQ_2014.sql to be loaded as a RIF user (not rif40) and
 the production data (rif_pg_usa_2014.sql) needs to be loaded into the rif40 account in the rif_data schema.
 
 ## 2.2 SQL Server
 
 SQL Server needs access permission granted to the directories used to `BULK INSERT` files, the files are not copied from the client to the 
-server as in the *Postgres* *psql* ```\copy` command and the *Oracle* *sqlldr* command.
+server as in the *Postgres* *psql* ```\copy` command and the *Oracle* *sqlldr* command. This also implies that a full file path is required and the file name must be accessible on the 
+SQL Server server; it does **NOT** have to be accessible on the client.
 
 SQL Server needs access to these directories. The simplest
 way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users or USERS depending on your Windows version).
 
-*DO NOT TRY TO RUN BULK INSERT FROM NETWORK DRIVES or CLOUD DRIVES (e.g. Google Drive).* Use a local directory which SQL Server has
+**DO NOT TRY TO RUN BULK INSERT FROM NETWORK DRIVES or CLOUD DRIVES (e.g. Google Drive).** Use a local directory which SQL Server has
 access to; e.g. somewhere on the C: drive. Note that SQL Server *BULK LOAD* behaves deterrently if you logon using Windows authentication (where it will use your credentials 
 to access the files) to using a username and password (where it will use the Server's credentials to access the file).
 
@@ -221,7 +218,7 @@ Cannot bulk load because the file "C:\Users\Peter\Documents\GitHub\rapidInquiryF
 ## 2.3 Data Structure
 
 All RIF data tables are located in the *rif_data* schema. They must be located in *rif_data* because SQL Server does not have the concept of a schema search 
-path; the search paths have been hard coded. Tables may be located in any tablespace.
+path; the search paths have been hard coded. Tables may be located in any tablespace and you may use views which again must be located in the *rif_data* schema.
 
 The RIF also support views for numerator and denominator tables. This allows for considerable flexibility in configuration as:
 
@@ -234,7 +231,7 @@ The RIF also support views for numerator and denominator tables. This allows for
 All table and column names must be a valid [Oracle] database name - 30 characters, uppercase, A-Z, 0-9 and underscore (_) and start with a letter. In some cases 
 the length is reduced to 20 characters so that derived names of indexes, primary and foreign keys are under the 30 character limit. 
 
-The middleware translates these names into the correct format for the database port. Names must *NOT* have schemas appended.
+The middleware translates these names into the correct format for the database software port. Names must *NOT* have schemas appended.
 
 ### 2.3.1 Numerator
 
@@ -387,6 +384,7 @@ As an example the covariate table *covar_sahsuland_covariates3* contains (with r
 | 1989 | 01.002.000700    |   5 |         3 |
 | 1989 | 01.002.000800    |   4 |         3 |
 | 1989 | 01.002.000900    |   1 |         2 |
+
 | ...  | ...              | ... | ...       |
 
 ### 2.3.4 Administrative Geography

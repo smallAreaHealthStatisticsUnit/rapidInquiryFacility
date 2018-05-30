@@ -2361,3 +2361,4 @@ Todo:
  
 * Test and merge pull #39: added version numbering;
 * Complete database management manual;
+* Test SEER data; data loading manual;
