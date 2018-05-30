@@ -373,7 +373,7 @@ even if the covariate data is null. So in the example below
 As an example the covariate table *covar_sahsuland_covariates3* contains (with rows truncated):
  
 | year | sahsu_grd_level3 | ses | ethnicity |
-|------|----------|-------|-----|-----------|
+|------|------------------|-----|-----------|
 | 1989 | 01.001.000100    |   4 |         1 |
 | 1989 | 01.001.000200    |   5 |         1 |
 | 1989 | 01.001.000300    |   5 |         3 |
@@ -384,7 +384,6 @@ As an example the covariate table *covar_sahsuland_covariates3* contains (with r
 | 1989 | 01.002.000700    |   5 |         3 |
 | 1989 | 01.002.000800    |   4 |         3 |
 | 1989 | 01.002.000900    |   1 |         2 |
-
 | ...  | ...              | ... | ...       |
 
 ### 2.3.4 Administrative Geography
