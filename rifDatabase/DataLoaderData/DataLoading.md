@@ -847,7 +847,7 @@ Generally load processing requires three steps:
   * Convert numerator/denominator/covariate fixed length string into new numerator/denominator/covariate load table with the correct columns and datatypes;
   * Create numerator/denominator/covariate table from load table. For denominator and covariate tables additional rows may need to be added to cope with holes in the data; e.g. re-use a later 
     year of population or covariate data to replace missing earlier years. RIF covariates require annual data, if you do not have annual data you can use a view and the ```generate_series``` 
-	function to add the years; see: [3.0.1 Generate series](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#301-generate_series);
+	function to add the years; see: [3.0.1 Generate series](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#301-generate-series);
   * Add constraints to numerator/denominator/covariate table;
   * Add indexes to numerator/denominator/covariate table;
   * Comment numerator/denominator/covariate table and columns;
@@ -954,10 +954,105 @@ sahsuland=> select * from rif40_num_denom;
 (2 rows)
 
 ``` 
-If your dsata does not appear; see [Numerator Denominator Pair Errors](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#62-numerator-denominator-pair-errors)
+If your data does not appear; see [Numerator Denominator Pair Errors](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/DataLoaderData/DataLoading.md#62-numerator-denominator-pair-errors)
 
 ### 3.0.1 Generate Series
 
+The ```generate_series``` function is used in the RIF *rif_data.tiles_sahsuland* VIEW to add back tiles for which there is no data (i.e. outside of the extent of the geography so the tiles 
+cover the entire world. It is also very useful for converting non annual covariates to the annual form required by the RIF; e.g:
+
+```SQL
+SELECT generate_series(2011, 2018);
+ generate_series
+-----------------
+            2011
+            2012
+            2013
+            2014
+            2015
+            2016
+            2017
+            2018
+(8 rows)
+```
+
+Using *rif_data.covar_sahsuland_covariates3* year 2000 data only (i.e pretend it is not annualised!)
+```SQL
+WITH a AS (
+	SELECT generate_series(2011, 2018) AS year
+)
+SELECT a.year, b.sahsu_grd_level3, b.ses, b.ethnicity
+  FROM a, covar_sahsuland_covariates3 b
+ WHERE b.year = 2000 /* USe only one year! */
+ ORDER BY 1, 2 LIMIT 20;
+ year | sahsu_grd_level3 | ses | ethnicity
+------+------------------+-----+-----------
+ 2011 | 01.001.000100    |   4 |         1
+ 2011 | 01.001.000200    |   5 |         1
+ 2011 | 01.001.000300    |   5 |         3
+ 2011 | 01.002.000300    |   2 |         2
+ 2011 | 01.002.000400    |   5 |         3
+ 2011 | 01.002.000500    |   5 |         3
+ 2011 | 01.002.000600    |   4 |         3
+ 2011 | 01.002.000700    |   5 |         3
+ 2011 | 01.002.000800    |   4 |         3
+ 2011 | 01.002.000900    |   1 |         2
+ 2011 | 01.002.001000    |   2 |         1
+ 2011 | 01.002.001100    |   3 |         3
+ 2011 | 01.002.001200    |   1 |         2
+ 2011 | 01.002.001300    |   2 |         3
+ 2011 | 01.002.001400    |   2 |         3
+ 2011 | 01.002.001500    |   1 |         2
+ 2011 | 01.002.001600    |   2 |         3
+ 2011 | 01.002.001700    |   1 |         1
+ 2011 | 01.002.001800    |   2 |         3
+ 2011 | 01.002.001900    |   1 |         1
+(20 rows)  
+```
+  
+See [Postgres set returning functions](https://www.postgresql.org/docs/9.6/static/functions-srf.html)
+
+The ```generate_series``` function is **NOT** part of SQL Server; however the following code provides this functionality.
+
+```SQL
+/*
+ * SQL statement name: 	generate_series.sql
+ * Type:				MS SQL Server SQL statement
+ * Parameters:			None
+ * Description:			Generate a series of values, from start to stop with a step size of step
+ *						Original by: Simon Greener, Independent GeoSpatial Solutions Architect
+ *						http://www.spatialdbadvisor.com/sql_server_blog/86/generate_series-for-sql-server-2008
+ */
+CREATE FUNCTION generate_series ( @p_start INT, @p_end INT, @p_step INT=1 )
+RETURNS @Integers TABLE ( [IntValue] INT )
+AS
+BEGIN
+    DECLARE
+      @v_i                 INT,
+      @v_step              INT,
+      @v_terminating_value INT;
+    BEGIN
+      SET @v_i = CASE WHEN @p_start IS NULL THEN 1 ELSE @p_start END;
+      SET @v_step  = CASE WHEN @p_step IS NULL OR @p_step = 0 THEN 1 ELSE @p_step END;
+      SET @v_terminating_value =  @p_start + CONVERT(INT,ABS(@p_start-@p_end) / ABS(@v_step) ) * @v_step;
+      -- Check for impossible combinations
+      IF NOT ( ( @p_start > @p_end AND SIGN(@p_step) = 1 )
+               OR
+               ( @p_start < @p_end AND SIGN(@p_step) = -1 ))
+      BEGIN
+        -- Generate values
+        WHILE ( 1 = 1 )
+        BEGIN
+           INSERT INTO @Integers ( [IntValue] ) VALUES ( @v_i )
+           IF ( @v_i = @v_terminating_value )
+              BREAK
+           SET @v_i = @v_i + @v_step;
+        END;
+      END;
+    END;
+    RETURN
+END;
+```
 
 ## 3.1 Administrative Geography
 
