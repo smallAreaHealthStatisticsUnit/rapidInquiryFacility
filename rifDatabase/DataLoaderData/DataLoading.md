@@ -2635,6 +2635,157 @@ We can now create the production covariate tables for both county and state leve
 * saipe_county_poverty_1989_2015
 * seer_wbo_ethnicity
 
+* Create production covariate table from covariate tables:
+  - Postgres:  
+    ```SQL	
+	DROP TABLE IF EXISTS :USER.cov_cb_2014_us_county_500k;
+
+	CREATE TABLE cov_cb_2014_us_county_500k
+	(
+	  year 												integer NOT NULL, -- Year
+	  cb_2014_us_county_500k 							character varying(30) NOT NULL, -- Geolevel name
+	  areaname					 						character varying(200),
+	  total_poverty_all_ages							INTEGER,
+	  pct_poverty_all_ages								NUMERIC,
+	  pct_poverty_0_17									NUMERIC,
+	  pct_poverty_related_5_17							NUMERIC,
+	  median_household_income							NUMERIC,
+	  median_hh_income_quin								INTEGER,
+	  med_pct_not_in_pov_quin							INTEGER,
+	  med_pct_not_in_pov_0_17_quin						INTEGER,
+	  med_pct_not_in_pov_5_17r_quin						INTEGER,
+	  pct_white_quintile								INTEGER,
+	  pct_black_quintile								INTEGER,
+	  CONSTRAINT cov_cb_2014_us_county_500k_pkey PRIMARY KEY (year, cb_2014_us_county_500k)
+	);
+	
+	--
+	-- Cope with holes in SAIPE data: before 89 use 1989 data
+	-- Allow holes in SEER ethnicty data
+	--
+	INSERT INTO cov_cb_2014_us_county_500k(year, cb_2014_us_county_500k, areaname,
+		   total_poverty_all_ages,
+		   pct_poverty_all_ages,
+		   pct_poverty_0_17,
+		   pct_poverty_related_5_17,
+		   median_household_income,
+		   median_hh_income_quin,
+		   med_pct_not_in_pov_quin,
+		   med_pct_not_in_pov_0_17_quin,
+		   med_pct_not_in_pov_5_17r_quin,
+		   pct_white_quintile,
+		   pct_black_quintile)
+	WITH a AS (
+		SELECT generate_series(MIN(year), MAX(year)) AS year
+		  FROM seer_population
+	), b AS (
+		SELECT a.year, b.cb_2014_us_county_500k, b.areaname
+		  FROM a CROSS JOIN lookup_cb_2014_us_county_500k b
+	)
+	SELECT b.year, b.cb_2014_us_county_500k, b.areaname,
+		   COALESCE(c.total_poverty_all_ages, c89.total_poverty_all_ages) AS total_poverty_all_ages,
+		   COALESCE(c.pct_poverty_all_ages, c89.pct_poverty_all_ages) AS pct_poverty_all_ages,
+		   COALESCE(c.pct_poverty_0_17, c89.pct_poverty_0_17) AS pct_poverty_0_17,
+		   COALESCE(c.pct_poverty_related_5_17, c89.pct_poverty_related_5_17) AS pct_poverty_related_5_17,
+		   COALESCE(c.median_household_income, c89.median_household_income) AS median_household_income,
+		   COALESCE(c.median_hh_income_quin, c89.median_hh_income_quin) AS median_hh_income_quin,
+		   COALESCE(c.med_pct_not_in_pov_quin, c89.med_pct_not_in_pov_quin) AS med_pct_not_in_pov_quin,
+		   COALESCE(c.med_pct_not_in_pov_0_17_quin, c89.med_pct_not_in_pov_0_17_quin) 
+				AS med_pct_not_in_pov_0_17_quin,
+		   COALESCE(c.med_pct_not_in_pov_5_17r_quin, c89.med_pct_not_in_pov_5_17r_quin) 
+				AS med_pct_not_in_pov_5_17r_quin,
+		   d.pct_white_quintile,
+		   d.pct_black_quintile
+	  FROM b
+		LEFT OUTER JOIN saipe_county_poverty_1989_2015 c ON 
+			(b.year = c.year AND b.cb_2014_us_county_500k = c.cb_2014_us_county_500k)
+		LEFT OUTER JOIN saipe_county_poverty_1989_2015 c89 ON 
+			(1989 = c89.year AND b.cb_2014_us_county_500k = c89.cb_2014_us_county_500k)
+			LEFT OUTER JOIN seer_wbo_ethnicity_covariates d ON 
+			(b.year = d.year AND b.cb_2014_us_county_500k = d.cb_2014_us_county_500k)
+	 ORDER BY 1, 2;
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Check rowcount:
+  - Postgres:  
+    ```SQL	
+	SELECT year, COUNT(year) AS total, COUNT(median_hh_income_quin) AS t_median_hh_income_quin
+	  FROM cov_cb_2014_us_county_500k
+	 GROUP BY year
+	 ORDER BY year;
+	 
+	DO LANGUAGE plpgsql $$
+	DECLARE
+		c1 CURSOR FOR
+			SELECT COUNT(*) AS total
+			  FROM cov_cb_2014_us_county_500k;
+		c1_rec RECORD;
+	BEGIN
+		OPEN c1;
+		FETCH c1 INTO c1_rec;
+		CLOSE c1;
+	--
+		IF c1_rec.total = 132553 THEN
+			RAISE INFO 'Table: cov_cb_2014_us_county_500k has % rows', c1_rec.total;
+		ELSE
+			RAISE EXCEPTION 'Table: cov_cb_2014_us_county_500k has % rows; expecting 132553', c1_rec.total;
+		END IF;
+	END;
+	$$;
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Comment covariate table:
+  - Postgres:  
+    ```SQL	
+	COMMENT ON TABLE cov_cb_2014_us_county_500k
+	  IS 'Example covariate table for: The County at a scale of 1:500,000';
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.year IS 'Year';
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.cb_2014_us_county_500k IS 'County FIPS code (geolevel id)';
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.areaname IS 'Area (county) name';
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.total_poverty_all_ages IS 'Estimate of people of all ages in poverty';
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.pct_poverty_all_ages IS 'Estimate percent of people of all ages in poverty';
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.pct_poverty_0_17 IS 'Estimated percent of people age 0-17 in poverty';
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.pct_poverty_related_5_17 IS 'Estimated percent of related children age 5-17 in families in poverty';
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.median_household_income IS 'Estimate of median household income';
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.median_hh_income_quin IS 'Quintile: estimate of median household income (1=most deprived, 5=least)';
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.med_pct_not_in_pov_quin IS 'Quintile: estimate percent of people of all ages NOT in poverty (1=most deprived, 5=least)';
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.med_pct_not_in_pov_0_17_quin IS 'Quintile: estimated percent of people age 0-17 NOT in poverty (1=most deprived, 5=least)';
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.med_pct_not_in_pov_5_17r_quin IS 'Quintile: estimated percent of related children age 5-17 in families NOT in poverty (1=most deprived, 5=least)';
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.pct_white_quintile IS '% White quintile (1=least white, 5=most)'; 
+	COMMENT ON COLUMN cov_cb_2014_us_county_500k.pct_black_quintile IS '% Black quintile (1=least black, 5=most)';
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Add indexes:
+  - Postgres:  
+    ```SQL	
+		
+	--
+	-- Convert to index organised table
+	--
+	CLUSTER cov_cb_2014_us_county_500k USING cov_cb_2014_us_county_500k_pkey;
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
+* Unload table:
+  - Postgres:  
+    ```SQL	
+	\copy cov_cb_2014_us_county_500k TO 'cov_cb_2014_us_county_500k.csv' WITH CSV HEADER;
+    ```
+  - SQL Server: 
+    ```SQL	
+	TO BE ADDED
+    ```
 	
 ## 3.4.2 Load Processing
 
