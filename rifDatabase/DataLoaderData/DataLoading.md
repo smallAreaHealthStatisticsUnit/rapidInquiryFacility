@@ -440,6 +440,12 @@ The supplied *SAHUSLAND* test database is set up as follows:
 |-----------|-------------------------|---------------------|-------|------------------|------------------|-----------|--------------------|--------------------|-----------------|--------------|--------------|---------------------|
 | SAHSULAND | SAHSU Example geography | HIERARCHY_SAHSULAND | 27700 | SAHSU_GRD_LEVEL1 | SAHSU_GRD_LEVEL3 |         1 |                  6 | GEOMETRY_SAHSULAND | TILES_SAHSULAND |            6 |           11 | ADJACENCY_SAHSULAND |
  
+The example *SEER* test database is set up as follows:
+  
+| geography |       description                        |   hierarchytable    | srid  | defaultcomparea      | defaultstudyarea      | partition | max_geojson_digits |   geometrytable    |    tiletable    | minzoomlevel | maxzoomlevel |   adjacencytable    |
+|-----------|------------------------------------------|---------------------|-------|----------------------|-----------------------|-----------|--------------------|--------------------|-----------------|--------------|--------------|---------------------|
+| USA_2014  | US 2014 Census geography to county level | HIERARCHY_USA_2014  |  4269 | CB_2014_US_NATION_5M | CB_2014_US_STATE_500K |         1 |                  6 | GEOMETRY_USA_2014  | TILES_USA_2014  |            6 |            9 | ADJACENCY_USA_2014  |
+ 
 #### 2.3.4.2 Geolevels
 
 The table and view *rif40.t_rif40_geolevels*/*rif40.rif40_geolevels* is used to define a hierarchy of administrative areas that define a geography where each higher resolution contains 
@@ -492,7 +498,15 @@ The supplied *SAHUSLAND* test database is set up as follows:
 | SAHSULAND | SAHSU_GRD_LEVEL2 |           2 | Level 2             | LOOKUP_SAHSU_GRD_LEVEL2 | AREANAME           | SAHSU_GRD_Level2.shp |               | SAHSU_GRD_LEVEL2 | LEVEL2                   | NAME                  | COV_SAHSU_GRD_LEVEL2        |          1 |        1 |       1 |          0 |           17 |
 | SAHSULAND | SAHSU_GRD_LEVEL1 |           1 | Level 1 (top level) | LOOKUP_SAHSU_GRD_LEVEL1 | AREANAME           | SAHSU_GRD_Level1.shp |               | SAHSU_GRD_LEVEL1 | LEVEL1                   | LEVEL1                |                             |          1 |        1 |       1 |          0 |            1 |
  
-The field *geolevel_id* is used to order the geolevels by resolution. The highest *geolevel_id* is the highest resolution (i.e. has the most areas).
+The field *geolevel_id* is used to order the geolevels by resolution. The highest *geolevel_id* is the highest resolution (i.e. has the most areas). 
+ 
+The example *SEER* test database is set up as follows:
+ 
+| geography |  geolevel_name         | geolevel_id |     description                      |      lookup_table             | lookup_desc_column |      shapefile             | centroidsfile | shapefile_table        | shapefile_area_id_column | shapefile_desc_column |       covariate_table      | resolution | comparea | listing | restricted | areaid_count |
+|-----------|------------------------|-------------|--------------------------------------|-------------------------------|--------------------|----------------------------|---------------|------------------------|--------------------------|-----------------------|----------------------------|------------|----------|---------|------------|--------------|
+| USA_2014  | CB_2014_US_COUNTY_500K |           3 | The County at a scale of 1:500,000   | LOOKUP_CB_2014_US_COUNTY_500K | AREANAME           | cb_2014_us_county_500k.shp |               | CB_2014_US_COUNTY_500K | COUNTYNS                 | NAME                  | COV_CB_2014_US_COUNTY_500K |          1 |        1 |       1 |          0 |         3233 |
+| USA_2014  | CB_2014_US_STATE_500K  |           2 | The State at a scale of 1:500,000    | LOOKUP_CB_2014_US_STATE_500K  | AREANAME           | cb_2014_us_state_500k.shp  |               | CB_2014_US_STATE_500K  | STATENS                  | NAME                  | COV_CB_2014_US_STATE_500K  |          1 |        1 |       1 |          0 |           56 |
+| USA_2014  | CB_2014_US_NATION_5M   |           1 | The nation at a scale of 1:5,000,000 | LOOKUP_CB_2014_US_NATION_5M   | AREANAME           | cb_2014_us_nation_5m.shp   |               | CB_2014_US_NATION_5M   | GEOID                    | NAME                  |                            |            |          1 |        1 |       1 |            1 |
  
 #### 2.3.4.3 Lookup tables
 
@@ -533,6 +547,67 @@ As an example the lookup table *lookup_sahsu_grd_level2* contains:
 | 01.016           | De Hoogh   |  15 | {"type":"Point","coordinates":[-5.57639756386895,53.7060196095887]} |
 | 01.017           | Savigny    |  16 | {"type":"Point","coordinates":[-6.99828886177757,53.0298596972378]} |
 | 01.018           | Cockings   |  17 | {"type":"Point","coordinates":[-5.93617635675363,53.1514779844403]} |
+ 
+And for USA states:
+
+| cb_2014_us_state_500k |                   areaname                   | gid |                         geographic_centroid                          |
+|-----------------------|----------------------------------------------|-----|----------------------------------------------------------------------|
+| 00068085              | Arkansas                                     |   1 | {"type":"Point","coordinates":[-91.7460600676377,34.7989664318261]}  |
+| 00294478              | Florida                                      |   2 | {"type":"Point","coordinates":[-82.191285629571,27.2641344923978]}   |
+| 00448508              | Indiana                                      |   3 | {"type":"Point","coordinates":[-86.6396085844172,39.2583984174708]}  |
+| 00481813              | Kansas                                       |   4 | {"type":"Point","coordinates":[-96.9603123072795,38.7478452695085]}  |
+| 00606926              | Massachusetts                                |   5 | {"type":"Point","coordinates":[-70.8496779292619,41.9574785877662]}  |
+| 00662849              | Minnesota                                    |   6 | {"type":"Point","coordinates":[-94.2946075529846,46.9142548993034]}  |
+| 00767982              | Montana                                      |   7 | {"type":"Point","coordinates":[-112.440158950593,46.0953789167559]}  |
+| 00897535              | New Mexico                                   |   8 | {"type":"Point","coordinates":[-106.210319618421,34.0796842247757]}  |
+| 01027616              | North Carolina                               |   9 | {"type":"Point","coordinates":[-78.1838147583888,35.4144296092622]}  |
+| 01085497              | Ohio                                         |  10 | {"type":"Point","coordinates":[-82.4309672991619,40.379873178333]}   |
+| 01102857              | Oklahoma                                     |  11 | {"type":"Point","coordinates":[-97.1409457095718,34.712480112523]}   |
+| 01155107              | Oregon                                       |  12 | {"type":"Point","coordinates":[-121.26568196262,44.5161240770227]}   |
+| 01219835              | Rhode Island                                 |  13 | {"type":"Point","coordinates":[-71.3998545840162,41.5702071077978]}  |
+| 01325873              | Tennessee                                    |  14 | {"type":"Point","coordinates":[-85.8408130481816,35.8337160114235]}  |
+| 01455989              | Utah                                         |  15 | {"type":"Point","coordinates":[-111.621001625722,39.1152289226468]}  |
+| 01629543              | Louisiana                                    |  16 | {"type":"Point","coordinates":[-91.2369599329216,30.3596077655874]}  |
+| 01702382              | District of Columbia                         |  17 | {"type":"Point","coordinates":[-77.0161156802619,38.899287485358]}   |
+| 01705317              | Georgia                                      |  18 | {"type":"Point","coordinates":[-82.8985467943147,32.6450260988439]}  |
+| 01714934              | Maryland                                     |  19 | {"type":"Point","coordinates":[-76.5695402961508,38.7769267877812]}  |
+| 01779775              | Alabama                                      |  20 | {"type":"Point","coordinates":[-86.7664800530139,31.7690551760402]}  |
+| 01779777              | Arizona                                      |  21 | {"type":"Point","coordinates":[-113.396230811877,34.458696450714]}   |
+| 01779778              | California                                   |  22 | {"type":"Point","coordinates":[-120.249510325325,36.2457149373203]}  |
+| 01779779              | Colorado                                     |  23 | {"type":"Point","coordinates":[-104.808380671455,38.9255583779329]}  |
+| 01779780              | Connecticut                                  |  24 | {"type":"Point","coordinates":[-72.8528546706635,41.3456700453746]}  |
+| 01779781              | Delaware                                     |  25 | {"type":"Point","coordinates":[-75.4994397114792,39.2171211171611]}  |
+| 01779782              | Hawaii                                       |  26 | {"type":"Point","coordinates":[-157.752347796731,21.0611974598024]}  |
+| 01779783              | Idaho                                        |  27 | {"type":"Point","coordinates":[-114.675046469887,45.4195058476719]}  |
+| 01779784              | Illinois                                     |  28 | {"type":"Point","coordinates":[-89.2220209830065,39.8410669123454]}  |
+| 01779785              | Iowa                                         |  29 | {"type":"Point","coordinates":[-93.8227666555831,42.0221134891659]}  |
+| 01779786              | Kentucky                                     |  30 | {"type":"Point","coordinates":[-85.2123467005517,37.7223857693082]}  |
+| 01779787              | Maine                                        |  31 | {"type":"Point","coordinates":[-68.9047268601883,44.5331050274351]}  |
+| 01779789              | Michigan                                     |  32 | {"type":"Point","coordinates":[-85.7125400934235,45.4651010832855]}  |
+| 01779790              | Mississippi                                  |  33 | {"type":"Point","coordinates":[-90.2098738969815,32.2488403702241]}  |
+| 01779791              | Missouri                                     |  34 | {"type":"Point","coordinates":[-92.1883046699325,38.3681761336563]}  |
+| 01779792              | Nebraska                                     |  35 | {"type":"Point","coordinates":[-97.8496886533389,41.4426955679412]}  |
+| 01779793              | Nevada                                       |  36 | {"type":"Point","coordinates":[-115.992474312302,37.9127709992178]}  |
+| 01779794              | New Hampshire                                |  37 | {"type":"Point","coordinates":[-71.5978177402021,43.9585841263735]}  |
+| 01779795              | New Jersey                                   |  38 | {"type":"Point","coordinates":[-74.7342060895472,40.1862212281874]}  |
+| 01779796              | New York                                     |  39 | {"type":"Point","coordinates":[-74.931413218779,42.2529504249618]}   |
+| 01779797              | North Dakota                                 |  40 | {"type":"Point","coordinates":[-97.7974492684418,47.3592469399905]}  |
+| 01779798              | Pennsylvania                                 |  41 | {"type":"Point","coordinates":[-76.8260790277368,40.9801819217324]}  |
+| 01779799              | South Carolina                               |  42 | {"type":"Point","coordinates":[-81.3588011364492,33.5808270966468]}  |
+| 01779801              | Texas                                        |  43 | {"type":"Point","coordinates":[-98.7725068956115,29.8219670967323]}  |
+| 01779802              | Vermont                                      |  44 | {"type":"Point","coordinates":[-72.436271076001,44.0669830822455]}   |
+| 01779803              | Virginia                                     |  45 | {"type":"Point","coordinates":[-78.0541807437174,37.6982304423068]}  |
+| 01779804              | Washington                                   |  46 | {"type":"Point","coordinates":[-122.640006855541,47.7959450287645]}  |
+| 01779805              | West Virginia                                |  47 | {"type":"Point","coordinates":[-80.3551373923862,38.7506276616833]}  |
+| 01779806              | Wisconsin                                    |  48 | {"type":"Point","coordinates":[-89.5095248112451,45.198644842279]}   |
+| 01779807              | Wyoming                                      |  49 | {"type":"Point","coordinates":[-107.571827493527,42.9599050320965]}  |
+| 01779808              | Puerto Rico                                  |  50 | {"type":"Point","coordinates":[-66.2423900561918,18.2032215322885]}  |
+| 01779809              | Commonwealth of the Northern Mariana Islands |  51 | {"type":"Point","coordinates":[145.615819585475,16.1727270208791]}   |
+| 01785533              | Alaska                                       |  52 | {"type":"Point","coordinates":[-150.41866893173,58.3829444770504]}   |
+| 01785534              | South Dakota                                 |  53 | {"type":"Point","coordinates":[-98.1393052717026,43.8929744764808]}  |
+| 01802701              | American Samoa                               |  54 | {"type":"Point","coordinates":[-170.302817441699,-14.2005732150488]} |
+| 01802705              | Guam                                         |  55 | {"type":"Point","coordinates":[144.763252929807,13.4279675884233]}   |
+| 01802710              | United States Virgin Islands                 |  56 | {"type":"Point","coordinates":[-64.8355292735655,18.1760172621614]}  |
  
 #### 2.3.4.4 Tile tables
 
@@ -879,12 +954,31 @@ To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive
 * ```cd C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\Tile maker USA```;
 * Run *rif_pg_usa_2014.sql* or *rif_mssql_usa_2014.sql*;.
 
-## 3.1.1 Postgres
+The scripts *rif_pg_usa_2014.sql* or *rif_mssql_usa_2014.sql* load processed geometry and tiles tables into production database:
+      
+a) integrate with RIF40 control tables, e.g:                   
+    * geography_usa_2014                               
+    * geolevels_usa_2014     
+b) Processed geometry data (partitioned in PostGres), e.g:                          
+    * geometry_usa_2014                                  
+c) Hierarchy table, e.g:
+   * hierarchy_usa_2014   
+d) Lookup tables, e.g:
+   * lookup_cb_2014_us_county_500k             
+   * lookup_cb_2014_us_nation_5m                    
+   * lookup_cb_2014_us_state_500k      
+e) Tiles table and view               
+   * t_tiles_usa_2014           
+   * tiles_usa_2014 
+   
+## 3.1.1 Postgres  
 
+Run: ```psql -U rif40 -w -e -f rif_pg_USA_2014.sql```
 
 ## 3.1.2 SQL Server
 
- 
+Run: ```sqlcmd -U rif40 -d <database name> -b -m-1 -e -r1 -i rif_mssql_USA_2014.sql -v pwd="%cd%"```
+
 ## 3.2 Numerator
 
 ## 3.2.1 Pre Processing
