@@ -781,7 +781,7 @@ The RIF is setup so that three roles control access to the application:
 
 * *rif_user*: User level access to the application with full access to data at the highest resolution. 
   No ability to change the RIF configuration or to add more data;
-* * rif_manager*: Manager level access to the application with full access to data at the highest resolution. 
+* *rif_manager*: Manager level access to the application with full access to data at the highest resolution. 
   Ability to change the RIF configuration. No ability by default to add data to the RIF. Data is normally added 
   using the schema owner account (rif40); see the above section on proxying to access the schema account user 
   a manager accounts credentials.
@@ -867,7 +867,7 @@ sahsuland-# \dp rif40_tables
 (1 row)
 ```
  
-Where the access privileges (*+* is a line continuation character):
+Where the access privileges (*+* is a line continuation character) are:
 
 * r: SELECT ("read")
 * w: UPDATE ("write")
@@ -1041,7 +1041,7 @@ Care needs to be taken **NOT* to break the RIF. The default search path for a RI
 ALTER DATABASE sahsuland SET search_path TO rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions;
 ```
 
-**DO NOT MOVE** RIF objects into the following schemas without extensive testing for hard coded schemas:
+**DO NOT MOVE** RIF objects in the following schemas without extensive testing for hard coded schemas:
 
 * rif40, rif_data, rif40_sql_pkg, rif_studies
 
@@ -1055,7 +1055,7 @@ sahsuland=> show search_path;
 (1 row)
 ```
  
-**THEREFORE BEWARE OF CREATING OBJECTS WITH THE SDAME NAME AS A RIF OBJECT** on Postgres. They will be used in preference to the *RIF40* schema object!
+**THEREFORE BEWARE OF CREATING OBJECTS WITH THE SAME NAME AS A RIF OBJECT** on Postgres. They will be used in preference to the *RIF40* schema object!
 
 ### 3.1.2 SQL Server
 
@@ -1147,9 +1147,13 @@ ALTER ROLE [seer_user] ADD MEMBER [peter];
 GO
 ```
 
-To view all roles: ```SELECT name, type_desc FROM sys.database_principals WHERE name LIKE '%seer_user%';```
+To view all roles: ```SELECT name, type_desc FROM sys.database_principals;```
 
 # 4. Information Governance
+
+This currently covers:
+
+* Auditing
 
 ## 4.1 Auditing
 
@@ -1157,7 +1161,7 @@ To view all roles: ```SELECT name, type_desc FROM sys.database_principals WHERE 
 
 Basic statement logging can be provided by the standard logging facility with the configuration parameter ```log_statement = all```. 
 Postgres has an extension [pgAudit](https://github.com/pgaudit/pgaudit) which provides much more auditing, however the Enterprise DB installer does not include Postgres 
-extensions (apart from PostGIS). EnterpiseDB Postgres has its own auditing subsystem (*edb_audit), but this is is paid for item. To use pgAudit pgAudit must be compile from source
+extensions (apart from PostGIS). EnterpiseDB Postgres has its own auditing subsystem (*edb_audit), but this is is paid for item. To use pgAudit the module must be compile from source
 
 To configure Postgres server [error reporting and logging](https://www.postgresql.org/docs/9.6/static/runtime-config-logging.html) set the following Postgres system parameters see
 [Postgres tuning](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#71-postgres) for details on how to set parameters:
@@ -1170,7 +1174,7 @@ To configure Postgres server [error reporting and logging](https://www.postgresq
 * ```log_destinstion = stderr, eventlog, csvlog```. Other choices are *csvlog* or syslog*
 
 Parameters can be set in the *postgresql.conf* file or on the server command line. This is stored in the database cluster's data directory, e.g. *C:\Program Files\PostgreSQL\9.6\data*. Beware, you can 
-move the data directory to a solid state disk, mine is: * E:\Postgres\data*! Check the startup parameters in the Windows services app for the *"-D"* flag: 
+move the data directory to a solid state disk, mine is: *E:\Postgres\data*! Check the startup parameters in the Windows services app for the *"-D"* flag: 
 ```"C:\Program Files\PostgreSQL\9.6\bin\pg_ctl.exe" runservice -N "postgresql-x64-9.6" -D "E:\Postgres\data" -w```
 
 If you are using CSV log files set:
@@ -1345,11 +1349,11 @@ Where the database name is *sahsuland*
 Flags:
 
 * *-U postgres*:
-* "-F &lt;format%gt;*: Format: plain (SQL), custom or directory (pg_restore);
-* *-w*: Do not prompt for a password;
-* *-v*: Be verbose;
+* *-F &lt;format%gt;*: dump format: plain (SQL), custom or directory (pg_restore);
+* *-w*: do not prompt for a password;
+* *-v*: be verbose;
  
-To restore a custom or directory pg_dump* file: ```pg_restore -d sahsuland -U postgres -v sahsuland.dump```. This is the method uses to create the example database *sahsuland* 
+To restore a custom or directory *pg_dump* file: ```pg_restore -d sahsuland -U postgres -v sahsuland.dump```. This is the method uses to create the example database *sahsuland* 
 from the development database *sahsuland_dev*.
 
 See: 
@@ -1446,7 +1450,7 @@ Scripts must be applied as follows:
 ## 6.1 Postgres
 
 Alter scripts *v4_0_alter_1.sql* to *v4_0_alter_9.sql* related to be original database development on Postgres
-and were not created on SQL Server. The scripts *v4_0_alter_3.sql* and *v4_0_alter_4.sql* enable partitioning on```
+and were not created on SQL Server. The scripts *v4_0_alter_3.sql* and *v4_0_alter_4.sql* enable partitioning by
 ranges (data with year fields) and hashes (study_id) respectively. Alter script 4 must go after 7. Alter 
 script 7 provides:
 - Support for  ontologies (e.g. ICD9, 10); removed previous table based support.
@@ -1455,7 +1459,7 @@ script 7 provides:
 This is because alter script 7 was written before the partitioning was enabled and does not support it.
 
 Partitioning was removed as it is supported natively in Postgres 10. Support for hash partitioning is
-in alter 4 is incomplete:
+in alter 4 and is incomplete:
 
 - Partition movement is not supported; 
 - The hashing function *rif40_sql_pkg._rif40_hash* has not been added to the code so hash partition elimination 
@@ -1477,6 +1481,22 @@ Scripts are in the standard bundle in the directory *Database alter scripts\Post
 ```
 psql -U rif40 -d <your database name> -w -e -P pager=off -v verbosity=terse -v debug_level=0 -v use_plr=N -v pghost=localhost -v echo=none -f alter_scripts/<alter script name>
 ```
+
+The following partitioning limitations are ascheduled to be fixed in Postgres 11:
+
+* Executor-stage partition pruning or faster child table pruning or parallel partition processing (i.e. partition elimination using bind variables);
+* Hash partitioning;
+* UPDATEs that cause rows to move from one partition to another;
+* Support for routing tuples to partitions that are foreign tables;
+* Support for index constraints, such as UNIQUE, across the entire partition tree; indexes need to be defined on the individual leaf partitions (unique indexes span only the individual partitions);
+* Support for referencing regular tables from partitioned parent tables;
+* Support for "catch-all" / "fallback" / "default" partition.
+
+There is no support currently planned for:
+
+* Referencing partitioned parent tables in foreign key relationships;
+* "Splitting" or "merging" partitions using dedicated commands;
+* Automatic creation of partitions (e.g. for values not covered).
 
 ## 6.2 SQL Server
 
