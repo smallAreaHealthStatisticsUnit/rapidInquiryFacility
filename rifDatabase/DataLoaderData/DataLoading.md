@@ -1021,7 +1021,7 @@ SELECT a.year, b.sahsu_grd_level3, b.ses, b.ethnicity
   
 See [Postgres set returning functions](https://www.postgresql.org/docs/9.6/static/functions-srf.html)
 
-The ```generate_series``` function is **NOT** part of SQL Server; however the following code provides this functionality. It is installed as a table valued function in the *rif409* schema. 
+The ```generate_series``` function is **NOT** part of SQL Server; however the following code provides this functionality. It is installed as a table valued function in the *rif40* schema. 
 
 ```SQL
 /*
