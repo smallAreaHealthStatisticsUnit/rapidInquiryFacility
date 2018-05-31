@@ -208,7 +208,7 @@ info:    Forever stopped process:
 ```
 
 ```http://127.0.0.1:3000/tile-maker.html```
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_start.png?raw=true "Tile Maker Start Screen")
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_start.PNG?raw=true "Tile Maker Start Screen")
 
 ## 2.2 Processing Overview
 ## 2.3 Running the Front End
