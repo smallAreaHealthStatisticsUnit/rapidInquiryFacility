@@ -842,7 +842,8 @@ Generally load processing requires three steps:
   Typically this is done as a normal user on any database. Do **not** use the schema *rif40* or  administrative accounts (*postgres* or *administrator*):
   * Create numerator/denominator/covariate load tables to load data from CSV or Text files. Fixed length (mainframe) record files have to be loaded as a single string 
     and then chopped converted into the relevant fields in stage four;
-  * Load numerator/denominator/covariate tables from CSV or Text files;
+  * Load numerator/denominator/covariate tables from CSV or Text files. SQL Server records will need a format specification 
+    [Using a Format File to Bulk Import Data](https://docs.microsoft.com/en-us/sql/relational-databases/import-export/use-a-format-file-to-bulk-import-data-sql-server?view=sql-server-2017);
   * Check all numerator/denominator/covariate table data has been loaded;
   * Convert numerator/denominator/covariate fixed length string into new numerator/denominator/covariate load table with the correct columns and datatypes;
   * Create numerator/denominator/covariate table from load table. For denominator and covariate tables additional rows may need to be added to cope with holes in the data; e.g. re-use a later 
@@ -895,7 +896,7 @@ The SEER pre-processing script *pg_load_seer_covariates.sql* has a dependency on
 tilemaker pre-processing. The FIPS code is required to make the join and this field is not in the standard lookup tables. For this reason it is necessary to build 
 the covariates table on *sahsuland_dev*. In the longer term the FIPS codes should be added to the lookup tables. 
   
-SQL Server pre-processing scripts have not been created due to the lack of an unload facility in *sqlcmd*. There are three basic options to resolve this problem without recourse 
+SQL Server pre-processing scripts have not been created due to the lack of an unload facility in *sqlcmd*. There are two basic options to resolve this problem without recourse 
 to C# or the many GUI wizards available:
 
 * Use [bcp](https://docs.microsoft.com/en-us/sql/relational-databases/import-export/import-and-export-bulk-data-by-using-the-bcp-utility-sql-server?view=sql-server-2017)
@@ -1020,7 +1021,7 @@ SELECT a.year, b.sahsu_grd_level3, b.ses, b.ethnicity
   
 See [Postgres set returning functions](https://www.postgresql.org/docs/9.6/static/functions-srf.html)
 
-The ```generate_series``` function is **NOT** part of SQL Server; however the following code provides this functionality.
+The ```generate_series``` function is **NOT** part of SQL Server; however the following code provides this functionality. It is installed as a table valued function in the *rif409* schema. 
 
 ```SQL
 /*
