@@ -42,7 +42,7 @@ Leaflet uses de facto OpenStreetMap standard, known as [Slippy Map Tilenames](ht
 
 Background map images are served direct from the source through a REST API, with a URL like ```http://.../Z/X/Y.png``` where Z is the zoom level, and X and Y identify the tile. 
 
-For example:
+For example a zoomlevel 8 tile, X=123, Y=82; covering the Irish Sea, Liverpool and the Lancashire and Cumbrian coasts:
 ![alt text](http://a.tile.openstreetmap.org/8/125/82.png "Zoomlevel 8, X=123, Y=82; Irish Sea, Liverpool and the Lancashire and Cumbrian coasts")
  
 The RIF does *NOT* cache background maps so on a private air-gapped network you will not get background maps. 
@@ -54,11 +54,27 @@ and then internally converts to TopoJSON to GeoJSON for the Leaflet gridlayer. S
 
 The caching code is in the main RIF application but is disabled due to issues with browser support.
 
+The job of the Tile Maker is to:
+
+* Generate the TopoJSON tiles required by the RIF and store them in the database;
+* Generate the required data tables, scripts and setup data for a RIF administrative geography;
+* Provide installer scripts for both Postgres and SQL Server.
+
 ## 1.1 Software Requirements
+
+* [Node.js 8](https://nodejs.org/en/)
+* [Python 2.7](https://www.python.org/downloads/release/python-2714/)
+* GNU Make (part of [Mingw](http://www.mingw.org/wiki/Getting_Started) MSYS on Windows)
 
 ## 1.2 Issues
 
 ### 1.2.1 Memory Requirements
+
+A minimum of 16GB of RAM is required; if you are processing high resolution geographies (e.g. US census block groups or UK census output areas) you will require 32 to 48GB of RAM.
+
+The memory requirement comes from the need to read an entire shapefile, convert each area to [GeoJson](http://geojson.org/), and finally progressively simplify the GeoJSON to be 
+suitable for each zoomlevel.  
+
 ### 1.2.2 SQL Server Connection Error
 
 Symptom; SQL Severer connect error ```Error: None of the binaries loaded successfully. Is your node version either >= 0.12.7 or >= 4.2.x or >= 5.1.1 or >= 6.1.0```
@@ -119,6 +135,81 @@ Symptom; SQL Severer connect error ```Error: None of the binaries loaded success
 # 2. Running the Tile Maker
 
 ## 2.1 Setup
+
+Install the required *Node.js* modules. Change directory into the *rapidInquiryFacility\rifNodeServices*:
+
+```
+cd C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices
+make
+```
+
+If you do not have make, type:
+
+```
+mkdir node_modules/pg-native
+npm install --save pg-native
+npm install JSZip@2.6.0
+npm install --save request JSZip turf geojson2svg clone object-sizeof form-data magic-globals helmet pg pg-native mssql msnodesqlv8 srs xml2js async reproject mapshaper forever shapefile node-uuid chroma-js jszip express morgan topojson request-debug cjson wellknown svg2png svg2png-many connect-busboy winston
+```
+
+To update the modules type ```npm update --save```.
+
+The tile Maker is a web application, so you need to start the server. The Makefile has a number of ratgers to help with this:
+
+- all: Build modules, run the complete database test harness
+- modules: Build required Node.js modules using npm install --save to update dependencies in package.json
+- clean: clean Node modules; avoid Windows path length stupidities with rimraf
+- install:  No install target (dummy)
+- server-start: start server
+- server-restart: restart server
+- server-restart-debug: restart server with debugging
+- server-status: status of running server
+- server-stop: stop server
+- server-log: display server logs
+- test\make_bighelloworld.js: create >2G data\bighelloworld.js
+- update: Update required Node.js modules using npm install --save to update dependencies in package.json
+- test: Run the test harness
+- help: Display makefile help, rifNode.js help
+
+Again, these commands casn be run by hand; 
+
+- Start:
+  ```
+  rm -f forever.err forever.log
+  node node_modules\forever\bin\forever start -c "node --max-old-space-size=4096 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
+  ```
+- Stop:
+  ```
+  node node_modules\forever\bin\forever stop -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
+  ```
+- Restart:
+  ```
+  rm -f forever.err forever.log
+  node node_modules\forever\bin\forever stop -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
+  node node_modules\forever\bin\forever start -c "node --max-old-space-size=4096 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
+  ```
+
+Stop example:  
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices>make server-start
+Debug level set to default: 1
+node_modules\\forever\\bin\\forever start -c "node --max-old-space-size=4096 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
+warn:    --minUptime not set. Defaulting to: 1000ms
+warn:    --spinSleepTime not set. Your script will exit if it does not stay up for at least 1000ms
+info:    Forever processing file: ./expressServer.js
+```
+
+Stop example:
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices>  node node_modules\forever\bin\forever stop -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
+info:    Forever stopped process:
+    uid  command                                    script                                                                                forever pid   id logfile                             uptime
+[0] b_rz node --max-old-space-size=4096 --expose-gc C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices\expressServer.js 37284   33616    C:\Users\phamb\.forever\forever.log 0:0:9:31.853
+```
+
+```http://127.0.0.1:3000/tile-maker.html```
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_start.png?raw=true "Tile Maker Start Screen")
+
 ## 2.2 Processing Overview
 ## 2.3 Running the Front End
 ### 2.3.1 Shapefile Format
