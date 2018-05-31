@@ -239,8 +239,8 @@ The following browsers are tested:
 
 GUI phase:
 
-1. The *tile maker* application is used to upload and convert shapefiles and simplify both SAHSULAND and the USA to county level.
-2. The user then downloads the processed data from server.
+1. The *tile maker* application is used to upload and convert shapefiles and simplifies the GeoJSON geometry. Generates scripts and the *tile maker* configuration file: *geoDataLoader.xml*;
+2. The user then downloads the processed data from server;
 
 GUI phase then proceeds to script phase:
 
@@ -255,10 +255,12 @@ the user only needing to install the processed data into the database.
 
 ## 2.3 Running the Front End
 
+The *tile maker* front end uploads and converts shapefiles to geoJSON; and then simplifies the GeoJSON geometry. Generates scripts and the *tile maker* configuration file: *geoDataLoader.xml*;
+XXXX 
 
 ### 2.3.1 Shapefile Format
 
-The best approach is to have each administrative geography in your hierarchy as single ZIP file containing a set of shapefiles. The tile maker requires two or more shapefile structured:
+The best approach is to have each administrative geography in your hierarchy as single ZIP file containing a set of shapefiles. The tile maker requires two or more shapefiles with:
 
 * A shapefile (.shp). This contains the geometric data in a proprietary ESRI format;
 * dBASE III/IV file (.dbf). The contains the attributes records for each area in a dBASE table;
@@ -269,7 +271,7 @@ There is a one-to-one relationship between geometry and attributes, which is bas
 Optional files:
 
 * Tile maker configuration file: *geoDataLoader.xml*. This contains the setup for your hierarchy and can be downloaded after your run;
-* ESRI extended attributes XML file for a shapefile (.shp.ea.iso.xml). The contains principally the names of the atributes and their description.
+* ESRI extended attributes XML file for a shapefile (.shp.ea.iso.xml). The contains principally the names of the attributes and their description.
 
 Other files not required by the tile Maker:
 
@@ -277,21 +279,26 @@ Other files not required by the tile Maker:
 * .sbn and .sbx — The files that store the spatial index of the features;
 * .fbn and .fbx — The files that store the spatial index of the features for shapefiles that are read-only;
 * .ain and .aih — The files that store the attribute index of the active fields in a table or a theme's attribute table;
-* .atx—An .atx file is created for each shapefile or dBASE attribute index created in ArcCatalog. ArcView GIS 3.x attribute indexes for shapefiles and dBASE files are not used by ArcGIS. 
+* .atx — An .atx file is created for each shapefile or dBASE attribute index created in ArcCatalog. ArcView GIS 3.x attribute indexes for shapefiles and dBASE files are not used by ArcGIS. 
    A new attribute indexing model has been developed for shapefiles and dBASE files;
-* .ixs—Geocoding index for read/write shapefiles;
-* .mxs—Geocoding index for read/write shapefiles (ODB format);
-* .cpg—An optional file that can be used to specify the codepage for identifying the characterset to be used.
+* .ixs — Geocoding index for read/write shapefiles;
+* .mxs — Geocoding index for read/write shapefiles (ODB format);
+* .cpg — An optional file that can be used to specify the codepage for identifying the character-set to be used.
 
-The usual layout for the ZIP file is:
+The usual layout for the tilemaker ZIP file is:
 
 -  *geoDataLoader.xml* [not needed first time around]
-- Directory containing the shapefiles:
+- Directory containing the shapefiles. These *may* be contained in sub-directories:
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/zip_file_structure_1.PNG?raw=true "ZIP file base directory")
-  - Shapefiles:
+  - The shapefiles themselves:
     ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/zip_file_structure_2.PNG?raw=true "ZIP file directory containing the shapefiles")
 
 This allows the *tile maker* runs to be re-produced exactly.
+
+Make sure:
+
+* You follow the ESRI naming convention exactly;
+* Do **NOT** use the same file name in multiple sub-directories
 
 ### 2.3.2 Processing Huge Shapefiles
 ## 2.4 Post Front End Processing
