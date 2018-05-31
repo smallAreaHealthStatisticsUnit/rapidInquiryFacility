@@ -14,15 +14,18 @@ public class TomcatResourceBundle {
 
 	private static RIFLogger rifLogger = RIFLogger.getLogger();
 	private ResourceBundle bundle;
+	private TomcatFile file;
 
 	public TomcatResourceBundle(TomcatFile file) {
+
+		this.file = file;
 
 		try (BufferedReader reader = file.reader()) {
 
 			bundle = new PropertyResourceBundle(reader);
 			rifLogger.info(getClass().getName(),
-					"RIFServiceStartupProperties: using: " +
-							file.path().getFileName());
+					"Loading Resource Bundle from file: " +
+							file.path().toString());
 		} catch (IOException ioException) {
 
 			rifLogger.error(getClass().getName(),
@@ -35,5 +38,10 @@ public class TomcatResourceBundle {
 	public ResourceBundle bundle() {
 
 		return bundle;
+	}
+
+	public TomcatFile tomcatFile() {
+
+		return file;
 	}
 }

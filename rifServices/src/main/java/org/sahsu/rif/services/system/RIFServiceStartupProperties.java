@@ -2,6 +2,7 @@ package org.sahsu.rif.services.system;
 
 import java.util.Hashtable;
 import java.util.MissingResourceException;
+import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 import org.apache.commons.lang.StringUtils;
@@ -13,91 +14,16 @@ import org.sahsu.rif.services.system.files.TomcatResourceBundle;
 
 /**
  * Reads values from the RIFServiceStartupProperties.properties file.
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
- * @version
  */
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence	Section
- * ==========	======
- * (1)			Section Constants
- * (2)			Section Properties
- * (3)			Section Construction
- * (8)			Section Accessors
- * (9)			Section Mutators
- * (6)			Section Validation
- * (7)			Section Errors
- * (5)			Section Interfaces
- * (4)			Section Overload
- *
-*/
-
 public final class RIFServiceStartupProperties {
-
-	// ==========================================
-	// Section Constants
-	// ==========================================
 
 	private static final String STARTUP_PROPERTIES_FILE = "RIFServiceStartupProperties.properties";
 
 	private static ResourceBundle resourceBundle = null;
 	protected static RIFLogger rifLogger = RIFLogger.getLogger();
  
-	// Creating a Hashtable for controlling warnings about optional parameters
-	static private Hashtable<String, Integer> parameterWarnings = new Hashtable<>();
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-
-	// ==========================================
-	// Section Construction
-	// ==========================================
+	private static Hashtable<String, Integer> parameterWarnings = new Hashtable<>();
 
 	/**
 	 * This is the standard way to get an instance of a
@@ -133,15 +59,17 @@ public final class RIFServiceStartupProperties {
 	private RIFServiceStartupProperties() {
 
 		if (resourceBundle == null) {
-			resourceBundle = new TomcatResourceBundle(
+			TomcatResourceBundle bundle = new TomcatResourceBundle(
 					new TomcatFile(
-							new TomcatBase(), STARTUP_PROPERTIES_FILE)).bundle();
+							new TomcatBase(), STARTUP_PROPERTIES_FILE));
+			String msg = String.format("%s: loaded resource bundle %s%n",
+			                           getClass().getSimpleName(),
+			                           bundle.tomcatFile().absolutePath());
+			rifLogger.info(getClass(), msg);
+			resourceBundle = bundle.bundle();
+
 		}
 	}
-
-	// ==========================================
-	// Section Accessors
-	// ==========================================
 
 	boolean isSSLSupported()
 					throws Exception {
@@ -174,7 +102,7 @@ public final class RIFServiceStartupProperties {
 					throws Exception {
 		return getMandatoryRIfServiceProperty("database.databaseName");
 	}
-	
+
 	String getServerSideCacheDirectory()
 					throws Exception {
 		return getMandatoryRIfServiceProperty("cache");
@@ -184,7 +112,7 @@ public final class RIFServiceStartupProperties {
 					throws Exception {
 		return getMandatoryRIfServiceProperty("webApplicationDirectory");
 	}
-	
+
 	String getRScriptDirectory()
 					throws Exception {
 		return getMandatoryRIfServiceProperty("rScriptDirectory");
@@ -202,7 +130,7 @@ public final class RIFServiceStartupProperties {
 			propertyValue=getProperty(propertyName);
 		}
 		catch(Exception exception) {
-			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+			rifLogger.error(getClass().getSimpleName(),
 				"Error fetching mandatory property: " + propertyName, exception);
 			throw exception;
 		}
@@ -216,7 +144,7 @@ public final class RIFServiceStartupProperties {
 		}
 		else {
 			parameterWarnings.put(propertyName, new Integer(1));
-			rifLogger.info("rifServices.system.RIFServiceStartupProperties", 
+			rifLogger.info(getClass().getSimpleName(),
 				"Unable to fetch optional property [MissingResourceException]: " + propertyName);
 		}
 	}
@@ -232,7 +160,7 @@ public final class RIFServiceStartupProperties {
 			updateParameterWarnings(propertyName);
 		}
 		catch(Exception exception) {
-			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+			rifLogger.error(getClass().getSimpleName(),
 				"Unable to fetch optional property: " + propertyName, exception);
 			throw exception;
 		}
@@ -265,20 +193,19 @@ public final class RIFServiceStartupProperties {
 			updateParameterWarnings(propertyName);
 		}
 		catch(Exception exception) {
-			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+			rifLogger.error(getClass().getSimpleName(),
 				"Unable to fetch optional property: " + propertyName, exception);
 			throw exception;
 		}
 		
-		rifLogger.info("rifServices.system.RIFServiceStartupProperties", 
+		rifLogger.info(getClass().getSimpleName(),
 			"getOptionalRIfServiceProperty(Boolean) " + propertyName + ": " + propertyValue + "; string: " +
 			stringValue);
 
 		return propertyValue;		
 	}
 	
-	String getOptionalRIfServiceProperty(String propertyName, String defaultValue)
-					throws Exception {
+	String getOptionalRIfServiceProperty(String propertyName, String defaultValue) {
 		String propertyValue=defaultValue;
 		try {
 			propertyValue=getProperty(propertyName);
@@ -287,7 +214,7 @@ public final class RIFServiceStartupProperties {
 			updateParameterWarnings(propertyName);
 		}
 		catch(Exception exception) {
-			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+			rifLogger.error(getClass().getSimpleName(),
 				"Unable to fetch optional property: " + propertyName, exception);
 			throw exception;
 		}
@@ -305,7 +232,7 @@ public final class RIFServiceStartupProperties {
 			updateParameterWarnings(propertyName);
 		}
 		catch(Exception exception) { // java.util.MissingResourceException
-			rifLogger.error("rifServices.system.RIFServiceStartupProperties", 
+			rifLogger.error(getClass().getSimpleName(),
 				"Unable to fetch optional property: " + propertyName, exception);
 			throw exception;
 		}
@@ -323,7 +250,7 @@ public final class RIFServiceStartupProperties {
 			updateParameterWarnings(propertyName);
 		}
 		catch(Exception exception) {
-			rifLogger.debug("rifServices.system.RIFServiceStartupProperties", 
+			rifLogger.debug(getClass().getSimpleName(),
 				"Unable to fetch optional property: " + propertyName);
 			throw exception;
 		}

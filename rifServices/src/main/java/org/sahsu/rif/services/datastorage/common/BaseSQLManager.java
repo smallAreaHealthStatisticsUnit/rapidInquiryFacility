@@ -848,10 +848,9 @@ public class BaseSQLManager implements SQLManager {
 			passwordHashList.put(userID, password);
 			registeredUserIDs.add(userID);
 
-		//	rifLogger.info(this.getClass(), "JAVA LIBRARY PATH >>>");
-		//	rifLogger.info(this.getClass(), System.getProperty("java.library.path"));
-
-			rifLogger.info(this.getClass(), "XXXXXXXXXXX M S S Q L S E R V E R XXXXXXXXXX");
+			String banner = String.format("XXXXXXXXXXX %s XXXXXXXXXX",
+			                              rifDatabaseProperties.getDatabaseType().banner());
+			rifLogger.info(this.getClass(), banner);
 		}
 		catch(ClassNotFoundException classNotFoundException) {
 			RIFServiceExceptionFactory exceptionFactory
