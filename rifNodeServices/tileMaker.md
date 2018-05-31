@@ -24,6 +24,36 @@ Tile Maker
 
 This document details the loading of the administrative geography data and the geo-coding requirements of the RIF. 
 
+The RIF web front end uses [leaflet](https://leafletjs.com/), which requires map tiles; these are squares that follow certain Google Maps conventions:
+
+* Tiles are 256x256 pixels;
+* At the outer most zoom level, 0, the entire world can be rendered in a single map tile;
+* Each [zoom level](https://wiki.openstreetmap.org/wiki/Zoom_levels) doubles in both dimensions, so a single tile is replaced by 4 tiles when zooming in. This 
+  means that about 22 zoom levels are sufficient for most practical purposes; the RIF uses 0-11;
+* The Web Mercator ([WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System), as used by GPS) projection is used, with latitude limits of around 85 degrees. Care 
+  needs to be taken during simplification with 
+  Northern latitudes in the USA because of the distortions in the Mercator projection (e.g. the size of Greenland); with each pixel being much shorter in
+  length than in latitudes near to the equator.
+  
+Leaflet uses de facto OpenStreetMap standard, known as [Slippy Map Tilenames](https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames) or XYZ, follows these and adds more:
+
+* An X and Y numbering scheme; with Z for the zoomlevels;
+* PNG images for tiles. In the RIF Leaflet also uses topoJSON tles for the administrative geography.
+
+Background map images are served direct from the source through a REST API, with a URL like ```http://.../Z/X/Y.png``` where Z is the zoom level, and X and Y identify the tile. 
+
+For example:
+![alt text](http://a.tile.openstreetmap.org/8/125/82.png "Zoomlevel 8, X=123, Y=82; Irish Sea, Liverpool and the Lancashire and Cumbrian coasts")
+ 
+The RIF does *NOT* cache background maps so on a private air-gapped network you will not get background maps. 
+
+The administrative geography
+uses [GeoJSON Layers](https://leafletjs.com/reference-1.3.0.html#geojson) server by the *rifServices* REST api. For performance reasons the RIF uses a modified 
+[Leaflet.GeoJSONGridLayer](https://github.com/ebrelsford/leaflet-geojson-gridlayer) originally created by Eric Brelsford. This uses TopoJSON grids to reduce the REST GET JSON size
+and then internally converts to TopoJSON to GeoJSON for the Leaflet gridlayer. Some experiments have been carried out with local caching and there is a tile viewer program to test this.
+
+The caching code is in the main RIF application but is disabled due to issues with browser support.
+
 ## 1.1 Software Requirements
 
 ## 1.2 Issues

@@ -1082,6 +1082,21 @@ SQL Server does not have the concept of tablespaces.
 
 ## 3.3 Partitioning
 
+The SAHSU version 3.1 RIF was extensively partitioned; in particular the calculation tables and the result table *rif_results* needed to be partitioned on system that had run thousands of 
+studies will many millions of result rows and billions of extract calculation rows. Hash partitioning was retro fitted to the RIF calculation and results tables and this gave a useful 
+performance gain.
+
+The new V4.0 RIF uses separate extract and results tables so does not need partitioning of the internal tables. The geometry tables on Postgres are partitioned and this gave a useful 
+performance gain.
+
+The SAHSU Oracle database performance has benefited from: 
+
+* Complete partitioning of all health, population and covariate data;
+* Allowing the use of limited parallelisation in queries, inserts and index creation;
+* Use of index organised denominator and covariate tables. Note that by default all tables are index organised on SQL Server; 
+
+The RIF currently [deliberately] extracts data year by year and so explicit disables effective parallelisation in the extract.
+
 ### 3.3.1 Postgres
 
 Currently only the geometry tables, e.g. *rif_data.geometry_sahsuland* are partitioned using inheritance and custom triggers. Postgres 10 has native support for partitioning, see: 
@@ -1100,6 +1115,23 @@ following limitations apply to partitioned tables:
 See [Postgres Patching](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/rifDatabase/databaseManagementManual#61-postgres)
 for a description of historic Postgres partitioning. The partitioning on the geometry tables uses the range 
 partitioning schema but generates the code directly. This functionality is part of the tile maker.
+
+The following partitioning limitations are scheduled to be fixed in Postgres 11:
+
+* Executor-stage partition pruning or faster child table pruning or parallel partition processing (i.e. partition elimination using bind variables). This in particular will effect the 
+  RIF as the year by year extract uses bind variables and will probably not partition eliminate correctly;
+* Hash partitioning;
+* UPDATEs that cause rows to move from one partition to another;
+* Support for routing tuples to partitions that are foreign tables;
+* Support for index constraints, such as UNIQUE, across the entire partition tree; indexes need to be defined on the individual leaf partitions (unique indexes span only the individual partitions);
+* Support for referencing regular tables from partitioned parent tables;
+* Support for "catch-all" / "fallback" / "default" partition.
+
+There is no support currently planned for:
+
+* Referencing partitioned parent tables in foreign key relationships;
+* "Splitting" or "merging" partitions using dedicated commands;
+* Automatic creation of partitions (e.g. for values not covered).
 
 ### 3.3.2 SQL Server
 
@@ -1482,22 +1514,6 @@ Scripts are in the standard bundle in the directory *Database alter scripts\Post
 psql -U rif40 -d <your database name> -w -e -P pager=off -v verbosity=terse -v debug_level=0 -v use_plr=N -v pghost=localhost -v echo=none -f alter_scripts/<alter script name>
 ```
 
-The following partitioning limitations are ascheduled to be fixed in Postgres 11:
-
-* Executor-stage partition pruning or faster child table pruning or parallel partition processing (i.e. partition elimination using bind variables);
-* Hash partitioning;
-* UPDATEs that cause rows to move from one partition to another;
-* Support for routing tuples to partitions that are foreign tables;
-* Support for index constraints, such as UNIQUE, across the entire partition tree; indexes need to be defined on the individual leaf partitions (unique indexes span only the individual partitions);
-* Support for referencing regular tables from partitioned parent tables;
-* Support for "catch-all" / "fallback" / "default" partition.
-
-There is no support currently planned for:
-
-* Referencing partitioned parent tables in foreign key relationships;
-* "Splitting" or "merging" partitions using dedicated commands;
-* Automatic creation of partitions (e.g. for values not covered).
-
 ## 6.2 SQL Server
 
 Scripts are in the standard bundle in the directory *Database alter scripts\SQL Server* or in github in *rapidInquiryFacility\rifDatabase\SQLserver\sahsuland_dev\alter_scripts*
@@ -1513,6 +1529,14 @@ The following aspects of tuning are covered:
 * Server memory allocation
 * Huge/large page support
 * RIF application tuning
+
+In general RIF database performance will benefit from: 
+
+* Complete partitioning of all health, population and covariate data;
+* Allowing the use of limited parallelisation in queries, inserts and index creation;
+* Use of index organised denominator and covariate tables. Note that by default all tables are index organised on SQL Server; 
+
+See [3.3 Partitioning](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#33-partitioning)
 
 ## 7.1 Postgres
 
