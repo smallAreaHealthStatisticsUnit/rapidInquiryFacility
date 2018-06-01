@@ -153,7 +153,58 @@ Symptom; SQL Severer connect error ```Error: None of the binaries loaded success
   + mssql@4.1.0
   added 12 packages in 11.196s
   ```
-   
+ 
+### 1.2.3 JSZip 3.0 Error
+
+The error log forever.err contains:
+```
+Error(Error): The constructor with parameters has been removed in JSZip 3.0, please check the upgrade guide.
+Stack >>>
+Error: The constructor with parameters has been removed in JSZip 3.0, please check the upgrade guide.
+    at Object.JSZip (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\JSZip\lib\index.js:14:15)
+    at zipProcessingSeriesAddStatus1 (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServices.js:765:17)
+    at addStatusWriteDiagnosticFileRename (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServicesCommon.js:923:10)
+    at FSReqWrap.oncomplete (fs.js:123:15)<<<
+
+* LOG END ***********************************************************************
+
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServicesCommon.js:932
+									throw e;
+									^
+
+Error: The constructor with parameters has been removed in JSZip 3.0, please check the upgrade guide.
+    at Object.JSZip (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\JSZip\lib\index.js:14:15)
+    at zipProcessingSeriesAddStatus1 (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServices.js:765:17)
+    at addStatusWriteDiagnosticFileRename (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServicesCommon.js:923:10)
+    at FSReqWrap.oncomplete (fs.js:123:15)
+``` 
+
+Ypou must install a version 2.6.N JSZip: ```npm install JSZip@2.6.1```
+
+If you get:
+
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices>npm install JSZip@2.6.1
+RIF40-geospatial@0.0.1 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices
+`-- jszip@2.6.1  invalid
+```
+Chnage the *package.json line from the version 3 JSZip to the 2.6.N version:
+```
+    "jszip": "^2.6.1",
+```
+The code does need to be updated to version 3.
+
+A correct install looks like:
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices>npm install JSZip@2.6.1
+RIF40-geospatial@0.0.1 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices
+`-- jszip@2.6.1
+
+npm WARN optional SKIPPING OPTIONAL DEPENDENCY: fsevents@^1.0.0 (node_modules\chokidar\node_modules\fsevents):
+npm WARN notsup SKIPPING OPTIONAL DEPENDENCY: Unsupported platform for fsevents@1.2.4: wanted {"os":"darwin","arch":"any"} (current:
+ {"os":"win32","arch":"x64"})
+```
+
 # 2. Running the Tile Maker
 
 ## 2.1 Setup
@@ -272,6 +323,7 @@ The *tile maker* web application is used to:
      * Enter a description for the *Area_id*;
      * Select an *Area_Name* from the list of features in the shapefile; 
      * Enter a description for the *Area_Name*;
+   * When setup the user presses the **Upload file(s)** button. You then get a lot of processing messages.
    
    The descriptions may be pre-entered  for you if you have an ESRI extended attributes file (.shp.ea.iso.xml)
    
@@ -298,10 +350,12 @@ The *tile maker* web application is used to:
   
    Note that you can also change:
    
-   * The quantization. So be able to simplify the geoJSON the data must be quantized. The default is 
+   * The quantization. To be able to simplify the geoJSON the data must be quantized. The default is 
      1:1,000,000. This means that the smallest value is 1 millionth of the largest value. You will need to 
 	 increase this quantization to 1:10,000,000 or 1:100,000,000 if you use more than 11 zoom levels or you cover are 
-	 very large area;
+	 very large area. Quantization is applied on a per shapefile basis so there is no potential for slivers between areas.
+	 However, if the shapefiles are not on the same scale (as in the US data) then you will see differences between 
+	 the national data at 1:5,000,000 and the state and county data at 1:500,000;
    * The simplification factor. The *tile maker* uses Visvalingam algorithm 
      [Line generalisation by repeated elimination of the smallest area; Visvalingam, Maheswari; Whyatt, J. D. (James Duncan)Cartography -- Data processing; Computer science; July 1992](https://hydra.hull.ac.uk/resources/hull:8338)
      This is superior to the Ramer–Douglas–Peucker algorithm generally leaving no "cocked hat" artefacts. The 
@@ -312,12 +366,22 @@ The *tile maker* web application is used to:
    * Maximum zoomlevel. The default is 11; reducing to 9 will reduce the processing time by a factor of 16. Every 
      increase quadruples processing time. !1 gives good quality even with fine census tracts/output areas.
    * Enables more diagnostics in the log
-   
+ 
+   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_processing.PNG?raw=true "Tile maker processing messages")
+ 
    The web application then:
    
    2. Converts the shapefiles to GeoJSON format in the WGS84 projection;
    3. Simplifies the GeoJSON geometry using the Visvalingam algorithm;
    4. Generates SQL scripts and the *tile maker* configuration file: *geoDataLoader.xml*;
+
+   Tile maker processing messages are also found in the *forever.err* log, e.g:
+   
+   * ```Processed zip file 1: SAHSULAND.zip; size: 6.73MB; added: 33 file(s)```
+   * ```SAHSU_GRD_Level4: simplified topojson for zoomlevel: ```
+   * ```Created database load scripts: pg_SAHSULAND.sql and mssql_SAHSULAND.sql```
+   
+   [Tile-maker example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_log.md)
    
 5. The user then downloads the processed data from server;
 
