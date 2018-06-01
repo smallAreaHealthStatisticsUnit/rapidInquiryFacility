@@ -48,9 +48,12 @@ For example a zoomlevel 8 tile, X=123, Y=82; covering the Irish Sea, Liverpool a
 The RIF does *NOT* cache background maps so on a private air-gapped network you will not get background maps. 
 
 The administrative geography
-uses [GeoJSON Layers](https://leafletjs.com/reference-1.3.0.html#geojson) server by the *rifServices* REST api. For performance reasons the RIF uses a modified 
-[Leaflet.GeoJSONGridLayer](https://github.com/ebrelsford/leaflet-geojson-gridlayer) originally created by Eric Brelsford. This uses TopoJSON grids to reduce the REST GET JSON size
-and then internally converts to TopoJSON to GeoJSON for the Leaflet gridlayer. Some experiments have been carried out with local caching and there is a tile viewer program to test this.
+uses [GeoJSON Layers](https://leafletjs.com/reference-1.3.0.html#geojson) server by the *rifServices* REST api. 
+For performance reasons the RIF uses a modified 
+[Leaflet.GeoJSONGridLayer](https://github.com/ebrelsford/leaflet-geojson-gridlayer) originally created by 
+Eric Brelsford. The modification is to use TopoJSON grids to reduce the REST GET JSON size
+and then internally converts to TopoJSON to GeoJSON for the Leaflet gridlayer. Some experiments have been 
+carried out with local caching and there is a tile viewer program to test this.
 
 The caching code is in the main RIF application but is disabled due to issues with browser support.
 
@@ -63,7 +66,7 @@ The job of the Tile Maker is to process a hierarchy of administrative shapefiles
 Performance:
 
 * SAHSULAND takes about 15 minutes to processing in total.
-* USA to county level:
+* USA to county level with only 9 zoomlevels:
   * Shapefile conversion and simplification: 115s.
   * Database load/clean etc: 1 hour 27 minutes
   * Tile manufacture: 5290 tiles in 2 hours  48 minutes
@@ -82,13 +85,14 @@ The principal limitation is memory:
 * GNU Make (part of [Mingw](http://www.mingw.org/wiki/Getting_Started) MSYS on Windows) [Optional];
 * Postgres 9.3 onwards and/or SQL Server 2012 onwards;
 
-The software is not tested on Linux or MAcOS but should work.
+The software has not been tested on Linux or MacOS but should work.
 
 ## 1.2 Issues
 
 ### 1.2.1 Memory Requirements
 
-A minimum of 16GB of RAM is required; if you are processing high resolution geographies (e.g. US census block groups or UK census output areas) you will require 32 to 48GB of RAM.
+A minimum of 16GB of RAM is required; if you are processing high resolution geographies (e.g. US census 
+block groups or UK census output areas) you will require 32 to 64GB of RAM.
 
 The memory requirement comes from the need to read an entire shapefile, convert each area to [GeoJson](http://geojson.org/), and finally progressively simplify the GeoJSON to be 
 suitable for each zoomlevel.  
@@ -225,10 +229,10 @@ info:    Forever stopped process:
 [0] b_rz node --max-old-space-size=4096 --expose-gc C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices\expressServer.js 37284   33616    C:\Users\phamb\.forever\forever.log 0:0:9:31.853
 ```
 
-Finally, start the *tile maker* application in a browser ```http://127.0.0.1:3000/tile-maker.html```
+Finally, start the *tile maker* application in a browser [http://127.0.0.1:3000/tile-maker.html](http://127.0.0.1:3000/tile-maker.html)
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_start.PNG?raw=true "Tile Maker Start Screen")
 
-The following browsers are tested:
+The following browsers have been tested:
 
 * Chrome;
 * Mozilla Firefox [recommended as it handles large memory requirements well];
@@ -239,7 +243,8 @@ The following browsers are tested:
 
 GUI phase:
 
-1. The *tile maker* application is used to upload and convert shapefiles and simplifies the GeoJSON geometry. Generates scripts and the *tile maker* configuration file: *geoDataLoader.xml*;
+1. The *tile maker* web application is used to upload and convert shapefiles and simplifies the GeoJSON 
+   geometry. The web application generates scripts and the *tile maker* configuration file: *geoDataLoader.xml*;
 2. The user then downloads the processed data from server;
 
 GUI phase then proceeds to script phase:
@@ -255,8 +260,47 @@ the user only needing to install the processed data into the database.
 
 ## 2.3 Running the Front End
 
-The *tile maker* front end uploads and converts shapefiles to geoJSON; and then simplifies the GeoJSON geometry. Generates scripts and the *tile maker* configuration file: *geoDataLoader.xml*;
-XXXX 
+The *tile maker* web application is used to:
+
+1. Upload a set of shapefiles (see next section for format), this optionally contains the *tile maker* 
+   configuration file: *geoDataLoader.xml*:
+   
+   * Enter a geography name and description
+   * For each administrative geography starting from the highest resolution:
+     * Enter a description;
+     * Select an *Area_ID* from the list of features in the shapefile; 
+     * Enter a description for the *Area_id*;
+     * Select an *Area_Name* from the list of features in the shapefile; 
+     * Enter a description for the *Area_Name*;
+   
+   The descriptions may be pre-entered  for you if you have an ESRI extended attributes file (.shp.ea.iso.xml)
+   
+   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sahsuland_setup.PNG?raw=true "SAHSUland setup")
+
+   So as a worked example for the United States to county level:
+   
+   * Geography name: USA_2014
+   * Description: US 2014 Census geography to county level
+   * Shapefile: cb_2014_us_nation_5m.shp:
+     * Description: The nation at a scale of 1:5,000,000
+     * Area_ID: GEOID - Nation identifier
+	 * Area_Name: NAME - Nation name
+   * Shapefile: cb_2014_us_state_500k.shp:
+     * Description: The State at a scale of 1:500,000
+     * Area_ID: STATENS - Current state Geographic Names Information System (GNIS) code
+	 * Area_Name: NAME - Current State name
+   * Shapefile: cb_2014_us_county_500k.shp:
+     * Description: The County at a scale of 1:500,000
+     * Area_ID: COUNTYNS - Current county Geographic Names Information System (GNIS) code
+	 * Area_Name: NAME - Current county name
+   
+   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/USA_county_setup.PNG?raw=true "USA County setup")
+  
+   The web application then:
+   2. Converts the shapefiles to GeoJSON format;
+   3. simplifies the GeoJSON geometry;
+   4. Generates SQL scripts and the *tile maker* configuration file: *geoDataLoader.xml*;
+5. The user then downloads the processed data from server;
 
 ### 2.3.1 Shapefile Format
 
@@ -264,7 +308,12 @@ The best approach is to have each administrative geography in your hierarchy as 
 
 * A shapefile (.shp). This contains the geometric data in a proprietary ESRI format;
 * dBASE III/IV file (.dbf). The contains the attributes records for each area in a dBASE table;
-* An ESRI projection file (.prj);
+* An ESRI projection file (.prj). You must have a projection file, use: http://spatialreference.org/ to search for it.
+  Using *OSGB* as the search term returns the UK national grid http://spatialreference.org/ref/epsg/4277/. You
+  can then download the relevant .prj file. This actually only contains the ESRI WKT (wellknown text):
+  ```
+  GEOGCS["OSGB 1936",DATUM["D_OSGB_1936",SPHEROID["Airy_1830",6377563.396,299.3249646]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]]
+  ```
 
 There is a one-to-one relationship between geometry and attributes, which is based on record number. Attribute records in the dBASE file must be in the same order as records in the main file.
 
@@ -287,7 +336,7 @@ Other files not required by the tile Maker:
 
 The usual layout for the tilemaker ZIP file is:
 
--  *geoDataLoader.xml* [not needed first time around]
+-  *geoDataLoader.xml* [not needed first time around; generated by the *tile maker* web application]
 - Directory containing the shapefiles. These *may* be contained in sub-directories:
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/zip_file_structure_1.PNG?raw=true "ZIP file base directory")
   - The shapefiles themselves:
@@ -298,9 +347,16 @@ This allows the *tile maker* runs to be re-produced exactly.
 Make sure:
 
 * You follow the ESRI naming convention exactly;
-* Do **NOT** use the same file name in multiple sub-directories
+* Do **NOT** use the same file name in multiple sub-directories or you will get:
+  ```
+  Unable to process list of filess
+  Duplicate file: sahsu_grd_level1.dbf; shape file: sahsu_grd_level1.shp already processed
+  ```
 
 ### 2.3.2 Processing Huge Shapefiles
+
+To be added.
+
 ## 2.4 Post Front End Processing
 ### 2.4.1 Geospatial Data Load
 
