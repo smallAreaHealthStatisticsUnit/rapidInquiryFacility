@@ -507,9 +507,35 @@ Make sure:
 To be added.
 
 ## 2.4 Post Front End Processing
+
+Typical post front end processing:
+
+* Loads tile maker output into both *sahsuland* and *sahsuland_dev* in a non RIF40 Schema. This can be any 
+  database;
+* Processes *sahsuland_dev* schema to tiles;
+* Loads production data into the *rif40* schema on both *sahsuland* and *sahsuland_dev*.
+
+The SEER pre-processing script *pg_load_seer_covariates.sql* has a dependency on the *cb_2014_us_nation_5m*, 
+*cb_2014_us_state_500k* and *cb_2014_us_county_500l* that are part of the 
+*tile maker* pre-processing. The FIPS code is required to make the join and this field is not in the standard 
+lookup tables. For this reason it is necessary to build 
+the covariates table on *sahsuland_dev*. In the longer term the FIPS codes should be added to the lookup tables. 
+
 ### 2.4.1 Geospatial Data Load
 
-Load data into non RIF40 Schema.
+Load data into a non RIF40 Schema.
+
+```
+cd C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices
+make
+C:\Users\phamb\OneDrive\SEER Data\Tile maker USA
+psql -d sahsuland_dev -w -e -f pg_USA_2014.sql
+psql -d sahsuland -w -e -f pg_USA_2014.sql
+sqlcmd -U peter -P retep -d sahsuland_dev -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"
+sqlcmd -U peter -P retep -d sahsuland -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"
+node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev
+node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database test
+```
 
 ### 2.4.2 Tile Manufacture
 
