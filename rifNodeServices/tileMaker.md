@@ -309,6 +309,14 @@ GUI phase then proceeds to script phase:
 The first load/clean/setup SQL script and the tile maker will be integrated into the web services at a later date. All the processing will then be in the front end and this leaves 
 the user only needing to install the processed data into the database.
 
+Processing concepts:
+
+* Geography: The name of an administrative geography; e.g. USA_2014, EW_2001 (the 2011 census for England 
+  and Wales);
+* Geolevel: The name of a level in the hierarchy of shapefiles that make up the geography;
+* Area ID: A code given to an area ID by the administrative authority (e.g. ONS for the 2011 Census);
+* Area Name: A name corresponding to an *area ID*. 
+
 ## 2.3 Running the Front End
 
 The *tile maker* web application is used to:
@@ -367,24 +375,82 @@ The *tile maker* web application is used to:
      increase quadruples processing time. !1 gives good quality even with fine census tracts/output areas.
    * Enables more diagnostics in the log
  
-   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_processing.PNG?raw=true "Tile maker processing messages")
- 
    The web application then:
    
-   2. Converts the shapefiles to GeoJSON format in the WGS84 projection;
-   3. Simplifies the GeoJSON geometry using the Visvalingam algorithm;
+   2. Converts the shapefiles to first GeoJSON the TopoJSON format in the WGS84 projection;
+   3. Simplifies the GeoJSON geometry using the *Visvalingam* algorithm;
    4. Generates SQL scripts and the *tile maker* configuration file: *geoDataLoader.xml*;
 
+   Informative message appear at the bottom of the screen:
+   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_processing.PNG?raw=true "Tile maker processing messages")
+    
    Tile maker processing messages are also found in the *forever.err* log, e.g:
    
    * ```Processed zip file 1: SAHSULAND.zip; size: 6.73MB; added: 33 file(s)```
-   * ```SAHSU_GRD_Level4: simplified topojson for zoomlevel: ```
+   * ```SAHSU_GRD_Level4: simplified topojson for zoomlevel: 7```
    * ```Created database load scripts: pg_SAHSULAND.sql and mssql_SAHSULAND.sql```
    
    [Tile-maker example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_log.md)
    
-5. The user then downloads the processed data from server;
+   Finally a map is displayed of the adminstrative geography:
+   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_map.PNG?raw=true "Tile maker map")
+   
+5. The user then downloads the processed data from server using the two download buttons in the *shapefile 
+   selector* tab. The *Download configuration" button returns an XML file e.g. 
+   *shpConvertGetConfig_66d8a532-bb2c-4304-8e2b-ffde330b88fa.xml*; this is the *geoDataLoader.xml* for the run.
 
+   The *Download processed files* button is currently not worked ans the underlying ZIP file is **NOT**
+   implemented and it will produce an error:
+   
+   ```
+   * LOG START *********************************************************************
+
+   Fri Jun 01 2018 17:25:23 GMT+0100 (GMT Daylight Time)
+   [httpErrorResponse:143; function: httpErrorResponseAddStatusCallback();
+   Url: /shpConvertGetResults.zip?uuidV1=1dca95fe-7f68-4edc-9bc6-56dc76130920; ip: ::ffff:127.0.0.1]
+   httpErrorResponse sent; size: 532 bytes: 
+   Output: {"error":"ENOENT: no such file or directory, stat 'C:\\Users\\Peter\\AppData\\Local\\Temp\\shpConvert\\1dca95fe-7f68-4edc-9bc6-56dc76130920\\geoDataLoader.zip'","no_files":0,"field_errors":0,"file_errors":0,"file_list":[],"message":"shpConvertGetResults(): \nresults ZIP file: C:/Users/Peter/AppData/Local/Temp/shpConvert/1dca95fe-7f68-4edc-9bc6-56dc76130920/geoDataLoader.zip does not exist","diagnostic":"\n\nIn: shpConvertGetResults()","fields":{"uuidV1":"1dca95fe-7f68-4edc-9bc6-56dc76130920","xmlFileName":"geoDataLoader.zip"}}
+
+   No errors
+
+   * LOG END ***********************************************************************
+   ```
+   
+   The files cab be found in your TMP directory, in Windows:
+   C:\Users\&lt;Windows user&gt;\AppData\Local\Temp\shpConvert\&lt;unique file name&gt;
+   
+   e.g. ```C:\Users\Peter\AppData\Local\Temp\shpConvert\66d8a532-bb2c-4304-8e2b-ffde330b88fa```
+   
+   The structure of archive is:
+   
+   * Data directory contains the Postgres and SQL Server scripts and data. These are named:
+   
+     * *pg_/mssql_&lt;Geography&gt;.sql* - load for tile processing;
+     * *rif_pg_/mssql_&lt;Geography&gt;.sql* - production load script;
+	 * *&lt;Geolevel&gt;.csv* - geospatial data;
+	 * *mssql_sahsu_&lt;Geolevel&gt;.fmt* - SQL Server bulk load format;
+	 
+	 E.g. 
+	 
+     * ```mssql_SAHSULAND.sql```;
+     * ```mssql_sahsu_grd_level1.fmt```;
+     * ```mssql_sahsu_grd_level2.fmt```;
+     * ```mssql_sahsu_grd_level3.fmt```;
+     * ```mssql_sahsu_grd_level4.fmt```;
+     * ```pg_SAHSULAND.sql```;
+     * ```rif_mssql_SAHSULAND.sql```;
+     * ```rif_pg_SAHSULAND.sql```;
+     * ```SAHSU_GRD_Level1.csv```;
+     * ```SAHSU_GRD_Level2.csv```;
+     * ```SAHSU_GRD_Level3.csv```;
+     * ```SAHSU_GRD_Level4.csv```;
+   * *&lt;Shapefile directory&gt;*: contains the shapefile data. One per geolevel;
+   * *&lt;Geography&gt;* directory: contains the input data. E.g *SASULAND.zip*;
+   * *diagnostics.log*: the log trace;
+   * *geoDataLoader.xml*: configuation file;
+   * *response.json.N*: internal JSON status at stages 1 to 3 of the processing;
+   * *status.json*: processing statii in JSON format.
+   
 ### 2.3.1 Shapefile Format
 
 The best approach is to have each administrative geography in your hierarchy as single ZIP file containing a set of shapefiles. The tile maker requires two or more shapefiles with:
