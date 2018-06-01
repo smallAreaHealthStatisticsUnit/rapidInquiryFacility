@@ -263,9 +263,9 @@ the user only needing to install the processed data into the database.
 The *tile maker* web application is used to:
 
 1. Upload a set of shapefiles (see next section for format), this optionally contains the *tile maker* 
-   configuration file: *geoDataLoader.xml*:
+   configuration file: *geoDataLoader.xml*. For first run through setup:
    
-   * Enter a geography name and description
+   * Enter a geography name and description;
    * For each administrative geography starting from the highest resolution:
      * Enter a description;
      * Select an *Area_ID* from the list of features in the shapefile; 
@@ -279,27 +279,46 @@ The *tile maker* web application is used to:
 
    So as a worked example for the United States to county level:
    
-   * Geography name: USA_2014
-   * Description: US 2014 Census geography to county level
+   * Geography name: USA_2014;
+   * Description: US 2014 Census geography to county level;
    * Shapefile: cb_2014_us_nation_5m.shp:
-     * Description: The nation at a scale of 1:5,000,000
-     * Area_ID: GEOID - Nation identifier
-	 * Area_Name: NAME - Nation name
+     * Description: The nation at a scale of 1:5,000,000;
+     * Area_ID: GEOID - Nation identifier;
+	 * Area_Name: NAME - Nation name;
    * Shapefile: cb_2014_us_state_500k.shp:
-     * Description: The State at a scale of 1:500,000
-     * Area_ID: STATENS - Current state Geographic Names Information System (GNIS) code
-	 * Area_Name: NAME - Current State name
+     * Description: The State at a scale of 1:500,000;
+     * Area_ID: STATENS - Current state Geographic Names Information System (GNIS) code;
+	 * Area_Name: NAME - Current State name;
    * Shapefile: cb_2014_us_county_500k.shp:
-     * Description: The County at a scale of 1:500,000
-     * Area_ID: COUNTYNS - Current county Geographic Names Information System (GNIS) code
-	 * Area_Name: NAME - Current county name
+     * Description: The County at a scale of 1:500,000;
+     * Area_ID: COUNTYNS - Current county Geographic Names Information System (GNIS) code;
+	 * Area_Name: NAME - Current county name;
    
    ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/USA_county_setup.PNG?raw=true "USA County setup")
   
+   Note that you can also change:
+   
+   * The quantization. So be able to simplify the geoJSON the data must be quantized. The default is 
+     1:1,000,000. This means that the smallest value is 1 millionth of the largest value. You will need to 
+	 increase this quantization to 1:10,000,000 or 1:100,000,000 if you use more than 11 zoom levels or you cover are 
+	 very large area;
+   * The simplification factor. The *tile maker* uses Visvalingam algorithm 
+     [Line generalisation by repeated elimination of the smallest area; Visvalingam, Maheswari; Whyatt, J. D. (James Duncan)Cartography -- Data processing; Computer science; July 1992](https://hydra.hull.ac.uk/resources/hull:8338)
+     This is superior to the Ramer–Douglas–Peucker algorithm generally leaving no "cocked hat" artefacts. The 
+	 effect of this parameter can be seen at [Mike Bostock's Line Simplification Example](https://bost.ocks.org/mike/simplify/)
+	 Set a low value (e.g. 0.3) will result in modern art (i.e. triangles). Generally it needs to be increased slightly from the default (0.75)
+	 for large areas and high resolutions to improve quality. This is especially true if you have high latitudes in your map 
+	 and the mercator distortions are greater;
+   * Maximum zoomlevel. The default is 11; reducing to 9 will reduce the processing time by a factor of 16. Every 
+     increase quadruples processing time. !1 gives good quality even with fine census tracts/output areas.
+   * Enables more diagnostics in the log
+   
    The web application then:
-   2. Converts the shapefiles to GeoJSON format;
-   3. simplifies the GeoJSON geometry;
+   
+   2. Converts the shapefiles to GeoJSON format in the WGS84 projection;
+   3. Simplifies the GeoJSON geometry using the Visvalingam algorithm;
    4. Generates SQL scripts and the *tile maker* configuration file: *geoDataLoader.xml*;
+   
 5. The user then downloads the processed data from server;
 
 ### 2.3.1 Shapefile Format
