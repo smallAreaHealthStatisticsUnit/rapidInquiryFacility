@@ -54,17 +54,35 @@ and then internally converts to TopoJSON to GeoJSON for the Leaflet gridlayer. S
 
 The caching code is in the main RIF application but is disabled due to issues with browser support.
 
-The job of the Tile Maker is to:
+The job of the Tile Maker is to process a hierarchy of administrative shapefiles to:
 
 * Generate the TopoJSON tiles required by the RIF and store them in the database;
 * Generate the required data tables, scripts and setup data for a RIF administrative geography;
 * Provide installer scripts for both Postgres and SQL Server.
 
+Performance:
+
+* SAHSULAND takes about 15 minutes to processing in total.
+* USA to county level:
+  * Shapefile conversion and simplification: 115s.
+  * Database load/clean etc: 1 hour 27 minutes
+  * Tile manufacture: 5290 tiles in 2 hours  48 minutes
+  About 5 hours in total.
+
+The principal limitation is memory:
+ 
+* UK Census output area 2011 is 1GB in size and has 227,759 records and 203,930,998 points! 
+* This requires a machine with 32 or 63G memory.
+* A pre-simplification program will be created to reduce the resolution suitably.
+
 ## 1.1 Software Requirements
 
-* [Node.js 8](https://nodejs.org/en/)
-* [Python 2.7](https://www.python.org/downloads/release/python-2714/)
-* GNU Make (part of [Mingw](http://www.mingw.org/wiki/Getting_Started) MSYS on Windows)
+* [Node.js 8](https://nodejs.org/en/);
+* [Python 2.7](https://www.python.org/downloads/release/python-2714/);
+* GNU Make (part of [Mingw](http://www.mingw.org/wiki/Getting_Started) MSYS on Windows) [Optional];
+* Postgres 9.3 onwards and/or SQL Server 2012 onwards;
+
+The software is not tested on Linux or MAcOS but should work.
 
 ## 1.2 Issues
 
@@ -154,7 +172,7 @@ npm install --save request JSZip turf geojson2svg clone object-sizeof form-data 
 
 To update the modules type ```npm update --save```.
 
-The tile Maker is a web application, so you need to start the server. The Makefile has a number of ratgers to help with this:
+The tile Maker is a web application, so you need to start the server. The Makefile has a number of targets to help with this:
 
 - all: Build modules, run the complete database test harness
 - modules: Build required Node.js modules using npm install --save to update dependencies in package.json
@@ -171,7 +189,7 @@ The tile Maker is a web application, so you need to start the server. The Makefi
 - test: Run the test harness
 - help: Display makefile help, rifNode.js help
 
-Again, these commands casn be run by hand; 
+Again, these commands can be run by hand; 
 
 - Start:
   ```
@@ -207,12 +225,81 @@ info:    Forever stopped process:
 [0] b_rz node --max-old-space-size=4096 --expose-gc C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices\expressServer.js 37284   33616    C:\Users\phamb\.forever\forever.log 0:0:9:31.853
 ```
 
-```http://127.0.0.1:3000/tile-maker.html```
+Finally, start the *tile maker* application in a browser ```http://127.0.0.1:3000/tile-maker.html```
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_start.PNG?raw=true "Tile Maker Start Screen")
 
+The following browsers are tested:
+
+* Chrome;
+* Mozilla Firefox [recommended as it handles large memory requirements well];
+* Internet Explorer 11 [not recommended as it is very bad at handling large memory requirements];
+* Microsoft Edge
+
 ## 2.2 Processing Overview
+
+GUI phase:
+
+1. The *tile maker* application is used to upload and convert shapefiles and simplifies the GeoJSON geometry. Generates scripts and the *tile maker* configuration file: *geoDataLoader.xml*;
+2. The user then downloads the processed data from server;
+
+GUI phase then proceeds to script phase:
+
+3. Run a SQL script. This loads the processed CSV data into the database (both Postgres and SQL Server are supported). The data is then cleaned and processed by the script into geospatial 
+   data tables, data for tiles and the hierarchy and lookup tables needed by the RIF;
+4. A tile manufacture node script is then run. This makes the topoJSON tiles; dumps geospatial table data to CSV files for the load scripts.
+5. The RIF production load SQL script can now be run. This script loads and configure the geospatial data into your RIF database;
+6. You can view the tiles using the *tile viewer* application.
+
+The first load/clean/setup SQL script and the tile maker will be integrated into the web services at a later date. All the processing will then be in the front end and this leaves 
+the user only needing to install the processed data into the database.
+
 ## 2.3 Running the Front End
+
+The *tile maker* front end uploads and converts shapefiles to geoJSON; and then simplifies the GeoJSON geometry. Generates scripts and the *tile maker* configuration file: *geoDataLoader.xml*;
+XXXX 
+
 ### 2.3.1 Shapefile Format
+
+The best approach is to have each administrative geography in your hierarchy as single ZIP file containing a set of shapefiles. The tile maker requires two or more shapefiles with:
+
+* A shapefile (.shp). This contains the geometric data in a proprietary ESRI format;
+* dBASE III/IV file (.dbf). The contains the attributes records for each area in a dBASE table;
+* An ESRI projection file (.prj);
+
+There is a one-to-one relationship between geometry and attributes, which is based on record number. Attribute records in the dBASE file must be in the same order as records in the main file.
+
+Optional files:
+
+* Tile maker configuration file: *geoDataLoader.xml*. This contains the setup for your hierarchy and can be downloaded after your run;
+* ESRI extended attributes XML file for a shapefile (.shp.ea.iso.xml). The contains principally the names of the attributes and their description.
+
+Other files not required by the tile Maker:
+
+* .shx — The index file that stores the index of the feature geometry; only required by ARCGIS;
+* .sbn and .sbx — The files that store the spatial index of the features;
+* .fbn and .fbx — The files that store the spatial index of the features for shapefiles that are read-only;
+* .ain and .aih — The files that store the attribute index of the active fields in a table or a theme's attribute table;
+* .atx — An .atx file is created for each shapefile or dBASE attribute index created in ArcCatalog. ArcView GIS 3.x attribute indexes for shapefiles and dBASE files are not used by ArcGIS. 
+   A new attribute indexing model has been developed for shapefiles and dBASE files;
+* .ixs — Geocoding index for read/write shapefiles;
+* .mxs — Geocoding index for read/write shapefiles (ODB format);
+* .cpg — An optional file that can be used to specify the codepage for identifying the character-set to be used.
+
+The usual layout for the tilemaker ZIP file is:
+
+-  *geoDataLoader.xml* [not needed first time around]
+- Directory containing the shapefiles. These *may* be contained in sub-directories:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/zip_file_structure_1.PNG?raw=true "ZIP file base directory")
+  - The shapefiles themselves:
+    ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/zip_file_structure_2.PNG?raw=true "ZIP file directory containing the shapefiles")
+
+This allows the *tile maker* runs to be re-produced exactly.
+
+Make sure:
+
+* You follow the ESRI naming convention exactly;
+* Do **NOT** use the same file name in multiple sub-directories
+
 ### 2.3.2 Processing Huge Shapefiles
 ## 2.4 Post Front End Processing
 ### 2.4.1 Geospatial Data Load
