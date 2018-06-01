@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -72,21 +73,13 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 		setUser(userID, password);
 
-		ArrayList<Parameter> rifStartupOptionParameters
-			= rifStartupOptions.extractParameters();
+		List<Parameter> rifStartupOptionParameters = rifStartupOptions.getDbParametersForRScripts();
 		addParameters(rifStartupOptionParameters);
 
 		setODBCDataSourceName(rifStartupOptions.getODBCDataSourceName());
-
-		//register the names of parameters that we will want to check are
-		//not empty
-		ArrayList<String> startupOptionParameterNames
-			= Parameter.extractParameterNames(rifStartupOptionParameters);
-		addParameterToVerify(startupOptionParameterNames);
-
 	}
 	
-	public void performStep(final Connection connection, final RIFStudySubmission studySubmission,
+	void performStep(final Connection connection, final RIFStudySubmission studySubmission,
 			final String studyID) throws RIFServiceException {
 		
 		StringBuilder rifScriptPath = new StringBuilder();
@@ -96,7 +89,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 		String rErrorTrace="No R error tracer (see Tomcat log)";
 
 		try {		
-			addParameterToVerify("studyID");		
 
 			//KLG: For now it only works with the first study.  For some reason, newer extract
 			//tables cause the R program we use to generate an error.
@@ -110,7 +102,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 			addParameter("investigationName",
 			             createDatabaseFriendlyInvestigationName(firstInvestigation.getTitle()));
-			addParameterToVerify("investigationName");
 
 			String covariateName = getCovariateName(studySubmission);
 			addParameter("covariate_name", covariateName);
@@ -118,11 +109,9 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 			Integer investigationID = getInvestigationID(connection, studyID, firstInvestigation);
 					
 			String studyName=studySubmission.getStudy().getName();
-			addParameterToVerify("studyName");
 			addParameter("studyName", studyName);
 					
 			String studyDescription=studySubmission.getStudy().getDescription();
-			addParameterToVerify("studyDescription");
 			addParameter("studyDescription", studyDescription);
 					
 			rifLogger.info(this.getClass(), "Study id: " + studyID + 
@@ -131,7 +120,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				"; Investigation name: " + firstInvestigation.getTitle() + 
 				"; ID: "+ investigationID);
 
-			addParameterToVerify("investigationId");
 			addParameter("investigationId", String.valueOf(investigationID));
 
 			setCalculationMethod(studySubmission.getCalculationMethods().get(0));
@@ -146,20 +134,21 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				if (rengine == null) {
 					String[] rArgs={"--vanilla"};
 					rengine = new Rengine(
-						rArgs,											// Args
-						false, 											// runMainLoop
-						new LoggingConsole(log)); 						// RMainLoopCallbacks implementaton
-																		// Logger log not used - uses RIFLogger					
+						rArgs,								// Args
+						false, 							// runMainLoop
+						new LoggingConsole(log)); 			// RMainLoopCallbacks implementation
+															// Logger log not used - uses RIFLogger
 				}
 
 				if (!rengine.waitForR()) {
-					rifLogger.warning(this.getClass(), "Cannot load the R engine (probably already loaded)");
+					rifLogger.warning(getClass(),
+					                  "Cannot load the R engine (probably already loaded)");
 				}
 				Rengine.DEBUG = 10;
 				rengine.eval("Rpid<-Sys.getpid()");
-				REXP Rpid = rengine.eval("Rpid");
+				REXP rPid = rengine.eval("Rpid");
 				rifLogger.info(this.getClass(), "Rengine Started" +
-				                                "; Rpid: " + Rpid.asInt() +
+				                                "; Rpid: " + rPid.asInt() +
 				                                "; JRI version: " + Rengine.getVersion() +
                                                 "; thread ID: " + Thread.currentThread().getId());
 
@@ -169,87 +158,38 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				rengine.eval("rm(list=ls())"); //just in case!
 				rengine.eval("print(.libPaths())");
 
-				//Session Info
+				// Session Info
 				rengine.eval("print(sessionInfo())");
 
-				//set connection details and parameters
-				StringBuilder str = new StringBuilder();
+				// Set connection details and parameters
+				StringBuilder logMsg = new StringBuilder();
 				for (Parameter parameter : getParameterArray()) {
-					String name=parameter.getName();
-					String value=parameter.getValue();
-					
-					if (name.equals("password")) {
-						str.append(name).append("=XXXXXXXX").append(lineSeparator); // Hide password
-						rengine.assign(name, value);
-					}
-					else {
-						if (name.equals("covariate_name")) {
-							str.append("names.adj.1=").append(value).append(lineSeparator);
-							rengine.assign("names.adj.1", value);
-							str.append("adj.1=").append(getRAdjust(value)).append(lineSeparator);
-							rengine.assign("adj.1", getRAdjust(value));
-						}
-						else {
-							str.append(name).append("=").append(value).append(lineSeparator);
+					String name = parameter.getName();
+					String value = parameter.getValue();
+
+					switch (name) {
+						case "password":
+							// Hide password
+							logMsg.append(name).append("=XXXXXXXX").append(lineSeparator);
 							rengine.assign(name, value);
-						}
+							break;
+						case "covariate_name":
+							logMsg.append("names.adj.1=").append(value).append(lineSeparator);
+							rengine.assign("names.adj.1", value);
+							logMsg.append("adj.1=").append(getRAdjust(value)).append(lineSeparator);
+							rengine.assign("adj.1", getRAdjust(value));
+							break;
+						default:
+							logMsg.append(name).append("=").append(value).append(lineSeparator);
+							rengine.assign(name, value);
+							break;
 					}
 				}
 
 				rengine.assign("working_dir", rifStartupOptions.getExtractDirectory());
 				
-				rifLogger.info(this.getClass(), "R parameters: " + lineSeparator + str.toString());	
+				rifLogger.info(this.getClass(), "R parameters: " + lineSeparator + logMsg.toString());
 
-		//same order of args as in the old batch file
-		/*
-		0		"jdbc:postgresql", //db_driver_prefix
-		1		"localhost", //dbHost
-		2		"5432", //dbPort
-		3		"sahsuland_dev", //dbName
-		4		"db_driver_class_name", //org.postgresql.Driver
-		5		"14", //studyID
-		6		"MY_NEW_INVESTIGATION", //investigationName
-		7		"NONE", //covariate_name 
-		8		"9", //investigationId
-		9		"het_r_procedure", //r_model
-		10		"odbcDataSource", //PostgreSQL30
-		11		"dwmorley", //userID
-		12		"*******" //password
-		
-db_driver_prefix=jdbc:postgresql
-db_host=localhost
-db_port=5432
-db_name=sahsuland
-db_driver_class_name=org.postgresql.Driver
-study_id=327
-investigation_name=TEST_1001
-covariate_name=NONE
-study_name=R Test exception
-investigation_id=325
-r_model=het_r_procedure
-odbcDataSource=PostgreSQL35W
-userID=peter
-password=XXXXXXXX
-		 */
-/*
-				rengine.assign("userID", parameters[13]);
-				rengine.assign("password", parameters[12]);
-				rengine.assign("dbName", parameters[3]);
-				rengine.assign("dbHost", parameters[1]);
-				rengine.assign("dbPort", parameters[2]);
-				rengine.assign("db_driver_prefix", parameters[0]);
-				rengine.assign("db_driver_class_name", parameters[4]);
-				rengine.assign("studyID", parameters[5]);
-				rengine.assign("study_name", getParameter("study_name").getValue());
-				rengine.assign("investigationName", parameters[6]);
-				rengine.assign("investigationId", parameters[8]);
-				rengine.assign("odbcDataSource", parameters[11]);
-				rengine.assign("model", getRRoutineModelCode(parameters[9]));
-				rengine.assign("names.adj.1", parameters[7]);			
-				rengine.assign("adj.1", getRAdjust(parameters[7]));
- */
-				//RUN "adjCovSmoothJri.R"
-				
 				rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
 				rifScriptPath.append(File.separator);
 				
@@ -259,10 +199,11 @@ password=XXXXXXXX
 				rifOdbc.append("RIF_odbc.R");
 				performSmoothingActivity.append(rifScriptPath);
 				performSmoothingActivity.append("performSmoothingActivity.R");
-				
+
 				sourceRScript(rengine, adjCovSmoothJri.toString());
 				sourceRScript(rengine, rifOdbc.toString());
 				sourceRScript(rengine, performSmoothingActivity.toString());
+				// sourceRScript(rengine, rifScriptPath + "jdbcHandler.R");
 
 				//RUN the actual smoothing
 				//REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");

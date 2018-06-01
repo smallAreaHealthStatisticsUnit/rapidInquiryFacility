@@ -2,6 +2,7 @@ package org.sahsu.rif.services.system;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -14,6 +15,7 @@ import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
+import org.sahsu.rif.services.datastorage.JdbcUrl;
 import org.sahsu.rif.services.system.files.TomcatBase;
 import org.sahsu.rif.services.system.files.TomcatFile;
 
@@ -35,7 +37,7 @@ public class RIFServiceStartupOptions {
 	
 	/** The database driver. */
 	private String databaseDriverPrefix;
-	
+
 	/** The host. */
 	private String host;
 	
@@ -170,39 +172,21 @@ public class RIFServiceStartupOptions {
 		return properties.getOptionalRIfServiceProperty(propertyName, defaultValue);
 	}
 
-	public ArrayList<Parameter> extractParameters() {
-		ArrayList<Parameter> parameters = new ArrayList<Parameter>();
-		
-		Parameter databaseDriverPrefixParameter
-			= Parameter.newInstance(
-				"db_driver_prefix", 
-				databaseDriverPrefix);		
-		parameters.add(databaseDriverPrefixParameter);
+	/**
+	 * Returns a {@link List} of {@link Parameter}s from database elements in the startup
+	 * properties. This is mainly intended for passing to the R code.
+	 * @return a {@link List} of {@link Parameter}s formatted for use by the R scripts
+	 */
+	public List<Parameter> getDbParametersForRScripts() {
 
-		Parameter databaseHostParameter
-			= Parameter.newInstance(
-				"db_host",
-				host);
-		parameters.add(databaseHostParameter);
+		List<Parameter> parameters = new ArrayList<>();
+		parameters.add(Parameter.newInstance("db_driver_prefix", databaseDriverPrefix));
+		parameters.add(Parameter.newInstance("db_host", host));
+		parameters.add(Parameter.newInstance("db_port", port));
+		parameters.add(Parameter.newInstance("db_name", databaseName));
+		parameters.add(Parameter.newInstance("db_driver_class_name", databaseDriverClassName));
+		parameters.add(Parameter.newInstance("db_url", new JdbcUrl(this).url()));
 
-		Parameter databasePortParameter
-			= Parameter.newInstance(
-				"db_port",
-				port);			
-		parameters.add(databasePortParameter);
-
-		Parameter databaseNameParameter
-			= Parameter.newInstance(
-				"db_name",
-				databaseName);			
-		parameters.add(databaseNameParameter);
-
-		Parameter databaseDriverClassNameParameter
-			= Parameter.newInstance(
-				"db_driver_class_name",
-				databaseDriverClassName);
-		parameters.add(databaseDriverClassNameParameter);
-				
 		return parameters;
 	}
 	

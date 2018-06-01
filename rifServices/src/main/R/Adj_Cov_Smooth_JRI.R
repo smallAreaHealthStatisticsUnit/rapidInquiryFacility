@@ -65,7 +65,7 @@ library(Matrix)
 # SCRIPT VARIABLES
 ##====================================================================
 
-connDB <- ""	# Database connection
+# connDB <- ""	# Database connection
 exitValue <- 0 	# 0 success, 1 failure
 errorCount <- 0	# Smoothing error count
 
