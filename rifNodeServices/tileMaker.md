@@ -10,6 +10,7 @@ Tile Maker
     - [1.2.2 SQL Server Connection Error](#122-sql-server-connection-error)
 	- [1.2.3 JSZip 3.0 Error](#123-jszip-30-error)
 	- [1.2.4 BULK INSERT Permission](#124-bulk-insert-permission)
+	- [1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms](#125 mssql-timeout-request-failed-to-complete-in-xxx000ms)
 - [2. Running the Tile Maker](#2-running-the-tile-maker)
   - [2.1 Setup](#21-setup)
   - [2.2 Processing Overview](#22-processing-overview)
@@ -20,7 +21,8 @@ Tile Maker
     - [2.4.1 Geospatial Data Load](#241-geospatial-data-load)
     - [2.4.2 Tile Manufacture](#242-tile-manufacture)
     - [2.4.3 Load Production Data into the RIF](#243-load-production-data-into-the-rif)
-    - [2.4.4 Example of Post Front End Processing](#244-example-of-post-front-end-processing)
+- [3. TileMaker Source Code](#3-tilemaker-source-code)
+- [4. TileMaker TODO](#4-tilemaker-todo)
 
 # 1. Overview
 
@@ -233,6 +235,41 @@ Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 3
 Cannot bulk load because the file "C:\Users\Peter\OneDrive\SEER Data\Tile maker USA/cb_2014_us_county_500k.csv" could not be opened. Operating system error code 5(Access is denied.).
 ```
 
+### 1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms
+
+Timeout in Node [mssql](https://www.npmjs.com/package/mssql) package. Edit *mssqlTileMaker.js*  and set
+the the requestTomeout in the MSSQL connection config:
+
+```js
+	var config = {
+		driver: 'msnodesqlv8',
+		server: p_hostname,
+		requestTimeout: 300000, // 5 mins. Default 15s per SQL statement
+		options: {
+			trustedConnection: false,
+			useUTC: true,
+			appName: 'mssqlTileMaker.js',
+			encrypt: true
+		}
+	};
+```
+
+```
+error [events:96:dbErrorHandler()] dbErrorHandler() Error: dbErrorHandler(no callback): Timeout: Request failed to complete in 90000ms
+Stack:
+RequestError: Timeout: Request failed to complete in 90000ms
+    at Request.tds.Request.err [as userCallback] (c:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\mssql\lib\tedious.js:578:19)
+    at Request._this.callback (c:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\tedious\lib\request.js:60:27)
+    at Connection.message (c:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\tedious\lib\connection.js:1936:24)
+    at Connection.dispatchEvent (c:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\tedious\lib\connection.js:992:38)
+    at MessageIO.<anonymous> (c:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\tedious\lib\connection.js:886:18)
+    at emitNone (events.js:86:13)
+    at MessageIO.emit (events.js:185:7)
+    at ReadablePacketStream.<anonymous> (c:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\tedious\lib\message-io.js:102:16)
+    at emitOne (events.js:96:13)
+    at ReadablePacketStream.emit (events.js:188:7)
+```
+	
 # 2. Running the Tile Maker
 
 ## 2.1 Setup
@@ -587,6 +624,186 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
 
 	[SQL Server data processing example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_data_processing.md)
 	
+* For each shapefile geolevel:
+  * Create the table, comment;
+  * Load data;
+  * check rows;  
+  * Add primary key;
+  * Add geometry columns (1/geolevel + the original shapefile geometry), geographic centroid column;
+  * Update geographic centroid, geometry columns, handle polygons and mutlipolygons,
+    convert highest zoomlevel to original;
+	- Postgres
+	  ```SQL
+	  UPDATE cb_2014_us_county_500k
+	   SET geographic_centroid = ST_GeomFromText(geographic_centroid_wkt, 4326),
+		   geom_6 = 
+				CASE ST_IsCollection(ST_GeomFromText(wkt_6, 4326)) /* Convert to Multipolygon */
+					WHEN true THEN 	ST_GeomFromText(wkt_6, 4326)
+					ELSE 			ST_Multi(ST_GeomFromText(wkt_6, 4326))
+				END,
+		   geom_7 = 
+				CASE ST_IsCollection(ST_GeomFromText(wkt_7, 4326)) /* Convert to Multipolygon */
+					WHEN true THEN 	ST_GeomFromText(wkt_7, 4326)
+					ELSE 			ST_Multi(ST_GeomFromText(wkt_7, 4326))
+				END,
+		   geom_8 = 
+				CASE ST_IsCollection(ST_GeomFromText(wkt_8, 4326)) /* Convert to Multipolygon */
+					WHEN true THEN 	ST_GeomFromText(wkt_8, 4326)
+					ELSE 			ST_Multi(ST_GeomFromText(wkt_8, 4326))
+				END,
+		   geom_9 = 
+				CASE ST_IsCollection(ST_GeomFromText(wkt_9, 4326)) /* Convert to Multipolygon */
+					WHEN true THEN 	ST_GeomFromText(wkt_9, 4326)
+					ELSE 			ST_Multi(ST_GeomFromText(wkt_9, 4326))
+				END,
+		   geom_orig = ST_Transform(
+				CASE ST_IsCollection(ST_GeomFromText(wkt_9, 4326)) /* Convert to Multipolygon */
+					WHEN true THEN 	ST_GeomFromText(wkt_9, 4326)
+					ELSE 			ST_Multi(ST_GeomFromText(wkt_9, 4326))
+				END, 4269);
+	  ```
+	- SQL Server
+	  ```SQL
+	  UPDATE cb_2014_us_county_500k
+	     SET geographic_centroid = geography::STGeomFromText(geographic_centroid_wkt, 4326),
+		     geom_6 = geography::STGeomFromText(wkt_6, 4326).MakeValid(),
+		     geom_7 = geography::STGeomFromText(wkt_7, 4326).MakeValid(),
+		     geom_8 = geography::STGeomFromText(wkt_8, 4326).MakeValid(),
+		     geom_9 = geography::STGeomFromText(wkt_9, 4326).MakeValid(),
+		     geom_orig = geometry::STGeomFromText(geometry::STGeomFromText(wkt_9, 4326).MakeValid().STAsText(), 4269);
+	  ```
+  * Make geometry columns valid (Postgres only):
+    ```SQL
+	UPDATE cb_2014_us_county_500k
+	   SET
+		   geom_6 = CASE ST_IsValid(geom_6)
+					WHEN false THEN ST_CollectionExtract(ST_MakeValid(geom_6), 3 /* Remove non polygons */)
+					ELSE geom_6
+				END,
+		   geom_7 = CASE ST_IsValid(geom_7)
+					WHEN false THEN ST_CollectionExtract(ST_MakeValid(geom_7), 3 /* Remove non polygons */)
+					ELSE geom_7
+				END,
+		   geom_8 = CASE ST_IsValid(geom_8)
+					WHEN false THEN ST_CollectionExtract(ST_MakeValid(geom_8), 3 /* Remove non polygons */)
+					ELSE geom_8
+				END,
+		   geom_9 = CASE ST_IsValid(geom_9)
+					WHEN false THEN ST_CollectionExtract(ST_MakeValid(geom_9), 3 /* Remove non polygons */)
+					ELSE geom_9
+				END,
+		   geom_orig = CASE ST_IsValid(geom_orig)
+				WHEN false THEN ST_CollectionExtract(ST_MakeValid(geom_orig), 3 /* Remove non polygons */)
+				ELSE geom_orig
+			END;
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -85.2045985857456 46.044431737627747
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -84.769219239639256 45.839784716078725
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -84.439364648483661 45.996148099462111
+	psql:pg_USA_2014.sql:632: NOTICE:  Self-intersection at or near point -89.528959972298978 29.651621096712105
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -149.31411756797058 59.956820817190831
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -68.983577325577343 44.175116080674087
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -162.79221305489506 55.324770369325378
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -131.38639491395594 55.250884374979393
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -80.296620697321714 25.326798923010927
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -156.76186812997113 56.928697844261862
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -68.269311127101147 44.285601416405427
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -162.87907356747357 64.452955401038409
+	psql:pg_USA_2014.sql:632: NOTICE:  Self-intersection at or near point -105.05294356541158 39.913698399795408
+	```
+  * Check validity of geometry columns;
+  * Make all polygons right handed:
+    - Postgres
+      ```SQL 
+	  UPDATE cb_2014_us_county_500k
+	   SET       geom_6 = ST_ForceRHR(geom_6),
+		   geom_7 = ST_ForceRHR(geom_7),
+		   geom_8 = ST_ForceRHR(geom_8),
+		   geom_9 = ST_ForceRHR(geom_9),
+		   geom_orig = ST_ForceRHR(geom_orig);
+	  ```
+	- SQL Server
+	  ```SQL
+	  WITH a AS (
+			SELECT gid, geom_6,
+				   CAST(area_km2 AS NUMERIC(21,6)) AS area_km2,
+				   CAST((geom_6.STArea()/(1000*1000)) AS NUMERIC(21,6)) AS area_km2_calc
+			  FROM cb_2014_us_county_500k
+		), b AS (
+			SELECT a.gid,
+				   a.geom_6,
+				   a.area_km2,
+				   a.area_km2_calc,
+				  CASE WHEN a.area_km2 > 0 THEN CAST(100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2) AS NUMERIC(21,6))
+						WHEN a.area_km2 = a.area_km2_calc THEN 0
+						ELSE NULL
+				   END AS pct_km2_diff 
+		  FROM a
+		)
+		UPDATE cb_2014_us_county_500k
+		   SET geom_6 = c.geom_6.ReorientObject()
+		  FROM cb_2014_us_county_500k c
+		 JOIN b ON b.gid = c.gid
+		 WHERE b.pct_km2_diff > 200 /* Threshold test */;
+	  ```
+  * Create spatial indexes; 
+* Create, populate and comment geography meta data table compatible with RIF40_GEOGRAPHIES 
+  (called geography_&lt;geography name&gt;);
+* Create, populate and comment geography meta data table compatible with RIF40_GEOLEVELS 
+  (called geolevels_&lt;geography name&gt;);
+* For each shapefile geolevel:  
+  * Create, populate and comment lookup tables tables (called lookup_&lt;geography name&gt;);
+* Create, populate and comment hierarchy table (called hierarchy_&lt;geography name&gt;);
+* Create, populate and comment geometry table (called geometry_&lt;geography name&gt;);
+* Partition geometry table (PostGres only);
+* Create, populate and comment adjacency table (called adjacency_&lt;geography name&gt;);
+* Create required functions:
+  * tileMaker_longitude2tile(longitude DOUBLE PRECISION, zoom_level INTEGER)
+  * tileMaker_latitude2tile(latitude DOUBLE PRECISION, zoom_level INTEGER)
+  * tileMaker_tile2longitude(x INTEGER, zoom_level INTEGER)
+  * tileMaker_tile2latitude(y INTEGER, zoom_level INTEGER)
+  * tileMaker_intersector_usa_2014(
+		l_geolevel_id INTEGER, 
+		l_zoomlevel INTEGER, 
+		l_use_zoomlevel INTEGER, 
+		l_debug BOOLEAN DEFAULT FALSE)
+  * tileMaker_intersector2_usa_2014(
+		l_geolevel_id INTEGER, 
+		l_zoomlevel INTEGER, 
+		l_use_zoomlevel INTEGER, 
+		l_debug BOOLEAN DEFAULT FALSE)
+  * tileMaker_aggregator_usa_2014(
+		l_geolevel_id INTEGER, 
+		l_zoomlevel INTEGER,  
+		l_debug BOOLEAN DEFAULT FALSE)
+* Create and comment tiles table (called t_tiles_&lt;geography name&gt;); 
+* Create and comment tiles view (called tiles_&lt;geography name&gt;); 
+* Create and comment tile limits table (called tile_limits_&lt;geography name&gt;); 
+* Create and comment tile intersects table (called tile_intersects_&lt;geography name&gt;); 
+* Partition tile intersects  table (PostGres only);
+* Populate and index tile intersects table (called tile_intersects_&lt;geography name&gt;); 
+  ```
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 57+0 total areaid intersects for geolevel id 2/3 zoomlevel: 1/9 in 0.8+0.0s+0.0s, 0.8s total; 71.2 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 67+0 total areaid intersects for geolevel id 2/3 zoomlevel: 2/9 in 1.2+0.0s+0.0s, 2.0s total; 57.5 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 81+0 total areaid intersects for geolevel id 2/3 zoomlevel: 3/9 in 1.6+0.0s+0.0s, 3.6s total; 50.6 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 95+0 total areaid intersects for geolevel id 2/3 zoomlevel: 4/9 in 3.1+0.0s+0.0s, 6.7s total; 30.9 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 142+0 total areaid intersects for geolevel id 2/3 zoomlevel: 5/9 in 5.4+0.0s+0.0s, 12.1s total; 26.3 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 242+0 total areaid intersects for geolevel id 2/3 zoomlevel: 6/9 in 12.4+0.0s+0.0s, 24.5s total; 19.6 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 487+0 total areaid intersects for geolevel id 2/3 zoomlevel: 7/9 in 31.7+0.0s+0.0s, 56.2s total; 15.4 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 1020+0 total areaid intersects for geolevel id 2/3 zoomlevel: 8/9 in 101.4+0.0s+0.0s, 157.6s total; 10.1 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 2248+0 total areaid intersects for geolevel id 2/3 zoomlevel: 9/9 in 313.8+0.0s+0.0s, 471.4s total; 7.2 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 3233+0 total areaid intersects for geolevel id 3/3 zoomlevel: 1/9 in 7.0+0.0s+0.0s, 478.5s total; 459.1 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 3291+0 total areaid intersects for geolevel id 3/3 zoomlevel: 2/9 in 6.9+0.0s+0.0s, 485.3s total; 480.2 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 3390+0 total areaid intersects for geolevel id 3/3 zoomlevel: 3/9 in 4.9+0.0s+0.0s, 490.2s total; 693.6 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 3440+0 total areaid intersects for geolevel id 3/3 zoomlevel: 4/9 in 4.2+0.0s+0.0s, 494.4s total; 821.5 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 3658+0 total areaid intersects for geolevel id 3/3 zoomlevel: 5/9 in 4.6+0.0s+0.0s, 499.1s total; 795.8 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 4065+3 total areaid intersects for geolevel id 3/3 zoomlevel: 6/9 in 4.7+0.0s+0.0s, 503.8s total; 866.9 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 4989+1 total areaid intersects for geolevel id 3/3 zoomlevel: 7/9 in 7.8+0.0s+0.0s, 511.7s total; 636.6 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 7127+4 total areaid intersects for geolevel id 3/3 zoomlevel: 8/9 in 19.1+0.1s+0.0s, 530.8s total; 373.4 intesects/s
+  ```
+* Create statistics on all tables;
+* For each shapefile geolevel:  
+  * Test Turf (Node.js processing) and database calculated areas agree to within 1% (Postgres)/5% (SQL server)
+  
 ### 2.4.2 Tile Manufacture
 
 In the same directory as before run the *tileMaker* manufacturer. This has separate Postgres and SQL Server stubs calling a common 
@@ -611,8 +828,36 @@ In the same directory as before run the *tileMaker* manufacturer. This has separ
 	   [default: false]
 
 - Postgres: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev```
-- SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database test```
+  [Postgres tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_tile_manufacture.md)
 
+- SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database test```
+  [SQL Server tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_tile_manufacture.md)
+	
+* Parse XML configuration file;
+* Connect to database;
+* Create hierarchy CSV file;
+* Create lookup CSV file for each geolevel;
+* Create adjacency CSV file for geography;
+* Create geometry CSV file for geography;
+* Create tiles 10 at a time for each zoomlevel and geography;
+* Creating tile CSV file for each geolevel;
+* Created dataLoader XML config file
+* All 6 tests passed, none failed
+* Produce Zoomlevel and geolevel report (null tiles/total tiles):
+
+  |          zoomlevel |          geolevel_1 |          geolevel_2 |          geolevel_3 |
+  |--------------------|---------------------|---------------------|---------------------|
+  |                   0                  0/1 |                 0/1 |                 0/1 |
+  |                   1                      |                 0/3 |                 0/3 |
+  |                   2                      |                 0/5 |                 0/5 |
+  |                   3                      |                0/10 |                0/10 |
+  |                   4                      |                0/22 |                0/22 |
+  |                   5                      |                0/47 |                0/48 |
+  |                   6                      |               0/111 |               0/118 |
+  |                   7                      |               0/281 |               0/333 |
+  |                   8                      |               0/665 |               0/992 |
+  |                   9                      |              0/1568 |              0/3137 |
+	
 ### 2.4.3 Load Production Data into the RIF
 
 1. Load production data into RIF40 Schema.
@@ -629,6 +874,8 @@ In the same directory as before run the *tileMaker* manufacturer. This has separ
 
      E.g: ```psql -U rif40 -d sahsuland_dev -w -e -f rif_pg_usa_2014.sql```
 	 
+	[Postgres data load log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_load.md)
+	 
    - SQL Server: ```sqlcmd -U rif40 -P <password> -d <database name> -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql  -v pwd="%cd%"```
      Flags:
      * ```-U rif40```: connect as *rif40*;
@@ -643,31 +890,40 @@ In the same directory as before run the *tileMaker* manufacturer. This has separ
        load can find the CSV files.
 	
 	E.g:
-	```sqlcmd -U rif40 -P XXXXXXXXXXX -d sahsuland_dev -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```	
+	```sqlcmd -U rif40 -P XXXXXXXXXXX -d sahsuland_dev -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```
+
+ 	[SQL Server load example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_load.md)
+	
 2. Test the RIF is setup correctly:
 	
-### 2.4.4 Example of Post Front End Processing
+- Check the *rif40_geographies* table;
+- Check the *rfi40_geolevels* view;
+- Check geography is selectable in the initial study submission screen;
 
-* Loads tilemaker output into both *sahsuland* and *sahsuland_dev*;
-* Processes *sahsuland_dev* schema to tiles;
-* Loads production data into *rif40* schema on  both *sahsuland* and *sahsuland_dev*.
+Add data, then:
 
-The SEER pre-processing script *pg_load_seer_covariates.sql* has a dependency on the *cb_2014_us_nation_5m*, *cb_2014_us_state_500k* and *cb_2014_us_county_500l* that are part of the 
-tilemaker pre-processing. The FIPS code is required to make the join and this field is not in the standard lookup tables. For this reason it is necessary to build 
-the covariates table on *sahsuland_dev*. In the longer term the FIPS codes should be added to the lookup tables. 
+- Check study and comparison area selection works OK;
+- Setup and run a study.
 
-```
-cd C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices
-make
-C:\Users\phamb\OneDrive\SEER Data\Tile maker USA
-psql -d sahsuland_dev -w -e -f pg_USA_2014.sql
-psql -d sahsuland -w -e -f pg_USA_2014.sql
-sqlcmd -U peter -P retep -d sahsuland_dev -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"
-sqlcmd -U peter -P retep -d sahsuland -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"
-node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev
-node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database test
-psql -U rif40 -d sahsuland_dev -w -e -f rif_pg_usa_2014.sql
-psql -U rif40 -d sahsuland -w -e -f rif_pg_usa_2014.sql
-sqlcmd -U rif40 -P rif40 -d sahsuland -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql -v pwd="%cd%"
-sqlcmd -U rif40 -P rif40 -d sahsuland_dev -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql -v pwd="%cd%"
-```
+# 3. TileMaker Source Code
+
+TO BE ADDED.
+
+# 4. TileMaker TODO
+
+TileMaker is currently working with some minor faults but needs to have:
+
+1. Support for population weighted centroids];
+2. Run the generated scripts. This requires the ability to logon and PSQL copy needs to be replaced to SQL COPY from STDIN/to STDOUT with STDIN/STOUT
+   file handlers in Node.js;
+3. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present);
+4. Support very large shapefiles (e.g. COA2011);
+5. Make ZIP file download work;
+6. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
+   than the TileMaker screen. Probably the best solution is to use Angular;
+7. Support for database logons;
+8. Needs to calculate geographic centroids using the database;
+9. Add all DBF fields in shapefile to lookup table (i..e add FIPS codes).
+
+Peter Hambly
+June 2018

@@ -291,6 +291,7 @@ function mssql_db_connect(p_mssql, p_hostname, p_database, p_user, p_password, p
 	var config = {
 		driver: 'msnodesqlv8',
 		server: p_hostname,
+		requestTimeout: 300000, // 5 mins. Default 15s per SQL statement
 		options: {
 			trustedConnection: false,
 			useUTC: true,
