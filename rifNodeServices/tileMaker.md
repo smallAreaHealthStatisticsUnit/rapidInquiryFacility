@@ -8,6 +8,8 @@ Tile Maker
   - [1.2 Issues](#12-issues)
     - [1.2.1 Memory Requirements](#121-memory-requirements)
     - [1.2.2 SQL Server Connection Error](#122-sql-server-connection-error)
+	- [1.2.3 JSZip 3.0 Error](#123-jszip-30-error)
+	- [1.2.4 BULK INSERT Permission](#124-bulk-insert-permission)
 - [2. Running the Tile Maker](#2-running-the-tile-maker)
   - [2.1 Setup](#21-setup)
   - [2.2 Processing Overview](#22-processing-overview)
@@ -203,6 +205,32 @@ RIF40-geospatial@0.0.1 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifN
 npm WARN optional SKIPPING OPTIONAL DEPENDENCY: fsevents@^1.0.0 (node_modules\chokidar\node_modules\fsevents):
 npm WARN notsup SKIPPING OPTIONAL DEPENDENCY: Unsupported platform for fsevents@1.2.4: wanted {"os":"darwin","arch":"any"} (current:
  {"os":"win32","arch":"x64"})
+```
+
+### 1.2.4 BULK INSERT Permission
+
+SQL Server needs access permission granted to the directories used to `BULK INSERT` files, the files are not copied from the client to the 
+server as in the *Postgres* *psql* ```\copy` command and the *Oracle* *sqlldr* command.
+
+SQL Server needs access to the directories containing the data loaded by the scripts. The simplest
+way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users or USERS depending on your Windows version).
+
+*DO NOT TRY TO RUN BULK INSERT FROM NETWORK DRIVES or CLOUD DRIVES (e.g. Google Drive).* Use a local directory which SQL Server has
+access to; e.g. somewhere on the C: drive. Note that SQL Server *BULK LOAD* behaves deterrently if you logon using Windows authentication (where it will use your credentials 
+to access the files) to using a username and password (where it will use the Server's credentials to access the file).
+
+```
+-- SQL statement 23: Load table from CSV file >>>
+BULK INSERT cb_2014_us_county_500k
+FROM 'C:\Users\Peter\OneDrive\SEER Data\Tile maker USA/cb_2014_us_county_500k.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+WITH
+(
+	FORMATFILE = 'C:\Users\Peter\OneDrive\SEER Data\Tile maker USA/mssql_cb_2014_us_county_500k.fmt',		-- Use a format file
+	TABLOCK					-- Table lock
+);
+
+Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 3
+Cannot bulk load because the file "C:\Users\Peter\OneDrive\SEER Data\Tile maker USA/cb_2014_us_county_500k.csv" could not be opened. Operating system error code 5(Access is denied.).
 ```
 
 # 2. Running the Tile Maker
@@ -538,11 +566,13 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
      For information on [Postgres passwords](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#221-postgres)
 
      E.g: ```psql -U peter -d sahsuland_dev -w -e -f pg_USA_2014.sql```
-	 
+
+	[Postgres data processing example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_data_processing.md)
+	
    - SQL Server: ```sqlcmd -U <username> -P <password> -d <database name> -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```
      Flags:
      * ```-U <username>```: connect as user &lt;username&gt; **NOT** *rif40*;
-     * ```-P <password>```: the &lt;password&gt; for user *rif40*;
+     * ```-P <password>```: the &lt;password&gt; for user &lt;username&gt;;
      * ```-d <database name>```: connect to database &lt;database name&gt;;
      * ```-b```: terminate batch job if there is an error;
      * ```-m-1```: all messages including informational messages, are sent to stdout;
@@ -555,17 +585,67 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
 	E.g:
 	```sqlcmd -U peter -P XXXXXXXXXXX -d sahsuland_dev -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```	
 
+	[SQL Server data processing example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_data_processing.md)
+	
 ### 2.4.2 Tile Manufacture
 
-```
-node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev
-node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database test
-```
+In the same directory as before run the *tileMaker* manufacturer. This has separate Postgres and SQL Server stubs calling a common 
+*tileMaker.js* node.js core:
+
+- ```node <full path to script> --database <flags>```
+     Flags:
+	 * ```-D, --database  <database name>```: Name of the database.          
+	   [default: <user default>];
+	 * ```-U, --username <username>```: Connect as user &lt;username&gt; **NOT** *rif40*.         
+	   [default: NONE (use MSSQL trusted connection/psql style default)];
+	 * ```--password, --pw <password>```: The &lt;password&gt; for user &lt;username&gt;
+	 * ```-H, --hostname```: &lt;hostname&gt; of the database. 
+	   [default: "localhost"];
+	 * ```-V, --verbose```: Verbose mode. 
+	   [default: 0: false; 1 or 2];
+	 * ```-X, --xmlfile <XML file>```: XML Configuration file &lt;XML file&gt;.
+	   [default: "geoDataLoader.xml"];
+	 * ```-p, --pngfile```: Make SVG/PNG files.                     
+	   [default: false]
+	 * ```-h, --help```: display this helpful message and exit.
+	   [default: false]
+
+- Postgres: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev```
+- SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database test```
 
 ### 2.4.3 Load Production Data into the RIF
 
-Load data into RIF40 Schema.
+1. Load production data into RIF40 Schema.
+   - Postgres: ```psql -U rif40 -d <database name> -w -e -f rif_pg_usa_2014.sql```
+     Flags:
+     * ```-U rif40```: connect as *rif40*;
+     * ```-d <database name>```: connect to database &lt;database name&gt;
+     * ```-w```: never issue a password prompt. If the server requires password authentication and a password is not available by other means 
+       such as a .pgpass file, the connection attempt will fail;
+     * ```-e```: copy all SQL commands sent to the server to standard output as well;
+     * ```-f rif_pg_usa_2014.sql```: run SQL script rif_pg_usa_2014.sql
+  
+     For information on [Postgres passwords](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#221-postgres)
 
+     E.g: ```psql -U rif40 -d sahsuland_dev -w -e -f rif_pg_usa_2014.sql```
+	 
+   - SQL Server: ```sqlcmd -U rif40 -P <password> -d <database name> -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql  -v pwd="%cd%"```
+     Flags:
+     * ```-U rif40```: connect as *rif40*;
+     * ```-P <password>```: the &lt;password&gt; for user *rif40*;
+     * ```-d <database name>```: connect to database &lt;database name&gt;;
+     * ```-b```: terminate batch job if there is an error;
+     * ```-m-1```: all messages including informational messages, are sent to stdout;
+     * ```-e```: echo input;
+     * ```-r1```: redirects the error message output to stderr;
+     * ```-i rif_mssql_usa_2014.sql```: run SQL script rif_mssql_usa_2014.sql;
+     * ```-v pwd="%cd%"```: set script variable pwd to %cd% (current working directory). So bulk 
+       load can find the CSV files.
+	
+	E.g:
+	```sqlcmd -U rif40 -P XXXXXXXXXXX -d sahsuland_dev -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```	
+2. Test the RIF is setup correctly:
+	
 ### 2.4.4 Example of Post Front End Processing
 
 * Loads tilemaker output into both *sahsuland* and *sahsuland_dev*;
