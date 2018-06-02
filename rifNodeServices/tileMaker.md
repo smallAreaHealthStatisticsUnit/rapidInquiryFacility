@@ -447,7 +447,7 @@ The *tile maker* web application is used to:
    * *&lt;Shapefile directory&gt;*: contains the shapefile data. One per geolevel;
    * *&lt;Geography&gt;* directory: contains the input data. E.g *SASULAND.zip*;
    * *diagnostics.log*: the log trace;
-   * *geoDataLoader.xml*: configuation file;
+   * *geoDataLoader.xml*: configuration file;
    * *response.json.N*: internal JSON status at stages 1 to 3 of the processing;
    * *status.json*: processing statii in JSON format.
    
@@ -523,21 +523,44 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
 
 ### 2.4.1 Geospatial Data Load
 
-Load data into a non RIF40 Schema.
+1. Place the files in the archive *data* in a new directory together with the *geoDataLoader.xml* configuration 
+   file
+2. Load data into a non RIF40 Schema:
+   - Postgres: ```psql -U <username> -d <database name> -w -e -f pg_USA_2014.sql```
+     Flags:
+     * ```-U <username>```: connect as user &lt;username&gt; **NOT** *rif40*;
+     * ```-d <database name>```: connect to database &lt;database name&gt;
+     * ```-w```: never issue a password prompt. If the server requires password authentication and a password is not available by other means 
+       such as a .pgpass file, the connection attempt will fail;
+     * ```-e```: copy all SQL commands sent to the server to standard output as well;
+     * ```-f pg_USA_2014.sql```: run SQL script pg_USA_2014.sql
+  
+     For information on [Postgres passwords](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#221-postgres)
+
+     E.g: ```psql -U peter -d sahsuland_dev -w -e -f pg_USA_2014.sql```
+	 
+   - SQL Server: ```sqlcmd -U <username> -P <password> -d <database name> -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```
+     Flags:
+     * ```-U <username>```: connect as user &lt;username&gt; **NOT** *rif40*;
+     * ```-P <password>```: the &lt;password&gt; for user *rif40*;
+     * ```-d <database name>```: connect to database &lt;database name&gt;;
+     * ```-b```: terminate batch job if there is an error;
+     * ```-m-1```: all messages including informational messages, are sent to stdout;
+     * ```-e```: echo input;
+     * ```-r1```: redirects the error message output to stderr;
+     * ```-i mssql_USA_2014.sql```: run SQL script mssql_USA_2014.sql;
+     * ```-v pwd="%cd%"```: set script variable pwd to %cd% (current working directory). So bulk 
+       load can find the CSV files.
+	
+	E.g:
+	```sqlcmd -U peter -P XXXXXXXXXXX -d sahsuland_dev -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```	
+
+### 2.4.2 Tile Manufacture
 
 ```
-cd C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices
-make
-C:\Users\phamb\OneDrive\SEER Data\Tile maker USA
-psql -d sahsuland_dev -w -e -f pg_USA_2014.sql
-psql -d sahsuland -w -e -f pg_USA_2014.sql
-sqlcmd -U peter -P retep -d sahsuland_dev -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"
-sqlcmd -U peter -P retep -d sahsuland -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"
 node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev
 node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database test
 ```
-
-### 2.4.2 Tile Manufacture
 
 ### 2.4.3 Load Production Data into the RIF
 
