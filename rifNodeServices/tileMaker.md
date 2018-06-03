@@ -830,7 +830,7 @@ In the same directory as before run the *tileMaker* manufacturer. This has separ
 - Postgres: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev```
   [Postgres tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_tile_manufacture.md)
 
-- SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database test```
+- SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database sahsuland_dev```
   [SQL Server tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_tile_manufacture.md)
 	
 * Parse XML configuration file;
@@ -872,7 +872,7 @@ In the same directory as before run the *tileMaker* manufacturer. This has separ
   
      For information on [Postgres passwords](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#221-postgres)
 
-     E.g: ```psql -U rif40 -d sahsuland_dev -w -e -f rif_pg_usa_2014.sql```
+     E.g: ```psql -U rif40 -d sahsuland -w -e -f rif_pg_usa_2014.sql```
 	 
 	[Postgres data load log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_load.md)
 	 
@@ -890,7 +890,7 @@ In the same directory as before run the *tileMaker* manufacturer. This has separ
        load can find the CSV files.
 	
 	E.g:
-	```sqlcmd -U rif40 -P XXXXXXXXXXX -d sahsuland_dev -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```
+	```sqlcmd -U rif40 -P XXXXXXXXXXX -d sahsuland -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```
 
  	[SQL Server load example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_load.md)
 	
