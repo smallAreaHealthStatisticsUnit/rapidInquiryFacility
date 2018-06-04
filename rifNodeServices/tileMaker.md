@@ -758,7 +758,10 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
   * Partition geometry table (PostGres only);
   * Create, populate and comment adjacency table (called adjacency_&lt;geography name&gt;);
 * Create required functions for this scripts and the *tile Maker* manufacturer:
-  * ```tileMaker_longitude2tile(longitude DOUBLE PRECISION, zoom_level INTEGER)```: ```SELECT FLOOR( (longitude + 180) / 360 * (1 << zoom_level) )::INTEGER;```
+  * ```tileMaker_longitude2tile(longitude DOUBLE PRECISION, zoom_level INTEGER)```: Convert longitude (WGS84 - 4326) to OSM tile x.
+    ```SQL
+	SELECT FLOOR( (longitude + 180) / 360 * (1 << zoom_level) )::INTEGER;
+	```
   * ```tileMaker_latitude2tile(latitude DOUBLE PRECISION, zoom_level INTEGER)```: Convert latitude (WGS84 - 4326) to OSM tile x.
     ```SQL
 	SELECT FLOOR( (1.0 - LN(TAN(RADIANS(latitude)) + 1.0 / COS(RADIANS(latitude))) / PI()) / 2.0 * (1 << zoom_level) )::INTEGER;
@@ -795,23 +798,15 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
 		RETURN DEGREES(ATAN(sinh));
 	END;
 	```
-  * ```tileMaker_intersector_usa_2014(
-		l_geolevel_id INTEGER, 
-		l_zoomlevel INTEGER, 
-		l_use_zoomlevel INTEGER, 
-		l_debug BOOLEAN DEFAULT FALSE)```: tile intersects table INSERT function. Zoomlevels <6 use zoomlevel 6 data
+  * ```tileMaker_intersector_usa_2014(geolevel_id INTEGER, zoomlevel INTEGER, use_zoomlevel INTEGER, debug BOOLEAN DEFAULT FALSE)```: tile 
+    intersects table INSERT function. Zoomlevels <6 use zoomlevel 6 data.
 	Inserts tile area id intersections.
-  * ```tileMaker_intersector2_usa_2014(
-		l_geolevel_id INTEGER, 
-		l_zoomlevel INTEGER, 
-		l_use_zoomlevel INTEGER, 
-		l_debug BOOLEAN DEFAULT FALSE)```: tile intersects table INSERT function. Zoomlevels <6 use zoomlevel 6 data
+  * ```tileMaker_intersector2_usa_2014(geolevel_id INTEGER, zoomlevel INTEGER, use_zoomlevel INTEGER, debug BOOLEAN DEFAULT FALSE)```: tile 
+    intersects table INSERT function. Zoomlevels <6 use zoomlevel 6 data.
     Insert tile area id intersections missing where not in the previous layer; 
     this is usually due to it being simplified out of existence.
-  * ```tileMaker_aggregator_usa_2014(
-		l_geolevel_id INTEGER, 
-		l_zoomlevel INTEGER,  
-		l_debug BOOLEAN DEFAULT FALSE)```: tiles table INSERT function. Aggregate area_id JSON into featureCollection
+  * ```tileMaker_aggregator_usa_2014(geolevel_id INTEGER, zoomlevel INTEGER, debug BOOLEAN DEFAULT FALSE)```: tiles table INSERT function. 
+    Aggregate area_id JSON into featureCollection
 * Create and comment tiles table (called t_tiles_&lt;geography name&gt;). This is populated by the *tile Maker* manufacturer; 
 * Create and comment tiles view (called tiles_&lt;geography name&gt;). This add back the NULL tiles outside of the tile limits boundaries 
   and inside where an NON NULL tile logically cannot exists (a big county at a high zoomlevel where the tile is completely within the county); 
