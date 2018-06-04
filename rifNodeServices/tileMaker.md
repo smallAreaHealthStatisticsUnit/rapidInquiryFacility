@@ -941,7 +941,7 @@ Tile manufacturing steps:
 * Create geometry CSV file for geography;
 * Create tiles 10 at a time for each zoomlevel and geography:
   * Tile IDs are in the form ```<geolevel_id>_<zoomlevel>_<x>_<y>```;
-  * Tiles arr process by geolevel and  zoomlevel in blocks of 10 in x/y order. SQL Server code to create the tile blocks table:
+  * Tiles are processed by geolevel and  zoomlevel in blocks of 10 in x/y order. SQL Server code to create the tile blocks table:
     ```SQL
 	IF OBJECT_ID('tile_blocks_usa_2014', 'U') IS NOT NULL DROP TABLE tile_blocks_usa_2014;
 	WITH a AS (
@@ -1036,8 +1036,62 @@ Tile manufacturing steps:
 				],
 	```
 * Creating tile CSV file for each geolevel;
-* Created dataLoader XML config file
-* All 6 tests passed, none failed
+* Created dataLoader XML config file;
+* Carry out the following tests:
+  * Missing tiles in tile blocks:
+    ```SQL
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_blocks_usa_2014
+	EXCEPT
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM t_tiles_usa_2014
+	 ORDER BY 1, 2, 3, 4;
+	```
+  * Missing tiles in tile interescts:
+    ```SQL
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_intersects_usa_2014
+	EXCEPT
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM t_tiles_usa_2014
+	 ORDER BY 1, 2, 3, 4;
+    ```	
+  * Missing tile blocks in tile interescts:
+    ```SQL
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_intersects_usa_2014
+	EXCEPT
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_blocks_usa_2014
+	 ORDER BY 1, 2, 3, 4;
+    ```	
+  * Extra tiles not in blocks:
+    ```SQL
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM t_tiles_usa_2014
+	EXCEPT
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_blocks_usa_2014
+	 ORDER BY 1, 2, 3, 4;
+    ```	
+  * Extra tiles not in tile intersects:
+    ```SQL
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM t_tiles_usa_2014
+	EXCEPT
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_intersects_usa_2014
+	 ORDER BY 1, 2, 3, 4;
+    ```	
+  * Extra tile blocks not in tile intersects:
+    ```SQL
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_blocks_usa_2014
+	EXCEPT
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_intersects_usa_2014
+	 ORDER BY 1, 2, 3, 4;
+    ```	
 * Produce Zoomlevel and geolevel report (null tiles/total tiles):
 
   |          zoomlevel |          geolevel_1 |          geolevel_2 |          geolevel_3 |
