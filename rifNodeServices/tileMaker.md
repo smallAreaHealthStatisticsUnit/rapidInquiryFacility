@@ -758,24 +758,58 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
   * Partition geometry table (PostGres only);
   * Create, populate and comment adjacency table (called adjacency_&lt;geography name&gt;);
 * Create required functions for this scripts and the *tile Maker* manufacturer:
-  * tileMaker_longitude2tile(longitude DOUBLE PRECISION, zoom_level INTEGER)
-  * tileMaker_latitude2tile(latitude DOUBLE PRECISION, zoom_level INTEGER)
-  * tileMaker_tile2longitude(x INTEGER, zoom_level INTEGER)
-  * tileMaker_tile2latitude(y INTEGER, zoom_level INTEGER)
-  * tileMaker_intersector_usa_2014(
+  * ```tileMaker_longitude2tile(longitude DOUBLE PRECISION, zoom_level INTEGER)```: ```SELECT FLOOR( (longitude + 180) / 360 * (1 << zoom_level) )::INTEGER;```
+  * ```tileMaker_latitude2tile(latitude DOUBLE PRECISION, zoom_level INTEGER)```: Convert latitude (WGS84 - 4326) to OSM tile x.
+    ```SELECT FLOOR( (1.0 - LN(TAN(RADIANS(latitude)) + 1.0 / COS(RADIANS(latitude))) / PI()) / 2.0 * (1 << zoom_level) )::INTEGER```
+	
+    Derivation of the tile X/Y:   
+
+    * Reproject the coordinates to the Mercator projection (from EPSG:4326 to EPSG:3857):
+      ```
+	  x = lon
+	  y = arsinh(tan(lat)) = log[tan(lat) + sec(lat)]
+      ```
+	(lat and lon are in radians)
+
+    * Transform range of x and y to 0 � 1 and shift origin to top left corner:
+      ```
+	x = [1 + (x / pi)] / 2
+	y = [1 - (y / pi)] / 2
+      ```
+      * Calculate the number of tiles across the map, n, using 2**zoom
+      * Multiply x and y by n. Round results down to give tilex and tiley.
+  * ```tileMaker_tile2longitude(x INTEGER, zoom_level INTEGER)```:
+    Convert OSM tile x to longitude (WGS84 - 4326) - ```( (x * 1.0) / (1 << zoom_level) * 360.0) - 180.0```
+  * ```tileMaker_tile2latitude(y INTEGER, zoom_level INTEGER)```:
+    Convert OSM tile y to latitude (WGS84 - 4326):
+	```SQL
+	DECLARE
+		n FLOAT;
+		sinh FLOAT;
+		E FLOAT = 2.7182818284;
+	BEGIN
+		n = PI() - (2.0 * PI() * y) / POWER(2.0, zoom_level);
+		sinh = (1 - POWER(E, -2*n)) / (2 * POWER(E, -n));
+		RETURN DEGREES(ATAN(sinh));
+	END;
+	```
+  * ```tileMaker_intersector_usa_2014(
 		l_geolevel_id INTEGER, 
 		l_zoomlevel INTEGER, 
 		l_use_zoomlevel INTEGER, 
-		l_debug BOOLEAN DEFAULT FALSE)
-  * tileMaker_intersector2_usa_2014(
+		l_debug BOOLEAN DEFAULT FALSE)```: tile intersects table INSERT function. Zoomlevels <6 use zoomlevel 6 data
+	Inserts tile area id intersections.
+  * ```tileMaker_intersector2_usa_2014(
 		l_geolevel_id INTEGER, 
 		l_zoomlevel INTEGER, 
 		l_use_zoomlevel INTEGER, 
-		l_debug BOOLEAN DEFAULT FALSE)
-  * tileMaker_aggregator_usa_2014(
+		l_debug BOOLEAN DEFAULT FALSE)```: tile intersects table INSERT function. Zoomlevels <6 use zoomlevel 6 data
+    Insert tile area id intersections missing where not in the previous layer; 
+    this is usually due to it being simplified out of existence.
+  * ```tileMaker_aggregator_usa_2014(
 		l_geolevel_id INTEGER, 
 		l_zoomlevel INTEGER,  
-		l_debug BOOLEAN DEFAULT FALSE)
+		l_debug BOOLEAN DEFAULT FALSE)```: tiles table INSERT function. Aggregate area_id JSON into featureCollection
 * Create and comment tiles table (called t_tiles_&lt;geography name&gt;). This is populated by the *tile Maker* manufacturer; 
 * Create and comment tiles view (called tiles_&lt;geography name&gt;). This add back the NULL tiles outside of the tile limits boundaries 
   and inside where an NON NULL tile logically cannot exists (a big county at a high zoomlevel where the tile is completely within the county); 
