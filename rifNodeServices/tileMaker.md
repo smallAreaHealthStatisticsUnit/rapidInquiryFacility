@@ -1123,7 +1123,7 @@ Tile manufacturing steps:
 
      E.g: ```psql -U rif40 -d sahsuland -w -e -f rif_pg_usa_2014.sql```
 	 
-	[Postgres data load log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_load.md)
+	[Postgres production data load log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_load.md)
 	 
    - SQL Server: ```sqlcmd -U rif40 -P <password> -d <database name> -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql  -v pwd="%cd%"```
      Flags:
@@ -1139,9 +1139,34 @@ Tile manufacturing steps:
        load can find the CSV files.
 	
 	E.g:
-	```sqlcmd -U rif40 -P XXXXXXXXXXX -d sahsuland -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```
+	```sqlcmd -U rif40 -P XXXXXXXXXXX -d sahsuland -b -m-1 -e -r1 -i rif_mssql_USA_2014.sql  -v pwd="%cd%"```
 
- 	[SQL Server load example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_load.md)
+ 	[SQL Server production load example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_load.md)
+	
+  - To Reload the geography it must not be in use by any studies:
+    ```
+    psql:rif_pg_usa_2014.sql:151: ERROR:  Geography: USA_2014 is used by: 2 studies
+    ```
+  
+Load processed geometry and tiles tables into production database:
+     
+a) Integrate new geography with RIF40 control tables, i.e. add the data in:                   
+   * *geography_usa_2014*;                               
+   * *geolevels_usa_2014*;     
+   to be respective RIF40 tables *rif40_geographies* and *rif40_geolevels*;
+b) Add processed geometry data (partitioned in PostGres), e.g:                          
+   * *geometry_usa_2014*;                                 
+c) Create hierarchy table, e.g: 
+   * *hierarchy_usa_2014*;   
+d) Create lookup tables, e.g:
+   * *lookup_cb_2014_us_county_500k*;             
+   * *lookup_cb_2014_us_nation_5m*;                    
+   * *lookup_cb_2014_us_state_500k*;      
+e) Tiles table and view               
+   * *t_tiles_usa_2014*           
+   * *tiles_usa_2014*;                                
+f) Create adjacency table, e.g: 
+   * *adjacency_usa_2014*   
 	
 2. Test the RIF is setup correctly:
 	
@@ -1160,19 +1185,21 @@ TO BE ADDED.
 
 # 4. TileMaker TODO
 
-TileMaker is currently working with some minor faults but needs to have:
+TileMaker is currently working with some minor faults but needs to have in order of priority:
 
-1. Support for population weighted centroids];
-2. Run the generated scripts. This requires the ability to logon and PSQL copy needs to be replaced to SQL COPY from STDIN/to STDOUT with STDIN/STOUT
-   file handlers in Node.js;
-3. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present);
-4. Support very large shapefiles (e.g. COA2011);
-5. Make ZIP file download work;
+1. Make ZIP file download work. A workaround is provided;
+2. Needs to calculate geographic centroids using the database;
+3. Support for population weighted centroids]. In the interim this will be supported via script;
+4. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present);
+5. Support very large shapefiles (e.g. COA2011). This probably will require a rewrite of the shapefile reader to process area by area. The issue is with multipolygons. 
+   These are often multiple records in shapefiles and they need to be UNIOONed together. A work area is provide in 
+   [2.3.2 Processing Huge Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#232-processing-huge-shapefiles);
 6. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
    than the TileMaker screen. Probably the best solution is to use Angular;
-7. Support for database logons;
-8. Needs to calculate geographic centroids using the database;
-9. Add all DBF fields in shapefile to lookup table (i..e add FIPS codes).
+7. Add all DBF fields in shapefile to lookup table (i..e add FIPS codes);
+8. Support for database logon in the front end;
+9. Run the generated scripts in the Node.js server. This requires the ability to logon and PSQL copy needs to be replaced to SQL COPY from STDIN/to STDOUT with STDIN/STOUT
+   file handlers in Node.js.
 
 Peter Hambly
 June 2018
