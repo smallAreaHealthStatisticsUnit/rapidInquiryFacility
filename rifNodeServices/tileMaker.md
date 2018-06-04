@@ -750,13 +750,14 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
   (called geography_&lt;geography name&gt;);
 * Create, populate and comment geography meta data table compatible with RIF40_GEOLEVELS 
   (called geolevels_&lt;geography name&gt;);
-* For each shapefile geolevel:  
-  * Create, populate and comment lookup tables tables (called lookup_&lt;geography name&gt;);
-* Create, populate and comment hierarchy table (called hierarchy_&lt;geography name&gt;);
-* Create, populate and comment geometry table (called geometry_&lt;geography name&gt;);
-* Partition geometry table (PostGres only);
-* Create, populate and comment adjacency table (called adjacency_&lt;geography name&gt;);
-* Create required functions:
+* Create tables required by the metadata:  
+  * For each shapefile geolevel:  
+    * Create, populate and comment lookup tables tables (called lookup_&lt;geography name&gt;);
+  * Create, populate and comment hierarchy table (called hierarchy_&lt;geography name&gt;);
+  * Create, populate and comment geometry table (called geometry_&lt;geography name&gt;);
+  * Partition geometry table (PostGres only);
+  * Create, populate and comment adjacency table (called adjacency_&lt;geography name&gt;);
+* Create required functions for this scripts and the *tile Maker* manufacturer:
   * tileMaker_longitude2tile(longitude DOUBLE PRECISION, zoom_level INTEGER)
   * tileMaker_latitude2tile(latitude DOUBLE PRECISION, zoom_level INTEGER)
   * tileMaker_tile2longitude(x INTEGER, zoom_level INTEGER)
@@ -775,9 +776,27 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
 		l_geolevel_id INTEGER, 
 		l_zoomlevel INTEGER,  
 		l_debug BOOLEAN DEFAULT FALSE)
-* Create and comment tiles table (called t_tiles_&lt;geography name&gt;); 
-* Create and comment tiles view (called tiles_&lt;geography name&gt;); 
-* Create and comment tile limits table (called tile_limits_&lt;geography name&gt;); 
+* Create and comment tiles table (called t_tiles_&lt;geography name&gt;). This is populated by the *tile Maker* manufacturer; 
+* Create and comment tiles view (called tiles_&lt;geography name&gt;). This add back the NULL tiles outside of the tile limits boundaries 
+  and inside where an NON NULL tile logically cannot exists (a big county at a high zoomlevel where the tile is completely within the county); 
+* Create, population and comment tile limits table (called tile_limits_&lt;geography name&gt;). This sets the limits of the area to be 
+  processed (the bounding box or bbox) for tiles together with the associate maximum and minimum tiles numbers.:
+  ```
+  sahsuland=> SELECT zoomlevel, st_astext(bbox) AS bbox, y_mintile, y_maxtile, x_mintile, x_maxtile FROM tile_limits_usa_2014;
+   zoomlevel |                                                                   bbox                                                                    | y_mintile | y_maxtile | x_mintile | x_maxtile
+  -----------+-------------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------+-----------+-----------
+           0 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |         0 |         0 |         0 |         0
+           1 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |         0 |         1 |         0 |         1
+           2 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |         0 |         2 |         0 |         3
+           3 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |         1 |         4 |         0 |         7
+           4 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |         3 |         8 |         0 |        15
+           5 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |         6 |        17 |         0 |        31
+           6 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |        13 |        34 |         0 |        63
+           7 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |        27 |        69 |         0 |       127
+           8 | POLYGON((-179.14734 -14.552549,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.552549,-179.14734 -14.552549))                      |        54 |       138 |         0 |       255
+           9 | POLYGON((-179.14734 -14.552549,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.552549,-179.14734 -14.552549))                      |       108 |       276 |         1 |       511
+  (10 rows)
+  ```
 * Create and comment tile intersects table (called tile_intersects_&lt;geography name&gt;); 
 * Partition tile intersects  table (PostGres only);
 * Populate and index tile intersects table (called tile_intersects_&lt;geography name&gt;); 
@@ -800,13 +819,55 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
 	psql:pg_USA_2014.sql:6039: INFO:  Processed 4989+1 total areaid intersects for geolevel id 3/3 zoomlevel: 7/9 in 7.8+0.0s+0.0s, 511.7s total; 636.6 intesects/s
 	psql:pg_USA_2014.sql:6039: INFO:  Processed 7127+4 total areaid intersects for geolevel id 3/3 zoomlevel: 8/9 in 19.1+0.1s+0.0s, 530.8s total; 373.4 intesects/s
   ```
+  This is a key SQL statement and the code (tile_intersects_insert2.sql) is markedly different although functionally identical between SQL Server and Postgres. For
+  performance reasons the SQL Server code is split into sub statements to prevent SQL Server ignoring the common table expression structure and unnesting.
+  The algorithm only processes NON NULL tiles (i.e.e tiles with data in them). This results in the following savings:
+  ```
+    1> SELECT geolevel_id, zoomlevel,
+	2>        COUNT(DISTINCT(areaid)) AS areas,
+	3>        MIN(x) AS xmin, MIN(y) AS ymin,
+	4>        MAX(x) AS xmax, MAX(y) AS ymax,
+	5>    (MAX(x)-MIN(x)+1)*(MAX(y)-MIN(y)+1) AS possible_tiles,
+	6>        COUNT(DISTINCT(CAST(x AS VARCHAR) + CAST(y AS VARCHAR))) AS tiles,
+	7>    CAST(ROUND((CAST( (((MAX(x)-MIN(x)+1)*(MAX(y)-MIN(y)+1)) /* possible_tiles */ - COUNT(DISTINCT(CAST(x AS VARCHAR) + CAST(y AS VARCHAR)))) AS NUMERIC)/
+	8> ((MAX(x)-MIN(x)+1)*(MAX(y)-MIN(y)+1)))*100, 2) AS DECIMAL(4,1)) AS pct_saving
+	9>   FROM tile_intersects_usa_2014
+	10>  GROUP BY geolevel_id, zoomlevel
+	11>  ORDER BY 1, 2;
+	12> go
+	geolevel_id zoomlevel   areas       xmin        ymin        xmax        ymax        possible_tiles tiles       pct_saving
+	----------- ----------- ----------- ----------- ----------- ----------- ----------- -------------- ----------- ----------
+			  1           0           1           0           0           0           0              1           1         .0
+			  2           0          56           0           0           0           0              1           1         .0
+			  2           1          56           0           0           1           1              4           3       25.0
+			  2           2          56           0           0           3           2             12           5       58.3
+			  2           3          56           0           1           7           4             32          10       68.8
+			  2           4          56           0           3          15           8             96          22       77.1
+			  2           5          56           0           6          31          17            384          47       87.8
+			  2           6          56           0          13          63          34           1408         111       92.1
+			  2           7          56           0          27         127          69           5504         281       94.9
+			  2           8          56           0          54         255         135          20992         665       96.8
+			  2           9          56           1         108         511         271          83804        1568       98.1
+			  3           0        3233           0           0           0           0              1           1         .0
+			  3           1        3233           0           0           1           1              4           3       25.0
+			  3           2        3233           0           0           3           2             12           5       58.3
+			  3           3        3233           0           1           7           4             32          10       68.8
+			  3           4        3233           0           3          15           8             96          22       77.1
+			  3           5        3233           0           6          31          17            384          49       87.2
+			  3           6        3233           0          13          63          34           1408         119       91.6
+			  3           7        3233           0          27         127          69           5504         333       94.0
+			  3           8        3233           0          54         255         138          21760         992       95.4
+			  3           9        3233           1         108         511         276          86359        3137       96.4
+
+	(21 rows affected)
+  ```
 * Create statistics on all tables;
 * For each shapefile geolevel:  
   * Test Turf (Node.js processing) and database calculated areas agree to within 1% (Postgres)/5% (SQL server)
   
 ### 2.4.2 Tile Manufacture
 
-In the same directory as before run the *tileMaker* manufacturer. This has separate Postgres and SQL Server stubs calling a common 
+In the same directory as before run the *tile Maker* manufacturer. This has separate Postgres and SQL Server stubs calling a common 
 *tileMaker.js* node.js core:
 
 - ```node <full path to script> --database <flags>```
