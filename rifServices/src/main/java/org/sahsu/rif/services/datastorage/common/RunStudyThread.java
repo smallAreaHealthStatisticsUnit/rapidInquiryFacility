@@ -233,9 +233,10 @@ public class RunStudyThread implements Runnable {
 				= RIFServiceMessages.getMessage(
 					"studyState.studyResultsRFailure.description");
 			updateStudyStatusState(statusMessage, rifServiceException, errorStudyState);
-			throw rifServiceException;
+			throw new RIFServiceException(rifServiceException,
+			                              "Status is '%s'; error study state is '%s'",
+			                              statusMessage, errorStudyState);
 		}
-
 	}
 
 	// Normal state transition
