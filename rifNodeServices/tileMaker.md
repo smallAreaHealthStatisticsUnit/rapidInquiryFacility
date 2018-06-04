@@ -623,6 +623,8 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
 	```sqlcmd -U peter -P XXXXXXXXXXX -d sahsuland_dev -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```	
 
 	[SQL Server data processing example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_data_processing.md)
+
+Data loading steps. These load the data and prepare it for tile manufacture:
 	
 * For each shapefile geolevel:
   * Create the table, comment;
@@ -902,8 +904,8 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
 In the same directory as before run the *tile Maker* manufacturer. This has separate Postgres and SQL Server stubs calling a common 
 *tileMaker.js* node.js core:
 
-- ```node <full path to script> --database <flags>```
-     Flags:
+* ```node <full path to script> <flags>```
+     Where the flags are:
 	 * ```-D, --database  <database name>```: Name of the database.          
 	   [default: <user default>];
 	 * ```-U, --username <username>```: Connect as user &lt;username&gt; **NOT** *rif40*.         
@@ -920,19 +922,119 @@ In the same directory as before run the *tile Maker* manufacturer. This has sepa
 	 * ```-h, --help```: display this helpful message and exit.
 	   [default: false]
 
-- Postgres: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev```
+Script examples:
+	   
+* Postgres: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev```
   [Postgres tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_tile_manufacture.md)
-
-- SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database sahsuland_dev```
+  A log file will be created in the current directory as: *pgTileMaker.log*;
+* SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database sahsuland_dev```
   [SQL Server tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_tile_manufacture.md)
-	
+  A log file will be created in the current directory as: *mssqlTileMaker.log*
+
+Tile manufacturing steps:
+  
 * Parse XML configuration file;
 * Connect to database;
 * Create hierarchy CSV file;
 * Create lookup CSV file for each geolevel;
 * Create adjacency CSV file for geography;
 * Create geometry CSV file for geography;
-* Create tiles 10 at a time for each zoomlevel and geography;
+* Create tiles 10 at a time for each zoomlevel and geography:
+  * Tile IDs are in the form ```<geolevel_id>_<zoomlevel>_<x>_<y>```;
+  * Tiles arr process by geolevel and  zoomlevel in blocks of 10 in x/y order. SQL Server code to create the tile blocks table:
+    ```SQL
+	IF OBJECT_ID('tile_blocks_usa_2014', 'U') IS NOT NULL DROP TABLE tile_blocks_usa_2014;
+	WITH a AS (
+		SELECT geolevel_id, zoomlevel, x, y, COUNT(areaid) AS total_areas
+		  FROM  tile_intersects_usa_2014
+		GROUP BY geolevel_id, zoomlevel, x, y
+	), b AS (
+		SELECT geolevel_id, zoomlevel, x, y, total_areas,
+			   ABS((ROW_NUMBER() OVER(PARTITION BY geolevel_id, zoomlevel ORDER BY x, y))/10)+1 AS block
+		  FROM a
+	), c AS (
+	SELECT geolevel_id, zoomlevel, block, x, y, total_areas,
+		   CAST(geolevel_id AS VARCHAR) + '_' + CAST(zoomlevel AS VARCHAR) + '_' + CAST(x AS VARCHAR) + '_' + CAST(y AS VARCHAR) AS tile
+	  FROM b
+	)
+	SELECT geolevel_id, zoomlevel, block, x, y, total_areas, tile
+	  INTO tile_blocks_usa_2014
+	  FROM c
+	 ORDER BY geolevel_id, zoomlevel, block, tile;
+    ```	
+  * The tile blocks, intersects and lookup tables are then joined (e.g. tile_blocks_usa_2014 y, tile_intersects_usa_2014 z, lookup_cb_2014_us_nation_5m) and the area_id's for each tile
+    appended in a single ```FeatureCollection``` for the tile, see [GeoJSON draft version 6](http://wiki.geojson.org/GeoJSON_draft_version_6). Example SQL Server SQL:
+    ```SQL
+		WITH a AS (
+			SELECT CAST(z.geolevel_id AS VARCHAR) + '_' + 'CB_2014_US_NATION_5M' + '_' + CAST(z.zoomlevel AS VARCHAR) + '_' + CAST(z.x AS VARCHAR) + '_' + CAST(z.y AS VARCHAR) AS tile_id,
+				 z.geolevel_id, z.zoomlevel, z.geom.STAsText() AS optimised_wkt, z.areaid, z.x, z.y, y.block,
+				 a.gid AS lookup_gid, a.*
+			 FROM tile_blocks_usa_2014 y, tile_intersects_USA_2014 z, lookup_CB_2014_US_NATION_5M a
+			 WHERE y.geolevel_id = @geolevel_id
+			   AND y.zoomlevel   = @zoomlevel
+			   AND y.block       = @block
+			   AND y.geolevel_id = z.geolevel_id
+			   AND y.zoomlevel   = z.zoomlevel
+			   AND y.x           = z.x
+			   AND y.y           = z.y
+			   AND z.areaid      = a.CB_2014_US_NATION_5M
+		)
+		SELECT tile_id, areaid, geolevel_id, zoomlevel, x, y, block,
+			   areaname, CB_2014_US_NATION_5M, geographic_centroid, optimised_wkt, lookup_gid
+			   FROM a
+		 ORDER BY tile_id, areaid;
+	```
+	This GeoJSON is then converted to [TopoJSON](https://github.com/topojson/topojson-specification/blob/master/README.md) and stored in the tiles table. 
+	Example TopoJSON fragment - truncated:
+	```JSON
+	{
+	  "type": "Topology",
+	  "objects": {
+		"collection": {
+		  "type": "GeometryCollection",
+		  "bbox": [
+			-179.14734000000004,
+			-14.549542318143596,
+			179.77846999999986,
+			71.35256100000012
+		  ],
+		  "geometries": [
+			{
+			  "type": "MultiPolygon",
+			  "properties": {
+				"gid": 1,
+				"area_id": "US",
+				"name": "United States",
+				"geographic_centroid": {
+				  "type": "Point",
+				  "coordinates": [
+					-108.528,
+					45.1076
+				  ]
+				},
+				"x": 0,
+				"y": 0,
+				"CB_2014_US_NATION_5M": "US",
+				"zoomlevel": 0
+			  },
+			  "id": 1,
+			  "arcs": [
+				[
+				  [
+					0
+				  ]
+				],
+				[
+				  [
+					1
+				  ]
+				],
+				[
+				  [
+					2
+				  ]
+				],
+	```
 * Creating tile CSV file for each geolevel;
 * Created dataLoader XML config file
 * All 6 tests passed, none failed

@@ -17,7 +17,7 @@ About to connected to SQL server using: {
     },
     "database": "sahsuland_dev",
     "user": "peter",
-    "password": "retep"
+    "password": "XXXXXX"
 }
 (node:15528) [DEP0064] DeprecationWarning: tls.createSecurePair() is deprecated. Please use tls.Socket instead.
 Connected to SQL server using: {
@@ -31,7 +31,7 @@ Connected to SQL server using: {
     },
     "database": "sahsuland_dev",
     "user": "peter",
-    "password": "retep",
+    "password": "XXXXXX",
     "port": 1433,
     "stream": false,
     "parseJSON": false
