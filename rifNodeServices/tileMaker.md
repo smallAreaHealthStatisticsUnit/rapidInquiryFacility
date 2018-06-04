@@ -760,8 +760,9 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
 * Create required functions for this scripts and the *tile Maker* manufacturer:
   * ```tileMaker_longitude2tile(longitude DOUBLE PRECISION, zoom_level INTEGER)```: ```SELECT FLOOR( (longitude + 180) / 360 * (1 << zoom_level) )::INTEGER;```
   * ```tileMaker_latitude2tile(latitude DOUBLE PRECISION, zoom_level INTEGER)```: Convert latitude (WGS84 - 4326) to OSM tile x.
-    ```SELECT FLOOR( (1.0 - LN(TAN(RADIANS(latitude)) + 1.0 / COS(RADIANS(latitude))) / PI()) / 2.0 * (1 << zoom_level) )::INTEGER```
-	
+    ```SQL
+	SELECT FLOOR( (1.0 - LN(TAN(RADIANS(latitude)) + 1.0 / COS(RADIANS(latitude))) / PI()) / 2.0 * (1 << zoom_level) )::INTEGER;
+	```
     Derivation of the tile X/Y:   
 
     * Reproject the coordinates to the Mercator projection (from EPSG:4326 to EPSG:3857):
@@ -769,19 +770,20 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
 	  x = lon
 	  y = arsinh(tan(lat)) = log[tan(lat) + sec(lat)]
       ```
-	(lat and lon are in radians)
+	  (lat and lon are in radians)
 
-    * Transform range of x and y to 0 � 1 and shift origin to top left corner:
+    * Transform range of x and y to between 0 and 1 and shift origin to top left corner:
       ```
-	x = [1 + (x / pi)] / 2
-	y = [1 - (y / pi)] / 2
+   	  x = [1 + (x / pi)] / 2
+	  y = [1 - (y / pi)] / 2
       ```
       * Calculate the number of tiles across the map, n, using 2**zoom
       * Multiply x and y by n. Round results down to give tilex and tiley.
-  * ```tileMaker_tile2longitude(x INTEGER, zoom_level INTEGER)```:
-    Convert OSM tile x to longitude (WGS84 - 4326) - ```( (x * 1.0) / (1 << zoom_level) * 360.0) - 180.0```
-  * ```tileMaker_tile2latitude(y INTEGER, zoom_level INTEGER)```:
-    Convert OSM tile y to latitude (WGS84 - 4326):
+  * ```tileMaker_tile2longitude(x INTEGER, zoom_level INTEGER)```: Convert OSM tile x to longitude (WGS84 - 4326)
+	```SQL
+	SELECT ( ( (x * 1.0) / (1 << zoom_level) * 360.0) - 180.0)::DOUBLE;
+	```
+  * ```tileMaker_tile2latitude(y INTEGER, zoom_level INTEGER)```: Convert OSM tile y to latitude (WGS84 - 4326):
 	```SQL
 	DECLARE
 		n FLOAT;
