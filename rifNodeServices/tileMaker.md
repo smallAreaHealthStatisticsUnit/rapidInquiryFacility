@@ -569,7 +569,188 @@ Make sure:
 
 ### 2.3.2 Processing Huge Shapefiles
 
-To be added.
+Huge shapefiles need to be pre processed using *mapshaper* down to a more reasonable size. *mapshaper* has browser and command line based versions and handles large files well.
+Do *NOT* use the web based version [http://mapshaper.org/](http://mapshaper.org/) as it is limited to 100MB.
+
+Install [mapshaper](https://github.com/mbloch/mapshaper) globally using ```npm install -g mapshaper```:
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>npm install -g mapshaper
+C:\Users\phamb\AppData\Roaming\npm\mapshaper -> C:\Users\phamb\AppData\Roaming\npm\node_modules\mapshaper\bin\mapshaper
+C:\Users\phamb\AppData\Roaming\npm\mapshaper-xl -> C:\Users\phamb\AppData\Roaming\npm\node_modules\mapshaper\bin\mapshaper-xl
+C:\Users\phamb\AppData\Roaming\npm\mapshaper-gui -> C:\Users\phamb\AppData\Roaming\npm\node_modules\mapshaper\bin\mapshaper-gui
++ mapshaper@0.4.80
+added 17 packages in 2.913s
+```
+On Windows theewe are two commands available:
+
+* Command line: ```C:\Users\%USERNAME%\AppData\Roaming\npm\node_modules\mapshaper-gui.cmd```
+* Browser GUI: ```C:\Users\%USERNAME%\AppData\Roaming\npm\node_modules\mapshaper.cmd```
+
+*mapshaper* is a complex tool with many options [mapshaper WIKI](https://github.com/mbloch/mapshaper/wiki). In addition to simplification:
+ 
+* Convert between file formats
+* Clip a layer of polygons, lines or points using polygons in a second layer
+* Erase parts of a polygon, line or point layer using a second polygon layer
+* Aggregate polygons by dissolving edges
+* Join an external data table to a feature layer
+* Edit the attribute table
+
+The following options were used:
+
+* ```<shapefile>```: Input shapefile name
+* ```-simplify <simpliy percent>```: Simplify retaining %lt;simplify percent&gt; of the data. 20% to 50% gives good results; 5% will result in triangles.
+* ```-o <output shapefile>```:
+* ```-info```: Get information about a dataset
+
+For example:
+
+To get information about a dataset: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd COA\coa11_clip.shp -info```
+
+```
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\phamb\AppData\Roaming\npm\mapshaper.cmd COA\coa11_clip.shp -info
+[info]
+Layer 1 *
+Layer name: coa11_clip
+Records: 227,759
+Geometry
+  Type: polygon
+  Bounds: 5513 5337.9 655604.7 1220301.5
+  Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
+Attribute data
+  Field     First value
+  Area      49974.435826
+  Area_km2      0.049974435826
+  COA11     'E00062113'
+  LAD11     'E06000005'
+  LAD11NM   'Darlington'
+  LSOA11_1  'E01012316'
+  LSOA11NM  'Darlington 010B'
+  MSOA11    'E02002568'
+  MSOA11NM  'Darlington 010'
+```
+
+To simplify a dataset 50%: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp LSOA\*.shp MSOA\*.shp snap -simplify 0.5 -clean -o tilemaker/ format=shapefile -verbose```
+
+```
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i COA\*.shp snap -simplify 0.5 -clean -o tilemaker/ format=shapefile -verbose
+[i] Importing: COA\coa11_clip.shp
+[i] Snapped 54928 points
+[i] - 31757ms
+[simplify] Repaired 38 intersections; 212 intersections could not be repaired
+[simplify] - 29170ms
+[clean] Find mosaic rings 1130ms
+[clean] Detect holes (holes: 3496, enclosures: 4630) 1637ms
+[clean] Build mosaic 2770ms
+[clean] Dissolve tiles 2413ms
+[clean] Retained 227,759 of 227,759 features
+[clean] - 27774ms
+[o] Wrote tilemaker\coa11_clip.shp
+[o] Wrote tilemaker\coa11_clip.shx
+[o] Wrote tilemaker\coa11_clip.dbf
+[o] Wrote tilemaker\coa11_clip.prj
+[o] - 15673ms
+```
+ 
+To simplify a geography 25%: 
+```
+C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
+-i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+-i LSOA\*.shp name=LS2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+-i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+-i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+-i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+-verbose
+```
+
+```
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
+More? -i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+More? -i LSOA\*.shp name=LS2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+More? -i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+More? -i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+More? -i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+More? -verbose
+[i] Importing: COA\coa11_clip.shp
+[i] Snapped 54928 points
+[i] - 32522ms
+[simplify] Repaired 38 intersections; 212 intersections could not be repaired
+[simplify] - 28352ms
+[clean] Find mosaic rings 1132ms
+[clean] Detect holes (holes: 3496, enclosures: 4630) 1901ms
+[clean] Build mosaic 3037ms
+[clean] Dissolve tiles 2107ms
+[clean] Retained 227,759 of 227,759 features
+[clean] - 28546ms
+[o] Wrote tilemaker\COA2011.shp
+[o] Wrote tilemaker\COA2011.shx
+[o] Wrote tilemaker\COA2011.dbf
+[o] Wrote tilemaker\COA2011.prj
+[o] - 16352ms
+[i] Importing: LSOA\LSOA11_clip.shp
+[i] Snapped 28149 points
+[i] - 16600ms
+[simplify] Repaired 2 intersections; 1 intersection could not be repaired
+[simplify] - 11430ms
+[clean] Find mosaic rings 302ms
+[clean] Detect holes (holes: 183, enclosures: 857) 159ms
+[clean] Build mosaic 465ms
+[clean] Dissolve tiles 577ms
+[clean] Retained 41,729 of 41,729 features
+[clean] - 9615ms
+[o] Wrote tilemaker\LS2011.shp
+[o] Wrote tilemaker\LS2011.shx
+[o] Wrote tilemaker\LS2011.dbf
+[o] Wrote tilemaker\LS2011.prj
+[o] - 5993ms
+[i] Importing: MSOA\MSOA11_clip.shp
+[i] Snapped 20697 points
+[i] - 8731ms
+[simplify] Repaired 6 intersections
+[simplify] - 8183ms
+[clean] Find mosaic rings 133ms
+[clean] Detect holes (holes: 2894, enclosures: 1474) 616ms
+[clean] Build mosaic 751ms
+[clean] Dissolve tiles 367ms
+[clean] Retained 8,480 of 8,480 features
+[clean] - 5553ms
+[o] Wrote tilemaker\MSOA2011.shp
+[o] Wrote tilemaker\MSOA2011.shx
+[o] Wrote tilemaker\MSOA2011.dbf
+[o] Wrote tilemaker\MSOA2011.prj
+[o] - 2569ms
+[i] Importing: District\District11_SAHSU_clip.shp
+[i] Snapped 27497 points
+[i] - 1888ms
+[simplify] Repaired 7 intersections; 1 intersection could not be repaired
+[simplify] - 2225ms
+[clean] Find mosaic rings 34ms
+[clean] Detect holes (holes: 1, enclosures: 752) 194ms
+[clean] Build mosaic 232ms
+[clean] Dissolve tiles 58ms
+[clean] Retained 380 of 380 features
+[clean] - 1174ms
+[o] Wrote tilemaker\LADUA2011.shp
+[o] Wrote tilemaker\LADUA2011.shx
+[o] Wrote tilemaker\LADUA2011.dbf
+[o] Wrote tilemaker\LADUA2011.prj
+[o] - 867ms
+[i] Importing: Region\region11_clip.shp
+[i] Snapped 42648 points
+[i] - 1818ms
+[simplify] Repaired 169 intersections
+[simplify] - 4281ms
+[clean] Find mosaic rings 58ms
+[clean] Detect holes (holes: 1882, enclosures: 4618) 1598ms
+[clean] Build mosaic 1659ms
+[clean] Dissolve tiles 463ms
+[clean] Retained 11 of 11 features
+[clean] - 3872ms
+[o] Wrote tilemaker\GOR2011.shp
+[o] Wrote tilemaker\GOR2011.shx
+[o] Wrote tilemaker\GOR2011.dbf
+[o] Wrote tilemaker\GOR2011.prj
+[o] - 1201ms
+```
 
 ## 2.4 Post Front End Processing
 
@@ -1192,7 +1373,7 @@ TileMaker is currently working with some minor faults but needs to have in order
 3. Support for population weighted centroids]. In the interim this will be supported via script;
 4. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present);
 5. Support very large shapefiles (e.g. COA2011). This probably will require a rewrite of the shapefile reader to process area by area. The issue is with multipolygons. 
-   These are often multiple records in shapefiles and they need to be UNIOONed together. A work area is provide in 
+   These are often multiple records in shapefiles and they need to be UNIOONed together. A workaround is provide in 
    [2.3.2 Processing Huge Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#232-processing-huge-shapefiles);
 6. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
    than the TileMaker screen. Probably the best solution is to use Angular;
