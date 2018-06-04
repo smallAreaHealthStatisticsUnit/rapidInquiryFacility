@@ -10,7 +10,7 @@ Tile Maker
     - [1.2.2 SQL Server Connection Error](#122-sql-server-connection-error)
 	- [1.2.3 JSZip 3.0 Error](#123-jszip-30-error)
 	- [1.2.4 BULK INSERT Permission](#124-bulk-insert-permission)
-	- [1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms](#125 mssql-timeout-request-failed-to-complete-in-xxx000ms)
+	- [1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms](#125-mssql-timeout-request-failed-to-complete-in-xxx000ms)
 - [2. Running the Tile Maker](#2-running-the-tile-maker)
   - [2.1 Setup](#21-setup)
   - [2.2 Processing Overview](#22-processing-overview)
@@ -711,7 +711,7 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
 	psql:pg_USA_2014.sql:632: NOTICE:  Self-intersection at or near point -105.05294356541158 39.913698399795408
 	```
   * Check validity of geometry columns;
-  * Make all polygons right handed:
+  * Make all polygons right handed. If not right handed the area calculation will be wrong on SQL Server:
     - Postgres
       ```SQL 
 	  UPDATE cb_2014_us_county_500k
@@ -740,10 +740,10 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
 		  FROM a
 		)
 		UPDATE cb_2014_us_county_500k
-		   SET geom_6 = c.geom_6.ReorientObject()
+		   SET geom_6 = c.geom_6.ReorientObject() /* This is no ST_ForceRHR() equivalent */
 		  FROM cb_2014_us_county_500k c
 		 JOIN b ON b.gid = c.gid
-		 WHERE b.pct_km2_diff > 200 /* Threshold test */;
+		 WHERE b.pct_km2_diff > 200 /* Threshold test: area calculation is wrong */;
 	  ```
   * Create spatial indexes; 
 * Create, populate and comment geography meta data table compatible with RIF40_GEOGRAPHIES 
@@ -797,7 +797,8 @@ the covariates table on *sahsuland_dev*. In the longer term the FIPS codes shoul
            9 | POLYGON((-179.14734 -14.552549,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.552549,-179.14734 -14.552549))                      |       108 |       276 |         1 |       511
   (10 rows)
   ```
-* Create and comment tile intersects table (called tile_intersects_&lt;geography name&gt;); 
+* Create and comment tile intersects table (called tile_intersects_&lt;geography name&gt;). This is a table is tile area id intersects, and 
+  contains the geometry and bounding box for each area id; 
 * Partition tile intersects  table (PostGres only);
 * Populate and index tile intersects table (called tile_intersects_&lt;geography name&gt;); 
   ```
