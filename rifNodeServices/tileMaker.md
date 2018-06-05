@@ -393,7 +393,7 @@ Processing concepts:
 The *tile maker* web application is used to:
 
 1. Upload a set of shapefiles (see next section for format), this optionally contains the *tile maker* 
-   configuration file: *geoDataLoader.xml*. For first run through setup:
+   configuration file: *geoDataLoader.xml*. The field names must be in upper case. For first run through setup:
    
    * Enter a geography name and description;
    * For each administrative geography starting from the highest resolution:
@@ -689,11 +689,11 @@ Attribute data
 
 ### 2.4.2 Simplifying a shapefile
 
-To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory: 
-```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -simplify 0.5 -clean -o tilemaker/ format=shapefile -verbose```
+To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *EWS2011* directory: 
+```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -simplify 0.5 -clean -o EWS2011/ format=shapefile -verbose```
 
 ```
-C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i COA\*.shp snap -simplify 0.5 -clean -o tilemaker/ format=shapefile -verbose
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i COA\*.shp snap -simplify 0.5 -clean -o EWS2011/ format=shapefile -verbose
 [i] Importing: COA\coa11_clip.shp
 [i] Snapped 54928 points
 [i] - 31757ms
@@ -705,138 +705,138 @@ C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\
 [clean] Dissolve tiles 2413ms
 [clean] Retained 227,759 of 227,759 features
 [clean] - 27774ms
-[o] Wrote tilemaker\coa11_clip.shp
-[o] Wrote tilemaker\coa11_clip.shx
-[o] Wrote tilemaker\coa11_clip.dbf
-[o] Wrote tilemaker\coa11_clip.prj
+[o] Wrote EWS2011\coa11_clip.shp
+[o] Wrote EWS2011\coa11_clip.shx
+[o] Wrote EWS2011\coa11_clip.dbf
+[o] Wrote EWS2011\coa11_clip.prj
 [o] - 15673ms
 ```
 
 ### 2.4.3 Renaming fields in a shapefile
 
-To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory: 
-```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -rename-fields coa2011=COA11 -o tilemaker/ format=shapefile -verbose```
+To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *EWS2011* directory: 
+```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile -verbose```
 
 ```
-C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -rename-fields coa2011=COA11 -o tilemaker/ format=shapefile -verbose
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile -verbose
 [i] Importing: COA\coa11_clip.shp
 [i] Snapped 54928 points
 [i] - 30723ms
 [rename-fields] - 1034ms
-[o] Wrote tilemaker\coa11_clip.shp
-[o] Wrote tilemaker\coa11_clip.shx
-[o] Wrote tilemaker\coa11_clip.dbf
-[o] Wrote tilemaker\coa11_clip.prj
+[o] Wrote EWS2011\coa11_clip.shp
+[o] Wrote EWS2011\coa11_clip.shx
+[o] Wrote EWS2011\coa11_clip.dbf
+[o] Wrote EWS2011\coa11_clip.prj
 [o] - 25844ms
 ```
 
 ### 2.4.4 Simplifying multiple shapefiles
 
-To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory. Note the 
+To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *EWS2011* directory. Note the 
 grouping and repetition of the commands; this is essentially five commands concatenated together: 
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
--i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -rename-fields coa2011=COA11 -o tilemaker/ format=shapefile ^
--i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 -clean -rename-fields lsoa2011=LSOA11 -o tilemaker/ format=shapefile ^
--i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -rename-fields msoa2011=MSOA11 -o tilemaker/ format=shapefile ^
--i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -rename-fields ladua2011=LADUA11 -o tilemaker/ format=shapefile ^
--i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -rename-fields gor2011=geo_code -o tilemaker/ format=shapefile ^
+-i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile ^
+-i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 -clean -rename-fields LSOA2011=LSOA11 -o EWS2011/ format=shapefile ^
+-i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -rename-fields MSOA2011=MSOA11 -o EWS2011/ format=shapefile ^
+-i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -rename-fields LADUA2011=LADUA11 -o EWS2011/ format=shapefile ^
+-i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -rename-fields GOR2011=geo_code,GOR_NAME=geo_label -o EWS2011/ format=shapefile ^
 -verbose
 ```
 
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
-More? -i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -rename-fields coa2011=COA11 -o tilemaker/ format=shapefile ^
-More? -i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 -clean -rename-fields lsoa2011=LSOA11 -o tilemaker/ format=shapefile ^
-More? -i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -rename-fields msoa2011=MSOA11 -o tilemaker/ format=shapefile ^
-More? -i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -rename-fields ladua2011=LADUA11 -o tilemaker/ format=shapefile ^
-More? -i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -rename-fields gor2011=geo_code -o tilemaker/ format=shapefile ^
+More? -i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile ^
+More? -i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 -clean -rename-fields LSOA2011=LSOA11 -o EWS2011/ format=shapefile ^
+More? -i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -rename-fields MSOA2011=MSOA11 -o EWS2011/ format=shapefile ^
+More? -i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -rename-fields LADUA2011=LADUA11 -o EWS2011/ format=shapefile ^
+More? -i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -rename-fields GOR2011=geo_code,GOR_NAME=geo_label -o EWS2011/ format=shapefile ^
 More? -verbose
 [i] Importing: COA\coa11_clip.shp
 [i] Snapped 54928 points
-[i] - 31018ms
+[i] - 30997ms
 [simplify] Repaired 38 intersections; 212 intersections could not be repaired
-[simplify] - 27963ms
-[clean] Find mosaic rings 1134ms
-[clean] Detect holes (holes: 3496, enclosures: 4630) 1945ms
-[clean] Build mosaic 3083ms
-[clean] Dissolve tiles 2098ms
+[simplify] - 28262ms
+[clean] Find mosaic rings 1131ms
+[clean] Detect holes (holes: 3496, enclosures: 4630) 1983ms
+[clean] Build mosaic 3116ms
+[clean] Dissolve tiles 2077ms
 [clean] Retained 227,759 of 227,759 features
-[clean] - 27706ms
-[rename-fields] - 121ms
-[o] Wrote tilemaker\COA2011.shp
-[o] Wrote tilemaker\COA2011.shx
-[o] Wrote tilemaker\COA2011.dbf
-[o] Wrote tilemaker\COA2011.prj
-[o] - 16481ms
+[clean] - 27964ms
+[rename-fields] - 120ms
+[o] Wrote EWS2011\COA2011.shp
+[o] Wrote EWS2011\COA2011.shx
+[o] Wrote EWS2011\COA2011.dbf
+[o] Wrote EWS2011\COA2011.prj
+[o] - 16534ms
 [i] Importing: LSOA\LSOA11_clip.shp
 [i] Snapped 28149 points
-[i] - 16280ms
+[i] - 16334ms
 [simplify] Repaired 2 intersections; 1 intersection could not be repaired
-[simplify] - 11405ms
-[clean] Find mosaic rings 328ms
-[clean] Detect holes (holes: 183, enclosures: 857) 161ms
-[clean] Build mosaic 492ms
-[clean] Dissolve tiles 586ms
+[simplify] - 11474ms
+[clean] Find mosaic rings 306ms
+[clean] Detect holes (holes: 183, enclosures: 857) 160ms
+[clean] Build mosaic 470ms
+[clean] Dissolve tiles 578ms
 [clean] Retained 41,729 of 41,729 features
-[clean] - 9488ms
+[clean] - 9447ms
 [rename-fields] - 9ms
-[o] Wrote tilemaker\LSOA2011.shp
-[o] Wrote tilemaker\LSOA2011.shx
-[o] Wrote tilemaker\LSOA2011.dbf
-[o] Wrote tilemaker\LSOA2011.prj
-[o] - 6063ms
+[o] Wrote EWS2011\LSOA2011.shp
+[o] Wrote EWS2011\LSOA2011.shx
+[o] Wrote EWS2011\LSOA2011.dbf
+[o] Wrote EWS2011\LSOA2011.prj
+[o] - 6198ms
 [i] Importing: MSOA\MSOA11_clip.shp
 [i] Snapped 20697 points
-[i] - 8912ms
+[i] - 9005ms
 [simplify] Repaired 6 intersections
-[simplify] - 8352ms
-[clean] Find mosaic rings 142ms
-[clean] Detect holes (holes: 2894, enclosures: 1474) 774ms
-[clean] Build mosaic 919ms
-[clean] Dissolve tiles 363ms
+[simplify] - 8208ms
+[clean] Find mosaic rings 133ms
+[clean] Detect holes (holes: 2894, enclosures: 1474) 740ms
+[clean] Build mosaic 877ms
+[clean] Dissolve tiles 699ms
 [clean] Retained 8,480 of 8,480 features
-[clean] - 5993ms
+[clean] - 5723ms
 [rename-fields] - 4ms
-[o] Wrote tilemaker\MSOA2011.shp
-[o] Wrote tilemaker\MSOA2011.shx
-[o] Wrote tilemaker\MSOA2011.dbf
-[o] Wrote tilemaker\MSOA2011.prj
-[o] - 2677ms
+[o] Wrote EWS2011\MSOA2011.shp
+[o] Wrote EWS2011\MSOA2011.shx
+[o] Wrote EWS2011\MSOA2011.dbf
+[o] Wrote EWS2011\MSOA2011.prj
+[o] - 2695ms
 [i] Importing: District\District11_SAHSU_clip.shp
 [i] Snapped 27497 points
-[i] - 2144ms
+[i] - 2198ms
 [simplify] Repaired 7 intersections; 1 intersection could not be repaired
-[simplify] - 2285ms
-[clean] Find mosaic rings 37ms
-[clean] Detect holes (holes: 1, enclosures: 752) 203ms
-[clean] Build mosaic 246ms
-[clean] Dissolve tiles 69ms
+[simplify] - 2180ms
+[clean] Find mosaic rings 32ms
+[clean] Detect holes (holes: 1, enclosures: 752) 191ms
+[clean] Build mosaic 225ms
+[clean] Dissolve tiles 62ms
 [clean] Retained 380 of 380 features
-[clean] - 1664ms
+[clean] - 1188ms
 [rename-fields] - 0ms
-[o] Wrote tilemaker\LADUA2011.shp
-[o] Wrote tilemaker\LADUA2011.shx
-[o] Wrote tilemaker\LADUA2011.dbf
-[o] Wrote tilemaker\LADUA2011.prj
-[o] - 509ms
+[o] Wrote EWS2011\LADUA2011.shp
+[o] Wrote EWS2011\LADUA2011.shx
+[o] Wrote EWS2011\LADUA2011.dbf
+[o] Wrote EWS2011\LADUA2011.prj
+[o] - 562ms
 [i] Importing: Region\region11_clip.shp
 [i] Snapped 42648 points
-[i] - 1794ms
+[i] - 2106ms
 [simplify] Repaired 169 intersections
-[simplify] - 4637ms
+[simplify] - 4332ms
 [clean] Find mosaic rings 59ms
-[clean] Detect holes (holes: 1882, enclosures: 4618) 1598ms
-[clean] Build mosaic 1659ms
-[clean] Dissolve tiles 451ms
+[clean] Detect holes (holes: 1882, enclosures: 4618) 1637ms
+[clean] Build mosaic 1700ms
+[clean] Dissolve tiles 472ms
 [clean] Retained 11 of 11 features
-[clean] - 3592ms
-[rename-fields] - 0ms
-[o] Wrote tilemaker\GOR2011.shp
-[o] Wrote tilemaker\GOR2011.shx
-[o] Wrote tilemaker\GOR2011.dbf
-[o] Wrote tilemaker\GOR2011.prj
-[o] - 1139ms
+[clean] - 4036ms
+[rename-fields] - 1ms
+[o] Wrote EWS2011\GOR2011.shp
+[o] Wrote EWS2011\GOR2011.shx
+[o] Wrote EWS2011\GOR2011.dbf
+[o] Wrote EWS2011\GOR2011.prj
+[o] - 695ms
 ```
 
 ### 2.4.5 Dissolving a shapefile
@@ -850,7 +850,7 @@ To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i 
 
 Old DBF file data:
 
-| gor2011   | geo_label                | EER11CDO |
+| GOR2011   | GOR_NAME                 | EER11CDO |
 |-----------|--------------------------|----------|
 | E12000006 | East of England          |          | 
 | E12000003 | Yorkshire and The Humber |          | 
@@ -866,7 +866,7 @@ Old DBF file data:
 
 New DBF file data:
 
-| gor2011   | geo_label                | EER11CDO | country_co | country_na |
+| GOR2011   | GOR_NAME                 | EER11CDO | country_co | country_na |
 |-----------|--------------------------|----------|------------|------------|
 | E12000006 | East of England          |          | E92000001  | England    |
 | E12000003 | Yorkshire and The Humber |          | E92000001  | England    |
@@ -886,32 +886,32 @@ Step 2: Create Cntry\cntry11_clip.shp renaming *country_co* to *geo_code* and *c
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
 -i Region\*.shp name=CNTRY2011 snap -simplify 0.5 -clean ^
--each 'cntry2011=country_co,geo_label=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
+-each 'CNTRY2011=country_co,CNTRYNAME=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
 -verbose
 ```
 
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
 More? -i Region\*.shp name=CNTRY2011 snap -simplify 0.5 -clean ^
-More? -each 'cntry2011=country_co,geo_label=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
+More? -each 'CNTRY2011=country_co,CNTRYNAME=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
 More? -verbose
 [i] Importing: Region\region11_clip.shp
 [i] Snapped 42648 points
-[i] - 1516ms
+[i] - 1531ms
 [simplify] Repaired 169 intersections
-[simplify] - 3253ms
-[clean] Find mosaic rings 77ms
-[clean] Detect holes (holes: 1882, enclosures: 4618) 2414ms
-[clean] Build mosaic 2491ms
-[clean] Dissolve tiles 471ms
+[simplify] - 3336ms
+[clean] Find mosaic rings 97ms
+[clean] Detect holes (holes: 1882, enclosures: 4618) 2405ms
+[clean] Build mosaic 2506ms
+[clean] Dissolve tiles 495ms
 [clean] Retained 11 of 11 features
-[clean] - 4517ms
+[clean] - 4591ms
 [each] - 1ms
 [o] Wrote Cntry\cntry11_clip.shp
 [o] Wrote Cntry\cntry11_clip.shx
 [o] Wrote Cntry\cntry11_clip.dbf
 [o] Wrote Cntry\cntry11_clip.prj
-[o] - 637ms
+[o] - 653ms
 ```
 
 Step 3: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i Cntry\cntry11_clip.shp -o Cntry\cntry11_clip.csv format=csv -verbose```:
@@ -930,31 +930,31 @@ Step 3: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roamin
 | W92000004 | Wales     | 10       | W92000004  | Wales      |
 | S92000003 | Scotland  | 11       | S92000003  | Scotland   |
 
-Step 4: Using *Cntry\cntry11_clip.shp* dissolve on *cntry2011*, *geo_label* to create *CNTRY2011.shp* in the *tileMaker* directory:
+Step 4: Using *Cntry\cntry11_clip.shp* dissolve on *cntry2011*, *geo_label* to create *CNTRY2011.shp* in the *EWS2011* directory:
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
 -i Cntry\*.shp name=CNTRY2011 ^
--dissolve cntry2011,geo_label -o tilemaker/ format=shapefile ^
+-dissolve CNTRY2011,CNTRYNAME -o EWS2011/ format=shapefile ^
 -verbose
 ```
 
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
 More? -i Cntry\*.shp name=CNTRY2011 ^
-More? -dissolve cntry2011,geo_label -o tilemaker/ format=shapefile ^
+More? -dissolve CNTRY2011,CNTRYNAME -o EWS2011/ format=shapefile ^
 More? -verbose
 [i] Importing: Cntry\cntry11_clip.shp
-[i] - 477ms
+[i] - 485ms
 [dissolve] Dissolved 11 features into 3 features
 [dissolve] - 23ms
-[o] Wrote tilemaker\CNTRY2011.shp
-[o] Wrote tilemaker\CNTRY2011.shx
-[o] Wrote tilemaker\CNTRY2011.dbf
-[o] Wrote tilemaker\CNTRY2011.prj
-[o] - 672ms
+[o] Wrote EWS2011\CNTRY2011.shp
+[o] Wrote EWS2011\CNTRY2011.shx
+[o] Wrote EWS2011\CNTRY2011.dbf
+[o] Wrote EWS2011\CNTRY2011.prj
+[o] - 689ms
 ```
 
-Step 5: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i tilemaker\CNTRY2011.shp -o tilemaker\CNTRY2011.csv format=csv -verbose```:
+Step 5: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i EWS2011\CNTRY2011.shp -o EWS2011\CNTRY2011.csv format=csv -verbose```:
 
 | geo_code  | geo_label |
 |-----------|-----------|
@@ -966,10 +966,10 @@ Step 5: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roamin
 
 Step 6: View results of 2.4.4, 2.4.5 if run in sequence
 
-```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i tilemaker\*.shp -info```
+```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i EWS2011\*.shp -info```
 
 ```
-C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i tilemaker\*.shp -info
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>CALL C:\Users\phamb\AppData\Roaming\npm\mapshaper.cmd -i EWS2011\*.shp -info
 [info]
 Layer 1 *
 Layer name: CNTRY2011
@@ -980,28 +980,8 @@ Geometry
   Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
 Attribute data
   Field      First value
-  cntry2011  'E92000001\n'
-  geo_label  'England'
-
-[info]
-Layer 1 *
-Layer name: coa11_clip
-Records: 227,759
-Geometry
-  Type: polygon
-  Bounds: 5513 5337.9 655604.7 1220301.5
-  Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
-Attribute data
-  Field     First value
-  Area      49974.435826
-  Area_km2      0.049974435826
-  coa2011   'E00062113'
-  LAD11     'E06000005'
-  LAD11NM   'Darlington'
-  LSOA11_1  'E01012316'
-  LSOA11NM  'Darlington 010B'
-  MSOA11    'E02002568'
-  MSOA11NM  'Darlington 010'
+  CNTRY2011  'E92000001\n'
+  CNTRYNAME  'England'
 
 [info]
 Layer 1 *
@@ -1015,7 +995,7 @@ Attribute data
   Field     First value
   Area      49974.435826
   Area_km2      0.049974435826
-  coa2011   'E00062113'
+  COA2011   'E00062113'
   LAD11     'E06000005'
   LAD11NM   'Darlington'
   LSOA11_1  'E01012316'
@@ -1036,8 +1016,8 @@ Attribute data
   country_co  'E92000001\n'
   country_na  'England'
   EER11CDO    ''
-  geo_label   'East of England'
-  gor2011     'E12000006'
+  GOR2011     'E12000006'
+  GOR_NAME    'East of England'
 
 [info]
 Layer 1 *
@@ -1050,7 +1030,7 @@ Geometry
 Attribute data
   Field       First value
   LADUA11_NM  'Hartlepool'
-  ladua2011   'E06000001'
+  LADUA2011   'E06000001'
 
 [info]
 Layer 1 *
@@ -1062,7 +1042,7 @@ Geometry
   Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
 Attribute data
   Field     First value
-  lsoa2011  'W01000111'
+  LSOA2011  'W01000111'
   X         247672.287819
   Y         361618.08299
 
@@ -1079,7 +1059,7 @@ Attribute data
   Area       346980330.243
   Area_km2         346.980330243
   MSOA11_NM  'Mid Nithsdale'
-  msoa2011   'S02001421'
+  MSOA2011   'S02001421'
 ```
 
 ## 2.4 Post Front End Processing
