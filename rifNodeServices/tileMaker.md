@@ -564,18 +564,23 @@ The usual layout for the tilemaker ZIP file is:
 
 This allows the *tile maker* runs to be re-produced exactly.
 
-Make sure:
+Make sure you:
 
-* You follow the ESRI naming convention exactly;
-* Do **NOT** use the same file name in multiple sub-directories or you will get:
+* **Follow the ESRI naming convention exactly**;
+* **Do **NOT** use the same file name in multiple sub-directories** or you will get:
   ```
   Unable to process list of filess
   Duplicate file: sahsu_grd_level1.dbf; shape file: sahsu_grd_level1.shp already processed
   ```
+* **Follow the Shapefile Naming Requirements**.
 
 ### 2.3.2 Shapefile Naming Requirements
 
-The *AreaID* field will be the name of column used throughout the administrative geography and must be distinct between shapefiles. DO *NOT* call them all *area_id* or *geo_code*. 
+The *AreaID* field will be the name of column used throughout the administrative geography and must be:
+
+* Distinct between shapefiles. DO *NOT* call them all *area_id* or *geo_code*;
+* In upper case. Using lower case names will result in a crash!
+
 See the [2.4.3 Renaming fields in a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#243-renaming-fields-in-a-shapefile) 
 example below.
 
@@ -732,7 +737,7 @@ grouping and repetition of the commands; this is essentially five commands conca
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
 -i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -rename-fields coa2011=COA11 -o tilemaker/ format=shapefile ^
--i LSOA\*.shp name=LS2011 snap -simplify 0.5 -clean -rename-fields lsoa2011=LSOA11 -o tilemaker/ format=shapefile ^
+-i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 -clean -rename-fields lsoa2011=LSOA11 -o tilemaker/ format=shapefile ^
 -i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -rename-fields msoa2011=MSOA11 -o tilemaker/ format=shapefile ^
 -i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -rename-fields ladua2011=LADUA11 -o tilemaker/ format=shapefile ^
 -i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -rename-fields gor2011=geo_code -o tilemaker/ format=shapefile ^
@@ -742,7 +747,7 @@ C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
 More? -i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -rename-fields coa2011=COA11 -o tilemaker/ format=shapefile ^
-More? -i LSOA\*.shp name=LS2011 snap -simplify 0.5 -clean -rename-fields lsoa2011=LSOA11 -o tilemaker/ format=shapefile ^
+More? -i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 -clean -rename-fields lsoa2011=LSOA11 -o tilemaker/ format=shapefile ^
 More? -i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -rename-fields msoa2011=MSOA11 -o tilemaker/ format=shapefile ^
 More? -i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -rename-fields ladua2011=LADUA11 -o tilemaker/ format=shapefile ^
 More? -i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -rename-fields gor2011=geo_code -o tilemaker/ format=shapefile ^
@@ -776,10 +781,10 @@ More? -verbose
 [clean] Retained 41,729 of 41,729 features
 [clean] - 9488ms
 [rename-fields] - 9ms
-[o] Wrote tilemaker\LS2011.shp
-[o] Wrote tilemaker\LS2011.shx
-[o] Wrote tilemaker\LS2011.dbf
-[o] Wrote tilemaker\LS2011.prj
+[o] Wrote tilemaker\LSOA2011.shp
+[o] Wrote tilemaker\LSOA2011.shx
+[o] Wrote tilemaker\LSOA2011.dbf
+[o] Wrote tilemaker\LSOA2011.prj
 [o] - 6063ms
 [i] Importing: MSOA\MSOA11_clip.shp
 [i] Snapped 20697 points
@@ -1049,7 +1054,7 @@ Attribute data
 
 [info]
 Layer 1 *
-Layer name: LS2011
+Layer name: LSOA2011
 Records: 41,729
 Geometry
   Type: polygon
@@ -1694,18 +1699,19 @@ TO BE ADDED.
 TileMaker is currently working with some minor faults but needs to have in order of priority:
 
 1. Make ZIP file download work. A workaround is provided;
-2. Needs to calculate geographic centroids using the database;
-3. Support for population weighted centroids]. In the interim this will be supported via script;
-4. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present);
-5. Support very large shapefiles (e.g. COA2011). This probably will require a rewrite of the shapefile reader to process area by area. The issue is with multipolygons. 
+2. Using lower case DBF file names will result in a crash;
+3. Needs to calculate geographic centroids using the database;
+4. Support for population weighted centroids]. In the interim this will be supported via script;
+5. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present);
+6. Support very large shapefiles (e.g. COA2011). This probably will require a rewrite of the shapefile reader to process area by area. The issue is with multipolygons. 
    These are often multiple records in shapefiles and they need to be UNIOONed together. A workaround is provide in 
    [2.4 Pre Processing Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#24-pre-processing-shapefiles);
-6. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
+7. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
    than the TileMaker screen. Probably the best solution is to use Angular;
-7. Add all DBF fields in shapefile to lookup table (i..e add FIPS codes);
-8. Support for database logon in the front end;
-9. Run the generated scripts in the Node.js server. This requires the ability to logon and PSQL copy needs to be replaced to SQL COPY from STDIN/to STDOUT with STDIN/STOUT
-   file handlers in Node.js.
+8. Add all DBF fields in shapefile to lookup table (i..e add FIPS codes);
+9. Support for database logon in the front end;
+10. Run the generated scripts in the Node.js server. This requires the ability to logon and PSQL copy needs to be replaced to SQL COPY from STDIN/to STDOUT with STDIN/STOUT
+    file handlers in Node.js.
 
 Peter Hambly
 June 2018
