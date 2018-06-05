@@ -16,11 +16,11 @@ Tile Maker
   - [2.2 Processing Overview](#22-processing-overview)
   - [2.3 Running the Front End](#23-running-the-front-end)
   - [2.3.1 Shapefile Format](#231-shapefile-format)
-    - [2.3.2 Pre Processing Shapefiles](#232-pre-processing-shapefiles)	 
-      - [2.3.2.1 To display information about a shapefile](#2321-to-display-information-about-a-shapefile)
-      - [2.3.2.2 Simplifying a shapefile](#2322-simplifying-a-shapefile)
-      - [2.3.2.3 Simplifying multiple shapefiles](#2323-simplifying-multiple-shapefiles)
-      - [2.3.2.4 Dissolving a shapefile](#2324-simplifying-multiple-shapefiles)
+    - [2.4 Pre Processing Shapefiles](#24-pre-processing-shapefiles)	 
+      - [2.4.1 To display information about a shapefile](#241-to-display-information-about-a-shapefile)
+      - [2.4.2 Simplifying a shapefile](#242-simplifying-a-shapefile)
+      - [2.4.3 Simplifying multiple shapefiles](#243-simplifying-multiple-shapefiles)
+      - [2.4.4 Dissolving a shapefile](#244-simplifying-multiple-shapefiles)
   - [2.4 Post Front End Processing](#24-post-front-end-processing)
     - [2.4.1 Geospatial Data Load](#241-geospatial-data-load)
     - [2.4.2 Tile Manufacture](#242-tile-manufacture)
@@ -571,7 +571,7 @@ Make sure:
   Duplicate file: sahsu_grd_level1.dbf; shape file: sahsu_grd_level1.shp already processed
   ```
 
-### 2.3.2 Pre Processing Shapefiles
+### 2.4 Pre Processing Shapefiles
 
 Huge shapefiles need to be pre processed using *mapshaper* down to a more reasonable size. *mapshaper* has browser and command line based versions and handles large files well.
 Do *NOT* use the web based version [http://mapshaper.org/](http://mapshaper.org/) as it is limited to 100MB.
@@ -627,12 +627,12 @@ The following *mapshaper* options were used:
 
 Examples:
 
-* [To display information about a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2321-to-display-information-about-a-shapefile);
-* [Simplifying a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2322-simplifying-a-shapefile). To simplify a dataset by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory;
-* [Simplifying multiple shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2323-simplifying-multiple-shapefiles). To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory;
-* [Dissolving a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2324-simplifying-multiple-shapefiles). To dissolve a geography - UK regions (GOR2011) to UK Countries.
+* [To display information about a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#241-to-display-information-about-a-shapefile);
+* [Simplifying a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#242-simplifying-a-shapefile). To simplify a dataset by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory;
+* [Simplifying multiple shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#243-simplifying-multiple-shapefiles). To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory;
+* [Dissolving a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#244-simplifying-multiple-shapefiles). To dissolve a geography - UK regions (GOR2011) to UK Countries.
 
-#### 2.3.2.1 To display information about a shapefile
+#### 2.4.1 To display information about a shapefile
  
 To display information about a shapefile: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd COA\coa11_clip.shp -info```
 
@@ -659,7 +659,7 @@ Attribute data
   MSOA11NM  'Darlington 010'
 ```
 
-#### 2.3.2.2 Simplifying a shapefile
+#### 2.4.2 Simplifying a shapefile
 
 To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory: 
 ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp LSOA\*.shp MSOA\*.shp snap -simplify 0.5 -clean -o tilemaker/ format=shapefile -verbose```
@@ -684,7 +684,7 @@ C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\
 [o] - 15673ms
 ```
 
-#### 2.3.2.3 Simplifying multiple shapefiles
+#### 2.4.3 Simplifying multiple shapefiles
 
 To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory. Note the 
 grouping and repetition of the commands; this is essentially five commands concatenated together: 
@@ -788,14 +788,14 @@ More? -verbose
 [o] - 1201ms
 ```
 
-#### 2.3.2.4 Dissolving a shapefile
+#### 2.4.4 Dissolving a shapefile
 
 To dissolve a geography - UK regions (GOR2011) to UK Countries. 
 
 Step 1: Edit the DBF file using QGIS to add *country_co* and *country_na* as follows. This provides the correct code to dissolve onto. This possibly could be done 
 programatically using *mapshaper*.
 
-To dump DBG to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i Region\*.shp -o Region\region11_clip.csv format=csv -verbose```:
+To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i Region\*.shp -o Region\region11_clip.csv format=csv -verbose```:
 
 Old DBF file data:
 
@@ -863,7 +863,7 @@ More? -verbose
 [o] - 607ms
 ```
 
-Step 3: View new data. To dump DBG to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i Cntry\cntry11_clip.shp -o Cntry\cntry11_clip.csv format=csv -verbose```:
+Step 3: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i Cntry\cntry11_clip.shp -o Cntry\cntry11_clip.csv format=csv -verbose```:
 
 | geo_code  | geo_label | EER11CDO | country_co | country_na |
 |-----------|-----------|----------|------------|------------|
@@ -903,7 +903,7 @@ More? -verbose
 [o] - 647ms
 ```
 
-Step 5: View new data. To dump DBG to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i tilemaker\CNTRY2011.shp -o tilemaker\CNTRY2011.csv format=csv -verbose```:
+Step 5: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i tilemaker\CNTRY2011.shp -o tilemaker\CNTRY2011.csv format=csv -verbose```:
 
 | geo_code  | geo_label |
 |-----------|-----------|
@@ -1535,7 +1535,7 @@ TileMaker is currently working with some minor faults but needs to have in order
 4. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present);
 5. Support very large shapefiles (e.g. COA2011). This probably will require a rewrite of the shapefile reader to process area by area. The issue is with multipolygons. 
    These are often multiple records in shapefiles and they need to be UNIOONed together. A workaround is provide in 
-   [2.3.2 Pre Processing Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#232-pre-processing-shapefiles);
+   [2.4 Pre Processing Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#24-pre-processing-shapefiles);
 6. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
    than the TileMaker screen. Probably the best solution is to use Angular;
 7. Add all DBF fields in shapefile to lookup table (i..e add FIPS codes);
