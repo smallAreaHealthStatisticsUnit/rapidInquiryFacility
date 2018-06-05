@@ -627,7 +627,7 @@ The following *mapshaper* options were used:
 
 Examples:
 
-* [To display information about a shapefile][(https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2321-to-display-information-about-a-shapefile);
+* [To display information about a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2321-to-display-information-about-a-shapefile);
 * [Simplifying a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2322-simplifying-a-shapefile). To simplify a dataset by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory;
 * [Simplifying multiple shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2323-simplifying-multiple-shapefiles). To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory;
 * [Dissolving a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2324-simplifying-multiple-shapefiles). To dissolve a geography - UK regions (GOR2011) to UK Countries.
@@ -879,38 +879,39 @@ Step 3: View new data. To dump DBG to CSV: ```C:\Users\%USERNAME%\AppData\Roamin
 | W92000004 | Wales     | 10       | W92000004  | Wales      |
 | S92000003 | Scotland  | 11       | S92000003  | Scotland   |
 
-
 Step 4: Using *Cntry\cntry11_clip.shp* dissolve on *geo_code*, *geo_label* to create *CNTRY2011.shp* in the *tileMaker* directory:
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
--i Cntry\*.shp name=CNTRY2011 -clean ^
--dissolve='geo_code' -o tilemaker/ format=shapefile ^
+-i Cntry\*.shp name=CNTRY2011 ^
+-dissolve geo_code,geo_label -o tilemaker/ format=shapefile ^
 -verbose
 ```
 
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
-More? -i Cntry\*.shp name=CNTRY2011 -clean ^
-More? -dissolve='geo_code,geo_label' -o tilemaker/ format=shapefile ^
+More? -i Cntry\*.shp name=CNTRY2011 ^
+More? -dissolve geo_code,geo_label -o tilemaker/ format=shapefile ^
 More? -verbose
 [i] Importing: Cntry\cntry11_clip.shp
-[i] - 501ms
-[clean] Find mosaic rings 53ms
-[clean] Detect holes (holes: 1882, enclosures: 4618) 2317ms
-[clean] Build mosaic 2372ms
-[clean] Dissolve tiles 156ms
-[clean] Retained 11 of 11 features
-[clean] - 3394ms
+[i] - 484ms
+[dissolve] Dissolved 11 features into 3 features
+[dissolve] - 25ms
 [o] Wrote tilemaker\CNTRY2011.shp
 [o] Wrote tilemaker\CNTRY2011.shx
 [o] Wrote tilemaker\CNTRY2011.dbf
 [o] Wrote tilemaker\CNTRY2011.prj
-[o] - 639ms
+[o] - 647ms
 ```
 
-![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cntry2011_map.png?raw=true "CNTRY2011 map")
+Step 5: View new data. To dump DBG to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i tilemaker\CNTRY2011.shp -o tilemaker\CNTRY2011.csv format=csv -verbose```:
 
-XXX ,delete COUNTRY_CO,delete COUNTRY_NA,delete EER11CDO
+| geo_code  | geo_label |
+|-----------|-----------|
+| E92000001 | England   |
+| W92000004 | Wales     |
+| S92000003 | Scotland  |
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cntry2011_map.png?raw=true "CNTRY2011 map")
 
 ## 2.4 Post Front End Processing
 
