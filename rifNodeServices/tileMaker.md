@@ -20,7 +20,7 @@ Tile Maker
     - [2.4.1 To display information about a shapefile](#241-to-display-information-about-a-shapefile)
     - [2.4.2 Simplifying a shapefile](#242-simplifying-a-shapefile)
     - [2.4.3 Simplifying multiple shapefiles](#243-simplifying-multiple-shapefiles)
-    - [2.4.4 Dissolving a shapefile](#244-simplifying-multiple-shapefiles)
+    - [2.4.4 Dissolving a shapefile](#244-dissolving-a-shapefile)
   - [2.4 Post Front End Processing](#24-post-front-end-processing)
     - [2.4.1 Geospatial Data Load](#241-geospatial-data-load)
     - [2.4.2 Tile Manufacture](#242-tile-manufacture)
@@ -630,7 +630,7 @@ Examples:
 * [To display information about a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#241-to-display-information-about-a-shapefile);
 * [Simplifying a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#242-simplifying-a-shapefile). To simplify a dataset by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory;
 * [Simplifying multiple shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#243-simplifying-multiple-shapefiles). To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory;
-* [Dissolving a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#244-simplifying-multiple-shapefiles). To dissolve a geography - UK regions (GOR2011) to UK Countries.
+* [Dissolving a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#244-dissolving-a-shapefile). To dissolve a geography - UK regions (GOR2011) to UK Countries.
 
 #### 2.4.1 To display information about a shapefile
  
