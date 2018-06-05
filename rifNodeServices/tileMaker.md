@@ -615,32 +615,31 @@ Other tools available are:
 
 The following *mapshaper* options were used:
 
-* ```<shapefile>``` or ```-i <shapefile>```: Input shapefile name;
-* ```snap```: Input shapefile option - snap together vertices within a small distance threshold. This option is intended to fix minor coordinate misalignments in adjacent polygons. 
-  The snapping distance is 0.0025 of the average segment length;
-* ```-simplify <simplify percent>```: Simplify retaining %lt;simplify percent&gt; of the data. 20% to 50% gives good results; 5% will probably result in triangles. Mapshaper supports 
+* [```<shapefile>``` or ```-i <shapefile>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-i-input): Input shapefile name;
+  * ```snap```: Input shapefile option - snap together vertices within a small distance threshold. This option is intended to fix minor coordinate misalignments in adjacent polygons. 
+    The snapping distance is 0.0025 of the average segment length;
+* [```-simplify <simplify percent>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-simplify): Simplify retaining %lt;simplify percent&gt; of the data. 20% to 50% gives good results; 5% will probably result in triangles. Mapshaper supports 
   Douglas-Peucker simplification and two kinds of Visvalingam simplification. Douglas-Peucker (a.k.a. Ramer-Douglas-Peucker) produces simplified lines that remain within a specified 
   distance of the original line. It is effective for thinning dense vertices but tends to form spikes at high simplification.
   Visvalingam simplification iteratively removes the least important point from a polyline. The importance of points is measured using a metric based on the geometry of the triangle 
   formed by each non-endpoint vertex and the two neighboring vertices. The visvalingam option uses the "effective area" metric — points forming smaller-area triangles are removed first.
   Mapshaper's default simplification method uses Visvalingam simplification but weights the effective area of each point so that smaller-angle vertices are preferentially removed, 
   resulting in a smoother appearance;
-* ```-o <output shapefile or output directory>```: Output shapefile or output directory;
-* ```format=shapefile|geojson|topojson|json|dbf|csv|tsv|svg```: Output option - format as a shapefile|geojson|topojson|json|dbf|csv|tsv|svg; 
-* ```name=<new name>```: Rename the layer (or layers) modified by a command;
-* ```-each <expression>```: Apply a JavaScript &lt;expression&gt; to each feature in a layer. Data properties are available as local variables. Additional feature-level properties 
+* [```-o <output shapefile or output directory>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-o-output): Output shapefile or output directory;
+  * ```format=shapefile|geojson|topojson|json|dbf|csv|tsv|svg```: Output option - format as a shapefile|geojson|topojson|json|dbf|csv|tsv|svg; 
+  * ```name=<new name>```: Rename the layer (or layers) modified by a command;
+* [```-each <expression>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-each): Apply a JavaScript &lt;expression&gt; to each feature in a layer. Data properties are available as local variables. Additional feature-level properties 
   are available as read-only properties of the this object.
   E.g.
-  ```'geo_code=country_co,geo_label=country_na'```: replace the data in *geo_code* with *country_co* and *geo_label* with *country_na*. See 
-  [```-each```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-each). Note there must be no spaces bug to a bug as of 5/6/2018 (now fixed in development) so the delete 
-  example will not work;
-* ```-dissolve <fields>```: Aggregate groups of features using a data field, or aggregate all features if no field is given. For polygon layers, -dissolve merges adjacent polygons by 
+  ```'geo_code=country_co,geo_label=country_na'```: replace the data in *geo_code* with *country_co* and *geo_label* with *country_na*. Note there must be no 
+  spaces due to a bug as of 5/6/2018 (now fixed in development) so the delete example will not work;
+* [```-dissolve <fields>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-dissolve): Aggregate groups of features using a data field, or aggregate all features if no field is given. For polygon layers, -dissolve merges adjacent polygons by 
   erasing shared boundaries. For point layers, -dissolve replaces a group of points with their centroid. For polyline layers, -dissolve tries to merge contiguous polylines into as 
   few polylines as possible.
-  &lt;fields&gt; Name of a data field or fields to dissolve on. Accepts a comma-separated list of field names. See [```-dissolve```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-dissolve);
-* ```-verbose```: Print verbose messages, including the time taken by each processing step;
-* ```-info```: Get information about a dataset;
-* ```-clean```: Repair overlaps and fill small gaps between adjacent polygons. Only gaps that are completely enclosed can be filled. Areas that are contained by more than one polygon 
+  &lt;fields&gt; Name of a data field or fields to dissolve on. Accepts a comma-separated list of field names;
+* [```-verbose```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-verbose): Print verbose messages, including the time taken by each processing step;
+* [```-info```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-info):Print information about a dataset. Useful for seeing the fields in a layer's attribute data table. Also useful for summarizing the result of a series of commands;
+* [```-clean```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-clean): Repair overlaps and fill small gaps between adjacent polygons. Only gaps that are completely enclosed can be filled. Areas that are contained by more than one polygon 
   (overlaps) are assigned to the polygon with the largest area. Similarly, gaps are assigned to the largest-area polygon. This rule may give undesired results and will likely change 
   in the future.
 
