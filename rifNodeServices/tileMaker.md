@@ -15,7 +15,8 @@ Tile Maker
   - [2.1 Setup](#21-setup)
   - [2.2 Processing Overview](#22-processing-overview)
   - [2.3 Running the Front End](#23-running-the-front-end)
-  - [2.3.1 Shapefile Format](#231-shapefile-format)
+    - [2.3.1 Shapefile Format](#231-shapefile-format)
+    - [2.3.2 Shapefile Naming Requirements](#232-shapefile-naming-requirements)
   - [2.4 Pre Processing Shapefiles](#24-pre-processing-shapefiles)	 
     - [2.4.1 To display information about a shapefile](#241-to-display-information-about-a-shapefile)
     - [2.4.2 Simplifying a shapefile](#242-simplifying-a-shapefile)
@@ -396,7 +397,7 @@ The *tile maker* web application is used to:
    * Enter a geography name and description;
    * For each administrative geography starting from the highest resolution:
      * Enter a description;
-     * Select an *Area_ID* from the list of features in the shapefile; 
+     * Select an *Area_ID* from the list of features in the shapefile. This will be the name of column used throughout the administrative geography and must be distinct; 
      * Enter a description for the *Area_id*;
      * Select an *Area_Name* from the list of features in the shapefile; 
      * Enter a description for the *Area_Name*;
@@ -571,7 +572,14 @@ Make sure:
   Duplicate file: sahsu_grd_level1.dbf; shape file: sahsu_grd_level1.shp already processed
   ```
 
-### 2.4 Pre Processing Shapefiles
+### 2.3.2 Shapefile Naming Requirements
+
+The *AreaID* field will be the name of column used throughout the administrative geography and must be distinct between shapefiles. DO *NOT* call them all *area_id* or *geo_code*. There 
+is a renaming example below.
+
+The file name of the ZIP file is the code for the geography. This can be changed in the front end. 
+
+## 2.4 Pre Processing Shapefiles
 
 Huge shapefiles need to be pre processed using *mapshaper* down to a more reasonable size. *mapshaper* has browser and command line based versions and handles large files well.
 Do *NOT* use the web based version [http://mapshaper.org/](http://mapshaper.org/) as it is limited to 100MB.
@@ -592,12 +600,13 @@ On Windows there are two commands available:
 
 *mapshaper* is a complex tool with many options [mapshaper WIKI](https://github.com/mbloch/mapshaper/wiki). In addition to simplification:
  
-* Convert between file formats
-* Clip a layer of polygons, lines or points using polygons in a second layer
-* Erase parts of a polygon, line or point layer using a second polygon layer
-* Aggregate polygons by dissolving edges
-* Join an external data table to a feature layer
-* Edit the attribute table
+* Convert between file formats;
+* Clip a layer of polygons, lines or points using polygons in a second layer;
+* Erase parts of a polygon, line or point layer using a second polygon layer;
+* Aggregate polygons by dissolving edges;
+* Join an external data table to a feature layer;
+* Edit the attribute table;
+* Create population weighted centroids.
 
 Other tools available are:
 
@@ -619,6 +628,16 @@ The following *mapshaper* options were used:
 * ```-o <output shapefile or output directory>```: Output shapefile or output directory;
 * ```format=shapefile|geojson|topojson|json|dbf|csv|tsv|svg```: Output option - format as a shapefile|geojson|topojson|json|dbf|csv|tsv|svg; 
 * ```name=<new name>```: Rename the layer (or layers) modified by a command;
+* ```-each <expression>```: Apply a JavaScript &lt;expression&gt; to each feature in a layer. Data properties are available as local variables. Additional feature-level properties 
+  are available as read-only properties of the this object.
+  E.g.
+  ```'geo_code=country_co,geo_label=country_na'```: replace the data in *geo_code* with *country_co* and *geo_label* with *country_na*. See 
+  [```-each```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-each). Note there must be no spaces bug to a bug as of 5/6/2018 (now fixed in development) so the delete 
+  example will not work;
+* ```-dissolve <fields>```: Aggregate groups of features using a data field, or aggregate all features if no field is given. For polygon layers, -dissolve merges adjacent polygons by 
+  erasing shared boundaries. For point layers, -dissolve replaces a group of points with their centroid. For polyline layers, -dissolve tries to merge contiguous polylines into as 
+  few polylines as possible.
+  &lt;fields&gt; Name of a data field or fields to dissolve on. Accepts a comma-separated list of field names. See [```-dissolve```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-dissolve);
 * ```-verbose```: Print verbose messages, including the time taken by each processing step;
 * ```-info```: Get information about a dataset;
 * ```-clean```: Repair overlaps and fill small gaps between adjacent polygons. Only gaps that are completely enclosed can be filled. Areas that are contained by more than one polygon 
@@ -632,7 +651,7 @@ Examples:
 * [Simplifying multiple shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#243-simplifying-multiple-shapefiles). To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory;
 * [Dissolving a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#244-dissolving-a-shapefile). To dissolve a geography - UK regions (GOR2011) to UK Countries.
 
-#### 2.4.1 To display information about a shapefile
+### 2.4.1 To display information about a shapefile
  
 To display information about a shapefile: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd COA\coa11_clip.shp -info```
 
@@ -659,7 +678,7 @@ Attribute data
   MSOA11NM  'Darlington 010'
 ```
 
-#### 2.4.2 Simplifying a shapefile
+### 2.4.2 Simplifying a shapefile
 
 To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory: 
 ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp LSOA\*.shp MSOA\*.shp snap -simplify 0.5 -clean -o tilemaker/ format=shapefile -verbose```
@@ -684,7 +703,7 @@ C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\
 [o] - 15673ms
 ```
 
-#### 2.4.3 Simplifying multiple shapefiles
+### 2.4.3 Simplifying multiple shapefiles
 
 To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory. Note the 
 grouping and repetition of the commands; this is essentially five commands concatenated together: 
@@ -788,7 +807,7 @@ More? -verbose
 [o] - 1201ms
 ```
 
-#### 2.4.4 Dissolving a shapefile
+### 2.4.4 Dissolving a shapefile
 
 To dissolve a geography - UK regions (GOR2011) to UK Countries. 
 
