@@ -8,17 +8,25 @@ Tile Maker
   - [1.2 Issues](#12-issues)
     - [1.2.1 Memory Requirements](#121-memory-requirements)
     - [1.2.2 SQL Server Connection Error](#122-sql-server-connection-error)
+	- [1.2.3 JSZip 3.0 Error](#123-jszip-30-error)
+	- [1.2.4 BULK INSERT Permission](#124-bulk-insert-permission)
+	- [1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms](#125-mssql-timeout-request-failed-to-complete-in-xxx000ms)
 - [2. Running the Tile Maker](#2-running-the-tile-maker)
   - [2.1 Setup](#21-setup)
   - [2.2 Processing Overview](#22-processing-overview)
   - [2.3 Running the Front End](#23-running-the-front-end)
   - [2.3.1 Shapefile Format](#231-shapefile-format)
-    - [2.3.2 Processing Huge Shapefiles](#232-processing-huge-shapefiles)
+    - [2.3.2 Pre Processing Shapefiles](#232-pre-processing-shapefiles)	 
+      - [2.3.2.1 To display information about a shapefile](#2321-to-display-information-about-a-shapefile)
+      - [2.3.2.2 Simplifying a shapefile](#2322-simplifying-a-shapefile)
+      - [2.3.2.3 Simplifying multiple shapefiles](#2323-simplifying-multiple-shapefiles)
+      - [2.3.2.4 Dissolving a shapefile](#2324-simplifying-multiple-shapefiles)
   - [2.4 Post Front End Processing](#24-post-front-end-processing)
     - [2.4.1 Geospatial Data Load](#241-geospatial-data-load)
     - [2.4.2 Tile Manufacture](#242-tile-manufacture)
     - [2.4.3 Load Production Data into the RIF](#243-load-production-data-into-the-rif)
-    - [2.4.4 Example of Post Front End Processing](#244-example-of-post-front-end-processing)
+- [3. TileMaker Source Code](#3-tilemaker-source-code)
+- [4. TileMaker TODO](#4-tilemaker-todo)
 
 # 1. Overview
 
@@ -153,7 +161,119 @@ Symptom; SQL Severer connect error ```Error: None of the binaries loaded success
   + mssql@4.1.0
   added 12 packages in 11.196s
   ```
-   
+ 
+### 1.2.3 JSZip 3.0 Error
+
+The error log forever.err contains:
+```
+Error(Error): The constructor with parameters has been removed in JSZip 3.0, please check the upgrade guide.
+Stack >>>
+Error: The constructor with parameters has been removed in JSZip 3.0, please check the upgrade guide.
+    at Object.JSZip (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\JSZip\lib\index.js:14:15)
+    at zipProcessingSeriesAddStatus1 (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServices.js:765:17)
+    at addStatusWriteDiagnosticFileRename (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServicesCommon.js:923:10)
+    at FSReqWrap.oncomplete (fs.js:123:15)<<<
+
+* LOG END ***********************************************************************
+
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServicesCommon.js:932
+									throw e;
+									^
+
+Error: The constructor with parameters has been removed in JSZip 3.0, please check the upgrade guide.
+    at Object.JSZip (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\JSZip\lib\index.js:14:15)
+    at zipProcessingSeriesAddStatus1 (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServices.js:765:17)
+    at addStatusWriteDiagnosticFileRename (C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServicesCommon.js:923:10)
+    at FSReqWrap.oncomplete (fs.js:123:15)
+``` 
+
+Ypou must install a version 2.6.N JSZip: ```npm install JSZip@2.6.1```
+
+If you get:
+
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices>npm install JSZip@2.6.1
+RIF40-geospatial@0.0.1 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices
+`-- jszip@2.6.1  invalid
+```
+Chnage the *package.json line from the version 3 JSZip to the 2.6.N version:
+```
+    "jszip": "^2.6.1",
+```
+The code does need to be updated to version 3.
+
+A correct install looks like:
+```
+C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices>npm install JSZip@2.6.1
+RIF40-geospatial@0.0.1 C:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices
+`-- jszip@2.6.1
+
+npm WARN optional SKIPPING OPTIONAL DEPENDENCY: fsevents@^1.0.0 (node_modules\chokidar\node_modules\fsevents):
+npm WARN notsup SKIPPING OPTIONAL DEPENDENCY: Unsupported platform for fsevents@1.2.4: wanted {"os":"darwin","arch":"any"} (current:
+ {"os":"win32","arch":"x64"})
+```
+
+### 1.2.4 BULK INSERT Permission
+
+SQL Server needs access permission granted to the directories used to `BULK INSERT` files, the files are not copied from the client to the 
+server as in the *Postgres* *psql* ```\copy` command and the *Oracle* *sqlldr* command.
+
+SQL Server needs access to the directories containing the data loaded by the scripts. The simplest
+way is to allow read/execute access to the local users group (e.g. PH-LAPTOP\Users or USERS depending on your Windows version).
+
+*DO NOT TRY TO RUN BULK INSERT FROM NETWORK DRIVES or CLOUD DRIVES (e.g. Google Drive).* Use a local directory which SQL Server has
+access to; e.g. somewhere on the C: drive. Note that SQL Server *BULK LOAD* behaves deterrently if you logon using Windows authentication (where it will use your credentials 
+to access the files) to using a username and password (where it will use the Server's credentials to access the file).
+
+```
+-- SQL statement 23: Load table from CSV file >>>
+BULK INSERT cb_2014_us_county_500k
+FROM 'C:\Users\Peter\OneDrive\SEER Data\Tile maker USA/cb_2014_us_county_500k.csv'	-- Note use of pwd; set via -v pwd="%cd%" in the sqlcmd command line
+WITH
+(
+	FORMATFILE = 'C:\Users\Peter\OneDrive\SEER Data\Tile maker USA/mssql_cb_2014_us_county_500k.fmt',		-- Use a format file
+	TABLOCK					-- Table lock
+);
+
+Msg 4861, Level 16, State 1, Server PH-LAPTOP\SQLEXPRESS, Line 3
+Cannot bulk load because the file "C:\Users\Peter\OneDrive\SEER Data\Tile maker USA/cb_2014_us_county_500k.csv" could not be opened. Operating system error code 5(Access is denied.).
+```
+
+### 1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms
+
+Timeout in Node [mssql](https://www.npmjs.com/package/mssql) package. Edit *mssqlTileMaker.js*  and set
+the the requestTomeout in the MSSQL connection config:
+
+```js
+	var config = {
+		driver: 'msnodesqlv8',
+		server: p_hostname,
+		requestTimeout: 300000, // 5 mins. Default 15s per SQL statement
+		options: {
+			trustedConnection: false,
+			useUTC: true,
+			appName: 'mssqlTileMaker.js',
+			encrypt: true
+		}
+	};
+```
+
+```
+error [events:96:dbErrorHandler()] dbErrorHandler() Error: dbErrorHandler(no callback): Timeout: Request failed to complete in 90000ms
+Stack:
+RequestError: Timeout: Request failed to complete in 90000ms
+    at Request.tds.Request.err [as userCallback] (c:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\mssql\lib\tedious.js:578:19)
+    at Request._this.callback (c:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\tedious\lib\request.js:60:27)
+    at Connection.message (c:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\tedious\lib\connection.js:1936:24)
+    at Connection.dispatchEvent (c:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\tedious\lib\connection.js:992:38)
+    at MessageIO.<anonymous> (c:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\tedious\lib\connection.js:886:18)
+    at emitNone (events.js:86:13)
+    at MessageIO.emit (events.js:185:7)
+    at ReadablePacketStream.<anonymous> (c:\Users\Peter\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\tedious\lib\message-io.js:102:16)
+    at emitOne (events.js:96:13)
+    at ReadablePacketStream.emit (events.js:188:7)
+```
+	
 # 2. Running the Tile Maker
 
 ## 2.1 Setup
@@ -258,6 +378,14 @@ GUI phase then proceeds to script phase:
 The first load/clean/setup SQL script and the tile maker will be integrated into the web services at a later date. All the processing will then be in the front end and this leaves 
 the user only needing to install the processed data into the database.
 
+Processing concepts:
+
+* Geography: The name of an administrative geography; e.g. USA_2014, EW_2001 (the 2011 census for England 
+  and Wales);
+* Geolevel: The name of a level in the hierarchy of shapefiles that make up the geography;
+* Area ID: A code given to an area ID by the administrative authority (e.g. ONS for the 2011 Census);
+* Area Name: A name corresponding to an *area ID*. 
+
 ## 2.3 Running the Front End
 
 The *tile maker* web application is used to:
@@ -272,6 +400,7 @@ The *tile maker* web application is used to:
      * Enter a description for the *Area_id*;
      * Select an *Area_Name* from the list of features in the shapefile; 
      * Enter a description for the *Area_Name*;
+   * When setup the user presses the **Upload file(s)** button. You then get a lot of processing messages.
    
    The descriptions may be pre-entered  for you if you have an ESRI extended attributes file (.shp.ea.iso.xml)
    
@@ -298,10 +427,12 @@ The *tile maker* web application is used to:
   
    Note that you can also change:
    
-   * The quantization. So be able to simplify the geoJSON the data must be quantized. The default is 
+   * The quantization. To be able to simplify the geoJSON the data must be quantized. The default is 
      1:1,000,000. This means that the smallest value is 1 millionth of the largest value. You will need to 
 	 increase this quantization to 1:10,000,000 or 1:100,000,000 if you use more than 11 zoom levels or you cover are 
-	 very large area;
+	 very large area. Quantization is applied on a per shapefile basis so there is no potential for slivers between areas.
+	 However, if the shapefiles are not on the same scale (as in the US data) then you will see differences between 
+	 the national data at 1:5,000,000 and the state and county data at 1:500,000;
    * The simplification factor. The *tile maker* uses Visvalingam algorithm 
      [Line generalisation by repeated elimination of the smallest area; Visvalingam, Maheswari; Whyatt, J. D. (James Duncan)Cartography -- Data processing; Computer science; July 1992](https://hydra.hull.ac.uk/resources/hull:8338)
      This is superior to the Ramer–Douglas–Peucker algorithm generally leaving no "cocked hat" artefacts. The 
@@ -312,15 +443,83 @@ The *tile maker* web application is used to:
    * Maximum zoomlevel. The default is 11; reducing to 9 will reduce the processing time by a factor of 16. Every 
      increase quadruples processing time. !1 gives good quality even with fine census tracts/output areas.
    * Enables more diagnostics in the log
-   
+ 
    The web application then:
    
-   2. Converts the shapefiles to GeoJSON format in the WGS84 projection;
-   3. Simplifies the GeoJSON geometry using the Visvalingam algorithm;
+   2. Converts the shapefiles to first GeoJSON the TopoJSON format in the WGS84 projection;
+   3. Simplifies the GeoJSON geometry using the *Visvalingam* algorithm;
    4. Generates SQL scripts and the *tile maker* configuration file: *geoDataLoader.xml*;
-   
-5. The user then downloads the processed data from server;
 
+   Informative message appear at the bottom of the screen:
+   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_processing.PNG?raw=true "Tile maker processing messages")
+    
+   Tile maker processing messages are also found in the *forever.err* log, e.g:
+   
+   * ```Processed zip file 1: SAHSULAND.zip; size: 6.73MB; added: 33 file(s)```
+   * ```SAHSU_GRD_Level4: simplified topojson for zoomlevel: 7```
+   * ```Created database load scripts: pg_SAHSULAND.sql and mssql_SAHSULAND.sql```
+   
+   [Tile-maker example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_log.md)
+   
+   Finally a map is displayed of the adminstrative geography:
+   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tile_maker_map.PNG?raw=true "Tile maker map")
+   
+5. The user then downloads the processed data from server using the two download buttons in the *shapefile 
+   selector* tab. The *Download configuration" button returns an XML file e.g. 
+   *shpConvertGetConfig_66d8a532-bb2c-4304-8e2b-ffde330b88fa.xml*; this is the *geoDataLoader.xml* for the run.
+
+   The *Download processed files* button is currently not worked ans the underlying ZIP file is **NOT**
+   implemented and it will produce an error:
+   
+   ```
+   * LOG START *********************************************************************
+
+   Fri Jun 01 2018 17:25:23 GMT+0100 (GMT Daylight Time)
+   [httpErrorResponse:143; function: httpErrorResponseAddStatusCallback();
+   Url: /shpConvertGetResults.zip?uuidV1=1dca95fe-7f68-4edc-9bc6-56dc76130920; ip: ::ffff:127.0.0.1]
+   httpErrorResponse sent; size: 532 bytes: 
+   Output: {"error":"ENOENT: no such file or directory, stat 'C:\\Users\\Peter\\AppData\\Local\\Temp\\shpConvert\\1dca95fe-7f68-4edc-9bc6-56dc76130920\\geoDataLoader.zip'","no_files":0,"field_errors":0,"file_errors":0,"file_list":[],"message":"shpConvertGetResults(): \nresults ZIP file: C:/Users/Peter/AppData/Local/Temp/shpConvert/1dca95fe-7f68-4edc-9bc6-56dc76130920/geoDataLoader.zip does not exist","diagnostic":"\n\nIn: shpConvertGetResults()","fields":{"uuidV1":"1dca95fe-7f68-4edc-9bc6-56dc76130920","xmlFileName":"geoDataLoader.zip"}}
+
+   No errors
+
+   * LOG END ***********************************************************************
+   ```
+   
+   The files cab be found in your TMP directory, in Windows:
+   C:\Users\&lt;Windows user&gt;\AppData\Local\Temp\shpConvert\&lt;unique file name&gt;
+   
+   e.g. ```C:\Users\Peter\AppData\Local\Temp\shpConvert\66d8a532-bb2c-4304-8e2b-ffde330b88fa```
+   
+   The structure of archive is:
+   
+   * Data directory contains the Postgres and SQL Server scripts and data. These are named:
+   
+     * *pg_/mssql_&lt;Geography&gt;.sql* - load for tile processing;
+     * *rif_pg_/mssql_&lt;Geography&gt;.sql* - production load script;
+	 * *&lt;Geolevel&gt;.csv* - geospatial data;
+	 * *mssql_sahsu_&lt;Geolevel&gt;.fmt* - SQL Server bulk load format;
+	 
+	 E.g. 
+	 
+     * ```mssql_SAHSULAND.sql```;
+     * ```mssql_sahsu_grd_level1.fmt```;
+     * ```mssql_sahsu_grd_level2.fmt```;
+     * ```mssql_sahsu_grd_level3.fmt```;
+     * ```mssql_sahsu_grd_level4.fmt```;
+     * ```pg_SAHSULAND.sql```;
+     * ```rif_mssql_SAHSULAND.sql```;
+     * ```rif_pg_SAHSULAND.sql```;
+     * ```SAHSU_GRD_Level1.csv```;
+     * ```SAHSU_GRD_Level2.csv```;
+     * ```SAHSU_GRD_Level3.csv```;
+     * ```SAHSU_GRD_Level4.csv```;
+   * *&lt;Shapefile directory&gt;*: contains the shapefile data. One per geolevel;
+   * *&lt;Geography&gt;* directory: contains the input data. E.g *SASULAND.zip*;
+   * *diagnostics.log*: the log trace;
+   * *geoDataLoader.xml*: configuration file;
+   * *response.json.N*: internal JSON status at stages 1 to 3 of the processing;
+   * *status.json*: processing statii in JSON format.
+   
 ### 2.3.1 Shapefile Format
 
 The best approach is to have each administrative geography in your hierarchy as single ZIP file containing a set of shapefiles. The tile maker requires two or more shapefiles with:
@@ -372,43 +571,976 @@ Make sure:
   Duplicate file: sahsu_grd_level1.dbf; shape file: sahsu_grd_level1.shp already processed
   ```
 
-### 2.3.2 Processing Huge Shapefiles
+### 2.3.2 Pre Processing Shapefiles
 
-To be added.
+Huge shapefiles need to be pre processed using *mapshaper* down to a more reasonable size. *mapshaper* has browser and command line based versions and handles large files well.
+Do *NOT* use the web based version [http://mapshaper.org/](http://mapshaper.org/) as it is limited to 100MB.
+
+Install [mapshaper](https://github.com/mbloch/mapshaper) globally using ```npm install -g mapshaper```:
+```
+C:\Users\phamb\Documents\GitHub\rapidInquiryFacility>npm install -g mapshaper
+C:\Users\phamb\AppData\Roaming\npm\mapshaper -> C:\Users\phamb\AppData\Roaming\npm\node_modules\mapshaper\bin\mapshaper
+C:\Users\phamb\AppData\Roaming\npm\mapshaper-xl -> C:\Users\phamb\AppData\Roaming\npm\node_modules\mapshaper\bin\mapshaper-xl
+C:\Users\phamb\AppData\Roaming\npm\mapshaper-gui -> C:\Users\phamb\AppData\Roaming\npm\node_modules\mapshaper\bin\mapshaper-gui
++ mapshaper@0.4.80
+added 17 packages in 2.913s
+```
+On Windows there are two commands available:
+
+* Command line: ```C:\Users\%USERNAME%\AppData\Roaming\npm\node_modules\mapshaper-gui.cmd```
+* Browser GUI: ```C:\Users\%USERNAME%\AppData\Roaming\npm\node_modules\mapshaper.cmd```
+
+*mapshaper* is a complex tool with many options [mapshaper WIKI](https://github.com/mbloch/mapshaper/wiki). In addition to simplification:
+ 
+* Convert between file formats
+* Clip a layer of polygons, lines or points using polygons in a second layer
+* Erase parts of a polygon, line or point layer using a second polygon layer
+* Aggregate polygons by dissolving edges
+* Join an external data table to a feature layer
+* Edit the attribute table
+
+Other tools available are:
+
+* [QGIS](https://qgis.org/en/site/). QGIS can load and simplify shapefiles;
+* [ArcGIS](https://www.arcgis.com/features/index.html). The most complete all round solution; but requires expensive licensing.
+
+The following *mapshaper* options were used:
+
+* ```<shapefile>``` or ```-i <shapefile>```: Input shapefile name;
+* ```snap```: Input shapefile option - snap together vertices within a small distance threshold. This option is intended to fix minor coordinate misalignments in adjacent polygons. 
+  The snapping distance is 0.0025 of the average segment length;
+* ```-simplify <simplify percent>```: Simplify retaining %lt;simplify percent&gt; of the data. 20% to 50% gives good results; 5% will probably result in triangles. Mapshaper supports 
+  Douglas-Peucker simplification and two kinds of Visvalingam simplification. Douglas-Peucker (a.k.a. Ramer-Douglas-Peucker) produces simplified lines that remain within a specified 
+  distance of the original line. It is effective for thinning dense vertices but tends to form spikes at high simplification.
+  Visvalingam simplification iteratively removes the least important point from a polyline. The importance of points is measured using a metric based on the geometry of the triangle 
+  formed by each non-endpoint vertex and the two neighboring vertices. The visvalingam option uses the "effective area" metric — points forming smaller-area triangles are removed first.
+  Mapshaper's default simplification method uses Visvalingam simplification but weights the effective area of each point so that smaller-angle vertices are preferentially removed, 
+  resulting in a smoother appearance;
+* ```-o <output shapefile or output directory>```: Output shapefile or output directory;
+* ```format=shapefile|geojson|topojson|json|dbf|csv|tsv|svg```: Output option - format as a shapefile|geojson|topojson|json|dbf|csv|tsv|svg; 
+* ```name=<new name>```: Rename the layer (or layers) modified by a command;
+* ```-verbose```: Print verbose messages, including the time taken by each processing step;
+* ```-info```: Get information about a dataset;
+* ```-clean```: Repair overlaps and fill small gaps between adjacent polygons. Only gaps that are completely enclosed can be filled. Areas that are contained by more than one polygon 
+  (overlaps) are assigned to the polygon with the largest area. Similarly, gaps are assigned to the largest-area polygon. This rule may give undesired results and will likely change 
+  in the future.
+
+Examples:
+
+* [To display information about a shapefile][(https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2321-to-display-information-about-a-shapefile);
+* [Simplifying a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2322-simplifying-a-shapefile). To simplify a dataset by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory;
+* [Simplifying multiple shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2323-simplifying-multiple-shapefiles). To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory;
+* [Dissolving a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2324-simplifying-multiple-shapefiles). To dissolve a geography - UK regions (GOR2011) to UK Countries.
+
+#### 2.3.2.1 To display information about a shapefile
+ 
+To display information about a shapefile: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd COA\coa11_clip.shp -info```
+
+```
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\phamb\AppData\Roaming\npm\mapshaper.cmd COA\coa11_clip.shp -info
+[info]
+Layer 1 *
+Layer name: coa11_clip
+Records: 227,759
+Geometry
+  Type: polygon
+  Bounds: 5513 5337.9 655604.7 1220301.5
+  Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
+Attribute data
+  Field     First value
+  Area      49974.435826
+  Area_km2      0.049974435826
+  COA11     'E00062113'
+  LAD11     'E06000005'
+  LAD11NM   'Darlington'
+  LSOA11_1  'E01012316'
+  LSOA11NM  'Darlington 010B'
+  MSOA11    'E02002568'
+  MSOA11NM  'Darlington 010'
+```
+
+#### 2.3.2.2 Simplifying a shapefile
+
+To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory: 
+```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp LSOA\*.shp MSOA\*.shp snap -simplify 0.5 -clean -o tilemaker/ format=shapefile -verbose```
+
+```
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i COA\*.shp snap -simplify 0.5 -clean -o tilemaker/ format=shapefile -verbose
+[i] Importing: COA\coa11_clip.shp
+[i] Snapped 54928 points
+[i] - 31757ms
+[simplify] Repaired 38 intersections; 212 intersections could not be repaired
+[simplify] - 29170ms
+[clean] Find mosaic rings 1130ms
+[clean] Detect holes (holes: 3496, enclosures: 4630) 1637ms
+[clean] Build mosaic 2770ms
+[clean] Dissolve tiles 2413ms
+[clean] Retained 227,759 of 227,759 features
+[clean] - 27774ms
+[o] Wrote tilemaker\coa11_clip.shp
+[o] Wrote tilemaker\coa11_clip.shx
+[o] Wrote tilemaker\coa11_clip.dbf
+[o] Wrote tilemaker\coa11_clip.prj
+[o] - 15673ms
+```
+
+#### 2.3.2.3 Simplifying multiple shapefiles
+
+To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory. Note the 
+grouping and repetition of the commands; this is essentially five commands concatenated together: 
+```
+C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
+-i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+-i LSOA\*.shp name=LS2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+-i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+-i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+-i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+-verbose
+```
+
+```
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
+More? -i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+More? -i LSOA\*.shp name=LS2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+More? -i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+More? -i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+More? -i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+More? -verbose
+[i] Importing: COA\coa11_clip.shp
+[i] Snapped 54928 points
+[i] - 32522ms
+[simplify] Repaired 38 intersections; 212 intersections could not be repaired
+[simplify] - 28352ms
+[clean] Find mosaic rings 1132ms
+[clean] Detect holes (holes: 3496, enclosures: 4630) 1901ms
+[clean] Build mosaic 3037ms
+[clean] Dissolve tiles 2107ms
+[clean] Retained 227,759 of 227,759 features
+[clean] - 28546ms
+[o] Wrote tilemaker\COA2011.shp
+[o] Wrote tilemaker\COA2011.shx
+[o] Wrote tilemaker\COA2011.dbf
+[o] Wrote tilemaker\COA2011.prj
+[o] - 16352ms
+[i] Importing: LSOA\LSOA11_clip.shp
+[i] Snapped 28149 points
+[i] - 16600ms
+[simplify] Repaired 2 intersections; 1 intersection could not be repaired
+[simplify] - 11430ms
+[clean] Find mosaic rings 302ms
+[clean] Detect holes (holes: 183, enclosures: 857) 159ms
+[clean] Build mosaic 465ms
+[clean] Dissolve tiles 577ms
+[clean] Retained 41,729 of 41,729 features
+[clean] - 9615ms
+[o] Wrote tilemaker\LS2011.shp
+[o] Wrote tilemaker\LS2011.shx
+[o] Wrote tilemaker\LS2011.dbf
+[o] Wrote tilemaker\LS2011.prj
+[o] - 5993ms
+[i] Importing: MSOA\MSOA11_clip.shp
+[i] Snapped 20697 points
+[i] - 8731ms
+[simplify] Repaired 6 intersections
+[simplify] - 8183ms
+[clean] Find mosaic rings 133ms
+[clean] Detect holes (holes: 2894, enclosures: 1474) 616ms
+[clean] Build mosaic 751ms
+[clean] Dissolve tiles 367ms
+[clean] Retained 8,480 of 8,480 features
+[clean] - 5553ms
+[o] Wrote tilemaker\MSOA2011.shp
+[o] Wrote tilemaker\MSOA2011.shx
+[o] Wrote tilemaker\MSOA2011.dbf
+[o] Wrote tilemaker\MSOA2011.prj
+[o] - 2569ms
+[i] Importing: District\District11_SAHSU_clip.shp
+[i] Snapped 27497 points
+[i] - 1888ms
+[simplify] Repaired 7 intersections; 1 intersection could not be repaired
+[simplify] - 2225ms
+[clean] Find mosaic rings 34ms
+[clean] Detect holes (holes: 1, enclosures: 752) 194ms
+[clean] Build mosaic 232ms
+[clean] Dissolve tiles 58ms
+[clean] Retained 380 of 380 features
+[clean] - 1174ms
+[o] Wrote tilemaker\LADUA2011.shp
+[o] Wrote tilemaker\LADUA2011.shx
+[o] Wrote tilemaker\LADUA2011.dbf
+[o] Wrote tilemaker\LADUA2011.prj
+[o] - 867ms
+[i] Importing: Region\region11_clip.shp
+[i] Snapped 42648 points
+[i] - 1818ms
+[simplify] Repaired 169 intersections
+[simplify] - 4281ms
+[clean] Find mosaic rings 58ms
+[clean] Detect holes (holes: 1882, enclosures: 4618) 1598ms
+[clean] Build mosaic 1659ms
+[clean] Dissolve tiles 463ms
+[clean] Retained 11 of 11 features
+[clean] - 3872ms
+[o] Wrote tilemaker\GOR2011.shp
+[o] Wrote tilemaker\GOR2011.shx
+[o] Wrote tilemaker\GOR2011.dbf
+[o] Wrote tilemaker\GOR2011.prj
+[o] - 1201ms
+```
+
+#### 2.3.2.4 Dissolving a shapefile
+
+To dissolve a geography - UK regions (GOR2011) to UK Countries. 
+
+Step 1: Edit the DBF file using QGIS to add *country_co* and *country_na* as follows. This provides the correct code to dissolve onto. This possibly could be done 
+programatically using *mapshaper*.
+
+To dump DBG to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i Region\*.shp -o Region\region11_clip.csv format=csv -verbose```:
+
+Old DBF file data:
+
+| geo_code  | geo_label                | EER11CDO |
+|-----------|--------------------------|----------|
+| E12000006 | East of England          |          | 
+| E12000003 | Yorkshire and The Humber |          | 
+| E12000008 | South East               |          | 
+| E12000004 | East Midlands            |          | 
+| E12000007 | London                   |          | 
+| E12000009 | South West               |          | 
+| E12000005 | West Midlands            |          | 
+| E12000002 | North West               |          | 
+| E12000001 | North East               |          | 
+| W08000001 | Wales                    | 10       | 
+| S15000001 | Scotland                 | 11       | 
+
+New DBF file data:
+
+| geo_code  | geo_label                | EER11CDO | country_co | country_na |
+|-----------|--------------------------|----------|------------|------------|
+| E12000006 | East of England          |          | E92000001  | England    |
+| E12000003 | Yorkshire and The Humber |          | E92000001  | England    |
+| E12000008 | South East               |          | E92000001  | England    |
+| E12000004 | East Midlands            |          | E92000001  | England    |
+| E12000007 | London                   |          | E92000001  | England    |
+| E12000009 | South West               |          | E92000001  | England    |
+| E12000005 | West Midlands            |          | E92000001  | England    |
+| E12000002 | North West               |          | E92000001  | England    |
+| E12000001 | North East               |          | E92000001  | England    |
+| W08000001 | Wales                    | 10       | W92000004  | Wales      |
+| S15000001 | Scotland                 | 11       | S92000003  | Scotland   |
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/gor2011_map.png?raw=true "GOR2011 map")
+
+Step 2: Create Cntry\cntry11_clip.shp renaming *country_co* to *geo_code* and *country_na* to *geo_label*:
+```
+C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
+-i Region\*.shp name=CNTRY2011 snap -simplify 0.5 -clean ^
+-each 'geo_code=country_co,geo_label=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
+-verbose
+```
+
+```
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
+More? -i Region\*.shp name=CNTRY2011 snap -simplify 0.5 -clean ^
+More? -each 'geo_code=country_co,geo_label=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
+More? -verbose
+[i] Importing: Region\region11_clip.shp
+[i] Snapped 42648 points
+[i] - 1502ms
+[simplify] Repaired 169 intersections
+[simplify] - 3287ms
+[clean] Find mosaic rings 83ms
+[clean] Detect holes (holes: 1882, enclosures: 4618) 2321ms
+[clean] Build mosaic 2407ms
+[clean] Dissolve tiles 471ms
+[clean] Retained 11 of 11 features
+[clean] - 4465ms
+[each] - 1ms
+[o] Wrote Cntry\cntry11_clip.shp
+[o] Wrote Cntry\cntry11_clip.shx
+[o] Wrote Cntry\cntry11_clip.dbf
+[o] Wrote Cntry\cntry11_clip.prj
+[o] - 607ms
+```
+
+Step 3: View new data. To dump DBG to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i Cntry\cntry11_clip.shp -o Cntry\cntry11_clip.csv format=csv -verbose```:
+
+| geo_code  | geo_label | EER11CDO | country_co | country_na |
+|-----------|-----------|----------|------------|------------|
+| E92000001 | England   |          | E92000001  | England    |
+| E92000001 | England   |          | E92000001  | England    |
+| E92000001 | England   |          | E92000001  | England    |
+| E92000001 | England   |          | E92000001  | England    |
+| E92000001 | England   |          | E92000001  | England    |
+| E92000001 | England   |          | E92000001  | England    |
+| E92000001 | England   |          | E92000001  | England    |
+| E92000001 | England   |          | E92000001  | England    |
+| E92000001 | England   |          | E92000001  | England    |
+| W92000004 | Wales     | 10       | W92000004  | Wales      |
+| S92000003 | Scotland  | 11       | S92000003  | Scotland   |
+
+
+Step 4: Using *Cntry\cntry11_clip.shp* dissolve on *geo_code*, *geo_label* to create *CNTRY2011.shp* in the *tileMaker* directory:
+```
+C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
+-i Cntry\*.shp name=CNTRY2011 -clean ^
+-dissolve='geo_code' -o tilemaker/ format=shapefile ^
+-verbose
+```
+
+```
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
+More? -i Cntry\*.shp name=CNTRY2011 -clean ^
+More? -dissolve='geo_code,geo_label' -o tilemaker/ format=shapefile ^
+More? -verbose
+[i] Importing: Cntry\cntry11_clip.shp
+[i] - 501ms
+[clean] Find mosaic rings 53ms
+[clean] Detect holes (holes: 1882, enclosures: 4618) 2317ms
+[clean] Build mosaic 2372ms
+[clean] Dissolve tiles 156ms
+[clean] Retained 11 of 11 features
+[clean] - 3394ms
+[o] Wrote tilemaker\CNTRY2011.shp
+[o] Wrote tilemaker\CNTRY2011.shx
+[o] Wrote tilemaker\CNTRY2011.dbf
+[o] Wrote tilemaker\CNTRY2011.prj
+[o] - 639ms
+```
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cntry2011_map.png?raw=true "CNTRY2011 map")
+
+XXX ,delete COUNTRY_CO,delete COUNTRY_NA,delete EER11CDO
 
 ## 2.4 Post Front End Processing
-### 2.4.1 Geospatial Data Load
 
-Load data into non RIF40 Schema.
+Typical post front end processing:
 
-### 2.4.2 Tile Manufacture
-
-### 2.4.3 Load Production Data into the RIF
-
-Load data into RIF40 Schema.
-
-### 2.4.4 Example of Post Front End Processing
-
-* Loads tilemaker output into both *sahsuland* and *sahsuland_dev*;
+* Loads tile maker output into both *sahsuland* and *sahsuland_dev* in a non RIF40 Schema. This can be any 
+  database;
 * Processes *sahsuland_dev* schema to tiles;
-* Loads production data into *rif40* schema on  both *sahsuland* and *sahsuland_dev*.
+* Loads production data into the *rif40* schema on both *sahsuland* and *sahsuland_dev*.
 
-The SEER pre-processing script *pg_load_seer_covariates.sql* has a dependency on the *cb_2014_us_nation_5m*, *cb_2014_us_state_500k* and *cb_2014_us_county_500l* that are part of the 
-tilemaker pre-processing. The FIPS code is required to make the join and this field is not in the standard lookup tables. For this reason it is necessary to build 
+The SEER pre-processing script *pg_load_seer_covariates.sql* has a dependency on the *cb_2014_us_nation_5m*, 
+*cb_2014_us_state_500k* and *cb_2014_us_county_500l* that are part of the 
+*tile maker* pre-processing. The FIPS code is required to make the join and this field is not in the standard 
+lookup tables. For this reason it is necessary to build 
 the covariates table on *sahsuland_dev*. In the longer term the FIPS codes should be added to the lookup tables. 
 
-```
-cd C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices
-make
-C:\Users\phamb\OneDrive\SEER Data\Tile maker USA
-psql -d sahsuland_dev -w -e -f pg_USA_2014.sql
-psql -d sahsuland -w -e -f pg_USA_2014.sql
-sqlcmd -U peter -P retep -d sahsuland_dev -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"
-sqlcmd -U peter -P retep -d sahsuland -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"
-node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev
-node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database test
-psql -U rif40 -d sahsuland_dev -w -e -f rif_pg_usa_2014.sql
-psql -U rif40 -d sahsuland -w -e -f rif_pg_usa_2014.sql
-sqlcmd -U rif40 -P rif40 -d sahsuland -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql -v pwd="%cd%"
-sqlcmd -U rif40 -P rif40 -d sahsuland_dev -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql -v pwd="%cd%"
-```
+### 2.4.1 Geospatial Data Load
+
+1. Place the files in the archive *data* in a new directory together with the *geoDataLoader.xml* configuration 
+   file
+2. Load data into a non RIF40 Schema:
+   - Postgres: ```psql -U <username> -d <database name> -w -e -f pg_USA_2014.sql```
+     Flags:
+     * ```-U <username>```: connect as user &lt;username&gt; **NOT** *rif40*;
+     * ```-d <database name>```: connect to database &lt;database name&gt;
+     * ```-w```: never issue a password prompt. If the server requires password authentication and a password is not available by other means 
+       such as a .pgpass file, the connection attempt will fail;
+     * ```-e```: copy all SQL commands sent to the server to standard output as well;
+     * ```-f pg_USA_2014.sql```: run SQL script pg_USA_2014.sql
+  
+     For information on [Postgres passwords](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#221-postgres)
+
+     E.g: ```psql -U peter -d sahsuland_dev -w -e -f pg_USA_2014.sql```
+
+	[Postgres data processing example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_data_processing.md)
+	
+   - SQL Server: ```sqlcmd -U <username> -P <password> -d <database name> -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```
+     Flags:
+     * ```-U <username>```: connect as user &lt;username&gt; **NOT** *rif40*;
+     * ```-P <password>```: the &lt;password&gt; for user &lt;username&gt;;
+     * ```-d <database name>```: connect to database &lt;database name&gt;;
+     * ```-b```: terminate batch job if there is an error;
+     * ```-m-1```: all messages including informational messages, are sent to stdout;
+     * ```-e```: echo input;
+     * ```-r1```: redirects the error message output to stderr;
+     * ```-i mssql_USA_2014.sql```: run SQL script mssql_USA_2014.sql;
+     * ```-v pwd="%cd%"```: set script variable pwd to %cd% (current working directory). So bulk 
+       load can find the CSV files.
+	
+	E.g:
+	```sqlcmd -U peter -P XXXXXXXXXXX -d sahsuland_dev -b -m-1 -e -r1 -i mssql_USA_2014.sql  -v pwd="%cd%"```	
+
+	[SQL Server data processing example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_data_processing.md)
+
+Data loading steps. These load the data and prepare it for tile manufacture:
+	
+* For each shapefile geolevel:
+  * Create the table, comment;
+  * Load data;
+  * check rows;  
+  * Add primary key;
+  * Add geometry columns (1/geolevel + the original shapefile geometry), geographic centroid column;
+  * Update geographic centroid, geometry columns, handle polygons and mutlipolygons,
+    convert highest zoomlevel to original;
+	- Postgres
+	  ```SQL
+	  UPDATE cb_2014_us_county_500k
+	   SET geographic_centroid = ST_GeomFromText(geographic_centroid_wkt, 4326),
+		   geom_6 = 
+				CASE ST_IsCollection(ST_GeomFromText(wkt_6, 4326)) /* Convert to Multipolygon */
+					WHEN true THEN 	ST_GeomFromText(wkt_6, 4326)
+					ELSE 			ST_Multi(ST_GeomFromText(wkt_6, 4326))
+				END,
+		   geom_7 = 
+				CASE ST_IsCollection(ST_GeomFromText(wkt_7, 4326)) /* Convert to Multipolygon */
+					WHEN true THEN 	ST_GeomFromText(wkt_7, 4326)
+					ELSE 			ST_Multi(ST_GeomFromText(wkt_7, 4326))
+				END,
+		   geom_8 = 
+				CASE ST_IsCollection(ST_GeomFromText(wkt_8, 4326)) /* Convert to Multipolygon */
+					WHEN true THEN 	ST_GeomFromText(wkt_8, 4326)
+					ELSE 			ST_Multi(ST_GeomFromText(wkt_8, 4326))
+				END,
+		   geom_9 = 
+				CASE ST_IsCollection(ST_GeomFromText(wkt_9, 4326)) /* Convert to Multipolygon */
+					WHEN true THEN 	ST_GeomFromText(wkt_9, 4326)
+					ELSE 			ST_Multi(ST_GeomFromText(wkt_9, 4326))
+				END,
+		   geom_orig = ST_Transform(
+				CASE ST_IsCollection(ST_GeomFromText(wkt_9, 4326)) /* Convert to Multipolygon */
+					WHEN true THEN 	ST_GeomFromText(wkt_9, 4326)
+					ELSE 			ST_Multi(ST_GeomFromText(wkt_9, 4326))
+				END, 4269);
+	  ```
+	- SQL Server
+	  ```SQL
+	  UPDATE cb_2014_us_county_500k
+	     SET geographic_centroid = geography::STGeomFromText(geographic_centroid_wkt, 4326),
+		     geom_6 = geography::STGeomFromText(wkt_6, 4326).MakeValid(),
+		     geom_7 = geography::STGeomFromText(wkt_7, 4326).MakeValid(),
+		     geom_8 = geography::STGeomFromText(wkt_8, 4326).MakeValid(),
+		     geom_9 = geography::STGeomFromText(wkt_9, 4326).MakeValid(),
+		     geom_orig = geometry::STGeomFromText(geometry::STGeomFromText(wkt_9, 4326).MakeValid().STAsText(), 4269);
+	  ```
+  * Make geometry columns valid (Postgres only):
+    ```SQL
+	UPDATE cb_2014_us_county_500k
+	   SET
+		   geom_6 = CASE ST_IsValid(geom_6)
+					WHEN false THEN ST_CollectionExtract(ST_MakeValid(geom_6), 3 /* Remove non polygons */)
+					ELSE geom_6
+				END,
+		   geom_7 = CASE ST_IsValid(geom_7)
+					WHEN false THEN ST_CollectionExtract(ST_MakeValid(geom_7), 3 /* Remove non polygons */)
+					ELSE geom_7
+				END,
+		   geom_8 = CASE ST_IsValid(geom_8)
+					WHEN false THEN ST_CollectionExtract(ST_MakeValid(geom_8), 3 /* Remove non polygons */)
+					ELSE geom_8
+				END,
+		   geom_9 = CASE ST_IsValid(geom_9)
+					WHEN false THEN ST_CollectionExtract(ST_MakeValid(geom_9), 3 /* Remove non polygons */)
+					ELSE geom_9
+				END,
+		   geom_orig = CASE ST_IsValid(geom_orig)
+				WHEN false THEN ST_CollectionExtract(ST_MakeValid(geom_orig), 3 /* Remove non polygons */)
+				ELSE geom_orig
+			END;
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -85.2045985857456 46.044431737627747
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -84.769219239639256 45.839784716078725
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -84.439364648483661 45.996148099462111
+	psql:pg_USA_2014.sql:632: NOTICE:  Self-intersection at or near point -89.528959972298978 29.651621096712105
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -149.31411756797058 59.956820817190831
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -68.983577325577343 44.175116080674087
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -162.79221305489506 55.324770369325378
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -131.38639491395594 55.250884374979393
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -80.296620697321714 25.326798923010927
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -156.76186812997113 56.928697844261862
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -68.269311127101147 44.285601416405427
+	psql:pg_USA_2014.sql:632: NOTICE:  Too few points in geometry component at or near point -162.87907356747357 64.452955401038409
+	psql:pg_USA_2014.sql:632: NOTICE:  Self-intersection at or near point -105.05294356541158 39.913698399795408
+	```
+  * Check validity of geometry columns;
+  * Make all polygons right handed. If not right handed the area calculation will be wrong on SQL Server:
+    - Postgres
+      ```SQL 
+	  UPDATE cb_2014_us_county_500k
+	   SET       geom_6 = ST_ForceRHR(geom_6),
+		   geom_7 = ST_ForceRHR(geom_7),
+		   geom_8 = ST_ForceRHR(geom_8),
+		   geom_9 = ST_ForceRHR(geom_9),
+		   geom_orig = ST_ForceRHR(geom_orig);
+	  ```
+	- SQL Server
+	  ```SQL
+	  WITH a AS (
+			SELECT gid, geom_6,
+				   CAST(area_km2 AS NUMERIC(21,6)) AS area_km2,
+				   CAST((geom_6.STArea()/(1000*1000)) AS NUMERIC(21,6)) AS area_km2_calc
+			  FROM cb_2014_us_county_500k
+		), b AS (
+			SELECT a.gid,
+				   a.geom_6,
+				   a.area_km2,
+				   a.area_km2_calc,
+				  CASE WHEN a.area_km2 > 0 THEN CAST(100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2) AS NUMERIC(21,6))
+						WHEN a.area_km2 = a.area_km2_calc THEN 0
+						ELSE NULL
+				   END AS pct_km2_diff 
+		  FROM a
+		)
+		UPDATE cb_2014_us_county_500k
+		   SET geom_6 = c.geom_6.ReorientObject() /* This is no ST_ForceRHR() equivalent */
+		  FROM cb_2014_us_county_500k c
+		 JOIN b ON b.gid = c.gid
+		 WHERE b.pct_km2_diff > 200 /* Threshold test: area calculation is wrong */;
+	  ```
+  * Create spatial indexes; 
+* Create, populate and comment geography meta data table compatible with RIF40_GEOGRAPHIES 
+  (called geography_&lt;geography name&gt;);
+* Create, populate and comment geography meta data table compatible with RIF40_GEOLEVELS 
+  (called geolevels_&lt;geography name&gt;);
+* Create tables required by the metadata:  
+  * For each shapefile geolevel:  
+    * Create, populate and comment lookup tables tables (called lookup_&lt;geography name&gt;);
+  * Create, populate and comment hierarchy table (called hierarchy_&lt;geography name&gt;);
+  * Create, populate and comment geometry table (called geometry_&lt;geography name&gt;);
+  * Partition geometry table (PostGres only);
+  * Create, populate and comment adjacency table (called adjacency_&lt;geography name&gt;);
+* Create required functions for this scripts and the *tile Maker* manufacturer:
+  * ```tileMaker_longitude2tile(longitude DOUBLE PRECISION, zoom_level INTEGER)```: Convert longitude (WGS84 - 4326) to OSM tile x.
+    ```SQL
+	SELECT FLOOR( (longitude + 180) / 360 * (1 << zoom_level) )::INTEGER;
+	```
+  * ```tileMaker_latitude2tile(latitude DOUBLE PRECISION, zoom_level INTEGER)```: Convert latitude (WGS84 - 4326) to OSM tile x.
+    ```SQL
+	SELECT FLOOR( (1.0 - LN(TAN(RADIANS(latitude)) + 1.0 / COS(RADIANS(latitude))) / PI()) / 2.0 * (1 << zoom_level) )::INTEGER;
+	```
+    Derivation of the tile X/Y:   
+
+    * Reproject the coordinates to the Mercator projection (from EPSG:4326 to EPSG:3857):
+      ```
+	  x = lon
+	  y = arsinh(tan(lat)) = log[tan(lat) + sec(lat)]
+      ```
+	  (lat and lon are in radians)
+
+    * Transform range of x and y to between 0 and 1 and shift origin to top left corner:
+      ```
+   	  x = [1 + (x / pi)] / 2
+	  y = [1 - (y / pi)] / 2
+      ```
+      * Calculate the number of tiles across the map, n, using 2**zoom
+      * Multiply x and y by n. Round results down to give tilex and tiley.
+  * ```tileMaker_tile2longitude(x INTEGER, zoom_level INTEGER)```: Convert OSM tile x to longitude (WGS84 - 4326)
+	```SQL
+	SELECT ( ( (x * 1.0) / (1 << zoom_level) * 360.0) - 180.0)::DOUBLE;
+	```
+  * ```tileMaker_tile2latitude(y INTEGER, zoom_level INTEGER)```: Convert OSM tile y to latitude (WGS84 - 4326):
+	```SQL
+	DECLARE
+		n FLOAT;
+		sinh FLOAT;
+		E FLOAT = 2.7182818284;
+	BEGIN
+		n = PI() - (2.0 * PI() * y) / POWER(2.0, zoom_level);
+		sinh = (1 - POWER(E, -2*n)) / (2 * POWER(E, -n));
+		RETURN DEGREES(ATAN(sinh));
+	END;
+	```
+  * ```tileMaker_intersector_usa_2014(geolevel_id INTEGER, zoomlevel INTEGER, use_zoomlevel INTEGER, debug BOOLEAN DEFAULT FALSE)```: tile 
+    intersects table INSERT function. Zoomlevels <6 use zoomlevel 6 data.
+	Inserts tile area id intersections.
+  * ```tileMaker_intersector2_usa_2014(geolevel_id INTEGER, zoomlevel INTEGER, use_zoomlevel INTEGER, debug BOOLEAN DEFAULT FALSE)```: tile 
+    intersects table INSERT function. Zoomlevels <6 use zoomlevel 6 data.
+    Insert tile area id intersections missing where not in the previous layer; 
+    this is usually due to it being simplified out of existence.
+  * ```tileMaker_aggregator_usa_2014(geolevel_id INTEGER, zoomlevel INTEGER, debug BOOLEAN DEFAULT FALSE)```: tiles table INSERT function. 
+    Aggregate area_id JSON into featureCollection
+* Create and comment tiles table (called t_tiles_&lt;geography name&gt;). This is populated by the *tile Maker* manufacturer; 
+* Create and comment tiles view (called tiles_&lt;geography name&gt;). This add back the NULL tiles outside of the tile limits boundaries 
+  and inside where an NON NULL tile logically cannot exists (a big county at a high zoomlevel where the tile is completely within the county); 
+* Create, population and comment tile limits table (called tile_limits_&lt;geography name&gt;). This sets the limits of the area to be 
+  processed (the bounding box or bbox) for tiles together with the associate maximum and minimum tiles numbers.:
+  ```
+  sahsuland=> SELECT zoomlevel, st_astext(bbox) AS bbox, y_mintile, y_maxtile, x_mintile, x_maxtile FROM tile_limits_usa_2014;
+   zoomlevel |                                                                   bbox                                                                    | y_mintile | y_maxtile | x_mintile | x_maxtile
+  -----------+-------------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------+-----------+-----------
+           0 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |         0 |         0 |         0 |         0
+           1 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |         0 |         1 |         0 |         1
+           2 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |         0 |         2 |         0 |         3
+           3 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |         1 |         4 |         0 |         7
+           4 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |         3 |         8 |         0 |        15
+           5 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |         6 |        17 |         0 |        31
+           6 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |        13 |        34 |         0 |        63
+           7 | POLYGON((-179.14734 -14.5495423181433,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.5495423181433,-179.14734 -14.5495423181433)) |        27 |        69 |         0 |       127
+           8 | POLYGON((-179.14734 -14.552549,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.552549,-179.14734 -14.552549))                      |        54 |       138 |         0 |       255
+           9 | POLYGON((-179.14734 -14.552549,-179.14734 71.352561,179.77847 71.352561,179.77847 -14.552549,-179.14734 -14.552549))                      |       108 |       276 |         1 |       511
+  (10 rows)
+  ```
+* Create and comment tile intersects table (called tile_intersects_&lt;geography name&gt;). This is a table is tile area id intersects, and 
+  contains the geometry and bounding box for each area id; 
+* Partition tile intersects  table (PostGres only);
+* Populate and index tile intersects table (called tile_intersects_&lt;geography name&gt;); 
+  ```
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 57+0 total areaid intersects for geolevel id 2/3 zoomlevel: 1/9 in 0.8+0.0s+0.0s, 0.8s total; 71.2 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 67+0 total areaid intersects for geolevel id 2/3 zoomlevel: 2/9 in 1.2+0.0s+0.0s, 2.0s total; 57.5 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 81+0 total areaid intersects for geolevel id 2/3 zoomlevel: 3/9 in 1.6+0.0s+0.0s, 3.6s total; 50.6 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 95+0 total areaid intersects for geolevel id 2/3 zoomlevel: 4/9 in 3.1+0.0s+0.0s, 6.7s total; 30.9 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 142+0 total areaid intersects for geolevel id 2/3 zoomlevel: 5/9 in 5.4+0.0s+0.0s, 12.1s total; 26.3 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 242+0 total areaid intersects for geolevel id 2/3 zoomlevel: 6/9 in 12.4+0.0s+0.0s, 24.5s total; 19.6 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 487+0 total areaid intersects for geolevel id 2/3 zoomlevel: 7/9 in 31.7+0.0s+0.0s, 56.2s total; 15.4 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 1020+0 total areaid intersects for geolevel id 2/3 zoomlevel: 8/9 in 101.4+0.0s+0.0s, 157.6s total; 10.1 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 2248+0 total areaid intersects for geolevel id 2/3 zoomlevel: 9/9 in 313.8+0.0s+0.0s, 471.4s total; 7.2 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 3233+0 total areaid intersects for geolevel id 3/3 zoomlevel: 1/9 in 7.0+0.0s+0.0s, 478.5s total; 459.1 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 3291+0 total areaid intersects for geolevel id 3/3 zoomlevel: 2/9 in 6.9+0.0s+0.0s, 485.3s total; 480.2 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 3390+0 total areaid intersects for geolevel id 3/3 zoomlevel: 3/9 in 4.9+0.0s+0.0s, 490.2s total; 693.6 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 3440+0 total areaid intersects for geolevel id 3/3 zoomlevel: 4/9 in 4.2+0.0s+0.0s, 494.4s total; 821.5 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 3658+0 total areaid intersects for geolevel id 3/3 zoomlevel: 5/9 in 4.6+0.0s+0.0s, 499.1s total; 795.8 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 4065+3 total areaid intersects for geolevel id 3/3 zoomlevel: 6/9 in 4.7+0.0s+0.0s, 503.8s total; 866.9 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 4989+1 total areaid intersects for geolevel id 3/3 zoomlevel: 7/9 in 7.8+0.0s+0.0s, 511.7s total; 636.6 intesects/s
+	psql:pg_USA_2014.sql:6039: INFO:  Processed 7127+4 total areaid intersects for geolevel id 3/3 zoomlevel: 8/9 in 19.1+0.1s+0.0s, 530.8s total; 373.4 intesects/s
+  ```
+  This is a key SQL statement and the code (tile_intersects_insert2.sql) is markedly different although functionally identical between SQL Server and Postgres. For
+  performance reasons the SQL Server code is split into sub statements to prevent SQL Server ignoring the common table expression structure and unnesting.
+  The algorithm only processes NON NULL tiles (i.e.e tiles with data in them). This results in the following savings:
+  ```
+    1> SELECT geolevel_id, zoomlevel,
+	2>        COUNT(DISTINCT(areaid)) AS areas,
+	3>        MIN(x) AS xmin, MIN(y) AS ymin,
+	4>        MAX(x) AS xmax, MAX(y) AS ymax,
+	5>    (MAX(x)-MIN(x)+1)*(MAX(y)-MIN(y)+1) AS possible_tiles,
+	6>        COUNT(DISTINCT(CAST(x AS VARCHAR) + CAST(y AS VARCHAR))) AS tiles,
+	7>    CAST(ROUND((CAST( (((MAX(x)-MIN(x)+1)*(MAX(y)-MIN(y)+1)) /* possible_tiles */ - COUNT(DISTINCT(CAST(x AS VARCHAR) + CAST(y AS VARCHAR)))) AS NUMERIC)/
+	8> ((MAX(x)-MIN(x)+1)*(MAX(y)-MIN(y)+1)))*100, 2) AS DECIMAL(4,1)) AS pct_saving
+	9>   FROM tile_intersects_usa_2014
+	10>  GROUP BY geolevel_id, zoomlevel
+	11>  ORDER BY 1, 2;
+	12> go
+	geolevel_id zoomlevel   areas       xmin        ymin        xmax        ymax        possible_tiles tiles       pct_saving
+	----------- ----------- ----------- ----------- ----------- ----------- ----------- -------------- ----------- ----------
+			  1           0           1           0           0           0           0              1           1         .0
+			  2           0          56           0           0           0           0              1           1         .0
+			  2           1          56           0           0           1           1              4           3       25.0
+			  2           2          56           0           0           3           2             12           5       58.3
+			  2           3          56           0           1           7           4             32          10       68.8
+			  2           4          56           0           3          15           8             96          22       77.1
+			  2           5          56           0           6          31          17            384          47       87.8
+			  2           6          56           0          13          63          34           1408         111       92.1
+			  2           7          56           0          27         127          69           5504         281       94.9
+			  2           8          56           0          54         255         135          20992         665       96.8
+			  2           9          56           1         108         511         271          83804        1568       98.1
+			  3           0        3233           0           0           0           0              1           1         .0
+			  3           1        3233           0           0           1           1              4           3       25.0
+			  3           2        3233           0           0           3           2             12           5       58.3
+			  3           3        3233           0           1           7           4             32          10       68.8
+			  3           4        3233           0           3          15           8             96          22       77.1
+			  3           5        3233           0           6          31          17            384          49       87.2
+			  3           6        3233           0          13          63          34           1408         119       91.6
+			  3           7        3233           0          27         127          69           5504         333       94.0
+			  3           8        3233           0          54         255         138          21760         992       95.4
+			  3           9        3233           1         108         511         276          86359        3137       96.4
+
+	(21 rows affected)
+  ```
+* Create statistics on all tables;
+* For each shapefile geolevel:  
+  * Test Turf (Node.js processing) and database calculated areas agree to within 1% (Postgres)/5% (SQL server)
+  
+### 2.4.2 Tile Manufacture
+
+In the same directory as before run the *tile Maker* manufacturer. This has separate Postgres and SQL Server stubs calling a common 
+*tileMaker.js* node.js core:
+
+* ```node <full path to script> <flags>```
+     Where the flags are:
+	 * ```-D, --database  <database name>```: Name of the database.          
+	   [default: <user default>];
+	 * ```-U, --username <username>```: Connect as user &lt;username&gt; **NOT** *rif40*.         
+	   [default: NONE (use MSSQL trusted connection/psql style default)];
+	 * ```--password, --pw <password>```: The &lt;password&gt; for user &lt;username&gt;
+	 * ```-H, --hostname```: &lt;hostname&gt; of the database. 
+	   [default: "localhost"];
+	 * ```-V, --verbose```: Verbose mode. 
+	   [default: 0: false; 1 or 2];
+	 * ```-X, --xmlfile <XML file>```: XML Configuration file &lt;XML file&gt;.
+	   [default: "geoDataLoader.xml"];
+	 * ```-p, --pngfile```: Make SVG/PNG files.                     
+	   [default: false]
+	 * ```-h, --help```: display this helpful message and exit.
+	   [default: false]
+
+Script examples:
+	   
+* Postgres: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev```
+  [Postgres tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_tile_manufacture.md)
+  A log file will be created in the current directory as: *pgTileMaker.log*;
+* SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database sahsuland_dev```
+  [SQL Server tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_tile_manufacture.md)
+  A log file will be created in the current directory as: *mssqlTileMaker.log*
+
+Tile manufacturing steps:
+  
+* Parse XML configuration file;
+* Connect to database;
+* Create hierarchy CSV file;
+* Create lookup CSV file for each geolevel;
+* Create adjacency CSV file for geography;
+* Create geometry CSV file for geography;
+* Create tiles 10 at a time for each zoomlevel and geography:
+  * Tile IDs are in the form ```<geolevel_id>_<zoomlevel>_<x>_<y>```;
+  * Tiles are processed by geolevel and  zoomlevel in blocks of 10 in x/y order. SQL Server code to create the tile blocks table:
+    ```SQL
+	IF OBJECT_ID('tile_blocks_usa_2014', 'U') IS NOT NULL DROP TABLE tile_blocks_usa_2014;
+	WITH a AS (
+		SELECT geolevel_id, zoomlevel, x, y, COUNT(areaid) AS total_areas
+		  FROM  tile_intersects_usa_2014
+		GROUP BY geolevel_id, zoomlevel, x, y
+	), b AS (
+		SELECT geolevel_id, zoomlevel, x, y, total_areas,
+			   ABS((ROW_NUMBER() OVER(PARTITION BY geolevel_id, zoomlevel ORDER BY x, y))/10)+1 AS block
+		  FROM a
+	), c AS (
+	SELECT geolevel_id, zoomlevel, block, x, y, total_areas,
+		   CAST(geolevel_id AS VARCHAR) + '_' + CAST(zoomlevel AS VARCHAR) + '_' + CAST(x AS VARCHAR) + '_' + CAST(y AS VARCHAR) AS tile
+	  FROM b
+	)
+	SELECT geolevel_id, zoomlevel, block, x, y, total_areas, tile
+	  INTO tile_blocks_usa_2014
+	  FROM c
+	 ORDER BY geolevel_id, zoomlevel, block, tile;
+    ```	
+  * The tile blocks, intersects and lookup tables are then joined (e.g. tile_blocks_usa_2014 y, tile_intersects_usa_2014 z, lookup_cb_2014_us_nation_5m) and the area_id's for each tile
+    appended in a single ```FeatureCollection``` for the tile, see [GeoJSON draft version 6](http://wiki.geojson.org/GeoJSON_draft_version_6). Example SQL Server SQL:
+    ```SQL
+		WITH a AS (
+			SELECT CAST(z.geolevel_id AS VARCHAR) + '_' + 'CB_2014_US_NATION_5M' + '_' + CAST(z.zoomlevel AS VARCHAR) + '_' + CAST(z.x AS VARCHAR) + '_' + CAST(z.y AS VARCHAR) AS tile_id,
+				 z.geolevel_id, z.zoomlevel, z.geom.STAsText() AS optimised_wkt, z.areaid, z.x, z.y, y.block,
+				 a.gid AS lookup_gid, a.*
+			 FROM tile_blocks_usa_2014 y, tile_intersects_USA_2014 z, lookup_CB_2014_US_NATION_5M a
+			 WHERE y.geolevel_id = @geolevel_id
+			   AND y.zoomlevel   = @zoomlevel
+			   AND y.block       = @block
+			   AND y.geolevel_id = z.geolevel_id
+			   AND y.zoomlevel   = z.zoomlevel
+			   AND y.x           = z.x
+			   AND y.y           = z.y
+			   AND z.areaid      = a.CB_2014_US_NATION_5M
+		)
+		SELECT tile_id, areaid, geolevel_id, zoomlevel, x, y, block,
+			   areaname, CB_2014_US_NATION_5M, geographic_centroid, optimised_wkt, lookup_gid
+			   FROM a
+		 ORDER BY tile_id, areaid;
+	```
+	This GeoJSON is then converted to [TopoJSON](https://github.com/topojson/topojson-specification/blob/master/README.md) and stored in the tiles table. 
+	Example TopoJSON fragment - truncated:
+	```JSON
+	{
+	  "type": "Topology",
+	  "objects": {
+		"collection": {
+		  "type": "GeometryCollection",
+		  "bbox": [
+			-179.14734000000004,
+			-14.549542318143596,
+			179.77846999999986,
+			71.35256100000012
+		  ],
+		  "geometries": [
+			{
+			  "type": "MultiPolygon",
+			  "properties": {
+				"gid": 1,
+				"area_id": "US",
+				"name": "United States",
+				"geographic_centroid": {
+				  "type": "Point",
+				  "coordinates": [
+					-108.528,
+					45.1076
+				  ]
+				},
+				"x": 0,
+				"y": 0,
+				"CB_2014_US_NATION_5M": "US",
+				"zoomlevel": 0
+			  },
+			  "id": 1,
+			  "arcs": [
+				[
+				  [
+					0
+				  ]
+				],
+				[
+				  [
+					1
+				  ]
+				],
+				[
+				  [
+					2
+				  ]
+				],
+	```
+* Creating tile CSV file for each geolevel;
+* Created dataLoader XML config file;
+* Carry out the following tests:
+  * Missing tiles in tile blocks:
+    ```SQL
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_blocks_usa_2014
+	EXCEPT
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM t_tiles_usa_2014
+	 ORDER BY 1, 2, 3, 4;
+	```
+  * Missing tiles in tile interescts:
+    ```SQL
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_intersects_usa_2014
+	EXCEPT
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM t_tiles_usa_2014
+	 ORDER BY 1, 2, 3, 4;
+    ```	
+  * Missing tile blocks in tile interescts:
+    ```SQL
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_intersects_usa_2014
+	EXCEPT
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_blocks_usa_2014
+	 ORDER BY 1, 2, 3, 4;
+    ```	
+  * Extra tiles not in blocks:
+    ```SQL
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM t_tiles_usa_2014
+	EXCEPT
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_blocks_usa_2014
+	 ORDER BY 1, 2, 3, 4;
+    ```	
+  * Extra tiles not in tile intersects:
+    ```SQL
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM t_tiles_usa_2014
+	EXCEPT
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_intersects_usa_2014
+	 ORDER BY 1, 2, 3, 4;
+    ```	
+  * Extra tile blocks not in tile intersects:
+    ```SQL
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_blocks_usa_2014
+	EXCEPT
+	SELECT geolevel_id, zoomlevel, x, y
+	  FROM tile_intersects_usa_2014
+	 ORDER BY 1, 2, 3, 4;
+    ```	
+* Produce Zoomlevel and geolevel report (null tiles/total tiles):
+
+  |          zoomlevel |          geolevel_1 |          geolevel_2 |          geolevel_3 |
+  |--------------------|---------------------|---------------------|---------------------|
+  |                   0                  0/1 |                 0/1 |                 0/1 |
+  |                   1                      |                 0/3 |                 0/3 |
+  |                   2                      |                 0/5 |                 0/5 |
+  |                   3                      |                0/10 |                0/10 |
+  |                   4                      |                0/22 |                0/22 |
+  |                   5                      |                0/47 |                0/48 |
+  |                   6                      |               0/111 |               0/118 |
+  |                   7                      |               0/281 |               0/333 |
+  |                   8                      |               0/665 |               0/992 |
+  |                   9                      |              0/1568 |              0/3137 |
+	
+### 2.4.3 Load Production Data into the RIF
+
+1. Load production data into RIF40 Schema.
+   - Postgres: ```psql -U rif40 -d <database name> -w -e -f rif_pg_usa_2014.sql```
+     Flags:
+     * ```-U rif40```: connect as *rif40*;
+     * ```-d <database name>```: connect to database &lt;database name&gt;
+     * ```-w```: never issue a password prompt. If the server requires password authentication and a password is not available by other means 
+       such as a .pgpass file, the connection attempt will fail;
+     * ```-e```: copy all SQL commands sent to the server to standard output as well;
+     * ```-f rif_pg_usa_2014.sql```: run SQL script rif_pg_usa_2014.sql
+  
+     For information on [Postgres passwords](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/databaseManagementManual.md#221-postgres)
+
+     E.g: ```psql -U rif40 -d sahsuland -w -e -f rif_pg_usa_2014.sql```
+	 
+	[Postgres production data load log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_load.md)
+	 
+   - SQL Server: ```sqlcmd -U rif40 -P <password> -d <database name> -b -m-1 -e -r1 -i rif_mssql_usa_2014.sql  -v pwd="%cd%"```
+     Flags:
+     * ```-U rif40```: connect as *rif40*;
+     * ```-P <password>```: the &lt;password&gt; for user *rif40*;
+     * ```-d <database name>```: connect to database &lt;database name&gt;;
+     * ```-b```: terminate batch job if there is an error;
+     * ```-m-1```: all messages including informational messages, are sent to stdout;
+     * ```-e```: echo input;
+     * ```-r1```: redirects the error message output to stderr;
+     * ```-i rif_mssql_usa_2014.sql```: run SQL script rif_mssql_usa_2014.sql;
+     * ```-v pwd="%cd%"```: set script variable pwd to %cd% (current working directory). So bulk 
+       load can find the CSV files.
+	
+	E.g:
+	```sqlcmd -U rif40 -P XXXXXXXXXXX -d sahsuland -b -m-1 -e -r1 -i rif_mssql_USA_2014.sql  -v pwd="%cd%"```
+
+ 	[SQL Server production load example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_load.md)
+	
+  - To Reload the geography it must not be in use by any studies:
+    ```
+    psql:rif_pg_usa_2014.sql:151: ERROR:  Geography: USA_2014 is used by: 2 studies
+    ```
+  
+Load processed geometry and tiles tables into production database:
+     
+a) Integrate new geography with RIF40 control tables, i.e. add the data in:                   
+   * *geography_usa_2014*;                               
+   * *geolevels_usa_2014*;     
+   to be respective RIF40 tables *rif40_geographies* and *rif40_geolevels*;
+b) Add processed geometry data (partitioned in PostGres), e.g:                          
+   * *geometry_usa_2014*;                                 
+c) Create hierarchy table, e.g: 
+   * *hierarchy_usa_2014*;   
+d) Create lookup tables, e.g:
+   * *lookup_cb_2014_us_county_500k*;             
+   * *lookup_cb_2014_us_nation_5m*;                    
+   * *lookup_cb_2014_us_state_500k*;      
+e) Tiles table and view               
+   * *t_tiles_usa_2014*           
+   * *tiles_usa_2014*;                                
+f) Create adjacency table, e.g: 
+   * *adjacency_usa_2014*   
+	
+2. Test the RIF is setup correctly:
+	
+- Check the *rif40_geographies* table;
+- Check the *rfi40_geolevels* view;
+- Check geography is selectable in the initial study submission screen;
+
+Add data, then:
+
+- Check study and comparison area selection works OK;
+- Setup and run a study.
+
+# 3. TileMaker Source Code
+
+TO BE ADDED.
+
+# 4. TileMaker TODO
+
+TileMaker is currently working with some minor faults but needs to have in order of priority:
+
+1. Make ZIP file download work. A workaround is provided;
+2. Needs to calculate geographic centroids using the database;
+3. Support for population weighted centroids]. In the interim this will be supported via script;
+4. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present);
+5. Support very large shapefiles (e.g. COA2011). This probably will require a rewrite of the shapefile reader to process area by area. The issue is with multipolygons. 
+   These are often multiple records in shapefiles and they need to be UNIOONed together. A workaround is provide in 
+   [2.3.2 Pre Processing Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#232-pre-processing-shapefiles);
+6. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
+   than the TileMaker screen. Probably the best solution is to use Angular;
+7. Add all DBF fields in shapefile to lookup table (i..e add FIPS codes);
+8. Support for database logon in the front end;
+9. Run the generated scripts in the Node.js server. This requires the ability to logon and PSQL copy needs to be replaced to SQL COPY from STDIN/to STDOUT with STDIN/STOUT
+   file handlers in Node.js.
+
+Peter Hambly
+June 2018
