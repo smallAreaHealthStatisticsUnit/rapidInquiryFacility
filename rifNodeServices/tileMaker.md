@@ -1080,7 +1080,16 @@ Step 5: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roamin
 
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cntry2011_map.png?raw=true "CNTRY2011 map")
 
-Step 6: View results of 2.4.4, 2.4.5 if run in sequence
+Step 6. Using *Cntry\cntry11_clip.shp* dissolve completely to create *SCTRY2011.shp* in the *EWS2011* directory:
+
+```
+C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
+-i Cntry\*.shp name=SCTRY2011 ^
+-dissolve -each 'SCTRY2011=\"UK\",SCNTRYNAME=\"United_Kingdom\"' -o EWS2011/ format=shapefile ^
+-verbose
+```
+
+Step 7: View results of 2.4.4, 2.4.5 if run in sequence
 
 ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i EWS2011\*.shp -info```
 
@@ -1092,7 +1101,7 @@ Layer name: CNTRY2011
 Records: 3
 Geometry
   Type: polygon
-  Bounds: 5512.99982883349 5337.900000000402 655604.7000000002 1220301.5000000012
+  Bounds: 5512.99982883349 5338.601595239976 655604.7000000002 1220301.5000000012
   Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
 Attribute data
   Field      First value
@@ -1102,10 +1111,10 @@ Attribute data
 [info]
 Layer 1 *
 Layer name: COA2011
-Records: 227,759
+Records: 227,750
 Geometry
   Type: polygon
-  Bounds: 5513 5337.9 655604.7 1220301.5
+  Bounds: 5513 5338.601000000001 655604.7 1220301.5
   Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
 Attribute data
   Field     First value
@@ -1125,7 +1134,7 @@ Layer name: GOR2011
 Records: 11
 Geometry
   Type: polygon
-  Bounds: 5512.99982883349 5337.900000000402 655604.7000000002 1220301.5000000012
+  Bounds: 5512.99982883349 5338.601595239976 655604.7000000002 1220301.5000000012
   Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
 Attribute data
   Field       First value
@@ -1141,7 +1150,7 @@ Layer name: LADUA2011
 Records: 380
 Geometry
   Type: polygon
-  Bounds: 7458.999995046033 7122.999930665916 655603.9999950442 1219572.486894817
+  Bounds: 7458.999995046033 7122.999930665916 655603.9999950442 1219570.8744639815
   Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
 Attribute data
   Field       First value
@@ -1176,6 +1185,19 @@ Attribute data
   Area_km2         346.980330243
   MSOA11_NM  'Mid Nithsdale'
   MSOA2011   'S02001421'
+
+[info]
+Layer 1 *
+Layer name: SCTRY2011
+Records: 1
+Geometry
+  Type: polygon
+  Bounds: 5512.99982883349 5338.601595239976 655604.7000000002 1220301.5000000012
+  Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
+Attribute data
+  Field       First value
+  SCTRY2011  'UK'
+  SCNTRYNAME  'United_Kingdom'
 ```
 
 ## 2.4 Post Front End Processing
