@@ -650,7 +650,7 @@ The file name of the ZIP file is the code for the geography. This can be changed
 ### 2.3.3 Handling Large Shapefiles
 
 Large shapefiles are those bigger than 500MB in size or with more than 100,000 records. The England, Wales and Scotland 2011 census has census output area as it highest resolution 
-with 227,759 feature and is 1.04GB in size. Pre-processing to reduce the shapefile size by 50% reduces this to 500MB with no appreciable loss in quality. The maximum zoomlevel can 
+with 227,759 feature and is 1.04GB in size. Pre-processing to reduce the shapefile size by 80% reduces this to 240MB with acceptable loss in quality. The maximum zoomlevel can 
 easily be set to 9, this removes two simplification passes with no reduction in overall quality. This will also speed up the SQL post processing by a factor of 16. 
 
 In the England, Wales and Scotland 2011 census there a four further levels with increasing administrative boundary size to (Government office) region; and a sixth highest level of country. 
@@ -680,7 +680,7 @@ These leads to the following conclusions:
 * 80% simplification is acceptable, there is some visible loss of information in urban areas;
 * 90% simplification is borderline, there is visible loss of information in urban areas;
 
-After shapefile reduction by 80% the total size if around 1GB. This is a simplification factor of 0.8.
+After shapefile reduction by 80% the total size of all the files in the administrative geography is 480MB. This is a simplification factor of 0.8.
 
 The Node.js server program needs to be able to read each shapefile in turn and then store the GeoJSON in memory. This leads to a memory requirement of 16x the disk space with 
 a maximum zoomlevel of 9.

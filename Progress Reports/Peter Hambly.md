@@ -2365,5 +2365,19 @@ Todo:
 
 #### 4th to 8th June
 
-* TileMaker manual, testing, handling huge shapefiles
-* Shapefile pre-processing; EWS2011 as an example
+* TileMaker manual, testing, handling huge shapefiles;
+* Shapefile pre-processing; EWS2011 as an example;
+* Processed EWS2011 to LSOA; documented memory management and issues; fix DBF parsing fault for very small DBF files;
+* Strange bug when processing COA as well:
+  ```
+  C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServicesCommon.js:932
+									throw e;
+									^
+
+	RangeError: Invalid string length
+		at JSON.stringify (<anonymous>)
+		at responseProcessingAddStatusCallback (C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServicesCommon.js:299:23)
+		at addStatusWriteDiagnosticFileRename (C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServicesCommon.js:923:10)
+		at FSReqWrap.oncomplete (fs.js:135:15)
+  ```
+  Memory seems OK at: 24G!
