@@ -11,7 +11,7 @@ Tile Maker
 	- [1.2.3 JSZip 3.0 Error](#123-jszip-30-error)
 	- [1.2.4 BULK INSERT Permission](#124-bulk-insert-permission)
 	- [1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms](#125-mssql-timeout-request-failed-to-complete-in-xxx000ms)
-	- [1.2.6 JavaScript heap out of memory](#126-javaScript-heap-out-of-memory)
+	- [1.2.6 JavaScript heap out of memory](#126-javascript-heap-out-of-memory)
 - [2. Running the Tile Maker](#2-running-the-tile-maker)
   - [2.1 Setup](#21-setup)
   - [2.2 Processing Overview](#22-processing-overview)
@@ -108,6 +108,9 @@ block groups or UK census output areas) you will require 32 to 64GB of RAM.
 
 The memory requirement comes from the need to read an entire shapefile, convert each area to [GeoJson](http://geojson.org/), and finally progressively simplify the GeoJSON to be 
 suitable for each zoomlevel.  
+
+In particular see [2.3.3 Handling Large Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#233-handling-large-shapefiles) to  
+either reduce the memory requirement or increase the available memory.
 
 ### 1.2.2 SQL Server Connection Error
 
