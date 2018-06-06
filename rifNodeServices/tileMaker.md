@@ -626,7 +626,8 @@ Make sure you:
   Unable to process list of filess
   Duplicate file: sahsu_grd_level1.dbf; shape file: sahsu_grd_level1.shp already processed
   ```
-* **Have a top level shapefile with only one area;
+* **Have a top level shapefile with only one area**;
+* **Do not add extra files other than those specified here. For example a Windows batch script used to pre process the shapefiles will cause an error**;
 * **Follow the Shapefile Naming Requirements**.
 
 ### 2.3.2 Shapefile Naming Requirements
