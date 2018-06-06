@@ -109,7 +109,9 @@ block groups or UK census output areas) you will require 32 to 64GB of RAM.
 The memory requirement comes from the need to read an entire shapefile, convert each area to [GeoJson](http://geojson.org/), and finally progressively simplify the GeoJSON to be 
 suitable for each zoomlevel.  
 
-In particular see [2.3.3 Handling Large Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#233-handling-large-shapefiles) to  
+By default the *TileMaker* runs in only 4GB memory which is not enough for large shapefiles. 
+
+In particular see [2.3.3 Handling Large Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#233-handling-large-shapefiles) to
 either reduce the memory requirement or increase the available memory.
 
 ### 1.2.2 SQL Server Connection Error
@@ -303,7 +305,8 @@ FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memo
 15: 00000291C30043C1
 ```
 
-See [2.3.3 Handling Large Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#233-handling-large-shapefiles) to  either
+By default the *TileMaker* runs in only 4GB memory which is not enough for large shapefiles. 
+See [2.3.3 Handling Large Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#233-handling-large-shapefiles) to either
 reduce the memory requirement or increase the available memory.
 	
 # 2. Running the Tile Maker
@@ -624,25 +627,55 @@ The file name of the ZIP file is the code for the geography. This can be changed
 ### 2.3.3 Handling Large Shapefiles
 
 Large shapefiles are those bigger than 500MB in size or with more than 100,000 records. The England, Wales and Scotland 2011 census has census output area as it highest resolution 
-with 227,759 feature and is 1.04GB in size. Pre-processing to reduce the shapefile size by 50% reduces this to 500MB with no appreciable loss in quality. There a four further levels 
-with increasing adminstrative boundary size to (Government office) region; and a sixth highest level of country. After reduction the total size if around 1GB.
+with 227,759 feature and is 1.04GB in size. Pre-processing to reduce the shapefile size by 50% reduces this to 500MB with no appreciable loss in quality. The maximum zoomlevel can 
+easily be set to 9, this removes two simplification passes with no reduction in overall quality. This will also speed up the SQL post processing by a factor of 16. 
 
-The Node.js server program needs to be able to read each shapefile in turn and then store the GeoJSON in memory. This leads to a memory requirement of 12x the disk space.
+In the England, Wales and Scotland 2011 census there a four further levels with increasing administrative boundary size to (Government office) region; and a sixth highest level of country. 
 
-The server is pre-configured with 4GB of memory in the *Makefile*. To change the memory in use alter *NODE_MAX_MEMORY=* to the new value in MB: ```NODE_MAX_MEMORY?=12288```. The 
+A key factor is visualizing a suitable amount of initial simplification using the mapshaper GUI, see: 
+[pre processing shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#24-pre-processing-shapefiles):
+
+* England Wales and Scotland at Census Output area, unsimplified:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_unsimplified.PNG?raw=true "England Wales and Scotland at Census Output area, unsimplified")
+
+* Simplified 50%:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_50pct_simplified.PNG?raw=true "Simplified 50%")
+
+* Simplified 80%:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_80pct_simplified.PNG?raw=true "Simplified 80%")
+
+* Simplified 90%:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_90pct_simplified.PNG?raw=true "Simplified 90%")
+
+* Simplified 99.999%:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_99_999pct_simplified.PNG?raw=true "Simplified 99.999%")
+
+These leads to the following conclusions:
+
+* 99.999% is far too much as the shapes are starting to break down;
+* 50% is still very high quality with little visible loss of information at the scales the RIF maps at;
+* 80% is acceptable, there is some visible loss of information in urban areas;
+* 90% is borderline, there is visible loss of information in urban areas;
+
+After shapefile reduction by 80% the total size if around 1GB.
+
+The Node.js server program needs to be able to read each shapefile in turn and then store the GeoJSON in memory. This leads to a memory requirement of 16x the disk space with 
+a maximum zoomlevel of 9.
+
+The server is pre-configured with 4GB of memory in the *Makefile*. To change the memory in use alter *NODE_MAX_MEMORY=* to the new value in MB: ```NODE_MAX_MEMORY?=16384```. The 
 ```?``` is important, it allows the value to be set without altering the Makefile. There are four ways to achieve this:
 
 1. Altering the Makefile:
   ```Makefile
-  NODE_MAX_MEMORY?=12288
+  NODE_MAX_MEMORY?=16384
   FOREVER_OPTIONS=--max-old-space-size=$(NODE_MAX_MEMORY) --expose-gc
   ```
 2. Set *NODE_MAX_MEMORY* in the environment;
-3. Use ```make server-start NODE_MAX_MEMORY=12288``` to set on the command line. This will work for the other stop/restart make targets;
-4. Manual start - chnage ```--max-old-space-size=12288``` to ```--max-old-space-size=4096```:
+3. Use ```make server-start NODE_MAX_MEMORY=16384``` to set on the command line. This will work for the other stop/restart make targets;
+4. Manual start - change ```--max-old-space-size=4096``` to ```--max-old-space-size=16384```:
   ```
   rm -f forever.err forever.log
-  node node_modules\forever\bin\forever start -c "node --max-old-space-size=12288 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
+  node node_modules\forever\bin\forever start -c "node --max-old-space-size=16384 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
   ```
   
 ## 2.4 Pre Processing Shapefiles
@@ -661,8 +694,8 @@ added 17 packages in 2.913s
 ```
 On Windows there are two commands available:
 
-* Command line: ```C:\Users\%USERNAME%\AppData\Roaming\npm\node_modules\mapshaper-gui.cmd```
-* Browser GUI: ```C:\Users\%USERNAME%\AppData\Roaming\npm\node_modules\mapshaper.cmd```
+* Command line: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper-gui.cmd```
+* Browser GUI: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd```
 
 *mapshaper* is a complex tool with many options [mapshaper WIKI](https://github.com/mbloch/mapshaper/wiki). In addition to simplification:
  
@@ -684,7 +717,8 @@ The following *mapshaper* options were used:
 * [```<shapefile>``` or ```-i <shapefile>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-i-input): Input shapefile name;
   * ```snap```: Input shapefile option - snap together vertices within a small distance threshold. This option is intended to fix minor coordinate misalignments in adjacent polygons. 
     The snapping distance is 0.0025 of the average segment length;
-* [```-simplify <simplify percent>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-simplify): Simplify retaining %lt;simplify percent&gt; of the data. 20% to 50% gives good results; 5% will probably result in triangles. Mapshaper supports 
+* [```-simplify <simplify percent>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-simplify): Simplify retaining %lt;simplify percent&gt; of the data. 20% to 50% 
+  gives good results; less than 5% will probably result in triangles. This is very dependent on the resolution of the shapefile. Mapshaper supports 
   Douglas-Peucker simplification and two kinds of Visvalingam simplification. Douglas-Peucker (a.k.a. Ramer-Douglas-Peucker) produces simplified lines that remain within a specified 
   distance of the original line. It is effective for thinning dense vertices but tends to form spikes at high simplification.
   Visvalingam simplification iteratively removes the least important point from a polyline. The importance of points is measured using a metric based on the geometry of the triangle 
