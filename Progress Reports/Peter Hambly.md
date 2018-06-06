@@ -2362,3 +2362,8 @@ Todo:
 * Test and merge pull #39: added version numbering;
 * Complete database management manual;
 * Test SEER data; completed data loading manual;
+
+#### 4th to 8th June
+
+* TileMaker manual, testing, handling huge shapefiles
+* Shapefile pre-processing; EWS2011 as an example

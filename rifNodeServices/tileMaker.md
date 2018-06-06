@@ -11,12 +11,14 @@ Tile Maker
 	- [1.2.3 JSZip 3.0 Error](#123-jszip-30-error)
 	- [1.2.4 BULK INSERT Permission](#124-bulk-insert-permission)
 	- [1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms](#125-mssql-timeout-request-failed-to-complete-in-xxx000ms)
+	- [1.2.6 JavaScript heap out of memory](#126-javaScript-heap-out-of-memory)
 - [2. Running the Tile Maker](#2-running-the-tile-maker)
   - [2.1 Setup](#21-setup)
   - [2.2 Processing Overview](#22-processing-overview)
   - [2.3 Running the Front End](#23-running-the-front-end)
     - [2.3.1 Shapefile Format](#231-shapefile-format)
     - [2.3.2 Shapefile Naming Requirements](#232-shapefile-naming-requirements)
+	- [2.3.3 Handling Large Shapefiles](#233-handling-large-shapefiles)
   - [2.4 Pre Processing Shapefiles](#24-pre-processing-shapefiles)	 
     - [2.4.1 To display information about a shapefile](#241-to-display-information-about-a-shapefile)
     - [2.4.2 Simplifying a shapefile](#242-simplifying-a-shapefile)
@@ -275,6 +277,31 @@ RequestError: Timeout: Request failed to complete in 90000ms
     at emitOne (events.js:96:13)
     at ReadablePacketStream.emit (events.js:188:7)
 ```
+
+### 1.2.6 JavaScript heap out of memory
+
+The TileMaker server log *forever.log* contains:
+```
+FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memory
+ 1: node_module_register
+ 2: v8::internal::FatalProcessOutOfMemory
+ 3: v8::internal::FatalProcessOutOfMemory
+ 4: v8::internal::Factory::NewRawTwoByteString
+ 5: v8::internal::Smi::SmiPrint
+ 6: v8::internal::StackGuard::HandleInterrupts
+ 7: v8::String::WriteUtf8
+ 8: v8_inspector::V8InspectorClient::currentTimeMS
+ 9: node::Buffer::New
+10: node::Buffer::New
+11: v8::internal::wasm::SignatureMap::Find
+12: v8::internal::Builtins::CallableFor
+13: v8::internal::Builtins::CallableFor
+14: v8::internal::Builtins::CallableFor
+15: 00000291C30043C1
+```
+
+See [2.3.3 Handling Large Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#233-handling-large-shapefiles) to  either
+reduce the memory requirement or increase the available memory.
 	
 # 2. Running the Tile Maker
 
@@ -580,12 +607,41 @@ The *AreaID* field will be the name of column used throughout the administrative
 
 * Distinct between shapefiles. DO *NOT* call them all *area_id* or *geo_code*;
 * In upper case. Using lower case names will result in a crash!
+* Do not add files not defined here to the ZIP file. This will cause:
+  ```
+  FAIL Shapefile[7/7/tileMaker]:
+  tileMaker.bat is missing a shapefile/DBF file/Projection file
+  ```
 
 See the [2.4.3 Renaming fields in a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#243-renaming-fields-in-a-shapefile) 
 example below.
 
 The file name of the ZIP file is the code for the geography. This can be changed in the front end. 
 
+### 2.3.3 Handling Large Shapefiles
+
+Large shapefiles are those bigger than 500MB in size or with more than 100,000 records. The England, Wales and Scotland 2011 census has census output area as it highest resolution 
+with 227,759 feature and is 1.04GB in size. Pre-processing to reduce the shapefile size by 50% reduces this to 500MB with no appreciable loss in quality. There a four further levels 
+with increasing adminstrative boundary size to (Government office) region; and a sixth highest level of country. After reduction the total size if around 1GB.
+
+The Node.js server program needs to be able to read each shapefile in turn and then store the GeoJSON in memory. This leads to a memory requirement of 12x the disk space.
+
+The server is pre-configured with 4GB of memory in the *Makefile*. To change the memory in use alter *NODE_MAX_MEMORY=* to the new value in MB: ```NODE_MAX_MEMORY?=12288```. The 
+```?``` is important, it allows the value to be set without altering the Makefile. There are four ways to achieve this:
+
+1. Altering the Makefile:
+  ```Makefile
+  NODE_MAX_MEMORY?=12288
+  FOREVER_OPTIONS=--max-old-space-size=$(NODE_MAX_MEMORY) --expose-gc
+  ```
+2. Set *NODE_MAX_MEMORY* in the environment;
+3. Use ```make server-start NODE_MAX_MEMORY=12288``` to set on the command line. This will work for the other stop/restart make targets;
+4. Manual start - chnage ```--max-old-space-size=12288``` to ```--max-old-space-size=4096```:
+  ```
+  rm -f forever.err forever.log
+  node node_modules\forever\bin\forever start -c "node --max-old-space-size=12288 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
+  ```
+  
 ## 2.4 Pre Processing Shapefiles
 
 Huge shapefiles need to be pre processed using *mapshaper* down to a more reasonable size. *mapshaper* has browser and command line based versions and handles large files well.
