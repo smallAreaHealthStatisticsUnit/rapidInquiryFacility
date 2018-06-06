@@ -12,6 +12,7 @@ Tile Maker
 	- [1.2.4 BULK INSERT Permission](#124-bulk-insert-permission)
 	- [1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms](#125-mssql-timeout-request-failed-to-complete-in-xxx000ms)
 	- [1.2.6 JavaScript heap out of memory](#126-javascript-heap-out-of-memory)
+	- [1.2.7 No top level shapefile with only one area](#127-no-top-level-shapefile-with-only-one-area)
 - [2. Running the Tile Maker](#2-running-the-tile-maker)
   - [2.1 Setup](#21-setup)
   - [2.2 Processing Overview](#22-processing-overview)
@@ -309,6 +310,26 @@ By default the *TileMaker* runs in only 4GB memory which is not enough for large
 See [2.3.3 Handling Large Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#233-handling-large-shapefiles) to either
 reduce the memory requirement or increase the available memory.
 	
+### 1.2.7 No top level shapefile with only one area
+
+The top level shapefile must have only one area:
+
+```
+Check that minimum resolution shapefile has only 1 area
+
+geolevel 1/5 shapefile: CNTRY2011.shp has >1 (3) area)
+
+Stack:
+
+setupLayers@http://127.0.0.1:3000/nodeGeoSpatialFrontEnd.js:1169:5
+displayResponse@http://127.0.0.1:3000/nodeGeoSpatialFrontEnd.js:1304:26
+getShpConvertTopoJSON@http://127.0.0.1:3000/nodeGeoSpatialFrontEnd.js:1511:4
+fire@http://127.0.0.1:3000/jquery-2.2.3.js:3187:11
+fireWith@http://127.0.0.1:3000/jquery-2.2.3.js:3317:7
+done@http://127.0.0.1:3000/jquery-2.2.3.js:8785:5
+callback/<@http://127.0.0.1:3000/jquery-2.2.3.js:9151:9
+```
+	
 # 2. Running the Tile Maker
 
 ## 2.1 Setup
@@ -605,6 +626,7 @@ Make sure you:
   Unable to process list of filess
   Duplicate file: sahsu_grd_level1.dbf; shape file: sahsu_grd_level1.shp already processed
   ```
+* **Have a top level shapefile with only one area;
 * **Follow the Shapefile Naming Requirements**.
 
 ### 2.3.2 Shapefile Naming Requirements
@@ -635,29 +657,29 @@ In the England, Wales and Scotland 2011 census there a four further levels with 
 A key factor is visualizing a suitable amount of initial simplification using the mapshaper GUI, see: 
 [pre processing shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#24-pre-processing-shapefiles):
 
-* England Wales and Scotland at Census Output area, unsimplified:
+* England Wales and Scotland at Census Output area, unsimplified. The orange lines and points are polygon errors (line intersections):
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_unsimplified.PNG?raw=true "England Wales and Scotland at Census Output area, unsimplified")
 
-* Simplified 50%:
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_50pct_simplified.PNG?raw=true "Simplified 50%")
+* Simplified by 50%:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_50pct_simplified.PNG?raw=true "Simplified by 50%")
 
-* Simplified 80%:
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_80pct_simplified.PNG?raw=true "Simplified 80%")
+* Simplified by 80%:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_80pct_simplified.PNG?raw=true "Simplified by 80%")
 
-* Simplified 90%:
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_90pct_simplified.PNG?raw=true "Simplified 90%")
+* Simplified by 90%:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_90pct_simplified.PNG?raw=true "Simplified by 90%")
 
-* Simplified 99.999%:
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_99_999pct_simplified.PNG?raw=true "Simplified 99.999%")
+* Simplified by 99.999%:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_99_999pct_simplified.PNG?raw=true "Simplified by 99.999%")
 
 These leads to the following conclusions:
 
-* 99.999% is far too much as the shapes are starting to break down;
-* 50% is still very high quality with little visible loss of information at the scales the RIF maps at;
-* 80% is acceptable, there is some visible loss of information in urban areas;
-* 90% is borderline, there is visible loss of information in urban areas;
+* 99.999% simplification is far too much as the shapes are starting to break down;
+* 50% simplification is still very high quality with little visible loss of information at the scales the RIF maps at;
+* 80% simplification is acceptable, there is some visible loss of information in urban areas;
+* 90% simplification is borderline, there is visible loss of information in urban areas;
 
-After shapefile reduction by 80% the total size if around 1GB.
+After shapefile reduction by 80% the total size if around 1GB. This is a simplification factor of 0.8.
 
 The Node.js server program needs to be able to read each shapefile in turn and then store the GeoJSON in memory. This leads to a memory requirement of 16x the disk space with 
 a maximum zoomlevel of 9.
