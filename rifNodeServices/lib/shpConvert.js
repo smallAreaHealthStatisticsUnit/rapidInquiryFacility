@@ -730,7 +730,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 		function shapefileDataReadNextRecord(record, shapefileData, recNo) { // Read next record
 			record=undefined;	
 			// Force garbage collection
-			if (global.gc && shapefileData["recLen"] > (1024*1024*500) && ((recNo/10000)-Math.floor(recNo/10000)) == 0) { // GC if json > 500M;  every 10K records
+/*			if (global.gc && shapefileData["recLen"] > (1024*1024*500) && ((recNo/10000)-Math.floor(recNo/10000)) == 0) { // GC if json > 500M;  every 10K records
 				const v8 = require('v8');
 				
 				global.gc();
@@ -742,7 +742,7 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 				msg+="\n<<< End of memory heap";
 				serverLog.serverLog2(__file, __line, "shapefileDataReadNextRecord", "OK [" + shapefileData["uuidV1"] + 
 					"] Force garbage collection shapefile at read [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"] + msg, shapefileData["req"]);					
-			}
+			} */
 			
 			// Print read record diagnostics every 1000 shapefile records or second
 			if (((recNo/1000)-Math.floor(recNo/1000)) == 0 || recNo == 1 || elapsedReadTime > (shapefileData["elapsedReadTime"] + 1)) { 
