@@ -11,16 +11,21 @@ Tile Maker
 	- [1.2.3 JSZip 3.0 Error](#123-jszip-30-error)
 	- [1.2.4 BULK INSERT Permission](#124-bulk-insert-permission)
 	- [1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms](#125-mssql-timeout-request-failed-to-complete-in-xxx000ms)
+	- [1.2.6 JavaScript heap out of memory](#126-javascript-heap-out-of-memory)
+	- [1.2.7 No top level shapefile with only one area](#127-no-top-level-shapefile-with-only-one-area)
 - [2. Running the Tile Maker](#2-running-the-tile-maker)
   - [2.1 Setup](#21-setup)
   - [2.2 Processing Overview](#22-processing-overview)
   - [2.3 Running the Front End](#23-running-the-front-end)
-  - [2.3.1 Shapefile Format](#231-shapefile-format)
-    - [2.3.2 Pre Processing Shapefiles](#232-pre-processing-shapefiles)	 
-      - [2.3.2.1 To display information about a shapefile](#2321-to-display-information-about-a-shapefile)
-      - [2.3.2.2 Simplifying a shapefile](#2322-simplifying-a-shapefile)
-      - [2.3.2.3 Simplifying multiple shapefiles](#2323-simplifying-multiple-shapefiles)
-      - [2.3.2.4 Dissolving a shapefile](#2324-simplifying-multiple-shapefiles)
+    - [2.3.1 Shapefile Format](#231-shapefile-format)
+    - [2.3.2 Shapefile Naming Requirements](#232-shapefile-naming-requirements)
+	- [2.3.3 Handling Large Shapefiles](#233-handling-large-shapefiles)
+  - [2.4 Pre Processing Shapefiles](#24-pre-processing-shapefiles)	 
+    - [2.4.1 To display information about a shapefile](#241-to-display-information-about-a-shapefile)
+    - [2.4.2 Simplifying a shapefile](#242-simplifying-a-shapefile)
+	- [2.4.3 Renaming fields in a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#243-renaming-fields-in-a-shapefile)
+    - [2.4.4 Simplifying multiple shapefiles](#244-simplifying-multiple-shapefiles)
+    - [2.4.5 Dissolving a shapefile](#245-dissolving-a-shapefile)
   - [2.4 Post Front End Processing](#24-post-front-end-processing)
     - [2.4.1 Geospatial Data Load](#241-geospatial-data-load)
     - [2.4.2 Tile Manufacture](#242-tile-manufacture)
@@ -104,6 +109,11 @@ block groups or UK census output areas) you will require 32 to 64GB of RAM.
 
 The memory requirement comes from the need to read an entire shapefile, convert each area to [GeoJson](http://geojson.org/), and finally progressively simplify the GeoJSON to be 
 suitable for each zoomlevel.  
+
+By default the *TileMaker* runs in only 4GB memory which is not enough for large shapefiles. 
+
+In particular see [2.3.3 Handling Large Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#233-handling-large-shapefiles) to
+either reduce the memory requirement or increase the available memory.
 
 ### 1.2.2 SQL Server Connection Error
 
@@ -273,6 +283,52 @@ RequestError: Timeout: Request failed to complete in 90000ms
     at emitOne (events.js:96:13)
     at ReadablePacketStream.emit (events.js:188:7)
 ```
+
+### 1.2.6 JavaScript heap out of memory
+
+The TileMaker server log *forever.log* contains:
+```
+FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memory
+ 1: node_module_register
+ 2: v8::internal::FatalProcessOutOfMemory
+ 3: v8::internal::FatalProcessOutOfMemory
+ 4: v8::internal::Factory::NewRawTwoByteString
+ 5: v8::internal::Smi::SmiPrint
+ 6: v8::internal::StackGuard::HandleInterrupts
+ 7: v8::String::WriteUtf8
+ 8: v8_inspector::V8InspectorClient::currentTimeMS
+ 9: node::Buffer::New
+10: node::Buffer::New
+11: v8::internal::wasm::SignatureMap::Find
+12: v8::internal::Builtins::CallableFor
+13: v8::internal::Builtins::CallableFor
+14: v8::internal::Builtins::CallableFor
+15: 00000291C30043C1
+```
+
+By default the *TileMaker* runs in only 4GB memory which is not enough for large shapefiles. 
+See [2.3.3 Handling Large Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#233-handling-large-shapefiles) to either
+reduce the memory requirement or increase the available memory.
+	
+### 1.2.7 No top level shapefile with only one area
+
+The top level shapefile must have only one area:
+
+```
+Check that minimum resolution shapefile has only 1 area
+
+geolevel 1/5 shapefile: CNTRY2011.shp has >1 (3) area)
+
+Stack:
+
+setupLayers@http://127.0.0.1:3000/nodeGeoSpatialFrontEnd.js:1169:5
+displayResponse@http://127.0.0.1:3000/nodeGeoSpatialFrontEnd.js:1304:26
+getShpConvertTopoJSON@http://127.0.0.1:3000/nodeGeoSpatialFrontEnd.js:1511:4
+fire@http://127.0.0.1:3000/jquery-2.2.3.js:3187:11
+fireWith@http://127.0.0.1:3000/jquery-2.2.3.js:3317:7
+done@http://127.0.0.1:3000/jquery-2.2.3.js:8785:5
+callback/<@http://127.0.0.1:3000/jquery-2.2.3.js:9151:9
+```
 	
 # 2. Running the Tile Maker
 
@@ -391,12 +447,12 @@ Processing concepts:
 The *tile maker* web application is used to:
 
 1. Upload a set of shapefiles (see next section for format), this optionally contains the *tile maker* 
-   configuration file: *geoDataLoader.xml*. For first run through setup:
+   configuration file: *geoDataLoader.xml*. The field names must be in upper case. For first run through setup:
    
    * Enter a geography name and description;
    * For each administrative geography starting from the highest resolution:
      * Enter a description;
-     * Select an *Area_ID* from the list of features in the shapefile; 
+     * Select an *Area_ID* from the list of features in the shapefile. This will be the name of column used throughout the administrative geography and must be distinct; 
      * Enter a description for the *Area_id*;
      * Select an *Area_Name* from the list of features in the shapefile; 
      * Enter a description for the *Area_Name*;
@@ -562,16 +618,90 @@ The usual layout for the tilemaker ZIP file is:
 
 This allows the *tile maker* runs to be re-produced exactly.
 
-Make sure:
+Make sure you:
 
-* You follow the ESRI naming convention exactly;
-* Do **NOT** use the same file name in multiple sub-directories or you will get:
+* **Follow the ESRI naming convention exactly**;
+* **Do **NOT** use the same file name in multiple sub-directories** or you will get:
   ```
   Unable to process list of filess
   Duplicate file: sahsu_grd_level1.dbf; shape file: sahsu_grd_level1.shp already processed
   ```
+* **Have a top level shapefile with only one area**;
+* **Do not add extra files other than those specified here. For example a Windows batch script used to pre process the shapefiles will cause an error**;
+* **Follow the Shapefile Naming Requirements**.
 
-### 2.3.2 Pre Processing Shapefiles
+### 2.3.2 Shapefile Naming Requirements
+
+The *AreaID* field will be the name of column used throughout the administrative geography and must be:
+
+* Distinct between shapefiles. DO *NOT* call them all *area_id* or *geo_code*;
+* In upper case. Using lower case names will result in a crash!
+* Do not add files not defined here to the ZIP file. This will cause:
+  ```
+  FAIL Shapefile[7/7/tileMaker]:
+  tileMaker.bat is missing a shapefile/DBF file/Projection file
+  ```
+
+See the [2.4.3 Renaming fields in a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#243-renaming-fields-in-a-shapefile) 
+example below.
+
+The file name of the ZIP file is the code for the geography. This can be changed in the front end. 
+
+### 2.3.3 Handling Large Shapefiles
+
+Large shapefiles are those bigger than 500MB in size or with more than 100,000 records. The England, Wales and Scotland 2011 census has census output area as it highest resolution 
+with 227,759 feature and is 1.04GB in size. Pre-processing to reduce the shapefile size by 80% reduces this to 240MB with acceptable loss in quality. The maximum zoomlevel can 
+easily be set to 9, this removes two simplification passes with no reduction in overall quality. This will also speed up the SQL post processing by a factor of 16. 
+
+In the England, Wales and Scotland 2011 census there a four further levels with increasing administrative boundary size to (Government office) region; and a sixth highest level of country. 
+
+A key factor is visualizing a suitable amount of initial simplification using the mapshaper GUI, see: 
+[pre processing shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#24-pre-processing-shapefiles):
+
+* England Wales and Scotland at Census Output area, unsimplified. The orange lines and points are polygon errors (line intersections):
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_unsimplified.PNG?raw=true "England Wales and Scotland at Census Output area, unsimplified")
+
+* Simplified by 50%:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_50pct_simplified.PNG?raw=true "Simplified by 50%")
+
+* Simplified by 80%:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_80pct_simplified.PNG?raw=true "Simplified by 80%")
+
+* Simplified by 90%:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_90pct_simplified.PNG?raw=true "Simplified by 90%")
+
+* Simplified by 99.999%:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/EWS2011_COA_99_999pct_simplified.PNG?raw=true "Simplified by 99.999%")
+
+These leads to the following conclusions:
+
+* 99.999% simplification is far too much as the shapes are starting to break down;
+* 50% simplification is still very high quality with little visible loss of information at the scales the RIF maps at;
+* 80% simplification is acceptable, there is some visible loss of information in urban areas;
+* 90% simplification is borderline, there is visible loss of information in urban areas;
+
+After shapefile reduction by 80% the total size of all the files in the administrative geography is 480MB. This is a simplification factor of 0.8.
+
+The Node.js server program needs to be able to read each shapefile in turn and then store the GeoJSON in memory. This leads to a memory requirement of 16x the disk space with 
+a maximum zoomlevel of 9.
+
+The server is pre-configured with 4GB of memory in the *Makefile*. To change the memory in use alter *NODE_MAX_MEMORY=* to the new value in MB: ```NODE_MAX_MEMORY?=16384```. The 
+```?``` is important, it allows the value to be set without altering the Makefile. There are four ways to achieve this:
+
+1. Altering the Makefile:
+  ```Makefile
+  NODE_MAX_MEMORY?=16384
+  FOREVER_OPTIONS=--max-old-space-size=$(NODE_MAX_MEMORY) --expose-gc
+  ```
+2. Set *NODE_MAX_MEMORY* in the environment;
+3. Use ```make server-start NODE_MAX_MEMORY=16384``` to set on the command line. This will work for the other stop/restart make targets;
+4. Manual start - change ```--max-old-space-size=4096``` to ```--max-old-space-size=16384```:
+  ```
+  rm -f forever.err forever.log
+  node node_modules\forever\bin\forever start -c "node --max-old-space-size=16384 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
+  ```
+  
+## 2.4 Pre Processing Shapefiles
 
 Huge shapefiles need to be pre processed using *mapshaper* down to a more reasonable size. *mapshaper* has browser and command line based versions and handles large files well.
 Do *NOT* use the web based version [http://mapshaper.org/](http://mapshaper.org/) as it is limited to 100MB.
@@ -587,17 +717,18 @@ added 17 packages in 2.913s
 ```
 On Windows there are two commands available:
 
-* Command line: ```C:\Users\%USERNAME%\AppData\Roaming\npm\node_modules\mapshaper-gui.cmd```
-* Browser GUI: ```C:\Users\%USERNAME%\AppData\Roaming\npm\node_modules\mapshaper.cmd```
+* Command line: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper-gui.cmd```
+* Browser GUI: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd```
 
 *mapshaper* is a complex tool with many options [mapshaper WIKI](https://github.com/mbloch/mapshaper/wiki). In addition to simplification:
  
-* Convert between file formats
-* Clip a layer of polygons, lines or points using polygons in a second layer
-* Erase parts of a polygon, line or point layer using a second polygon layer
-* Aggregate polygons by dissolving edges
-* Join an external data table to a feature layer
-* Edit the attribute table
+* Convert between file formats;
+* Clip a layer of polygons, lines or points using polygons in a second layer;
+* Erase parts of a polygon, line or point layer using a second polygon layer;
+* Aggregate polygons by dissolving edges;
+* Join an external data table to a feature layer;
+* Edit the attribute table;
+* Create population weighted centroids.
 
 Other tools available are:
 
@@ -606,33 +737,46 @@ Other tools available are:
 
 The following *mapshaper* options were used:
 
-* ```<shapefile>``` or ```-i <shapefile>```: Input shapefile name;
-* ```snap```: Input shapefile option - snap together vertices within a small distance threshold. This option is intended to fix minor coordinate misalignments in adjacent polygons. 
-  The snapping distance is 0.0025 of the average segment length;
-* ```-simplify <simplify percent>```: Simplify retaining %lt;simplify percent&gt; of the data. 20% to 50% gives good results; 5% will probably result in triangles. Mapshaper supports 
+* [```<shapefile>``` or ```-i <shapefile>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-i-input): Input shapefile name;
+  * ```snap```: Input shapefile option - snap together vertices within a small distance threshold. This option is intended to fix minor coordinate misalignments in adjacent polygons. 
+    The snapping distance is 0.0025 of the average segment length;
+* [```-simplify <simplify percent>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-simplify): Simplify retaining %lt;simplify percent&gt; of the data. 20% to 50% 
+  gives good results; less than 5% will probably result in triangles. This is very dependent on the resolution of the shapefile. Mapshaper supports 
   Douglas-Peucker simplification and two kinds of Visvalingam simplification. Douglas-Peucker (a.k.a. Ramer-Douglas-Peucker) produces simplified lines that remain within a specified 
   distance of the original line. It is effective for thinning dense vertices but tends to form spikes at high simplification.
   Visvalingam simplification iteratively removes the least important point from a polyline. The importance of points is measured using a metric based on the geometry of the triangle 
   formed by each non-endpoint vertex and the two neighboring vertices. The visvalingam option uses the "effective area" metric — points forming smaller-area triangles are removed first.
   Mapshaper's default simplification method uses Visvalingam simplification but weights the effective area of each point so that smaller-angle vertices are preferentially removed, 
   resulting in a smoother appearance;
-* ```-o <output shapefile or output directory>```: Output shapefile or output directory;
-* ```format=shapefile|geojson|topojson|json|dbf|csv|tsv|svg```: Output option - format as a shapefile|geojson|topojson|json|dbf|csv|tsv|svg; 
-* ```name=<new name>```: Rename the layer (or layers) modified by a command;
-* ```-verbose```: Print verbose messages, including the time taken by each processing step;
-* ```-info```: Get information about a dataset;
-* ```-clean```: Repair overlaps and fill small gaps between adjacent polygons. Only gaps that are completely enclosed can be filled. Areas that are contained by more than one polygon 
+* [```-o <output shapefile or output directory>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-o-output): Output shapefile or output directory;
+  * ```format=shapefile|geojson|topojson|json|dbf|csv|tsv|svg```: Output option - format as a shapefile|geojson|topojson|json|dbf|csv|tsv|svg; 
+  * ```name=<new name>```: Rename the layer (or layers) modified by a command;
+* [```-each <expression>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-each): Apply a JavaScript &lt;expression&gt; to each feature in a layer. Data properties are available as local variables. Additional feature-level properties 
+  are available as read-only properties of the this object.
+  E.g.
+  ```'geo_code=country_co,geo_label=country_na'```: replace the data in *geo_code* with *country_co* and *geo_label* with *country_na*. Note there must be no 
+  spaces due to a bug as of 5/6/2018 (now fixed in development) so the delete example will not work;
+* [```-dissolve <fields>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-dissolve): Aggregate groups of features using a data field, or aggregate all features if no field is given. For polygon layers, -dissolve merges adjacent polygons by 
+  erasing shared boundaries. For point layers, -dissolve replaces a group of points with their centroid. For polyline layers, -dissolve tries to merge contiguous polylines into as 
+  few polylines as possible.
+  &lt;fields&gt; Name of a data field or fields to dissolve on. Accepts a comma-separated list of field names;
+* [```-rename-fields <fields>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-rename-fields): Rename data fields. To rename a field from A to B, use the assignment operator: B=A.
+  &lt;fields&gt; or fields= List of fields to rename as a comma-separated list;
+* [```-verbose```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-verbose): Print verbose messages, including the time taken by each processing step;
+* [```-info```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-info):Print information about a dataset. Useful for seeing the fields in a layer's attribute data table. Also useful for summarizing the result of a series of commands;
+* [```-clean```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-clean): Repair overlaps and fill small gaps between adjacent polygons. Only gaps that are completely enclosed can be filled. Areas that are contained by more than one polygon 
   (overlaps) are assigned to the polygon with the largest area. Similarly, gaps are assigned to the largest-area polygon. This rule may give undesired results and will likely change 
   in the future.
 
 Examples:
 
-* [To display information about a shapefile][(https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2321-to-display-information-about-a-shapefile);
-* [Simplifying a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2322-simplifying-a-shapefile). To simplify a dataset by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory;
-* [Simplifying multiple shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2323-simplifying-multiple-shapefiles). To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory;
-* [Dissolving a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#2324-simplifying-multiple-shapefiles). To dissolve a geography - UK regions (GOR2011) to UK Countries.
+* [To display information about a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#241-to-display-information-about-a-shapefile);
+* [Simplifying a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#242-simplifying-a-shapefile). To simplify a dataset by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory;
+* [Renaming fields in a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#243-renaming-fields-in-a-shapefile);
+* [Simplifying multiple shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#244-simplifying-multiple-shapefiles). To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory;
+* [Dissolving a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#245-dissolving-a-shapefile). To dissolve a geography - UK regions (GOR2011) to UK Countries.
 
-#### 2.3.2.1 To display information about a shapefile
+### 2.4.1 To display information about a shapefile
  
 To display information about a shapefile: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd COA\coa11_clip.shp -info```
 
@@ -659,13 +803,13 @@ Attribute data
   MSOA11NM  'Darlington 010'
 ```
 
-#### 2.3.2.2 Simplifying a shapefile
+### 2.4.2 Simplifying a shapefile
 
-To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *tilemaker* directory: 
-```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp LSOA\*.shp MSOA\*.shp snap -simplify 0.5 -clean -o tilemaker/ format=shapefile -verbose```
+To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *EWS2011* directory: 
+```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -simplify 0.5 -clean -o EWS2011/ format=shapefile -verbose```
 
 ```
-C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i COA\*.shp snap -simplify 0.5 -clean -o tilemaker/ format=shapefile -verbose
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i COA\*.shp snap -simplify 0.5 -clean -o EWS2011/ format=shapefile -verbose
 [i] Importing: COA\coa11_clip.shp
 [i] Snapped 54928 points
 [i] - 31757ms
@@ -677,129 +821,152 @@ C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\
 [clean] Dissolve tiles 2413ms
 [clean] Retained 227,759 of 227,759 features
 [clean] - 27774ms
-[o] Wrote tilemaker\coa11_clip.shp
-[o] Wrote tilemaker\coa11_clip.shx
-[o] Wrote tilemaker\coa11_clip.dbf
-[o] Wrote tilemaker\coa11_clip.prj
+[o] Wrote EWS2011\coa11_clip.shp
+[o] Wrote EWS2011\coa11_clip.shx
+[o] Wrote EWS2011\coa11_clip.dbf
+[o] Wrote EWS2011\coa11_clip.prj
 [o] - 15673ms
 ```
 
-#### 2.3.2.3 Simplifying multiple shapefiles
+### 2.4.3 Renaming fields in a shapefile
 
-To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *tilemaker* directory. Note the 
+To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *EWS2011* directory: 
+```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile -verbose```
+
+```
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile -verbose
+[i] Importing: COA\coa11_clip.shp
+[i] Snapped 54928 points
+[i] - 30723ms
+[rename-fields] - 1034ms
+[o] Wrote EWS2011\coa11_clip.shp
+[o] Wrote EWS2011\coa11_clip.shx
+[o] Wrote EWS2011\coa11_clip.dbf
+[o] Wrote EWS2011\coa11_clip.prj
+[o] - 25844ms
+```
+
+### 2.4.4 Simplifying multiple shapefiles
+
+To simplify a geography 25%, repair overlaps and fill small gaps between adjacent polygons and produce a new renamed shapefile in the *EWS2011* directory. Note the 
 grouping and repetition of the commands; this is essentially five commands concatenated together: 
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
--i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
--i LSOA\*.shp name=LS2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
--i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
--i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
--i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+-i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile ^
+-i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 -clean -rename-fields LSOA2011=LSOA11 -o EWS2011/ format=shapefile ^
+-i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -rename-fields MSOA2011=MSOA11 -o EWS2011/ format=shapefile ^
+-i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -rename-fields LADUA2011=LADUA11 -o EWS2011/ format=shapefile ^
+-i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -rename-fields GOR2011=geo_code,GOR_NAME=geo_label -o EWS2011/ format=shapefile ^
 -verbose
 ```
 
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
-More? -i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
-More? -i LSOA\*.shp name=LS2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
-More? -i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
-More? -i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
-More? -i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -o tilemaker/ format=shapefile ^
+More? -i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile ^
+More? -i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 -clean -rename-fields LSOA2011=LSOA11 -o EWS2011/ format=shapefile ^
+More? -i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -rename-fields MSOA2011=MSOA11 -o EWS2011/ format=shapefile ^
+More? -i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -rename-fields LADUA2011=LADUA11 -o EWS2011/ format=shapefile ^
+More? -i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -rename-fields GOR2011=geo_code,GOR_NAME=geo_label -o EWS2011/ format=shapefile ^
 More? -verbose
 [i] Importing: COA\coa11_clip.shp
 [i] Snapped 54928 points
-[i] - 32522ms
+[i] - 30997ms
 [simplify] Repaired 38 intersections; 212 intersections could not be repaired
-[simplify] - 28352ms
-[clean] Find mosaic rings 1132ms
-[clean] Detect holes (holes: 3496, enclosures: 4630) 1901ms
-[clean] Build mosaic 3037ms
-[clean] Dissolve tiles 2107ms
+[simplify] - 28262ms
+[clean] Find mosaic rings 1131ms
+[clean] Detect holes (holes: 3496, enclosures: 4630) 1983ms
+[clean] Build mosaic 3116ms
+[clean] Dissolve tiles 2077ms
 [clean] Retained 227,759 of 227,759 features
-[clean] - 28546ms
-[o] Wrote tilemaker\COA2011.shp
-[o] Wrote tilemaker\COA2011.shx
-[o] Wrote tilemaker\COA2011.dbf
-[o] Wrote tilemaker\COA2011.prj
-[o] - 16352ms
+[clean] - 27964ms
+[rename-fields] - 120ms
+[o] Wrote EWS2011\COA2011.shp
+[o] Wrote EWS2011\COA2011.shx
+[o] Wrote EWS2011\COA2011.dbf
+[o] Wrote EWS2011\COA2011.prj
+[o] - 16534ms
 [i] Importing: LSOA\LSOA11_clip.shp
 [i] Snapped 28149 points
-[i] - 16600ms
+[i] - 16334ms
 [simplify] Repaired 2 intersections; 1 intersection could not be repaired
-[simplify] - 11430ms
-[clean] Find mosaic rings 302ms
-[clean] Detect holes (holes: 183, enclosures: 857) 159ms
-[clean] Build mosaic 465ms
-[clean] Dissolve tiles 577ms
+[simplify] - 11474ms
+[clean] Find mosaic rings 306ms
+[clean] Detect holes (holes: 183, enclosures: 857) 160ms
+[clean] Build mosaic 470ms
+[clean] Dissolve tiles 578ms
 [clean] Retained 41,729 of 41,729 features
-[clean] - 9615ms
-[o] Wrote tilemaker\LS2011.shp
-[o] Wrote tilemaker\LS2011.shx
-[o] Wrote tilemaker\LS2011.dbf
-[o] Wrote tilemaker\LS2011.prj
-[o] - 5993ms
+[clean] - 9447ms
+[rename-fields] - 9ms
+[o] Wrote EWS2011\LSOA2011.shp
+[o] Wrote EWS2011\LSOA2011.shx
+[o] Wrote EWS2011\LSOA2011.dbf
+[o] Wrote EWS2011\LSOA2011.prj
+[o] - 6198ms
 [i] Importing: MSOA\MSOA11_clip.shp
 [i] Snapped 20697 points
-[i] - 8731ms
+[i] - 9005ms
 [simplify] Repaired 6 intersections
-[simplify] - 8183ms
+[simplify] - 8208ms
 [clean] Find mosaic rings 133ms
-[clean] Detect holes (holes: 2894, enclosures: 1474) 616ms
-[clean] Build mosaic 751ms
-[clean] Dissolve tiles 367ms
+[clean] Detect holes (holes: 2894, enclosures: 1474) 740ms
+[clean] Build mosaic 877ms
+[clean] Dissolve tiles 699ms
 [clean] Retained 8,480 of 8,480 features
-[clean] - 5553ms
-[o] Wrote tilemaker\MSOA2011.shp
-[o] Wrote tilemaker\MSOA2011.shx
-[o] Wrote tilemaker\MSOA2011.dbf
-[o] Wrote tilemaker\MSOA2011.prj
-[o] - 2569ms
+[clean] - 5723ms
+[rename-fields] - 4ms
+[o] Wrote EWS2011\MSOA2011.shp
+[o] Wrote EWS2011\MSOA2011.shx
+[o] Wrote EWS2011\MSOA2011.dbf
+[o] Wrote EWS2011\MSOA2011.prj
+[o] - 2695ms
 [i] Importing: District\District11_SAHSU_clip.shp
 [i] Snapped 27497 points
-[i] - 1888ms
+[i] - 2198ms
 [simplify] Repaired 7 intersections; 1 intersection could not be repaired
-[simplify] - 2225ms
-[clean] Find mosaic rings 34ms
-[clean] Detect holes (holes: 1, enclosures: 752) 194ms
-[clean] Build mosaic 232ms
-[clean] Dissolve tiles 58ms
+[simplify] - 2180ms
+[clean] Find mosaic rings 32ms
+[clean] Detect holes (holes: 1, enclosures: 752) 191ms
+[clean] Build mosaic 225ms
+[clean] Dissolve tiles 62ms
 [clean] Retained 380 of 380 features
-[clean] - 1174ms
-[o] Wrote tilemaker\LADUA2011.shp
-[o] Wrote tilemaker\LADUA2011.shx
-[o] Wrote tilemaker\LADUA2011.dbf
-[o] Wrote tilemaker\LADUA2011.prj
-[o] - 867ms
+[clean] - 1188ms
+[rename-fields] - 0ms
+[o] Wrote EWS2011\LADUA2011.shp
+[o] Wrote EWS2011\LADUA2011.shx
+[o] Wrote EWS2011\LADUA2011.dbf
+[o] Wrote EWS2011\LADUA2011.prj
+[o] - 562ms
 [i] Importing: Region\region11_clip.shp
 [i] Snapped 42648 points
-[i] - 1818ms
+[i] - 2106ms
 [simplify] Repaired 169 intersections
-[simplify] - 4281ms
-[clean] Find mosaic rings 58ms
-[clean] Detect holes (holes: 1882, enclosures: 4618) 1598ms
-[clean] Build mosaic 1659ms
-[clean] Dissolve tiles 463ms
+[simplify] - 4332ms
+[clean] Find mosaic rings 59ms
+[clean] Detect holes (holes: 1882, enclosures: 4618) 1637ms
+[clean] Build mosaic 1700ms
+[clean] Dissolve tiles 472ms
 [clean] Retained 11 of 11 features
-[clean] - 3872ms
-[o] Wrote tilemaker\GOR2011.shp
-[o] Wrote tilemaker\GOR2011.shx
-[o] Wrote tilemaker\GOR2011.dbf
-[o] Wrote tilemaker\GOR2011.prj
-[o] - 1201ms
+[clean] - 4036ms
+[rename-fields] - 1ms
+[o] Wrote EWS2011\GOR2011.shp
+[o] Wrote EWS2011\GOR2011.shx
+[o] Wrote EWS2011\GOR2011.dbf
+[o] Wrote EWS2011\GOR2011.prj
+[o] - 695ms
 ```
 
-#### 2.3.2.4 Dissolving a shapefile
+### 2.4.5 Dissolving a shapefile
 
 To dissolve a geography - UK regions (GOR2011) to UK Countries. 
 
 Step 1: Edit the DBF file using QGIS to add *country_co* and *country_na* as follows. This provides the correct code to dissolve onto. This possibly could be done 
 programatically using *mapshaper*.
 
-To dump DBG to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i Region\*.shp -o Region\region11_clip.csv format=csv -verbose```:
+To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i Region\*.shp -o Region\region11_clip.csv format=csv -verbose```:
 
 Old DBF file data:
 
-| geo_code  | geo_label                | EER11CDO |
+| GOR2011   | GOR_NAME                 | EER11CDO |
 |-----------|--------------------------|----------|
 | E12000006 | East of England          |          | 
 | E12000003 | Yorkshire and The Humber |          | 
@@ -815,7 +982,7 @@ Old DBF file data:
 
 New DBF file data:
 
-| geo_code  | geo_label                | EER11CDO | country_co | country_na |
+| GOR2011   | GOR_NAME                 | EER11CDO | country_co | country_na |
 |-----------|--------------------------|----------|------------|------------|
 | E12000006 | East of England          |          | E92000001  | England    |
 | E12000003 | Yorkshire and The Humber |          | E92000001  | England    |
@@ -835,37 +1002,37 @@ Step 2: Create Cntry\cntry11_clip.shp renaming *country_co* to *geo_code* and *c
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
 -i Region\*.shp name=CNTRY2011 snap -simplify 0.5 -clean ^
--each 'geo_code=country_co,geo_label=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
+-each 'CNTRY2011=country_co,CNTRYNAME=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
 -verbose
 ```
 
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
 More? -i Region\*.shp name=CNTRY2011 snap -simplify 0.5 -clean ^
-More? -each 'geo_code=country_co,geo_label=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
+More? -each 'CNTRY2011=country_co,CNTRYNAME=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
 More? -verbose
 [i] Importing: Region\region11_clip.shp
 [i] Snapped 42648 points
-[i] - 1502ms
+[i] - 1531ms
 [simplify] Repaired 169 intersections
-[simplify] - 3287ms
-[clean] Find mosaic rings 83ms
-[clean] Detect holes (holes: 1882, enclosures: 4618) 2321ms
-[clean] Build mosaic 2407ms
-[clean] Dissolve tiles 471ms
+[simplify] - 3336ms
+[clean] Find mosaic rings 97ms
+[clean] Detect holes (holes: 1882, enclosures: 4618) 2405ms
+[clean] Build mosaic 2506ms
+[clean] Dissolve tiles 495ms
 [clean] Retained 11 of 11 features
-[clean] - 4465ms
+[clean] - 4591ms
 [each] - 1ms
 [o] Wrote Cntry\cntry11_clip.shp
 [o] Wrote Cntry\cntry11_clip.shx
 [o] Wrote Cntry\cntry11_clip.dbf
 [o] Wrote Cntry\cntry11_clip.prj
-[o] - 607ms
+[o] - 653ms
 ```
 
-Step 3: View new data. To dump DBG to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i Cntry\cntry11_clip.shp -o Cntry\cntry11_clip.csv format=csv -verbose```:
+Step 3: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i Cntry\cntry11_clip.shp -o Cntry\cntry11_clip.csv format=csv -verbose```:
 
-| geo_code  | geo_label | EER11CDO | country_co | country_na |
+| cntry2011 | geo_label | EER11CDO | country_co | country_na |
 |-----------|-----------|----------|------------|------------|
 | E92000001 | England   |          | E92000001  | England    |
 | E92000001 | England   |          | E92000001  | England    |
@@ -879,38 +1046,159 @@ Step 3: View new data. To dump DBG to CSV: ```C:\Users\%USERNAME%\AppData\Roamin
 | W92000004 | Wales     | 10       | W92000004  | Wales      |
 | S92000003 | Scotland  | 11       | S92000003  | Scotland   |
 
-
-Step 4: Using *Cntry\cntry11_clip.shp* dissolve on *geo_code*, *geo_label* to create *CNTRY2011.shp* in the *tileMaker* directory:
+Step 4: Using *Cntry\cntry11_clip.shp* dissolve on *cntry2011*, *geo_label* to create *CNTRY2011.shp* in the *EWS2011* directory:
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
--i Cntry\*.shp name=CNTRY2011 -clean ^
--dissolve='geo_code' -o tilemaker/ format=shapefile ^
+-i Cntry\*.shp name=CNTRY2011 ^
+-dissolve CNTRY2011,CNTRYNAME -o EWS2011/ format=shapefile ^
 -verbose
 ```
 
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
-More? -i Cntry\*.shp name=CNTRY2011 -clean ^
-More? -dissolve='geo_code,geo_label' -o tilemaker/ format=shapefile ^
+More? -i Cntry\*.shp name=CNTRY2011 ^
+More? -dissolve CNTRY2011,CNTRYNAME -o EWS2011/ format=shapefile ^
 More? -verbose
 [i] Importing: Cntry\cntry11_clip.shp
-[i] - 501ms
-[clean] Find mosaic rings 53ms
-[clean] Detect holes (holes: 1882, enclosures: 4618) 2317ms
-[clean] Build mosaic 2372ms
-[clean] Dissolve tiles 156ms
-[clean] Retained 11 of 11 features
-[clean] - 3394ms
-[o] Wrote tilemaker\CNTRY2011.shp
-[o] Wrote tilemaker\CNTRY2011.shx
-[o] Wrote tilemaker\CNTRY2011.dbf
-[o] Wrote tilemaker\CNTRY2011.prj
-[o] - 639ms
+[i] - 485ms
+[dissolve] Dissolved 11 features into 3 features
+[dissolve] - 23ms
+[o] Wrote EWS2011\CNTRY2011.shp
+[o] Wrote EWS2011\CNTRY2011.shx
+[o] Wrote EWS2011\CNTRY2011.dbf
+[o] Wrote EWS2011\CNTRY2011.prj
+[o] - 689ms
 ```
+
+Step 5: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i EWS2011\CNTRY2011.shp -o EWS2011\CNTRY2011.csv format=csv -verbose```:
+
+| geo_code  | geo_label |
+|-----------|-----------|
+| E92000001 | England   |
+| W92000004 | Wales     |
+| S92000003 | Scotland  |
 
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cntry2011_map.png?raw=true "CNTRY2011 map")
 
-XXX ,delete COUNTRY_CO,delete COUNTRY_NA,delete EER11CDO
+Step 6. Using *Cntry\cntry11_clip.shp* dissolve completely to create *SCTRY2011.shp* in the *EWS2011* directory:
+
+```
+C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
+-i Cntry\*.shp name=SCTRY2011 ^
+-dissolve -each 'SCTRY2011=\"UK\",SCNTRYNAME=\"United_Kingdom\"' -o EWS2011/ format=shapefile ^
+-verbose
+```
+
+Step 7: View results of 2.4.4, 2.4.5 if run in sequence
+
+```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i EWS2011\*.shp -info```
+
+```
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>CALL C:\Users\phamb\AppData\Roaming\npm\mapshaper.cmd -i EWS2011\*.shp -info
+[info]
+Layer 1 *
+Layer name: CNTRY2011
+Records: 3
+Geometry
+  Type: polygon
+  Bounds: 5512.99982883349 5338.601595239976 655604.7000000002 1220301.5000000012
+  Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
+Attribute data
+  Field      First value
+  CNTRY2011  'E92000001\n'
+  CNTRYNAME  'England'
+
+[info]
+Layer 1 *
+Layer name: COA2011
+Records: 227,750
+Geometry
+  Type: polygon
+  Bounds: 5513 5338.601000000001 655604.7 1220301.5
+  Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
+Attribute data
+  Field     First value
+  Area      49974.435826
+  Area_km2      0.049974435826
+  COA2011   'E00062113'
+  LAD11     'E06000005'
+  LAD11NM   'Darlington'
+  LSOA11_1  'E01012316'
+  LSOA11NM  'Darlington 010B'
+  MSOA11    'E02002568'
+  MSOA11NM  'Darlington 010'
+
+[info]
+Layer 1 *
+Layer name: GOR2011
+Records: 11
+Geometry
+  Type: polygon
+  Bounds: 5512.99982883349 5338.601595239976 655604.7000000002 1220301.5000000012
+  Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
+Attribute data
+  Field       First value
+  country_co  'E92000001\n'
+  country_na  'England'
+  EER11CDO    ''
+  GOR2011     'E12000006'
+  GOR_NAME    'East of England'
+
+[info]
+Layer 1 *
+Layer name: LADUA2011
+Records: 380
+Geometry
+  Type: polygon
+  Bounds: 7458.999995046033 7122.999930665916 655603.9999950442 1219570.8744639815
+  Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
+Attribute data
+  Field       First value
+  LADUA11_NM  'Hartlepool'
+  LADUA2011   'E06000001'
+
+[info]
+Layer 1 *
+Layer name: LSOA2011
+Records: 41,729
+Geometry
+  Type: polygon
+  Bounds: 7458.999995046033 7122.999930665916 655603.9999950442 1219572.486894817
+  Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
+Attribute data
+  Field     First value
+  LSOA2011  'W01000111'
+  X         247672.287819
+  Y         361618.08299
+
+[info]
+Layer 1 *
+Layer name: MSOA2011
+Records: 8,480
+Geometry
+  Type: polygon
+  Bounds: 7458.9999950430065 7122.999930663878 655603.9999950434 1219570.8744639796
+  Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
+Attribute data
+  Field      First value
+  Area       346980330.243
+  Area_km2         346.980330243
+  MSOA11_NM  'Mid Nithsdale'
+  MSOA2011   'S02001421'
+
+[info]
+Layer 1 *
+Layer name: SCTRY2011
+Records: 1
+Geometry
+  Type: polygon
+  Bounds: 5512.99982883349 5338.601595239976 655604.7000000002 1220301.5000000012
+  Proj.4: +proj=tmerc +x_0=400000 +y_0=-100000 +lon_0=-2 +k_0=0.9996012717 +lat_0=49 +datum=OSGB36
+Attribute data
+  Field       First value
+  SCTRY2011  'UK'
+  SCNTRYNAME  'United_Kingdom'
+```
 
 ## 2.4 Post Front End Processing
 
@@ -1529,18 +1817,19 @@ TO BE ADDED.
 TileMaker is currently working with some minor faults but needs to have in order of priority:
 
 1. Make ZIP file download work. A workaround is provided;
-2. Needs to calculate geographic centroids using the database;
-3. Support for population weighted centroids]. In the interim this will be supported via script;
-4. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present);
-5. Support very large shapefiles (e.g. COA2011). This probably will require a rewrite of the shapefile reader to process area by area. The issue is with multipolygons. 
+2. Using lower case DBF file names will result in a crash;
+3. Needs to calculate geographic centroids using the database;
+4. Support for population weighted centroids]. In the interim this will be supported via script;
+5. UTF8/16 support (e.g. Slättåkra-Kvibille should not be mangled as at present);
+6. Support very large shapefiles (e.g. COA2011). This probably will require a rewrite of the shapefile reader to process area by area. The issue is with multipolygons. 
    These are often multiple records in shapefiles and they need to be UNIOONed together. A workaround is provide in 
-   [2.3.2 Pre Processing Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#232-pre-processing-shapefiles);
-6. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
+   [2.4 Pre Processing Shapefiles](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#24-pre-processing-shapefiles);
+7. GUI's needs to be merged and brought up to same standard as the rest of the RIF. The TileViewer screen is in better shape
    than the TileMaker screen. Probably the best solution is to use Angular;
-7. Add all DBF fields in shapefile to lookup table (i..e add FIPS codes);
-8. Support for database logon in the front end;
-9. Run the generated scripts in the Node.js server. This requires the ability to logon and PSQL copy needs to be replaced to SQL COPY from STDIN/to STDOUT with STDIN/STOUT
-   file handlers in Node.js.
+8. Add all DBF fields in shapefile to lookup table (i..e add FIPS codes);
+9. Support for database logon in the front end;
+10. Run the generated scripts in the Node.js server. This requires the ability to logon and PSQL copy needs to be replaced to SQL COPY from STDIN/to STDOUT with STDIN/STOUT
+    file handlers in Node.js.
 
 Peter Hambly
 June 2018

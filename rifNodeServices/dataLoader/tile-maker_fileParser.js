@@ -78,7 +78,7 @@ function shpConvertInput(files, shpConvertInputCallback) {
 		var end=new Date().getTime();
 		var elapsed=(end - lstart)/1000; // in S	
 				
-		console.log("Processing file: " + fileName);
+		console.log("Processing file: " + fileName + "; size: " + fileSizeBytes);
 //		console.error("originalFileName: " + JSON.stringify(originalFileName, null, 4));
 			
 		if (ext == 'shp') {
@@ -124,18 +124,27 @@ function shpConvertInput(files, shpConvertInputCallback) {
 				else {
 					throw new Error("Duplicate file: " +  fileName + "; file: " + baseName + ".dbf already processed");
 				}
-			}						
+			}	
+			console.log("fileName: " + JSON.stringify(fileName, null, 4) + "; size: " + fileSizeBytes);
+			console.log("baseName: " + JSON.stringify(baseName, null, 4));	
+//			console.log("name: " + JSON.stringify(name, null, 4));	
+			var dbfHeader=undefined;
+			try {
+				dbfHeader=readDbfHeader(data, fileName);
+			}
+			catch (err) {
+				console.error("processFile() DBF file: " + baseName + ".shp; caught: " + err.message + JSON.stringify(err));
+				throw err;
+			}			
 			fileList[baseName] = {
 				fileName: 	baseName + ".shp",
 				zipFileBaseName: originalFileName.substring(0, originalFileName.indexOf('.')).toLowerCase(),
 				description: "",
-				dbfHeader: 	readDbfHeader(data, name),
+				dbfHeader: 	dbfHeader,
 				exAML: 		undefined,
 				fileSize: 	undefined,
 				projection:	undefined
 			};
-			console.log("fileName: " + JSON.stringify(fileName, null, 4));
-			console.log("baseName: " + JSON.stringify(baseName, null, 4));
 //			console.log("fileList: " + JSON.stringify(fileList, null, 4));
 			console.log("shapefileList: " + JSON.stringify(shapefileList, null, 4));
 		}
@@ -168,7 +177,7 @@ function shpConvertInput(files, shpConvertInputCallback) {
 	async.forEachOfSeries(files, 
 		function asyncSeriesIteree(file, fileno, callback) {
 			try {
-				if (file !== null) {
+				if (file !== null && file.name !== undefined) {
 						
 					var name = file.name;	
 					var ext = name.substring(name.indexOf('.') + 1).toLowerCase(); 				// Use the first "."
@@ -261,23 +270,27 @@ function shpConvertInput(files, shpConvertInputCallback) {
 									unzipPct=Math.round(fileContainedInZipFile._data.uncompressedSize*100/fileContainedInZipFile._data.compressedSize)
 									zipMsg+="<br>Zip [" + noZipFiles + "]: shapefile file: " + zipName + 
 										"; expanded: " + unzipPct + 
-										"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize);
-									totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+										"% to: " +  fileSize(fileContainedInZipFile._data.length);
+									totalUncompressedSize+=fileContainedInZipFile._data.length;
 								}
 								else if (zipExt == 'dbf') {
 									data=fileContainedInZipFile.asArrayBuffer();
 								}
 								else {
+									console.log("asyncSeriesIteree() WARNING! Ignoring[" + ZipIndex + "]: " + zipName + "; size: " + 
+										fileContainedInZipFile._data.length || fileContainedInZipFile._data.uncompressedSize + " bytes");
 		//							zipMsg+="<br>Zip file[" + noZipFiles + "]: file: " + zipName + 
 		//								"; expanded: " + unzipPct + 
 		//								"% to: " +  fileSize(fileContainedInZipFile._data.uncompressedSize) + "; extension: " + zipExt;
-									totalUncompressedSize+=fileContainedInZipFile._data.uncompressedSize;
+									totalUncompressedSize+=(fileContainedInZipFile._data.length || fileContainedInZipFile._data.uncompressedSize);
 								}
 								
 								if (zipExt == 'shp.ea.iso.xml' || zipExt == 'shp' || zipExt == 'dbf'|| zipExt == 'prj') {
 									try {
+									console.log("asyncSeriesIteree() call processFile [" + ZipIndex + "]: " + zipName + "; size: " + 
+										fileContainedInZipFile._data.length  || fileContainedInZipFile._data.uncompressedSize + " bytes");
 									// processFile(fileName, fileSizeBytes, baseName, ext, unzipFileName, data, originalFileName);
-										processFile(zipName, fileContainedInZipFile._data.uncompressedSize, 
+										processFile(zipName, fileContainedInZipFile._data.length || fileContainedInZipFile._data.uncompressedSize, 
 											zipBaseName, zipExt, zipName /* unzipFileName */, data, zipFileName);
 									}
 									catch (e) {
@@ -998,38 +1011,58 @@ function readDbfHeader(dbfData, fileName) {
 		return s;
 	}
 	
+	
+	if (typeof dbfData == 'undefined') {
+		throw new Error("readDbfHeader() DBF file: " + fileName + "; dbfData is undefined");
+	}
+	
 	var header=new Uint8Array(dbfData, 0, 30);			// First 31 bytes of file are the header
 	var records=new Uint32Array(dbfData, 4, 1);			// i.e. a 32 bit number
 	var headerLength=new Uint16Array(dbfData, 8, 1);	// i.e. a 16 bit number
 	var recordLength=new Uint16Array(dbfData, 10, 1);	// i.e. a 16 bit number
 
-	var dbfHeader={
-		version: header[0],
-		date: new Date(1900 + header[1], header[2] - 1, header[3]), // Bytes 1-3 in format YYMMDD
-		count: records[0],
-		headerBytes: headerLength[0], 
-		noFields: (headerLength[0] - 1 /* Terminator */ - 32 /* Record header */)/32,
-		recordBytes: recordLength[0], 
-		fields: [],
-		fieldNames: []
+	try {
+		var dbfHeader={
+			version: header[0],
+			date: new Date(1900 + header[1], header[2] - 1, header[3]), // Bytes 1-3 in format YYMMDD
+			count: records[0],
+			headerBytes: headerLength[0], 
+			noFields: (headerLength[0] - 1 /* Terminator */ - 32 /* Record header */)/32,
+			recordBytes: recordLength[0], 
+			fields: [],
+			fieldNames: []
+		}
+		
+		for (var i=0; i< dbfHeader.noFields; i++) { // Now add fields (in 32 bit "rows")
+			var fieldDescriptor=new Uint8Array(dbfData, 32+(i*32), 32);
+			var dataType=String.fromCharCode(fieldDescriptor[11]);
+			var field = {
+				position: 32+(i*32),
+				name:  ua2text(new Uint8Array(dbfData, 32+(i*32), 11), i).toUpperCase(),
+				description: "",
+				type: dataType,
+				length: fieldDescriptor[16]
+			};
+			dbfHeader.fieldNames.push(field.name);
+			dbfHeader.fields[i] = field;
+		}
 	}
-	
-	for (var i=0; i< dbfHeader.noFields; i++) { // Now add fields (in 32 bit "rows")
-		var fieldDescriptor=new Uint8Array(dbfData, 32+(i*32), 32);
-		var dataType=String.fromCharCode(fieldDescriptor[11]);
-		var field = {
-			position: 32+(i*32),
-			name:  ua2text(new Uint8Array(dbfData, 32+(i*32), 11), i).toUpperCase(),
-			description: "",
-			type: dataType,
-			length: fieldDescriptor[16]
-		};
-		dbfHeader.fieldNames.push(field.name);
-		dbfHeader.fields[i] = field;
+	catch (err) {
+		console.error("readDbfHeader() DBF file read header: " + fileName + "; caught: " + err.message + JSON.stringify(err));
+		throw err;
 	}
-	
-	var terminator=new Uint8Array(dbfData, headerLength[0]-1, 32); // This should align on 32 bit boundaries... (header has 31 bytes)
+
+	try {
+		var terminator=new Uint8Array(dbfData, headerLength[0]-1, 1); // This should align on 32 bit boundaries... (header has 31 bytes)
+	}
+	catch (err) {
+		console.error("readDbfHeader() DBF file read terminator: " + fileName + "; caught: " + err.message + JSON.stringify(err) + "; dbfData length: " + dbfData.byteLength);
+		throw err;
+	}	
 	if (terminator[0] != 0x0d) {
+		console.error("readDbfHeader() DBF file: " + fileName + "; found: " + terminator[0].toString() + "(" + ua2text(terminator) + ")" +
+			"; no terminator (0x0d) found in dbf file at postion: " + (headerLength[0]-1) + 
+			"\nDBF header >>>\n" + JSON.stringify(dbfHeader, null, 4) + "\n<<< End of DBF header");
 		throw new Error("readDbfHeader() DBF file: " + fileName + "; found: " + terminator[0].toString() + "(" + ua2text(terminator) + ")" +
 			"; no terminator (0x0d) found in dbf file at postion: " + (headerLength[0]-1) + 
 			"\nDBF header >>>\n" + JSON.stringify(dbfHeader, null, 4) + "\n<<< End of DBF header");
