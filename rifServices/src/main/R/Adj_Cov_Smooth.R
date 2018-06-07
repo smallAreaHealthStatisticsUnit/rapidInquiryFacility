@@ -293,7 +293,9 @@ establishTableNames <-function(vstudyID) {
 ##DESCRIPTION: Run SQL query. On error/warning/NULL data; print SQL, error and exit
 ##====================================================================
 doSQLQuery <- function(sql) {
-	sqlData <- tryCatch(sqlQuery(connDB, sql, FALSE),
+	# sqlData <- tryCatch(sqlQuery(connDB, sql, FALSE),
+    connectToDb()
+    sqlData <- tryCatch(doQuery(sql),
 		warning=function(w) {
 			print(paste("UNABLE TO QUERY! SQL> ", sql, "; warning: ", w))
 			odbcClose(connDB)

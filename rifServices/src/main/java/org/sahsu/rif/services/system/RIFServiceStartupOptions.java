@@ -177,7 +177,7 @@ public class RIFServiceStartupOptions {
 	 * properties. This is mainly intended for passing to the R code.
 	 * @return a {@link List} of {@link Parameter}s formatted for use by the R scripts
 	 */
-	public List<Parameter> getDbParametersForRScripts() {
+	public List<Parameter> getDbParametersForRScripts() throws RIFServiceException {
 
 		List<Parameter> parameters = new ArrayList<>();
 		parameters.add(Parameter.newInstance("db_driver_prefix", databaseDriverPrefix));
@@ -186,6 +186,7 @@ public class RIFServiceStartupOptions {
 		parameters.add(Parameter.newInstance("db_name", databaseName));
 		parameters.add(Parameter.newInstance("db_driver_class_name", databaseDriverClassName));
 		parameters.add(Parameter.newInstance("db_url", new JdbcUrl(this).url()));
+		parameters.add(Parameter.newInstance("java_lib_path_dir", getLibDirectory()));
 
 		return parameters;
 	}
@@ -429,7 +430,7 @@ public class RIFServiceStartupOptions {
 		
 	}
 	
-	public String getRIFServiceResourcePath() throws RIFServiceException {
+	public String getClassesDirectory() throws RIFServiceException {
 
 		if (isWebDeployment) {
 
@@ -453,6 +454,24 @@ public class RIFServiceStartupOptions {
 			       + "target"
 			       + File.separator
 			       + "classes";
+		}
+	}
+
+	private String getLibDirectory() {
+
+		if (isWebDeployment) {
+
+			String path = new TomcatFile(new TomcatBase(), ".").pathToLibDirectory().toString();
+			rifLogger.info(getClass(), "Returning path: " + path);
+			return path;
+		}
+		else {
+
+			return (new File(".")).getAbsolutePath()
+			       + File.separator
+			       + "target"
+			       + File.separator
+			       + "lib";
 		}
 	}
 

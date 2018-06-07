@@ -67,7 +67,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 	public void initialise(
 			final String userID,
 			final String password,
-			final RIFServiceStartupOptions rifStartupOptions) {
+			final RIFServiceStartupOptions rifStartupOptions) throws RIFServiceException {
 
 		this.rifStartupOptions = rifStartupOptions;
 
@@ -76,7 +76,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 		List<Parameter> rifStartupOptionParameters = rifStartupOptions.getDbParametersForRScripts();
 		addParameters(rifStartupOptionParameters);
 
-		setODBCDataSourceName(rifStartupOptions.getODBCDataSourceName());
+		// setODBCDataSourceName(rifStartupOptions.getODBCDataSourceName());
 	}
 	
 	void performStep(final Connection connection, final RIFStudySubmission studySubmission,
@@ -190,7 +190,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				
 				rifLogger.info(this.getClass(), "R parameters: " + lineSeparator + logMsg.toString());
 
-				rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
+				rifScriptPath.append(rifStartupOptions.getClassesDirectory());
 				rifScriptPath.append(File.separator);
 				
 				adjCovSmoothJri.append(rifScriptPath);
@@ -200,10 +200,10 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				performSmoothingActivity.append(rifScriptPath);
 				performSmoothingActivity.append("performSmoothingActivity.R");
 
+				sourceRScript(rengine, rifScriptPath + "JdbcHandler.R");
 				sourceRScript(rengine, adjCovSmoothJri.toString());
-				sourceRScript(rengine, rifOdbc.toString());
+				// sourceRScript(rengine, rifOdbc.toString());
 				sourceRScript(rengine, performSmoothingActivity.toString());
-				// sourceRScript(rengine, rifScriptPath + "jdbcHandler.R");
 
 				//RUN the actual smoothing
 				//REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");

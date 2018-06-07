@@ -43,7 +43,7 @@ public class RunStudyThread implements Runnable {
 		final String password,		
 		final RIFStudySubmission studySubmission,
 		final RIFServiceStartupOptions rifServiceStartupOptions,
-		final ServiceResources rifServiceResources) {
+		final ServiceResources rifServiceResources) throws RIFServiceException {
 		
 		this.connection = connection;
 		this.user = user;				

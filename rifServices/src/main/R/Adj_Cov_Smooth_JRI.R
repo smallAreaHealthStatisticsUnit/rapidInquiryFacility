@@ -57,7 +57,7 @@ library(abind)
 library(INLA)
 library(maptools)
 library(spdep)
-library(RODBC)
+# library(RODBC)
 library(Matrix)
 
 
@@ -385,23 +385,27 @@ withErrorTracing = function(expr, silentSuccess=FALSE) {
 ##Returns (exitvalue) 0 on success, 1 on failure 
 ##================================================================================
 runRSmoothingFunctions <- function() {
+
+    cat(paste("In runRSmoothingFunctions in JRI script", "\n"))
+
 	establishTableNames(studyID)
 	errorTrace<-capture.output({
 		tryCatch({
-			connDB=dbConnect()
+			# connDB=dbConnect()
+			connDB = connectToDb()
 		},
 		warning=function(w) {		
-			cat(paste("dbConnect() WARNING: ", w, "\n"), sep="")
+			cat(paste("connectToDb() WARNING: ", w, "\n"), sep="")
 			exitValue <<- 1
 		},
 		error=function(e) {
 			e <<- e
-			cat(paste("dbConnect() ERROR: ", e$message, 
+			cat(paste("connectToDb() ERROR: ", e$message,
 				"; call stack: ", e$call, "\n"), sep="")
 			exitValue <<- 1
 		},
 		finally={
-			cat(paste0("dbConnect exitValue: ", exitValue, "\n"), sep="")
+			cat(paste0("connectToDb exitValue: ", exitValue, "\n"), sep="")
 		})
 	})
 		
@@ -487,7 +491,8 @@ runRSmoothingFunctions <- function() {
 	# Dummy change to check conflict is resolved
   
 	if (!is.na(connDB)) {
-		dbDisConnect()
+		# dbDisConnect()
+		disconnect()
 	}
 	
 
