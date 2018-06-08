@@ -50,7 +50,8 @@ const serverLog = require('../lib/serverLog'),
 	  httpErrorResponse = require('../lib/httpErrorResponse'),
 	  nodeGeoSpatialServicesCommon = require('../lib/nodeGeoSpatialServicesCommon'),
 	  async = require('async'),
-	  clone = require('clone'); 
+	  clone = require('clone'),
+	  v8 = require('v8'); 
 		  
 /*
  * Function:	shpConvertFieldProcessor()
@@ -171,10 +172,17 @@ shpConvert = function shpConvert(ofields, d_files, response, req, res, shapefile
 		for (var i = 0; i < response.no_files; i++) {
 //			response.message+="\nFreeing " + d_files.d_list[i].file.file_size + " bytes for file: " + d_files.d_list[i].file.file_name;
 			d_files.d_list[i].file.file_data=undefined;
-			if (global.gc && d_files.d_list[i].file.file_size > (1024*1024*500)) { // GC if file > 500M
-				serverLog.serverLog2(__file, __line, "Force garbage collection for file: " + d_files.d_list[i].file.file_name, fileData["req"]);
+			if (global.gc && d_files.d_list[i].file.file_size > (1024*1024*100)) { // GC if file > 100M
+				var heap=v8.getHeapStatistics();
+				var msg="\nMemory heap >>>";
+				for (var key in heap) {
+					msg+="\n" + key + ": " + heap[key];
+				}
+				msg+="\n<<< End of memory heap";
+				serverLog.serverLog2(__file, __line, "Force garbage collection after processing file: " + d_files.d_list[i].file.file_name + 
+					"; size: " + d_files.d_list[i].file.file_size + " bytes" + msg, fileData["req"]);
 				global.gc();
-			}
+			} 
 		}
 	
 		if (!shpTotal || shpTotal == 0) {
@@ -561,7 +569,48 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 			var areaName=shapefileData["areaName"];
 		
 			try {
+				/* Remove NUL from properties
+				GeoJSON recordsample >>>
+				{
+				  "type": "Feature",
+				  "properties": {
+					"COA2011": "E00062113",
+					"LSOA11_1": "E01012316",
+					"LSOA11NM": "Darlington 010Bundefined\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+					"MSOA11": "E02002568",
+					"MSOA11NM": "Darlington 010undefined\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+					"LAD11": "E06000005",
+					"LAD11NM": "Darlingtonundefined\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+					"Area": 49974.435826,
+					"Area_km2": 0.049974435826
+				  },
+				  "geometry": {
+					"type": "Polygon",
+					"co
+				<<< 
+				*/
+				for (var property in record.properties) {
+					if (typeof record.properties[property] === 'string' || record.properties[property] instanceof String) {
+						record.properties[property]=record.properties[property].replace(/\0/g, ''); 
+					}
+				}
+//				if (recNo < 4) {
+//					serverLog.serverLog2(__file, __line, "Remove NUL from properties [" + recNo + "]: " + JSON.stringify(record.properties));
+//				}
+			}
+			catch (e) {
+				serverLog.serverLog2(__file, __line, "shapefileDataAddRecord", 
+					"[" + recNo + "]; failed [" + shapefileData["uuidV1"] + 
+					"] File: " + shapefileData["shapeFileName"] + "\n" + 
+					"\nGeoJSON recordsample >>>\n" + JSON.stringify(record, null, 2).substring(0, 600) + "\n<<<", 
+					shapefileData["req"], e);	
+				shapefileData["callback"](e); // Run shapefile callback with error
+				return false;
+			}
+			
+			try {	
 				if (record.properties && areaID && record.properties[areaID]) { // Extract area_id value 
+					
 					// Duplicate areaName detector
 					if (shapefileData["areaNames"][record.properties[areaName]] &&
 						shapefileData["areaNames"][record.properties[areaName]].areaName == record.properties[areaName]) {
@@ -731,7 +780,6 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 			record=undefined;	
 			// Force garbage collection
 /*			if (global.gc && shapefileData["recLen"] > (1024*1024*500) && ((recNo/10000)-Math.floor(recNo/10000)) == 0) { // GC if json > 500M;  every 10K records
-				const v8 = require('v8');
 				
 				global.gc();
 				var heap=v8.getHeapStatistics();
@@ -744,16 +792,17 @@ shpConvertCheckFiles=function shpConvertCheckFiles(shpList, response, shpTotal, 
 					"] Force garbage collection shapefile at read [" + recNo + "] for: " + shapefileData["fileNoExt"] + "; size: " + shapefileData["recLen"] + msg, shapefileData["req"]);					
 			} */
 			
-			// Print read record diagnostics every 1000 shapefile records or second
-			if (((recNo/1000)-Math.floor(recNo/1000)) == 0 || recNo == 1 || elapsedReadTime > (shapefileData["elapsedReadTime"] + 1)) { 
+			// Print read record diagnostics every 1000 shapefile records or every three seconds
+			if (((recNo/1000)-Math.floor(recNo/1000)) == 0 || recNo == 1 || elapsedReadTime > (shapefileData["elapsedReadTime"] + 3)) { 
 				doTrace=true;
 		
 				msg="Reading shapefile record " + recNo + " from: " + shapefileData["fileNoExt"] + "; current size: " + nodeGeoSpatialServicesCommon.fileSize(shapefileData["recLen"]);						
-				if (shapefileData["recLen"] > 100*1024*1024) { // Write a log message every 100 MB
+//				if (shapefileData["recLen"] > 100*1024*1024) { // Write a log message every 100 MB
+//					serverLog.serverLog2(__file, __line, "readShapeFile", "+" + shapefileData["elapsedReadTime"] + "S; " + msg, shapefileData["req"]);
+//				}
+				if (elapsedReadTime > (shapefileData["elapsedReadTime"] + 3)) { // Add status every 3S
+					shapefileData["elapsedReadTime"]=elapsedReadTime;					
 					serverLog.serverLog2(__file, __line, "readShapeFile", "+" + shapefileData["elapsedReadTime"] + "S; " + msg, shapefileData["req"]);
-				}
-				if (elapsedReadTime > (shapefileData["elapsedReadTime"] + 1)) { // Add status every 1S
-					shapefileData["elapsedReadTime"]=elapsedReadTime;
 					nodeGeoSpatialServicesCommon.addStatus(__file, __line, response, msg, // Add end of shapefile read status
 						200 /* HTTP OK */, serverLog, req,
 						function shapefileReadNextRecordAddStatus(err) {

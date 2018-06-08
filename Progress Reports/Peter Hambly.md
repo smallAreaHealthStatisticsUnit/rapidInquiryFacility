@@ -2234,7 +2234,7 @@ Todo:
   * Will complete data loading manual and partial database administration guide [sections 2 and 3, PG 4]; then start on tile-maker;
   * Auto setup of R/tomcat environment and path to be added later;
   * Fixing risk analysis front end issues is a priority. Shapefile functionality needs to be investigated.
-    Circles to not be saved as geojson; arbitary shapes and plumes probably will. Which shapefle reading
+    Circles to not be saved as geojson; arbitrary shapes and plumes probably will. Which shapefle reading
     library has been used (Mike Bostock's?) needs to be determined. Method for determining geographic centroids
 	(hopefully the ones built-in to the geoJSON)
   * Need for population weighted centroids: test on England data in 6-8 weeks time;
@@ -2367,7 +2367,8 @@ Todo:
 
 * TileMaker manual, testing, handling huge shapefiles;
 * Shapefile pre-processing; EWS2011 as an example;
-* Processed EWS2011 to LSOA; documented memory management and issues; fix DBF parsing fault for very small DBF files;
+* Processed EWS2011 to LSOA OK, COA will crash below [batch ran to completion, problems occurred returning the run data]; documented memory management and 
+  issues; fix DBF parsing fault for very small DBF files;
 * Strange bug when processing COA as well:
   ```
   C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServicesCommon.js:932
@@ -2381,3 +2382,21 @@ Todo:
 		at FSReqWrap.oncomplete (fs.js:135:15)
   ```
   Memory seems OK at: 24G!
+* QGIS edit of DBF or mapshaper added ASCII NUL characters to pad strings to the same length. These had to be removed by ```string.replace(/\0/g, '')``` to remove an error the 
+  ```psql \copy``` command;
+* Performance problem traced to size and validity of the input shapefile:
+  Take care to ensure the the input shapefile is valid (i.e. use the ```-clean``` flag in *mapshaper*); and keep the boundary maps simple. If they are mapped at high scale 
+  they tend to contain many small islands which can become invalid during simplification. These take a long time to fix; for the UK no pre-simplification took two hours to  
+  fix, 98% simplification took 7 seconds;
+* Need to add invalid geometries report prior to *Make geometry columns valid*:
+  ```SQL
+  SELECT SUM(CASE WHEN ST_IsValid(geom_6) THEN 1 ELSE 0 END) AS geom_6_valid,
+       SUM(CASE WHEN ST_IsValid(geom_7) THEN 1 ELSE 0 END) AS geom_7_valid,
+       SUM(CASE WHEN ST_IsValid(geom_8) THEN 1 ELSE 0 END) AS geom_8_valid,
+       SUM(CASE WHEN ST_IsValid(geom_9) THEN 1 ELSE 0 END) AS geom_9_valid,
+       SUM(CASE WHEN ST_IsValid(geom_orig) THEN 1 ELSE 0 END) AS geoom_orig_valid,
+	   COUNT(*) total
+  FROM cntry2011;
+  ```  
+* Make post processing script multi transactional (hit by deadlock problems running overnight;
+  
