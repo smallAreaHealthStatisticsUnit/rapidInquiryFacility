@@ -51,11 +51,11 @@ Database Management Manual
    - [6.2 SQL Server](#62-sql-server)
 - [7. Tuning](#7-tuning)
    - [7.1 Postgres](#71-postgres)
-     -[7.1.1 Server Memory Tuning](#711-server-memory-tuning)
-     -[7.1.2 Query Tuning](#712-query-tuning)
+     - [7.1.1 Server Memory Tuning](#711-server-memory-tuning)
+     - [7.1.2 Query Tuning](#712-query-tuning)
    - [7.2 SQL Server](#72-sql-server)
-     -[7.2.1 Server Memory Tuning](#721-server-memory-tuning)
-     -[7.2.2 Query Tuning](#722-query-tuning)
+     - [7.2.1 Server Memory Tuning](#721-server-memory-tuning)
+     - [7.2.2 Query Tuning](#722-query-tuning)
 	 
 # 1. Overview
 
