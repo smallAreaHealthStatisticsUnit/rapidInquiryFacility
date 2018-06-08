@@ -1590,7 +1590,7 @@ so shared buffers of 1G is 131072 8KB pages. This is not very intuitive compared
 The amount of memory given to Postgres should allow room for *tomcat* if installed together with the application server; shared memory should generally not exceed a quarter of the available RAM.
 
 Tuning the buffer cache, see: [A Large Database Does Not Mean Large shared_buffers](https://www.keithf4.com/a-large-database-does-not-mean-large-shared_buffers/). Add the 
-```pg_buffercache``` extension as the postgres user: ```CREATE EXTENSION pg_buffercache;```, then run the following query:
+```pg_buffercache``` extension as the postgres user: ```CREATE EXTENSION pg_buffercache;```, then run the following query as *postgres*:
 
 ```SQL
 SELECT n.nspname AS schema, c.relname, c2.relname AS toast_table,
@@ -1617,21 +1617,45 @@ SELECT n.nspname AS schema, c.relname, c2.relname AS toast_table,
 
 This gives the following output:
 ```
-  schema  |        relname        |   toast_table   | primary_table |  buffered  | buffers_percent | percent_of_relation | usagecount
-----------+-----------------------+-----------------+---------------+------------+-----------------+---------------------+------------
- pg_toast | pg_toast_803497       |                 | cntry2011     | 85 MB      |           8.257 |               100.0 |          5
- public   | spatial_ref_sys_pkey  |                 |               | 8192 bytes |           0.001 |                 4.2 |          3
- rif40    | t_rif40_parameters    |                 |               | 8192 bytes |           0.001 |               100.0 |          5
- rif40    | t_rif40_parameters_pk |                 |               | 8192 bytes |           0.001 |                50.0 |          3
- peter    | cntry2011             | pg_toast_803497 |               | 8192 bytes |           0.001 |               100.0 |          5
- pg_toast | pg_toast_803497       |                 | cntry2011     | 8192 bytes |           0.001 |                 0.0 |          1
- pg_toast | pg_toast_803497       |                 | cntry2011     | 8192 bytes |           0.001 |                 0.0 |          4
- peter    | cntry2011_uk          |                 |               | 8192 bytes |           0.001 |                50.0 |          2
- peter    | cntry2011_pkey        |                 |               | 8192 bytes |           0.001 |                50.0 |          2
- public   | spatial_ref_sys_pkey  |                 |               | 24 kB      |           0.002 |                12.5 |          5
- public   | spatial_ref_sys       | pg_toast_321436 |               | 16 kB      |           0.002 |                 0.4 |          5
- pg_toast | pg_toast_803497_index |                 | cntry2011     | 1088 kB    |           0.104 |               100.0 |          5
-(12 rows)
+  schema  |        relname         |   toast_table    | primary_table |  buffered  | buffers_percent | percent_of_relation | usagecount
+----------+------------------------+------------------+---------------+------------+-----------------+---------------------+------------
+ pg_toast | pg_toast_1983440       |                  | coa2011       | 9672 kB    |           0.922 |                 0.6 |          5
+ peter    | coa2011_geom_orig_gix  |                  |               | 9664 kB    |           0.922 |                71.3 |          2
+ pg_toast | pg_toast_3163099       |                  | gor2011       | 95 MB      |           9.316 |               100.0 |          5
+ rif40    | t_rif40_parameters     |                  |               | 8192 bytes |           0.001 |               100.0 |          3
+ rif40    | t_rif40_parameters_pk  |                  |               | 8192 bytes |           0.001 |                50.0 |          1
+ public   | spatial_ref_sys        | pg_toast_321436  |               | 8192 bytes |           0.001 |                 0.2 |          2
+ public   | spatial_ref_sys        | pg_toast_321436  |               | 8192 bytes |           0.001 |                 0.2 |          5
+ public   | spatial_ref_sys_pkey   |                  |               | 8192 bytes |           0.001 |                 4.2 |          2
+ peter    | coa2011                | pg_toast_1983440 |               | 8192 bytes |           0.001 |                 0.0 |          4
+ peter    | gor2011                | pg_toast_3163099 |               | 8192 bytes |           0.001 |               100.0 |          5
+ pg_toast | pg_toast_3163099       |                  | gor2011       | 8192 bytes |           0.001 |                 0.0 |          2
+ peter    | gor2011_pkey           |                  |               | 8192 bytes |           0.001 |                50.0 |          1
+ peter    | gor2011_uk             |                  |               | 8192 bytes |           0.001 |                50.0 |          1
+ pg_toast | pg_toast_1983440       |                  | coa2011       | 8000 kB    |           0.763 |                 0.5 |          0
+ peter    | coa2011_geom_8_gix     |                  |               | 7048 kB    |           0.672 |                54.1 |          0
+ pg_toast | pg_toast_1983440_index |                  | coa2011       | 656 kB     |           0.063 |                 1.9 |          5
+ peter    | coa2011_geom_9_gix     |                  |               | 6264 kB    |           0.597 |                46.1 |          2
+ peter    | coa2011_geom_9_gix     |                  |               | 5912 kB    |           0.564 |                43.5 |          1
+ peter    | coa2011                | pg_toast_1983440 |               | 532 MB     |          51.966 |                19.4 |          1
+ peter    | coa2011_geom_7_gix     |                  |               | 5040 kB    |           0.481 |                39.3 |          0
+ peter    | coa2011_geom_8_gix     |                  |               | 4832 kB    |           0.461 |                37.1 |          1
+ peter    | coa2011                | pg_toast_1983440 |               | 40 kB      |           0.004 |                 0.0 |          2
+ pg_toast | pg_toast_1983440_index |                  | coa2011       | 2528 kB    |           0.241 |                 7.3 |          4
+ pg_toast | pg_toast_1983440       |                  | coa2011       | 25 MB      |           2.437 |                 1.5 |          3
+ peter    | coa2011_geom_orig_gix  |                  |               | 2488 kB    |           0.237 |                18.4 |          3
+ peter    | coa2011                | pg_toast_1983440 |               | 24 kB      |           0.002 |                 0.0 |          3
+ pg_toast | pg_toast_1983440       |                  | coa2011       | 2344 kB    |           0.224 |                 0.1 |          1
+ pg_toast | pg_toast_1983440       |                  | coa2011       | 208 kB     |           0.020 |                 0.0 |          2
+ peter    | coa2011_geom_orig_gix  |                  |               | 192 kB     |           0.018 |                 1.4 |          0
+ peter    | coa2011_geom_orig_gix  |                  |               | 184 kB     |           0.018 |                 1.4 |          1
+ peter    | coa2011                | pg_toast_1983440 |               | 170 MB     |          16.640 |                 6.2 |          0
+ peter    | coa2011                | pg_toast_1983440 |               | 160 kB     |           0.015 |                 0.0 |          5
+ public   | spatial_ref_sys_pkey   |                  |               | 16 kB      |           0.002 |                 8.3 |          5
+ peter    | coa2011_geom_9_gix     |                  |               | 152 kB     |           0.014 |                 1.1 |          0
+ pg_toast | pg_toast_1983440       |                  | coa2011       | 130 MB     |          12.648 |                 7.8 |          4
+ pg_toast | pg_toast_3163099_index |                  | gor2011       | 1088 kB    |           0.104 |               100.0 |          5
+(36 rows)
 ```
 
 Note the use of [TOAST](https://www.postgresql.org/docs/9.6/static/storage-toast.html) tsbles in Postgres. TOAST (The Oversized-Attribute Storage Technique) is used to store large field values,
@@ -1663,14 +1687,15 @@ I you wanted to cache everything with a *usagecount* of 2 you would need to add 
 ```
  usagecount | ideal_shared_buffers
 ------------+----------------------
- >3         | 88 MB
-  3         | 40 kB
-  2         | 416 kB
-  1         | 56 kB
-(4 rows)
+ >3         | 240 MB
+  3         | 28 MB
+  2         | 16 MB
+  1         | 548 MB
+  0         | 188 MB
+(5 rows)
 ``` 
 
-You will need to run this many times under different loads to determine a suitable value.
+You will need to run this many times under different loads to determine a suitable value. In this case a 1GB cache is fine for the geospatial workload.
 
 ### 7.1.2 Query Tuning
 

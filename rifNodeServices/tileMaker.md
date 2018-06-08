@@ -677,12 +677,18 @@ These leads to the following conclusions:
 
 * 99.999% simplification is far too much as the shapes are starting to break down;
 * 50% simplification is still very high quality with little visible loss of information at the scales the RIF maps at;
-* 80% simplification is acceptable, there is some visible loss of information in urban areas;
-* 90% simplification is borderline, there is visible loss of information in urban areas;
+* 80% simplification is acceptable, there is some visible loss of information in urban areas, suitable for most RIF users;
+* 90% simplification is borderline, there is visible loss of information in urban areas. Suitable for regional or state boundaries provided they are not too small;
+* 98% simplification is poor at high scale. Suitable for boundary maps, e.g. UK and UK constituent countries;
 
-After shapefile reduction by 80% the total size of all the files in the administrative geography is 480MB. This is a simplification factor of 0.8.
+After shapefile reduction by 80% the total size of all the files in the administrative geography is 480MB. This is a simplification factor of 0.8. Fine tuning lead to 
+98% simplification for boundary maps, e.g. UK and UK constituent countries.
 
-The Node.js server program needs to be able to read each shapefile in turn and then store the GeoJSON in memory. This leads to a memory requirement of 16x the disk space with 
+Take care to ensure the the input shapefile is valid (i.e. use the ```-clean``` flag in *mapshaper*); and keep the boundary maps simple. If they are mapped at high scale 
+they tend to contain many small islands which can become invalid during simplification. These take a long time to fix; for the UK no pre-simplification took two hours to 
+fix, 98% simplification took 7 seconds!
+
+The Node.js server program needs to be able to read each shapefile in turn and then store the GeoJSON in memory. This leads to a memory requirement of 40x the total size of the shapefiles with 
 a maximum zoomlevel of 9.
 
 The server is pre-configured with 4GB of memory in the *Makefile*. To change the memory in use alter *NODE_MAX_MEMORY=* to the new value in MB: ```NODE_MAX_MEMORY?=16384```. The 
