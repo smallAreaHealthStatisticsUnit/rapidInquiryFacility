@@ -19,7 +19,7 @@ import org.sahsu.rif.generic.datastorage.DeleteRowsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLInsertQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLRecordExistsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLSelectQueryFormatter;

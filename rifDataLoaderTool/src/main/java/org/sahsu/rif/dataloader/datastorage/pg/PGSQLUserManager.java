@@ -10,7 +10,7 @@ import org.sahsu.rif.dataloader.system.RIFDataLoaderToolError;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.FunctionCallerQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
 
 /**

@@ -30,7 +30,7 @@ import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLDeleteTableQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLSchemaCommentQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLSelectQueryFormatter;

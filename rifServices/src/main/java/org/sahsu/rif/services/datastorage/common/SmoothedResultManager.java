@@ -13,7 +13,7 @@ import org.sahsu.rif.generic.datastorage.CountTableRowsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.Sex;

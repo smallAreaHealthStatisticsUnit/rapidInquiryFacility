@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.sahsu.rif.generic.concepts.User;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFGenericLibraryError;
 import org.sahsu.rif.generic.system.RIFServiceException;
