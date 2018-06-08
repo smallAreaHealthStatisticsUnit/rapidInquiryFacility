@@ -17,11 +17,11 @@ import java.util.Set;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.ConnectionQueue;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
+import org.sahsu.rif.generic.datastorage.FunctionCallerQueryFormatter;
 import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.datastorage.RIFDatabaseProperties;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLFunctionCallerQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
@@ -364,15 +364,15 @@ public class BaseSQLManager implements SQLManager {
 	public void enableDatabaseDebugMessages(final Connection connection)
 			throws RIFServiceException {
 			
-		SQLFunctionCallerQueryFormatter setupDatabaseLogQueryFormatter 
-			= new SQLFunctionCallerQueryFormatter();
+		FunctionCallerQueryFormatter setupDatabaseLogQueryFormatter =
+				new FunctionCallerQueryFormatter();
 		setupDatabaseLogQueryFormatter.setDatabaseSchemaName("rif40_log_pkg");
 		setupDatabaseLogQueryFormatter.setFunctionName("rif40_log_setup");
 		setupDatabaseLogQueryFormatter.setNumberOfFunctionParameters(0);		
 		PreparedStatement setupLogStatement = null;
 		
-		SQLFunctionCallerQueryFormatter sendDebugToInfoQueryFormatter 
-			= new SQLFunctionCallerQueryFormatter();
+		FunctionCallerQueryFormatter sendDebugToInfoQueryFormatter =
+				new FunctionCallerQueryFormatter();
 		sendDebugToInfoQueryFormatter.setDatabaseSchemaName("rif40_log_pkg");
 		sendDebugToInfoQueryFormatter.setFunctionName("rif40_send_debug_to_info");
 		sendDebugToInfoQueryFormatter.setNumberOfFunctionParameters(1);		
