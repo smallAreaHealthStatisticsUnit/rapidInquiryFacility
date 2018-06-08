@@ -112,10 +112,10 @@ createWriteStreamWithCallback=function(file, data, serverLog, uuidV1, req, respo
 			}
 			else if (data) {
 				data=undefined; // Be nice. Could force GC at this point		
-				if (global.gc && len > (1024*1024*500)) { // GC is file > 500M
+/*				if (global.gc && len > (1024*1024*500)) { // GC is file > 500M
 					serverLog.serverLog2(__file, __line, "createWriteStreamWithCallback.wStream.on('finish')", "OK [" + uuidV1 + "] " + msg + "\nForce garbage collection", req);
 					global.gc();
-				}
+				} */
 			}
 
 			if (records && elapsedTime > 0) {

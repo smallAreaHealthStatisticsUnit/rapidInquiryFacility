@@ -740,14 +740,14 @@ The following *mapshaper* options were used:
 * [```<shapefile>``` or ```-i <shapefile>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-i-input): Input shapefile name;
   * ```snap```: Input shapefile option - snap together vertices within a small distance threshold. This option is intended to fix minor coordinate misalignments in adjacent polygons. 
     The snapping distance is 0.0025 of the average segment length;
-* [```-simplify <simplify percent>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-simplify): Simplify retaining %lt;simplify percent&gt; of the data. 20% to 50% 
+* [```-simplify <simplify percent> stats```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-simplify): Simplify retaining %lt;simplify percent&gt; of the data. 20% to 50% 
   gives good results; less than 5% will probably result in triangles. This is very dependent on the resolution of the shapefile. Mapshaper supports 
   Douglas-Peucker simplification and two kinds of Visvalingam simplification. Douglas-Peucker (a.k.a. Ramer-Douglas-Peucker) produces simplified lines that remain within a specified 
   distance of the original line. It is effective for thinning dense vertices but tends to form spikes at high simplification.
   Visvalingam simplification iteratively removes the least important point from a polyline. The importance of points is measured using a metric based on the geometry of the triangle 
   formed by each non-endpoint vertex and the two neighboring vertices. The visvalingam option uses the "effective area" metric — points forming smaller-area triangles are removed first.
   Mapshaper's default simplification method uses Visvalingam simplification but weights the effective area of each point so that smaller-angle vertices are preferentially removed, 
-  resulting in a smoother appearance;
+  resulting in a smoother appearance. Display summary statistics relating to the geometry of simplified paths;
 * [```-o <output shapefile or output directory>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-o-output): Output shapefile or output directory;
   * ```format=shapefile|geojson|topojson|json|dbf|csv|tsv|svg```: Output option - format as a shapefile|geojson|topojson|json|dbf|csv|tsv|svg; 
   * ```name=<new name>```: Rename the layer (or layers) modified by a command;
@@ -806,15 +806,29 @@ Attribute data
 ### 2.4.2 Simplifying a shapefile
 
 To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *EWS2011* directory: 
-```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -simplify 0.5 -clean -o EWS2011/ format=shapefile -verbose```
+```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -simplify 0.5 stats -clean -o EWS2011/ format=shapefile -verbose```
 
 ```
-C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i COA\*.shp snap -simplify 0.5 -clean -o EWS2011/ format=shapefile -verbose
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i COA\*.shp snap -simplify 0.5 stats -clean -o EWS2011/ format=shapefile -verbose
 [i] Importing: COA\coa11_clip.shp
 [i] Snapped 54928 points
 [i] - 31757ms
 [simplify] Repaired 38 intersections; 212 intersections could not be repaired
-[simplify] - 29170ms
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 17,787,587
+      49.3% of 36,051,631 unique coordinate locations
+      50.0% of 35,575,670 filterable coordinate locations
+   Simplification threshold: 0.4924
+   Collapsed rings: 20
+   Displacement statistics
+      Mean displacement: 0.0096
+      Max displacement: 20.0861
+      Quartiles: 0.00, 0.00, 0.00
+   Vertex angle statistics
+      Mean angle: 155.10 degrees
+      Quartiles: 148.00, 166.51, 173.76
+[simplify] - 32224ms
 [clean] Find mosaic rings 1130ms
 [clean] Detect holes (holes: 3496, enclosures: 4630) 1637ms
 [clean] Build mosaic 2770ms
@@ -852,107 +866,177 @@ To simplify a geography 25%, repair overlaps and fill small gaps between adjacen
 grouping and repetition of the commands; this is essentially five commands concatenated together: 
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
--i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile ^
--i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 -clean -rename-fields LSOA2011=LSOA11 -o EWS2011/ format=shapefile ^
--i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -rename-fields MSOA2011=MSOA11 -o EWS2011/ format=shapefile ^
--i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -rename-fields LADUA2011=LADUA11 -o EWS2011/ format=shapefile ^
--i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -rename-fields GOR2011=geo_code,GOR_NAME=geo_label -o EWS2011/ format=shapefile ^
+-i COA\*.shp name=COA2011 snap -simplify 0.5 stats -clean -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile ^
+-i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 stats -clean -rename-fields LSOA2011=LSOA11 -o EWS2011/ format=shapefile ^
+-i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 stats -clean -rename-fields MSOA2011=MSOA11 -o EWS2011/ format=shapefile ^
+-i District\*.shp name=LADUA2011 snap -simplify 0.5 stats -clean -rename-fields LADUA2011=LADUA11 -o EWS2011/ format=shapefile ^
+-i Region\*.shp name=GOR2011 snap -simplify 0.5 stats -clean -rename-fields GOR2011=geo_code,GOR_NAME=geo_label -o EWS2011/ format=shapefile ^
 -verbose
 ```
 
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
-More? -i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile ^
-More? -i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 -clean -rename-fields LSOA2011=LSOA11 -o EWS2011/ format=shapefile ^
-More? -i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -rename-fields MSOA2011=MSOA11 -o EWS2011/ format=shapefile ^
-More? -i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -rename-fields LADUA2011=LADUA11 -o EWS2011/ format=shapefile ^
-More? -i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -rename-fields GOR2011=geo_code,GOR_NAME=geo_label -o EWS2011/ format=shapefile ^
+More? -i COA\*.shp name=COA2011 snap -simplify 0.5 stats -clean -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile ^
+More? -i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 stats -clean -rename-fields LSOA2011=LSOA11 -o EWS2011/ format=shapefile ^
+More? -i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 stats -clean -rename-fields MSOA2011=MSOA11 -o EWS2011/ format=shapefile ^
+More? -i District\*.shp name=LADUA2011 snap -simplify 0.5 stats -clean -rename-fields LADUA2011=LADUA11 -o EWS2011/ format=shapefile ^
+More? -i Region\*.shp name=GOR2011 snap -simplify 0.5 stats -clean -rename-fields GOR2011=geo_code,GOR_NAME=geo_label -o EWS2011/ format=shapefile ^
 More? -verbose
 [i] Importing: COA\coa11_clip.shp
 [i] Snapped 54928 points
-[i] - 30997ms
-[simplify] Repaired 38 intersections; 212 intersections could not be repaired
-[simplify] - 28262ms
-[clean] Find mosaic rings 1131ms
-[clean] Detect holes (holes: 3496, enclosures: 4630) 1983ms
-[clean] Build mosaic 3116ms
-[clean] Dissolve tiles 2077ms
-[clean] Retained 227,759 of 227,759 features
-[clean] - 27964ms
-[rename-fields] - 120ms
+[i] - 38393ms
+[simplify] Repaired 1,073 intersections; 69 intersections could not be repaired
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 28,460,780
+      78.9% of 36,051,631 unique coordinate locations
+      80.0% of 35,575,670 filterable coordinate locations
+   Simplification threshold: 5.9781
+   Collapsed rings: 1,766
+   Displacement statistics
+      Mean displacement: 1.2519
+      Max displacement: 585.3023
+      Quartiles: 0.00, 0.74, 1.55
+   Vertex angle statistics
+      Mean angle: 141.88 degrees
+      Quartiles: 120.36, 151.68, 168.06
+[simplify] - 24211ms
+[clean] Find mosaic rings 981ms
+[clean] Detect holes (holes: 1848, enclosures: 4536) 988ms
+[clean] Build mosaic 1973ms
+[clean] Dissolve tiles 2180ms
+[clean] Retained 227,750 of 227,759 features
+[clean] - 18007ms
+[rename-fields] - 126ms
 [o] Wrote EWS2011\COA2011.shp
 [o] Wrote EWS2011\COA2011.shx
 [o] Wrote EWS2011\COA2011.dbf
 [o] Wrote EWS2011\COA2011.prj
-[o] - 16534ms
+[o] - 8712ms
 [i] Importing: LSOA\LSOA11_clip.shp
 [i] Snapped 28149 points
-[i] - 16334ms
-[simplify] Repaired 2 intersections; 1 intersection could not be repaired
-[simplify] - 11474ms
-[clean] Find mosaic rings 306ms
-[clean] Detect holes (holes: 183, enclosures: 857) 160ms
-[clean] Build mosaic 470ms
-[clean] Dissolve tiles 578ms
+[i] - 17988ms
+[simplify] Repaired 302 intersections; 1 intersection could not be repaired
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 13,987,029
+      79.6% of 17,573,633 unique coordinate locations
+      80.0% of 17,484,011 filterable coordinate locations
+   Simplification threshold: 6.1054
+   Collapsed rings: 208
+   Displacement statistics
+      Mean displacement: 1.1515
+      Max displacement: 301.2329
+      Quartiles: 0.00, 0.68, 1.44
+   Vertex angle statistics
+      Mean angle: 144.18 degrees
+      Quartiles: 123.53, 155.47, 170.13
+[simplify] - 11329ms
+[clean] Find mosaic rings 233ms
+[clean] Detect holes (holes: 182, enclosures: 671) 135ms
+[clean] Build mosaic 372ms
+[clean] Dissolve tiles 424ms
 [clean] Retained 41,729 of 41,729 features
-[clean] - 9447ms
-[rename-fields] - 9ms
+[clean] - 5215ms
+[rename-fields] - 14ms
 [o] Wrote EWS2011\LSOA2011.shp
 [o] Wrote EWS2011\LSOA2011.shx
 [o] Wrote EWS2011\LSOA2011.dbf
 [o] Wrote EWS2011\LSOA2011.prj
-[o] - 6198ms
+[o] - 2295ms
 [i] Importing: MSOA\MSOA11_clip.shp
 [i] Snapped 20697 points
-[i] - 9005ms
-[simplify] Repaired 6 intersections
-[simplify] - 8208ms
-[clean] Find mosaic rings 133ms
-[clean] Detect holes (holes: 2894, enclosures: 1474) 740ms
-[clean] Build mosaic 877ms
-[clean] Dissolve tiles 699ms
+[i] - 10260ms
+[simplify] Repaired 94 intersections
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 8,065,203
+      79.8% of 10,105,922 unique coordinate locations
+      80.0% of 10,078,914 filterable coordinate locations
+   Simplification threshold: 6.7475
+   Collapsed rings: 2,181
+   Displacement statistics
+      Mean displacement: 1.5862
+      Max displacement: 1118.9583
+      Quartiles: 0.24, 0.95, 1.83
+   Vertex angle statistics
+      Mean angle: 146.13 degrees
+      Quartiles: 129.24, 156.78, 170.10
+[simplify] - 8674ms
+[clean] Find mosaic rings 83ms
+[clean] Detect holes (holes: 1159, enclosures: 1118) 191ms
+[clean] Build mosaic 282ms
+[clean] Dissolve tiles 224ms
 [clean] Retained 8,480 of 8,480 features
-[clean] - 5723ms
+[clean] - 2453ms
 [rename-fields] - 4ms
 [o] Wrote EWS2011\MSOA2011.shp
 [o] Wrote EWS2011\MSOA2011.shx
 [o] Wrote EWS2011\MSOA2011.dbf
 [o] Wrote EWS2011\MSOA2011.prj
-[o] - 2695ms
+[o] - 1452ms
 [i] Importing: District\District11_SAHSU_clip.shp
 [i] Snapped 27497 points
-[i] - 2198ms
-[simplify] Repaired 7 intersections; 1 intersection could not be repaired
-[simplify] - 2180ms
-[clean] Find mosaic rings 32ms
-[clean] Detect holes (holes: 1, enclosures: 752) 191ms
-[clean] Build mosaic 225ms
-[clean] Dissolve tiles 62ms
+[i] - 2201ms
+[simplify] Repaired 25 intersections
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 1,942,659
+      79.8% of 2,434,247 unique coordinate locations
+      80.0% of 2,427,993 filterable coordinate locations
+   Simplification threshold: 10.9538
+   Collapsed rings: 301
+   Displacement statistics
+      Mean displacement: 3.3641
+      Max displacement: 559.1203
+      Quartiles: 0.88, 1.87, 3.62
+   Vertex angle statistics
+      Mean angle: 146.46 degrees
+      Quartiles: 131.53, 155.64, 168.71
+[simplify] - 2630ms
+[clean] Find mosaic rings 20ms
+[clean] Detect holes (holes: 1, enclosures: 573) 77ms
+[clean] Build mosaic 99ms
+[clean] Dissolve tiles 44ms
 [clean] Retained 380 of 380 features
-[clean] - 1188ms
+[clean] - 576ms
 [rename-fields] - 0ms
 [o] Wrote EWS2011\LADUA2011.shp
 [o] Wrote EWS2011\LADUA2011.shx
 [o] Wrote EWS2011\LADUA2011.dbf
 [o] Wrote EWS2011\LADUA2011.prj
-[o] - 562ms
+[o] - 161ms
 [i] Importing: Region\region11_clip.shp
 [i] Snapped 42648 points
-[i] - 2106ms
-[simplify] Repaired 169 intersections
-[simplify] - 4332ms
-[clean] Find mosaic rings 59ms
-[clean] Detect holes (holes: 1882, enclosures: 4618) 1637ms
-[clean] Build mosaic 1700ms
-[clean] Dissolve tiles 472ms
+[i] - 2353ms
+[simplify] Repaired 59 intersections
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 2,778,357
+      79.5% of 3,496,142 unique coordinate locations
+      80.0% of 3,469,941 filterable coordinate locations
+   Simplification threshold: 9.3525
+   Collapsed rings: 2,477
+   Displacement statistics
+      Mean displacement: 4.5091
+      Max displacement: 1249.3872
+      Quartiles: 1.35, 2.42, 4.41
+   Vertex angle statistics
+      Mean angle: 141.25 degrees
+      Quartiles: 125.17, 148.90, 163.65
+[simplify] - 4042ms
+[clean] Find mosaic rings 41ms
+[clean] Detect holes (holes: 852, enclosures: 4224) 622ms
+[clean] Build mosaic 667ms
+[clean] Dissolve tiles 341ms
 [clean] Retained 11 of 11 features
-[clean] - 4036ms
-[rename-fields] - 1ms
+[clean] - 1755ms
+[rename-fields] - 0ms
 [o] Wrote EWS2011\GOR2011.shp
 [o] Wrote EWS2011\GOR2011.shx
 [o] Wrote EWS2011\GOR2011.dbf
 [o] Wrote EWS2011\GOR2011.prj
-[o] - 695ms
+[o] - 608ms
 ```
 
 ### 2.4.5 Dissolving a shapefile
@@ -998,36 +1082,40 @@ New DBF file data:
 
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/gor2011_map.png?raw=true "GOR2011 map")
 
-Step 2: Create Cntry\cntry11_clip.shp renaming *country_co* to *geo_code* and *country_na* to *geo_label*:
+Step 2: Create Cntry\cntry11_clip.shp renaming *country_co* to *geo_code* and *country_na* to *geo_label*, simplifying as usual:
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
--i Region\*.shp name=CNTRY2011 snap -simplify 0.5 -clean ^
--each 'CNTRY2011=country_co,CNTRYNAME=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
+-i Region\*.shp name=CNTRY2011 snap ^
+-simplify 0.2 -clean ^
+-each 'CNTRY2011=country_co,CNTRYNAME=country_na' ^
+-o Cntry\cntry11_clip.shp format=shapefile ^
 -verbose
 ```
 
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
-More? -i Region\*.shp name=CNTRY2011 snap -simplify 0.5 -clean ^
-More? -each 'CNTRY2011=country_co,CNTRYNAME=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
+More? -i Region\*.shp name=CNTRY2011 snap ^
+More? -simplify 0.2 -clean ^
+More? -each 'CNTRY2011=country_co,CNTRYNAME=country_na' ^
+More? -o Cntry\cntry11_clip.shp format=shapefile ^
 More? -verbose
 [i] Importing: Region\region11_clip.shp
 [i] Snapped 42648 points
-[i] - 1531ms
-[simplify] Repaired 169 intersections
-[simplify] - 3336ms
-[clean] Find mosaic rings 97ms
-[clean] Detect holes (holes: 1882, enclosures: 4618) 2405ms
-[clean] Build mosaic 2506ms
-[clean] Dissolve tiles 495ms
+[i] - 1578ms
+[simplify] Repaired 59 intersections
+[simplify] - 2715ms
+[clean] Find mosaic rings 94ms
+[clean] Detect holes (holes: 852, enclosures: 4224) 785ms
+[clean] Build mosaic 882ms
+[clean] Dissolve tiles 340ms
 [clean] Retained 11 of 11 features
-[clean] - 4591ms
-[each] - 1ms
+[clean] - 2082ms
+[each] - 2ms
 [o] Wrote Cntry\cntry11_clip.shp
 [o] Wrote Cntry\cntry11_clip.shx
 [o] Wrote Cntry\cntry11_clip.dbf
 [o] Wrote Cntry\cntry11_clip.prj
-[o] - 653ms
+[o] - 281ms
 ```
 
 Step 3: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i Cntry\cntry11_clip.shp -o Cntry\cntry11_clip.csv format=csv -verbose```:
@@ -1046,28 +1134,55 @@ Step 3: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roamin
 | W92000004 | Wales     | 10       | W92000004  | Wales      |
 | S92000003 | Scotland  | 11       | S92000003  | Scotland   |
 
-Step 4: Using *Cntry\cntry11_clip.shp* dissolve on *cntry2011*, *geo_label* to create *CNTRY2011.shp* in the *EWS2011* directory:
+Step 4: Using *Cntry\cntry11_clip.shp* dissolve on *cntry2011*, *geo_label* to create *CNTRY2011.shp* in the *EWS2011* directory. Simplify an additional 90% as never used at high resolution:
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
--i Cntry\*.shp name=CNTRY2011 ^
--dissolve CNTRY2011,CNTRYNAME -o EWS2011/ format=shapefile ^
+-i Cntry\*.shp name=CNTRY2011 snap ^
+-dissolve CNTRY2011,CNTRYNAME ^
+-simplify 0.9 stats -clean ^
+-o EWS2011/ format=shapefile ^
 -verbose
 ```
 
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
-More? -i Cntry\*.shp name=CNTRY2011 ^
-More? -dissolve CNTRY2011,CNTRYNAME -o EWS2011/ format=shapefile ^
+More? -i Cntry\*.shp name=CNTRY2011 snap ^
+More? -dissolve CNTRY2011,CNTRYNAME ^
+More? -simplify 0.1 stats -clean ^
+More? -o EWS2011/ format=shapefile ^
 More? -verbose
 [i] Importing: Cntry\cntry11_clip.shp
-[i] - 485ms
+[i] Snapped 551 points
+[i] - 471ms
 [dissolve] Dissolved 11 features into 3 features
-[dissolve] - 23ms
+[dissolve] - 21ms
+[simplify] Repaired 48 intersections
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 71,347
+      9.9% of 717,244 unique coordinate locations
+      10.0% of 712,127 filterable coordinate locations
+   Simplification threshold: 10.2021
+   Collapsed rings: 182
+   Displacement statistics
+      Mean displacement: 7.3286
+      Max displacement: 420.0315
+      Quartiles: 3.02, 4.59, 7.23
+   Vertex angle statistics
+      Mean angle: 141.14 degrees
+      Quartiles: 125.06, 148.73, 163.48
+[simplify] - 840ms
+[clean] Find mosaic rings 31ms
+[clean] Detect holes (holes: 774, enclosures: 4120) 830ms
+[clean] Build mosaic 863ms
+[clean] Dissolve tiles 83ms
+[clean] Retained 3 of 3 features
+[clean] - 1566ms
 [o] Wrote EWS2011\CNTRY2011.shp
 [o] Wrote EWS2011\CNTRY2011.shx
 [o] Wrote EWS2011\CNTRY2011.dbf
 [o] Wrote EWS2011\CNTRY2011.prj
-[o] - 689ms
+[o] - 250ms
 ```
 
 Step 5: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i EWS2011\CNTRY2011.shp -o EWS2011\CNTRY2011.csv format=csv -verbose```:
@@ -1080,13 +1195,57 @@ Step 5: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roamin
 
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cntry2011_map.png?raw=true "CNTRY2011 map")
 
-Step 6. Using *Cntry\cntry11_clip.shp* dissolve completely to create *SCTRY2011.shp* in the *EWS2011* directory:
+Step 6. Using *Cntry\cntry11_clip.shp* dissolve completely to create *SCTRY2011.shp* in the *EWS2011* directory. Simplify an additional 90% as never used at high resolution:
 
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
--i Cntry\*.shp name=SCTRY2011 ^
--dissolve -each 'SCTRY2011=\"UK\",SCNTRYNAME=\"United_Kingdom\"' -o EWS2011/ format=shapefile ^
+-i Cntry\*.shp name=SCNTRY2011 snap ^
+-dissolve -each 'SCTRY2011=\"UK\",SCTRYNAME=\"United_Kingdom\"' ^
+-simplify 0.1 stats -clean ^
+ -o EWS2011/ format=shapefile ^
 -verbose
+```
+
+```
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
+More? -i Cntry\*.shp name=SCNTRY2011 snap ^
+More? -dissolve -each 'SCTRY2011=\"UK\",SCTRYNAME=\"United_Kingdom\"' ^
+More? -simplify 0.1 stats -clean ^
+More?  -o EWS2011/ format=shapefile ^
+More? -verbose
+[i] Importing: Cntry\cntry11_clip.shp
+[i] Snapped 551 points
+[i] - 451ms
+[dissolve] Dissolved 11 features into 1 feature
+[dissolve] - 13ms
+[each] - 2ms
+[simplify] Repaired 82 intersections
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 644,936
+      89.9% of 717,244 unique coordinate locations
+      90.0% of 712,127 filterable coordinate locations
+   Simplification threshold: 76.3803
+   Collapsed rings: 4,144
+   Displacement statistics
+      Mean displacement: 53.8718
+      Max displacement: 22207.0834
+      Quartiles: 14.62, 26.03, 47.53
+   Vertex angle statistics
+      Mean angle: 136.65 degrees
+      Quartiles: 120.17, 142.96, 158.32
+[simplify] - 589ms
+[clean] Find mosaic rings 5ms
+[clean] Detect holes (holes: 208, enclosures: 724) 49ms
+[clean] Build mosaic 56ms
+[clean] Dissolve tiles 48ms
+[clean] Retained 1 of 1 features
+[clean] - 243ms
+[o] Wrote EWS2011\SCNTRY2011.shp
+[o] Wrote EWS2011\SCNTRY2011.shx
+[o] Wrote EWS2011\SCNTRY2011.dbf
+[o] Wrote EWS2011\SCNTRY2011.prj
+[o] - 60ms
 ```
 
 Step 7: View results of 2.4.4, 2.4.5 if run in sequence

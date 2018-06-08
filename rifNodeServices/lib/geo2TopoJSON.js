@@ -356,10 +356,10 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
 				d.file.total_topojson_length+=(d.file.topojson[i].topojson_length || 0);
 			}
 		
-			if (global.gc &&d.file.jsonData.length > (1024*1024*500) ) { // GC if json > 500M; 
+/*			if (global.gc &&d.file.jsonData.length > (1024*1024*500) ) { // GC if json > 500M; 
 				const v8 = require('v8');
 			
-				d.file.jsonData=undefined;			// Release memory		
+				d.file.jsonData=undefined;			// Release memory [PUT ME BACK????]		
 				global.gc();
 				var heap=v8.getHeapStatistics();
 				msg+="\nMemory heap >>>";
@@ -368,7 +368,7 @@ geo2TopoJSONFile=function geo2TopoJSONFile(d, ofields, topojson_options, stderr,
 				}
 				msg+="\n<<< End of memory heap";
 				serverLog.serverLog2(__file, __line, "geo2TopoJSONFile", "Force garbage collection");					
-			}
+			} */
 			response.file_list[idx].topojson=d.file.topojson;
 			response.file_list[idx].file_size=d.file.file_size;		
 			response.file_list[idx].geojson_file_length=d.file.file_size;	
