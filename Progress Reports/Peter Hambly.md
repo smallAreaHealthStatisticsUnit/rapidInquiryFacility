@@ -2367,7 +2367,8 @@ Todo:
 
 * TileMaker manual, testing, handling huge shapefiles;
 * Shapefile pre-processing; EWS2011 as an example;
-* Processed EWS2011 to LSOA; documented memory management and issues; fix DBF parsing fault for very small DBF files;
+* Processed EWS2011 to LSOA OK, COA will crash below [batch ran to completion, problems occurred returning the run data]; documented memory management and 
+  issues; fix DBF parsing fault for very small DBF files;
 * Strange bug when processing COA as well:
   ```
   C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServicesCommon.js:932
@@ -2381,3 +2382,5 @@ Todo:
 		at FSReqWrap.oncomplete (fs.js:135:15)
   ```
   Memory seems OK at: 24G!
+* QGIS edit of DBF added ASCII NUL characters to pad strings to the same length. These need to be removed by string.replace(\x00) or they will crash the 
+  ```psql \copy``` command.  

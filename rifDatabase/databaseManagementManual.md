@@ -51,7 +51,11 @@ Database Management Manual
    - [6.2 SQL Server](#62-sql-server)
 - [7. Tuning](#7-tuning)
    - [7.1 Postgres](#71-postgres)
+     -[7.1.1 Server Memory Tuning](#711-server-memory-tuning)
+     -[7.1.2 Query Tuning](#712-query-tuning)
    - [7.2 SQL Server](#72-sql-server)
+     -[7.2.1 Server Memory Tuning](#721-server-memory-tuning)
+     -[7.2.2 Query Tuning](#722-query-tuning)
 	 
 # 1. Overview
 
@@ -1540,6 +1544,8 @@ See [3.3 Partitioning](https://github.com/smallAreaHealthStatisticsUnit/rapidInq
 
 ## 7.1 Postgres
 
+### 7.1.1 Server Memory Tuning
+
 The best source for Postgres tuning information is at the [Postgres Performance Optimization Wiki](https://wiki.postgresql.org/wiki/Performance_Optimization). This references
 [Tuning Your PostgreSQL Server](https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server)
 
@@ -1550,9 +1556,10 @@ move the data directory to a solid state disk, mine is: * E:\Postgres\data*! Che
 An example [postgresql.conf](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgresql.conf) is supplied. 
 The principal tuning changes are:
 
-* Shared buffers: 1GB
-* Temporary buffers: 256MB
-* Work memory: 256MB
+* Shared buffers: 1GB. Can be tuned higher if required (see below);
+* Temporary buffers: 1-4GB
+* Work memory: 1GB. The Maximum is 2047MB; 
+* Effective_cache_size: 1/2 of total memory 
 * Try to use huge pages - this is called large page support in Windows. This is to reduce the process memory footprint 
   [translation lookaside buffer](https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938) size.
 
@@ -1560,17 +1567,112 @@ The principal tuning changes are:
 ```conf
 shared_buffers = 1024MB     # min 128kB; default 128 MB (9.6)
                             # (change requires restart)
-temp_buffers = 256MB        # min 800kB; default 8M
+temp_buffers = 1G           # min 800kB; default 8M
 
 huge_pages = try            # on, off, or try
                             # (change requires restart
-work_mem = 256MB            # min 64kB; default 4MB
+work_mem = 1GB              # min 64kB; default 4MB
+
+log_temp_files = 5000		# log temporary files equal or larger [5MB]
+					# than the specified size in kilobytes;
+					# -1 disables [default], 0 logs all temp files
+					
+# according to http://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server, 
+# "Setting effective_cache_size to 1/2 of total memory would be a normal conservative setting, 
+# and 3/4 of memory is a more aggressive but still reasonable amount."					
+#effective_cache_size = 4GB
+effective_cache_size = 20GB
 ```
 
 On Windows, I modified the *postgresql.conf* rather than use SQL at the server command line. This is because the server command line needs to be in the units of the parameters, 
 so shared buffers of 1G is 131072 8KB pages. This is not very intuitive compared to using MB/GB etc.
  
 The amount of memory given to Postgres should allow room for *tomcat* if installed together with the application server; shared memory should generally not exceed a quarter of the available RAM.
+
+Tuning the buffer cache, see: [A Large Database Does Not Mean Large shared_buffers](https://www.keithf4.com/a-large-database-does-not-mean-large-shared_buffers/). Add the 
+```pg_buffercache``` extension as the postgres user: ```CREATE EXTENSION pg_buffercache;```, then run the following query:
+
+```SQL
+SELECT n.nspname AS schema, c.relname, c2.relname AS toast_table,
+       c3.relname AS primary_table,
+       pg_size_pretty(COUNT(*) * 8192) as buffered,
+       ROUND(100.0 * COUNT(*) / ( SELECT setting FROM pg_settings WHERE name='shared_buffers')::integer,3) AS buffers_percent,
+       ROUND(100.0 * COUNT(*) * 8192 / pg_relation_size(c.oid),1) AS percent_of_relation,
+	   b.usagecount
+  FROM pg_class c
+		INNER JOIN pg_buffercache b ON b.relfilenode = c.relfilenode
+		INNER JOIN pg_database d ON (b.reldatabase = d.oid AND d.datname = current_database()) /* Restrict to current database */
+		INNER JOIN pg_namespace n ON n.oid = c.relnamespace
+		LEFT OUTER JOIN pg_class c2 ON c2.oid = c.reltoastrelid
+		LEFT OUTER JOIN pg_class c3 ON c3.oid = CASE 
+			WHEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '') ~ '^[0-9]+$' THEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '')::oid 
+			ELSE NULL
+	   END
+ WHERE pg_relation_size(c.oid) > 0 AND 
+       ((c.relname NOT LIKE 'pg_%' OR c.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */) AND 
+       (c3.relname IS NULL OR c3.relname NOT LIKE 'pg_%' 			/* Exclude data dictionary but not TOAST tables */)
+ GROUP BY c.oid, n.nspname, c.relname, c2.relname, c3.relname, b.usagecount
+ ORDER BY 5 DESC;
+```
+
+This gives the following output:
+```
+  schema  |        relname        |   toast_table   | primary_table |  buffered  | buffers_percent | percent_of_relation | usagecount
+----------+-----------------------+-----------------+---------------+------------+-----------------+---------------------+------------
+ pg_toast | pg_toast_803497       |                 | cntry2011     | 85 MB      |           8.257 |               100.0 |          5
+ public   | spatial_ref_sys_pkey  |                 |               | 8192 bytes |           0.001 |                 4.2 |          3
+ rif40    | t_rif40_parameters    |                 |               | 8192 bytes |           0.001 |               100.0 |          5
+ rif40    | t_rif40_parameters_pk |                 |               | 8192 bytes |           0.001 |                50.0 |          3
+ peter    | cntry2011             | pg_toast_803497 |               | 8192 bytes |           0.001 |               100.0 |          5
+ pg_toast | pg_toast_803497       |                 | cntry2011     | 8192 bytes |           0.001 |                 0.0 |          1
+ pg_toast | pg_toast_803497       |                 | cntry2011     | 8192 bytes |           0.001 |                 0.0 |          4
+ peter    | cntry2011_uk          |                 |               | 8192 bytes |           0.001 |                50.0 |          2
+ peter    | cntry2011_pkey        |                 |               | 8192 bytes |           0.001 |                50.0 |          2
+ public   | spatial_ref_sys_pkey  |                 |               | 24 kB      |           0.002 |                12.5 |          5
+ public   | spatial_ref_sys       | pg_toast_321436 |               | 16 kB      |           0.002 |                 0.4 |          5
+ pg_toast | pg_toast_803497_index |                 | cntry2011     | 1088 kB    |           0.104 |               100.0 |          5
+(12 rows)
+```
+
+Note the use of [TOAST](https://www.postgresql.org/docs/9.6/static/storage-toast.html) tsbles in Postgres. TOAST (The Oversized-Attribute Storage Technique) is used to store large field values,
+for instance the geometry databases on *cntry2011* as in this example.
+
+This this is is possible to determine an ideal value for *shared_buffers*:
+```SQL
+SELECT CASE 
+			WHEN usagecount >3 THEN '>3' 
+			ELSE ' '||usagecount::Text END AS usagecount,
+	   pg_size_pretty(count(*) * 8192) as ideal_shared_buffers
+  FROM pg_class c
+		INNER JOIN pg_buffercache b ON b.relfilenode = c.relfilenode
+		INNER JOIN pg_database d ON (b.reldatabase = d.oid AND d.datname = current_database())
+ GROUP BY CASE 
+			WHEN usagecount >3 THEN '>3' 
+			ELSE ' '||usagecount::Text END
+ ORDER BY 1 DESC;
+```
+
+A usage count of:
+
+* 1: this is the system caching all data;
+* 2,3: occasional caching;
+* >3: suitable target for shared_buffer;
+
+I you wanted to cache everything with a *usagecount* of 2 you would need to add the >3, 3 and 2 figures together!
+
+```
+ usagecount | ideal_shared_buffers
+------------+----------------------
+ >3         | 88 MB
+  3         | 40 kB
+  2         | 416 kB
+  1         | 56 kB
+(4 rows)
+``` 
+
+You will need to run this many times under different loads to determine a suitable value.
+
+### 7.1.2 Query Tuning
 
 On Postgres the extract queries all do an ```EXPLAIN PLAN VERBOSE``` to the log:
 ```
@@ -1739,6 +1841,8 @@ Insert on rif_studies.s416_extract  (cost=19943.90..21263.53 rows=52785 width=58
 
 ## 7.2 SQL Server
 
+### 7.2.1 Server Memory Tuning
+
 SQL Server automatically allocates memory as needed by the server up to the limit of 2,147,483,647MB! In practice you may wish to reduce this figure to 40% of the available RAM.
 
 By default SQL Server is not using *largepages* (the names for *huge_pages* in SQL Server):
@@ -1754,7 +1858,9 @@ large_page_allocations_kb
 To enable *largepages* you need to [Enable the Lock Pages in Memory Option](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/enable-the-lock-pages-in-memory-option-windows?view=sql-server-2017).
 This will have consequences for the automated tuning which unless limited in size will remove the ability of Windows to free up SQL Server memory for other applications (and Windows itself). You need to be on a 
 big server and make sure your memory set-up is stable before enabling it.  
-				
+	
+### 7.2.2 Query Tuning
+			
 The [SQL Server profiler](https://docs.microsoft.com/en-us/sql/tools/sql-server-profiler/sql-server-profiler?view=sql-server-2017) needs to be used to trace RIF application tuning.
 				
 Peter Hambly
