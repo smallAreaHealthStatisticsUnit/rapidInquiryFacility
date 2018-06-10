@@ -2399,4 +2399,40 @@ Todo:
   FROM cntry2011;
   ```  
 * Make post processing script multi transactional (hit by deadlock problems running overnight;
-  
+* Postgres processing failed after 2:26 (hours) at statement 421/601 hierarchy checks (check_intersections.sql):
+  ```
+  psql:pg_EWS2011.sql:6524: WARNING:  Geography: EWS2011 geolevel 7: [coa2011] spurious additional codes: 2
+  ...
+  psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 1: [scntry2011] no multiple hierarchy codes
+  psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 2: [cntry2011] no multiple hierarchy codes
+  psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 3: [gor2011] no multiple hierarchy codes
+  psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 4: [ladua2011] no multiple hierarchy codes
+  psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 5: [msoa2011] no multiple hierarchy codes
+  psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 6: [lsoa2011] no multiple hierarchy codes
+  psql:pg_EWS2011.sql:6524: ERROR:  Geography: EWS2011 codes check 0 missing, 1 spurious additional, 0 hierarchy fails
+  CONTEXT:  PL/pgSQL function inline_code_block line 41 at RAISE
+  Time: 1714.103 ms
+  ```
+  Hierarchy insert took 83 mins. Two  rows missing romn the hierarchy are:
+  ```
+  sahsuland_dev=> SELECT coa2011 FROM lookup_coa2011
+  sahsuland_dev->                 EXCEPT 
+  sahsuland_dev->                 SELECT coa2011 FROM hierarchy_ews2011;
+    coa2011
+  -----------
+   W00010143
+   W00010161
+  (2 rows)
+  ```
+  These are in Cardiff and are small:
+  ```
+  SELECT coa2011, lad11nm, msoa11nm, area_km2, geographic_centroid_wkt, ST_ASText(ST_Transform(geographic_centroid, 27700)) AS osgb
+    FROM coa2011
+   WHERE coa2011 IN ('W00010143', 'W00010161');
+    coa2011  | lad11nm |  msoa11nm   |    area_km2     |            geographic_centroid_wkt            |                   osgb
+  -----------+---------+-------------+-----------------+-----------------------------------------------+------------------------------------------
+   W00010161 | Cardiff | Cardiff 048 | 0.0147534816105 | POINT (-3.1781555521064697 51.45499419539898) | POINT(318235.967585802, 173549.01243282)
+   W00010143 | Cardiff | Cardiff 048 |  0.009281476807 | POINT (-3.1768272276630127 51.45381197706475) | POINT(318326.146578801 173416.053359773)
+  (2 rows)
+  ```
+  Suspect causes by oversimplification of higher layers.
