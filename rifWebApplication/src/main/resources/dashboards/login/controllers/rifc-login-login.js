@@ -134,7 +134,8 @@ angular.module("RIF")
 				}
 					
 				setFrontEndParameters(undefined);
-
+				document.getElementById('username').focus(); // Focus on username
+				
                 //The angular material button has a progress spinner
                 $scope.showSpinner = false;
 
