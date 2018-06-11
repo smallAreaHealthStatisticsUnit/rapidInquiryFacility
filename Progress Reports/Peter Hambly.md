@@ -2435,4 +2435,12 @@ Todo:
    W00010143 | Cardiff | Cardiff 048 |  0.009281476807 | POINT (-3.1768272276630127 51.45381197706475) | POINT(318326.146578801 173416.053359773)
   (2 rows)
   ```
-  Suspect causes by oversimplification of higher layers.
+
+#### 11th to 15th June 
+  
+  Caused by oversimplification of higher layers (SCNTRY, CNTRY):
+  * CNTRY2011 in purple;
+  * GOT2011 (not oversimplified) in green;
+  * COA2001 in hashing;
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue.png?raw=true "Cardiff COA2001 issue map")
+  
