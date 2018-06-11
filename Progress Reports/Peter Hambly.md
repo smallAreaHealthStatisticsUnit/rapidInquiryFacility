@@ -2435,7 +2435,8 @@ Todo:
    W00010143 | Cardiff | Cardiff 048 |  0.009281476807 | POINT (-3.1768272276630127 51.45381197706475) | POINT(318326.146578801 173416.053359773)
   (2 rows)
   ```
-
+  That COA2011 only is affected means that the upper intersections are fine.
+  
 #### 11th to 15th June 
   
 The hierarchy check failure is caused by oversimplification of higher layers (SCNTRY, CNTRY):
@@ -2531,10 +2532,11 @@ SELECT x12.scntry2011,
  ORDER BY 1, 2, 3, 4, 5, 6, 7; 
 ```
 
-This, not unsurprisingly, returned no rows:
+This, unsurprisingly, returned no rows, suggesting the problem is with the intersection and not the area:
 ```
   scntry2011 | cntry2011 | gor2011 | ladua2011 | msoa2011 | lsoa2011 | coa2011 | test12 | max12 | test23 | max23 | test34 | max34 | test45 | max45 | test56 | max56 | test67 | max67
  ------------+-----------+---------+-----------+----------+----------+---------+--------+-------+--------+-------+--------+-------+--------+-------+--------+-------+--------+-------
  (0 rows)
 
- ```
+```
+This in turn implies the problem may be with the COA2011, LSOA2011 intersection, common table expression: *x67*.
