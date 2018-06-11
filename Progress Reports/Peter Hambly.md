@@ -2440,7 +2440,7 @@ Todo:
   
   Caused by oversimplification of higher layers (SCNTRY, CNTRY):
   * CNTRY2011 in purple;
-  * GOT2011 (not oversimplified) in green;
+  * GOR2011 (not oversimplified) in green;
   * COA2001 in hashing;
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue.png?raw=true "Cardiff COA2001 issue map")
   
