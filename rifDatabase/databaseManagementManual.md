@@ -1707,7 +1707,155 @@ I you wanted to cache everything with a *usagecount* of 2 you would need to add 
 ``` 
 
 You will need to run this many times under different loads to determine a suitable value. In this case a 1GB cache appears to fine for the geospatial workload. Note however that
-the *shared_buffers* are 100% used. ADD CACHE MISSES!
+the *shared_buffers* are 100% used. 
+
+ADD CACHE MISSES!
+
+```SQL
+WITH all_tables AS (
+	SELECT *
+		 FROM (
+			SELECT  'ALL'::text as table_name, 
+					SUM( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) as from_disk, 
+					SUM( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) as from_cache    
+              FROM pg_statio_all_tables  --> change to pg_statio_USER_tables if you want to check only user tables (excluding postgres's own tables)
+		 ) a
+		WHERE   (from_disk + from_cache) > 0 -- discard tables without hits
+), tables AS (
+	SELECT  *
+		FROM (
+			SELECT  relname as table_name, 
+					( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) as from_disk, 
+					( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) as from_cache    
+			 FROM pg_statio_all_tables --> change to pg_statio_USER_tables if you want to check only user tables (excluding postgres's own tables)
+		) a
+		WHERE   (from_disk + from_cache) > 0 -- discard tables without hits
+)
+SELECT  table_name as "table name",
+    from_disk as "disk hits",
+    round((from_disk::numeric / (from_disk + from_cache)::numeric)*100.0,2) as "% disk hits",
+    round((from_cache::numeric / (from_disk + from_cache)::numeric)*100.0,2) as "% cache hits",
+    (from_disk + from_cache) as "total hits"
+  FROM    (SELECT * FROM all_tables UNION ALL SELECT * FROM tables) a
+ ORDER   BY (case when table_name = 'ALL' then 0 else 1 end), from_disk desc;
+```
+
+```
+                 table name                  | disk hits | % disk hits | % cache hits | total hits
+---------------------------------------------+-----------+-------------+--------------+------------
+ ALL                                         |  36988384 |       11.36 |        88.64 |  325685108
+ coa2011                                     |  34504900 |       22.38 |        77.62 |  154167178
+ lsoa2011                                    |   1071762 |        1.54 |        98.46 |   69495436
+ pg_toast_1983440                            |    688786 |        3.37 |        96.63 |   20424031
+ pg_toast_3168696                            |    316933 |        2.48 |        97.52 |   12770489
+ msoa2011                                    |    117613 |        0.44 |        99.56 |   26905598
+ pg_toast_3436878                            |     77389 |        1.33 |        98.67 |    5803179
+ ladua2011                                   |     22833 |        0.88 |        99.12 |    2581687
+ gor2011                                     |     22773 |        1.20 |        98.80 |    1891500
+ pg_toast_3163099                            |     20965 |        2.83 |        97.17 |     740498
+ pg_toast_3163350                            |     20341 |        2.51 |        97.49 |     809052
+ t_tiles_usa_2014                            |     20243 |        1.95 |        98.05 |    1038179
+ pg_toast_796059                             |     19025 |        6.38 |        93.62 |     298395
+ hierarchy_ews2011                           |     15226 |        0.34 |        99.66 |    4430738
+ geometry_usa_2014_geolevel_id_3_zoomlevel_9 |      7218 |        3.06 |        96.94 |     236115
+ geometry_usa_2014_geolevel_id_3_zoomlevel_8 |      6177 |        3.23 |        96.77 |     191193
+ lookup_coa2011                              |      6006 |        0.70 |        99.30 |     861011
+ geometry_usa_2014_geolevel_id_3_zoomlevel_7 |      5127 |        3.37 |        96.63 |     152354
+ geometry_usa_2014_geolevel_id_3_zoomlevel_6 |      4199 |        3.29 |        96.71 |     127481
+ pg_toast_783771                             |      3844 |        3.21 |        96.79 |     119580
+ scntry2011                                  |      2917 |        2.22 |        97.78 |     131278
+ pg_toast_783761                             |      2768 |        3.13 |        96.87 |      88418
+ pg_toast_3515713                            |      2732 |        6.06 |        93.94 |      45053
+ cntry2011                                   |      2616 |        1.52 |        98.48 |     172669
+ pg_toast_1983352                            |      2387 |        3.95 |        96.05 |      60374
+ pg_toast_783751                             |      1952 |        3.00 |        97.00 |      65135
+ pg_proc                                     |      1742 |        1.56 |        98.44 |     111512
+ pg_statistic                                |      1700 |        6.84 |        93.16 |      24846
+ lookup_lsoa2011                             |      1449 |        1.12 |        98.88 |     129068
+ pg_toast_783741                             |      1422 |        2.78 |        97.22 |      51113
+ geometry_usa_2014_geolevel_id_2_zoomlevel_9 |      1356 |        3.48 |        96.52 |      38987
+ pg_toast_783731                             |      1324 |        4.88 |        95.12 |      27151
+ pg_toast_2619                               |      1179 |       10.38 |        89.62 |      11362
+ geometry_usa_2014_geolevel_id_2_zoomlevel_8 |      1042 |        3.47 |        96.53 |      30024
+ pg_toast_783721                             |      1013 |        4.90 |        95.10 |      20686
+ pg_attribute                                |      1011 |        0.70 |        99.30 |     144721
+ geometry_usa_2014_geolevel_id_2_zoomlevel_7 |       805 |        3.40 |        96.60 |      23657
+ pg_toast_783711                             |       776 |        4.80 |        95.20 |      16178
+ pg_class                                    |       700 |        0.00 |       100.00 |   14432677
+ pg_depend                                   |       695 |        1.96 |        98.04 |      35408
+ geometry_usa_2014_geolevel_id_2_zoomlevel_6 |       621 |        3.30 |        96.70 |      18800
+ pg_constraint                               |       592 |        2.51 |        97.49 |      23575
+ pg_toast_783701                             |       588 |        4.59 |        95.41 |      12804
+ lookup_msoa2011                             |       300 |        1.15 |        98.85 |      26001
+ pg_type                                     |       271 |        0.19 |        99.81 |     140097
+ pg_index                                    |       232 |        0.41 |        99.59 |      56729
+ pg_description                              |       220 |        2.68 |        97.32 |       8214
+ pg_operator                                 |       184 |        1.59 |        98.41 |      11588
+ geometry_usa_2014_geolevel_id_1_zoomlevel_9 |       158 |        5.00 |        95.00 |       3161
+ pg_rewrite                                  |       153 |       11.38 |        88.62 |       1344
+ pg_toast_783691                             |       151 |        6.40 |        93.60 |       2360
+ geometry_usa_2014_geolevel_id_1_zoomlevel_8 |       123 |        5.54 |        94.46 |       2221
+ pg_amop                                     |       120 |        1.50 |        98.50 |       7978
+ pg_toast_783681                             |       116 |        6.83 |        93.17 |       1698
+ pg_amproc                                   |        95 |        0.22 |        99.78 |      43528
+ geometry_usa_2014_geolevel_id_1_zoomlevel_7 |        92 |        5.67 |        94.33 |       1624
+ pg_shdepend                                 |        87 |        3.66 |        96.34 |       2377
+ pg_toast_783671                             |        87 |        6.91 |        93.09 |       1259
+ pg_opclass                                  |        76 |        0.17 |        99.83 |      43481
+ pg_namespace                                |        73 |        0.01 |        99.99 |    1020223
+ geometry_usa_2014_geolevel_id_1_zoomlevel_6 |        72 |        5.82 |        94.18 |       1238
+ pg_toast_2618                               |        69 |       15.00 |        85.00 |        460
+ lookup_cb_2014_us_county_500k               |        67 |        1.04 |        98.96 |       6415
+ pg_toast_783661                             |        67 |        7.02 |        92.98 |        954
+ pg_toast_1255                               |        66 |       13.81 |        86.19 |        478
+ hierarchy_usa_2014                          |        61 |        0.48 |        99.52 |      12602
+ adjacency_usa_2014                          |        58 |        0.91 |        99.09 |       6347
+ pg_trigger                                  |        55 |        1.63 |        98.37 |       3377
+ pg_database                                 |        48 |        0.00 |       100.00 |    3053378
+ spatial_ref_sys                             |        40 |        0.00 |       100.00 |    1518748
+ pg_cast                                     |        35 |        0.22 |        99.78 |      15959
+ pg_db_role_setting                          |        34 |        0.02 |        99.98 |     171610
+ pg_authid                                   |        33 |        0.00 |       100.00 |     744270
+ pg_enum                                     |        30 |        9.58 |        90.42 |        313
+ pg_language                                 |        30 |        5.19 |        94.81 |        578
+ pg_am                                       |        28 |        0.27 |        99.73 |      10231
+ pg_tablespace                               |        24 |        5.07 |        94.93 |        473
+ pg_attrdef                                  |        24 |        8.92 |        91.08 |        269
+ pg_extension                                |        23 |        9.27 |        90.73 |        248
+ pg_aggregate                                |        22 |        9.95 |        90.05 |        221
+ lookup_ladua2011                            |        19 |        2.14 |        97.86 |        889
+ pg_auth_members                             |        18 |        3.72 |        96.28 |        484
+ pg_inherits                                 |        17 |        6.61 |        93.39 |        257
+ pg_init_privs                               |        16 |        2.85 |        97.15 |        562
+ pg_conversion                               |        15 |       27.27 |        72.73 |         55
+ t_rif40_parameters                          |        12 |       17.91 |        82.09 |         67
+ pg_range                                    |        12 |        9.45 |        90.55 |        127
+ pg_default_acl                              |         8 |        7.27 |        92.73 |        110
+ t_rif40_geolevels                           |         8 |       10.26 |        89.74 |         78
+ pg_event_trigger                            |         8 |       27.59 |        72.41 |         29
+ lookup_cb_2014_us_state_500k                |         7 |       10.14 |        89.86 |         69
+ pg_collation                                |         7 |        4.64 |        95.36 |        151
+ lookup_cb_2014_us_nation_5m                 |         7 |       53.85 |        46.15 |         13
+ rif40_geographies                           |         6 |       17.14 |        82.86 |         35
+ pg_seclabel                                 |         6 |        0.88 |        99.12 |        679
+ geolevels_ews2011                           |         5 |        6.02 |        93.98 |         83
+ geography_ews2011                           |         5 |       16.13 |        83.87 |         31
+ lookup_scntry2011                           |         5 |       83.33 |        16.67 |          6
+ t_rif40_results                             |         4 |      100.00 |         0.00 |          4
+ lookup_gor2011                              |         4 |       15.38 |        84.62 |         26
+ lookup_cntry2011                            |         4 |       40.00 |        60.00 |         10
+ t_rif40_studies                             |         3 |       12.50 |        87.50 |         24
+ pg_transform                                |         3 |       37.50 |        62.50 |          8
+ pg_policy                                   |         2 |       11.11 |        88.89 |         18
+ pg_shseclabel                               |         2 |        9.09 |        90.91 |         22
+ tile_limits_usa_2014                        |         2 |       33.33 |        66.67 |          6
+ pg_shdescription                            |         2 |       50.00 |        50.00 |          4
+ rif40_covariates                            |         2 |       40.00 |        60.00 |          5
+ pg_largeobject_metadata                     |         2 |       33.33 |        66.67 |          6
+ t_rif40_inv_covariates                      |         1 |       25.00 |        75.00 |          4
+ pg_foreign_table                            |         1 |       25.00 |        75.00 |          4
+(111 rows)
+```
 
 ### 7.1.2 Query Tuning
 
