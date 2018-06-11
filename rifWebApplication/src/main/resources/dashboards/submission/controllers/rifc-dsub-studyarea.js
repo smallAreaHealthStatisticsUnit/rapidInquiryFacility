@@ -102,12 +102,12 @@ angular.module("RIF")
             $scope.input.studyResolution = StudyAreaStateService.getState().studyResolution;
             $scope.input.center = StudyAreaStateService.getState().center;
             $scope.input.geography = StudyAreaStateService.getState().geography;
-            $scope.input.transparency = StudyAreaStateService.getState().transparency;  
-            $scope.input.showSwitch = true;
+            $scope.input.transparency = StudyAreaStateService.getState().transparency;
             $scope.input.type = StudyAreaStateService.getState().type; 
-            if ($scope.input.type === "Risk Analysis") {
+			$scope.input.showSwitch = true; // Show switch
+            if ($scope.input.type === "Risk Analysis") {  
                 $scope.input.bands = [1, 2, 3, 4, 5, 6];
-            } else {
+            } else {  
                 $scope.input.bands = [1];
             }
 

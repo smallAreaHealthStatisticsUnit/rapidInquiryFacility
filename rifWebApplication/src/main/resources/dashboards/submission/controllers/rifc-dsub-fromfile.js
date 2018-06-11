@@ -83,18 +83,13 @@ angular.module("RIF")
                     //JSON headers
                     var thisHeaders = [];
                     for (var i in rifJob) {
+						//Risk analysis OR disease mapping study?
 						if (i == "risk_analysis_study") {
 							studyType = "risk_analysis_study";
 							studyAreaType = "risk_analysis_study_area";
 						}
                         thisHeaders.push(rifJob[i]);
                     }
-
-                    //Risk analysis OR disease mapping study?
-//                    if (thisHeaders.indexOf("risk_analysis_study") !== -1) {
-//                        studyType = "risk_analysis_study";
-//                        studyAreaType = "risk_analysis_study_area";
-//                    }
 
                     //Expected headers present for RIF study
                     var expectedHeaders = ['submitted_by', 'job_submission_date', 'project', studyType, 
@@ -461,6 +456,9 @@ angular.module("RIF")
 						StudyAreaStateService.getState().geography = rifJob[studyType].geography.name;
 						if (StudyAreaStateService.getState().polygonIDs.length !== 0) {
 							SubmissionStateService.getState().studyTree = true;
+						}
+						if (studyType === "risk_analysis_study") {
+							StudyAreaStateService.getState().type = "Risk Analysis";	
 						}
 						//Comparison area
 						CompAreaStateService.getState().selectAt = rifJob[studyType].comparison_area.geo_levels.geolevel_select.name;
