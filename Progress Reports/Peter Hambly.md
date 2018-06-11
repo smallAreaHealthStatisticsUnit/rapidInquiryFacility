@@ -2443,7 +2443,7 @@ The hierarchy check failure is caused by oversimplification of higher layers (SC
 * CNTRY2011 in purple;
 * GOR2011 (not oversimplified) in green;
 * COA2001 in hashing;
-  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue.png?raw=true "Cardiff COA2001 issue map");
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue.png?raw=true "Cardiff COA2001 issue map")
   To be in the hierarchy the intersection code *insert_hierarchy.sql* selects the intersection with the largest intersection by area for each (higher resolution). This 
   eliminates duplicates and picks the most likely intersection on the basis of area. There are two possible reasons for this failure:
 
@@ -2501,7 +2501,7 @@ SELECT a6.areaid AS lsoa2011, a7.areaid AS coa2011,
        ST_Area(ST_Intersection(a6.geom_9, a7.geom_9)) AS a67_area
   FROM lsoa2011 a6 CROSS JOIN coa2011 a7
  WHERE ST_Intersects(a6.geom_9, a7.geom_9)
-   AND x67.coa2011 IN ('W00010143','W00010161')
+   AND a7.coa2011 IN ('W00010143','W00010161')
 )
 SELECT x12.scntry2011, 
        x12.cntry2011, 
@@ -2528,6 +2528,13 @@ SELECT x12.scntry2011,
    AND x34.ladua2011 = x45.ladua2011
    AND x45.msoa2011 = x56.msoa2011
    AND x56.lsoa2011 = x67.lsoa2011
-   AND x67.coa2011 IN ('W00010143','W00010161')
- ORDER BY 1, 2, 3, 4, 5, 6, 7;
+ ORDER BY 1, 2, 3, 4, 5, 6, 7; 
 ```
+
+This, not unsurprisingly, returned no rows:
+```
+  scntry2011 | cntry2011 | gor2011 | ladua2011 | msoa2011 | lsoa2011 | coa2011 | test12 | max12 | test23 | max23 | test34 | max34 | test45 | max45 | test56 | max56 | test67 | max67
+ ------------+-----------+---------+-----------+----------+----------+---------+--------+-------+--------+-------+--------+-------+--------+-------+--------+-------+--------+-------
+ (0 rows)
+
+ ```

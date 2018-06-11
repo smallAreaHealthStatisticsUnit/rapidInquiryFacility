@@ -1592,6 +1592,17 @@ The amount of memory given to Postgres should allow room for *tomcat* if install
 Tuning the buffer cache, see: [A Large Database Does Not Mean Large shared_buffers](https://www.keithf4.com/a-large-database-does-not-mean-large-shared_buffers/). Add the 
 ```pg_buffercache``` extension as the postgres user: ```CREATE EXTENSION pg_buffercache;```, then run the following query as *postgres*:
 
+See how many buffers are in use:
+```SQL
+SELECT ROUND(100.0 * COUNT(*) / ( SELECT setting FROM pg_settings WHERE name='shared_buffers')::integer,3) AS buffers_in_use_percent
+  FROM pg_buffercache;
+  
+  buffers_in_use_percent
+------------------------
+                100.000 
+```
+
+And what is being used:
 ```SQL
 SELECT n.nspname AS schema, c.relname, c2.relname AS toast_table,
        c3.relname AS primary_table,
@@ -1695,7 +1706,8 @@ I you wanted to cache everything with a *usagecount* of 2 you would need to add 
 (5 rows)
 ``` 
 
-You will need to run this many times under different loads to determine a suitable value. In this case a 1GB cache is fine for the geospatial workload.
+You will need to run this many times under different loads to determine a suitable value. In this case a 1GB cache appears to fine for the geospatial workload. Note however that
+the *shared_buffers* are 100% used. ADD CACHE MISSES!
 
 ### 7.1.2 Query Tuning
 
