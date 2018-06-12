@@ -2540,3 +2540,12 @@ This, unsurprisingly, returned no rows, suggesting the problem is with the inter
 
 ```
 This in turn implies the problem may be with the COA2011, LSOA2011 intersection, common table expression: *x67*.
+
+* Fix for: Focus should be on username field on the login screen #22;
+* Can now reload saved risk analysis study;
+* Found shapefile risk analysis areas codes;
+* Added test shapefiles for exposure point and surfaces;
+* WARNING: Could not find (weighted) centroids stored in database - using geographic centroids on the fly
+  call to user.getTileMakerCentroids() in rifd-dsub-maptable.js is producing a HTTP 404:
+  ```http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerCentroids?userID=peter&geographyName=SAHSULAND&geoLevelSelectName=SAHSU_GRD_LEVEL1```. 
+  Submitted an as issue.

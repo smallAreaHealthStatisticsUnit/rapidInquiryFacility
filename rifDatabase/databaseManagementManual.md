@@ -1592,21 +1592,37 @@ The amount of memory given to Postgres should allow room for *tomcat* if install
 Tuning the buffer cache, see: [A Large Database Does Not Mean Large shared_buffers](https://www.keithf4.com/a-large-database-does-not-mean-large-shared_buffers/). Add the 
 ```pg_buffercache``` extension as the postgres user: ```CREATE EXTENSION pg_buffercache;```, then run the following query as *postgres*:
 
-See how many buffers are in use:
+When running these queries, please bear in mind that *shared_buffers* usage varies with the type of workload;
+data loading (especially geospatial) will generally hit a few large tables often; normal RIF usage which is 
+more OLTP like less so. There run these queries often under different loads.
+ 
+Firstly see how many buffers are in use by database:
 ```SQL
-SELECT ROUND(100.0 * COUNT(*) / ( SELECT setting FROM pg_settings WHERE name='shared_buffers')::integer,3) AS buffers_in_use_percent
-  FROM pg_buffercache;
+SELECT CASE
+			WHEN d.datname = current_database() THEN d.datname || ' (current)'
+			ELSE d.datname
+	   END AS database,
+	   ROUND(100.0 * COUNT(*) / ( SELECT setting FROM pg_settings WHERE name='shared_buffers')::integer,3) AS buffers_in_use_percent
+  FROM pg_buffercache b, pg_database d
+ WHERE b.reldatabase = d.oid
+ GROUP BY CASE
+			WHEN d.datname = current_database() THEN d.datname || ' (current)'
+			ELSE d.datname
+	   END
+ ORDER BY 1;
   
-  buffers_in_use_percent
+  buffers_in_use_percent UPDATE
 ------------------------
                 100.000 
 ```
+This is across all databases. 100% is not unusual, less than 100% probably means your *shared_buffers* are
+too large.
 
-And what is being used:
+Now see what is being used in the current database:
 ```SQL
 SELECT n.nspname AS schema, c.relname, c2.relname AS toast_table,
        c3.relname AS primary_table,
-       pg_size_pretty(COUNT(*) * 8192) as buffered,
+       pg_size_pretty(COUNT(*) * 8192) AS buffered,
        ROUND(100.0 * COUNT(*) / ( SELECT setting FROM pg_settings WHERE name='shared_buffers')::integer,3) AS buffers_percent,
        ROUND(100.0 * COUNT(*) * 8192 / pg_relation_size(c.oid),1) AS percent_of_relation,
 	   b.usagecount
@@ -1615,13 +1631,14 @@ SELECT n.nspname AS schema, c.relname, c2.relname AS toast_table,
 		INNER JOIN pg_database d ON (b.reldatabase = d.oid AND d.datname = current_database()) /* Restrict to current database */
 		INNER JOIN pg_namespace n ON n.oid = c.relnamespace
 		LEFT OUTER JOIN pg_class c2 ON c2.oid = c.reltoastrelid
-		LEFT OUTER JOIN pg_class c3 ON c3.oid = CASE 
-			WHEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '') ~ '^[0-9]+$' THEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '')::oid 
-			ELSE NULL
-	   END
- WHERE pg_relation_size(c.oid) > 0 AND 
-       ((c.relname NOT LIKE 'pg_%' OR c.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */) AND 
-       (c3.relname IS NULL OR c3.relname NOT LIKE 'pg_%' 			/* Exclude data dictionary but not TOAST tables */)
+		LEFT OUTER JOIN pg_class c3 ON c3.oid = 
+			CASE 
+				WHEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '') ~ '^[0-9]+$' THEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '')::oid 
+				ELSE NULL
+			END
+ WHERE pg_relation_size(c.oid) > 0 /* Exclude non table objects or zero sized objects */ 
+   AND ((c.relname NOT LIKE 'pg_%' OR c.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */) 
+   AND  (c3.relname IS NULL OR c3.relname NOT LIKE 'pg_%' 			/* Exclude data dictionary but not TOAST tables */)
  GROUP BY c.oid, n.nspname, c.relname, c2.relname, c3.relname, b.usagecount
  ORDER BY 5 DESC;
 ```
@@ -1669,22 +1686,31 @@ This gives the following output:
 (36 rows)
 ```
 
-Note the use of [TOAST](https://www.postgresql.org/docs/9.6/static/storage-toast.html) tsbles in Postgres. TOAST (The Oversized-Attribute Storage Technique) is used to store large field values,
+Note the use of [TOAST](https://www.postgresql.org/docs/9.6/static/storage-toast.html) tables in Postgres. 
+TOAST (The Oversized-Attribute Storage Technique) is used to store large field values,
 for instance the geometry databases on *cntry2011* as in this example.
 
-This this is is possible to determine an ideal value for *shared_buffers*:
+Now it is possible to determine an **ideal** value for *shared_buffers*:
 ```SQL
-SELECT CASE 
+SELECT CASE
+			WHEN d.datname = current_database() THEN d.datname || ' (current)'
+			ELSE d.datname
+	   END AS database,
+	   CASE 
 			WHEN usagecount >3 THEN '>3' 
 			ELSE ' '||usagecount::Text END AS usagecount,
 	   pg_size_pretty(count(*) * 8192) as ideal_shared_buffers
   FROM pg_class c
 		INNER JOIN pg_buffercache b ON b.relfilenode = c.relfilenode
-		INNER JOIN pg_database d ON (b.reldatabase = d.oid AND d.datname = current_database())
- GROUP BY CASE 
+		INNER JOIN pg_database d ON (b.reldatabase = d.oid)
+ GROUP BY CASE
+			WHEN d.datname = current_database() THEN d.datname || ' (current)'
+			ELSE d.datname
+	      END,
+	      CASE 
 			WHEN usagecount >3 THEN '>3' 
 			ELSE ' '||usagecount::Text END
- ORDER BY 1 DESC;
+ ORDER BY 1, 2 DESC;
 ```
 
 A usage count of:
@@ -1693,10 +1719,10 @@ A usage count of:
 * 2,3: occasional caching;
 * >3: suitable target for shared_buffer;
 
-I you wanted to cache everything with a *usagecount* of 2 you would need to add the >3, 3 and 2 figures together!
+If you wanted to cache everything with a *usagecount* of 2 you would need to add the >3, 3 and 2 figures together!
 
 ```
- usagecount | ideal_shared_buffers
+ usagecount | ideal_shared_buffers UPDATE
 ------------+----------------------
  >3         | 240 MB
   3         | 28 MB
@@ -1705,40 +1731,79 @@ I you wanted to cache everything with a *usagecount* of 2 you would need to add 
   0         | 188 MB
 (5 rows)
 ``` 
+This should give a reasonable starting performance on an OLTP system.
 
-You will need to run this many times under different loads to determine a suitable value. In this case a 1GB cache appears to fine for the geospatial workload. Note however that
-the *shared_buffers* are 100% used. 
-
-ADD CACHE MISSES!
+You will need to run this many times under different loads to determine a suitable value. In this case a 
+1GB cache appears to fine for the geospatial workload. Note however thatthe *shared_buffers* are 100% used. 
 
 ```SQL
 WITH all_tables AS (
 	SELECT *
 		 FROM (
-			SELECT  'ALL'::text as table_name, 
-					SUM( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) as from_disk, 
-					SUM( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) as from_cache    
+			SELECT 'All'::Text AS schema_name, 'ALL'::text AS table_name, 
+				   'N/A'::Text AS toast_table, 'N/A'::Text AS primary_table,
+				   SUM( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) AS from_disk, 
+				   SUM( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) AS from_cache,
+				   (SELECT pg_size_pretty(COUNT(*) * 8192) AS buffered
+						  FROM pg_buffercache b, pg_database d
+						 WHERE b.reldatabase = d.oid 
+						   AND d.datname = current_database()) AS buffered	   
               FROM pg_statio_all_tables  --> change to pg_statio_USER_tables if you want to check only user tables (excluding postgres's own tables)
 		 ) a
-		WHERE   (from_disk + from_cache) > 0 -- discard tables without hits
+		WHERE (from_disk + from_cache) > 0 -- discard tables without hits
 ), tables AS (
-	SELECT  *
+	SELECT a.schemaname AS schema_name, a.relname AS table_name, 
+	       c2.relname AS toast_table, c3.relname AS primary_table,
+	       a.from_disk, a.from_cache,   
+           pg_size_pretty(COUNT(b.relfilenode) * 8192) AS buffered
 		FROM (
-			SELECT  relname as table_name, 
-					( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) as from_disk, 
-					( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) as from_cache    
-			 FROM pg_statio_all_tables --> change to pg_statio_USER_tables if you want to check only user tables (excluding postgres's own tables)
-		) a
-		WHERE   (from_disk + from_cache) > 0 -- discard tables without hits
+			SELECT c.*, s.schemaname, s.from_disk, s.from_cache
+			  FROM (
+				SELECT relid, schemaname,
+						( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) AS from_disk, 
+						( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) AS from_cache    
+				 FROM pg_statio_all_tables --> change to pg_statio_USER_tables if you want to check only user tables (excluding postgres's own tables)
+			) s, pg_class c WHERE c.oid = s.relid
+		 ) a
+		LEFT OUTER JOIN pg_buffercache b ON b.relfilenode = a.relfilenode
+		LEFT OUTER JOIN pg_class c2 ON c2.oid = a.reltoastrelid
+		LEFT OUTER JOIN pg_class c3 ON c3.oid = 
+			CASE 
+				WHEN REPLACE(REPLACE(a.relname, 'pg_toast_', ''), '_index', '') ~ '^[0-9]+$' THEN 
+						REPLACE(REPLACE(a.relname, 'pg_toast_', ''), '_index', '')::oid 
+				ELSE NULL
+			END
+ WHERE ((a.relname NOT LIKE 'pg_%' OR a.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */) 
+   AND  (c3.relname IS NULL OR c3.relname NOT LIKE 'pg_%' 		/* Exclude data dictionary but not TOAST tables */)
+   AND  (a.from_disk + a.from_cache) > 0 -- discard tables without hits
+ GROUP BY a.schemaname, a.relname, 
+	       c2.relname, c3.relname,
+	       a.from_disk, a.from_cache
 )
-SELECT  table_name as "table name",
-    from_disk as "disk hits",
-    round((from_disk::numeric / (from_disk + from_cache)::numeric)*100.0,2) as "% disk hits",
-    round((from_cache::numeric / (from_disk + from_cache)::numeric)*100.0,2) as "% cache hits",
-    (from_disk + from_cache) as "total hits"
-  FROM    (SELECT * FROM all_tables UNION ALL SELECT * FROM tables) a
- ORDER   BY (case when table_name = 'ALL' then 0 else 1 end), from_disk desc;
+SELECT schema_name AS "schema name",
+       table_name AS "table name",
+	   toast_table AS "toast table",
+	   primary_table AS "primary table",
+       from_disk AS "disk hits",
+       round((from_disk::numeric / (from_disk + from_cache)::numeric)*100.0,2) AS "% disk hits",
+       round((from_cache::numeric / (from_disk + from_cache)::numeric)*100.0,2) AS "% cache hits",
+       (from_disk + from_cache) AS "total hits",
+	   buffered AS "buffered"
+  FROM (SELECT * FROM all_tables UNION ALL SELECT * FROM tables) a
+ ORDER BY (CASE WHEN table_name = 'ALL' THEN 0 ELSE 1 END), from_disk DESC;
 ```
+
+Where the columns are:
+
+ * schema name: Schema;                  
+ * table name: Table;          
+ * toast table: TOAST (The Oversized-Attribute Storage Technique) table;   
+ * primary table: primary table associated with TOAST (The Oversized-Attribute Storage Technique) table;              
+ * disk hits: Total hits on table from the disk;
+ * % disk hits: % of disk hits. Ideally this should be <10%;
+ * % cache hits: % of cache hits. Ideally this should be >90%; 
+ * total hits: Total hits on table from the *shared_buffers* cache and disk;  
+ * buffered: Amount of table cached in *shared_buffers*.
 
 ```
                  table name                  | disk hits | % disk hits | % cache hits | total hits
