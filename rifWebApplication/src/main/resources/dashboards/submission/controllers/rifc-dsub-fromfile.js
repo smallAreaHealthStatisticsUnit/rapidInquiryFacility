@@ -77,7 +77,7 @@ angular.module("RIF")
                     }
                     //has a non-empty object been uploaded?
                     if (angular.isUndefined(rifJob) || rifJob === null) {
-                        return "Not a valid or recognised RIF job";
+                        return "Not a valid or recognized RIF job";
                     }
 
                     //JSON headers
@@ -91,22 +91,70 @@ angular.module("RIF")
                         thisHeaders.push(rifJob[i]);
                     }
 
-                    //Expected headers present for RIF study
-                    var expectedHeaders = ['submitted_by', 'job_submission_date', 'project', studyType, 
-						'calculation_methods', 'rif_output_options'];
-                    if (thisHeaders.length < expectedHeaders.length) {
-                        return "Not a recognised RIF job, not all expected headers (" + thisHeaders.length + 
-							"/" + expectedHeaders.length + ") found";
-                    } else {
-                        for (var i = 0; i < rifJob.length; i++) {
-                            if (thisHeaders[i] !== expectedHeaders[i]) {
-                                return "Expected header not found " + expectedHeaders[i];
-                            }
-                        }
-                    }
+                    //Expected headers present for RIF study; boolean is mandatory
+                    var expectedHeaders = {
+						submitted_by: true,
+						job_submission_date: true, 
+						project: true, 
+						calculation_methods: true, 
+						rif_output_options: true, 
+						study_selection: false
+					};
+					expectedHeaders[studyType]=true;
+					
+					// Check for missing
+					var headerMissingCount = 0;
+					var missingHeaders = undefined;
+					for (var header in expectedHeaders) {
+                        if (!rifJob[header]) {
+							if (!expectedHeaders[header]) { // Not mandatory
+								$scope.showWarning(header + " non mandatory header is missing"); 
+							}
+							else if (!missingHeaders) {
+								headerMissingCount++;
+								missingHeaders = header;
+							}
+							else {
+								headerMissingCount++;
+								missingHeaders+=", " + header;
+							}
+						}
+					}
+					if (headerMissingCount > 0) {
+						$scope.consoleDebug("[rifc-dsub-fromfile.js] Not a recognized RIF job, " +
+							headerMissingCount + " expected header(s) not found: " + missingHeaders + 
+							"; rifJob: " + JSON.stringify(rifJob, null, 2) 
+							);
+						return "Not a recognized RIF job, " +
+							headerMissingCount + " expected header(s) not found: " + missingHeaders;
+					}
+					
+					// Check for extra
+					var headerExtraCount = 0;
+					var extraHeaders = undefined;
+					for (var header in rifJob) {
+                        if (!expectedHeaders[header]) {
+							if (!missingHeaders) {
+								headerExtraCount++;
+								extraHeaders = header;
+							}
+							else {
+								headerExtraCount++;
+								extraHeaders+=", " + header;
+							}
+						}
+					}
+					if (headerMissingCount > 0) {
+						$scope.consoleDebug("[rifc-dsub-fromfile.js] Not a recognized RIF job, " +
+							headerExtraCount + " extra header(s) found: " + extraHeaders + 
+							"; rifJob: " + JSON.stringify(rifJob, null, 2) 
+							);
+						return "Not a recognized RIF job, " +
+							headerExtraCount + " extra header(s) found: " + extraHeaders;
+					}
+
 					if (rifJob[studyType] == undefined) {
 						$scope.consoleDebug("[rifc-dsub-fromfile.js] No " + studyType + " object found." + 
-//							"; thisHeaders: " + JSON.stringify(thisHeaders) +
 							"; rifJob: " + JSON.stringify(rifJob, null, 2) 
 							);
 						
@@ -436,6 +484,19 @@ angular.module("RIF")
                     }
                 }
 
+                function uploadStudySelection() {
+					try {	
+						if (rifJob.study_selection) {
+							//get possible StudySelection
+							return true;
+						} else {
+							return true; // Optional for backward compatibility
+						}	
+                    } catch (e) {
+                        return "Could not upload and check study selection: " + (e.message||"(no message)");
+                    }
+                }
+				
                 /*
                  * All tests passed so commit changes to states
                  */
@@ -536,6 +597,8 @@ angular.module("RIF")
                         var p8 = d8.promise;
                         var d9 = $q.defer();
                         var p9 = d9.promise;
+                        var d10 = $q.defer();
+                        var p10 = d10.promise;
 						
                         //check initial file structure
                         d1.resolve(uploadCheckStructure());
@@ -589,8 +652,15 @@ angular.module("RIF")
 								p9.then(function (value) {
 									return value;
 								}, fromFileError);
-								                        //resolve all the promises
-								$q.all([p2, p3, p4, p5, p6, p7, p8, p9]).then(function (result) {
+								
+								//check studySelection
+								d10.resolve(uploadStudySelection());
+								p10.then(function (value) {
+									return value;
+								}, fromFileError);
+								
+								//resolve all the promises
+								$q.all([p2, p3, p4, p5, p6, p7, p8, p9, p10]).then(function (result) {
 									var bPass = true;
 									var errorCount=0;
 									for (var i = 0; i < result.length; i++) {
