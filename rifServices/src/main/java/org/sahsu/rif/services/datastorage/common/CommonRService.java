@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
+import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.CalculationMethod;
 
@@ -14,9 +15,8 @@ public abstract class CommonRService implements RService {
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 		
 	private String odbcDataSourceName;
-	private String userID;
-	private String password;
-	
+	User user;
+
 	private List<Parameter> parameters;
 
 	public CommonRService() {
@@ -36,9 +36,8 @@ public abstract class CommonRService implements RService {
 
 	@Override
 	public void setUser(final String userID, final String password) {
-		
-		this.userID = userID;
-		this.password = password;
+
+		user = User.newInstance(userID, password);
 	}
 	
 	@Override
@@ -68,15 +67,15 @@ public abstract class CommonRService implements RService {
 	}
 	
 	//Fetch parameters array list
-	@Override
-	public List<Parameter> getParameterArray() {
-	
-		addParameter("odbcDataSource", odbcDataSourceName);
-		addParameter("userID", userID);
-		addParameter("password", password);
-		
-		return(parameters);
-	}
+	// @Override
+	// public List<Parameter> getParameterArray() {
+	//
+	// 	addParameter("odbcDataSource", odbcDataSourceName);
+	// 	addParameter("userID", userID);
+	// 	addParameter("password", password);
+	//
+	// 	return(parameters);
+	// }
 	
 	// Source R script
 	@Override

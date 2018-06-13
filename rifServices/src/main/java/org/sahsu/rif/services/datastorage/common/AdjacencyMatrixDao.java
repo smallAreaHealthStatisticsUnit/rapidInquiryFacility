@@ -4,30 +4,40 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.concepts.AdjacencyMatrix;
 import org.sahsu.rif.services.datastorage.ms.SqlServerAdjacencyMatrixDao;
 import org.sahsu.rif.services.datastorage.pg.PostgresAdjacencyMatrixDao;
+import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
 public interface AdjacencyMatrixDao {
 
-	static AdjacencyMatrixDao getInstance(DatabaseType type, DataSource dataSource) throws
-	                                                                      RIFServiceException {
+	static AdjacencyMatrixDao getInstance(RIFServiceStartupOptions options)
+			throws RIFServiceException {
 
-		switch (type) {
+		switch (options.getRifDatabaseType()) {
 
 			case SQL_SERVER:
-				return new SqlServerAdjacencyMatrixDao(dataSource);
+				return new SqlServerAdjacencyMatrixDao(options);
 			case POSTGRESQL:
-				return new PostgresAdjacencyMatrixDao(dataSource);
+				return new PostgresAdjacencyMatrixDao(options);
 			case UNKNOWN:
 			default:
 				throw new RIFServiceException(
-						"Unknown database type %s in AdjacencyMatrixDao", type);
+						"Unknown database type %s in AdjacencyMatrixDao",
+						options.getRifDatabaseType());
 		}
-
 	}
 
-	AdjacencyMatrix getByStudyId(String studyId) throws SQLException;
+	/**
+	 * Returns an {@link AdjacencyMatrix} given a study ID.
+	 * @param studyId the study
+	 * @return the adjacency matrix
+	 * @throws SQLException for database problems
+	 * @throws RIFServiceException for general problems
+	 */
+	AdjacencyMatrix getByStudyId(final User user, final String studyId)
+			throws SQLException, RIFServiceException;
 }

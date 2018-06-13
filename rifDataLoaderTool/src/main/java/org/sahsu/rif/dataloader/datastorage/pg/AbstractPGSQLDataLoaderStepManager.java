@@ -29,7 +29,7 @@ import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.datastorage.QueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLDeleteTableQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLExportTableToCSVQueryFormatter;
@@ -212,8 +212,8 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 		String secondTableName
 			= secondTablePrefix.getTableName(coreTableName);
 		
-		SQLGeneralQueryFormatter queryFormatter 
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter
+			= new GeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "WITH");
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(" firstTableCount AS");
@@ -531,8 +531,8 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 		final String primaryKeyFieldPhrase)
 		throws RIFServiceException {
 		
-		SQLGeneralQueryFormatter queryFormatter
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter
+			= new GeneralQueryFormatter();
 		PreparedStatement statement = null;		
 		try {
 			queryFormatter.addQueryPhrase("ALTER TABLE ");
@@ -700,7 +700,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 		final String destinationTableName) 
 		throws RIFServiceException {
 			
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		PreparedStatement statement = null;
 		try {
 			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
@@ -742,7 +742,7 @@ abstract class AbstractPGSQLDataLoaderStepManager {
 		final String destinationTableName) 
 		throws RIFServiceException {
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		PreparedStatement statement = null;
 		try {
 			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");

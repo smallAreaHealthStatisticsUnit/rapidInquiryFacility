@@ -9,7 +9,7 @@ import org.sahsu.rif.dataloader.concepts.RIFDataType;
 import org.sahsu.rif.dataloader.concepts.RIFDataTypeFactory;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLCreatePrimaryKeyQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLDeleteTableQueryFormatter;
 
@@ -154,7 +154,7 @@ public final class MSSQLCastingUtility {
 		String castingTableName
 			= RIFTemporaryTablePrefixes.CLEAN_CASTING.getTableName(coreDataSetName);
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 		
 		String queryCommentLine1
@@ -192,8 +192,8 @@ public final class MSSQLCastingUtility {
 		 * FROM
 		 *    ...
 		 */
-		SQLGeneralQueryFormatter createCastingCTASQueryFormatter
-			= new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter createCastingCTASQueryFormatter
+			= new GeneralQueryFormatter();
 		createCastingCTASStatement(
 			createCastingCTASQueryFormatter,
 			cleanValidationTableName,
@@ -215,7 +215,7 @@ public final class MSSQLCastingUtility {
 
 	
 	private void createCastingCTASStatement(
-		final SQLGeneralQueryFormatter queryFormatter,
+		final GeneralQueryFormatter queryFormatter,
 		final String cleanValidationTableName,
 		final String castingTableName,
 		final DataSetConfiguration dataSetConfiguration) {
@@ -252,7 +252,7 @@ public final class MSSQLCastingUtility {
 	
 
 	private void addCastingQueryFragment(
-		final SQLGeneralQueryFormatter queryFormatter,
+		final GeneralQueryFormatter queryFormatter,
 		final int baseIndentationLevel,
 		final DataSetFieldConfiguration dataSetFieldConfiguration) {
 		

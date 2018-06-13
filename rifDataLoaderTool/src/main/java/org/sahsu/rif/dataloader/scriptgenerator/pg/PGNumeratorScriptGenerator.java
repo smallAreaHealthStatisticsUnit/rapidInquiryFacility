@@ -9,7 +9,7 @@ import org.sahsu.rif.dataloader.concepts.Geography;
 import org.sahsu.rif.dataloader.concepts.GeographyMetaData;
 import org.sahsu.rif.dataloader.concepts.HealthTheme;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLCreateTableQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLInsertQueryFormatter;
 
@@ -193,7 +193,7 @@ public class PGNumeratorScriptGenerator
 		final StringBuilder denominatorEntry,
 		final DataSetConfiguration dataSet) {
 
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_tables (");
 		queryFormatter.addQueryLine(1, "theme,");
 		queryFormatter.addQueryLine(1, "table_name,");
@@ -289,7 +289,7 @@ public class PGNumeratorScriptGenerator
 		final StringBuilder numeratorEntry,
 		final DataSetConfiguration numerator) {
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 		
 		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_outcome_groups(");
@@ -314,7 +314,7 @@ public class PGNumeratorScriptGenerator
 		String publishedNumeratorTableName
 			= numerator.getPublishedTableName();
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_table_outcomes (");
 		queryFormatter.addQueryLine(1, "outcome_group_name,");
 		queryFormatter.addQueryLine(1, "numer_tab,");

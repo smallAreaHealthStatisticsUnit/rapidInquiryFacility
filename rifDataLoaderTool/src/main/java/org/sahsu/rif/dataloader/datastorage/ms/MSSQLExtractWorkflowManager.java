@@ -14,7 +14,7 @@ import org.sahsu.rif.dataloader.system.RIFDataLoaderToolError;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
 import org.sahsu.rif.generic.concepts.RIFResultTable;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLCreateTableQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLDeleteTableQueryFormatter;
@@ -258,8 +258,8 @@ final class MSSQLExtractWorkflowManager
 			
 			PreparedStatement bulkInsert = null;
 			
-			SQLGeneralQueryFormatter queryFormatter
-				= new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter
+				= new GeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "BULK INSERT ");
 			queryFormatter.addQueryPhrase(destinationTableName);
 			queryFormatter.addQueryPhrase(" FROM '");
@@ -319,7 +319,7 @@ final class MSSQLExtractWorkflowManager
 		
 		PreparedStatement statement = null;
 		try {
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");//KLG_SCHEMA
 			queryFormatter.addQueryPhrase(targetExtractTable);
 			queryFormatter.addQueryPhrase(" ADD data_set_id INTEGER DEFAULT ");
@@ -372,7 +372,7 @@ final class MSSQLExtractWorkflowManager
 			 * #POSSIBLE_PORTING_ISSUE
 			 * Do PostgreSQL and SQL Server provide support for BIGSERIAL? - int IDENTITY?
 			 */				
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");//KLG_SCHEMA
 			queryFormatter.addQueryPhrase(targetExtractTable);
 			queryFormatter.addQueryPhrase(" ADD row_number int IDENTITY(1,1) NOT NULL");

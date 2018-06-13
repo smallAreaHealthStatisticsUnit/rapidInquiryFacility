@@ -42,7 +42,7 @@ import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.concepts.Sex;
@@ -414,7 +414,7 @@ public class RifGeospatialOutputs {
 			final String studyID,
 			final String areaTableName)
 			throws Exception {
-		SQLGeneralQueryFormatter geolevelQueryFormatter = new SQLGeneralQueryFormatter();	
+		GeneralQueryFormatter geolevelQueryFormatter = new GeneralQueryFormatter();
 		geolevelQueryFormatter.addQueryLine(0, "WITH a AS (");
 		geolevelQueryFormatter.addQueryLine(1, "SELECT b.geolevel_id,");
 		geolevelQueryFormatter.addQueryLine(1, "       CASE WHEN b.geolevel_id > 2 THEN 2 ELSE null END AS bg_geolevel_id,");
@@ -652,7 +652,7 @@ public class RifGeospatialOutputs {
 		CoordinateReferenceSystem databaseCRS=DefaultGeographicCRS.WGS84; // 4326
 		ReferencedEnvelope dbEnvelope = rifCoordinateReferenceSystem.getDefaultReferencedEnvelope(
 			rif40GeographiesCRS); // Default is the geographical extent of rif40GeographiesCRS
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "WITH c AS (");
 		if (databaseType == DatabaseType.POSTGRESQL) { 
 			queryFormatter.addQueryLine(1, "SELECT ST_Envelope(ST_Union(ST_Envelope(b.geom))) AS envelope");			
@@ -797,7 +797,7 @@ public class RifGeospatialOutputs {
 
 		DefaultFeatureCollection backgroundAreasFeatureCollection=null;
 	
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();	
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "SELECT b.wkt, b.areaid AS area_id, b.zoomlevel, c.areaname");	
 		queryFormatter.addQueryLine(0, "  FROM "  + schemaName + "." + tileTableName.toLowerCase() + " b");												
 		queryFormatter.addQueryLine(2, "LEFT OUTER JOIN rif_data.lookup_" + geolevelName.toLowerCase() + 
@@ -1022,7 +1022,7 @@ public class RifGeospatialOutputs {
 		ReferencedEnvelope envelope=getMapReferencedEnvelope(connection, schemaName, areaTableName,tileTableName, 
 			geolevel, zoomLevel, studyID, rif40GeographiesCRS, srid);
 			
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "WITH a AS (");
 		queryFormatter.addQueryLine(0, "	SELECT *");
 		queryFormatter.addQueryLine(0, "	  FROM rif40." + areaTableName);

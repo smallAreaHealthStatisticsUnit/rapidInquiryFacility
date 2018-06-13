@@ -33,7 +33,7 @@ import java.util.zip.ZipOutputStream;
 import org.json.JSONObject;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.fileformats.XMLCommentInjector;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -825,7 +825,7 @@ public class RifZipFile {
 		int minSex=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "min_sex"));
 		int maxSex=Integer.parseInt(manager.getColumnFromResultSet(rif40ExtraxctMaxMinYear, "max_sex"));
 				
-		SQLGeneralQueryFormatter investigationsQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter investigationsQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		
 		investigationsQueryFormatter.addQueryLine(0, "SELECT inv_id, inv_name, inv_description");
@@ -1122,7 +1122,7 @@ public class RifZipFile {
 			final Connection connection,
 			final String extractTable)
 			throws Exception {
-		SQLGeneralQueryFormatter extractTableQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter extractTableQueryFormatter = new GeneralQueryFormatter();
 		
 		extractTableQueryFormatter.addQueryLine(0, "SELECT MIN(year) AS min_year, MAX(year) AS max_year,");
 		extractTableQueryFormatter.addQueryLine(0, "       MIN(sex) AS min_sex, MAX(sex) AS max_sex");
@@ -1139,7 +1139,7 @@ public class RifZipFile {
 			final Connection connection,
 			final String studyID)
 			throws Exception {
-		SQLGeneralQueryFormatter rif40StudiesQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rif40StudiesQueryFormatter = new GeneralQueryFormatter();
 		
 		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT extract_table, map_table, denom_tab,");
 		rif40StudiesQueryFormatter.addQueryLine(0, "       study_name, description, year_start, year_stop");
@@ -1167,7 +1167,7 @@ public class RifZipFile {
 			final Connection connection,
 			final String studyID)
 			throws Exception {
-		SQLGeneralQueryFormatter rif40StudiesQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rif40StudiesQueryFormatter = new GeneralQueryFormatter();
 		
 		rif40StudiesQueryFormatter.addQueryLine(0, "SELECT inv_id, inv_name, inv_description,");
 		rif40StudiesQueryFormatter.addQueryLine(0, "       genders, numer_tab,");
@@ -1200,7 +1200,7 @@ public class RifZipFile {
 			final Locale locale,
 			final String url)
 			throws Exception {
-		SQLGeneralQueryFormatter studyAndComparisonReportQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter studyAndComparisonReportQueryFormatter = new GeneralQueryFormatter();
 		
 		ResultSet resultSet = null;
 		
@@ -1272,7 +1272,7 @@ public class RifZipFile {
 	private String getTableComment(Connection connection, String schemaName, String tableName,
 		String defaultComment)
 			throws Exception {
-		SQLGeneralQueryFormatter tableCommentQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter tableCommentQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		if (databaseType == DatabaseType.POSTGRESQL) {
 			tableCommentQueryFormatter.addQueryLine(0, // Postgres
@@ -1344,7 +1344,7 @@ public class RifZipFile {
 		String tableName="rif40_inv_conditions";	
 		String tableComment=getTableComment(connection, "rif40", tableName, null);
 		
-		SQLGeneralQueryFormatter invConditionsQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter invConditionsQueryFormatter = new GeneralQueryFormatter();
 				
 		invConditionsQueryFormatter.addQueryLine(0, "SELECT inv_id,numer_tab,min_condition,max_condition,");
 		invConditionsQueryFormatter.addQueryLine(0, "       outcome_group_name,condition");
@@ -1560,7 +1560,7 @@ public class RifZipFile {
      */	
 	private String getOutcomeType(Connection connection, String outcome_group_name) 
 					throws Exception {
-		SQLGeneralQueryFormatter rifOutcomeGroupsQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rifOutcomeGroupsQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		
 		if (outcome_group_name == null) {
@@ -1638,7 +1638,7 @@ public class RifZipFile {
 		else if (tableHeader.equals("Studies")) {
 			valueLavel="Study";
 		}
-		SQLGeneralQueryFormatter htmlReportQueryFormatter = new SQLGeneralQueryFormatter();	
+		GeneralQueryFormatter htmlReportQueryFormatter = new GeneralQueryFormatter();
 		if (commonTableExpression != null) {
 			htmlReportQueryFormatter.addQueryLine(0, commonTableExpression);
 		}
@@ -1701,7 +1701,7 @@ public class RifZipFile {
 		else if (tableHeader.equals("Studies")) {
 			valueLavel="Study";
 		}
-		SQLGeneralQueryFormatter htmlReportQueryFormatter = new SQLGeneralQueryFormatter();	
+		GeneralQueryFormatter htmlReportQueryFormatter = new GeneralQueryFormatter();
 		htmlReportQueryFormatter.createQueryFromFile(queryFileName, queryArgs, databaseType);
 		
 		executeHTmlReport(htmlFileText, connection, htmlReportQueryFormatter, expectedRows,
@@ -1711,7 +1711,7 @@ public class RifZipFile {
 	private void executeHTmlReport(
 			final StringBuilder htmlFileText,
 			Connection connection, 
-			SQLGeneralQueryFormatter htmlReportQueryFormatter,
+			GeneralQueryFormatter htmlReportQueryFormatter,
 			final String expectedRows,
 			final boolean rotate,
 			String studyID,
@@ -2155,7 +2155,7 @@ public class RifZipFile {
 					throws Exception {
 						
 		//get study_state
-		SQLGeneralQueryFormatter studyStatusQueryFormatter = new SQLGeneralQueryFormatter();	
+		GeneralQueryFormatter studyStatusQueryFormatter = new GeneralQueryFormatter();
 		studyStatusQueryFormatter.addQueryLine(0, "SELECT a.study_state");
 		studyStatusQueryFormatter.addQueryLine(0, "FROM rif40.rif40_studies a");
 		studyStatusQueryFormatter.addQueryLine(0, "WHERE a.study_id = ?");

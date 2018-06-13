@@ -11,7 +11,7 @@ import org.sahsu.rif.dataloader.concepts.RIFDataTypeFactory;
 import org.sahsu.rif.dataloader.concepts.ValidationRule;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLCreatePrimaryKeyQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLDeleteTableQueryFormatter;
 
@@ -137,7 +137,7 @@ public class MSSQLDataTypeValidationUtility {
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 		
 		//add comments to the SQL query
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 		
 		String queryCommentLine1
@@ -167,8 +167,8 @@ public class MSSQLDataTypeValidationUtility {
 		 * FROM
 		 *    ...
 		 */
-		SQLGeneralQueryFormatter createValidationCTASQueryFormatter
-			= new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter createValidationCTASQueryFormatter
+			= new GeneralQueryFormatter();
 		createValidationCTASStatement(
 			createValidationCTASQueryFormatter,
 			cleanSearchReplaceTableName,
@@ -189,7 +189,7 @@ public class MSSQLDataTypeValidationUtility {
 	}
 	
 	private void createValidationCTASStatement(
-		final SQLGeneralQueryFormatter queryFormatter,
+		final GeneralQueryFormatter queryFormatter,
 		final String cleanSearchReplaceTableName,
 		final String cleanValidationTableName,
 		final DataSetConfiguration dataSetConfiguration) {
@@ -225,7 +225,7 @@ public class MSSQLDataTypeValidationUtility {
 	
 	private void addDataSetFieldValidationFragment(
 		final int baseIndentationLevel,
-		final SQLGeneralQueryFormatter queryFormatter,
+		final GeneralQueryFormatter queryFormatter,
 		final DataSetFieldConfiguration dataSetFieldConfiguration) {
 			
 		String loadFieldName

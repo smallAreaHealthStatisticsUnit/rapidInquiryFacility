@@ -15,7 +15,7 @@ import org.sahsu.rif.dataloader.concepts.DataLoaderToolSettings;
 import org.sahsu.rif.dataloader.concepts.DatabaseConnectionsConfiguration;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolError;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLCreateDatabaseQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLDropDatabaseQueryFormatter;
@@ -151,7 +151,7 @@ public class PGSQLDatabaseSetupUtility {
 		final String password)
 		throws RIFServiceException {
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "SELECT 1 ");
 		queryFormatter.addQueryLine(0, "FROM pg_database ");
 		queryFormatter.addQueryLine(0, "WHERE lower(datname)=lower(?)");

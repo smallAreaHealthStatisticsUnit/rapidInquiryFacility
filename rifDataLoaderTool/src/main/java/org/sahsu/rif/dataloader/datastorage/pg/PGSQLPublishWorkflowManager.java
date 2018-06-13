@@ -23,7 +23,7 @@ import org.sahsu.rif.dataloader.concepts.WorkflowState;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolError;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -132,7 +132,7 @@ final class PGSQLPublishWorkflowManager
 				publishTableName);
 		
 			//Create the first part of the query used to create a converted table
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
 			queryFormatter.addQueryPhrase(publishTableName);
 			queryFormatter.addQueryPhrase(" AS");
@@ -313,8 +313,8 @@ final class PGSQLPublishWorkflowManager
 		throws SQLException,
 		RIFServiceException {
 
-		SQLGeneralQueryFormatter queryFormatter
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter
+			= new GeneralQueryFormatter();
 		
 		//@TODO: fill in this query
 			

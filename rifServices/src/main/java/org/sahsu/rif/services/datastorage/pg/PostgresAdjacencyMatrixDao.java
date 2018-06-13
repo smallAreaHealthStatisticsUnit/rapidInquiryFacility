@@ -1,39 +1,32 @@
 package org.sahsu.rif.services.datastorage.pg;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
-import javax.sql.DataSource;
-
+import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.FunctionCallerQueryFormatter;
+import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.concepts.AdjacencyMatrix;
-import org.sahsu.rif.services.datastorage.common.AdjacencyMatrixDao;
+import org.sahsu.rif.services.datastorage.common.AbstractAdjacencyMatrixDao;
+import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
-public class PostgresAdjacencyMatrixDao implements AdjacencyMatrixDao {
+public class PostgresAdjacencyMatrixDao extends AbstractAdjacencyMatrixDao {
 
-	private final DataSource dataSource;
+	public PostgresAdjacencyMatrixDao(
+			final RIFServiceStartupOptions rifServiceStartupOptions) {
 
-	public PostgresAdjacencyMatrixDao(final DataSource dataSource) {
-
-		this.dataSource = dataSource;
+		super(rifServiceStartupOptions);
 	}
 
 	@Override
-	public AdjacencyMatrix getByStudyId(final String studyId) throws SQLException {
+	public AdjacencyMatrix getByStudyId(final User user, final String studyId)
+			throws SQLException, RIFServiceException {
 
-		Connection connection = dataSource.getConnection();
 		FunctionCallerQueryFormatter formatter = new FunctionCallerQueryFormatter();
 		formatter.setFunctionName("rif40_GetAdjacencyMatrix");
 		formatter.setDatabaseSchemaName("rif40_xml_pkg");
 		formatter.setNumberOfFunctionParameters(1);
 
-
-		/*
-		  sql <- paste("SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(", studyID, ")")
-    AdjRowset=doSQLQuery(sql)
-    numberOfRows <- nrow(AdjRowset)
-		 */
-
-		return null;
+		return getAdjacencyMatrix(user, studyId, formatter);
 	}
+
 }

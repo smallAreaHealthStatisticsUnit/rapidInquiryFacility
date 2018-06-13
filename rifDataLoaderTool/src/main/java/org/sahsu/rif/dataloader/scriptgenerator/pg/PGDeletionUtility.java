@@ -9,7 +9,7 @@ import org.sahsu.rif.dataloader.concepts.DataSetFieldConfiguration;
 import org.sahsu.rif.dataloader.concepts.Geography;
 import org.sahsu.rif.dataloader.concepts.HealthTheme;
 import org.sahsu.rif.generic.datastorage.DeleteRowsQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLDeleteTableQueryFormatter;
 
 /**
@@ -214,7 +214,7 @@ public class PGDeletionUtility {
 				= numerator.getGeography();
 			String geographyName = geography.getName();
 			
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 			queryFormatter.addQueryLine(0, "DO LANGUAGE plpgsql $$");
 			queryFormatter.addQueryLine(0, "DECLARE");
 			queryFormatter.addQueryLine(1, "c1 CURSOR FOR");

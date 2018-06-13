@@ -11,7 +11,7 @@ import java.util.Hashtable;
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.datastorage.CountTableRowsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -274,7 +274,7 @@ public class SmoothedResultManager extends BaseSQLManager {
 			final String studyID)
 			throws RIFServiceException {
 
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 
 		queryFormatter.addQueryLine(1, "SELECT");
 		queryFormatter.addQueryLine(2, "a.username, a.study_name, a.description, a.study_date, a.geography, "
@@ -354,7 +354,7 @@ public class SmoothedResultManager extends BaseSQLManager {
 			throws RIFServiceException {
 
 		//Count the number of terms
-		SQLGeneralQueryFormatter countTableRowsQueryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter countTableRowsQueryFormatter = new GeneralQueryFormatter();
 		countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
 		countTableRowsQueryFormatter.addQueryLine(1, "COUNT(min_condition) AS total");
 		countTableRowsQueryFormatter.addQueryLine(0, "FROM");
@@ -428,14 +428,14 @@ public class SmoothedResultManager extends BaseSQLManager {
 		}
 
 		//count total rows in table
-		SQLGeneralQueryFormatter countTableRowsQueryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter countTableRowsQueryFormatter = new GeneralQueryFormatter();
 		countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
 		countTableRowsQueryFormatter.addQueryLine(1, "COUNT(area_id) AS total");
 		countTableRowsQueryFormatter.addQueryLine(0, "FROM");
 		countTableRowsQueryFormatter.addQueryLine(1, tableName);
 
 		//get requested subset
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "SELECT * FROM");
 		queryFormatter.addQueryLine(1, "(select row_number() over(ORDER BY area_id ASC) as row_number, * ");
 		queryFormatter.addQueryLine(1, "from " + tableName + ") a ");
@@ -621,7 +621,7 @@ public class SmoothedResultManager extends BaseSQLManager {
 		 * }
 		 */
 
-		SQLGeneralQueryFormatter countTableRowsQueryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter countTableRowsQueryFormatter = new GeneralQueryFormatter();
 		//otherwise, if it's both, don't filter by any sex value
 		countTableRowsQueryFormatter.addQueryLine(0, "SELECT");
 		countTableRowsQueryFormatter.addQueryLine(1, "COUNT(DISTINCT area_id) AS total");
@@ -635,7 +635,7 @@ public class SmoothedResultManager extends BaseSQLManager {
 
 		//Aggregate population totals for each area based on sex.  If sex is 'BOTH', aggregate male and female
 		//totals together.
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.addQueryLine(0, "WITH population_per_area AS ");
 		queryFormatter.addQueryLine(1, "(SELECT");
 		queryFormatter.addQueryLine(2, "area_id,");
@@ -853,7 +853,7 @@ public class SmoothedResultManager extends BaseSQLManager {
 	}
 
 	private void addSelectSmoothedFieldEntry(
-			final SQLGeneralQueryFormatter queryFormatter,
+			final GeneralQueryFormatter queryFormatter,
 			final int indentationLevel,
 			final String tableName,
 			final String columnName,
@@ -932,7 +932,7 @@ public class SmoothedResultManager extends BaseSQLManager {
 		getPyramidResultsCounter.setTableName(extractTableName);
 
 
-		SQLGeneralQueryFormatter getPopulationPyramidData = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter getPopulationPyramidData = new GeneralQueryFormatter();
 		getPopulationPyramidData.addQueryLine(0, "WITH males AS");
 		getPopulationPyramidData.addQueryLine(1, "(SELECT");
 		getPopulationPyramidData.addQueryLine(2, "age_group,");

@@ -22,6 +22,7 @@ import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.generic.util.RIFMemoryManager;
 import org.sahsu.rif.services.concepts.AbstractCovariate;
 import org.sahsu.rif.services.concepts.AbstractStudy;
+import org.sahsu.rif.services.concepts.AdjacencyMatrix;
 import org.sahsu.rif.services.concepts.Investigation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
@@ -163,28 +164,28 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 				// Set connection details and parameters
 				StringBuilder logMsg = new StringBuilder();
-				for (Parameter parameter : getParameterArray()) {
-					String name = parameter.getName();
-					String value = parameter.getValue();
-
-					switch (name) {
-						case "password":
-							// Hide password
-							logMsg.append(name).append("=XXXXXXXX").append(lineSeparator);
-							rengine.assign(name, value);
-							break;
-						case "covariate_name":
-							logMsg.append("names.adj.1=").append(value).append(lineSeparator);
-							rengine.assign("names.adj.1", value);
-							logMsg.append("adj.1=").append(getRAdjust(value)).append(lineSeparator);
-							rengine.assign("adj.1", getRAdjust(value));
-							break;
-						default:
-							logMsg.append(name).append("=").append(value).append(lineSeparator);
-							rengine.assign(name, value);
-							break;
-					}
-				}
+				// for (Parameter parameter : getParameterArray()) {
+				// 	String name = parameter.getName();
+				// 	String value = parameter.getValue();
+				//
+				// 	switch (name) {
+				// 		case "password":
+				// 			// Hide password
+				// 			logMsg.append(name).append("=XXXXXXXX").append(lineSeparator);
+				// 			rengine.assign(name, value);
+				// 			break;
+				// 		case "covariate_name":
+				// 			logMsg.append("names.adj.1=").append(value).append(lineSeparator);
+				// 			rengine.assign("names.adj.1", value);
+				// 			logMsg.append("adj.1=").append(getRAdjust(value)).append(lineSeparator);
+				// 			rengine.assign("adj.1", getRAdjust(value));
+				// 			break;
+				// 		default:
+				// 			logMsg.append(name).append("=").append(value).append(lineSeparator);
+				// 			rengine.assign(name, value);
+				// 			break;
+				// 	}
+				// }
 
 				rengine.assign("working_dir", rifStartupOptions.getExtractDirectory());
 				
@@ -192,11 +193,19 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 				rifScriptPath.append(rifStartupOptions.getClassesDirectory());
 				rifScriptPath.append(File.separator);
-				
+
+				AdjacencyMatrix adjacencyMatrix = AdjacencyMatrixDao.getInstance(rifStartupOptions)
+						                                  .getByStudyId(user, studyID);
+
+
 				adjCovSmoothJri.append(rifScriptPath);
 				adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
 				rifOdbc.append(rifScriptPath);
 				rifOdbc.append("RIF_odbc.R");
+
+
+
+
 				performSmoothingActivity.append(rifScriptPath);
 				performSmoothingActivity.append("performSmoothingActivity.R");
 

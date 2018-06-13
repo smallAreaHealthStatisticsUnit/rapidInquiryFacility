@@ -10,7 +10,7 @@ import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.DeleteRowsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -106,7 +106,7 @@ public final class CommonStudyStateManager extends BaseSQLManager implements Stu
 		String statusTableName = deriveStatusTableName(user.getUserID());
 		try {
 
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 			queryFormatter.addQueryLine(0, "WITH ordered_updates AS ");
 			queryFormatter.addQueryLine(1, "(SELECT ");		
 			queryFormatter.addQueryLine(2, "study_id,");
@@ -271,7 +271,7 @@ public final class CommonStudyStateManager extends BaseSQLManager implements Stu
 		 */
 		String statusTableName = deriveStatusTableName(user.getUserID());
 				
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		if (traceMessage == null) {
 			queryFormatter.addQueryLine(0, "INSERT INTO " + statusTableName);
 			queryFormatter.addQueryLine(1, " (study_id, study_state, ith_update, message) ");
@@ -409,7 +409,7 @@ public final class CommonStudyStateManager extends BaseSQLManager implements Stu
 				= deriveStatusTableName(
 					userID);
 			
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 			queryFormatter.addQueryLine(0, "WITH ordered_updates AS ");
 			queryFormatter.addQueryLine(1, "(SELECT ");		
 			queryFormatter.addQueryLine(2, "study_id,");
@@ -564,7 +564,7 @@ public final class CommonStudyStateManager extends BaseSQLManager implements Stu
 			throws SQLException, 
 			RIFServiceException {
 			
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 			queryFormatter.addQueryLine(0, "WITH ordered_updates AS ");
 			queryFormatter.addQueryLine(1, "(SELECT ");
 			queryFormatter.addQueryLine(2, "study_id,");

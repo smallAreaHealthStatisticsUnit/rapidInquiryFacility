@@ -6,7 +6,7 @@ import org.sahsu.rif.dataloader.concepts.DataSetConfiguration;
 import org.sahsu.rif.dataloader.concepts.DataSetConfigurationUtility;
 import org.sahsu.rif.dataloader.concepts.DataSetFieldConfiguration;
 import org.sahsu.rif.dataloader.concepts.RIFSchemaArea;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLSchemaCommentQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 
@@ -185,7 +185,7 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 			
 		String indexName = tableName.toUpperCase() + "_" + fieldName.toUpperCase();
 			
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "CREATE INDEX ");
 		queryFormatter.addQueryPhrase(indexName);
 		queryFormatter.addQueryPhrase(" ON rif_data.");
@@ -206,7 +206,7 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 		
 		String publishedTableName
 			= dataSetConfiguration.getPublishedTableName().toUpperCase();
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "GRANT SELECT ON rif_data.");
 		queryFormatter.addQueryPhrase(publishedTableName);
 		queryFormatter.addQueryPhrase(" TO rif_user, rif_manager");
@@ -230,7 +230,7 @@ public abstract class MSAbstractDataLoadingScriptGenerator {
 		String publishedTableName
 			= dataSetConfiguration.getPublishedTableName().toUpperCase();
 
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addQueryPhrase(0, "ALTER TABLE rif_data.");
 		queryFormatter.addQueryPhrase(publishedTableName);

@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -85,7 +85,7 @@ public final class MapDataManager extends BaseSQLManager {
 			 *    level2='01.003' OR
 			 *    ...
 			 */
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 			queryFormatter.addQueryLine(0, "SELECT DISTINCT");
 			queryFormatter.addQueryPhrase(1, geoLevelToMapTableName);
 			queryFormatter.addQueryPhrase(".gid,");

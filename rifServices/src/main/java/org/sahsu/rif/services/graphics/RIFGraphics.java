@@ -39,7 +39,7 @@ import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.general.DefaultKeyedValues2DDataset;
 import org.jfree.data.general.KeyedValues2DDataset;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.Sex;
 import org.sahsu.rif.services.datastorage.common.SQLManager;
@@ -561,7 +561,7 @@ Could not write TIFF file because no WriteAdapter is availble
 		int year, boolean treeForm) 
 			throws Exception {
 				
-		SQLGeneralQueryFormatter extractTableQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter extractTableQueryFormatter = new GeneralQueryFormatter();
 		
 		ResultSet resultSet = null;
 		// Convert age_group to textual age group strings

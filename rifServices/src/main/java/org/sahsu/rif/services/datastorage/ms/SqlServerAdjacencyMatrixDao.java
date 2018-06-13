@@ -1,59 +1,101 @@
 package org.sahsu.rif.services.datastorage.ms;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import javax.sql.DataSource;
 
+import org.sahsu.rif.generic.concepts.User;
+import org.sahsu.rif.generic.datastorage.DatabaseType;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
+import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.concepts.AdjacencyMatrix;
-import org.sahsu.rif.services.datastorage.common.AdjacencyMatrixDao;
+import org.sahsu.rif.services.datastorage.common.AbstractAdjacencyMatrixDao;
+import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
-public class SqlServerAdjacencyMatrixDao implements AdjacencyMatrixDao {
+public class SqlServerAdjacencyMatrixDao extends AbstractAdjacencyMatrixDao {
 
-	private final DataSource dataSource;
+	public SqlServerAdjacencyMatrixDao(final RIFServiceStartupOptions rifServiceStartupOptions) {
 
-	public SqlServerAdjacencyMatrixDao(final DataSource dataSource) {
-
-		this.dataSource = dataSource;
+		super(rifServiceStartupOptions);
 	}
 
 	@Override
-	public AdjacencyMatrix getByStudyId(final String studyId) {
+	public AdjacencyMatrix getByStudyId(final User user, final String studyId)
+			throws SQLException, RIFServiceException {
 
-		/*
-		"SELECT b2.adjacencytable
-                 FROM [rif40].[rif40_studies] b1, [rif40].[rif40_geographies] b2
-                 WHERE b1.study_id  = ", studyID ,"
-                 AND b2.geography = b1.geography"
-		 */
+		String adjacencyTable = getAdjacencyTable(user, studyId,
+		                                          rifDatabaseProperties.getDatabaseType());
 
-		/*
-		sql <- paste("SELECT b2.adjacencytable
-                 FROM [rif40].[rif40_studies] b1, [rif40].[rif40_geographies] b2
-                 WHERE b1.study_id  = ", studyID ,"
-                 AND b2.geography = b1.geography");
-    adjacencyTableRes=doSQLQuery(sql)
-    numberOfRows <- nrow(adjacencyTableRes)
-    if (numberOfRows != 1) {
-      cat(paste("Expected 1 row; got: " + numberOfRows + "; SQL> ", sql, "\n"), sep="")
-      exitValue <<- 1
-    }
-    adjacencyTable <- tolower(adjacencyTableRes$adjacencytable[1])
-#    print(adjacencyTable);
-    sql <- paste("WITH b AS ( /* Tilemaker: has adjacency table *
-		SELECT b1.area_id, b3.geolevel_id
-		FROM [rif40].[rif40_study_areas] b1, [rif40].[rif40_studies] b2, [rif40].[rif40_geolevels] b3
-		WHERE b1.study_id  = ", studyID ,"
-		AND b1.study_id  = b2.study_id
-		AND b2.geography = b3.geography
-    )
-		SELECT c1.areaid AS area_id, c1.num_adjacencies, c1.adjacency_list
-		FROM [rif_data].[", adjacencyTable, "] c1, b
-		WHERE c1.geolevel_id   = b.geolevel_id
-		AND c1.areaid        = b.area_id
-		ORDER BY 1", sep = "")
-		AdjRowset=doSQLQuery(sql)
-		numberOfRows <- nrow(AdjRowset)
-		 */
+		return getAdjacencyMatrix(user, studyId,
+		                          createFormatterForAdjacencyMatrix(studyId, adjacencyTable));
+	}
 
+	private String getAdjacencyTable(final User user, final String studyId,
+			 final DatabaseType type) throws SQLException, RIFServiceException {
 
-		return null;
+		final String adjacencyTable;
+		SelectQueryFormatter formatter = SelectQueryFormatter.getInstance(type);
+		formatter.setDatabaseSchemaName("rif40");
+		formatter.addSelectField("adjacencytable");
+		formatter.addFromTable("rif40_studies");
+		formatter.addFromTable("rif40_geographies");
+		formatter.addWhereParameter("rif40_studies","study_id" );
+		formatter.addWhereJoinCondition(
+				"rif40_studies", "geography",
+				"rif40_geographies", "geography");
+
+		logSQLQuery("Get Adjacency Table", formatter);
+
+		Connection connection = assignPooledReadConnection(user);
+		try (PreparedStatement adjTableFormatter = SQLQueryUtility.createPreparedStatement(
+				                            connection, formatter.generateQuery())) {
+
+			adjTableFormatter.setString(1, studyId);
+			ResultSet resultSet = adjTableFormatter.executeQuery();
+			if (resultSet.next()) {
+				adjacencyTable = resultSet.getString(1);
+			} else {
+				throw new RIFServiceException("No rows returned for adjacency table");
+			}
+
+			// Also an error if there is more than one row.
+			if (resultSet.next()) {
+				throw new RIFServiceException("More than one row returned for adjacency table");
+			}
+		} finally {
+
+			reclaimPooledReadConnection(user, connection);
+		}
+
+		return adjacencyTable;
+	}
+
+	private GeneralQueryFormatter createFormatterForAdjacencyMatrix(
+			final String studyId, final String adjacencyTable) {
+
+		GeneralQueryFormatter formatter = new GeneralQueryFormatter();
+		formatter.setDatabaseSchemaName("rif40");
+		formatter.addQueryLine(0, "WITH b as (");
+		formatter.addQueryLine(1,"SELECT b1.area_id, b3.geolevel_id FROM ");
+		formatter.addQueryLine(2, "rif40_study_areas b1,");
+		formatter.addQueryLine(2, "rif40_studies b2,");
+		formatter.addQueryLine(2, "rif40_geolevels b3");
+		formatter.addQueryLine(1, "WHERE b1.study_id = " + studyId);
+		formatter.addQueryLine(1, "AND b1.study_id = b2.study_id");
+		formatter.addQueryLine(1, "AND b2.geography = b3.geography");
+		formatter.addQueryLine(0,")");
+		formatter.addQueryLine(0,
+		                       "SELECT c1.areaid AS area_id, c1.num_adjacencies, "
+		                       + "c1.adjacency_list");
+		formatter.addQueryLine(1, "FROM " + adjacencyTable + " c1, b");
+		formatter.addQueryLine(1, "WHERE c1.geolevel_id = b.geolevel_id");
+		formatter.addQueryLine(1, "AND c1.areaid = b.area_id");
+		formatter.addQueryLine(1, "ORDER BY area_id");
+		return formatter;
 	}
 }

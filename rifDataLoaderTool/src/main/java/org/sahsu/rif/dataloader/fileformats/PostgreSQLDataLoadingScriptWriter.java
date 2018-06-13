@@ -15,7 +15,7 @@ import org.sahsu.rif.dataloader.concepts.RIFSchemaArea;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
 import org.sahsu.rif.generic.datastorage.QueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLAddCommentQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLCreateIndexQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLCreateTableQueryFormatter;
@@ -272,8 +272,8 @@ public class PostgreSQLDataLoadingScriptWriter {
 		writeCommentSectionDivider(fileWriter);
 		
 		
-		SQLGeneralQueryFormatter addPrimaryKeysQueryFormatter
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter addPrimaryKeysQueryFormatter
+			= new GeneralQueryFormatter();
 		addPrimaryKeysQueryFormatter.setEndWithSemiColon(true);
 		addPrimaryKeysQueryFormatter.addQueryPhrase("ALTER TABLE ");
 		addPrimaryKeysQueryFormatter.addQueryPhrase(publishTableName);

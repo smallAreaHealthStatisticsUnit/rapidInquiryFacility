@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.InsertQueryFormatter;
 import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -119,7 +119,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		try {
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 			queryFormatter.addQueryLine(0, "SELECT");
 			queryFormatter.addQueryLine(
 					1,

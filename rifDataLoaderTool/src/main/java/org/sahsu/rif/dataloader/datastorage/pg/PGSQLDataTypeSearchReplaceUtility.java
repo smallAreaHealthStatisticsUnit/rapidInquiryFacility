@@ -10,7 +10,7 @@ import org.sahsu.rif.dataloader.concepts.FieldActionPolicy;
 import org.sahsu.rif.dataloader.concepts.RIFDataType;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLCreatePrimaryKeyQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLDeleteTableQueryFormatter;
 
@@ -138,7 +138,7 @@ public class PGSQLDataTypeSearchReplaceUtility {
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 		
 		//add comments to the SQL query
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage(
@@ -166,8 +166,8 @@ public class PGSQLDataTypeSearchReplaceUtility {
 		 * FROM
 		 *    ...
 		 */
-		SQLGeneralQueryFormatter createValidationCTASQueryFormatter
-			= new SQLGeneralQueryFormatter();	
+		GeneralQueryFormatter createValidationCTASQueryFormatter
+			= new GeneralQueryFormatter();
 		createValidationCTASQueryFormatter.setEndWithSemiColon(true);
 		createSearchReplaceCTASStatement(
 			createValidationCTASQueryFormatter,
@@ -189,7 +189,7 @@ public class PGSQLDataTypeSearchReplaceUtility {
 	}
 	
 	private void createSearchReplaceCTASStatement(
-		final SQLGeneralQueryFormatter queryFormatter,
+		final GeneralQueryFormatter queryFormatter,
 		final String loadTableName,
 		final String cleanSearchReplaceTableName,
 		final DataSetConfiguration dataSetConfiguration,
@@ -235,7 +235,7 @@ public class PGSQLDataTypeSearchReplaceUtility {
 	
 	private void addDataSetFieldCleaningFragment(
 		final int baseIndentationLevel,
-		final SQLGeneralQueryFormatter queryFormatter,
+		final GeneralQueryFormatter queryFormatter,
 		final DataSetFieldConfiguration dataSetFieldConfiguration) {
 			
 		String loadFieldName

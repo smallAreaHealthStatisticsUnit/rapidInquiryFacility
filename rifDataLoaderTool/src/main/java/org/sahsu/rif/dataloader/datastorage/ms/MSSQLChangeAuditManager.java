@@ -17,7 +17,7 @@ import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
 import org.sahsu.rif.generic.datastorage.DeleteRowsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLInsertQueryFormatter;
@@ -207,7 +207,7 @@ final public class MSSQLChangeAuditManager
 		 */
 
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		//queryFormatter.addQueryPhrase(0, "CREATE TABLE ");//KLG_SCHEMA
 		//queryFormatter.addQueryPhrase(auditValidationFailuresTable);
 		//queryFormatter.addQueryPhrase(" AS");		
@@ -326,7 +326,7 @@ final public class MSSQLChangeAuditManager
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 
 		String coreDataSetName = dataSetConfiguration.getName();
@@ -487,8 +487,8 @@ final public class MSSQLChangeAuditManager
 		String cleanSearchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 		
-		SQLGeneralQueryFormatter queryFormatter 
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter
+			= new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 		
 		for (int i = 0; i < numberOfAuditableChangeFields; i++) {
@@ -568,8 +568,8 @@ final public class MSSQLChangeAuditManager
 		String cleanSearchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 		
-		SQLGeneralQueryFormatter queryFormatter 
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter
+			= new GeneralQueryFormatter();
 		
 		for (int i = 0; i < numberOfAuditableChangeFields; i++) {
 			DataSetFieldConfiguration dataSetFieldConfiguration
@@ -786,8 +786,8 @@ final public class MSSQLChangeAuditManager
 		MSSQLInsertQueryFormatter addDataSetQueryFormatter
 			= new MSSQLInsertQueryFormatter();
 		
-		SQLGeneralQueryFormatter getIdentifierQueryFormatter
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter getIdentifierQueryFormatter
+			= new GeneralQueryFormatter();
 		
 		try {
 			//KLG_SCHEMA

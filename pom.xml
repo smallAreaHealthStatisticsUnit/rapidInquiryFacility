@@ -42,6 +42,7 @@
 		<imageio-ext-tiff.version>1.1.20</imageio-ext-tiff.version>
 		<gdal.version>2.2.0</gdal.version>
 		<mockito-core.version>2.16.0</mockito-core.version>
+		<lombok.version>1.18.0</lombok.version>
 
 	</properties>
 	
@@ -305,6 +306,12 @@
 				<artifactId>mockito-core</artifactId>
 				<version>${mockito-core.version}</version>
 				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>${lombok.version}</version>
 			</dependency>
 
 		</dependencies>

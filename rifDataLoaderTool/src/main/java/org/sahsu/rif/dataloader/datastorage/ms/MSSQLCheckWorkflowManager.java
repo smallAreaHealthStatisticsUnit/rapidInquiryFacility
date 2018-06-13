@@ -17,7 +17,7 @@ import org.sahsu.rif.dataloader.system.RIFDataLoaderToolError;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
 import org.sahsu.rif.generic.datastorage.QueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFGenericLibraryError;
@@ -206,8 +206,8 @@ final public class MSSQLCheckWorkflowManager
 			 * There may be issues with porting the way the WITH statement
 			 * is written?
 			 */	
-			SQLGeneralQueryFormatter queryFormatter 
-				= new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter
+				= new GeneralQueryFormatter();
 
 			queryFormatter.addPaddedQueryLine(0, "WITH duplicate_rows AS");
 			queryFormatter.addPaddedQueryLine(1, "(SELECT");
@@ -462,7 +462,7 @@ final public class MSSQLCheckWorkflowManager
 				= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
 		
 		
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		
 			queryFormatter.addPaddedQueryLine(0, "WITH");
 			queryFormatter.addQueryPhrase(1, "identifiers AS");
@@ -759,7 +759,7 @@ final public class MSSQLCheckWorkflowManager
 				= RIFTemporaryTablePrefixes.CHECK.getTableName(coreDataSetName);
 		
 		
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		
 			queryFormatter.addPaddedQueryLine(0, "WITH");
 			queryFormatter.addQueryPhrase(1, "identifiers AS");

@@ -10,7 +10,7 @@ import org.sahsu.rif.dataloader.concepts.DataSetConfiguration;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolError;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.generic.datastorage.DeleteRowsQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLInsertQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLRecordExistsQueryFormatter;
@@ -197,8 +197,8 @@ final public class PGSQLDataSetManager
 		PGSQLInsertQueryFormatter addDataSetQueryFormatter
 			= new PGSQLInsertQueryFormatter();		
 		
-		SQLGeneralQueryFormatter getIdentifierQueryFormatter
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter getIdentifierQueryFormatter
+			= new GeneralQueryFormatter();
 		
 		try {
 			addDataSetQueryFormatter.setIntoTable("data_set_configurations");

@@ -5,7 +5,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -41,7 +41,7 @@ public final class MSSQLGenerateResultsSubmissionStep implements GenerateResults
 		int rval=-1;
 
 		try {
-			SQLGeneralQueryFormatter generalQueryFormatter = new SQLGeneralQueryFormatter();		
+			GeneralQueryFormatter generalQueryFormatter = new GeneralQueryFormatter();
 			//EXECUTE @rval=rif40.rif40_run_study <study id> <debug: 0/1> <rval>
 			String stmt = "{call rif40.rif40_run_study(?, ?, ?)}";
 			generalQueryFormatter.addQueryLine(1, stmt);

@@ -18,7 +18,7 @@ import org.sahsu.rif.dataloader.system.RIFDataLoaderToolError;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
 import org.sahsu.rif.generic.concepts.RIFResultTable;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLCreateTableQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLDeleteTableQueryFormatter;
@@ -264,8 +264,8 @@ final class PGSQLExtractWorkflowManager
 			 * different syntax for importing CSV files than PostgreSQL.
 			 */				
 			//COPY t FROM STDIN
-			SQLGeneralQueryFormatter queryFormatter
-				= new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter
+				= new GeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "COPY ");
 			queryFormatter.addQueryPhrase(destinationTableName);
 			queryFormatter.addQueryPhrase(" FROM STDIN WITH DELIMITER ',' CSV HEADER");
@@ -297,7 +297,7 @@ final class PGSQLExtractWorkflowManager
 		
 		PreparedStatement statement = null;
 		try {
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
 			queryFormatter.addQueryPhrase(targetExtractTable);
 			queryFormatter.addQueryPhrase(" ADD COLUMN data_set_id INTEGER DEFAULT ");
@@ -350,7 +350,7 @@ final class PGSQLExtractWorkflowManager
 			 * #POSSIBLE_PORTING_ISSUE
 			 * Do PostgreSQL and SQL Server provide support for BIGSERIAL?
 			 */				
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "ALTER TABLE ");
 			queryFormatter.addQueryPhrase(targetExtractTable);
 			queryFormatter.addQueryPhrase(" ADD COLUMN row_number BIGSERIAL");

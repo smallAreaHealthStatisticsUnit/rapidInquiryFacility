@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 import org.sahsu.rif.dataloader.concepts.DataLoaderToolSettings;
 import org.sahsu.rif.dataloader.concepts.DatabaseConnectionsConfiguration;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLCreateDatabaseQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLDropDatabaseQueryFormatter;
@@ -327,7 +327,7 @@ public class MSSQLDatabaseSetupUtility {
 		throws Exception {
 		
 		PreparedStatement statement = null;
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		try {
 			queryFormatter.addQueryLine(0, "SELECT");

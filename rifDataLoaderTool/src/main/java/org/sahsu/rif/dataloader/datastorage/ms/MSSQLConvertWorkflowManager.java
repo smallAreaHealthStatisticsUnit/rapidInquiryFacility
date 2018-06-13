@@ -21,7 +21,7 @@ import org.sahsu.rif.dataloader.concepts.WorkflowValidator;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolError;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -157,7 +157,7 @@ final public class MSSQLConvertWorkflowManager
 				convertedTableName);
 			
 			//Create the first part of the query used to create a converted table
-			SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 			queryFormatter.addQueryPhrase(0, "SELECT");
 			queryFormatter.padAndFinishLine();
 			queryFormatter.addQueryLine(1, "data_set_id,");
@@ -230,7 +230,7 @@ final public class MSSQLConvertWorkflowManager
 	}
 
 	private void processFieldsWithoutConversions(
-		final SQLGeneralQueryFormatter queryFormatter,
+		final GeneralQueryFormatter queryFormatter,
 		final int indentationLevel,
 		final DataSetConfiguration dataSetConfiguration) {
 		
@@ -264,7 +264,7 @@ final public class MSSQLConvertWorkflowManager
 	 * to be combined.
 	 */
 	private void processFieldsWithConversions(
-		final SQLGeneralQueryFormatter queryFormatter,
+		final GeneralQueryFormatter queryFormatter,
 		final int indentationLevel,
 		final DataSetConfiguration dataSetConfiguration) 
 		throws RIFServiceException {
@@ -340,7 +340,7 @@ final public class MSSQLConvertWorkflowManager
 	}
 	
 	private void addConvertQueryFragment(
-		final SQLGeneralQueryFormatter queryFormatter,
+		final GeneralQueryFormatter queryFormatter,
 		final int baseIndentationLevel,
 		final DataSetFieldConfiguration dataSetFieldConfiguration) {
 	

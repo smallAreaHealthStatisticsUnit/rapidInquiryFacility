@@ -20,7 +20,7 @@ import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.FunctionCallerQueryFormatter;
 import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.datastorage.RIFDatabaseProperties;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -297,7 +297,7 @@ public class BaseSQLManager implements SQLManager {
 	public String getColumnComment(Connection connection, String schemaName, String tableName,
 			String columnName) throws Exception {
 		
-		SQLGeneralQueryFormatter columnCommentQueryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter columnCommentQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet;
 		if (databaseType == DatabaseType.POSTGRESQL) {
 			columnCommentQueryFormatter.addQueryLine(0, // Postgres

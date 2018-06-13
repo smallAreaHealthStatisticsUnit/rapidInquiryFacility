@@ -7,7 +7,7 @@ import org.sahsu.rif.dataloader.concepts.DataSetConfiguration;
 import org.sahsu.rif.dataloader.concepts.DataSetConfigurationUtility;
 import org.sahsu.rif.dataloader.concepts.DataSetFieldConfiguration;
 import org.sahsu.rif.dataloader.concepts.RIFSchemaArea;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLSchemaCommentQueryFormatter;
 
 /**
@@ -108,8 +108,8 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 		final ArrayList<String> fieldNames,
 		final String importFilePath) {
 		
-		SQLGeneralQueryFormatter queryFormatter
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter
+			= new GeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "\\copy ");
 		queryFormatter.addQueryPhrase(tableName);
 		queryFormatter.addQueryPhrase("(");
@@ -202,7 +202,7 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 			
 		String indexName = tableName.toUpperCase() + "_" + fieldName.toUpperCase();
 			
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(true);
 		queryFormatter.addQueryPhrase(0, "CREATE INDEX ");
 		queryFormatter.addQueryPhrase(indexName);
@@ -222,7 +222,7 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 		
 		String publishedTableName
 			= dataSetConfiguration.getPublishedTableName().toUpperCase();
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "GRANT SELECT ON rif_data.");
 		queryFormatter.addQueryPhrase(publishedTableName);
 		queryFormatter.addQueryPhrase(" TO rif_user, rif_manager");
@@ -242,7 +242,7 @@ public abstract class PGAbstractDataLoadingScriptGenerator {
 			= dataSetConfiguration.getPublishedTableName();
 		String primaryKeyName = this.getPrimaryKeyName(dataSetConfiguration);
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "ALTER TABLE rif_data.");
 		queryFormatter.addQueryPhrase(publishedTableName);
 		queryFormatter.addQueryPhrase(" ADD CONSTRAINT ");

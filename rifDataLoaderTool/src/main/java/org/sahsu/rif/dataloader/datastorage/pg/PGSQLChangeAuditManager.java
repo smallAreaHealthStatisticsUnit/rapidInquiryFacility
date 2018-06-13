@@ -16,7 +16,7 @@ import org.sahsu.rif.dataloader.system.RIFDataLoaderToolError;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
 import org.sahsu.rif.generic.datastorage.DeleteRowsQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLInsertQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLRecordExistsQueryFormatter;
@@ -201,7 +201,7 @@ final public class PGSQLChangeAuditManager
 		 */
 
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "CREATE TABLE ");
 		queryFormatter.addQueryPhrase(auditValidationFailuresTable);
 		queryFormatter.addQueryPhrase(" AS");		
@@ -308,7 +308,7 @@ final public class PGSQLChangeAuditManager
 		final DataSetConfiguration dataSetConfiguration)
 		throws RIFServiceException {
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 
 		String coreDataSetName = dataSetConfiguration.getName();
@@ -455,8 +455,8 @@ final public class PGSQLChangeAuditManager
 		String cleanSearchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 		
-		SQLGeneralQueryFormatter queryFormatter 
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter
+			= new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 		
 		for (int i = 0; i < numberOfAuditableChangeFields; i++) {
@@ -537,8 +537,8 @@ final public class PGSQLChangeAuditManager
 		String cleanSearchReplaceTableName
 			= RIFTemporaryTablePrefixes.CLEAN_SEARCH_REPLACE.getTableName(coreDataSetName);
 		
-		SQLGeneralQueryFormatter queryFormatter 
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter
+			= new GeneralQueryFormatter();
 		
 		for (int i = 0; i < numberOfAuditableChangeFields; i++) {
 			DataSetFieldConfiguration dataSetFieldConfiguration
@@ -750,8 +750,8 @@ final public class PGSQLChangeAuditManager
 		PGSQLInsertQueryFormatter addDataSetQueryFormatter
 			= new PGSQLInsertQueryFormatter();		
 		
-		SQLGeneralQueryFormatter getIdentifierQueryFormatter
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter getIdentifierQueryFormatter
+			= new GeneralQueryFormatter();
 		
 		try {
 			addDataSetQueryFormatter.setIntoTable("data_set_configurations");

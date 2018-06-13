@@ -28,7 +28,7 @@ import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.datastorage.QueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLDeleteTableQueryFormatter;
@@ -226,8 +226,8 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		String secondTableName
 			= secondTablePrefix.getTableName(coreTableName);
 		
-		SQLGeneralQueryFormatter queryFormatter
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter
+			= new GeneralQueryFormatter();
 		queryFormatter.addQueryPhrase(0, "WITH");
 		queryFormatter.padAndFinishLine();
 		queryFormatter.addQueryPhrase(" firstTableCount AS");
@@ -552,8 +552,8 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		final String primaryKeyFieldPhrase)
 		throws RIFServiceException {
 		
-		SQLGeneralQueryFormatter queryFormatter
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter
+			= new GeneralQueryFormatter();
 		PreparedStatement statement = null;		
 		try {
 			queryFormatter.addQueryPhrase("ALTER TABLE ");//KLG_SCHEMA
@@ -849,7 +849,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		final String destinationTableName) 
 		throws RIFServiceException {
 			
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		PreparedStatement statement = null;
 		try {
 			queryFormatter.addQueryPhrase(0, "exec sp_rename ");//KLG_SCHEMA
@@ -891,7 +891,7 @@ abstract class AbstractMSSQLDataLoaderStepManager {
 		final String destinationTableName) 
 		throws RIFServiceException {
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		PreparedStatement statement = null;
 		try {
 			queryFormatter.addQueryPhrase("SELECT * INTO ");//KLG_SCHEMA

@@ -8,7 +8,7 @@ import org.sahsu.rif.dataloader.concepts.DataSetFieldConfiguration;
 import org.sahsu.rif.dataloader.concepts.Geography;
 import org.sahsu.rif.dataloader.concepts.RIFDataType;
 import org.sahsu.rif.dataloader.concepts.RIFDataTypeFactory;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLCreateTableQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 
@@ -238,7 +238,7 @@ public class MSCovariateScriptGenerator
 			= DataSetConfigurationUtility.getRequiredGeographicalResolutionField(covariate);
 		String publishedTableName
 			= covariate.getPublishedTableName();
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addQueryLine(0, "UPDATE t_rif40_geolevels ");
 		queryFormatter.addQueryPhrase("SET covariate_table = '");
@@ -291,7 +291,7 @@ public class MSCovariateScriptGenerator
 		String covariateFieldName
 			= covariateFieldConfiguration.getCleanFieldName().toUpperCase();		
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_covariates (");
 		queryFormatter.addQueryLine(1, "geography,");
@@ -346,7 +346,7 @@ public class MSCovariateScriptGenerator
 			= resolutionFieldConfiguration.getConvertFieldName().toUpperCase();
 		
 		String indexName = publishedTableName + "_pk";
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addQueryPhrase(0, "CREATE UNIQUE INDEX ");
 		queryFormatter.addQueryPhrase(indexName);

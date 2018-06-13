@@ -26,7 +26,7 @@ public interface RService {
 	void setCalculationMethod(CalculationMethod calculationMethod);
 
 	//Fetch parameters array list
-	List<Parameter> getParameterArray();
+	// List<Parameter> getParameterArray();
 
 	/*
 	 * Logging R console output to RIFLogger

@@ -12,7 +12,7 @@ import org.sahsu.rif.dataloader.concepts.ValidationRule;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
 import org.sahsu.rif.generic.datastorage.DeleteRowsQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLDeleteTableQueryFormatter;
 
 /**
@@ -169,7 +169,7 @@ public final class MSCleaningStepQueryGenerator {
 		 *    load_my_table_2001;
 		 */
 				
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		String commentLine1
 			= RIFDataLoaderToolMessages
 					  .getMessage("queryComments.clean.searchReplaceQuery.comment1");
@@ -230,7 +230,7 @@ public final class MSCleaningStepQueryGenerator {
 	}
 
 	private void addSearchReplaceQueryFragment(
-		final SQLGeneralQueryFormatter queryFormatter,
+		final GeneralQueryFormatter queryFormatter,
 		final int baseIndentationLevel,
 		final DataSetFieldConfiguration dataSetFieldConfiguration) {
 
@@ -345,7 +345,7 @@ public final class MSCleaningStepQueryGenerator {
 		 *
 		 */
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.validationQuery.comment1");
 		queryFormatter.addCommentLine(queryCommentLine1);
@@ -396,7 +396,7 @@ public final class MSCleaningStepQueryGenerator {
 	}	
 	
 	private void addValidationQueryFragment(
-		final SQLGeneralQueryFormatter queryFormatter,
+		final GeneralQueryFormatter queryFormatter,
 		final int baseIndentationLevel,
 		final DataSetFieldConfiguration fieldConfiguration) {
 
@@ -647,7 +647,7 @@ public final class MSCleaningStepQueryGenerator {
 			= dataSetConfiguration.getFieldConfigurations();
 		int numberOfFieldConfigurations = fieldConfigurations.size();
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.addChangeAudits.comment1");		
@@ -799,7 +799,7 @@ public final class MSCleaningStepQueryGenerator {
 		
 		int numberOfFieldConfigurations = fieldConfigurations.size();
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.addErrorAudits.comment1");		
@@ -888,7 +888,7 @@ public final class MSCleaningStepQueryGenerator {
 		
 		int numberOfFieldConfigurations = fieldConfigurations.size();
 
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.addBlankAudits.comment1");		
 		queryFormatter.addCommentLine(queryCommentLine1);
@@ -1057,7 +1057,7 @@ public final class MSCleaningStepQueryGenerator {
 
 
 	private void addWhenCleaningRuleAppliesStatement(
-		final SQLGeneralQueryFormatter queryFormatter,
+		final GeneralQueryFormatter queryFormatter,
 		final int baseIndentationLevel,
 		final DataSetFieldConfiguration dataSetFieldConfiguration,
 		final CleaningRule cleaningRule) {
@@ -1149,7 +1149,7 @@ public final class MSCleaningStepQueryGenerator {
 	public String generateCastingTableQuery(
 		final DataSetConfiguration dataSetConfiguration) {
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 
 		String queryCommentLine1
 			= RIFDataLoaderToolMessages.getMessage("queryComments.clean.castQuery.comment1");
@@ -1221,7 +1221,7 @@ public final class MSCleaningStepQueryGenerator {
 	}
 
 	private void addCastingQueryFragment(
-		final SQLGeneralQueryFormatter queryFormatter,
+		final GeneralQueryFormatter queryFormatter,
 		final int baseIndentationLevel,
 		final DataSetFieldConfiguration dataSetFieldConfiguration) {
 		

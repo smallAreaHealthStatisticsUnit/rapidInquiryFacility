@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import org.sahsu.rif.dataloader.concepts.DataSetFieldConfiguration;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
 
@@ -220,8 +220,8 @@ public class PGSQLDatabaseSchemaInformationManager {
 		ResultSet resultSet = null;
 		PreparedStatement statement = null;
 		try {
-			SQLGeneralQueryFormatter queryFormatter 
-				= new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter
+				= new GeneralQueryFormatter();
 			queryFormatter.addQueryLine(0, "SELECT");
 			queryFormatter.addQueryLine(1, "pg_proc.proname AS function_name");
 			queryFormatter.addQueryLine(0, "FROM");

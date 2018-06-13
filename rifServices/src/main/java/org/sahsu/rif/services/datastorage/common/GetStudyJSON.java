@@ -30,7 +30,7 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.client.urlconnection.HTTPSProperties;
 
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.util.RIFLogger;
 
 public class GetStudyJSON {
@@ -92,7 +92,7 @@ public class GetStudyJSON {
 			}
 		}
 		
-		SQLGeneralQueryFormatter rifStudiesQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rifStudiesQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		ResultSetMetaData rsmd = null;
 		int columnCount = 0;
@@ -338,7 +338,7 @@ public class GetStudyJSON {
      */	
 	private String getGeographyDescription(String geographyName)
 					throws Exception {
-		SQLGeneralQueryFormatter rifGeographyQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rifGeographyQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		
 		rifGeographyQueryFormatter.addQueryLine(0, "SELECT description FROM rif40.rif40_geographies WHERE geography = ?");
@@ -378,7 +378,7 @@ public class GetStudyJSON {
 	private void addSqlLog(JSONObject additionalData) 
 					throws Exception {
 		JSONArray tableData = new JSONArray();
-		SQLGeneralQueryFormatter addSqlLogQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter addSqlLogQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		
 		addSqlLogQueryFormatter.addQueryLine(0, "SELECT statement_number, COUNT(line_number) AS lines"); 
@@ -445,7 +445,7 @@ public class GetStudyJSON {
 	private void addSQLLogLines(JSONObject additionalData, String statementNumber) 
 					throws Exception {
 		JSONArray tableData = new JSONArray();
-		SQLGeneralQueryFormatter addAdditionalTablesQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter addAdditionalTablesQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		
 		addAdditionalTablesQueryFormatter.addQueryLine(0, "SELECT * FROM rif40.rif40_study_sql_log"); 
@@ -508,7 +508,7 @@ public class GetStudyJSON {
 	private void addSQLLogSql(JSONObject additionalData, String statementNumber) 
 					throws Exception {
 		JSONArray tableData = new JSONArray();
-		SQLGeneralQueryFormatter addAdditionalTablesQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter addAdditionalTablesQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		
 		addAdditionalTablesQueryFormatter.addQueryLine(0, "SELECT * FROM rif40.rif40_study_sql"); 
@@ -571,7 +571,7 @@ public class GetStudyJSON {
 	private void addAdditionalTables(JSONObject additionalData, String tableName) 
 					throws Exception {
 		JSONArray tableData = new JSONArray();
-		SQLGeneralQueryFormatter addAdditionalTablesQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter addAdditionalTablesQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		
 		addAdditionalTablesQueryFormatter.addQueryLine(0, "SELECT * FROM rif40." + tableName.toLowerCase()); 
@@ -917,7 +917,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
      */	
 	private String getOutcomeType(String outcome_group_name) 
 					throws Exception {
-		SQLGeneralQueryFormatter rifOutcomeGroupsQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rifOutcomeGroupsQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		
 		rifOutcomeGroupsQueryFormatter.addQueryLine(0, 
@@ -959,7 +959,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
      */	
 	public JSONObject getStudyData(Connection connection, String studyID)
 					throws Exception {
-		SQLGeneralQueryFormatter rifStudiesQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rifStudiesQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		
 		rifStudiesQueryFormatter.addQueryLine(0, "SELECT username,extract_table,study_name,");
@@ -1021,7 +1021,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
      */	
 	public JSONObject getLookupTableName(Connection connection, String geolevelName, String geographyName)
 					throws Exception {
-		SQLGeneralQueryFormatter rifGeographyQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rifGeographyQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		
 		rifGeographyQueryFormatter.addQueryLine(0, "SELECT description,lookup_table,lookup_desc_column");
@@ -1082,7 +1082,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 					throws Exception {
 		JSONObject studyGeolevel = getLookupTableName(connection, studyGeolevelName, geographyName);
 		
-		SQLGeneralQueryFormatter rifStudyAreasQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rifStudyAreasQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		rifStudyAreasQueryFormatter.addQueryLine(0, "SELECT a.area_id, a.band_id, b." + 
 			studyGeolevel.getString("lookup_desc_column").toLowerCase() + " AS label, b.gid");		
@@ -1168,7 +1168,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 					throws Exception {
 		JSONObject comparisonGeolevel = getLookupTableName(connection, comparisonGeolevelName, geographyName);
 		
-		SQLGeneralQueryFormatter rifComparisonAreasQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rifComparisonAreasQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		rifComparisonAreasQueryFormatter.addQueryLine(0, "SELECT a.area_id, b." + 
 			comparisonGeolevel.getString("lookup_desc_column").toLowerCase() + " AS label, b.gid");			
@@ -1250,7 +1250,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
      */						
 	private void addHealthCodes(JSONObject healthCodes, String studyID, int invID)
 					throws Exception {
-		SQLGeneralQueryFormatter rifInvConditionsQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rifInvConditionsQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		rifInvConditionsQueryFormatter.addQueryLine(0, "SELECT min_condition,max_condition,predefined_group_name,");
 		rifInvConditionsQueryFormatter.addQueryLine(0, "       outcome_group_name,numer_tab,");
@@ -1356,7 +1356,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
      */			
 	private void addCovariates(JSONArray covariateArray, String studyID, int invID)
 					throws Exception {
-		SQLGeneralQueryFormatter rifInvCovariatesQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rifInvCovariatesQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		rifInvCovariatesQueryFormatter.addQueryLine(0, "SELECT covariate_name,min,max,geography,study_geolevel_name");
 		rifInvCovariatesQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_inv_covariates");
@@ -1424,7 +1424,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
      */		
 	private void addInvestigations(JSONArray investigation, String geographyName)
 					throws Exception {
-		SQLGeneralQueryFormatter rifInvestigationsQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rifInvestigationsQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		
 		rifInvestigationsQueryFormatter.addQueryLine(0, "SELECT inv_id,inv_name,year_start,year_stop,");
@@ -1579,7 +1579,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
      */	
 	private JSONObject addAgeSexGroup(int offset, String tableName) 
 					throws Exception {
-		SQLGeneralQueryFormatter ageSexGroupQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter ageSexGroupQueryFormatter = new GeneralQueryFormatter();
 		ageSexGroupQueryFormatter.addQueryLine(0, "SELECT a.offset AS id, a.low_age AS lower_limit, a.high_age AS upper_limit, a.fieldname AS name");
 		ageSexGroupQueryFormatter.addQueryLine(0, "  FROM rif40.rif40_age_groups a, rif40.rif40_tables b");
 		ageSexGroupQueryFormatter.addQueryLine(0, " WHERE a.offset       = ?");
@@ -1652,7 +1652,7 @@ java.lang.AbstractMethodError: javax.ws.rs.core.UriBuilder.uri(Ljava/lang/String
 						JSONObject numerator_denominator_pair, JSONObject health_theme, 
 						String geographyName)
 					throws Exception {
-		SQLGeneralQueryFormatter rifNumDenomQueryFormatter = new SQLGeneralQueryFormatter();		
+		GeneralQueryFormatter rifNumDenomQueryFormatter = new GeneralQueryFormatter();
 		ResultSet resultSet = null;
 		
 		rifNumDenomQueryFormatter.addQueryLine(0, "SELECT a.geography, a.numerator_table, a.numerator_description,");

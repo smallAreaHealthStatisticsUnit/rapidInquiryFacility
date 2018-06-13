@@ -13,7 +13,7 @@ import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.datastorage.DeleteRowsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.InsertQueryFormatter;
 import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLRecordExistsQueryFormatter;
@@ -203,8 +203,8 @@ final public class MSSQLDataSetManager
 		InsertQueryFormatter addDataSetQueryFormatter =
 				InsertQueryFormatter.getInstance(DatabaseType.SQL_SERVER);
 		
-		SQLGeneralQueryFormatter getIdentifierQueryFormatter
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter getIdentifierQueryFormatter
+			= new GeneralQueryFormatter();
 		//KLG_SCHEMA
 		//getIdentifierQueryFormatter.setDatabaseSchemaName("dbo");
 		

@@ -13,7 +13,7 @@ import org.sahsu.rif.dataloader.concepts.DatabaseConnectionsConfiguration;
 import org.sahsu.rif.dataloader.concepts.WorkflowState;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolError;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLCreateTableQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLDeleteTableQueryFormatter;
@@ -134,8 +134,8 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			 */				
 			connection
 				= DriverManager.getConnection(databaseURL, userID, password);
-			SQLGeneralQueryFormatter queryFormatter
-				= new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter queryFormatter
+				= new GeneralQueryFormatter();
 			queryFormatter.addQueryPhrase("DROP DATABASE IF EXISTS ");
 			queryFormatter.addQueryPhrase(dbParameters.getDatabaseName());
 			queryFormatter.addQueryPhrase(";");
@@ -290,7 +290,7 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			 * require porting in SQL Server
 			 */							
 			//Create a sequence that will auto-increment
-			SQLGeneralQueryFormatter createIDSequenceQueryFormatter = new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter createIDSequenceQueryFormatter = new GeneralQueryFormatter();
 			createIDSequenceQueryFormatter.addQueryPhrase(
 				0, 
 				"CREATE SEQUENCE data_set_sequence;");
@@ -331,8 +331,8 @@ public class PGSQLSampleRIFDatabaseCreationManager {
 			
 			//Ensure that the id field owns the sequence so that no other table could
 			//increment it
-			SQLGeneralQueryFormatter sequenceOwnershipQueryFormatter
-				= new SQLGeneralQueryFormatter();
+			GeneralQueryFormatter sequenceOwnershipQueryFormatter
+				= new GeneralQueryFormatter();
 			sequenceOwnershipQueryFormatter.addQueryPhrase(0, "ALTER SEQUENCE data_set_sequence ");
 			sequenceOwnershipQueryFormatter.addQueryPhrase("OWNED BY ");
 			sequenceOwnershipQueryFormatter.addQueryPhrase("data_set_configurations.id;");

@@ -21,7 +21,7 @@ import org.sahsu.rif.dataloader.fileformats.PostgreSQLDataLoadingScriptWriter;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolError;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -196,8 +196,8 @@ final class MSSQLPublishWorkflowManager
 		throws SQLException,
 		RIFServiceException {
 
-		SQLGeneralQueryFormatter queryFormatter
-			= new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter
+			= new GeneralQueryFormatter();
 		
 		//@TODO: fill in this query
 			

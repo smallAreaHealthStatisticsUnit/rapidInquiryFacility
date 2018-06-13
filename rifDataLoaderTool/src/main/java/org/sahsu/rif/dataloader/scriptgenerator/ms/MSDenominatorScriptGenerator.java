@@ -6,7 +6,7 @@ import org.sahsu.rif.dataloader.concepts.DataSetConfiguration;
 import org.sahsu.rif.dataloader.concepts.DataSetConfigurationUtility;
 import org.sahsu.rif.dataloader.concepts.DataSetFieldConfiguration;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
-import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
+import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLCreateTableQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 
@@ -186,7 +186,7 @@ public class MSDenominatorScriptGenerator
 		final StringBuilder denominatorEntry,
 		final DataSetConfiguration denominator) {
 		
-		SQLGeneralQueryFormatter queryFormatter = new SQLGeneralQueryFormatter();
+		GeneralQueryFormatter queryFormatter = new GeneralQueryFormatter();
 		queryFormatter.setEndWithSemiColon(false);
 		queryFormatter.addQueryLine(0, "INSERT INTO rif40.rif40_tables (");
 		queryFormatter.addQueryLine(1, "theme,");
