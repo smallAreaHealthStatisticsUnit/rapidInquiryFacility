@@ -1592,10 +1592,37 @@ The amount of memory given to Postgres should allow room for *tomcat* if install
 Tuning the buffer cache, see: [A Large Database Does Not Mean Large shared_buffers](https://www.keithf4.com/a-large-database-does-not-mean-large-shared_buffers/). Add the 
 ```pg_buffercache``` extension as the postgres user: ```CREATE EXTENSION pg_buffercache;```, then run the following query as *postgres*:
 
+When running these queries, please bear in mind that *shared_buffers* usage varies with the type of workload;
+data loading (especially geospatial) will generally hit a few large tables often; normal RIF usage which is 
+more OLTP like less so. There run these queries often under different loads.
+ 
+Firstly see how many buffers are in use by database:
+```SQL
+SELECT CASE
+			WHEN d.datname = current_database() THEN d.datname || ' (current)'
+			ELSE d.datname
+	   END AS database,
+	   ROUND(100.0 * COUNT(*) / ( SELECT setting FROM pg_settings WHERE name='shared_buffers')::integer,3) AS buffers_in_use_percent
+  FROM pg_buffercache b, pg_database d
+ WHERE b.reldatabase = d.oid
+ GROUP BY CASE
+			WHEN d.datname = current_database() THEN d.datname || ' (current)'
+			ELSE d.datname
+	   END
+ ORDER BY 1;
+  
+  buffers_in_use_percent UPDATE
+------------------------
+                100.000 
+```
+This is across all databases. 100% is not unusual, less than 100% probably means your *shared_buffers* are
+too large.
+
+Now see what is being used in the current database:
 ```SQL
 SELECT n.nspname AS schema, c.relname, c2.relname AS toast_table,
        c3.relname AS primary_table,
-       pg_size_pretty(COUNT(*) * 8192) as buffered,
+       pg_size_pretty(COUNT(*) * 8192) AS buffered,
        ROUND(100.0 * COUNT(*) / ( SELECT setting FROM pg_settings WHERE name='shared_buffers')::integer,3) AS buffers_percent,
        ROUND(100.0 * COUNT(*) * 8192 / pg_relation_size(c.oid),1) AS percent_of_relation,
 	   b.usagecount
@@ -1604,13 +1631,14 @@ SELECT n.nspname AS schema, c.relname, c2.relname AS toast_table,
 		INNER JOIN pg_database d ON (b.reldatabase = d.oid AND d.datname = current_database()) /* Restrict to current database */
 		INNER JOIN pg_namespace n ON n.oid = c.relnamespace
 		LEFT OUTER JOIN pg_class c2 ON c2.oid = c.reltoastrelid
-		LEFT OUTER JOIN pg_class c3 ON c3.oid = CASE 
-			WHEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '') ~ '^[0-9]+$' THEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '')::oid 
-			ELSE NULL
-	   END
- WHERE pg_relation_size(c.oid) > 0 AND 
-       ((c.relname NOT LIKE 'pg_%' OR c.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */) AND 
-       (c3.relname IS NULL OR c3.relname NOT LIKE 'pg_%' 			/* Exclude data dictionary but not TOAST tables */)
+		LEFT OUTER JOIN pg_class c3 ON c3.oid = 
+			CASE 
+				WHEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '') ~ '^[0-9]+$' THEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '')::oid 
+				ELSE NULL
+			END
+ WHERE pg_relation_size(c.oid) > 0 /* Exclude non table objects or zero sized objects */ 
+   AND ((c.relname NOT LIKE 'pg_%' OR c.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */) 
+   AND  (c3.relname IS NULL OR c3.relname NOT LIKE 'pg_%' 			/* Exclude data dictionary but not TOAST tables */)
  GROUP BY c.oid, n.nspname, c.relname, c2.relname, c3.relname, b.usagecount
  ORDER BY 5 DESC;
 ```
@@ -1658,22 +1686,31 @@ This gives the following output:
 (36 rows)
 ```
 
-Note the use of [TOAST](https://www.postgresql.org/docs/9.6/static/storage-toast.html) tsbles in Postgres. TOAST (The Oversized-Attribute Storage Technique) is used to store large field values,
+Note the use of [TOAST](https://www.postgresql.org/docs/9.6/static/storage-toast.html) tables in Postgres. 
+TOAST (The Oversized-Attribute Storage Technique) is used to store large field values,
 for instance the geometry databases on *cntry2011* as in this example.
 
-This this is is possible to determine an ideal value for *shared_buffers*:
+Now it is possible to determine an **ideal** value for *shared_buffers*:
 ```SQL
-SELECT CASE 
+SELECT CASE
+			WHEN d.datname = current_database() THEN d.datname || ' (current)'
+			ELSE d.datname
+	   END AS database,
+	   CASE 
 			WHEN usagecount >3 THEN '>3' 
 			ELSE ' '||usagecount::Text END AS usagecount,
 	   pg_size_pretty(count(*) * 8192) as ideal_shared_buffers
   FROM pg_class c
 		INNER JOIN pg_buffercache b ON b.relfilenode = c.relfilenode
-		INNER JOIN pg_database d ON (b.reldatabase = d.oid AND d.datname = current_database())
- GROUP BY CASE 
+		INNER JOIN pg_database d ON (b.reldatabase = d.oid)
+ GROUP BY CASE
+			WHEN d.datname = current_database() THEN d.datname || ' (current)'
+			ELSE d.datname
+	      END,
+	      CASE 
 			WHEN usagecount >3 THEN '>3' 
 			ELSE ' '||usagecount::Text END
- ORDER BY 1 DESC;
+ ORDER BY 1, 2 DESC;
 ```
 
 A usage count of:
@@ -1682,10 +1719,10 @@ A usage count of:
 * 2,3: occasional caching;
 * >3: suitable target for shared_buffer;
 
-I you wanted to cache everything with a *usagecount* of 2 you would need to add the >3, 3 and 2 figures together!
+If you wanted to cache everything with a *usagecount* of 2 you would need to add the >3, 3 and 2 figures together!
 
 ```
- usagecount | ideal_shared_buffers
+ usagecount | ideal_shared_buffers UPDATE
 ------------+----------------------
  >3         | 240 MB
   3         | 28 MB
@@ -1694,8 +1731,196 @@ I you wanted to cache everything with a *usagecount* of 2 you would need to add 
   0         | 188 MB
 (5 rows)
 ``` 
+This should give a reasonable starting performance on an OLTP system.
 
-You will need to run this many times under different loads to determine a suitable value. In this case a 1GB cache is fine for the geospatial workload.
+You will need to run this many times under different loads to determine a suitable value. In this case a 
+1GB cache appears to fine for the geospatial workload. Note however thatthe *shared_buffers* are 100% used. 
+
+```SQL
+WITH all_tables AS (
+	SELECT *
+		 FROM (
+			SELECT 'All'::Text AS schema_name, 'ALL'::text AS table_name, 
+				   'N/A'::Text AS toast_table, 'N/A'::Text AS primary_table,
+				   SUM( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) AS from_disk, 
+				   SUM( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) AS from_cache,
+				   (SELECT pg_size_pretty(COUNT(*) * 8192) AS buffered
+						  FROM pg_buffercache b, pg_database d
+						 WHERE b.reldatabase = d.oid 
+						   AND d.datname = current_database()) AS buffered	   
+              FROM pg_statio_all_tables  --> change to pg_statio_USER_tables if you want to check only user tables (excluding postgres's own tables)
+		 ) a
+		WHERE (from_disk + from_cache) > 0 -- discard tables without hits
+), tables AS (
+	SELECT a.schemaname AS schema_name, a.relname AS table_name, 
+	       c2.relname AS toast_table, c3.relname AS primary_table,
+	       a.from_disk, a.from_cache,   
+           pg_size_pretty(COUNT(b.relfilenode) * 8192) AS buffered
+		FROM (
+			SELECT c.*, s.schemaname, s.from_disk, s.from_cache
+			  FROM (
+				SELECT relid, schemaname,
+						( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) AS from_disk, 
+						( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) AS from_cache    
+				 FROM pg_statio_all_tables --> change to pg_statio_USER_tables if you want to check only user tables (excluding postgres's own tables)
+			) s, pg_class c WHERE c.oid = s.relid
+		 ) a
+		LEFT OUTER JOIN pg_buffercache b ON b.relfilenode = a.relfilenode
+		LEFT OUTER JOIN pg_class c2 ON c2.oid = a.reltoastrelid
+		LEFT OUTER JOIN pg_class c3 ON c3.oid = 
+			CASE 
+				WHEN REPLACE(REPLACE(a.relname, 'pg_toast_', ''), '_index', '') ~ '^[0-9]+$' THEN 
+						REPLACE(REPLACE(a.relname, 'pg_toast_', ''), '_index', '')::oid 
+				ELSE NULL
+			END
+ WHERE ((a.relname NOT LIKE 'pg_%' OR a.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */) 
+   AND  (c3.relname IS NULL OR c3.relname NOT LIKE 'pg_%' 		/* Exclude data dictionary but not TOAST tables */)
+   AND  (a.from_disk + a.from_cache) > 0 -- discard tables without hits
+ GROUP BY a.schemaname, a.relname, 
+	       c2.relname, c3.relname,
+	       a.from_disk, a.from_cache
+)
+SELECT schema_name AS "schema name",
+       table_name AS "table name",
+	   toast_table AS "toast table",
+	   primary_table AS "primary table",
+       from_disk AS "disk hits",
+       round((from_disk::numeric / (from_disk + from_cache)::numeric)*100.0,2) AS "% disk hits",
+       round((from_cache::numeric / (from_disk + from_cache)::numeric)*100.0,2) AS "% cache hits",
+       (from_disk + from_cache) AS "total hits",
+	   buffered AS "buffered"
+  FROM (SELECT * FROM all_tables UNION ALL SELECT * FROM tables) a
+ ORDER BY (CASE WHEN table_name = 'ALL' THEN 0 ELSE 1 END), from_disk DESC;
+```
+
+Where the columns are:
+
+ * schema name: Schema;                  
+ * table name: Table;          
+ * toast table: TOAST (The Oversized-Attribute Storage Technique) table;   
+ * primary table: primary table associated with TOAST (The Oversized-Attribute Storage Technique) table;              
+ * disk hits: Total hits on table from the disk;
+ * % disk hits: % of disk hits. Ideally this should be <10%;
+ * % cache hits: % of cache hits. Ideally this should be >90%; 
+ * total hits: Total hits on table from the *shared_buffers* cache and disk;  
+ * buffered: Amount of table cached in *shared_buffers*.
+
+```
+                 table name                  | disk hits | % disk hits | % cache hits | total hits
+---------------------------------------------+-----------+-------------+--------------+------------
+ ALL                                         |  36988384 |       11.36 |        88.64 |  325685108
+ coa2011                                     |  34504900 |       22.38 |        77.62 |  154167178
+ lsoa2011                                    |   1071762 |        1.54 |        98.46 |   69495436
+ pg_toast_1983440                            |    688786 |        3.37 |        96.63 |   20424031
+ pg_toast_3168696                            |    316933 |        2.48 |        97.52 |   12770489
+ msoa2011                                    |    117613 |        0.44 |        99.56 |   26905598
+ pg_toast_3436878                            |     77389 |        1.33 |        98.67 |    5803179
+ ladua2011                                   |     22833 |        0.88 |        99.12 |    2581687
+ gor2011                                     |     22773 |        1.20 |        98.80 |    1891500
+ pg_toast_3163099                            |     20965 |        2.83 |        97.17 |     740498
+ pg_toast_3163350                            |     20341 |        2.51 |        97.49 |     809052
+ t_tiles_usa_2014                            |     20243 |        1.95 |        98.05 |    1038179
+ pg_toast_796059                             |     19025 |        6.38 |        93.62 |     298395
+ hierarchy_ews2011                           |     15226 |        0.34 |        99.66 |    4430738
+ geometry_usa_2014_geolevel_id_3_zoomlevel_9 |      7218 |        3.06 |        96.94 |     236115
+ geometry_usa_2014_geolevel_id_3_zoomlevel_8 |      6177 |        3.23 |        96.77 |     191193
+ lookup_coa2011                              |      6006 |        0.70 |        99.30 |     861011
+ geometry_usa_2014_geolevel_id_3_zoomlevel_7 |      5127 |        3.37 |        96.63 |     152354
+ geometry_usa_2014_geolevel_id_3_zoomlevel_6 |      4199 |        3.29 |        96.71 |     127481
+ pg_toast_783771                             |      3844 |        3.21 |        96.79 |     119580
+ scntry2011                                  |      2917 |        2.22 |        97.78 |     131278
+ pg_toast_783761                             |      2768 |        3.13 |        96.87 |      88418
+ pg_toast_3515713                            |      2732 |        6.06 |        93.94 |      45053
+ cntry2011                                   |      2616 |        1.52 |        98.48 |     172669
+ pg_toast_1983352                            |      2387 |        3.95 |        96.05 |      60374
+ pg_toast_783751                             |      1952 |        3.00 |        97.00 |      65135
+ pg_proc                                     |      1742 |        1.56 |        98.44 |     111512
+ pg_statistic                                |      1700 |        6.84 |        93.16 |      24846
+ lookup_lsoa2011                             |      1449 |        1.12 |        98.88 |     129068
+ pg_toast_783741                             |      1422 |        2.78 |        97.22 |      51113
+ geometry_usa_2014_geolevel_id_2_zoomlevel_9 |      1356 |        3.48 |        96.52 |      38987
+ pg_toast_783731                             |      1324 |        4.88 |        95.12 |      27151
+ pg_toast_2619                               |      1179 |       10.38 |        89.62 |      11362
+ geometry_usa_2014_geolevel_id_2_zoomlevel_8 |      1042 |        3.47 |        96.53 |      30024
+ pg_toast_783721                             |      1013 |        4.90 |        95.10 |      20686
+ pg_attribute                                |      1011 |        0.70 |        99.30 |     144721
+ geometry_usa_2014_geolevel_id_2_zoomlevel_7 |       805 |        3.40 |        96.60 |      23657
+ pg_toast_783711                             |       776 |        4.80 |        95.20 |      16178
+ pg_class                                    |       700 |        0.00 |       100.00 |   14432677
+ pg_depend                                   |       695 |        1.96 |        98.04 |      35408
+ geometry_usa_2014_geolevel_id_2_zoomlevel_6 |       621 |        3.30 |        96.70 |      18800
+ pg_constraint                               |       592 |        2.51 |        97.49 |      23575
+ pg_toast_783701                             |       588 |        4.59 |        95.41 |      12804
+ lookup_msoa2011                             |       300 |        1.15 |        98.85 |      26001
+ pg_type                                     |       271 |        0.19 |        99.81 |     140097
+ pg_index                                    |       232 |        0.41 |        99.59 |      56729
+ pg_description                              |       220 |        2.68 |        97.32 |       8214
+ pg_operator                                 |       184 |        1.59 |        98.41 |      11588
+ geometry_usa_2014_geolevel_id_1_zoomlevel_9 |       158 |        5.00 |        95.00 |       3161
+ pg_rewrite                                  |       153 |       11.38 |        88.62 |       1344
+ pg_toast_783691                             |       151 |        6.40 |        93.60 |       2360
+ geometry_usa_2014_geolevel_id_1_zoomlevel_8 |       123 |        5.54 |        94.46 |       2221
+ pg_amop                                     |       120 |        1.50 |        98.50 |       7978
+ pg_toast_783681                             |       116 |        6.83 |        93.17 |       1698
+ pg_amproc                                   |        95 |        0.22 |        99.78 |      43528
+ geometry_usa_2014_geolevel_id_1_zoomlevel_7 |        92 |        5.67 |        94.33 |       1624
+ pg_shdepend                                 |        87 |        3.66 |        96.34 |       2377
+ pg_toast_783671                             |        87 |        6.91 |        93.09 |       1259
+ pg_opclass                                  |        76 |        0.17 |        99.83 |      43481
+ pg_namespace                                |        73 |        0.01 |        99.99 |    1020223
+ geometry_usa_2014_geolevel_id_1_zoomlevel_6 |        72 |        5.82 |        94.18 |       1238
+ pg_toast_2618                               |        69 |       15.00 |        85.00 |        460
+ lookup_cb_2014_us_county_500k               |        67 |        1.04 |        98.96 |       6415
+ pg_toast_783661                             |        67 |        7.02 |        92.98 |        954
+ pg_toast_1255                               |        66 |       13.81 |        86.19 |        478
+ hierarchy_usa_2014                          |        61 |        0.48 |        99.52 |      12602
+ adjacency_usa_2014                          |        58 |        0.91 |        99.09 |       6347
+ pg_trigger                                  |        55 |        1.63 |        98.37 |       3377
+ pg_database                                 |        48 |        0.00 |       100.00 |    3053378
+ spatial_ref_sys                             |        40 |        0.00 |       100.00 |    1518748
+ pg_cast                                     |        35 |        0.22 |        99.78 |      15959
+ pg_db_role_setting                          |        34 |        0.02 |        99.98 |     171610
+ pg_authid                                   |        33 |        0.00 |       100.00 |     744270
+ pg_enum                                     |        30 |        9.58 |        90.42 |        313
+ pg_language                                 |        30 |        5.19 |        94.81 |        578
+ pg_am                                       |        28 |        0.27 |        99.73 |      10231
+ pg_tablespace                               |        24 |        5.07 |        94.93 |        473
+ pg_attrdef                                  |        24 |        8.92 |        91.08 |        269
+ pg_extension                                |        23 |        9.27 |        90.73 |        248
+ pg_aggregate                                |        22 |        9.95 |        90.05 |        221
+ lookup_ladua2011                            |        19 |        2.14 |        97.86 |        889
+ pg_auth_members                             |        18 |        3.72 |        96.28 |        484
+ pg_inherits                                 |        17 |        6.61 |        93.39 |        257
+ pg_init_privs                               |        16 |        2.85 |        97.15 |        562
+ pg_conversion                               |        15 |       27.27 |        72.73 |         55
+ t_rif40_parameters                          |        12 |       17.91 |        82.09 |         67
+ pg_range                                    |        12 |        9.45 |        90.55 |        127
+ pg_default_acl                              |         8 |        7.27 |        92.73 |        110
+ t_rif40_geolevels                           |         8 |       10.26 |        89.74 |         78
+ pg_event_trigger                            |         8 |       27.59 |        72.41 |         29
+ lookup_cb_2014_us_state_500k                |         7 |       10.14 |        89.86 |         69
+ pg_collation                                |         7 |        4.64 |        95.36 |        151
+ lookup_cb_2014_us_nation_5m                 |         7 |       53.85 |        46.15 |         13
+ rif40_geographies                           |         6 |       17.14 |        82.86 |         35
+ pg_seclabel                                 |         6 |        0.88 |        99.12 |        679
+ geolevels_ews2011                           |         5 |        6.02 |        93.98 |         83
+ geography_ews2011                           |         5 |       16.13 |        83.87 |         31
+ lookup_scntry2011                           |         5 |       83.33 |        16.67 |          6
+ t_rif40_results                             |         4 |      100.00 |         0.00 |          4
+ lookup_gor2011                              |         4 |       15.38 |        84.62 |         26
+ lookup_cntry2011                            |         4 |       40.00 |        60.00 |         10
+ t_rif40_studies                             |         3 |       12.50 |        87.50 |         24
+ pg_transform                                |         3 |       37.50 |        62.50 |          8
+ pg_policy                                   |         2 |       11.11 |        88.89 |         18
+ pg_shseclabel                               |         2 |        9.09 |        90.91 |         22
+ tile_limits_usa_2014                        |         2 |       33.33 |        66.67 |          6
+ pg_shdescription                            |         2 |       50.00 |        50.00 |          4
+ rif40_covariates                            |         2 |       40.00 |        60.00 |          5
+ pg_largeobject_metadata                     |         2 |       33.33 |        66.67 |          6
+ t_rif40_inv_covariates                      |         1 |       25.00 |        75.00 |          4
+ pg_foreign_table                            |         1 |       25.00 |        75.00 |          4
+(111 rows)
+```
 
 ### 7.1.2 Query Tuning
 
