@@ -36,9 +36,11 @@
  */
 angular.module("RIF")
         .controller('ModalRunFileCtrl', ['$q', 'user', '$scope', '$uibModal',
-            'StudyAreaStateService', 'CompAreaStateService', 'SubmissionStateService', 'StatsStateService', 'ParameterStateService',
+            'StudyAreaStateService', 'CompAreaStateService', 'SubmissionStateService', 'StatsStateService', 
+			'ParameterStateService', 'SelectStateService',
             function ($q, user, $scope, $uibModal,
-                    StudyAreaStateService, CompAreaStateService, SubmissionStateService, StatsStateService, ParameterStateService) {
+                    StudyAreaStateService, CompAreaStateService, SubmissionStateService, StatsStateService, 
+					ParameterStateService, SelectStateService) {
 
                 // Magic number for the always-included first method (see rifp-dsub-stats.html).
                 const FIXED_NO_SMOOTHING_METHOD_POSITION  = -1;
@@ -486,8 +488,10 @@ angular.module("RIF")
 
                 function uploadStudySelection() {
 					try {	
+						SelectStateService.getState().studyType=studyType;
 						if (rifJob.study_selection) {
-							//get possible StudySelection
+							//set StudySelection
+							SelectStateService.setStudySelection(rifJob.study_selection, studyType);
 							return true;
 						} else {
 							return true; // Optional for backward compatibility
@@ -554,6 +558,37 @@ angular.module("RIF")
 							}
 							SubmissionStateService.getState().statsTree = true;
 						}	
+						
+						if (SelectStateService.getState().studySelection.comparisonSelectAt == undefined) {
+							SelectStateService.getState().studySelection.comparisonSelectAt = 
+								CompAreaStateService.getState().selectAt;
+						}
+						if (SelectStateService.getState().studySelection.studySelectAt === undefined) {
+							SelectStateService.getState().studySelection.studySelectAt = 
+								StudyAreaStateService.getState().selectAt;
+						}					
+//						if (SelectStateService.getState().studySelection.studySelectedAreas === undefined  &&
+//						    studyType === "disease_mapping_study") {
+//							SelectStateService.getState().studySelection.studySelectedAreas = 
+//								StudyAreaStateService.getState().studySelectedAreas;
+//						}
+//						if (SelectStateService.getState().studySelection.comparisonSelectedAreas === undefined) {
+//							SelectStateService.getState().studySelection.comparisonSelectedAreas = 
+//								StudyAreaStateService.getState().comparisonSelectedAreas;
+//						}
+						
+						try {
+							if (SelectStateService.getState().studySelection) {
+								var r=SelectStateService.verifyStudySelection();
+								$scope.consoleDebug("[rifc-dsub-fromfile.js] verifyStudySelection() OK: " +
+									JSON.stringify(r));
+							}
+						}
+						catch (e) {
+							fromFileErrorCount++;
+							return "Unable to verify study selection: " + e.message;
+						}							
+
                     } catch (e) {
                         return "Could not set study state: " + (e.message||"(no message)");
                     }

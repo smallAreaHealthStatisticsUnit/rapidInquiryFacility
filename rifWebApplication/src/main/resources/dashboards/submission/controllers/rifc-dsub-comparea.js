@@ -38,8 +38,10 @@
 /* global L */
 
 angular.module("RIF")
-        .controller('ModalComparisonAreaCtrl', ['$scope', '$uibModal', 'CompAreaStateService', 'SubmissionStateService', 'StudyAreaStateService',
-            function ($scope, $uibModal, CompAreaStateService, SubmissionStateService, StudyAreaStateService) {
+        .controller('ModalComparisonAreaCtrl', ['$scope', '$uibModal', 'CompAreaStateService', 
+			'SubmissionStateService', 'StudyAreaStateService', 'SelectStateService',
+            function ($scope, $uibModal, CompAreaStateService, SubmissionStateService, 
+				StudyAreaStateService, SelectStateService) {
                 $scope.tree = SubmissionStateService.getState().comparisonTree;
                 $scope.animationsEnabled = false;
                 $scope.open = function () {
@@ -85,6 +87,27 @@ angular.module("RIF")
                         CompAreaStateService.getState().center = input.center;
                         CompAreaStateService.getState().geography = input.geography;
                         CompAreaStateService.getState().transparency = input.transparency;
+						
+						SelectStateService.getState().studySelection.comparisonSelectAt = input.selectAt;
+						SelectStateService.getState().studySelection.comparisonSelectedAreas = 
+							input.selectedPolygon;
+						
+						try {
+							var r=SelectStateService.verifyStudySelection();
+							$scope.consoleDebug("[rifc-dsub-studyarea.js] verifyStudySelection() " +
+								SelectStateService.getState().studyType + " comparison area OK: " +
+								JSON.stringify(r, null, 2));
+						}
+						catch (e) {
+							$scope.showWarningNoHide("Unable to verify comparison area selection: " + e.message);
+							$scope.consoleDebug("[rifc-dsub-comparea.js] input: " +
+								JSON.stringify(input, null, 2));
+							$scope.consoleDebug("[rifc-dsub-comparea.js] SelectStateService.getState(): " +
+								JSON.stringify(SelectStateService.getState(), null, 2));
+								
+                            CompAreaStateService.getState().comparisonTree = false;
+                            $scope.tree = false;
+						}						
                     });
                 };
             }])

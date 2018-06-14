@@ -41,8 +41,10 @@
 angular.module("RIF")
         .directive('submissionMapTable', ['ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService', 'mapTools',
             'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService',
+			'SelectStateService', 
             function (ModalAreaService, LeafletDrawService, $uibModal, JSONService, mapTools,
-                    GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService) {
+                    GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService,
+					SelectStateService) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
@@ -224,10 +226,14 @@ angular.module("RIF")
                             if ($scope.input.type === "Risk Analysis") {
                                 $scope.possibleBands = [1, 2, 3, 4, 5, 6];
                                 $scope.areamap.band = 6;
+								
+								SelectStateService.initialiseRiskAnalysis();
                             } else {
                                 $scope.possibleBands = [1];
                                 $scope.currentBand = 1;
                                 $scope.areamap.band = 1;
+								
+								SelectStateService.resetState();
                             }
                         };
 

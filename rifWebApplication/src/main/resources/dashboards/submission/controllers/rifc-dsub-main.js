@@ -35,8 +35,10 @@
  * CONTROLLER for the main 'tree' page
  */
 angular.module("RIF")
-        .controller('SumbmissionCtrl', ['$scope', 'user', '$state', 'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ParameterStateService',
-            function ($scope, user, $state, SubmissionStateService, StudyAreaStateService, CompAreaStateService, ParameterStateService) {
+        .controller('SumbmissionCtrl', ['$scope', 'user', '$state', 'SubmissionStateService', 
+			'StudyAreaStateService', 'CompAreaStateService', 'ParameterStateService', 'SelectStateService', 
+            function ($scope, user, $state, SubmissionStateService, 
+				StudyAreaStateService, CompAreaStateService, ParameterStateService, SelectStateService) {
                 /*
                  * STUDY, GEOGRAPHY AND FRACTION DROP-DOWNS
                  * Calls to API returns a chain of promises
@@ -67,6 +69,7 @@ angular.module("RIF")
                     //reset states using geography
                     StudyAreaStateService.resetState();
                     CompAreaStateService.resetState();
+                    SelectStateService.resetState();
                     ParameterStateService.resetState();
                     SubmissionStateService.getState().comparisonTree = false;
                     SubmissionStateService.getState().studyTree = false;
