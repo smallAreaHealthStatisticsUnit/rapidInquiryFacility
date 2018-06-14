@@ -160,6 +160,12 @@ angular.module("RIF")
 							else {			
 								SelectStateService.resetState();
 							}
+							
+                            if ($scope.areamap.hasLayer(shapes)) {
+                                $scope.areamap.removeLayer(shapes);
+								shapes = new L.layerGroup();
+								$scope.areamap.addLayer(shapes);
+                            }
                         };
                         //remove AOI layer
                         $scope.clearAOI = function () {
@@ -443,7 +449,9 @@ angular.module("RIF")
                         //district centres for rubberband selection
                         var latlngList = 0;
                         var centroidMarkers = new L.layerGroup();
-
+						var shapes = new L.layerGroup();
+                        $scope.areamap.addLayer(shapes);
+						
                         //shapefile AOI, used in directive
                         $scope.shpfile = new L.layerGroup();
 
@@ -578,23 +586,43 @@ angular.module("RIF")
                             $scope.makeDrawSelection(data);
                         });
                         $scope.makeDrawSelection = function (shape) {
-							if (SelectStateService.getState().studyType == "Risk Analysis") {
-								var savedShape = {
-									circle: shape.circle,
-									freehand: shape.freehand,
-									band: shape.band,
-									radius: undefined,
-									latLng: undefined,
-									geojson: undefined
-								}
-								if (shape.circle) {
-									savedShape.radius=shape.data.getRadius();
-									savedShape.latLng=shape.data.getLatLng();	
-								}
-								else {
-									savedShape.geojson=shape.data.toGeoJSON();
-								}
-								SelectStateService.getState().studySelection.shapes.push(savedShape);
+							var savedShape = {
+								circle: shape.circle,
+								freehand: shape.freehand,
+								band: shape.band,
+								radius: undefined,
+								latLng: undefined,
+								geojson: undefined
+							}
+							if (shape.circle) {
+								savedShape.radius=shape.data.getRadius();
+								savedShape.latLng=shape.data.getLatLng();	
+								var circle = new L.Circle([savedShape.latLng.lat, savedShape.latLng.lng], {
+									radius: savedShape.radius,
+									color: "#000",
+									weight: 1,
+									opacity: 0.4,
+									fillOpacity: 0
+								});
+								shapes.addLayer(circle);
+							}
+							else {
+								savedShape.geojson=shape.data.toGeoJSON();
+								var geojson= new L.geoJSON(savedShape.geojson, {
+									color: "#000",
+									weight: 1,
+									opacity: 0.4,
+									fillOpacity: 0
+								});
+								
+								shapes.addLayer(geojson);
+							}	
+
+							if ($scope.input.name == "ComparisionAreaMap") {
+								SelectStateService.getState().studySelection.comparisonShapes.push(savedShape);
+							}
+							else {
+								SelectStateService.getState().studySelection.studyShapes.push(savedShape);
 							}
 							
                             latlngList.forEach(function (point) {

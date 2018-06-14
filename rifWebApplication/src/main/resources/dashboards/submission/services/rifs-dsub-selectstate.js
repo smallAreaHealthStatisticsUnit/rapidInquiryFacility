@@ -70,8 +70,11 @@ angular.module("RIF")
 							studySelectedAreas: [],
 							riskAnalysisType: 12, 	// assume point sources, many areas, one to six bands
 													// Can come from shapefile points or by manual entry
-							points: [],
-							shapes: [],
+							studyPoints: [],
+							studyShapes: [],
+							comparisonPoints: [],
+							comparisonShapes: [],
+							
 //
 // Risk analysis study types (as per rif40_studies.stype_type): 
 //
