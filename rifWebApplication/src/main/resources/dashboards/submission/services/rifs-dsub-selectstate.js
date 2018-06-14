@@ -37,6 +37,23 @@
 angular.module("RIF")
         .factory('SelectStateService',
                 function () {
+					// check if an element exists in array using a comparer function
+					// comparer : function(currentElement)
+					Array.prototype.inArray = function(comparer) { 
+						for(var i=0; i < this.length; i++) { 
+							if(comparer(this[i])) return true; 
+						}
+						return false; 
+					}; 
+
+					// adds an element to the array if it does not already exist using a comparer 
+					// function
+					Array.prototype.pushIfNotExist = function(element, comparer) { 
+						if (!this.inArray(comparer)) {
+							this.push(element);
+						}
+					};
+
                     var s = {
                         studyType: "Disease Mapping",
 						studySelection: {			
@@ -54,7 +71,7 @@ angular.module("RIF")
 							riskAnalysisType: 12, 	// assume point sources, many areas, one to six bands
 													// Can come from shapefile points or by manual entry
 							points: [],
-							bands: [],
+							shapes: [],
 //
 // Risk analysis study types (as per rif40_studies.stype_type): 
 //
@@ -67,8 +84,9 @@ angular.module("RIF")
 							comparisonSelectedAreas: []
 						}
                     };
+					
                     var defaults = angular.copy(JSON.parse(JSON.stringify(s)));
-					var diseaseMappingDefaults = angular.copy(JSON.parse(JSON.stringify(defaults)));;
+					var diseaseMappingDefaults = angular.copy(JSON.parse(JSON.stringify(defaults)));
                     var riskAnalysisDefaults = angular.copy(JSON.parse(JSON.stringify(t)));
 					
 					function verifyStudySelection2(newStudySelection, newStudyType) {
@@ -141,7 +159,15 @@ angular.module("RIF")
 						},
 						setStudySelection: function(newStudySelection, newStudyType) { // Needs to verify
 							studySelection=verifyStudySelection2(newStudySelection, newStudyType);
-							studyType=newStudyType;
+							if (newStudyType === "Disease Mapping") {		
+								studyType=newStudyType;
+							}
+							else if (newStudyType === "Risk Analysis") {	
+								studyType=newStudyType;
+							}
+							else {
+								throw new Error("rifs-dsub-selectstate.js(): unexpected study type: " + newStudyType);
+							}
 						},
 						verifyStudySelection: function() {
 							var r;

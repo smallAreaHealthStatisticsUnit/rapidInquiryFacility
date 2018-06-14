@@ -154,6 +154,12 @@ angular.module("RIF")
                             $scope.selectedPolygon.length = 0;
                             $scope.input.selectedPolygon.length = 0;
                             $scope.clearAOI();
+							if ($scope.input.type === "Risk Analysis") {
+								SelectStateService.initialiseRiskAnalysis();
+							}
+							else {			
+								SelectStateService.resetState();
+							}
                         };
                         //remove AOI layer
                         $scope.clearAOI = function () {
@@ -572,6 +578,25 @@ angular.module("RIF")
                             $scope.makeDrawSelection(data);
                         });
                         $scope.makeDrawSelection = function (shape) {
+							if (SelectStateService.getState().studyType == "Risk Analysis") {
+								var savedShape = {
+									circle: shape.circle,
+									freehand: shape.freehand,
+									band: shape.band,
+									radius: undefined,
+									latLng: undefined,
+									geojson: undefined
+								}
+								if (shape.circle) {
+									savedShape.radius=shape.data.getRadius();
+									savedShape.latLng=shape.data.getLatLng();	
+								}
+								else {
+									savedShape.geojson=shape.data.toGeoJSON();
+								}
+								SelectStateService.getState().studySelection.shapes.push(savedShape);
+							}
+							
                             latlngList.forEach(function (point) {
                                 //is point in defined polygon?
                                 var test;
@@ -581,6 +606,7 @@ angular.module("RIF")
                                     test = GISService.getPointinpolygon(point[0], shape);
                                 }
                                 if (test) {
+									var thisLatLng = point[0];
                                     var thisPoly = point[1];
                                     var thisPolyID = point[2];
                                     var bFound = false;
@@ -592,10 +618,16 @@ angular.module("RIF")
                                     }
                                     if (!bFound) {
                                         if (shape.band === -1) {
-                                            $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand});
+                                            $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand, centroid: thisLatLng});
                                         } else {
-                                            $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: shape.band});
+                                            $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: shape.band, centroid: thisLatLng});
                                         }
+										if (SelectStateService.getState().studyType == "Risk Analysis") {
+															
+//											SelectStateService.getState().studySelection.points.pushIfNotExist(thisLatLng, function(e) { 
+//												return e.lat === thisLatLng.lat && e.lng === thisLatLng.lng; 
+//											});
+										}
                                     }
                                 }
                             });
@@ -671,6 +703,14 @@ angular.module("RIF")
                                     var listOfIDs = JSON.parse(JSONService.getCSV2JSON($scope.content));
                                     //attempt to fill 'selectedPolygon' with valid entries
                                     $scope.clear();
+									
+									if ($scope.input.type === "Risk Analysis") {
+										SelectStateService.initialiseRiskAnalysis();
+									}
+									else {			
+										SelectStateService.resetState();
+									}
+									
                                     var bPushed = false;
                                     var bInvalid = false;
                                     for (var i = 0; i < listOfIDs.length; i++) {
