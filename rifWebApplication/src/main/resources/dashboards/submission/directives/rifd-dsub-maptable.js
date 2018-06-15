@@ -225,6 +225,15 @@ angular.module("RIF")
                             } else {
                                 $scope.areamap.addLayer(centroidMarkers);
                             }
+                        }; 
+						
+                        //Show-hide shapes
+						$scope.showShapes = function () {
+                            if ($scope.areamap.hasLayer(shapes)) {
+                                $scope.areamap.removeLayer(shapes);
+                            } else {
+                                $scope.areamap.addLayer(shapes);
+                            }
                         };
 
                         /*
@@ -586,6 +595,8 @@ angular.module("RIF")
                             $scope.makeDrawSelection(data);
                         });
                         $scope.makeDrawSelection = function (shape) {
+							
+							// Create savedShape for SelectStateService
 							var savedShape = {
 								circle: shape.circle,
 								freehand: shape.freehand,
@@ -594,9 +605,11 @@ angular.module("RIF")
 								latLng: undefined,
 								geojson: undefined
 							}
-							if (shape.circle) {
+							if (shape.circle) { // Represent circles as a point and a radius
 								savedShape.radius=shape.data.getRadius();
 								savedShape.latLng=shape.data.getLatLng();	
+								
+								// basic shape to map shapes layer group
 								var circle = new L.Circle([savedShape.latLng.lat, savedShape.latLng.lng], {
 									radius: savedShape.radius,
 									color: "#000",
@@ -606,7 +619,7 @@ angular.module("RIF")
 								});
 								shapes.addLayer(circle);
 							}
-							else {
+							else { // Use geoJSON
 								savedShape.geojson=shape.data.toGeoJSON();
 								var geojson= new L.geoJSON(savedShape.geojson, {
 									color: "#000",
@@ -618,6 +631,7 @@ angular.module("RIF")
 								shapes.addLayer(geojson);
 							}	
 
+							// Save to SelectStateService
 							if ($scope.input.name == "ComparisionAreaMap") {
 								SelectStateService.getState().studySelection.comparisonShapes.push(savedShape);
 							}

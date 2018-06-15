@@ -35,6 +35,8 @@
 
 /*
  * SERVICE to add tool icons to leaflet containers
+ *
+ * Icons are defined in: ..\..\css\rifx-css-leaflet.css
  */
 angular.module("RIF")
         .factory('mapTools',
@@ -46,6 +48,7 @@ angular.module("RIF")
                         '<button type="button" class="btn btn-zoomExtent" title="Zoom to full extent" ng-click="zoomToExtent()"></button>',
                         '<button type="button" class="btn btn-zoomSelected" title="Zoom to selection" ng-click="zoomToSelection()"></button>',
                         '<button type="button" class="btn btn-centroids" title="Show-hide centroids" ng-click="showCentroids()"></button>',
+                        '<button type="button" class="btn btn-shapes" title="Show-hide selction shapes" ng-click="showShapes()"></button>',
                         '<button type="button" class="btn btn-addAOI" title="Select by shapefile" risk-analysis></button>',
                         '<button type="button" class="btn btn-removeAOI" title="Clear shapefile" ng-click="clearAOI()"></button>',
                         '<button type="button" class="btn btn-exportMap" title="Quick export map" leaflet-to-png mapid="areamap"></button>'

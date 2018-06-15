@@ -141,8 +141,11 @@
 .btn-centroids, .btn-centroids:active {
     background: white url("../images/glyphicon/glyphicons-267-flag.png") no-repeat;
 }
-.btn-addAOI, .btn-addAOI:active {
+.btn-shapes, .btn-shapes:active {
     background: white url("../images/glyphicon/glyphicons-97-vector-path-polygon.png") no-repeat;
+}
+.btn-addAOI, .btn-addAOI:active {
+    background: white url("../images/glyphicon/glyphicons-416-disk-open.png") no-repeat;
 }
 .btn-removeAOI, .btn-removeAOI:active {
     background: white url("../images/glyphicon/glyphicons-17-bin.png") no-repeat;
