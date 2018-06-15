@@ -2539,8 +2539,27 @@ This, unsurprisingly, returned no rows, suggesting the problem is with the inter
  (0 rows)
 
 ```
-This in turn implies the problem may be with the COA2011, LSOA2011 intersection, common table expression: *x67*; as show by the map. The records will be manually inserted to fix the problem.
+This in turn implies the problem may be with the COA2011, LSOA2011 intersection, common table expression: *x67*; as shown by the map. The records will be manually inserted to fix the problem.
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue2.png?raw=true "Cardiff COA2001 intersection issue map")
+
+```SQL
+WITH a AS (
+	SELECT DISTINCT scntry2011,cntry2011, gor2011, ladua2011, msoa2011, lsoa2011
+	  FROM hierarchy_ews2011
+	 WHERE lsoa2011 = 'W01001945' /* Where it should be */
+), b AS (
+	SELECT coa2011, lsoa11_1
+      FROM coa2011
+     WHERE coa2011 IN ('W00010143', 'W00010161') 
+)
+INSERT INTO hierarchy_ews2011 (scntry2011, cntry2011, gor2011, ladua2011, msoa2011, lsoa2011, coa2011)
+SELECT a.*, b.coa2011
+  FROM a, b
+ WHERE a.lsoa2011 = b.lsoa11_1
+   AND b.coa2011 NOT IN (SELECT coa2011 FROM hierarchy_ews2011);   
+
+   INSERT 0 2
+```
 
 * Fix for: Focus should be on username field on the login screen #22;
 * Can now reload saved risk analysis study;
