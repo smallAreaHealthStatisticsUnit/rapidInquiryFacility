@@ -108,16 +108,16 @@ angular.module("RIF")
 						
 						try {
 							var r=SelectStateService.verifyStudySelection();
-							$scope.consoleDebug("[rifc-dsub-studyarea.js] verifyStudySelection() " +
-								SelectStateService.getState().studyType + " study area OK: " +
-								JSON.stringify(r, null, 2));
+//							$scope.consoleDebug("[rifc-dsub-studyarea.js] verifyStudySelection() " +
+//								SelectStateService.getState().studyType + " study area OK: " +
+//								JSON.stringify(r, null, 1));
 						}
 						catch (e) {
 							$scope.showWarningNoHide("Unable to verify study area selection: " + e.message);
 							$scope.consoleDebug("[rifc-dsub-studyarea.js] input: " +
-								JSON.stringify(input, null, 2));
+								JSON.stringify(input, null, 1));
 							$scope.consoleDebug("[rifc-dsub-studyarea.js] SelectStateService.getState(): " +
-								JSON.stringify(SelectStateService.getState(), null, 2));
+								JSON.stringify(SelectStateService.getState(), null, 1));
 								
                             SubmissionStateService.getState().studyTree = false;
                             $scope.tree = false;

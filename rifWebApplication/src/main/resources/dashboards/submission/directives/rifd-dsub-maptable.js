@@ -161,10 +161,10 @@ angular.module("RIF")
 								SelectStateService.resetState();
 							}
 							
-                            if ($scope.areamap.hasLayer(shapes)) {
-                                $scope.areamap.removeLayer(shapes);
-								shapes = new L.layerGroup();
-								$scope.areamap.addLayer(shapes);
+                            if ($scope.areamap.hasLayer($scope.shapes)) {
+                                $scope.areamap.removeLayer($scope.shapes);
+								$scope.shapes = new L.layerGroup();
+								$scope.areamap.addLayer($scope.shapes);
                             }
                         };
                         //remove AOI layer
@@ -227,12 +227,12 @@ angular.module("RIF")
                             }
                         }; 
 						
-                        //Show-hide shapes
+                        // Show-hide shapes
 						$scope.showShapes = function () {
-                            if ($scope.areamap.hasLayer(shapes)) {
-                                $scope.areamap.removeLayer(shapes);
+                            if ($scope.areamap.hasLayer($scope.shapes)) {
+                                $scope.areamap.removeLayer($scope.shapes);
                             } else {
-                                $scope.areamap.addLayer(shapes);
+                                $scope.areamap.addLayer($scope.shapes);
                             }
                         };
 
@@ -394,7 +394,10 @@ angular.module("RIF")
                                     $scope.gridOptions.data = ModalAreaService.fillTable(res.data);
                                     $scope.totalPolygonCount = res.data.objects.collection.geometries.length;
                                 });
-                            });
+                            }).then(function () {
+								// Add back selected shapes
+								addSelectedShapes();
+							});
                         };
 
                         /*
@@ -413,6 +416,56 @@ angular.module("RIF")
                             }
                             user.getGeoLevelViews(user.currentUser, thisGeography, $scope.input.selectAt).then(handleGeoLevelViews, handleGeographyError);
                         };
+						
+						function addSelectedShapes() {
+							var selectedShapes=undefined;
+							// Add back selected shapes
+							if ($scope.input.name == "ComparisionAreaMap") {
+								selectedShapes=SelectStateService.getState().studySelection.comparisonShapes;
+							}
+							else {
+								selectedShapes=SelectStateService.getState().studySelection.studyShapes;
+							}
+							if (selectedShapes) {
+								console.log("selectedShapes " + $scope.input.name + ": " + 
+									JSON.stringify(selectedShapes, null, 1));
+								if (!$scope.areamap.hasLayer($scope.shapes)) {
+									console.log("Add shapes layerGroup");
+									$scope.shapes = new L.layerGroup();
+									$scope.areamap.addLayer($scope.shapes);
+								}
+								for (var i = 0; i < selectedShapes.length; i++) {
+									var selectedShape=selectedShapes[i];
+								
+									if (selectedShape.circle) { // Represent circles as a point and a radius
+										
+										// basic shape to map shapes layer group
+										var circle = new L.Circle([selectedShape.latLng.lat, selectedShape.latLng.lng], {
+											radius: selectedShape.radius,
+											color: "#000",
+											weight: 1,
+											opacity: 0.4,
+											fillOpacity: 0
+										});
+										$scope.shapes.addLayer(circle);
+										console.log("Added circle: " + JSON.stringify(selectedShape.latLng) + 
+											"; radius: " + selectedShape.radius);
+									}
+									else { // Use geoJSON
+										var geojson= new L.geoJSON(selectedShape.geojson, {
+											color: "#000",
+											weight: 1,
+											opacity: 0.4,
+											fillOpacity: 0
+										});
+										
+										$scope.shapes.addLayer(geojson);
+										console.log("Added geojson: " + 
+											JSON.stringify(selectedShape, null, 1));
+									}
+								}
+							}
+						}
 
                         function handleGeoLevelSelect(res) {
                             $scope.geoLevels.length = 0;
@@ -446,6 +499,7 @@ angular.module("RIF")
                             }
                             //get table
                             getMyMap();
+							
                         }
 
                         function handleGeographyError() {
@@ -458,8 +512,8 @@ angular.module("RIF")
                         //district centres for rubberband selection
                         var latlngList = 0;
                         var centroidMarkers = new L.layerGroup();
-						var shapes = new L.layerGroup();
-                        $scope.areamap.addLayer(shapes);
+						$scope.shapes = new L.layerGroup();
+                        $scope.areamap.addLayer($scope.shapes);
 						
                         //shapefile AOI, used in directive
                         $scope.shpfile = new L.layerGroup();
@@ -471,7 +525,7 @@ angular.module("RIF")
                         $scope.gridOptions.onRegisterApi = function (gridApi) {
                             $scope.gridApi = gridApi;
                         };
-
+						
                         //Set the user defined basemap
                         $scope.renderMap = function (mapID) {
                             $scope.areamap.removeLayer($scope.thisLayer);
@@ -617,7 +671,7 @@ angular.module("RIF")
 									opacity: 0.4,
 									fillOpacity: 0
 								});
-								shapes.addLayer(circle);
+								$scope.shapes.addLayer(circle);
 							}
 							else { // Use geoJSON
 								savedShape.geojson=shape.data.toGeoJSON();
@@ -628,7 +682,7 @@ angular.module("RIF")
 									fillOpacity: 0
 								});
 								
-								shapes.addLayer(geojson);
+								$scope.shapes.addLayer(geojson);
 							}	
 
 							// Save to SelectStateService
@@ -775,7 +829,7 @@ angular.module("RIF")
                                     }
                                     if (!bPushed) {
                                         alertScope.showWarning("No valid 'ID' fields or 'Band' numbers found in your list");
-//										$scope.consoleLog(JSON.stringify(listOfIDs, null, 2));
+//										$scope.consoleDebug(JSON.stringify(listOfIDs, null, 2));
                                     } else if (!bInvalid) {
                                         alertScope.showSuccess("List uploaded sucessfully");
                                     } else {
