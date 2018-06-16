@@ -1616,8 +1616,8 @@ SELECT CASE
  sahsuland_dev (current) |                 99.988
 (1 row)
 ```
-This is across all databases. 100% is not unusual, less than 100% probably means your *shared_buffers* are
-too large.
+This is across all databases. 100% is not unusual, much less than 100% probably means your *shared_buffers* are
+too large (unless the other databases are doing substantial work).
 
 Now see what is being used in the current database:
 ```SQL
@@ -1641,7 +1641,7 @@ SELECT n.nspname AS schema, c.relname, c2.relname AS toast_table,
    AND ((c.relname NOT LIKE 'pg_%' OR c.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */) 
    AND  (c3.relname IS NULL OR c3.relname NOT LIKE 'pg_%' 			/* Exclude data dictionary but not TOAST tables */)
  GROUP BY c.oid, n.nspname, c.relname, c2.relname, c3.relname, b.usagecount
- ORDER BY 5 DESC;
+ ORDER BY 6 DESC;
 ```
 
 This gives the following output:
@@ -1718,9 +1718,9 @@ A usage count of:
 
 * 1: this is the system caching all data;
 * 2,3: occasional caching;
-* >3: suitable target for shared_buffer;
+* &gt;3: suitable target for shared_buffer;
 
-If you wanted to cache everything with a *usagecount* of 2 you would need to add the >3, 3 and 2 figures together!
+If you wanted to cache everything with a *usagecount* of 2 you would need to add the &gt;3, 3 and 2 figures together!
 
 ```
         database         | usagecount | ideal_shared_buffers
@@ -1735,7 +1735,9 @@ If you wanted to cache everything with a *usagecount* of 2 you would need to add
 This should give a reasonable starting performance on an OLTP system.
 
 You will need to run this many times under different loads to determine a suitable value. In this case a 
-1GB cache appears to fine for the geospatial workload. Note however thatthe *shared_buffers* are 100% used. 
+1GB cache *appears* to be fine for the geospatial workload. Note however that the *shared_buffers* are 100% used. 
+
+The problem with just looking at the buffer cache is it does not tell you what effect cache misses are having on performance.
 
 ```SQL
 WITH all_tables AS (
@@ -1911,6 +1913,13 @@ Where the columns are:
  peter       | tile_limits_usa_2014                              | pg_toast_626601  |                                                   |         2 |      100.00 |         0.00 |          2 | 0 bytes
 (100 rows)
 ```
+
+In this cases, somewhat later on in the processing:
+
+* There are a number of small tables with with <90% cache hits;
+* A large number the most hit tables are not buffered
+
+These are both signs that the shared buffers needs to be increased for this workload.
 
 ### 7.1.2 Query Tuning
 
