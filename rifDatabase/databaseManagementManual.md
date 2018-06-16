@@ -1560,7 +1560,7 @@ The principal tuning changes are:
 * Temporary buffers: 1-4GB
 * Work memory: 1GB. The Maximum is 2047MB; 
 * Effective_cache_size: 1/2 of total memory 
-* Try to use huge pages - this is called large page support in Windows. This is to reduce the process memory footprint 
+* On Linux try to use huge pages. This is called large page support in Windows and is not yet implemented (it was committed 21st January 2018 and should appear in Postgres 11 scheduled for Q3 2018). This is to reduce the process memory footprint 
   [translation lookaside buffer](https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938) size.
 
   Example parameter entries from *postgresql.conf*:
@@ -1569,8 +1569,8 @@ shared_buffers = 1024MB     # min 128kB; default 128 MB (9.6)
                             # (change requires restart)
 temp_buffers = 1G           # min 800kB; default 8M
 
-huge_pages = try            # on, off, or try
-                            # (change requires restart
+huge_pages = try            # on, off, or try: Linux only
+                            # (change requires restart)
 work_mem = 1GB              # min 64kB; default 4MB
 
 log_temp_files = 5000		# log temporary files equal or larger [5MB]
@@ -1621,12 +1621,14 @@ too large (unless the other databases are doing substantial work).
 
 Now see what is being used in the current database:
 ```SQL
-SELECT n.nspname AS schema, c.relname, c2.relname AS toast_table,
-       c3.relname AS primary_table,
-       pg_size_pretty(COUNT(*) * 8192) AS buffered,
-       ROUND(100.0 * COUNT(*) / ( SELECT setting FROM pg_settings WHERE name='shared_buffers')::integer,3) AS buffers_percent,
-       ROUND(100.0 * COUNT(*) * 8192 / pg_relation_size(c.oid),1) AS percent_of_relation,
-	   b.usagecount
+SELECT n.nspname AS "schema", 
+	   c.relname AS "table name", 
+	   c2.relname AS "toast table",
+       c3.relname AS "primary table",
+       pg_size_pretty(COUNT(*) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER) AS buffered,
+       ROUND(100.0 * COUNT(*) / ( SELECT setting FROM pg_settings WHERE name='shared_buffers')::INTEGER,3) AS "buffers percent",
+       ROUND(100.0 * COUNT(*) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER / pg_relation_size(c.oid),1) AS "percent of relation",
+	   b.usagecount AS "usage count"
   FROM pg_class c
 		INNER JOIN pg_buffercache b ON b.relfilenode = c.relfilenode
 		INNER JOIN pg_database d ON (b.reldatabase = d.oid AND d.datname = current_database()) /* Restrict to current database */
@@ -1644,10 +1646,20 @@ SELECT n.nspname AS schema, c.relname, c2.relname AS toast_table,
  ORDER BY 6 DESC;
 ```
 
-This gives the following output:
+This gives the following output here the columns are:
+
+ * schema: Schema;                  
+ * table name: Table;          
+ * toast table: TOAST (The Oversized-Attribute Storage Technique) table;   
+ * primary table: primary table associated with TOAST (The Oversized-Attribute Storage Technique) table;    
+ * buffered: Amount of table cached in *shared_buffers*;
+ * buffers percent: % of *shared_buffers* use by this table;
+ * percent of relation: % of table buffered;
+ * usage count: times used by separate queries (can be the same SQL statement);
+ 
 ```
-  schema  |        relname         |   toast_table    | primary_table |  buffered  | buffers_percent | percent_of_relation | usagecount
-----------+------------------------+------------------+---------------+------------+-----------------+---------------------+------------
+  schema  |      table name        |   toast table    | primary table |  buffered  | buffers percent | percent of relation | usage count
+----------+------------------------+------------------+---------------+------------+-----------------+---------------------+-------------
  pg_toast | pg_toast_1983440       |                  | coa2011       | 9672 kB    |           0.922 |                 0.6 |          5
  peter    | coa2011_geom_orig_gix  |                  |               | 9664 kB    |           0.922 |                71.3 |          2
  pg_toast | pg_toast_3163099       |                  | gor2011       | 95 MB      |           9.316 |               100.0 |          5
@@ -1700,7 +1712,7 @@ SELECT CASE
 	   CASE 
 			WHEN usagecount >3 THEN '>3' 
 			ELSE ' '||usagecount::Text END AS usagecount,
-	   pg_size_pretty(count(*) * 8192) as ideal_shared_buffers
+	   pg_size_pretty(count(*) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER) as ideal_shared_buffers
   FROM pg_class c
 		INNER JOIN pg_buffercache b ON b.relfilenode = c.relfilenode
 		INNER JOIN pg_database d ON (b.reldatabase = d.oid)
@@ -1747,7 +1759,7 @@ WITH all_tables AS (
 				   'N/A'::Text AS toast_table, 'N/A'::Text AS primary_table,
 				   SUM( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) AS from_disk, 
 				   SUM( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) AS from_cache,
-				   (SELECT pg_size_pretty(COUNT(*) * 8192) AS buffered
+				   (SELECT pg_size_pretty(COUNT(*) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER) AS buffered
 						  FROM pg_buffercache b, pg_database d
 						 WHERE b.reldatabase = d.oid 
 						   AND d.datname = current_database()) AS buffered	   
@@ -1758,7 +1770,7 @@ WITH all_tables AS (
 	SELECT a.schemaname AS schema_name, a.relname AS table_name, 
 	       c2.relname AS toast_table, c3.relname AS primary_table,
 	       a.from_disk, a.from_cache,   
-           pg_size_pretty(COUNT(b.relfilenode) * 8192) AS buffered
+           pg_size_pretty(COUNT(b.relfilenode) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER) AS buffered
 		FROM (
 			SELECT c.*, s.schemaname, s.from_disk, s.from_cache
 			  FROM (
