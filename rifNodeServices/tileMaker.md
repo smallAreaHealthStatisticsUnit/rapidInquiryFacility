@@ -1752,6 +1752,7 @@ In the same directory as before run the *tile Maker* manufacturer. This has sepa
 *tileMaker.js* node.js core:
 
 * ```node <node options> <full path to script> <flags>```
+
   Where the flags are:
   * ```-D, --database  <database name>```: Name of the database.          
     [default: <user default>];
@@ -1769,8 +1770,8 @@ In the same directory as before run the *tile Maker* manufacturer. This has sepa
   * ```-h, --help```: display this helpful message and exit.
     [default: false]
 	   
- Node options example:
- * Node *Node.js* executable options, e.g. ```--max-old-space-size=<max node memory in MB>``` 
+  Node options example:
+  * Node *Node.js* executable options, e.g. ```--max-old-space-size=<max node memory in MB>``` 
 	
 Script examples:
 	   
