@@ -13,6 +13,7 @@ Tile Maker
 	- [1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms](#125-mssql-timeout-request-failed-to-complete-in-xxx000ms)
 	- [1.2.6 JavaScript heap out of memory](#126-javascript-heap-out-of-memory)
 	- [1.2.7 No top level shapefile with only one area](#127-no-top-level-shapefile-with-only-one-area)
+	- [1.2.8 pgTileMake or mssqlTileMaker JavaScript heap out of memory](#128-pgtilemake-or-mssqltilemaker-javascript-heap-out-of-memory)
 - [2. Running the Tile Maker](#2-running-the-tile-maker)
   - [2.1 Setup](#21-setup)
   - [2.2 Processing Overview](#22-processing-overview)
@@ -23,7 +24,7 @@ Tile Maker
   - [2.4 Pre Processing Shapefiles](#24-pre-processing-shapefiles)	 
     - [2.4.1 To display information about a shapefile](#241-to-display-information-about-a-shapefile)
     - [2.4.2 Simplifying a shapefile](#242-simplifying-a-shapefile)
-	- [2.4.3 Renaming fields in a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#243-renaming-fields-in-a-shapefile)
+	- [2.4.3 Renaming fields in a shapefile](#243-renaming-fields-in-a-shapefile)
     - [2.4.4 Simplifying multiple shapefiles](#244-simplifying-multiple-shapefiles)
     - [2.4.5 Dissolving a shapefile](#245-dissolving-a-shapefile)
   - [2.4 Post Front End Processing](#24-post-front-end-processing)
@@ -330,6 +331,58 @@ done@http://127.0.0.1:3000/jquery-2.2.3.js:8785:5
 callback/<@http://127.0.0.1:3000/jquery-2.2.3.js:9151:9
 ```
 	
+### 1.2.8 pgTileMake or mssqlTileMaker JavaScript heap out of memory
+
+Symptom:
+
+```
+node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev -V
+Created info log file: pgTileMaker.log
+XML Directory C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd is readable
+Parsed XML config file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/geoDataLoader.xml
+Connected to Postgres using: postgres://peter@localhost:5432/sahsuland_dev?application_name=pgTileMaker; log level: info
+Set Postgres search path to: "$user",rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions
+SET client_encoding='UTF-8'
+Creating hierarchy CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_hierarchy_ews2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_scntry2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_cntry2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_gor2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_ladua2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_msoa2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_lsoa2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_coa2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating adjacency CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_adjacency_ews2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating geometry CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_geometry_ews2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+
+<--- Last few GCs --->
+
+[17648:00000123C835AD90]    79285 ms: Mark-sweep 1565.0 (1629.7) -> 1565.0 (1630.7) MB, 114.9 / 0.0 ms  allocation failure GC in old space requested
+[17648:00000123C835AD90]    79397 ms: Mark-sweep 1565.0 (1630.7) -> 1564.9 (1598.2) MB, 112.0 / 0.0 ms  last resort GC in old space requested
+[17648:00000123C835AD90]    79511 ms: Mark-sweep 1564.9 (1598.2) -> 1564.9 (1598.2) MB, 113.1 / 0.0 ms  last resort GC in old space requested
+
+
+<--- JS stacktrace --->
+
+==== JS stack trace =========================================
+
+Security context: 000001BA0F8A57C1 <JSObject>
+    1: /* anonymous */ [C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\pg\lib\client.js:~107] [pc=000003501E21C756](this=00000373014B8E71 <Connection map = 0000031F751CEF99>,msg=00000237B13DF6D1 <DataRowMessage map = 00000189A6D84E59>)
+    2: emitOne(aka emitOne) [events.js:~114] [pc=000003501E21541C](this=000000AC5A9022D1 <undefined>,handler=00000373014B8DE1...
+
+FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memory
+ 1: node_module_register
+ 2: v8::internal::FatalProcessOutOfMemory
+ 3: v8::internal::FatalProcessOutOfMemory
+ 4: v8::internal::Factory::NewUninitializedFixedArray
+ 5: v8::internal::WasmDebugInfo::SetupForTesting
+ 6: v8::internal::interpreter::BytecodeArrayRandomIterator::UpdateOffsetFromIndex
+ 7: 000003501E0843C1
+```
+
+Solution: add ```--max-old-space-size=<max node memory in MB>``` flag, e.g.
+
+```node --max-old-space-size=4096 C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev -V```
+
 # 2. Running the Tile Maker
 
 ## 2.1 Setup
@@ -1698,7 +1751,7 @@ Data loading steps. These load the data and prepare it for tile manufacture:
 In the same directory as before run the *tile Maker* manufacturer. This has separate Postgres and SQL Server stubs calling a common 
 *tileMaker.js* node.js core:
 
-* ```node <full path to script> <flags>```
+* ```node <node options> <full path to script> <flags>```
      Where the flags are:
 	 * ```-D, --database  <database name>```: Name of the database.          
 	   [default: <user default>];
@@ -1715,7 +1768,9 @@ In the same directory as before run the *tile Maker* manufacturer. This has sepa
 	   [default: false]
 	 * ```-h, --help```: display this helpful message and exit.
 	   [default: false]
-
+    Node options example:
+	* Node Node.js executable options, e.g. ```--max-old-space-size=<max node memory in MB>``` 
+	
 Script examples:
 	   
 * Postgres: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev```
@@ -1724,6 +1779,11 @@ Script examples:
 * SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database sahsuland_dev```
   [SQL Server tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_tile_manufacture.md)
   A log file will be created in the current directory as: *mssqlTileMaker.log*
+
+The CSV Files are created in a) the XML: directory defined in *geoDataLoader.xml* if the directory exists or b) the current working directory if it does not. 
+```
+Creating hierarchy CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_hierarchy_ews2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+```
 
 Tile manufacturing steps:
   
