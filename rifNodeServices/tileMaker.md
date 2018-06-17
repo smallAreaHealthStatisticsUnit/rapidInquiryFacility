@@ -1752,24 +1752,25 @@ In the same directory as before run the *tile Maker* manufacturer. This has sepa
 *tileMaker.js* node.js core:
 
 * ```node <node options> <full path to script> <flags>```
-     Where the flags are:
-	 * ```-D, --database  <database name>```: Name of the database.          
-	   [default: <user default>];
-	 * ```-U, --username <username>```: Connect as user &lt;username&gt; **NOT** *rif40*.         
-	   [default: NONE (use MSSQL trusted connection/psql style default)];
-	 * ```--password, --pw <password>```: The &lt;password&gt; for user &lt;username&gt;
-	 * ```-H, --hostname```: &lt;hostname&gt; of the database. 
-	   [default: "localhost"];
-	 * ```-V, --verbose```: Verbose mode. 
-	   [default: 0: false; 1 or 2];
-	 * ```-X, --xmlfile <XML file>```: XML Configuration file &lt;XML file&gt;.
-	   [default: "geoDataLoader.xml"];
-	 * ```-p, --pngfile```: Make SVG/PNG files.                     
-	   [default: false]
-	 * ```-h, --help```: display this helpful message and exit.
-	   [default: false]
-    Node options example:
-	* Node Node.js executable options, e.g. ```--max-old-space-size=<max node memory in MB>``` 
+  Where the flags are:
+  * ```-D, --database  <database name>```: Name of the database.          
+    [default: <user default>];
+  * ```-U, --username <username>```: Connect as user &lt;username&gt; **NOT** *rif40*.         
+    [default: NONE (use MSSQL trusted connection/psql style default)];
+  * ```--password, --pw <password>```: The &lt;password&gt; for user &lt;username&gt;
+  * ```-H, --hostname```: &lt;hostname&gt; of the database. 
+    [default: "localhost"];
+  * ```-V, --verbose```: Verbose mode. 
+    [default: 0: false; 1 or 2];
+  * ```-X, --xmlfile <XML file>```: XML Configuration file &lt;XML file&gt;.
+    [default: "geoDataLoader.xml"];
+  * ```-p, --pngfile```: Make SVG/PNG files.                     
+    [default: false]
+  * ```-h, --help```: display this helpful message and exit.
+    [default: false]
+	   
+ Node options example:
+ * Node *Node.js* executable options, e.g. ```--max-old-space-size=<max node memory in MB>``` 
 	
 Script examples:
 	   
