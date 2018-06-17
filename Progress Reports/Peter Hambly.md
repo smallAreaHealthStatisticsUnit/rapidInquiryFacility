@@ -2568,4 +2568,13 @@ SELECT a.*, b.coa2011
 * WARNING: Could not find (weighted) centroids stored in database - using geographic centroids on the fly
   call to user.getTileMakerCentroids() in rifd-dsub-maptable.js is producing a HTTP 404:
   ```http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerCentroids?userID=peter&geographyName=SAHSULAND&geoLevelSelectName=SAHSU_GRD_LEVEL1```. 
-  Submitted an as issue.
+  Submitted an as issue;
+* RIF meeting;
+* Buffer cache tuning for Postgres;
+* Document pgTileMaker or mssqlTileMaker JavaScript heap out of memory error;
+* Created add_study_selection_to_json branch. Added ability to view JSOBN shapes used in study selection (e.g. the concentric circle);
+* Run EWS2011 pre processing script pg_EWS2011.sql to end after hierarchy fix. Took about a day and a half. Ran pgTileMaker -needed more memory. Took 3 hours.
+
+18th to 22nd June
+
+* 
