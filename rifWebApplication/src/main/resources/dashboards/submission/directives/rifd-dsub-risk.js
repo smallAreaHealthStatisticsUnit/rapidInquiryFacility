@@ -240,7 +240,19 @@ angular.module("RIF")
                                 if (scope.isPoint) {
                                     //check ascending and sequential for radii
                                     for (var i = 0; i < scope.bandAttr.length - 1; i++) {
-                                        if (scope.bandAttr[i] > scope.bandAttr[i + 1]) {
+										var a = parseInt(scope.bandAttr[i]);
+										var b = parseInt(scope.bandAttr[i+1]);
+										
+										if (a.toString() != scope.bandAttr[i] || 
+										    b.toString() != scope.bandAttr[i+1]) {
+											alertScope.consoleLog("scope.bandAttr[" + i + "]: " + 
+												JSON.stringify(scope.bandAttr));
+                                            alertScope.showError("Distance band values are not integers");
+                                            return false;
+										}
+                                        else if (a > b) {
+											alertScope.consoleLog("scope.bandAttr[" + i + "]: " + 
+												JSON.stringify(scope.bandAttr));
                                             alertScope.showError("Distance band values are not in ascending order");
                                             return false;
                                         }
@@ -248,7 +260,19 @@ angular.module("RIF")
                                 } else {
                                     //check descending and sequential for exposures
                                     for (var i = 0; i < scope.bandAttr.length - 1; i++) {
-                                        if (scope.bandAttr[i] < scope.bandAttr[i + 1]) {
+										var a = parseInt(scope.bandAttr[i]);
+										var b = parseInt(scope.bandAttr[i+1]);
+                                        
+										if (a.toString() != scope.bandAttr[i] || 
+										    b.toString() != scope.bandAttr[i+1]) {
+											alertScope.consoleLog("scope.bandAttr[" + i + "]: " + 
+												JSON.stringify(scope.bandAttr));
+                                            alertScope.showError("Distance band values are not integers");
+                                            return false;
+										}
+                                        else if (a < b) {
+											alertScope.consoleLog("scope.bandAttr[" + i + "]: " + 
+												JSON.stringify(scope.bandAttr));
                                             alertScope.showError("Exposure band values are not in descending order");
                                             return false;
                                         }
