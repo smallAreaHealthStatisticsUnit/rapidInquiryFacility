@@ -13,6 +13,8 @@ Tile Maker
 	- [1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms](#125-mssql-timeout-request-failed-to-complete-in-xxx000ms)
 	- [1.2.6 JavaScript heap out of memory](#126-javascript-heap-out-of-memory)
 	- [1.2.7 No top level shapefile with only one area](#127-no-top-level-shapefile-with-only-one-area)
+	- [1.2.8 pgTileMaker or mssqlTileMaker JavaScript heap out of memory](#128-pgtilemaker-or-mssqltilemaker-javascript-heap-out-of-memory)
+	- [1.2.9 Hierarchy Issues](#129-hierarchy-issues)
 - [2. Running the Tile Maker](#2-running-the-tile-maker)
   - [2.1 Setup](#21-setup)
   - [2.2 Processing Overview](#22-processing-overview)
@@ -23,7 +25,7 @@ Tile Maker
   - [2.4 Pre Processing Shapefiles](#24-pre-processing-shapefiles)	 
     - [2.4.1 To display information about a shapefile](#241-to-display-information-about-a-shapefile)
     - [2.4.2 Simplifying a shapefile](#242-simplifying-a-shapefile)
-	- [2.4.3 Renaming fields in a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#243-renaming-fields-in-a-shapefile)
+	- [2.4.3 Renaming fields in a shapefile](#243-renaming-fields-in-a-shapefile)
     - [2.4.4 Simplifying multiple shapefiles](#244-simplifying-multiple-shapefiles)
     - [2.4.5 Dissolving a shapefile](#245-dissolving-a-shapefile)
   - [2.4 Post Front End Processing](#24-post-front-end-processing)
@@ -330,6 +332,228 @@ done@http://127.0.0.1:3000/jquery-2.2.3.js:8785:5
 callback/<@http://127.0.0.1:3000/jquery-2.2.3.js:9151:9
 ```
 	
+### 1.2.8 pgTileMaker or mssqlTileMaker JavaScript heap out of memory
+
+Symptom:
+
+```
+node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev -V
+Created info log file: pgTileMaker.log
+XML Directory C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd is readable
+Parsed XML config file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/geoDataLoader.xml
+Connected to Postgres using: postgres://peter@localhost:5432/sahsuland_dev?application_name=pgTileMaker; log level: info
+Set Postgres search path to: "$user",rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions
+SET client_encoding='UTF-8'
+Creating hierarchy CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_hierarchy_ews2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_scntry2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_cntry2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_gor2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_ladua2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_msoa2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_lsoa2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_coa2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating adjacency CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_adjacency_ews2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating geometry CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_geometry_ews2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+
+<--- Last few GCs --->
+
+[17648:00000123C835AD90]    79285 ms: Mark-sweep 1565.0 (1629.7) -> 1565.0 (1630.7) MB, 114.9 / 0.0 ms  allocation failure GC in old space requested
+[17648:00000123C835AD90]    79397 ms: Mark-sweep 1565.0 (1630.7) -> 1564.9 (1598.2) MB, 112.0 / 0.0 ms  last resort GC in old space requested
+[17648:00000123C835AD90]    79511 ms: Mark-sweep 1564.9 (1598.2) -> 1564.9 (1598.2) MB, 113.1 / 0.0 ms  last resort GC in old space requested
+
+
+<--- JS stacktrace --->
+
+==== JS stack trace =========================================
+
+Security context: 000001BA0F8A57C1 <JSObject>
+    1: /* anonymous */ [C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\pg\lib\client.js:~107] [pc=000003501E21C756](this=00000373014B8E71 <Connection map = 0000031F751CEF99>,msg=00000237B13DF6D1 <DataRowMessage map = 00000189A6D84E59>)
+    2: emitOne(aka emitOne) [events.js:~114] [pc=000003501E21541C](this=000000AC5A9022D1 <undefined>,handler=00000373014B8DE1...
+
+FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memory
+ 1: node_module_register
+ 2: v8::internal::FatalProcessOutOfMemory
+ 3: v8::internal::FatalProcessOutOfMemory
+ 4: v8::internal::Factory::NewUninitializedFixedArray
+ 5: v8::internal::WasmDebugInfo::SetupForTesting
+ 6: v8::internal::interpreter::BytecodeArrayRandomIterator::UpdateOffsetFromIndex
+ 7: 000003501E0843C1
+```
+
+Solution: add ```--max-old-space-size=<max node memory in MB>``` flag, e.g.
+
+```node --max-old-space-size=4096 C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev -V```
+
+### 1.2.9 Hierarchy Issues
+
+E.g.  Postgres processing failed after 2:26 (hours) at statement 421/601 hierarchy checks (check_intersections.sql):
+```
+psql:pg_EWS2011.sql:6524: WARNING:  Geography: EWS2011 geolevel 7: [coa2011] spurious additional codes: 2
+...
+psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 1: [scntry2011] no multiple hierarchy codes
+psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 2: [cntry2011] no multiple hierarchy codes
+psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 3: [gor2011] no multiple hierarchy codes
+psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 4: [ladua2011] no multiple hierarchy codes
+psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 5: [msoa2011] no multiple hierarchy codes
+psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 6: [lsoa2011] no multiple hierarchy codes
+psql:pg_EWS2011.sql:6524: ERROR:  Geography: EWS2011 codes check 0 missing, 1 spurious additional, 0 hierarchy fails
+CONTEXT:  PL/pgSQL function inline_code_block line 41 at RAISE
+Time: 1714.103 ms
+```
+
+The transaction BEGIN/END statements had already been removed from *pg_EWS2011.sql* so that the previous objects up to and including the hierarchy table were committed.
+
+Hierarchy insert took 83 minutes. Two rows are missing from the hierarchy are:
+```
+sahsuland_dev=> SELECT coa2011 FROM lookup_coa2011
+sahsuland_dev->                 EXCEPT 
+sahsuland_dev->                 SELECT coa2011 FROM hierarchy_ews2011;
+  coa2011
+-----------
+ W00010143
+ W00010161
+(2 rows)
+```
+
+These are in Cardiff and are small:
+```
+SELECT coa2011, lsoa11_1, lad11nm, msoa11nm, area_km2, geographic_centroid_wkt, ST_ASText(ST_Transform(geographic_centroid, 27700)) AS osgb
+FROM coa2011
+WHERE coa2011 IN ('W00010143', 'W00010161');
+  coa2011  | lsoa11_1  | lad11nm |  msoa11nm   |    area_km2     |            geographic_centroid_wkt            |                   osgb
+-----------+-----------+---------+-------------+-----------------+-----------------------------------------------+------------------------------------------
+ W00010161 | W01001945 | Cardiff | Cardiff 048 | 0.0147534816105 | POINT (-3.1781555521064697 51.45499419539898) | POINT(318235.967585802 173549.01243282)
+ W00010143 | W01001945 | Cardiff | Cardiff 048 |  0.009281476807 | POINT (-3.1768272276630127 51.45381197706475) | POINT(318326.146578801 173416.053359773)
+(2 rows)
+```
+
+That COA2011 only is affected means that the upper intersections are fine.
+
+The hierarchy check failure may have been caused by oversimplification of higher layers (SCNTRY, CNTRY) leading to the exclusion to the two census output areas.:
+
+* CNTRY2011 in purple;
+* GOR2011 (not oversimplified) in green;
+* COA2001 in hashing;
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue.png?raw=true "Cardiff COA2001 issue map")
+To be in the hierarchy the intersection code *insert_hierarchy.sql* selects the intersection with the largest intersection by area for each (higher resolution). This 
+eliminates duplicates and picks the most likely intersection on the basis of area. There are two possible reasons for this failure:
+
+* An intersection was not found. **Visually this appears to be the case**;
+* The area is zero. This seems unlikely and would need to be tested in SQL.
+
+The following SQL was derived from code generated by *insert_hierarchy.sql*:
+
+```SQL  
+WITH x12 AS ( /* Subqueries x12 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a1.areaid AS scntry2011, a2.areaid AS cntry2011,
+       ST_Area(a2.geom_9) AS a2_area,
+       ST_Area(ST_Intersection(a1.geom_9, a2.geom_9)) AS a12_area
+  FROM scntry2011 a1 CROSS JOIN cntry2011 a2
+ WHERE ST_Intersects(a1.geom_9, a2.geom_9)
+), x23 AS ( /* Subqueries x23 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a2.areaid AS cntry2011, a3.areaid AS gor2011,
+       ST_Area(a3.geom_9) AS a3_area,
+       ST_Area(ST_Intersection(a2.geom_9, a3.geom_9)) AS a23_area
+  FROM cntry2011 a2 CROSS JOIN gor2011 a3
+ WHERE ST_Intersects(a2.geom_9, a3.geom_9)
+), x34 AS ( /* Subqueries x34 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a3.areaid AS gor2011, a4.areaid AS ladua2011,
+       ST_Area(a4.geom_9) AS a4_area,
+       ST_Area(ST_Intersection(a3.geom_9, a4.geom_9)) AS a34_area
+  FROM gor2011 a3 CROSS JOIN ladua2011 a4
+ WHERE ST_Intersects(a3.geom_9, a4.geom_9)
+), x45 AS ( /* Subqueries x45 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a4.areaid AS ladua2011, a5.areaid AS msoa2011,
+       ST_Area(a5.geom_9) AS a5_area,
+       ST_Area(ST_Intersection(a4.geom_9, a5.geom_9)) AS a45_area
+  FROM ladua2011 a4 CROSS JOIN msoa2011 a5
+ WHERE ST_Intersects(a4.geom_9, a5.geom_9)
+), x56 AS ( /* Subqueries x56 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a5.areaid AS msoa2011, a6.areaid AS lsoa2011,
+       ST_Area(a6.geom_9) AS a6_area,
+       ST_Area(ST_Intersection(a5.geom_9, a6.geom_9)) AS a56_area
+  FROM msoa2011 a5 CROSS JOIN lsoa2011 a6
+ WHERE ST_Intersects(a5.geom_9, a6.geom_9)
+), x67 AS ( /* Subqueries x67 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a6.areaid AS lsoa2011, a7.areaid AS coa2011,
+       ST_Area(a7.geom_9) AS a7_area,
+       ST_Area(ST_Intersection(a6.geom_9, a7.geom_9)) AS a67_area
+  FROM lsoa2011 a6 CROSS JOIN coa2011 a7
+ WHERE ST_Intersects(a6.geom_9, a7.geom_9)
+   AND a7.coa2011 IN ('W00010143','W00010161')
+)
+SELECT x12.scntry2011, 
+       x12.cntry2011, 
+       x23.gor2011, 
+       x34.ladua2011, 
+       x45.msoa2011, 
+       x56.lsoa2011, 
+       x67.coa2011, 
+       CASE WHEN x12.a2_area > 0 THEN x12.a12_area/x12.a2_area ELSE NULL END test12,
+       MAX(x12.a12_area/x12.a2_area) OVER (PARTITION BY x12.cntry2011) AS max12,
+       CASE WHEN x23.a3_area > 0 THEN x23.a23_area/x23.a3_area ELSE NULL END test23,
+       MAX(x23.a23_area/x23.a3_area) OVER (PARTITION BY x23.gor2011) AS max23,
+       CASE WHEN x34.a4_area > 0 THEN x34.a34_area/x34.a4_area ELSE NULL END test34,
+       MAX(x34.a34_area/x34.a4_area) OVER (PARTITION BY x34.ladua2011) AS max34,
+       CASE WHEN x45.a5_area > 0 THEN x45.a45_area/x45.a5_area ELSE NULL END test45,
+       MAX(x45.a45_area/x45.a5_area) OVER (PARTITION BY x45.msoa2011) AS max45,
+       CASE WHEN x56.a6_area > 0 THEN x56.a56_area/x56.a6_area ELSE NULL END test56,
+       MAX(x56.a56_area/x56.a6_area) OVER (PARTITION BY x56.lsoa2011) AS max56,
+       CASE WHEN x67.a7_area > 0 THEN x67.a67_area/x67.a7_area ELSE NULL END test67,
+       MAX(x67.a67_area/x67.a7_area) OVER (PARTITION BY x67.coa2011) AS max67
+  FROM x12, x23, x34, x45, x56, x67
+ WHERE x12.cntry2011 = x23.cntry2011
+   AND x23.gor2011 = x34.gor2011
+   AND x34.ladua2011 = x45.ladua2011
+   AND x45.msoa2011 = x56.msoa2011
+   AND x56.lsoa2011 = x67.lsoa2011
+ ORDER BY 1, 2, 3, 4, 5, 6, 7; 
+```
+
+This, unsurprisingly, returned no rows, suggesting the problem is with the intersection and not the area:
+```
+  scntry2011 | cntry2011 | gor2011 | ladua2011 | msoa2011 | lsoa2011 | coa2011 | test12 | max12 | test23 | max23 | test34 | max34 | test45 | max45 | test56 | max56 | test67 | max67
+ ------------+-----------+---------+-----------+----------+----------+---------+--------+-------+--------+-------+--------+-------+--------+-------+--------+-------+--------+-------
+ (0 rows)
+
+```
+This in turn implies the problem may be with the COA2011, LSOA2011 intersection, common table expression: *x67*; as shown by the below map. The records will be manually inserted to fix the problem.
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue2.png?raw=true "Cardiff COA2001 intersection issue map")
+
+The following Postgres SQL was added to *pg_EWS2011.sql* immediately after the hierarchy insert.
+
+```SQL
+WITH a AS (
+	SELECT DISTINCT scntry2011,cntry2011, gor2011, ladua2011, msoa2011, lsoa2011
+	  FROM hierarchy_ews2011
+	 WHERE lsoa2011 = 'W01001945' /* Where it should be */
+), b AS (
+	SELECT coa2011, lsoa11_1
+      FROM coa2011
+     WHERE coa2011 IN ('W00010143', 'W00010161') 
+)
+INSERT INTO hierarchy_ews2011 (scntry2011, cntry2011, gor2011, ladua2011, msoa2011, lsoa2011, coa2011)
+SELECT a.*, b.coa2011
+  FROM a, b
+ WHERE a.lsoa2011 = b.lsoa11_1
+   AND b.coa2011 NOT IN (SELECT coa2011 FROM hierarchy_ews2011);   
+```
+
+The SQL Server SQL code will be the same.
+
 # 2. Running the Tile Maker
 
 ## 2.1 Setup
@@ -1698,24 +1922,28 @@ Data loading steps. These load the data and prepare it for tile manufacture:
 In the same directory as before run the *tile Maker* manufacturer. This has separate Postgres and SQL Server stubs calling a common 
 *tileMaker.js* node.js core:
 
-* ```node <full path to script> <flags>```
-     Where the flags are:
-	 * ```-D, --database  <database name>```: Name of the database.          
-	   [default: <user default>];
-	 * ```-U, --username <username>```: Connect as user &lt;username&gt; **NOT** *rif40*.         
-	   [default: NONE (use MSSQL trusted connection/psql style default)];
-	 * ```--password, --pw <password>```: The &lt;password&gt; for user &lt;username&gt;
-	 * ```-H, --hostname```: &lt;hostname&gt; of the database. 
-	   [default: "localhost"];
-	 * ```-V, --verbose```: Verbose mode. 
-	   [default: 0: false; 1 or 2];
-	 * ```-X, --xmlfile <XML file>```: XML Configuration file &lt;XML file&gt;.
-	   [default: "geoDataLoader.xml"];
-	 * ```-p, --pngfile```: Make SVG/PNG files.                     
-	   [default: false]
-	 * ```-h, --help```: display this helpful message and exit.
-	   [default: false]
+* ```node <node options> <full path to script> <flags>```
 
+  Where the flags are:
+  * ```-D, --database  <database name>```: Name of the database.          
+    [default: <user default>];
+  * ```-U, --username <username>```: Connect as user &lt;username&gt; **NOT** *rif40*.         
+    [default: NONE (use MSSQL trusted connection/psql style default)];
+  * ```--password, --pw <password>```: The &lt;password&gt; for user &lt;username&gt;
+  * ```-H, --hostname```: &lt;hostname&gt; of the database. 
+    [default: "localhost"];
+  * ```-V, --verbose```: Verbose mode. 
+    [default: 0: false; 1 or 2];
+  * ```-X, --xmlfile <XML file>```: XML Configuration file &lt;XML file&gt;.
+    [default: "geoDataLoader.xml"];
+  * ```-p, --pngfile```: Make SVG/PNG files.                     
+    [default: false]
+  * ```-h, --help```: display this helpful message and exit.
+    [default: false]
+	   
+  Node options example:
+  * Node *Node.js* executable options, e.g. ```--max-old-space-size=<max node memory in MB>``` 
+	
 Script examples:
 	   
 * Postgres: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev```
@@ -1724,6 +1952,11 @@ Script examples:
 * SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database sahsuland_dev```
   [SQL Server tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_tile_manufacture.md)
   A log file will be created in the current directory as: *mssqlTileMaker.log*
+
+The CSV Files are created in a) the XML: directory defined in *geoDataLoader.xml* if the directory exists or b) the current working directory if it does not. 
+```
+Creating hierarchy CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_hierarchy_ews2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+```
 
 Tile manufacturing steps:
   
