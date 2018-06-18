@@ -8,7 +8,7 @@ import lombok.ToString;
 @Builder
 @Getter
 @ToString
-public class AdjacencyMatrix {
+public class AdjacencyMatrixRow {
 
 	@NonNull
 	private final String areaId;

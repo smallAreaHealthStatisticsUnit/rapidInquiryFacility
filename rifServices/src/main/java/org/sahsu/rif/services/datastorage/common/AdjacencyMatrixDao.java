@@ -1,13 +1,11 @@
 package org.sahsu.rif.services.datastorage.common;
 
 import java.sql.SQLException;
-
-import javax.sql.DataSource;
+import java.util.List;
 
 import org.sahsu.rif.generic.concepts.User;
-import org.sahsu.rif.generic.datastorage.DatabaseType;
 import org.sahsu.rif.generic.system.RIFServiceException;
-import org.sahsu.rif.services.concepts.AdjacencyMatrix;
+import org.sahsu.rif.services.concepts.AdjacencyMatrixRow;
 import org.sahsu.rif.services.datastorage.ms.SqlServerAdjacencyMatrixDao;
 import org.sahsu.rif.services.datastorage.pg.PostgresAdjacencyMatrixDao;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
@@ -32,12 +30,12 @@ public interface AdjacencyMatrixDao {
 	}
 
 	/**
-	 * Returns an {@link AdjacencyMatrix} given a study ID.
+	 * Returns an {@link AdjacencyMatrixRow} given a study ID.
 	 * @param studyId the study
 	 * @return the adjacency matrix
 	 * @throws SQLException for database problems
 	 * @throws RIFServiceException for general problems
 	 */
-	AdjacencyMatrix getByStudyId(final User user, final String studyId)
+	List<AdjacencyMatrixRow> getByStudyId(final User user, final String studyId)
 			throws SQLException, RIFServiceException;
 }

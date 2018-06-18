@@ -22,7 +22,7 @@ import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.generic.util.RIFMemoryManager;
 import org.sahsu.rif.services.concepts.AbstractCovariate;
 import org.sahsu.rif.services.concepts.AbstractStudy;
-import org.sahsu.rif.services.concepts.AdjacencyMatrix;
+import org.sahsu.rif.services.concepts.AdjacencyMatrixRow;
 import org.sahsu.rif.services.concepts.Investigation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
@@ -194,8 +194,9 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				rifScriptPath.append(rifStartupOptions.getClassesDirectory());
 				rifScriptPath.append(File.separator);
 
-				AdjacencyMatrix adjacencyMatrix = AdjacencyMatrixDao.getInstance(rifStartupOptions)
-						                                  .getByStudyId(user, studyID);
+				List<AdjacencyMatrixRow> adjacencyMatrix = AdjacencyMatrixDao.getInstance(
+						rifStartupOptions).getByStudyId(user, studyID);
+
 
 
 				adjCovSmoothJri.append(rifScriptPath);

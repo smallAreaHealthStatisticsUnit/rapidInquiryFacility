@@ -4,8 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import javax.sql.DataSource;
+import java.util.List;
 
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
@@ -13,7 +12,7 @@ import org.sahsu.rif.generic.datastorage.GeneralQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
-import org.sahsu.rif.services.concepts.AdjacencyMatrix;
+import org.sahsu.rif.services.concepts.AdjacencyMatrixRow;
 import org.sahsu.rif.services.datastorage.common.AbstractAdjacencyMatrixDao;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 
@@ -25,7 +24,7 @@ public class SqlServerAdjacencyMatrixDao extends AbstractAdjacencyMatrixDao {
 	}
 
 	@Override
-	public AdjacencyMatrix getByStudyId(final User user, final String studyId)
+	public List<AdjacencyMatrixRow> getByStudyId(final User user, final String studyId)
 			throws SQLException, RIFServiceException {
 
 		String adjacencyTable = getAdjacencyTable(user, studyId,
