@@ -2577,4 +2577,11 @@ SELECT a.*, b.coa2011
 
 18th to 22nd June
 
-* 
+* Test and merge *Tidies up the query formatters #43*;
+* Document *tilemaker* hierarchy issues;
+* Apply Postgres fix for EWS2011 hierarchy issues to SQL Server;
+* Resolve adjacency list tuning issues >1 day to 3 minutes;
+* Update SQL Server tuning comments;
+* Create test noise band shapefile for sahsuland from Heathrow 2013 day noise;
+* Resolve front end shapefile loading issues for banded data;
+* Received population weighted centroids from Aina;

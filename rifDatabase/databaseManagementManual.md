@@ -2126,12 +2126,12 @@ The [SQL Server profiler](https://docs.microsoft.com/en-us/sql/tools/sql-server-
 		
 To use the profiler you will need to be a *sysadmin* or have the *ALTER TRACE* role: ```GRANT ALTER TRACE TO peter;```
 	
-Show execution plan in SQL SERver management studio is also very effective (showing missing indexes) and allows analysis of running queries:
+Show execution plan in SQL Server management studio is also very effective (showing missing indexes) and allows analysis of running queries:
 
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/SSMS_execution_plan.PNG?raw=true "SQL Server Management Studio Execution Plan")
 	
-However it is not very effective as it did not spot disabled SPATIAL indexes and the real problem is the lack of partitioning on SQL SErver. When the query was split by geolevel_id it ran in 
-two minutes as opposed to >245 hours!. It also cannot cope with T-SQL.
+However it is not very effective as it did not spot that the query had effectively disabled the SPATIAL indexes. The real problem with the query was the lack of partitioning on SQL Server. 
+When the query was split by geolevel_id it ran in two minutes as opposed to >245 hours!. It also cannot cope with T-SQL.
 	
 Peter Hambly
 May 2018
