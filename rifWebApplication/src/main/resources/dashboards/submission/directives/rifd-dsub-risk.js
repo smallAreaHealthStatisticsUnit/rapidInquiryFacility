@@ -101,6 +101,26 @@ angular.module("RIF")
                                 scope.isTable = false;
                             }
                         };
+						
+						scope.changedValue = function(attr) {
+							scope.selectedAttr=attr;
+						}
+						
+						function getSelectionMethodAsString(attributeName) {
+							if (scope.selectionMethod === 1) { // Single boundary; already set
+								return "selection by single boundary";
+							}
+							else if (scope.selectionMethod === 2) { // make selection by band attribute in file
+								return "selection by band attribute";
+							}
+							else if (scope.selectionMethod === 3) { // make selection by attribute value in file
+								return "selection by attribute value: " + (attributeName||"(unknown attribute)");
+							}
+							else {
+								return "unknown selection method " + scope.selectionMethod;
+							}
+						};
+						
                         function readShpFile(file) {
                             try {
                                 if (file.name.slice(-3) !== 'zip') {
@@ -135,7 +155,8 @@ angular.module("RIF")
                                                             scope.attrs.push(property);
                                                         }
                                                         bAttr = true;
-                                                        scope.attr = scope.attrs[scope.attrs.length - 1];
+                                                        scope.selectedAttr = scope.attrs[scope.attrs.length - 1];
+															// Set default
                                                     }
                                                     scope.isPolygon = true;
                                                     scope.isPoint = false;
@@ -199,6 +220,7 @@ angular.module("RIF")
                         scope.displayShapeFile = function () {
                             //exit if there is no shapefile
                             if (!scope.isPolygon && !scope.isPoint) {
+                                alertScope.showError("File is not a shapefile");
                                 return false;
                             }
 
@@ -281,14 +303,17 @@ angular.module("RIF")
                             }
 
                             //make bands around points
-                            if (scope.isPoint) {
+                            if (scope.isPoint) { 
                                 //make polygons and apply selection
                                 buffers = new L.layerGroup();
-                                for (var i = 0; i < scope.bandAttr.length; i++) {
+								var i = 0;
+								var points = 0;
+                                for (; i < scope.bandAttr.length; i++) {
                                     for (var j in poly._layers) {
                                         //Shp Library inverts lat, lngs for some reason (Bug?) - switch back
-                                        var polygon = L.circle([poly._layers[j].feature.geometry.coordinates[1],
-                                            poly._layers[j].feature.geometry.coordinates[0]],
+                                        var polygon = L.circle(
+											[poly._layers[j].feature.geometry.coordinates[1],
+                                             poly._layers[j].feature.geometry.coordinates[0]],
                                                 {
                                                     radius: scope.bandAttr[i],
                                                     fillColor: 'none',
@@ -302,16 +327,29 @@ angular.module("RIF")
                                             freehand: false,
                                             band: i + 1
                                         });
+										points += Object.keys(poly._layers).length;
                                     }
                                 }
-                                scope.shpfile.addLayer(buffers);
+								
+								alertScope.showSuccess("Added " + (i+1) + " band(s) from  " + 
+									points + " points using " +
+									getSelectionMethodAsString());
+								try {	
+									scope.shpfile.addLayer(buffers);
+								} catch (err) {
+									alertScope.showError("Could not open Shapefile, no valid features");
+									return false;
+								}
                             } else if (scope.isPolygon) {
-                                if (scope.selectionMethod === 2) {
-                                    //make selection by band attribute in file
+                                if (scope.selectionMethod === 2) { // make selection by band attribute in file
                                     for (var i in poly._layers) {
                                         //check these are valid bands
+										if (poly._layers[i].feature.properties.band == undefined) {                                            //band number not recognized
+                                            alertScope.showError("Invalid band descriptor: (no band field)");
+                                            return false;
+										}
                                         if (scope.possibleBands.indexOf(poly._layers[i].feature.properties.band) === -1) {
-                                            //band number not recognised
+                                            //band number not recognized
                                             alertScope.showError("Invalid band descriptor: " + poly._layers[i].feature.properties.band);
                                             return false;
                                         }
@@ -320,14 +358,25 @@ angular.module("RIF")
                                     //check the attribute is numeric etc
                                     for (var i in poly._layers) {
                                         //check these are valid exposure values
-                                        if (!angular.isNumber(poly._layers[i].feature.properties[scope.attr])) {
-                                            //number not recognised 
-                                            alertScope.showError("Non-numeric value in file: " + poly._layers[i].feature.properties[scope.attr]);
-                                            return false;
+                                        if (!angular.isNumber(poly._layers[i].feature.properties[scope.selectedAttr])) {
+											var a=parseFloat(poly._layers[i].feature.properties[scope.selectedAttr]);
+											if (!isNaN(a)) {
+												poly._layers[i].feature.properties[scope.selectedAttr]=a;
+											}
+											else {
+												//number not recognized 
+												alertScope.showError("Non-numeric value in file: " + 
+													poly._layers[i].feature.properties[scope.selectedAttr]);
+												return false;
+											}
                                         }
                                     }
                                 }
                                 //make the selection for each polygon
+								
+								var maxBand=0;
+								var attributeName=undefined;
+								var bandValues={};
                                 for (var i in poly._layers) {
                                     var polygon = L.polygon(poly._layers[i].feature.geometry.coordinates[0], {});
                                     var shape = {
@@ -336,33 +385,117 @@ angular.module("RIF")
                                     shape.circle = false;
                                     shape.freehand = false;
                                     shape.shapefile = true;
-                                    if (scope.selectionMethod === 1) {
-                                        shape.band = -1;
-                                    } else if (scope.selectionMethod === 2) {
+                                    if (scope.selectionMethod === 1) { // Single boundary; already set
+                                        shape.band = 1;
+										maxBand=1;
+										
+										if (bandValues[i]) {
+											bandValues[i].band = shape.band;
+										}
+										else {
+											bandValues[i]={
+												band: shape.band,
+												value: undefined
+											};
+										}
+                                    } 
+									else if (scope.selectionMethod === 2) { // make selection by band attribute in file
                                         shape.band = poly._layers[i].feature.properties.band;
-                                    } else if (scope.selectionMethod === 3) {
-                                        var attr = poly._layers[i].feature.properties[scope.attr];
+										attributeName="band";
+										
+										if (bandValues[i]) {
+											bandValues[i].band = shape.band;
+										}
+										else {
+											bandValues[i]={
+												band: shape.band,
+												value: undefined
+											};
+										}
+                                    } 
+									else if (scope.selectionMethod === 3) { // make selection by attribute value in file
+                                        var attr = poly._layers[i].feature.properties[scope.selectedAttr];
+										attributeName=scope.selectedAttr;
                                         shape.band = -1;
-                                        for (var k = 0; k < scope.bandAttr.length; k++) {
-                                            if (k === 0) {
-                                                if (attr >= scope.bandAttr[k]) {
-                                                    shape.band = 1;
-                                                }
-                                            } else if (k < scope.bandAttr.length - 1) {
-                                                if (attr >= scope.bandAttr[k] && attr < scope.bandAttr[k - 1]) {
-                                                    shape.band = k + 1;
-                                                }
-                                            }
+                                        for (var k = 0; k < scope.bandAttr.length; k++) { // In descending order
+                                            if (shape.band == -1 && attr >= scope.bandAttr[k]) {
+                                                shape.band = k  + 1;
+												alertScope.consoleDebug("selection by attribute value shape.band[" + i + "]: " + shape.band +
+													"; attr value: " + attr +
+													"; k: " + k + 
+													">= scope.bandAttr[k] " + scope.bandAttr[k]);
+                                            } 
+											else {
+												alertScope.consoleDebug("No selection by attribute value shape.band[" + i + "]: " + shape.band +
+													"; attr value: " + attr + 
+													"; k: " + k + 
+													"; NOT >= scope.bandAttr[k] " + scope.bandAttr[k]);
+											}
+											
+											if (bandValues[i]) {
+												bandValues[i].band = shape.band;
+												bandValues[i].value = attr;
+											}
+											else {
+												bandValues[i]={
+													band: shape.band,
+													value: attr
+												};
+											}
+											
                                         }
+										
                                     }
+									
+									if (shape.band > maxBand) {
+										maxBand = shape.band;
+									}
                                     //make the selection
                                     scope.makeDrawSelection(shape);
                                 }
-                            }
+								
+								var bandsUsed={};
+								var noBandsUsed=0;
+								for (var k in bandValues) {
+									if (bandValues[k].band > 0) {
+										if (bandsUsed[bandValues[k].band]) {
+											bandsUsed[bandValues[k].band]++;
+										}
+										else {
+											bandsUsed[bandValues[k].band]=1;
+										}
+									}
+								}								
+								alertScope.consoleDebug(getSelectionMethodAsString(attributeName) +	
+									" of maxBand: " + maxBand +
+									"; scope.attrs: " + (scope.attrs||"(no attributes in shapefile)") +
+									"; scope.bandAttr (user supplied band values): " + JSON.stringify(scope.bandAttr) +
+									"; bandsUsed: " + JSON.stringify(bandsUsed, null , 1) +
+									"; bandValues: " + JSON.stringify(bandValues, null , 1) +
+									"; polygon coordinates: " + poly._layers[i].feature.geometry.coordinates[0].length);
+								if (maxBand > 0) {
+									alertScope.showSuccess("Added " + 
+										Object.keys(bandsUsed).length + "/" + maxBand + " band(s) from " + 
+										Object.keys(poly._layers).length + " polygons using " +
+										getSelectionMethodAsString(attributeName));
+								}
+								else {
+									alertScope.showError("Added no bands from " + 
+										Object.keys(poly._layers).length + " polygons using " +
+										getSelectionMethodAsString(attributeName));
+									return false;
+									
+								}
+								try {
+									scope.shpfile.addLayer(poly);
+								} catch (err) {
+									alertScope.showError("Could not open Shapefile, no valid features");
+									return false;
+								}
+                            } // End of isPolygon()
 
                             //add AOI layer to map on modal close                            
                             try {
-                                scope.shpfile.addLayer(poly);
                                 scope.shpfile.addTo(scope.areamap);
                             } catch (err) {
                                 alertScope.showError("Could not open Shapefile, no valid features");

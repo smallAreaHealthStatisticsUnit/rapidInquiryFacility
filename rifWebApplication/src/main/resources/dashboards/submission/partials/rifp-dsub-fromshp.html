@@ -72,7 +72,7 @@ Disease submission modal to open shapefile AOI
             </div>
 
             <table ng-show="isTable && isPolygon" id="breakstable">
-                <select ng-show="isTable && isPolygon" id="exposureSelect" ng-model="attr" ng-options="s for s in attrs" ng-init="attr"></select>
+                <select ng-show="isTable && isPolygon" id="exposureSelect" ng-model="selectedAttr" ng-change="changedValue(selectedAttr)" ng-options="s for s in attrs" ng-init="selectedAttr"></select>
                 <tr ng-repeat="i in possibleBands track by $index">
                     <td><input class="break" ng-model="bandAttr[$index]"> Lower value for band {{possibleBands[i - 1]}}</td> 
                 </tr>
