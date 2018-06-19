@@ -14,7 +14,7 @@ import java.util.Scanner;
 import org.sahsu.rif.dataloader.concepts.DataLoaderToolSettings;
 import org.sahsu.rif.dataloader.concepts.DatabaseConnectionsConfiguration;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLCreateDatabaseQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLDropDatabaseQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;

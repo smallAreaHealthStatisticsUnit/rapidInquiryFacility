@@ -16,7 +16,7 @@ import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLCountQueryFormatter;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLSelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;

@@ -14,7 +14,7 @@ import org.sahsu.rif.dataloader.concepts.WorkflowValidator;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolError;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLCreateIndexQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLDeleteIndexQueryFormatter;
 import org.sahsu.rif.generic.system.Messages;

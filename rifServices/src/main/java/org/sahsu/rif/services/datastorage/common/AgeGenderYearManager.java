@@ -10,7 +10,7 @@ import java.util.List;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.AbstractRIFConcept.ValidationPolicy;
