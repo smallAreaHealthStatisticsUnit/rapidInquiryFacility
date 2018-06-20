@@ -49,7 +49,8 @@ angular.module("RIF")
                 }
             };
         })
-        .directive('riskAnalysis', ['$rootScope', '$uibModal', '$q',
+        .directive('riskAnalysis', ['$rootScope', '$uibModal', '$q', 
+			// SelectStateService is not need as makeDrawSelection() in rifd-dsub-maptable.js is called to update
             function ($rootScope, $uibModal, $q) {
                 return {
                     restrict: 'A', //added as attribute to in to selectionMapTools > btn-addAOI in rifs-utils-mapTools
@@ -267,13 +268,13 @@ angular.module("RIF")
 										
 										if (a.toString() != scope.bandAttr[i] || 
 										    b.toString() != scope.bandAttr[i+1]) {
-											alertScope.consoleLog("scope.bandAttr[" + i + "]: " + 
+											alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
 												JSON.stringify(scope.bandAttr));
                                             alertScope.showError("Distance band values are not integers");
                                             return false;
 										}
                                         else if (a > b) {
-											alertScope.consoleLog("scope.bandAttr[" + i + "]: " + 
+											alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
 												JSON.stringify(scope.bandAttr));
                                             alertScope.showError("Distance band values are not in ascending order");
                                             return false;
@@ -287,13 +288,13 @@ angular.module("RIF")
                                         
 										if (a.toString() != scope.bandAttr[i] || 
 										    b.toString() != scope.bandAttr[i+1]) {
-											alertScope.consoleLog("scope.bandAttr[" + i + "]: " + 
+											alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
 												JSON.stringify(scope.bandAttr));
                                             alertScope.showError("Distance band values are not integers");
                                             return false;
 										}
                                         else if (a < b) {
-											alertScope.consoleLog("scope.bandAttr[" + i + "]: " + 
+											alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
 												JSON.stringify(scope.bandAttr));
                                             alertScope.showError("Exposure band values are not in descending order");
                                             return false;
@@ -420,13 +421,13 @@ angular.module("RIF")
                                         for (var k = 0; k < scope.bandAttr.length; k++) { // In descending order
                                             if (shape.band == -1 && attr >= scope.bandAttr[k]) {
                                                 shape.band = k  + 1;
-												alertScope.consoleDebug("selection by attribute value shape.band[" + i + "]: " + shape.band +
+												alertScope.consoleDebug("[rifd-dsub-risk.js] selection by attribute value shape.band[" + i + "]: " + shape.band +
 													"; attr value: " + attr +
 													"; k: " + k + 
 													">= scope.bandAttr[k] " + scope.bandAttr[k]);
                                             } 
 											else {
-												alertScope.consoleDebug("No selection by attribute value shape.band[" + i + "]: " + shape.band +
+												alertScope.consoleDebug("[rifd-dsub-risk.js] No selection by attribute value shape.band[" + i + "]: " + shape.band +
 													"; attr value: " + attr + 
 													"; k: " + k + 
 													"; NOT >= scope.bandAttr[k] " + scope.bandAttr[k]);
@@ -466,7 +467,7 @@ angular.module("RIF")
 										}
 									}
 								}								
-								alertScope.consoleDebug(getSelectionMethodAsString(attributeName) +	
+								alertScope.consoleDebug("[rifd-dsub-risk.js] " + getSelectionMethodAsString(attributeName) +	
 									" of maxBand: " + maxBand +
 									"; scope.attrs: " + (scope.attrs||"(no attributes in shapefile)") +
 									"; scope.bandAttr (user supplied band values): " + JSON.stringify(scope.bandAttr) +
@@ -486,12 +487,13 @@ angular.module("RIF")
 									return false;
 									
 								}
+														
 								try {
-									scope.shpfile.addLayer(poly);
+									scope.shpfile.addLayer(poly); // Add poly to layerGroup
 								} catch (err) {
 									alertScope.showError("Could not open Shapefile, no valid features");
 									return false;
-								}
+								} 
                             } // End of isPolygon()
 
                             //add AOI layer to map on modal close                            

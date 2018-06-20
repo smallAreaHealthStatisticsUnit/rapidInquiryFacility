@@ -427,10 +427,10 @@ angular.module("RIF")
 								selectedShapes=SelectStateService.getState().studySelection.studyShapes;
 							}
 							if (selectedShapes) {
-								console.log("selectedShapes " + $scope.input.name + ": " + 
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes() selectedShapes " + $scope.input.name + ": " + 
 									JSON.stringify(selectedShapes, null, 1));
 								if (!$scope.areamap.hasLayer($scope.shapes)) {
-									console.log("Add shapes layerGroup");
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes() add shapes layerGroup");
 									$scope.shapes = new L.layerGroup();
 									$scope.areamap.addLayer($scope.shapes);
 								}
@@ -448,8 +448,9 @@ angular.module("RIF")
 											fillOpacity: 0
 										});
 										$scope.shapes.addLayer(circle);
-										console.log("Added circle: " + JSON.stringify(selectedShape.latLng) + 
-											"; radius: " + selectedShape.radius);
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): added circle: " + JSON.stringify(selectedShape.latLng) + 
+											"; radius: " + selectedShape.radius+ 
+											"; band: " + selectedShape.band);
 									}
 									else { // Use geoJSON
 										var geojson= new L.geoJSON(selectedShape.geojson, {
@@ -460,8 +461,9 @@ angular.module("RIF")
 										});
 										
 										$scope.shapes.addLayer(geojson);
-										console.log("Added geojson: " + 
-											JSON.stringify(selectedShape, null, 1));
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): added geojson" + 
+											"; band: " + selectedShape.band +
+											"; " + selectedShape.geojson.geometry.coordinates[0].length + " coordinates");
 									}
 								}
 							}
@@ -659,6 +661,7 @@ angular.module("RIF")
 								latLng: undefined,
 								geojson: undefined
 							}
+								
 							if (shape.circle) { // Represent circles as a point and a radius
 								savedShape.radius=shape.data.getRadius();
 								savedShape.latLng=shape.data.getLatLng();	
@@ -672,6 +675,9 @@ angular.module("RIF")
 									fillOpacity: 0
 								});
 								$scope.shapes.addLayer(circle);
+								
+								alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection() savedShape: " + 
+									JSON.stringify(savedShape, null, 1));
 							}
 							else { // Use geoJSON
 								savedShape.geojson=shape.data.toGeoJSON();
@@ -683,8 +689,13 @@ angular.module("RIF")
 								});
 								
 								$scope.shapes.addLayer(geojson);
+									
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection(): added geojson" + 
+									"; band: " + savedShape.band +
+									"; " + savedShape.geojson.geometry.coordinates[0].length + " coordinates");
 							}	
 
+								
 							// Save to SelectStateService
 							if ($scope.input.name == "ComparisionAreaMap") {
 								SelectStateService.getState().studySelection.comparisonShapes.push(savedShape);
@@ -813,7 +824,7 @@ angular.module("RIF")
                                         for (var j = 0; j < $scope.gridOptions.data.length; j++) {
                                             if ($scope.gridOptions.data[j].area_id === listOfIDs[i].ID) {
                                                 var thisBand = Number(listOfIDs[i].Band);
-//												$scope.consoleLog("[" + i + "," + j + "] MATCH area_id: " + $scope.gridOptions.data[j].area_id + 
+//												alertScope.consoleLog("[rifd-dsub-maptable.js] [" + i + "," + j + "] MATCH area_id: " + $scope.gridOptions.data[j].area_id + 
 //													"; ID: " + listOfIDs[i].ID +
 //													"; thisBand: " + thisBand);
                                                 if ($scope.possibleBands.indexOf(thisBand) !== -1) {
@@ -829,7 +840,7 @@ angular.module("RIF")
                                     }
                                     if (!bPushed) {
                                         alertScope.showWarning("No valid 'ID' fields or 'Band' numbers found in your list");
-//										$scope.consoleDebug(JSON.stringify(listOfIDs, null, 2));
+//										alertScope.consoleDebug("[rifd-dsub-maptable.js] " + JSON.stringify(listOfIDs, null, 2));
                                     } else if (!bInvalid) {
                                         alertScope.showSuccess("List uploaded sucessfully");
                                     } else {
