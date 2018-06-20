@@ -268,7 +268,7 @@ angular.module("RIF")
                             }
 
                             var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt);
-                            latlngList = [];
+                            latlngList = []; // of objects!
                             centroidMarkers = new L.layerGroup();
 
                             //Get the centroids from DB
@@ -276,7 +276,12 @@ angular.module("RIF")
                             user.getTileMakerCentroids(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
                                 for (var i = 0; i < res.data.smoothed_results.length; i++) {
                                     var p = res.data.smoothed_results[i];
-                                    latlngList.push([L.latLng([p.y, p.x]), p.name, p.id]);
+									latlngList.push({
+										latLng: L.latLng([p.y, p.x]), 
+										name: p.name, 
+										id: p.id,
+										band: -1
+									});
                                     var circle = new L.CircleMarker([p.y, p.x], {
                                         radius: 2,
                                         fillColor: "blue",
@@ -302,7 +307,12 @@ angular.module("RIF")
                                                 //get as centroid marker layer. 
                                                 if (!bWeightedCentres) {
                                                     var p = layer.getBounds().getCenter();
-                                                    latlngList.push([L.latLng([p.lat, p.lng]), feature.properties.name, feature.properties.area_id]);
+                                                    latlngList.push({
+														latLng: L.latLng([p.lat, p.lng]), 
+														name: feature.properties.name, 
+														id: feature.properties.area_id,
+														bnand: -1
+													});
                                                     var circle = new L.CircleMarker([p.lat, p.lng], {
                                                         radius: 2,
                                                         fillColor: "red",
@@ -512,7 +522,7 @@ angular.module("RIF")
                          * MAP SETUP
                          */
                         //district centres for rubberband selection
-                        var latlngList = 0;
+                        var latlngList = [];
                         var centroidMarkers = new L.layerGroup();
 						$scope.shapes = new L.layerGroup();
                         $scope.areamap.addLayer($scope.shapes);
@@ -704,51 +714,84 @@ angular.module("RIF")
 								SelectStateService.getState().studySelection.studyShapes.push(savedShape);
 							}
 							
-                            latlngList.forEach(function (point) {
-                                //is point in defined polygon?
-                                var test;
-                                if (shape.circle) {
-                                    test = GISService.getPointincircle(point[0], shape);
-                                } else {
-                                    test = GISService.getPointinpolygon(point[0], shape);
-                                }
-                                if (test) {
-									var thisLatLng = point[0];
-                                    var thisPoly = point[1];
-                                    var thisPolyID = point[2];
-                                    var bFound = false;
-                                    for (var i = 0; i < $scope.selectedPolygon.length; i++) {
-                                        if ($scope.selectedPolygon[i].id === thisPolyID) {
-                                            bFound = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!bFound) {
-                                        if (shape.band === -1) {
-                                            $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: $scope.currentBand, centroid: thisLatLng});
-                                        } else {
-                                            $scope.selectedPolygon.push({id: thisPolyID, gid: thisPolyID, label: thisPoly, band: shape.band, centroid: thisLatLng});
-                                        }
-										if (SelectStateService.getState().studyType == "Risk Analysis") {
-															
-//											SelectStateService.getState().studySelection.points.pushIfNotExist(thisLatLng, function(e) { 
-//												return e.lat === thisLatLng.lat && e.lng === thisLatLng.lng; 
-//											});
+							function latlngListCallback () { 
+//								alertScope.consoleDebug("[rifd-dsub-maptable.js] processed latlngList: " + 
+//									JSON.stringify(latlngList, null, 1));	
+									
+								$scope.$applyAsync();
+
+								if (!shape.circle && !shape.shapefile) {
+									removeMapDrawItems();
+									//auto increase band dropdown
+									if ($scope.currentBand < Math.max.apply(null, $scope.possibleBands)) {
+										$scope.currentBand++;
+									}
+								}												
+							}
+
+							var itemsProcessed = 0;
+                            latlngList.forEach(
+								function asyncFunction(latLng) { // Centroid
+									//is point in defined polygon?
+									var test;
+									if (shape.circle) {
+										test = GISService.getPointincircle(latLng.latLng, shape);
+									} else {
+										test = GISService.getPointinpolygon(latLng.latLng, shape);
+									}
+									if (test) {
+										var thisLatLng = latLng.latLng;
+										var thisPoly = latLng.name;
+										var thisPolyID = latLng.id;
+										var bFound = false;
+										for (var i = 0; i < $scope.selectedPolygon.length; i++) {
+											if ($scope.selectedPolygon[i].id === thisPolyID) {											
+												if (shape.band === -1) {  // Set band
+													$scope.selectedPolygon[i].band=$scope.currentBand;
+												}
+												else {
+													$scope.selectedPolygon[i].band=shape.band;
+												}
+												latlngList[itemsProcessed].band=$scope.selectedPolygon[i].band;
+												bFound = true;
+												break;
+											}
 										}
-                                    }
-                                }
-                            });
-
-                            $scope.$applyAsync();
-
-                            if (!shape.circle && !shape.shapefile) {
-                                removeMapDrawItems();
-                                //auto increase band dropdown
-                                if ($scope.currentBand < Math.max.apply(null, $scope.possibleBands)) {
-                                    $scope.currentBand++;
-                                }
-                            }
-                        };
+										if (!bFound) {
+											if (shape.band === -1) {
+												$scope.selectedPolygon.push({
+													id: thisPolyID, 
+													gid: thisPolyID, 
+													label: thisPoly, 
+													band: $scope.currentBand, 
+													centroid: thisLatLng
+												});
+												latlngList[itemsProcessed].band=$scope.currentBand;
+											} else {
+												$scope.selectedPolygon.push({
+													id: thisPolyID, 
+													gid: thisPolyID, 
+													label: thisPoly, 
+													band: shape.band, 
+													centroid: thisLatLng
+												});
+												latlngList[itemsProcessed].band=shape.band;
+											}
+											if (SelectStateService.getState().studyType == "Risk Analysis") {
+																
+	//											SelectStateService.getState().studySelection.points.pushIfNotExist(thisLatLng, function(e) { 
+	//												return e.lat === thisLatLng.lat && e.lng === thisLatLng.lng; 
+	//											});
+											}
+										}
+									}
+									itemsProcessed++;
+									if (itemsProcessed === latlngList.length) {
+										latlngListCallback();
+									}
+								}
+							);
+                        }; // End of makeDrawSelection()
                         //remove drawn items event fired from service
                         $scope.$on('removeDrawnItems', function (event, data) {
                             removeMapDrawItems();

@@ -468,7 +468,7 @@ angular.module("RIF")
 									}
 								}								
 								alertScope.consoleDebug("[rifd-dsub-risk.js] " + getSelectionMethodAsString(attributeName) +	
-									" of maxBand: " + maxBand +
+									"; maxBand: " + maxBand +
 									"; scope.attrs: " + (scope.attrs||"(no attributes in shapefile)") +
 									"; scope.bandAttr (user supplied band values): " + JSON.stringify(scope.bandAttr) +
 									"; bandsUsed: " + JSON.stringify(bandsUsed, null , 1) +
@@ -484,8 +484,7 @@ angular.module("RIF")
 									alertScope.showError("Added no bands from " + 
 										Object.keys(poly._layers).length + " polygons using " +
 										getSelectionMethodAsString(attributeName));
-									return false;
-									
+									return false;			
 								}
 														
 								try {
