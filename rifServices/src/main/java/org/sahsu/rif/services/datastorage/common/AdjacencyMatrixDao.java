@@ -36,6 +36,6 @@ public interface AdjacencyMatrixDao {
 	 * @throws SQLException for database problems
 	 * @throws RIFServiceException for general problems
 	 */
-	List<AdjacencyMatrixRow> getByStudyId(final User user, final String studyId)
+	List<AdjacencyMatrixRow> getByStudyId(final User user, final int studyId)
 			throws SQLException, RIFServiceException;
 }

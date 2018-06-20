@@ -185,6 +185,11 @@
 			<artifactId>lombok</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<repositories>

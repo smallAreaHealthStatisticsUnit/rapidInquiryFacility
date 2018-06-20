@@ -14,18 +14,18 @@ import java.util.logging.Logger;
 import org.rosuda.JRI.REXP;
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
-import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.generic.util.RIFMemoryManager;
 import org.sahsu.rif.services.concepts.AbstractCovariate;
 import org.sahsu.rif.services.concepts.AbstractStudy;
-import org.sahsu.rif.services.concepts.AdjacencyMatrixRow;
 import org.sahsu.rif.services.concepts.Investigation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
+import org.sahsu.rif.services.system.files.AdjacencyMatrixCsv;
 
 public class SmoothResultsSubmissionStep extends CommonRService {
 
@@ -189,14 +189,21 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 				rengine.assign("working_dir", rifStartupOptions.getExtractDirectory());
 				
-				rifLogger.info(this.getClass(), "R parameters: " + lineSeparator + logMsg.toString());
+				rifLogger.info(getClass(), "R parameters: " + lineSeparator
+				                           + logMsg.toString());
 
 				rifScriptPath.append(rifStartupOptions.getClassesDirectory());
 				rifScriptPath.append(File.separator);
 
-				List<AdjacencyMatrixRow> adjacencyMatrix = AdjacencyMatrixDao.getInstance(
-						rifStartupOptions).getByStudyId(user, studyID);
-
+				// Output the adjacency matrix as a CSV file.
+				int numStudyId = Integer.parseInt(studyID);
+				AdjacencyMatrixCsv.builder()
+						.studyId(numStudyId)
+						.extractDirectory(rifStartupOptions.getExtractDirectory())
+						.matrix(AdjacencyMatrixDao.getInstance(rifStartupOptions)
+								        .getByStudyId(user, numStudyId))
+						.build()
+					.toCsv();
 
 
 				adjCovSmoothJri.append(rifScriptPath);

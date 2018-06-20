@@ -23,7 +23,7 @@ public abstract class AbstractAdjacencyMatrixDao extends BaseSQLManager
 		super(rifServiceStartupOptions);
 	}
 
-	protected List<AdjacencyMatrixRow> getAdjacencyMatrix(final User user, final String studyId,
+	protected List<AdjacencyMatrixRow> getAdjacencyMatrix(final User user, final int studyId,
 			final QueryFormatter formatter) throws SQLException, RIFServiceException {
 
 		final List<AdjacencyMatrixRow> matrix = Lists.newArrayList();
@@ -34,7 +34,7 @@ public abstract class AbstractAdjacencyMatrixDao extends BaseSQLManager
 		try (PreparedStatement getMatrix = SQLQueryUtility.createPreparedStatement(
 				connection, formatter.generateQuery())) {
 
-			getMatrix.setString(1, studyId);
+			getMatrix.setInt(1, studyId);
 			ResultSet resultSet = getMatrix.executeQuery();
 
 			while(resultSet.next()) {

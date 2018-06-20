@@ -24,7 +24,7 @@ public class SqlServerAdjacencyMatrixDao extends AbstractAdjacencyMatrixDao {
 	}
 
 	@Override
-	public List<AdjacencyMatrixRow> getByStudyId(final User user, final String studyId)
+	public List<AdjacencyMatrixRow> getByStudyId(final User user, final int studyId)
 			throws SQLException, RIFServiceException {
 
 		String adjacencyTable = getAdjacencyTable(user, studyId,
@@ -34,7 +34,7 @@ public class SqlServerAdjacencyMatrixDao extends AbstractAdjacencyMatrixDao {
 		                          createFormatterForAdjacencyMatrix(studyId, adjacencyTable));
 	}
 
-	private String getAdjacencyTable(final User user, final String studyId,
+	private String getAdjacencyTable(final User user, final int studyId,
 			 final DatabaseType type) throws SQLException, RIFServiceException {
 
 		final String adjacencyTable;
@@ -54,7 +54,7 @@ public class SqlServerAdjacencyMatrixDao extends AbstractAdjacencyMatrixDao {
 		try (PreparedStatement adjTableFormatter = SQLQueryUtility.createPreparedStatement(
 				                            connection, formatter.generateQuery())) {
 
-			adjTableFormatter.setString(1, studyId);
+			adjTableFormatter.setInt(1, studyId);
 			ResultSet resultSet = adjTableFormatter.executeQuery();
 			if (resultSet.next()) {
 				adjacencyTable = resultSet.getString(1);
@@ -75,7 +75,7 @@ public class SqlServerAdjacencyMatrixDao extends AbstractAdjacencyMatrixDao {
 	}
 
 	private GeneralQueryFormatter createFormatterForAdjacencyMatrix(
-			final String studyId, final String adjacencyTable) {
+			final int studyId, final String adjacencyTable) {
 
 		GeneralQueryFormatter formatter = new GeneralQueryFormatter();
 		formatter.setDatabaseSchemaName("rif40");

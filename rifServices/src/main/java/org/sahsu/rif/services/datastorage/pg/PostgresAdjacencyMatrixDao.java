@@ -19,11 +19,11 @@ public class PostgresAdjacencyMatrixDao extends AbstractAdjacencyMatrixDao {
 	}
 
 	@Override
-	public List<AdjacencyMatrixRow> getByStudyId(final User user, final String studyId)
+	public List<AdjacencyMatrixRow> getByStudyId(final User user, final int studyId)
 			throws SQLException, RIFServiceException {
 
 		FunctionCallerQueryFormatter formatter = new FunctionCallerQueryFormatter();
-		formatter.setFunctionName("rif40_GetAdjacencyMatrix");
+		formatter.setFunctionName("rif40_getadjacencymatrix");
 		formatter.setDatabaseSchemaName("rif40_xml_pkg");
 		formatter.setNumberOfFunctionParameters(1);
 
