@@ -123,7 +123,7 @@ Symptom; SQL Severer connect error ```Error: None of the binaries loaded success
 
 * SQL server connect error caused by a version mismatch between the Node.js packages *mssql* and *msnodesqlv8*; 
   ```
-  C:\Users\phamb\OneDrive\SEER Data\Tile maker USA>node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password retep
+  C:\Users\phamb\OneDrive\SEER Data\Tile maker USA>node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password XXXXXXXXXXX
 	Created info log file: mssqlTileMaker.log
 	About to connected to SQL server using: {
 		"driver": "msnodesqlv8",
@@ -1949,7 +1949,7 @@ Script examples:
 * Postgres: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev```
   [Postgres tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_tile_manufacture.md)
   A log file will be created in the current directory as: *pgTileMaker.log*;
-* SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database sahsuland_dev```
+* SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password XXXXXXXXXXX --database sahsuland_dev```
   [SQL Server tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_tile_manufacture.md)
   A log file will be created in the current directory as: *mssqlTileMaker.log*
 
