@@ -393,74 +393,74 @@ dbDisConnect <- function() {
 ##Set (exitvalue) 0 on success, 1 on failure
 ## THROWS EXCEPTION
 ##================================================================================
-getAdjacencyMatrix <- function() {
-  if (db_driver_prefix == "jdbc:postgresql") {
-    sql <- paste("SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(", studyID, ")")
-    AdjRowset=doSQLQuery(sql)
-    numberOfRows <- nrow(AdjRowset)
-  }
-  else if (db_driver_prefix == "jdbc:sqlserver") {
-    sql <- paste("SELECT b2.adjacencytable
-                 FROM [rif40].[rif40_studies] b1, [rif40].[rif40_geographies] b2
-                 WHERE b1.study_id  = ", studyID ,"
-                 AND b2.geography = b1.geography");
-    adjacencyTableRes=doSQLQuery(sql)
-    numberOfRows <- nrow(adjacencyTableRes)
-    if (numberOfRows != 1) {
-      cat(paste("Expected 1 row; got: " + numberOfRows + "; SQL> ", sql, "\n"), sep="")
-      exitValue <<- 1
-    }
-    adjacencyTable <- tolower(adjacencyTableRes$adjacencytable[1])
-#    print(adjacencyTable);
-    sql <- paste("WITH b AS ( /* Tilemaker: has adjacency table */
-                 SELECT b1.area_id, b3.geolevel_id
-                 FROM [rif40].[rif40_study_areas] b1, [rif40].[rif40_studies] b2, [rif40].[rif40_geolevels] b3
-                 WHERE b1.study_id  = ", studyID ,"
-                 AND b1.study_id  = b2.study_id
-                 AND b2.geography = b3.geography
-    )
-                 SELECT c1.areaid AS area_id, c1.num_adjacencies, c1.adjacency_list
-                 FROM [rif_data].[", adjacencyTable, "] c1, b
-                 WHERE c1.geolevel_id   = b.geolevel_id
-                 AND c1.areaid        = b.area_id
-                 ORDER BY 1", sep = "")
-    AdjRowset=doSQLQuery(sql)
-    numberOfRows <- nrow(AdjRowset)
-  }
-  else {
-    cat(paste("Unsupported port: ", db_driver_prefix, "\n"), sep="")
-    exitValue <<- 1
-  }
-
-
-	if (exitValue != 0) {
-		throw("Error getting adjacency matrix");
-	}
-
-  cat(paste0("rif40_GetAdjacencyMatrix numberOfRows=",numberOfRows, "==", "\n"), sep="")
-  #
-  # areaid               num_adjacencies adjacency_list_truncated
-  # -------------------- --------------- ------------------------------------------------------------------------------------------
-  # 01.001.000100.1                   18 01.001.000100.2,01.001.000200.1,01.002.000500.1,01.002.000500.4,01.002.000500.7,01.002.000
-  # 01.001.000100.2                    2 01.001.000100.1,01.001.000200.1
-  # 01.001.000200.1                    4 01.001.000100.1,01.001.000100.2,01.001.000300.1,01.005.002400.1
-  # 01.001.000300.1                    1 01.001.000200.1
-  # 01.002.000300.1                    3 01.002.000300.2,01.002.000300.3,01.002.000300.4
-  # 01.002.000300.2                    4 01.002.000300.1,01.002.000300.4,01.002.000500.3,01.002.000600.2
-  # 01.002.000300.3                    3 01.002.000300.1,01.002.000300.4,01.002.000300.5
-  # 01.002.000300.4                    6 01.002.000300.1,01.002.000300.2,01.002.000300.3,01.002.000300.5,01.002.000400.3,01.002.000
-  # 01.002.000300.5                    3 01.002.000300.3,01.002.000300.4,01.002.000400.3
-  # 01.002.000400.1                    6 01.002.000400.2,01.002.000400.5,01.002.000400.7,01.002.001700.1,01.002.001700.2,01.002.001
-  #
-  #   cat(head(AdjRowset, n=10, "\n"), sep="")
-
-  #
-# Save extract data frame to file
+# getAdjacencyMatrix <- function() {
+#   if (db_driver_prefix == "jdbc:postgresql") {
+#     sql <- paste("SELECT * FROM rif40_xml_pkg.rif40_GetAdjacencyMatrix(", studyID, ")")
+#     AdjRowset=doSQLQuery(sql)
+#     numberOfRows <- nrow(AdjRowset)
+#   }
+#   else if (db_driver_prefix == "jdbc:sqlserver") {
+#     sql <- paste("SELECT b2.adjacencytable
+#                  FROM [rif40].[rif40_studies] b1, [rif40].[rif40_geographies] b2
+#                  WHERE b1.study_id  = ", studyID ,"
+#                  AND b2.geography = b1.geography");
+#     adjacencyTableRes=doSQLQuery(sql)
+#     numberOfRows <- nrow(adjacencyTableRes)
+#     if (numberOfRows != 1) {
+#       cat(paste("Expected 1 row; got: " + numberOfRows + "; SQL> ", sql, "\n"), sep="")
+#       exitValue <<- 1
+#     }
+#     adjacencyTable <- tolower(adjacencyTableRes$adjacencytable[1])
+# #    print(adjacencyTable);
+#     sql <- paste("WITH b AS ( /* Tilemaker: has adjacency table */
+#                  SELECT b1.area_id, b3.geolevel_id
+#                  FROM [rif40].[rif40_study_areas] b1, [rif40].[rif40_studies] b2, [rif40].[rif40_geolevels] b3
+#                  WHERE b1.study_id  = ", studyID ,"
+#                  AND b1.study_id  = b2.study_id
+#                  AND b2.geography = b3.geography
+#     )
+#                  SELECT c1.areaid AS area_id, c1.num_adjacencies, c1.adjacency_list
+#                  FROM [rif_data].[", adjacencyTable, "] c1, b
+#                  WHERE c1.geolevel_id   = b.geolevel_id
+#                  AND c1.areaid        = b.area_id
+#                  ORDER BY 1", sep = "")
+#     AdjRowset=doSQLQuery(sql)
+#     numberOfRows <- nrow(AdjRowset)
+#   }
+#   else {
+#     cat(paste("Unsupported port: ", db_driver_prefix, "\n"), sep="")
+#     exitValue <<- 1
+#   }
 #
-	if (dumpFramesToCsv == TRUE) {
-		cat(paste0("Saving adjacency matrix to: ", adjacencyMatrixFileName, "\n"), sep="")
-		write.csv(AdjRowset, file=adjacencyMatrixFileName)
-	}
-
-  return(AdjRowset);
-}
+#
+# 	if (exitValue != 0) {
+# 		throw("Error getting adjacency matrix");
+# 	}
+#
+#   cat(paste0("rif40_GetAdjacencyMatrix numberOfRows=",numberOfRows, "==", "\n"), sep="")
+#   #
+#   # areaid               num_adjacencies adjacency_list_truncated
+#   # -------------------- --------------- ------------------------------------------------------------------------------------------
+#   # 01.001.000100.1                   18 01.001.000100.2,01.001.000200.1,01.002.000500.1,01.002.000500.4,01.002.000500.7,01.002.000
+#   # 01.001.000100.2                    2 01.001.000100.1,01.001.000200.1
+#   # 01.001.000200.1                    4 01.001.000100.1,01.001.000100.2,01.001.000300.1,01.005.002400.1
+#   # 01.001.000300.1                    1 01.001.000200.1
+#   # 01.002.000300.1                    3 01.002.000300.2,01.002.000300.3,01.002.000300.4
+#   # 01.002.000300.2                    4 01.002.000300.1,01.002.000300.4,01.002.000500.3,01.002.000600.2
+#   # 01.002.000300.3                    3 01.002.000300.1,01.002.000300.4,01.002.000300.5
+#   # 01.002.000300.4                    6 01.002.000300.1,01.002.000300.2,01.002.000300.3,01.002.000300.5,01.002.000400.3,01.002.000
+#   # 01.002.000300.5                    3 01.002.000300.3,01.002.000300.4,01.002.000400.3
+#   # 01.002.000400.1                    6 01.002.000400.2,01.002.000400.5,01.002.000400.7,01.002.001700.1,01.002.001700.2,01.002.001
+#   #
+#   #   cat(head(AdjRowset, n=10, "\n"), sep="")
+#
+#   #
+# # Save extract data frame to file
+# #
+# 	# if (dumpFramesToCsv == TRUE) {
+# 	# 	cat(paste0("Saving adjacency matrix to: ", adjacencyMatrixFileName, "\n"), sep="")
+# 	# 	write.csv(AdjRowset, file=adjacencyMatrixFileName)
+# 	# }
+#
+#   return(AdjRowset);
+# }

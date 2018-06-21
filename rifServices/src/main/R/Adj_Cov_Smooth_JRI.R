@@ -152,7 +152,7 @@ establishTableNames <-function(vstudyID) {
 	}		
 	temporarySmoothedResultsFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_map.csv", sep="")
 	temporaryExtractFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_extract.csv", sep="")
-	adjacencyMatrixFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_adjacency_matrix.csv", sep="")
+	# adjacencyMatrixFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_adjacency_matrix.csv", sep="")
   
 #The name of the temporary table that this script uses to hold the data frame
 #containing smoothed results.  It should have a 1:1 correspondence between
@@ -230,36 +230,36 @@ establishTableNames <-function(vstudyID) {
 #
 # Create rif40_run_R_env.bat
 #
-		rif40_run_R_env=paste(
-					paste0("SET USERID=", userID),
-					paste0("SET DB_NAME=", db_name),
-					paste0("SET DB_HOST=", db_host),
-					paste0("SET DB_PORT=", db_port),
-					paste0("SET DB_DRIVER_PREFIX=", db_driver_prefix),
-					paste0("SET DB_DRIVER_CLASS_NAME=", db_driver_class_name),
-					paste0("SET STUDYID=", studyID),
-					paste0("SET INVESTIGATIONNAME=", investigationName),
-					paste0("SET STUDYNAME=", studyName),
-					paste0("SET INVESTIGATIONID=", investigationId),
-					paste0("SET ODBCDATASOURCE=", odbcDataSource),
-					paste0("SET MODEL=", model),
-					paste0("SET COVARIATENAME=", paste0(names.adj)),
-				sep="\n");
-		
-		rif40_run_R_envB<-paste0(scratchSpace, "rif40_run_R_env.bat") # Target
-		
-		cat(paste("Create: ", rif40_run_R_envB, "\n"), sep="")	
-		tryCatch({			
-			cat(rif40_run_R_env, file=rif40_run_R_envB)
-		},
-		warning=function(w) {
-			cat(paste("UNABLE to create: ", rif40_run_RB, w, "\n"), sep="")
-			exitValue <<- 0
-		},
-		error=function(e) {
-			cat(paste("ERROR creating: ", rif40_run_RB, e, "\n"), sep="")
-			exitValue <<- 1
-		}) # End of tryCatch
+		# rif40_run_R_env=paste(
+		# 			paste0("SET USERID=", userID),
+		# 			paste0("SET DB_NAME=", db_name),
+		# 			paste0("SET DB_HOST=", db_host),
+		# 			paste0("SET DB_PORT=", db_port),
+		# 			paste0("SET DB_DRIVER_PREFIX=", db_driver_prefix),
+		# 			paste0("SET DB_DRIVER_CLASS_NAME=", db_driver_class_name),
+		# 			paste0("SET STUDYID=", studyID),
+		# 			paste0("SET INVESTIGATIONNAME=", investigationName),
+		# 			paste0("SET STUDYNAME=", studyName),
+		# 			paste0("SET INVESTIGATIONID=", investigationId),
+		# 			paste0("SET ODBCDATASOURCE=", odbcDataSource),
+		# 			paste0("SET MODEL=", model),
+		# 			paste0("SET COVARIATENAME=", paste0(names.adj)),
+		# 		sep="\n");
+		#
+		# rif40_run_R_envB<-paste0(scratchSpace, "rif40_run_R_env.bat") # Target
+		#
+		# cat(paste("Create: ", rif40_run_R_envB, "\n"), sep="")
+		# tryCatch({
+		# 	cat(rif40_run_R_env, file=rif40_run_R_envB)
+		# },
+		# warning=function(w) {
+		# 	cat(paste("UNABLE to create: ", rif40_run_RB, w, "\n"), sep="")
+		# 	exitValue <<- 0
+		# },
+		# error=function(e) {
+		# 	cat(paste("ERROR creating: ", rif40_run_RB, e, "\n"), sep="")
+		# 	exitValue <<- 1
+		# }) # End of tryCatch
 	}
 }
 

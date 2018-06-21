@@ -25,7 +25,8 @@ import org.sahsu.rif.services.concepts.AbstractStudy;
 import org.sahsu.rif.services.concepts.Investigation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
-import org.sahsu.rif.services.system.files.AdjacencyMatrixCsv;
+import org.sahsu.rif.services.system.files.study.AdjacencyMatrixCsv;
+import org.sahsu.rif.services.system.files.study.BatFiile;
 
 public class SmoothResultsSubmissionStep extends CommonRService {
 
@@ -205,6 +206,27 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 						.build()
 					.toCsv();
 
+				// Create the Windows environment batch file
+				BatFiile.builder()
+						.studyId(numStudyId)
+						.dbName(rifStartupOptions.getDatabaseName())
+						.dbHost(rifStartupOptions.getHost())
+						.dbDriverClassName(
+								rifStartupOptions.getDatabaseDriverClassName())
+						.dbDriverPrefix(rifStartupOptions.getDatabaseDriverPrefix())
+						.dbPort(rifStartupOptions.getPort())
+						.odbcDataSource(rifStartupOptions.getODBCDataSourceName())
+						.covariateName(covariateName)
+						.directory(rifStartupOptions.getExtractDirectory())
+						.investigationId(investigationID)
+						// .model(in)
+						.studyName(studyName)
+						.investigationName(
+								createDatabaseFriendlyInvestigationName(
+										firstInvestigation.getTitle()))
+						.userId(user.getUserID())
+						.build()
+						.createEnvScript();
 
 				adjCovSmoothJri.append(rifScriptPath);
 				adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
