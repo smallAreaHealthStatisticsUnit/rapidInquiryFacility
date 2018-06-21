@@ -33,6 +33,10 @@ Tile Maker
     - [2.4.2 Tile Manufacture](#242-tile-manufacture)
     - [2.4.3 Load Production Data into the RIF](#243-load-production-data-into-the-rif)
 - [3. TileMaker Source Code](#3-tilemaker-source-code)
+  - [3.1 TileMaker Server](#31-tilemaker-server)
+    - [3.1.1 TileMaker SQL Generation](#311-tilemaker-sql-generation)
+  - [3.2 TileMaker Web Application](#32-tilemaker-web-application)
+  - [3.3 TileViewer](#33-tileviewer)
 - [4. TileMaker TODO](#4-tilemaker-todo)
 
 # 1. Overview
@@ -2209,6 +2213,39 @@ Add data, then:
 # 3. TileMaker Source Code
 
 TO BE ADDED.
+
+## 3.1 TileMaker Server
+
+### 3.1.1 TileMaker SQL Generation
+
+## 3.2 TileMaker Web Application
+
+## 3.3 TileViewer
+
+The TileViewer is an experimental program to view tiles and to test the topoJSON technology used in the RIF. It also uses tile caching technology not enabled in the RIF web front end
+so may have browser compatibility issues. It currently uses both Postgres and SQL Server; both must be used for it to run.
+
+To use the *tileViwer* you must
+
+* Load your geography into your default database on **BOTH** SQL Server and Postgres.
+* Set the SQL Server password in *rapidInquiryFacility\rifNodeServices\lib\tileViewer.js*:
+  ```
+				var config = {
+					driver: 	'msnodesqlv8',
+					user: 		'peter',				// Hard coded. Will change
+					password: 	'retep',
+					server: 	p_hostname,
+					database: 	p_database,
+					options: {
+  //					trustedConnection: true,		// Will be an option
+						useUTC: true,
+						appName: 'tileViewer.js'
+					}
+				};
+  ```
+
+*TileViewer* example - Lower super output area in south east London:
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/TileViewer_example.PNG?raw=true "TileViewer example - Lower super output area in south east London")  
 
 # 4. TileMaker TODO
 
