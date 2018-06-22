@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
+import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.CalculationMethod;
 
@@ -18,7 +19,9 @@ public abstract class CommonRService implements RService {
 	
 	private ArrayList<Parameter> parameters;	
 	private ArrayList<String> parametersToVerify;
-	
+
+	User user;
+
 	public CommonRService() {
 		parameters = new ArrayList<>();
 		
@@ -48,7 +51,9 @@ public abstract class CommonRService implements RService {
 		
 	@Override
 	public void setUser(final String userID, final String password) {
-		
+
+		user = User.newInstance(userID, password);
+
 		this.userID = userID;
 		this.password = password;
 	}

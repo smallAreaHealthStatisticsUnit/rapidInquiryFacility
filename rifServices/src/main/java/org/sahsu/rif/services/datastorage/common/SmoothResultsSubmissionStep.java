@@ -24,6 +24,7 @@ import org.sahsu.rif.services.concepts.AbstractStudy;
 import org.sahsu.rif.services.concepts.Investigation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
+import org.sahsu.rif.services.system.files.study.AdjacencyMatrixCsv;
 
 public class SmoothResultsSubmissionStep extends CommonRService {
 
@@ -250,8 +251,18 @@ password=XXXXXXXX
  */
 				//RUN "adjCovSmoothJri.R"
 				
-				rifScriptPath.append(rifStartupOptions.getRIFServiceResourcePath());
+				rifScriptPath.append(rifStartupOptions.getClassesDirectory());
 				rifScriptPath.append(File.separator);
+
+				// Get the adjacency matrix and output it as a CSV file.
+				int numStudyId = Integer.parseInt(studyID);
+				AdjacencyMatrixCsv.builder()
+						.studyId(numStudyId)
+						.extractDirectory(rifStartupOptions.getExtractDirectory())
+						.matrix(AdjacencyMatrixDao.getInstance(rifStartupOptions)
+								        .getByStudyId(user, numStudyId))
+						.build()
+					.toCsv();
 				
 				adjCovSmoothJri.append(rifScriptPath);
 				adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");

@@ -422,7 +422,8 @@ runRSmoothingFunctions <- function() {
 #
 # Get Adjacency matrix
 #  	
-						AdjRowset=getAdjacencyMatrix()
+# 						AdjRowset=getAdjacencyMatrix()
+						AdjRowset = read.csv(adjacencyMatrixFileName)
 #
 # Call: performSmoothingActivity()
 #						

@@ -445,7 +445,7 @@ public class RIFServiceStartupOptions {
 		
 	}
 	
-	public String getRIFServiceResourcePath() throws RIFServiceException {
+	public String getClassesDirectory() throws RIFServiceException {
 
 		if (isWebDeployment) {
 
