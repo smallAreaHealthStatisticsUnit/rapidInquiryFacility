@@ -2585,4 +2585,7 @@ SELECT a.*, b.coa2011
 * Create test noise band shapefile for sahsuland from Heathrow 2013 day noise;
 * Resolve front end shapefile loading issues for banded data;
 * Received population weighted centroids from Aina;
-* Run EWS2011 pre processing script mssql_EWS2011.sql to end after hierarchy and performance fixes overnight. Ran mssqlTileMaker -needed more memory. Took 1 hour.
+* Run EWS2011 pre processing script mssql_EWS2011.sql to end after hierarchy and performance fixes overnight. Ran mssqlTileMaker -needed more memory. Took 1 hour;
+* Loaded EWS2011 into SQL SErver and PostGres;
+* *TileViewer* example - Lower super output area in south east London:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/TileViewer_example.PNG?raw=true "TileViewer example - Lower super output area in south east London")  
