@@ -1,4 +1,4 @@
-package org.sahsu.rif.generic.datastorage.common;
+package org.sahsu.rif.generic.datastorage;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -9,7 +9,6 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 
 import org.sahsu.rif.generic.system.RIFServiceException;
-import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFGenericLibraryError;
 import org.sahsu.rif.generic.util.RIFLogger;

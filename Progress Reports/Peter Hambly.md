@@ -2426,20 +2426,20 @@ Todo:
   ```
   These are in Cardiff and are small:
   ```
-  SELECT coa2011, lad11nm, msoa11nm, area_km2, geographic_centroid_wkt, ST_ASText(ST_Transform(geographic_centroid, 27700)) AS osgb
+  SELECT coa2011, lsoa11_1, lad11nm, msoa11nm, area_km2, geographic_centroid_wkt, ST_ASText(ST_Transform(geographic_centroid, 27700)) AS osgb
     FROM coa2011
    WHERE coa2011 IN ('W00010143', 'W00010161');
-    coa2011  | lad11nm |  msoa11nm   |    area_km2     |            geographic_centroid_wkt            |                   osgb
-  -----------+---------+-------------+-----------------+-----------------------------------------------+------------------------------------------
-   W00010161 | Cardiff | Cardiff 048 | 0.0147534816105 | POINT (-3.1781555521064697 51.45499419539898) | POINT(318235.967585802, 173549.01243282)
-   W00010143 | Cardiff | Cardiff 048 |  0.009281476807 | POINT (-3.1768272276630127 51.45381197706475) | POINT(318326.146578801 173416.053359773)
+    coa2011  | lsoa11_1  | lad11nm |  msoa11nm   |    area_km2     |            geographic_centroid_wkt            |                   osgb
+  -----------+-----------+---------+-------------+-----------------+-----------------------------------------------+------------------------------------------
+   W00010161 | W01001945 | Cardiff | Cardiff 048 | 0.0147534816105 | POINT (-3.1781555521064697 51.45499419539898) | POINT(318235.967585802 173549.01243282)
+   W00010143 | W01001945 | Cardiff | Cardiff 048 |  0.009281476807 | POINT (-3.1768272276630127 51.45381197706475) | POINT(318326.146578801 173416.053359773)
   (2 rows)
   ```
   That COA2011 only is affected means that the upper intersections are fine.
   
 #### 11th to 15th June 
   
-The hierarchy check failure is caused by oversimplification of higher layers (SCNTRY, CNTRY):
+The hierarchy check failure is probably caused by oversimplification of higher layers (SCNTRY, CNTRY):
 
 * CNTRY2011 in purple;
 * GOR2011 (not oversimplified) in green;
@@ -2539,7 +2539,27 @@ This, unsurprisingly, returned no rows, suggesting the problem is with the inter
  (0 rows)
 
 ```
-This in turn implies the problem may be with the COA2011, LSOA2011 intersection, common table expression: *x67*.
+This in turn implies the problem may be with the COA2011, LSOA2011 intersection, common table expression: *x67*; as shown by the map. The records will be manually inserted to fix the problem.
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue2.png?raw=true "Cardiff COA2001 intersection issue map")
+
+```SQL
+WITH a AS (
+	SELECT DISTINCT scntry2011,cntry2011, gor2011, ladua2011, msoa2011, lsoa2011
+	  FROM hierarchy_ews2011
+	 WHERE lsoa2011 = 'W01001945' /* Where it should be */
+), b AS (
+	SELECT coa2011, lsoa11_1
+      FROM coa2011
+     WHERE coa2011 IN ('W00010143', 'W00010161') 
+)
+INSERT INTO hierarchy_ews2011 (scntry2011, cntry2011, gor2011, ladua2011, msoa2011, lsoa2011, coa2011)
+SELECT a.*, b.coa2011
+  FROM a, b
+ WHERE a.lsoa2011 = b.lsoa11_1
+   AND b.coa2011 NOT IN (SELECT coa2011 FROM hierarchy_ews2011);   
+
+   INSERT 0 2
+```
 
 * Fix for: Focus should be on username field on the login screen #22;
 * Can now reload saved risk analysis study;
@@ -2548,4 +2568,24 @@ This in turn implies the problem may be with the COA2011, LSOA2011 intersection,
 * WARNING: Could not find (weighted) centroids stored in database - using geographic centroids on the fly
   call to user.getTileMakerCentroids() in rifd-dsub-maptable.js is producing a HTTP 404:
   ```http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerCentroids?userID=peter&geographyName=SAHSULAND&geoLevelSelectName=SAHSU_GRD_LEVEL1```. 
-  Submitted an as issue.
+  Submitted an as issue;
+* RIF meeting;
+* Buffer cache tuning for Postgres;
+* Document pgTileMaker or mssqlTileMaker JavaScript heap out of memory error;
+* Created add_study_selection_to_json branch. Added ability to view JSOBN shapes used in study selection (e.g. the concentric circle);
+* Run EWS2011 pre processing script pg_EWS2011.sql to end after hierarchy fix. Took about a day and a half. Ran pgTileMaker -needed more memory. Took 3 hours.
+
+#### 18th to 22nd June
+
+* Test and merge *Tidies up the query formatters #43*;
+* Document *tilemaker* hierarchy issues;
+* Apply Postgres fix for EWS2011 hierarchy issues to SQL Server;
+* Resolve adjacency list tuning issues >1 day to 3 minutes;
+* Update SQL Server tuning comments;
+* Create 2x test noise band shapefiles for sahsuland from Heathrow 2013 day noise;
+* Resolve front end shapefile loading issues for banded data;
+* Received population weighted centroids from Aina;
+* Run EWS2011 pre processing script mssql_EWS2011.sql to end after hierarchy and performance fixes overnight. Ran mssqlTileMaker -needed more memory. Took 1 hour;
+* Loaded EWS2011 into SQL Server and PostGres;
+* *TileViewer* example - Lower super output area in south east London:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/TileViewer_example.PNG?raw=true "TileViewer example - Lower super output area in south east London")  

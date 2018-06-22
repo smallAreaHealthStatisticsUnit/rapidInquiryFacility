@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.concepts.User;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLSelectQueryFormatter;
 import org.sahsu.rif.generic.system.ClassFileLocator;
 import org.sahsu.rif.generic.system.Messages;

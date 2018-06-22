@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
