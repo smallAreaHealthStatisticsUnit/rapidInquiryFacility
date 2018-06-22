@@ -300,7 +300,7 @@ public final class TestGUIScenario extends CommonRIFServiceTestCase {
 	
 		}
 		catch(RIFServiceException rifServiceException) {
-			ArrayList<String> errorMessages
+			List<String> errorMessages
 				= rifServiceException.getErrorMessages();
 			for (String errorMessage : errorMessages) {
 				System.out.println("ERROR:=="+errorMessage+"==");

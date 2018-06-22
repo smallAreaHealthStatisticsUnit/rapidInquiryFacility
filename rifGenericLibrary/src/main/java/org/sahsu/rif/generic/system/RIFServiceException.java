@@ -1,7 +1,10 @@
 package org.sahsu.rif.generic.system;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.sahsu.rif.generic.util.RIFLogger;
 
 /**
@@ -28,7 +31,7 @@ public class RIFServiceException extends Exception {
 	private Object error;
 	
 	/** The error messages. */
-	private ArrayList<String> errorMessages;
+	private List<String> errorMessages;
 
 	/** The cause of this exception, if any */
 	private Throwable cause;
@@ -66,7 +69,7 @@ public class RIFServiceException extends Exception {
 	 * @param error the error
 	 * @param errorMessages the error messages
 	 */
-	public RIFServiceException(final Object error, final ArrayList<String> errorMessages,
+	public RIFServiceException(final Object error, final List<String> errorMessages,
 			Throwable cause) {
 
 		super(cause);
@@ -76,7 +79,7 @@ public class RIFServiceException extends Exception {
 		this.errorMessages.addAll(errorMessages);
 	}
 
-	public RIFServiceException(final ArrayList<String> errorMessages, Throwable cause) {
+	public RIFServiceException(final List<String> errorMessages, Throwable cause) {
 
 		super(cause);
 		this.cause = cause;
@@ -116,20 +119,46 @@ public class RIFServiceException extends Exception {
 	 * @param error the error
 	 * @param errorMessages the error messages
 	 */
-	public RIFServiceException(
-			final Object error,
-			final ArrayList<String> errorMessages) {
+	public RIFServiceException(final Object error, final List<String> errorMessages) {
 
 		this.error = error;
 		this.errorMessages = new ArrayList<>();
 		this.errorMessages.addAll(errorMessages);
 	}
 
-	public RIFServiceException(
-			final ArrayList<String> errorMessages) {
+	public RIFServiceException(final List<String> errorMessages) {
 
 		this.errorMessages = new ArrayList<>();
 		this.errorMessages.addAll(errorMessages);
+	}
+
+	/**
+	 * Creates the exception given a single error message using {@link String#format}-style
+	 * replacement values.
+	 */
+	public RIFServiceException(Throwable cause, String baseMsg, Object... formatStrings) {
+
+		this(baseMsg, formatStrings);
+		this.cause = cause;
+	}
+
+	/**
+	 * Creates the exception given a single error message using {@link String#format}-style
+	 * replacement values.
+	 */
+	public RIFServiceException(String baseMsg, Object... formatStrings) {
+
+		String msg;
+		if (!StringUtils.isEmpty(baseMsg)) {
+
+			if (formatStrings != null && formatStrings.length > 0) {
+
+				msg = String.format(baseMsg, formatStrings);
+			} else {
+				msg = baseMsg;
+			}
+			errorMessages = Collections.singletonList(msg);
+		}
 	}
 
 	/**
@@ -147,7 +176,7 @@ public class RIFServiceException extends Exception {
 	 *
 	 * @return the error messages
 	 */
-	public ArrayList<String> getErrorMessages() {
+	public List<String> getErrorMessages() {
 
 		return errorMessages;
 	}
@@ -163,9 +192,7 @@ public class RIFServiceException extends Exception {
 	}
 
 	public void printErrors() {
-		for (String errorMessage : errorMessages) {
-			rifLogger.error(this.getClass(), (errorMessage));
-		}
+		rifLogger.error(getClass(), toString());
 	}
 
 	@Override

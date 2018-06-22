@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -410,7 +411,7 @@ final class WebServiceResponseUtility {
 			if (exceptionThrownByRIFService instanceof RIFServiceException) {
 				RIFServiceException rifServiceException
 					= (RIFServiceException) exceptionThrownByRIFService;
-				ArrayList<String> errorMessages
+				List<String> errorMessages
 					= rifServiceException.getErrorMessages();
 				rifServiceExceptionProxy.setErrorMessages(errorMessages.toArray(new String[0]));
 			}
