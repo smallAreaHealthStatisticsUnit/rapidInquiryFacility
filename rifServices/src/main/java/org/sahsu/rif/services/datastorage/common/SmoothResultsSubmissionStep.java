@@ -26,7 +26,7 @@ import org.sahsu.rif.services.concepts.Investigation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
 import org.sahsu.rif.services.system.files.study.AdjacencyMatrixCsv;
-import org.sahsu.rif.services.system.files.study.BatFiile;
+import org.sahsu.rif.services.system.files.study.BatFile;
 
 public class SmoothResultsSubmissionStep extends CommonRService {
 
@@ -78,7 +78,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 		List<Parameter> rifStartupOptionParameters = rifStartupOptions.getDbParametersForRScripts();
 		addParameters(rifStartupOptionParameters);
 
-		// setODBCDataSourceName(rifStartupOptions.getODBCDataSourceName());
+		setODBCDataSourceName(rifStartupOptions.getODBCDataSourceName());
 	}
 	
 	void performStep(final Connection connection, final RIFStudySubmission studySubmission,
@@ -165,28 +165,28 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 
 				// Set connection details and parameters
 				StringBuilder logMsg = new StringBuilder();
-				// for (Parameter parameter : getParameterArray()) {
-				// 	String name = parameter.getName();
-				// 	String value = parameter.getValue();
-				//
-				// 	switch (name) {
-				// 		case "password":
-				// 			// Hide password
-				// 			logMsg.append(name).append("=XXXXXXXX").append(lineSeparator);
-				// 			rengine.assign(name, value);
-				// 			break;
-				// 		case "covariate_name":
-				// 			logMsg.append("names.adj.1=").append(value).append(lineSeparator);
-				// 			rengine.assign("names.adj.1", value);
-				// 			logMsg.append("adj.1=").append(getRAdjust(value)).append(lineSeparator);
-				// 			rengine.assign("adj.1", getRAdjust(value));
-				// 			break;
-				// 		default:
-				// 			logMsg.append(name).append("=").append(value).append(lineSeparator);
-				// 			rengine.assign(name, value);
-				// 			break;
-				// 	}
-				// }
+				for (Parameter parameter : getParameterArray()) {
+					String name = parameter.getName();
+					String value = parameter.getValue();
+
+					switch (name) {
+						case "password":
+							// Hide password
+							logMsg.append(name).append("=XXXXXXXX").append(lineSeparator);
+							rengine.assign(name, value);
+							break;
+						case "covariate_name":
+							logMsg.append("names.adj.1=").append(value).append(lineSeparator);
+							rengine.assign("names.adj.1", value);
+							logMsg.append("adj.1=").append(getRAdjust(value)).append(lineSeparator);
+							rengine.assign("adj.1", getRAdjust(value));
+							break;
+						default:
+							logMsg.append(name).append("=").append(value).append(lineSeparator);
+							rengine.assign(name, value);
+							break;
+					}
+				}
 
 				rengine.assign("working_dir", rifStartupOptions.getExtractDirectory());
 				
@@ -196,7 +196,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				rifScriptPath.append(rifStartupOptions.getClassesDirectory());
 				rifScriptPath.append(File.separator);
 
-				// Output the adjacency matrix as a CSV file.
+				// Get the adjacency matrix and output it as a CSV file.
 				int numStudyId = Integer.parseInt(studyID);
 				AdjacencyMatrixCsv.builder()
 						.studyId(numStudyId)
@@ -207,7 +207,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 					.toCsv();
 
 				// Create the Windows environment batch file
-				BatFiile.builder()
+				BatFile.builder()
 						.studyId(numStudyId)
 						.dbName(rifStartupOptions.getDatabaseName())
 						.dbHost(rifStartupOptions.getHost())
@@ -221,12 +221,10 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 						.investigationId(investigationID)
 						// .model(in)
 						.studyName(studyName)
-						.investigationName(
-								createDatabaseFriendlyInvestigationName(
-										firstInvestigation.getTitle()))
+						.investigationName(firstInvestigation.getTitle())
 						.userId(user.getUserID())
 						.build()
-						.createEnvScript();
+					.createEnvScript();
 
 				adjCovSmoothJri.append(rifScriptPath);
 				adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
@@ -239,14 +237,14 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				performSmoothingActivity.append(rifScriptPath);
 				performSmoothingActivity.append("performSmoothingActivity.R");
 
-				sourceRScript(rengine, rifScriptPath + "JdbcHandler.R");
 				sourceRScript(rengine, adjCovSmoothJri.toString());
-				// sourceRScript(rengine, rifOdbc.toString());
+				sourceRScript(rengine, rifOdbc.toString());
 				sourceRScript(rengine, performSmoothingActivity.toString());
 
 				//RUN the actual smoothing
 				//REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
 				rengine.eval("returnValues <- runRSmoothingFunctions()");
+
 				REXP exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
 				if (exitValueFromR != null) {
 					exitValue  = exitValueFromR.asInt();

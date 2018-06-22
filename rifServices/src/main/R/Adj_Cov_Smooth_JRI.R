@@ -57,7 +57,7 @@ library(abind)
 library(INLA)
 library(maptools)
 library(spdep)
-# library(RODBC)
+library(RODBC)
 library(Matrix)
 
 
@@ -65,7 +65,7 @@ library(Matrix)
 # SCRIPT VARIABLES
 ##====================================================================
 
-# connDB <- ""	# Database connection
+connDB <- ""	# Database connection
 exitValue <- 0 	# 0 success, 1 failure
 errorCount <- 0	# Smoothing error count
 
@@ -152,7 +152,7 @@ establishTableNames <-function(vstudyID) {
 	}		
 	temporarySmoothedResultsFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_map.csv", sep="")
 	temporaryExtractFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_extract.csv", sep="")
-	# adjacencyMatrixFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_adjacency_matrix.csv", sep="")
+	adjacencyMatrixFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_adjacency_matrix.csv"))
   
 #The name of the temporary table that this script uses to hold the data frame
 #containing smoothed results.  It should have a 1:1 correspondence between
@@ -391,21 +391,20 @@ runRSmoothingFunctions <- function() {
 	establishTableNames(studyID)
 	errorTrace<-capture.output({
 		tryCatch({
-			# connDB=dbConnect()
-			connDB = connectToDb()
+			connDB=dbConnect()
 		},
 		warning=function(w) {		
-			cat(paste("connectToDb() WARNING: ", w, "\n"), sep="")
+			cat(paste("dbConnect() WARNING: ", w, "\n"), sep="")
 			exitValue <<- 1
 		},
 		error=function(e) {
 			e <<- e
-			cat(paste("connectToDb() ERROR: ", e$message,
+			cat(paste("dbConnect() ERROR: ", e$message,
 				"; call stack: ", e$call, "\n"), sep="")
 			exitValue <<- 1
 		},
 		finally={
-			cat(paste0("connectToDb exitValue: ", exitValue, "\n"), sep="")
+			cat(paste0("dbConnect exitValue: ", exitValue, "\n"), sep="")
 		})
 	})
 		
@@ -421,12 +420,14 @@ runRSmoothingFunctions <- function() {
 # extract the relevant Study data
 #
 #data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
-						data=fetchExtractTable()
+						# data=fetchExtractTable()
 
 #
 # Get Adjacency matrix
 #  	
-						AdjRowset=getAdjacencyMatrix()
+# 						AdjRowset=getAdjacencyMatrix()
+						cat(paste("About to get adjacency matrix from file ", adjacencyMatrixFileName, "\n"))
+						AdjRowset = read.csv(file=adjacencyMatrixFileName, header=TRUE, sep=",")
 #
 # Call: performSmoothingActivity()
 #						
@@ -491,8 +492,7 @@ runRSmoothingFunctions <- function() {
 	# Dummy change to check conflict is resolved
   
 	if (!is.na(connDB)) {
-		# dbDisConnect()
-		disconnect()
+		dbDisConnect()
 	}
 	
 

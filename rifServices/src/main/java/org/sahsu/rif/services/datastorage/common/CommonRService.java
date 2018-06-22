@@ -16,6 +16,7 @@ public abstract class CommonRService implements RService {
 		
 	private String odbcDataSourceName;
 	User user;
+	private String password; // TODO: get rid of this when ODBC is removed
 
 	private List<Parameter> parameters;
 
@@ -38,6 +39,9 @@ public abstract class CommonRService implements RService {
 	public void setUser(final String userID, final String password) {
 
 		user = User.newInstance(userID, password);
+
+		// TODO: Temporarily storing the password until I finish removing ODBC
+		this.password = password;
 	}
 	
 	@Override
@@ -68,14 +72,14 @@ public abstract class CommonRService implements RService {
 	
 	//Fetch parameters array list
 	// @Override
-	// public List<Parameter> getParameterArray() {
-	//
-	// 	addParameter("odbcDataSource", odbcDataSourceName);
-	// 	addParameter("userID", userID);
-	// 	addParameter("password", password);
-	//
-	// 	return(parameters);
-	// }
+	List<Parameter> getParameterArray() {
+
+		addParameter("odbcDataSource", odbcDataSourceName);
+		addParameter("userID", user.getUserID());
+		addParameter("password", password);
+
+		return(parameters);
+	}
 	
 	// Source R script
 	@Override

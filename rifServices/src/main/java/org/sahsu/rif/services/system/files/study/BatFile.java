@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import lombok.Builder;
 
 @Builder
-public class BatFiile {
+public class BatFile {
 
 	private String directory;
 	private int studyId;
