@@ -9,7 +9,7 @@
 
 	<name>General RIF Tool Suite Settings</name>
 	<description>This project contains the general project settings that are shared by the family
-				 of applications in the RIF Tool Suite</description>
+		of applications in the RIF Tool Suite</description>
 	<url>https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility</url>
 
 	<properties>
@@ -19,6 +19,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 
 		<rifGeneric.version>4.0.0-SNAPSHOT</rifGeneric.version>
+
 		<junit.version>4.11</junit.version>
 		<sqlserver.version>6.1.0.jre8</sqlserver.version>
 		<postgres.version>9.3-1102-jdbc3</postgres.version>
@@ -42,14 +43,15 @@
 		<imageio-ext-tiff.version>1.1.20</imageio-ext-tiff.version>
 		<gdal.version>2.2.0</gdal.version>
 		<mockito-core.version>2.16.0</mockito-core.version>
-
+		<lombok.version>1.18.0</lombok.version>
+		<openCsv.version>4.2</openCsv.version>
 	</properties>
-	
+
 	<modules>
-	    <module>./rifGenericLibrary</module>
-	    <module>./rifServices</module>
+		<module>./rifGenericLibrary</module>
+		<module>./rifServices</module>
 		<module>./taxonomyServices</module>
-	    <module>./rifDataLoaderTool</module>
+		<module>./rifDataLoaderTool</module>
 		<module>./rifITGovernanceTool</module>
 		<module>./rifWebApplication</module>
 	</modules>
@@ -305,6 +307,18 @@
 				<artifactId>mockito-core</artifactId>
 				<version>${mockito-core.version}</version>
 				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>${lombok.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.opencsv</groupId>
+				<artifactId>opencsv</artifactId>
+				<version>${openCsv.version}</version>
 			</dependency>
 
 		</dependencies>

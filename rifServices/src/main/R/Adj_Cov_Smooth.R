@@ -280,7 +280,7 @@ establishTableNames <-function(vstudyID) {
 
 # Name of Rdata CSV file for debugging results save
 # This needs to be passed in via interface
-  temporarySmoothedResultsFileName <<-file.path(scratchSpace, "tmp_s", vstudyID, "_map.csv")
+  temporarySmoothedResultsFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_map.csv"))
   temporaryExtractFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_extract.csv"))
   
   mapTableName <<- paste0("rif_studies.s", vstudyID, "_map")

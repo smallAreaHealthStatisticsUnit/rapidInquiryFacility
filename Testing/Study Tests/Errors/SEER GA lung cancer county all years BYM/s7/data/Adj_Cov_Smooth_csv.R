@@ -171,9 +171,9 @@ establishTableNames <-function(vstudyID) {
 	if (exists("dumpFramesToCsv") == FALSE || dumpFramesToCsv == "") {
 		dumpFramesToCsv <<- defaultDumpFramesToCsv
 	}		
-	temporarySmoothedResultsFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_map.csv", sep="")
-	temporaryExtractFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_extract.csv", sep="")
-	adjacencyMatrixFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_adjacency_matrix.csv", sep="")
+	temporarySmoothedResultsFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_map.csv"))
+	temporaryExtractFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_extract.csv"))
+	adjacencyMatrixFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_adjacency_matrix.csv"))
   
 #The name of the temporary table that this script uses to hold the data frame
 #containing smoothed results.  It should have a 1:1 correspondence between

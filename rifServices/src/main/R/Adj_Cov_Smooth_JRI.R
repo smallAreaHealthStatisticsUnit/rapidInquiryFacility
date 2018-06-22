@@ -150,9 +150,9 @@ establishTableNames <-function(vstudyID) {
 	if (exists("dumpFramesToCsv") == FALSE || dumpFramesToCsv == "") {
 		dumpFramesToCsv <<- TRUE
 	}		
-	temporarySmoothedResultsFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_map.csv", sep="")
-	temporaryExtractFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_extract.csv", sep="")
-	adjacencyMatrixFileName <<-paste(scratchSpace, "tmp_s", vstudyID, "_adjacency_matrix.csv", sep="")
+	temporarySmoothedResultsFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_map.csv"))
+	temporaryExtractFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_extract.csv"))
+	adjacencyMatrixFileName <<-file.path(scratchSpace, paste0("tmp_s", vstudyID, "_adjacency_matrix.csv"))
   
 #The name of the temporary table that this script uses to hold the data frame
 #containing smoothed results.  It should have a 1:1 correspondence between
@@ -246,7 +246,7 @@ establishTableNames <-function(vstudyID) {
 					paste0("SET COVARIATENAME=", paste0(names.adj)),
 				sep="\n");
 		
-		rif40_run_R_envB<-paste0(scratchSpace, "rif40_run_R_env.bat") # Target
+		rif40_run_R_envB<-file.path(scratchSpace, "rif40_run_R_env.bat") # Target
 		
 		cat(paste("Create: ", rif40_run_R_envB, "\n"), sep="")	
 		tryCatch({			
