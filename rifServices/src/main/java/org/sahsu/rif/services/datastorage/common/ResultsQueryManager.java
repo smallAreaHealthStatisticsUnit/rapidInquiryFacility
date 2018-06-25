@@ -159,8 +159,8 @@ public class ResultsQueryManager extends BaseSQLManager {
 			//This is the tile table name for this geography
 			String myTileTable = "rif_data." + resultSet.getString(1);
 
-			SelectQueryFormatter getMapTilesQueryFormatter
-					= new MSSQLSelectQueryFormatter();
+			SelectQueryFormatter getMapTilesQueryFormatter = SelectQueryFormatter.getInstance(
+					rifDatabaseProperties.getDatabaseType());
 
 			//STEP 2: get the tiles
 			/*
