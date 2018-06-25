@@ -45,6 +45,7 @@
 		<mockito-core.version>2.16.0</mockito-core.version>
 		<lombok.version>1.18.0</lombok.version>
 		<openCsv.version>4.2</openCsv.version>
+		<guava.version>25.1-jre</guava.version>
 	</properties>
 
 	<modules>
@@ -342,6 +343,11 @@
 			<artifactId>postgresql</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
 	</dependencies>
 
 	<scm>

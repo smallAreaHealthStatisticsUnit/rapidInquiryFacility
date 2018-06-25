@@ -341,18 +341,8 @@ performSmoothingActivity <- function() {
 		odbcClose(connDB)
 		quit("no", 1, FALSE)
 	})	
-  # Get the adjacency matrix from the db
-  #data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
-  
-  #
-  # Save extract data frame to file
-  #
-  if (dumpFramesToCsv == TRUE) {
-	  print(paste0("Saving extract frame to: ", temporaryExtractFileName))
-	  write.csv(data, file=temporaryExtractFileName)
-  }
-  
-  numberOfRows <- nrow(data)	
+
+  numberOfRows <- nrow(data)
   if (is.null(nrow(data))) {
 		print(paste("ERROR IN FETCH! (null data returned): ", extractTableName, ", error: ", odbcGetErrMsg(connDB)))
 		odbcClose(connDB)

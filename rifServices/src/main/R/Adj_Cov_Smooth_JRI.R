@@ -406,7 +406,7 @@ runRSmoothingFunctions <- function() {
 	})
 		
 
-	if (exitValue == 0 && !is.na(connDB)) {  
+	if (exitValue == 0 && !is.na(connDB)) {  callPerformSmoothingActivity
 		cat("Performing basic stats and smoothing\n")	
 		errorTrace<-capture.output({
 			# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
@@ -417,7 +417,7 @@ runRSmoothingFunctions <- function() {
 # extract the relevant Study data
 #
 #data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
-						data=fetchExtractTable()
+						# data=fetchExtractTable()
 
 #
 # Get Adjacency matrix

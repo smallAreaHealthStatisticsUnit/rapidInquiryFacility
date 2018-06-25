@@ -6,11 +6,16 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
+
+import javax.naming.spi.StateFactory;
 
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.concepts.AdjacencyMatrixRow;
 
+import com.opencsv.CSVWriter;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -20,7 +25,7 @@ import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import lombok.Builder;
 
 @Builder
-public class AdjacencyMatrixCsv {
+public class StudyCsvs {
 
 	private static final String AREA_ID_COL = "area_id";
 	private static final String NUM_ADJACENCIES_COL = "num_adjacencies";
@@ -32,18 +37,12 @@ public class AdjacencyMatrixCsv {
 			AREA_ID_COL, NUM_ADJACENCIES_COL, ADJACENCY_LIST_COL };
 
 	private final int studyId;
-	private final List<AdjacencyMatrixRow> matrix;
 	private final String extractDirectory;
 
-	public void toCsv() throws IOException, RIFServiceException {
+	public void adjacencyMatrixToCsv(final List<AdjacencyMatrixRow> matrix) throws IOException, RIFServiceException {
 
 		// Get the directory for the adjacency matrix
-		Path adjacencyMatrixFile = ScratchDirectories.builder()
-				                           .studyId(studyId)
-				                           .directory(extractDirectory)
-				                           .build()
-				                           .dataDir()
-				                           .resolve("tmp_s" + studyId + "_adjacency_matrix.csv");
+		Path adjacencyMatrixFile = dataDir().resolve("tmp_s" + studyId + "_adjacency_matrix.csv");
 
 		System.out.printf("Should create a file called %s%n", adjacencyMatrixFile);
 
@@ -64,6 +63,25 @@ public class AdjacencyMatrixCsv {
 
 			throw new RIFServiceException(e, "Problem generating CSV file %s", adjacencyMatrixFile);
 		}
+	}
+
+	public void extractTableToCsv(ResultSet extractResults) throws IOException, SQLException {
+
+		Path extractFile = dataDir().resolve("tmp_s" + studyId + "_extract.csv");
+
+		try(CSVWriter out = new CSVWriter(new FileWriter(extractFile.toFile()))) {
+
+			out.writeAll(extractResults, true);
+		}
+	}
+
+	private Path dataDir() throws IOException {
+
+		return ScratchDirectories.builder()
+				       .studyId(studyId)
+				       .directory(extractDirectory)
+				       .build()
+				       .dataDir();
 	}
 
 	/**

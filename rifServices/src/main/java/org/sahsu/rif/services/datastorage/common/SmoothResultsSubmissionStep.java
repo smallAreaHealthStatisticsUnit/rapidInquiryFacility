@@ -24,7 +24,7 @@ import org.sahsu.rif.services.concepts.AbstractStudy;
 import org.sahsu.rif.services.concepts.Investigation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
-import org.sahsu.rif.services.system.files.study.AdjacencyMatrixCsv;
+import org.sahsu.rif.services.system.files.study.StudyCsvs;
 
 public class SmoothResultsSubmissionStep extends CommonRService {
 
@@ -256,13 +256,18 @@ password=XXXXXXXX
 
 				// Get the adjacency matrix and output it as a CSV file.
 				int numStudyId = Integer.parseInt(studyID);
-				AdjacencyMatrixCsv.builder()
+				StudyCsvs csvs = StudyCsvs.builder()
 						.studyId(numStudyId)
 						.extractDirectory(rifStartupOptions.getExtractDirectory())
-						.matrix(AdjacencyMatrixDao.getInstance(rifStartupOptions)
-								        .getByStudyId(user, numStudyId))
+						.build();
+				csvs.adjacencyMatrixToCsv(AdjacencyMatrixDao.getInstance(rifStartupOptions)
+							                      .getByStudyId(user, numStudyId));
+
+				// Get the extract data and write it to a CSV file.
+				GenericSelectAllDao.builder().options(rifStartupOptions).schemaName("rif_studies")
+						.user(user).extractTableName("s" + studyID + "_extract")
 						.build()
-					.toCsv();
+						.dumpAllToCsv(csvs);
 				
 				adjCovSmoothJri.append(rifScriptPath);
 				adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
@@ -315,7 +320,7 @@ password=XXXXXXXX
 					rifLogger.error(this.getClass(), "JRI R script ERROR", error);
 					exitValue = 1;
 				}
-			} 
+			}
 			finally {
 				try {
 					loggingConsole.rFlushConsole(rengine);
@@ -340,11 +345,9 @@ password=XXXXXXXX
 							
 						}				
 
-						RIFServiceExceptionFactory rifServiceExceptionFactory
-						= new RIFServiceExceptionFactory();
-						RIFServiceException rifServiceException =
-							rifServiceExceptionFactory.createRScriptException(rErrorTrace);
-						throw rifServiceException;
+						RIFServiceExceptionFactory rifServiceExceptionFactory =
+								new RIFServiceExceptionFactory();
+						throw rifServiceExceptionFactory.createRScriptException(rErrorTrace);
 					}
 					else {	
 						try {

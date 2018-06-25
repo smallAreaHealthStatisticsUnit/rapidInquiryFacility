@@ -31,7 +31,7 @@ public class RIFServiceException extends Exception {
 	private Object error;
 	
 	/** The error messages. */
-	private List<String> errorMessages;
+	private List<String> errorMessages = new ArrayList<>();;
 
 	/** The cause of this exception, if any */
 	private Throwable cause;
@@ -50,7 +50,6 @@ public class RIFServiceException extends Exception {
 		
 		this.error = error;
 		this.cause = cause;
-		errorMessages = new ArrayList<>();
 		errorMessages.add(errorMessage);
 	}
 	
@@ -59,7 +58,6 @@ public class RIFServiceException extends Exception {
 		super(errorMessage, cause);
 		this.cause = cause;
 			
-		errorMessages = new ArrayList<>();
 		errorMessages.add(errorMessage);
 	}
 
@@ -75,7 +73,6 @@ public class RIFServiceException extends Exception {
 		super(cause);
 		this.cause = cause;
 		this.error = error;
-		this.errorMessages = new ArrayList<>();
 		this.errorMessages.addAll(errorMessages);
 	}
 
@@ -83,7 +80,6 @@ public class RIFServiceException extends Exception {
 
 		super(cause);
 		this.cause = cause;
-		this.errorMessages = new ArrayList<>();
 		this.errorMessages.addAll(errorMessages);
 	}	
 
@@ -100,7 +96,6 @@ public class RIFServiceException extends Exception {
 		super(errorMessage);
 
 		this.error = error;
-		errorMessages = new ArrayList<>();
 		errorMessages.add(errorMessage);
 	}
 
@@ -109,7 +104,6 @@ public class RIFServiceException extends Exception {
 
 		super(errorMessage);
 
-		errorMessages = new ArrayList<>();
 		errorMessages.add(errorMessage);
 	}
 
@@ -122,13 +116,11 @@ public class RIFServiceException extends Exception {
 	public RIFServiceException(final Object error, final List<String> errorMessages) {
 
 		this.error = error;
-		this.errorMessages = new ArrayList<>();
 		this.errorMessages.addAll(errorMessages);
 	}
 
 	public RIFServiceException(final List<String> errorMessages) {
 
-		this.errorMessages = new ArrayList<>();
 		this.errorMessages.addAll(errorMessages);
 	}
 
@@ -159,6 +151,15 @@ public class RIFServiceException extends Exception {
 			}
 			errorMessages = Collections.singletonList(msg);
 		}
+	}
+
+	/**
+	 * Used when we just want to wrap another Exception with no extra information.
+	 * @param t the other Exception
+	 */
+	public RIFServiceException(Throwable t) {
+
+		this.cause = t;
 	}
 
 	/**

@@ -5,6 +5,7 @@ import java.sql.Connection;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.RIFDatabaseProperties;
 import org.sahsu.rif.generic.system.RIFServiceException;
+import org.sahsu.rif.generic.system.RifRuntimeException;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.concepts.StudyState;
@@ -141,6 +142,7 @@ public class RunStudyThread implements Runnable {
 		}
 		catch(RIFServiceException rifServiceException) {
 			rifServiceException.printErrors();
+			throw new RifRuntimeException("Exception caught in study thread", rifServiceException);
 		}
 	}
 	
