@@ -173,6 +173,10 @@ angular.module("RIF")
 								$scope.shapes = new L.layerGroup();
 								$scope.areamap.addLayer($scope.shapes);
                             }
+							
+							if (maxbounds) { //  Zoom back to maximum extent of geolevel
+								$scope.areamap.fitBounds(maxbounds);
+							}
                         };
                         //remove AOI layer
                         $scope.clearAOI = function () {
@@ -490,9 +494,9 @@ angular.module("RIF")
 										// basic shape to map shapes layer group
 										var circle = new L.Circle([selectedShape.latLng.lat, selectedShape.latLng.lng], {
 											radius: selectedShape.radius,
-											color: "#000",
+											color: 'blue',
 											weight: 1,
-											opacity: 0.4,
+											opacity: 0.5,
 											fillOpacity: 0
 										});
 										if (circle) {
@@ -505,30 +509,31 @@ angular.module("RIF")
 											alertScope.showError("Could not restore circle");
 										}
 									}
-									else { // Use geoJSON
-										var geojson= new L.geoJSON(selectedShape.geojson, {
-												style: {
-													color: "#000",
-													weight: 1,
-													opacity: 0.4,
+									else { // Use L.polygon(), L.geoJSON needs a GeoJSON layer
+										var polygon=selectedShape.data; // L.Polygon()
+										if (polygon == undefined) {
+											polygon=L.polygon(selectedShape.geojson.geometry.coordinates[0], {
+													color: 'blue',
+													weight: 2,
+													opacity: 0.5,
 													fillOpacity: 0
-												}
-											});
-										if (geojson) {
-											$scope.shapes.addLayer(geojson);
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): adding geojson" + 
+												});					
+										}
+										if (polygon) {
+											$scope.shapes.addLayer(polygon);
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): adding polygon" + 
 												"; band: " + selectedShape.band +
 												"; area: " + turf.area(selectedShape.geojson) +
 												"; " + selectedShape.geojson.geometry.coordinates[0].length + " coordinates");							
 										}
 										else {
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): L.geoJSON failed" +
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): L.Polygon is undefined" +
 												"; geoJSON: " + JSON.stringify(selectedShape.geojson, null, 1));
 											if (selectedShape.freehand) {	
-												alertScope.showError("Could not restore freehand geoJSON shape");
+												alertScope.showError("Could not restore freehand Polygon shape");
 											}
 											else {
-												alertScope.showError("Could not restore shapefile geoJSON shape");
+												alertScope.showError("Could not restore shapefile Polygon shape");
 											}
 										}
 										
@@ -539,8 +544,8 @@ angular.module("RIF")
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] end addSelectedShapes(): shapes layerGroup has " +
 										$scope.shapes.getLayers().length + " layers" +
 										"; centered: " + JSON.stringify($scope.center));
-																		
-									$scope.areamap.fitBounds($scope.areamap.getBounds()); // Force map to redraw
+									$scope.zoomToSelection(); // Zoom to selection									
+									$scope.redrawMap();
 								});
 							}
 						}
@@ -741,10 +746,20 @@ angular.module("RIF")
 							}
 						};
 						
+						// Map redraw function with slight delay for leaflet
+						$scope.redrawMap = function() {
+							$timeout(function() {
+								alertScope.consoleLog("[rifd-dsub-maptable.js] redraw map");
+								$scope.areamap.fitBounds($scope.areamap.getBounds()); // Force map to redraw after 0.5s delay
+								}, 500);			
+						};
+						
                         // completed selection event fired from service
 						$scope.$on('completedDrawSelection', function (event, data) {
-							$scope.areamap.fitBounds($scope.areamap.getBounds()); // Force map to redraw
-							$scope.safeApply(0);					
+							$scope.zoomToSelection(); // Zoom to selection	
+							$scope.safeApply(0, function() {
+								$scope.redrawMap();
+							});					
                         });
 						
                         // selection event fired from service
@@ -786,7 +801,7 @@ angular.module("RIF")
 								var geojson= new L.geoJSON(savedShape.geojson, {
 									color: "#000",
 									weight: 1,
-									opacity: 0.4,
+									opacity: 0.5,
 									fillOpacity: 0
 								});
 								
@@ -836,12 +851,12 @@ angular.module("RIF")
 										duplicateAreaCheckIds.push(id);
 									}
 									
-									if (duplicateAreaCheckIds.length < 10) {
+/*									if (duplicateAreaCheckIds.length < 10) {
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] " + 
 											"duplicateAreaCheckIds[" + duplicateAreaCheckIds.length + "] " +
 											id + "; duplicates: " +
 											JSON.stringify(areaCheck[id].index));
-									}
+									} */
 								}
 								if (duplicateAreaCheckIds.length > 0) {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] " + 
