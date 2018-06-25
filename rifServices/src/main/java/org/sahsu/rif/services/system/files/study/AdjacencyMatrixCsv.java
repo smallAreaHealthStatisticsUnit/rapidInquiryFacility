@@ -67,7 +67,7 @@ public class AdjacencyMatrixCsv {
 	}
 
 	/**
-	 * OpenCfv doesn't quite give us what we need as far as creating a CSV file with the
+	 * OpenCsv doesn't quite give us what we need as far as creating a CSV file with the
 	 * columns ordered correctly and with headers goes. This mapping strategy fixes that.
 	 * @param <T>
 	 */
