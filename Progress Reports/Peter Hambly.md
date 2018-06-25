@@ -2589,3 +2589,9 @@ SELECT a.*, b.coa2011
 * Loaded EWS2011 into SQL Server and PostGres;
 * *TileViewer* example - Lower super output area in south east London:
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/TileViewer_example.PNG?raw=true "TileViewer example - Lower super output area in south east London")  
+
+#### 25th to 29th June
+
+* Upgraded wsrifdb1 to latest patch level; secured tomcat to OWASP guidelines; added US SEER dataset;
+* Fix for lack of polygons on ret8uened the study areas screen; fix for map synchronisation problems (slowed it down 0.5s as usual - map.whenReady() isn't!);
+* Clear selection now zooms back to full extent; shapefile selection only zooms to study extent;
