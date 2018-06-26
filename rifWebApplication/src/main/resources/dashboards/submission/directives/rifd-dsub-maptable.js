@@ -220,7 +220,7 @@ angular.module("RIF")
                         //Zoom to selection
                         $scope.zoomToSelection = function () {
                             var studyBounds = new L.LatLngBounds();
-                            if (angular.isDefined($scope.geoJSON)) {
+                            if (angular.isDefined($scope.geoJSON && $scope.geoJSON._geojsons)) {
                                 $scope.geoJSON._geojsons.default.eachLayer(function (layer) {
                                     for (var i = 0; i < $scope.selectedPolygon.length; i++) {
                                         if ($scope.selectedPolygon[i].id === layer.feature.properties.area_id) {

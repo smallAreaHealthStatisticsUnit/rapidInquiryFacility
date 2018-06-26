@@ -45,11 +45,16 @@
 angular.module("RIF")
         .factory('LeafletDrawService',
                 function ($rootScope) {
+                    var bandColours = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33'];
+					   
+					function getBandColours() {
+						return bandColours;
+					};
+					
                     function extendLeafletDrawCircle() {
 
                         //increment of band count, 1st band is #1, to a max of 6
                         var thisBand = 1;
-                        var bandColours = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33'];
 
                         L.SimpleShape = {};
                         L.Draw.SimpleShape = L.Draw.Feature.extend({
@@ -374,6 +379,9 @@ angular.module("RIF")
                         },
                         getPolygonCapability: function () {
                             return extendLeafletDrawPolygon();
-                        }
+                        },
+						getBandColours: function() {
+							return bandColours;
+						}
                     };
                 });         
