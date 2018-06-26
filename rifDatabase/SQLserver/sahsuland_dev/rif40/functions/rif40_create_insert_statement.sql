@@ -464,7 +464,7 @@ GO
 				'    c.' + LOWER(@c1_rec_study_geolevel_name) +
 				' = c1.' + LOWER(@c1_rec_study_geolevel_name) + @tab + @tab + '/* Join at study geolevel */' + @crlf;
 			SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab +
-				'AND c.year = c1.year)' + @crlf; /* Was $2 - may cause a performance problem */
+				'AND c.year = c1.year)' + @crlf; /* Was @yearstart - may cause a performance problem */
 		END;
 
 		IF @study_or_comparison = 'C' SET @sql_stmt=@sql_stmt + @tab + 
@@ -558,11 +558,18 @@ GO
 --
 -- This is joining at the study geolevel. This needs to be aggregated to the comparison area
 --			
-	IF @covariate_table_name IS NOT NULL SET @sql_stmt=@sql_stmt + @tab + @tab + 'LEFT OUTER JOIN rif_data.' +
-		LOWER(@covariate_table_name) + ' c1 ON (' + @tab + '/* Covariates */' + @crlf +
-		@tab + @tab + @tab + '    d1.' + LOWER(@c1_rec_study_geolevel_name) +
-		' = c1.' + LOWER(@c1_rec_study_geolevel_name) + @tab + @tab + '/* Join at study geolevel */' + @crlf +
-		@tab + @tab + @tab + 'AND d1.year = @yearstart)' + @crlf;
+	IF @covariate_table_name IS NOT NULL BEGIN
+		SET @sql_stmt=@sql_stmt + @tab + @tab + @tab +
+			'LEFT OUTER JOIN rif_data.' + LOWER(@covariate_table_name) + ' c1 ON (' + @tab + '/* Covariates */' + @crlf;
+--
+-- This is joining at the study geolevel. This needs to be aggregated to the comparison area
+--
+		SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab +
+			'    d1.' + LOWER(@c1_rec_study_geolevel_name) +
+			' = c1.' + LOWER(@c1_rec_study_geolevel_name) + @tab + @tab + '/* Join at study geolevel */' + @crlf;
+		SET @sql_stmt=@sql_stmt + @tab + @tab + @tab + @tab +
+			'AND d1.year = c1.year)' + @crlf; /* Was @yearstart - may cause a performance problem */
+	END;
 
 	IF @sql_stmt IS NOT NULL PRINT 'SQL Statement OK: C';	
 	
