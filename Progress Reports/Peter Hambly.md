@@ -2575,17 +2575,23 @@ SELECT a.*, b.coa2011
 * Created add_study_selection_to_json branch. Added ability to view JSOBN shapes used in study selection (e.g. the concentric circle);
 * Run EWS2011 pre processing script pg_EWS2011.sql to end after hierarchy fix. Took about a day and a half. Ran pgTileMaker -needed more memory. Took 3 hours.
 
-18th to 22nd June
+#### 18th to 22nd June
 
 * Test and merge *Tidies up the query formatters #43*;
 * Document *tilemaker* hierarchy issues;
 * Apply Postgres fix for EWS2011 hierarchy issues to SQL Server;
 * Resolve adjacency list tuning issues >1 day to 3 minutes;
 * Update SQL Server tuning comments;
-* Create test noise band shapefile for sahsuland from Heathrow 2013 day noise;
+* Create 2x test noise band shapefiles for sahsuland from Heathrow 2013 day noise;
 * Resolve front end shapefile loading issues for banded data;
 * Received population weighted centroids from Aina;
 * Run EWS2011 pre processing script mssql_EWS2011.sql to end after hierarchy and performance fixes overnight. Ran mssqlTileMaker -needed more memory. Took 1 hour;
-* Loaded EWS2011 into SQL SErver and PostGres;
+* Loaded EWS2011 into SQL Server and PostGres;
 * *TileViewer* example - Lower super output area in south east London:
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/TileViewer_example.PNG?raw=true "TileViewer example - Lower super output area in south east London")  
+
+#### 25th to 29th June
+
+* Upgraded wsrifdb1 to latest patch level; secured tomcat to OWASP guidelines; added US SEER dataset;
+* Fix for lack of polygons on ret8uened the study areas screen; fix for map synchronisation problems (slowed it down 0.5s as usual - map.whenReady() isn't!);
+* Clear selection now zooms back to full extent; shapefile selection only zooms to study extent;

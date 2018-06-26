@@ -952,6 +952,23 @@ To run a script:
   sqlcmd -U rif40 -P rif40 -d sahsuland -b -m-1 -e -r1 -i ms_rif40_load_seer.sql -v pwd="%cd%"
   ```
 
+  The production scripts *rif_pg_usa_2014.sql* and *rif_mssql_usa_2014.sql* require a role called *SEER_USER*. This needs to be created and then granted to each database user:
+  ```sql
+  psql -U postgres -d postgres
+  CREATE ROLE seer_user;
+  GRANT seer_user TO peter;
+  ```
+	
+  ```sql
+  sqlcmd -E
+  USE sahsuland;
+  IF DATABASE_PRINCIPAL_ID('seer_user') IS NULL
+  	CREATE ROLE [seer_user];
+  SELECT name, type_desc FROM sys.database_principals WHERE name LIKE '%seer_user%';
+  ALTER ROLE [seer_user] ADD MEMBER [peter];
+  GO
+  ```
+  
 Once all the data has been loaded, check the table appears in a user (not rif40) *rif40_num_denom*
  
 ```
@@ -1071,6 +1088,7 @@ need to load the USA County level administrative geography. The scripts and the 
 
 To install, change to the &lt;tile maker directory, e.g. C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\Tile maker USA&gt;
 
+* Make sure nobody is logged onto the RIF;
 * ```cd C:\Users\phamb\OneDrive\April 2018 deliverable for SAHSU\SEER Data\Tile maker USA```;
 * Run *rif_pg_usa_2014.sql* or *rif_mssql_usa_2014.sql*;.
 
@@ -3366,7 +3384,7 @@ E.g:
   ```SQL 
   --
   -- Grant
-  -- * The role SEER_USER needs to be created by an administrator
+  -- * The role SEER_USER needs to be created by an administrator (```CREATE ROLE seer_user;```):
   --
   GRANT SELECT ON rif_data.cov_cb_2014_us_county_500k TO seer_user;  
   GRANT SELECT ON rif_data.cov_cb_2014_us_state_500k TO seer_user;

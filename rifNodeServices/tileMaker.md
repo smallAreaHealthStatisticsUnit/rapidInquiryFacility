@@ -558,6 +558,27 @@ SELECT a.*, b.coa2011
 
 The SQL Server SQL code will be the same.
 
+This can also be added to *geoDataLoader.xml* just below the top level ```<geoDataLoader>```:
+```
+  <hierarchy_post_processing_sql>
+WITH a AS (
+	SELECT DISTINCT scntry2011,cntry2011, gor2011, ladua2011, msoa2011, lsoa2011
+	  FROM hierarchy_ews2011
+	 WHERE lsoa2011 = 'W01001945' /* Where it should be */
+), b AS (
+	SELECT coa2011, lsoa11_1
+      FROM coa2011
+     WHERE coa2011 IN ('W00010143', 'W00010161') /* Missing */
+)
+INSERT INTO hierarchy_ews2011 (scntry2011, cntry2011, gor2011, ladua2011, msoa2011, lsoa2011, coa2011)
+SELECT a.*, b.coa2011
+  FROM a, b
+ WHERE a.lsoa2011 = b.lsoa11_1
+   AND b.coa2011 NOT IN (SELECT coa2011 FROM hierarchy_ews2011);
+  </hierarchy_post_processing_sql>  
+```
+This SQL will then be inserted just after *insert_hierarchy.sql* and before the checks.
+
 # 2. Running the Tile Maker
 
 ## 2.1 Setup
@@ -919,20 +940,20 @@ fix, 98% simplification took 7 seconds!
 The Node.js server program needs to be able to read each shapefile in turn and then store the GeoJSON in memory. This leads to a memory requirement of 40x the total size of the shapefiles with 
 a maximum zoomlevel of 9.
 
-The server is pre-configured with 4GB of memory in the *Makefile*. To change the memory in use alter *NODE_MAX_MEMORY=* to the new value in MB: ```NODE_MAX_MEMORY?=16384```. The 
+The server is pre-configured with 4GB of memory in the *Makefile*. To change the memory in use alter *NODE_MAX_MEMORY=* to the new value in MB: ```NODE_MAX_MEMORY?=20480```. The 
 ```?``` is important, it allows the value to be set without altering the Makefile. There are four ways to achieve this:
 
 1. Altering the Makefile:
   ```Makefile
-  NODE_MAX_MEMORY?=16384
+  NODE_MAX_MEMORY?=20480
   FOREVER_OPTIONS=--max-old-space-size=$(NODE_MAX_MEMORY) --expose-gc
   ```
 2. Set *NODE_MAX_MEMORY* in the environment;
-3. Use ```make server-start NODE_MAX_MEMORY=16384``` to set on the command line. This will work for the other stop/restart make targets;
-4. Manual start - change ```--max-old-space-size=4096``` to ```--max-old-space-size=16384```:
+3. Use ```make server-start NODE_MAX_MEMORY=20480``` to set on the command line. This will work for the other stop/restart make targets;
+4. Manual start - change ```--max-old-space-size=4096``` to ```--max-old-space-size=20480```:
   ```
   rm -f forever.err forever.log
-  node node_modules\forever\bin\forever start -c "node --max-old-space-size=16384 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
+  node node_modules\forever\bin\forever start -c "node --max-old-space-size=20480 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
   ```
   
 ## 2.4 Pre Processing Shapefiles
