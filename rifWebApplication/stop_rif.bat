@@ -66,14 +66,11 @@ IF NOT DEFINED CATALINA_HOME (
 		exit /b 1
 )
 IF NOT DEFINED JAVA_HOME (
-		ECHO JAVA_HOME must be set in the environment
-		PAUSE
-		exit /b 1
-)
-IF NOT DEFINED JRE_HOME (
-		ECHO JRE_HOME must be set in the environment
-		PAUSE
-		exit /b 1
+		IF NOT DEFINED JRE_HOME (
+			ECHO JAVA_HOME or JRE_HOME must be set in the environment
+			PAUSE
+			exit /b 1
+		)
 )
 IF NOT DEFINED R_HOME (
 		ECHO R_HOME must be set in the environment
