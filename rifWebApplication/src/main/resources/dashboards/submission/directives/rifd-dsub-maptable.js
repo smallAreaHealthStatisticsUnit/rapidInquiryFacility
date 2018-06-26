@@ -40,16 +40,19 @@
 /* global L, d3, key, topojson */
 angular.module("RIF")
         .directive('submissionMapTable', ['ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService', 'mapTools',
-            'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService',
-			'SelectStateService', 
+            'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService', 
+			'SelectStateService', 'LeafletDrawService',
             function (ModalAreaService, LeafletDrawService, $uibModal, JSONService, mapTools,
                     GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService,
-					SelectStateService) {
+					SelectStateService, LeafletDrawService) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
                     link: function ($scope) {
 
+                        var bandColours = (LeafletDrawService.getBandColours() ||
+									['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']);
+									
                         $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);					
 						SubmissionStateService.setAreaMap($scope.areamap);
 						
@@ -141,6 +144,8 @@ angular.module("RIF")
                             $scope.input.studyResolution = "";
                             $scope.input.geography = thisGeography;
                         }
+						
+						// Also defined in rifs-util-leafletdraw.js
 
                         //selectedPolygon array synchronises the map <-> table selections  
                         $scope.selectedPolygon = $scope.input.selectedPolygon;
@@ -220,7 +225,7 @@ angular.module("RIF")
                         //Zoom to selection
                         $scope.zoomToSelection = function () {
                             var studyBounds = new L.LatLngBounds();
-                            if (angular.isDefined($scope.geoJSON && $scope.geoJSON._geojsons)) {
+                            if (angular.isDefined($scope.geoJSON && $scope.geoJSON._geojsons && $scope.geoJSON._geojsons.default)) {
                                 $scope.geoJSON._geojsons.default.eachLayer(function (layer) {
                                     for (var i = 0; i < $scope.selectedPolygon.length; i++) {
                                         if ($scope.selectedPolygon[i].id === layer.feature.properties.area_id) {
@@ -467,6 +472,7 @@ angular.module("RIF")
 									}
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShape[" + i + "] " +
 										"band: " + selectedShapes[i].band +
+										"; colour: " + bandColours[selectedShapes[i].band-1] +
 										"; circle: " + selectedShapes[i].circle +
 										"; freehand: " + selectedShapes[i].freehand +
 										"; points: " + points);
@@ -494,8 +500,8 @@ angular.module("RIF")
 										// basic shape to map shapes layer group
 										var circle = new L.Circle([selectedShape.latLng.lat, selectedShape.latLng.lng], {
 											radius: selectedShape.radius,
-											color: 'blue',
-											weight: 1,
+											color: (bandColours[selectedShapes[i].band-1] || 'blue'),
+											weight: 3,
 											opacity: 0.5,
 											fillOpacity: 0
 										});

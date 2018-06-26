@@ -321,7 +321,7 @@ angular.module("RIF")
                                                     radius: scope.bandAttr[i],
                                                     fillColor: 'none',
                                                     weight: 3,
-                                                    color: bandColours[i]
+                                                    color: bandColours[i] // Band i
                                                 });
                                         buffers.addLayer(polygon);
                                         $rootScope.$broadcast('makeDrawSelection', {
