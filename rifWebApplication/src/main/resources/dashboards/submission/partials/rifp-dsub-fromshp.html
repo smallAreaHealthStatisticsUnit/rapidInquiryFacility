@@ -53,18 +53,24 @@ Disease submission modal to open shapefile AOI
                 <h3>Defined polygon extent</h3><br>
                 <input ng-model="selectionMethod" type="radio" ng-value="1" id="byBoundary" ng-change="radioChange(selectionMethod)">
                 <label for="byBoundary">By maximum extent only</label><br>
-                <input ng-model="selectionMethod" type="radio" ng-value="2" id="byBand" ng-change="radioChange(selectionMethod)">
-                <label for="byBand">By band attribute in file</label><br>
-                <input ng-model="selectionMethod" type="radio" ng-value="3" id="byAttribute" ng-change="radioChange(selectionMethod)">
-                <label for="byAttribute">By exposure attribute</label><br>
+				<div ng-show="hasBandAttribute">
+                  <input ng-model="selectionMethod" type="radio" ng-value="2" id="byBand" ng-change="radioChange(selectionMethod)">
+                  <label for="byBand">By "band" attribute in shapefile</label><br>
+				</div>
+				<div ng-show="hasExposureAttributes">
+                  <input ng-model="selectionMethod" type="radio" ng-value="3" id="byAttribute" ng-change="radioChange(selectionMethod)">
+                  <label for="byAttribute">By exposure attribute</label><br>
+				</div>
             </div>
 
             <div ng-show="isPolygon && !isRiskMapping"> 
                 <h3>Defined polygon extent</h3><br>
                 <input ng-model="selectionMethod" type="radio" ng-value="1" id="byBoundary" ng-change="radioChange(selectionMethod)">
                 <label for="byBoundary">By maximum extent only</label><br>
-                <input ng-model="selectionMethod" type="radio" ng-value="3" id="byAttribute" ng-change="radioChange(selectionMethod)">
-                <label for="byAttribute">By exposure attribute</label><br>
+				<div ng-show="hasExposureAttributes">
+                  <input ng-model="selectionMethod" type="radio" ng-value="3" id="byAttribute" ng-change="radioChange(selectionMethod)">
+                  <label for="byAttribute">By exposure attribute</label><br>
+				</div>
             </div>
 
             <div ng-show="isPoint">

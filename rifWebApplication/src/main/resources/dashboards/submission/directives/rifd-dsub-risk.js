@@ -96,6 +96,8 @@ angular.module("RIF")
                             scope.isPolygon = false;
                             scope.isPoint = false;
                             scope.isTable = false;
+							scope.hasBandAttribute = false;
+							scope.hasExposureAttributes = false;
                             scope.bandAttr.length = 0;
                             //remove any existing AOI layer
                             poly = null;
@@ -107,7 +109,7 @@ angular.module("RIF")
                         });
                         scope.radioChange = function (selectionMethod) {
                             scope.selectionMethod = selectionMethod;
-                            if (selectionMethod === 3) {
+                            if (selectionMethod === 3) { // make selection by attribute value in file
                                 scope.isTable = true;
                             } else {
                                 scope.isTable = false;
@@ -163,9 +165,20 @@ angular.module("RIF")
                                                     scope.isTable = true;
                                                 } else if (feature.geometry.type === "Polygon") {
                                                     if (!bAttr) {
+														var exposureAttributesCount = 0;
                                                         for (var property in feature.properties) {
                                                             scope.attrs.push(property);
+															if (property == "band") {
+																scope.hasBandAttribute = true;
+															}
+															else {
+																exposureAttributesCount++;
+															}
                                                         }
+														if (exposureAttributesCount > 0) {
+															scope.hasExposureAttributes = true;														}
+														
+							
                                                         bAttr = true;
                                                         scope.selectedAttr = scope.attrs[scope.attrs.length - 1];
 															// Set default
