@@ -406,7 +406,7 @@ runRSmoothingFunctions <- function() {
 	})
 		
 
-	if (exitValue == 0 && !is.na(connDB)) {  callPerformSmoothingActivity
+	if (exitValue == 0 && !is.na(connDB)) {
 		cat("Performing basic stats and smoothing\n")	
 		errorTrace<-capture.output({
 			# tryCatch()is trouble because it replaces the stack! it also copies all global variables!

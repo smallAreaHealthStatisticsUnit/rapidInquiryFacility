@@ -3,19 +3,16 @@ package org.sahsu.rif.services.system.files.study;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-
-import javax.naming.spi.StateFactory;
 
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.concepts.AdjacencyMatrixRow;
 
 import com.opencsv.CSVWriter;
+import com.opencsv.ResultSetColumnNameHelperService;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -48,8 +45,8 @@ public class StudyCsvs {
 
 		try(Writer out = new FileWriter(adjacencyMatrixFile.toFile())) {
 
-			ProperMappingStrategy<AdjacencyMatrixRow> mappingStrategy =
-					new ProperMappingStrategy<>();
+			OrderedNamedHeadersMappingStrategy<AdjacencyMatrixRow> mappingStrategy =
+					new OrderedNamedHeadersMappingStrategy<>();
 			mappingStrategy.setType(AdjacencyMatrixRow.class);
 			mappingStrategy.setColumnMapping(columns);
 
@@ -71,7 +68,30 @@ public class StudyCsvs {
 
 		try(CSVWriter out = new CSVWriter(new FileWriter(extractFile.toFile()))) {
 
-			out.writeAll(extractResults, true);
+			// The old version of the CSV was generated from an R data frame, which includes
+			// the row number with an empty header. So we emulate that here.
+			ResultSetColumnNameHelperService columnService = new ResultSetColumnNameHelperService();
+			String[] columnNames = columnService.getColumnNames(extractResults);
+			String[] fullColumnNames = new String[columnNames.length + 1];
+			fullColumnNames[0] = "";
+			System.arraycopy(columnNames, 0, fullColumnNames, 1, columnNames.length);
+
+			// Write the column names
+			out.writeNext(fullColumnNames);
+
+			// Now the ResultSet contents
+			String[] columns = new String[fullColumnNames.length];
+			int rowCount = 1;
+			while (extractResults.next()) {
+
+				columns[0] = Integer.toString(rowCount);
+				for (int i  = 1; i <= columnNames.length; i++) {
+
+					columns[i] = extractResults.getString(i);
+				}
+				out.writeNext(columns);
+				rowCount++;
+			}
 		}
 	}
 
@@ -89,7 +109,7 @@ public class StudyCsvs {
 	 * columns ordered correctly and with headers goes. This mapping strategy fixes that.
 	 * @param <T>
 	 */
-	private final class ProperMappingStrategy<T> extends ColumnPositionMappingStrategy<T> {
+	private final class OrderedNamedHeadersMappingStrategy<T> extends ColumnPositionMappingStrategy<T> {
 
 		@Override
 		public String[] generateHeader(T bean) throws CsvRequiredFieldEmptyException {
