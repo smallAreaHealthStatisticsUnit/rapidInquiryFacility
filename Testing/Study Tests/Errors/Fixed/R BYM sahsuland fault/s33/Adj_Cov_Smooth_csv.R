@@ -319,13 +319,13 @@ runRSmoothingFunctions <- function() {
 #
 # extract the relevant Study data
 #
-						data=read.table(temporaryExtractFileName,header=TRUE,sep=',')
+						data=read.csv(temporaryExtractFileName,header=TRUE,sep=',')
 #						data=fetchExtractTable()
 
 #
 # Get Adjacency matrix
 #  	
-						AdjRowset=read.table(adjacencyMatrixFileName,header=TRUE,sep=',')
+						AdjRowset=read.csv(adjacencyMatrixFileName,header=TRUE,sep=',')
 #						AdjRowset=getAdjacencyMatrix()
 
 #
