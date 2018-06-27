@@ -49,18 +49,27 @@ angular.module("RIF")
                 }
             };
         })
-        .directive('riskAnalysis', ['$rootScope', '$uibModal', '$q', 'LeafletDrawService',
+        .directive('riskAnalysis', ['$rootScope', '$uibModal', '$q', 'ParametersService',
 			// SelectStateService is not need as makeDrawSelection() in rifd-dsub-maptable.js is called to update
-            function ($rootScope, $uibModal, $q, LeafletDrawService) {
+            function ($rootScope, $uibModal, $q, ParametersService) {
                 return {
                     restrict: 'A', //added as attribute to in to selectionMapTools > btn-addAOI in rifs-utils-mapTools
                     link: function (scope, element, attr) {
 
                         var alertScope = scope.$parent.$$childHead.$parent.$parent.$$childHead;
                         var poly; //polygon shapefile
-                        var buffers; //concentric buffers around points
-                        var bandColours = (LeafletDrawService.getBandColours() ||
-									['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']);
+                        var buffers; //concentric buffers around points					
+						var parameters=ParametersService.getParameters();
+						var selectorBands = { // Study and comparison are selectors
+								weight: 3,
+								opacity: 0.8,
+								fillOpacity: 0,
+								bandColours: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']
+							};
+						if (parameters && parameters.selectorBands) {
+							selectorBands=parameters.selectorBands
+						}	
+					
 						// Also defined in rifs-util-leafletdraw.js
                         var factory = L.icon({
                             iconUrl: 'images/factory.png',
@@ -320,8 +329,10 @@ angular.module("RIF")
                                                 {
                                                     radius: scope.bandAttr[i],
                                                     fillColor: 'none',
-                                                    weight: 3,
-                                                    color: bandColours[i] // Band i
+                                                    weight: (selectorBands.weight || 3),
+													opacity: (selectorBands.opacity || 0.8),
+													fillOpacity: (selectorBands.fillOpacity || 0),
+                                                    color: selectorBands.bandColours[i] // Band i
                                                 });
                                         buffers.addLayer(polygon);
                                         $rootScope.$broadcast('makeDrawSelection', {

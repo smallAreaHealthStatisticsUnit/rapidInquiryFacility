@@ -41,17 +41,24 @@
 angular.module("RIF")
         .directive('submissionMapTable', ['ModalAreaService', 'LeafletDrawService', '$uibModal', 'JSONService', 'mapTools',
             'GISService', 'LeafletBaseMapService', '$timeout', 'user', 'SubmissionStateService', 
-			'SelectStateService', 'LeafletDrawService',
+			'SelectStateService', 'ParametersService',
             function (ModalAreaService, LeafletDrawService, $uibModal, JSONService, mapTools,
                     GISService, LeafletBaseMapService, $timeout, user, SubmissionStateService,
-					SelectStateService, LeafletDrawService) {
+					SelectStateService, ParametersService) {
                 return {
                     templateUrl: 'dashboards/submission/partials/rifp-dsub-maptable.html',
                     restrict: 'AE',
                     link: function ($scope) {
-
-                        var bandColours = (LeafletDrawService.getBandColours() ||
-									['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']);
+						var parameters=ParametersService.getParameters();
+					    var selectorBands = { // Study and comparison are selectors
+								weight: 3,
+								opacity: 0.8,
+								fillOpacity: 0,
+								bandColours: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']
+							};
+						if (parameters && parameters.selectorBands) {
+							selectorBands=parameters.selectorBands
+						}		
 									
                         $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);					
 						SubmissionStateService.setAreaMap($scope.areamap);
@@ -472,7 +479,7 @@ angular.module("RIF")
 									}
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShape[" + i + "] " +
 										"band: " + selectedShapes[i].band +
-										"; colour: " + bandColours[selectedShapes[i].band-1] +
+										"; colour: " + selectorBands.bandColours[selectedShapes[i].band-1] +
 										"; circle: " + selectedShapes[i].circle +
 										"; freehand: " + selectedShapes[i].freehand +
 										"; points: " + points);
@@ -500,10 +507,10 @@ angular.module("RIF")
 										// basic shape to map shapes layer group
 										var circle = new L.Circle([selectedShape.latLng.lat, selectedShape.latLng.lng], {
 											radius: selectedShape.radius,
-											color: (bandColours[selectedShapes[i].band-1] || 'blue'),
-											weight: 3,
-											opacity: 0.5,
-											fillOpacity: 0
+											color: (selectorBands.bandColours[selectedShapes[i].band-1] || 'blue'),
+											weight: (selectorBands.weight || 3),
+											opacity: (selectorBands.opacity || 0.8),
+											fillOpacity: (selectorBands.fillOpacity || 0)
 										});
 										if (circle) {
 											$scope.shapes.addLayer(circle);

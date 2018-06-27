@@ -43,12 +43,21 @@
  */
 
 angular.module("RIF")
-        .factory('LeafletDrawService',
-                function ($rootScope) {
-                    var bandColours = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33'];
+        .factory('LeafletDrawService', ['$rootScope', 'ParametersService', 
+                function ($rootScope, ParametersService) {
+					var parameters=ParametersService.getParameters();
+                    var selectorBands = { // Study and comparison are selectors
+							weight: 3,
+							opacity: 0.8,
+							fillOpacity: 0,
+							bandColours: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']
+						};
+					if (parameters && parameters.selectorBands) {
+						selectorBands=parameters.selectorBands
+					}			
 					   
 					function getBandColours() {
-						return bandColours;
+						return selectorBands.bandColours;
 					};
 					
                     function extendLeafletDrawCircle() {
@@ -228,7 +237,7 @@ angular.module("RIF")
                                 L.Draw.SimpleShape.prototype.initialize.call(this, map, options);
                             },
                             _drawShape: function (latlng) {
-                                this.options.shapeOptions.color = bandColours[thisBand - 1];
+                                this.options.shapeOptions.color = selectorBands.bandColours[thisBand - 1];
                                 if (!this._shape) {
                                     this._shape = new L.Circle(this._startLatLng, this._startLatLng.distanceTo(latlng), this.options.shapeOptions);
                                     this._map.addLayer(this._shape);
@@ -381,7 +390,7 @@ angular.module("RIF")
                             return extendLeafletDrawPolygon();
                         },
 						getBandColours: function() {
-							return bandColours;
+							return selectorBands.bandColours;
 						}
                     };
-                });         
+                }]);         
