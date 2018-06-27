@@ -55,10 +55,6 @@ angular.module("RIF")
 					if (parameters && parameters.selectorBands) {
 						selectorBands=parameters.selectorBands
 					}			
-					   
-					function getBandColours() {
-						return selectorBands.bandColours;
-					};
 					
                     function extendLeafletDrawCircle() {
 
@@ -388,9 +384,6 @@ angular.module("RIF")
                         },
                         getPolygonCapability: function () {
                             return extendLeafletDrawPolygon();
-                        },
-						getBandColours: function() {
-							return selectorBands.bandColours;
-						}
+                        }
                     };
                 }]);         
