@@ -139,7 +139,8 @@ angular.module("RIF")
                                             data: this._shape,
                                             circle: true,
                                             freehand: false,
-                                            band: thisBand
+                                            band: thisBand,
+											finalCircleBand: true
                                         });
                                     }
                                     this.disable();
@@ -164,7 +165,8 @@ angular.module("RIF")
                                             data: this._shape,
                                             circle: true,
                                             freehand: false,
-                                            band: thisBand
+                                            band: thisBand,
+											finalCircleBand: true
                                         });
                                     }
                                     this.disable();

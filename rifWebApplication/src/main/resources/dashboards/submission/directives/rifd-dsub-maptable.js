@@ -479,7 +479,7 @@ angular.module("RIF")
 									}
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShape[" + i + "] " +
 										"band: " + selectedShapes[i].band +
-										"; colour: " + selectorBands.bandColours[selectedShapes[i].band-1] +
+										"; color[" + (selectedShapes[i].band-1) + "]: " + selectorBands.bandColours[selectedShapes[i].band-1] +
 										"; circle: " + selectedShapes[i].circle +
 										"; freehand: " + selectedShapes[i].freehand +
 										"; points: " + points);
@@ -504,22 +504,26 @@ angular.module("RIF")
 								
 									if (selectedShape.circle) { // Represent circles as a point and a radius
 										
-										// basic shape to map shapes layer group
-										var circle = new L.Circle([selectedShape.latLng.lat, selectedShape.latLng.lng], {
-											radius: selectedShape.radius,
-											color: (selectorBands.bandColours[selectedShapes[i].band-1] || 'blue'),
-											weight: (selectorBands.weight || 3),
-											opacity: (selectorBands.opacity || 0.8),
-											fillOpacity: (selectorBands.fillOpacity || 0)
-										});
-										if (circle) {
-											$scope.shapes.addLayer(circle);
-											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): adding circle: " + JSON.stringify(selectedShape.latLng) + 
-												"; radius: " + selectedShape.radius + 
-												"; band: " + selectedShape.band);
-										}
-										else {
-											alertScope.showError("Could not restore circle");
+										if (!selectedShape.finalCircleBand) {
+											// basic shape to map shapes layer group
+											var circle = new L.Circle([selectedShape.latLng.lat, selectedShape.latLng.lng], {
+												radius: selectedShape.radius,
+												color: (selectorBands.bandColours[selectedShapes[i].band-1] || 'blue'),
+												weight: (selectorBands.weight || 3),
+												opacity: (selectorBands.opacity || 0.8),
+												fillOpacity: (selectorBands.fillOpacity || 0)
+											});
+											if (circle) {
+												$scope.shapes.addLayer(circle);
+												alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): " +
+													"adding circle: " + JSON.stringify(selectedShape.latLng) + 
+													"; color[" + (selectedShapes[i].band-1) + "]: " + (selectorBands.bandColours[selectedShapes[i].band-1] || 'blue') + 
+													"; radius: " + selectedShape.radius + 
+													"; band: " + selectedShape.band);
+											}
+											else {
+												alertScope.showError("Could not restore circle");
+											}
 										}
 									}
 									else { // Use L.polygon(), L.geoJSON needs a GeoJSON layer
@@ -789,25 +793,32 @@ angular.module("RIF")
 								area: shape.area, 
 								radius: undefined,
 								latLng: undefined,
-								geojson: undefined
+								geojson: undefined,
+								finalCircleBand: (shape.finalCircleBand || false)
 							}
 								
 							if (shape.circle) { // Represent circles as a point and a radius
 								savedShape.radius=shape.data.getRadius();
 								savedShape.latLng=shape.data.getLatLng();
-								
-								// basic shape to map shapes layer group
-								var circle = new L.Circle([savedShape.latLng.lat, savedShape.latLng.lng], {
-									radius: savedShape.radius,
-									color: "#000",
-									weight: 1,
-									opacity: 0.4,
-									fillOpacity: 0
-								});
-								$scope.shapes.addLayer(circle);
-								
-								alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection() added circle" +
-									"; savedShape: " + JSON.stringify(savedShape, null, 1));
+							
+								if (!savedShape.finalCircleBand) {
+									// basic shape to map shapes layer group
+									var circle = new L.Circle([savedShape.latLng.lat, savedShape.latLng.lng], {
+										radius: savedShape.radius,
+										color: (selectorBands.bandColours[savedShape.band-1] || 'blue'),
+										weight: (selectorBands.weight || 3),
+										opacity: (selectorBands.opacity || 0.8),
+										fillOpacity: (selectorBands.fillOpacity || 0)
+									});									
+									$scope.shapes.addLayer(circle);
+									alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection() added circle" +
+										"; color: " + selectorBands.bandColours[savedShape.band-1] +
+										"; savedShape: " + JSON.stringify(savedShape, null, 1));
+								}
+								else {
+									alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection() suppressed circle" +
+										"; savedShape: " + JSON.stringify(savedShape, null, 1));
+								}
 							}
 							else { // Use geoJSON
 								savedShape.geojson=angular.copy(shape.data.toGeoJSON());

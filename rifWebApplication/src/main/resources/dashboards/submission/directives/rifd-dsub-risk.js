@@ -332,7 +332,7 @@ angular.module("RIF")
                                                     weight: (selectorBands.weight || 3),
 													opacity: (selectorBands.opacity || 0.8),
 													fillOpacity: (selectorBands.fillOpacity || 0),
-                                                    color: selectorBands.bandColours[i] // Band i
+                                                    color: selectorBands.bandColours[i] // Band i+1
                                                 });
                                         buffers.addLayer(polygon);
                                         $rootScope.$broadcast('makeDrawSelection', {
