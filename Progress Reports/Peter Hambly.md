@@ -2680,4 +2680,8 @@ SELECT a.*, b.coa2011
   * Fix height interaction with shapefile selector modal;
   * Emphasise centroid point when area selected; 
   * Reverse shapefile band columns so the same as points (red innermost);
+  * Colour shapefile bands;
+  * Check all bands etc restore correctly;
+  * Add shapefile properties to map;
+  * Check for no bands setup with limits;
   
