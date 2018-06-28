@@ -2592,6 +2592,92 @@ SELECT a.*, b.coa2011
 
 #### 25th to 29th June
 
-* Upgraded wsrifdb1 to latest patch level; secured tomcat to OWASP guidelines; added US SEER dataset;
-* Fix for lack of polygons on ret8uened the study areas screen; fix for map synchronisation problems (slowed it down 0.5s as usual - map.whenReady() isn't!);
+* Upgraded wsrifdb1 and 2 to latest patch level; secured tomcat to OWASP guidelines; added US SEER dataset; fixed stop/start_rif.bat; made to start on boot;
+* Made SQL Server SEER load script re-runnable using MERGE statements (removed DELETE FROM/INSERT rif40 tables);
+* Fix for lack of polygons on returning to the study areas screen; fix for map synchronisation problems (slowed it down 0.5s as usual - map.whenReady() isn't!);
 * Clear selection now zooms back to full extent; shapefile selection only zooms to study extent;
+* R error on SQL Server port only with SEER data:
+  ```
+  getRootCauseMessage: RIFServiceException: R script execution error; trace:
+	EXTRACT TABLE NAME: rif_studies.s4_extract
+	Saving extract frame to: scratchSpace/d1-100/s4/datatmp_s4_extract.csv
+	rif_studies.s4_extract numberOfRows=745322==
+	rif40_GetAdjacencyMatrix numberOfRows=712==
+	Saving adjacency matrix to: scratchSpace/d1-100/s4/datatmp_s4_adjacency_matrix.csv
+	Covariates: MEDIAN_HH_INCOME_QUIN
+	Stack tracer >>>
+
+	 performSmoothingActivity.R#710: .handleSimpleError(function (obj) 
+	{
+		ca FUN(X[[i]], ...) lapply(X = X, FUN = FUN, ...) performSmoothingActivity.R#709: sapply(x, FUN = function(y) {
+		ans = y
+	  performSmoothingActivity.R#106: findNULL(data[, i.d.adj[i]]) performSmoothingActivity(data, AdjRowset) Adj_Cov_Smooth_JRI.R#372: withVisible(expr) Adj_Cov_Smooth_JRI.R#372: withCallingHandlers(withVisible(expr), error = er withErrorTracing({
+		data = fetchExtractTable()
+		AdjRowset = getAdjace doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names, parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryCatch({
+		withErrorTracing({
+			data = fetchExtractTable()
+		   eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) Adj_Cov_Smooth_JRI.R#411: capture.output({
+		tryCatch({
+			withError runRSmoothingFunctions() 
+	<<< End of stack tracer.
+	callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  if 
+	callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  y == "NULL" 
+	callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  {
+		ans = 0
+	} 
+	callPerformSmoothingActivity exitValue: 1
+  ```
+  Traced to missing patch applied to Postgres (rif40_create_insert_statement.sql). Mal-join of denominator covariate data in extract;
+  **Checked numbers were the same for both ports!**
+* Mysterious error on wsrifdb2:
+  ```
+  10:49:56.827 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Created TaxonomyLogger: org.sahsu.rif.generic.util.TaxonomyLogger
+  10:49:56.843 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Set java.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+  10:49:56.843 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.RIFTaxonomyWebServiceApplication]:
+  !!!!!!!!!!!!!!!!!!!!! RIFTaxonomyWebServiceApplication !!!!!!
+  10:49:58.155 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfigurationXMLReader]:
+  TaxonomyService configuration file: C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\TaxonomyServicesConfiguration.xml
+  10:49:58.186 [https-jsse-nio-8080-exec-5] ERROR org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+  ICD10/11 taxonomy service: ICD Taxonomy Service initialiseService() error
+  getMessage:          RIFServiceException: ICD10/11 taxonomy service: ICD Taxonomy Service file: "org.sahsu.rif.generic.concepts.Parameter@131041c4" not found.
+  getRootCauseMessage: RIFServiceException: ICD10/11 taxonomy service: ICD Taxonomy Service file: "org.sahsu.rif.generic.concepts.Parameter@131041c4" not found.
+  getThrowableCount:   1
+  getRootCauseStackTrace >>>
+  1 error(s). Error code is 'HEALTH_CODE_TAXONOMY_SERVICE_ERROR'. Message list is: 'ICD10/11 taxonomy service: ICD Taxonomy Service file: "org.sahsu.rif.generic.concepts.Parameter@131041c4" not found.'
+  	at org.sahsu.taxonomyservices.claMLTaxonomyService.initialiseService(claMLTaxonomyService.java:170)
+  	at org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfigurationXMLReader.readFile(TaxonomyServiceConfigurationXMLReader.java:206)
+  	at org.sahsu.rif.generic.taxonomyservices.FederatedTaxonomyService.initialise(FederatedTaxonomyService.java:115)
+  	at org.sahsu.taxonomyservices.RIFTaxonomyWebServiceResource.initialiseService(RIFTaxonomyWebServiceResource.java:83)
+	...
+	<<< End getRootCauseStackTrace.
+	10:55:25.306 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Created TaxonomyLogger: org.sahsu.rif.generic.util.TaxonomyLogger
+	10:55:25.322 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Set java.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+	10:55:25.322 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.RIFTaxonomyWebServiceApplication]:
+	!!!!!!!!!!!!!!!!!!!!! RIFTaxonomyWebServiceApplication !!!!!!
+	10:55:26.587 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfigurationXMLReader]:
+	TaxonomyService configuration file: C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\TaxonomyServicesConfiguration.xml
+	10:55:27.134 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.ICD10TaxonomyTermParser]:
+	ICD10TaxonomyTermParser 2
+	10:55:49.312 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+	icd101/1TaxonomyParser: ICD Taxonomy Service read: "C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\icdClaML2016ens.xml".
+	10:55:49.312 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+	icd101/1TaxonomyParser: ICD Taxonomy Service initialised: International classification of diseases and related health problems 10th revision (2016 version)..
+	11:01:46.608 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Created TaxonomyLogger: org.sahsu.rif.generic.util.TaxonomyLogger
+	11:01:46.639 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Set java.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+	11:01:46.639 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.RIFTaxonomyWebServiceApplication]:
+	!!!!!!!!!!!!!!!!!!!!! RIFTaxonomyWebServiceApplication !!!!!!
+	11:01:48.076 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfigurationXMLReader]:
+	TaxonomyService configuration file: C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\TaxonomyServicesConfiguration.xml
+	11:01:49.795 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.ICD10TaxonomyTermParser]:
+	ICD10TaxonomyTermParser 2
+	11:02:13.651 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+	icd101/1TaxonomyParser: ICD Taxonomy Service read: "C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\icdClaML2016ens.xml".
+	11:02:13.651 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+	icd101/1TaxonomyParser: ICD Taxonomy Service initialised: International classification of diseases and related health problems 10th revision (2016 version)..	
+  ```
+* Add shapefile properties data to selector modal;
+* Issues:
+  * Fix height interaction with shapefile selector modal;
+  * Emphasise centroid point when area selected; 
+  * Reverse shapefile band columns so the same as points (red innermost);
+  

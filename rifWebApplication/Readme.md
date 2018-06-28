@@ -343,7 +343,7 @@ Two scripts (in the scripts directory) are provided to start and stop the RIF fr
 * start_rif.bat
 * stop_rif.bat
 
-These should be copied to a local directory and then sent to the desktop as a shortcut; find each file, right click, "select send to" then "Desktop (create shortcut)". 
+These should be copied to a local directory (e.g. *%CATALINA_HOME%\bin*) and then sent to the desktop as a shortcut; find each file, right click, "select send to" then "Desktop (create shortcut)". 
 The shortcuts created then need to be modified to run as an Administrator (right click on shortcut, select properties, in shortcut properties window select advanced then check run as administrator).
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/setting_runas_administrator.png?raw=true "Make a shortcut run as an administrator")
