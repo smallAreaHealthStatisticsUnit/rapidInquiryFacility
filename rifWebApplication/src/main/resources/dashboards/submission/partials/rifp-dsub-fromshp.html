@@ -48,47 +48,53 @@ Disease submission modal to open shapefile AOI
             <md-progress-linear md-mode="indeterminate" ng-show="bProgress"></md-progress-linear>
         </div>
 
-        <div class="bnd-fld">
-            <div ng-show="isPolygon && isRiskMapping"> 
-                <h3>Defined polygon extent</h3><br>
-                <input ng-model="selectionMethod" type="radio" ng-value="1" id="byBoundary" ng-change="radioChange(selectionMethod)">
-                <label for="byBoundary">By maximum extent only</label><br>
-				<div ng-show="hasBandAttribute">
-                  <input ng-model="selectionMethod" type="radio" ng-value="2" id="byBand" ng-change="radioChange(selectionMethod)">
-                  <label for="byBand">By "band" attribute in shapefile</label><br>
+		<div class="shapefile-box">
+			<div ng-controller="ShapefileSelect">
+			  <div ng-show="hasGrid" class="grid-shapefile" ng-mouseleave="mouseleave($event)" ui-grid="shapefileGridOptions" ui-grid-resize-columns></br></div>
+			</div>
+				
+			<div class="bnd-fld">
+				<div ng-show="isPolygon && isRiskMapping"> 
+					<h3>Defined polygon extent</h3><br>
+					<input ng-model="selectionMethod" type="radio" ng-value="1" id="byBoundary" ng-change="radioChange(selectionMethod)">
+					<label for="byBoundary">By maximum extent only</label><br>
+					<div ng-show="hasBandAttribute">
+					  <input ng-model="selectionMethod" type="radio" ng-value="2" id="byBand" ng-change="radioChange(selectionMethod)">
+					  <label for="byBand">By "band" attribute in shapefile</label><br>
+					</div>
+					<div ng-show="hasExposureAttributes">
+					  <input ng-model="selectionMethod" type="radio" ng-value="3" id="byAttribute" ng-change="radioChange(selectionMethod)">
+					  <label for="byAttribute">By exposure attribute</label><br>
+					</div>
 				</div>
-				<div ng-show="hasExposureAttributes">
-                  <input ng-model="selectionMethod" type="radio" ng-value="3" id="byAttribute" ng-change="radioChange(selectionMethod)">
-                  <label for="byAttribute">By exposure attribute</label><br>
+
+				<div ng-show="isPolygon && !isRiskMapping"> 
+					<h3>Defined polygon extent</h3><br>
+					<input ng-model="selectionMethod" type="radio" ng-value="1" id="byBoundary" ng-change="radioChange(selectionMethod)">
+					<label for="byBoundary">By maximum extent only</label><br>
+					<div ng-show="hasExposureAttributes">
+					  <input ng-model="selectionMethod" type="radio" ng-value="3" id="byAttribute" ng-change="radioChange(selectionMethod)">
+					  <label for="byAttribute">By exposure attribute</label><br>
+					</div>
 				</div>
-            </div>
 
-            <div ng-show="isPolygon && !isRiskMapping"> 
-                <h3>Defined polygon extent</h3><br>
-                <input ng-model="selectionMethod" type="radio" ng-value="1" id="byBoundary" ng-change="radioChange(selectionMethod)">
-                <label for="byBoundary">By maximum extent only</label><br>
-				<div ng-show="hasExposureAttributes">
-                  <input ng-model="selectionMethod" type="radio" ng-value="3" id="byAttribute" ng-change="radioChange(selectionMethod)">
-                  <label for="byAttribute">By exposure attribute</label><br>
+				<div ng-show="isPoint">
+					<h3>Circular buffer around points (metres)</h3><br>
 				</div>
-            </div>
 
-            <div ng-show="isPoint">
-                <h3>Circular buffer around points (metres)</h3><br>
-            </div>
-
-            <table ng-show="isTable && isPolygon" id="breakstable">
-                <select ng-show="isTable && isPolygon" id="exposureSelect" ng-model="selectedAttr" ng-change="changedValue(selectedAttr)" ng-options="s for s in attrs" ng-init="selectedAttr"></select>
-                <tr ng-repeat="i in possibleBands track by $index">
-                    <td><input class="break" ng-model="bandAttr[$index]"> Lower value for band {{possibleBands[i - 1]}}</td> 
-                </tr>
-            </table>
-            <table ng-show="isTable && isPoint" id="breakstable">
-                <tr ng-repeat="i in possibleBands track by $index">
-                    <td><input class="break" ng-model="bandAttr[$index]"> Radius for band {{possibleBands[i - 1]}}</td> 
-                </tr>
-            </table>
-        </div>
+				<table ng-show="isTable && isPolygon" id="breakstable">
+					<select ng-show="isTable && isPolygon" id="exposureSelect" ng-model="selectedAttr" ng-change="changedValue(selectedAttr)" ng-options="s for s in attrs" ng-init="selectedAttr"></select>
+					<tr ng-repeat="i in possibleBands track by $index">
+						<td><input class="break" ng-model="bandAttr[$index]"> Lower value for band {{possibleBands[i - 1]}}</td> 
+					</tr>
+				</table>
+				<table ng-show="isTable && isPoint" id="breakstable">
+					<tr ng-repeat="i in possibleBands track by $index">
+						<td><input class="break" ng-model="bandAttr[$index]"> Radius for band {{possibleBands[i - 1]}}</td> 
+					</tr>
+				</table>
+			</div>
+		</div>
 
         <div class="save-fld">
             <input type="button" value="Apply" ng-click="submit()">
