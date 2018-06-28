@@ -2594,7 +2594,7 @@ SELECT a.*, b.coa2011
 
 * Upgraded wsrifdb1 and 2 to latest patch level; secured tomcat to OWASP guidelines; added US SEER dataset; fixed stop/start_rif.bat; made to start on boot;
 * Made SQL Server SEER load script re-runnable using MERGE statements (removed DELETE FROM/INSERT rif40 tables);
-* Fix for lack of polygons on ret8uened the study areas screen; fix for map synchronisation problems (slowed it down 0.5s as usual - map.whenReady() isn't!);
+* Fix for lack of polygons on returning to the study areas screen; fix for map synchronisation problems (slowed it down 0.5s as usual - map.whenReady() isn't!);
 * Clear selection now zooms back to full extent; shapefile selection only zooms to study extent;
 * R error on SQL Server port only with SEER data:
   ```
@@ -2675,3 +2675,9 @@ SELECT a.*, b.coa2011
 	11:02:13.651 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
 	icd101/1TaxonomyParser: ICD Taxonomy Service initialised: International classification of diseases and related health problems 10th revision (2016 version)..	
   ```
+* Add shapefile properties data to selector modal;
+* Issues:
+  * Fix height interaction with shapefile selector modal;
+  * Emphasise centroid point when area selected; 
+  * Reverse shapefile band columns so the same as points (red innermost);
+  
