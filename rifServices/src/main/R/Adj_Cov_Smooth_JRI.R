@@ -416,8 +416,7 @@ runRSmoothingFunctions <- function() {
 #
 # extract the relevant Study data
 #
-#data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
-						# data=fetchExtractTable()
+						data = read.csv(temporaryExtractFileName)
 
 #
 # Get Adjacency matrix
