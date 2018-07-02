@@ -377,45 +377,57 @@ angular.module("RIF")
                                     scope.bandAttr = angular.copy(tmp);
                                 }
                                 if (scope.isPoint) {
-                                    //check ascending and sequential for radii
-                                    for (var i = 0; i < scope.bandAttr.length - 1; i++) {
-										var a = parseInt(scope.bandAttr[i]);
-										var b = parseInt(scope.bandAttr[i+1]);
-										
-										if (a.toString() != scope.bandAttr[i] || 
-										    b.toString() != scope.bandAttr[i+1]) {
-											alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
-												JSON.stringify(scope.bandAttr));
-                                            alertScope.showError("Distance band values are not integers");
-                                            return false;
+									if (scope.bandAttr.length == 0) {
+										alertScope.showError(" No distance band values supplied for points");
+										return false;
+									}
+									else {
+										//check ascending and sequential for radii
+										for (var i = 0; i < scope.bandAttr.length - 1; i++) {
+											var a = parseInt(scope.bandAttr[i]);
+											var b = parseInt(scope.bandAttr[i+1]);
+											
+											if (a.toString() != scope.bandAttr[i] || 
+												b.toString() != scope.bandAttr[i+1]) {
+												alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
+													JSON.stringify(scope.bandAttr));
+												alertScope.showError("Distance band values are not integers");
+												return false;
+											}
+											else if (a > b) {
+												alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
+													JSON.stringify(scope.bandAttr));
+												alertScope.showError("Distance band values are not in ascending order");
+												return false;
+											}
 										}
-                                        else if (a > b) {
-											alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
-												JSON.stringify(scope.bandAttr));
-                                            alertScope.showError("Distance band values are not in ascending order");
-                                            return false;
-                                        }
-                                    }
+									}
                                 } else {
-                                    //check descending and sequential for exposures
-                                    for (var i = 0; i < scope.bandAttr.length - 1; i++) {
-										var a = parseInt(scope.bandAttr[i]);
-										var b = parseInt(scope.bandAttr[i+1]);
-                                        
-										if (a.toString() != scope.bandAttr[i] || 
-										    b.toString() != scope.bandAttr[i+1]) {
-											alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
-												JSON.stringify(scope.bandAttr));
-                                            alertScope.showError("Distance band values are not integers");
-                                            return false;
+									if (scope.bandAttr.length == 0) {
+										alertScope.showError(" No exposure attribute values supplied for shapefile");
+										return false;
+									}
+									else {
+										//check descending and sequential for exposures
+										for (var i = 0; i < scope.bandAttr.length - 1; i++) {
+											var a = parseInt(scope.bandAttr[i]);
+											var b = parseInt(scope.bandAttr[i+1]);
+											
+											if (a.toString() != scope.bandAttr[i] || 
+												b.toString() != scope.bandAttr[i+1]) {
+												alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
+													JSON.stringify(scope.bandAttr));
+												alertScope.showError("Distance band values are not integers");
+												return false;
+											}
+											else if (a < b) {
+												alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
+													JSON.stringify(scope.bandAttr));
+												alertScope.showError("Exposure band values are not in descending order");
+												return false;
+											}
 										}
-                                        else if (a < b) {
-											alertScope.consoleLog("[rifd-dsub-risk.js] scope.bandAttr[" + i + "]: " + 
-												JSON.stringify(scope.bandAttr));
-                                            alertScope.showError("Exposure band values are not in descending order");
-                                            return false;
-                                        }
-                                    }
+									}
                                 }
                             }
 

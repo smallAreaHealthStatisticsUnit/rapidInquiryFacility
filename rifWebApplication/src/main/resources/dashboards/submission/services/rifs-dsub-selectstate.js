@@ -116,7 +116,7 @@ angular.module("RIF")
 									Object.keys(newStudySelection).join(", "));
 							}		
 							else if (newStudySelection.comparisonSelectedAreas.length < 1) {
-								throw new Error("rifs-dsub-selectstate.js(): at least one comparisonSelectedAreas required");
+								throw new Error("at least one comparison area required");
 							}									
 						}
 						
@@ -126,7 +126,7 @@ angular.module("RIF")
 									Object.keys(newStudySelection).join(", "));
 							}			
 							else if (newStudySelection.studySelectedAreas.length < 1) {
-								throw new Error("rifs-dsub-selectstate.js(): at least one studySelectedAreas required");
+								throw new Error("at least one study area required");
 							}								
 						}
 						else {
