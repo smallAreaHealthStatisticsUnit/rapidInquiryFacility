@@ -12,7 +12,6 @@ import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.concepts.AdjacencyMatrixRow;
 
 import com.opencsv.CSVWriter;
-import com.opencsv.ResultSetColumnNameHelperService;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -70,36 +69,6 @@ public class StudyCsvs {
 
 			out.writeAll(extractResults, true);
 		}
-
-		// Path extractFile = dataDir().resolve("tmp_s" + studyId + "_extract.csv");
-		//
-		// try(CSVWriter out = new CSVWriter(new FileWriter(extractFile.toFile()))) {
-		//
-		// 	// The old version of the CSV was generated from an R data frame, which includes
-		// 	// the row number with an empty header. So we emulate that here.
-		// 	ResultSetColumnNameHelperService columnService = new ResultSetColumnNameHelperService();
-		// 	String[] columnNames = columnService.getColumnNames(extractResults);
-		// 	String[] fullColumnNames = new String[columnNames.length + 1];
-		// 	fullColumnNames[0] = "";
-		// 	System.arraycopy(columnNames, 0, fullColumnNames, 1, columnNames.length);
-		//
-		// 	// Write the column names
-		// 	out.writeNext(fullColumnNames);
-		//
-		// 	// Now the ResultSet contents
-		// 	String[] columns = new String[fullColumnNames.length];
-		// 	int rowCount = 1;
-		// 	while (extractResults.next()) {
-		//
-		// 		columns[0] = Integer.toString(rowCount);
-		// 		for (int i  = 1; i <= columnNames.length; i++) {
-		//
-		// 			columns[i] = extractResults.getString(i);
-		// 		}
-		// 		out.writeNext(columns);
-		// 		rowCount++;
-		// 	}
-		// }
 	}
 
 	private Path dataDir() throws IOException {

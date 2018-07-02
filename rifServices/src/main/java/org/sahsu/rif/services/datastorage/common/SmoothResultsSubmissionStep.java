@@ -254,6 +254,7 @@ password=XXXXXXXX
 				rifScriptPath.append(rifStartupOptions.getClassesDirectory());
 				rifScriptPath.append(File.separator);
 
+// -------------------------------------------------------------------------------------------------
 				// Get the adjacency matrix and output it as a CSV file.
 				int numStudyId = Integer.parseInt(studyID);
 				StudyCsvs csvs = StudyCsvs.builder()
@@ -267,8 +268,10 @@ password=XXXXXXXX
 				GenericSelectAllDao.builder().options(rifStartupOptions).schemaName("rif_studies")
 						.user(user).extractTableName("s" + studyID + "_extract")
 						.build()
-						.dumpAllToCsv(csvs);
-				
+						.createExtractFileCsv(csvs);
+
+// -------------------------------------------------------------------------------------------------
+
 				adjCovSmoothJri.append(rifScriptPath);
 				adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
 				rifOdbc.append(rifScriptPath);

@@ -35,7 +35,7 @@ public class GenericSelectAllDao extends BaseSQLManager {
 		this.user = user;
 	}
 
-	public void dumpAllToCsv(final StudyCsvs csvs) throws RIFServiceException {
+	public void createExtractFileCsv(final StudyCsvs csvs) throws RIFServiceException {
 
 		SelectQueryFormatter formatter = SelectQueryFormatter.getInstance(
 				rifServiceStartupOptions.getRifDatabaseType());
