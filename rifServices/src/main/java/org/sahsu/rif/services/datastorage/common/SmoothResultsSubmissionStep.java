@@ -11,6 +11,8 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import org.rosuda.JRI.REXP;
+import org.rosuda.JRI.RList;
+import org.rosuda.JRI.RVector;
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
@@ -285,16 +287,23 @@ password=XXXXXXXX
 
 				//RUN the actual smoothing
 				//REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
-				rengine.eval("returnValues <- runRSmoothingFunctions()");
-				REXP exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
+				// rengine.eval("returnValues <- runRSmoothingFunctions()");
+				RList resultsFromR = rengine.eval("runRSmoothingFunctions()").asList();
+
+				// REXP exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
+				REXP exitValueFromR = resultsFromR.at(0);
+
+				String[] columnNames  = resultsFromR.at(2).asStringArray();
+				RVector columnValues = resultsFromR.at(3).asVector();
+
 				if (exitValueFromR != null) {
 					exitValue  = exitValueFromR.asInt();
-				}
-				else {
-					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR is NULL");
+				} else {
+					rifLogger.warning(getClass(), "JRI R ERROR: exitValueFromR is NULL");
 					exitValue = 1;
 				}
-				REXP errorTraceFromR = rengine.eval("returnValues$errorTrace");
+
+				REXP errorTraceFromR = resultsFromR.at(1);
 				if (errorTraceFromR != null) {
 					String[] strArr=errorTraceFromR.asStringArray();
 					StringBuilder strBuilder = new StringBuilder();

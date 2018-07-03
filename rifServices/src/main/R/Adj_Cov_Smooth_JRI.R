@@ -426,7 +426,7 @@ runRSmoothingFunctions <- function() {
 #
 # Call: performSmoothingActivity()
 #						
-						result <- performSmoothingActivity(data, AdjRowset)
+						result <<- performSmoothingActivity(data, AdjRowset)
 					})
 				},
 				warning=function(w) {		
@@ -485,7 +485,7 @@ runRSmoothingFunctions <- function() {
 		dropTemporaryTable()
 	}
 	# Dummy change to check conflict is resolved
-  
+
 	if (!is.na(connDB)) {
 		dbDisConnect()
 	}
@@ -512,5 +512,6 @@ runRSmoothingFunctions <- function() {
 	}	
 	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 
-	return(list(exitValue=exitValue, errorTrace=errorTrace))
+	return(list(exitValue=exitValue, errorTrace=errorTrace, columns=names(result),
+				resultList=as.list(result)))
 }
