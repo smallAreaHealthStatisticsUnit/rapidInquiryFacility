@@ -416,13 +416,13 @@ runRSmoothingFunctions <- function() {
 #
 # extract the relevant Study data
 #
-						data = read.csv(temporaryExtractFileName)
+						data = read.csv(temporaryExtractFileName, header=TRUE)
 
 #
 # Get Adjacency matrix
 #  	
 # 						AdjRowset=getAdjacencyMatrix()
-						AdjRowset = read.csv(adjacencyMatrixFileName)
+						AdjRowset = read.csv(adjacencyMatrixFileName, header=TRUE)
 #
 # Call: performSmoothingActivity()
 #						
@@ -512,6 +512,5 @@ runRSmoothingFunctions <- function() {
 	}	
 	cat(paste0("Adj_Cov_Smooth_JRI.R exitValue: ", exitValue, "; error tracer: ", length(errorTrace)-1, "\n"), sep="")
 
-	return(list(exitValue=exitValue, errorTrace=errorTrace, columns=names(result),
-				resultList=as.list(result)))
+	return(list(exitValue=exitValue, errorTrace=errorTrace, resultList=as.list(result)))
 }

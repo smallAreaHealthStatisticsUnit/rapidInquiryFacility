@@ -12,11 +12,10 @@ import java.util.logging.Logger;
 
 import org.rosuda.JRI.REXP;
 import org.rosuda.JRI.RList;
-import org.rosuda.JRI.RVector;
 import org.rosuda.JRI.Rengine;
 import org.sahsu.rif.generic.concepts.Parameter;
-import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceExceptionFactory;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -272,7 +271,6 @@ password=XXXXXXXX
 						.build()
 						.createExtractFileCsv(csvs);
 
-// -------------------------------------------------------------------------------------------------
 
 				adjCovSmoothJri.append(rifScriptPath);
 				adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
@@ -280,7 +278,7 @@ password=XXXXXXXX
 				rifOdbc.append("RIF_odbc.R");
 				performSmoothingActivity.append(rifScriptPath);
 				performSmoothingActivity.append("performSmoothingActivity.R");
-				
+
 				sourceRScript(rengine, adjCovSmoothJri.toString());
 				sourceRScript(rengine, rifOdbc.toString());
 				sourceRScript(rengine, performSmoothingActivity.toString());
@@ -294,8 +292,17 @@ password=XXXXXXXX
 				REXP exitValueFromR = resultsFromR.at(0);
 
 				String[] columnNames  = resultsFromR.at(2).asStringArray();
-				RVector columnValues = resultsFromR.at(3).asVector();
+				RList columnValues = resultsFromR.at("resultList").asList();
 
+				TempTableCreator creator = TempTableCreator.builder()
+												   .data(columnValues)
+												   .rifServiceStartupOptions(rifStartupOptions)
+												   .studyId(numStudyId)
+												   .user(user)
+						                           .build();
+				creator.create();
+
+// -------------------------------------------------------------------------------------------------
 				if (exitValueFromR != null) {
 					exitValue  = exitValueFromR.asInt();
 				} else {
