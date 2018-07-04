@@ -2683,5 +2683,9 @@ SELECT a.*, b.coa2011
   * Colour shapefile bands;
   * Check all bands etc restore correctly;
   * Add shapefile properties to map;
+
+#### 2nd to 6th June
+
+* Add support for *hierarchy_post_processing_sql*, *population_weighted_centroids*
+* Risk analysis front end:
   * Check for no bands setup with limits;
-  
