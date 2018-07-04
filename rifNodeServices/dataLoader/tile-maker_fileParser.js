@@ -47,6 +47,7 @@
 
 var fileList = {};
 var geoDataLoaderParameters={};
+var hierarchy_post_processing_sql = undefined;
 	
 /*
  * Function: 	shpConvertInput()
@@ -304,6 +305,14 @@ function shpConvertInput(files, shpConvertInputCallback) {
 									var x2js = new X2JS();					
 									var geodataloader=x2js.xml_str2json(data);
 									if (geodataloader["geoDataLoader"]) {
+										if (geodataloader["geoDataLoader"].hierarchy_post_processing_sql) {
+											hierarchy_post_processing_sql=geodataloader["geoDataLoader"].hierarchy_post_processing_sql;
+											consoleLog("Parsed dataloader XML hierarchy_post_processing_sql; SQL>" + 
+												hierarchy_post_processing_sql);
+										}
+										else {
+											consoleLog("No dataloader XML hierarchy_post_processing_sql parsed");
+										}
 										if (geodataloader["geoDataLoader"].parameters) {
 											consoleLog("Parsed dataloader XML configuration file: geoDataLoader.xml");
 											geoDataLoaderParameters=geodataloader["geoDataLoader"].parameters;
