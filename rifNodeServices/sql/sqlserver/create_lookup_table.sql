@@ -14,5 +14,6 @@ CREATE TABLE %3%1 (
 	areaname	NVARCHAR(1000),
 	gid			INTEGER		  NOT NULL,
 	geographic_centroid		VARCHAR(1000),
+	population_weighted_centroid		VARCHAR(1000),
 	PRIMARY KEY (%2)
 )
