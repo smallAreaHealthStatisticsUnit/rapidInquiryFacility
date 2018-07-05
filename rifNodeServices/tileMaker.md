@@ -13,6 +13,9 @@ Tile Maker
 	- [1.2.5 MSSQL Timeout: Request failed to complete in XXX000ms](#125-mssql-timeout-request-failed-to-complete-in-xxx000ms)
 	- [1.2.6 JavaScript heap out of memory](#126-javascript-heap-out-of-memory)
 	- [1.2.7 No top level shapefile with only one area](#127-no-top-level-shapefile-with-only-one-area)
+	- [1.2.8 pgTileMaker or mssqlTileMaker JavaScript heap out of memory](#128-pgtilemaker-or-mssqltilemaker-javascript-heap-out-of-memory)
+	- [1.2.9 Hierarchy Issues](#129-hierarchy-issues)
+	- [1.2.10 SQL Server disk space and memory Issues](#1210-sql-server-disk-space-and-memory-issues)
 - [2. Running the Tile Maker](#2-running-the-tile-maker)
   - [2.1 Setup](#21-setup)
   - [2.2 Processing Overview](#22-processing-overview)
@@ -23,7 +26,7 @@ Tile Maker
   - [2.4 Pre Processing Shapefiles](#24-pre-processing-shapefiles)	 
     - [2.4.1 To display information about a shapefile](#241-to-display-information-about-a-shapefile)
     - [2.4.2 Simplifying a shapefile](#242-simplifying-a-shapefile)
-	- [2.4.3 Renaming fields in a shapefile](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/tileMaker.md#243-renaming-fields-in-a-shapefile)
+	- [2.4.3 Renaming fields in a shapefile](#243-renaming-fields-in-a-shapefile)
     - [2.4.4 Simplifying multiple shapefiles](#244-simplifying-multiple-shapefiles)
     - [2.4.5 Dissolving a shapefile](#245-dissolving-a-shapefile)
   - [2.4 Post Front End Processing](#24-post-front-end-processing)
@@ -31,6 +34,10 @@ Tile Maker
     - [2.4.2 Tile Manufacture](#242-tile-manufacture)
     - [2.4.3 Load Production Data into the RIF](#243-load-production-data-into-the-rif)
 - [3. TileMaker Source Code](#3-tilemaker-source-code)
+  - [3.1 TileMaker Server](#31-tilemaker-server)
+    - [3.1.1 TileMaker SQL Generation](#311-tilemaker-sql-generation)
+  - [3.2 TileMaker Web Application](#32-tilemaker-web-application)
+  - [3.3 TileViewer](#33-tileviewer)
 - [4. TileMaker TODO](#4-tilemaker-todo)
 
 # 1. Overview
@@ -121,7 +128,7 @@ Symptom; SQL Severer connect error ```Error: None of the binaries loaded success
 
 * SQL server connect error caused by a version mismatch between the Node.js packages *mssql* and *msnodesqlv8*; 
   ```
-  C:\Users\phamb\OneDrive\SEER Data\Tile maker USA>node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password retep
+  C:\Users\phamb\OneDrive\SEER Data\Tile maker USA>node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password XXXXXXXXXXX
 	Created info log file: mssqlTileMaker.log
 	About to connected to SQL server using: {
 		"driver": "msnodesqlv8",
@@ -330,6 +337,262 @@ done@http://127.0.0.1:3000/jquery-2.2.3.js:8785:5
 callback/<@http://127.0.0.1:3000/jquery-2.2.3.js:9151:9
 ```
 	
+### 1.2.8 pgTileMaker or mssqlTileMaker JavaScript heap out of memory
+
+Symptom:
+
+```
+node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev -V
+Created info log file: pgTileMaker.log
+XML Directory C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd is readable
+Parsed XML config file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/geoDataLoader.xml
+Connected to Postgres using: postgres://peter@localhost:5432/sahsuland_dev?application_name=pgTileMaker; log level: info
+Set Postgres search path to: "$user",rif40, public, topology, gis, pop, rif_data, data_load, rif40_sql_pkg, rif_studies, rif40_partitions
+SET client_encoding='UTF-8'
+Creating hierarchy CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_hierarchy_ews2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_scntry2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_cntry2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_gor2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_ladua2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_msoa2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_lsoa2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating lookup CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_lookup_coa2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating adjacency CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_adjacency_ews2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+Creating geometry CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_geometry_ews2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+
+<--- Last few GCs --->
+
+[17648:00000123C835AD90]    79285 ms: Mark-sweep 1565.0 (1629.7) -> 1565.0 (1630.7) MB, 114.9 / 0.0 ms  allocation failure GC in old space requested
+[17648:00000123C835AD90]    79397 ms: Mark-sweep 1565.0 (1630.7) -> 1564.9 (1598.2) MB, 112.0 / 0.0 ms  last resort GC in old space requested
+[17648:00000123C835AD90]    79511 ms: Mark-sweep 1564.9 (1598.2) -> 1564.9 (1598.2) MB, 113.1 / 0.0 ms  last resort GC in old space requested
+
+
+<--- JS stacktrace --->
+
+==== JS stack trace =========================================
+
+Security context: 000001BA0F8A57C1 <JSObject>
+    1: /* anonymous */ [C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices\node_modules\pg\lib\client.js:~107] [pc=000003501E21C756](this=00000373014B8E71 <Connection map = 0000031F751CEF99>,msg=00000237B13DF6D1 <DataRowMessage map = 00000189A6D84E59>)
+    2: emitOne(aka emitOne) [events.js:~114] [pc=000003501E21541C](this=000000AC5A9022D1 <undefined>,handler=00000373014B8DE1...
+
+FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memory
+ 1: node_module_register
+ 2: v8::internal::FatalProcessOutOfMemory
+ 3: v8::internal::FatalProcessOutOfMemory
+ 4: v8::internal::Factory::NewUninitializedFixedArray
+ 5: v8::internal::WasmDebugInfo::SetupForTesting
+ 6: v8::internal::interpreter::BytecodeArrayRandomIterator::UpdateOffsetFromIndex
+ 7: 000003501E0843C1
+```
+
+Solution: add ```--max-old-space-size=<max node memory in MB>``` flag, e.g.
+
+```node --max-old-space-size=4096 C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev -V```
+
+### 1.2.9 Hierarchy Issues
+
+E.g.  Postgres processing failed after 2:26 (hours) at statement 421/601 hierarchy checks (check_intersections.sql):
+```
+psql:pg_EWS2011.sql:6524: WARNING:  Geography: EWS2011 geolevel 7: [coa2011] spurious additional codes: 2
+...
+psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 1: [scntry2011] no multiple hierarchy codes
+psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 2: [cntry2011] no multiple hierarchy codes
+psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 3: [gor2011] no multiple hierarchy codes
+psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 4: [ladua2011] no multiple hierarchy codes
+psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 5: [msoa2011] no multiple hierarchy codes
+psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 6: [lsoa2011] no multiple hierarchy codes
+psql:pg_EWS2011.sql:6524: ERROR:  Geography: EWS2011 codes check 0 missing, 1 spurious additional, 0 hierarchy fails
+CONTEXT:  PL/pgSQL function inline_code_block line 41 at RAISE
+Time: 1714.103 ms
+```
+
+The transaction BEGIN/END statements had already been removed from *pg_EWS2011.sql* so that the previous objects up to and including the hierarchy table were committed.
+
+Hierarchy insert took 83 minutes. Two rows are missing from the hierarchy are:
+```
+sahsuland_dev=> SELECT coa2011 FROM lookup_coa2011
+sahsuland_dev->                 EXCEPT 
+sahsuland_dev->                 SELECT coa2011 FROM hierarchy_ews2011;
+  coa2011
+-----------
+ W00010143
+ W00010161
+(2 rows)
+```
+
+These are in Cardiff and are small:
+```
+SELECT coa2011, lsoa11_1, lad11nm, msoa11nm, area_km2, geographic_centroid_wkt, ST_ASText(ST_Transform(geographic_centroid, 27700)) AS osgb
+FROM coa2011
+WHERE coa2011 IN ('W00010143', 'W00010161');
+  coa2011  | lsoa11_1  | lad11nm |  msoa11nm   |    area_km2     |            geographic_centroid_wkt            |                   osgb
+-----------+-----------+---------+-------------+-----------------+-----------------------------------------------+------------------------------------------
+ W00010161 | W01001945 | Cardiff | Cardiff 048 | 0.0147534816105 | POINT (-3.1781555521064697 51.45499419539898) | POINT(318235.967585802 173549.01243282)
+ W00010143 | W01001945 | Cardiff | Cardiff 048 |  0.009281476807 | POINT (-3.1768272276630127 51.45381197706475) | POINT(318326.146578801 173416.053359773)
+(2 rows)
+```
+
+That COA2011 only is affected means that the upper intersections are fine.
+
+The hierarchy check failure may have been caused by oversimplification of higher layers (SCNTRY, CNTRY) leading to the exclusion to the two census output areas.:
+
+* CNTRY2011 in purple;
+* GOR2011 (not oversimplified) in green;
+* COA2001 in hashing;
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue.png?raw=true "Cardiff COA2001 issue map")
+To be in the hierarchy the intersection code *insert_hierarchy.sql* selects the intersection with the largest intersection by area for each (higher resolution). This 
+eliminates duplicates and picks the most likely intersection on the basis of area. There are two possible reasons for this failure:
+
+* An intersection was not found. **Visually this appears to be the case**;
+* The area is zero. This seems unlikely and would need to be tested in SQL.
+
+The following SQL was derived from code generated by *insert_hierarchy.sql*:
+
+```SQL  
+WITH x12 AS ( /* Subqueries x12 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a1.areaid AS scntry2011, a2.areaid AS cntry2011,
+       ST_Area(a2.geom_9) AS a2_area,
+       ST_Area(ST_Intersection(a1.geom_9, a2.geom_9)) AS a12_area
+  FROM scntry2011 a1 CROSS JOIN cntry2011 a2
+ WHERE ST_Intersects(a1.geom_9, a2.geom_9)
+), x23 AS ( /* Subqueries x23 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a2.areaid AS cntry2011, a3.areaid AS gor2011,
+       ST_Area(a3.geom_9) AS a3_area,
+       ST_Area(ST_Intersection(a2.geom_9, a3.geom_9)) AS a23_area
+  FROM cntry2011 a2 CROSS JOIN gor2011 a3
+ WHERE ST_Intersects(a2.geom_9, a3.geom_9)
+), x34 AS ( /* Subqueries x34 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a3.areaid AS gor2011, a4.areaid AS ladua2011,
+       ST_Area(a4.geom_9) AS a4_area,
+       ST_Area(ST_Intersection(a3.geom_9, a4.geom_9)) AS a34_area
+  FROM gor2011 a3 CROSS JOIN ladua2011 a4
+ WHERE ST_Intersects(a3.geom_9, a4.geom_9)
+), x45 AS ( /* Subqueries x45 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a4.areaid AS ladua2011, a5.areaid AS msoa2011,
+       ST_Area(a5.geom_9) AS a5_area,
+       ST_Area(ST_Intersection(a4.geom_9, a5.geom_9)) AS a45_area
+  FROM ladua2011 a4 CROSS JOIN msoa2011 a5
+ WHERE ST_Intersects(a4.geom_9, a5.geom_9)
+), x56 AS ( /* Subqueries x56 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a5.areaid AS msoa2011, a6.areaid AS lsoa2011,
+       ST_Area(a6.geom_9) AS a6_area,
+       ST_Area(ST_Intersection(a5.geom_9, a6.geom_9)) AS a56_area
+  FROM msoa2011 a5 CROSS JOIN lsoa2011 a6
+ WHERE ST_Intersects(a5.geom_9, a6.geom_9)
+), x67 AS ( /* Subqueries x67 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a6.areaid AS lsoa2011, a7.areaid AS coa2011,
+       ST_Area(a7.geom_9) AS a7_area,
+       ST_Area(ST_Intersection(a6.geom_9, a7.geom_9)) AS a67_area
+  FROM lsoa2011 a6 CROSS JOIN coa2011 a7
+ WHERE ST_Intersects(a6.geom_9, a7.geom_9)
+   AND a7.coa2011 IN ('W00010143','W00010161')
+)
+SELECT x12.scntry2011, 
+       x12.cntry2011, 
+       x23.gor2011, 
+       x34.ladua2011, 
+       x45.msoa2011, 
+       x56.lsoa2011, 
+       x67.coa2011, 
+       CASE WHEN x12.a2_area > 0 THEN x12.a12_area/x12.a2_area ELSE NULL END test12,
+       MAX(x12.a12_area/x12.a2_area) OVER (PARTITION BY x12.cntry2011) AS max12,
+       CASE WHEN x23.a3_area > 0 THEN x23.a23_area/x23.a3_area ELSE NULL END test23,
+       MAX(x23.a23_area/x23.a3_area) OVER (PARTITION BY x23.gor2011) AS max23,
+       CASE WHEN x34.a4_area > 0 THEN x34.a34_area/x34.a4_area ELSE NULL END test34,
+       MAX(x34.a34_area/x34.a4_area) OVER (PARTITION BY x34.ladua2011) AS max34,
+       CASE WHEN x45.a5_area > 0 THEN x45.a45_area/x45.a5_area ELSE NULL END test45,
+       MAX(x45.a45_area/x45.a5_area) OVER (PARTITION BY x45.msoa2011) AS max45,
+       CASE WHEN x56.a6_area > 0 THEN x56.a56_area/x56.a6_area ELSE NULL END test56,
+       MAX(x56.a56_area/x56.a6_area) OVER (PARTITION BY x56.lsoa2011) AS max56,
+       CASE WHEN x67.a7_area > 0 THEN x67.a67_area/x67.a7_area ELSE NULL END test67,
+       MAX(x67.a67_area/x67.a7_area) OVER (PARTITION BY x67.coa2011) AS max67
+  FROM x12, x23, x34, x45, x56, x67
+ WHERE x12.cntry2011 = x23.cntry2011
+   AND x23.gor2011 = x34.gor2011
+   AND x34.ladua2011 = x45.ladua2011
+   AND x45.msoa2011 = x56.msoa2011
+   AND x56.lsoa2011 = x67.lsoa2011
+ ORDER BY 1, 2, 3, 4, 5, 6, 7; 
+```
+
+This, unsurprisingly, returned no rows, suggesting the problem is with the intersection and not the area:
+```
+  scntry2011 | cntry2011 | gor2011 | ladua2011 | msoa2011 | lsoa2011 | coa2011 | test12 | max12 | test23 | max23 | test34 | max34 | test45 | max45 | test56 | max56 | test67 | max67
+ ------------+-----------+---------+-----------+----------+----------+---------+--------+-------+--------+-------+--------+-------+--------+-------+--------+-------+--------+-------
+ (0 rows)
+
+```
+This in turn implies the problem may be with the COA2011, LSOA2011 intersection, common table expression: *x67*; as shown by the below map. The records will be manually inserted to fix the problem.
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue2.png?raw=true "Cardiff COA2001 intersection issue map")
+
+The following Postgres SQL was added to *pg_EWS2011.sql* immediately after the hierarchy insert.
+
+```SQL
+WITH a AS (
+	SELECT DISTINCT scntry2011,cntry2011, gor2011, ladua2011, msoa2011, lsoa2011
+	  FROM hierarchy_ews2011
+	 WHERE lsoa2011 = 'W01001945' /* Where it should be */
+), b AS (
+	SELECT coa2011, lsoa11_1
+      FROM coa2011
+     WHERE coa2011 IN ('W00010143', 'W00010161') 
+)
+INSERT INTO hierarchy_ews2011 (scntry2011, cntry2011, gor2011, ladua2011, msoa2011, lsoa2011, coa2011)
+SELECT a.*, b.coa2011
+  FROM a, b
+ WHERE a.lsoa2011 = b.lsoa11_1
+   AND b.coa2011 NOT IN (SELECT coa2011 FROM hierarchy_ews2011);   
+```
+
+The SQL Server SQL code will be the same.
+
+This can also be added to *geoDataLoader.xml* just below the top level ```<geoDataLoader>```:
+```
+  <hierarchy_post_processing_sql>
+    <![CDATA[
+WITH a AS (
+	SELECT DISTINCT scntry2011,cntry2011, gor2011, ladua2011, msoa2011, lsoa2011
+	  FROM hierarchy_ews2011
+	 WHERE lsoa2011 = 'W01001945' /* Where it should be */
+), b AS (
+	SELECT coa2011, lsoa11_1
+      FROM coa2011
+     WHERE coa2011 IN ('W00010143', 'W00010161') /* Missing */
+)
+INSERT INTO hierarchy_ews2011 (scntry2011, cntry2011, gor2011, ladua2011, msoa2011, lsoa2011, coa2011)
+SELECT a.*, b.coa2011
+  FROM a, b
+ WHERE a.lsoa2011 = b.lsoa11_1
+   AND b.coa2011 NOT IN (SELECT coa2011 FROM hierarchy_ews2011)
+   ]]>
+  </hierarchy_post_processing_sql> 
+```
+This SQL will then be inserted just after *insert_hierarchy.sql* and before the checks. The SQL should be in a CDATA block and should **NOT** have a terminating comma.
+
+### 1.2.10 SQL Server disk space and memory Issues
+
+Large database post processing can easily fill up the database and exhaust the memory. SQL Server does not release memory willingly and database compaction (*shrinking*) 
+has to be done manually.
+
+* If the database runs out of space; shrink it: https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-database?view=sql-server-2017
+* ```The app domain with specified version id (2) was unloaded due to memory pressure and could not be found```
+ * Stop and start SQL Server to release memory
+ 
+It is advised to do this before any big run.
+ 
 # 2. Running the Tile Maker
 
 ## 2.1 Setup
@@ -677,28 +940,34 @@ These leads to the following conclusions:
 
 * 99.999% simplification is far too much as the shapes are starting to break down;
 * 50% simplification is still very high quality with little visible loss of information at the scales the RIF maps at;
-* 80% simplification is acceptable, there is some visible loss of information in urban areas;
-* 90% simplification is borderline, there is visible loss of information in urban areas;
+* 80% simplification is acceptable, there is some visible loss of information in urban areas, suitable for most RIF users;
+* 90% simplification is borderline, there is visible loss of information in urban areas. Suitable for regional or state boundaries provided they are not too small;
+* 98% simplification is poor at high scale. Suitable for boundary maps, e.g. UK and UK constituent countries;
 
-After shapefile reduction by 80% the total size of all the files in the administrative geography is 480MB. This is a simplification factor of 0.8.
+After shapefile reduction by 80% the total size of all the files in the administrative geography is 480MB. This is a simplification factor of 0.8. Fine tuning lead to 
+98% simplification for boundary maps, e.g. UK and UK constituent countries.
 
-The Node.js server program needs to be able to read each shapefile in turn and then store the GeoJSON in memory. This leads to a memory requirement of 16x the disk space with 
+Take care to ensure the the input shapefile is valid (i.e. use the ```-clean``` flag in *mapshaper*); and keep the boundary maps simple. If they are mapped at high scale 
+they tend to contain many small islands which can become invalid during simplification. These take a long time to fix; for the UK no pre-simplification took two hours to 
+fix, 98% simplification took 7 seconds!
+
+The Node.js server program needs to be able to read each shapefile in turn and then store the GeoJSON in memory. This leads to a memory requirement of 40x the total size of the shapefiles with 
 a maximum zoomlevel of 9.
 
-The server is pre-configured with 4GB of memory in the *Makefile*. To change the memory in use alter *NODE_MAX_MEMORY=* to the new value in MB: ```NODE_MAX_MEMORY?=16384```. The 
+The server is pre-configured with 4GB of memory in the *Makefile*. To change the memory in use alter *NODE_MAX_MEMORY=* to the new value in MB: ```NODE_MAX_MEMORY?=24576```. The 
 ```?``` is important, it allows the value to be set without altering the Makefile. There are four ways to achieve this:
 
 1. Altering the Makefile:
   ```Makefile
-  NODE_MAX_MEMORY?=16384
+  NODE_MAX_MEMORY?=24576
   FOREVER_OPTIONS=--max-old-space-size=$(NODE_MAX_MEMORY) --expose-gc
   ```
 2. Set *NODE_MAX_MEMORY* in the environment;
-3. Use ```make server-start NODE_MAX_MEMORY=16384``` to set on the command line. This will work for the other stop/restart make targets;
-4. Manual start - change ```--max-old-space-size=4096``` to ```--max-old-space-size=16384```:
+3. Use ```make server-start NODE_MAX_MEMORY=24576``` to set on the command line. This will work for the other stop/restart make targets;
+4. Manual start - change ```--max-old-space-size=4096``` to ```--max-old-space-size=24576```:
   ```
   rm -f forever.err forever.log
-  node node_modules\forever\bin\forever start -c "node --max-old-space-size=16384 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
+  node node_modules\forever\bin\forever start -c "node --max-old-space-size=24576 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
   ```
   
 ## 2.4 Pre Processing Shapefiles
@@ -740,14 +1009,14 @@ The following *mapshaper* options were used:
 * [```<shapefile>``` or ```-i <shapefile>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-i-input): Input shapefile name;
   * ```snap```: Input shapefile option - snap together vertices within a small distance threshold. This option is intended to fix minor coordinate misalignments in adjacent polygons. 
     The snapping distance is 0.0025 of the average segment length;
-* [```-simplify <simplify percent>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-simplify): Simplify retaining %lt;simplify percent&gt; of the data. 20% to 50% 
+* [```-simplify <simplify percent> stats```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-simplify): Simplify retaining %lt;simplify percent&gt; of the data. 20% to 50% 
   gives good results; less than 5% will probably result in triangles. This is very dependent on the resolution of the shapefile. Mapshaper supports 
   Douglas-Peucker simplification and two kinds of Visvalingam simplification. Douglas-Peucker (a.k.a. Ramer-Douglas-Peucker) produces simplified lines that remain within a specified 
   distance of the original line. It is effective for thinning dense vertices but tends to form spikes at high simplification.
   Visvalingam simplification iteratively removes the least important point from a polyline. The importance of points is measured using a metric based on the geometry of the triangle 
   formed by each non-endpoint vertex and the two neighboring vertices. The visvalingam option uses the "effective area" metric — points forming smaller-area triangles are removed first.
   Mapshaper's default simplification method uses Visvalingam simplification but weights the effective area of each point so that smaller-angle vertices are preferentially removed, 
-  resulting in a smoother appearance;
+  resulting in a smoother appearance. Display summary statistics relating to the geometry of simplified paths;
 * [```-o <output shapefile or output directory>```](https://github.com/mbloch/mapshaper/wiki/Command-Reference#-o-output): Output shapefile or output directory;
   * ```format=shapefile|geojson|topojson|json|dbf|csv|tsv|svg```: Output option - format as a shapefile|geojson|topojson|json|dbf|csv|tsv|svg; 
   * ```name=<new name>```: Rename the layer (or layers) modified by a command;
@@ -806,15 +1075,29 @@ Attribute data
 ### 2.4.2 Simplifying a shapefile
 
 To simplify a shapefile by 50% in size, repair overlaps and fill small gaps between adjacent polygons and produce a new shapefile in the *EWS2011* directory: 
-```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -simplify 0.5 -clean -o EWS2011/ format=shapefile -verbose```
+```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i  COA\*.shp snap -simplify 0.5 stats -clean -o EWS2011/ format=shapefile -verbose```
 
 ```
-C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i COA\*.shp snap -simplify 0.5 -clean -o EWS2011/ format=shapefile -verbose
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i COA\*.shp snap -simplify 0.5 stats -clean -o EWS2011/ format=shapefile -verbose
 [i] Importing: COA\coa11_clip.shp
 [i] Snapped 54928 points
 [i] - 31757ms
 [simplify] Repaired 38 intersections; 212 intersections could not be repaired
-[simplify] - 29170ms
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 17,787,587
+      49.3% of 36,051,631 unique coordinate locations
+      50.0% of 35,575,670 filterable coordinate locations
+   Simplification threshold: 0.4924
+   Collapsed rings: 20
+   Displacement statistics
+      Mean displacement: 0.0096
+      Max displacement: 20.0861
+      Quartiles: 0.00, 0.00, 0.00
+   Vertex angle statistics
+      Mean angle: 155.10 degrees
+      Quartiles: 148.00, 166.51, 173.76
+[simplify] - 32224ms
 [clean] Find mosaic rings 1130ms
 [clean] Detect holes (holes: 3496, enclosures: 4630) 1637ms
 [clean] Build mosaic 2770ms
@@ -852,107 +1135,177 @@ To simplify a geography 25%, repair overlaps and fill small gaps between adjacen
 grouping and repetition of the commands; this is essentially five commands concatenated together: 
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
--i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile ^
--i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 -clean -rename-fields LSOA2011=LSOA11 -o EWS2011/ format=shapefile ^
--i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -rename-fields MSOA2011=MSOA11 -o EWS2011/ format=shapefile ^
--i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -rename-fields LADUA2011=LADUA11 -o EWS2011/ format=shapefile ^
--i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -rename-fields GOR2011=geo_code,GOR_NAME=geo_label -o EWS2011/ format=shapefile ^
+-i COA\*.shp name=COA2011 snap -simplify 0.5 stats -clean -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile ^
+-i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 stats -clean -rename-fields LSOA2011=LSOA11 -o EWS2011/ format=shapefile ^
+-i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 stats -clean -rename-fields MSOA2011=MSOA11 -o EWS2011/ format=shapefile ^
+-i District\*.shp name=LADUA2011 snap -simplify 0.5 stats -clean -rename-fields LADUA2011=LADUA11 -o EWS2011/ format=shapefile ^
+-i Region\*.shp name=GOR2011 snap -simplify 0.5 stats -clean -rename-fields GOR2011=geo_code,GOR_NAME=geo_label -o EWS2011/ format=shapefile ^
 -verbose
 ```
 
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
-More? -i COA\*.shp name=COA2011 snap -simplify 0.5 -clean -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile ^
-More? -i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 -clean -rename-fields LSOA2011=LSOA11 -o EWS2011/ format=shapefile ^
-More? -i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 -clean -rename-fields MSOA2011=MSOA11 -o EWS2011/ format=shapefile ^
-More? -i District\*.shp name=LADUA2011 snap -simplify 0.5 -clean -rename-fields LADUA2011=LADUA11 -o EWS2011/ format=shapefile ^
-More? -i Region\*.shp name=GOR2011 snap -simplify 0.5 -clean -rename-fields GOR2011=geo_code,GOR_NAME=geo_label -o EWS2011/ format=shapefile ^
+More? -i COA\*.shp name=COA2011 snap -simplify 0.5 stats -clean -rename-fields COA2011=COA11 -o EWS2011/ format=shapefile ^
+More? -i LSOA\*.shp name=LSOA2011 snap -simplify 0.5 stats -clean -rename-fields LSOA2011=LSOA11 -o EWS2011/ format=shapefile ^
+More? -i MSOA\*.shp name=MSOA2011 snap -simplify 0.5 stats -clean -rename-fields MSOA2011=MSOA11 -o EWS2011/ format=shapefile ^
+More? -i District\*.shp name=LADUA2011 snap -simplify 0.5 stats -clean -rename-fields LADUA2011=LADUA11 -o EWS2011/ format=shapefile ^
+More? -i Region\*.shp name=GOR2011 snap -simplify 0.5 stats -clean -rename-fields GOR2011=geo_code,GOR_NAME=geo_label -o EWS2011/ format=shapefile ^
 More? -verbose
 [i] Importing: COA\coa11_clip.shp
 [i] Snapped 54928 points
-[i] - 30997ms
-[simplify] Repaired 38 intersections; 212 intersections could not be repaired
-[simplify] - 28262ms
-[clean] Find mosaic rings 1131ms
-[clean] Detect holes (holes: 3496, enclosures: 4630) 1983ms
-[clean] Build mosaic 3116ms
-[clean] Dissolve tiles 2077ms
-[clean] Retained 227,759 of 227,759 features
-[clean] - 27964ms
-[rename-fields] - 120ms
+[i] - 38393ms
+[simplify] Repaired 1,073 intersections; 69 intersections could not be repaired
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 28,460,780
+      78.9% of 36,051,631 unique coordinate locations
+      80.0% of 35,575,670 filterable coordinate locations
+   Simplification threshold: 5.9781
+   Collapsed rings: 1,766
+   Displacement statistics
+      Mean displacement: 1.2519
+      Max displacement: 585.3023
+      Quartiles: 0.00, 0.74, 1.55
+   Vertex angle statistics
+      Mean angle: 141.88 degrees
+      Quartiles: 120.36, 151.68, 168.06
+[simplify] - 24211ms
+[clean] Find mosaic rings 981ms
+[clean] Detect holes (holes: 1848, enclosures: 4536) 988ms
+[clean] Build mosaic 1973ms
+[clean] Dissolve tiles 2180ms
+[clean] Retained 227,750 of 227,759 features
+[clean] - 18007ms
+[rename-fields] - 126ms
 [o] Wrote EWS2011\COA2011.shp
 [o] Wrote EWS2011\COA2011.shx
 [o] Wrote EWS2011\COA2011.dbf
 [o] Wrote EWS2011\COA2011.prj
-[o] - 16534ms
+[o] - 8712ms
 [i] Importing: LSOA\LSOA11_clip.shp
 [i] Snapped 28149 points
-[i] - 16334ms
-[simplify] Repaired 2 intersections; 1 intersection could not be repaired
-[simplify] - 11474ms
-[clean] Find mosaic rings 306ms
-[clean] Detect holes (holes: 183, enclosures: 857) 160ms
-[clean] Build mosaic 470ms
-[clean] Dissolve tiles 578ms
+[i] - 17988ms
+[simplify] Repaired 302 intersections; 1 intersection could not be repaired
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 13,987,029
+      79.6% of 17,573,633 unique coordinate locations
+      80.0% of 17,484,011 filterable coordinate locations
+   Simplification threshold: 6.1054
+   Collapsed rings: 208
+   Displacement statistics
+      Mean displacement: 1.1515
+      Max displacement: 301.2329
+      Quartiles: 0.00, 0.68, 1.44
+   Vertex angle statistics
+      Mean angle: 144.18 degrees
+      Quartiles: 123.53, 155.47, 170.13
+[simplify] - 11329ms
+[clean] Find mosaic rings 233ms
+[clean] Detect holes (holes: 182, enclosures: 671) 135ms
+[clean] Build mosaic 372ms
+[clean] Dissolve tiles 424ms
 [clean] Retained 41,729 of 41,729 features
-[clean] - 9447ms
-[rename-fields] - 9ms
+[clean] - 5215ms
+[rename-fields] - 14ms
 [o] Wrote EWS2011\LSOA2011.shp
 [o] Wrote EWS2011\LSOA2011.shx
 [o] Wrote EWS2011\LSOA2011.dbf
 [o] Wrote EWS2011\LSOA2011.prj
-[o] - 6198ms
+[o] - 2295ms
 [i] Importing: MSOA\MSOA11_clip.shp
 [i] Snapped 20697 points
-[i] - 9005ms
-[simplify] Repaired 6 intersections
-[simplify] - 8208ms
-[clean] Find mosaic rings 133ms
-[clean] Detect holes (holes: 2894, enclosures: 1474) 740ms
-[clean] Build mosaic 877ms
-[clean] Dissolve tiles 699ms
+[i] - 10260ms
+[simplify] Repaired 94 intersections
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 8,065,203
+      79.8% of 10,105,922 unique coordinate locations
+      80.0% of 10,078,914 filterable coordinate locations
+   Simplification threshold: 6.7475
+   Collapsed rings: 2,181
+   Displacement statistics
+      Mean displacement: 1.5862
+      Max displacement: 1118.9583
+      Quartiles: 0.24, 0.95, 1.83
+   Vertex angle statistics
+      Mean angle: 146.13 degrees
+      Quartiles: 129.24, 156.78, 170.10
+[simplify] - 8674ms
+[clean] Find mosaic rings 83ms
+[clean] Detect holes (holes: 1159, enclosures: 1118) 191ms
+[clean] Build mosaic 282ms
+[clean] Dissolve tiles 224ms
 [clean] Retained 8,480 of 8,480 features
-[clean] - 5723ms
+[clean] - 2453ms
 [rename-fields] - 4ms
 [o] Wrote EWS2011\MSOA2011.shp
 [o] Wrote EWS2011\MSOA2011.shx
 [o] Wrote EWS2011\MSOA2011.dbf
 [o] Wrote EWS2011\MSOA2011.prj
-[o] - 2695ms
+[o] - 1452ms
 [i] Importing: District\District11_SAHSU_clip.shp
 [i] Snapped 27497 points
-[i] - 2198ms
-[simplify] Repaired 7 intersections; 1 intersection could not be repaired
-[simplify] - 2180ms
-[clean] Find mosaic rings 32ms
-[clean] Detect holes (holes: 1, enclosures: 752) 191ms
-[clean] Build mosaic 225ms
-[clean] Dissolve tiles 62ms
+[i] - 2201ms
+[simplify] Repaired 25 intersections
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 1,942,659
+      79.8% of 2,434,247 unique coordinate locations
+      80.0% of 2,427,993 filterable coordinate locations
+   Simplification threshold: 10.9538
+   Collapsed rings: 301
+   Displacement statistics
+      Mean displacement: 3.3641
+      Max displacement: 559.1203
+      Quartiles: 0.88, 1.87, 3.62
+   Vertex angle statistics
+      Mean angle: 146.46 degrees
+      Quartiles: 131.53, 155.64, 168.71
+[simplify] - 2630ms
+[clean] Find mosaic rings 20ms
+[clean] Detect holes (holes: 1, enclosures: 573) 77ms
+[clean] Build mosaic 99ms
+[clean] Dissolve tiles 44ms
 [clean] Retained 380 of 380 features
-[clean] - 1188ms
+[clean] - 576ms
 [rename-fields] - 0ms
 [o] Wrote EWS2011\LADUA2011.shp
 [o] Wrote EWS2011\LADUA2011.shx
 [o] Wrote EWS2011\LADUA2011.dbf
 [o] Wrote EWS2011\LADUA2011.prj
-[o] - 562ms
+[o] - 161ms
 [i] Importing: Region\region11_clip.shp
 [i] Snapped 42648 points
-[i] - 2106ms
-[simplify] Repaired 169 intersections
-[simplify] - 4332ms
-[clean] Find mosaic rings 59ms
-[clean] Detect holes (holes: 1882, enclosures: 4618) 1637ms
-[clean] Build mosaic 1700ms
-[clean] Dissolve tiles 472ms
+[i] - 2353ms
+[simplify] Repaired 59 intersections
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 2,778,357
+      79.5% of 3,496,142 unique coordinate locations
+      80.0% of 3,469,941 filterable coordinate locations
+   Simplification threshold: 9.3525
+   Collapsed rings: 2,477
+   Displacement statistics
+      Mean displacement: 4.5091
+      Max displacement: 1249.3872
+      Quartiles: 1.35, 2.42, 4.41
+   Vertex angle statistics
+      Mean angle: 141.25 degrees
+      Quartiles: 125.17, 148.90, 163.65
+[simplify] - 4042ms
+[clean] Find mosaic rings 41ms
+[clean] Detect holes (holes: 852, enclosures: 4224) 622ms
+[clean] Build mosaic 667ms
+[clean] Dissolve tiles 341ms
 [clean] Retained 11 of 11 features
-[clean] - 4036ms
-[rename-fields] - 1ms
+[clean] - 1755ms
+[rename-fields] - 0ms
 [o] Wrote EWS2011\GOR2011.shp
 [o] Wrote EWS2011\GOR2011.shx
 [o] Wrote EWS2011\GOR2011.dbf
 [o] Wrote EWS2011\GOR2011.prj
-[o] - 695ms
+[o] - 608ms
 ```
 
 ### 2.4.5 Dissolving a shapefile
@@ -998,36 +1351,40 @@ New DBF file data:
 
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/gor2011_map.png?raw=true "GOR2011 map")
 
-Step 2: Create Cntry\cntry11_clip.shp renaming *country_co* to *geo_code* and *country_na* to *geo_label*:
+Step 2: Create Cntry\cntry11_clip.shp renaming *country_co* to *geo_code* and *country_na* to *geo_label*, simplifying as usual:
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
--i Region\*.shp name=CNTRY2011 snap -simplify 0.5 -clean ^
--each 'CNTRY2011=country_co,CNTRYNAME=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
+-i Region\*.shp name=CNTRY2011 snap ^
+-simplify 0.2 -clean ^
+-each 'CNTRY2011=country_co,CNTRYNAME=country_na' ^
+-o Cntry\cntry11_clip.shp format=shapefile ^
 -verbose
 ```
 
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
-More? -i Region\*.shp name=CNTRY2011 snap -simplify 0.5 -clean ^
-More? -each 'CNTRY2011=country_co,CNTRYNAME=country_na' -o Cntry\cntry11_clip.shp format=shapefile ^
+More? -i Region\*.shp name=CNTRY2011 snap ^
+More? -simplify 0.2 -clean ^
+More? -each 'CNTRY2011=country_co,CNTRYNAME=country_na' ^
+More? -o Cntry\cntry11_clip.shp format=shapefile ^
 More? -verbose
 [i] Importing: Region\region11_clip.shp
 [i] Snapped 42648 points
-[i] - 1531ms
-[simplify] Repaired 169 intersections
-[simplify] - 3336ms
-[clean] Find mosaic rings 97ms
-[clean] Detect holes (holes: 1882, enclosures: 4618) 2405ms
-[clean] Build mosaic 2506ms
-[clean] Dissolve tiles 495ms
+[i] - 1578ms
+[simplify] Repaired 59 intersections
+[simplify] - 2715ms
+[clean] Find mosaic rings 94ms
+[clean] Detect holes (holes: 852, enclosures: 4224) 785ms
+[clean] Build mosaic 882ms
+[clean] Dissolve tiles 340ms
 [clean] Retained 11 of 11 features
-[clean] - 4591ms
-[each] - 1ms
+[clean] - 2082ms
+[each] - 2ms
 [o] Wrote Cntry\cntry11_clip.shp
 [o] Wrote Cntry\cntry11_clip.shx
 [o] Wrote Cntry\cntry11_clip.dbf
 [o] Wrote Cntry\cntry11_clip.prj
-[o] - 653ms
+[o] - 281ms
 ```
 
 Step 3: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i Cntry\cntry11_clip.shp -o Cntry\cntry11_clip.csv format=csv -verbose```:
@@ -1046,28 +1403,55 @@ Step 3: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roamin
 | W92000004 | Wales     | 10       | W92000004  | Wales      |
 | S92000003 | Scotland  | 11       | S92000003  | Scotland   |
 
-Step 4: Using *Cntry\cntry11_clip.shp* dissolve on *cntry2011*, *geo_label* to create *CNTRY2011.shp* in the *EWS2011* directory:
+Step 4: Using *Cntry\cntry11_clip.shp* dissolve on *cntry2011*, *geo_label* to create *CNTRY2011.shp* in the *EWS2011* directory. Simplify an additional 90% as never used at high resolution:
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
--i Cntry\*.shp name=CNTRY2011 ^
--dissolve CNTRY2011,CNTRYNAME -o EWS2011/ format=shapefile ^
+-i Cntry\*.shp name=CNTRY2011 snap ^
+-dissolve CNTRY2011,CNTRYNAME ^
+-simplify 0.9 stats -clean ^
+-o EWS2011/ format=shapefile ^
 -verbose
 ```
 
 ```
 C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
-More? -i Cntry\*.shp name=CNTRY2011 ^
-More? -dissolve CNTRY2011,CNTRYNAME -o EWS2011/ format=shapefile ^
+More? -i Cntry\*.shp name=CNTRY2011 snap ^
+More? -dissolve CNTRY2011,CNTRYNAME ^
+More? -simplify 0.1 stats -clean ^
+More? -o EWS2011/ format=shapefile ^
 More? -verbose
 [i] Importing: Cntry\cntry11_clip.shp
-[i] - 485ms
+[i] Snapped 551 points
+[i] - 471ms
 [dissolve] Dissolved 11 features into 3 features
-[dissolve] - 23ms
+[dissolve] - 21ms
+[simplify] Repaired 48 intersections
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 71,347
+      9.9% of 717,244 unique coordinate locations
+      10.0% of 712,127 filterable coordinate locations
+   Simplification threshold: 10.2021
+   Collapsed rings: 182
+   Displacement statistics
+      Mean displacement: 7.3286
+      Max displacement: 420.0315
+      Quartiles: 3.02, 4.59, 7.23
+   Vertex angle statistics
+      Mean angle: 141.14 degrees
+      Quartiles: 125.06, 148.73, 163.48
+[simplify] - 840ms
+[clean] Find mosaic rings 31ms
+[clean] Detect holes (holes: 774, enclosures: 4120) 830ms
+[clean] Build mosaic 863ms
+[clean] Dissolve tiles 83ms
+[clean] Retained 3 of 3 features
+[clean] - 1566ms
 [o] Wrote EWS2011\CNTRY2011.shp
 [o] Wrote EWS2011\CNTRY2011.shx
 [o] Wrote EWS2011\CNTRY2011.dbf
 [o] Wrote EWS2011\CNTRY2011.prj
-[o] - 689ms
+[o] - 250ms
 ```
 
 Step 5: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd -i EWS2011\CNTRY2011.shp -o EWS2011\CNTRY2011.csv format=csv -verbose```:
@@ -1080,13 +1464,57 @@ Step 5: View new data. To dump DBF to CSV: ```C:\Users\%USERNAME%\AppData\Roamin
 
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cntry2011_map.png?raw=true "CNTRY2011 map")
 
-Step 6. Using *Cntry\cntry11_clip.shp* dissolve completely to create *SCTRY2011.shp* in the *EWS2011* directory:
+Step 6. Using *Cntry\cntry11_clip.shp* dissolve completely to create *SCTRY2011.shp* in the *EWS2011* directory. Simplify an additional 90% as never used at high resolution:
 
 ```
 C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
--i Cntry\*.shp name=SCTRY2011 ^
--dissolve -each 'SCTRY2011=\"UK\",SCNTRYNAME=\"United_Kingdom\"' -o EWS2011/ format=shapefile ^
+-i Cntry\*.shp name=SCNTRY2011 snap ^
+-dissolve -each 'SCTRY2011=\"UK\",SCTRYNAME=\"United_Kingdom\"' ^
+-simplify 0.1 stats -clean ^
+ -o EWS2011/ format=shapefile ^
 -verbose
+```
+
+```
+C:\Users\phamb\Documents\Local Data Loading\RIF2011>C:\Users\%USERNAME%\AppData\Roaming\npm\mapshaper.cmd ^
+More? -i Cntry\*.shp name=SCNTRY2011 snap ^
+More? -dissolve -each 'SCTRY2011=\"UK\",SCTRYNAME=\"United_Kingdom\"' ^
+More? -simplify 0.1 stats -clean ^
+More?  -o EWS2011/ format=shapefile ^
+More? -verbose
+[i] Importing: Cntry\cntry11_clip.shp
+[i] Snapped 551 points
+[i] - 451ms
+[dissolve] Dissolved 11 features into 1 feature
+[dissolve] - 13ms
+[each] - 2ms
+[simplify] Repaired 82 intersections
+[simplify] Simplification statistics
+   Method: Weighted Visvalingam (planar) (weighting=0.7)
+   Removed vertices: 644,936
+      89.9% of 717,244 unique coordinate locations
+      90.0% of 712,127 filterable coordinate locations
+   Simplification threshold: 76.3803
+   Collapsed rings: 4,144
+   Displacement statistics
+      Mean displacement: 53.8718
+      Max displacement: 22207.0834
+      Quartiles: 14.62, 26.03, 47.53
+   Vertex angle statistics
+      Mean angle: 136.65 degrees
+      Quartiles: 120.17, 142.96, 158.32
+[simplify] - 589ms
+[clean] Find mosaic rings 5ms
+[clean] Detect holes (holes: 208, enclosures: 724) 49ms
+[clean] Build mosaic 56ms
+[clean] Dissolve tiles 48ms
+[clean] Retained 1 of 1 features
+[clean] - 243ms
+[o] Wrote EWS2011\SCNTRY2011.shp
+[o] Wrote EWS2011\SCNTRY2011.shx
+[o] Wrote EWS2011\SCNTRY2011.dbf
+[o] Wrote EWS2011\SCNTRY2011.prj
+[o] - 60ms
 ```
 
 Step 7: View results of 2.4.4, 2.4.5 if run in sequence
@@ -1533,32 +1961,41 @@ Data loading steps. These load the data and prepare it for tile manufacture:
 In the same directory as before run the *tile Maker* manufacturer. This has separate Postgres and SQL Server stubs calling a common 
 *tileMaker.js* node.js core:
 
-* ```node <full path to script> <flags>```
-     Where the flags are:
-	 * ```-D, --database  <database name>```: Name of the database.          
-	   [default: <user default>];
-	 * ```-U, --username <username>```: Connect as user &lt;username&gt; **NOT** *rif40*.         
-	   [default: NONE (use MSSQL trusted connection/psql style default)];
-	 * ```--password, --pw <password>```: The &lt;password&gt; for user &lt;username&gt;
-	 * ```-H, --hostname```: &lt;hostname&gt; of the database. 
-	   [default: "localhost"];
-	 * ```-V, --verbose```: Verbose mode. 
-	   [default: 0: false; 1 or 2];
-	 * ```-X, --xmlfile <XML file>```: XML Configuration file &lt;XML file&gt;.
-	   [default: "geoDataLoader.xml"];
-	 * ```-p, --pngfile```: Make SVG/PNG files.                     
-	   [default: false]
-	 * ```-h, --help```: display this helpful message and exit.
-	   [default: false]
+* ```node <node options> <full path to script> <flags>```
 
+  Where the flags are:
+  * ```-D, --database  <database name>```: Name of the database.          
+    [default: <user default>];
+  * ```-U, --username <username>```: Connect as user &lt;username&gt; **NOT** *rif40*.         
+    [default: NONE (use MSSQL trusted connection/psql style default)];
+  * ```--password, --pw <password>```: The &lt;password&gt; for user &lt;username&gt;
+  * ```-H, --hostname```: &lt;hostname&gt; of the database. 
+    [default: "localhost"];
+  * ```-V, --verbose```: Verbose mode. 
+    [default: 0: false; 1 or 2];
+  * ```-X, --xmlfile <XML file>```: XML Configuration file &lt;XML file&gt;.
+    [default: "geoDataLoader.xml"];
+  * ```-p, --pngfile```: Make SVG/PNG files.                     
+    [default: false]
+  * ```-h, --help```: display this helpful message and exit.
+    [default: false]
+	   
+  Node options example:
+  * Node *Node.js* executable options, e.g. ```--max-old-space-size=<max node memory in MB>``` 
+	
 Script examples:
 	   
 * Postgres: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\pgTileMaker.js --database sahsuland_dev```
   [Postgres tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/postgres_tile_manufacture.md)
   A log file will be created in the current directory as: *pgTileMaker.log*;
-* SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password peter --database sahsuland_dev```
+* SQL Server: ```node C:\Users\%USERNAME%\Documents\GitHub\rapidInquiryFacility\rifNodeServices\mssqlTileMaker.js -U peter --password XXXXXXXXXXX --database sahsuland_dev```
   [SQL Server tile manufacture example log](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/sql_server_tile_manufacture.md)
   A log file will be created in the current directory as: *mssqlTileMaker.log*
+
+The CSV Files are created in a) the XML: directory defined in *geoDataLoader.xml* if the directory exists or b) the current working directory if it does not. 
+```
+Creating hierarchy CSV file: C:/Users/phamb/AppData/Local/Temp/shpConvert/c01a6d67-dd9d-4380-9446-21470eafdcfd/data/pg_hierarchy_ews2011.csv for EWS2011: England, Wales and Scotland 2011 census Administatrive geography
+```
 
 Tile manufacturing steps:
   
@@ -1811,6 +2248,39 @@ Add data, then:
 # 3. TileMaker Source Code
 
 TO BE ADDED.
+
+## 3.1 TileMaker Server
+
+### 3.1.1 TileMaker SQL Generation
+
+## 3.2 TileMaker Web Application
+
+## 3.3 TileViewer
+
+The TileViewer is an experimental program to view tiles and to test the topoJSON technology used in the RIF. It also uses tile caching technology not enabled in the RIF web front end
+so may have browser compatibility issues. It currently uses both Postgres and SQL Server; both must be used for it to run.
+
+To use the *tileViwer* you must
+
+* Load your geography into your default database on **BOTH** SQL Server and Postgres.
+* Set the SQL Server password in *rapidInquiryFacility\rifNodeServices\lib\tileViewer.js*:
+  ```
+				var config = {
+					driver: 	'msnodesqlv8',
+					user: 		'peter',				// Hard coded. Will change
+					password: 	'retep',
+					server: 	p_hostname,
+					database: 	p_database,
+					options: {
+  //					trustedConnection: true,		// Will be an option
+						useUTC: true,
+						appName: 'tileViewer.js'
+					}
+				};
+  ```
+
+*TileViewer* example - Lower super output area in south east London:
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/TileViewer_example.PNG?raw=true "TileViewer example - Lower super output area in south east London")  
 
 # 4. TileMaker TODO
 

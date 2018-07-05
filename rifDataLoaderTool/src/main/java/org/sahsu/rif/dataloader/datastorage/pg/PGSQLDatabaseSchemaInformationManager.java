@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 import org.sahsu.rif.dataloader.concepts.DataSetFieldConfiguration;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
 
 /**

@@ -51,8 +51,14 @@ Database Management Manual
    - [6.2 SQL Server](#62-sql-server)
 - [7. Tuning](#7-tuning)
    - [7.1 Postgres](#71-postgres)
+     - [7.1.1 Server Memory Tuning](#711-server-memory-tuning)
+     - [7.1.2 Query Tuning](#712-query-tuning)
+	 - [7.1.3 Database Space Management](#713-database-space-management)
    - [7.2 SQL Server](#72-sql-server)
-	 
+     - [7.2.1 Server Memory Tuning](#721-server-memory-tuning)
+     - [7.2.2 Query Tuning](#722-query-tuning)
+	 - [7.2.3 Database Space Management](#723-database-space-management)
+					
 # 1. Overview
 
 This manual details how to manage RIF databases. See also the:
@@ -1540,6 +1546,8 @@ See [3.3 Partitioning](https://github.com/smallAreaHealthStatisticsUnit/rapidInq
 
 ## 7.1 Postgres
 
+### 7.1.1 Server Memory Tuning
+
 The best source for Postgres tuning information is at the [Postgres Performance Optimization Wiki](https://wiki.postgresql.org/wiki/Performance_Optimization). This references
 [Tuning Your PostgreSQL Server](https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server)
 
@@ -1550,27 +1558,384 @@ move the data directory to a solid state disk, mine is: * E:\Postgres\data*! Che
 An example [postgresql.conf](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/Postgres/conf/postgresql.conf) is supplied. 
 The principal tuning changes are:
 
-* Shared buffers: 1GB
-* Temporary buffers: 256MB
-* Work memory: 256MB
-* Try to use huge pages - this is called large page support in Windows. This is to reduce the process memory footprint 
+* Shared buffers: 1GB. Can be tuned higher if required (see below);
+* Temporary buffers: 1-4GB
+* Work memory: 1GB. The Maximum is 2047MB; 
+* Effective_cache_size: 1/2 of total memory 
+* On Linux try to use huge pages. This is called large page support in Windows and is not yet implemented (it was committed 21st January 2018 and should appear in Postgres 11 scheduled for Q3 2018). This is to reduce the process memory footprint 
   [translation lookaside buffer](https://answers.microsoft.com/en-us/windows/forum/windows_10-performance/physical-and-virtual-memory-in-windows-10/e36fb5bc-9ac8-49af-951c-e7d39b979938) size.
 
   Example parameter entries from *postgresql.conf*:
 ```conf
 shared_buffers = 1024MB     # min 128kB; default 128 MB (9.6)
                             # (change requires restart)
-temp_buffers = 256MB        # min 800kB; default 8M
+temp_buffers = 1G           # min 800kB; default 8M
 
-huge_pages = try            # on, off, or try
-                            # (change requires restart
-work_mem = 256MB            # min 64kB; default 4MB
+huge_pages = try            # on, off, or try: Linux only
+                            # (change requires restart)
+work_mem = 1GB              # min 64kB; default 4MB
+
+log_temp_files = 5000		# log temporary files equal or larger [5MB]
+					# than the specified size in kilobytes;
+					# -1 disables [default], 0 logs all temp files
+					
+# according to http://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server, 
+# "Setting effective_cache_size to 1/2 of total memory would be a normal conservative setting, 
+# and 3/4 of memory is a more aggressive but still reasonable amount."					
+#effective_cache_size = 4GB
+effective_cache_size = 20GB
 ```
 
 On Windows, I modified the *postgresql.conf* rather than use SQL at the server command line. This is because the server command line needs to be in the units of the parameters, 
 so shared buffers of 1G is 131072 8KB pages. This is not very intuitive compared to using MB/GB etc.
  
 The amount of memory given to Postgres should allow room for *tomcat* if installed together with the application server; shared memory should generally not exceed a quarter of the available RAM.
+
+Tuning the buffer cache, see: [A Large Database Does Not Mean Large shared_buffers](https://www.keithf4.com/a-large-database-does-not-mean-large-shared_buffers/). Add the 
+```pg_buffercache``` extension as the postgres user: ```CREATE EXTENSION pg_buffercache;```, then run the following query as *postgres*:
+
+When running these queries, please bear in mind that *shared_buffers* usage varies with the type of workload;
+data loading (especially geospatial) will generally hit a few large tables often; normal RIF usage which is 
+more OLTP like less so. There run these queries often under different loads.
+ 
+Firstly see how many buffers are in use by database:
+```SQL
+SELECT CASE
+			WHEN d.datname = current_database() THEN d.datname || ' (current)'
+			ELSE d.datname
+	   END AS database,
+	   ROUND(100.0 * COUNT(*) / ( SELECT setting FROM pg_settings WHERE name='shared_buffers')::integer,3) AS buffers_in_use_percent
+  FROM pg_buffercache b, pg_database d
+ WHERE b.reldatabase = d.oid
+ GROUP BY CASE
+			WHEN d.datname = current_database() THEN d.datname || ' (current)'
+			ELSE d.datname
+	   END
+ ORDER BY 1;
+  
+        database         | buffers_in_use_percent
+-------------------------+------------------------
+ sahsuland_dev (current) |                 99.988
+(1 row)
+```
+This is across all databases. 100% is not unusual, much less than 100% probably means your *shared_buffers* are
+too large (unless the other databases are doing substantial work).
+
+Now see what is being used in the current database:
+```SQL
+SELECT n.nspname AS "schema", 
+	   c.relname AS "table name", 
+	   c2.relname AS "toast table",
+       c3.relname AS "primary table",
+       pg_size_pretty(COUNT(*) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER) AS buffered,
+       ROUND(100.0 * COUNT(*) / ( SELECT setting FROM pg_settings WHERE name='shared_buffers')::INTEGER,3) AS "buffers percent",
+       ROUND(100.0 * COUNT(*) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER / pg_relation_size(c.oid),1) AS "percent of relation",
+	   b.usagecount AS "usage count"
+  FROM pg_class c
+		INNER JOIN pg_buffercache b ON b.relfilenode = c.relfilenode
+		INNER JOIN pg_database d ON (b.reldatabase = d.oid AND d.datname = current_database()) /* Restrict to current database */
+		INNER JOIN pg_namespace n ON n.oid = c.relnamespace
+		LEFT OUTER JOIN pg_class c2 ON c2.oid = c.reltoastrelid
+		LEFT OUTER JOIN pg_class c3 ON c3.oid = 
+			CASE 
+				WHEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '') ~ '^[0-9]+$' THEN REPLACE(REPLACE(c.relname, 'pg_toast_', ''), '_index', '')::oid 
+				ELSE NULL
+			END
+ WHERE pg_relation_size(c.oid) > 0 /* Exclude non table objects or zero sized objects */ 
+   AND ((c.relname NOT LIKE 'pg_%' OR c.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */) 
+   AND  (c3.relname IS NULL OR c3.relname NOT LIKE 'pg_%' 			/* Exclude data dictionary but not TOAST tables */)
+ GROUP BY c.oid, n.nspname, c.relname, c2.relname, c3.relname, b.usagecount
+ ORDER BY 6 DESC;
+```
+
+This gives the following output here the columns are:
+
+ * schema: Schema;                  
+ * table name: Table;          
+ * toast table: TOAST (The Oversized-Attribute Storage Technique) table;   
+ * primary table: primary table associated with TOAST (The Oversized-Attribute Storage Technique) table;    
+ * buffered: Amount of table cached in *shared_buffers*;
+ * buffers percent: % of *shared_buffers* use by this table;
+ * percent of relation: % of table buffered;
+ * usage count: times used by separate queries (can be the same SQL statement);
+ 
+```
+  schema  |      table name        |   toast table    | primary table |  buffered  | buffers percent | percent of relation | usage count
+----------+------------------------+------------------+---------------+------------+-----------------+---------------------+-------------
+ pg_toast | pg_toast_1983440       |                  | coa2011       | 9672 kB    |           0.922 |                 0.6 |          5
+ peter    | coa2011_geom_orig_gix  |                  |               | 9664 kB    |           0.922 |                71.3 |          2
+ pg_toast | pg_toast_3163099       |                  | gor2011       | 95 MB      |           9.316 |               100.0 |          5
+ rif40    | t_rif40_parameters     |                  |               | 8192 bytes |           0.001 |               100.0 |          3
+ rif40    | t_rif40_parameters_pk  |                  |               | 8192 bytes |           0.001 |                50.0 |          1
+ public   | spatial_ref_sys        | pg_toast_321436  |               | 8192 bytes |           0.001 |                 0.2 |          2
+ public   | spatial_ref_sys        | pg_toast_321436  |               | 8192 bytes |           0.001 |                 0.2 |          5
+ public   | spatial_ref_sys_pkey   |                  |               | 8192 bytes |           0.001 |                 4.2 |          2
+ peter    | coa2011                | pg_toast_1983440 |               | 8192 bytes |           0.001 |                 0.0 |          4
+ peter    | gor2011                | pg_toast_3163099 |               | 8192 bytes |           0.001 |               100.0 |          5
+ pg_toast | pg_toast_3163099       |                  | gor2011       | 8192 bytes |           0.001 |                 0.0 |          2
+ peter    | gor2011_pkey           |                  |               | 8192 bytes |           0.001 |                50.0 |          1
+ peter    | gor2011_uk             |                  |               | 8192 bytes |           0.001 |                50.0 |          1
+ pg_toast | pg_toast_1983440       |                  | coa2011       | 8000 kB    |           0.763 |                 0.5 |          0
+ peter    | coa2011_geom_8_gix     |                  |               | 7048 kB    |           0.672 |                54.1 |          0
+ pg_toast | pg_toast_1983440_index |                  | coa2011       | 656 kB     |           0.063 |                 1.9 |          5
+ peter    | coa2011_geom_9_gix     |                  |               | 6264 kB    |           0.597 |                46.1 |          2
+ peter    | coa2011_geom_9_gix     |                  |               | 5912 kB    |           0.564 |                43.5 |          1
+ peter    | coa2011                | pg_toast_1983440 |               | 532 MB     |          51.966 |                19.4 |          1
+ peter    | coa2011_geom_7_gix     |                  |               | 5040 kB    |           0.481 |                39.3 |          0
+ peter    | coa2011_geom_8_gix     |                  |               | 4832 kB    |           0.461 |                37.1 |          1
+ peter    | coa2011                | pg_toast_1983440 |               | 40 kB      |           0.004 |                 0.0 |          2
+ pg_toast | pg_toast_1983440_index |                  | coa2011       | 2528 kB    |           0.241 |                 7.3 |          4
+ pg_toast | pg_toast_1983440       |                  | coa2011       | 25 MB      |           2.437 |                 1.5 |          3
+ peter    | coa2011_geom_orig_gix  |                  |               | 2488 kB    |           0.237 |                18.4 |          3
+ peter    | coa2011                | pg_toast_1983440 |               | 24 kB      |           0.002 |                 0.0 |          3
+ pg_toast | pg_toast_1983440       |                  | coa2011       | 2344 kB    |           0.224 |                 0.1 |          1
+ pg_toast | pg_toast_1983440       |                  | coa2011       | 208 kB     |           0.020 |                 0.0 |          2
+ peter    | coa2011_geom_orig_gix  |                  |               | 192 kB     |           0.018 |                 1.4 |          0
+ peter    | coa2011_geom_orig_gix  |                  |               | 184 kB     |           0.018 |                 1.4 |          1
+ peter    | coa2011                | pg_toast_1983440 |               | 170 MB     |          16.640 |                 6.2 |          0
+ peter    | coa2011                | pg_toast_1983440 |               | 160 kB     |           0.015 |                 0.0 |          5
+ public   | spatial_ref_sys_pkey   |                  |               | 16 kB      |           0.002 |                 8.3 |          5
+ peter    | coa2011_geom_9_gix     |                  |               | 152 kB     |           0.014 |                 1.1 |          0
+ pg_toast | pg_toast_1983440       |                  | coa2011       | 130 MB     |          12.648 |                 7.8 |          4
+ pg_toast | pg_toast_3163099_index |                  | gor2011       | 1088 kB    |           0.104 |               100.0 |          5
+(36 rows)
+```
+
+Note the use of [TOAST](https://www.postgresql.org/docs/9.6/static/storage-toast.html) tables in Postgres. 
+TOAST (The Oversized-Attribute Storage Technique) is used to store large field values,
+for instance the geometry databases on *cntry2011* as in this example.
+
+Now it is possible to determine an **ideal** value for *shared_buffers*:
+```SQL
+SELECT CASE
+			WHEN d.datname = current_database() THEN d.datname || ' (current)'
+			ELSE d.datname
+	   END AS database,
+	   CASE 
+			WHEN usagecount >3 THEN '>3' 
+			ELSE ' '||usagecount::Text END AS usagecount,
+	   pg_size_pretty(count(*) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER) as ideal_shared_buffers
+  FROM pg_class c
+		INNER JOIN pg_buffercache b ON b.relfilenode = c.relfilenode
+		INNER JOIN pg_database d ON (b.reldatabase = d.oid)
+ GROUP BY CASE
+			WHEN d.datname = current_database() THEN d.datname || ' (current)'
+			ELSE d.datname
+	      END,
+	      CASE 
+			WHEN usagecount >3 THEN '>3' 
+			ELSE ' '||usagecount::Text END
+ ORDER BY 1, 2 DESC;
+```
+
+A usage count of:
+
+* 1: this is the system caching all data;
+* 2,3: occasional caching;
+* &gt;3: suitable target for shared_buffer;
+
+If you wanted to cache everything with a *usagecount* of 2 you would need to add the &gt;3, 3 and 2 figures together!
+
+```
+        database         | usagecount | ideal_shared_buffers
+-------------------------+------------+----------------------
+ sahsuland_dev (current) | >3         | 485 MB
+ sahsuland_dev (current) |  3         | 353 MB
+ sahsuland_dev (current) |  2         | 86 MB
+ sahsuland_dev (current) |  1         | 44 MB
+ sahsuland_dev (current) |  0         | 55 MB
+(5 rows)
+``` 
+This should give a reasonable starting performance on an OLTP system.
+
+You will need to run this many times under different loads to determine a suitable value. In this case a 
+1GB cache *appears* to be fine for the geospatial workload. Note however that the *shared_buffers* are 100% used. 
+
+The problem with just looking at the buffer cache is it does not tell you what effect cache misses are having on performance.
+
+```SQL
+WITH all_tables AS (
+	SELECT *
+		 FROM (
+			SELECT 'All'::Text AS schema_name, 'ALL'::text AS table_name, 
+				   'N/A'::Text AS toast_table, 'N/A'::Text AS primary_table,
+				   SUM( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) AS from_disk, 
+				   SUM( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) AS from_cache,
+				   (SELECT pg_size_pretty(COUNT(*) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER) AS buffered
+						  FROM pg_buffercache b, pg_database d
+						 WHERE b.reldatabase = d.oid 
+						   AND d.datname = current_database()) AS buffered	   
+              FROM pg_statio_all_tables  --> change to pg_statio_USER_tables if you want to check only user tables (excluding postgres's own tables)
+		 ) a
+		WHERE (from_disk + from_cache) > 0 -- discard tables without hits
+), tables AS (
+	SELECT a.schemaname AS schema_name, a.relname AS table_name, 
+	       c2.relname AS toast_table, c3.relname AS primary_table,
+	       a.from_disk, a.from_cache,   
+           pg_size_pretty(COUNT(b.relfilenode) * ( SELECT setting FROM pg_settings WHERE name = 'block_size')::INTEGER) AS buffered
+		FROM (
+			SELECT c.*, s.schemaname, s.from_disk, s.from_cache
+			  FROM (
+				SELECT relid, schemaname,
+						( (coalesce(heap_blks_read,0) + coalesce(idx_blks_read,0) + coalesce(toast_blks_read,0) + coalesce(tidx_blks_read,0)) ) AS from_disk, 
+						( (coalesce(heap_blks_hit,0)  + coalesce(idx_blks_hit,0)  + coalesce(toast_blks_hit,0)  + coalesce(tidx_blks_hit,0))  ) AS from_cache    
+				 FROM pg_statio_all_tables --> change to pg_statio_USER_tables if you want to check only user tables (excluding postgres's own tables)
+			) s, pg_class c WHERE c.oid = s.relid
+		 ) a
+		LEFT OUTER JOIN pg_buffercache b ON b.relfilenode = a.relfilenode
+		LEFT OUTER JOIN pg_class c2 ON c2.oid = a.reltoastrelid
+		LEFT OUTER JOIN pg_class c3 ON c3.oid = 
+			CASE 
+				WHEN REPLACE(REPLACE(a.relname, 'pg_toast_', ''), '_index', '') ~ '^[0-9]+$' THEN 
+						REPLACE(REPLACE(a.relname, 'pg_toast_', ''), '_index', '')::oid 
+				ELSE NULL
+			END
+ WHERE ((a.relname NOT LIKE 'pg_%' OR a.relname LIKE 'pg_toast_%') 	/* Exclude data dictionary but not TOAST tables */) 
+   AND  (c3.relname IS NULL OR c3.relname NOT LIKE 'pg_%' 		/* Exclude data dictionary but not TOAST tables */)
+   AND  (a.from_disk + a.from_cache) > 0 -- discard tables without hits
+ GROUP BY a.schemaname, a.relname, 
+	       c2.relname, c3.relname,
+	       a.from_disk, a.from_cache
+)
+SELECT schema_name AS "schema name",
+       table_name AS "table name",
+	   toast_table AS "toast table",
+	   primary_table AS "primary table",
+       from_disk AS "disk hits",
+       round((from_disk::numeric / (from_disk + from_cache)::numeric)*100.0,2) AS "% disk hits",
+       round((from_cache::numeric / (from_disk + from_cache)::numeric)*100.0,2) AS "% cache hits",
+       (from_disk + from_cache) AS "total hits",
+	   buffered AS "buffered"
+  FROM (SELECT * FROM all_tables UNION ALL SELECT * FROM tables) a
+ ORDER BY (CASE WHEN table_name = 'ALL' THEN 0 ELSE 1 END), from_disk DESC;
+```
+
+Where the columns are:
+
+ * schema name: Schema;                  
+ * table name: Table;          
+ * toast table: TOAST (The Oversized-Attribute Storage Technique) table;   
+ * primary table: primary table associated with TOAST (The Oversized-Attribute Storage Technique) table;              
+ * disk hits: Total hits on table from the disk;
+ * % disk hits: % of disk hits. Ideally this should be <10%;
+ * % cache hits: % of cache hits. Ideally this should be >90%; 
+ * total hits: Total hits on table from the *shared_buffers* cache and disk;  
+ * buffered: Amount of table cached in *shared_buffers*.
+
+```
+ schema name |                    table name                     |   toast table    |                   primary table                   | disk hits | % disk hits | % cache hits | total hits |  buffered
+-------------+---------------------------------------------------+------------------+---------------------------------------------------+-----------+-------------+--------------+------------+------------
+ All         | ALL                                               | N/A              | N/A                                               |  11655875 |        4.25 |        95.75 |  274207672 | 1024 MB
+ peter       | coa2011                                           | pg_toast_3523190 |                                                   |   7869405 |        6.49 |        93.51 |  121248197 | 0 bytes
+ peter       | lsoa2011                                          | pg_toast_4708439 |                                                   |   1224683 |        2.27 |        97.73 |   53923473 | 0 bytes
+ pg_toast    | pg_toast_3523190                                  |                  | coa2011                                           |    715589 |        3.69 |        96.31 |   19405252 | 0 bytes
+ pg_toast    | pg_toast_4708439                                  |                  | lsoa2011                                          |    321707 |        3.24 |        96.76 |    9932869 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_7_zoomlevel_9        | pg_toast_5055911 |                                                   |    172584 |        2.76 |        97.24 |    6245362 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_7_zoomlevel_8        | pg_toast_5055901 |                                                   |    168785 |       12.41 |        87.59 |    1359723 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_7_zoomlevel_7        | pg_toast_5055891 |                                                   |    141985 |       11.44 |        88.56 |    1240941 | 0 bytes
+ peter       | msoa2011                                          | pg_toast_4976604 |                                                   |    133320 |        0.60 |        99.40 |   22268185 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_7_zoomlevel_6        | pg_toast_5055881 |                                                   |    122665 |       10.16 |        89.84 |    1207286 | 117 MB
+ peter       | geometry_ews2011_geolevel_id_6_zoomlevel_9        | pg_toast_5055871 |                                                   |     97517 |        2.64 |        97.36 |    3697067 | 89 MB
+ pg_toast    | pg_toast_4976604                                  |                  | msoa2011                                          |     95295 |        2.00 |        98.00 |    4765263 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_6_zoomlevel_8        | pg_toast_5055861 |                                                   |     68563 |       17.23 |        82.77 |     397843 | 0 bytes
+ peter       | tile_intersects_ews2011_geolevel_id_7_zoomlevel_0 | pg_toast_5071372 |                                                   |     57432 |        2.81 |        97.19 |    2046639 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_6_zoomlevel_7        | pg_toast_5055851 |                                                   |     51025 |       16.32 |        83.68 |     312694 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_6_zoomlevel_6        | pg_toast_5055841 |                                                   |     40263 |       14.86 |        85.14 |     270952 | 0 bytes
+ peter       | ladua2011                                         | pg_toast_4703093 |                                                   |     28762 |        1.14 |        98.86 |    2531926 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_5_zoomlevel_9        | pg_toast_5055831 |                                                   |     28192 |        1.20 |        98.80 |    2351736 | 0 bytes
+ peter       | tile_intersects_ews2011_geolevel_id_6_zoomlevel_0 | pg_toast_5071212 |                                                   |     26397 |        4.73 |        95.27 |     558081 | 0 bytes
+ peter       | gor2011                                           | pg_toast_4702848 |                                                   |     25962 |        1.46 |        98.54 |    1784083 | 0 bytes
+ pg_toast    | pg_toast_4703093                                  |                  | ladua2011                                         |     24773 |        3.16 |        96.84 |     783986 | 0 bytes
+ pg_toast    | pg_toast_4702848                                  |                  | gor2011                                           |     23952 |        3.54 |        96.46 |     676983 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_5_zoomlevel_8        | pg_toast_5055821 |                                                   |     18342 |        9.57 |        90.43 |     191641 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_5_zoomlevel_6        | pg_toast_5055801 |                                                   |     15644 |       12.19 |        87.81 |     128319 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_5_zoomlevel_7        | pg_toast_5055811 |                                                   |     15374 |       10.58 |        89.42 |     145371 | 0 bytes
+ peter       | hierarchy_ews2011                                 | pg_toast_5055579 |                                                   |     15239 |        0.34 |        99.66 |    4437162 | 0 bytes
+ pg_toast    | pg_toast_5055871                                  |                  | geometry_ews2011_geolevel_id_6_zoomlevel_9        |     12780 |        1.99 |        98.01 |     643402 | 29 MB
+ pg_toast    | pg_toast_5055911                                  |                  | geometry_ews2011_geolevel_id_7_zoomlevel_9        |     12291 |        2.04 |        97.96 |     601709 | 0 bytes
+ pg_toast    | pg_toast_5055831                                  |                  | geometry_ews2011_geolevel_id_5_zoomlevel_9        |      9274 |        2.11 |        97.89 |     439525 | 0 bytes
+ peter       | tile_intersects_ews2011_geolevel_id_5_zoomlevel_0 | pg_toast_5071052 |                                                   |      8742 |        3.53 |        96.47 |     247448 | 0 bytes
+ pg_toast    | pg_toast_5071372                                  |                  | tile_intersects_ews2011_geolevel_id_7_zoomlevel_0 |      8684 |        4.14 |        95.86 |     209511 | 0 bytes
+ pg_toast    | pg_toast_5071212                                  |                  | tile_intersects_ews2011_geolevel_id_6_zoomlevel_0 |      7927 |        4.53 |        95.47 |     175020 | 0 bytes
+ pg_toast    | pg_toast_5071052                                  |                  | tile_intersects_ews2011_geolevel_id_5_zoomlevel_0 |      5776 |        4.78 |        95.22 |     120758 | 0 bytes
+ peter       | lookup_coa2011                                    | pg_toast_5055571 |                                                   |      5034 |        0.59 |        99.41 |     857506 | 0 bytes
+ peter       | adjacency_ews2011                                 | pg_toast_5070504 |                                                   |      4855 |        0.46 |        99.54 |    1055413 | 0 bytes
+ pg_toast    | pg_toast_5055861                                  |                  | geometry_ews2011_geolevel_id_6_zoomlevel_8        |      4588 |        6.73 |        93.27 |      68173 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_4_zoomlevel_9        | pg_toast_5055791 |                                                   |      3440 |        0.30 |        99.70 |    1164684 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_3_zoomlevel_9        | pg_toast_5055751 |                                                   |      3232 |        0.51 |        99.49 |     629888 | 0 bytes
+ pg_toast    | pg_toast_5055751                                  |                  | geometry_ews2011_geolevel_id_3_zoomlevel_9        |      3182 |        5.31 |        94.69 |      59959 | 0 bytes
+ pg_toast    | pg_toast_5055791                                  |                  | geometry_ews2011_geolevel_id_4_zoomlevel_9        |      3079 |        3.09 |        96.91 |      99728 | 0 bytes
+ pg_toast    | pg_toast_5055901                                  |                  | geometry_ews2011_geolevel_id_7_zoomlevel_8        |      3033 |        8.62 |        91.38 |      35194 | 0 bytes
+ pg_toast    | pg_toast_5055821                                  |                  | geometry_ews2011_geolevel_id_5_zoomlevel_8        |      3029 |        3.97 |        96.03 |      76312 | 0 bytes
+ peter       | scntry2011                                        | pg_toast_5055439 |                                                   |      2527 |        2.00 |        98.00 |     126143 | 0 bytes
+ peter       | cntry2011                                         | pg_toast_3523103 |                                                   |      2488 |        1.77 |        98.23 |     140612 | 0 bytes
+ pg_toast    | pg_toast_5055439                                  |                  | scntry2011                                        |      2322 |        5.70 |        94.30 |      40749 | 0 bytes
+ pg_toast    | pg_toast_3523103                                  |                  | cntry2011                                         |      2297 |        4.90 |        95.10 |      46845 | 0 bytes
+ pg_toast    | pg_toast_5055801                                  |                  | geometry_ews2011_geolevel_id_5_zoomlevel_6        |      2279 |        5.74 |        94.26 |      39708 | 0 bytes
+ pg_toast    | pg_toast_5055811                                  |                  | geometry_ews2011_geolevel_id_5_zoomlevel_7        |      1904 |        3.84 |        96.16 |      49525 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_4_zoomlevel_6        | pg_toast_5055761 |                                                   |      1884 |        6.64 |        93.36 |      28370 | 0 bytes
+ peter       | tile_intersects_ews2011_geolevel_id_4_zoomlevel_0 | pg_toast_5070892 |                                                   |      1700 |        4.06 |        95.94 |      41888 | 0 bytes
+ peter       | tile_intersects_ews2011_geolevel_id_3_zoomlevel_0 | pg_toast_5070732 |                                                   |      1576 |        4.54 |        95.46 |      34750 | 0 bytes
+ pg_toast    | pg_toast_5070732                                  |                  | tile_intersects_ews2011_geolevel_id_3_zoomlevel_0 |      1554 |        6.83 |        93.17 |      22764 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_4_zoomlevel_8        | pg_toast_5055781 |                                                   |      1507 |        3.92 |        96.08 |      38431 | 0 bytes
+ pg_toast    | pg_toast_5070892                                  |                  | tile_intersects_ews2011_geolevel_id_4_zoomlevel_0 |      1485 |        5.69 |        94.31 |      26095 | 0 bytes
+ peter       | lookup_lsoa2011                                   | pg_toast_5055563 |                                                   |      1449 |        1.12 |        98.88 |     129068 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_3_zoomlevel_6        | pg_toast_5055721 |                                                   |      1372 |        7.23 |        92.77 |      18976 | 0 bytes
+ pg_toast    | pg_toast_5055721                                  |                  | geometry_ews2011_geolevel_id_3_zoomlevel_6        |      1342 |        9.73 |        90.27 |      13792 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_4_zoomlevel_7        | pg_toast_5055771 |                                                   |      1298 |        4.40 |        95.60 |      29474 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_3_zoomlevel_8        | pg_toast_5055741 |                                                   |      1206 |        4.03 |        95.97 |      29960 | 0 bytes
+ pg_toast    | pg_toast_5055741                                  |                  | geometry_ews2011_geolevel_id_3_zoomlevel_8        |      1183 |        5.68 |        94.32 |      20811 | 0 bytes
+ pg_toast    | pg_toast_5055761                                  |                  | geometry_ews2011_geolevel_id_4_zoomlevel_6        |      1118 |        6.58 |        93.42 |      16981 | 0 bytes
+ pg_toast    | pg_toast_5055781                                  |                  | geometry_ews2011_geolevel_id_4_zoomlevel_8        |      1101 |        4.54 |        95.46 |      24256 | 0 bytes
+ pg_toast    | pg_toast_5055891                                  |                  | geometry_ews2011_geolevel_id_7_zoomlevel_7        |      1073 |        9.06 |        90.94 |      11842 | 0 bytes
+ pg_toast    | pg_toast_5055851                                  |                  | geometry_ews2011_geolevel_id_6_zoomlevel_7        |      1060 |        3.61 |        96.39 |      29337 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_3_zoomlevel_7        | pg_toast_5055731 |                                                   |       911 |        4.06 |        95.94 |      22441 | 0 bytes
+ pg_toast    | pg_toast_5055731                                  |                  | geometry_ews2011_geolevel_id_3_zoomlevel_7        |       891 |        5.71 |        94.29 |      15612 | 0 bytes
+ pg_toast    | pg_toast_5055771                                  |                  | geometry_ews2011_geolevel_id_4_zoomlevel_7        |       788 |        4.40 |        95.60 |      17928 | 0 bytes
+ pg_toast    | pg_toast_5055841                                  |                  | geometry_ews2011_geolevel_id_6_zoomlevel_6        |       763 |        5.56 |        94.44 |      13735 | 0 bytes
+ pg_toast    | pg_toast_5055881                                  |                  | geometry_ews2011_geolevel_id_7_zoomlevel_6        |       710 |       11.73 |        88.27 |       6053 | 1632 kB
+ peter       | geometry_ews2011_geolevel_id_2_zoomlevel_9        | pg_toast_5055711 |                                                   |       456 |        0.08 |        99.92 |     562259 | 0 bytes
+ pg_toast    | pg_toast_5055711                                  |                  | geometry_ews2011_geolevel_id_2_zoomlevel_9        |       434 |        9.33 |        90.67 |       4651 | 0 bytes
+ peter       | lookup_msoa2011                                   | pg_toast_5055555 |                                                   |       300 |        1.15 |        98.85 |      26001 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_1_zoomlevel_9        | pg_toast_5055671 |                                                   |       296 |        0.05 |        99.95 |     561952 | 0 bytes
+ pg_toast    | pg_toast_5055671                                  |                  | geometry_ews2011_geolevel_id_1_zoomlevel_9        |       278 |        6.20 |        93.80 |       4486 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_2_zoomlevel_8        | pg_toast_5055701 |                                                   |       237 |       11.45 |        88.55 |       2070 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_1_zoomlevel_8        | pg_toast_5055661 |                                                   |       221 |        9.74 |        90.26 |       2269 | 0 bytes
+ pg_toast    | pg_toast_5055701                                  |                  | geometry_ews2011_geolevel_id_2_zoomlevel_8        |       221 |       14.16 |        85.84 |       1561 | 0 bytes
+ pg_toast    | pg_toast_5055661                                  |                  | geometry_ews2011_geolevel_id_1_zoomlevel_8        |       208 |       11.36 |        88.64 |       1831 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_2_zoomlevel_6        | pg_toast_5055681 |                                                   |       203 |       14.87 |        85.13 |       1365 | 0 bytes
+ pg_toast    | pg_toast_5055681                                  |                  | geometry_ews2011_geolevel_id_2_zoomlevel_6        |       187 |       17.51 |        82.49 |       1068 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_2_zoomlevel_7        | pg_toast_5055691 |                                                   |       177 |       11.76 |        88.24 |       1505 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_1_zoomlevel_7        | pg_toast_5055651 |                                                   |       171 |        9.97 |        90.03 |       1716 | 0 bytes
+ pg_toast    | pg_toast_5055691                                  |                  | geometry_ews2011_geolevel_id_2_zoomlevel_7        |       165 |       14.44 |        85.56 |       1143 | 0 bytes
+ pg_toast    | pg_toast_5055651                                  |                  | geometry_ews2011_geolevel_id_1_zoomlevel_7        |       158 |       11.46 |        88.54 |       1379 | 0 bytes
+ peter       | tile_intersects_ews2011_geolevel_id_2_zoomlevel_0 | pg_toast_5070572 |                                                   |       156 |        6.03 |        93.97 |       2588 | 0 bytes
+ peter       | tile_intersects_ews2011_geolevel_id_1_zoomlevel_0 | pg_toast_5070556 |                                                   |       149 |        6.12 |        93.88 |       2435 | 0 bytes
+ pg_toast    | pg_toast_5070572                                  |                  | tile_intersects_ews2011_geolevel_id_2_zoomlevel_0 |       148 |        8.11 |        91.89 |       1825 | 0 bytes
+ pg_toast    | pg_toast_5070556                                  |                  | tile_intersects_ews2011_geolevel_id_1_zoomlevel_0 |       141 |        8.09 |        91.91 |       1743 | 0 bytes
+ peter       | geometry_ews2011_geolevel_id_1_zoomlevel_6        | pg_toast_5055641 |                                                   |       134 |        7.81 |        92.19 |       1716 | 0 bytes
+ pg_toast    | pg_toast_5055641                                  |                  | geometry_ews2011_geolevel_id_1_zoomlevel_6        |       120 |        8.31 |        91.69 |       1444 | 0 bytes
+ public      | spatial_ref_sys                                   | pg_toast_321436  |                                                   |        23 |        0.02 |        99.98 |     152022 | 0 bytes
+ peter       | lookup_ladua2011                                  | pg_toast_5055547 |                                                   |        19 |        2.14 |        97.86 |        889 | 0 bytes
+ peter       | geolevels_ews2011                                 | pg_toast_5055505 |                                                   |         9 |        7.63 |        92.37 |        118 | 0 bytes
+ peter       | lookup_scntry2011                                 | pg_toast_5055523 |                                                   |         5 |       83.33 |        16.67 |          6 | 0 bytes
+ peter       | geography_ews2011                                 | pg_toast_5055490 |                                                   |         5 |       16.13 |        83.87 |         31 | 0 bytes
+ peter       | lookup_gor2011                                    | pg_toast_5055539 |                                                   |         4 |       15.38 |        84.62 |         26 | 0 bytes
+ peter       | lookup_cntry2011                                  | pg_toast_5055531 |                                                   |         4 |       40.00 |        60.00 |         10 | 0 bytes
+ rif40       | t_rif40_parameters                                |                  |                                                   |         2 |       12.50 |        87.50 |         16 | 0 bytes
+ peter       | tile_limits_ews2011                               | pg_toast_5070536 |                                                   |         2 |       25.00 |        75.00 |          8 | 8192 bytes
+ peter       | tile_limits_usa_2014                              | pg_toast_626601  |                                                   |         2 |      100.00 |         0.00 |          2 | 0 bytes
+(100 rows)
+```
+
+In this cases, somewhat later on in the processing:
+
+* There are a number of small tables with with <90% cache hits;
+* A large number the most hit tables are not buffered
+
+These are both signs that the shared buffers needs to be increased for this workload.
+
+### 7.1.2 Query Tuning
 
 On Postgres the extract queries all do an ```EXPLAIN PLAN VERBOSE``` to the log:
 ```
@@ -1737,7 +2102,25 @@ Insert on rif_studies.s416_extract  (cost=19943.90..21263.53 rows=52785 width=58
 +00038.28s  rif40_execute_insert_statement(): [56605] Study 416: Study extract insert 1995 (EXPLAIN) OK, took: 00:00:00.061771
 ```
 
+### 7.1.3 Database Space Management
+
+Postrgres needs to be VACUUM to clear out dead tuples as it has no rollback segments. VACUUM reclaims storage occupied by dead tuples. In normal PostgreSQL operation, 
+tuples that are deleted or obsoleted by an update are not physically removed from their table; they remain present until a VACUUM is done. Therefore it's necessary to do 
+VACUUM periodically, especially on frequently-updated tables. An [Auto Vacuum]https://www.postgresql.org/docs/9.6/static/routine-vacuuming.html#AUTOVACUUM) 
+daemon is provided for this purpose. If you do NOT do this you will eventually run out of disk space. After about Postgres 9.3 or so he system will launch autovacuum processes 
+if necessary to prevent transaction ID wraparound.
+
+```
+autovacuum = on		# Enable autovacuum subprocess?  'on'
+					# requires track_counts to also be on.
+```
+
+Vaccuming can also be carried out using the [*vacuumdb*](https://www.postgresql.org/docs/9.6/static/app-vacuumdb.html) command or by using the SQL 
+[*VACUUM*](https://www.postgresql.org/docs/9.6/static/sql-vacuum.html) command: ```VACCUM FULL VERBOSE ANALYZE``` will garbage-collect and analyze a database verbosely.
+ 					
 ## 7.2 SQL Server
+
+### 7.2.1 Server Memory Tuning
 
 SQL Server automatically allocates memory as needed by the server up to the limit of 2,147,483,647MB! In practice you may wish to reduce this figure to 40% of the available RAM.
 
@@ -1754,8 +2137,28 @@ large_page_allocations_kb
 To enable *largepages* you need to [Enable the Lock Pages in Memory Option](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/enable-the-lock-pages-in-memory-option-windows?view=sql-server-2017).
 This will have consequences for the automated tuning which unless limited in size will remove the ability of Windows to free up SQL Server memory for other applications (and Windows itself). You need to be on a 
 big server and make sure your memory set-up is stable before enabling it.  
-				
+	
+### 7.2.2 Query Tuning
+			
 The [SQL Server profiler](https://docs.microsoft.com/en-us/sql/tools/sql-server-profiler/sql-server-profiler?view=sql-server-2017) needs to be used to trace RIF application tuning.
-				
+		
+To use the profiler you will need to be a *sysadmin* or have the *ALTER TRACE* role: ```GRANT ALTER TRACE TO peter;```
+	
+Show execution plan in SQL Server management studio is also very effective (showing missing indexes) and allows analysis of running queries:
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/SSMS_execution_plan.PNG?raw=true "SQL Server Management Studio Execution Plan")
+	
+However it is not very effective as it did not spot that the query had effectively disabled the SPATIAL indexes. The real problem with the query was the lack of partitioning on SQL Server. 
+When the query was split by geolevel_id it ran in two minutes as opposed to >245 hours!. It also cannot cope with T-SQL.
+		
+### 7.2.3 Database Space Management
+
+SQL Server should not need VACUUMing like Postgres as it uses rollback segments. However the database can run out of space as space stays with tables once allocated; databases need to be shrunk periodically: 
+https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-database?view=sql-server-2017
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/shrink.PNG?raw=true "SQL Server Shrink Database")
+
+The option *reorganise files before releasing unused space* will affect performance and take a long like (2x as long as a Postgres ```VACUUM FULL```.
+
 Peter Hambly
 May 2018

@@ -10,8 +10,8 @@
  */
 WITH a AS (
 	SELECT areaname, %1,
-		   CAST(area_km2 AS NUMERIC(15,2)) AS area_km2,
-		   CAST((%1.STArea()/(1000*1000)) AS NUMERIC(15,2)) AS area_km2_calc,
+		   CAST(area_km2 AS NUMERIC(15,4)) AS area_km2,
+		   CAST((%1.STArea()/(1000*1000)) AS NUMERIC(15,4)) AS area_km2_calc,
 		   CONCAT(
 				CAST(CAST(geographic_centroid.Long AS NUMERIC(15,7)) AS VARCHAR(30)),
 				',',
@@ -30,7 +30,7 @@ SELECT SUBSTRING(a.areaname, 1, 30) AS areaname,
        a.area_km2,
 	   a.area_km2_calc,
 	   CASE WHEN area_km2 = 0 THEN NULL 
-			ELSE CAST(100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2) AS NUMERIC(15,2)) 
+			ELSE CAST(100*(ABS(a.area_km2 - a.area_km2_calc)/area_km2) AS NUMERIC(15,4)) 
 			END AS pct_km2_diff,
 	   a.geographic_centroid,
        a.geographic_centroid_calc,

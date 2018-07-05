@@ -30,7 +30,7 @@ import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.datastorage.QueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLDeleteTableQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLExportTableToCSVQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLSchemaCommentQueryFormatter;

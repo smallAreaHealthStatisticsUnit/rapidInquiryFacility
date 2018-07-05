@@ -2234,7 +2234,7 @@ Todo:
   * Will complete data loading manual and partial database administration guide [sections 2 and 3, PG 4]; then start on tile-maker;
   * Auto setup of R/tomcat environment and path to be added later;
   * Fixing risk analysis front end issues is a priority. Shapefile functionality needs to be investigated.
-    Circles to not be saved as geojson; arbitary shapes and plumes probably will. Which shapefle reading
+    Circles to not be saved as geojson; arbitrary shapes and plumes probably will. Which shapefle reading
     library has been used (Mike Bostock's?) needs to be determined. Method for determining geographic centroids
 	(hopefully the ones built-in to the geoJSON)
   * Need for population weighted centroids: test on England data in 6-8 weeks time;
@@ -2367,7 +2367,8 @@ Todo:
 
 * TileMaker manual, testing, handling huge shapefiles;
 * Shapefile pre-processing; EWS2011 as an example;
-* Processed EWS2011 to LSOA; documented memory management and issues; fix DBF parsing fault for very small DBF files;
+* Processed EWS2011 to LSOA OK, COA will crash below [batch ran to completion, problems occurred returning the run data]; documented memory management and 
+  issues; fix DBF parsing fault for very small DBF files;
 * Strange bug when processing COA as well:
   ```
   C:\Users\phamb\Documents\GitHub\rapidInquiryFacility\rifNodeServices\lib\nodeGeoSpatialServicesCommon.js:932
@@ -2381,3 +2382,310 @@ Todo:
 		at FSReqWrap.oncomplete (fs.js:135:15)
   ```
   Memory seems OK at: 24G!
+* QGIS edit of DBF or mapshaper added ASCII NUL characters to pad strings to the same length. These had to be removed by ```string.replace(/\0/g, '')``` to remove an error the 
+  ```psql \copy``` command;
+* Performance problem traced to size and validity of the input shapefile:
+  Take care to ensure the the input shapefile is valid (i.e. use the ```-clean``` flag in *mapshaper*); and keep the boundary maps simple. If they are mapped at high scale 
+  they tend to contain many small islands which can become invalid during simplification. These take a long time to fix; for the UK no pre-simplification took two hours to  
+  fix, 98% simplification took 7 seconds;
+* Need to add invalid geometries report prior to *Make geometry columns valid*:
+  ```SQL
+  SELECT SUM(CASE WHEN ST_IsValid(geom_6) THEN 1 ELSE 0 END) AS geom_6_valid,
+       SUM(CASE WHEN ST_IsValid(geom_7) THEN 1 ELSE 0 END) AS geom_7_valid,
+       SUM(CASE WHEN ST_IsValid(geom_8) THEN 1 ELSE 0 END) AS geom_8_valid,
+       SUM(CASE WHEN ST_IsValid(geom_9) THEN 1 ELSE 0 END) AS geom_9_valid,
+       SUM(CASE WHEN ST_IsValid(geom_orig) THEN 1 ELSE 0 END) AS geoom_orig_valid,
+	   COUNT(*) total
+  FROM cntry2011;
+  ```  
+* Make post processing script multi transactional (hit by deadlock problems running overnight;
+* Postgres processing failed after 2:26 (hours) at statement 421/601 hierarchy checks (check_intersections.sql):
+  ```
+  psql:pg_EWS2011.sql:6524: WARNING:  Geography: EWS2011 geolevel 7: [coa2011] spurious additional codes: 2
+  ...
+  psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 1: [scntry2011] no multiple hierarchy codes
+  psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 2: [cntry2011] no multiple hierarchy codes
+  psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 3: [gor2011] no multiple hierarchy codes
+  psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 4: [ladua2011] no multiple hierarchy codes
+  psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 5: [msoa2011] no multiple hierarchy codes
+  psql:pg_EWS2011.sql:6524: INFO:  Geography: EWS2011 geolevel 6: [lsoa2011] no multiple hierarchy codes
+  psql:pg_EWS2011.sql:6524: ERROR:  Geography: EWS2011 codes check 0 missing, 1 spurious additional, 0 hierarchy fails
+  CONTEXT:  PL/pgSQL function inline_code_block line 41 at RAISE
+  Time: 1714.103 ms
+  ```
+  Hierarchy insert took 83 mins. Two  rows missing romn the hierarchy are:
+  ```
+  sahsuland_dev=> SELECT coa2011 FROM lookup_coa2011
+  sahsuland_dev->                 EXCEPT 
+  sahsuland_dev->                 SELECT coa2011 FROM hierarchy_ews2011;
+    coa2011
+  -----------
+   W00010143
+   W00010161
+  (2 rows)
+  ```
+  These are in Cardiff and are small:
+  ```
+  SELECT coa2011, lsoa11_1, lad11nm, msoa11nm, area_km2, geographic_centroid_wkt, ST_ASText(ST_Transform(geographic_centroid, 27700)) AS osgb
+    FROM coa2011
+   WHERE coa2011 IN ('W00010143', 'W00010161');
+    coa2011  | lsoa11_1  | lad11nm |  msoa11nm   |    area_km2     |            geographic_centroid_wkt            |                   osgb
+  -----------+-----------+---------+-------------+-----------------+-----------------------------------------------+------------------------------------------
+   W00010161 | W01001945 | Cardiff | Cardiff 048 | 0.0147534816105 | POINT (-3.1781555521064697 51.45499419539898) | POINT(318235.967585802 173549.01243282)
+   W00010143 | W01001945 | Cardiff | Cardiff 048 |  0.009281476807 | POINT (-3.1768272276630127 51.45381197706475) | POINT(318326.146578801 173416.053359773)
+  (2 rows)
+  ```
+  That COA2011 only is affected means that the upper intersections are fine.
+  
+#### 11th to 15th June 
+  
+The hierarchy check failure is probably caused by oversimplification of higher layers (SCNTRY, CNTRY):
+
+* CNTRY2011 in purple;
+* GOR2011 (not oversimplified) in green;
+* COA2001 in hashing;
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue.png?raw=true "Cardiff COA2001 issue map")
+  To be in the hierarchy the intersection code *insert_hierarchy.sql* selects the intersection with the largest intersection by area for each (higher resolution). This 
+  eliminates duplicates and picks the most likely intersection on the basis of area. There are two possible reasons for this failure:
+
+* An intersection was not found. Visually this appears to not be the case;
+* The area is zero. This seems unlikely and would need to be tested in SQL.
+
+The following SQL was derived from code generated by *insert_hierarchy.sql*:
+
+```SQL  
+WITH x12 AS ( /* Subqueries x12 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a1.areaid AS scntry2011, a2.areaid AS cntry2011,
+       ST_Area(a2.geom_9) AS a2_area,
+       ST_Area(ST_Intersection(a1.geom_9, a2.geom_9)) AS a12_area
+  FROM scntry2011 a1 CROSS JOIN cntry2011 a2
+ WHERE ST_Intersects(a1.geom_9, a2.geom_9)
+), x23 AS ( /* Subqueries x23 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a2.areaid AS cntry2011, a3.areaid AS gor2011,
+       ST_Area(a3.geom_9) AS a3_area,
+       ST_Area(ST_Intersection(a2.geom_9, a3.geom_9)) AS a23_area
+  FROM cntry2011 a2 CROSS JOIN gor2011 a3
+ WHERE ST_Intersects(a2.geom_9, a3.geom_9)
+), x34 AS ( /* Subqueries x34 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a3.areaid AS gor2011, a4.areaid AS ladua2011,
+       ST_Area(a4.geom_9) AS a4_area,
+       ST_Area(ST_Intersection(a3.geom_9, a4.geom_9)) AS a34_area
+  FROM gor2011 a3 CROSS JOIN ladua2011 a4
+ WHERE ST_Intersects(a3.geom_9, a4.geom_9)
+), x45 AS ( /* Subqueries x45 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a4.areaid AS ladua2011, a5.areaid AS msoa2011,
+       ST_Area(a5.geom_9) AS a5_area,
+       ST_Area(ST_Intersection(a4.geom_9, a5.geom_9)) AS a45_area
+  FROM ladua2011 a4 CROSS JOIN msoa2011 a5
+ WHERE ST_Intersects(a4.geom_9, a5.geom_9)
+), x56 AS ( /* Subqueries x56 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a5.areaid AS msoa2011, a6.areaid AS lsoa2011,
+       ST_Area(a6.geom_9) AS a6_area,
+       ST_Area(ST_Intersection(a5.geom_9, a6.geom_9)) AS a56_area
+  FROM msoa2011 a5 CROSS JOIN lsoa2011 a6
+ WHERE ST_Intersects(a5.geom_9, a6.geom_9)
+), x67 AS ( /* Subqueries x67 ... x67: intersection aggregate geometries starting from the lowest resolution.
+	       Created using N-1 geoevels cross joins rather than 1 to minimise cross join size and hence improve performance.
+	       Calculate the area of the higher resolution geolevel and the area of the intersected area */
+SELECT a6.areaid AS lsoa2011, a7.areaid AS coa2011,
+       ST_Area(a7.geom_9) AS a7_area,
+       ST_Area(ST_Intersection(a6.geom_9, a7.geom_9)) AS a67_area
+  FROM lsoa2011 a6 CROSS JOIN coa2011 a7
+ WHERE ST_Intersects(a6.geom_9, a7.geom_9)
+   AND a7.coa2011 IN ('W00010143','W00010161')
+)
+SELECT x12.scntry2011, 
+       x12.cntry2011, 
+       x23.gor2011, 
+       x34.ladua2011, 
+       x45.msoa2011, 
+       x56.lsoa2011, 
+       x67.coa2011, 
+       CASE WHEN x12.a2_area > 0 THEN x12.a12_area/x12.a2_area ELSE NULL END test12,
+       MAX(x12.a12_area/x12.a2_area) OVER (PARTITION BY x12.cntry2011) AS max12,
+       CASE WHEN x23.a3_area > 0 THEN x23.a23_area/x23.a3_area ELSE NULL END test23,
+       MAX(x23.a23_area/x23.a3_area) OVER (PARTITION BY x23.gor2011) AS max23,
+       CASE WHEN x34.a4_area > 0 THEN x34.a34_area/x34.a4_area ELSE NULL END test34,
+       MAX(x34.a34_area/x34.a4_area) OVER (PARTITION BY x34.ladua2011) AS max34,
+       CASE WHEN x45.a5_area > 0 THEN x45.a45_area/x45.a5_area ELSE NULL END test45,
+       MAX(x45.a45_area/x45.a5_area) OVER (PARTITION BY x45.msoa2011) AS max45,
+       CASE WHEN x56.a6_area > 0 THEN x56.a56_area/x56.a6_area ELSE NULL END test56,
+       MAX(x56.a56_area/x56.a6_area) OVER (PARTITION BY x56.lsoa2011) AS max56,
+       CASE WHEN x67.a7_area > 0 THEN x67.a67_area/x67.a7_area ELSE NULL END test67,
+       MAX(x67.a67_area/x67.a7_area) OVER (PARTITION BY x67.coa2011) AS max67
+  FROM x12, x23, x34, x45, x56, x67
+ WHERE x12.cntry2011 = x23.cntry2011
+   AND x23.gor2011 = x34.gor2011
+   AND x34.ladua2011 = x45.ladua2011
+   AND x45.msoa2011 = x56.msoa2011
+   AND x56.lsoa2011 = x67.lsoa2011
+ ORDER BY 1, 2, 3, 4, 5, 6, 7; 
+```
+
+This, unsurprisingly, returned no rows, suggesting the problem is with the intersection and not the area:
+```
+  scntry2011 | cntry2011 | gor2011 | ladua2011 | msoa2011 | lsoa2011 | coa2011 | test12 | max12 | test23 | max23 | test34 | max34 | test45 | max45 | test56 | max56 | test67 | max67
+ ------------+-----------+---------+-----------+----------+----------+---------+--------+-------+--------+-------+--------+-------+--------+-------+--------+-------+--------+-------
+ (0 rows)
+
+```
+This in turn implies the problem may be with the COA2011, LSOA2011 intersection, common table expression: *x67*; as shown by the map. The records will be manually inserted to fix the problem.
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/cardiff_COA_issue2.png?raw=true "Cardiff COA2001 intersection issue map")
+
+```SQL
+WITH a AS (
+	SELECT DISTINCT scntry2011,cntry2011, gor2011, ladua2011, msoa2011, lsoa2011
+	  FROM hierarchy_ews2011
+	 WHERE lsoa2011 = 'W01001945' /* Where it should be */
+), b AS (
+	SELECT coa2011, lsoa11_1
+      FROM coa2011
+     WHERE coa2011 IN ('W00010143', 'W00010161') 
+)
+INSERT INTO hierarchy_ews2011 (scntry2011, cntry2011, gor2011, ladua2011, msoa2011, lsoa2011, coa2011)
+SELECT a.*, b.coa2011
+  FROM a, b
+ WHERE a.lsoa2011 = b.lsoa11_1
+   AND b.coa2011 NOT IN (SELECT coa2011 FROM hierarchy_ews2011);   
+
+   INSERT 0 2
+```
+
+* Fix for: Focus should be on username field on the login screen #22;
+* Can now reload saved risk analysis study;
+* Found shapefile risk analysis areas codes;
+* Added test shapefiles for exposure point and surfaces;
+* WARNING: Could not find (weighted) centroids stored in database - using geographic centroids on the fly
+  call to user.getTileMakerCentroids() in rifd-dsub-maptable.js is producing a HTTP 404:
+  ```http://localhost:8080/rifServices/studyResultRetrieval/getTileMakerCentroids?userID=peter&geographyName=SAHSULAND&geoLevelSelectName=SAHSU_GRD_LEVEL1```. 
+  Submitted an as issue;
+* RIF meeting;
+* Buffer cache tuning for Postgres;
+* Document pgTileMaker or mssqlTileMaker JavaScript heap out of memory error;
+* Created add_study_selection_to_json branch. Added ability to view JSOBN shapes used in study selection (e.g. the concentric circle);
+* Run EWS2011 pre processing script pg_EWS2011.sql to end after hierarchy fix. Took about a day and a half. Ran pgTileMaker -needed more memory. Took 3 hours.
+
+#### 18th to 22nd June
+
+* Test and merge *Tidies up the query formatters #43*;
+* Document *tilemaker* hierarchy issues;
+* Apply Postgres fix for EWS2011 hierarchy issues to SQL Server;
+* Resolve adjacency list tuning issues >1 day to 3 minutes;
+* Update SQL Server tuning comments;
+* Create 2x test noise band shapefiles for sahsuland from Heathrow 2013 day noise;
+* Resolve front end shapefile loading issues for banded data;
+* Received population weighted centroids from Aina;
+* Run EWS2011 pre processing script mssql_EWS2011.sql to end after hierarchy and performance fixes overnight. Ran mssqlTileMaker -needed more memory. Took 1 hour;
+* Loaded EWS2011 into SQL Server and PostGres;
+* *TileViewer* example - Lower super output area in south east London:
+  ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/TileViewer_example.PNG?raw=true "TileViewer example - Lower super output area in south east London")  
+
+#### 25th to 29th June
+
+* Upgraded wsrifdb1 and 2 to latest patch level; secured tomcat to OWASP guidelines; added US SEER dataset; fixed stop/start_rif.bat; made to start on boot;
+* Made SQL Server SEER load script re-runnable using MERGE statements (removed DELETE FROM/INSERT rif40 tables);
+* Fix for lack of polygons on returning to the study areas screen; fix for map synchronisation problems (slowed it down 0.5s as usual - map.whenReady() isn't!);
+* Clear selection now zooms back to full extent; shapefile selection only zooms to study extent;
+* R error on SQL Server port only with SEER data:
+  ```
+  getRootCauseMessage: RIFServiceException: R script execution error; trace:
+	EXTRACT TABLE NAME: rif_studies.s4_extract
+	Saving extract frame to: scratchSpace/d1-100/s4/datatmp_s4_extract.csv
+	rif_studies.s4_extract numberOfRows=745322==
+	rif40_GetAdjacencyMatrix numberOfRows=712==
+	Saving adjacency matrix to: scratchSpace/d1-100/s4/datatmp_s4_adjacency_matrix.csv
+	Covariates: MEDIAN_HH_INCOME_QUIN
+	Stack tracer >>>
+
+	 performSmoothingActivity.R#710: .handleSimpleError(function (obj) 
+	{
+		ca FUN(X[[i]], ...) lapply(X = X, FUN = FUN, ...) performSmoothingActivity.R#709: sapply(x, FUN = function(y) {
+		ans = y
+	  performSmoothingActivity.R#106: findNULL(data[, i.d.adj[i]]) performSmoothingActivity(data, AdjRowset) Adj_Cov_Smooth_JRI.R#372: withVisible(expr) Adj_Cov_Smooth_JRI.R#372: withCallingHandlers(withVisible(expr), error = er withErrorTracing({
+		data = fetchExtractTable()
+		AdjRowset = getAdjace doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names, parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryCatch({
+		withErrorTracing({
+			data = fetchExtractTable()
+		   eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) Adj_Cov_Smooth_JRI.R#411: capture.output({
+		tryCatch({
+			withError runRSmoothingFunctions() 
+	<<< End of stack tracer.
+	callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  if 
+	callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  y == "NULL" 
+	callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  {
+		ans = 0
+	} 
+	callPerformSmoothingActivity exitValue: 1
+  ```
+  Traced to missing patch applied to Postgres (rif40_create_insert_statement.sql). Mal-join of denominator covariate data in extract;
+  **Checked numbers were the same for both ports!**
+* Mysterious error on wsrifdb2:
+  ```
+  10:49:56.827 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Created TaxonomyLogger: org.sahsu.rif.generic.util.TaxonomyLogger
+  10:49:56.843 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Set java.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+  10:49:56.843 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.RIFTaxonomyWebServiceApplication]:
+  !!!!!!!!!!!!!!!!!!!!! RIFTaxonomyWebServiceApplication !!!!!!
+  10:49:58.155 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfigurationXMLReader]:
+  TaxonomyService configuration file: C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\TaxonomyServicesConfiguration.xml
+  10:49:58.186 [https-jsse-nio-8080-exec-5] ERROR org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+  ICD10/11 taxonomy service: ICD Taxonomy Service initialiseService() error
+  getMessage:          RIFServiceException: ICD10/11 taxonomy service: ICD Taxonomy Service file: "org.sahsu.rif.generic.concepts.Parameter@131041c4" not found.
+  getRootCauseMessage: RIFServiceException: ICD10/11 taxonomy service: ICD Taxonomy Service file: "org.sahsu.rif.generic.concepts.Parameter@131041c4" not found.
+  getThrowableCount:   1
+  getRootCauseStackTrace >>>
+  1 error(s). Error code is 'HEALTH_CODE_TAXONOMY_SERVICE_ERROR'. Message list is: 'ICD10/11 taxonomy service: ICD Taxonomy Service file: "org.sahsu.rif.generic.concepts.Parameter@131041c4" not found.'
+  	at org.sahsu.taxonomyservices.claMLTaxonomyService.initialiseService(claMLTaxonomyService.java:170)
+  	at org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfigurationXMLReader.readFile(TaxonomyServiceConfigurationXMLReader.java:206)
+  	at org.sahsu.rif.generic.taxonomyservices.FederatedTaxonomyService.initialise(FederatedTaxonomyService.java:115)
+  	at org.sahsu.taxonomyservices.RIFTaxonomyWebServiceResource.initialiseService(RIFTaxonomyWebServiceResource.java:83)
+	...
+	<<< End getRootCauseStackTrace.
+	10:55:25.306 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Created TaxonomyLogger: org.sahsu.rif.generic.util.TaxonomyLogger
+	10:55:25.322 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Set java.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+	10:55:25.322 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.RIFTaxonomyWebServiceApplication]:
+	!!!!!!!!!!!!!!!!!!!!! RIFTaxonomyWebServiceApplication !!!!!!
+	10:55:26.587 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfigurationXMLReader]:
+	TaxonomyService configuration file: C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\TaxonomyServicesConfiguration.xml
+	10:55:27.134 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.ICD10TaxonomyTermParser]:
+	ICD10TaxonomyTermParser 2
+	10:55:49.312 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+	icd101/1TaxonomyParser: ICD Taxonomy Service read: "C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\icdClaML2016ens.xml".
+	10:55:49.312 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+	icd101/1TaxonomyParser: ICD Taxonomy Service initialised: International classification of diseases and related health problems 10th revision (2016 version)..
+	11:01:46.608 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Created TaxonomyLogger: org.sahsu.rif.generic.util.TaxonomyLogger
+	11:01:46.639 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Set java.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+	11:01:46.639 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.RIFTaxonomyWebServiceApplication]:
+	!!!!!!!!!!!!!!!!!!!!! RIFTaxonomyWebServiceApplication !!!!!!
+	11:01:48.076 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfigurationXMLReader]:
+	TaxonomyService configuration file: C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\TaxonomyServicesConfiguration.xml
+	11:01:49.795 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.ICD10TaxonomyTermParser]:
+	ICD10TaxonomyTermParser 2
+	11:02:13.651 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+	icd101/1TaxonomyParser: ICD Taxonomy Service read: "C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\icdClaML2016ens.xml".
+	11:02:13.651 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+	icd101/1TaxonomyParser: ICD Taxonomy Service initialised: International classification of diseases and related health problems 10th revision (2016 version)..	
+  ```
+* Add shapefile properties data to selector modal;
+* Issues:
+  * Fix height interaction with shapefile selector modal;
+  * Emphasise centroid point when area selected; 
+  * Reverse shapefile band columns so the same as points (red innermost);
+  * Colour shapefile bands;
+  * Check all bands etc restore correctly;
+  * Add shapefile properties to map;
+
+#### 2nd to 6th June
+
+* Add support for *hierarchy_post_processing_sql*, *population_weighted_centroids*
+* Risk analysis front end:
+  * Check for no bands setup with limits;

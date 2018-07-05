@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.datastorage.FunctionCallerQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.ms.MSSQLSelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.services.concepts.GeoLevelSelect;

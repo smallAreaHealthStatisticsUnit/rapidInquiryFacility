@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.datastorage.common.GenerateResultsSubmissionStep;

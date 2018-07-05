@@ -15,7 +15,7 @@ import org.sahsu.rif.dataloader.system.RIFDataLoaderToolError;
 import org.sahsu.rif.dataloader.system.RIFDataLoaderToolMessages;
 import org.sahsu.rif.dataloader.system.RIFTemporaryTablePrefixes;
 import org.sahsu.rif.generic.concepts.RIFResultTable;
-import org.sahsu.rif.generic.datastorage.common.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLCountQueryFormatter;
 import org.sahsu.rif.generic.datastorage.pg.PGSQLSelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
