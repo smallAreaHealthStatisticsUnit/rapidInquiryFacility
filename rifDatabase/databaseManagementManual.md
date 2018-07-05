@@ -2111,8 +2111,9 @@ daemon is provided for this purpose. If you do NOT do this you will eventually r
 if necessary to prevent transaction ID wraparound.
 
 ```
-autovacuum = on		# Enable autovacuum subprocess?  'on'
-					# requires track_counts to also be on.
+autovacuum = on     # Enable autovacuum subprocess?  'on'
+                    # requires track_counts to also be on.
+track_counts = on
 ```
 
 Vaccuming can also be carried out using the [*vacuumdb*](https://www.postgresql.org/docs/9.6/static/app-vacuumdb.html) command or by using the SQL 
@@ -2158,7 +2159,7 @@ https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-dat
 
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/shrink.PNG?raw=true "SQL Server Shrink Database")
 
-The option *reorganise files before releasing unused space* will affect performance and take a long like (2x as long as a Postgres ```VACUUM FULL```.
+The option *reorganise files before releasing unused space* will affect performance and take a long like (2x as long as a Postgres ```VACUUM FULL```).
 
 Peter Hambly
 May 2018
