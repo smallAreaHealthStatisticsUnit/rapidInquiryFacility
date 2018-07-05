@@ -207,11 +207,13 @@ angular.module("RIF")
 								var shapesLayerList=$scope.shapes.getLayers();
 								var shapesLayerBands = {};
 								var shapesLayerAreas = {};
+								var useBands=false;
+								
 								for (var i=0; i<shapesLayerList.length; i++) {
 									var shapeLayer=shapesLayerList[i];
 									if (shapeLayer.options.icon) { // Factory icon - ignore
-									}
-									else if (shapeLayer.options.band == undefined || shapeLayer.options.area == undefined) {	
+									}										
+									else if (shapeLayer.options.band == undefined) {	
 										alertScope.consoleLog("[rifd-dsub-maptable.js] cannot resolve shapesLayerList[" + i + 
 											 "].options.band/area; options: " + JSON.stringify(shapeLayer.options));
 										shapeLayerOptionsBanderror++;
@@ -220,11 +222,17 @@ angular.module("RIF")
 										if (shapesLayerBands[shapeLayer.options.band] == undefined) {
 											shapesLayerBands[shapeLayer.options.band] = [];
 										}
-										if (shapesLayerAreas[shapeLayer.options.area] == undefined) {
-											shapesLayerAreas[shapeLayer.options.area] = [];
+										
+										if (shapeLayer.options.area) {
+											if (shapesLayerAreas[shapeLayer.options.area] == undefined) {
+												shapesLayerAreas[shapeLayer.options.area] = [];
+											}
+											shapesLayerAreas[shapeLayer.options.area].push($scope.shapes.getLayerId(shapeLayer));
+										}
+										else {
+											useBands=true;
 										}
 										shapesLayerBands[shapeLayer.options.band].push($scope.shapes.getLayerId(shapeLayer));
-										shapesLayerAreas[shapeLayer.options.area].push($scope.shapes.getLayerId(shapeLayer));
 										if (maxBands < shapeLayer.options.band) {
 											maxBands=shapeLayer.options.band;
 										}
@@ -232,13 +240,13 @@ angular.module("RIF")
 									}
 								}
 
-//								if (Object.keys(shapesLayerAreas).length == Object.keys(shapesLayerBands).length) { // Use areas - all present
+								if (!useBands) { // Use areas - all present
 	
 									shapesLayerAreaList=Object.keys(shapesLayerAreas); 
 									shapesLayerAreaList.sort(function(a, b){return b - a}); 
 									// Sort into descended list so the smallest areas are in front
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] sorted areas: " + shapesLayerAreaList.length + 
-											"; " + JSON.stringify(shapesLayerAreaList));
+										"; " + JSON.stringify(shapesLayerAreaList));
 									for (var k=0; k<shapesLayerAreaList.length; k++) {
 											
 										for (var area in shapesLayerAreas) {
@@ -261,8 +269,8 @@ angular.module("RIF")
 											}
 										}
 									}
-//								}
-/*								else { // Use bands
+								}
+								else { // Use bands
 									
 									for (var j=maxBands; j>0; j--) { 
 										alertScope.consoleDebug("[rifd-dsub-maptable.js] band: " + j + "/" + maxBands + 
@@ -281,7 +289,7 @@ angular.module("RIF")
 											}
 										}
 									}
-								} */
+								} 
 								
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] brought " + layerCount + " shapes in " + 
 									maxBands + " layer(s) to the front");
@@ -948,6 +956,7 @@ angular.module("RIF")
                         // completed selection event fired from service
 						$scope.$on('completedDrawSelection', function (event, data) {
 							
+							alertScope.consoleLog("[rifd-dsub-maptable.js] completed Draw Selection");
 							if ($scope.info._map == undefined) { // Add back info control
 								$scope.info.addTo($scope.areamap);
 							}
@@ -1249,7 +1258,7 @@ angular.module("RIF")
 							if (this._div) {
 								if (savedShape) {
 									if (savedShape.circle) {
-										this._div.innerHTML = '<h4>Circle;</h4><b>Radius: ' + savedShape.radius + 'm</b></br>' +
+										this._div.innerHTML = '<h4>Circle;</h4><b>Radius: ' + Math.round(savedShape.radius * 10) / 10 + 'm</b></br>' +
 											"<b>Lat: " + Math.round(savedShape.latLng.lat * 1000) / 1000 + // 100m precision
 											"; long: " +  Math.round(savedShape.latLng.lng * 1000) / 1000 +'</b></br>';
 									}

@@ -142,6 +142,8 @@ angular.module("RIF")
                                             band: thisBand,
 											finalCircleBand: true
                                         });
+										
+										$rootScope.$broadcast('completedDrawSelection', {});
                                     }
                                     this.disable();
                                     if (this.options.repeatMode) {
@@ -168,6 +170,8 @@ angular.module("RIF")
                                             band: thisBand,
 											finalCircleBand: true
                                         });
+										
+										$rootScope.$broadcast('completedDrawSelection', {});
                                     }
                                     this.disable();
                                     if (this.options.repeatMode) {
