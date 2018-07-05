@@ -60,7 +60,10 @@ angular.module("RIF")
 							selectorBands=parameters.selectorBands
 						}		
 									
-                        $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);					
+                        $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);		
+						$scope.areamap.createPane('shapes');
+						$scope.areamap.getPane('shapes').style.zIndex = 650; // set shapes to show on top of markers but below pop-ups
+						
 						SubmissionStateService.setAreaMap($scope.areamap);
 						
                         $scope.thisLayer = LeafletBaseMapService.setBaseMap(LeafletBaseMapService.getCurrentBaseMapInUse("areamap"));
@@ -184,12 +187,57 @@ angular.module("RIF")
                                 $scope.areamap.removeLayer($scope.shapes);
 								$scope.shapes = new L.layerGroup();
 								$scope.areamap.addLayer($scope.shapes);
+								
+								$scope.info.update();
                             }
 							
 							if (maxbounds) { //  Zoom back to maximum extent of geolevel
 								$scope.areamap.fitBounds(maxbounds);
 							}
                         };
+						
+						// Bring shapes to front by descending band order; lowest in front (so dblclick works!)
+						$scope.bringShapesToFront = function() {
+							var layerCount=0;
+							var maxBands=0;
+							if ($scope.shapes) {
+								var shapesLayerList=$scope.shapes.getLayers();
+								var shapesLayerBands = {};
+								for (var i=0; i<shapesLayerList.length; i++) {
+									var shapeLayer=shapesLayerList[i];
+									if (shapeLayer.options.band == undefined) {		
+										alertScope.consoleError("[rifd-dsub-maptable.js] no band set in shapeLayer options");
+									}
+									else {
+										if (shapesLayerBands[shapeLayer.options.band] == undefined) {
+											shapesLayerBands[shapeLayer.options.band] = [];
+										}
+										shapesLayerBands[shapeLayer.options.band].push($scope.shapes.getLayerId(shapeLayer));
+										if (maxBands < shapeLayer.options.band) {
+											maxBands=shapeLayer.options.band;
+										}
+									}
+									layerCount++;
+								}
+								for (var j=maxBands; j>0; j--) { 
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] band: " + j + "/" + maxBands + 
+										"; layers: " + shapesLayerBands[j].length + "; ids: " + JSON.stringify(shapesLayerBands[j]));
+									for (var k=0; k<shapesLayerBands[j].length; k++) {
+										var shapeLayer=$scope.shapes.getLayer(shapesLayerBands[j][k]);
+										if (shapeLayer && typeof shapeLayer.bringToFront === "function") { 
+											shapeLayer.bringToFront();
+										}
+										else {		
+											alertScope.consoleError("[rifd-dsub-maptable.js] cannot resolve shapesLayerBands[" + j + 
+												"][" + k + "].bringToFront()");
+										}
+									}
+								}
+							}
+							alertScope.consoleDebug("[rifd-dsub-maptable.js] brought " + layerCount + " shapes in " + 
+								maxBands + " layer(s) to the front");
+						}; 
+						
                         //remove AOI layer
                         $scope.clearAOI = function () {
                             if ($scope.areamap.hasLayer($scope.shpfile)) {
@@ -254,12 +302,28 @@ angular.module("RIF")
                             }
                         }; 
 						
-                        // Show-hide shapes
+                        // Show-hide shapes and associated info
 						$scope.showShapes = function () {
-                            if ($scope.areamap.hasLayer($scope.shapes)) {
+                            if ($scope.shapes == undefined) {
+								alertScope.showError("[rifd-dsub-maptable.js] no shapes layerGroup");
+							}
+							else if ($scope.areamap.hasLayer($scope.shapes)) {
                                 $scope.areamap.removeLayer($scope.shapes);
-                            } else {
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] remove shapes layerGroup");
+								if ($scope.info._map) { // Remove info control
+									$scope.info.remove();
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] remove info control");
+								}
+                            } 
+							else {
                                 $scope.areamap.addLayer($scope.shapes);
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] add shapes layerGroup");
+								if ($scope.info._map == undefined) { // Add back info control
+									$scope.info.addTo($scope.areamap);
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] add info control");
+								}
+								
+								$scope.bringShapesToFront();
                             }
                         };
 
@@ -484,35 +548,60 @@ angular.module("RIF")
 										"; freehand: " + selectedShapes[i].freehand +
 										"; points: " + points);
 								}
+								
+								if ($scope.info._map == undefined) { // Add back info control
+									$scope.info.addTo($scope.areamap);
+								}
+								
 								if (!$scope.areamap.hasLayer($scope.shapes)) {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): add shapes layerGroup");
 									$scope.shapes = new L.layerGroup();
 									$scope.areamap.addLayer($scope.shapes);
 								}
-								else if ($scope.shapes.getLayers().length == 0) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] start addSelectedShapes(): recreate shapes layerGroup");				
-									$scope.areamap.removeLayer($scope.shapes);
-									$scope.shapes = new L.layerGroup();
-									$scope.areamap.addLayer($scope.shapes);
-								}
 								else {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] start addSelectedShapes(): shapes layerGroup has " +
-										$scope.shapes.getLayers().length + " layers");
+									if ($scope.shapes.getLayers().length == 0) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] start addSelectedShapes(): shapes layerGroup has no layers");				
+//										$scope.areamap.removeLayer($scope.shapes);
+//										$scope.shapes = new L.layerGroup();
+//										$scope.areamap.addLayer($scope.shapes);
+									}
+									else {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] start addSelectedShapes(): shapes layerGroup has " +
+											$scope.shapes.getLayers().length + " layers");
+									}
 								}
+								
 								for (var i = 0; i < selectedShapes.length; i++) {
 									var selectedShape=selectedShapes[i];
-								
+									function selectedShapesHighLightFeature(e, selectedShape) {
+										alertScope.consoleLog("[rifd-dsub-maptable.js] selectedShapesHighLightFeature: " + JSON.stringify(selectedShape.properties));
+										$scope.info.update(selectedShape);
+									}									
+									function selectedShapesResetFeature(e) {
+										alertScope.consoleLog("[rifd-dsub-maptable.js] selectedShapesResetFeature: " + JSON.stringify(selectedShape.properties));
+										$scope.info.update();
+									}		
+									
 									if (selectedShape.circle) { // Represent circles as a point and a radius
 										
 										if (!selectedShape.finalCircleBand) {
 											// basic shape to map shapes layer group
 											var circle = new L.Circle([selectedShape.latLng.lat, selectedShape.latLng.lng], {
-												radius: selectedShape.radius,
-												color: (selectorBands.bandColours[selectedShapes[i].band-1] || 'blue'),
-												weight: (selectorBands.weight || 3),
-												opacity: (selectorBands.opacity || 0.8),
-												fillOpacity: (selectorBands.fillOpacity || 0)
-											});
+													pane: 'shapes', 
+													band: selectedShape.band,
+													radius: selectedShape.radius,
+													color: (selectorBands.bandColours[selectedShapes[i].band-1] || 'blue'),
+													weight: (selectorBands.weight || 3),
+													opacity: (selectorBands.opacity || 0.8),
+													fillOpacity: (selectorBands.fillOpacity || 0),
+													selectedShape: selectedShape
+												});										
+											circle.on({
+												dblclick : function(e) {
+													selectedShapesHighLightFeature(e, this.options.selectedShape);
+												} 
+											}); 
+											
 											if (circle) {
 												$scope.shapes.addLayer(circle);
 												alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): " +
@@ -524,23 +613,43 @@ angular.module("RIF")
 											else {
 												alertScope.showError("Could not restore circle");
 											}
+											
+											if (selectedShape.band == 1) {
+											   var factory = L.icon({
+													iconUrl: 'images/factory.png',
+													iconSize: 15
+												});
+												var marker = new L.marker([selectedShape.latLng.lat, selectedShape.latLng.lng], {
+													pane: 'shapes',
+													icon: factory
+												});
+												$scope.shapes.addLayer(marker);
+											}
 										}
 									}
 									else { // Use L.polygon(), L.geoJSON needs a GeoJSON layer
 										var polygon=selectedShape.data; // L.Polygon()
-										if (polygon == undefined) {
+										if (polygon == undefined) {	
 											polygon=L.polygon(selectedShape.geojson.geometry.coordinates[0], {
-													color: 'blue',
-													weight: 2,
-													opacity: 0.5,
-													fillOpacity: 0
-												});					
+													pane: 'shapes', 
+													band: selectedShape.band,
+													color: (selectorBands.bandColours[selectedShapes[i].band-1] || 'blue'),
+													weight: (selectorBands.weight || 3),
+													opacity: (selectorBands.opacity || 0.8),
+													fillOpacity: (selectorBands.fillOpacity || 0),
+													selectedShape: selectedShape
+												});										
+											polygon.on({
+												dblclick : function(e) {
+													selectedShapesHighLightFeature(e, this.options.selectedShape);
+												}
+											}); 		
 										}
 										if (polygon) {
 											$scope.shapes.addLayer(polygon);
 											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): adding polygon" + 
 												"; band: " + selectedShape.band +
-												"; area: " + turf.area(selectedShape.geojson) +
+												"; area: " + (selectedShape.area || turf.area(selectedShape.geojson)) +
 												"; " + selectedShape.geojson.geometry.coordinates[0].length + " coordinates");							
 										}
 										else {
@@ -765,15 +874,23 @@ angular.module("RIF")
 						
 						// Map redraw function with slight delay for leaflet
 						$scope.redrawMap = function() {
+							$scope.bringShapesToFront();
+									
 							$timeout(function() {
-								alertScope.consoleLog("[rifd-dsub-maptable.js] redraw map");
-								$scope.areamap.fitBounds($scope.areamap.getBounds()); // Force map to redraw after 0.5s delay
+										
+									
+									alertScope.consoleLog("[rifd-dsub-maptable.js] redraw map");
+									$scope.areamap.fitBounds($scope.areamap.getBounds()); // Force map to redraw after 0.5s delay
 								}, 500);			
 						};
 						
                         // completed selection event fired from service
 						$scope.$on('completedDrawSelection', function (event, data) {
-							$scope.zoomToSelection(); // Zoom to selection	
+							
+							if ($scope.info._map == undefined) { // Add back info control
+								$scope.info.addTo($scope.areamap);
+							}
+							$scope.zoomToSelection(); // Zoom to selection
 							$scope.safeApply(0, function() {
 								$scope.redrawMap();
 							});					
@@ -791,29 +908,62 @@ angular.module("RIF")
 								freehand: shape.freehand,
 								band: shape.band,
 								area: shape.area, 
+								properties: shape.properties,
 								radius: undefined,
 								latLng: undefined,
 								geojson: undefined,
-								finalCircleBand: (shape.finalCircleBand || false)
+								finalCircleBand: (shape.finalCircleBand || false),
+								style: undefined
 							}
-								
-							if (shape.circle) { // Represent circles as a point and a radius
-								savedShape.radius=shape.data.getRadius();
-								savedShape.latLng=shape.data.getLatLng();
-							
-								if (!savedShape.finalCircleBand) {
-									// basic shape to map shapes layer group
-									var circle = new L.Circle([savedShape.latLng.lat, savedShape.latLng.lng], {
-										radius: savedShape.radius,
+							savedShape.style={
 										color: (selectorBands.bandColours[savedShape.band-1] || 'blue'),
 										weight: (selectorBands.weight || 3),
 										opacity: (selectorBands.opacity || 0.8),
 										fillOpacity: (selectorBands.fillOpacity || 0)
-									});									
+									};
+										
+							function highLightFeature(e) {
+							alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection highLightFeature: " + JSON.stringify(savedShape.properties));
+								$scope.info.update(savedShape);
+							}									
+							function resetFeature(e) {
+								alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection resetFeature: " + JSON.stringify(savedShape.properties));
+								$scope.info.update();
+							}		
+							
+							if (shape.circle) { // Represent circles as a point and a radius
+								savedShape.radius=shape.data.getRadius();
+								savedShape.latLng=shape.data.getLatLng();
+								if (!savedShape.finalCircleBand) {
+									// basic shape to map shapes layer group
+									var circle = new L.Circle([savedShape.latLng.lat, savedShape.latLng.lng], {
+											pane: 'shapes', 
+											band: shape.band,
+											radius: savedShape.radius,
+											color: (savedShape.style.color || selectorBands.bandColours[savedShape.band-1] || 'blue'),
+											weight: (savedShape.style.weight || selectorBands.weight || 3),
+											opacity: (savedShape.style.opacity || selectorBands.opacity || 0.8),
+											fillOpacity: (savedShape.style.fillOpacity || selectorBands.fillOpacity || 0)
+										});										
+									circle.on({
+										dblclick: highLightFeature
+									});
+									
 									$scope.shapes.addLayer(circle);
 									alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection() added circle" +
 										"; color: " + selectorBands.bandColours[savedShape.band-1] +
 										"; savedShape: " + JSON.stringify(savedShape, null, 1));
+									if (shape.band == 1) {
+					                   var factory = L.icon({
+											iconUrl: 'images/factory.png',
+											iconSize: 15
+										});
+										var marker = new L.marker([savedShape.latLng.lat, savedShape.latLng.lng], {
+											pane: 'shapes',
+											icon: factory
+										});
+										$scope.shapes.addLayer(marker);
+									}
 								}
 								else {
 									alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection() suppressed circle" +
@@ -821,23 +971,30 @@ angular.module("RIF")
 								}
 							}
 							else { // Use geoJSON
-								savedShape.geojson=angular.copy(shape.data.toGeoJSON());
-								var geojson= new L.geoJSON(savedShape.geojson, {
-									color: "#000",
-									weight: 1,
-									opacity: 0.5,
-									fillOpacity: 0
-								});
-								
-								$scope.shapes.addLayer(geojson);
+								savedShape.geojson=angular.copy(shape.data.toGeoJSON());									
+									
+								var polygon=L.polygon(savedShape.geojson.geometry.coordinates[0], {
+										pane: 'shapes', 
+										band: shape.band,
+										color: (savedShape.style.color || selectorBands.bandColours[savedShape.band-1] || 'blue'),
+										weight: (savedShape.style.weight || selectorBands.weight || 3),
+										opacity: (savedShape.style.opacity || selectorBands.opacity || 0.8),
+										fillOpacity: (savedShape.style.fillOpacity || selectorBands.fillOpacity || 0)
+									});										
+								polygon.on({
+									dblclick: highLightFeature
+								}); 
+							
+								$scope.shapes.addLayer(polygon);
 									
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection(): added geojson" + 
 									"; band: " + savedShape.band +
 									"; area: " + savedShape.area +
-									"; " + savedShape.geojson.geometry.coordinates[0].length + " coordinates");
+									"; style: " + JSON.stringify(savedShape.style) +
+									"; " + savedShape.geojson.geometry.coordinates[0].length + " coordinates" +
+									"; properties: " + JSON.stringify(savedShape.properties));			
 							}	
-
-								
+		
 							// Save to SelectStateService
 							if ($scope.input.name == "ComparisionAreaMap") { 
 								SelectStateService.getState().studySelection.comparisonShapes.push(savedShape);
@@ -921,8 +1078,8 @@ angular.module("RIF")
 								
 								for (var band in areaNameList) {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] " + 
-										"; areaNameList band: " + band + "; " + areaNameList[band].length +
-										": " + JSON.stringify(areaNameList[band]));	
+										"; areaNameList band: " + band + "; " + areaNameList[band].length);
+//										": " + JSON.stringify(areaNameList[band]));	
 								}
 
 								if (!shape.circle && !shape.shapefile) {
@@ -1016,7 +1173,51 @@ angular.module("RIF")
                             $scope.areamap.addLayer(drawnItems);
                             $scope.input.bDrawing = false; //re-enable layer events
                         }
+						
+						$scope.info = L.control();
+						$scope.info.onAdd = function(map) {
+							this._div = L.DomUtil.create('div', 'info');
+							this.update();
+							return this._div;
+						};
 
+						// method that we will use to update the control based on feature properties passed
+						$scope.info.update = function (savedShape) {
+							if (this._div) {
+								if (savedShape) {
+									if (savedShape.circle) {
+										this._div.innerHTML = '<h4>Circle;</h4><b>Radius: ' + savedShape.radius + 'm</b></br>' +
+											"<b>Lat: " + Math.round(savedShape.latLng.lat * 1000) / 1000 + // 100m precision
+											"; long: " +  Math.round(savedShape.latLng.lng * 1000) / 1000 +'</b></br>';
+									}
+									else if (savedShape.freehand) {
+										this._div.innerHTML = '<h4>freehand</h4>';
+									}
+									else  {
+										this._div.innerHTML = '<h4>Polygon</h4>';
+									}
+									
+									if (savedShape.area) {
+										this._div.innerHTML+= '<b>area: ' + savedShape.area + ' square km</b><br />'
+									}
+										
+									for (var property in savedShape.properties) {
+										if (property == 'area') {
+											if (savedShape.area === undefined) {
+												this._div.innerHTML+= '<b>' + property + ': ' + savedShape.properties[property] + ' square km</b><br />'
+											}
+										}
+										else if (property != '$$hashKey') {
+											this._div.innerHTML+= '<b>' + property + ': ' + savedShape.properties[property] + '</b><br />'
+										}
+									}
+								}
+								else {
+									this._div.innerHTML = '<h4>Double click on shapes to show properties</h4>';
+								}
+							}
+						};
+						
                         /*
                          * SELECT AREAS FROM A LIST, CSV
                          */
@@ -1111,6 +1312,7 @@ angular.module("RIF")
                                     alertScope.showError("Could not read or process the file: Please check formatting");
                                 }
                             };
+							
                             var modalInstance = $uibModal.open({
                                 animation: true,
                                 templateUrl: 'dashboards/submission/partials/rifp-dsub-fromfile.html',

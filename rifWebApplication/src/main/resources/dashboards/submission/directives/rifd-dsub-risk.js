@@ -435,12 +435,13 @@ angular.module("RIF")
                             if (scope.isPoint) { 
                                 //make polygons and apply selection
                                 buffers = new L.layerGroup();
+								
 								var i = 0;
 								var points = 0;
                                 for (; i < scope.bandAttr.length; i++) {
                                     for (var j in poly._layers) {
                                         //Shp Library inverts lat, lngs for some reason (Bug?) - switch back
-                                        var polygon = L.circle(
+                                        var circle = L.circle(
 											[poly._layers[j].feature.geometry.coordinates[1],
                                              poly._layers[j].feature.geometry.coordinates[0]],
                                                 {
@@ -451,21 +452,60 @@ angular.module("RIF")
 													fillOpacity: (selectorBands.fillOpacity || 0),
                                                     color: selectorBands.bandColours[i] // Band i+1
                                                 });
-                                        buffers.addLayer(polygon);
+                                        buffers.addLayer(circle);
+										var properties = poly._layers[j].feature.properties;
                                         $rootScope.$broadcast('makeDrawSelection', {
-                                            data: polygon,
+                                            data: circle,
+											properties: properties,
                                             circle: true,
                                             freehand: false,
                                             band: i + 1,
-											area: Math.PI*Math.pow(scope.bandAttr[i], 2)
+											area: Math.round((Math.PI*Math.pow(scope.bandAttr[i], 2)*100)/1000000)/100 // Square km to 2dp
                                         });
-										points += Object.keys(poly._layers).length;
+										points++;
                                     }
                                 }
 								
-								alertScope.showSuccess("Added " + (i+1) + " band(s) from  " + 
+								alertScope.showSuccess("Added " +i + " band(s) from " + 
 									points + " points using " +
 									getSelectionMethodAsString());
+								/*
+								var points = 0;
+								var colourIndex=0;
+                                for (var i = (scope.bandAttr.length-1); i>=0; i--) { // In descending order (biggest band first)
+                                    for (var j in poly._layers) {
+                                        //Shp Library inverts lat, lngs for some reason (Bug?) - switch back
+                                        var circle = L.circle(
+											[poly._layers[j].feature.geometry.coordinates[1],
+                                             poly._layers[j].feature.geometry.coordinates[0]],
+                                                {
+                                                    radius: scope.bandAttr[i],
+                                                    fillColor: 'none',
+                                                    weight: (selectorBands.weight || 3),
+													opacity: (selectorBands.opacity || 0.8),
+													fillOpacity: (selectorBands.fillOpacity || 0),
+                                                    color: selectorBands.bandColours[colourIndex] // Band i+1
+                                                });
+										var properties = poly._layers[j].feature.properties;	
+											
+                                        buffers.addLayer(circle);
+                                        $rootScope.$broadcast('makeDrawSelection', {
+                                            data: circle,
+											properties: properties,
+                                            circle: true,
+                                            freehand: false,
+                                            band: i + 1,	
+											area: Math.round((Math.PI*Math.pow(scope.bandAttr[i], 2)*100)/1000000)/100 // Square km to 2dp
+                                        });
+										points++;
+                                    }
+									colourIndex++;
+                                }
+								
+								alertScope.showSuccess("Added " + colourIndex + " band(s) from " + 
+									points + " points using " +
+									getSelectionMethodAsString()); */
+									
 								try {	
 									scope.shpfile.addLayer(buffers);
 								} catch (err) {
@@ -514,16 +554,19 @@ angular.module("RIF")
 								var shapeList = []
                                 for (var i in poly._layers) {
                                     var polygon = L.polygon(poly._layers[i].feature.geometry.coordinates[0], {});
+									var properties = poly._layers[i].feature.properties	
                                     var shape = {
                                         data: angular.copy(polygon),
 										circle: false,
 										freehand: false,
 										shapefile: true,
+										properties: properties,
 										area: undefined,
 										index: i,
 										selectionMethod: scope.selectionMethod
                                     };
-									shape.area = turf.area(polygon.toGeoJSON());
+//									shape.area = turf.area(polygon.toGeoJSON());  // Square m
+									shape.area = Math.round((turf.area(polygon.toGeoJSON())*100)/1000000)/100; // Square km to 2dp
 									shapeList.push(shape);
 								}
 								shapeList.sort(function(a, b){return a.area - b.area}); 
@@ -642,7 +685,7 @@ angular.module("RIF")
 
                             //add AOI layer to map on modal close                            
                             try {
-                                scope.shpfile.addTo(scope.areamap);
+//                                scope.shpfile.addTo(scope.areamap);
                             } catch (err) {
                                 alertScope.showError("Could not open Shapefile, no valid features");
                                 return false;
