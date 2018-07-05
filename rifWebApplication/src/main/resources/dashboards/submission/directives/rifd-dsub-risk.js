@@ -123,10 +123,10 @@ angular.module("RIF")
                             //remove any existing AOI layer
                             poly = null;
                             buffers = null;
-                            if (scope.areamap.hasLayer(scope.shpfile)) {
-                                scope.areamap.removeLayer(scope.shpfile);
-                                scope.shpfile = new L.layerGroup();
-                            }
+//                            if (scope.areamap.hasLayer(scope.shpfile)) {
+//                                scope.areamap.removeLayer(scope.shpfile);
+//                                scope.shpfile = new L.layerGroup();
+//                            }
                         });
                         scope.radioChange = function (selectionMethod) {
                             scope.selectionMethod = selectionMethod;
@@ -257,12 +257,12 @@ angular.module("RIF")
                             }
                             var file = files[0];
                             //clear existing layers
-                            if (scope.shpfile.hasLayer(buffers)) {
-                                scope.shpfile.removeLayer(buffers);
-                            }
-                            if (scope.shpfile.hasLayer(poly)) {
-                                scope.shpfile.removeLayer(poly);
-                            }
+//                            if (scope.shpfile.hasLayer(buffers)) {
+//                               scope.shpfile.removeLayer(buffers);
+//                            }
+//                            if (scope.shpfile.hasLayer(poly)) {
+//                                scope.shpfile.removeLayer(poly);
+//                            }
                             poly = null;
                             buffers = null;
                             //async for progress bar
@@ -506,12 +506,12 @@ angular.module("RIF")
 									points + " points using " +
 									getSelectionMethodAsString()); */
 									
-								try {	
-									scope.shpfile.addLayer(buffers);
-								} catch (err) {
-									alertScope.showError("Could not open Shapefile, no valid features");
-									return false;
-								}	
+//								try {	
+//									scope.shpfile.addLayer(buffers);
+//								} catch (err) {
+//									alertScope.showError("Could not open Shapefile, no valid features");
+//									return false;
+//								}	
 								
                                 $rootScope.$broadcast('completedDrawSelection', {});
                             } else if (scope.isPolygon) {
@@ -673,12 +673,12 @@ angular.module("RIF")
 									return false;			
 								}
 														
-								try {
-									scope.shpfile.addLayer(poly); // Add poly to layerGroup
-								} catch (err) {
-									alertScope.showError("Could not open Shapefile, no valid features");
-									return false;
-								} 
+//								try {
+//									scope.shpfile.addLayer(poly); // Add poly to layerGroup
+//								} catch (err) {
+//									alertScope.showError("Could not open Shapefile, no valid features");
+//									return false;
+//								} 
 								
                                 $rootScope.$broadcast('completedDrawSelection', {});
                             } // End of isPolygon()
