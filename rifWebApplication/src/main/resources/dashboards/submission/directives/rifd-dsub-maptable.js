@@ -985,6 +985,22 @@ angular.module("RIF")
 								finalCircleBand: (shape.finalCircleBand || false),
 								style: undefined
 							}
+							
+							if (savedShape.area == undefined) {
+								if (savedShape.circle) {
+									savedShape.area = Math.round((Math.PI*Math.pow(shape.data.getRadius(), 2)*100)/1000000)/100 // Square km to 2dp
+								}
+								else {
+									var geojson=shape.data.toGeoJSON();
+									if (geojson) {
+										savedShape.area = Math.round((turf.area(geojson)*100)/1000000)/100; // Square km to 2dp
+									}
+									else {
+										alertScope.consoleLog("[rifd-dsub-maptable.js] savedShape.area could not be set: " + JSON.stringify(savedShape));
+									}
+								}
+							}
+							
 							savedShape.style={
 										color: (selectorBands.bandColours[savedShape.band-1] || 'blue'),
 										weight: (selectorBands.weight || 3),
@@ -993,7 +1009,7 @@ angular.module("RIF")
 									};
 										
 							function highLightFeature(e) {
-							alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection highLightFeature: " + JSON.stringify(savedShape.properties));
+								alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection highLightFeature: " + JSON.stringify(savedShape.properties));
 								$scope.info.update(savedShape);
 							}									
 							function resetFeature(e) {
@@ -1004,7 +1020,7 @@ angular.module("RIF")
 							if (shape.circle) { // Represent circles as a point and a radius
 								savedShape.radius=shape.data.getRadius();
 								savedShape.latLng=shape.data.getLatLng();
-								if (!savedShape.finalCircleBand) {
+								if ((shape.band == 1) || (shape.band > 1 && !savedShape.finalCircleBand)) {
 									// basic shape to map shapes layer group
 									var circle = new L.Circle([savedShape.latLng.lat, savedShape.latLng.lng], {
 											pane: 'shapes', 

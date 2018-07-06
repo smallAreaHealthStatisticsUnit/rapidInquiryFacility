@@ -59,6 +59,8 @@ angular.module("RIF")
 						studySelection: {			
 							studySelectAt: undefined,
 							studySelectedAreas: [],
+							studyPoints: [],
+							studyShapes: [],
 							comparisonSelectAt: undefined,
 							comparisonSelectedAreas: []
 						}
