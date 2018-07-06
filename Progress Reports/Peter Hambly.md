@@ -2681,12 +2681,17 @@ SELECT a.*, b.coa2011
 
 * Add support for *hierarchy_post_processing_sql*, *population_weighted_centroids*
 * Risk analysis front end:
-  * Fix height interaction with shapefile selector modal;
   * Check for no bands setup with limits;
   * Reverse shapefile band columns so the same as points (red innermost);
   * Colour shapefile bands; 
   * Check all bands etc restore correctly;
   * Add shapefile properties to map;
   
-* Issues:
+* Risk analysis front end issues/todo:
+  * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
   * Emphasise centroid point when area selected;
+  * Select by freehand polygons needs to be disabled for risk analysis;
+  * Add area to freehand circles;
+  * Improve scaling in shapefile properties table, 40:60 split;
+  * Save/restore user selection methods to/from file;
+  * Add user selection methods to middleware;  
