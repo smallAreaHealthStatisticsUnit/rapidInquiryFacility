@@ -2676,16 +2676,22 @@ SELECT a.*, b.coa2011
 	icd101/1TaxonomyParser: ICD Taxonomy Service initialised: International classification of diseases and related health problems 10th revision (2016 version)..	
   ```
 * Add shapefile properties data to selector modal;
-* Issues:
-  * Fix height interaction with shapefile selector modal;
-  * Emphasise centroid point when area selected; 
-  * Reverse shapefile band columns so the same as points (red innermost);
-  * Colour shapefile bands;
-  * Check all bands etc restore correctly;
-  * Add shapefile properties to map;
 
 #### 2nd to 6th June
 
 * Add support for *hierarchy_post_processing_sql*, *population_weighted_centroids*
 * Risk analysis front end:
   * Check for no bands setup with limits;
+  * Reverse shapefile band columns so the same as points (red innermost);
+  * Colour shapefile bands; 
+  * Check all bands etc restore correctly;
+  * Add shapefile properties to map;
+  
+* Risk analysis front end issues/todo:
+  * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
+  * Emphasise centroid point when area selected;
+  * Select by freehand polygons needs to be disabled for risk analysis;
+  * Add area to freehand circles;
+  * Improve scaling in shapefile properties table, 40:60 split;
+  * Save/restore user selection methods to/from file;
+  * Add user selection methods to middleware;  
