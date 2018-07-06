@@ -10,7 +10,7 @@ library(RJDBC)
 connectToDb <- function() {
 
 	cat(paste0("Trying JDBC connection using driver class ", db_driver_class_name, ", lib dir ",
-			   java_lib_path_dir, ", URL ", db_url, ", user ", userID, ", password ", password, "\n"))
+			   java_lib_path_dir, ", URL ", db_url, ", user ", userID, "\n"))
 	driver <- JDBC(db_driver_class_name, Sys.glob(paste0(java_lib_path_dir, "/*.jar")))
 	connection <<- RJDBC::dbConnect(driver, db_url, userID, password)
 
@@ -171,6 +171,8 @@ getAdjacencyMatrix <- function() {
 
 saveDataFrameToDatabaseTable <- function(data) {
 
+	cat("In saveDataFrameToDatabaseTable")
+
 	#
 	# Save data frame to file
 	#
@@ -178,6 +180,7 @@ saveDataFrameToDatabaseTable <- function(data) {
 		cat(paste0("Saving data frame to: ", temporarySmoothedResultsFileName, "\n"), sep="")
 		write.csv(data, file=temporarySmoothedResultsFileName)
 	}
+
 	#
 	# Save data frame to table
 	#
@@ -186,29 +189,36 @@ saveDataFrameToDatabaseTable <- function(data) {
 		withErrorTracing({
 			if (dbExistsTable(connection, temporarySmoothedResultsTableName)) {
 				dropTemporaryTable()
-				}
+			}
 
-				if (db_driver_prefix == "jdbc:sqlserver") {
+			# NA values have been appearing in DB columns that should be null.
+			# data <- do.call(data.frame, lapply(data, function(x) {
+			# 	replace(x, is.na(x), NULL)
+			# }
+			# ))
+
+			if (db_driver_prefix == "jdbc:sqlserver") {
 					data<-do.call(data.frame, lapply(data, function(x) {
 						replace(x, is.infinite(x),NA) # Replace INF will NA for SQL Server
 					}
 					))
-				}
-				cat(paste0("About to write temporary table: ", temporarySmoothedResultsTableName, "\n"))
-				dbWriteTable(connection, name=temporarySmoothedResultsTableName, value=data)
+			}
 
-				# Add indices to the new table so that its join with s[study_id]_map will be more
-				# efficient
-				print("Creating study_id index on temporary table\n")
-				dbSendUpdate(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName,
-					"study_id"))
-				print("Creating area_id index on temporary table\n")
-				dbSendUpdate(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName,
-					"area_id"))
-				print("Creating genders index on temporary table\n")
-				dbSendUpdate(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName,
-					"genders"))
-				print("Created indices on temporary table\n")
+			cat(paste0("About to write temporary table: ", temporarySmoothedResultsTableName, "\n"))
+			dbWriteTable(connection, name=temporarySmoothedResultsTableName, value=data)
+
+			# Add indices to the new table so that its join with s[study_id]_map will be more
+			# efficient
+			print("Creating study_id index on temporary table\n")
+			dbSendUpdate(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName,
+				"study_id"))
+			print("Creating area_id index on temporary table\n")
+			dbSendUpdate(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName,
+				"area_id"))
+			print("Creating genders index on temporary table\n")
+			dbSendUpdate(connection, generateTableIndexSQLQuery(temporarySmoothedResultsTableName,
+				"genders"))
+			print("Created indices on temporary table\n")
 		}
 	)},
 		warning=function(w) {
@@ -268,16 +278,16 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 	"upper95=b.upper95,",
 	"relative_risk=b.relative_risk,",
 	"smoothed_relative_risk=b.smoothed_relative_risk,",
-	"posterior_probability=b.posterior_probability,",
-	"posterior_probability_upper95=b.posterior_probability_upper95,",
-	"posterior_probability_lower95=b.posterior_probability_lower95,",
-	"residual_relative_risk=b.residual_relative_risk,",
-	"residual_rr_lower95=b.residual_rr_lower95,",
-	"residual_rr_upper95=b.residual_rr_upper95,",
-	"smoothed_smr=b.smoothed_smr,",
-	"smoothed_smr_lower95=b.smoothed_smr_lower95,",
-	"smoothed_smr_upper95=b.smoothed_smr_upper95 ",
-	"FROM ", temporarySmoothedResultsTableName, " b WHERE ",
+	"posterior_probability=", nullProtect("b.posterior_probability"),
+	", posterior_probability_upper95=", nullProtect("b.posterior_probability_upper95"),
+	", posterior_probability_lower95=", nullProtect("b.posterior_probability_lower95"),
+	", residual_relative_risk=", nullProtect("b.residual_relative_risk"),
+	", residual_rr_lower95=", nullProtect("b.residual_rr_lower95"),
+	", residual_rr_upper95=", nullProtect("b.residual_rr_upper95"),
+	", smoothed_smr=", nullProtect("b.smoothed_smr"),
+	", smoothed_smr_lower95=", nullProtect("b.smoothed_smr_lower95"),
+	", smoothed_smr_upper95=", nullProtect("b.smoothed_smr_upper95"),
+	" FROM ", temporarySmoothedResultsTableName, " b WHERE ",
 	"a.study_id=b.study_id AND ",
 	"a.band_id=b.band_id AND ",
 	"a.inv_id=b.inv_id AND ",
@@ -290,20 +300,26 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 		updateMapTableSQLQuery <- paste0(updateStmtPart1, "a.area_id=b.area_id")
 	}
 
+	cat(updateMapTableSQLQuery)
+	flush.console()
 
-	res <- tryCatch(dbSendUpdate(connection, updateMapTableSQLQuery),
-	warning=function(w) {
-		cat(paste("UNABLE TO QUERY! SQL> ", updateMapTableSQLQuery, "; warning: ", w, "\n"), sep="")
-		exitValue <<- 1
-	}
-	,
-	error=function(e) {
-		cat(paste("CATCH ERROR IN QUERY! SQL> ", updateMapTableSQLQuery,
-		"; error: ", e,
-		"; JDBC error", "\n"), sep="")
-		exitValue <<- 1
-	}
-	)
+	dbSendUpdate(connection, updateMapTableSQLQuery)
+
+	# res <- tryCatch(dbSendUpdate(connection, updateMapTableSQLQuery),
+	# warning=function(w) {
+	# 	warn1 <<- paste("UNABLE TO QUERY! SQL> ", updateMapTableSQLQuery, "; warning: ", w, "\n")
+	# 	cat(warn1, sep="")
+	# 	exitValue <<- 1
+	# }
+	# ,
+	# error=function(e) {
+	# 	err <<- paste("CATCH ERROR IN QUERY! SQL> ", updateMapTableSQLQuery,
+	# 	"; error: ", e,
+	# 	"; JDBC error", "\n")
+	# 	cat(err, sep="")
+	# 	exitValue <<- 1
+	# }
+	# )
 	# if (res == 1) {
 	# 	cat(paste0("Updated map table: ", mapTableName, "\n"), sep="")
 	# }
@@ -318,10 +334,19 @@ updateMapTableFromSmoothedResultsTable <- function(area_id_is_integer) {
 	# 	exitValue <<- 1
 	# }
 
-	if (exitValue != 0) {
-		stop("Error updating Map Table from Smoothed Results Table");
-	}
+	flush.console()
+	# if (exitValue != 0) {
+	# 	msg <- paste0("Error updating Map Table from Smoothed Results Table", "\n",
+	# 				  "Error", err, "Warning", warn1, "\n")
+	# 	stop(msg);
+	# }
 } # End of updateMapTableFromSmoothedResultsTable()
+
+nullProtect <- function(col) {
+
+	protectedCol <- paste("CASE WHEN", col, " = 'NAN' THEN NULL ELSE", col, "END")
+	return(protectedCol)
+}
 
 ##================================================================================
 ##FUNCTION: dropTemporaryTable

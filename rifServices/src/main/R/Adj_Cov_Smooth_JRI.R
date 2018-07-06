@@ -1,32 +1,3 @@
-####
-## The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
-## that rapidly addresses epidemiological and public health questions using 
-## routinely collected health and population data and generates standardised 
-## rates and relative risks for any given health outcome, for specified age 
-## and year ranges, for any given geographical area.
-##
-## Copyright 2016 Imperial College London, developed by the Small Area
-## Health Statistics Unit. The work of the Small Area Health Statistics Unit 
-## is funded by the Public Health England as part of the MRC-PHE Centre for 
-## Environment and Health. Funding for this project has also been received 
-## from the United States Centers for Disease Control and Prevention.  
-##
-## This file is part of the Rapid Inquiry Facility (RIF) project.
-## RIF is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## RIF is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-## GNU Lesser General Public License for more details.
-##
-## You should have received a copy of the GNU Lesser General Public License
-## along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
-## to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
-## Boston, MA 02110-1301 USA
-
 ## Brandon Parkes
 ## @author bparkes
 ##
@@ -41,23 +12,12 @@
 #
 ############################################################################################################
 
-## CHECK & AUTO INSTALL MISSING PACKAGES
-## CHECK .libPaths(), add lib="" argument and RUN AS ADMIN IF NEEDED
-#packages <- c("pryr", "plyr", "abind", "maptools", "spdep", "RODBC", "rJava")
-#if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
-#  install.packages(setdiff(packages, rownames(installed.packages())))  
-#}
-#if (!require(INLA)) {
-#	install.packages("INLA", repos="https://www.math.ntnu.no/inla/R/stable")
-#}
-
 library(pryr)
 library(plyr)
 library(abind)
 library(INLA)
 library(maptools)
 library(spdep)
-# library(RODBC)
 library(Matrix)
 
 
@@ -65,11 +25,9 @@ library(Matrix)
 # SCRIPT VARIABLES
 ##====================================================================
 
-# connDB <- ""	# Database connection
 exitValue <- 0 	# 0 success, 1 failure
 errorCount <- 0	# Smoothing error count
 
-				
 #Adjust for other covariate(s) or not
 #Reformat Java type > R
 adj <- FALSE #either true or false
@@ -107,7 +65,8 @@ setwd(working_dir)
 #
 ##==========================================================================
 establishTableNames <-function(vstudyID) {
- 
+
+	cat("In establishTableNames")
 #The name of the extract table that is created by the middleware for a given
 #study.  It is of the format rif_studies.s[study_id]_extract
 	extractTableName <<- paste0("rif_studies.s", vstudyID, "_extract")
@@ -262,11 +221,6 @@ establishTableNames <-function(vstudyID) {
 	}
 }
 
-#make and ODBC connection
-#dbHost = 'networkRif'
-#dbName = 'rif_studies'
-#studyID = '1'
-
 ##================================================================================
 ##FUNCTION: check.integer
 ##DESCRIPTION
@@ -388,12 +342,13 @@ runRSmoothingFunctions <- function() {
     cat(paste("In runRSmoothingFunctions in JRI script", "\n"))
 
 	establishTableNames(studyID)
+	cat("Table names established\n")
 	errorTrace<-capture.output({
 		tryCatch({
-			# connDB=dbConnect()
 			connDB = connectToDb()
+			cat(paste0("Connected to DB", "\n"))
 		},
-		warning=function(w) {		
+		warning=function(w) {
 			cat(paste("connectToDb() WARNING: ", w, "\n"), sep="")
 			exitValue <<- 1
 		},
@@ -407,28 +362,34 @@ runRSmoothingFunctions <- function() {
 			cat(paste0("connectToDb exitValue: ", exitValue, "\n"), sep="")
 		})
 	})
-		
 
-	if (exitValue == 0 && !is.na(connDB)) {  
-		cat("Performing basic stats and smoothing\n")	
+	cat(paste("About to test exitValue", exitValue, "and connection", "\n"))
+	# if (exitValue == 0 && !is.na(connDB)) {
+	if (exitValue == 0) {
+		cat("Performing basic stats and smoothing\n")
 		errorTrace<-capture.output({
 			# tryCatch()is trouble because it replaces the stack! it also copies all global variables!
-					
+
+			cat(paste0("About to fetch extract table outside of the try", "\n"))
+			data=fetchExtractTable()
 			tryCatch({
 					withErrorTracing({  				
 #
 # extract the relevant Study data
 #
 #data=read.table('sahsuland_example_extract.csv',header=TRUE,sep=',')
+						cat(paste0("About to fetch extract table", "\n"))
 						data=fetchExtractTable()
 
 #
 # Get Adjacency matrix
-#  	
+#
+						cat(paste0("About to get adjacency matrix", "\n"))
 						AdjRowset=getAdjacencyMatrix()
 #
 # Call: performSmoothingActivity()
-#						
+#
+						cat(paste0("About to smooth", "\n"))
 						result <- performSmoothingActivity(data, AdjRowset)
 					})
 				},
@@ -462,8 +423,9 @@ runRSmoothingFunctions <- function() {
 									"; result$area_id[1]: ", result$area_id[1], "\n"), sep="")
 							}
 
+							cat("About to save to table")
 							saveDataFrameToDatabaseTable(result)
-							updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue  
+							updateMapTableFromSmoothedResultsTable(area_id_is_integer) # may set exitValue
 						}
 						else {
 							cat("ERROR! No result$area_id column found\n")
@@ -490,7 +452,6 @@ runRSmoothingFunctions <- function() {
 	# Dummy change to check conflict is resolved
   
 	if (!is.na(connDB)) {
-		# dbDisConnect()
 		disconnect()
 	}
 	
