@@ -13,7 +13,6 @@ dbName <- ""
 dbHost <- ""
 dbPort <- ""
 dbConnectionString <- ""
-odbcDataSource <- ""
 numberOfInvestigations <- ""
 
 #The identifier of the study whose extract table fields need to be smoothed.

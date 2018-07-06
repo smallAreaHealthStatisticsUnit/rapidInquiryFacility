@@ -241,7 +241,6 @@ establishTableNames <-function(vstudyID) {
 					paste0("SET INVESTIGATIONNAME=", investigationName),
 					paste0("SET STUDYNAME=", studyName),
 					paste0("SET INVESTIGATIONID=", investigationId),
-					paste0("SET ODBCDATASOURCE=", odbcDataSource),
 					paste0("SET MODEL=", model),
 					paste0("SET COVARIATENAME=", paste0(names.adj)),
 				sep="\n");

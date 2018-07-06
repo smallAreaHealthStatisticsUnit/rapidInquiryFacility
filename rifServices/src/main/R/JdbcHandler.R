@@ -188,20 +188,11 @@ saveDataFrameToDatabaseTable <- function(data) {
 				dropTemporaryTable()
 				}
 
-				# if (db_driver_prefix == "jdbc:postgresql") {
-				#
-				# 	# sqlSave(connection, data, tablename=temporarySmoothedResultsTableName
-				# 	#			, verbose=TRUE				# Enable save debug (1 row/tuple!)
-				# 	)
-				# }
-				# else
 				if (db_driver_prefix == "jdbc:sqlserver") {
 					data<-do.call(data.frame, lapply(data, function(x) {
 						replace(x, is.infinite(x),NA) # Replace INF will NA for SQL Server
 					}
 					))
-					# sqlSave(connection, ndata, tablename=temporarySmoothedResultsTableName
-					#			, verbose=TRUE				# Enable save debug (1 row/tuple!)
 				}
 				cat(paste0("About to write temporary table: ", temporarySmoothedResultsTableName, "\n"))
 				dbWriteTable(connection, name=temporarySmoothedResultsTableName, value=data)
