@@ -2685,13 +2685,17 @@ SELECT a.*, b.coa2011
   * Reverse shapefile band columns so the same as points (red innermost);
   * Colour shapefile bands; 
   * Check all bands etc restore correctly;
-  * Add shapefile properties to map;
+  * Add shapefile properties to map; 
+  
+#### 9th to 13th June  
   
 * Risk analysis front end issues/todo:
-  * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
-  * Emphasise centroid point when area selected;
+  * Fix (freehand diease mapping) shape selector;
   * Select by freehand polygons needs to be disabled for risk analysis;
   * Add area to freehand circles;
+  * Remove inferior (i.e. within or on edge of) bands;
+  * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
+  * Emphasise centroid point when area selected;
   * Improve scaling in shapefile properties table, 40:60 split;
   * Save/restore user selection methods to/from file;
-  * Add user selection methods to middleware;  
+  * Add user selection methods to middleware; 
