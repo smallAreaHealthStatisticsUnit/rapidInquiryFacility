@@ -441,44 +441,46 @@ public class StudyResultRetrievalServiceResource extends WebService {
 
 	@GET
 	@Produces({"application/json"})
+	@Path("/getTileMakerCentroids")
+	public Response getTileMakerCentroids(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName, //SAHSU
+			@QueryParam("geoLevelSelectName") String geoLevelSelectName ) { //LEVEL2
+
+		return super.getTileMakerCentroids(servletRequest, userID, geographyName, geoLevelSelectName);
+	}
+
+	@GET
+	@Produces({"application/json"})
 	@Path("/getGeographyAndLevelForStudy")
 	public String getGeographyAndLevelForStudy(
 			@Context HttpServletRequest servletRequest,
 			@QueryParam("userID") String userID,
 			@QueryParam("studyID") String studyID) {
 
-		String result = "";
+		String result;
 
 		try {
-			//Convert URL parameters to RIF service API parameters
+
 			User user = createUser(servletRequest, userID);
 
-			//Call service API
-			RIFStudyResultRetrievalAPI studyResultRetrievalService
-					= getRIFStudyResultRetrievalService();
-			String[] results
-					= studyResultRetrievalService.getGeographyAndLevelForStudy(user, studyID);
+			RIFStudyResultRetrievalAPI studyResultRetrievalService =
+					getRIFStudyResultRetrievalService();
+			String[] results = studyResultRetrievalService.getGeographyAndLevelForStudy(
+					user, studyID);
 
 			//Convert results to support JSON
-			result
-					= serialiseSingleItemAsArrayResult(
-					servletRequest,
-					results);
-		}
-		catch(Exception exception) {
-			rifLogger.error(
-					this.getClass(),
-					"GET /getTileMakerTiles method failed: ",
-					exception);
+			result = serialiseSingleItemAsArrayResult(servletRequest, results);
+		} catch(Exception exception) {
+			rifLogger.error(getClass(), "GET /getTileMakerTiles method failed: ",
+			                exception);
+
 			//Convert exceptions to support JSON
-			result
-					= serialiseException(
-					servletRequest,
-					exception);
+			result = serialiseException(servletRequest, exception);
 		}
 
 		return result;
-
 	}
 
 	@GET
