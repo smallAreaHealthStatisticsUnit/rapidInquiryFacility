@@ -600,7 +600,7 @@ angular.module("RIF")
 							if (selectedShapes) {
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes() selectedShapes " + 
 									$scope.input.name + ": " + 
-									selectedShapes.length);
+									selectedShapes.length + " shape");
 								for (var i=0; i<selectedShapes.length; i++) {
 									var points=0;
 									if (selectedShapes[i].geojson &&
@@ -640,17 +640,19 @@ angular.module("RIF")
 								for (var i = 0; i < selectedShapes.length; i++) {
 									var selectedShape=selectedShapes[i];
 									function selectedShapesHighLightFeature(e, selectedShape) {
-										alertScope.consoleLog("[rifd-dsub-maptable.js] selectedShapesHighLightFeature: " + JSON.stringify(selectedShape.properties));
+										alertScope.consoleLog("[rifd-dsub-maptable.js] selectedShapesHighLightFeature: " + 
+											(JSON.stringify(selectedShape.properties) || "no properties"));
 										$scope.info.update(selectedShape);
 									}									
 									function selectedShapesResetFeature(e) {
-										alertScope.consoleLog("[rifd-dsub-maptable.js] selectedShapesResetFeature: " + JSON.stringify(selectedShape.properties));
+										alertScope.consoleLog("[rifd-dsub-maptable.js] selectedShapesResetFeature: " + 
+											(JSON.stringify(selectedShape.properties) || "no properties"));
 										$scope.info.update();
 									}		
 									
 									if (selectedShape.circle) { // Represent circles as a point and a radius
-										
-										if (!selectedShape.finalCircleBand) {
+									
+										if ((selectedShape.band == 1) || (selectedShape.band > 1 && !selectedShape.finalCircleBand)) {
 											// basic shape to map shapes layer group
 											var circle = new L.Circle([selectedShape.latLng.lat, selectedShape.latLng.lng], {
 													pane: 'shapes', 
@@ -696,30 +698,35 @@ angular.module("RIF")
 										}
 									}
 									else { // Use L.polygon(), L.geoJSON needs a GeoJSON layer
-										var polygon=selectedShape.data; // L.Polygon()
-										if (polygon == undefined) {	
-											polygon=L.polygon(selectedShape.geojson.geometry.coordinates[0], {
-													pane: 'shapes', 
-													band: selectedShape.band,
-													area: selectedShape.area,
-													color: (selectorBands.bandColours[selectedShapes[i].band-1] || 'blue'),
-													weight: (selectorBands.weight || 3),
-													opacity: (selectorBands.opacity || 0.8),
-													fillOpacity: (selectorBands.fillOpacity || 0),
-													selectedShape: selectedShape
-												});										
+										var polygon; 
+										var coordinates=selectedShape.geojson.geometry.coordinates[0];												
+										if (selectedShape.freehand) { // Shapefile		
+											coordinates=selectedShape.coordinates;	
+										}		
+																		
+										polygon=L.polygon(coordinates, {
+												pane: 'shapes', 
+												band: selectedShape.band,
+												area: selectedShape.area,
+												color: (selectorBands.bandColours[selectedShapes[i].band-1] || 'blue'),
+												weight: (selectorBands.weight || 3),
+												opacity: (selectorBands.opacity || 0.8),
+												fillOpacity: (selectorBands.fillOpacity || 0),
+												selectedShape: selectedShape
+											});		
+										if (polygon && polygon._latlngs.length > 0) {										
 											polygon.on({
 												dblclick : function(e) {
 													selectedShapesHighLightFeature(e, this.options.selectedShape);
 												}
-											}); 		
-										}
-										if (polygon) {
+											}); 
 											$scope.shapes.addLayer(polygon);
 											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): adding polygon" + 
 												"; band: " + selectedShape.band +
 												"; area: " + selectedShape.area +
-												"; " + selectedShape.geojson.geometry.coordinates[0].length + " coordinates");							
+												"; freehand: " + selectedShape.freehand +
+												"; " + coordinates.length + " coordinates; " +
+												JSON.stringify(coordinates).substring(0,100) + "...");							
 										}
 										else {
 											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): L.Polygon is undefined" +
@@ -986,17 +993,24 @@ angular.module("RIF")
 								style: undefined
 							}
 							
-							if (savedShape.area == undefined) {
-								if (savedShape.circle) {
-									savedShape.area = Math.round((Math.PI*Math.pow(shape.data.getRadius(), 2)*100)/1000000)/100 // Square km to 2dp
+							if (savedShape.freehand) {
+								if (shape.band == -1) {
+									shape.band=1;
+									savedShape.band=1;
 								}
-								else {
-									var geojson=shape.data.toGeoJSON();
-									if (geojson) {
-										savedShape.area = Math.round((turf.area(geojson)*100)/1000000)/100; // Square km to 2dp
-									}
-									else {
-										alertScope.consoleLog("[rifd-dsub-maptable.js] savedShape.area could not be set: " + JSON.stringify(savedShape));
+								
+								if (shape.data._latlngs && shape.data._latlngs.length > 1) { // Fix freehand polygons
+									if (shape.data._latlngs[0].lat == shape.data._latlngs[shape.data._latlngs.length-1].lat &&
+									   shape.data._latlngs[0].lng == shape.data._latlngs[shape.data._latlngs.length-1].lng) { // OK
+									} 
+									else { // Make it a polygon
+										shape.data._latlngs.push({
+											lat: shape.data._latlngs[0].lat,
+											lng: shape.data._latlngs[0].lng
+										});
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] Fix freehand polygon; " +
+										shape.data._latlngs.length + " points: " + 
+											JSON.stringify(shape.data._latlngs));
 									}
 								}
 							}
@@ -1009,17 +1023,28 @@ angular.module("RIF")
 									};
 										
 							function highLightFeature(e) {
-								alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection highLightFeature: " + JSON.stringify(savedShape.properties));
+								alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection highLightFeature: " + 
+										(JSON.stringify(savedShape.properties) || "no properties"));
 								$scope.info.update(savedShape);
 							}									
 							function resetFeature(e) {
-								alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection resetFeature: " + JSON.stringify(savedShape.properties));
+								alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection resetFeature: " + 
+										(JSON.stringify(savedShape.properties) || "no properties"));
 								$scope.info.update();
 							}		
 							
 							if (shape.circle) { // Represent circles as a point and a radius
 								savedShape.radius=shape.data.getRadius();
 								savedShape.latLng=shape.data.getLatLng();
+								if (savedShape.area == undefined || savedShape.area == 0) {
+									savedShape.area = Math.round((Math.PI*Math.pow(shape.data.getRadius(), 2)*100)/1000000)/100 // Square km to 2dp
+									
+									if (savedShape.area == undefined || savedShape.area == 0) {
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection(): Cannot determine area" +
+											"; geoJSON: " + JSON.stringify(savedShape.geojson, null, 1));
+										alertScope.showError("Could not create circle shape");
+									}
+								}
 								if ((shape.band == 1) || (shape.band > 1 && !savedShape.finalCircleBand)) {
 									// basic shape to map shapes layer group
 									var circle = new L.Circle([savedShape.latLng.lat, savedShape.latLng.lng], {
@@ -1057,30 +1082,94 @@ angular.module("RIF")
 										"; savedShape: " + JSON.stringify(savedShape, null, 1));
 								}
 							}
-							else { // Use geoJSON
-								savedShape.geojson=angular.copy(shape.data.toGeoJSON());									
-									
-								var polygon=L.polygon(savedShape.geojson.geometry.coordinates[0], {
-										pane: 'shapes', 
-										band: savedShape.band,
-										area: savedShape.area,
-										color: (savedShape.style.color || selectorBands.bandColours[savedShape.band-1] || 'blue'),
-										weight: (savedShape.style.weight || selectorBands.weight || 3),
-										opacity: (savedShape.style.opacity || selectorBands.opacity || 0.8),
-										fillOpacity: (savedShape.style.fillOpacity || selectorBands.fillOpacity || 0)
-									});										
-								polygon.on({
-									dblclick: highLightFeature
-								}); 
+							else { // Use geoJSON								
+								
+								var coordinates;
+								
+								if (shape.data._latlngs && shape.data._latlngs.length > 1) {
+									coordinates=shape.data._latlngs;
+								}
+								else {
+									coordinates=shape.data._latlngs[0];
+								}
 							
-								$scope.shapes.addLayer(polygon);
+								var polygon;
+								
+								if (savedShape.freehand) {
+									polygon=L.polygon(coordinates, {
+											pane: 'shapes', 
+											band: savedShape.band,
+											area: savedShape.area,
+											color: (savedShape.style.color || selectorBands.bandColours[savedShape.band-1] || 'blue'),
+											weight: (savedShape.style.weight || selectorBands.weight || 3),
+											opacity: (savedShape.style.opacity || selectorBands.opacity || 0.8),
+											fillOpacity: (savedShape.style.fillOpacity || selectorBands.fillOpacity || 0)
+										});		
+									savedShape.coordinates=coordinates; // L.Polygon()	- now fixed; was a lineString
+									savedShape.geojson=angular.copy(polygon.toGeoJSON());								
+								}
+								else { // Shapefile
+									savedShape.geojson=angular.copy(shape.data.toGeoJSON());	
+									savedShape.data=shape.data;									
+									polygon=L.polygon(savedShape.geojson.geometry.coordinates[0], {
+											pane: 'shapes', 
+											band: savedShape.band,
+											area: savedShape.area,
+											color: (savedShape.style.color || selectorBands.bandColours[savedShape.band-1] || 'blue'),
+											weight: (savedShape.style.weight || selectorBands.weight || 3),
+											opacity: (savedShape.style.opacity || selectorBands.opacity || 0.8),
+											fillOpacity: (savedShape.style.fillOpacity || selectorBands.fillOpacity || 0)
+										});
+								}
+							
+								if (polygon && polygon._latlngs.length > 0) {	
 									
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection(): added geojson" + 
-									"; band: " + savedShape.band +
-									"; area: " + savedShape.area +
-									"; style: " + JSON.stringify(savedShape.style) +
-									"; " + savedShape.geojson.geometry.coordinates[0].length + " coordinates" +
-									"; properties: " + JSON.stringify(savedShape.properties));			
+									if (savedShape.area == undefined || savedShape.area == 0) {
+										if (savedShape.geojson) {
+											savedShape.area = Math.round((turf.area(savedShape.geojson)*100)/1000000)/100; // Square km to 2dp
+										}
+										else {
+											alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection(): savedShape.area could not be set: " + 
+												JSON.stringify(savedShape));
+										}
+									
+										if (savedShape.area == undefined || savedShape.area == 0) {
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection(): Cannot determine area" +
+												"; geoJSON: " + JSON.stringify(savedShape.geojson, null, 1));
+											if (savedShape.freehand) {	
+												alertScope.showError("Could not create freehand Polygon shape");
+											}
+											else {
+												alertScope.showError("Could not create shapefile Polygon shape");
+											}
+										}
+										polygon.options.area=savedShape.area;
+									}
+								
+									polygon.on({
+										dblclick: highLightFeature
+									}); 
+									$scope.shapes.addLayer(polygon);
+										
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection(): added Polygon" + 
+										"; band: " + savedShape.band +
+										"; area: " + savedShape.area +
+										"; freehand: " + savedShape.freehand +
+										"; style: " + JSON.stringify(savedShape.style) +
+										"; " + coordinates.length + " coordinates; " +
+												JSON.stringify(coordinates).substring(0,100) + "..." +
+										"; properties: " + (JSON.stringify(savedShape.properties) || "None"));			
+								}
+								else {
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection(): L.Polygon is undefined" +
+										"; geoJSON: " + JSON.stringify(savedShape.geojson, null, 1));
+									if (savedShape.freehand) {	
+										alertScope.showError("Could not create freehand Polygon shape");
+									}
+									else {
+										alertScope.showError("Could not create shapefile Polygon shape");
+									}
+								}
 							}	
 		
 							// Save to SelectStateService
@@ -1099,7 +1188,6 @@ angular.module("RIF")
 								var areaNameList = {};
 								var areaCheck = {};
 								var duplicateAreaCheckIds = [];
-								var syncCount=0;
 								
 								// Check for duplicate selectedPolygons 
 								for (var j = 0; j < $scope.selectedPolygon.length; j++) {
@@ -1160,13 +1248,11 @@ angular.module("RIF")
 									}
 								}
 										
-								alertScope.consoleDebug("[rifd-dsub-maptable.js] " + 
-									"; syncCount: " + syncCount +
-									"; $scope.selectedPolygon.length: " + $scope.selectedPolygon.length);
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] $scope.selectedPolygon.length: " + $scope.selectedPolygon.length);
 								
 								for (var band in areaNameList) {
-									alertScope.consoleDebug("[rifd-dsub-maptable.js] " + 
-										"; areaNameList band: " + band + "; " + areaNameList[band].length);
+									alertScope.consoleDebug("[rifd-dsub-maptable.js] areaNameList band: " + 
+									band + "; " + areaNameList[band].length);
 //										": " + JSON.stringify(areaNameList[band]));	
 								}
 
@@ -1278,11 +1364,21 @@ angular.module("RIF")
 											"<b>Lat: " + Math.round(savedShape.latLng.lat * 1000) / 1000 + // 100m precision
 											"; long: " +  Math.round(savedShape.latLng.lng * 1000) / 1000 +'</b></br>';
 									}
-									else if (savedShape.freehand) {
-										this._div.innerHTML = '<h4>freehand</h4>';
-									}
-									else  {
-										this._div.innerHTML = '<h4>Polygon</h4>';
+									else {
+										var coordinates=savedShape.geojson.geometry.coordinates[0];												
+										if (savedShape.freehand) { // Shapefile		
+											savedShape=savedShape.coordinates;	
+										}	
+										
+										if (savedShape.freehand) {
+											this._div.innerHTML = '<h4>Freehand polygon</h4>';
+										}
+										else  {
+											this._div.innerHTML = '<h4>Shapefile polygon</h4>';
+										}
+										if (coordinates) {
+											this._div.innerHTML+='<b>' + coordinates.length + ' points</b></br>';
+										}
 									}
 									
 									if (savedShape.area) {
