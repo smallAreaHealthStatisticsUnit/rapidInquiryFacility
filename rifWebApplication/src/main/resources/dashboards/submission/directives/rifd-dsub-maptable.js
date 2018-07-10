@@ -130,7 +130,9 @@ angular.module("RIF")
 
                             //Set initial map extents
                             $scope.center = $scope.input.center;
-                            $scope.areamap.setView([$scope.center.lat, $scope.center.lng], $scope.center.zoom);
+//
+// TO STOP LEAFLET NOT DISPLAYING SELECTED AREAS (experimental)
+//                            $scope.areamap.setView([$scope.center.lat, $scope.center.lng], $scope.center.zoom);
 
                             //Attributions to open in new window
                             L.control.condensedAttribution({
@@ -175,7 +177,7 @@ angular.module("RIF")
                         $scope.clear = function () {
                             $scope.selectedPolygon.length = 0;
                             $scope.input.selectedPolygon.length = 0;
-                            $scope.clearAOI();
+//                            $scope.clearAOI();
 							if ($scope.input.type === "Risk Analysis") {
 								SelectStateService.initialiseRiskAnalysis();
 							}
@@ -581,7 +583,7 @@ angular.module("RIF")
                         $scope.geoLevelChange = function () {
                             //Clear the map
                             $scope.selectedPolygon.length = 0;
-                            $scope.clearAOI();
+//                            $scope.clearAOI();
                             if ($scope.areamap.hasLayer(centroidMarkers)) {
                                 $scope.areamap.removeLayer(centroidMarkers);
                             }
@@ -640,14 +642,16 @@ angular.module("RIF")
 								for (var i = 0; i < selectedShapes.length; i++) {
 									var selectedShape=selectedShapes[i];
 									function selectedShapesHighLightFeature(e, selectedShape) {
-										alertScope.consoleLog("[rifd-dsub-maptable.js] selectedShapesHighLightFeature: " + 
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShapesHighLightFeature " + 
+											"(" + e.target._leaflet_id + "; " + JSON.stringify(e.target._latlng) + "): " +
 											(JSON.stringify(selectedShape.properties) || "no properties"));
-										$scope.info.update(selectedShape);
+										$scope.info.update(selectedShape, e.target._latlng);
 									}									
 									function selectedShapesResetFeature(e) {
-										alertScope.consoleLog("[rifd-dsub-maptable.js] selectedShapesResetFeature: " + 
+										alertScope.consoleDebug("[rifd-dsub-maptable.js] selectedShapesResetFeature " +  
+											"(" + e.target._leaflet_id + "; " + JSON.stringify(e.target._latlng) + "): " +
 											(JSON.stringify(selectedShape.properties) || "no properties"));
-										$scope.info.update();
+										$scope.info.update(undefined, e.target._latlng);
 									}		
 									
 									if (selectedShape.circle) { // Represent circles as a point and a radius
@@ -666,8 +670,14 @@ angular.module("RIF")
 													selectedShape: selectedShape
 												});										
 											circle.on({
-												dblclick : function(e) {
+//												dblclick : function(e) {
+//													selectedShapesHighLightFeature(e, this.options.selectedShape);
+//												}, 
+												mouseover : function(e) {
 													selectedShapesHighLightFeature(e, this.options.selectedShape);
+												}, 
+												mouseout : function(e) {
+													selectedShapesResetFeature(e, this.options.selectedShape);
 												} 
 											}); 
 											
@@ -716,9 +726,15 @@ angular.module("RIF")
 											});		
 										if (polygon && polygon._latlngs.length > 0) {										
 											polygon.on({
-												dblclick : function(e) {
+//												dblclick : function(e) {
+//													selectedShapesHighLightFeature(e, this.options.selectedShape);
+//												}, 
+												mouseover : function(e) {
 													selectedShapesHighLightFeature(e, this.options.selectedShape);
-												}
+												}, 
+												mouseout : function(e) {
+													selectedShapesResetFeature(e, this.options.selectedShape);
+												} 
 											}); 
 											$scope.shapes.addLayer(polygon);
 											alertScope.consoleDebug("[rifd-dsub-maptable.js] addSelectedShapes(): adding polygon" + 
@@ -746,8 +762,14 @@ angular.module("RIF")
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] end addSelectedShapes(): shapes layerGroup has " +
 										$scope.shapes.getLayers().length + " layers" +
 										"; centered: " + JSON.stringify($scope.center));
-									$scope.zoomToSelection(); // Zoom to selection									
-									$scope.redrawMap();
+										
+									$timeout(function() {
+
+										$scope.zoomToSelection(); // Zoom to selection	
+										$timeout(function() {								
+											$scope.redrawMap();
+										}, 100);			
+									}, 100);			
 								});
 							}
 						}
@@ -952,12 +974,13 @@ angular.module("RIF")
 						$scope.redrawMap = function() {
 							$scope.bringShapesToFront();
 									
-							$timeout(function() {
+							$scope.areamap.whenReady(function() {
+								$timeout(function() {										
 										
-									
-									alertScope.consoleLog("[rifd-dsub-maptable.js] redraw map");
-									$scope.areamap.fitBounds($scope.areamap.getBounds()); // Force map to redraw after 0.5s delay
-								}, 500);			
+										alertScope.consoleLog("[rifd-dsub-maptable.js] redraw map");
+										$scope.areamap.fitBounds($scope.areamap.getBounds()); // Force map to redraw after 0.5s delay
+									}, 500);	
+							});									
 						};
 						
                         // completed selection event fired from service
@@ -1021,16 +1044,18 @@ angular.module("RIF")
 										opacity: (selectorBands.opacity || 0.8),
 										fillOpacity: (selectorBands.fillOpacity || 0)
 									};
-										
+		
 							function highLightFeature(e) {
-								alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection highLightFeature: " + 
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection highLightFeature " +  
+										"(" + this._leaflet_id + "; " + JSON.stringify(this._latlng) + "): " +
 										(JSON.stringify(savedShape.properties) || "no properties"));
-								$scope.info.update(savedShape);
+								$scope.info.update(savedShape, this._latlng); 
 							}									
 							function resetFeature(e) {
-								alertScope.consoleLog("[rifd-dsub-maptable.js] makeDrawSelection resetFeature: " + 
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection resetFeature " +  
+										"(" + this._leaflet_id + "; " + JSON.stringify(this._latlng) + "): " +
 										(JSON.stringify(savedShape.properties) || "no properties"));
-								$scope.info.update();
+								$scope.info.update(undefined, this._latlng);
 							}		
 							
 							if (shape.circle) { // Represent circles as a point and a radius
@@ -1058,7 +1083,9 @@ angular.module("RIF")
 											fillOpacity: (savedShape.style.fillOpacity || selectorBands.fillOpacity || 0)
 										});										
 									circle.on({
-										dblclick: highLightFeature
+//										dblclick: highLightFeature,
+										mouseover: highLightFeature,
+										mouseout: resetFeature
 									});
 									
 									$scope.shapes.addLayer(circle);
@@ -1147,7 +1174,9 @@ angular.module("RIF")
 									}
 								
 									polygon.on({
-										dblclick: highLightFeature
+//										dblclick: highLightFeature,
+										mouseover: highLightFeature,
+										mouseout: resetFeature
 									}); 
 									$scope.shapes.addLayer(polygon);
 										
@@ -1356,7 +1385,8 @@ angular.module("RIF")
 						};
 
 						// method that we will use to update the control based on feature properties passed
-						$scope.info.update = function (savedShape) {
+						$scope.info.update = function (savedShape, latLng /* Of shape, not mouse! */) {
+							
 							if (this._div) {
 								if (savedShape) {
 									if (savedShape.circle) {
@@ -1396,10 +1426,29 @@ angular.module("RIF")
 										}
 									}
 								}
+								else if ($scope.shapes.getLayers().length > 0) {
+									this._div.innerHTML = '<h4>Mouse over selection shapes to show properties</br>' +
+										'Hide selection shapes to mouse over area names</h4>';
+								}
 								else {
-									this._div.innerHTML = '<h4>Double click on shapes to show properties</h4>';
+									this._div.innerHTML = '<h4>Mouse over area names</h4>';
 								}
 							}
+/* The aim of this bit of code was to display the area. However "layer.fireEvent('mouseover');" breaks the selection and
+   the latLng is the shape, not the position of the mouse. Encourage user to use show/hide selection instead
+   
+                            if (!$scope.input.bDrawing && 
+							    angular.isDefined($scope.geoJSON && $scope.geoJSON._geojsons && $scope.geoJSON._geojsons.default)) {
+							
+								$scope.geoJSON._geojsons.default.eachLayer(function (layer) {	
+									if (savedShape) {
+										layer.fireEvent('mouseover'); // Breaks selection		
+									}
+									else {
+										layer.fireEvent('mouseout');  	
+									}
+								});
+							} */
 						};
 						
                         /*
