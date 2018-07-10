@@ -2679,20 +2679,22 @@ SELECT a.*, b.coa2011
 
 #### 2nd to 6th June
 
-* Add support for *hierarchy_post_processing_sql*, *population_weighted_centroids*
+* Add support for *hierarchy_post_processing_sql*, *population_weighted_centroids*;
 * Risk analysis front end:
   * Check for no bands setup with limits;
   * Reverse shapefile band columns so the same as points (red innermost);
   * Colour shapefile bands; 
   * Check all bands etc restore correctly;
   * Add shapefile properties to map; 
+  * Switch to mouseover/mouseout to be consistent; improve info box to help. Confirmed not possible to share mouseover/mouseout between layers
   
 #### 9th to 13th June  
   
-* Risk analysis front end issues/todo:
+* Risk analysis front end:
   * Fix (freehand diease mapping) shape selector;
+  * Add area to all shapes;
+* Risk analysis front end issues/todo:
   * Select by freehand polygons needs to be disabled for risk analysis;
-  * Add area to freehand circles;
   * Remove inferior (i.e. within or on edge of) bands;
   * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
   * Emphasise centroid point when area selected;
