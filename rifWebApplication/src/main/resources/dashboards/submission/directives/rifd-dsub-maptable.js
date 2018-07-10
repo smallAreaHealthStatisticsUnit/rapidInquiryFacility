@@ -59,7 +59,8 @@ angular.module("RIF")
 						if (parameters && parameters.selectorBands) {
 							selectorBands=parameters.selectorBands
 						}		
-									
+						$scope.centroid_type="UNKNOWN";		
+						
                         $scope.areamap = L.map('areamap', {condensedAttributionControl: false}).setView([0, 0], 1);		
 						$scope.areamap.createPane('shapes');
 						$scope.areamap.getPane('shapes').style.zIndex = 650; // set shapes to show on top of markers but below pop-ups
@@ -427,13 +428,25 @@ angular.module("RIF")
                             }
 
                             var topojsonURL = user.getTileMakerTiles(user.currentUser, thisGeography, $scope.input.selectAt);
-                            latlngList = []; // of objects!
+                            latlngList = []; // centroids!
+                            latlngListById = []; // centroids!
                             centroidMarkers = new L.layerGroup();
 
                             //Get the centroids from DB
                             var bWeightedCentres = true;
                             user.getTileMakerCentroids(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
+								
+								
+								if (res.data.smoothed_results[0] && res.data.smoothed_results[0].pop_x && res.data.smoothed_results[0].pop_y) {
+									$scope.centroid_type="population weighted";
+								}
+								else if (res.data.smoothed_results[0] && res.data.smoothed_results[0].x && res.data.smoothed_results[0].y) {
+									$scope.centroid_type="database geographic";
+								}
+								
+								var latlngListDups=0;
                                 for (var i = 0; i < res.data.smoothed_results.length; i++) {
+									
                                     var p = res.data.smoothed_results[i];
 									latlngList.push({
 										latLng: L.latLng([p.y, p.x]), 
@@ -441,6 +454,7 @@ angular.module("RIF")
 										id: p.id,
 										band: -1
 									});
+									
                                     var circle = new L.CircleMarker([p.y, p.x], {
                                         radius: 2,
                                         fillColor: "blue",
@@ -449,13 +463,31 @@ angular.module("RIF")
                                         opacity: 1,
                                         fillOpacity: 0.8
                                     });
+									
                                     centroidMarkers.addLayer(circle);
+
+									if (latlngListById[p.id]) {
+										latlngListDups++;
+									}
+									else {
+										latlngListById[p.id] = {
+											latLng: L.latLng([p.y, p.x]), 
+											name: p.name,
+											circleId: centroidMarkers.getLayerId(circle)
+										}
+									}
+									
+									if (latlngListDups > 0) {
+										alertScope.showWarning("Duplicate IDs in centroid list");
+									}
                                 }
                             }, function () {
                                 //couldn't get weighted centres so generate geographic with leaflet
-                                alertScope.showWarning("Could not find (weighted) centroids stored in database - using geographic centroids on the fly");
+                                alertScope.showWarning("Could not find (weighted) centroids stored in database - calculating geographic centroids on the fly");
                                 bWeightedCentres = false;
+								$scope.centroid_type="Leaflet calculated geographic";
                             }).then(function () {
+								var latlngListDups=0;
                                 $scope.geoJSON = new L.topoJsonGridLayer(topojsonURL, {
                                     attribution: 'Polygons &copy; <a href="http://www.sahsu.org/content/rapid-inquiry-facility" target="_blank">Imperial College London</a>',
                                     layers: {
@@ -472,6 +504,7 @@ angular.module("RIF")
 														id: feature.properties.area_id,
 														bnand: -1
 													});
+													feature.properties.latLng = L.latLng([p.lat, p.lng]);
                                                     var circle = new L.CircleMarker([p.lat, p.lng], {
                                                         radius: 2,
                                                         fillColor: "red",
@@ -480,8 +513,25 @@ angular.module("RIF")
                                                         opacity: 1,
                                                         fillOpacity: 0.8
                                                     });
+													
                                                     centroidMarkers.addLayer(circle);
+													
+													if (latlngListById[feature.properties.area_id]) {
+														latlngListDups++;
+													}
+													else {
+														latlngListById[feature.properties.area_id] = {
+															latLng: L.latLng([p.lat, p.lng]), 
+															name: p.name,
+															circleId: centroidMarkers.getLayerId(circle)
+														}
+													}
                                                 }
+												else { // Using database centroids
+													feature.properties.latLng = latlngListById[feature.properties.area_id].latLng;
+												}
+												feature.properties.circleId = latlngListById[feature.properties.area_id].circleId;
+												
                                                 layer.on('mouseover', function (e) {
                                                     //if drawing then return
                                                     if ($scope.input.bDrawing) {
@@ -496,11 +546,30 @@ angular.module("RIF")
                                                         }()
                                                     });
                                                     $scope.thisPolygon = feature.properties.name;
+													// Centroids: feature.properties.latLng [app] and 
+													// feature.properties.geographic_centroid{} [tilemaker]
+													
+													if (feature.properties.circleId) {
+														$scope.highLightedCircleId=feature.properties.circleId;
+														var circle=centroidMarkers.getLayer(feature.properties.circleId);
+														circle.setStyle({
+															radius: 3,
+															weight: 2
+														});
+													}
                                                     $scope.$digest();
                                                 });
                                                 layer.on('mouseout', function (e) {
                                                     $scope.geoJSON._geojsons.default.resetStyle(e.target);
                                                     $scope.thisPolygon = "";
+													if ($scope.highLightedCircleId) {
+														var circle=centroidMarkers.getLayer(feature.properties.circleId);
+														circle.setStyle({
+															radius: 2,
+															weight: 1
+														});
+														$scope.highLightedCircleId=undefined;
+													}
                                                     $scope.$digest();
                                                 });
                                                 layer.on('click', function (e) {
@@ -851,8 +920,9 @@ angular.module("RIF")
                                 if ($scope.selectedPolygon[i].id === feature) {
                                     bFound = true;
                                     //max possible is six bands according to specs
-                                    var cb = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33'];
-                                    return cb[$scope.selectedPolygon[i].band - 1];
+//                                    var cb = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33'];
+//                                    return cb[$scope.selectedPolygon[i].band - 1];
+                                    return selectorBands.bandColours[$scope.selectedPolygon[i].band - 1];
                                 }
                             }
                             return '#F5F5F5'; //whitesmoke
@@ -1433,7 +1503,9 @@ angular.module("RIF")
 								else {
 									this._div.innerHTML = '<h4>Mouse over area names</h4>';
 								}
+								this._div.innerHTML += '<b>Centroids: ' + $scope.centroid_type + '</b>';
 							}
+							
 /* The aim of this bit of code was to display the area. However "layer.fireEvent('mouseover');" breaks the selection and
    the latLng is the shape, not the position of the mouse. Encourage user to use show/hide selection instead
    
