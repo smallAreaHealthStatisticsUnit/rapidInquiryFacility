@@ -2159,7 +2159,7 @@ https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-dat
 
 ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/shrink.PNG?raw=true "SQL Server Shrink Database")
 
-The option *reorganise files before releasing unused space* will affect performance and take a long like (2x as long as a Postgres ```VACUUM FULL```).
+The option *reorganise files before releasing unused space* will affect performance and will take a long like (2x as long as a Postgres ```VACUUM FULL```).
 
 Peter Hambly
 May 2018
