@@ -35,8 +35,8 @@
  * SERVICE to store state of selection modal
  */
 angular.module("RIF")
-        .factory('SelectStateService', ['$rootScope', 
-                function ($rootScope) {
+        .factory('SelectStateService', ['$rootScope', 'AlertService',
+                function ($rootScope, AlertService) {
 
                     var s = {
                         studyType: "disease_mapping_study",
@@ -134,16 +134,10 @@ angular.module("RIF")
 						return newStudySelection;
 					}
 					
-					function localConsoleDebug(message) {
-						$rootScope.$broadcast('consoleMessage', { 
-								messageLevel: "DEBUG", 
-								msg: message
-							});
-					}
 					
                     return {
                         getState: function () {
-//							localConsoleDebug("[rrifs-dsub-selectstate.js] getState(): " + JSON.stringify(s, null, 1));
+//							AlertService.consoleDebug("[rrifs-dsub-selectstate.js] getState(): " + JSON.stringify(s, null, 1));
                             return s;
                         },
                         resetState: function () {
@@ -155,7 +149,7 @@ angular.module("RIF")
 						setStudySelection: function(newStudySelection, newStudyType) { // Needs to verify
 							studySelection=verifyStudySelection2(newStudySelection, newStudyType);
 							s.studySelection=studySelection;
-							localConsoleDebug("[rrifs-dsub-selectstate.js] setup study selection: " + newStudyType + 
+							AlertService.consoleDebug("[rrifs-dsub-selectstate.js] setup study selection: " + newStudyType + 
 									"; studySelectAt: " + studySelection.studySelectAt +
 									"; studySelectedAreas: " + studySelection.studySelectedAreas.length +
 									", riskAnalysisType: " + studySelection.riskAnalysisType + 

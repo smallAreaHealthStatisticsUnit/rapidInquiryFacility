@@ -331,7 +331,7 @@ angular.module("RIF")
 			$scope.$on('consoleMessage', function (event, data) {
 				 if (data.messageLevel && data.msg) {
 					 if (data.messageLevel.toUpperCase() == "DEBUG") {
-						$scope.consoleError(data.msg, data.rifError);	
+						$scope.consoleDebug(data.msg, data.rifError);	
 					 }	
 					 else if (data.messageLevel.toUpperCase() == "INFO") {
 						$scope.consoleLog(data.msg, data.rifError);	

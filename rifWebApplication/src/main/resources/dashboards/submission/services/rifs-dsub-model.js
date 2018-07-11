@@ -36,9 +36,9 @@
  */
 angular.module("RIF")
         .factory('ModelService', ['StudyAreaStateService', 'CompAreaStateService', 'StatsStateService',
-                'SubmissionStateService', 'ParameterStateService', 'SelectStateService', 'user', '$rootScope',
+                'SubmissionStateService', 'ParameterStateService', 'SelectStateService', 'user', '$rootScope', 'AlertService',
 				function (StudyAreaStateService, CompAreaStateService, StatsStateService,
-                SubmissionStateService, ParameterStateService, SelectStateService, user, $rootScope) {
+                SubmissionStateService, ParameterStateService, SelectStateService, user, $rootScope, AlertService) {
 
             var type = "disease_mapping_study";
             var areaType = "disease_mapping_study_area";
@@ -204,13 +204,6 @@ angular.module("RIF")
             _getAttr = function (v) {
                 return '<attr>' + v + '</attr></br>';
             };
-
-			localConsoleDebug = function (message) {
-				$rootScope.$broadcast('consoleMessage', { 
-						messageLevel: "DEBUG", 
-						msg: message
-					});
-			};
 				
             return {
                 //return the job submission as unformatted JSON
@@ -288,7 +281,7 @@ angular.module("RIF")
 //                    outputOptions = outputOptions.substring(0, outputOptions.length - 2);
 //                    project += '<section>Options:</section>' + _getAttr(outputOptions);
 
-					localConsoleDebug('get_rif_job_submission_HTML(): ' + project);
+					AlertService.consoleDebug('get_rif_job_submission_HTML(): ' + project);
 					
                     return project;
                 }
