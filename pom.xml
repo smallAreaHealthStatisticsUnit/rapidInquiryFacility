@@ -336,4 +336,38 @@
 		</developerConnection>
 	</scm>
 
+	<profiles>
+
+		<!-- This profile is intend to allow Log4j to work when tests are run on a build machine
+		     that does not have Tomcat environment variables set. -->
+		<profile>
+			<id>env-catalina-base-not-set</id>
+			<activation>
+				<property>
+					<name>!env.CATALINA_BASE</name>
+				</property>
+			</activation>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>2.22.0</version>
+						<configuration>
+							<encoding>UTF-8</encoding>
+							<systemProperties>
+								<property>
+									<name>catalina.base</name>
+									<value>${user.home}/logs</value>
+								</property>
+							</systemProperties>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+	</profiles>
+
 </project>
