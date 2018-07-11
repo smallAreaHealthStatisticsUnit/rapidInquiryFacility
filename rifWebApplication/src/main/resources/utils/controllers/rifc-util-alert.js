@@ -329,23 +329,25 @@ angular.module("RIF")
 			 * Usage:		$rootScope.$broadcast('rifMessage', { messageLevel: "DEBUG", msg: "Test message" });
 			 */			
 			$scope.$on('consoleMessage', function (event, data) {
-				 if (data.messageLevel && data.msg) {
-					 if (data.messageLevel.toUpperCase() == "DEBUG") {
+				if (data.messageLevel && data.msg) {
+					if (data.messageLevel.toUpperCase() == "DEBUG") {
 						$scope.consoleDebug(data.msg, data.rifError);	
-					 }	
-					 else if (data.messageLevel.toUpperCase() == "INFO") {
+					}	
+					else if (data.messageLevel.toUpperCase() == "INFO") {
 						$scope.consoleLog(data.msg, data.rifError);	
-					 }	
-					 else if (data.messageLevel.toUpperCase() == "ERROR") {
+					}	
+					else if (data.messageLevel.toUpperCase() == "ERROR") {
 						$scope.consoleError(data.msg, data.rifError);	
-					 }	
+					}	
 					else {
 						$scope.consoleError("consoleMessage has incorrect messageLevel: " + JSON.stringify(data), data.rifError);
 					}	
-				 }
-				 else {
+				}
+				else if (data.msg == undefined) { // Do nothing
+				}
+				else {
 					$scope.consoleError("consoleMessage has incorrect data: " + JSON.stringify(data), data.rifError);
-				 }
+				}
 			});
 						
 			/*
