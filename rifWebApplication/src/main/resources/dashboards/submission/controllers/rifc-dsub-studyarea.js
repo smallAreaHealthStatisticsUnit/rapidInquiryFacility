@@ -95,7 +95,11 @@ angular.module("RIF")
                         StudyAreaStateService.getState().transparency = input.transparency;
                         StudyAreaStateService.getState().type = input.type;
 						
-						if (SelectStateService.getState().studyType != input.type) {
+						if (SelectStateService.getState().studyType == "disease_mapping_study" && input.type == "Disease Mapping") {
+						}
+						else if (SelectStateService.getState().studyType == "risk_analysis_study" && input.type == "Risk Analysis") {
+						}
+						else {
 							$scope.showErrorNoHide("[rifc-dsub-studyarea.js] Study type mismatch, expecting SelectStateService.getState().studyType: " +
 								SelectStateService.getState().studyType + " ; got: " + input.type);
 						}

@@ -35,8 +35,10 @@
  * SERVICE storing results of the submission stage
  */
 angular.module("RIF")
-        .factory('ModelService', function (StudyAreaStateService, CompAreaStateService, StatsStateService,
-                SubmissionStateService, ParameterStateService, user) {
+        .factory('ModelService', ['StudyAreaStateService', 'CompAreaStateService', 'StatsStateService',
+                'SubmissionStateService', 'ParameterStateService', 'SelectStateService', 'user',
+				function (StudyAreaStateService, CompAreaStateService, StatsStateService,
+                SubmissionStateService, ParameterStateService, SelectStateService, user) {
 
             var type = "disease_mapping_study";
             var areaType = "disease_mapping_study_area";
@@ -67,7 +69,9 @@ angular.module("RIF")
                                 "Maps",
                                 "Ratios and Rates"
                             ]
-                        }
+                        },
+						"study_selection": SelectStateService.getState().studySelection
+					
                     }
                 };
 
@@ -279,4 +283,4 @@ angular.module("RIF")
                     return project;
                 }
             };
-        });
+        }]);

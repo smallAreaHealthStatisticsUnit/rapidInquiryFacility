@@ -306,6 +306,49 @@ angular.module("RIF")
 			}
 
 			/*
+			 * Function:	rifMessage listener
+			 * Parameters:	Event, data object:
+			 *					Level [ERROR/WARNING/SUCCESS], message, auto hide (after about 5s): true/false, rif Error object [optional] 
+			 * Description:	Call rifMessage()
+			 * Usage:		$rootScope.$broadcast('rifMessage', { messageLevel: "DEBUG", msg: "Test message" });
+			 */			
+			$scope.$on('rifMessage', function (event, data) {
+				 if (data.messageLevel && data.msg) {
+					rifMessage(data.messageLevel, data.msg, data.rifHide || true, data.rifError);			 
+				 }
+				 else {
+					$scope.consoleError("rifMessage has incorrect data: " + JSON.stringify(data), data.rifError);
+				 }
+			});
+			
+			/*
+			 * Function:	consoleMessage listener
+			 * Parameters:	Event, data object:
+			 *					Level [DEBUG/INFO/ERROR], message, rif Error object [optional] 
+			 * Description:	Call rifMessage()
+			 * Usage:		$rootScope.$broadcast('rifMessage', { messageLevel: "DEBUG", msg: "Test message" });
+			 */			
+			$scope.$on('consoleMessage', function (event, data) {
+				 if (data.messageLevel && data.msg) {
+					 if (data.messageLevel.toUpperCase() == "DEBUG") {
+						$scope.consoleError(data.msg, data.rifError);	
+					 }	
+					 else if (data.messageLevel.toUpperCase() == "INFO") {
+						$scope.consoleLog(data.msg, data.rifError);	
+					 }	
+					 else if (data.messageLevel.toUpperCase() == "ERROR") {
+						$scope.consoleError(data.msg, data.rifError);	
+					 }	
+					else {
+						$scope.consoleError("consoleMessage has incorrect messageLevel: " + JSON.stringify(data), data.rifError);
+					}	
+				 }
+				 else {
+					$scope.consoleError("consoleMessage has incorrect data: " + JSON.stringify(data), data.rifError);
+				 }
+			});
+						
+			/*
 			 * Function:	rifMessage()
 			 * Parameters:	Level [ERROR/WARNING/SUCCESS], message, auto hide (after about 5s): true/false, rif Error object [optional] 
 			 * Desription:	Call notifications.show* to display message to user

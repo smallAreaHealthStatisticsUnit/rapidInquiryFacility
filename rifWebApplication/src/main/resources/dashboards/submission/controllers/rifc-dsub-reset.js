@@ -35,13 +35,16 @@
  * CONTROLLER for disease submission reset model
  */
 angular.module("RIF")
-        .controller('ModalResetCtrl', ['$scope', '$uibModal', '$state', 'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 'ParameterStateService', 'StatsStateService',
-            function ($scope, $uibModal, $state, SubmissionStateService, StudyAreaStateService, CompAreaStateService, ParameterStateService, StatsStateService) {
+        .controller('ModalResetCtrl', ['$scope', '$uibModal', '$state', 'SubmissionStateService', 'StudyAreaStateService', 'CompAreaStateService', 
+			'ParameterStateService', 'StatsStateService', 'SelectStateService',
+            function ($scope, $uibModal, $state, SubmissionStateService, StudyAreaStateService, CompAreaStateService, 
+				ParameterStateService, StatsStateService, SelectStateService) {
                 
                 $scope.resetToDefaults = function () {
                     //reset all submission states to default
                     SubmissionStateService.resetState();
                     StudyAreaStateService.resetState();
+					SelectStateService.resetState();
                     CompAreaStateService.resetState();
                     ParameterStateService.resetState();
                     StatsStateService.resetState();

@@ -1422,7 +1422,7 @@ angular.module("RIF")
 												});
 												latlngList[itemsProcessed].band=shape.band;
 											}
-											if (SelectStateService.getState().studyType == "Risk Analysis") {
+											if (SelectStateService.getState().studyType == "risk_analysis_study") {
 																
 	//											SelectStateService.getState().studySelection.points.pushIfNotExist(thisLatLng, function(e) { 
 	//												return e.lat === thisLatLng.lat && e.lng === thisLatLng.lng; 

@@ -494,6 +494,15 @@ angular.module("RIF")
 							SelectStateService.setStudySelection(rifJob.study_selection, studyType);
 							return true;
 						} else {
+							if (SelectStateService.getState().studyType == 'disease_mapping_study') {
+								SelectStateService.resetState();
+							}
+							else if (SelectStateService.getState().studyType == 'risk_analysis_study') {
+								SelectStateService.initialiseRiskAnalysis();
+							}
+							else {
+								return "Invalid SelectStateService.getState().studyType: " + SelectStateService.getState().studyType;
+							}
 							return true; // Optional for backward compatibility
 						}	
                     } catch (e) {
