@@ -2685,19 +2685,70 @@ SELECT a.*, b.coa2011
   * Reverse shapefile band columns so the same as points (red innermost);
   * Colour shapefile bands; 
   * Check all bands etc restore correctly;
-  * Add shapefile properties to map; 
+  * Added shapefile properties to map; 
   * Switch to mouseover/mouseout to be consistent; improve info box to help. Confirmed not possible to share mouseover/mouseout between layers
   
 #### 9th to 13th June  
   
 * Risk analysis front end:
-  * Fix (freehand diease mapping) shape selector;
-  * Add area to all shapes;
+  * Fixed (freehand diease mapping) shape selector;
+  * Added area to all shapes;
+  * Emphasise centroid point when area selected;
+  * Save/restore user selection methods to/from file;
+  * Add user selection methods to study submission XML;
 * Risk analysis front end issues/todo:
+  * Progress of shapefile display setup after "apply" button in shapefile load modal;
+  * Disable "apply" button in shapefile load modal after pushed (so you don't do it twice while waiting);
+  * "Green" display shapefile selection and centroids display when selected;
+  * Check selection methods (e.g. by attribute: DB; bands 69, 63, 0) are saved to study selection;
+  * Remove points from study selection and remove disabled AOI code;
   * Select by freehand polygons needs to be disabled for risk analysis;
   * Remove inferior (i.e. within or on edge of) bands;
   * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
-  * Emphasise centroid point when area selected;
   * Improve scaling in shapefile properties table, 40:60 split;
-  * Save/restore user selection methods to/from file;
-  * Add user selection methods to middleware; 
+* Risk analysis middleware todo:
+  * Add user selection methods to XML parse: ```Unable to convert JSON stream to XML stream```; middleware trace. JSON is valid, probably causing by $$hashkey properties copying as part of UI grid: 
+    ```
+	14:41:16.428 [http-nio-8080-exec-3] ERROR org.sahsu.rif.generic.util.RIFLogger : [org.sahsu.rif.services.fileformats.RIFStudySubmissionXMLReader]:
+	Caught exception in RIFStudySubmissionXMLReader.readFile(InputStream)
+	getMessage:          SAXParseException: The content of elements must consist of well-formed character data or markup.
+	getRootCauseMessage: SAXParseException: The content of elements must consist of well-formed character data or markup.
+	getThrowableCount:   1
+	getRootCauseStackTrace >>>
+	org.xml.sax.SAXParseException; lineNumber: 1; columnNumber: 106494; The content of elements must consist of well-formed character data or markup.
+		at com.sun.org.apache.xerces.internal.util.ErrorHandlerWrapper.createSAXParseException(ErrorHandlerWrapper.java:203)
+		at com.sun.org.apache.xerces.internal.util.ErrorHandlerWrapper.fatalError(ErrorHandlerWrapper.java:177)
+		at com.sun.org.apache.xerces.internal.impl.XMLErrorReporter.reportError(XMLErrorReporter.java:400)
+		at com.sun.org.apache.xerces.internal.impl.XMLErrorReporter.reportError(XMLErrorReporter.java:327)
+		at com.sun.org.apache.xerces.internal.impl.XMLScanner.reportFatalError(XMLScanner.java:1472)
+		at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl$FragmentContentDriver.startOfMarkup(XMLDocumentFragmentScannerImpl.java:2635)
+		at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl$FragmentContentDriver.next(XMLDocumentFragmentScannerImpl.java:2732)
+		at com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl.next(XMLDocumentScannerImpl.java:602)
+		at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanDocument(XMLDocumentFragmentScannerImpl.java:505)
+		at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:841)
+		at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:770)
+		at com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(XMLParser.java:141)
+		at com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.parse(AbstractSAXParser.java:1213)
+		at com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser.parse(SAXParserImpl.java:643)
+		at com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl.parse(SAXParserImpl.java:327)
+		at javax.xml.parsers.SAXParser.parse(SAXParser.java:195)
+		at org.sahsu.rif.services.fileformats.RIFStudySubmissionXMLReader.readFile(RIFStudySubmissionXMLReader.java:164)
+		at org.sahsu.rif.services.rest.WebService.getRIFSubmissionFromXMLSource(WebService.java:1207)
+		at org.sahsu.rif.services.rest.WebService.getRIFSubmissionFromJSONSource(WebService.java:1183)
+		at org.sahsu.rif.services.rest.WebService.submitStudy(WebService.java:1126)
+		at org.sahsu.rif.services.rest.StudySubmissionServiceResource.submitStudy(StudySubmissionServiceResource.java:1132)
+    
+	14:41:16.440 [http-nio-8080-exec-3] ERROR org.sahsu.rif.generic.util.RIFLogger : [org.sahsu.rif.services.rest.StudySubmissionServiceResource]:
+	StudySubmissionServiceResource.submitStudy error
+	getMessage:          RIFServiceException: Unable to convert JSON stream to XML stream.
+	getRootCauseMessage: RIFServiceException: Unable to convert JSON stream to XML stream.
+	getThrowableCount:   1
+	getRootCauseStackTrace >>>
+	1 error(s). Error code is 'UNABLE_TO_PARSE_JSON_SUBMISSION'. Message list is: 'Unable to convert JSON stream to XML stream.'
+		at org.sahsu.rif.services.rest.WebService.getRIFSubmissionFromJSONSource(WebService.java:1190)
+		at org.sahsu.rif.services.rest.WebService.submitStudy(WebService.java:1126)
+		at org.sahsu.rif.services.rest.StudySubmissionServiceResource.submitStudy(StudySubmissionServiceResource.java:1132)	
+	```
+  * Add user selection methods to database insert;
+  * Add user selection methods to DB study save;
+  * Add population weighted centroid support (pop_x, pop_y) to getTileMakerCentroids();
