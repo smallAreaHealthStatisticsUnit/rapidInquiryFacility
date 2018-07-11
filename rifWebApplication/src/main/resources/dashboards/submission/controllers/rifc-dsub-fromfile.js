@@ -30,7 +30,7 @@
  * David Morley
  * @author dmorley
  */
-
+ 
 /* 
  * CONTROLLER for disease submission run study from file modal
  */
@@ -620,6 +620,13 @@ angular.module("RIF")
 
                     $scope.uploadFile = function () {
 
+						//reset all submission states to default
+						SubmissionStateService.resetState();
+						StudyAreaStateService.resetState();
+						SelectStateService.resetState();
+						CompAreaStateService.resetState();
+						ParameterStateService.resetState();
+						SelectStateService.resetState();
                         $scope.consoleDebug("[rifc-dsub-fromfile.js] Starting upload...");
 
 						// Create promises

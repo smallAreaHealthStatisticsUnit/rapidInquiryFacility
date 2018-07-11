@@ -1207,7 +1207,6 @@ angular.module("RIF")
 								}
 								else { // Shapefile
 									savedShape.geojson=angular.copy(shape.data.toGeoJSON());	
-									savedShape.data=shape.data;									
 									polygon=L.polygon(savedShape.geojson.geometry.coordinates[0], {
 											pane: 'shapes', 
 											band: savedShape.band,
@@ -1421,12 +1420,6 @@ angular.module("RIF")
 													centroid: thisLatLng
 												});
 												latlngList[itemsProcessed].band=shape.band;
-											}
-											if (SelectStateService.getState().studyType == "risk_analysis_study") {
-																
-	//											SelectStateService.getState().studySelection.points.pushIfNotExist(thisLatLng, function(e) { 
-	//												return e.lat === thisLatLng.lat && e.lng === thisLatLng.lng; 
-	//											});
 											}
 										}
 									}

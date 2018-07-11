@@ -36,9 +36,9 @@
  */
 angular.module("RIF")
         .factory('ModelService', ['StudyAreaStateService', 'CompAreaStateService', 'StatsStateService',
-                'SubmissionStateService', 'ParameterStateService', 'SelectStateService', 'user',
+                'SubmissionStateService', 'ParameterStateService', 'SelectStateService', 'user', '$rootScope',
 				function (StudyAreaStateService, CompAreaStateService, StatsStateService,
-                SubmissionStateService, ParameterStateService, SelectStateService, user) {
+                SubmissionStateService, ParameterStateService, SelectStateService, user, $rootScope) {
 
             var type = "disease_mapping_study";
             var areaType = "disease_mapping_study_area";
@@ -205,6 +205,13 @@ angular.module("RIF")
                 return '<attr>' + v + '</attr></br>';
             };
 
+			localConsoleDebug = function (message) {
+				$rootScope.$broadcast('consoleMessage', { 
+						messageLevel: "DEBUG", 
+						msg: message
+					});
+			};
+				
             return {
                 //return the job submission as unformatted JSON
                 get_rif_job_submission_JSON: function () {
@@ -213,7 +220,7 @@ angular.module("RIF")
                 //return the job submission as formatted HTML
                 get_rif_job_submission_HTML: function () {
                     var modelJSON = updateModel();
-
+					
                     //Overview
                     var project = '<header>Overview</header><section>Project Name:</section>' + _getAttr(modelJSON.rif_job_submission.project.name) +
                             '<section>Project Description:</section>' + _getAttr(modelJSON.rif_job_submission.project.description) +
@@ -280,6 +287,9 @@ angular.module("RIF")
 //                    }
 //                    outputOptions = outputOptions.substring(0, outputOptions.length - 2);
 //                    project += '<section>Options:</section>' + _getAttr(outputOptions);
+
+					localConsoleDebug('get_rif_job_submission_HTML(): ' + project);
+					
                     return project;
                 }
             };
