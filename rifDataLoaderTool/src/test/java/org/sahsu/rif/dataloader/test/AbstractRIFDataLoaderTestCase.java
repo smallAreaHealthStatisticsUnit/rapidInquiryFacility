@@ -1,7 +1,12 @@
 package org.sahsu.rif.dataloader.test;
 
 import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.Collator;
+import java.util.Objects;
 
 import org.junit.After;
 import org.junit.Before;
@@ -12,7 +17,6 @@ import org.sahsu.rif.dataloader.datastorage.pg.TestPGDataLoaderService;
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.DatabaseType;
-import org.sahsu.rif.generic.system.ClassFileLocator;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
@@ -70,18 +74,9 @@ import org.sahsu.rif.generic.util.FieldValidationUtility;
 
 public abstract class AbstractRIFDataLoaderTestCase {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
 	private User rifManager;
-	public static DatabaseType databaseType = DatabaseType.POSTGRESQL;
-		
-	private File exportDirectory;
-	
+	private static DatabaseType databaseType = DatabaseType.POSTGRESQL;
+	private Path exportDirectory;
 	private TestDataLoaderServiceAPI dataLoaderService;
 
 	/** The test user. */
@@ -90,8 +85,6 @@ public abstract class AbstractRIFDataLoaderTestCase {
 	/** The invalid user. */
 	private User emptyAdministrationUser;
 
-	private User invalidAdministrationUser;
-	
 	/** The non existent user. */
 	private User nonExistentAdministrationUser;
 	
@@ -100,41 +93,26 @@ public abstract class AbstractRIFDataLoaderTestCase {
 
 	private String testFileDirectoryPath;
 	
-	// ==========================================
-	// Section Construction
-	// ==========================================
+	AbstractRIFDataLoaderTestCase() {
 
-	
-	public AbstractRIFDataLoaderTestCase() {
-		init(DatabaseType.POSTGRESQL);		
-	}
-	
-	public AbstractRIFDataLoaderTestCase(final DatabaseType databaseType) {
-		this.databaseType = databaseType;
-		init(databaseType);
-	}
-
-	private void init(final DatabaseType databaseType) {
-
-		testFileDirectoryPath 
-			= ClassFileLocator.getClassRootLocation("rifDataLoaderTool");
-		exportDirectory = new File(testFileDirectoryPath);
+		Path testFileDir = Paths.get("rifDataLoaderTool");
+		testFileDirectoryPath = testFileDir.toFile().getAbsolutePath();
+		exportDirectory = testFileDir.resolve(testFileDirectoryPath);
 
 		validAdministrationUser = User.newInstance("kgarwood", "11.111.11.228");
 		nonExistentAdministrationUser = User.newInstance("nobody", "11.111.11.228");
 		emptyAdministrationUser = User.newInstance(null, "11.111.11.228");
-		invalidAdministrationUser = User.newInstance("9$£blah", "11.111.11.228");
-		
-		FieldValidationUtility fieldValidationUtility 
-			= new FieldValidationUtility();
-		String maliciousFieldValue 
-			= fieldValidationUtility.getTestMaliciousFieldValue();		
+
+		FieldValidationUtility fieldValidationUtility
+				= new FieldValidationUtility();
+		String maliciousFieldValue
+				= fieldValidationUtility.getTestMaliciousFieldValue();
 		maliciousAdministrationUser = User.newInstance(maliciousFieldValue, "11.111.11.228");
-		
-		rifManager = User.newInstance("kgarwood", "111.111.111.111");		
+
+		rifManager = User.newInstance("kgarwood", "111.111.111.111");
 	}
-	
-	protected String getTestFilePath(final String fileName) {
+
+	String getTestFilePath(final String fileName) {
 		StringBuilder filePath = new StringBuilder();
 		filePath.append(testFileDirectoryPath);
 		filePath.append(File.separator);
@@ -190,8 +168,8 @@ public abstract class AbstractRIFDataLoaderTestCase {
 	// Section Accessors and Mutators
 	// ==========================================
 
-	public File getExportDirectory() {
-		return exportDirectory;
+	File getExportDirectory() {
+		return exportDirectory.toFile();
 	}
 	
 	protected User getRIFManager() {
