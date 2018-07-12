@@ -1,20 +1,22 @@
 package org.sahsu.taxonomyservices.test;
 
-import org.sahsu.taxonomyservices.ICD10TaxonomyTermParser;
-
-import org.sahsu.rif.generic.system.ClassFileLocator;
-import org.sahsu.rif.generic.taxonomyservices.TaxonomyTermManager;
-
-import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
-
-import org.sahsu.rif.generic.system.RIFServiceException;
-
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
 import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Objects;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.sahsu.rif.generic.system.RIFServiceException;
+import org.sahsu.rif.generic.taxonomyservices.TaxonomyTerm;
+import org.sahsu.rif.generic.taxonomyservices.TaxonomyTermManager;
+import org.sahsu.taxonomyservices.ICD10TaxonomyTermParser;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 
 
@@ -56,74 +58,27 @@ import org.junit.Test;
  * @author kgarwood
  */
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
 public class ICD10ClaMLTaxonomyProviderTest {
-	
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
+	private File inputFile;
 	private ICD10TaxonomyTermParser icd10TaxonomyFileReader;
 	private TaxonomyTermManager taxonomyTermManager;
 	
-	// ==========================================
-	// Section Construction
-	// ==========================================
-
 	public ICD10ClaMLTaxonomyProviderTest() {
 		icd10TaxonomyFileReader = new ICD10TaxonomyTermParser();
 	}
    
 	@Before
-	public void setUp() throws RIFServiceException{
+	public void setUp() throws RIFServiceException, URISyntaxException {
 
-		String classFileDirectory = 
-				ClassFileLocator.getClassRootLocation("taxonomyServices");
-		
-		StringBuilder inputFilePath = new StringBuilder();
-		inputFilePath.append(classFileDirectory);
-		inputFilePath.append(File.separator);
-		inputFilePath.append("ExampleClaMLICD10Codes.xml");
-		File inputFile = new File(inputFilePath.toString());
-	
-/*		
-		File file = 
-		ArrayList<Parameter> parameters = new ArrayList<Parameter>();
-		Parameter inputFileParameter = Parameter.newInstance();
-		inputFileParameter.setName("icd10_ClaML_file");
-		//Need a better way to set the file location
-		inputFileParameter.setValue("C:/rapidInquiryFacility/rifServices/src/main/resources/ExampleClaMLICD10Codes.xml");
-*/		
+		ClassLoader loader = getClass().getClassLoader();
+		URL url = Objects.requireNonNull(loader.getResource("ExampleClaMLICD10Codes.xml"));
+		inputFile = Paths.get(url.toURI()).toFile();
+
 		icd10TaxonomyFileReader.readFile(inputFile);
 		taxonomyTermManager = icd10TaxonomyFileReader.getTaxonomyTermManager();
-		
 	}
-	
+
 	/**
 	 * Test
 	 *     {@link ICD10TaxonomyTermParser#getTopLevelCodes()}.
