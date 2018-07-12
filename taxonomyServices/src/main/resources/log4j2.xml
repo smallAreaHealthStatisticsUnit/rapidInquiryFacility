@@ -78,7 +78,7 @@
     </Console>
 	<!-- File logs are in ${CATALINA_HOME}/log4j2 - %CATALINA_HOME/log4j2 -->
     <RollingFile name="RIF_middleware" 
-				 filePattern="${env:CATALINA_HOME}/log4j2/$${date:yyyy-MM}/${rif_middleware}-%d{yyyy-MM-dd}-%i.log"
+				 filePattern="${sys:catalina.base}/log4j2/$${date:yyyy-MM}/${rif_middleware}-%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="true" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${rif_log_pattern}"/>
 	  <Policies>
@@ -87,7 +87,7 @@
 	  </Policies>
     </RollingFile>
     <RollingFile name="Other" 
-				 filePattern="${env:CATALINA_HOME}/log4j2/$${date:yyyy-MM}/${other}-%d{yyyy-MM-dd}-%i.log"
+				 filePattern="${sys:catalina.base}/log4j2/$${date:yyyy-MM}/${other}-%d{yyyy-MM-dd}-%i.log"
 				 immediateFlush="false" bufferedIO="true" bufferSize="1024">
       <PatternLayout pattern="${other_log_pattern}"/>
 	  <Policies>

@@ -56,7 +56,7 @@ public class WebService {
 	private WebServiceResponseGenerator webServiceResponseGenerator;
 	private FrontEndLogger frontEndLogger = FrontEndLogger.getLogger();
 	
-	public WebService() {
+	WebService() {
 		
 		startTime = new Date();
 		webServiceResponseGenerator = new WebServiceResponseGenerator();
@@ -754,7 +754,7 @@ public class WebService {
 			final String geographyName,
 			final String geoLevelSelectName) {
 			
-			String result = "";
+			String result;
 			
 			try {
 				//Convert URL parameters to RIF service API parameters
@@ -763,32 +763,22 @@ public class WebService {
 				GeoLevelSelect geoLevelSelect = GeoLevelSelect.newInstance(geoLevelSelectName);
 				
 				//Call service API
-				RIFStudyResultRetrievalAPI studyResultRetrievalService
-					= getRIFStudyResultRetrievalService();
+				RIFStudyResultRetrievalAPI studyResultRetrievalService =
+						getRIFStudyResultRetrievalService();
 				
-				RIFResultTable resultTable
-					= studyResultRetrievalService.getTileMakerCentroids(
-						user,
-						geography,
-						geoLevelSelect);
+				RIFResultTable resultTable = studyResultRetrievalService.getTileMakerCentroids(
+						user, geography, geoLevelSelect);
 				
-				RIFResultTableJSONGenerator rifResultTableJSONGenerator
-					= new RIFResultTableJSONGenerator();
+				RIFResultTableJSONGenerator rifResultTableJSONGenerator =
+						new RIFResultTableJSONGenerator();
 				result = rifResultTableJSONGenerator.writeResultTable(resultTable);
-			}
-			catch(Exception exception) {
-			rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			} catch(Exception exception) {
+				rifLogger.error(this.getClass(), getClass().getSimpleName() +
 			                                 ".getTileMakerCentroids error", exception);
-				result
-					= serialiseException(
-						servletRequest,
-						exception);
+				result = serialiseException(servletRequest, exception);
 			}
 			
-
-			return webServiceResponseGenerator.generateWebServiceResponse(
-					servletRequest,
-					result);
+			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
 		}
 	
 	protected Response getTileMakerTiles(
