@@ -1,7 +1,9 @@
 package org.sahsu.taxonomyservices.test;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -67,11 +69,11 @@ public class ICD10ClaMLTaxonomyProviderTest {
 	}
    
 	@Before
-	public void setUp() throws RIFServiceException{
+	public void setUp() throws RIFServiceException, URISyntaxException {
 
 		ClassLoader loader = getClass().getClassLoader();
 		URL url = Objects.requireNonNull(loader.getResource("ExampleClaMLICD10Codes.xml"));
-		inputFile = new File(url.getFile());
+		inputFile = Paths.get(url.toURI()).toFile();
 
 		icd10TaxonomyFileReader.readFile(inputFile);
 		taxonomyTermManager = icd10TaxonomyFileReader.getTaxonomyTermManager();
