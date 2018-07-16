@@ -1110,14 +1110,13 @@ angular.module("RIF")
 									
 							if (savedShape.freehand) {						
 								
-								if (shape.data._latlngs && shape.data._latlngs.length > 1) { // Fix freehand polygons
-									if (shape.data._latlngs[0].lat == shape.data._latlngs[shape.data._latlngs.length-1].lat &&
-									   shape.data._latlngs[0].lng == shape.data._latlngs[shape.data._latlngs.length-1].lng) { // OK
-									} 
-									else { // Make it a polygon
-										shape.data._latlngs.push({
-											lat: shape.data._latlngs[0].lat,
-											lng: shape.data._latlngs[0].lng
+								if ($scope.input.type === "Risk Analysis") {
+									alertScope.showError("Freehand selection not permitted for risk analysis");
+									var polyId=shape.data._leaflet_id;
+									drawnItems.eachLayer(
+										function(layer) {
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] Remove freehand polygon; " + layer._leaflet_id);
+											$scope.areamap.removeLayer(layer);
 										});
 									return;
 								}
