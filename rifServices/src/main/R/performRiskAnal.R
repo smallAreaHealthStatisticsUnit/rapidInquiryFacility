@@ -1,4 +1,4 @@
-####
+###
 ## The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
 ## that rapidly addresses epidemiological and public health questions using 
 ## routinely collected health and population data and generates standardised 
