@@ -8928,8 +8928,7 @@
             "Id": 1,
             "Name": "Poisonous Chemicals Inc.",
             "Year": 1997,
-            "Owner": "Gary",
-            "$$hashKey": "uiGrid-01ZB"
+            "Owner": "Gary"
           },
           "radius": "5000",
           "latLng": {
@@ -8953,8 +8952,7 @@
             "Id": 2,
             "Name": "Radioactive Soup Factory",
             "Year": 1952,
-            "Owner": "Kate",
-            "$$hashKey": "uiGrid-01ZD"
+            "Owner": "Kate"
           },
           "radius": "5000",
           "latLng": {
@@ -8978,8 +8976,7 @@
             "Id": 3,
             "Name": "Squirrel Training Facility",
             "Year": 2002,
-            "Owner": "Jonathan",
-            "$$hashKey": "uiGrid-01ZF"
+            "Owner": "Jonathan"
           },
           "radius": "5000",
           "latLng": {
@@ -9003,8 +9000,7 @@
             "Id": 4,
             "Name": "Incinerate Everything KFT.",
             "Year": 1999,
-            "Owner": "Sarah",
-            "$$hashKey": "uiGrid-01ZH"
+            "Owner": "Sarah"
           },
           "radius": "5000",
           "latLng": {
@@ -9028,8 +9024,7 @@
             "Id": 5,
             "Name": "Mutant Fruit Farms Ltd",
             "Year": 2012,
-            "Owner": "Archibald",
-            "$$hashKey": "uiGrid-01ZJ"
+            "Owner": "Archibald"
           },
           "radius": "5000",
           "latLng": {
@@ -9053,8 +9048,7 @@
             "Id": 1,
             "Name": "Poisonous Chemicals Inc.",
             "Year": 1997,
-            "Owner": "Gary",
-            "$$hashKey": "uiGrid-01ZB"
+            "Owner": "Gary"
           },
           "radius": "25000",
           "latLng": {
@@ -9078,8 +9072,7 @@
             "Id": 2,
             "Name": "Radioactive Soup Factory",
             "Year": 1952,
-            "Owner": "Kate",
-            "$$hashKey": "uiGrid-01ZD"
+            "Owner": "Kate"
           },
           "radius": "25000",
           "latLng": {
@@ -9103,8 +9096,7 @@
             "Id": 3,
             "Name": "Squirrel Training Facility",
             "Year": 2002,
-            "Owner": "Jonathan",
-            "$$hashKey": "uiGrid-01ZF"
+            "Owner": "Jonathan"
           },
           "radius": "25000",
           "latLng": {
@@ -9128,8 +9120,7 @@
             "Id": 4,
             "Name": "Incinerate Everything KFT.",
             "Year": 1999,
-            "Owner": "Sarah",
-            "$$hashKey": "uiGrid-01ZH"
+            "Owner": "Sarah"
           },
           "radius": "25000",
           "latLng": {
@@ -9153,8 +9144,7 @@
             "Id": 5,
             "Name": "Mutant Fruit Farms Ltd",
             "Year": 2012,
-            "Owner": "Archibald",
-            "$$hashKey": "uiGrid-01ZJ"
+            "Owner": "Archibald"
           },
           "radius": "25000",
           "latLng": {

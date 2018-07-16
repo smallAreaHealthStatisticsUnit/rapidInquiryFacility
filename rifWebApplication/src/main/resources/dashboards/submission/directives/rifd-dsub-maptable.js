@@ -416,7 +416,7 @@ angular.module("RIF")
 								
 								SelectStateService.resetState();
                             }
-                        };
+						};
 
                         /*
                          * RENDER THE MAP AND THE TABLE
@@ -980,35 +980,38 @@ angular.module("RIF")
                          */
                         //Add Leaflet.Draw capabilities
                         var drawnItems;
-                        LeafletDrawService.getCircleCapability();
-                        LeafletDrawService.getPolygonCapability();
-                        
-                        //Add Leaflet.Draw toolbar
-                        L.drawLocal.draw.toolbar.buttons.circle = "Select by concentric bands";
-                        L.drawLocal.draw.toolbar.buttons.polygon = "Select by freehand polygons";
+						
                         drawnItems = new L.FeatureGroup();
                         $scope.areamap.addLayer(drawnItems);
-                        var drawControl = new L.Control.Draw({
-                            draw: {
-                                polygon: {
-                                    shapeOptions: {
-                                        color: '#0099cc',
-                                        weight: 4,
-                                        opacity: 1,
-                                        fillOpacity: 0.2
-                                    }
-                                },
-                                marker: false,
-                                polyline: false,
-                                rectangle: false
-                            },
-                            edit: {
-                                remove: false,
-                                edit: false,
-                                featureGroup: drawnItems
-                            }
-                        });
-                        $scope.areamap.addControl(drawControl);
+                        $scope.drawControl;	
+						
+						LeafletDrawService.getCircleCapability();
+						LeafletDrawService.getPolygonCapability();
+						//Add Leaflet.Draw toolbar
+						L.drawLocal.draw.toolbar.buttons.circle = "Select by concentric bands";
+						L.drawLocal.draw.toolbar.buttons.polygon = "Select by freehand polygons";
+						$scope.drawControl = new L.Control.Draw({
+							draw: {
+								polygon: {
+									shapeOptions: {
+										color: '#0099cc',
+										weight: 4,
+										opacity: 1,
+										fillOpacity: 0.2
+									}
+								},
+								marker: false,
+								polyline: false,
+								rectangle: false
+							},
+							edit: {
+								remove: false,
+								edit: false,
+								featureGroup: drawnItems
+							}
+						});
+                        $scope.areamap.addControl($scope.drawControl);
+						
                         new L.Control.GeoSearch({
                             provider: new L.GeoSearch.Provider.OpenStreetMap()
                         }).addTo($scope.areamap);
@@ -1083,14 +1086,29 @@ angular.module("RIF")
 								latLng: undefined,
 								geojson: undefined,
 								finalCircleBand: (shape.finalCircleBand || false),
-								style: undefined
+								style: undefined,
+								selectionMethod: shape.selectionMethod
 							}
-							
-							if (savedShape.freehand) {
-								if (shape.band == -1) {
-									shape.band=1;
-									savedShape.band=1;
-								}
+//							
+// Risk analysis study types (as per rif40_studies.stype_type): 
+//
+// 11 - Risk Analysis (many areas, one band), 
+// 12 - Risk Analysis (point sources, many areas, one to six bands) [DEFAULT], 
+// 13 - Risk Analysis (exposure covariates), 
+// 14 - Risk Analysis (coverage shapefile), 
+// 15 - Risk Analysis (exposure shapefile)
+//
+							if (shape.selectionMethod === 1) { // selectionMethod 1: Single boundary; already set
+								SelectStateService.getState().studySelection.riskAnalysisType = 11;
+							}
+							else if (shape.selectionMethod === 2) { // selectionMethod 2: make selection by band attribute in file
+								SelectStateService.getState().studySelection.riskAnalysisType = 13;
+							}
+							else if (shape.selectionMethod === 3) { // selectionMethod 3: make selection by attribute value in file			
+								SelectStateService.getState().studySelection.riskAnalysisType = 15;				
+							}
+									
+							if (savedShape.freehand) {						
 								
 								if (shape.data._latlngs && shape.data._latlngs.length > 1) { // Fix freehand polygons
 									if (shape.data._latlngs[0].lat == shape.data._latlngs[shape.data._latlngs.length-1].lat &&
@@ -1101,9 +1119,28 @@ angular.module("RIF")
 											lat: shape.data._latlngs[0].lat,
 											lng: shape.data._latlngs[0].lng
 										});
-										alertScope.consoleDebug("[rifd-dsub-maptable.js] Fix freehand polygon; " +
-										shape.data._latlngs.length + " points: " + 
-											JSON.stringify(shape.data._latlngs));
+									return;
+								}
+								else {
+								
+									if (shape.band == -1) {
+										shape.band=1;
+										savedShape.band=1;
+									}
+									
+									if (shape.data._latlngs && shape.data._latlngs.length > 1) { // Fix freehand polygons
+										if (shape.data._latlngs[0].lat == shape.data._latlngs[shape.data._latlngs.length-1].lat &&
+										   shape.data._latlngs[0].lng == shape.data._latlngs[shape.data._latlngs.length-1].lng) { // OK
+										} 
+										else { // Make it a polygon
+											shape.data._latlngs.push({
+												lat: shape.data._latlngs[0].lat,
+												lng: shape.data._latlngs[0].lng
+											});
+											alertScope.consoleDebug("[rifd-dsub-maptable.js] Fix freehand polygon; " +
+											shape.data._latlngs.length + " points: " + 
+												JSON.stringify(shape.data._latlngs));
+										}
 									}
 								}
 							}
@@ -1256,7 +1293,7 @@ angular.module("RIF")
 										"; style: " + JSON.stringify(savedShape.style) +
 										"; " + coordinates.length + " coordinates; " +
 												JSON.stringify(coordinates).substring(0,100) + "..." +
-										"; properties: " + (JSON.stringify(savedShape.properties) || "None"));			
+										"; properties: " + (JSON.stringify(savedShape.properties) || "None"));										
 								}
 								else {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] makeDrawSelection(): L.Polygon is undefined" +
@@ -1277,7 +1314,8 @@ angular.module("RIF")
 									SelectStateService.getState().studySelection.comparisonShapes.length);
 							}
 							else {
-								SelectStateService.getState().studySelection.studyShapes.push(savedShape);
+								SelectStateService.getState().studySelection.studyShapes.push(savedShape);							
+							
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] Save to StudyAreaMap SelectStateService " +
 									SelectStateService.getState().studySelection.studyShapes.length);
 							}

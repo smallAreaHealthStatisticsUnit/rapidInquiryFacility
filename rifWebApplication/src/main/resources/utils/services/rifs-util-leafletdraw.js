@@ -130,6 +130,7 @@ angular.module("RIF")
                                 }
                                 //Draw a single circle only (disease mapping comparison area)
                                 if (this._map.band === 1) {
+									
                                     this._map.addLayer(this._shape);
                                     this._fireCreatedEvent();
                                     if (this._shape) {

@@ -43,7 +43,6 @@ angular.module("RIF")
 						studySelection: {			
 							studySelectAt: undefined,
 							studySelectedAreas: [],
-							studyPoints: [],
 							studyShapes: [],
 							comparisonSelectAt: undefined,
 							comparisonSelectedAreas: []
@@ -56,16 +55,15 @@ angular.module("RIF")
 							studySelectedAreas: [],
 							riskAnalysisType: 12, 	// assume point sources, many areas, one to six bands
 													// Can come from shapefile points or by manual entry
-							studyPoints: [],
+							riskAnalysisDescription: getriskAnalysisDesription2(),
 							studyShapes: [],
-							comparisonPoints: [],
 							comparisonShapes: [],
 							
 //
 // Risk analysis study types (as per rif40_studies.stype_type): 
 //
 // 11 - Risk Analysis (many areas, one band), 
-// 12 - Risk Analysis (point sources, many areas, one to six bands), 
+// 12 - Risk Analysis (point sources, many areas, one to six bands) [DEFAULT], 
 // 13 - Risk Analysis (exposure covariates), 
 // 14 - Risk Analysis (coverage shapefile), 
 // 15 - Risk Analysis (exposure shapefile)
@@ -134,9 +132,37 @@ angular.module("RIF")
 						return newStudySelection;
 					}
 					
+					function getriskAnalysisDesription2() {
+						var r=undefined;
+						
+						if (s && s.studySelection && s.studySelection.riskAnalysisType) {
+							switch(s.studySelection.riskAnalysisType) {
+								case 11:
+									r='Risk Analysis (many areas, one band)';
+									break;
+								case 12:
+									r='Risk Analysis (point sources, many areas, one to six bands';
+									break;
+								case 13:
+									r='Risk Analysis (exposure covariates)';
+									break;
+								case 14:
+									r='Risk Analysis (coverage shapefile)';
+									break;
+								case 15:
+									r='Risk Analysis (exposure shapefile)';
+									break;
+							}
+						}
+						
+						return r;
+					}
 					
                     return {
                         getState: function () {
+							if (s.studySelection && !s.studySelection.riskAnalysisDescription) {
+								s.studySelection.riskAnalysisDescription=getriskAnalysisDesription2();
+							}
 //							AlertService.consoleDebug("[rrifs-dsub-selectstate.js] getState(): " + JSON.stringify(s, null, 1));
                             return s;
                         },
@@ -153,9 +179,7 @@ angular.module("RIF")
 									"; studySelectAt: " + studySelection.studySelectAt +
 									"; studySelectedAreas: " + studySelection.studySelectedAreas.length +
 									", riskAnalysisType: " + studySelection.riskAnalysisType + 
-									"; studyPoints: " + studySelection.studyPoints.length +
 									", studyShapes: " + studySelection.studyShapes.length +
-									", comparisonPoints: " + studySelection.comparisonPoints.length +
 									", comparisonShapes: " + studySelection.comparisonShapes.length);
 					
 							if (newStudyType === "disease_mapping_study") {		
@@ -183,6 +207,9 @@ angular.module("RIF")
 								throw new Error("rifs-dsub-selectstate.js(): unable to verify study type: " + s.studyType);
 							}
 							return r;
+						},
+						getriskAnalysisDesription: function() {
+							return getriskAnalysisDesription2();
 						}
                     };
                 }]);

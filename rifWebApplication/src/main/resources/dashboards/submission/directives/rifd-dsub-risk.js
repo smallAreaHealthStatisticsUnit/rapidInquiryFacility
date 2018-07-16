@@ -57,6 +57,8 @@ angular.module("RIF")
                     link: function (scope, element, attr) {
 
                         var alertScope = scope.$parent.$$childHead.$parent.$parent.$$childHead;
+                        var studyType = scope.$parent.input.type; // Disease Mapping or Risk Analysis
+						
                         var poly; //polygon shapefile
                         var buffers; //concentric buffers around points					
 						var parameters=ParametersService.getParameters();
@@ -454,6 +456,9 @@ angular.module("RIF")
                                                 });
                                         buffers.addLayer(circle);
 										var properties = poly._layers[j].feature.properties;
+										if (properties['$$hashKey']) {
+											properties['$$hashKey']=undefined;
+										}
                                         $rootScope.$broadcast('makeDrawSelection', {
                                             data: circle,
 											properties: properties,
@@ -469,51 +474,7 @@ angular.module("RIF")
 								alertScope.showSuccess("Added " +i + " band(s) from " + 
 									points + " points using " +
 									getSelectionMethodAsString());
-								/*
-								var points = 0;
-								var colourIndex=0;
-                                for (var i = (scope.bandAttr.length-1); i>=0; i--) { // In descending order (biggest band first)
-                                    for (var j in poly._layers) {
-                                        //Shp Library inverts lat, lngs for some reason (Bug?) - switch back
-                                        var circle = L.circle(
-											[poly._layers[j].feature.geometry.coordinates[1],
-                                             poly._layers[j].feature.geometry.coordinates[0]],
-                                                {
-                                                    radius: scope.bandAttr[i],
-                                                    fillColor: 'none',
-                                                    weight: (selectorBands.weight || 3),
-													opacity: (selectorBands.opacity || 0.8),
-													fillOpacity: (selectorBands.fillOpacity || 0),
-                                                    color: selectorBands.bandColours[colourIndex] // Band i+1
-                                                });
-										var properties = poly._layers[j].feature.properties;	
-											
-                                        buffers.addLayer(circle);
-                                        $rootScope.$broadcast('makeDrawSelection', {
-                                            data: circle,
-											properties: properties,
-                                            circle: true,
-                                            freehand: false,
-                                            band: i + 1,	
-											area: Math.round((Math.PI*Math.pow(scope.bandAttr[i], 2)*100)/1000000)/100 // Square km to 2dp
-                                        });
-										points++;
-                                    }
-									colourIndex++;
-                                }
-								
-								alertScope.showSuccess("Added " + colourIndex + " band(s) from " + 
-									points + " points using " +
-									getSelectionMethodAsString()); */
-									
-//								try {	
-//									scope.shpfile.addLayer(buffers);
-//								} catch (err) {
-//									alertScope.showError("Could not open Shapefile, no valid features");
-//									return false;
-//								}	
-								
-                                $rootScope.$broadcast('completedDrawSelection', {});
+                                $rootScope.$broadcast('completedDrawSelection', { maxBand: i});
                             } else if (scope.isPolygon) {
                                 if (scope.selectionMethod === 2) { // make selection by band attribute in file
                                     for (var i in poly._layers) {
@@ -554,7 +515,10 @@ angular.module("RIF")
 								var shapeList = []
                                 for (var i in poly._layers) {
                                     var polygon = L.polygon(poly._layers[i].feature.geometry.coordinates[0], {});
-									var properties = poly._layers[i].feature.properties	
+									var properties = poly._layers[i].feature.properties;					
+									if (properties['$$hashKey']) {
+										properties['$$hashKey']=undefined;
+									}
                                     var shape = {
                                         data: angular.copy(polygon),
 										circle: false,
@@ -680,7 +644,7 @@ angular.module("RIF")
 //									return false;
 //								} 
 								
-                                $rootScope.$broadcast('completedDrawSelection', {});
+                                $rootScope.$broadcast('completedDrawSelection', {maxBand: maxBand});
                             } // End of isPolygon()
 
                             //add AOI layer to map on modal close                            
