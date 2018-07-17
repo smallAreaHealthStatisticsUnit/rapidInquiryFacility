@@ -421,7 +421,7 @@ public class BaseSQLManager implements SQLManager {
 
 		StringBuilder queryLog = new StringBuilder();
 		queryLog.append("QUERY NAME: ").append(queryName).append(lineSeparator);
-		queryLog.append("PARAMETERS:").append(lineSeparator);
+		queryLog.append("PARAMETERS(" + parameters.length + "): ").append(lineSeparator);
 		for (int i = 0; i < parameters.length; i++) {
 			queryLog.append("\t");
 			queryLog.append(i + 1);

@@ -161,9 +161,16 @@ public class RIFContextManager extends BaseSQLManager {
 					queryFormatter);
 			dbResultSet = statement.executeQuery();
 
+		
 			while (dbResultSet.next()) {
-				HealthTheme healthTheme = HealthTheme.newInstance();
-				healthTheme.setName(dbResultSet.getString(1));
+				if (dbResultSet.getString(1) == null) {
+					throw new SQLException("getHealthThemes(): null theme for row: " + dbResultSet.getRow());
+				}
+				else if (dbResultSet.getString(2) == null) {
+					throw new SQLException("getHealthThemes(): null description for row: " + dbResultSet.getRow());
+				}
+				HealthTheme healthTheme = HealthTheme.newInstance(dbResultSet.getString(1));
+//				healthTheme.setName(dbResultSet.getString(1));
 				healthTheme.setDescription(dbResultSet.getString(2));
 				results.add(healthTheme);
 			}
@@ -363,7 +370,8 @@ public class RIFContextManager extends BaseSQLManager {
 			logSQLQuery(
 					"getNumeratorDenominatorPairs",
 					queryFormatter,
-					healthTheme.getDescription());
+					healthTheme.getDescription(),
+					geography.getDisplayName());
 
 			//Parameterise and execute query
 			statement
@@ -398,7 +406,8 @@ public class RIFContextManager extends BaseSQLManager {
 				String errorMessage
 						= RIFServiceMessages.getMessage(
 						"sqlRIFContextManager.error.noNDPairForHealthTheme",
-						healthTheme.getName());
+						healthTheme.getDescription(),
+						geography.getDisplayName());
 				throw new RIFServiceException(
 						RIFServiceError.NO_ND_PAIR_FOR_HEALTH_THEME,
 						errorMessage);
