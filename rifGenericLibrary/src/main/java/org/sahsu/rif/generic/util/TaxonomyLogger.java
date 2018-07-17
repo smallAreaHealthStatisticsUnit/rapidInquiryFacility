@@ -2,84 +2,25 @@ package org.sahsu.rif.generic.util;
 
 /**
  * This is a class used for error logging and provides a facade to the underlying
- * SL4J logging facilities.  The class has been developed as part of a temporary
+ * SLF4J logging facilities.  The class has been developed as part of a temporary
  * work-around for transitivity problems we've encountered with classes in the 
- * SL4J jars.  By using this class, we've reduced the number of times that SL4J
+ * SLF4J jars.  By using this class, we've reduced the number of times that SL4J
  * is explicitly called in the code base.  For now we're commenting out references
- * to SL4J until the transitive dependencies problems can be addressed.
+ * to SLF4J until the transitive dependencies problems can be addressed.
  * 
- * 
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
  * <hr>
  * Kevin Garwood
  * @author kgarwood
  */
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
+import java.util.Arrays;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 public final class TaxonomyLogger {
 
-	// ==========================================
-	// Section Constants
-	// ==========================================
-
-	// ==========================================
-	// Section Properties
-	// ==========================================
-	
 	//TOUR_CONCURRENCY
 	/*
 	 * We use eager instantiation to create a single instance of the class
@@ -104,12 +45,8 @@ public final class TaxonomyLogger {
 	private static Logger log;
 	private static String lineSeparator = System.getProperty("line.separator");
 				
-	// ==========================================
-	// Section Construction: log4j
-	// ==========================================
-	
 	private TaxonomyLogger() {
-//		System.out.println("TaxonomyLogger() INIT");
+
 		/* Get actual class name to be printed on */
 		String message = "Created TaxonomyLogger: " + TaxonomyLogger.class.getName();
 		boolean setManager=false;
@@ -122,41 +59,26 @@ public final class TaxonomyLogger {
 		
 		try {
 			log=LogManager.getLogger(TaxonomyLogger.class.getName());	
-															// Get logger called: "TaxonomyLogger" 	
-		}
-		catch(Exception e) {
-			System.out.println("TaxonomyLogger() LogManager.getLogger: Caught exception: " + e.getMessage());
-		}
-		finally {
+		} catch(Exception e) {
+			System.out.println("TaxonomyLogger() LogManager.getLogger: Caught exception: "
+			                   + e.getMessage());
+		} finally {
 			if (log != null) {
 				log.info("[TaxonomyLogger]: " + message);
 				if (setManager) {
 					log.info("[TaxonomyLogger]: Set java.util.logging.manager=" +
 						System.getProperty("java.util.logging.manager"));
 				}
-			}
-			else {	
+			} else {
 				System.out.println("INFO(no TaxonomyLogger) " + message);
 			}			
 		}
 	}
-	
-	public void printLoggers() {
-		if (log == null) {	
-			System.out.println("INFO(no TaxonomyLogger) [printLoggers]");
-			return;
-		}	
-	}
-	
+
 	public static TaxonomyLogger getLogger() { // Return this static object
 		return taxonomyLogger;
 	}	
 	
-	// ==========================================
-	// Section Accessors and Mutators
-	// ==========================================
-	// 
-
 	/**
 	 * error() print error message and stack trace. Contains message, root cause message, throwable count,
 	 * All root cause stack traces.
@@ -166,7 +88,6 @@ public final class TaxonomyLogger {
 	 * @param  callingClass  Calling class (object); usually this.getClass()
 	 * @param  errorHeading  Textual error heading
 	 * @param  throwableItem Exception caught
-	 * @return Nothing
 	 */
 	public void error(
 		final Class callingClass,
@@ -175,22 +96,25 @@ public final class TaxonomyLogger {
 			
 		StringBuilder errorString = new StringBuilder();
 		
-		errorString.append("getMessage:          " + ExceptionUtils.getMessage(throwableItem) + lineSeparator);
-        errorString.append("getRootCauseMessage: " + ExceptionUtils.getRootCauseMessage(throwableItem) + lineSeparator);
-        errorString.append("getThrowableCount:   " + ExceptionUtils.getThrowableCount(throwableItem) + lineSeparator);
-		errorString.append("getRootCauseStackTrace >>>" + lineSeparator);
+		errorString.append("getMessage:          ").append(ExceptionUtils.getMessage(
+				throwableItem)).append(lineSeparator);
+        errorString.append("getRootCauseMessage: ")
+		        .append(ExceptionUtils.getRootCauseMessage(throwableItem)).append(lineSeparator);
+        errorString.append("getThrowableCount:   ")
+		        .append(ExceptionUtils.getThrowableCount(throwableItem)).append(lineSeparator);
+		errorString.append("getRootCauseStackTrace >>>").append(lineSeparator);
 		for (String cause : ExceptionUtils.getRootCauseStackTrace(throwableItem)) {
-			errorString.append(cause + lineSeparator);
+			errorString.append(cause).append(lineSeparator);
 		}
 		errorString.append("<<< End getRootCauseStackTrace.");
 		
 		if (log != null) {
 			log.error("["+callingClass.getName()+"]:" + lineSeparator + 
 				errorHeading + lineSeparator + errorString);
-		}
-		else {	
-			System.out.println("ERROR(no RIFLogger):" + lineSeparator + "["+callingClass.getName()+"]" + 
-				errorHeading + lineSeparator + throwableItem.getStackTrace());
+		} else {
+			System.out.println("ERROR(no RIFLogger):" + lineSeparator + "["
+			                   + callingClass.getName() + "]" + errorHeading + lineSeparator
+			                   + Arrays.toString(throwableItem.getStackTrace()));
 		}
 	}
 	

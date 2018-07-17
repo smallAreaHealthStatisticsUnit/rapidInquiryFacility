@@ -1,6 +1,8 @@
 package org.sahsu.rif.dataloader.test;
 
 
+import java.net.URISyntaxException;
+
 import org.junit.Test;
 
 /**
@@ -66,11 +68,6 @@ public class TestClean extends AbstractRIFDataLoaderTestCase {
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
-	public TestClean() {
-
-	}
-
 
 	@Test
 	public void test2() {
