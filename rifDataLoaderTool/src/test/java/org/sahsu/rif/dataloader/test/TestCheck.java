@@ -1,6 +1,7 @@
 package org.sahsu.rif.dataloader.test;
 
 import java.io.File;
+import java.net.URISyntaxException;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -78,10 +79,6 @@ public class TestCheck extends AbstractRIFDataLoaderTestCase {
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
-	public TestCheck() {
-
-	}
 
 	private LinearWorkflowEnactor getEnactor() {
 		User rifManager = getRIFManager();

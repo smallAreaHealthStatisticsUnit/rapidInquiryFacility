@@ -1,5 +1,7 @@
 package org.sahsu.rif.dataloader.test;
 
+import java.net.URISyntaxException;
+
 /**
  *
  *
@@ -63,10 +65,6 @@ public class TestOptimise extends AbstractRIFDataLoaderTestCase {
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
-	public TestOptimise() {
-
-	}
 
 	public void test1() {
 
