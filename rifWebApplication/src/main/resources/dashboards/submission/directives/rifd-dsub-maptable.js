@@ -1489,6 +1489,19 @@ angular.module("RIF")
 							
 							if (this._div) {
 								if (savedShape) {
+									var bandCount = {};
+									var studySelection=$scope.selectedPolygon;
+									if (studySelection) {
+										for (var i=0; i<studySelection.length; i++) {
+											var band=studySelection[i].band;
+											if (bandCount[band]) {
+												bandCount[band]++;
+											}
+											else {
+												bandCount[band]=1;
+											}
+										}
+									}
 									if (savedShape.circle) {
 										this._div.innerHTML = '<h4>Circle;</h4><b>Radius: ' + Math.round(savedShape.radius * 10) / 10 + 'm</b></br>' +
 											"<b>Lat: " + Math.round(savedShape.latLng.lat * 1000) / 1000 + // 100m precision
@@ -1522,9 +1535,11 @@ angular.module("RIF")
 											}
 										}
 										else if (property != '$$hashKey') {
-											this._div.innerHTML+= '<b>' + property + ': ' + savedShape.properties[property] + '</b><br />'
+											this._div.innerHTML+= '<b>' + property + ': ' + savedShape.properties[property] + '</b><br />';
 										}
 									}
+									this._div.innerHTML += '<b>Band: ' + (savedShape.band || "unknown") + '</b><br />';
+									this._div.innerHTML += '<b>Areas selected: ' + (bandCount[savedShape.band] || 0) + '</b><br />';
 								}
 								else if ($scope.shapes.getLayers().length > 0) {
 									this._div.innerHTML = '<h4>Mouse over selection shapes to show properties</br>' +
