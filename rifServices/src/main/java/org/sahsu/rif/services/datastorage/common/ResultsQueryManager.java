@@ -33,16 +33,43 @@ public class ResultsQueryManager extends BaseSQLManager {
 	RIFResultTable getTileMakerCentroids(
 			final Connection connection, final Geography geography,
 			final GeoLevelSelect geoLevelSelect) throws RIFServiceException {
-
-		SelectQueryFormatter getMapTileTableQueryFormatter =
+				
+		boolean hasPopulationWeightedCentroids=false;
+		
+		try {
+			hasPopulationWeightedCentroids=doesColumnExist(connection, 
+				"rif_data", "lookup_" + geoLevelSelect.getName().toLowerCase(), "population_weighted_centroid");
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in doesColumnExist()",
+				exception);			
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToGetCentroids",
+					geoLevelSelect.getDisplayName(),
+					geography.getDisplayName());
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+		}				
+		
+		SelectQueryFormatter getTileMakerCentroidsQueryFormatter =
 				SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
 
-		getMapTileTableQueryFormatter.setDatabaseSchemaName("rif_data");
-		getMapTileTableQueryFormatter.addSelectField(geoLevelSelect.getName());
-		getMapTileTableQueryFormatter.addSelectField("areaname");
-		getMapTileTableQueryFormatter.addSelectField("geographic_centroid");
-		getMapTileTableQueryFormatter.addFromTable("lookup_" + geoLevelSelect.getName());
+		getTileMakerCentroidsQueryFormatter.setDatabaseSchemaName("rif_data");
+		getTileMakerCentroidsQueryFormatter.addSelectField(geoLevelSelect.getName().toLowerCase());
+		getTileMakerCentroidsQueryFormatter.addSelectField("areaname");
+		if (hasPopulationWeightedCentroids) {
+			getTileMakerCentroidsQueryFormatter.addSelectField("geographic_centroid");
+			getTileMakerCentroidsQueryFormatter.addSelectField("population_weighted_centroid");
+		}
+		else {
+			getTileMakerCentroidsQueryFormatter.addSelectField("geographic_centroid");
+		}
+		getTileMakerCentroidsQueryFormatter.addFromTable("lookup_" + geoLevelSelect.getName().toLowerCase());
 
+		logSQLQuery("getTileMakerCentroids", getTileMakerCentroidsQueryFormatter);
+								
 		PreparedStatement resultCounterStatement;
 		PreparedStatement statement = null;
 		ResultSet resultCounterSet;
@@ -50,7 +77,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 
 		try {
 			//Count the number of results first
-			resultCounterStatement = connection.prepareStatement(getMapTileTableQueryFormatter.generateQuery());
+			resultCounterStatement = connection.prepareStatement(getTileMakerCentroidsQueryFormatter.generateQuery());
 			resultCounterSet = resultCounterStatement.executeQuery();
 
 			int totalNumberRowsInResults = 0;
@@ -59,23 +86,42 @@ public class ResultsQueryManager extends BaseSQLManager {
 			}
 
 			//get the results
-			statement = connection.prepareStatement(getMapTileTableQueryFormatter.generateQuery());
+			statement = connection.prepareStatement(getTileMakerCentroidsQueryFormatter.generateQuery());
 
 			RIFResultTable results = new RIFResultTable();
 
-			String[] columnNames = new String[4];
+			String[] columnNames;
+			String[][] data;
+			RIFResultTable.ColumnDataType[] columnDataTypes;
+			if (hasPopulationWeightedCentroids) {
+				columnNames = new String[6];
+				data = new String[totalNumberRowsInResults][6];
+				columnDataTypes = new RIFResultTable.ColumnDataType[6];
+			}
+			else {
+				columnNames = new String[4];
+				data = new String[totalNumberRowsInResults][4];
+				columnDataTypes = new RIFResultTable.ColumnDataType[4];
+			}
+			
 			columnNames[0] = "id";
 			columnNames[1] = "name";
 			columnNames[2] = "x";
 			columnNames[3] = "y";
+			if (hasPopulationWeightedCentroids) {
+				columnNames[4] = "pop_x";
+				columnNames[5] = "pop_y";
+			}
 
-			RIFResultTable.ColumnDataType[] columnDataTypes = new RIFResultTable.ColumnDataType[4];
 			columnDataTypes[0] = RIFResultTable.ColumnDataType.TEXT;
 			columnDataTypes[1] = RIFResultTable.ColumnDataType.TEXT;
 			columnDataTypes[2] = RIFResultTable.ColumnDataType.TEXT;
 			columnDataTypes[3] = RIFResultTable.ColumnDataType.TEXT;
+			if (hasPopulationWeightedCentroids) {
+				columnDataTypes[4] = RIFResultTable.ColumnDataType.TEXT;
+				columnDataTypes[5] = RIFResultTable.ColumnDataType.TEXT;
+			}
 
-			String[][] data = new String[totalNumberRowsInResults][4];
 			int ithRow = 0;
 
 			resultSet = statement.executeQuery();
@@ -89,6 +135,23 @@ public class ResultsQueryManager extends BaseSQLManager {
 				y = y.replaceAll("[^0-9?!\\.-]","");
 				data[ithRow][2] = x;
 				data[ithRow][3] = y;
+				
+				if (hasPopulationWeightedCentroids) {
+					String pop_weighted_coords = resultSet.getString(4);
+					if (pop_weighted_coords == null) {
+						data[ithRow][4] = null;
+						data[ithRow][5] = null;	
+					}
+					else {
+						pop_weighted_coords=pop_weighted_coords.split(":")[2];
+						String pop_x = pop_weighted_coords.split(",")[0];
+						String pop_y = pop_weighted_coords.split(",")[1];
+						pop_x = pop_x.replaceAll("[^0-9?!\\.-]","");
+						pop_y = pop_y.replaceAll("[^0-9?!\\.-]","");
+						data[ithRow][4] = pop_x;
+						data[ithRow][5] = pop_y;	
+					}					
+				}
 				ithRow++;
 			}
 

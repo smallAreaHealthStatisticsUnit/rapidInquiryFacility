@@ -531,6 +531,57 @@ public class BaseSQLManager implements SQLManager {
 	}
 
 	@Override
+	public boolean doesColumnExist(final Connection connection, final String schemaName, final String tableName, final String columnName) 
+		throws Exception {		
+	
+		boolean rVal=false;
+		
+		SQLGeneralQueryFormatter checkColumnExistsQueryFormatter = new SQLGeneralQueryFormatter();
+		ResultSet resultSet;
+		
+		configureQueryFormatterForDB(checkColumnExistsQueryFormatter);
+		checkColumnExistsQueryFormatter.addQueryLine(0, "SELECT column_name");
+		checkColumnExistsQueryFormatter.addQueryLine(0, "  FROM information_schema.columns");
+		checkColumnExistsQueryFormatter.addQueryLine(0, " WHERE table_schema = ?");
+		checkColumnExistsQueryFormatter.addQueryLine(0, "   AND table_name   = ?");
+		checkColumnExistsQueryFormatter.addQueryLine(0, "   AND column_name  = ?");
+
+		logSQLQuery(
+				"doesColumnExist",
+				checkColumnExistsQueryFormatter,
+				schemaName,
+				tableName,
+				columnName);
+		PreparedStatement statement = createPreparedStatement(connection, checkColumnExistsQueryFormatter);
+		
+		try {		
+			statement.setString(1, schemaName);
+			statement.setString(2, tableName);
+			statement.setString(3, columnName);
+			resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				String columnComment=resultSet.getString(1);
+				if (resultSet.next()) {
+					throw new Exception("doesColumnExist() database: " + databaseType +
+						"; expected 1 row, got >1");
+				}
+				rVal=true;
+			}
+		}
+		catch (Exception exception) {
+			rifLogger.error(this.getClass(), "Error in SQL Statement (" + databaseType + ") >>> " +
+				lineSeparator + checkColumnExistsQueryFormatter.generateQuery(),
+				exception);
+			throw exception;
+		}
+		finally {
+			closeStatement(statement);
+		}
+		
+		return rVal;
+	}
+	
+	@Override
 	public boolean isUserBlocked(
 			final User user) {
 		

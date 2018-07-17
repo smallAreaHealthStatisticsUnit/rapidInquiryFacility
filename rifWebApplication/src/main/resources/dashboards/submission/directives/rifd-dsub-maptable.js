@@ -434,53 +434,120 @@ angular.module("RIF")
 
                             //Get the centroids from DB
                             var bWeightedCentres = true;
+							var popWeightedCount=0;
+							var dbCentroidCount=0;
                             user.getTileMakerCentroids(user.currentUser, thisGeography, $scope.input.selectAt).then(function (res) {
-								
-								
-								if (res.data.smoothed_results[0] && res.data.smoothed_results[0].pop_x && res.data.smoothed_results[0].pop_y) {
-									$scope.centroid_type="population weighted";
-								}
-								else if (res.data.smoothed_results[0] && res.data.smoothed_results[0].x && res.data.smoothed_results[0].y) {
-									$scope.centroid_type="database geographic";
-								}
-								
+		
 								var latlngListDups=0;
+								$scope.centroid_type="Not known";
                                 for (var i = 0; i < res.data.smoothed_results.length; i++) {
-									
-                                    var p = res.data.smoothed_results[i];
-									latlngList.push({
-										latLng: L.latLng([p.y, p.x]), 
-										name: p.name, 
-										id: p.id,
-										band: -1
-									});
-									
-                                    var circle = new L.CircleMarker([p.y, p.x], {
-                                        radius: 2,
-                                        fillColor: "blue",
-                                        color: "#000",
-                                        weight: 1,
-                                        opacity: 1,
-                                        fillOpacity: 0.8
-                                    });
-									
-                                    centroidMarkers.addLayer(circle);
-
-									if (latlngListById[p.id]) {
-										latlngListDups++;
+													
+									var circle = undefined;
+																		
+									if (res.data.smoothed_results[i].pop_x == 'null') { // Fix NULL DB data
+										res.data.smoothed_results[i].pop_x=undefined;
 									}
-									else {
-										latlngListById[p.id] = {
-											latLng: L.latLng([p.y, p.x]), 
-											name: p.name,
-											circleId: centroidMarkers.getLayerId(circle)
+									if (res.data.smoothed_results[i].pop_y == 'null') {
+										res.data.smoothed_results[i].pop_y=undefined;
+									}
+									
+                                    var p = res.data.smoothed_results[i];	
+
+									if (res.data.smoothed_results[i] && res.data.smoothed_results[i].pop_x && res.data.smoothed_results[i].pop_y) {
+										popWeightedCount++;
+										
+										latlngList.push({
+											latLng: L.latLng([p.pop_y, p.pop_x]), 
+											name: p.name, 
+											id: p.id,
+											band: -1
+										});
+										circle = new L.CircleMarker([p.pop_y, p.pop_x], {
+											radius: 2,
+											fillColor: "green",
+											color: "#000",
+											weight: 1,
+											opacity: 1,
+											fillOpacity: 0.8
+										});
+										
+										centroidMarkers.addLayer(circle);
+
+										if (latlngListById[p.id]) {
+											latlngListDups++;
+										}
+										else {
+											latlngListById[p.id] = {
+												latLng: L.latLng([p.pop_y, p.pop_x]), 
+												name: p.name,
+												circleId: centroidMarkers.getLayerId(circle)
+											}
+										}
+										
+										if (res.data.smoothed_results[i] && res.data.smoothed_results[i].x && res.data.smoothed_results[i].y) {
+											dbCentroidCount++;
 										}
 									}
-									
-									if (latlngListDups > 0) {
-										alertScope.showWarning("Duplicate IDs in centroid list");
-									}
+									else if (res.data.smoothed_results[i] && res.data.smoothed_results[i].x && res.data.smoothed_results[i].y) {
+										dbCentroidCount++;
+										latlngList.push({
+											latLng: L.latLng([p.y, p.x]), 
+											name: p.name, 
+											id: p.id,
+											band: -1
+										});
+										circle = new L.CircleMarker([p.y, p.x], {
+											radius: 2,
+											fillColor: "blue",
+											color: "#000",
+											weight: 1,
+											opacity: 1,
+											fillOpacity: 0.8
+										});
+										
+										centroidMarkers.addLayer(circle);
+
+										if (latlngListById[p.id]) {
+											latlngListDups++;
+										}
+										else {
+											latlngListById[p.id] = {
+												latLng: L.latLng([p.y, p.x]), 
+												name: p.name,
+												circleId: centroidMarkers.getLayerId(circle)
+											}
+										}
+									}									
                                 }
+								
+								if (latlngListDups > 0) {
+									alertScope.showWarning("Duplicate IDs in centroid list");
+								}
+								
+								var pctPopWeighted=Math.round(10000*popWeightedCount/dbCentroidCount)/100;
+									
+								if (res.data.smoothed_results.length == popWeightedCount) {
+									$scope.centroid_type="population weighted";
+								}
+								else if (res.data.smoothed_results.length == dbCentroidCount) {
+									$scope.centroid_type="database geographic";
+								}
+								else if (0 == dbCentroidCount) {
+									throw new Error("user.getTileMakerCentroids: dbCentroidCount=0");
+								}
+								else {
+									$scope.centroid_type=pctPopWeighted + "% population weighted";
+								}
+								
+								alertScope.consoleDebug("[rifd-dsub-maptable.js] " + thisGeography + "; " + $scope.input.selectAt +
+									"; polygons: " + res.data.smoothed_results.length +
+									"; dbCentroidCount: " + dbCentroidCount +
+									"; popWeightedCount: " + popWeightedCount +
+									"; pctPopWeighted: " + pctPopWeighted +
+									"; centroid_type: " + $scope.centroid_type);
+									
+								$scope.info.update();
+								
                             }, function () {
                                 //couldn't get weighted centres so generate geographic with leaflet
                                 alertScope.showWarning("Could not find (weighted) centroids stored in database - calculating geographic centroids on the fly");
