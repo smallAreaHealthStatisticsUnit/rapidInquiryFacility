@@ -144,6 +144,9 @@
 .btn-shapes, .btn-shapes:active {
     background: white url("../images/glyphicon/glyphicons-97-vector-path-polygon.png") no-repeat;
 }
+.btn-addPostalCode, .btn-addPostalCode:active {
+    background: white url("../images/glyphicon/glyphicons-90-building.png") no-repeat;
+}
 .btn-addAOI, .btn-addAOI:active {
     background: white url("../images/glyphicon/glyphicons-416-disk-open.png") no-repeat;
 }

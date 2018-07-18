@@ -388,6 +388,20 @@
     margin: auto;
 }
 
+.postal-code-modal .modal-dialog {
+    width: 850px;
+    position: absolute;
+    height: 325px;
+    top:0; bottom: 0; left: 0; right: 0;
+}
+
+.postal-code-box {
+    width: 825px;
+    height: 320px;
+    top: 10px; bottom: 10px; left: 10px; right: 10px;
+    margin: 10px;
+}
+
 .shapefile-modal .modal-dialog {
     width: 850px;
     position: absolute;
