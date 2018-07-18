@@ -71,6 +71,12 @@ public interface UserService {
 			GeoLevelToMap _geoLevelToMap)
 						throws RIFServiceException;
 
+	RIFResultTable getPostalCodes(
+			User _user,
+			Geography _geography,
+			String postcode)
+								throws RIFServiceException;
+
 	RIFResultTable getTileMakerCentroids(
 			User _user,
 			Geography _geography,

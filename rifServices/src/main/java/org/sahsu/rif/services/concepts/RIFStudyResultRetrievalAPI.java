@@ -13,6 +13,12 @@ public interface RIFStudyResultRetrievalAPI extends RIFStudyServiceAPI {
 			final Geography geography,
 			final GeoLevelSelect geoLevelSelect)
 					throws RIFServiceException;
+					
+	RIFResultTable getPostalCodes(
+			final User user,
+			final Geography geography,
+			final String postcode)
+					throws RIFServiceException;
 
 	String getTileMakerTiles(
 			final User user,

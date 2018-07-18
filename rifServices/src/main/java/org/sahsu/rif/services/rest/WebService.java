@@ -747,6 +747,38 @@ public class WebService {
 			result);
 	}
 	
+	protected Response getPostalCodes(
+			final HttpServletRequest servletRequest,
+			final String userID,
+			final String geographyName,
+			final String postcode) {
+			
+			String result;
+			
+			try {
+				//Convert URL parameters to RIF service API parameters
+				User user = createUser(servletRequest, userID);
+				Geography geography = Geography.newInstance(geographyName, "");
+				
+				//Call service API
+				RIFStudyResultRetrievalAPI studyResultRetrievalService =
+						getRIFStudyResultRetrievalService();
+				
+				RIFResultTable resultTable = studyResultRetrievalService.getPostalCodes(
+						user, geography, postcode);
+				
+				RIFResultTableJSONGenerator rifResultTableJSONGenerator =
+						new RIFResultTableJSONGenerator();
+				result = rifResultTableJSONGenerator.writeResultTable(resultTable);
+			} catch(Exception exception) {
+				rifLogger.error(this.getClass(), getClass().getSimpleName() +
+			                                 ".getPostalCodes error", exception);
+				result = serialiseException(servletRequest, exception);
+			}
+			
+			return webServiceResponseGenerator.generateWebServiceResponse(servletRequest, result);
+		}
+		
 	protected Response getTileMakerCentroids(
 			final HttpServletRequest servletRequest,
 			final String userID,

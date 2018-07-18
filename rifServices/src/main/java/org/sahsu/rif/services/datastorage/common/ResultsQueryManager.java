@@ -30,8 +30,89 @@ public class ResultsQueryManager extends BaseSQLManager {
 		getTilesQueryFormatter.setNumberOfFunctionParameters(9);
 	}
 
+	RIFResultTable getPostalCodes(
+			final Connection connection, 
+			final Geography geography,
+			final String postcode) throws RIFServiceException {
+	
+		SelectQueryFormatter getPostalCodesQueryFormatter1 =
+				SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
+
+		getPostalCodesQueryFormatter1.setDatabaseSchemaName("rif40");
+		getPostalCodesQueryFormatter1.addSelectField("postal_population_table");
+		getPostalCodesQueryFormatter1.addFromTable("rif40_geographies");
+		getPostalCodesQueryFormatter1.addWhereParameter("geography");
+
+		logSQLQuery("getPostalCodes", getPostalCodesQueryFormatter1, geography.getName().toUpperCase());
+	
+		PreparedStatement statement1 = null;
+		ResultSet resultSet1 = null;
+
+		try {
+			statement1 = connection.prepareStatement(getPostalCodesQueryFormatter1.generateQuery());
+			resultSet1 = statement1.executeQuery();
+			statement1.setString(1, geography.getName().toUpperCase());
+		
+			resultSet1.next();
+			String postalPopulationTable = resultSet1.getString(1);
+			if (resultSet1.next()) {
+				throw new Exception("getPostalCodes query 1; expected 1 row, got >1");
+			}
+			
+			if (postalPopulationTable == null) {
+				throw new Exception("getPostalCodes no postal population table defined for geography: " + geography.getName().toUpperCase());
+			}
+	
+			boolean hasXcoordinate=doesColumnExist(connection, 
+				"rif_data", postalPopulationTable.toLowerCase(), "xcoordinate");
+			boolean hasYcoordinate=doesColumnExist(connection, 
+				"rif_data", postalPopulationTable.toLowerCase(), "ycoordinate");
+
+			if (hasXcoordinate == false || hasYcoordinate == false) {
+				throw new Exception("getPostalCodes X/Y coordinate columns found in geography: " + geography.getName().toUpperCase() +
+					" postal population table: " + postalPopulationTable);
+			}
+			
+			rifLogger.info(getClass(), "get postcode for geography: " + geography.getName().toUpperCase());
+			
+			RIFResultTable results = new RIFResultTable();	
+			connection.commit();
+			
+			return results;
+		} catch(SQLException sqlException) {
+			//Record original exception, throw sanitised, human-readable version
+			logSQLException(sqlException);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToGetPostalCode",
+					geography.getDisplayName());
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+		} catch(Exception exception) {
+			//Record original exception, throw sanitised, human-readable version
+			logException(exception);
+			String errorMessage
+					= RIFServiceMessages.getMessage(
+					"sqlResultsQueryManager.unableToGetPostalCode",
+					geography.getDisplayName());
+			throw new RIFServiceException(
+					RIFServiceError.DATABASE_QUERY_FAILED,
+					errorMessage);
+		} finally {
+			//Cleanup database resources
+			SQLQueryUtility.close(statement1);
+			SQLQueryUtility.close(resultSet1);
+
+//			SQLQueryUtility.close(statement2);
+//			SQLQueryUtility.close(resultSet2);
+		}			
+			
+	}
+
 	RIFResultTable getTileMakerCentroids(
-			final Connection connection, final Geography geography,
+			final Connection connection, 
+			final Geography geography,
 			final GeoLevelSelect geoLevelSelect) throws RIFServiceException {
 				
 		boolean hasPopulationWeightedCentroids=false;
@@ -70,7 +151,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 
 		logSQLQuery("getTileMakerCentroids", getTileMakerCentroidsQueryFormatter);
 								
-		PreparedStatement resultCounterStatement;
+		PreparedStatement resultCounterStatement = null;
 		PreparedStatement statement = null;
 		ResultSet resultCounterSet;
 		ResultSet resultSet = null;

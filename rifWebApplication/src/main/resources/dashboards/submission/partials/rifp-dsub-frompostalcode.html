@@ -46,18 +46,16 @@ Disease submission modal to open postal code
 
 		<div class="postal-code-box">
 			<div class="bnd-fld">
-				<table id="breakstable">
-			        <tr>
-						<td>Postal or ZIP code:&nbsp;<input class="postcode" ng-model="postcode"></td> 
-					</tr>
-				</table>
-				<h3>Circular buffer around postal codes (metres)</h3><br>
+				Postal or ZIP code:&nbsp;<input class="postcode" type="text" required ng-model="postcode" ng-change="postcodeChange(postcode)" ng-blur="checkPostcode()">
+				</br>
+				<h3>Circular buffer around postal code (metres)</h3><br>
 
 				<table id="breakstable">
 					<tr ng-repeat="i in possibleBands track by $index">
 						<td>Radius for band {{possibleBands[i - 1]}}:&nbsp;&nbsp;<input class="break" ng-model="bandAttr[$index]"></td> 
 					</tr>
 				</table>
+				</br>
 			</div>
 		</div>
 

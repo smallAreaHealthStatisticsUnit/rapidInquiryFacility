@@ -28,7 +28,7 @@
  * Boston, MA 02110-1301 USA
  
  * Peter Hambly
- * @author dmorley
+ * @author phambly
  */
 
 /*
@@ -43,21 +43,24 @@ angular.module("RIF")
                 $uibModalInstance.dismiss();
             };
             $scope.submit = function () {
-                var bOk = $scope.displayPostalCode();
+                var bOk = $scope.applyPostalCode();
                 if (bOk) {
                     $uibModalInstance.close();
                 }
             };
         })
-        .directive('postalCode', ['$rootScope', '$uibModal', '$q', 'ParametersService', 'uiGridConstants', 
+        .directive('postalCode', ['$rootScope', '$uibModal', '$q', 'ParametersService', 'uiGridConstants', 'AlertService', 'SubmissionStateService', 
+			'user',
 			// SelectStateService is not need as makeDrawSelection() in rifd-dsub-maptable.js is called to update
-            function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants) {
+            function ($rootScope, $uibModal, $q, ParametersService, uiGridConstants, AlertService, SubmissionStateService,
+				user) {
                 return {
-                    restrict: 'A', //added as attribute to in to selectionMapTools > btn-addAOI in rifs-utils-mapTools
+                    restrict: 'A', //added as attribute to in to selectionMapTools > btn-addPostalCode in rifs-utils-mapTools
                     link: function (scope, element, attr) {
 
                         var alertScope = scope.$parent.$$childHead.$parent.$parent.$$childHead;
                         var studyType = scope.$parent.input.type; // Disease Mapping or Risk Analysis
+						var selectAt = scope.$parent.input.selectAt;
 						
                         var buffers; //concentric buffers around points					
 						var parameters=ParametersService.getParameters();
@@ -89,16 +92,34 @@ angular.module("RIF")
 						
 						var postalcodeGridOptions = angular.copy(initialPostalcodeGridOptions);
 							
+                        var thisGeography = SubmissionStateService.getState().geography;
+						
 						// Also defined in rifs-util-leafletdraw.js
                         var factory = L.icon({
                             iconUrl: 'images/factory.png',
                             iconAnchor: [16, 16]
                         });
                         //user input boxes
-                        scope.bandAttr = [];
+                        scope.bandAttr = [];	
+						
                         element.on('click', function (event) {
+							
+							scope.postcodeChange = function(attr) {
+								scope.postcode=attr;
+							}
+							scope.checkPostcode = function() {
+								AlertService.consoleDebug("[rifd-dsub-postal.js] postcode change: " + scope.postcode);
+								
+								user.getPostalCodes(user.currentUser, thisGeography, scope.postcode).then(function (res) {     
+								
+								}, function () { // Error handler
+									AlertService.rifMessage('warning', "Could not postal codes from the database");
+
+								}).then(function () {
+								});
+							}
+							
                             scope.modalHeader = "Select by Postal Code";
-                            scope.accept = ".zip";
                             var modalInstance = $uibModal.open({
                                 animation: true,
                                 templateUrl: 'dashboards/submission/partials/rifp-dsub-frompostalcode.html',
@@ -108,9 +129,16 @@ angular.module("RIF")
                                 scope: scope,
                                 keyboard: false
                             });
-                        });					
-
-                        scope.displayPostalCode = function () {
+                        });		
+						
+                        scope.applyPostalCode = function () {
+							if (scope.postcode) {
+								AlertService.consoleDebug("[rifd-dsub-postal.js] apply postcode: " + scope.postcode);
+							}
+							else {
+								AlertService.rifMessage('warning', 'You must enter a valid postcode');
+								return false;
+							}
                             return true;
                         };
                     }

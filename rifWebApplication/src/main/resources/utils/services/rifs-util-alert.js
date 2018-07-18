@@ -46,19 +46,19 @@ angular.module("RIF")
 								rifError: rifError
 							});
                         },
-                        consoleDebug: function (messageLevel, msg, rifHide, rifError) {
+                        consoleDebug: function (msg, rifHide, rifError) {
                             $rootScope.$broadcast('consoleMessage', { 
 								messageLevel: "DEBUG", 
 								msg: msg
 							});
                         },
-                        consoleLog: function (messageLevel, msg, rifHide, rifError) {
+                        consoleLog: function (msg, rifHide, rifError) {
                             $rootScope.$broadcast('consoleMessage', { 
 								messageLevel: "INFO", 
 								msg: msg
 							});
                         },
-                        consoleError: function (messageLevel, msg, rifHide, rifError) {
+                        consoleError: function (msg, rifHide, rifError) {
                             $rootScope.$broadcast('consoleMessage', { 
 								messageLevel: "ERROR", 
 								msg: msg

@@ -441,6 +441,19 @@ public class StudyResultRetrievalServiceResource extends WebService {
 
 	@GET
 	@Produces({"application/json"})
+	@Path("/getPostalCodes")
+	public Response getPostalCodes(
+			@Context HttpServletRequest servletRequest,
+			@QueryParam("userID") String userID,
+			@QueryParam("geographyName") String geographyName, //SAHSU
+			@QueryParam("postcode") String postcode
+			) { //LEVEL2
+
+		return super.getPostalCodes(servletRequest, userID, geographyName, postcode);
+	}
+	
+	@GET
+	@Produces({"application/json"})
 	@Path("/getTileMakerCentroids")
 	public Response getTileMakerCentroids(
 			@Context HttpServletRequest servletRequest,
