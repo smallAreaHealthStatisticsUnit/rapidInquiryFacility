@@ -250,6 +250,10 @@ angular.module("RIF")
 									// Sort into descended list so the smallest areas are in front
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] sorted areas: " + shapesLayerAreaList.length + 
 										"; " + JSON.stringify(shapesLayerAreaList));
+									if ($scope.areaNameList == undefined) {
+										$scope.createAreaNameList();
+									}
+									
 									for (var k=0; k<shapesLayerAreaList.length; k++) {
 											
 										for (var area in shapesLayerAreas) {
@@ -258,10 +262,28 @@ angular.module("RIF")
 												for (var l=0; l<areaIdList.length; l++) {
 													var shapeLayer=$scope.shapes.getLayer(areaIdList[l]);
 													if (shapeLayer && typeof shapeLayer.bringToFront === "function") { 
-														alertScope.consoleDebug("[rifd-dsub-maptable.js] bring layer: " + areaIdList[l] + " to front" +
-															"; band: " + shapeLayer.options.band +
-															"; area: " + shapeLayer.options.area);
-														shapeLayer.bringToFront();
+														if ($scope.areaNameList == undefined) {
+															alertScope.consoleDebug("[rifd-dsub-maptable.js] bring layer: " + areaIdList[l] + " to front" +
+																"; band: " + shapeLayer.options.band +
+																"; area: " + shapeLayer.options.area +
+																"; polygons: unknwon");
+															shapeLayer.bringToFront();
+														}
+														else if (shapeLayer.options.band && $scope.areaNameList &&
+															$scope.areaNameList[shapeLayer.options.band] &&
+														    $scope.areaNameList[shapeLayer.options.band].length > 0) {
+															alertScope.consoleDebug("[rifd-dsub-maptable.js] bring layer: " + areaIdList[l] + " to front" +
+																"; band: " + shapeLayer.options.band +
+																"; area: " + shapeLayer.options.area +
+																"; polygons: " + $scope.areaNameList[shapeLayer.options.band].length);
+															shapeLayer.bringToFront();
+														}
+														else {
+															alertScope.consoleDebug("[rifd-dsub-maptable.js] ignore layer: " + areaIdList[l] + " to front" +
+																"; band: " + shapeLayer.options.band +
+																"; area: " + shapeLayer.options.area +
+																"; no polygons");
+														}
 													}
 													else {		
 														shapeLayerBringToFrontError++;
@@ -458,6 +480,7 @@ angular.module("RIF")
 										
 										latlngList.push({
 											latLng: L.latLng([p.pop_y, p.pop_x]), 
+											popWeighted: true,
 											name: p.name, 
 											id: p.id,
 											band: -1
@@ -480,6 +503,7 @@ angular.module("RIF")
 											latlngListById[p.id] = {
 												latLng: L.latLng([p.pop_y, p.pop_x]), 
 												name: p.name,
+												popWeighted: true,
 												circleId: centroidMarkers.getLayerId(circle)
 											}
 										}
@@ -492,6 +516,7 @@ angular.module("RIF")
 										dbCentroidCount++;
 										latlngList.push({
 											latLng: L.latLng([p.y, p.x]), 
+											popWeighted: false,
 											name: p.name, 
 											id: p.id,
 											band: -1
@@ -514,6 +539,7 @@ angular.module("RIF")
 											latlngListById[p.id] = {
 												latLng: L.latLng([p.y, p.x]), 
 												name: p.name,
+												popWeighted: false,
 												circleId: centroidMarkers.getLayerId(circle)
 											}
 										}
@@ -1136,6 +1162,29 @@ angular.module("RIF")
 							});					
                         });
 						
+							
+						$scope.createAreaNameList = function () { // Not from latlngList - not in scope when restored
+							var studySelectedAreas=SelectStateService.getState().studySelection.studySelectedAreas;
+							if (studySelectedAreas) {
+								$scope.areaNameList = {};
+								
+								for (var i = 0; i < studySelectedAreas.length; i++) {              									
+									// Update areaNameList for debug
+									if (studySelectedAreas[i].band && studySelectedAreas[i].band != -1) {
+										if ($scope.areaNameList[studySelectedAreas[i].band]) {
+											$scope.areaNameList[studySelectedAreas[i].band].push(studySelectedAreas[i].label);
+										}
+										else {
+											$scope.areaNameList[studySelectedAreas[i].band] = [];
+											$scope.areaNameList[studySelectedAreas[i].band].push(studySelectedAreas[i].label);
+										}
+									}
+								}
+							}
+							alertScope.consoleLog("[rifd-dsub-maptable.js] createAreaNameList(); studySelectedAreas: " + studySelectedAreas.length +
+								"; areaNameList: " + $scope.areaNameList.length);
+						}
+							
                         // selection event fired from service
                         $scope.$on('makeDrawSelection', function (event, data) {
                             $scope.makeDrawSelection(data);
@@ -1387,7 +1436,7 @@ angular.module("RIF")
 							}
 							
 							function latlngListCallback () { 
-								var areaNameList = {};
+								$scope.areaNameList = {};
 								var areaCheck = {};
 								var duplicateAreaCheckIds = [];
 								
@@ -1440,22 +1489,22 @@ angular.module("RIF")
                             									
 									// Update areaNameList for debug
 									if (latlngList[i].band && latlngList[i].band != -1) {
-										if (areaNameList[latlngList[i].band]) {
-											areaNameList[latlngList[i].band].push(latlngList[i].name);
+										if ($scope.areaNameList[latlngList[i].band]) {
+											$scope.areaNameList[latlngList[i].band].push(latlngList[i].name);
 										}
 										else {
-											areaNameList[latlngList[i].band] = [];
-											areaNameList[latlngList[i].band].push(latlngList[i].name);
+											$scope.areaNameList[latlngList[i].band] = [];
+											$scope.areaNameList[latlngList[i].band].push(latlngList[i].name);
 										}
 									}
 								}
 										
 								alertScope.consoleDebug("[rifd-dsub-maptable.js] $scope.selectedPolygon.length: " + $scope.selectedPolygon.length);
 								
-								for (var band in areaNameList) {
+								for (var band in $scope.areaNameList) {
 									alertScope.consoleDebug("[rifd-dsub-maptable.js] areaNameList band: " + 
-									band + "; " + areaNameList[band].length);
-//										": " + JSON.stringify(areaNameList[band]));	
+									band + "; " + $scope.areaNameList[band].length + " areas");
+//										": " + JSON.stringify($scope.areaNameList[band]));	
 								}
 
 								if (!shape.circle && !shape.shapefile) {
@@ -1606,7 +1655,8 @@ angular.module("RIF")
 										}
 									}
 									this._div.innerHTML += '<b>Band: ' + (savedShape.band || "unknown") + '</b><br />';
-									this._div.innerHTML += '<b>Areas selected: ' + (bandCount[savedShape.band] || 0) + '</b><br />';
+									this._div.innerHTML += '<b>Areas selected: ' + (bandCount[savedShape.band] || 0) + '/' +
+										latlngList.length +  '</b><br />';
 								}
 								else if ($scope.shapes.getLayers().length > 0) {
 									this._div.innerHTML = '<h4>Mouse over selection shapes to show properties</br>' +
