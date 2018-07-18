@@ -2751,16 +2751,18 @@ SELECT a.*, b.coa2011
 * Select by freehand polygons disabled for risk analysis;
 * Add band and number of selected polygons to info control;
 * For no numerator/denominators setup errors so intelligible;
-* Add support for population weighted centroids; in green
+* Add support for population weighted centroids; in green;
+* Fix inferior (i.e. within or on edge of) bands;
+* Remove points from study selection; 
 * Test EWS2011 geography and centroids in RIF:
-  * OK to MSOA level with acceptable performance.
+  * OK to MSOA level (~9000 centroids) with acceptable performance.
 
 * Risk analysis front end issues/todo:
+  * Add selection by postal code;
   * Progress of shapefile display setup after "apply" button in shapefile load modal;
   * Disable "apply" button in shapefile load modal after pushed (so you don't do it twice while waiting);
   * "Green" display shapefile selection and centroids display when selected;
   * Check selection methods (e.g. by attribute: DB; bands 69, 63, 0) are saved to study selection;
-  * Remove points from study selection and remove disabled AOI code;
-  * Remove inferior (i.e. within or on edge of) bands;
+  * Remove disabled AOI code;
   * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
   * Improve scaling in shapefile properties table, 40:60 split;
