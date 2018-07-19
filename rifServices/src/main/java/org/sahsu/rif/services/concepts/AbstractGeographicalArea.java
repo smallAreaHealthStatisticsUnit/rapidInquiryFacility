@@ -15,80 +15,9 @@ import org.sahsu.rif.generic.util.FieldValidationUtility;
  * <p>
  * Comparison areas should be the same for either type of study.
  * </p>
- *
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
  */
+public abstract class AbstractGeographicalArea extends AbstractRIFConcept {
 
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-
-abstract public class AbstractGeographicalArea 
-	extends AbstractRIFConcept {
-
-
-// ==========================================
-// Section Constants
-// ==========================================
-
-// ==========================================
-// Section Properties
-// ==========================================
-	
 	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 	
 	/** The geo level view. */
@@ -105,25 +34,18 @@ abstract public class AbstractGeographicalArea
 	
 	/** The map areas. */
 	private ArrayList<MapArea> mapAreas;
-    
-// ==========================================
-// Section Construction
-// ==========================================
-    /**
- * Instantiates a new abstract geographical area.
- */
-protected AbstractGeographicalArea() {
+
+	/**
+     * Instantiates a new abstract geographical area.
+     */
+	protected AbstractGeographicalArea() {
     	
     	geoLevelSelect = GeoLevelSelect.newInstance();
     	geoLevelArea = GeoLevelArea.newInstance();
     	geoLevelView = GeoLevelView.newInstance();
     	geoLevelToMap = GeoLevelToMap.newInstance();
-    	mapAreas = new ArrayList<MapArea>();
+    	mapAreas = new ArrayList<>();
     }
-    
-// ==========================================
-// Section Accessors and Mutators
-// ==========================================
 
 	public void identifyDifferences(
 		final AbstractGeographicalArea anotherGeographicalArea,
@@ -133,7 +55,6 @@ protected AbstractGeographicalArea() {
 			anotherGeographicalArea, 
 			differences);
 	}
-
 
 	/**
 	 * Checks for identical contents.
@@ -158,7 +79,7 @@ protected AbstractGeographicalArea() {
 				return false;
 			}
 		}
-		else if (geoLevelSelect.hasIdenticalContents(otherGeoLevelSelect) == false) {
+		else if (!geoLevelSelect.hasIdenticalContents(otherGeoLevelSelect)) {
 			return false;
 		}
 		
@@ -166,8 +87,7 @@ protected AbstractGeographicalArea() {
 			if (otherGeoLevelArea != null) {
 				return false;
 			}
-		}
-		else if (geoLevelView.hasIdenticalContents(otherGeoLevelArea) == false) {
+		} else if (!geoLevelView.hasIdenticalContents(otherGeoLevelArea)) {
 			return false;
 		}
 		
@@ -175,8 +95,7 @@ protected AbstractGeographicalArea() {
 			if (otherGeoLevelView != null) {
 				return false;
 			}
-		}
-		else if (geoLevelView.hasIdenticalContents(otherGeoLevelView) == false) {
+		} else if (!geoLevelView.hasIdenticalContents(otherGeoLevelView)) {
 			return false;
 		}
 		
@@ -184,22 +103,24 @@ protected AbstractGeographicalArea() {
 			if (otherGeoLevelToMap != null) {
 				return false;
 			}
-		}
-		else if (geoLevelToMap.hasIdenticalContents(otherGeoLevelToMap) == false) {
+		} else if (!geoLevelToMap.hasIdenticalContents(otherGeoLevelToMap)) {
 			return false;
 		}
-				
-		if ( ((geoLevelArea == null) && (otherGeoLevelArea != null)) ||
-			 ((geoLevelArea != null) && (otherGeoLevelArea == null))) {
+
+		if (geoLevelArea == null && otherGeoLevelArea != null) {
 			return false;
 		}
-		if (geoLevelArea.hasIdenticalContents(otherGeoLevelArea) == false) {
-			return false;
+
+		if (geoLevelArea != null) {
+			if (otherGeoLevelArea == null) {
+				return false;
+			} else if (!geoLevelArea.hasIdenticalContents(otherGeoLevelArea)) {
+				return false;
+			}
 		}
 		
-		ArrayList<MapArea> otherMapAreas 
-			= otherGeographicalArea.getMapAreas();		
-		if (MapArea.hasIdenticalContents(mapAreas, otherMapAreas) == false) {
+		ArrayList<MapArea> otherMapAreas = otherGeographicalArea.getMapAreas();
+		if (!MapArea.hasIdenticalContents(mapAreas, otherMapAreas)) {
 			return false;
 		}
 		
@@ -226,19 +147,7 @@ protected AbstractGeographicalArea() {
 		
 		mapAreas.add(mapArea);
 	}
-	
-	
-	public String[] getMapAreaIdentifiers() {
-		String[] areaIdentifiers
-			= new String[mapAreas.size()];
-		for (int i = 0; i < mapAreas.size(); i++) {
-			areaIdentifiers[i] = mapAreas.get(i).getIdentifier();
-		}
-		
-		return areaIdentifiers;
-		
-	}
-	
+
 	/**
 	 * Adds the map area.
 	 *
@@ -256,17 +165,6 @@ protected AbstractGeographicalArea() {
 				identifier, 
 				label);
 		mapAreas.add(mapArea);
-	}
-	
-	/**
-	 * Adds the map areas.
-	 *
-	 * @param mapAreasToAdd the map areas to add
-	 */
-	public void addMapAreas(
-		final ArrayList<MapArea> mapAreasToAdd) {
-		
-		mapAreas.addAll(mapAreasToAdd);
 	}
 
 	/**
@@ -372,10 +270,6 @@ protected AbstractGeographicalArea() {
 		this.geoLevelToMap = geoLevelToMap;
 	}
 			
-// ==========================================
-// Section Errors and Validation
-// ==========================================
-	
 	@Override
 	protected void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
@@ -520,9 +414,8 @@ protected AbstractGeographicalArea() {
 					recordType,
 					mapAreasFieldLabel);			
 			errorMessages.add(errorMessage);		
-		}
-		else {			
-			if (mapAreas.isEmpty() == true) {
+		} else {
+			if (mapAreas.isEmpty()) {
 				
 				//ERROR: StudyArea must have at least one area identifier
 				String errorMessage
@@ -530,8 +423,7 @@ protected AbstractGeographicalArea() {
 						"abstractGeographicalArea.error.noMapAreasDefined",
 						recordType);
 				errorMessages.add(errorMessage);
-			}
-			else {			
+			} else {
 				boolean areMapAreasValid = true;
 				for (MapArea mapArea : mapAreas) {
 					if (mapArea == null) {
@@ -556,7 +448,7 @@ protected AbstractGeographicalArea() {
 					}
 				}
 				
-				if (areMapAreasValid == true) {
+				if (areMapAreasValid) {
 					ArrayList<MapArea> duplicateMapAreas
 						= MapArea.identifyDuplicatesWithinList(mapAreas);
 					
@@ -581,17 +473,8 @@ protected AbstractGeographicalArea() {
 		}
 	}
 	
-// ==========================================
-// Section Interfaces
-// ==========================================
-
-// ==========================================
-// Section Override
-// ==========================================
-
 	abstract public String getRecordType();
 	
-	//Interface: DisplayableListItem
 	@Override
 	public String getDisplayName() {
 	
