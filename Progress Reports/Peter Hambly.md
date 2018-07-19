@@ -2696,16 +2696,6 @@ SELECT a.*, b.coa2011
   * Emphasise centroid point when area selected;
   * Save/restore user selection methods to/from file;
   * Add user selection methods to study submission XML;
-* Risk analysis front end issues/todo:
-  * Progress of shapefile display setup after "apply" button in shapefile load modal;
-  * Disable "apply" button in shapefile load modal after pushed (so you don't do it twice while waiting);
-  * "Green" display shapefile selection and centroids display when selected;
-  * Check selection methods (e.g. by attribute: DB; bands 69, 63, 0) are saved to study selection;
-  * Remove points from study selection and remove disabled AOI code;
-  * Select by freehand polygons needs to be disabled for risk analysis;
-  * Remove inferior (i.e. within or on edge of) bands;
-  * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
-  * Improve scaling in shapefile properties table, 40:60 split;
 * Risk analysis middleware todo:
   * Add user selection methods to XML parse: ```Unable to convert JSON stream to XML stream```; middleware trace. JSON is valid, probably causing by $$hashkey properties copying as part of UI grid: 
     ```
@@ -2752,3 +2742,27 @@ SELECT a.*, b.coa2011
   * Add user selection methods to database insert;
   * Add user selection methods to DB study save;
   * Add population weighted centroid support (pop_x, pop_y) to getTileMakerCentroids();
+  * Create and run PG/MSSQL scripts to load population weighted centroid and update lookup tables; MSSQL script is dependent on the PG script;
+  
+#### 16th to 20th July
+
+* Fix unable to convert JSON stream to XML stream error;
+* Add support for risk analysis type;
+* Select by freehand polygons disabled for risk analysis;
+* Add band and number of selected polygons to info control;
+* For no numerator/denominators setup errors so intelligible;
+* Add support for population weighted centroids; in green;
+* Fix inferior (i.e. within or on edge of) bands;
+* Remove points from study selection; 
+* Test EWS2011 geography and centroids in RIF:
+  * OK to MSOA level (~9000 centroids) with acceptable performance.
+
+* Risk analysis front end issues/todo:
+  * Add selection by postal code;
+  * Progress of shapefile display setup after "apply" button in shapefile load modal;
+  * Disable "apply" button in shapefile load modal after pushed (so you don't do it twice while waiting);
+  * "Green" display shapefile selection and centroids display when selected;
+  * Check selection methods (e.g. by attribute: DB; bands 69, 63, 0) are saved to study selection;
+  * Remove disabled AOI code;
+  * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
+  * Improve scaling in shapefile properties table, 40:60 split;
