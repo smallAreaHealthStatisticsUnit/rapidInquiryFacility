@@ -204,6 +204,23 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				sourceRScript(rengine, adjCovSmoothJri.toString());
 				// sourceRScript(rengine, rifOdbc.toString());
 				sourceRScript(rengine, performSmoothingActivity.toString());
+				sourceRScript(rengine, "performRiskAnal.R");
+
+				/* TODO: At this point we need to check for this being a Risk Analysis study,
+				 * rather than disease mapping. if it is, we call the performRiskAnal.R script.
+				 * I _think_ that should happen before the smoothing, but check with Brandon.
+				 * Or maybe it shouldn't be here all? Nowhere else calls R functions at the
+				 * moment, though.
+				 */
+
+				if(true) {
+
+					REXP riskAnalysisExit = rengine.eval("performRiskAnal.R");
+					/* TODO: also, that's the script name, not the name of a function in it; but
+					 * there doesn't at present appear to be a suitable one.
+					 * Then do something with riskAnalysisExit.
+					 */
+				}
 
 				//RUN the actual smoothing
 				//REXP exitValueFromR = rengine.eval("as.integer(a <- runRSmoothingFunctions())");
@@ -211,8 +228,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				REXP exitValueFromR = rengine.eval("as.integer(returnValues$exitValue)");
 				if (exitValueFromR != null) {
 					exitValue  = exitValueFromR.asInt();
-				}
-				else {
+				} else {
 					rifLogger.warning(this.getClass(), "JRI R ERROR: exitValueFromR is NULL");
 					exitValue = 1;
 				}

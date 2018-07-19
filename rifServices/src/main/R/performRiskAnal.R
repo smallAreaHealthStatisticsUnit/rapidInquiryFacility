@@ -37,7 +37,6 @@ library(abind)
 library(INLA)
 library(maptools)
 library(spdep)
-library(RODBC)
 library(Matrix)
 ############################################################################################################
 #   RIF PROJECT
@@ -53,7 +52,7 @@ convertToDBFormat=function(dataIn){
   
   band_id = dataIn$band_id
   genders = dataIn$gender
-  direct_standardisation = 0 # For now RIf only does indirect standardisation
+  direct_standardisation = 0 # For now RIF only does indirect standardisation
   dataOut = cbind(band_id, genders, direct_standardisation)
   
   observed = dataIn$observed
@@ -81,7 +80,9 @@ res=c(xd)
 if (length(xd)>1){for (i in 2:length(xd)){res=paste(res,xd[i],sep='-')}}
 return(res)}
 
-setwd('C:\\RIF\\s15\\data')
+# Set the working directory based on the value from the Java class
+setwd(working_dir)
+
 adj<<-TRUE
 investigationName <<- "lung_cancer"
 studyName <<- "UNKNOWN"
