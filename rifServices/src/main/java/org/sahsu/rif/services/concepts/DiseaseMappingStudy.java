@@ -9,13 +9,9 @@ import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.system.RIFServiceError;
 
-public final class DiseaseMappingStudy
-	extends AbstractStudy {
+public final class DiseaseMappingStudy extends AbstractStudy {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
-
-	private static final Messages GENERIC_MESSAGES = Messages.genericMessages();
-	private static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 	
 	private DiseaseMappingStudyArea diseaseMappingStudyArea;
     

@@ -5,6 +5,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Objects;
 
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
@@ -19,83 +20,15 @@ import org.sahsu.rif.services.system.RIFServiceMessages;
  * activity.  Note that the class {@link RIFStudySubmission}
  * encompasses both the request (study) and various information about how the results
  * should be configured.
- * 
- * <hr>
- * The Rapid Inquiry Facility (RIF) is an automated tool devised by SAHSU 
- * that rapidly addresses epidemiological and public health questions using 
- * routinely collected health and population data and generates standardised 
- * rates and relative risks for any given health outcome, for specified age 
- * and year ranges, for any given geographical area.
- *
- * <p>
- * Copyright 2017 Imperial College London, developed by the Small Area
- * Health Statistics Unit. The work of the Small Area Health Statistics Unit 
- * is funded by the Public Health England as part of the MRC-PHE Centre for 
- * Environment and Health. Funding for this project has also been received 
- * from the United States Centers for Disease Control and Prevention.  
- * </p>
- *
- * <pre> 
- * This file is part of the Rapid Inquiry Facility (RIF) project.
- * RIF is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * RIF is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RIF. If not, see <http://www.gnu.org/licenses/>; or write 
- * to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, 
- * Boston, MA 02110-1301 USA
- * </pre>
- *
- * <hr>
- * Kevin Garwood
- * @author kgarwood
  */
-
-/*
- * Code Road Map:
- * --------------
- * Code is organised into the following sections.  Wherever possible, 
- * methods are classified based on an order of precedence described in 
- * parentheses (..).  For example, if you're trying to find a method 
- * 'getName(...)' that is both an interface method and an accessor 
- * method, the order tells you it should appear under interface.
- * 
- * Order of 
- * Precedence     Section
- * ==========     ======
- * (1)            Section Constants
- * (2)            Section Properties
- * (3)            Section Construction
- * (7)            Section Accessors and Mutators
- * (6)            Section Errors and Validation
- * (5)            Section Interfaces
- * (4)            Section Override
- *
- */
-
-
 abstract public class AbstractStudy 
 	extends AbstractRIFConcept {
 
-
-// ==========================================
-// Section Constants
-// ==========================================
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	private static String lineSeparator = System.getProperty("line.separator");
-	
-	private static Messages GENERIC_MESSAGES = Messages.genericMessages();
-	
-// ==========================================
-// Section Properties
-// ==========================================
+
+	static final Messages GENERIC_MESSAGES = Messages.genericMessages();
+	static final Messages SERVICE_MESSAGES = Messages.serviceMessages();
 	/** The name. */
 	private String name;
 	
@@ -114,9 +47,6 @@ abstract public class AbstractStudy
 	/** The investigations. */
 	private ArrayList<Investigation> investigations;
     
-// ==========================================
-// Section Construction
-// ==========================================
     /**
      * Instantiates a new abstract study.
      */
@@ -130,10 +60,6 @@ abstract public class AbstractStudy
 		comparisonArea = ComparisonArea.newInstance();
 		investigations = new ArrayList<Investigation>();
     }
-
-// ==========================================
-// Section Accessors and Mutators
-// ==========================================
 
 	/**
 	 * Gets the name.
@@ -182,7 +108,7 @@ abstract public class AbstractStudy
 	 *
 	 * @return the other notes
 	 */
-	public String getOtherNotes() {
+	private String getOtherNotes() {
 		
 		return otherNotes;
 	}
@@ -286,9 +212,7 @@ abstract public class AbstractStudy
 		super.identifyDifferences(
 			anotherAbstractStudy, 
 			differences);
-		
 	}
-			
 	
 	/**
 	 * Checks for identical contents.
@@ -315,7 +239,7 @@ abstract public class AbstractStudy
 		}
 		else if (name != null) {
 			//they must both be non-null
-			if (collator.equals(name, otherName) == false) {
+			if (!collator.equals(name, otherName)) {
 				return false;
 			}
 		}
@@ -326,7 +250,7 @@ abstract public class AbstractStudy
 		}
 		else if (description != null) {
 			//they must both be non-null
-			if (collator.equals(description, otherDescription) == false) {
+			if (!collator.equals(description, otherDescription)) {
 				return false;
 			}
 		}
@@ -337,7 +261,7 @@ abstract public class AbstractStudy
 		}
 		else if (otherNotes != null) {
 			//they must both be non-null
-			if (collator.equals(otherNotes, otherKnownIssues) == false) {
+			if (!collator.equals(otherNotes, otherKnownIssues)) {
 				return false;
 			}
 		}
@@ -351,22 +275,18 @@ abstract public class AbstractStudy
 		}
 		else if (comparisonArea != null) {
 			//they must both be non-null
-			if (comparisonArea.hasIdenticalContents(otherComparisonArea) == false) {
+			if (!comparisonArea.hasIdenticalContents(otherComparisonArea)) {
 				return false;
 			}
 		}
 		
-		if (Investigation.hasIdenticalContents(investigations, otherInvestigations) == false) {
+		if (!Investigation.hasIdenticalContents(investigations, otherInvestigations)) {
 			return false;
 		}
 		
 		return super.hasIdenticalContents(otherStudy);
 	}
-	
-// ==========================================
-// Section Errors and Validation
-// ==========================================
-	
+
 	@Override
 	protected void checkSecurityViolations() 
 		throws RIFServiceSecurityException {
@@ -377,11 +297,11 @@ abstract public class AbstractStudy
 		
 		//Extract field names
 		String nameFieldLabel
-			= RIFServiceMessages.getMessage("abstractStudy.name.label");
+			= SERVICE_MESSAGES.getMessage("abstractStudy.name.label");
 		String descriptionFieldLabel
-			= RIFServiceMessages.getMessage("abstractStudy.description.label");
+			= SERVICE_MESSAGES.getMessage("abstractStudy.description.label");
 		String otherNotesFieldLabel
-			= RIFServiceMessages.getMessage("abstractStudy.otherNotes.label");
+			= SERVICE_MESSAGES.getMessage("abstractStudy.otherNotes.label");
 				
 		//Extract field values
 		
@@ -424,16 +344,15 @@ abstract public class AbstractStudy
 		throws RIFServiceException {
 
 		//Extract field names
-		String nameFieldLabel
-			= RIFServiceMessages.getMessage("abstractStudy.name.label");
-		String descriptionFieldLabel
-			= RIFServiceMessages.getMessage("abstractStudy.description.label");
+		String nameFieldLabel = SERVICE_MESSAGES.getMessage("abstractStudy.name.label");
+		String descriptionFieldLabel = SERVICE_MESSAGES.getMessage(
+				"abstractStudy.description.label");
 				
 		//Extract field values
 		String recordType = getRecordType();
 		
 		FieldValidationUtility fieldValidationUtility = new FieldValidationUtility();		
-		if (fieldValidationUtility.isEmpty(name) == true) {
+		if (fieldValidationUtility.isEmpty(name)) {
 			String errorMessage 
 				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
@@ -442,7 +361,7 @@ abstract public class AbstractStudy
 			errorMessages.add(errorMessage);
 		}
     
-		if (fieldValidationUtility.isEmpty(getDescription()) == true) {
+		if (fieldValidationUtility.isEmpty(getDescription())) {
 			String errorMessage 
 				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
@@ -503,7 +422,7 @@ abstract public class AbstractStudy
 					investigationsFieldName);
 			errorMessages.add(errorMessage);			
 		}
-		else if (investigations.isEmpty() == true) {
+		else if (investigations.isEmpty()) {
 			String errorMessage
 				= RIFServiceMessages.getMessage(
 					"abstractStudy.error.noInvestigationSpecified",
@@ -514,10 +433,10 @@ abstract public class AbstractStudy
 		else {
 			for (Investigation investigation : investigations) {
 				if (investigation == null) {
-					String covariateRecordType
-						= RIFServiceMessages.getMessage("investigation.label");
+					String covariateRecordType =
+							SERVICE_MESSAGES.getMessage("investigation.label");
 					String errorMessage
-						= RIFServiceMessages.getMessage(
+						= SERVICE_MESSAGES.getMessage(
 							"general.validation.nullListItem",
 							getRecordType(),
 							covariateRecordType);
@@ -540,9 +459,9 @@ abstract public class AbstractStudy
 			for (Investigation investigation : investigations) {
 				String currentInvestigationTitle
 					= investigation.getTitle();
-				if (uniqueInvestigationTitles.contains(currentInvestigationTitle) == true) {
+				if (uniqueInvestigationTitles.contains(currentInvestigationTitle)) {
 					String errorMessage
-						= RIFServiceMessages.getMessage(
+						= SERVICE_MESSAGES.getMessage(
 							"abstractStudy.error.duplicateInvestigation",
 							recordType,
 							getDisplayName(),
@@ -568,7 +487,7 @@ abstract public class AbstractStudy
 				Investigation firstInvestigation
 					= investigations.get(0);
 				ArrayList<String> differencesInCovariateCollections
-					= new ArrayList<String>();
+					= new ArrayList<>();
 				for (int i = 1; i < numberOfInvestigations; i++) {
 					Investigation currentInvestigation
 						= investigations.get(i);
@@ -606,62 +525,44 @@ abstract public class AbstractStudy
 	 * @param investigations
 	 * @return
 	 */
-	public static String identifyDifferentDenominators(
-		final ArrayList<Investigation> investigations) {
+	private static String identifyDifferentDenominators(
+			final ArrayList<Investigation> investigations) {
 		
 		if (investigations.size() < 2) {
 			return null;
 		}
 		
 		//all of the investigations should have the same 
-		Hashtable<String, ArrayList<Investigation>> investigationsForDenominatorTableNames 
-			= new Hashtable<String, ArrayList<Investigation>>();
+		Hashtable<String, ArrayList<Investigation>> investigationsForDenominatorTableNames =
+				new Hashtable<>();
 		for (Investigation investigation : investigations) {
 			NumeratorDenominatorPair ndPair = investigation.getNdPair();
-			assert(ndPair != null);
+			Objects.requireNonNull(ndPair);
 			String denominatorTableName = ndPair.getDenominatorTableName();
-			ArrayList<Investigation> investigationsForDenominator
-				= investigationsForDenominatorTableNames.get(denominatorTableName);
+			ArrayList<Investigation> investigationsForDenominator =
+					investigationsForDenominatorTableNames.get(denominatorTableName);
 			if (investigationsForDenominator == null) {
-				investigationsForDenominator
-					= new ArrayList<Investigation>();
-				investigationsForDenominatorTableNames.put(
-					denominatorTableName,
-					investigationsForDenominator);
+				investigationsForDenominator = new ArrayList<>();
+				investigationsForDenominatorTableNames.put(denominatorTableName,
+				                                           investigationsForDenominator);
 			}
-			
-			investigationsForDenominator.add(investigation);			
+
+			investigationsForDenominator.add(investigation);
 		}
 		
 		//we should only have one denominator table name
-		ArrayList<String> denominatorTableNameKeys 
-			= new ArrayList<String>();
-		denominatorTableNameKeys.addAll(investigationsForDenominatorTableNames.keySet());
+		ArrayList<String> denominatorTableNameKeys = new ArrayList<>(
+				investigationsForDenominatorTableNames.keySet());
 		if (denominatorTableNameKeys.size() > 1) {
-			String errorMessage
-				= RIFServiceMessages.getMessage("abstractStudy.error.inconsistentDenominatorTables");
-			return errorMessage;
-		}
-		else {
+			return SERVICE_MESSAGES.getMessage("abstractStudy.error.inconsistentDenominatorTables");
+		} else {
 			return null;
 		}			
 	}
 
-	
-	
-// ==========================================
-// Section Interfaces
-// ==========================================
-
-// ==========================================
-// Section Override
-// ==========================================
-
-	//Interface: Displayable List Item
 	@Override
 	public String getDisplayName() {
 		
 		return name;
 	}
-
 }
