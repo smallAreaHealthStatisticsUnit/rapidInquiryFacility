@@ -108,10 +108,10 @@ angular.module("RIF")
 								scope.postcode=attr;
 							}
 							scope.checkPostcode = function() {
-								AlertService.consoleDebug("[rifd-dsub-postal.js] postcode change: " + scope.postcode);
 								
 								user.getPostalCodes(user.currentUser, thisGeography, scope.postcode).then(function (res) {     
-								
+									AlertService.consoleDebug("[rifd-dsub-postal.js] postcode change: " + scope.postcode +
+										"; res: " + JSON.stringify(res, null, 1));
 								}, function () { // Error handler
 									AlertService.rifMessage('warning', "Could not postal codes from the database");
 

@@ -123,18 +123,28 @@ public final class RIFResultTableJSONGenerator {
 				if (currentColumn != 0) {
 					result.append(",");
 				}
-				
-				result.append("\"");
-				result.append(columnNames[currentColumn]);
-				result.append("\"");
-				result.append(":");
 				if (dataTypes[currentColumn] == RIFResultTable.ColumnDataType.TEXT) {
+					result.append("\"");
+					result.append(columnNames[currentColumn]);
+					result.append("\"");
+					result.append(":");
 					result.append("\"");
 					result.append(data[currentRow][currentColumn]);					
 					result.append("\"");
+				}				
+				else if (dataTypes[currentColumn] == RIFResultTable.ColumnDataType.JSON) { // No escaping at all: you do it yourself!!!!
+					result.append("\"");
+					result.append(columnNames[currentColumn]);
+					result.append("\"");
+					result.append(":");
+					result.append(data[currentRow][currentColumn]);	
 				}
 				else {
 					//it is numeric
+					result.append("\"");
+					result.append(columnNames[currentColumn]);
+					result.append("\"");
+					result.append(":");
 					result.append(data[currentRow][currentColumn]);					
 				}
 				

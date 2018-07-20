@@ -567,6 +567,7 @@ public class BaseSQLManager implements SQLManager {
 				}
 				rVal=true;
 			}
+			// Otherwise not found; i.e. false
 		}
 		catch (Exception exception) {
 			rifLogger.error(this.getClass(), "Error in SQL Statement (" + databaseType + ") >>> " +
