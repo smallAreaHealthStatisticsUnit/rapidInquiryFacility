@@ -10,18 +10,18 @@ import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.InsertQueryFormatter;
 import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLGeneralQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.FieldValidationUtility;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.AbstractCovariate;
 import org.sahsu.rif.services.concepts.AbstractRIFConcept.ValidationPolicy;
+import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.AgeGroup;
 import org.sahsu.rif.services.concepts.CalculationMethod;
 import org.sahsu.rif.services.concepts.ComparisonArea;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
-import org.sahsu.rif.services.concepts.DiseaseMappingStudyArea;
 import org.sahsu.rif.services.concepts.Geography;
 import org.sahsu.rif.services.concepts.HealthCode;
 import org.sahsu.rif.services.concepts.Investigation;
@@ -193,7 +193,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			addStudyStatement.setString(ithQueryParameter++,
 			                            comparisonArea.getGeoLevelToMap().getName());
 
-			DiseaseMappingStudyArea diseaseMappingStudyArea =
+			AbstractStudyArea diseaseMappingStudyArea =
 					diseaseMappingStudy.getDiseaseMappingStudyArea();
 			addStudyStatement.setString(ithQueryParameter++,
 			                            diseaseMappingStudyArea.getGeoLevelToMap().getName());
@@ -461,7 +461,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 		try {
 
 			Geography geography = diseaseMappingStudy.getGeography();
-			DiseaseMappingStudyArea diseaseMappingStudyArea
+			AbstractStudyArea diseaseMappingStudyArea
 					= diseaseMappingStudy.getDiseaseMappingStudyArea();
 
 			ArrayList<MapArea> allMapAreas
@@ -592,7 +592,7 @@ public final class StudySubmissionStep extends BaseSQLManager {
 			Geography geography = diseaseMappingStudy.getGeography();
 			String geographyName = geography.getName();
 
-			DiseaseMappingStudyArea diseaseMappingStudyArea
+			AbstractStudyArea diseaseMappingStudyArea
 					= diseaseMappingStudy.getDiseaseMappingStudyArea();
 			String studyGeoLevelName
 					= diseaseMappingStudyArea.getGeoLevelToMap().getName();

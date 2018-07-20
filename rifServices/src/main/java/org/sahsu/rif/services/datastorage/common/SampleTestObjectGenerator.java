@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.sahsu.rif.generic.concepts.Parameter;
+import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.AdjustableCovariate;
 import org.sahsu.rif.services.concepts.AgeBand;
 import org.sahsu.rif.services.concepts.AgeGroup;
@@ -345,7 +346,7 @@ public final class SampleTestObjectGenerator {
 		diseaseMappingStudy.setComparisonArea(comparisonArea);
 	
 		DiseaseMappingStudyArea diseaseMappingStudyArea
-			= DiseaseMappingStudyArea.newInstance();
+			= AbstractStudyArea.newInstance();
 		diseaseMappingStudyArea.setNewRecord(false);		
 
 		diseaseMappingStudyArea.addMapArea(mapArea1);
@@ -574,7 +575,7 @@ public final class SampleTestObjectGenerator {
 
 		//Set the study area
 		DiseaseMappingStudyArea diseaseMappingStudyArea
-			= DiseaseMappingStudyArea.newInstance();
+			= AbstractStudyArea.newInstance();
 		diseaseMappingStudyArea.setNewRecord(false);		
 		GeoLevelSelect studyAreaGeoLevelSelect = GeoLevelSelect.newInstance("LEVEL2");
 		studyAreaGeoLevelSelect.setNewRecord(false);

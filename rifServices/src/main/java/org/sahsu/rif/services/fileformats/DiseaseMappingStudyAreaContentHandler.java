@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import org.sahsu.rif.generic.fileformats.XMLCommentInjector;
 import org.sahsu.rif.generic.fileformats.XMLUtility;
 import org.sahsu.rif.generic.presentation.HTMLUtility;
+import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudyArea;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.xml.sax.Attributes;
@@ -150,7 +151,7 @@ final class DiseaseMappingStudyAreaContentHandler
 	 */
 	public void writeHTML(
 		final int headerLevel,
-		final DiseaseMappingStudyArea diseaseMappingStudyArea,
+		final AbstractStudyArea diseaseMappingStudyArea,
 		final boolean isFragmentWithinLargerReport) 
 		throws IOException {
 
@@ -202,7 +203,7 @@ final class DiseaseMappingStudyAreaContentHandler
 		throws SAXException {
 
 		if (isSingularRecordName(qualifiedName)) {
-			currentDiseaseMappingStudyArea = DiseaseMappingStudyArea.newInstance();
+			currentDiseaseMappingStudyArea = AbstractStudyArea.newInstance();
 			activate();				
 		}
 		else {

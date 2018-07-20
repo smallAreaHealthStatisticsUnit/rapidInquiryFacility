@@ -10,6 +10,7 @@ import org.sahsu.rif.generic.fileformats.AbstractXMLContentHandler;
 import org.sahsu.rif.generic.fileformats.XMLCommentInjector;
 import org.sahsu.rif.generic.fileformats.XMLUtility;
 import org.sahsu.rif.generic.presentation.HTMLUtility;
+import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.ComparisonArea;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudyArea;
@@ -203,7 +204,7 @@ final class DiseaseMappingStudyContentHandler
 		Geography geography = diseaseMappingStudy.getGeography();
 		geographyContentHandler.writeXML(geography);
 				
-		DiseaseMappingStudyArea studyArea = diseaseMappingStudy.getDiseaseMappingStudyArea();
+		AbstractStudyArea studyArea = diseaseMappingStudy.getDiseaseMappingStudyArea();
 		diseaseMappingStudyAreaContentHandler.writeXML(studyArea);
 		
 		ComparisonArea comparisonArea = diseaseMappingStudy.getComparisonArea();
@@ -245,7 +246,7 @@ final class DiseaseMappingStudyContentHandler
 			geography,
 			isFragmentWithinLargerReport);
 		
-		DiseaseMappingStudyArea studyArea = diseaseMappingStudy.getDiseaseMappingStudyArea();
+		AbstractStudyArea studyArea = diseaseMappingStudy.getDiseaseMappingStudyArea();
 		diseaseMappingStudyAreaContentHandler.writeHTML(
 			2,
 			studyArea, 
@@ -263,7 +264,7 @@ final class DiseaseMappingStudyContentHandler
 			investigations, 
 			isFragmentWithinLargerReport);
 		
-		if (isFragmentWithinLargerReport == false) {
+		if (!isFragmentWithinLargerReport) {
 			htmlUtility.endDocument();
 		}
 	}

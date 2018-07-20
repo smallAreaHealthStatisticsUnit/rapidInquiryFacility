@@ -6,9 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.sahsu.rif.generic.concepts.User;
-import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.system.RIFServiceException;
+import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.AgeBand;
 import org.sahsu.rif.services.concepts.AgeGroup;
 import org.sahsu.rif.services.concepts.ComparisonArea;
@@ -158,7 +159,7 @@ public class SubmissionManager extends BaseSQLManager {
 
 			GeoLevelToMap diseaseMappingStudyAreaGeoLevelToMap
 					= GeoLevelToMap.newInstance(resultSet.getString(3));
-			DiseaseMappingStudyArea diseaseMappingStudyArea
+			AbstractStudyArea diseaseMappingStudyArea
 					= diseaseMappingStudy.getDiseaseMappingStudyArea();
 			diseaseMappingStudyArea.setGeoLevelToMap(diseaseMappingStudyAreaGeoLevelToMap);
 
@@ -200,7 +201,7 @@ public class SubmissionManager extends BaseSQLManager {
 			statement.setInt(1, Integer.valueOf(diseaseMappingStudy.getIdentifier()));
 
 			DiseaseMappingStudyArea diseaseMappingStudyArea
-					= DiseaseMappingStudyArea.newInstance();
+					= AbstractStudyArea.newInstance();
 			//KLG: TODO - how can we improve this so we can add in extra
 			//information?
 			resultSet = statement.executeQuery();

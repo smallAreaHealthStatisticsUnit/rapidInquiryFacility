@@ -9,15 +9,15 @@ import java.util.ArrayList;
 
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.datastorage.RecordExistsQueryFormatter;
-import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SQLQueryUtility;
+import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
 import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.util.RIFLogger;
 import org.sahsu.rif.services.concepts.AbstractGeographicalArea;
+import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.ComparisonArea;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
-import org.sahsu.rif.services.concepts.DiseaseMappingStudyArea;
 import org.sahsu.rif.services.concepts.GeoLevelSelect;
 import org.sahsu.rif.services.concepts.GeoLevelToMap;
 import org.sahsu.rif.services.concepts.GeoLevelView;
@@ -151,7 +151,7 @@ public final class DiseaseMappingStudyManager extends BaseSQLManager {
 		rifContextManager.checkGeographyExists(
 			connection, 
 			geography.getName());
-		DiseaseMappingStudyArea diseaseMappingStudyArea
+		AbstractStudyArea diseaseMappingStudyArea
 			= diseaseMappingStudy.getDiseaseMappingStudyArea();
 
 		checkAreaNonExistentItems(

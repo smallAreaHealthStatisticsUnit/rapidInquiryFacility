@@ -3,11 +3,11 @@ package org.sahsu.rif.services.test.businessConceptLayer.pg;
 import org.junit.Test;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
+import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.AdjustableCovariate;
 import org.sahsu.rif.services.concepts.ComparisonArea;
 import org.sahsu.rif.services.concepts.CovariateType;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
-import org.sahsu.rif.services.concepts.DiseaseMappingStudyArea;
 import org.sahsu.rif.services.concepts.GeoLevelArea;
 import org.sahsu.rif.services.concepts.GeoLevelSelect;
 import org.sahsu.rif.services.concepts.GeoLevelToMap;
@@ -653,7 +653,7 @@ public final class TestDiseaseMappingStudy
 		
 		maliciousDiseaseMappingStudy
 			= DiseaseMappingStudy.createCopy(masterDiseaseMappingStudy);
-		DiseaseMappingStudyArea diseaseMappingStudyArea
+		AbstractStudyArea diseaseMappingStudyArea
 			= maliciousDiseaseMappingStudy.getDiseaseMappingStudyArea();
 		MapArea maliciousMapArea = MapArea.newInstance("454", "454", getTestMaliciousValue());
 		diseaseMappingStudyArea.addMapArea(maliciousMapArea);

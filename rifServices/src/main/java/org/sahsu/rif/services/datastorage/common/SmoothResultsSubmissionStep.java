@@ -84,7 +84,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 		
 		StringBuilder rifScriptPath = new StringBuilder();
 		StringBuilder adjCovSmoothJri = new StringBuilder();
-		StringBuilder rifOdbc = new StringBuilder();
 		StringBuilder performSmoothingActivity = new StringBuilder();
 		String rErrorTrace="No R error tracer (see Tomcat log)";
 
@@ -195,8 +194,6 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				
 				adjCovSmoothJri.append(rifScriptPath);
 				adjCovSmoothJri.append("Adj_Cov_Smooth_JRI.R");
-				rifOdbc.append(rifScriptPath);
-				rifOdbc.append("RIF_odbc.R");
 				performSmoothingActivity.append(rifScriptPath);
 				performSmoothingActivity.append("performSmoothingActivity.R");
 
@@ -204,7 +201,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				sourceRScript(rengine, adjCovSmoothJri.toString());
 				// sourceRScript(rengine, rifOdbc.toString());
 				sourceRScript(rengine, performSmoothingActivity.toString());
-				sourceRScript(rengine, "performRiskAnal.R");
+				sourceRScript(rengine, rifScriptPath + "performRiskAnal.R");
 
 				/* TODO: At this point we need to check for this being a Risk Analysis study,
 				 * rather than disease mapping. if it is, we call the performRiskAnal.R script.
@@ -213,7 +210,7 @@ public class SmoothResultsSubmissionStep extends CommonRService {
 				 * moment, though.
 				 */
 
-				if(true) {
+				if(false) {
 
 					REXP riskAnalysisExit = rengine.eval("performRiskAnal.R");
 					/* TODO: also, that's the script name, not the name of a function in it; but

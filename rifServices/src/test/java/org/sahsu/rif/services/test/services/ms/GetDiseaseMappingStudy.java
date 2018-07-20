@@ -8,11 +8,11 @@ import org.junit.Test;
 import org.sahsu.rif.generic.concepts.User;
 import org.sahsu.rif.generic.system.RIFGenericLibraryError;
 import org.sahsu.rif.generic.system.RIFServiceException;
+import org.sahsu.rif.services.concepts.AbstractStudyArea;
 import org.sahsu.rif.services.concepts.AgeBand;
 import org.sahsu.rif.services.concepts.AgeGroup;
 import org.sahsu.rif.services.concepts.ComparisonArea;
 import org.sahsu.rif.services.concepts.DiseaseMappingStudy;
-import org.sahsu.rif.services.concepts.DiseaseMappingStudyArea;
 import org.sahsu.rif.services.concepts.Investigation;
 import org.sahsu.rif.services.concepts.RIFStudySubmission;
 import org.sahsu.rif.services.datastorage.common.SampleTestObjectGenerator;
@@ -536,7 +536,7 @@ public final class GetDiseaseMappingStudy
 			
 			DiseaseMappingStudy study 
 				= (DiseaseMappingStudy) emptyStudySubmission.getStudy();
-			DiseaseMappingStudyArea diseaseMappingStudyArea
+			AbstractStudyArea diseaseMappingStudyArea
 				= study.getDiseaseMappingStudyArea();
 			diseaseMappingStudyArea.setGeoLevelToMap(cloneNonExistentGeoLevelToMap());
 			
@@ -824,7 +824,7 @@ public final class GetDiseaseMappingStudy
 				= sampleTestObjectGenerator.createSampleRIFJobSubmission();
 			DiseaseMappingStudy diseaseMappingStudy 
 				= (DiseaseMappingStudy) maliciousStudySubmission.getStudy();
-			DiseaseMappingStudyArea diseaseMappingStudyArea
+			AbstractStudyArea diseaseMappingStudyArea
 				= diseaseMappingStudy.getDiseaseMappingStudyArea();
 			diseaseMappingStudyArea.setGeoLevelSelect(cloneMaliciousGeoLevelSelect());
 					

@@ -3,7 +3,6 @@ package org.sahsu.rif.services.concepts;
 
 import java.util.ArrayList;
 
-import org.sahsu.rif.generic.system.Messages;
 import org.sahsu.rif.generic.system.RIFServiceException;
 import org.sahsu.rif.generic.system.RIFServiceSecurityException;
 import org.sahsu.rif.generic.util.RIFLogger;
@@ -13,11 +12,11 @@ public final class DiseaseMappingStudy extends AbstractStudy {
 
 	private static final RIFLogger rifLogger = RIFLogger.getLogger();
 	
-	private DiseaseMappingStudyArea diseaseMappingStudyArea;
+	private AbstractStudyArea diseaseMappingStudyArea;
     
 	private DiseaseMappingStudy() {
     	
-		diseaseMappingStudyArea = DiseaseMappingStudyArea.newInstance();
+		diseaseMappingStudyArea = AbstractStudyArea.newInstance();
     }
 	
 	static public DiseaseMappingStudy newInstance() {
@@ -47,8 +46,8 @@ public final class DiseaseMappingStudy extends AbstractStudy {
 		cloneDiseaseMappingStudy.setIdentifier(originalDiseaseMappingStudy.getIdentifier());	     
 		cloneDiseaseMappingStudy.setName(originalDiseaseMappingStudy.getName());
 		cloneDiseaseMappingStudy.setDescription(originalDiseaseMappingStudy.getDescription());
-		DiseaseMappingStudyArea cloneDiseaseMappingStudyArea
-			= DiseaseMappingStudyArea.copy(originalDiseaseMappingStudy.getDiseaseMappingStudyArea());
+		AbstractStudyArea cloneDiseaseMappingStudyArea
+			= AbstractStudyArea.copy(originalDiseaseMappingStudy.getDiseaseMappingStudyArea());
 		cloneDiseaseMappingStudy.setDiseaseMappingStudyArea(cloneDiseaseMappingStudyArea);
 		ComparisonArea cloneComparisonArea 
 			= ComparisonArea.createCopy(originalDiseaseMappingStudy.getComparisonArea());
@@ -69,7 +68,7 @@ public final class DiseaseMappingStudy extends AbstractStudy {
      *
      * @return the disease mapping study area
      */
-	public DiseaseMappingStudyArea getDiseaseMappingStudyArea() {
+	public AbstractStudyArea getDiseaseMappingStudyArea() {
     	
 		return diseaseMappingStudyArea;
 	}
@@ -79,8 +78,7 @@ public final class DiseaseMappingStudy extends AbstractStudy {
 	 *
 	 * @param diseaseMappingStudyArea the new disease mapping study area
 	 */
-	public void setDiseaseMappingStudyArea(
-		final DiseaseMappingStudyArea diseaseMappingStudyArea) {
+	public void setDiseaseMappingStudyArea(final AbstractStudyArea diseaseMappingStudyArea) {
 		
 		this.diseaseMappingStudyArea = diseaseMappingStudyArea;
 	}
@@ -108,7 +106,7 @@ public final class DiseaseMappingStudy extends AbstractStudy {
 			return false;
 		}
 		
-		DiseaseMappingStudyArea otherDiseaseMappingStudyArea
+		AbstractStudyArea otherDiseaseMappingStudyArea
 			= otherDiseaseMappingStudy.getDiseaseMappingStudyArea();
 		
 		if (diseaseMappingStudyArea == null) {
@@ -125,13 +123,9 @@ public final class DiseaseMappingStudy extends AbstractStudy {
 		return super.hasIdenticalContents(otherDiseaseMappingStudy);
 	}
 	
-	public void checkErrors(
-		final ValidationPolicy validationPolicy) 
+	public void checkErrors(final ValidationPolicy validationPolicy)
 		throws RIFServiceException {		
 		
-		String recordType
-			= SERVICE_MESSAGES.getMessage("diseaseMappingStudy.label");
-	
 		ArrayList<String> errorMessages = new ArrayList<>();
 		super.checkErrors(
 			validationPolicy,
@@ -149,7 +143,7 @@ public final class DiseaseMappingStudy extends AbstractStudy {
 			String errorMessage
 				= GENERIC_MESSAGES.getMessage(
 					"general.validation.emptyRequiredRecordField",
-					recordType,
+					getRecordType(),
 					diseaseMappingStudyAreaFieldName);
 			errorMessages.add(errorMessage);						
 		}
