@@ -759,17 +759,18 @@ public class WebService {
 				//Convert URL parameters to RIF service API parameters
 				User user = createUser(servletRequest, userID);
 				Geography geography = Geography.newInstance(geographyName, "");
+				Locale locale = servletRequest.getLocale();
+				if (locale == null) {
+					locale=Locale.US;
+				}
 				
 				//Call service API
 				RIFStudyResultRetrievalAPI studyResultRetrievalService =
 						getRIFStudyResultRetrievalService();
 				
-				RIFResultTable resultTable = studyResultRetrievalService.getPostalCodes(
-						user, geography, postcode);
+				result = studyResultRetrievalService.getPostalCodes(
+						user, geography, postcode, locale);
 				
-				RIFResultTableJSONGenerator rifResultTableJSONGenerator =
-						new RIFResultTableJSONGenerator();
-				result = rifResultTableJSONGenerator.writeResultTable(resultTable);
 			} catch(Exception exception) {
 				rifLogger.error(this.getClass(), getClass().getSimpleName() +
 			                                 ".getPostalCodes error", exception);

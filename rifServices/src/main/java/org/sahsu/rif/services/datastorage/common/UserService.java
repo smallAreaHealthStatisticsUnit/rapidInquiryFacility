@@ -1,6 +1,7 @@
 package org.sahsu.rif.services.datastorage.common;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.concepts.User;
@@ -71,10 +72,11 @@ public interface UserService {
 			GeoLevelToMap _geoLevelToMap)
 						throws RIFServiceException;
 
-	RIFResultTable getPostalCodes(
+	String getPostalCodes(
 			User _user,
 			Geography _geography,
-			String postcode)
+			String postcode,
+			Locale locale)
 								throws RIFServiceException;
 
 	RIFResultTable getTileMakerCentroids(

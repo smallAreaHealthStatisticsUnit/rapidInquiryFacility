@@ -2,6 +2,7 @@ package org.sahsu.rif.services.datastorage.common;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.concepts.User;
@@ -963,10 +964,11 @@ public class CommonUserService implements UserService {
 		}
 	
 	@Override
-	public RIFResultTable getPostalCodes(
+	public String getPostalCodes(
 			final User _user,
 			final Geography _geography,
-			final String postcode)
+			final String postcode,
+			final Locale locale)
 			throws RIFServiceException {
 			
 			//Defensively copy parameters and guard against blocked users
@@ -978,8 +980,8 @@ public class CommonUserService implements UserService {
 			}
 			Geography geography
 				= Geography.createCopy(_geography);
+			String result="{}";
 			
-			RIFResultTable result = new RIFResultTable();
 			Connection connection = null;
 			try {
 				//Check for empty parameters
@@ -1026,7 +1028,8 @@ public class CommonUserService implements UserService {
 					= sqlResultsQueryManager.getPostalCodes(
 						connection,
 						geography,
-						postcode);
+						postcode,
+						locale);
 			} 
 			catch(RIFServiceException rifServiceException) {
 				//Audit failure of operation

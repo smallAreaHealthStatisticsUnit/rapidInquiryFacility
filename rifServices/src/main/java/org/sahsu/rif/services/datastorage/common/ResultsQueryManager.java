@@ -8,6 +8,8 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.sql.SQLException;
+import java.util.Locale;
+import java.util.Calendar;
 
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.datastorage.FunctionCallerQueryFormatter;
@@ -20,6 +22,8 @@ import org.sahsu.rif.services.concepts.Geography;
 import org.sahsu.rif.services.system.RIFServiceError;
 import org.sahsu.rif.services.system.RIFServiceMessages;
 import org.sahsu.rif.services.system.RIFServiceStartupOptions;
+import org.sahsu.rif.services.datastorage.common.RifLocale;
+import org.sahsu.rif.services.rest.RIFResultTableJSONGenerator;
 
 public class ResultsQueryManager extends BaseSQLManager {
 
@@ -34,12 +38,18 @@ public class ResultsQueryManager extends BaseSQLManager {
 		getTilesQueryFormatter.setNumberOfFunctionParameters(9);
 	}
 
-	RIFResultTable getPostalCodes(
+	String getPostalCodes(
 			final Connection connection, 
 			final Geography geography,
-			final String postcode) throws RIFServiceException {
-	
+			final String postcode,
+			final Locale locale) throws RIFServiceException {
+				
+		RifLocale rifLocale = new RifLocale(locale);
+		Calendar calendar = rifLocale.getCalendar();			
+		DateFormat df = rifLocale.getDateFormat();
+		
 		String cleanPostcode=postcode;
+		String result="{}";
 		
 		SelectQueryFormatter getPostalCodesQueryFormatter1 =
 				SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
@@ -166,9 +176,8 @@ public class ResultsQueryManager extends BaseSQLManager {
 					if (columnType.equals("timestamp") ||
 						columnType.equals("timestamptz") ||
 						columnType.equals("datetime")) {
-//							Timestamp dateTimeValue=resultSet.getTimestamp(i, calendar);
-//							value=df.format(dateTimeValue) + "<!-- DATE: " + name + " -->";
-// Use string: see RifZipFile.java for LOcale support
+							Timestamp dateTimeValue=resultSet2.getTimestamp(i, calendar);
+							value=RIFResultTable.quote(df.format(dateTimeValue));
 					}
 					else if (value != null && (
 							 columnType.equals("integer") || 
@@ -176,10 +185,9 @@ public class ResultsQueryManager extends BaseSQLManager {
 							 columnType.equals("int4") ||
 							 columnType.equals("int") ||
 							 columnType.equals("smallint"))) {
-						try {
-							Long longVal=Long.parseLong(resultSet2.getString(i));
-//							value=NumberFormat.getNumberInstance(locale).format(longVal) + 
-//								" <!-- LONG: " + name + " -->";
+						try { // Use normal decimal formatting - will cause confusion with coordinates
+//							Long longVal=Long.parseLong(resultSet2.getString(i));
+//							value=RIFResultTable.quote(NumberFormat.getNumberInstance(locale).format(longVal));
 						}
 						catch (Exception exception) {
 							rifLogger.error(this.getClass(), "Unable to parseLong(" + 
@@ -197,10 +205,9 @@ public class ResultsQueryManager extends BaseSQLManager {
 							 columnType.equals("float8") || 
 							 columnType.equals("double precision") ||
 							 columnType.equals("numeric"))) {
-						try {
-							Double doubleVal=Double.parseDouble(resultSet2.getString(i));
-//							value=NumberFormat.getNumberInstance(locale).format(doubleVal) + 
-//								" <!-- Double: " + name + " -->";
+						try { // Ditto
+//							Double doubleVal=Double.parseDouble(resultSet2.getString(i));
+//							value=RIFResultTable.quote(NumberFormat.getNumberInstance(locale).format(doubleVal));
 						}
 						catch (Exception exception) {
 							rifLogger.error(this.getClass(), "Unable to parseDouble(" + 
@@ -215,24 +222,27 @@ public class ResultsQueryManager extends BaseSQLManager {
 						data[i-1][1] = value;
 					}
 				} // For loop
+				rifLogger.info(getClass(), "get postcode: " + cleanPostcode + 
+					" for geography: " + geography.getName().toUpperCase() +
+					"; srid: " + srid);
+				
+				RIFResultTable results = new RIFResultTable();	
+					
+				results.setColumnProperties(columnNames, columnDataTypes);
+				results.setData(data);
+				
+				RIFResultTableJSONGenerator rifResultTableJSONGenerator =
+						new RIFResultTableJSONGenerator();
+				result = rifResultTableJSONGenerator.writeResultTable(results);
 			}
 			else {		
-				throw new RIFServiceException(
-					RIFServiceError.DATABASE_QUERY_FAILED,
-					"Postcode: \"" + cleanPostcode + "\" for geography: " + geography.getName().toUpperCase() + " is invalid");
+				result="{\"nopostcodefound\": " +
+					"\"Postcode: \\\"" + cleanPostcode + "\\\" for geography: " + geography.getName().toUpperCase() + " is invalid\"}";
 			}
 				
-			rifLogger.info(getClass(), "get postcode: " + cleanPostcode + 
-				" for geography: " + geography.getName().toUpperCase() +
-				"; srid: " + srid);
-			
-			RIFResultTable results = new RIFResultTable();	
-			results.setColumnProperties(columnNames, columnDataTypes);
-			results.setData(data);
-			
 			connection.commit();
 			
-			return results;
+			return result;
 		} catch(RIFServiceException rifServiceException) {
 			throw rifServiceException;
 		} catch(SQLException sqlException) {

@@ -109,9 +109,14 @@ angular.module("RIF")
 							}
 							scope.checkPostcode = function() {
 								
-								user.getPostalCodes(user.currentUser, thisGeography, scope.postcode).then(function (res) {     
-									AlertService.consoleDebug("[rifd-dsub-postal.js] postcode change: " + scope.postcode +
-										"; res: " + JSON.stringify(res, null, 1));
+								user.getPostalCodes(user.currentUser, thisGeography, scope.postcode).then(function (res) {    
+									if (res.data.nopostcodefound) {
+										AlertService.rifMessage('warning', res.data.nopostcodefound);
+									}
+									else {
+										AlertService.consoleDebug("[rifd-dsub-postal.js] postcode change: " + scope.postcode +
+											"; res: " + JSON.stringify(res, null, 1));
+									}
 								}, function () { // Error handler
 									AlertService.rifMessage('warning', "Could not postal codes from the database");
 
