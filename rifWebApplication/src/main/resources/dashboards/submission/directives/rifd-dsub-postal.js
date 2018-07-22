@@ -184,89 +184,57 @@ angular.module("RIF")
 							scope.setPostcode = function(newPostcode) {
 								scope.postcode=newPostcode;
 							}
-							scope.setupGrid = function(newPostcode) {
+							scope.setupGrid = function(smoothed_results) {
 								postalcodeGridOptions = angular.copy(initialPostalcodeGridOptions);
-/*								
-								var columnDefs = {};
-								for (var layer in poly._layers) {		
-									shapefileGridOptions.data.push(poly._layers[layer].feature.properties);
-									for (var property in poly._layers[layer].feature.properties) {
-										if (columnDefs[property] == undefined) {
-											columnDefs[property] = { 
-												counter: 0,
-												totalLength: 0,
-												averageLength: 0,
-												width: 0
-											};
-										}
-										columnDefs[property].counter++;
-										columnDefs[property].totalLength+=(' ' + poly._layers[layer].feature.properties[property]).length;
+								postalcodeGridOptions.columnDefs = [
+									{ field: 'Name' },
+									{ field: 'Value' }
+								];
+								var data=[];
+								for (var i=0; i<smoothed_results.length; i++) {
+									if (smoothed_results[i].Value && typeof smoothed_results[i].Value != "object") {
+										data.push(smoothed_results[i]);
 									}
 								}
+								postalcodeGridOptions.data=data;
 								
-								for (var column in columnDefs) {
-									columnDefs[column].averageLength=columnDefs[column].totalLength/columnDefs[column].counter;
-									columnDefs[column].width=80;
-									if (columnDefs[column].averageLength < 3 && column.lnegth < 4) {				
-										columnDefs[column].width=60;
-									}
-									else if (columnDefs[column].averageLength > 7 && column.lnegth > 8) {				
-										columnDefs[column].width=100;
-									}
-
-									if (column == 'band') {
-										shapefileGridOptions.columnDefs.push({
-											name: column,
-											defaultSort: {
-												direction: uiGridConstants.ASC,
-												priority: 0
-										   }, 
-										   averageLength: columnDefs[column].averageLength,
-										   width: columnDefs[column].width
-										});
-									}
-									else {
-										shapefileGridOptions.columnDefs.push({
-											name: column, 
-										    averageLength: columnDefs[column].averageLength,
-											width: columnDefs[column].width
-										});
-
-									}
-								}
-								
-								if (shapefileGridOptions.data.length > 0) {
-									alertScope.consoleDebug("[rifd-dsub-risk.js] scope.shapefileGridOptions: " +
-										JSON.stringify(shapefileGridOptions, null, 1));
-									scope.shapefileGridOptions = shapefileGridOptions;
+								if (postalcodeGridOptions.data.length > 0) {
+									alertScope.consoleDebug("[rifd-dsub-risk.js] scope.postalcodeGridOptions: " +
+										JSON.stringify(postalcodeGridOptions, null, 1));
+									scope.postalcodeGridOptions = postalcodeGridOptions;
 									scope.hasGrid = true;
 									if (scope.gridApi) {
 										scope.gridApi.core.refresh();
 									}
-								}			*/					
+								}							
 							}
 							scope.checkPostcode = function() {
 								
-								user.getPostalCodes(user.currentUser, thisGeography, scope.postcode).then(function (res) {    
-									if (res.data.nopostcodefound) {
-										scope.postcode=res.data.nopostcodefound.postalCode || scope.postcode;
-										AlertService.rifMessage('warning', res.data.nopostcodefound.warning);
-										scope.setPostcode(undefined);
-										scope.setupGrid(undefined);		
-									}
-									else {
-										if (res.data.additionalTableJson && res.data.additionalTableJson.postalCode) {
-											scope.setPostcode(res.data.additionalTableJson.postalCode);
+								if (scope.postcode) {
+									user.getPostalCodes(user.currentUser, thisGeography, scope.postcode).then(function (res) {    
+										if (res.data.nopostcodefound) {
+											scope.postcode=res.data.nopostcodefound.postalCode || scope.postcode;
+											AlertService.rifMessage('warning', res.data.nopostcodefound.warning);
+											scope.setPostcode(undefined);
+											scope.setupGrid(undefined);		
 										}
-										AlertService.consoleDebug("[rifd-dsub-postal.js] postcode change: " + scope.postcode +
-											"; res: " + JSON.stringify(res, null, 1));
-										scope.setupGrid(res.data.smoothed_results);			  
-									}
-								}, function () { // Error handler
-									AlertService.rifMessage('warning', "Could not fetch postal codes from the database");
+										else {
+											if (res.data.additionalTableJson && res.data.additionalTableJson.postalCode) {
+												scope.setPostcode(res.data.additionalTableJson.postalCode);
+											}
+											AlertService.consoleDebug("[rifd-dsub-postal.js] postcode change: " + scope.postcode +
+												"; res: " + JSON.stringify(res, null, 1));
+											scope.setupGrid(res.data.smoothed_results);			  
+										}
+									}, function () { // Error handler
+										AlertService.rifMessage('warning', "Could not fetch postal codes from the database");
 
-								}).then(function () {
-								});
+									}).then(function () {
+									});
+								}
+								else {
+									AlertService.rifMessage('warning', "You must enter a postal code");
+								}
 							}
 							
                             var modalInstance = $uibModal.open({
