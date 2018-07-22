@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Calendar;
 
+import org.json.JSONObject;
+
 import org.sahsu.rif.generic.concepts.RIFResultTable;
 import org.sahsu.rif.generic.datastorage.FunctionCallerQueryFormatter;
 import org.sahsu.rif.generic.datastorage.SelectQueryFormatter;
@@ -77,39 +79,69 @@ public class ResultsQueryManager extends BaseSQLManager {
 			}
 			String postalPopulationTable = resultSet1.getString(1);
 			int srid = resultSet1.getInt(2);
+			Double xcoordinate=null;
+			Double ycoordinate=null;
 			
 			if (resultSet1.next()) {
 				throw new Exception("getPostalCodes query 1; expected 1 row, got >1");
 			}
 			if (srid == 27700) {
 				cleanPostcode=postcode.toUpperCase();
-				String outwardCode=cleanPostcode.substring(cleanPostcode.length()-3, cleanPostcode.length()); 	// Last 3 characters
-							
-				if (outwardCode == null) {
-					throw new Exception("getPostalCodes null outwardCode for geography: " + 
-						geography.getName().toUpperCase() + "; postcode: " + cleanPostcode);
+				String outwardCode=null;
+				if (cleanPostcode.length() > 3) {
+					outwardCode=cleanPostcode.substring(cleanPostcode.length()-3, cleanPostcode.length()); 	// Last 3 characters
+				}		
+				if (outwardCode == null) {			
+					result="{\"nopostcodefound\":{\"postalCode\": \"" + cleanPostcode + "\"," + 
+						"\"warning\": " + 
+						"\"Postal code: \\\"" + cleanPostcode + "\\\" has no outwardCode for geography: " + 
+						geography.getName().toUpperCase() + 
+						"\"}}";
+					connection.commit();
+					
+					return result;
 				}
 				outwardCode=outwardCode.trim();
-				if (outwardCode.length() != 3) {
-					throw new Exception("getPostalCodes null/wrong size outwardCode (" + outwardCode + ") for geography: " + 
-						geography.getName().toUpperCase() + "; postcode: " + cleanPostcode);
+				if (outwardCode.length() != 3) {			
+					result="{\"nopostcodefound\":{\"postalCode\": \"" + cleanPostcode + "\"," + 
+						"\"warning\": " + 
+						"\"Postal code: \\\"" + cleanPostcode + "\\\" has null/wrong size outwardCode (" + outwardCode + ") for geography: " + 
+						geography.getName().toUpperCase() + 
+						"\"}}";
+					connection.commit();
+					
+					return result;
 				}
-				String inwardCode=cleanPostcode.substring(0, cleanPostcode.length()-4);	// Character 0 to last 3
+				String inwardCode=null;
+				if (cleanPostcode.length() > 4) {
+					inwardCode=cleanPostcode.substring(0, cleanPostcode.length()-4);	// Character 0 to last 3
+				}
 				if (inwardCode == null) {
-					throw new Exception("getPostalCodes null inwardCode for geography: " + geography.getName().toUpperCase() +
-						"; postcode: " + postcode +
-						"; outwardCode; " + outwardCode);
+					result="{\"nopostcodefound\":{\"postalCode\": \"" + cleanPostcode + "\"," + 
+						"\"warning\": " + 
+						"\"Postal code: \\\"" + cleanPostcode + "\\\" has no inwardCode for geography: " + 
+						geography.getName().toUpperCase() + 
+						"; outwardCode; " + outwardCode +
+						"\"}}";
+					connection.commit();
+					
+					return result;
 				}		
 				inwardCode=String.format("%-4s", 									// Pad to 4 characters
 					inwardCode.trim()); 											// Trim white space						
-				if (inwardCode.length() != 4) {
-					throw new Exception("getPostalCodes wrong sized inwardCode (" + inwardCode + ") for geography: " + 
+				if (inwardCode.length() != 4) {		
+					result="{\"nopostcodefound\":{\"postalCode\": \"" + cleanPostcode + "\"," + 
+						"\"warning\": " + 
+						"\"Postal code: \\\"" + cleanPostcode + "\\\" has wrong sized inwardCode (" + inwardCode + ") for geography: " + 
 						geography.getName().toUpperCase() + 
-						"; postcode: " + postcode +
-						"; outwardCode; " + outwardCode);
+						"; outwardCode; " + outwardCode +
+						"\"}}";
+					connection.commit();
+					
+					return result;
 				}
 				cleanPostcode = inwardCode + outwardCode;
-				if (cleanPostcode.length() != 7) {
+				if (cleanPostcode.length() != 7) { // error in cleaning logic!
 					throw new Exception("getPostalCodes wrong sized cleanPostcode (" + cleanPostcode + ") for geography: " + 
 						geography.getName().toUpperCase() + 
 						"; postcode: " + postcode +
@@ -122,7 +154,7 @@ public class ResultsQueryManager extends BaseSQLManager {
 				throw new Exception("getPostalCodes no postal population table defined for geography: " + geography.getName().toUpperCase() +
 					"; postcode: " + postcode);
 			}
-/*	
+	
 			boolean hasXcoordinate=doesColumnExist(connection, 
 				"rif_data", postalPopulationTable.toLowerCase(), "xcoordinate");
 			boolean hasYcoordinate=doesColumnExist(connection, 
@@ -130,8 +162,10 @@ public class ResultsQueryManager extends BaseSQLManager {
 
 			if (hasXcoordinate == false || hasYcoordinate == false) {
 				throw new Exception("getPostalCodes X/Y coordinate columns found in geography: " + geography.getName().toUpperCase() +
-					" postal population table: " + postalPopulationTable);
-			} */
+					" postal population table: " + postalPopulationTable + 
+					"; hasXcoordinate: " + hasXcoordinate + 
+					"; hasYcoordinate: " + hasYcoordinate);
+			} 
 		
 			SelectQueryFormatter getPostalCodesQueryFormatter2 =
 				SelectQueryFormatter.getInstance(rifDatabaseProperties.getDatabaseType());
@@ -186,7 +220,13 @@ public class ResultsQueryManager extends BaseSQLManager {
 							 columnType.equals("int") ||
 							 columnType.equals("smallint"))) {
 						try { // Use normal decimal formatting - will cause confusion with coordinates
-//							Long longVal=Long.parseLong(resultSet2.getString(i));
+							Long longVal=Long.parseLong(resultSet2.getString(i));
+							if (name.equals("xcoordinate")) {
+								xcoordinate=new Double(longVal);
+							}
+							if (name.equals("ycoordinate")) {
+								ycoordinate=new Double(longVal);
+							}
 //							value=RIFResultTable.quote(NumberFormat.getNumberInstance(locale).format(longVal));
 						}
 						catch (Exception exception) {
@@ -206,7 +246,13 @@ public class ResultsQueryManager extends BaseSQLManager {
 							 columnType.equals("double precision") ||
 							 columnType.equals("numeric"))) {
 						try { // Ditto
-//							Double doubleVal=Double.parseDouble(resultSet2.getString(i));
+							Double doubleVal=Double.parseDouble(resultSet2.getString(i));
+							if (name.equals("xcoordinate")) {
+								xcoordinate=new Double(doubleVal);
+							}
+							if (name.equals("ycoordinate")) {
+								ycoordinate=new Double(doubleVal);
+							}
 //							value=RIFResultTable.quote(NumberFormat.getNumberInstance(locale).format(doubleVal));
 						}
 						catch (Exception exception) {
@@ -231,13 +277,21 @@ public class ResultsQueryManager extends BaseSQLManager {
 				results.setColumnProperties(columnNames, columnDataTypes);
 				results.setData(data);
 				
+				JSONObject additionalTableJson = new JSONObject();
+				additionalTableJson.put("postalCode", cleanPostcode);
+				if (xcoordinate != null && ycoordinate != null) {
+					additionalTableJson.put("xcoordinate", xcoordinate);
+					additionalTableJson.put("ycoordinate", ycoordinate);
+				}
+				
 				RIFResultTableJSONGenerator rifResultTableJSONGenerator =
 						new RIFResultTableJSONGenerator();
-				result = rifResultTableJSONGenerator.writeResultTable(results);
+				result = rifResultTableJSONGenerator.writeResultTable(results, additionalTableJson);
 			}
 			else {		
-				result="{\"nopostcodefound\": " +
-					"\"Postcode: \\\"" + cleanPostcode + "\\\" for geography: " + geography.getName().toUpperCase() + " is invalid\"}";
+				result="{\"nopostcodefound\":{\"postalCode\": \"" + cleanPostcode + "\"," + 
+					"\"warning\": " + 
+					"\"Postal code: \\\"" + cleanPostcode + "\\\" for geography: " + geography.getName().toUpperCase() + " is invalid\"}}";
 			}
 				
 			connection.commit();

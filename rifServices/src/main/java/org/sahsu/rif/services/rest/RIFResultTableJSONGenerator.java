@@ -1,6 +1,7 @@
 package org.sahsu.rif.services.rest;
 
 import org.sahsu.rif.generic.concepts.RIFResultTable;
+import org.json.JSONObject;
 
 
 /**
@@ -88,6 +89,14 @@ public final class RIFResultTableJSONGenerator {
 	public String writeResultTable(
 		final RIFResultTable resultTable) {
 		
+		return writeResultTable(resultTable, null);
+			
+	}
+	
+	public String writeResultTable(
+		final RIFResultTable resultTable,
+		final JSONObject additionalTableJson) {
+		
 		StringBuilder result = new StringBuilder();
 		
 		String[] columnNames = resultTable.getColumnNames();
@@ -98,6 +107,11 @@ public final class RIFResultTableJSONGenerator {
 		int numberOfColumns = columnNames.length;		
 			
 		result.append("{");
+		if (additionalTableJson != null) {
+			result.append("\"additionalTableJson\":");
+			result.append(additionalTableJson.toString());
+			result.append(",");
+		}
 		
 		//write out table header
 		result.append("\"smoothed_results_header\":[");
@@ -128,9 +142,7 @@ public final class RIFResultTableJSONGenerator {
 					result.append(columnNames[currentColumn]);
 					result.append("\"");
 					result.append(":");
-					result.append("\"");
-					result.append(data[currentRow][currentColumn]);					
-					result.append("\"");
+					result.append(RIFResultTable.quote(data[currentRow][currentColumn]));	
 				}				
 				else if (dataTypes[currentColumn] == RIFResultTable.ColumnDataType.JSON) { // No escaping at all: you do it yourself!!!!
 					result.append("\"");
