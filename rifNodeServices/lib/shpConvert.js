@@ -1663,7 +1663,8 @@ This error in actually originating from the error handler function
 			},
 			projection: {},
 			simplificationFactor: 	response.fields["simplificationFactor"],
-			quantization: 			response.fields["quantization"]			
+			quantization: 			response.fields["quantization"],
+			hierarchy_post_processing_sql: 			response.fields["hierarchy_post_processing_sql"]			
 		};
 
 		/*

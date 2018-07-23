@@ -2575,17 +2575,194 @@ SELECT a.*, b.coa2011
 * Created add_study_selection_to_json branch. Added ability to view JSOBN shapes used in study selection (e.g. the concentric circle);
 * Run EWS2011 pre processing script pg_EWS2011.sql to end after hierarchy fix. Took about a day and a half. Ran pgTileMaker -needed more memory. Took 3 hours.
 
-18th to 22nd June
+#### 18th to 22nd June
 
 * Test and merge *Tidies up the query formatters #43*;
 * Document *tilemaker* hierarchy issues;
 * Apply Postgres fix for EWS2011 hierarchy issues to SQL Server;
 * Resolve adjacency list tuning issues >1 day to 3 minutes;
 * Update SQL Server tuning comments;
-* Create test noise band shapefile for sahsuland from Heathrow 2013 day noise;
+* Create 2x test noise band shapefiles for sahsuland from Heathrow 2013 day noise;
 * Resolve front end shapefile loading issues for banded data;
 * Received population weighted centroids from Aina;
 * Run EWS2011 pre processing script mssql_EWS2011.sql to end after hierarchy and performance fixes overnight. Ran mssqlTileMaker -needed more memory. Took 1 hour;
-* Loaded EWS2011 into SQL SErver and PostGres;
+* Loaded EWS2011 into SQL Server and PostGres;
 * *TileViewer* example - Lower super output area in south east London:
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifNodeServices/TileViewer_example.PNG?raw=true "TileViewer example - Lower super output area in south east London")  
+
+#### 25th to 29th June
+
+* Upgraded wsrifdb1 and 2 to latest patch level; secured tomcat to OWASP guidelines; added US SEER dataset; fixed stop/start_rif.bat; made to start on boot;
+* Made SQL Server SEER load script re-runnable using MERGE statements (removed DELETE FROM/INSERT rif40 tables);
+* Fix for lack of polygons on returning to the study areas screen; fix for map synchronisation problems (slowed it down 0.5s as usual - map.whenReady() isn't!);
+* Clear selection now zooms back to full extent; shapefile selection only zooms to study extent;
+* R error on SQL Server port only with SEER data:
+  ```
+  getRootCauseMessage: RIFServiceException: R script execution error; trace:
+	EXTRACT TABLE NAME: rif_studies.s4_extract
+	Saving extract frame to: scratchSpace/d1-100/s4/datatmp_s4_extract.csv
+	rif_studies.s4_extract numberOfRows=745322==
+	rif40_GetAdjacencyMatrix numberOfRows=712==
+	Saving adjacency matrix to: scratchSpace/d1-100/s4/datatmp_s4_adjacency_matrix.csv
+	Covariates: MEDIAN_HH_INCOME_QUIN
+	Stack tracer >>>
+
+	 performSmoothingActivity.R#710: .handleSimpleError(function (obj) 
+	{
+		ca FUN(X[[i]], ...) lapply(X = X, FUN = FUN, ...) performSmoothingActivity.R#709: sapply(x, FUN = function(y) {
+		ans = y
+	  performSmoothingActivity.R#106: findNULL(data[, i.d.adj[i]]) performSmoothingActivity(data, AdjRowset) Adj_Cov_Smooth_JRI.R#372: withVisible(expr) Adj_Cov_Smooth_JRI.R#372: withCallingHandlers(withVisible(expr), error = er withErrorTracing({
+		data = fetchExtractTable()
+		AdjRowset = getAdjace doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(expr, names, parentenv, handlers[[1]]) tryCatchList(expr, names[-nh], parentenv, handlers[-nh]) doTryCatch(return(expr), name, parentenv, handler) tryCatchOne(tryCatchList(expr, names[-nh], parentenv, handlers[-nh]), names tryCatchList(expr, classes, parentenv, handlers) tryCatch({
+		withErrorTracing({
+			data = fetchExtractTable()
+		   eval(expr, pf) eval(expr, pf) withVisible(eval(expr, pf)) evalVis(expr) Adj_Cov_Smooth_JRI.R#411: capture.output({
+		tryCatch({
+			withError runRSmoothingFunctions() 
+	<<< End of stack tracer.
+	callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  if 
+	callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  y == "NULL" 
+	callPerformSmoothingActivity() ERROR:  missing value where TRUE/FALSE needed ; call stack:  {
+		ans = 0
+	} 
+	callPerformSmoothingActivity exitValue: 1
+  ```
+  Traced to missing patch applied to Postgres (rif40_create_insert_statement.sql). Mal-join of denominator covariate data in extract;
+  **Checked numbers were the same for both ports!**
+* Mysterious error on wsrifdb2:
+  ```
+  10:49:56.827 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Created TaxonomyLogger: org.sahsu.rif.generic.util.TaxonomyLogger
+  10:49:56.843 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Set java.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+  10:49:56.843 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.RIFTaxonomyWebServiceApplication]:
+  !!!!!!!!!!!!!!!!!!!!! RIFTaxonomyWebServiceApplication !!!!!!
+  10:49:58.155 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfigurationXMLReader]:
+  TaxonomyService configuration file: C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\TaxonomyServicesConfiguration.xml
+  10:49:58.186 [https-jsse-nio-8080-exec-5] ERROR org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+  ICD10/11 taxonomy service: ICD Taxonomy Service initialiseService() error
+  getMessage:          RIFServiceException: ICD10/11 taxonomy service: ICD Taxonomy Service file: "org.sahsu.rif.generic.concepts.Parameter@131041c4" not found.
+  getRootCauseMessage: RIFServiceException: ICD10/11 taxonomy service: ICD Taxonomy Service file: "org.sahsu.rif.generic.concepts.Parameter@131041c4" not found.
+  getThrowableCount:   1
+  getRootCauseStackTrace >>>
+  1 error(s). Error code is 'HEALTH_CODE_TAXONOMY_SERVICE_ERROR'. Message list is: 'ICD10/11 taxonomy service: ICD Taxonomy Service file: "org.sahsu.rif.generic.concepts.Parameter@131041c4" not found.'
+  	at org.sahsu.taxonomyservices.claMLTaxonomyService.initialiseService(claMLTaxonomyService.java:170)
+  	at org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfigurationXMLReader.readFile(TaxonomyServiceConfigurationXMLReader.java:206)
+  	at org.sahsu.rif.generic.taxonomyservices.FederatedTaxonomyService.initialise(FederatedTaxonomyService.java:115)
+  	at org.sahsu.taxonomyservices.RIFTaxonomyWebServiceResource.initialiseService(RIFTaxonomyWebServiceResource.java:83)
+	...
+	<<< End getRootCauseStackTrace.
+	10:55:25.306 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Created TaxonomyLogger: org.sahsu.rif.generic.util.TaxonomyLogger
+	10:55:25.322 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Set java.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+	10:55:25.322 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.RIFTaxonomyWebServiceApplication]:
+	!!!!!!!!!!!!!!!!!!!!! RIFTaxonomyWebServiceApplication !!!!!!
+	10:55:26.587 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfigurationXMLReader]:
+	TaxonomyService configuration file: C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\TaxonomyServicesConfiguration.xml
+	10:55:27.134 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.ICD10TaxonomyTermParser]:
+	ICD10TaxonomyTermParser 2
+	10:55:49.312 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+	icd101/1TaxonomyParser: ICD Taxonomy Service read: "C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\icdClaML2016ens.xml".
+	10:55:49.312 [https-jsse-nio-8080-exec-5] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+	icd101/1TaxonomyParser: ICD Taxonomy Service initialised: International classification of diseases and related health problems 10th revision (2016 version)..
+	11:01:46.608 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Created TaxonomyLogger: org.sahsu.rif.generic.util.TaxonomyLogger
+	11:01:46.639 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [TaxonomyLogger]: Set java.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+	11:01:46.639 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.RIFTaxonomyWebServiceApplication]:
+	!!!!!!!!!!!!!!!!!!!!! RIFTaxonomyWebServiceApplication !!!!!!
+	11:01:48.076 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.rif.generic.taxonomyservices.TaxonomyServiceConfigurationXMLReader]:
+	TaxonomyService configuration file: C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\TaxonomyServicesConfiguration.xml
+	11:01:49.795 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.ICD10TaxonomyTermParser]:
+	ICD10TaxonomyTermParser 2
+	11:02:13.651 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+	icd101/1TaxonomyParser: ICD Taxonomy Service read: "C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\icdClaML2016ens.xml".
+	11:02:13.651 [https-jsse-nio-8080-exec-10] INFO  org.sahsu.rif.generic.util.TaxonomyLogger : [org.sahsu.taxonomyservices.claMLTaxonomyService]:
+	icd101/1TaxonomyParser: ICD Taxonomy Service initialised: International classification of diseases and related health problems 10th revision (2016 version)..	
+  ```
+* Add shapefile properties data to selector modal;
+
+#### 2nd to 6th June
+
+* Add support for *hierarchy_post_processing_sql*, *population_weighted_centroids*;
+* Risk analysis front end:
+  * Check for no bands setup with limits;
+  * Reverse shapefile band columns so the same as points (red innermost);
+  * Colour shapefile bands; 
+  * Check all bands etc restore correctly;
+  * Added shapefile properties to map; 
+  * Switch to mouseover/mouseout to be consistent; improve info box to help. Confirmed not possible to share mouseover/mouseout between layers
+  
+#### 9th to 13th June  
+  
+* Risk analysis front end:
+  * Fixed (freehand diease mapping) shape selector;
+  * Added area to all shapes;
+  * Emphasise centroid point when area selected;
+  * Save/restore user selection methods to/from file;
+  * Add user selection methods to study submission XML;
+* Risk analysis middleware todo:
+  * Add user selection methods to XML parse: ```Unable to convert JSON stream to XML stream```; middleware trace. JSON is valid, probably causing by $$hashkey properties copying as part of UI grid: 
+    ```
+	14:41:16.428 [http-nio-8080-exec-3] ERROR org.sahsu.rif.generic.util.RIFLogger : [org.sahsu.rif.services.fileformats.RIFStudySubmissionXMLReader]:
+	Caught exception in RIFStudySubmissionXMLReader.readFile(InputStream)
+	getMessage:          SAXParseException: The content of elements must consist of well-formed character data or markup.
+	getRootCauseMessage: SAXParseException: The content of elements must consist of well-formed character data or markup.
+	getThrowableCount:   1
+	getRootCauseStackTrace >>>
+	org.xml.sax.SAXParseException; lineNumber: 1; columnNumber: 106494; The content of elements must consist of well-formed character data or markup.
+		at com.sun.org.apache.xerces.internal.util.ErrorHandlerWrapper.createSAXParseException(ErrorHandlerWrapper.java:203)
+		at com.sun.org.apache.xerces.internal.util.ErrorHandlerWrapper.fatalError(ErrorHandlerWrapper.java:177)
+		at com.sun.org.apache.xerces.internal.impl.XMLErrorReporter.reportError(XMLErrorReporter.java:400)
+		at com.sun.org.apache.xerces.internal.impl.XMLErrorReporter.reportError(XMLErrorReporter.java:327)
+		at com.sun.org.apache.xerces.internal.impl.XMLScanner.reportFatalError(XMLScanner.java:1472)
+		at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl$FragmentContentDriver.startOfMarkup(XMLDocumentFragmentScannerImpl.java:2635)
+		at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl$FragmentContentDriver.next(XMLDocumentFragmentScannerImpl.java:2732)
+		at com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl.next(XMLDocumentScannerImpl.java:602)
+		at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanDocument(XMLDocumentFragmentScannerImpl.java:505)
+		at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:841)
+		at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:770)
+		at com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(XMLParser.java:141)
+		at com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.parse(AbstractSAXParser.java:1213)
+		at com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser.parse(SAXParserImpl.java:643)
+		at com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl.parse(SAXParserImpl.java:327)
+		at javax.xml.parsers.SAXParser.parse(SAXParser.java:195)
+		at org.sahsu.rif.services.fileformats.RIFStudySubmissionXMLReader.readFile(RIFStudySubmissionXMLReader.java:164)
+		at org.sahsu.rif.services.rest.WebService.getRIFSubmissionFromXMLSource(WebService.java:1207)
+		at org.sahsu.rif.services.rest.WebService.getRIFSubmissionFromJSONSource(WebService.java:1183)
+		at org.sahsu.rif.services.rest.WebService.submitStudy(WebService.java:1126)
+		at org.sahsu.rif.services.rest.StudySubmissionServiceResource.submitStudy(StudySubmissionServiceResource.java:1132)
+    
+	14:41:16.440 [http-nio-8080-exec-3] ERROR org.sahsu.rif.generic.util.RIFLogger : [org.sahsu.rif.services.rest.StudySubmissionServiceResource]:
+	StudySubmissionServiceResource.submitStudy error
+	getMessage:          RIFServiceException: Unable to convert JSON stream to XML stream.
+	getRootCauseMessage: RIFServiceException: Unable to convert JSON stream to XML stream.
+	getThrowableCount:   1
+	getRootCauseStackTrace >>>
+	1 error(s). Error code is 'UNABLE_TO_PARSE_JSON_SUBMISSION'. Message list is: 'Unable to convert JSON stream to XML stream.'
+		at org.sahsu.rif.services.rest.WebService.getRIFSubmissionFromJSONSource(WebService.java:1190)
+		at org.sahsu.rif.services.rest.WebService.submitStudy(WebService.java:1126)
+		at org.sahsu.rif.services.rest.StudySubmissionServiceResource.submitStudy(StudySubmissionServiceResource.java:1132)	
+	```
+  * Add user selection methods to database insert;
+  * Add user selection methods to DB study save;
+  * Add population weighted centroid support (pop_x, pop_y) to getTileMakerCentroids();
+  * Create and run PG/MSSQL scripts to load population weighted centroid and update lookup tables; MSSQL script is dependent on the PG script;
+  
+#### 16th to 20th July
+
+* Fix unable to convert JSON stream to XML stream error;
+* Add support for risk analysis type;
+* Select by freehand polygons disabled for risk analysis;
+* Add band and number of selected polygons to info control;
+* For no numerator/denominators setup errors so intelligible;
+* Add support for population weighted centroids; in green;
+* Fix inferior (i.e. within or on edge of) bands;
+* Remove points from study selection; 
+* Test EWS2011 geography and centroids in RIF:
+  * OK to MSOA level (~9000 centroids) with acceptable performance.
+
+* Risk analysis front end issues/todo:
+  * Add selection by postal code/WGS 84 lat/long/possibly SRID X/Y;
+  * Progress of shapefile display setup after "apply" button in shapefile load modal;
+  * Disable "apply" button in shapefile load modal after pushed (so you don't do it twice while waiting);
+  * "Green" display shapefile selection and centroids display when selected;
+  * Check selection methods (e.g. by attribute: DB; bands 69, 63, 0) are saved to study selection;
+  * Remove disabled AOI code;
+  * Fix height interaction with shapefile selector modal for smaller heights then fixed modal height;
+  * Improve scaling in shapefile properties table, 40:60 split;

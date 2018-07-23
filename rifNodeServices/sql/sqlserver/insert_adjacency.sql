@@ -48,6 +48,7 @@ BEGIN
 	PRINT 'Created adjacency_list for geolevel_id: ' + CAST(@cnt AS VARCHAR) + '; rows: ' +  CAST(@@ROWCOUNT AS VARCHAR);
     SET @cnt = @cnt + 1;
 END;
+DEALLOCATE c1;
 
 CREATE INDEX #temp_a_pk ON #temp_a(geolevel_id, areaid);
 
@@ -67,4 +68,4 @@ SELECT DISTINCT geolevel_id, areaid, LEN(adjacency_list)-LEN(REPLACE(adjacency_l
   FROM b
  ORDER BY 1, 2;
 
-DROP TABLE #temp_a;
+DROP TABLE #temp_a

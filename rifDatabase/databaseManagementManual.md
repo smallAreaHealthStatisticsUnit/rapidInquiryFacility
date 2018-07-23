@@ -53,10 +53,12 @@ Database Management Manual
    - [7.1 Postgres](#71-postgres)
      - [7.1.1 Server Memory Tuning](#711-server-memory-tuning)
      - [7.1.2 Query Tuning](#712-query-tuning)
+	 - [7.1.3 Database Space Management](#713-database-space-management)
    - [7.2 SQL Server](#72-sql-server)
      - [7.2.1 Server Memory Tuning](#721-server-memory-tuning)
      - [7.2.2 Query Tuning](#722-query-tuning)
-	 
+	 - [7.2.3 Database Space Management](#723-database-space-management)
+					
 # 1. Overview
 
 This manual details how to manage RIF databases. See also the:
@@ -2100,6 +2102,23 @@ Insert on rif_studies.s416_extract  (cost=19943.90..21263.53 rows=52785 width=58
 +00038.28s  rif40_execute_insert_statement(): [56605] Study 416: Study extract insert 1995 (EXPLAIN) OK, took: 00:00:00.061771
 ```
 
+### 7.1.3 Database Space Management
+
+Postrgres needs to be VACUUM to clear out dead tuples as it has no rollback segments. VACUUM reclaims storage occupied by dead tuples. In normal PostgreSQL operation, 
+tuples that are deleted or obsoleted by an update are not physically removed from their table; they remain present until a VACUUM is done. Therefore it's necessary to do 
+VACUUM periodically, especially on frequently-updated tables. An [Auto Vacuum]https://www.postgresql.org/docs/9.6/static/routine-vacuuming.html#AUTOVACUUM) 
+daemon is provided for this purpose. If you do NOT do this you will eventually run out of disk space. After about Postgres 9.3 or so he system will launch autovacuum processes 
+if necessary to prevent transaction ID wraparound.
+
+```
+autovacuum = on     # Enable autovacuum subprocess?  'on'
+                    # requires track_counts to also be on.
+track_counts = on
+```
+
+Vaccuming can also be carried out using the [*vacuumdb*](https://www.postgresql.org/docs/9.6/static/app-vacuumdb.html) command or by using the SQL 
+[*VACUUM*](https://www.postgresql.org/docs/9.6/static/sql-vacuum.html) command: ```VACCUM FULL VERBOSE ANALYZE``` will garbage-collect and analyze a database verbosely.
+ 					
 ## 7.2 SQL Server
 
 ### 7.2.1 Server Memory Tuning
@@ -2132,6 +2151,15 @@ Show execution plan in SQL Server management studio is also very effective (show
 	
 However it is not very effective as it did not spot that the query had effectively disabled the SPATIAL indexes. The real problem with the query was the lack of partitioning on SQL Server. 
 When the query was split by geolevel_id it ran in two minutes as opposed to >245 hours!. It also cannot cope with T-SQL.
-	
+		
+### 7.2.3 Database Space Management
+
+SQL Server should not need VACUUMing like Postgres as it uses rollback segments. However the database can run out of space as space stays with tables once allocated; databases need to be shrunk periodically: 
+https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-database?view=sql-server-2017
+
+![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifDatabase/SQLserver/shrink.PNG?raw=true "SQL Server Shrink Database")
+
+The option *reorganise files before releasing unused space* will affect performance and will take a long like (2x as long as a Postgres ```VACUUM FULL```).
+
 Peter Hambly
 May 2018

@@ -15,6 +15,7 @@ Tile Maker
 	- [1.2.7 No top level shapefile with only one area](#127-no-top-level-shapefile-with-only-one-area)
 	- [1.2.8 pgTileMaker or mssqlTileMaker JavaScript heap out of memory](#128-pgtilemaker-or-mssqltilemaker-javascript-heap-out-of-memory)
 	- [1.2.9 Hierarchy Issues](#129-hierarchy-issues)
+	- [1.2.10 SQL Server disk space and memory Issues](#1210-sql-server-disk-space-and-memory-issues)
 - [2. Running the Tile Maker](#2-running-the-tile-maker)
   - [2.1 Setup](#21-setup)
   - [2.2 Processing Overview](#22-processing-overview)
@@ -558,6 +559,40 @@ SELECT a.*, b.coa2011
 
 The SQL Server SQL code will be the same.
 
+This can also be added to *geoDataLoader.xml* just below the top level ```<geoDataLoader>```:
+```
+  <hierarchy_post_processing_sql>
+    <![CDATA[
+WITH a AS (
+	SELECT DISTINCT scntry2011,cntry2011, gor2011, ladua2011, msoa2011, lsoa2011
+	  FROM hierarchy_ews2011
+	 WHERE lsoa2011 = 'W01001945' /* Where it should be */
+), b AS (
+	SELECT coa2011, lsoa11_1
+      FROM coa2011
+     WHERE coa2011 IN ('W00010143', 'W00010161') /* Missing */
+)
+INSERT INTO hierarchy_ews2011 (scntry2011, cntry2011, gor2011, ladua2011, msoa2011, lsoa2011, coa2011)
+SELECT a.*, b.coa2011
+  FROM a, b
+ WHERE a.lsoa2011 = b.lsoa11_1
+   AND b.coa2011 NOT IN (SELECT coa2011 FROM hierarchy_ews2011)
+   ]]>
+  </hierarchy_post_processing_sql> 
+```
+This SQL will then be inserted just after *insert_hierarchy.sql* and before the checks. The SQL should be in a CDATA block and should **NOT** have a terminating comma.
+
+### 1.2.10 SQL Server disk space and memory Issues
+
+Large database post processing can easily fill up the database and exhaust the memory. SQL Server does not release memory willingly and database compaction (*shrinking*) 
+has to be done manually.
+
+* If the database runs out of space; shrink it: https://docs.microsoft.com/en-us/sql/relational-databases/databases/shrink-a-database?view=sql-server-2017
+* ```The app domain with specified version id (2) was unloaded due to memory pressure and could not be found```
+ * Stop and start SQL Server to release memory
+ 
+It is advised to do this before any big run.
+ 
 # 2. Running the Tile Maker
 
 ## 2.1 Setup
@@ -919,20 +954,20 @@ fix, 98% simplification took 7 seconds!
 The Node.js server program needs to be able to read each shapefile in turn and then store the GeoJSON in memory. This leads to a memory requirement of 40x the total size of the shapefiles with 
 a maximum zoomlevel of 9.
 
-The server is pre-configured with 4GB of memory in the *Makefile*. To change the memory in use alter *NODE_MAX_MEMORY=* to the new value in MB: ```NODE_MAX_MEMORY?=16384```. The 
+The server is pre-configured with 4GB of memory in the *Makefile*. To change the memory in use alter *NODE_MAX_MEMORY=* to the new value in MB: ```NODE_MAX_MEMORY?=24576```. The 
 ```?``` is important, it allows the value to be set without altering the Makefile. There are four ways to achieve this:
 
 1. Altering the Makefile:
   ```Makefile
-  NODE_MAX_MEMORY?=16384
+  NODE_MAX_MEMORY?=24576
   FOREVER_OPTIONS=--max-old-space-size=$(NODE_MAX_MEMORY) --expose-gc
   ```
 2. Set *NODE_MAX_MEMORY* in the environment;
-3. Use ```make server-start NODE_MAX_MEMORY=16384``` to set on the command line. This will work for the other stop/restart make targets;
-4. Manual start - change ```--max-old-space-size=4096``` to ```--max-old-space-size=16384```:
+3. Use ```make server-start NODE_MAX_MEMORY=24576``` to set on the command line. This will work for the other stop/restart make targets;
+4. Manual start - change ```--max-old-space-size=4096``` to ```--max-old-space-size=24576```:
   ```
   rm -f forever.err forever.log
-  node node_modules\forever\bin\forever start -c "node --max-old-space-size=16384 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
+  node node_modules\forever\bin\forever start -c "node --max-old-space-size=24576 --expose-gc" -verbose -l forever.log -e forever.err -o forever.log --append ./expressServer.js
   ```
   
 ## 2.4 Pre Processing Shapefiles

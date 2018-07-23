@@ -343,7 +343,7 @@ Two scripts (in the scripts directory) are provided to start and stop the RIF fr
 * start_rif.bat
 * stop_rif.bat
 
-These should be copied to a local directory and then sent to the desktop as a shortcut; find each file, right click, "select send to" then "Desktop (create shortcut)". 
+These should be copied to a local directory (e.g. *%CATALINA_HOME%\bin*) and then sent to the desktop as a shortcut; find each file, right click, "select send to" then "Desktop (create shortcut)". 
 The shortcuts created then need to be modified to run as an Administrator (right click on shortcut, select properties, in shortcut properties window select advanced then check run as administrator).
 
   ![alt text](https://github.com/smallAreaHealthStatisticsUnit/rapidInquiryFacility/blob/master/rifWebApplication/setting_runas_administrator.png?raw=true "Make a shortcut run as an administrator")
@@ -1246,9 +1246,9 @@ To install and configure SSL/TLS support on Tomcat, you need to follow these sim
 Create a keystore file to store the server's private key and self-signed certificate by executing the following command in the $CATALINA_BASE/conf directory:
 Windows. Do **NOT** use a password of *changeit*:
 ```
-cd C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf
+cd %CATALINA_HOME%\conf
 
-"%JAVA_HOME%\bin\keytool" -genkey -alias tomcat -keyalg RSA -keystore "C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks" -storepass changeit
+"%JAVA_HOME%\bin\keytool" -genkey -alias tomcat -keyalg RSA -keystore "%CATALINA_HOME%\conf\localhost-rsa.jks" -storepass changeit
 
 Unix:
 ```
@@ -1260,7 +1260,7 @@ On a Unix system the keystore will be put in ~/.keystore and needs to be copied 
 
 Example output:
 ```
-C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>"%JAVA_HOME%\bin\keytool" -genkey -alias tomcat -keyalg RSA -keystore "C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks" -storepass changeit
+C:\Program Files\Apache Software Foundation\Tomcat 8.5\bin>"%JAVA_HOME%\bin\keytool" -genkey -alias tomcat -keyalg RSA -keystore "%CATALINA_HOME%\conf\localhost-rsa.jks" -storepass changeit
 What is your first and last name?
   [Unknown]:  Peter Hambly
 What is the name of your organizational unit?
@@ -1278,8 +1278,13 @@ Is CN=Peter Hambly, OU=SAHSU, O=Imperial College, L=London, ST=England, C=UK cor
 
 Enter key password for <tomcat>
         (RETURN if same as keystore password):
+Warning:
+The JKS keystore uses a proprietary format. It is recommended to migrate to PKCS12 which is an industry standard format using "keyto
+ol -importkeystore -srckeystore C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks -destkeystore C:\Progr
+am Files\Apache Software Foundation\Tomcat 8.5\conf\localhost-rsa.jks -deststoretype pkcs12".
 
 ```
+
 Check the keystore is in the correct place:
 ```
 C:\Program Files\Apache Software Foundation\Tomcat 8.5\conf>dir localhost-rsa.jks
@@ -2361,8 +2366,7 @@ Tomcat 8 has added support for following HTTP response headers.
 
 As a best practice, take a backup of necessary configuration file before making changes or test in a non-production environment.
 
-In the *%CATALINA_HOME%/conf* folder under path where Tomcat is installed
-Uncomment the following filter (by default it is commented out):
+In the *%CATALINA_HOME%/conf* folder under path where Tomcat is installed edit *web.xml* and uncomment the following filter (by default it is commented out):
 ```xml
     <filter>
         <filter-name>httpHeaderSecurity</filter-name>
@@ -2410,6 +2414,16 @@ These HTTP headers are an instruction to the client about the document's validit
 cached, the document may be fetched from the cache rather than from the source until this time has passed. 
 After that, the cache copy is considered "expired" and invalid, and a new copy must be obtained from the
 source.
+
+Replace: 
+```xml
+<filter-mapping>
+    <filter-name>httpHeaderSecurity</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
+
+With:
 
 ```xml
     <filter-mapping>

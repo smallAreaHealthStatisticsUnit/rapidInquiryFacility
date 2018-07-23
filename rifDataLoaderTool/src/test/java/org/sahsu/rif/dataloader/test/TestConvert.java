@@ -1,5 +1,7 @@
 package org.sahsu.rif.dataloader.test;
 
+import java.net.URISyntaxException;
+
 /**
  *
  *
@@ -63,10 +65,6 @@ public class TestConvert extends AbstractRIFDataLoaderTestCase {
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
-	public TestConvert() {
-
-	}
 
 	public void test1() {
 		

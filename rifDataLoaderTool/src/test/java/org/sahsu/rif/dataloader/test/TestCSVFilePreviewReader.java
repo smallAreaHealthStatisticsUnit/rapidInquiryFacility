@@ -1,6 +1,8 @@
 package org.sahsu.rif.dataloader.test;
 
 import java.io.File;
+import java.net.URISyntaxException;
+
 import org.junit.Test;
 
 /**
@@ -66,10 +68,6 @@ public class TestCSVFilePreviewReader extends AbstractRIFDataLoaderTestCase {
 	// ==========================================
 	// Section Construction
 	// ==========================================
-
-	public TestCSVFilePreviewReader() {
-
-	}
 
 	@Test
 	public void test1() {

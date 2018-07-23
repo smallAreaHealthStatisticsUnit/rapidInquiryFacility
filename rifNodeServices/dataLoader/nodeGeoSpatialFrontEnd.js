@@ -377,7 +377,9 @@ function submitFormXMLHttpRequest(output_type, formName) {
 		formData.append('verbose', verbose);
 	}	
 	formData.append('uuidV1', generateUUID()); // Random reference
-
+	if (hierarchy_post_processing_sql) {
+		formData.append('hierarchy_post_processing_sql', hierarchy_post_processing_sql);
+	}
 	addDbfDescFields(fileList, formData);
 	
 	// Display the key/value pairs
@@ -524,7 +526,7 @@ function updateCustomFileUploadInput(val) {
 function checkRequest(formData, jqForm, options) { 
     // formData is an array; here we use $.param to convert it to a string to display it 
     // but the form plugin does this for you automatically when it submits the data 
-		 	
+
 	options.data.uuidV1=generateUUID();
 	consoleLog("uuidV1: " + options.data.uuidV1);
 	uuidV1=options.data.uuidV1;

@@ -670,7 +670,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 		var appSchema;
 		
 		if (dbType == "MSSQLServer") { 
-			appSchema='$(USERNAME).';
+			appSchema='$(SQLCMDUSER).';
 			if (schema) {
 				appSchema='rif40.';
 			}
@@ -684,7 +684,7 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 				"t_tiles_" + xmlConfig.dataLoader.geographyName.toLowerCase() 	/* 4: tiles table; e.g. t_tiles_cb_2014_us_500k */,
 				xmlConfig.dataLoader.maxZoomlevel								/* 5: Max zoomlevel; e.g. 11 */,
 				(schema||"")													/* 6: Schema; e.g.rif_data. or "" */,
-				(appSchema||"")													/* 7: RIF or user schema; e.g. $(USERNAME) or rif40 */,
+				(appSchema||"")													/* 7: RIF or user schema; e.g. $(SQLCMDUSER) or rif40 */,
 				xmlConfig.dataLoader.geographyName.toUpperCase()				/* 8: Geography; e.g. USA_2014 */
 				), sqlArray, dbType); 		
 
@@ -782,6 +782,13 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 					(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),		/* Table name */
 					"geographic_centroid"											/* Column name */,
 					"Geographic centroid"											/* Comment */), 
+				sqlArray, dbType);	
+			var sqlStmt=new Sql("Comment " + (xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase() + " columns",
+				getSqlFromFile("comment_column.sql", 
+					dbType, 
+					(xmlConfig.dataLoader.geoLevel[i].lookupTable || "lookup_" + csvFiles[i].tableName).toLowerCase(),		/* Table name */
+					"population_weighted_centroid"											/* Column name */,
+					"Population weighted centroid"											/* Comment */),  
 				sqlArray, dbType);						
 		}				
 	} // End of createGeolevelsLookupTables()
@@ -898,6 +905,18 @@ cb_2014_us_500k                  1               3          11 -179.14734  179.7
 						xmlConfig.dataLoader.geographyName.toUpperCase()		/* 1: Geography */,
 						"orig"							 						/* 2: Use geom_orig */), 
 					sqlArray, dbType);
+			}
+			
+			/* 
+			 * Add SQL from <hierarchy_post_processing_sql> element in geoDataLoader.xml
+			 */
+			if (xmlConfig.hierarchy_post_processing_sql) {				
+				var sqlStmt=new Sql("Post processing hierarchy_" + xmlConfig.dataLoader.geographyName.toLowerCase(),
+					xmlConfig.hierarchy_post_processing_sql, 
+					sqlArray, dbType);
+			}
+			else {
+				sqlArray.push(new Sql("No SQL from <hierarchy_post_processing_sql> element in geoDataLoader.xml"));
 			}
 			
 			var sqlStmt=new Sql("Check intersctions  for geograpy: " + 
