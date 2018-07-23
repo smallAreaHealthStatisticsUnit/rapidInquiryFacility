@@ -350,7 +350,7 @@ runRSmoothingFunctions <- function() {
 		},
 		warning=function(w) {
 			cat(paste("connectToDb() WARNING: ", w, "\n"), sep="")
-			exitValue <<- 1
+			exitValue <<- 0
 		},
 		error=function(e) {
 			e <<- e
