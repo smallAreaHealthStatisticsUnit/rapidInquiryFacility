@@ -61,8 +61,7 @@ angular.module("RIF")
                         var alertScope = scope.$parent.$$childHead.$parent.$parent.$$childHead;
                         var studyType = scope.$parent.input.type; // Disease Mapping or Risk Analysis
 						var selectAt = scope.$parent.input.selectAt;
-						
-//                        var buffers; //concentric buffers around points					
+										
 						var parameters=ParametersService.getParameters();
 						var selectorBands = { // Study and comparison are selectors
 								weight: 3,
@@ -223,7 +222,7 @@ angular.module("RIF")
 										scope.properties = undefined;									
 									}
 									else {
-										scope.properties = angular.copy(res.data.additionalTableJson);
+										scope.properties = {"Postal code": res.data.additionalTableJson.postalCode};
 										if (res.data.additionalTableJson && res.data.additionalTableJson.postalCode) {
 //											setPostcode(res.data.additionalTableJson.postalCode);
 										}
@@ -287,8 +286,8 @@ angular.module("RIF")
 								
 								if (postalCodeGridOptions.data.length > 0) {
 									
-									AlertService.consoleDebug("[rifd-dsub-postal.js] setupGrid postalCodeGridOptions: " +
-										JSON.stringify(postalCodeGridOptions, null, 1));
+//									AlertService.consoleDebug("[rifd-dsub-postal.js] setupGrid postalCodeGridOptions: " +
+//										JSON.stringify(postalCodeGridOptions, null, 1));
 									scope.postalCodeGridOptions=postalCodeGridOptions;
 									scope.hasPostalGrid = true;
 									if (scope.gridApi) {
@@ -368,7 +367,6 @@ angular.module("RIF")
 									}
 								
 									//make polygons and apply selection
-//									buffers = new L.layerGroup();
 									var i = 0;
 									for (; i < scope.bandAttr.length; i++) {
 										var circle = L.circle([scope.ycoordinate, scope.xcoordinate],
@@ -380,7 +378,6 @@ angular.module("RIF")
 													fillOpacity: (selectorBands.fillOpacity || 0),
 													color: selectorBands.bandColours[i] // Band i+1
 												});
-//										buffers.addLayer(circle);
 										$rootScope.$broadcast('makeDrawSelection', {
 											data: circle,
 											properties: scope.properties,
